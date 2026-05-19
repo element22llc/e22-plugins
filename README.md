@@ -2,37 +2,44 @@
 
 Element 22's plugin marketplace for Claude Code and Claude Cowork.
 
-This repository is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces). It catalogues the plugins that Element 22 engineers and contributors install on top of Claude so that every team member works with the same proposal workflow, governance gates, and shared conventions.
+This repository is a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces). It catalogues the plugins that Element 22 engineers and non-engineering contributors install on top of Claude so that everyone works through the same proposal pipeline — engineers from a Claude Code terminal, PMs and designers from Cowork — and the lifecycle stays connected end-to-end.
 
-> The same marketplace format is supported in both **Claude Code** (the terminal coding agent) and **Claude Cowork** (the desktop tool for file and task automation). Install instructions for both are below.
+> The marketplace format is supported in both **Claude Code** (the terminal coding agent) and **Claude Cowork** (the desktop tool for file and task automation). Install instructions for both are below.
 
-## What's in here today
+## What's in here
 
-| Plugin | Install handle | What it does |
-|---|---|---|
-| [`proposal-workflow`](./plugins/proposal-workflow) | `proposal-workflow@e22-plugins` | The `/propose`, `/from-design`, and `/promote` commands, plus the `spec-refiner` and `drift-monitor` agents and the engineering constitution that anchors them. |
+| Plugin | Install handle | For whom | What it does |
+|---|---|---|---|
+| [`proposal-workflow`](./plugins/proposal-workflow) | `proposal-workflow@e22-plugins` | Engineers | `/propose`, `/from-design`, `/promote`; the `spec-refiner` and `drift-monitor` agents; the engineering constitution. Runs the full proposal lifecycle from draft PR to flag promotion. |
+| [`proposal-intake`](./plugins/proposal-intake) | `proposal-intake@e22-plugins` | Non-engineers (Cowork) | `/draft-proposal` turns a plain-language change idea into a structured brief; `/proposal-status` reports state without jargon; auto-triggered skills handle ad-hoc change ideas and terminology questions. |
 
-[`CONSTITUTION.md`](./CONSTITUTION.md) at the repo root is the always-loaded baseline that the `proposal-workflow` plugin references. Product-specific `CLAUDE.md` files extend it.
+**How they fit together.** `proposal-intake` is the on-ramp: a PM, designer, or ops contributor describes what they'd like to change; the plugin produces a brief and either files it as a GitHub issue or hands it to an engineer in chat. The engineer then runs `proposal-workflow`'s `/propose` against that brief and takes it through draft PR → preview → review → merge → flag promotion. The non-engineer can check back any time with `/proposal-status`.
+
+[`CONSTITUTION.md`](./CONSTITUTION.md) at the repo root is the always-loaded baseline that `proposal-workflow` references.
 
 ## Repository layout
 
 ```
 e22-plugins/
 ├── .claude-plugin/
-│   └── marketplace.json          ← the catalog
+│   └── marketplace.json              ← the catalog
 ├── plugins/
-│   └── proposal-workflow/
-│       ├── .claude-plugin/
-│       │   └── plugin.json
-│       ├── agents/
-│       │   ├── drift-monitor.md
-│       │   └── spec-refiner.md
-│       └── commands/
-│           ├── from-design.md
-│           ├── promote.md
-│           └── propose.md
-├── CONSTITUTION.md               ← engineering baseline
-├── MARKETPLACE_VALIDATION.md     ← internal: marketplace conformance notes
+│   ├── proposal-workflow/            ← engineer-facing
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── agents/{drift-monitor,spec-refiner}.md
+│   │   └── commands/{from-design,promote,propose}.md
+│   └── proposal-intake/              ← non-engineer / Cowork-facing
+│       ├── .claude-plugin/plugin.json
+│       ├── agents/intake-clarifier.md
+│       ├── commands/{draft-proposal,proposal-status}.md
+│       └── skills/
+│           ├── change-idea-intake/SKILL.md
+│           └── proposal-glossary/SKILL.md
+├── templates/
+│   ├── claude-settings.json          ← drop into product repos
+│   └── README.md
+├── CONSTITUTION.md                   ← engineering baseline
+├── MARKETPLACE_VALIDATION.md         ← internal: conformance notes
 ├── README.md
 └── .gitignore
 ```
@@ -47,17 +54,16 @@ Once this repo is on GitHub at `element22llc/e22-plugins`:
 # Inside a Claude Code session
 /plugin marketplace add element22llc/e22-plugins
 /plugin install proposal-workflow@e22-plugins
+/plugin install proposal-intake@e22-plugins   # optional for engineers
 ```
 
 For local development (before pushing):
 
 ```bash
-# From the parent of this repo, point at the checkout
 /plugin marketplace add ./e22-plugins
-/plugin install proposal-workflow@e22-plugins
 ```
 
-To validate marketplace JSON and plugin frontmatter before pushing:
+Validate before pushing:
 
 ```bash
 claude plugin validate .
@@ -65,84 +71,97 @@ claude plugin validate .
 
 ### In Claude Cowork
 
-Cowork supports the same plugin format as Claude Code. From the Cowork plugin manager UI:
+Cowork uses the same plugin format. Non-engineers should install `proposal-intake`:
 
-1. Open the Plugins panel.
-2. Add a marketplace pointing at `element22llc/e22-plugins` (or the local path during development).
-3. Install `proposal-workflow` from the catalog.
+1. Open the Plugins panel in Cowork.
+2. Add marketplace: `element22llc/e22-plugins` (or local path during development).
+3. Install `proposal-intake@e22-plugins`.
 
-The commands (`/propose`, `/from-design`, `/promote`) and agents (`spec-refiner`, `drift-monitor`) become available in Cowork sessions the same way they do in Claude Code.
+That gives them `/draft-proposal`, `/proposal-status`, and two auto-triggered skills:
 
-> **Practical note.** `proposal-workflow` is designed around an engineer's workflow: it expects a Git checkout, opens PRs, reads `package.json` / `pyproject.toml` for stack versions, talks to GitHub/Sentry/LaunchDarkly. It will run in Cowork, but you'll get the most out of it in a Claude Code session where those tools are already wired up. Non-engineering Cowork users will mostly interact with it indirectly — for example, by describing a change for an engineer to run `/propose` on.
+- **`change-idea-intake`** — kicks in automatically when they describe a change they'd like ("I wish X did Y", "can we make X different"). They never have to remember the slash command.
+- **`proposal-glossary`** — kicks in when they ask what a proposal-related term means ("what does experimental mean", "what's a feature flag"). Plain-language answers.
 
-### Auto-prompt teammates in other repos
+`proposal-workflow` will also install in Cowork, but it's built for engineers — it expects a Git checkout, GitHub MCP, feature-flag MCPs, and so on. Most Cowork users won't need it.
 
-In any Element 22 product repo, commit this to `.claude/settings.json` so Claude Code prompts contributors to install the marketplace when they trust the project folder:
+## Distribute through the Claude team workspace
 
-```json
-{
-  "extraKnownMarketplaces": {
-    "e22-plugins": {
-      "source": { "source": "github", "repo": "element22llc/e22-plugins" }
-    }
-  },
-  "enabledPlugins": {
-    "proposal-workflow@e22-plugins": true
-  }
-}
+The roll-out plan: push to GitHub, then drop a settings template into each Element 22 product repo so contributors get auto-prompted on first trust.
+
+### One-time: publish the marketplace
+
+1. Create the GitHub repo `element22llc/e22-plugins` (private or public depending on org policy).
+2. Push this checkout.
+3. (Optional) Tag a release: `git tag v0.1.0 && git push --tags`. The marketplace doesn't require tags, but they make the cache key predictable.
+
+### Per product repo: auto-prompt teammates
+
+Copy [`templates/claude-settings.json`](./templates/claude-settings.json) into the product repo as `.claude/settings.json` and commit it. The template registers `e22-plugins` as a known marketplace and pre-enables both plugins:
+
+```bash
+# From the product repo root
+mkdir -p .claude
+cp <path-to>/e22-plugins/templates/claude-settings.json .claude/settings.json
+git add .claude/settings.json
+git commit -m "chore: auto-prompt teammates to install e22-plugins marketplace"
 ```
 
-`extraKnownMarketplaces` registers the marketplace; `enabledPlugins` declares which plugin(s) should be enabled by default once installed.
+What happens for teammates after this lands:
 
-## Using `proposal-workflow`
+- First time they open the repo in Claude Code or Cowork and trust the folder, they'll see a prompt: *"This project recommends the `e22-plugins` marketplace. Install?"*
+- After they accept, `proposal-workflow` and `proposal-intake` install and enable automatically.
+- Updates: contributors get the latest version when they run `/plugin marketplace update` (or on next Claude startup, depending on auto-update settings).
 
-Once installed, three slash commands and two agents are available.
+### Optional: lock down marketplace sources
 
-### Commands
+This template **auto-prompts** but doesn't restrict. Anyone can still add other marketplaces. If you want strict control (e.g. SOC2-required repos shouldn't allow arbitrary marketplaces), configure [`strictKnownMarketplaces`](https://code.claude.com/docs/en/settings#strictknownmarketplaces) in **managed settings** at the org level — that requires an admin and a separate rollout. Out of scope for this README; see the spec when you're ready.
 
-- **`/propose <description>`** — Start a proposal from a natural-language change description. Creates a draft PR with a preview environment and acceptance criteria. Champions both technical and non-technical contributors.
-- **`/from-design <bundle url or path>`** — Same flow as `/propose`, but starts from a Claude Design handoff bundle. The bundle's design tokens are validated against `design-system/` and any deviations are surfaced to the champion.
-- **`/promote <flag> <target-percentage>`** — Promote an existing feature flag. Gated by `.github/PROMOTERS.yml`; requires explicit chat confirmation; never auto-promotes past 10% for SOC2 in-scope products.
+### Private repo auto-updates
 
-### Agents
+If `element22llc/e22-plugins` is private, contributors' Claude clients need `GITHUB_TOKEN` (or `GH_TOKEN`) in their shell environment for background auto-updates to work. Interactive `gh auth` is enough for manual `/plugin marketplace update`, but background updates suppress prompts. Document this in your contributor onboarding.
 
-- **`spec-refiner`** — Invoked automatically by `/propose` when a description is vague or under 20 words. Asks one focused clarifying question; never more than two; never writes code.
-- **`drift-monitor`** — CI-time agent that detects divergence between `CLAUDE.md` claims and the actual repository state, then files a GitHub issue. Never modifies code or `CLAUDE.md` itself.
+## Using the plugins
+
+### `/draft-proposal` (Cowork, non-engineers)
+
+```
+/draft-proposal Make checkout faster for international customers
+```
+
+Walks the user through three to four AskUserQuestion prompts (product, motivation, success criteria, urgency, champion), produces a brief in their outputs folder, and either files a GitHub issue or gives them a chat message to paste to an engineer.
+
+### `/proposal-status` (Cowork, non-engineers)
+
+```
+/proposal-status                # all proposals where I'm champion
+/proposal-status checkout       # proposals matching "checkout"
+```
+
+Reports state in plain language — "Engineer is working on it", "Ready for you to review the preview", "Live for customers" — not internal label vocabulary.
+
+### `/propose`, `/from-design`, `/promote` (Claude Code, engineers)
+
+See [the proposal-workflow README](./plugins/proposal-workflow) (and the [constitution](./CONSTITUTION.md)) for the full engineering lifecycle.
 
 ## Adding a new plugin to the marketplace
 
-1. Create the plugin subtree:
+1. Create the subtree:
    ```
    plugins/<new-plugin>/
-   ├── .claude-plugin/
-   │   └── plugin.json
+   ├── .claude-plugin/plugin.json
    ├── commands/    (optional)
    ├── agents/      (optional)
    ├── skills/      (optional)
    └── hooks/       (optional)
    ```
-2. Fill in `plugin.json` with at minimum `name`, `version`, and `description`.
-3. Add an entry to `.claude-plugin/marketplace.json#plugins`:
-   ```json
-   {
-     "name": "<new-plugin>",
-     "source": "./<new-plugin>",
-     "description": "...",
-     "category": "...",
-     "keywords": ["..."]
-   }
-   ```
-   Because `metadata.pluginRoot` is set to `./plugins`, the `source` value is just the bare directory name — no `plugins/` prefix needed.
-4. Run `claude plugin validate .` to confirm syntax and frontmatter are clean.
-5. Open a PR. Once merged, users get the new plugin on their next `/plugin marketplace update`.
+2. Fill in `plugin.json` (minimum: `name`, `version`, `description`).
+3. Add an entry to `.claude-plugin/marketplace.json#plugins`. Because `metadata.pluginRoot` is `./plugins`, the `source` value is just the bare directory name.
+4. Run `claude plugin validate .`.
+5. Open a PR. Once merged, teammates pick up the new plugin on the next marketplace refresh.
 
 ## Versioning
 
-Each plugin's `plugin.json` declares an explicit `version`. Users only see updates when that string changes — so **bump the `version` field on every release**. Setting `version` in both `plugin.json` and the marketplace entry is a footgun (the manifest value silently wins); pick one place. Omitting `version` entirely is also valid: Claude Code will treat each git commit as a new version.
-
-## Reserved-name reminder
-
-`e22-plugins` is not on the Anthropic reserved-name list and does not contain `claude` or `anthropic`, so it's safe for both Claude Code installs and the Claude.ai marketplace sync. Don't rename it to anything that begins with `claude-`, `anthropic-`, or any of the reserved patterns documented in the [marketplace spec](https://code.claude.com/docs/en/plugin-marketplaces).
+Each plugin's `plugin.json` declares an explicit `version`. **Bump the `version` field on every release** — users only see updates when the string changes. Don't set `version` in both `plugin.json` and the marketplace entry; the manifest value silently wins. Omitting `version` switches to git-SHA-per-commit, which is simpler for actively-developed plugins.
 
 ## Validating changes
 
@@ -152,7 +171,7 @@ Before pushing:
 claude plugin validate .
 ```
 
-This checks `marketplace.json`, every plugin's `plugin.json`, all skill/agent/command frontmatter, and `hooks/hooks.json` for syntax and schema errors. Warnings about kebab-case naming and missing descriptions are non-blocking but worth fixing — the Claude.ai marketplace sync is stricter than local installs.
+Checks `marketplace.json`, every plugin's `plugin.json`, all skill/agent/command frontmatter, and `hooks/hooks.json`. Warnings about kebab-case and missing descriptions are non-blocking but worth fixing — the Claude.ai marketplace sync is stricter than local installs.
 
 ## License
 
@@ -160,7 +179,9 @@ This checks `marketplace.json`, every plugin's `plugin.json`, all skill/agent/co
 
 ## See also
 
-- [CONSTITUTION.md](./CONSTITUTION.md) — the engineering baseline this marketplace's plugins reference
-- [MARKETPLACE_VALIDATION.md](./MARKETPLACE_VALIDATION.md) — internal notes on conformance against the Claude Code marketplace spec
+- [CONSTITUTION.md](./CONSTITUTION.md) — engineering baseline
+- [MARKETPLACE_VALIDATION.md](./MARKETPLACE_VALIDATION.md) — internal conformance notes
+- [templates/](./templates) — distribution config to drop into product repos
 - [Create and distribute a plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces) — official spec
 - [Plugins reference](https://code.claude.com/docs/en/plugins-reference) — full plugin schema
+- [Plugin settings](https://code.claude.com/docs/en/settings#plugin-settings) — `extraKnownMarketplaces`, `enabledPlugins`, `strictKnownMarketplaces`

@@ -1,6 +1,6 @@
 {
   "name": "e22-plugins",
-  "description": "Element 22 plugin catalog — proposal workflow, governance gates, and shared development conventions for Claude Code, Cowork, and Design.",
+  "description": "Element 22 plugin catalog — proposal workflow, intake for non-engineers, governance gates, and shared development conventions for Claude Code and Claude Cowork.",
   "owner": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
@@ -12,9 +12,16 @@
     {
       "name": "proposal-workflow",
       "source": "./proposal-workflow",
-      "description": "Element 22's proposal lifecycle: /propose, /from-design, /promote, the engineering constitution, spec-refiner and drift-monitor agents, and the SOC2 governance overlay.",
+      "description": "Element 22's proposal lifecycle for engineers: /propose, /from-design, /promote, the engineering constitution, spec-refiner and drift-monitor agents, and the SOC2 governance overlay.",
       "category": "platform",
       "keywords": ["element-22", "proposals", "governance", "soc2", "feature-flags", "terragrunt"]
+    },
+    {
+      "name": "proposal-intake",
+      "source": "./proposal-intake",
+      "description": "Cowork-friendly intake for non-engineering contributors. /draft-proposal turns a plain-language change idea into a structured brief; /proposal-status reports lifecycle state without jargon; auto-triggered skills handle ad-hoc change ideas and terminology questions.",
+      "category": "product",
+      "keywords": ["element-22", "cowork", "intake", "non-technical", "product", "proposals"]
     }
   ]
 }

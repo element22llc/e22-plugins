@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings",
+  "_comment": "Drop this into any Element 22 product repo as .claude/settings.json. When teammates trust the project folder, Claude Code and Claude Cowork will prompt them to install the e22-plugins marketplace and enable both Element 22 plugins. This file IS meant to be committed; it is per-project, not per-user. User-specific overrides go in .claude/settings.local.json which is gitignored.",
+
+  "extraKnownMarketplaces": {
+    "e22-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "element22llc/e22-plugins"
+      }
+    }
+  },
+
+  "enabledPlugins": {
+    "proposal-workflow@e22-plugins": true,
+    "proposal-intake@e22-plugins": true
+  }
+}
