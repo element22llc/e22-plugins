@@ -1,0 +1,80 @@
+# ---------------------------------------------------------------------------
+# Operating system
+# ---------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------------------------
+# Editors and IDEs
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+*.sublime-project
+*.sublime-workspace
+
+# ---------------------------------------------------------------------------
+# Claude Code / Cowork local state
+#
+# .claude/settings.local.json holds per-user overrides and should not be
+# committed. The project-level .claude/settings.json (if you add one to
+# auto-prompt teammates with extraKnownMarketplaces) IS meant to be committed.
+# ---------------------------------------------------------------------------
+.claude/settings.local.json
+.claude/local/
+.claude/.cache/
+
+# Cowork mount artifacts — Cowork sometimes leaves an empty folder named
+# after the connected workspace inside the workspace itself. Ignore any
+# top-level "Element 22 *" directory that isn't real content.
+/Element 22 AI collaborative dev workflow/
+
+# ---------------------------------------------------------------------------
+# Node / npm (defensive — no JS today, but harmless)
+# ---------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.pnp.*
+
+# ---------------------------------------------------------------------------
+# Python (defensive — in case a plugin ships scripts)
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---------------------------------------------------------------------------
+# Secrets — never commit these
+# ---------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ---------------------------------------------------------------------------
+# Build / packaging outputs
+# ---------------------------------------------------------------------------
+dist/
+build/
+out/
+*.tgz
+*.tar.gz
