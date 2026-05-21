@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings",
-  "_comment": "Drop this into any Element 22 product repo as .claude/settings.json. When teammates trust the project folder, Claude Code and Claude Cowork will prompt them to install the e22-plugins marketplace and enable both Element 22 plugins. This file IS meant to be committed; it is per-project, not per-user. User-specific overrides go in .claude/settings.local.json which is gitignored.",
+  "_comment": "Drop this into any Element 22 product repo as .claude/settings.json. When teammates trust the project folder, Claude Code, Claude Cowork, and Claude.ai (Chat) will prompt them to install the e22-plugins marketplace and connect GitHub. This file IS meant to be committed; it is per-project, not per-user. User-specific overrides go in .claude/settings.local.json which is gitignored.",
 
   "extraKnownMarketplaces": {
     "e22-plugins": {
@@ -12,7 +12,23 @@
   },
 
   "enabledPlugins": {
-    "proposal-workflow@e22-plugins": true,
-    "proposal-intake@e22-plugins": true
+    "_comment_lanes": "The two lane plugins. POs typically only need prototype-lane (Chat/Cowork). Engineers benefit from both — they receive handoffs into production-lane and may /propose directly.",
+    "prototype-lane@e22-plugins": true,
+    "production-lane@e22-plugins": true,
+
+    "_comment_house_rules": "The six house-rule plugins. These apply lane-aware rules to every Claude session (PO or Dev). In Claude Code they enforce via hooks; in Chat and Cowork they enforce via in-prompt rules + PR-level CI. The net effect is identical for anything that ships. Disable any individual one in .claude/settings.local.json if you need to opt out temporarily, but the team default is all six enabled.",
+    "spec-driven-dev@e22-plugins": true,
+    "always-test@e22-plugins": true,
+    "house-style@e22-plugins": true,
+    "security-rails@e22-plugins": true,
+    "spine-writer@e22-plugins": true,
+    "handoff-packager@e22-plugins": true
+  },
+
+  "_comment_connectors": "The e22-plugins workflow REQUIRES the GitHub connector. Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, LaunchDarkly/PostHog (for /promote), Slack, context7. See CONNECTORS.md in the marketplace repo for the full reference. We list them here for discoverability; the actual auth happens in each user's connector panel. The keys below are documentary metadata, not validated settings.",
+  "_recommendedConnectors": {
+    "required": ["github"],
+    "recommended": ["sentry", "launchdarkly", "posthog", "slack", "context7"],
+    "soc2_overlay": ["aws"]
   }
 }

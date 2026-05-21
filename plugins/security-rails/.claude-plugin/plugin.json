@@ -1,0 +1,12 @@
+{
+  "name": "security-rails",
+  "version": "0.1.0",
+  "description": "House rule: block risky patterns by default. Enforces the Four Guarantees on prototype/* branches (no prod hostnames, no prod auth, no prod payment URLs, no real credentials), and the constitution's 'Claude must not' rules everywhere (no raw SQL, no plaintext secrets, no direct production database access, no force push). PreToolUse hooks scan Write/Edit/Bash before they run.",
+  "author": {
+    "name": "Element 22 Platform",
+    "email": "alexis.valotaire@element-22.com"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/security-rails",
+  "license": "UNLICENSED",
+  "keywords": ["element-22", "house-rule", "claude-chat", "claude-cowork", "claude-code", "hooks-claude-code-only", "security", "guardrails", "four-guarantees"]
+}

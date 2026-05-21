@@ -1,0 +1,12 @@
+{
+  "name": "production-lane",
+  "version": "0.2.0",
+  "description": "Element 22's Production Lane plugin. /validate is the Keep/Refactor/Redesign/Reject gate that turns a packaged prototype into a production proposal. /propose starts a production-lane proposal directly. /from-design starts from a Claude Design handoff bundle. /promote governs feature-flag rollouts. spec-refiner and drift-monitor agents keep specs honest. SOC2 governance overlay applies on top.",
+  "author": {
+    "name": "Element 22 Platform",
+    "email": "alexis.valotaire@element-22.com"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/production-lane",
+  "license": "UNLICENSED",
+  "keywords": ["element-22", "claude-chat", "claude-cowork", "claude-code", "github-connector", "proposals", "validation", "governance", "soc2", "feature-flags", "terragrunt", "production"]
+}

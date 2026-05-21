@@ -1,0 +1,12 @@
+{
+  "name": "handoff-packager",
+  "version": "0.1.0",
+  "description": "House rule: every prototype-to-production handoff ships with a structured bundle the engineer can validate in minutes — not hours. /package generates the three required reports (dependency delta, novel patterns, plugin violations) into proposals/<slug>/handoff/. Invoked by /package-handoff in the prototype lane.",
+  "author": {
+    "name": "Element 22 Platform",
+    "email": "alexis.valotaire@element-22.com"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/handoff-packager",
+  "license": "UNLICENSED",
+  "keywords": ["element-22", "house-rule", "claude-chat", "claude-cowork", "claude-code", "github-connector", "handoff", "validation", "review"]
+}

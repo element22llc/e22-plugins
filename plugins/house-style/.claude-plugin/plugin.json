@@ -1,0 +1,12 @@
+{
+  "name": "house-style",
+  "version": "0.1.0",
+  "description": "House rule: naming, folder layout, and lint rules are the same in every PR. Reads the product's CLAUDE.md to load conventions, then runs lint/format on edited files via PostToolUse hook. Lane-aware — surfaces violations on prototype branches, blocks them on production-lane branches.",
+  "author": {
+    "name": "Element 22 Platform",
+    "email": "alexis.valotaire@element-22.com"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/house-style",
+  "license": "UNLICENSED",
+  "keywords": ["element-22", "house-rule", "claude-chat", "claude-cowork", "claude-code", "hooks-claude-code-only", "lint", "format", "conventions"]
+}
