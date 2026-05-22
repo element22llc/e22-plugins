@@ -27,7 +27,15 @@ esac
 
 # Look for an existing Spine file for this branch.
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
-slug="$(echo "$branch" | sed -E 's|^(prototype|proposal|feat|fix)/||')"
+
+# Prototype lane owns its own doctrine: the prototype IS the spec until
+# /package-handoff. Stay silent here so the PO never sees spec vocabulary
+# mid-vibe. The Spine gets distilled at handoff, not co-authored during.
+case "$branch" in
+  prototype/*) exit 0 ;;
+esac
+
+slug="$(echo "$branch" | sed -E 's|^(proposal|feat|fix)/||')"
 
 if [ -f "proposals/${slug}/product-spine.md" ]; then
   spine_age_minutes=$(( ( $(date +%s) - $(stat -f %m "proposals/${slug}/product-spine.md" 2>/dev/null || stat -c %Y "proposals/${slug}/product-spine.md" 2>/dev/null || echo 0) ) / 60 ))
