@@ -15,12 +15,12 @@ checklist: every contributor needs the **required** set; engineers also need
 | **GitHub**           | required    | All proposal motion: branches, PRs, issues, wiki, projects, labels.       |
 | Sentry               | recommended | Production-graded gate (error-rate, suspect-flag findings).               |
 | LaunchDarkly or PostHog | recommended | `/promote` flag mutation; rollout reporting.                              |
-| Slack                | optional    | `/proposal-status` direct-handoff messages; champion pings.               |
+| Microsoft Teams                | optional    | `/proposal-status` direct-handoff messages; champion pings.               |
 | AWS (Secrets Manager / SSM) | SOC2-overlay | Resolving secret names referenced in CLAUDE.md without exposing values.   |
 | `context7` (Upstash) | recommended | Current API/version docs to prevent hallucinated APIs.                    |
 
 > **Note on naming.** Anthropic ships these as a mix of first-party connectors
-> (GitHub, Sentry, Slack), third-party MCP servers, and Claude-Code-only plugins.
+> (GitHub, Sentry, Microsoft Teams), third-party MCP servers, and Claude-Code-only plugins.
 > Tool names are MCP-discoverable; this doc references capabilities by what they
 > *do*, not by exact tool names, so the plugins keep working as connector tooling
 > evolves.
@@ -87,9 +87,9 @@ Sentry to:
 it, promotion is a chat-only confirmation Claude cannot enact, and the
 constitution's promotion governance breaks.
 
-### Slack
+### Microsoft Teams
 
-Used by `change-idea-intake` skill (offers "paste to an engineer in Slack" as a
+Used by `change-idea-intake` skill (offers "paste to an engineer in Microsoft Teams" as a
 direct-handoff option) and `/proposal-status` (champion pings, gentle nudges).
 Without it, those flows degrade to "give the user a copy-pasteable message
 block" — still usable, less automated.
@@ -119,7 +119,7 @@ slightly. **This is what makes the e22-plugins workflow surface-portable**: the
 plugins themselves don't care which surface they're running on, only that the
 required connectors are reachable.
 
-| Surface          | GitHub connector | Sentry | Flags | Slack | AWS | context7 |
+| Surface          | GitHub connector | Sentry | Flags | Microsoft Teams | AWS | context7 |
 | ---------------- | :--------------: | :----: | :---: | :---: | :-: | :------: |
 | Claude.ai (Chat) | ✅               | ✅     | ✅    | ✅    | ✅  | ✅       |
 | Claude Cowork    | ✅               | ✅     | ✅    | ✅    | ✅  | ✅       |

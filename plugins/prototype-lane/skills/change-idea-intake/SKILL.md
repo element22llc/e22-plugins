@@ -35,12 +35,12 @@ Follow the `/vibe` workflow:
 4. Apply the Four Guarantees automatically: branch-per-idea, synthetic data,
    ephemeral URL, sandbox secrets.
 5. Push, wait for the preview, surface the URL with 2-3 specific things to try.
-6. Iterate on the PO's reactions. The branch *is* the conversation.
+6. Iterate on the PO's reactions. The branch _is_ the conversation.
 
 When the PO is happy, suggest `/package-handoff` to send the prototype to an
 engineer for validation.
 
-## What this skill is *not*
+## What this skill is _not_
 
 - Not a ticket-filing flow. The PO is not filing a written brief.
 - Not a spec-writing flow. The Spine comes later, from `/package-handoff`.
@@ -58,7 +58,7 @@ PO's words verbatim, a one-paragraph paraphrase, and a note that an engineer
 should run `/propose` (or invite the PO to `/vibe`) when they pick it up.
 
 That option only appears if the GitHub connector is connected. If it isn't,
-offer to draft a Slack-ready message instead.
+offer to draft a Microsoft Teams-ready message instead.
 
 This skill is the on-ramp; `/vibe` is the same flow when the PO already knows
 what they want.

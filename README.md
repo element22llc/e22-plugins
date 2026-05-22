@@ -152,7 +152,7 @@ the full reference, including which capabilities each command uses (branches,
 PRs, issues, wiki, projects, labels, comments, repo contents).
 
 Recommended but optional: Sentry (production-graded gate), LaunchDarkly or
-PostHog (`/promote`), Slack (champion pings), `context7` (current API docs).
+PostHog (`/promote`), Microsoft Teams (champion pings), `context7` (current API docs).
 SOC2 products also need AWS Secrets Manager / SSM Parameter Store access.
 
 ## Install
@@ -344,6 +344,7 @@ long vibe-coding session before `/package-handoff`, or post-merge when
 ## Adding a new plugin to the marketplace
 
 1. Create the subtree:
+
    ```
    plugins/<new-plugin>/
    ├── .claude-plugin/plugin.json
@@ -352,6 +353,7 @@ long vibe-coding session before `/package-handoff`, or post-merge when
    ├── skills/      (optional)
    └── hooks/       (optional — both hooks.json AND any shell scripts)
    ```
+
 2. Fill in `plugin.json` (minimum: `name`, `version`, `description`).
 3. Add an entry to `.claude-plugin/marketplace.json#plugins`. Because
    `metadata.pluginRoot` is `./plugins`, the `source` value is just the bare
@@ -393,7 +395,7 @@ stricter than local installs.
 - [CONSTITUTION.md](./CONSTITUTION.md) — engineering baseline (two lanes, Spine,
   validation gate, SOC2 overlay)
 - [CONNECTORS.md](./CONNECTORS.md) — required and recommended connectors (GitHub,
-  Sentry, flags, Slack, AWS) and which commands use each capability
+  Sentry, flags, Microsoft Teams, AWS) and which commands use each capability
 - [PRODUCT_SPINE_TEMPLATE.md](./PRODUCT_SPINE_TEMPLATE.md) — canonical Spine layout
 - [MARKETPLACE_VALIDATION.md](./MARKETPLACE_VALIDATION.md) — internal conformance
   notes

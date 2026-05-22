@@ -25,10 +25,10 @@
     "handoff-packager@e22-plugins": true
   },
 
-  "_comment_connectors": "The e22-plugins workflow REQUIRES the GitHub connector. Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, LaunchDarkly/PostHog (for /promote), Slack, context7. See CONNECTORS.md in the marketplace repo for the full reference. We list them here for discoverability; the actual auth happens in each user's connector panel. The keys below are documentary metadata, not validated settings.",
+  "_comment_connectors": "The e22-plugins workflow REQUIRES the GitHub connector. Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, LaunchDarkly/PostHog (for /promote), Microsoft Teams, context7. See CONNECTORS.md in the marketplace repo for the full reference. We list them here for discoverability; the actual auth happens in each user's connector panel. The keys below are documentary metadata, not validated settings.",
   "_recommendedConnectors": {
     "required": ["github"],
-    "recommended": ["sentry", "launchdarkly", "posthog", "slack", "context7"],
+    "recommended": ["sentry", "launchdarkly", "posthog", "Microsoft Teams", "context7"],
     "soc2_overlay": ["aws"]
   }
 }
