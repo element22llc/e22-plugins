@@ -122,9 +122,11 @@ eight plugins are pre-enabled there.
 ## Things to know for later
 
 - **Adding a ninth plugin.** Create `plugins/<new-plugin>/.claude-plugin/plugin.json`
-  and add a new entry to `marketplace.json#plugins`. Because
-  `metadata.pluginRoot` is set to `./plugins`, the `source` value just needs to
-  be the bare directory name.
+  and add a new entry to `marketplace.json#plugins` with
+  `"source": "./plugins/<new-plugin>"`. We use explicit repo-rooted paths rather
+  than `metadata.pluginRoot` because the Claude.ai org marketplace sync did not
+  honor `pluginRoot` and reported `No files found at source path '<name>'` for
+  every plugin until we switched.
 - **Versioning.** Lane plugins are at `0.2.0` (post-rewrite); house rules are at
   `0.1.0` (fresh). Bump on every functional change or users won't see updates.
 - **Release channels.** When ready, create two marketplaces pointing at the same

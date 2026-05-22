@@ -5,62 +5,59 @@
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
   },
-  "metadata": {
-    "pluginRoot": "./plugins"
-  },
   "plugins": [
     {
       "name": "prototype-lane",
-      "source": "./prototype-lane",
+      "source": "./plugins/prototype-lane",
       "description": "Prototype Lane plugin for Product Owners. /vibe spins up a sandboxed branch with a live preview within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. /proposal-status reports state without jargon.",
       "category": "workflow",
       "keywords": ["element-22", "cowork", "prototype", "vibe-coding", "product-owner", "non-technical", "spine"]
     },
     {
       "name": "production-lane",
-      "source": "./production-lane",
+      "source": "./plugins/production-lane",
       "description": "Production Lane plugin for engineers. /validate is the Keep/Refactor/Redesign/Reject gate. /propose, /from-design, /promote drive the production lifecycle. spec-refiner and drift-monitor agents keep specs honest.",
       "category": "workflow",
       "keywords": ["element-22", "proposals", "validation", "governance", "soc2", "feature-flags", "production"]
     },
     {
       "name": "spec-driven-dev",
-      "source": "./spec-driven-dev",
+      "source": "./plugins/spec-driven-dev",
       "description": "House rule: a spec or test must exist before code is generated. Lane-aware — lenient on prototype branches, strict on production-lane branches.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "spec", "tests", "spine"]
     },
     {
       "name": "always-test",
-      "source": "./always-test",
+      "source": "./plugins/always-test",
       "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware coverage requirements.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "tests", "smoke-tests", "ci"]
     },
     {
       "name": "house-style",
-      "source": "./house-style",
+      "source": "./plugins/house-style",
       "description": "House rule: naming, folder layout, and lint rules are the same in every PR. Runs the product's configured linter/formatter on edited files.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "lint", "format", "conventions"]
     },
     {
       "name": "security-rails",
-      "source": "./security-rails",
+      "source": "./plugins/security-rails",
       "description": "House rule: blocks risky patterns by default. Enforces the Four Guarantees on prototype branches and the constitution's 'Claude must not' rules everywhere.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "security", "guardrails", "four-guarantees"]
     },
     {
       "name": "spine-writer",
-      "source": "./spine-writer",
+      "source": "./plugins/spine-writer",
       "description": "House rule: the Product Spine stays in sync with the code. /spine-refresh and a PostToolUse hook keep the artefact that travels honest.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "spine", "spec", "handoff", "drift"]
     },
     {
       "name": "handoff-packager",
-      "source": "./handoff-packager",
+      "source": "./plugins/handoff-packager",
       "description": "House rule: every prototype-to-production handoff ships with a structured bundle (dependency delta, novel patterns, plugin violations) the engineer can validate in minutes.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "handoff", "validation", "review"]
