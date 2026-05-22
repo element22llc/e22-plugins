@@ -16,7 +16,7 @@ connectors:
 - **GitHub** — read the PR, post the post-promotion comment with rollout state,
   add a TODO to consider transitioning to `production-graded` after 24-48h of
   healthy observability.
-- **LaunchDarkly or PostHog** (whichever the product uses) — actually mutate the
+- **Statsig** (whichever the product uses) — actually mutate the
   flag. **Required**; if absent, refuse with a clear message.
 - **Sentry** (recommended) — verify zero suspect-flag findings before the
   promotion lands at 100%.
@@ -32,7 +32,7 @@ This command performs a state change visible to real users. Before doing anythin
    relevant product. If not, refuse and explain that promotion requires an
    authorized promoter.
 2. Read the flag's current state from the feature-flag system (via the
-   PostHog/LaunchDarkly MCP if configured).
+   Statsig MCP if configured).
 3. Surface the current rollout percentage, the requested target, and the affected
    user count (estimate if exact is unavailable). Ask for explicit confirmation
    in the chat: "Promote `$FLAG` from X% to Y%? This affects ~Z users."

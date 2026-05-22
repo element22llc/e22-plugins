@@ -151,8 +151,8 @@ workflow does not function without it. See [`CONNECTORS.md`](./CONNECTORS.md) fo
 the full reference, including which capabilities each command uses (branches,
 PRs, issues, wiki, projects, labels, comments, repo contents).
 
-Recommended but optional: Sentry (production-graded gate), LaunchDarkly or
-PostHog (`/promote`), Microsoft Teams (champion pings), `context7` (current API docs).
+Recommended but optional: Sentry (production-graded gate),
+Statsig (`/promote`), Microsoft Teams (champion pings), `context7` (current API docs).
 SOC2 products also need AWS Secrets Manager / SSM Parameter Store access.
 
 ## Install

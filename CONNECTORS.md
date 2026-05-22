@@ -14,7 +14,7 @@ checklist: every contributor needs the **required** set; engineers also need
 | -------------------- | ----------- | ------------------------------------------------------------------------- |
 | **GitHub**           | required    | All proposal motion: branches, PRs, issues, wiki, projects, labels.       |
 | Sentry               | recommended | Production-graded gate (error-rate, suspect-flag findings).               |
-| LaunchDarkly or PostHog | recommended | `/promote` flag mutation; rollout reporting.                              |
+| Statsig | recommended | `/promote` flag mutation; rollout reporting.                              |
 | Microsoft Teams                | optional    | `/proposal-status` direct-handoff messages; champion pings.               |
 | AWS (Secrets Manager / SSM) | SOC2-overlay | Resolving secret names referenced in CLAUDE.md without exposing values.   |
 | `context7` (Upstash) | recommended | Current API/version docs to prevent hallucinated APIs.                    |
@@ -81,7 +81,7 @@ Sentry to:
 - Scope: read issues, read events, search by tag (we tag events with the flag
   name for the suspect-flag query)
 
-### LaunchDarkly or PostHog (feature flags)
+### Statsig (feature flags)
 
 `/promote` mutates feature flags. Connect whichever the product uses. Without
 it, promotion is a chat-only confirmation Claude cannot enact, and the
