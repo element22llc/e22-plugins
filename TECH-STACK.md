@@ -77,8 +77,8 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
 | **React framework** | **Next.js 16.2.x** (App Router, Turbopack default, React Compiler stable) | Next.js 15.x for products mid-upgrade | Pages Router for greenfield work; Create-React-App | 2026-05 |
-| **React** | React 19.x (paired with Next.js 16) | React 18.x in legacy products | React ≤ 17 in greenfield | 2026-05 |
-| **Styling** | Tailwind CSS v4.x + shadcn/ui | CSS Modules; vanilla-extract | Plain global CSS in greenfield; CSS-in-JS runtime libraries (styled-components, emotion runtime) | 2026-05 |
+| **React** | React 19.x (paired with Next.js 16) | React <= 18.x in legacy products | 2026-05 |
+| **Styling** | Tailwind CSS v4.x + shadcn/ui | CSS Modules; vanilla-extract | 2026-05 |
 | **Forms** | React Hook Form + Zod | TanStack Form | Uncontrolled DOM forms for non-trivial flows | 2026-05 |
 | **Data fetching (client)** | TanStack Query | SWR | Hand-rolled fetch in `useEffect` for cache-relevant data | 2026-05 |
 | **State (client)** | URL state + React state + Zustand (when warranted) | Jotai | Redux for new code | 2026-05 |
