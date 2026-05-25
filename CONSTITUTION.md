@@ -197,7 +197,7 @@ Before generating code in any product:
 Once a prototype clears the gate, the proposal moves through these states, tracked
 as GitHub PR labels:
 
-- `drafting` — Proposal created, AI working on initial implementation, preview spinning up.
+- `drafting` — Proposal created, AI working on initial implementation.
 - `preview-ready` — Preview is live, champion can validate.
 - `review-requested` — Champion has validated; CODEOWNERS review required.
 - `experimental` — Merged to main, behind a feature flag, NOT visible to users.
