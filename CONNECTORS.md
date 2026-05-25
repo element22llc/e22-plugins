@@ -6,7 +6,7 @@ recommended, and what each plugin does with them.
 
 If you're rolling the marketplace out across a team, treat this as the connector
 checklist: every contributor needs the **required** set; engineers also need
-**recommended**; SOC2 product owners need the **SOC2-overlay** set.
+**recommended**; SOC2 product owners should read the SOC2-overlay notes below.
 
 ## TL;DR
 
