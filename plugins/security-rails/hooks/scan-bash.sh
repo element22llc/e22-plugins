@@ -29,13 +29,17 @@ if printf '%s' "$cmd" | grep -qE 'git push.*\b(main|master)\b'; then
   block "direct push to main/master. Use a PR — see the constitution."
 fi
 
-# Block terraform apply outside of CI
-if printf '%s' "$cmd" | grep -qE '\bterraform\s+apply\b'; then
-  block "terraform apply may only run inside GitHub Actions CI."
+# Block apply outside of CI for any IaC tool the team uses (Terragrunt + OpenTofu
+# preferred; Terraform acceptable for legacy products — see TECH-STACK.md §6).
+if printf '%s' "$cmd" | grep -qE '\b(terragrunt|tofu|terraform)\s+(run-all\s+)?apply\b'; then
+  block "IaC apply (terragrunt/tofu/terraform) may only run inside GitHub Actions CI."
 fi
 
-# Block direct production database commands
-if printf '%s' "$cmd" | grep -qiE '(psql|mysql|mongosh)\s+.*\b(prod|production)\b'; then
+# Block direct production database commands. The Element 22 stack is Postgres-only
+# (RDS Postgres for production, Neon for previews — see TECH-STACK.md), so psql is
+# the only client we need to guard. Any other client against a prod-named host is
+# itself suspicious and blocked separately by the prod-hostname pattern.
+if printf '%s' "$cmd" | grep -qiE '\bpsql\s+.*\b(prod|production)\b'; then
   block "direct production database client. Production data access must go through audited paths."
 fi
 

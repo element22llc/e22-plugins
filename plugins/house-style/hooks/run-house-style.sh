@@ -40,9 +40,18 @@ case "$file_path" in
       output="$(flake8 "$file_path" 2>&1)" || rc=$?
     fi
     ;;
-  *.tf)
-    if command -v terraform >/dev/null 2>&1; then
+  *.tf|*.tofu)
+    # Prefer OpenTofu (the team's standard); fall back to Terraform for legacy products.
+    if command -v tofu >/dev/null 2>&1; then
+      output="$(tofu fmt -check=true -diff=true "$file_path" 2>&1)" || rc=$?
+    elif command -v terraform >/dev/null 2>&1; then
       output="$(terraform fmt -check=true -diff=true "$file_path" 2>&1)" || rc=$?
+    fi
+    ;;
+  *.hcl)
+    # Terragrunt config files.
+    if command -v terragrunt >/dev/null 2>&1; then
+      output="$(terragrunt hclfmt --terragrunt-check --terragrunt-diff "$file_path" 2>&1)" || rc=$?
     fi
     ;;
   *.go)

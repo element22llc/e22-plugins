@@ -30,9 +30,12 @@ commits, open the (later) draft PR, and post the preview URL as a comment. See
   Commits are pushed via the connector's repo-contents API. Refuse with a clear
   message if GitHub is not connected.
 
-The preview URL itself comes from the product's CI (Vercel/GitHub Actions/etc.)
-firing on branch creation — not from this command directly. Any surface that
-can read the connector's deployment-status webhook can show the preview.
+The preview URL itself comes from **Vercel** (per-branch deployment) with a
+per-preview **Neon Postgres** branch attached via the Neon ↔ Vercel
+integration. Vercel posts the preview-ready signal back to the GitHub PR within
+~60 seconds; this command surfaces that URL to the PO. See
+[`TECH-STACK.md`](../../../TECH-STACK.md) §1 for the lane-specific
+infrastructure mapping.
 
 ## Workflow
 
@@ -103,9 +106,13 @@ This is the actual vibe-coding loop.
 
 ### 6. Push, wait for preview, surface the URL
 
-- Push the branch. GitHub Actions spins up a Tier 1 preview (the default for
-  prototype-lane branches; Tier 2 is blocked here).
-- Wait for the preview-ready signal. When it lands, post a single message to the PO:
+- Push the branch. Vercel spins up the per-branch preview deployment and the
+  Neon ↔ Vercel integration forks a sandbox Postgres branch in milliseconds.
+  This is the Tier 1 default for prototype-lane branches; Tier 2 (full AWS
+  stack) is blocked here — `branch.yaml#lane: prototype` cannot deploy against
+  production-shaped infrastructure (see [spec §9.9](../../../collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
+- Wait for the preview-ready signal from Vercel. When it lands, post a single
+  message to the PO:
   - Preview URL
   - 2-3 specific things to try ("click 'Re-deliver' on any past order — try one with
     a refund, one without")

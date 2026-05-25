@@ -13,23 +13,26 @@ the working preview, the commits, the chat context, the PO's reactions — into 
 
 Works on **Claude.ai (Chat), Claude Cowork, and Claude Code**. The GitHub
 connector is **required** — without it, this command cannot open the draft PR,
-advance the Project card, mirror to the wiki, or post the handoff comment.
-Refuse cleanly if the connector is missing. See [`CONNECTORS.md`](../../../CONNECTORS.md).
+advance the Project card, or post the handoff comment. Refuse cleanly if the
+connector is missing. See [`CONNECTORS.md`](../../../CONNECTORS.md).
 
 Connector capabilities used:
 
 - **Pull requests** — open draft PR with the bundled handoff.
-- **Repo contents** — write the Spine and bundle as commits on the branch (Chat
-  / Cowork case where there is no local checkout).
-- **Wiki** (optional) — publish a non-engineer-friendly Spine summary to the
-  product wiki under `Proposals/<slug>`. The PO can browse it from anywhere.
+- **Repo contents** — write the Spine, the Handoff Bundle (`/.workflow/handoff.md`),
+  and the bundle assets as commits on the branch (Chat / Cowork case where
+  there is no local checkout). All documentation lives as markdown in the repo
+  — there is no wiki to sync to.
 - **Projects (v2)** — advance the existing Project card from `vibe-coding` to
   `awaiting-validation`; populate the PR and Spine fields.
 - **Labels** — apply `proposal`, `drafting`, `awaiting-validation`,
   `product:<slug>`, and `soc2` if applicable.
 
-The Spine is the artefact that travels. Not the chat log. Not the commit list.
-The engineer will read the Spine at `/validate`, not scroll your conversation.
+The Handoff Bundle (and the Spine it links) is the artefact that travels. Not
+the chat log. Not the commit list. The engineer will read the Bundle at
+`/validate`, not scroll your conversation. See [spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
+for the Bundle's required sections — including §10 *"What should NOT be reused"*
+and §11 *"Acceptance checks"*, both of which are mandatory fields.
 
 ## What must already be true
 
@@ -92,19 +95,26 @@ Delegate to the `handoff-packager` plugin. It will:
   engineer needs to know what will need fixing if they pick `Keep`.)
 - Bundle all three into `proposals/<branch-slug>/handoff/`.
 
-### 4. (Optional) Mirror the Spine to the wiki
+### 4. Write the Handoff Bundle to the branch
 
-If the product's repo has a wiki enabled, publish a non-engineer-friendly version
-of the Spine to `<Proposals>/<slug>` via the GitHub connector's wiki API. This
-gives the PO (and anyone else without repo write access) a browsable view they
-can link to from chat or a Cowork artifact.
+Produce the standardized Handoff Bundle and commit it at
+`/.workflow/handoff.md` on the branch. This file follows the template in
+[spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
+and is what the Dev will read at `/validate`. It MUST include:
 
-The wiki copy is **not** the source of truth — the markdown file in the repo is.
-Add a header to the wiki page: *"Auto-generated from
-`proposals/<slug>/product-spine.md`. Do not edit here; edits will be overwritten
-on the next refresh."*
+- §1 What the PO wanted
+- §2 What changed in the prototype
+- §3 Link to the Product Spine
+- §4 Files touched
+- §5 New dependencies since `main`
+- §6 Risky patterns detected
+- §7 Open questions for the Dev
+- §8 Suggested decision (Keep / Refactor / Redesign / Reject)
+- §9 Rationale (one paragraph)
+- §10 **What should NOT be reused** — prototype shortcuts, fake data assumptions, hardcoded users, bypassed auth, inlined config. *Required field.*
+- §11 **Acceptance checks** — the observable conditions the PO will verify on the production PR. *Required field.* These anchor product approval under [spec §9.4](../../../collaborative-ai-workflow-spec.md#94-scaled-approval-matrix) so a later refactor cannot silently invalidate the PO's sign-off.
 
-Skip this step silently if the repo has no wiki configured.
+Refuse to package if either §10 or §11 is empty or placeholder text.
 
 ### 5. Open a Draft PR
 
@@ -135,8 +145,7 @@ its custom fields via the GitHub connector's Projects API:
 - `Status` → `awaiting-validation`
 - `PR` → the just-opened PR number
 - `Spine` → the link to `proposals/<branch-slug>/product-spine.md`
-- `Handoff bundle` → the link to `proposals/<branch-slug>/handoff/`
-- `Wiki summary` → the wiki URL if step 4 published one
+- `Handoff bundle` → the link to `/.workflow/handoff.md` on the branch
 
 If no Project card exists (the PO ran `/vibe` from outside the workflow), create
 one now with the same fields.

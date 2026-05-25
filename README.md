@@ -72,6 +72,13 @@ across.
 - [`CONSTITUTION.md`](./CONSTITUTION.md) — the always-loaded baseline. Defines the
   two lanes, the Four Guarantees, the Product Spine model, the Keep/Refactor/
   Redesign/Reject gate, and the SOC2 overlay.
+- [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md) — the
+  full operational specification. Branch metadata, the five enforcement layers,
+  the Handoff Bundle, scaled approvals, runtime guarantees, and the
+  non-negotiable invariants.
+- [`TECH-STACK.md`](./TECH-STACK.md) — the team's preferred tech stack:
+  Vercel + Neon for preview, AWS for production, plus default choices for
+  languages, frameworks, ORM, observability, and feature flags.
 - [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md) — the canonical layout
   for a Product Spine: Intent · UX · Surface · Architecture · Open Questions.
 
@@ -144,16 +151,25 @@ enforced**:
 Chat/Cowork are "PR loop" — feedback at PR open. Both ship the same product
 because they both go through the same Production Lane CI.
 
-## Required connector
+## Required connectors
 
 **All plugins require the GitHub connector.** This is non-negotiable; the
 workflow does not function without it. See [`CONNECTORS.md`](./CONNECTORS.md) for
 the full reference, including which capabilities each command uses (branches,
-PRs, issues, wiki, projects, labels, comments, repo contents).
+PRs, issues, projects, labels, comments, repo contents).
 
-Recommended but optional: Sentry (production-graded gate),
-Statsig (`/promote`), Microsoft Teams (champion pings), `context7` (current API docs).
-SOC2 products also need AWS Secrets Manager / SSM Parameter Store access.
+In addition:
+
+- **Prototype lane** requires **Vercel** (per-branch preview deployments) and **Neon Postgres** (per-preview database branches via the Neon ↔ Vercel integration). `/vibe` refuses to silently create a branch without a preview.
+- **Production lane** requires **AWS** — production runs on AWS (ECS / Lambda, RDS, S3, Secrets Manager, SSM, CloudFront), provisioned via **Terragrunt + OpenTofu** under `infra/live/<env>/<product>/` (Terraform acceptable for legacy products).
+
+Recommended but optional: Sentry (production-graded gate), Statsig accessed
+through the OpenFeature SDK (`/promote`), Microsoft Teams (champion pings),
+`context7` (current API docs).
+
+> **Documentation lives in the repo.** Element 22 does not use a GitHub wiki,
+> Notion, or Confluence. The Product Spine, ADRs, Handoff Bundles, and product
+> docs are all repo-tracked markdown.
 
 ## Install
 
@@ -394,8 +410,13 @@ stricter than local installs.
 
 - [CONSTITUTION.md](./CONSTITUTION.md) — engineering baseline (two lanes, Spine,
   validation gate, SOC2 overlay)
+- [collaborative-ai-workflow-spec.md](./collaborative-ai-workflow-spec.md) — the
+  full operational spec: branch metadata, the five enforcement layers, Handoff
+  Bundle, scaled approvals, runtime guarantees, invariants
+- [TECH-STACK.md](./TECH-STACK.md) — preferred tech stack (Vercel + Neon for
+  preview, AWS for production, languages / frameworks / ORM / etc.)
 - [CONNECTORS.md](./CONNECTORS.md) — required and recommended connectors (GitHub,
-  Sentry, flags, Microsoft Teams, AWS) and which commands use each capability
+  Vercel, Neon, AWS, Sentry, flags, Microsoft Teams) and which commands use each capability
 - [PRODUCT_SPINE_TEMPLATE.md](./PRODUCT_SPINE_TEMPLATE.md) — canonical Spine layout
 - [MARKETPLACE_VALIDATION.md](./MARKETPLACE_VALIDATION.md) — internal conformance
   notes
