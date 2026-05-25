@@ -9,7 +9,7 @@ Re-runs the `spine-extractor` agent against the current branch and updates the
 Product Spine file. Use this:
 
 - After a long working session, before packaging the handoff.
-- Post-merge on a production-lane proposal, when the `drift-monitor` agent flags
+- Post-merge on a governed-production proposal, when the `drift-monitor` agent flags
   that the Spine has diverged from code.
 - Any time the Spine feels stale relative to what's actually been built.
 
