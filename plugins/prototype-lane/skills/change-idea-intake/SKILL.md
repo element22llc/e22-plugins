@@ -56,8 +56,7 @@ Follow the `/vibe` workflow:
    needed — one question max, two as ceiling).
 2. Identify product and champion via AskUserQuestion (one question per turn).
 3. Create a `prototype/<slug>` branch and implement a working version.
-4. Apply the Four Guarantees automatically: branch-per-idea, synthetic data,
-   ephemeral URL, sandbox secrets.
+4. Apply the sandbox principles automatically: branch-per-idea, synthetic data.
 5. Push, wait for the preview, surface the URL with 2-3 specific things to try.
 6. Iterate on the PO's reactions. The branch _is_ the conversation.
 

@@ -3,7 +3,7 @@
 **Title:** From Vibes to Production — An AI-Native Collaborative Workflow
 **Purpose:** Source of truth for AI agents and contributors working within this workflow.
 **Tagline:** *How Product Owners ship ideas and Engineers ship systems — without one slowing the other down.*
-**Version:** 0.2.1 — enforcement-layer clarity pass.
+**Version:** 0.3 — drop infrastructure layer, add project-type detection and minimum test floor.
 
 ---
 
@@ -74,17 +74,6 @@ This prevents the common drift where someone says *"but we discussed this with C
 - Every branch carries machine-readable metadata (§9.1).
 - Every change — **even from a PO** — is git-tracked and auditable.
 
-### 4.3 Preview Platform — Vercel + Neon (prototype lane)
-
-- Every branch gets a **live, shareable URL in seconds**, served by **Vercel**.
-- Every preview has its own **Neon Postgres branch** (copy-on-write, instant) via the Neon ↔ Vercel integration. No shared synthetic store; no real data.
-- Sandboxed env vars from a **Vercel sandbox environment**, network-isolated from production AWS resources.
-- Every preview displays the prototype banner (§9.5).
-- Prototype/production isolation is enforced at the infrastructure layer, not by Claude (§9.9).
-- If it doesn't ship, throw away the whole branch — the Vercel preview and its Neon branch tear down together.
-
-> **Production runs on AWS, not Vercel.** Vercel handles preview and development environments only. Production traffic lands on AWS (ECS Fargate or Lambda + API Gateway, RDS Postgres, S3, CloudFront, Secrets Manager). This split is what makes invariant #1 enforceable at the platform layer: a prototype branch literally cannot reach the production resources because they live in a different cloud account with no network route from the Vercel sandbox. See [`TECH-STACK.md`](../TECH-STACK.md) §1 for the full lane mapping.
-
 ---
 
 ## 5. The Two Lanes
@@ -100,10 +89,9 @@ The workflow has two lanes joined by a structured handoff. **The lane is a prope
 | **Data** | Synthetic / fake fixtures | Real data, real guardrails |
 | **Tests required** | Smoke test scaffolded by Claude | Full suite must pass CI |
 | **Review** | Self-review on a preview URL | Engineer review on the diff |
-| **Deploy target** | Ephemeral preview, auto-expires | Production behind feature flag |
 | **Rollback** | Delete (archive) the branch | Flag off, then revert PR |
 | **Approvals** | None | Scaled by change type (§9.4) |
-| **Secret namespace** | Sandbox-only, network-isolated from prod (§9.9) | Production namespace |
+| **Project type** | Detected on branch creation; written to branch.yaml | Inherited from main; not re-detected |
 
 ---
 
@@ -128,10 +116,9 @@ The PO opens Claude, says what they want, and a working preview appears on a new
 **Happening under the hood (automatic):**
 
 - **Branch created** — e.g., `feat/po-redelivery-flag`
-- **Branch metadata written** — `/.workflow/branch.yaml` (§9.1) declares lane, owner, data policy, expiry, plugin pack version, change type.
+- **Branch metadata written** — `/.workflow/branch.yaml` (§9.1) declares lane, owner, project type, expiry, plugin pack version, change type.
 - **Claude writes code** — house rules enforced via the plugin pack at the version pinned in branch metadata.
 - **Tests scaffolded** — even prototypes ship with a smoke test.
-- **Preview deployed** — shareable URL, sandbox-only secrets (§9.9), fake data, prototype banner (§9.5).
 
 **Example PO prompt (`po-prompt.md`):**
 > *Add a way for customers to flag an order for re-delivery.*
@@ -144,16 +131,14 @@ The PO opens Claude, says what they want, and a working preview appears on a new
 
 **Principle:** *Chaos is fine — as long as it's contained.*
 
-Every prototype lives on its own branch with its own preview URL, its own sandboxed credentials, and **zero access to production data**. Rolling back is archiving the branch.
+Every prototype lives on its own branch — disposable, named, metadata-tagged. The platform-layer guarantees (preview URLs, sandbox credentials, network isolation from production) return when the platform substrate is chosen; until then the sandbox principles below are upheld by reviewer attention and the plugin pack's soft rules. Rolling back is archiving the branch.
 
-**The Four Guarantees:**
+**The sandbox principles:**
 
 1. **Branch-per-idea** — cheap, disposable, named, metadata-tagged.
-2. **Synthetic data** — no PII, no real customers.
-3. **Ephemeral URLs** — auto-expire after 14 days idle (§9.5).
-4. **Sandbox secrets** — separate namespace, network-isolated from production (§9.9).
+2. **Synthetic data** — no PII, no real customers; fixtures only.
 
-**Hard rule:** *No prototype branch ever connects to production data, production auth, or any other production system.* This is invariant #1 (§10), enforced at the infrastructure layer (§9.9) — not by Claude refusal alone.
+The remaining two guarantees from v0.2.1 (ephemeral URLs and sandbox secrets) depended on platform infrastructure and are deferred until the platform substrate is chosen. Until then, the sandbox principles are enforced by reviewer attention and the plugin pack's soft rules — not by infrastructure.
 
 If it goes wrong, you archive a branch — not write a postmortem.
 
@@ -263,7 +248,7 @@ Sensitive domains (auth, payments, PII, permissions, billing, data model) carry 
 ### 7.1 Fixtures Get Harder
 
 - A greenfield prototype invents its data.
-- A branch off `main` must **mock the real schema — without ever touching real credentials**, even for a moment. The infrastructure layer (§9.9) guarantees this; Claude does not.
+- A branch off `main` must **mock the real schema — without ever touching real credentials**, even for a moment. Claude enforces this with reviewer attention as the backstop.
 
 ### 7.2 The Spine Travels (The Code May Not)
 
@@ -287,43 +272,40 @@ The implementation is a thinking tool. What survives the loop is the Spine.
 
 ### 7.4 Sensitive Domains — Extra Rails
 
-For **auth, payments, PII, permissions, billing, data model changes**: the temptation to peek at production code is highest exactly where it matters most. These domains follow the Sensitive Change Policy (§9.7) and the runtime isolation rules in §9.9.
+For **auth, payments, PII, permissions, billing, data model changes**: the temptation to peek at production code is highest exactly where it matters most. These domains follow the Sensitive Change Policy (§9.7).
 
 > *Revisit checkout six months after launch — just not from `main` directly.*
 
 ---
 
-## 8. The Plugin Pack — House Rules in Five Layers
+## 8. The Plugin Pack — House Rules in Four Layers
 
 **Principle:** *A plugin pack is a versioned bundle of behavior, contracts, policies, guards, and review rules — applied automatically to every Claude session, whether a PO is vibe-coding or a Dev is shipping a hotfix.*
 
-The term *plugin pack* is preserved as the friendly, user-facing concept. Internally, it decomposes into **five distinct enforcement layers**, each with its own substrate and failure mode. This matters because Claude refusal is useful, but **CI and runtime enforcement are what protect the system when Claude is wrong, slow, or absent.**
+The term *plugin pack* is preserved as the friendly, user-facing concept. Internally, it decomposes into **four distinct enforcement layers**, each with its own substrate and failure mode. AI Instructions are soft; the other three are hard. CI and Review-Rule enforcement are what protect the system when Claude is wrong, slow, or absent.
 
-### 8.1 The Five Layers
+### 8.1 The Four Layers
 
 | Layer | Substrate | Examples | Enforced by | Failure if Claude is wrong? |
 |---|---|---|---|---|
 | **AI Instructions** | Claude project config / system prompts | Spec-driven dev, always-test, house style guidance, handoff packager logic, Spine writer logic | Claude itself (soft) | Bypassable — needs a backstop in another layer |
 | **Repo Contracts** | Files committed to the repo | `/.workflow/branch.yaml`, `/.workflow/handoff.md`, `/product-spine/*`, ADRs | Schema validation in CI | Hard — invalid file blocks merge |
 | **CI Policies** | GitHub Actions / workflow runs | Lint, type, security scan, Spine drift check, branch.yaml validation, smoke test gate | CI runner | Hard — red CI blocks merge |
-| **App Guards** | Application & deploy-time middleware | Prototype banner, sandbox-mode assertions, fake-data enforcement | Runtime checks (§9.9) | Hard — app refuses to boot in misconfigured state |
 | **Review Rules** | GitHub-native | CODEOWNERS, branch protection, required-approvals matrix | GitHub | Hard — PR cannot merge without satisfying reviewers |
 
 Each rule in the plugin pack maps to **at least one hard layer**. A behavior that exists *only* as an AI instruction is acceptable for ergonomics but cannot be relied on for safety.
 
 ### 8.2 The Standard Pack — Where Each Rule Lives
 
-| Rule | AI Instructions | Repo Contract | CI Policy | App Guard | Review Rule |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Spec-driven dev | ✓ | ✓ (Spine present) | ✓ (drift check) |  |  |
-| Always-test (smoke) | ✓ |  | ✓ (smoke gate) |  |  |
-| House style | ✓ |  | ✓ (lint) |  |  |
-| Security rails | ✓ |  | ✓ (secret scan, SAST) |  | ✓ (security CODEOWNERS) |
-| Spine writer | ✓ | ✓ | ✓ (drift + accuracy audit, §9.6) |  |  |
-| Handoff packager | ✓ | ✓ (`handoff.md`) | ✓ (presence + freshness) |  |  |
-| Banner injector | ✓ |  | ✓ (asset check) | ✓ (rendered at runtime) |  |
-| Prototype isolation |  |  | ✓ (branch.yaml validation) | ✓ (boot assertions, §9.9) |  |
-| Two-stage approval |  |  | ✓ (PR check) |  | ✓ (CODEOWNERS, §9.4) |
+| Rule | AI Instructions | Repo Contract | CI Policy | Review Rule |
+|---|:-:|:-:|:-:|:-:|
+| Spec-driven dev | ✓ | ✓ (Spine present) | ✓ (drift check) |  |
+| Always-test (smoke) | ✓ |  | ✓ (smoke gate) |  |
+| House style | ✓ |  | ✓ (lint) |  |
+| Security rails | ✓ |  | ✓ (secret scan, SAST) | ✓ (security CODEOWNERS) |
+| Spine writer | ✓ | ✓ | ✓ (drift + accuracy audit, §9.6) |  |
+| Handoff packager | ✓ | ✓ (`handoff.md`) | ✓ (presence + freshness) |  |
+| Two-stage approval |  |  | ✓ (PR check) | ✓ (CODEOWNERS, §9.4) |
 
 ### 8.3 Pack Properties
 
@@ -339,7 +321,7 @@ Each rule in the plugin pack maps to **at least one hard layer**. A behavior tha
 
 ## 9. Operational Enforcement
 
-The sections above describe how the workflow should behave. This section defines how it is **enforced** — by Git, CI, Claude, runtime guards, and reviewers — so the workflow does not depend on goodwill. Without this section, the spec is a wish; with it, the spec is a control plane.
+The sections above describe how the workflow should behave. This section defines how it is **enforced** — by Git, CI, Claude, and reviewers — so the workflow does not depend on goodwill. Without this section, the spec is a wish; with it, the spec is a control plane.
 
 ### 9.1 Branch Metadata
 
@@ -349,14 +331,13 @@ Every branch declares its lane and policy in a machine-readable file at `/.workf
 change_id: redelivery-flag
 lane: prototype                          # prototype | production
 base_branch: main                        # the branch this was cut from
-change_type: behavioral                  # cosmetic | behavioral | structural | sensitive
+change_type: behavioral                  # trivial | cosmetic | behavioral | structural | sensitive
+project_type: greenfield                 # greenfield | brownfield
 owner: alexis
 created_by: claude
 initiated_by: product_owner              # product_owner | engineer
 preview_url: https://prv-redelivery-flag.example.app
-data_policy: synthetic-only              # synthetic-only | real
 plugin_pack: tlm-product-workflow@0.3.1
-production_access: false
 created_at: 2026-05-25
 expires_at: 2026-06-08
 renewals: 0                              # see §9.5
@@ -370,8 +351,6 @@ sensitivity: standard                    # standard | sensitive (see §9.7)
 **Enforcement:**
 
 - CI refuses to deploy a preview without a valid `branch.yaml`.
-- `production_access: true` requires `lane: production`; rejected on prototype branches.
-- `data_policy: real` requires `lane: production`; rejected on prototype branches.
 - `change_type: sensitive` requires `sensitivity: sensitive`.
 - Missing or malformed file → blocked merge, blocked preview.
 - Claude refuses to operate on a branch with no `branch.yaml`.
@@ -387,10 +366,10 @@ A prototype branch enters handoff (Stage 03) only when all of the following are 
 | Intended user outcome is recorded in the Spine `Intent` section | Yes |
 | Known tradeoffs and open questions are listed in the Spine | Yes |
 | Smoke test exists and passes | Yes |
-| No production data, auth, or secrets used (enforced by §9.9) | Mandatory (invariant #1) |
 | PO explicitly requests handoff | Yes |
 | `branch.yaml` is valid | Yes |
 | `change_type` is set | Yes |
+| `project_type` is set in branch.yaml | Yes |
 
 `handoff_status` flips from `exploring` → `ready` when the checklist is complete, and is set by the Handoff packager — not by hand.
 
@@ -467,20 +446,12 @@ Production-lane changes require approvals scaled by `change_type` and `sensitivi
 
 **Invalidation rule:** **Product approval is invalidated if visible behavior changes after sign-off** (e.g., the PR is pushed with new UX-affecting commits). The acceptance checks in §9.3 #11 are the reference for "visible behavior." This prevents the failure mode where technically clean refactoring lands but no longer matches the PO's intent.
 
-### 9.5 Preview Lifecycle
+### 9.5 Branch Lifecycle
 
-**Banner.** Every preview displays a non-dismissable banner injected by the Banner injector. Bypassing it is treated as a plugin pack violation and an App Guard failure (§8.1).
-
-```
-⚠ PROTOTYPE PREVIEW
-Synthetic data only. Not production-ready. Architecture not approved.
-Branch: feat/po-redelivery-flag  ·  Expires in 9 days  ·  Spec: <link>
-```
-
-**Branch & preview expiry.**
+**Branch expiry.**
 
 - Prototype branches expire after **14 days idle** unless renewed by the PO.
-- "Expired" means: preview is torn down and the branch is moved to an `archive/` namespace. **Git history is preserved** for audit; nothing is hard-deleted.
+- "Expired" means: the branch is moved to an `archive/` namespace. **Git history is preserved** for audit; nothing is hard-deleted.
 - A weekly digest lists branches approaching expiry; the PO can renew with one click. Each renewal increments `renewals` in `branch.yaml`.
 - Production branches do not auto-expire; they merge or are explicitly closed.
 
@@ -491,10 +462,6 @@ Branch: feat/po-redelivery-flag  ·  Expires in 9 days  ·  Spec: <link>
 - be archived.
 
 The cap prevents the prototype lane from silently growing production-shaped systems that never face production discipline. Claude warns at renewal 2 and refuses further renewals at renewal 3 without explicit reclassification.
-
-**Cost visibility.**
-
-- Each preview reports its compute footprint in the weekly digest, so silent budget drains surface early.
 
 ### 9.6 Spine Drift Control
 
@@ -548,11 +515,9 @@ Some domains carry blast radius that exceeds the standard lane model. Branches t
 
 **Extra rails:**
 
-- Sensitive prototypes use a **further-isolated sandbox** — separate credentials, separate preview environment, no shared synthetic store with non-sensitive prototypes. Isolation is enforced at the infrastructure layer (§9.9).
 - Sensitive production changes require **two engineering approvals**, one from a domain owner listed in `CODEOWNERS` (§9.4).
 - Sensitive changes always require an ADR, regardless of the Spine writer's classification.
 - Claude **refuses** to generate code in sensitive domains without explicit `sensitivity: sensitive` declaration in `branch.yaml`.
-- The prototype banner is upgraded for sensitive previews: `⚠⚠ SENSITIVE PROTOTYPE — isolated sandbox`.
 
 > *The temptation to peek at production code is highest exactly where it matters most.*
 
@@ -567,7 +532,6 @@ The plugin pack is not configuration — it is the AI operating system for the t
 | Repo Contracts — `branch.yaml` schema, `handoff.md` template, Spine template | Product + engineering | PR + both approvals |
 | CI Policies — lint, type, drift check, smoke gate | Engineering | PR |
 | CI Policies — security scan, sensitive-path rules | Engineering + security | PR + required security approval |
-| App Guards — banner injector, sandbox-mode assertions | Engineering | PR |
 | Review Rules — CODEOWNERS, branch protection | Engineering (security on sensitive paths) | PR + required owners |
 | Prototype helper instructions | Product or engineering | Lightweight approval |
 
@@ -584,43 +548,61 @@ The plugin pack is not configuration — it is the AI operating system for the t
 - New branches refuse to install deprecated versions.
 - Existing branches receive a warning until they update.
 
-### 9.9 Runtime Guarantees — Prototype/Production Isolation
+### 9.9 Project-Type Detection
 
-**Principle:** *Prototype safety is enforced by infrastructure, not by Claude's good behavior.*
+**Principle:** *Greenfield and brownfield scaffolding diverge; the rest of the workflow does not.*
 
-Invariant #1 (no prototype branch touches production data, auth, or secrets) must hold even when Claude is wrong, the plugin pack is misconfigured, or an attacker tampers with `branch.yaml`. Three layers of enforcement, in order of trust:
+When a prototype branch is created, Claude detects whether the repo is greenfield (fresh ground) or brownfield (existing project) and writes the result to `branch.yaml#project_type`. The detection result drives scaffolding decisions only — stack selection, project layout, test runner, linter. The rest of the workflow (Spine, Handoff Bundle, scaled approval, drift control) is identical for both.
 
-#### 9.9.1 Deploy-time secret isolation
+**Detection rules, evaluated in order:**
 
-- Prototype previews deploy with credentials from a **sandbox-only secret namespace**. The production secret store is **network-isolated** from preview environments — preview runners have no route to it.
-- Sensitive prototypes (§9.7) deploy from a **further-isolated namespace** that is also segregated from non-sensitive prototype secrets.
-- The CI job that injects secrets reads `lane` and `sensitivity` from `branch.yaml`; injecting production secrets into a `lane: prototype` deploy is a hard failure of the deploy job.
+1. Repo has a manifest file (`package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `mix.exs`, `Gemfile`) **and** a non-empty source tree → **brownfield**.
+2. Repo has a `CLAUDE.md` declaring conventions → **brownfield** (regardless of size).
+3. Repo is empty, has only README/LICENSE, or is freshly `git init`-ed → **greenfield**.
+4. Ambiguous → Claude asks the PO once: *"Is this an existing project I should adapt to, or fresh ground?"* The PO's answer is recorded; not asked again on the same branch.
 
-#### 9.9.2 Boot-time assertions
+**Persistence.** Result is written once to `/.workflow/branch.yaml#project_type`. Not re-evaluated unless explicitly reset.
 
-The application refuses to boot in a misconfigured state. Pseudocode (language-agnostic):
+**Behavioral split (scaffolding only):**
 
-```
-on boot:
-  if WORKFLOW_LANE == "prototype":
-    require DATA_POLICY == "synthetic-only"
-    require SECRET_NAMESPACE.starts_with("sandbox-")
-    require no env var matches prod-shaped patterns
-      (e.g., DATABASE_URL containing "prod", AUTH_PROVIDER referencing prod tenants)
-  if WORKFLOW_LANE == "production":
-    require SECRET_NAMESPACE == "production"
-    require feature flags wired
-  on any assertion failure: refuse to start; emit alert.
-```
+| Step | Greenfield | Brownfield |
+|---|---|---|
+| Stack selection | Pick from TECH-STACK.md preferences | Read existing manifest; conform |
+| Project layout | Scaffold standard structure for the chosen stack | Place new files where existing patterns put them |
+| Test runner | Install + configure (vitest, pytest, etc.) + write its first smoke test | Hook into existing runner; never add a parallel one |
+| Linter / formatter | Install house-style defaults | Read existing config; never replace |
+| First commit | `chore: scaffold <stack>` before any feature commit | First commit is feature work |
 
-These assertions live in the **App Guards** layer (§8.1) and are part of the plugin pack.
+**Lives in:** the `project-type-detector` agent (`plugins/prototype-lane/agents/project-type-detector.md`), called by the existing `intake-clarifier` agent before it routes to scaffolding.
 
-#### 9.9.3 CI cross-checks
+**Enforcement:** Repo Contract layer — CI rejects a `branch.yaml` missing `project_type`. AI Instructions layer — the `prototype-lane` plugin's `/vibe` command refuses to scaffold without it.
 
-- A CI job validates that `branch.yaml`, the deploy target, and the injected secret namespace are mutually consistent before the preview is published.
-- Drift between `branch.yaml` and the actual deploy configuration is a blocking failure.
+### 9.10 Minimum Test Floor
 
-**Why this section exists.** Without runtime enforcement, invariant #1 is policy. With it, invariant #1 is infrastructure. Claude refusal remains useful as a first line of defense but is **not load-bearing for safety**.
+**Principle:** *Every new endpoint, screen, or background job ships with at least one test exercising its primary path. Soft on prototype, hard on production.*
+
+**The rule.** Each artefact that smells like an endpoint, page/screen, or background job must have at least one co-located or conventionally-located test file before the branch can be handed off (prototype) or merged (production).
+
+**Detection.** After every edit, the `always-test` plugin scans for new files matching these heuristics:
+
+- Route handler patterns: Express handlers, Next.js route segments, FastAPI / Flask routes, Rails routes
+- Component files under `pages/`, `views/`, `app/`
+- Files under `jobs/`, `workers/`, `tasks/`
+
+For each detected artefact, the plugin checks for a sibling test file (`*.test.*`, `*.spec.*`, `tests/<name>`).
+
+**Enforcement, lane-scaled:**
+
+| Lane | Per-edit | Session end | Handoff / merge |
+|---|---|---|---|
+| **Prototype** | Soft warning to stderr | Stop-hook surfaces a reminder to write the missing test before closing the session | `/package-handoff` refuses if any newly detected endpoint/screen/job has no sibling test file |
+| **Production** | Block (exit 2) | Stop-hook reminder | CI fails on coverage delta if an untested artefact lands |
+
+**Greenfield wrinkle.** On a greenfield branch, the first test counts as covering "the test runner works." Subsequent endpoints/screens trigger the per-artefact rule normally.
+
+**Lives in:** `plugins/always-test/hooks/check-test-coverage.sh` (per-edit detection), `plugins/always-test/hooks/remind-smoke-test.sh` (Stop-hook nudge), `plugins/prototype-lane/commands/package-handoff.md` (handoff refusal check).
+
+**Enforcement:** CI Policy layer (production hard block, coverage delta) + AI Instructions (per-edit warnings).
 
 ---
 
@@ -628,20 +610,18 @@ These assertions live in the **App Guards** layer (§8.1) and are part of the pl
 
 These rules must always hold. AI agents must refuse to violate them. CI must enforce them. Where possible, infrastructure must make them impossible to violate.
 
-1. **No prototype branch ever touches production data, auth, or secrets.** Enforced at the infrastructure layer (§9.9), not by Claude alone.
-2. **No direct pushes to `main`.** All production-touching changes go through a PR.
-3. **Green CI required** before any production deploy: lint, type, test, security scan, Spine drift check.
-4. **Approvals scaled by change type** on production-lane PRs (§9.4). Sensitive changes require two engineering approvals.
-5. **The Product Spine updates with every behavioral change** — Spine drift fails CI (§9.6).
-6. **The lane is a property of the branch**, declared in `/.workflow/branch.yaml`. Not the person, not the branch's origin.
-7. **Every branch is git-tracked, metadata-tagged, and auditable.** No anonymous or untagged branches reach a preview deploy.
-8. **Every preview displays the prototype banner** (§9.5). Bypassing it fails the App Guards layer.
-9. **Claude refuses to package a handoff** if the Prototype Ready Checklist is incomplete (§9.2).
-10. **Plugin packs are versioned and recorded per branch** (§9.8). Branches on deprecated packs cannot merge.
-11. **Chat history is not canonical.** Only the repo (Spine, ADRs, branch metadata, Handoff Bundle) is durable memory. *Chats propose; the repo records.*
-12. **Sensitive changes require explicit declaration** (§9.7). Claude refuses sensitive-domain code generation without it.
-13. **Every rule in the plugin pack maps to at least one hard enforcement layer** (Repo Contract, CI Policy, App Guard, or Review Rule). AI Instructions alone are never load-bearing for safety (§8.1).
-14. **Revert PRs touch the same Spine sections as the original** (§9.6). A revert that leaves the Spine lying is treated as drift.
+1. **No direct pushes to `main`.** All production-touching changes go through a PR.
+2. **Green CI required** before any production deploy: lint, type, test, security scan, Spine drift check.
+3. **Approvals scaled by change type** on production-lane PRs (§9.4). Sensitive changes require two engineering approvals.
+4. **The Product Spine updates with every behavioral change** — Spine drift fails CI (§9.6).
+5. **The lane is a property of the branch**, declared in `/.workflow/branch.yaml`. Not the person, not the branch's origin.
+6. **Every branch is git-tracked, metadata-tagged, and auditable.** No anonymous or untagged branches reach a shared environment.
+7. **Claude refuses to package a handoff** if the Prototype Ready Checklist is incomplete (§9.2).
+8. **Plugin packs are versioned and recorded per branch** (§9.8). Branches on deprecated packs cannot merge.
+9. **Chat history is not canonical.** Only the repo (Spine, ADRs, branch metadata, Handoff Bundle) is durable memory. *Chats propose; the repo records.*
+10. **Sensitive changes require explicit declaration** (§9.7). Claude refuses sensitive-domain code generation without it.
+11. **Every rule in the plugin pack maps to at least one hard enforcement layer** (Repo Contract, CI Policy, or Review Rule). AI Instructions alone are never load-bearing for safety (§8.1).
+12. **Revert PRs touch the same Spine sections as the original** (§9.6). A revert that leaves the Spine lying is treated as drift.
 
 ---
 
@@ -649,9 +629,9 @@ These rules must always hold. AI agents must refuse to violate them. CI must enf
 
 - POs ship to a live URL in minutes — no ticket, no waiting on engineering bandwidth.
 - Engineers review **intent, not chaos** — the Handoff Bundle is the artefact, not the chat or the diff alone.
-- Production stays production — lane discipline keeps prototype risk out of prod, enforced by infrastructure and CI, not goodwill.
+- Production stays production — lane discipline keeps prototype risk out of prod, enforced by CI and review-rule discipline, not goodwill.
 - The plugin pack compounds — every rule the team writes makes every future Claude session better, and every future CI run stricter.
-- The spec is the system. Spine, branch metadata, the Handoff Bundle, and the runtime guards are the controls — not documentation about the controls.
+- The spec is the system. Spine, branch metadata, and the Handoff Bundle are the controls — not documentation about the controls.
 
 ---
 
@@ -659,13 +639,13 @@ These rules must always hold. AI agents must refuse to violate them. CI must enf
 
 Several earlier open questions are now resolved by §9. The remaining unknowns:
 
-1. **Plugin authoring UX** — who in the team can practically write a rule, and what tooling do they need to test one across the five layers (§8.1)? Governance (§9.8) defines approval; ergonomics are unresolved.
-2. **Cost & quota model** — free vibe-coding sounds great until the bill arrives. Per-PO budgets? Org-level quotas? §9.5 surfaces per-preview cost and adds a renewal cap; org-level policy is undefined.
+1. **Plugin authoring UX** — who in the team can practically write a rule, and what tooling do they need to test one across the four layers (§8.1)? Governance (§9.8) defines approval; ergonomics are unresolved.
+2. **Cost & quota model** — free vibe-coding sounds great until the bill arrives. Per-PO budgets? Org-level quotas? §9.5 adds a renewal cap; org-level cost policy is undefined.
 3. **Cross-product context** — when an org has multiple products, how does Claude know which Spine to read? Repo-per-product is the MVP answer; multi-product orgs need more.
 4. **Onboarding curve for non-technical contributors** — the workflow is forgiving, but the first prompt is still a blank box. What scaffolds the PO's first session?
 5. **Concurrent prototypes on overlapping surfaces** — §9.6 introduces a soft-lock at the Spine level; hard conflict resolution between two `handoff_status: ready` branches touching the same surface is still undefined.
 6. **Spine pruning cadence** — §9.6 mandates quarterly pruning; the operational specifics (who decides what is obsolete, how to safely archive without breaking drift checks) need a real run to define.
-7. **Detection of silent runtime-guard failures** — §9.9 makes misconfiguration loud at boot, but a guard that *silently passes when it should fail* (e.g., a regex that misses a prod-shaped URL) is the worst case. Periodic adversarial testing of the guards is undefined.
+7. **Re-introducing infrastructure-layer isolation** — when platform decisions land (preview hosting, secret stores, environment isolation), §9.11 will return as a Runtime Guarantees section. The structure to slot it back into is preserved in v0.2.1 of this spec.
 
 ---
 
@@ -682,18 +662,14 @@ PO prompt → Claude prototype branch → preview URL → Spine extraction → D
 | Repo | One GitHub repo, one product |
 | AI workspace | Claude Team with one shared plugin pack |
 | Branch lanes | Naming convention + `/.workflow/branch.yaml` |
-| Preview platform | **Vercel** (per-branch deploy) + **Neon Postgres** (per-preview database branch via the Neon ↔ Vercel integration) |
-| Production platform | **AWS** (ECS / Lambda + API Gateway + RDS Postgres + S3 + CloudFront), provisioned via **Terragrunt + OpenTofu** under `infra/live/<env>/<product>/` (Terraform acceptable for legacy products) |
-| Data | Static fixtures or seeded fake DB on the Neon sandbox parent branch; copy-on-write to each preview |
+| Data | Static fixtures or seeded fake DB — mechanism deferred to infra; per-product CLAUDE.md declares the chosen sandbox approach until then |
 | Product Spine | Markdown files in `/product-spine/` (in-repo; no wiki) |
 | Handoff | Claude-generated bundle at `/.workflow/handoff.md` |
 | Governance | GitHub PR + `CODEOWNERS` + branch protection |
-| Expiry | Scheduled job: 14-day idle archive + renewal cap (§9.5); the Vercel preview and its Neon branch tear down together |
+| Expiry | Manual archive of stale branches via weekly digest; automation deferred to infra |
 | Scaled approval | §9.4 matrix, implemented via PR labels + CODEOWNERS |
 | Spine drift | CI check: behavioral diff requires Spine touch + accuracy audit comment |
-| Sensitive domains | `CODEOWNERS` group + manual `sensitivity` flag; a separate Neon project + Vercel project for sensitive sandbox isolation |
-| Runtime isolation | Separate Vercel/Neon (sandbox) and AWS (production) accounts with no network route between them; boot assertions read `branch.yaml#lane` (§9.9) |
-| Cost visibility | Weekly digest with per-branch footprint (Vercel + Neon + AWS broken out) |
+| Sensitive domains | CODEOWNERS group + manual `sensitivity` flag; isolated infrastructure deferred |
 | Tech stack defaults | [`TECH-STACK.md`](../TECH-STACK.md) — preference list, updated by PR |
 
 **Scope explicitly deferred until 10–20 changes have run through the flow:**
@@ -708,19 +684,19 @@ PO prompt → Claude prototype branch → preview URL → Spine extraction → D
 
 **Team size for MVP:** one repo, one product, one plugin pack, two POs, two Devs — and a lot of preview URLs.
 
-**Next deliverable after v0.2.1:** an executable repo, not v0.3. The five items to instantiate first are `branch.yaml` schema + validator, `handoff.md` template, a Spine change template, a Spine-drift GitHub Action, and a plugin pack v0.1 loaded into Claude. Run 10 real changes through it before adding anything else.
+**Next deliverable after v0.3:** an executable repo. The five items to instantiate first are `branch.yaml` schema + validator, `handoff.md` template, a Spine change template, a Spine-drift GitHub Action, and a plugin pack v0.1 loaded into Claude. Run 10 real changes through it before adding anything else.
 
 ---
 
 ## 14. The Workflow in One Line
 
-> **Let the PO vibe. Let Claude translate. Let the Dev industrialize. Let the infrastructure refuse to lie.**
+> **Let the PO vibe. Let Claude translate. Let the Dev industrialize.**
 
 ```
 PO  →  describes  →  CLAUDE  →  structures  →  DEV  →  industrializes
                                         ↑
                   Plugin pack: AI Instructions + Repo Contracts +
-                  CI Policies + App Guards + Review Rules
+                  CI Policies + Review Rules
 ```
 
 ---
@@ -734,20 +710,19 @@ PO  →  describes  →  CLAUDE  →  structures  →  DEV  →  industrializes
 | **Handoff** | The transition between lanes (Stages 03–04) where the Handoff Bundle is produced and architectural decisions are made. |
 | **Product Spine** | The structured, persistent spec living in the repo, with sections: Intent, UX, Surface, Architecture, Open questions. The canonical "what this change means." |
 | **Handoff Bundle** | The standardized handoff artefact at `/.workflow/handoff.md` containing the Spine link, file summary, dependencies, plugin flags, do-not-reuse list, acceptance checks, and Claude's suggested decision. |
-| **Branch Metadata** | The `/.workflow/branch.yaml` file declaring lane, base branch, change type, owner, data policy, expiry, renewals, plugin pack version, handoff status, and sensitivity. |
+| **Branch Metadata** | The `/.workflow/branch.yaml` file declaring lane, base branch, change type, owner, project type, expiry, renewals, plugin pack version, handoff status, and sensitivity. |
 | **Prototype Ready Checklist** | The gate between exploration and handoff (§9.2). |
 | **Scaled Approval** | The approval matrix in §9.4: ceremony depends on `change_type` and `sensitivity`. |
 | **Spine Drift** | Divergence between code and the Product Spine; treated as a CI failure on production-lane PRs. |
-| **Sensitive Change** | A change in a high-blast-radius domain (auth, payments, PII, permissions, billing, data model). Requires extra rails (§9.7) and stricter runtime isolation (§9.9). |
-| **Plugin Pack** | A versioned bundle of rules across five enforcement layers: AI Instructions, Repo Contracts, CI Policies, App Guards, Review Rules (§8.1). Every branch records the pack version it was generated under. |
-| **Five Enforcement Layers** | The substrates that carry plugin-pack rules. AI Instructions are soft; the other four are hard. (§8.1) |
-| **Preview URL** | A live, shareable, sandboxed deployment of a branch. Carries the prototype banner. Auto-expires. |
+| **Sensitive Change** | A change in a high-blast-radius domain (auth, payments, PII, permissions, billing, data model). Requires extra rails (§9.7). |
+| **Plugin Pack** | A versioned bundle of rules across four enforcement layers: AI Instructions, Repo Contracts, CI Policies, Review Rules (§8.1). Every branch records the pack version it was generated under. |
+| **Four Enforcement Layers** | The substrates that carry plugin-pack rules. AI Instructions are soft; the other three (Repo Contracts, CI Policies, Review Rules) are hard. (§8.1) |
 | **The Four Decisions** | The Dev's verdict at the architecture gate: Keep / Refactor / Redesign / Reject. |
-| **The Four Guarantees** | The sandbox guarantees: branch-per-idea, synthetic data, ephemeral URLs, sandbox secrets. |
 | **Working memory vs durable memory** | Chat history is working memory (ephemeral, not canonical); the Spine is durable memory (canonical, in the repo). *Chats propose; the repo records.* |
 | **Lane** | A property of the *branch* — not the person, not the branch's origin. Declared in `branch.yaml`. |
 | **Renewal Cap** | The §9.5 limit on prototype-branch life: 3 renewals or 60 days, after which the branch must hand off, reclassify as an experiment track, or archive. |
-| **Runtime Guarantee** | An invariant enforced at the infrastructure or boot layer (§9.9), not by Claude refusal. |
+| **Project Type** | A property of the repo, detected at prototype-branch creation and written to `branch.yaml#project_type`. `greenfield` (fresh ground) or `brownfield` (existing project). Affects scaffolding only. |
+| **Minimum Test Floor** | Every new endpoint/screen/job ships with at least one test. Soft warning on prototype lane; CI block on production lane. See §9.10. |
 
 ---
 
@@ -757,17 +732,17 @@ When an AI agent participates in this workflow, it must:
 
 1. **Read `/.workflow/branch.yaml`** before generating or modifying code. Reject the task if the file is missing, malformed, or contains a deprecated plugin pack.
 2. **Apply the plugin pack** at the version recorded in `branch.yaml`. Refuse to operate on an unsupported version.
-3. **Trust the infrastructure layer for isolation, not yourself.** Never wire prototype branches to prod data, prod auth, or prod secrets — but assume §9.9 is the real safety net. Surface any prod-shaped value you encounter as a runtime-guard concern, not a self-policed one.
-4. **Maintain the Product Spine.** On every behavioral change, update the relevant Spine section in the repo. If a meaningful diff lands without a Spine touch, surface a warning. Audit your own Spine updates against the diff and flag mismatches (§9.6).
-5. **Classify diffs upward when uncertain** (§9.6). When in doubt between two classes, pick the stricter one and let a human downgrade.
-6. **Respect the concurrent-edit soft-lock** (§9.6). Before overwriting a Spine file with a recent `spine_edit_in_progress_by`, warn the user and request confirmation.
-7. **Verify the Prototype Ready Checklist** before packaging a handoff. Refuse to package if incomplete.
-8. **Produce the Handoff Bundle** at `/.workflow/handoff.md` using the template in §9.3 — including sections 10 (*What should not be reused*) and 11 (*Acceptance checks*), which are mandatory fields. Regenerate the Bundle on each push while `handoff_status: ready`.
-9. **Pre-flight reviews** when handing off to a Dev: highlight novel patterns, flag plugin-pack violations, list new dependencies since `main`, call out prototype shortcuts not to be carried forward, suggest a decision (Keep / Refactor / Redesign / Reject) with reasoning.
-10. **Scaffold a smoke test** for any new endpoint or screen, even in the prototype lane.
-11. **Log open questions explicitly** in the Spine rather than guessing — defer to humans on undecided architectural questions.
-12. **Refuse direct pushes to `main`.** Always open a PR for production-lane changes.
-13. **Treat sensitive domains specially.** Refuse to generate code without explicit `sensitivity: sensitive` declaration in `branch.yaml` for any auth/payments/PII/permissions/billing/data-model change.
-14. **Respect the renewal cap** (§9.5). At renewal 2, warn the PO that the next renewal will require reclassification. At renewal 3, refuse to renew without an explicit experiment-track declaration or handoff.
-15. **Treat chat as ephemeral.** Do not assume context from past chats persists; rely on the Spine and the repo. If a user references something only present in chat history, ask them to confirm and write it into the Spine before acting on it. *Chats propose; only the repo records.*
-16. **On revert PRs, touch the Spine the original PR touched** (§9.6). Leaving the Spine claiming behavior that no longer exists is drift.
+3. **Maintain the Product Spine.** On every behavioral change, update the relevant Spine section in the repo. If a meaningful diff lands without a Spine touch, surface a warning. Audit your own Spine updates against the diff and flag mismatches (§9.6).
+4. **Classify diffs upward when uncertain** (§9.6). When in doubt between two classes, pick the stricter one and let a human downgrade.
+5. **Respect the concurrent-edit soft-lock** (§9.6). Before overwriting a Spine file with a recent `spine_edit_in_progress_by`, warn the user and request confirmation.
+6. **Verify the Prototype Ready Checklist** before packaging a handoff. Refuse to package if incomplete.
+7. **Produce the Handoff Bundle** at `/.workflow/handoff.md` using the template in §9.3 — including sections 10 (*What should not be reused*) and 11 (*Acceptance checks*), which are mandatory fields. Regenerate the Bundle on each push while `handoff_status: ready`.
+8. **Pre-flight reviews** when handing off to a Dev: highlight novel patterns, flag plugin-pack violations, list new dependencies since `main`, call out prototype shortcuts not to be carried forward, suggest a decision (Keep / Refactor / Redesign / Reject) with reasoning.
+9. **Scaffold a smoke test** for any new endpoint or screen, even in the prototype lane.
+10. **Log open questions explicitly** in the Spine rather than guessing — defer to humans on undecided architectural questions.
+11. **Refuse direct pushes to `main`.** Always open a PR for production-lane changes.
+12. **Treat sensitive domains specially.** Refuse to generate code without explicit `sensitivity: sensitive` declaration in `branch.yaml` for any auth/payments/PII/permissions/billing/data-model change.
+13. **Respect the renewal cap** (§9.5). At renewal 2, warn the PO that the next renewal will require reclassification. At renewal 3, refuse to renew without an explicit experiment-track declaration or handoff.
+14. **Treat chat as ephemeral.** Do not assume context from past chats persists; rely on the Spine and the repo. If a user references something only present in chat history, ask them to confirm and write it into the Spine before acting on it. *Chats propose; only the repo records.*
+15. **On revert PRs, touch the Spine the original PR touched** (§9.6). Leaving the Spine claiming behavior that no longer exists is drift.
+16. **Respect the project type** (§9.9). Read `branch.yaml#project_type` before scaffolding. On greenfield: pick from TECH-STACK.md and install the chosen stack's test runner. On brownfield: read existing manifests and conform; never add a parallel test runner or replace the existing linter config.

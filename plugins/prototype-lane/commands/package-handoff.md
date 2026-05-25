@@ -45,6 +45,10 @@ or to share which branch this is for.
 
 ## Workflow
 
+### 0. Verify minimum test floor (spec §9.10)
+
+Refuse to package if any new endpoint/screen/job on this branch lacks an adjacent test file. Run the product's configured test command (declared in `apps/<product>/CLAUDE.md` or the product's manifest) and confirm a clean run before proceeding. If tests are missing or failing, return to the PO with a clear message: *"I need at least one smoke test per new endpoint/screen/job before I can hand off. Want me to scaffold them now?"*
+
 ### 1. Identify the branch
 
 If `$ARGUMENTS` is provided, use it. Otherwise use the current branch. If the

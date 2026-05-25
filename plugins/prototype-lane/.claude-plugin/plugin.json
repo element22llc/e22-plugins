@@ -1,7 +1,7 @@
 {
   "name": "prototype-lane",
-  "version": "0.2.0",
-  "description": "Element 22's Prototype Lane plugin. /vibe lets a Product Owner describe a change in plain language and Claude spins up a sandboxed prototype branch with a live preview within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. The PO never needs to read a Jira ticket. The Four Guarantees (branch-per-idea, synthetic data, ephemeral URLs, sandbox secrets) are enforced by paired house-rule plugins.",
+  "version": "0.3.0",
+  "description": "Element 22's Prototype Lane plugin. /vibe lets a Product Owner describe a change in plain language and Claude spins up a sandboxed prototype branch within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. The PO never needs to read a Jira ticket. Auto-detects greenfield vs brownfield projects before scaffolding (spec §9.9). Sandbox principles (branch-per-idea, synthetic data) are enforced by paired house-rule plugins.",
   "author": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"

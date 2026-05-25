@@ -31,17 +31,13 @@ dependency/pattern/violation reports, then opens a draft PR.
 
 **Validation gate** — Where an engineer makes one decision: **Keep** (production-shaped, harden in place), **Refactor** (intent right, implementation needs rework), **Redesign** (right problem, wrong architecture, restart cleanly), or **Reject** (wrong problem, back to the drawing board).
 
-**The Four Guarantees** — What protects you in the prototype lane: branch-per-idea,
-synthetic data, ephemeral URL, sandbox secrets. You can't accidentally email real
-customers or charge real cards from a prototype branch.
+**The sandbox principles** — What protects you in the prototype lane: branch-per-idea (cheap, disposable) and synthetic data (no PII, no real customers). The v0.2.1 framing included two additional protections — ephemeral URLs and sandbox secrets — but those depend on platform infrastructure and are deferred until the platform substrate is chosen.
 
 **Champion** — The PO who decides whether the change is doing what they wanted.
 Usually whoever started the vibe session. Engineers come back to the champion when
 they need a decision or want you to look at the preview.
 
-**Preview** — A working, looks-real version of the change. Three sizes (Tier 0 / 1
-/ 2). Claude picks the tier automatically. Prototype-lane previews are always
-sandboxed and expire after a few days idle.
+**Preview** — A working, looks-real version of the change, hosted in whatever preview environment the product has chosen (declared in `apps/<product>/CLAUDE.md`). You click around in it before deciding what to do next.
 
 **Lifecycle labels** — Where the work is in the process:
 
@@ -76,9 +72,6 @@ automatically.
 
 **CODEOWNERS** — A file that says which team has to approve changes to which
 parts of the codebase. The champion doesn't need to track this.
-
-**Tier 0 / 1 / 2** — Preview environment sizes. Claude picks automatically;
-prototype lane defaults to Tier 1, Tier 2 is blocked on prototype branches.
 
 ## How to answer
 

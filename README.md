@@ -38,7 +38,7 @@ is *enforcement style* (see [Surface compatibility](#surface-compatibility) belo
 ```
 01 PO Explores     →  02 Sandbox       →  03 AI Extracts   →  04 Dev Validates  →  05 Production  →  06 Governed
    /vibe              Contains            the Spine            /validate            Lane              Iteration
-                     (Four Guarantees)   /package-handoff     Keep/Refactor/      tests, types,     PR for every
+                     (sandbox principles) /package-handoff     Keep/Refactor/      tests, types,     PR for every
                                                               Redesign/Reject      observability,   change — even
                                                                                    feature flags    PO copy tweaks
 PROTOTYPE LANE ─────────────────────────►│◄──── HANDOFF ────►│◄─── PRODUCTION LANE ──────────────────────────────
@@ -63,22 +63,22 @@ across.
 | [`spec-driven-dev`](./plugins/spec-driven-dev) | `spec-driven-dev@e22-plugins` | A spec or test must exist before code is generated. Lane-aware. |
 | [`always-test`](./plugins/always-test) | `always-test@e22-plugins` | Every new endpoint, screen, or job ships with at least one smoke test. |
 | [`house-style`](./plugins/house-style) | `house-style@e22-plugins` | Naming, folder layout, and lint rules are the same in every PR. |
-| [`security-rails`](./plugins/security-rails) | `security-rails@e22-plugins` | Blocks risky patterns. Enforces the Four Guarantees on prototype branches and the constitution's "Claude must not" rules everywhere. |
+| [`security-rails`](./plugins/security-rails) | `security-rails@e22-plugins` | Blocks universally dangerous patterns (secrets, prod-data access, direct `main` pushes). Delegates security guidance to per-product `CLAUDE.md` for product-specific rules. |
 | [`spine-writer`](./plugins/spine-writer) | `spine-writer@e22-plugins` | Keeps the Product Spine in sync with code. `/spine-refresh` and a PostToolUse hook. |
 | [`handoff-packager`](./plugins/handoff-packager) | `handoff-packager@e22-plugins` | Packages dependency-delta, novel-patterns, and plugin-violations reports for the validation gate. |
 
 ### Repo-level artefacts
 
 - [`CONSTITUTION.md`](./CONSTITUTION.md) — the always-loaded baseline. Defines the
-  two lanes, the Four Guarantees, the Product Spine model, the Keep/Refactor/
+  two lanes, the sandbox principles, the Product Spine model, the Keep/Refactor/
   Redesign/Reject gate, and the SOC2 overlay.
 - [`docs/collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) — the
   full operational specification. Branch metadata, the five enforcement layers,
   the Handoff Bundle, scaled approvals, runtime guarantees, and the
   non-negotiable invariants.
 - [`TECH-STACK.md`](./TECH-STACK.md) — the team's preferred tech stack:
-  Vercel + Neon for preview, AWS for production, plus default choices for
-  languages, frameworks, ORM, observability, and feature flags.
+  preferred languages, frameworks, ORM, observability, and feature flags.
+  Infrastructure decisions (preview hosting, production target) are per-product.
 - [`CONNECTORS.md`](./CONNECTORS.md) — required and recommended connectors and which
   capabilities each command uses.
 - [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md) — the canonical layout
@@ -93,7 +93,7 @@ PO has an idea
 /vibe (prototype-lane)
   │  branch: prototype/<slug>
   │  preview URL, sandboxed, ephemeral
-  │  Four Guarantees enforced by security-rails
+  │  sandbox principles enforced by security-rails
   │  House rules apply: spec-driven-dev (lenient), always-test, house-style
   ▼
 PO iterates… "move this up", "show me three variants"
@@ -128,8 +128,8 @@ production-graded
 
 ## Setting up a new product (greenfield)
 
-You're starting from nothing — no repo, no Vercel project, no Neon database, no
-AWS account. This walkthrough takes you from `mkdir my-product` to the PO's
+You're starting from nothing — no repo, no preview environment, no production
+environment. This walkthrough takes you from `mkdir my-product` to the PO's
 first `/vibe` working end-to-end. Plan ~45–60 minutes the first time; second
 product is closer to 15.
 
@@ -172,74 +172,23 @@ touch .workflow/handoff.md.template      # see spec §9.3 for the template
 cp <path-to>/e22-plugins/PRODUCT_SPINE_TEMPLATE.md product-spine/_template.md
 ```
 
-### Step 3 — Set up Vercel (prototype-lane preview platform)
+### Step 3 — Set up the preview and production environments
 
-1. In Vercel, create a new project and link it to the GitHub repo. Pick the
-   appropriate framework preset (Next.js for most web work — see
-   [`TECH-STACK.md`](./TECH-STACK.md) for defaults).
-2. **Leave Vercel's Production environment empty.** Production traffic for
-   Element 22 products runs on AWS, not Vercel. Preview and Development
-   environments are the live ones.
-3. Confirm Preview deployments fire on every branch push (Settings → Git →
-   "Automatically expose System Environment Variables" → on for Preview).
-4. Note the Vercel project ID — you'll reference it in `vercel.json` later if you
-   need per-product overrides.
+The v0.3 spec defers infrastructure decisions to per-product `CLAUDE.md` files. Pick a preview hosting mechanism (Vercel, Fly.io, Render, local dev server, etc.) and a production target (AWS, GCP, Hetzner, on-prem, etc.) that fit the product. Document your choice in `apps/<product>/CLAUDE.md`, including:
 
-### Step 4 — Add Neon Postgres via the Vercel integration
+- How a prototype branch is previewed (URL or local-run command)
+- Where production runs and how it's accessed
+- How secrets are scoped between preview and production
 
-Neon's copy-on-write branches are what make the Four Guarantees enforceable:
-every preview gets its own database, instantly, with no real data.
+When the team picks a default infrastructure stack, this section will be expanded with concrete instructions. Until then, the workflow runs on whatever the product declares.
 
-1. In Neon, create a new project (one per product). It comes with a default
-   branch — rename it to `sandbox-main`. This is the parent that every preview
-   will fork from.
-2. Seed `sandbox-main` with **synthetic fixtures only**. No real customer data,
-   ever. Use [Mockaroo](https://www.mockaroo.com), `faker`, or hand-crafted
-   seeds.
-3. Install the [Neon ↔ Vercel integration](https://vercel.com/integrations/neon)
-   on the Vercel project. Pick `sandbox-main` as the parent for preview branches.
-   Vercel will now inject `DATABASE_URL` into every preview, pointing at a fresh
-   Neon branch forked from `sandbox-main`.
-4. If this product will be SOC2 in scope, also enable Neon's **IP Allow** and
-   **Private Networking** features now.
-5. **Do not** create a `production` Neon branch in this project. Production runs
-   on AWS RDS by default (see [`TECH-STACK.md`](./TECH-STACK.md) §1). If the
-   product needs Neon in production, that's a separate Neon project with its
-   own credentials, network-isolated from the sandbox project.
+### Step 4 — Connect the required connectors in Claude
 
-### Step 5 — Provision the AWS production account
-
-If your team already has an AWS production account for this product, skip to
-step 6. Otherwise:
-
-1. Create a new AWS account (per product, in the Element 22 Organization).
-2. Bootstrap Terragrunt + OpenTofu state:
-
-   ```bash
-   mkdir -p infra/live/prod/<product>
-   mkdir -p infra/live/preview/<product>     # for Tier 2 ephemeral stacks
-   mkdir -p infra/modules
-   ```
-
-   The Tech Stack file mandates Terragrunt + OpenTofu under `infra/live/<env>/<product>/`.
-3. Set up GitHub Actions → AWS OIDC so CI can `terragrunt apply` without
-   long-lived keys. The deploy job must read `branch.yaml#lane` and refuse to
-   assume the production role on a `lane: prototype` branch (spec §9.9).
-4. Stand up the minimal production stack: VPC, ECS or Lambda + API Gateway, RDS
-   Postgres, S3 bucket, CloudFront distribution, Secrets Manager. (You can
-   defer this until the first proposal is ready to merge — the prototype lane
-   needs Vercel + Neon, not AWS.)
-
-### Step 6 — Connect the four required connectors in Claude
-
-Every contributor (PO and Dev) needs these in their Claude account:
+Every contributor (PO and Dev) needs the **GitHub connector** in their Claude account:
 
 | Connector | Where to connect | Why |
 |---|---|---|
 | **GitHub** | Settings → Connectors → GitHub. Grant access to `element22llc/*`. | Branches, PRs, issues, project boards, repo contents. |
-| **Vercel** | Settings → Connectors → Vercel. Grant project access. | Per-branch preview deploys, log read. |
-| **Neon** | Settings → Connectors → Neon (or via MCP). | Per-preview Postgres branch lifecycle. |
-| **AWS** | Settings → Connectors → AWS (read-only role for Claude). | Secret reference resolution, CloudWatch read, deploy log read. |
 
 Smoke-test: ask Claude *"list open PRs in element22llc/<product>"* — it should
 succeed without prompting for credentials.
@@ -248,7 +197,7 @@ See [`CONNECTORS.md`](./CONNECTORS.md) for the full capability matrix, degraded
 behaviour when a connector is missing, and the recommended set (Sentry, Statsig,
 Microsoft Teams, `context7`).
 
-### Step 7 — Install the marketplace and plugins
+### Step 5 — Install the marketplace and plugins
 
 In Claude Code (engineers):
 
@@ -274,7 +223,7 @@ Because `.claude/settings.json` was committed in step 2, **teammates who clone
 the repo and trust it will be auto-prompted** to install the marketplace. They
 don't have to remember the command above.
 
-### Step 8 — First `/vibe`
+### Step 6 — First `/vibe`
 
 From Cowork or Chat, the PO runs:
 
@@ -289,15 +238,14 @@ What you should see within ~60 seconds:
 1. A new branch `prototype/po-redelivery-flag` on GitHub.
 2. A populated `.workflow/branch.yaml` declaring lane, change type, expiry,
    plugin pack version.
-3. A Vercel preview URL with the prototype banner injected.
-4. A Neon branch forked from `sandbox-main`, with `DATABASE_URL` wired by the
-   integration.
+3. A preview URL (or local-run command) as declared in `apps/<product>/CLAUDE.md`.
+4. A sandboxed database or fixture set, isolated from production data.
 5. A smoke test scaffolded by `always-test`.
 
 If any of those don't appear, check the corresponding connector. The lane
 plugins refuse to silently degrade — Claude will say what's missing.
 
-### Step 9 — First handoff and validate
+### Step 7 — First handoff and validate
 
 When the PO is happy with the preview, they run `/package-handoff`. That writes
 the Product Spine to `product-spine/changes/<slug>.md`, opens the Handoff
@@ -327,10 +275,8 @@ Tick what's true today:
 |---|---|
 | GitHub repo with branch protection on `main` | ☐ |
 | CI on PRs (lint, type, test) | ☐ |
-| Vercel project linked to the repo | ☐ |
-| Preview deploys on push | ☐ |
-| Postgres database — and is it Neon? | ☐ |
-| Production runs on AWS? | ☐ |
+| Preview environment (how prototype branches are previewed) | ☐ |
+| Production environment documented in `CLAUDE.md` | ☐ |
 | `CODEOWNERS` configured | ☐ |
 
 You don't need everything ticked to start. The bare minimum is: GitHub repo +
@@ -388,36 +334,24 @@ You don't have to backfill them all at once. The recommended order:
 3. **`adr/` later.** Only required when the first structural change lands; ADRs
    are written on demand.
 
-### Step 4 — Wire Vercel + Neon for the prototype lane
+### Step 4 — Document the preview and production environments
 
-If you already have a Vercel project linked, skip the first part.
+With v0.3, infrastructure decisions live in per-product `CLAUDE.md` files, not in the workflow spec. Document the following in `apps/<product>/CLAUDE.md` (or the repo-root `CLAUDE.md` if the product is the whole repo):
 
-1. **Vercel project.** Confirm it's linked, Preview deploys fire on every
-   branch push, and the **Production environment is empty** (Element 22
-   production traffic lives on AWS, not Vercel). If your existing setup uses
-   Vercel for production, decide now: keep it there as an exception, or plan a
-   migration to AWS — `TECH-STACK.md` §1 documents the default split.
-2. **Neon for sandbox.** Create a new Neon project for the product. Name the
-   parent branch `sandbox-main`. Seed it with synthetic fixtures only — never
-   dump production data here, not even anonymised, unless your team has a
-   formal anonymisation pipeline.
-3. **Neon ↔ Vercel integration.** Install it on the Vercel project, pointing at
-   `sandbox-main`. Vercel will now inject a per-preview `DATABASE_URL`.
-4. **Your existing production database stays where it is.** If production is on
-   RDS, leave it. If production is on Neon today, it belongs in a *separate*
-   Neon project with separate credentials. The spec's invariant #1 ("no
-   prototype branch ever touches production data, auth, or secrets") requires
-   network-level isolation, not just role-level.
+- **How a prototype branch is previewed** — the URL pattern or the local-run command a PO should use.
+- **Where production runs and how it's accessed** — enough for an engineer to deploy and diagnose.
+- **How secrets are scoped** — prototype branches must never reach production credentials or real data. Describe the isolation mechanism (separate env files, separate secret stores, etc.).
+
+If you already have a working preview/production split, just write down what you already have. This step is documentation, not migration.
 
 ### Step 5 — Connect the required connectors
 
-Same as greenfield step 6. Every contributor needs GitHub, Vercel, and Neon
-connected at minimum; engineers shipping to production also need AWS. See
+Same as greenfield step 4. Every contributor needs GitHub connected at minimum. See
 [`CONNECTORS.md`](./CONNECTORS.md).
 
 ### Step 6 — Install the plugins
 
-Same as greenfield step 7. Once `.claude/settings.json` from step 2 is merged,
+Same as greenfield step 5. Once `.claude/settings.json` from step 2 is merged,
 teammates get auto-prompted on next trust; they don't have to run the install
 commands manually.
 
@@ -429,9 +363,9 @@ filter, a status badge. Have them run `/vibe` describing it.
 What changes vs. greenfield:
 
 - The new prototype branch is cut from `main`, so it carries the existing
-  schema. The Neon ↔ Vercel integration forks a fresh branch from
-  `sandbox-main` — make sure `sandbox-main`'s schema is in sync with production
-  before you start, otherwise migrations will diverge silently.
+  schema. Make sure your sandboxed preview environment's database fixtures are
+  in sync with the production schema before you start, otherwise migrations will
+  diverge silently.
 - `spine-writer` will see the existing `product-spine/main.md` and update the
   relevant sections rather than starting from a blank page.
 - The first time CI runs the **Spine drift check**, it may fail noisily because
@@ -495,8 +429,8 @@ PRs, issues, projects, labels, comments, repo contents).
 
 In addition:
 
-- **Prototype lane** requires **Vercel** (per-branch preview deployments) and **Neon Postgres** (per-preview database branches via the Neon ↔ Vercel integration). `/vibe` refuses to silently create a branch without a preview.
-- **Production lane** requires **AWS** — production runs on AWS (ECS / Lambda, RDS, S3, Secrets Manager, SSM, CloudFront), provisioned via **Terragrunt + OpenTofu** under `infra/live/<env>/<product>/` (Terraform acceptable for legacy products).
+- **Prototype lane** runs on whatever preview mechanism the product declares in its `CLAUDE.md`. There is no platform requirement at the workflow level.
+- **Production lane** runs on whatever production environment the product declares. The workflow's CI gates (lint, type, test, Spine drift, approvals) apply regardless of where production lives.
 
 Recommended but optional: Sentry (production-graded gate), Statsig accessed
 through the OpenFeature SDK (`/promote`), Microsoft Teams (champion pings),
@@ -553,8 +487,7 @@ plugins panel:
 1. Settings → Plugins → Add marketplace → `element22llc/e22-plugins`.
 2. Install at minimum `prototype-lane` plus all six house-rule plugins;
    `production-lane` is useful for status visibility.
-3. Settings → Connectors → ensure **GitHub**, **Vercel**, **Neon**, and **AWS**
-   are connected with access to the relevant org(s).
+3. Settings → Connectors → ensure **GitHub** is connected with access to the relevant org(s).
 
 That's enough to run `/vibe`, `/package-handoff`, and `/proposal-status` from
 chat. The same skills auto-trigger here as in Cowork.
@@ -645,8 +578,8 @@ your contributor onboarding.
 ```
 
 Claude creates `prototype/po-redelivery-flag`, scaffolds a smoke test, applies the
-Four Guarantees (sandbox secrets, fake data, ephemeral URL, throwaway branch), and
-posts a preview URL within minutes. The PO iterates by replying ("move this up",
+sandbox principles (no production secrets, no real data, isolated from production),
+and posts a preview within minutes. The PO iterates by replying ("move this up",
 "make the third variant the one") — Claude commits each turn to the same branch.
 
 ### `/package-handoff` (Cowork, Product Owner)
@@ -752,10 +685,8 @@ stricter than local installs.
 - [docs/collaborative-ai-workflow-spec.md](./docs/collaborative-ai-workflow-spec.md) — the
   full operational spec: branch metadata, the five enforcement layers, Handoff
   Bundle, scaled approvals, runtime guarantees, invariants
-- [TECH-STACK.md](./TECH-STACK.md) — preferred tech stack (Vercel + Neon for
-  preview, AWS for production, languages / frameworks / ORM / etc.)
-- [CONNECTORS.md](./CONNECTORS.md) — required and recommended connectors (GitHub,
-  Vercel, Neon, AWS, Sentry, flags, Microsoft Teams) and which commands use each capability
+- [TECH-STACK.md](./TECH-STACK.md) — preferred tech stack (languages, frameworks, ORM, observability, feature flags — infrastructure decisions are per-product)
+- [CONNECTORS.md](./CONNECTORS.md) — required and recommended connectors (GitHub required; Sentry, Statsig, Microsoft Teams, context7 optional) and which commands use each capability
 - [PRODUCT_SPINE_TEMPLATE.md](./PRODUCT_SPINE_TEMPLATE.md) — canonical Spine layout
 - [MARKETPLACE_VALIDATION.md](./MARKETPLACE_VALIDATION.md) — internal conformance
   notes

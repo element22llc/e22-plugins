@@ -39,23 +39,16 @@ guards, and the GitHub connector — not by branch-name convention alone (see th
 | Data            | Synthetic / fake fixtures                      | Real data, real guardrails                         |
 | Tests required  | Smoke test scaffolded by Claude                | Full suite must pass CI                            |
 | Review          | Self-review on a preview URL                   | Engineer review on the diff                        |
-| Deploy target   | **Vercel** preview + **Neon** sandbox branch, auto-expires | **AWS** (ECS / Lambda / RDS) behind a feature flag |
 | Rollback        | Delete the branch                              | Flag off, then revert PR                           |
-| Secret namespace | Sandbox-only, network-isolated from prod      | Production namespace (AWS Secrets Manager / SSM)   |
+| Project type    | Detected at branch creation                    | Inherited from main                                |
 
 **Speed lives on the left. Safety lives on the right. Claude carries the meaning across.**
-
-The infrastructure split — Vercel + Neon for preview, AWS for production — is
-load-bearing. It is what makes invariant #1 ("no prototype branch ever touches
-production data, auth, or secrets") enforceable at the platform layer rather
-than by Claude refusal alone. See [`TECH-STACK.md`](./TECH-STACK.md) §1 for the
-full per-layer mapping.
 
 ## The arc of a change (six stages)
 
 1. **PO Explores** — vibe-code ideas freely. Zero gates, zero shame. `/vibe` on the
    `prototype-lane` plugin.
-2. **Sandbox Contains** — the Four Guarantees apply (see below). Chaos is fine as long
+2. **Sandbox Contains** — sandbox principles apply (see below). Chaos is fine as long
    as it's contained.
 3. **AI Extracts Spec** — Claude distills the **Product Spine** from the prototype.
    `/package-handoff` invokes the `spine-writer` and `handoff-packager` plugins.
@@ -66,17 +59,14 @@ full per-layer mapping.
 6. **Governed Iteration** — after launch, every change (even a PO copy tweak) flows
    through branch → PR → CI → review.
 
-## The Four Guarantees of the sandbox
+## Sandbox principles
 
-A prototype-lane branch — *any* prototype-lane branch, by anyone — gets these four
-properties enforced by plugins, hooks, and platform configuration. **No exceptions.**
+A prototype-lane branch gets two enforced properties:
 
-1. **Branch-per-idea.** Cheap, disposable, named. Every prototype lives on its own
-   branch with its own preview URL.
+1. **Branch-per-idea.** Cheap, disposable, named. Every prototype lives on its own branch.
 2. **Synthetic data.** No PII, no real customers. Fixtures only.
-3. **Ephemeral URLs.** Auto-expire after N days idle. (Default: 7.)
-4. **Sandbox secrets.** Scoped tokens, never prod keys. No prototype branch ever
-   connects to production data, prod auth, or prod payment rails. **Ever.**
+
+The v0.2.1 "Four Guarantees" framing depended on infrastructure for ephemeral URLs and sandbox secrets. Those return when the platform substrate is chosen (see spec §12 open questions). Until then, the workflow leans on reviewer attention and the plugin pack's soft rules — not on platform isolation.
 
 If a prototype goes wrong, you delete a branch — you do not write a postmortem.
 
@@ -127,7 +117,7 @@ tomorrow.
 | `spec-driven-dev`    | Spec or test must exist before code is generated.                         |
 | `always-test`        | Smoke test scaffolded for every new endpoint or screen.                   |
 | `house-style`        | Naming, folder layout, lint rules — same in every PR.                     |
-| `security-rails`     | Blocks risky patterns (raw SQL, secrets, prod hostnames) by default.      |
+| `security-rails`     | Blocks risky patterns (secrets, AWS access keys, Stripe live keys, raw-SQL string interpolation, force-push, push-to-main, prod database clients). Pairs with Anthropic's `security-guidance` plugin for code-injection patterns. |
 | `spine-writer`       | Updates the Product Spine on every meaningful change.                     |
 | `handoff-packager`   | Produces the spec bundle for the prototype-to-prod gate.                  |
 
@@ -151,18 +141,9 @@ Element 22 has a **default tech stack** for greenfield work, declared in
 [`TECH-STACK.md`](./TECH-STACK.md). Existing products keep their stack; that
 file is the tie-breaker for new products and new subsystems.
 
-The default split at a glance:
-
-- **Prototype lane:** **Vercel** (per-branch preview URL) + **Neon Postgres**
-  (per-preview database branch via the Neon ↔ Vercel integration).
-- **Production lane:** **AWS** — ECS Fargate or Lambda + API Gateway, RDS
-  Postgres, S3, CloudFront, Secrets Manager / SSM. Provisioned via
-  **Terragrunt + OpenTofu** under `infra/live/<env>/<product>/`. Legacy
-  products on Terraform are acceptable; new products start on OpenTofu.
-
-For everything else — language versions, frameworks, ORM, tests, observability,
-feature flags — see `TECH-STACK.md`. That file is the single place to update
-when the team's preference changes.
+For language versions, frameworks, ORM, tests, observability, feature flags, and
+preferred infrastructure — see `TECH-STACK.md`. That file is the single place to
+update when the team's preference changes.
 
 Stack declarations live where they should:
 
@@ -173,17 +154,17 @@ Stack declarations live where they should:
   Python service), each subsystem has its own `CLAUDE.md` at the appropriate
   directory level.
 - **Authoritative versions:** the manifest files (`mise.toml`, `package.json`,
-  `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.tf`, `terragrunt.hcl`) are the
-  source of truth for versions and dependencies. `mise.toml` pins the exact
-  runtime/tool versions installed locally and in CI; the per-language manifests
-  declare floors and dependency sets. Never claim a version from memory.
+  `pyproject.toml`, `Cargo.toml`, `go.mod`) are the source of truth for versions
+  and dependencies. `mise.toml` pins the exact runtime/tool versions installed
+  locally and in CI; the per-language manifests declare floors and dependency
+  sets. Never claim a version from memory.
 - **Tool version manager:** every project that can express its toolchain in
   [mise](https://mise.jdx.dev/) MUST do so — `mise.toml` at the repo root is
-  the single source of truth for Node, Python, Go, Rust, `pnpm`, `terragrunt`,
-  `tofu`, and any other CLI the product depends on. Do not introduce parallel
-  installs via `nvm` / `pyenv` / `asdf` / Homebrew / global `npm i -g`; if a
-  tool genuinely cannot be installed through mise, document the reason in the
-  product's `CLAUDE.md`. See [`TECH-STACK.md`](./TECH-STACK.md) §2.
+  the single source of truth for Node, Python, Go, Rust, `pnpm`, and any other
+  CLI the product depends on. Do not introduce parallel installs via `nvm` /
+  `pyenv` / `asdf` / Homebrew / global `npm i -g`; if a tool genuinely cannot
+  be installed through mise, document the reason in the product's `CLAUDE.md`.
+  See [`TECH-STACK.md`](./TECH-STACK.md) §2.
 
 ### What this means for agents
 
@@ -216,8 +197,8 @@ Before generating code in any product:
 Once a prototype clears the gate, the proposal moves through these states, tracked
 as GitHub PR labels:
 
-- `drafting` — Proposal created, AI working on initial implementation, preview spinning up.
-- `preview-ready` — Tier 0/1/2 preview is live, champion can validate.
+- `drafting` — Proposal created, AI working on initial implementation.
+- `preview-ready` — Preview is live, champion can validate.
 - `review-requested` — Champion has validated; CODEOWNERS review required.
 - `experimental` — Merged to main, behind a feature flag, NOT visible to users.
 - `production-graded` — Flag rolled out, observability healthy, owner assigned.
@@ -230,20 +211,6 @@ Commands:
 - `/propose` — open a production-lane proposal directly, skipping the prototype lane.
 - `/from-design` — same as `/propose`, sourced from a Claude Design handoff bundle.
 - `/promote` — flip a feature flag (governed; not all roles can run this).
-
-## Preview environment tiers
-
-Pick the cheapest tier that validates the change:
-
-- **Tier 0 — Component playground** (~5s): UI-only changes, no backend. Storybook-style isolated render hosted on Vercel.
-- **Tier 1 — Vercel preview + Neon sandbox branch** (~1-2 min): The default for most product changes. The Neon ↔ Vercel integration creates a copy-on-write Postgres branch per preview deployment — instant, isolated, no real data. Auto-selected for prototype-lane work and for production-lane PRs that don't touch infrastructure.
-- **Tier 2 — Full ephemeral AWS stack via Terragrunt + OpenTofu** (~10-15 min): Migrations, schema changes, infrastructure-as-code changes, anything that needs the production-shaped topology. Lives under `infra/live/<env>/<product>/` and is provisioned via Terragrunt + OpenTofu. TTL 48h of inactivity, then auto-destroyed.
-
-**Prototype-lane branches default to Tier 1 (Vercel + Neon).** They never get
-Tier 2 stacks — Tier 2 reaches into AWS, which is reserved for production-lane
-work. This is enforced by the deploy job, which reads `branch.yaml#lane` before
-selecting credentials (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
-Production-lane PRs auto-detect tier from changed paths.
 
 ## Repository conventions
 
@@ -279,14 +246,10 @@ Products marked `soc2: true` in their product-level `CLAUDE.md` (currently:
 - Two reviewers required to merge to main (one must be a non-author).
 - No production data in previews. Ever. Synthetic data only. (This is the
   prototype-lane default; SOC2 makes it mandatory production-side too.)
-- All access to production runs through audited paths (no direct DB shells from
-  developer machines).
-- Infrastructure changes touching `infra/live/prod/<product>/` require platform-team
-  approval in addition to CODEOWNERS.
 - Agent-generated PRs must be self-reviewed by the `code-review` plugin before
   requesting human review.
 - Secrets never appear in CLAUDE.md, PR descriptions, or chat. Reference them via
-  AWS Secrets Manager or SSM Parameter Store names only.
+  secret-manager variable names only.
 - Prototype-lane branches for SOC2 products **cannot** be promoted directly to
   production-lane via `/validate keep`; they must round-trip through
   `/validate refactor` minimum, to force a code-review pass.
@@ -324,7 +287,7 @@ is the same — anything that ships goes through the Production Lane CI.
 
 The lane is read from the branch prefix, not from which surface the user is on.
 A PO running `/vibe` from Chat lands on the same `prototype/<slug>` branch with
-the same Four Guarantees as a Dev running it from Code.
+the same sandbox principles as a Dev running it from Code.
 
 ## Plugins this team relies on
 
@@ -334,7 +297,7 @@ we depend on them.
 **Required:**
 
 - `code-review` (Anthropic) — automated PR review before human review
-- `security-guidance` (Anthropic) — secret detection, OWASP checks
+- `security-guidance` (Anthropic) — **required complement to E22 `security-rails`**; covers code-injection patterns (eval, Function ctor, child_process.exec, dangerouslySetInnerHTML, innerHTML, pickle, os.system, GitHub Actions YAML) that the E22 plugin deliberately delegates.
 - `context7` (Upstash) — current API/version docs to prevent hallucinated APIs
 - `frontend-design` (Anthropic) — UI work, pairs with Claude Design
 
@@ -346,13 +309,9 @@ If you don't have these installed, `/propose` and `/validate` will warn you but 
 
 ## Things Claude must not do
 
-- Modify files in any product's `infra/live/prod/**` without an explicit human-typed instruction in the same session.
 - Push directly to `main` on any repo (use PRs only).
-- Run `terragrunt apply`, `tofu apply`, or `terraform apply` outside of GitHub Actions CI.
-- Read or transmit production database contents.
 - Include secrets, tokens, or credentials in PR descriptions, comments, commit messages, or any markdown file (including the Product Spine).
 - Auto-promote a feature flag past 10% rollout without `/promote` being invoked by an authorized user.
-- **Connect a `prototype/*` branch to production data, production auth, or production payment rails.** Ever. This is the hardest rule we have — it is enforced by the `security-rails` plugin and by platform configuration.
 
 ## Pointers
 
@@ -362,5 +321,4 @@ If you don't have these installed, `/propose` and `/validate` will warn you but 
 - **Connector reference:** [`CONNECTORS.md`](./CONNECTORS.md)
 - Product-level conventions: see `apps/<product>/CLAUDE.md`
 - Design system: `design-system/CLAUDE.md`
-- Infrastructure: `infra/CLAUDE.md` (Terragrunt + OpenTofu)
 - Architecture decisions: `docs/decisions/` (ADRs as markdown in the repo)

@@ -25,14 +25,11 @@
     "handoff-packager@e22-plugins": true
   },
 
-  "_comment_connectors": "The e22-plugins workflow REQUIRES four connectors: GitHub (always), Vercel + Neon (for prototype-lane previews via the Neon ↔ Vercel integration), and AWS (for production-lane deploys and SOC2 secrets). Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, Statsig accessed via the OpenFeature SDK (for /promote), Microsoft Teams, context7. See CONNECTORS.md and TECH-STACK.md in the marketplace repo for the full reference. The keys below are documentary metadata, not validated settings.",
+  "_comment_connectors": "The e22-plugins workflow REQUIRES the GitHub connector. Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, Statsig (accessed via the OpenFeature SDK for /promote), Microsoft Teams, context7. See CONNECTORS.md in the marketplace repo for the full reference. The keys below are documentary metadata, not validated settings.",
   "_recommendedConnectors": {
-    "required": ["github", "vercel", "neon", "aws"],
+    "required": ["github"],
     "recommended": ["sentry", "statsig", "microsoft-teams", "context7"],
     "notes": {
-      "vercel": "Per-branch preview deployments for prototype-lane and production-lane PR previews.",
-      "neon": "Per-preview Postgres database branches (copy-on-write) via the Neon ↔ Vercel integration.",
-      "aws": "Production runtime (ECS / Lambda, RDS, S3, Secrets Manager, SSM, CloudFront, SES). Also the SOC2 secrets store; read-only from Claude.",
       "statsig": "Accessed through the OpenFeature SDK so the flag platform stays swappable."
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "spine-writer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "House rule: the Product Spine stays in sync with the code. Provides /spine-refresh (manual) and a PostToolUse hook (automatic, when a meaningful file changes). The spine-extractor agent distills Intent/UX/Surface/Architecture/Open Questions from a branch's commits, code, and chat context. Invoked by /package-handoff in the prototype lane.",
   "author": {
     "name": "Element 22 Platform",
