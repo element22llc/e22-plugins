@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # always-test: PostToolUse hook. When a route handler, page component, or job
-# definition is added or modified, surface a reminder to scaffold a smoke test
-# alongside it. We do NOT block — we surface, because the right moment to write
-# the test is "next turn", not "before this edit is saved."
+# definition is added or modified, check for an adjacent test file.
+#
+# Lane-scaled (spec §9.10):
+#   - prototype lane: soft warning to stderr, exit 0
+#   - production lane: block with exit 2
+#
+# Lane is read from /.workflow/branch.yaml#lane (the authoritative source per
+# spec §9.1); falls back to "production" if branch.yaml is missing — strict by
+# default.
 
 set -uo pipefail
 
@@ -20,8 +26,8 @@ if printf '%s' "$file_path" | grep -qiE "$endpoint_patterns"; then
     *test*|*spec*|*__tests__*|*.test.*|*.spec.*) exit 0 ;;
   esac
 
-  # Look for an adjacent test file (rough heuristic — product-specific layouts
-  # differ; the product's CLAUDE.md should declare its convention).
+  # Look for an adjacent test file. The product's CLAUDE.md should declare its
+  # convention; these are the common defaults across TS/Python repos.
   dir="$(dirname "$file_path")"
   base="$(basename "$file_path" | sed -E 's/\.[a-zA-Z]+$//')"
   found=0
@@ -42,7 +48,21 @@ if printf '%s' "$file_path" | grep -qiE "$endpoint_patterns"; then
   done
 
   if [ "$found" -eq 0 ]; then
-    echo "always-test: '$file_path' looks like a new endpoint/screen/job and has no adjacent test. Scaffold at least one smoke test before this turn ends." >&2
+    # Read lane from branch.yaml (spec §9.1).
+    lane="production"
+    if [ -f ".workflow/branch.yaml" ]; then
+      lane="$(grep -E '^lane:' .workflow/branch.yaml | head -1 | sed -E 's/^lane:[[:space:]]*//' | tr -d '"' || echo production)"
+    fi
+
+    if [ "$lane" = "prototype" ]; then
+      echo "always-test (prototype, warn): '$file_path' looks like a new endpoint/screen/job and has no adjacent test. Scaffold at least one smoke test before this turn ends." >&2
+      exit 0
+    else
+      echo "always-test (production, BLOCK): '$file_path' is a new endpoint/screen/job and has no adjacent test." >&2
+      echo "  Production lane requires at least one smoke test per artifact (spec §9.10)." >&2
+      echo "  Write the test, then re-attempt the edit." >&2
+      exit 2
+    fi
   fi
 fi
 
