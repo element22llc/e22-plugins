@@ -1,6 +1,6 @@
 ---
 name: spine-extractor
-description: Use proactively at /package-handoff, /spine-refresh, and on meaningful PostToolUse changes. Reads a branch's commits, file diffs, product CLAUDE.md, and chat context, then produces or updates a Product Spine markdown file with five sections (Intent, UX, Surface, Architecture, Open Questions). Never modifies code; only writes to proposals/<slug>/product-spine.md.
+description: Use proactively before generating HANDOFF.md, at /spine-refresh, and on meaningful PostToolUse changes. Reads a branch's commits, file diffs, product CLAUDE.md, and chat context, then produces or updates a Product Spine markdown file with five sections (Intent, UX, Surface, Architecture, Open Questions). Never modifies code; only writes to proposals/<slug>/product-spine.md.
 tools: Read, Grep, Glob, Edit, Write
 ---
 
@@ -96,8 +96,8 @@ For each new/modified API endpoint, event emitter, schema:
   - comments like `// for now`, `# TODO: handle X`, `// assume Y`
   Surface each as a one-line assumption — the engineer will resolve them at
   `/validate`.
-- **Lane-aware notes:** if on prototype lane, note what's faked (fixtures, mocks);
-  if on production lane, note what made it past validation.
+- **Workspace-aware notes:** if in the local MVP sandbox, note what's faked (fixtures, mocks);
+  if in governed production, note what made it past validation.
 
 #### Open Questions
 
