@@ -5,7 +5,7 @@ for a new Element 22 product or subsystem. It is a template — edit it freely a
 your team's preferences evolve.
 
 > **How this file is used.** When Claude is asked to start a new product, pick a
-> framework, add a dependency, or scaffold a service, it MUST read this file
+> framework, or add a dependency, it MUST read this file
 > first. Existing products keep their stack; this file governs greenfield
 > choices and tie-breakers. For ongoing version checks, prefer `context7` or a
 > fresh web search over recalling versions from training data — the
@@ -14,7 +14,7 @@ your team's preferences evolve.
 >
 > **Authoritative versions live in manifests.** This file lists *preferred*
 > versions. Per-product `package.json` / `pyproject.toml` / `Cargo.toml` /
-> `go.mod` / `*.tf` files are the source of truth for what is actually
+> `go.mod` files are the source of truth for what is actually
 > installed. Never claim a version from this file without checking the manifest.
 
 **Last refreshed:** 2026-05-25
@@ -34,29 +34,7 @@ When Claude is making a choice, the order is: **Preferred → Acceptable → ask
 
 ---
 
-## 1. Lane-specific infrastructure
-
-The lane (Prototype vs Production) decides which infrastructure stack a branch is allowed to deploy against. This mirrors `branch.yaml#lane` in the spec.
-
-| Concern | Prototype Lane | Production Lane |
-|---|---|---|
-| Hosting / runtime | **Vercel** (per-branch preview URL) | **AWS** (ECS Fargate or Lambda + API Gateway, per product) |
-| Database | **Neon Postgres**, branch-per-preview via the Neon ↔ Vercel integration | **AWS RDS Postgres** (or **Neon** if the product explicitly opts in for prod) |
-| Object storage | Vercel Blob (sandbox bucket) | **AWS S3** |
-| Secrets | Vercel sandbox env vars (sandbox namespace only) | **AWS Secrets Manager / SSM Parameter Store** |
-| CDN / edge | Vercel Edge Network | **AWS CloudFront** (in front of the product's origin) |
-| Background jobs | Vercel Cron / inline (sandbox only) | **AWS EventBridge + Lambda** or **ECS scheduled tasks** |
-| Email / notifications | **Mailpit** sandbox sink (no real sends) | **AWS SES** |
-
-**Hard rules** (also encoded in CONSTITUTION.md and spec §9.9):
-
-1. A `lane: prototype` branch **never** reaches AWS production resources. Vercel + Neon-sandbox-branch only.
-2. A `lane: production` branch **never** holds production credentials in a Vercel preview. Vercel previews of a production-lane PR still run against a sandbox Neon branch.
-3. Infrastructure-as-code lives under `infra/` and is the only path that may touch production AWS.
-
----
-
-## 2. Languages & runtimes
+## 1. Languages & runtimes
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
@@ -68,11 +46,11 @@ The lane (Prototype vs Production) decides which infrastructure stack a branch i
 
 When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), promote it to Preferred after a one-product canary.
 
-**Tool version management — use [mise](https://mise.jdx.dev/).** Every project that can express its toolchain in mise MUST do so. A repo-root `mise.toml` is the **source of truth for installed versions** locally and in CI — Node, Python, Go, Rust, plus per-product tools like `pnpm`, `terragrunt`, `tofu`, `pre-commit`, `biome`, etc. Per-language manifests (`package.json#engines`, `pyproject.toml#requires-python`, `go.mod`) still declare the *minimum* required version; `mise.toml` pins the *exact* one installed. Prefer mise over `nvm` / `pyenv` / `asdf` / Homebrew-installed runtimes / "just install it globally" — one tool, one config file, one set of versions across dev machines and CI. Use a different manager only when the toolchain genuinely cannot be expressed in mise (rare); document the reason in the product's `CLAUDE.md`.
+**Tool version management — use [mise](https://mise.jdx.dev/).** Every project that can express its toolchain in mise MUST do so. A repo-root `mise.toml` is the **source of truth for installed versions** locally and in CI — Node, Python, Go, Rust, plus per-product tools like `pnpm`, `pre-commit`, `biome`, etc. Per-language manifests (`package.json#engines`, `pyproject.toml#requires-python`, `go.mod`) still declare the *minimum* required version; `mise.toml` pins the *exact* one installed. Prefer mise over `nvm` / `pyenv` / `asdf` / Homebrew-installed runtimes / "just install it globally" — one tool, one config file, one set of versions across dev machines and CI. Use a different manager only when the toolchain genuinely cannot be expressed in mise (rare); document the reason in the product's `CLAUDE.md`.
 
 ---
 
-## 3. Web app framework
+## 2. Web app framework
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
@@ -85,7 +63,7 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 
 ---
 
-## 4. Backend & APIs
+## 3. Backend & APIs
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
@@ -93,39 +71,24 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 | **Validation** | Zod (TS), Pydantic v2 (Python) | — | Ad-hoc runtime checks | 2026-05 |
 | **ORM (TS)** | **Prisma ORM** (with Prisma TypedSQL for raw-SQL escape hatches) | Drizzle for products that have already standardized on it | Raw `pg` queries scattered across the app outside a thin DAL | 2026-05 |
 | **ORM (Python)** | SQLAlchemy 2.x + Alembic | — | — | 2026-05 |
-| **Auth (product-facing)** | **Better-Auth** (preview) / **Better-Auth with AWS Cognito** (production) | — | Hand-rolled session tables | 2026-05 |
-| **Internal service auth** | mTLS via AWS PrivateLink + IAM Auth | OAuth2 client credentials | Long-lived static tokens | 2026-05 |
+| **Auth (product-facing)** | **Better-Auth** (declared per-product whether session storage is in-process, in-DB, or via an external identity provider) | — | Hand-rolled session tables | 2026-05 |
+| **Internal service auth** | mTLS or OAuth2 client credentials (declared per-product) | — | Long-lived static tokens | 2026-05 |
 
 ---
 
-## 5. Database & data platform
+## 4. Database & data platform
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
-| **OLTP** | **Postgres** — Neon (preview) / RDS (production) | Aurora Serverless v2 Postgres when steady-state RDS cost becomes prohibitive | MySQL, MongoDB, DynamoDB for relational data | 2026-05 |
+| **OLTP** | **Postgres** (preferred for all OLTP workloads — provisioning mechanism declared per-product) | Aurora Serverless v2 Postgres when steady-state cost becomes prohibitive | MySQL, MongoDB, DynamoDB for relational data | 2026-05 |
 | **Migrations** | Prisma Migrate (TS) / Alembic (Python) | golang-migrate | Bespoke SQL scripts run by hand | 2026-05 |
-| **Caching** | **Valkey** on Fargate (Redis-OSS-compatible) | Upstash Redis for preview | In-process caches for cross-instance data | 2026-05 |
+| **Caching** | **Valkey** (Redis-OSS-compatible; deployment mechanism declared per-product) | Upstash Redis for preview | In-process caches for cross-instance data | 2026-05 |
 | **Search / analytics** | Postgres + `pg_trgm` first; OpenSearch when warranted | — | Elasticsearch (license drift) | 2026-05 |
-| **Warehouse** | Postgres (declared per-product; usually a read replica of RDS) | DuckDB for embedded analytics | — | 2026-05 |
-
-**Neon-specific guidance.** The Neon ↔ Vercel integration creates a per-preview database branch via copy-on-write — no data copy, instant. Use this for previews. Production may pin to RDS for full VPC isolation, or Neon if the product opts in.
+| **Warehouse** | Postgres (declared per-product; usually a read replica) | DuckDB for embedded analytics | — | 2026-05 |
 
 ---
 
-## 6. Infrastructure as Code
-
-| Slot | Preferred | Acceptable | Not allowed | Last verified |
-|---|---|---|---|---|
-| **IaC for AWS** | **Terragrunt + OpenTofu** | Terraform (legacy projects only — those that pre-date the OpenTofu fork and have not migrated yet) | AWS CDK / CloudFormation YAML by hand / Pulumi mixed with the above for new projects | 2026-05 |
-| **Multi-env layering** | Terragrunt `run-all` with per-env directories under `infra/live/<env>/<product>/` | Per-stack `terragrunt.hcl` for one-off stacks | Per-env forked codebases; CDK Stages for new code | 2026-05 |
-| **Module source** | Internal `infra/modules/` (versioned via git tags) and audited OpenTofu Registry modules | Public Terraform Registry modules pinned by version | Forking a public module into the repo without a documented reason | 2026-05 |
-| **Vercel config** | `vercel.json` in repo + Neon integration | — | Drift between Vercel UI and repo | 2026-05 |
-
-**Why Terragrunt + OpenTofu.** OpenTofu is the community-governed fork of Terraform with a permissive license; Terragrunt sits on top to keep environments DRY and to wire backend / providers / remote state consistently across `infra/live/<env>/<product>/`. Legacy products still on Terraform are acceptable; new products start on OpenTofu. Migrations from Terraform → OpenTofu are usually a one-line state operation and are not blocking.
-
----
-
-## 7. CI / CD
+## 5. CI / CD
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
@@ -134,22 +97,22 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 | **E2E** | Playwright | — | Cypress for new products | 2026-05 |
 | **Lint / format** | Biome (preferred) or ESLint + Prettier | — | No formatter | 2026-05 |
 | **Package manager (TS)** | **pnpm 11.x** (requires Node ≥ 22, ESM-only) | — | npm or yarn classic in greenfield monorepos | 2026-05 |
-| **Tool version manager** | **mise** (repo-root `mise.toml` pins exact runtime + tool versions; see §2 callout) | `asdf` for legacy products mid-migration | `nvm` / `pyenv` standalone, Homebrew-installed language runtimes, global `npm install -g` for project tools | 2026-05 |
+| **Tool version manager** | **mise** (repo-root `mise.toml` pins exact runtime + tool versions; see §1 callout) | `asdf` for legacy products mid-migration | `nvm` / `pyenv` standalone, Homebrew-installed language runtimes, global `npm install -g` for project tools | 2026-05 |
 
 ---
 
-## 8. Observability
+## 6. Observability
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
 | **Errors** | Sentry | — | console.log as error tracking | 2026-05 |
-| **Metrics & traces** | **OpenTelemetry** → AWS CloudWatch (metrics, X-Ray for traces) | Datadog (where already paid for) | Bespoke metrics endpoints | 2026-05 |
-| **Logs** | AWS CloudWatch Logs (structured JSON) | — | Plaintext logs in production | 2026-05 |
+| **Metrics & traces** | **OpenTelemetry** (export target declared per-product) | Datadog (where already paid for) | Bespoke metrics endpoints | 2026-05 |
+| **Logs** | Structured JSON to stdout (collection target declared per-product) | — | Plaintext logs in production | 2026-05 |
 | **Feature flags** | **Statsig** (preferred platform); abstracted behind the OpenFeature SDK in app code | LaunchDarkly (where already paid for) | Bespoke flag tables | 2026-05 |
 
 ---
 
-## 9. AI / LLM stack
+## 7. AI / LLM stack
 
 | Slot | Preferred | Acceptable | Not allowed | Last verified |
 |---|---|---|---|---|
@@ -159,7 +122,7 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 
 ---
 
-## 10. How to update this file
+## 8. How to update this file
 
 1. Open a PR that edits this file.
 2. Bump the **Last refreshed** date at the top.
