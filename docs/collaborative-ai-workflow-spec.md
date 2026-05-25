@@ -116,7 +116,7 @@ The PO opens Claude, says what they want, and a working preview appears on a new
 **Happening under the hood (automatic):**
 
 - **Branch created** — e.g., `feat/po-redelivery-flag`
-- **Branch metadata written** — `/.workflow/branch.yaml` (§9.1) declares lane, owner, data policy, expiry, plugin pack version, change type.
+- **Branch metadata written** — `/.workflow/branch.yaml` (§9.1) declares lane, owner, project type, expiry, plugin pack version, change type.
 - **Claude writes code** — house rules enforced via the plugin pack at the version pinned in branch metadata.
 - **Tests scaffolded** — even prototypes ship with a smoke test.
 
@@ -131,7 +131,7 @@ The PO opens Claude, says what they want, and a working preview appears on a new
 
 **Principle:** *Chaos is fine — as long as it's contained.*
 
-Every prototype lives on its own branch with its own preview URL, its own sandboxed credentials, and **zero access to production data**. Rolling back is archiving the branch.
+Every prototype lives on its own branch — disposable, named, metadata-tagged. The platform-layer guarantees (preview URLs, sandbox credentials, network isolation from production) return when the platform substrate is chosen; until then the sandbox principles below are upheld by reviewer attention and the plugin pack's soft rules. Rolling back is archiving the branch.
 
 **The sandbox principles:**
 
@@ -331,7 +331,7 @@ Every branch declares its lane and policy in a machine-readable file at `/.workf
 change_id: redelivery-flag
 lane: prototype                          # prototype | production
 base_branch: main                        # the branch this was cut from
-change_type: behavioral                  # cosmetic | behavioral | structural | sensitive
+change_type: behavioral                  # trivial | cosmetic | behavioral | structural | sensitive
 project_type: greenfield                 # greenfield | brownfield
 owner: alexis
 created_by: claude
@@ -581,7 +581,7 @@ When a prototype branch is created, Claude detects whether the repo is greenfiel
 
 **Principle:** *Every new endpoint, screen, or background job ships with at least one test exercising its primary path. Soft on prototype, hard on production.*
 
-**The rule.** Each artifact that smells like an endpoint, page/screen, or background job must have at least one co-located or conventionally-located test file before the branch can be handed off (prototype) or merged (production).
+**The rule.** Each artefact that smells like an endpoint, page/screen, or background job must have at least one co-located or conventionally-located test file before the branch can be handed off (prototype) or merged (production).
 
 **Detection.** After every edit, the `always-test` plugin scans for new files matching these heuristics:
 
@@ -589,16 +589,16 @@ When a prototype branch is created, Claude detects whether the repo is greenfiel
 - Component files under `pages/`, `views/`, `app/`
 - Files under `jobs/`, `workers/`, `tasks/`
 
-For each detected artifact, the plugin checks for a sibling test file (`*.test.*`, `*.spec.*`, `tests/<name>`).
+For each detected artefact, the plugin checks for a sibling test file (`*.test.*`, `*.spec.*`, `tests/<name>`).
 
 **Enforcement, lane-scaled:**
 
 | Lane | Per-edit | Session end | Handoff / merge |
 |---|---|---|---|
-| **Prototype** | Soft warning to stderr | Stop-hook reminder asks Claude to continue and write the test | `/package-handoff` refuses if any prototype-lane test run failed since the branch was cut |
-| **Production** | Block (exit 2) | Stop-hook reminder | CI fails on coverage delta if an untested artifact lands |
+| **Prototype** | Soft warning to stderr | Stop-hook surfaces a reminder to write the missing test before closing the session | `/package-handoff` refuses if any newly detected endpoint/screen/job has no sibling test file |
+| **Production** | Block (exit 2) | Stop-hook reminder | CI fails on coverage delta if an untested artefact lands |
 
-**Greenfield wrinkle.** On a greenfield branch, the first test counts as covering "the test runner works." Subsequent endpoints/screens trigger the per-artifact rule normally.
+**Greenfield wrinkle.** On a greenfield branch, the first test counts as covering "the test runner works." Subsequent endpoints/screens trigger the per-artefact rule normally.
 
 **Lives in:** `plugins/always-test/hooks/check-test-coverage.sh` (per-edit detection), `plugins/always-test/hooks/remind-smoke-test.sh` (Stop-hook nudge), `plugins/prototype-lane/commands/package-handoff.md` (handoff refusal check).
 
@@ -615,7 +615,7 @@ These rules must always hold. AI agents must refuse to violate them. CI must enf
 3. **Approvals scaled by change type** on production-lane PRs (§9.4). Sensitive changes require two engineering approvals.
 4. **The Product Spine updates with every behavioral change** — Spine drift fails CI (§9.6).
 5. **The lane is a property of the branch**, declared in `/.workflow/branch.yaml`. Not the person, not the branch's origin.
-6. **Every branch is git-tracked, metadata-tagged, and auditable.** No anonymous or untagged branches reach a preview deploy.
+6. **Every branch is git-tracked, metadata-tagged, and auditable.** No anonymous or untagged branches reach a shared environment.
 7. **Claude refuses to package a handoff** if the Prototype Ready Checklist is incomplete (§9.2).
 8. **Plugin packs are versioned and recorded per branch** (§9.8). Branches on deprecated packs cannot merge.
 9. **Chat history is not canonical.** Only the repo (Spine, ADRs, branch metadata, Handoff Bundle) is durable memory. *Chats propose; the repo records.*
@@ -645,7 +645,7 @@ Several earlier open questions are now resolved by §9. The remaining unknowns:
 4. **Onboarding curve for non-technical contributors** — the workflow is forgiving, but the first prompt is still a blank box. What scaffolds the PO's first session?
 5. **Concurrent prototypes on overlapping surfaces** — §9.6 introduces a soft-lock at the Spine level; hard conflict resolution between two `handoff_status: ready` branches touching the same surface is still undefined.
 6. **Spine pruning cadence** — §9.6 mandates quarterly pruning; the operational specifics (who decides what is obsolete, how to safely archive without breaking drift checks) need a real run to define.
-7. **Re-introducing infrastructure-layer isolation** — when platform decisions land (preview hosting, secret stores, environment isolation), §9.9 will return as a Runtime Guarantees section. The structure to slot it back into is preserved in v0.2.1 of this spec.
+7. **Re-introducing infrastructure-layer isolation** — when platform decisions land (preview hosting, secret stores, environment isolation), §9.11 will return as a Runtime Guarantees section. The structure to slot it back into is preserved in v0.2.1 of this spec.
 
 ---
 
@@ -710,7 +710,7 @@ PO  →  describes  →  CLAUDE  →  structures  →  DEV  →  industrializes
 | **Handoff** | The transition between lanes (Stages 03–04) where the Handoff Bundle is produced and architectural decisions are made. |
 | **Product Spine** | The structured, persistent spec living in the repo, with sections: Intent, UX, Surface, Architecture, Open questions. The canonical "what this change means." |
 | **Handoff Bundle** | The standardized handoff artefact at `/.workflow/handoff.md` containing the Spine link, file summary, dependencies, plugin flags, do-not-reuse list, acceptance checks, and Claude's suggested decision. |
-| **Branch Metadata** | The `/.workflow/branch.yaml` file declaring lane, base branch, change type, owner, data policy, expiry, renewals, plugin pack version, handoff status, and sensitivity. |
+| **Branch Metadata** | The `/.workflow/branch.yaml` file declaring lane, base branch, change type, owner, project type, expiry, renewals, plugin pack version, handoff status, and sensitivity. |
 | **Prototype Ready Checklist** | The gate between exploration and handoff (§9.2). |
 | **Scaled Approval** | The approval matrix in §9.4: ceremony depends on `change_type` and `sensitivity`. |
 | **Spine Drift** | Divergence between code and the Product Spine; treated as a CI failure on production-lane PRs. |
