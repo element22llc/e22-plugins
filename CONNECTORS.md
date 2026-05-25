@@ -13,11 +13,8 @@ checklist: every contributor needs the **required** set; engineers also need
 | Connector            | Tier        | Why                                                                       |
 | -------------------- | ----------- | ------------------------------------------------------------------------- |
 | **GitHub**           | required    | All proposal motion: branches, PRs, issues, projects, labels, repo contents. |
-| **Vercel**           | required (prototype lane) | Per-branch preview deployments for prototype-lane work and production-lane PR previews. |
-| **Neon**             | required (prototype lane) | Per-preview Postgres database branches (copy-on-write) via the Neon ↔ Vercel integration. |
-| **AWS** (production) | required (production lane) | Production runtime: ECS / Lambda, RDS, S3, Secrets Manager, SSM, CloudFront, SES. |
 | Sentry               | recommended | Production-graded gate (error-rate, suspect-flag findings).               |
-| Statsig              | recommended | `/promote` flag mutation; rollout reporting. Accessed via the OpenFeature SDK in app code. |
+| Statsig              | recommended | `/promote` flag mutation; rollout reporting. Accessed via the OpenFeature SDK. |
 | Microsoft Teams      | optional    | `/proposal-status` direct-handoff messages; champion pings.               |
 | `context7` (Upstash) | recommended | Current API/version docs to prevent hallucinated APIs.                    |
 
@@ -69,64 +66,12 @@ they're degraded; they do not silently skip.
 
 | Command           | Without GitHub connector                                                                                  |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `/vibe`           | In Claude Code: falls back to local `git` for branch creation; preview won't auto-deploy. In Chat/Cowork: refuses, asks the user to connect GitHub. |
+| `/vibe`           | In Claude Code: falls back to local `git` for branch creation. In Chat/Cowork: refuses, asks the user to connect GitHub. |
 | `/package-handoff`| Writes the Spine and bundle to the local checkout (Code) or the outputs folder (Cowork); cannot open the draft PR. Surfaces a "paste this to engineering" message instead. |
 | `/proposal-status`| Refuses with a clear message about needing GitHub connected. No silent stale data.                        |
 | `/validate`       | Refuses. Validation is a public state change; it cannot happen without the connector.                     |
 | `/promote`        | Refuses. Promotion is governed and audited.                                                               |
 | `drift-monitor`   | Reports to chat only; cannot file issues.                                                                 |
-
-## Vercel connector — required for prototype lane
-
-Every prototype-lane branch deploys to a per-branch Vercel preview. Production-lane PRs also get a Vercel preview before they merge. Without Vercel connected, `/vibe` cannot complete — Claude refuses to silently create a branch with no preview.
-
-### Capabilities used
-
-| Capability                      | Used by                                        | What it does                                                                                              |
-| ------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Preview deployments**         | `/vibe`, `/package-handoff`, `/validate`        | Create / read per-branch preview URLs; report preview-ready status back to chat.                          |
-| **Environment variables (sandbox namespace)** | `/vibe`, `security-rails`        | Inject the prototype's sandbox-only env vars. Production secrets are network-isolated from this namespace (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)). |
-| **Deployment logs**             | `drift-monitor`, `/proposal-status`             | Surface failed previews and runtime errors without exposing production data.                              |
-| **Project linkage**             | `/vibe` (one-time)                              | Link the GitHub repo to a Vercel project. Per-product configuration lives in `vercel.json` in the repo.   |
-
-### Setup
-
-1. Connect Vercel to the Element 22 org. Each product gets its own Vercel project; the `Production` environment in Vercel is left **empty** (production traffic does not run on Vercel — it runs on AWS). Preview and Development environments are the live ones.
-2. Install the **Neon ↔ Vercel integration** in the Vercel project (see the Neon section below). This wires per-preview database branches automatically.
-3. Verify with a smoke test: push a commit to a `prototype/test` branch and confirm Vercel posts a preview URL within ~60 seconds.
-
-## Neon connector — required for prototype lane
-
-The Neon Postgres ↔ Vercel integration is what makes the Four Guarantees enforceable: every preview deployment gets its own copy-on-write Postgres branch from a sandbox parent. No real customer data, no shared synthetic store, no manual seeding.
-
-### Capabilities used
-
-| Capability                | Used by                                        | What it does                                                                                              |
-| ------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Per-preview branches**  | Neon ↔ Vercel integration (automatic)           | Each Vercel preview deployment gets a Neon branch forked from `sandbox-main` in milliseconds.             |
-| **Branch lifecycle**      | `/vibe`, weekly digest job                      | Branches expire with the Vercel preview. Idle branches scale to zero compute.                             |
-| **MCP `create_branch`**   | `spine-writer`, ad-hoc Claude work              | Fork an arbitrary parent branch when testing migrations; never against production data.                   |
-
-### Setup
-
-1. In Neon, create a project per product. Each project has at least two roots: `sandbox-main` (the parent for all preview branches; seeded with synthetic fixtures only) and — if you also run prod on Neon — `production`. The `production` root lives in a **separate Neon project with separate credentials**; it is network-isolated from the sandbox project.
-2. Install the Neon ↔ Vercel integration on the product's Vercel project. Vercel will automatically inject the per-preview `DATABASE_URL` into every preview deployment.
-3. For SOC2 products, additionally enable **IP Allow** and **Private Networking** on the sandbox project so anonymized branches can be created without restriction.
-
-## AWS connector — required for production lane
-
-AWS is the production runtime. The connector is also used (with read-only credentials) by SOC2 products to resolve secret references in CLAUDE.md without exposing values.
-
-### Capabilities used
-
-| Capability                                | Used by                                              | What it does                                                                                              |
-| ----------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Secrets Manager / SSM Parameter Store** | `/promote`, runtime apps (production lane only)       | Resolve secret references like `/prod/<product>/<key>`. Read-only from Claude; never paste values in chat. |
-| **Terragrunt deploys** (via GitHub Actions OIDC) | CI                                              | Production stacks are deployed by GitHub Actions running `terragrunt run-all apply` (with OpenTofu under the hood), assuming a deploy role via OIDC. Claude never runs `terragrunt apply`, `tofu apply`, or `terraform apply` directly. |
-| **CloudWatch Logs** (read)                | `drift-monitor`, production-graded gate               | Read structured logs to assess error rates post-promotion.                                                |
-| **CloudFront / S3** (read)                | `/proposal-status`                                    | Sanity-check that production assets shipped.                                                              |
-
-> **AWS is production-only.** A `lane: prototype` branch is forbidden from reaching AWS production resources. The deploy job enforces this by reading `branch.yaml#lane` before selecting credentials (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
 
 ## Recommended connectors
 
@@ -157,15 +102,11 @@ Used by every command before it generates code, to fetch current API/version
 documentation. Without it, Claude is more likely to hallucinate an outdated API.
 Not a blocker, but strongly recommended.
 
-## SOC2-overlay connectors
+## SOC2-overlay notes
 
-AWS Secrets Manager / SSM is already the production secrets store for every product (see the AWS connector section above). The SOC2 overlay adds these extra requirements on top:
+Secret references in product CLAUDE.md files use logical paths only (e.g., `/prod/<product>/<key>`). Values are resolved at runtime by the product's chosen secret store; the value never appears in chat, files, or PR descriptions. The secret-store mechanism is declared per-product and is out of scope for this connector reference (deferred with the rest of infra).
 
-- **Two read-only roles**, one for engineers and one for Claude, both auditable in CloudTrail.
-- **Reference-only resolution**: Claude reads the secret *path* (e.g., `/prod/<product>/<key>`) from CLAUDE.md and resolves it at runtime via the AWS connector; the value never appears in chat, files, or PR descriptions.
-- **Sensitive prototypes (spec §9.7)** use a further-isolated Neon project + a further-isolated Vercel project, distinct from non-sensitive prototype infrastructure.
-
-If your role doesn't have AWS access, that's fine — Claude will surface the path in chat for the human to resolve, but will never paste a value into a file.
+If a SOC2 product needs further isolation than the default sandbox principles offer (spec §9.7), document the chosen isolation mechanism in the product's CLAUDE.md.
 
 ## Connector compatibility by surface
 
@@ -174,20 +115,20 @@ slightly. **This is what makes the e22-plugins workflow surface-portable**: the
 plugins themselves don't care which surface they're running on, only that the
 required connectors are reachable.
 
-| Surface          | GitHub | Vercel | Neon | AWS | Sentry | Flags | Microsoft Teams | context7 |
-| ---------------- | :----: | :----: | :--: | :-: | :----: | :---: | :-------------: | :------: |
-| Claude.ai (Chat) | ✅     | ✅     | ✅   | ✅  | ✅     | ✅    | ✅              | ✅       |
-| Claude Cowork    | ✅     | ✅     | ✅   | ✅  | ✅     | ✅    | ✅              | ✅       |
-| Claude Code      | ✅ (or `gh` CLI fallback) | ✅ | ✅ | ✅ (or `aws` CLI fallback) | ✅ | ✅ | ✅ | ✅ |
+| Surface          | GitHub | Sentry | Flags | Microsoft Teams | context7 |
+| ---------------- | :----: | :----: | :---: | :-------------: | :------: |
+| Claude.ai (Chat) | ✅     | ✅     | ✅    | ✅              | ✅       |
+| Claude Cowork    | ✅     | ✅     | ✅    | ✅              | ✅       |
+| Claude Code      | ✅ (or `gh` CLI fallback) | ✅ | ✅ | ✅ | ✅ |
 
 ## See also
 
 - [`CONSTITUTION.md`](./CONSTITUTION.md) — declares which connectors are required
   and forbids storing secret values in committed files.
 - [`TECH-STACK.md`](./TECH-STACK.md) — the team's preferred tech stack; lane-specific infrastructure choices live in §1.
-- [`collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) — the full operational specification; §9.9 details the runtime guarantees that depend on the Vercel/Neon vs AWS split.
+- [`collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) — the full operational specification.
 - [`README.md`](./README.md#surface-compatibility) — the surface-compatibility
   matrix per plugin (including the hooks caveat).
 - [`templates/claude-settings.json`](./templates/claude-settings.json) — the
   per-product settings template; mentions the connector requirement so trusting
-  a product folder also nudges teammates to connect GitHub, Vercel, Neon, and AWS.
+  a product folder also nudges teammates to connect GitHub.
