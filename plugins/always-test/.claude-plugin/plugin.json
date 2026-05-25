@@ -1,7 +1,7 @@
 {
   "name": "always-test",
-  "version": "0.1.0",
-  "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware — prototype/* branches need a single smoke test scaffolded; production-lane branches need full unit + integration + smoke coverage pinned to the Spine's success criteria.",
+  "version": "0.2.0",
+  "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware — prototype/* branches need a single smoke test scaffolded; production-lane branches need full unit + integration + smoke coverage pinned to the Spine's success criteria. Soft warning on prototype lane, hard block (exit 2) on production per spec §9.10.",
   "author": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"

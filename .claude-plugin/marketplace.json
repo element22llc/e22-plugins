@@ -9,7 +9,7 @@
     {
       "name": "prototype-lane",
       "source": "./plugins/prototype-lane",
-      "description": "Prototype Lane plugin for Product Owners. /vibe spins up a sandboxed branch with a live preview within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. /proposal-status reports state without jargon.",
+      "description": "Prototype Lane plugin for Product Owners. /vibe spins up a sandboxed branch with a live preview within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. /proposal-status reports state without jargon. — auto-detects greenfield/brownfield projects before scaffolding.",
       "category": "workflow",
       "keywords": ["element-22", "cowork", "prototype", "vibe-coding", "product-owner", "non-technical", "spine"]
     },
@@ -30,7 +30,7 @@
     {
       "name": "always-test",
       "source": "./plugins/always-test",
-      "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware coverage requirements.",
+      "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware coverage requirements. — soft warning on prototype, hard block on production per spec §9.10.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "tests", "smoke-tests", "ci"]
     },
@@ -44,7 +44,7 @@
     {
       "name": "security-rails",
       "source": "./plugins/security-rails",
-      "description": "House rule: blocks risky patterns by default. Enforces the Four Guarantees on prototype branches and the constitution's 'Claude must not' rules everywhere.",
+      "description": "House rule: blocks universal risky patterns by default (secrets, AWS access keys, Stripe live keys, raw-SQL string interpolation, force-push, push-to-main, prod database clients). Pairs with Anthropic's `security-guidance` for code-injection patterns.",
       "category": "house-rule",
       "keywords": ["element-22", "house-rule", "security", "guardrails", "four-guarantees"]
     },
