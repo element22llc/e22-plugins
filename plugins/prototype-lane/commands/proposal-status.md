@@ -82,9 +82,9 @@ Your work (5):
 
 PROTOTYPE LANE
 • Re-delivery flag — You're still iterating (prototype/po-redelivery-flag, 2h ago)
-  → preview: https://preview-prototype-po-redelivery-flag.tier1.dev
+  → preview: <preview-url>
 • Refund modal v3 — Going stale, auto-expires in 2 days (prototype/po-refund-modal-v3, 5d ago)
-  → preview: https://preview-prototype-po-refund-modal-v3.tier1.dev
+  → preview: <preview-url>
 
 AWAITING VALIDATION
 • Faster checkout — Engineer hasn't looked yet (PR #142, 4h since handoff)
@@ -92,7 +92,7 @@ AWAITING VALIDATION
 
 PRODUCTION LANE
 • Dark mode toggle — Ready for you to review (PR #145, preview-ready 1h)
-  → engineer: @sam   https://preview-145.tier1.dev
+  → engineer: @sam   <preview-url>
 • Receipt download bug — Live for customers (PR #138, production-graded 11d)
   → engineer: @jordan   no action needed
 ```

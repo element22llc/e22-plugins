@@ -30,13 +30,6 @@ commits, open the (later) draft PR, and post the preview URL as a comment. See
   Commits are pushed via the connector's repo-contents API. Refuse with a clear
   message if GitHub is not connected.
 
-The preview URL itself comes from **Vercel** (per-branch deployment) with a
-per-preview **Neon Postgres** branch attached via the Neon ↔ Vercel
-integration. Vercel posts the preview-ready signal back to the GitHub PR within
-~60 seconds; this command surfaces that URL to the PO. See
-[`TECH-STACK.md`](../../../TECH-STACK.md) §1 for the lane-specific
-infrastructure mapping.
-
 ## Workflow
 
 ### 1. Read $ARGUMENTS
@@ -87,17 +80,14 @@ sees a working version.
 
 This is the actual vibe-coding loop.
 
+- **Run the `project-type-detector` agent** if `branch.yaml#project_type` is not set. The result drives whether you scaffold a fresh stack (greenfield) or conform to existing patterns (brownfield) — see spec §9.9.
 - Read the relevant code paths first. Do not start typing into the void.
 - Follow the product's `apps/<product>/CLAUDE.md` conventions.
 - House rules (`spec-driven-dev`, `always-test`, `house-style`, `security-rails`)
   apply automatically — they are enforced by paired plugins via hooks.
-- **The Four Guarantees apply automatically:**
+- **Sandbox principles apply (spec §6 Stage 02):**
   1. Branch-per-idea (you just made one).
-  2. Synthetic data only — use fixtures from `packages/test-fixtures` or scaffold new
-     ones. Never connect a prototype branch to production data, prod auth, or prod
-     payment rails. Ever.
-  3. The preview URL is ephemeral (auto-expires after 7 days idle).
-  4. Sandbox secrets only — scoped tokens from the prototype env, never prod keys.
+  2. Synthetic data only — use fixtures from `packages/test-fixtures` or scaffold new ones. The product's CLAUDE.md declares its fixture convention.
 - Always-test plugin will scaffold at least one smoke test for any new endpoint or
   screen. Do not skip it.
 - If the PO asked for **multiple variants** ("show me three versions of the modal"),
@@ -106,18 +96,12 @@ This is the actual vibe-coding loop.
 
 ### 6. Push, wait for preview, surface the URL
 
-- Push the branch. Vercel spins up the per-branch preview deployment and the
-  Neon ↔ Vercel integration forks a sandbox Postgres branch in milliseconds.
-  This is the Tier 1 default for prototype-lane branches; Tier 2 (full AWS
-  stack) is blocked here — `branch.yaml#lane: prototype` cannot deploy against
-  production-shaped infrastructure (see [spec §9.9](../../../docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
-- Wait for the preview-ready signal from Vercel. When it lands, post a single
-  message to the PO:
-  - Preview URL
-  - 2-3 specific things to try ("click 'Re-deliver' on any past order — try one with
-    a refund, one without")
-  - The branch name and how to come back to it (just `/vibe` with the same description
-    will reattach)
+- Push the branch via the GitHub connector (or local `git` in Claude Code).
+- The product's preview-environment configuration (declared in its CLAUDE.md until the platform substrate is chosen) will surface a preview URL or local-run instructions to the PO.
+- Post a single message to the PO with:
+  - The preview URL or run instructions
+  - 2-3 specific things to try ("click 'Re-deliver' on any past order — try one with a refund, one without")
+  - The branch name and how to come back to it (just `/vibe` with the same description will reattach)
 
 ### 7. Iterate in the PO's voice
 
@@ -146,7 +130,7 @@ help the PO pick one:
 
 - **Do not write a spec first.** The prototype *is* the spec until `/package-handoff`
   runs. That command produces the Spine.
-- **Do not ask the PO about preview tiers, SOC2 scope, CODEOWNERS, or feature flags.**
+- **Do not ask the PO about SOC2 scope, CODEOWNERS, or feature flags.**
   Those are production-lane concerns. The PO never needs to learn that vocabulary.
 - **Do not open a PR.** Prototype-lane branches stay branches until they survive the
   validation gate.
