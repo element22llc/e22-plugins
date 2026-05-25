@@ -1,5 +1,5 @@
 ---
-description: Auto-triggered when a Product Owner describes a change they'd like to see in an Element 22 product ("I wish X did Y", "could we make X different", "we should change Y", "X is annoying because…", "what if we tried Z"). Offers to vibe-code a working preview without requiring them to know about /vibe.
+description: Auto-triggered when a Product Owner describes a change they'd like to see in an Element 22 product ("I wish X did Y", "could we make X different", "we should change Y", "X is annoying because…", "what if we tried Z"). Offers to vibe-code a working preview without requiring them to know about /vibe. This skill is the prototype-lane on-ramp; for production-bound work defer to `proposal-intake`, for reviewing a packaged handoff defer to `validation-decision`, for flag ramps defer to `feature-flag-promotion`, for stale specs defer to `spine-staleness-cue`.
 ---
 
 A PO has just described something they'd like to change in an Element 22 product.
@@ -10,6 +10,30 @@ polished doc.
 They probably don't know the formal workflow yet. Asking them to invoke `/vibe`
 would be friction. Treat this as if `/vibe` had been called with their description
 as the argument.
+
+## When NOT to trigger — defer to a sibling skill
+
+The prototype lane is for *exploration*. If the request is shaped differently,
+route to a different on-ramp before doing anything else:
+
+- **Committed production work** ("we need to ship X by Friday", "this has to
+  land on main", "implement Y", "create a PR for Z", "fix the bug in W") →
+  defer to `proposal-intake` (production-lane) → `/propose`. The speaker is
+  asking for a feature branch off `main`, not a throwaway prototype.
+- **Reviewing a packaged handoff** ("let's review PR #N", "evaluate this
+  handoff", "is this Keep or Refactor") → defer to `validation-decision`
+  (production-lane) → `/validate`.
+- **Ramping a feature flag** ("promote X to 50%", "graduate from
+  experimental") → defer to `feature-flag-promotion` (production-lane) →
+  `/promote`.
+- **Stale spec / spine drift** ("the spec is out of date", "regenerate the
+  spine", "the docs don't match the code") → defer to `spine-staleness-cue`
+  (spine-writer) → `/spine-refresh`.
+- **Sensitive domains** (auth, payments, PII, permissions, billing, data
+  model) where the PO has not declared `sensitivity: sensitive` — pause and
+  require an explicit declaration before any code generation (spec §9.7,
+  invariant #12). The prototype lane has extra rails for these; do not
+  silently treat them as standard explorations.
 
 ## Before launching into it
 
@@ -38,7 +62,18 @@ Follow the `/vibe` workflow:
 6. Iterate on the PO's reactions. The branch _is_ the conversation.
 
 When the PO is happy, suggest `/package-handoff` to send the prototype to an
-engineer for validation.
+engineer for validation. After that, the change follows the production-lane
+on-ramps:
+
+- The engineer makes a Keep / Refactor / Redesign / Reject call via the
+  `validation-decision` skill → `/validate`.
+- On Keep or Refactor, the change is industrialized via `proposal-intake` →
+  `/propose` (the Spine travels even when the prototype code doesn't, spec
+  §7.2).
+- Once merged behind a flag, exposure is widened via `feature-flag-promotion`
+  → `/promote`.
+- If the Spine ever falls out of sync with the code on this branch, run
+  `spine-staleness-cue` → `/spine-refresh` before `/package-handoff`.
 
 ## What this skill is _not_
 
