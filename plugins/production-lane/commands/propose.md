@@ -45,8 +45,9 @@ missing.
    that to the contributor and confirm they understand the stricter review path.
 
 3. **Select preview tier.**
-   Based on the likely file changes, pick Tier 0/1/2 per the constitution.
-   State the chosen tier and why. Allow contributor to override with justification.
+   The product's preview-environment configuration (declared in its `apps/<product>/CLAUDE.md`)
+   determines how the PR preview is deployed. Review the product's configuration and state
+   how the preview will be handled. Allow contributor to override with justification.
 
 4. **Create branch and draft PR.**
    - Branch name: `proposal/<short-slug-from-description>`
@@ -56,7 +57,6 @@ missing.
      - **Champion:** the contributor's GitHub handle (ask if unknown)
      - **Intent:** one-paragraph plain-English description of the desired outcome
      - **Affected product:** the product slug
-     - **Preview tier:** Tier 0/1/2 + one-line justification
      - **Risks:** anything Claude can identify upfront
      - **Acceptance criteria:** 3-5 checkboxes the champion can tick when validating
      - **Product Spine:** link to the Spine file at `proposals/<branch-slug>/product-spine.md`. Create a Spine if one doesn't exist — the `spine-writer` plugin handles this automatically. Use [`PRODUCT_SPINE_TEMPLATE.md`](../../../PRODUCT_SPINE_TEMPLATE.md) as the starting layout.
@@ -66,7 +66,7 @@ missing.
    - Read the relevant code paths first; do not start typing.
    - Follow the conventions in the product-level `CLAUDE.md`.
    - For UI work, defer to the `frontend-design` plugin's conventions if installed.
-   - For Terraform work, defer to TerraShark or HashiCorp's skills if installed.
+   - For infrastructure work, defer to the product's chosen IaC tooling and any installed skills for it.
    - Make small, focused commits. One concern per commit.
 
 6. **Self-review before announcing.**
@@ -75,7 +75,7 @@ missing.
    internal review pass for: secrets exposure, missing tests, CLAUDE.md compliance.
 
 7. **Surface preview link.**
-   The Tier 1/2 preview is spun up by GitHub Actions on the PR open event. Wait
+   The preview environment (mechanism declared per-product) is spun up by GitHub Actions on the PR open event. Wait
    for the preview-ready comment from the Action, then post a chat message to the
    contributor with the preview URL and a checklist of acceptance criteria they
    should validate.
