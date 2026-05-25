@@ -85,8 +85,10 @@ prototype lane defaults to Tier 1, Tier 2 is blocked on prototype branches.
 When a PO asks one of these, find the relevant entry, paraphrase it briefly, and
 offer to go deeper if they want. Do not dump the whole glossary.
 
-If they ask about a term not in the glossary, **try the product wiki** via the
-GitHub connector before saying you don't know: the team may have a custom
-glossary page at `<product>/wiki/Glossary` or similar. If you find it, paraphrase
-from there and credit the wiki link. Otherwise, say so plainly and offer to ask
-an engineer to add the term to the glossary.
+If they ask about a term not in the glossary, **search the product repo's
+markdown docs** via the GitHub connector before saying you don't know — try
+`docs/glossary.md`, `docs/`, `product-spine/`, and `CONSTITUTION.md`. If you
+find it, paraphrase and credit the source file with a link. Otherwise, say so
+plainly and offer to ask an engineer to add the term to `docs/glossary.md` (a
+small PR is the right shape for that). The repo is the only source of truth —
+there is no wiki to fall back to.

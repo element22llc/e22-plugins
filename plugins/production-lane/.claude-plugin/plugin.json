@@ -8,5 +8,5 @@
   },
   "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/production-lane",
   "license": "UNLICENSED",
-  "keywords": ["element-22", "claude-chat", "claude-cowork", "claude-code", "github-connector", "proposals", "validation", "governance", "soc2", "feature-flags", "terragrunt", "production"]
+  "keywords": ["element-22", "claude-chat", "claude-cowork", "claude-code", "github-connector", "proposals", "validation", "governance", "soc2", "feature-flags", "aws", "terragrunt", "opentofu", "production"]
 }

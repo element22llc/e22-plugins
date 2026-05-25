@@ -24,8 +24,8 @@ Connector capabilities used:
   current labels and CI state to surface the right plain-language status.
 - **Branches** (read) — for `prototype/*` branches not yet linked to a PR, check
   last-commit age to detect "going stale".
-- **Wiki** (read, optional) — link to the wiki Spine summary if one exists, so
-  the PO can read a non-engineer-friendly version.
+- **Repo contents** (read) — link to the Spine markdown file in the repo so
+  the PO can read the engineer-facing summary.
 
 ## Workflow
 
@@ -45,7 +45,7 @@ a search term). For each card, read:
 
 - `Status` field → maps to the plain-language status table below
 - `Lane` field → prototype vs production
-- `Branch`, `PR`, `Spine`, `Wiki summary` fields → links to surface
+- `Branch`, `PR`, `Spine`, `Handoff bundle` fields → links to surface
 - Card's last-update timestamp → for "going stale" detection on prototype lane
 
 If no project board exists yet (greenfield rollout), fall back to listing PRs

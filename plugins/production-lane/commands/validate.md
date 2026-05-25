@@ -19,8 +19,8 @@ if the connector is missing.
 
 Connector capabilities used:
 
-- **Pull requests** — read the PR, the Spine, and the bundle; rename the branch
-  on Keep; close on Reject; comment on every decision.
+- **Pull requests** — read the PR, the Spine, and the Handoff Bundle; rename
+  the branch on Keep; close on Reject; comment on every decision.
 - **Branches** — rename `prototype/<slug>` → `proposal/<slug>` on Keep; create
   fresh `proposal/<slug>` off main on Refactor/Redesign.
 - **Projects (v2)** — advance the card to the post-validation Status (`drafting`
@@ -28,8 +28,9 @@ Connector capabilities used:
   decision` and `Decided by` fields.
 - **Labels** — drop `awaiting-validation`, apply `drafting` (or close).
 - **Comments** — post the decision rationale in the PR thread.
-- **Wiki** (optional) — if a wiki Spine summary exists, update its status
-  header.
+- **Repo contents** — update the Spine's "Validation decision" section and
+  (on Refactor/Redesign) carry the §10 *"What should NOT be reused"* notes from
+  the Handoff Bundle into the new branch.
 
 The four decisions are mutually exclusive:
 
@@ -64,18 +65,20 @@ product uses a single canonical one). Scan in this order:
    them. If it doesn't, it's not Keep.
 5. **UX.** Only relevant if you're considering Keep on a UI-heavy change.
 
-### 3. Read the handoff bundle pre-flight
+### 3. Read the Handoff Bundle pre-flight
 
-The `handoff-packager` produced three reports at
-`proposals/<branch-slug>/handoff/`:
+The Handoff Bundle lives at `/.workflow/handoff.md` on the branch (see
+[spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)).
+It contains:
 
-- **Dependency delta** — every package added since `main`. Look for: license
-  conflicts, transitive bloat, anything not already on the team's approved list.
-- **Novel patterns** — anything in the diff that doesn't match existing patterns
-  in the codebase. If everything's novel, that's a Redesign smell.
-- **Plugin violations** — what failed `house-style`, `security-rails`,
-  `spec-driven-dev`, `always-test` in lenient prototype mode but would fail in
-  strict production mode. The volume here is the single best Keep/Refactor signal.
+- **§5 New dependencies since `main`** — every package added. Look for: license conflicts, transitive bloat, anything not already on the team's approved list (see [`TECH-STACK.md`](../../../TECH-STACK.md)).
+- **§6 Risky patterns detected** — anything in the diff that doesn't match existing patterns, plus plugin-pack warnings. If everything's novel, that's a Redesign smell.
+- **§10 What should NOT be reused** — the prototype shortcuts (fake auth, hardcoded users, inlined config) that must not migrate to production by inertia. If this list is long, that's a Refactor signal.
+- **§11 Acceptance checks** — the observable conditions the PO will verify on the production PR. These anchor product approval; do not invalidate them silently.
+
+Plugin violations from `house-style`, `security-rails`, `spec-driven-dev`, and
+`always-test` (lenient prototype mode) appear under §6. The volume here is the
+single best Keep/Refactor signal.
 
 ### 4. Read the constitution
 

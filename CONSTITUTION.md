@@ -5,6 +5,13 @@ It defines how we work, the tools we use, and the gates that protect production.
 
 Product-specific `CLAUDE.md` files extend this constitution. They never contradict it.
 
+> **Companion documents.** The full operational specification lives in
+> [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md) —
+> branch metadata, the five enforcement layers, the Handoff Bundle, scaled
+> approvals, runtime guarantees, and the non-negotiable invariants. The team's
+> preferred tech stack lives in [`TECH-STACK.md`](./TECH-STACK.md). When this
+> constitution and the spec disagree, the spec wins.
+
 ---
 
 ## The workflow in one line
@@ -21,6 +28,9 @@ house-rule plugins applied to every session.
 ## The two lanes
 
 The lane is a property of the **branch**, not the person. POs cross over too.
+The lane is declared in `/.workflow/branch.yaml` and enforced by CI, runtime
+guards, and the GitHub connector — not by branch-name convention alone (see the
+[spec §9.1](./collaborative-ai-workflow-spec.md#91-branch-metadata)).
 
 | Dimension       | **Prototype Lane**                             | **Production Lane**                                |
 | --------------- | ---------------------------------------------- | -------------------------------------------------- |
@@ -29,10 +39,17 @@ The lane is a property of the **branch**, not the person. POs cross over too.
 | Data            | Synthetic / fake fixtures                      | Real data, real guardrails                         |
 | Tests required  | Smoke test scaffolded by Claude                | Full suite must pass CI                            |
 | Review          | Self-review on a preview URL                   | Engineer review on the diff                        |
-| Deploy target   | Ephemeral preview, auto-expires                | Production behind a feature flag                   |
+| Deploy target   | **Vercel** preview + **Neon** sandbox branch, auto-expires | **AWS** (ECS / Lambda / RDS) behind a feature flag |
 | Rollback        | Delete the branch                              | Flag off, then revert PR                           |
+| Secret namespace | Sandbox-only, network-isolated from prod      | Production namespace (AWS Secrets Manager / SSM)   |
 
 **Speed lives on the left. Safety lives on the right. Claude carries the meaning across.**
+
+The infrastructure split — Vercel + Neon for preview, AWS for production — is
+load-bearing. It is what makes invariant #1 ("no prototype branch ever touches
+production data, auth, or secrets") enforceable at the platform layer rather
+than by Claude refusal alone. See [`TECH-STACK.md`](./TECH-STACK.md) §1 for the
+full per-layer mapping.
 
 ## The arc of a change (six stages)
 
@@ -115,31 +132,69 @@ tomorrow.
 | `handoff-packager`   | Produces the spec bundle for the prototype-to-prod gate.                  |
 
 **Production plugins are stricter than prototype plugins.** Same plugin name, lane-aware
-rule sets. The lane is read from the branch prefix (`prototype/*` vs everything else).
+rule sets. The lane is read from `/.workflow/branch.yaml#lane`; the
+`prototype/*` branch prefix is a convention that helps humans, but the
+authoritative declaration is the file. (See [spec §9.1](./collaborative-ai-workflow-spec.md#91-branch-metadata).)
+
+> **The plugin pack is more than these six.** "Plugin pack" in the spec refers
+> to a versioned bundle across **five enforcement layers**: AI Instructions
+> (this constitution and the plugins below), Repo Contracts
+> (`branch.yaml`, `handoff.md`, Spine), CI Policies, App Guards (runtime
+> assertions), and Review Rules (CODEOWNERS, branch protection). AI Instructions
+> are soft; the other four are hard. A rule that only exists as an AI
+> instruction is acceptable for ergonomics but **never load-bearing for
+> safety**. See [spec §8.1](./collaborative-ai-workflow-spec.md#81-the-five-layers).
 
 ## Stack and conventions
 
-Element 22 products use different tech stacks. The platform constitution does not
-enumerate them. Stack declarations live where they should:
+Element 22 has a **default tech stack** for greenfield work, declared in
+[`TECH-STACK.md`](./TECH-STACK.md). Existing products keep their stack; that
+file is the tie-breaker for new products and new subsystems.
+
+The default split at a glance:
+
+- **Prototype lane:** **Vercel** (per-branch preview URL) + **Neon Postgres**
+  (per-preview database branch via the Neon ↔ Vercel integration).
+- **Production lane:** **AWS** — ECS Fargate or Lambda + API Gateway, RDS
+  Postgres, S3, CloudFront, Secrets Manager / SSM. Provisioned via
+  **Terragrunt + OpenTofu** under `infra/live/<env>/<product>/`. Legacy
+  products on Terraform are acceptable; new products start on OpenTofu.
+
+For everything else — language versions, frameworks, ORM, tests, observability,
+feature flags — see `TECH-STACK.md`. That file is the single place to update
+when the team's preference changes.
+
+Stack declarations live where they should:
 
 - **Per-product:** each product's `apps/<product>/CLAUDE.md` declares its overall
-  stack, key patterns, and any conventions that diverge from this constitution.
+  stack, key patterns, and any conventions that diverge from this constitution
+  or from `TECH-STACK.md`.
 - **Per-subsystem:** when a product mixes stacks (e.g., a TypeScript web app and a
   Python service), each subsystem has its own `CLAUDE.md` at the appropriate
   directory level.
-- **Authoritative versions:** the manifest files (`package.json`, `pyproject.toml`,
-  `Cargo.toml`, `go.mod`, `*.tf`) are the source of truth for versions and
-  dependencies. Never claim a version from memory.
+- **Authoritative versions:** the manifest files (`mise.toml`, `package.json`,
+  `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.tf`, `terragrunt.hcl`) are the
+  source of truth for versions and dependencies. `mise.toml` pins the exact
+  runtime/tool versions installed locally and in CI; the per-language manifests
+  declare floors and dependency sets. Never claim a version from memory.
+- **Tool version manager:** every project that can express its toolchain in
+  [mise](https://mise.jdx.dev/) MUST do so — `mise.toml` at the repo root is
+  the single source of truth for Node, Python, Go, Rust, `pnpm`, `terragrunt`,
+  `tofu`, and any other CLI the product depends on. Do not introduce parallel
+  installs via `nvm` / `pyenv` / `asdf` / Homebrew / global `npm i -g`; if a
+  tool genuinely cannot be installed through mise, document the reason in the
+  product's `CLAUDE.md`. See [`TECH-STACK.md`](./TECH-STACK.md) §2.
 
 ### What this means for agents
 
 Before generating code in any product:
 
 1. Read the product's `CLAUDE.md` to load conventions.
-2. Read the nearest manifest file(s) to determine current versions.
-3. If `context7` is installed, defer to it for current API/version-specific
+2. Read [`TECH-STACK.md`](./TECH-STACK.md) for the team's preferred choices.
+3. Read the nearest manifest file(s) to determine current versions.
+4. If `context7` is installed, defer to it for current API/version-specific
    documentation rather than relying on training-data recall.
-4. If a manifest is missing or the stack is unclear, ask — don't guess.
+5. If a manifest is missing or the stack is unclear, ask — don't guess.
 
 ## Principles
 
@@ -180,12 +235,15 @@ Commands:
 
 Pick the cheapest tier that validates the change:
 
-- **Tier 0 — Component playground** (~5s): UI-only changes, no backend. Storybook-style isolated render.
-- **Tier 1 — Frontend + shared staging backend** (~1-2 min): Most product changes. Auto-selected when only `apps/*/frontend/**` and API route files changed.
-- **Tier 2 — Full ephemeral AWS stack via Terragrunt** (~10-15 min): Migrations, schema changes, infra. TTL 48h of inactivity, then auto-destroyed.
+- **Tier 0 — Component playground** (~5s): UI-only changes, no backend. Storybook-style isolated render hosted on Vercel.
+- **Tier 1 — Vercel preview + Neon sandbox branch** (~1-2 min): The default for most product changes. The Neon ↔ Vercel integration creates a copy-on-write Postgres branch per preview deployment — instant, isolated, no real data. Auto-selected for prototype-lane work and for production-lane PRs that don't touch infrastructure.
+- **Tier 2 — Full ephemeral AWS stack via Terragrunt + OpenTofu** (~10-15 min): Migrations, schema changes, infrastructure-as-code changes, anything that needs the production-shaped topology. Lives under `infra/live/<env>/<product>/` and is provisioned via Terragrunt + OpenTofu. TTL 48h of inactivity, then auto-destroyed.
 
-**Prototype-lane branches default to Tier 1.** They never get Tier 2 stacks (cost
-and blast-radius reasons). Production-lane PRs auto-detect tier from changed paths.
+**Prototype-lane branches default to Tier 1 (Vercel + Neon).** They never get
+Tier 2 stacks — Tier 2 reaches into AWS, which is reserved for production-lane
+work. This is enforced by the deploy job, which reads `branch.yaml#lane` before
+selecting credentials (see [spec §9.9](./collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
+Production-lane PRs auto-detect tier from changed paths.
 
 ## Repository conventions
 
@@ -246,12 +304,12 @@ The connector must have access to:
 - **Pull requests** (read + write) — draft PRs, labels, descriptions, comments.
 - **Issues** (read + write) — `drift-monitor` files; `change-idea-intake` skill
   optionally files briefs as issues.
-- **Wiki** (read + write) — optional Spine mirror for non-engineer browsing;
-  glossary lookups.
 - **Projects (v2)** (read + write) — proposal tracking with lane/champion/status
   custom fields.
-- **Repo contents** (read) — Spine extraction, dependency-delta computation when
-  there's no local checkout (Chat/Cowork case).
+- **Repo contents** (read + write) — Spine extraction, dependency-delta
+  computation, and writing markdown docs back to the repo (Chat/Cowork case
+  with no local checkout). **All documentation lives as markdown in the repo
+  itself** — there is no separate wiki, Notion, or Confluence to sync to.
 
 Without GitHub connected, the lane plugins refuse — they do not silently degrade
 to chat-only behavior. The constitution forbids actions that pretend to mutate
@@ -279,12 +337,10 @@ we depend on them.
 - `security-guidance` (Anthropic) — secret detection, OWASP checks
 - `context7` (Upstash) — current API/version docs to prevent hallucinated APIs
 - `frontend-design` (Anthropic) — UI work, pairs with Claude Design
-- HashiCorp Terraform agent skills + Terraform MCP — for any `infra/**` work
 
 **Recommended:**
 
 - `pr-review-toolkit` (Anthropic) — deeper review specialization when needed
-- `terrashark` (community) — compliance-mapped Terraform skill, useful in SOC2 products
 
 If you don't have these installed, `/propose` and `/validate` will warn you but won't block.
 
@@ -292,7 +348,7 @@ If you don't have these installed, `/propose` and `/validate` will warn you but 
 
 - Modify files in any product's `infra/live/prod/**` without an explicit human-typed instruction in the same session.
 - Push directly to `main` on any repo (use PRs only).
-- Run `terraform apply` outside of GitHub Actions CI.
+- Run `terragrunt apply`, `tofu apply`, or `terraform apply` outside of GitHub Actions CI.
 - Read or transmit production database contents.
 - Include secrets, tokens, or credentials in PR descriptions, comments, commit messages, or any markdown file (including the Product Spine).
 - Auto-promote a feature flag past 10% rollout without `/promote` being invoked by an authorized user.
@@ -300,8 +356,11 @@ If you don't have these installed, `/propose` and `/validate` will warn you but 
 
 ## Pointers
 
+- **Full operational spec:** [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md)
+- **Preferred tech stack:** [`TECH-STACK.md`](./TECH-STACK.md)
+- **Product Spine template:** [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md)
+- **Connector reference:** [`CONNECTORS.md`](./CONNECTORS.md)
 - Product-level conventions: see `apps/<product>/CLAUDE.md`
 - Design system: `design-system/CLAUDE.md`
-- Infrastructure: `infra/CLAUDE.md`
-- Architecture decisions: `docs/decisions/`
-- **Product Spine template:** [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md)
+- Infrastructure: `infra/CLAUDE.md` (Terragrunt + OpenTofu)
+- Architecture decisions: `docs/decisions/` (ADRs as markdown in the repo)
