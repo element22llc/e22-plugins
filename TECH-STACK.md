@@ -68,6 +68,8 @@ The lane (Prototype vs Production) decides which infrastructure stack a branch i
 
 When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), promote it to Preferred after a one-product canary.
 
+**Tool version management — use [mise](https://mise.jdx.dev/).** Every project that can express its toolchain in mise MUST do so. A repo-root `mise.toml` is the **source of truth for installed versions** locally and in CI — Node, Python, Go, Rust, plus per-product tools like `pnpm`, `terragrunt`, `tofu`, `pre-commit`, `biome`, etc. Per-language manifests (`package.json#engines`, `pyproject.toml#requires-python`, `go.mod`) still declare the *minimum* required version; `mise.toml` pins the *exact* one installed. Prefer mise over `nvm` / `pyenv` / `asdf` / Homebrew-installed runtimes / "just install it globally" — one tool, one config file, one set of versions across dev machines and CI. Use a different manager only when the toolchain genuinely cannot be expressed in mise (rare); document the reason in the product's `CLAUDE.md`.
+
 ---
 
 ## 3. Web app framework
@@ -132,6 +134,7 @@ When TypeScript 7.0 reaches stable (currently beta on the Go-based compiler), pr
 | **E2E** | Playwright | — | Cypress for new products | 2026-05 |
 | **Lint / format** | Biome (preferred) or ESLint + Prettier | — | No formatter | 2026-05 |
 | **Package manager (TS)** | **pnpm 11.x** (requires Node ≥ 22, ESM-only) | — | npm or yarn classic in greenfield monorepos | 2026-05 |
+| **Tool version manager** | **mise** (repo-root `mise.toml` pins exact runtime + tool versions; see §2 callout) | `asdf` for legacy products mid-migration | `nvm` / `pyenv` standalone, Homebrew-installed language runtimes, global `npm install -g` for project tools | 2026-05 |
 
 ---
 

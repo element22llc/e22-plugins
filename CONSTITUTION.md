@@ -172,9 +172,18 @@ Stack declarations live where they should:
 - **Per-subsystem:** when a product mixes stacks (e.g., a TypeScript web app and a
   Python service), each subsystem has its own `CLAUDE.md` at the appropriate
   directory level.
-- **Authoritative versions:** the manifest files (`package.json`, `pyproject.toml`,
-  `Cargo.toml`, `go.mod`, `*.tf`, `terragrunt.hcl`) are the source of truth for
-  versions and dependencies. Never claim a version from memory.
+- **Authoritative versions:** the manifest files (`mise.toml`, `package.json`,
+  `pyproject.toml`, `Cargo.toml`, `go.mod`, `*.tf`, `terragrunt.hcl`) are the
+  source of truth for versions and dependencies. `mise.toml` pins the exact
+  runtime/tool versions installed locally and in CI; the per-language manifests
+  declare floors and dependency sets. Never claim a version from memory.
+- **Tool version manager:** every project that can express its toolchain in
+  [mise](https://mise.jdx.dev/) MUST do so — `mise.toml` at the repo root is
+  the single source of truth for Node, Python, Go, Rust, `pnpm`, `terragrunt`,
+  `tofu`, and any other CLI the product depends on. Do not introduce parallel
+  installs via `nvm` / `pyenv` / `asdf` / Homebrew / global `npm i -g`; if a
+  tool genuinely cannot be installed through mise, document the reason in the
+  product's `CLAUDE.md`. See [`TECH-STACK.md`](./TECH-STACK.md) §2.
 
 ### What this means for agents
 
