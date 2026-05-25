@@ -321,7 +321,7 @@ Each rule in the plugin pack maps to **at least one hard layer**. A behavior tha
 
 ## 9. Operational Enforcement
 
-The sections above describe how the workflow should behave. This section defines how it is **enforced** — by Git, CI, Claude, runtime guards, and reviewers — so the workflow does not depend on goodwill. Without this section, the spec is a wish; with it, the spec is a control plane.
+The sections above describe how the workflow should behave. This section defines how it is **enforced** — by Git, CI, Claude, and reviewers — so the workflow does not depend on goodwill. Without this section, the spec is a wish; with it, the spec is a control plane.
 
 ### 9.1 Branch Metadata
 
@@ -631,7 +631,7 @@ These rules must always hold. AI agents must refuse to violate them. CI must enf
 - Engineers review **intent, not chaos** — the Handoff Bundle is the artefact, not the chat or the diff alone.
 - Production stays production — lane discipline keeps prototype risk out of prod, enforced by CI and review-rule discipline, not goodwill.
 - The plugin pack compounds — every rule the team writes makes every future Claude session better, and every future CI run stricter.
-- The spec is the system. Spine, branch metadata, the Handoff Bundle, and the runtime guards are the controls — not documentation about the controls.
+- The spec is the system. Spine, branch metadata, and the Handoff Bundle are the controls — not documentation about the controls.
 
 ---
 
@@ -640,7 +640,7 @@ These rules must always hold. AI agents must refuse to violate them. CI must enf
 Several earlier open questions are now resolved by §9. The remaining unknowns:
 
 1. **Plugin authoring UX** — who in the team can practically write a rule, and what tooling do they need to test one across the four layers (§8.1)? Governance (§9.8) defines approval; ergonomics are unresolved.
-2. **Cost & quota model** — free vibe-coding sounds great until the bill arrives. Per-PO budgets? Org-level quotas? §9.5 surfaces per-preview cost and adds a renewal cap; org-level policy is undefined.
+2. **Cost & quota model** — free vibe-coding sounds great until the bill arrives. Per-PO budgets? Org-level quotas? §9.5 adds a renewal cap; org-level cost policy is undefined.
 3. **Cross-product context** — when an org has multiple products, how does Claude know which Spine to read? Repo-per-product is the MVP answer; multi-product orgs need more.
 4. **Onboarding curve for non-technical contributors** — the workflow is forgiving, but the first prompt is still a blank box. What scaffolds the PO's first session?
 5. **Concurrent prototypes on overlapping surfaces** — §9.6 introduces a soft-lock at the Spine level; hard conflict resolution between two `handoff_status: ready` branches touching the same surface is still undefined.
