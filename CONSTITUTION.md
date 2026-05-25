@@ -6,7 +6,7 @@ It defines how we work, the tools we use, and the gates that protect production.
 Product-specific `CLAUDE.md` files extend this constitution. They never contradict it.
 
 > **Companion documents.** The full operational specification lives in
-> [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md) —
+> [`collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) —
 > branch metadata, the five enforcement layers, the Handoff Bundle, scaled
 > approvals, runtime guarantees, and the non-negotiable invariants. The team's
 > preferred tech stack lives in [`TECH-STACK.md`](./TECH-STACK.md). When this
@@ -30,7 +30,7 @@ house-rule plugins applied to every session.
 The lane is a property of the **branch**, not the person. POs cross over too.
 The lane is declared in `/.workflow/branch.yaml` and enforced by CI, runtime
 guards, and the GitHub connector — not by branch-name convention alone (see the
-[spec §9.1](./collaborative-ai-workflow-spec.md#91-branch-metadata)).
+[spec §9.1](./docs/collaborative-ai-workflow-spec.md#91-branch-metadata)).
 
 | Dimension       | **Prototype Lane**                             | **Production Lane**                                |
 | --------------- | ---------------------------------------------- | -------------------------------------------------- |
@@ -134,7 +134,7 @@ tomorrow.
 **Production plugins are stricter than prototype plugins.** Same plugin name, lane-aware
 rule sets. The lane is read from `/.workflow/branch.yaml#lane`; the
 `prototype/*` branch prefix is a convention that helps humans, but the
-authoritative declaration is the file. (See [spec §9.1](./collaborative-ai-workflow-spec.md#91-branch-metadata).)
+authoritative declaration is the file. (See [spec §9.1](./docs/collaborative-ai-workflow-spec.md#91-branch-metadata).)
 
 > **The plugin pack is more than these six.** "Plugin pack" in the spec refers
 > to a versioned bundle across **five enforcement layers**: AI Instructions
@@ -143,7 +143,7 @@ authoritative declaration is the file. (See [spec §9.1](./collaborative-ai-work
 > assertions), and Review Rules (CODEOWNERS, branch protection). AI Instructions
 > are soft; the other four are hard. A rule that only exists as an AI
 > instruction is acceptable for ergonomics but **never load-bearing for
-> safety**. See [spec §8.1](./collaborative-ai-workflow-spec.md#81-the-five-layers).
+> safety**. See [spec §8.1](./docs/collaborative-ai-workflow-spec.md#81-the-five-layers).
 
 ## Stack and conventions
 
@@ -242,7 +242,7 @@ Pick the cheapest tier that validates the change:
 **Prototype-lane branches default to Tier 1 (Vercel + Neon).** They never get
 Tier 2 stacks — Tier 2 reaches into AWS, which is reserved for production-lane
 work. This is enforced by the deploy job, which reads `branch.yaml#lane` before
-selecting credentials (see [spec §9.9](./collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
+selecting credentials (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
 Production-lane PRs auto-detect tier from changed paths.
 
 ## Repository conventions
@@ -356,7 +356,7 @@ If you don't have these installed, `/propose` and `/validate` will warn you but 
 
 ## Pointers
 
-- **Full operational spec:** [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md)
+- **Full operational spec:** [`collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md)
 - **Preferred tech stack:** [`TECH-STACK.md`](./TECH-STACK.md)
 - **Product Spine template:** [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md)
 - **Connector reference:** [`CONNECTORS.md`](./CONNECTORS.md)

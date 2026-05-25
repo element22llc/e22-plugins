@@ -72,13 +72,15 @@ across.
 - [`CONSTITUTION.md`](./CONSTITUTION.md) — the always-loaded baseline. Defines the
   two lanes, the Four Guarantees, the Product Spine model, the Keep/Refactor/
   Redesign/Reject gate, and the SOC2 overlay.
-- [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md) — the
+- [`docs/collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) — the
   full operational specification. Branch metadata, the five enforcement layers,
   the Handoff Bundle, scaled approvals, runtime guarantees, and the
   non-negotiable invariants.
 - [`TECH-STACK.md`](./TECH-STACK.md) — the team's preferred tech stack:
   Vercel + Neon for preview, AWS for production, plus default choices for
   languages, frameworks, ORM, observability, and feature flags.
+- [`CONNECTORS.md`](./CONNECTORS.md) — required and recommended connectors and which
+  capabilities each command uses.
 - [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md) — the canonical layout
   for a Product Spine: Intent · UX · Surface · Architecture · Open Questions.
 
@@ -121,6 +123,339 @@ production lane: tests, types, observability, feature flag
   ▼
 production-graded
 ```
+
+---
+
+## Setting up a new product (greenfield)
+
+You're starting from nothing — no repo, no Vercel project, no Neon database, no
+AWS account. This walkthrough takes you from `mkdir my-product` to the PO's
+first `/vibe` working end-to-end. Plan ~45–60 minutes the first time; second
+product is closer to 15.
+
+### Step 1 — Create the GitHub repo
+
+1. Create `element22llc/<product>` in GitHub (private unless there's a reason
+   otherwise). Initialise it with a README and a `main` branch.
+2. Protect `main`: Settings → Branches → add rule for `main`. Require PR, require
+   passing checks, disallow direct pushes. (Invariant #2 from the spec.)
+3. Clone locally:
+
+   ```bash
+   git clone git@github.com:element22llc/<product>.git
+   cd <product>
+   ```
+
+4. Add a `CODEOWNERS` file. Even a minimal one (`* @element22llc/engineering`)
+   unlocks the scaled-approval matrix later.
+
+### Step 2 — Drop in the e22-plugins config
+
+Copy the per-repo settings template so contributors get auto-prompted on first
+trust:
+
+```bash
+mkdir -p .claude .workflow product-spine adr docs
+cp <path-to>/e22-plugins/templates/claude-settings.json .claude/settings.json
+```
+
+This file enables all eight e22 plugins and registers the marketplace. Commit
+it. Anyone who later opens the repo in Claude Code or Cowork and trusts the
+folder gets prompted to install.
+
+While you're here, seed the four repo contracts the spec requires (each starts
+empty and gets populated by Claude on the first `/vibe`):
+
+```bash
+touch .workflow/branch.yaml.template     # see spec §9.1 for the schema
+touch .workflow/handoff.md.template      # see spec §9.3 for the template
+cp <path-to>/e22-plugins/PRODUCT_SPINE_TEMPLATE.md product-spine/_template.md
+```
+
+### Step 3 — Set up Vercel (prototype-lane preview platform)
+
+1. In Vercel, create a new project and link it to the GitHub repo. Pick the
+   appropriate framework preset (Next.js for most web work — see
+   [`TECH-STACK.md`](./TECH-STACK.md) for defaults).
+2. **Leave Vercel's Production environment empty.** Production traffic for
+   Element 22 products runs on AWS, not Vercel. Preview and Development
+   environments are the live ones.
+3. Confirm Preview deployments fire on every branch push (Settings → Git →
+   "Automatically expose System Environment Variables" → on for Preview).
+4. Note the Vercel project ID — you'll reference it in `vercel.json` later if you
+   need per-product overrides.
+
+### Step 4 — Add Neon Postgres via the Vercel integration
+
+Neon's copy-on-write branches are what make the Four Guarantees enforceable:
+every preview gets its own database, instantly, with no real data.
+
+1. In Neon, create a new project (one per product). It comes with a default
+   branch — rename it to `sandbox-main`. This is the parent that every preview
+   will fork from.
+2. Seed `sandbox-main` with **synthetic fixtures only**. No real customer data,
+   ever. Use [Mockaroo](https://www.mockaroo.com), `faker`, or hand-crafted
+   seeds.
+3. Install the [Neon ↔ Vercel integration](https://vercel.com/integrations/neon)
+   on the Vercel project. Pick `sandbox-main` as the parent for preview branches.
+   Vercel will now inject `DATABASE_URL` into every preview, pointing at a fresh
+   Neon branch forked from `sandbox-main`.
+4. If this product will be SOC2 in scope, also enable Neon's **IP Allow** and
+   **Private Networking** features now.
+5. **Do not** create a `production` Neon branch in this project. Production runs
+   on AWS RDS by default (see [`TECH-STACK.md`](./TECH-STACK.md) §1). If the
+   product needs Neon in production, that's a separate Neon project with its
+   own credentials, network-isolated from the sandbox project.
+
+### Step 5 — Provision the AWS production account
+
+If your team already has an AWS production account for this product, skip to
+step 6. Otherwise:
+
+1. Create a new AWS account (per product, in the Element 22 Organization).
+2. Bootstrap Terragrunt + OpenTofu state:
+
+   ```bash
+   mkdir -p infra/live/prod/<product>
+   mkdir -p infra/live/preview/<product>     # for Tier 2 ephemeral stacks
+   mkdir -p infra/modules
+   ```
+
+   The Tech Stack file mandates Terragrunt + OpenTofu under `infra/live/<env>/<product>/`.
+3. Set up GitHub Actions → AWS OIDC so CI can `terragrunt apply` without
+   long-lived keys. The deploy job must read `branch.yaml#lane` and refuse to
+   assume the production role on a `lane: prototype` branch (spec §9.9).
+4. Stand up the minimal production stack: VPC, ECS or Lambda + API Gateway, RDS
+   Postgres, S3 bucket, CloudFront distribution, Secrets Manager. (You can
+   defer this until the first proposal is ready to merge — the prototype lane
+   needs Vercel + Neon, not AWS.)
+
+### Step 6 — Connect the four required connectors in Claude
+
+Every contributor (PO and Dev) needs these in their Claude account:
+
+| Connector | Where to connect | Why |
+|---|---|---|
+| **GitHub** | Settings → Connectors → GitHub. Grant access to `element22llc/*`. | Branches, PRs, issues, project boards, repo contents. |
+| **Vercel** | Settings → Connectors → Vercel. Grant project access. | Per-branch preview deploys, log read. |
+| **Neon** | Settings → Connectors → Neon (or via MCP). | Per-preview Postgres branch lifecycle. |
+| **AWS** | Settings → Connectors → AWS (read-only role for Claude). | Secret reference resolution, CloudWatch read, deploy log read. |
+
+Smoke-test: ask Claude *"list open PRs in element22llc/<product>"* — it should
+succeed without prompting for credentials.
+
+See [`CONNECTORS.md`](./CONNECTORS.md) for the full capability matrix, degraded
+behaviour when a connector is missing, and the recommended set (Sentry, Statsig,
+Microsoft Teams, `context7`).
+
+### Step 7 — Install the marketplace and plugins
+
+In Claude Code (engineers):
+
+```bash
+/plugin marketplace add element22llc/e22-plugins
+
+/plugin install prototype-lane@e22-plugins
+/plugin install production-lane@e22-plugins
+/plugin install spec-driven-dev@e22-plugins
+/plugin install always-test@e22-plugins
+/plugin install house-style@e22-plugins
+/plugin install security-rails@e22-plugins
+/plugin install spine-writer@e22-plugins
+/plugin install handoff-packager@e22-plugins
+```
+
+In Claude.ai or Cowork (POs): Settings → Plugins → Add marketplace
+`element22llc/e22-plugins`, install the same eight plugins. POs technically
+only need `prototype-lane` plus the six house rules, but `production-lane` is
+useful for status visibility.
+
+Because `.claude/settings.json` was committed in step 2, **teammates who clone
+the repo and trust it will be auto-prompted** to install the marketplace. They
+don't have to remember the command above.
+
+### Step 8 — First `/vibe`
+
+From Cowork or Chat, the PO runs:
+
+```
+/vibe Add a way for customers to flag an order for re-delivery.
+      Make the button live next to the order status.
+      Show me three variants of the modal — I'll pick.
+```
+
+What you should see within ~60 seconds:
+
+1. A new branch `prototype/po-redelivery-flag` on GitHub.
+2. A populated `.workflow/branch.yaml` declaring lane, change type, expiry,
+   plugin pack version.
+3. A Vercel preview URL with the prototype banner injected.
+4. A Neon branch forked from `sandbox-main`, with `DATABASE_URL` wired by the
+   integration.
+5. A smoke test scaffolded by `always-test`.
+
+If any of those don't appear, check the corresponding connector. The lane
+plugins refuse to silently degrade — Claude will say what's missing.
+
+### Step 9 — First handoff and validate
+
+When the PO is happy with the preview, they run `/package-handoff`. That writes
+the Product Spine to `product-spine/changes/<slug>.md`, opens the Handoff
+Bundle at `.workflow/handoff.md`, and opens a draft PR labelled
+`awaiting-validation`.
+
+An engineer runs `/validate <PR#>` in Claude Code, reads the Spine + bundle,
+and picks Keep / Refactor / Redesign / Reject. The branch either gets renamed
+to `proposal/<slug>` (Keep) or replaced (Refactor / Redesign) or closed (Reject).
+
+From there, the production lane CI takes over: lint, type, test, Spine drift
+check, then merge behind a feature flag.
+
+---
+
+## Adopting on an existing product (brownfield)
+
+You already have a repo, a deployed product, real users, and probably some
+technical debt. This walkthrough adds the e22-plugins workflow without
+disrupting the production path you already have. Plan ~30–45 minutes.
+
+### Step 1 — Audit what you already have
+
+Tick what's true today:
+
+| Capability | Already in place? |
+|---|---|
+| GitHub repo with branch protection on `main` | ☐ |
+| CI on PRs (lint, type, test) | ☐ |
+| Vercel project linked to the repo | ☐ |
+| Preview deploys on push | ☐ |
+| Postgres database — and is it Neon? | ☐ |
+| Production runs on AWS? | ☐ |
+| `CODEOWNERS` configured | ☐ |
+
+You don't need everything ticked to start. The bare minimum is: GitHub repo +
+branch protection. Everything else, the plugins will surface as missing the
+first time it's needed and refuse to fake it.
+
+### Step 2 — Drop in `.claude/settings.json`
+
+The least disruptive change first:
+
+```bash
+mkdir -p .claude
+cp <path-to>/e22-plugins/templates/claude-settings.json .claude/settings.json
+git checkout -b chore/add-e22-plugins
+git add .claude/settings.json
+git commit -m "chore: auto-prompt teammates to install e22-plugins marketplace"
+git push -u origin chore/add-e22-plugins
+```
+
+Open a PR. Once merged, every teammate who opens the repo in Claude Code or
+Cowork gets prompted to install on next trust. **Nothing else in your repo has
+to change.**
+
+### Step 3 — Add the repo contracts incrementally
+
+The workflow assumes four things exist in the repo:
+
+```
+.workflow/branch.yaml          # per-branch metadata (spec §9.1)
+.workflow/handoff.md           # handoff bundle (spec §9.3) — only on prototype/* branches
+product-spine/                 # the Spine, organised per change
+adr/                           # architecture decision records
+```
+
+You don't have to backfill them all at once. The recommended order:
+
+1. **`product-spine/` first.** Write a single `product-spine/main.md` describing
+   the product as it exists today — Intent, UX, Surface, Architecture, Open
+   Questions. Use [`PRODUCT_SPINE_TEMPLATE.md`](./PRODUCT_SPINE_TEMPLATE.md).
+   Time-box this to two hours; it gets refined as proposals land.
+2. **`.workflow/branch.yaml` on `main`.** A minimal one is fine:
+
+   ```yaml
+   change_id: main
+   lane: production
+   base_branch: main
+   change_type: structural
+   owner: <eng-lead>
+   data_policy: real
+   plugin_pack: tlm-product-workflow@0.3.1
+   sensitivity: standard
+   ```
+
+   This unblocks `spec-driven-dev` and `security-rails` for hotfixes on `main`.
+3. **`adr/` later.** Only required when the first structural change lands; ADRs
+   are written on demand.
+
+### Step 4 — Wire Vercel + Neon for the prototype lane
+
+If you already have a Vercel project linked, skip the first part.
+
+1. **Vercel project.** Confirm it's linked, Preview deploys fire on every
+   branch push, and the **Production environment is empty** (Element 22
+   production traffic lives on AWS, not Vercel). If your existing setup uses
+   Vercel for production, decide now: keep it there as an exception, or plan a
+   migration to AWS — `TECH-STACK.md` §1 documents the default split.
+2. **Neon for sandbox.** Create a new Neon project for the product. Name the
+   parent branch `sandbox-main`. Seed it with synthetic fixtures only — never
+   dump production data here, not even anonymised, unless your team has a
+   formal anonymisation pipeline.
+3. **Neon ↔ Vercel integration.** Install it on the Vercel project, pointing at
+   `sandbox-main`. Vercel will now inject a per-preview `DATABASE_URL`.
+4. **Your existing production database stays where it is.** If production is on
+   RDS, leave it. If production is on Neon today, it belongs in a *separate*
+   Neon project with separate credentials. The spec's invariant #1 ("no
+   prototype branch ever touches production data, auth, or secrets") requires
+   network-level isolation, not just role-level.
+
+### Step 5 — Connect the required connectors
+
+Same as greenfield step 6. Every contributor needs GitHub, Vercel, and Neon
+connected at minimum; engineers shipping to production also need AWS. See
+[`CONNECTORS.md`](./CONNECTORS.md).
+
+### Step 6 — Install the plugins
+
+Same as greenfield step 7. Once `.claude/settings.json` from step 2 is merged,
+teammates get auto-prompted on next trust; they don't have to run the install
+commands manually.
+
+### Step 7 — First `/vibe` on the existing product
+
+Pick a small, low-risk change the PO has been asking for — a copy tweak, a new
+filter, a status badge. Have them run `/vibe` describing it.
+
+What changes vs. greenfield:
+
+- The new prototype branch is cut from `main`, so it carries the existing
+  schema. The Neon ↔ Vercel integration forks a fresh branch from
+  `sandbox-main` — make sure `sandbox-main`'s schema is in sync with production
+  before you start, otherwise migrations will diverge silently.
+- `spine-writer` will see the existing `product-spine/main.md` and update the
+  relevant sections rather than starting from a blank page.
+- The first time CI runs the **Spine drift check**, it may fail noisily because
+  the Spine you wrote in step 3 doesn't yet mention every existing endpoint.
+  That's expected — backfill iteratively over the next few changes rather than
+  in one big commit.
+
+### Step 8 — Loop the team in
+
+Two things to communicate to the team:
+
+1. **POs can now `/vibe` directly.** They don't need to file a ticket. They
+   talk to Claude in Cowork or Chat and a preview URL appears. Engineers see
+   it as a draft PR labelled `awaiting-validation`.
+2. **Every change touching `main` now expects a Spine update.** The drift
+   check will catch missing updates and the `spine-writer` plugin will offer
+   to write them, but reviewers should expect to see the Spine touched in
+   most PRs.
+
+If the team has SOC2 obligations, also read the
+[Constitution's SOC2 overlay](./CONSTITUTION.md) — there are extra rules
+(two reviewers, no `Keep` decisions, reference-only secrets) that apply.
+
+---
 
 ## Surface compatibility
 
@@ -171,7 +506,11 @@ through the OpenFeature SDK (`/promote`), Microsoft Teams (champion pings),
 > Notion, or Confluence. The Product Spine, ADRs, Handoff Bundles, and product
 > docs are all repo-tracked markdown.
 
-## Install
+## Install (manual)
+
+The greenfield and brownfield walkthroughs above include install steps. This
+section is a reference for installing the plugins by hand, without using the
+settings template.
 
 ### In Claude Code
 
@@ -214,8 +553,8 @@ plugins panel:
 1. Settings → Plugins → Add marketplace → `element22llc/e22-plugins`.
 2. Install at minimum `prototype-lane` plus all six house-rule plugins;
    `production-lane` is useful for status visibility.
-3. Settings → Connectors → ensure **GitHub** is connected and has access to the
-   relevant org(s).
+3. Settings → Connectors → ensure **GitHub**, **Vercel**, **Neon**, and **AWS**
+   are connected with access to the relevant org(s).
 
 That's enough to run `/vibe`, `/package-handoff`, and `/proposal-status` from
 chat. The same skills auto-trigger here as in Cowork.
@@ -410,7 +749,7 @@ stricter than local installs.
 
 - [CONSTITUTION.md](./CONSTITUTION.md) — engineering baseline (two lanes, Spine,
   validation gate, SOC2 overlay)
-- [collaborative-ai-workflow-spec.md](./collaborative-ai-workflow-spec.md) — the
+- [docs/collaborative-ai-workflow-spec.md](./docs/collaborative-ai-workflow-spec.md) — the
   full operational spec: branch metadata, the five enforcement layers, Handoff
   Bundle, scaled approvals, runtime guarantees, invariants
 - [TECH-STACK.md](./TECH-STACK.md) — preferred tech stack (Vercel + Neon for

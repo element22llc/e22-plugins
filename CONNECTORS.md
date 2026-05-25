@@ -85,7 +85,7 @@ Every prototype-lane branch deploys to a per-branch Vercel preview. Production-l
 | Capability                      | Used by                                        | What it does                                                                                              |
 | ------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | **Preview deployments**         | `/vibe`, `/package-handoff`, `/validate`        | Create / read per-branch preview URLs; report preview-ready status back to chat.                          |
-| **Environment variables (sandbox namespace)** | `/vibe`, `security-rails`        | Inject the prototype's sandbox-only env vars. Production secrets are network-isolated from this namespace (see [spec §9.9](./collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)). |
+| **Environment variables (sandbox namespace)** | `/vibe`, `security-rails`        | Inject the prototype's sandbox-only env vars. Production secrets are network-isolated from this namespace (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)). |
 | **Deployment logs**             | `drift-monitor`, `/proposal-status`             | Surface failed previews and runtime errors without exposing production data.                              |
 | **Project linkage**             | `/vibe` (one-time)                              | Link the GitHub repo to a Vercel project. Per-product configuration lives in `vercel.json` in the repo.   |
 
@@ -126,7 +126,7 @@ AWS is the production runtime. The connector is also used (with read-only creden
 | **CloudWatch Logs** (read)                | `drift-monitor`, production-graded gate               | Read structured logs to assess error rates post-promotion.                                                |
 | **CloudFront / S3** (read)                | `/proposal-status`                                    | Sanity-check that production assets shipped.                                                              |
 
-> **AWS is production-only.** A `lane: prototype` branch is forbidden from reaching AWS production resources. The deploy job enforces this by reading `branch.yaml#lane` before selecting credentials (see [spec §9.9](./collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
+> **AWS is production-only.** A `lane: prototype` branch is forbidden from reaching AWS production resources. The deploy job enforces this by reading `branch.yaml#lane` before selecting credentials (see [spec §9.9](./docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
 
 ## Recommended connectors
 
@@ -185,7 +185,7 @@ required connectors are reachable.
 - [`CONSTITUTION.md`](./CONSTITUTION.md) — declares which connectors are required
   and forbids storing secret values in committed files.
 - [`TECH-STACK.md`](./TECH-STACK.md) — the team's preferred tech stack; lane-specific infrastructure choices live in §1.
-- [`collaborative-ai-workflow-spec.md`](./collaborative-ai-workflow-spec.md) — the full operational specification; §9.9 details the runtime guarantees that depend on the Vercel/Neon vs AWS split.
+- [`collaborative-ai-workflow-spec.md`](./docs/collaborative-ai-workflow-spec.md) — the full operational specification; §9.9 details the runtime guarantees that depend on the Vercel/Neon vs AWS split.
 - [`README.md`](./README.md#surface-compatibility) — the surface-compatibility
   matrix per plugin (including the hooks caveat).
 - [`templates/claude-settings.json`](./templates/claude-settings.json) — the

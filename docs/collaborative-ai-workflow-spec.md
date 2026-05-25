@@ -83,7 +83,7 @@ This prevents the common drift where someone says *"but we discussed this with C
 - Prototype/production isolation is enforced at the infrastructure layer, not by Claude (§9.9).
 - If it doesn't ship, throw away the whole branch — the Vercel preview and its Neon branch tear down together.
 
-> **Production runs on AWS, not Vercel.** Vercel handles preview and development environments only. Production traffic lands on AWS (ECS Fargate or Lambda + API Gateway, RDS Postgres, S3, CloudFront, Secrets Manager). This split is what makes invariant #1 enforceable at the platform layer: a prototype branch literally cannot reach the production resources because they live in a different cloud account with no network route from the Vercel sandbox. See [`TECH-STACK.md`](./TECH-STACK.md) §1 for the full lane mapping.
+> **Production runs on AWS, not Vercel.** Vercel handles preview and development environments only. Production traffic lands on AWS (ECS Fargate or Lambda + API Gateway, RDS Postgres, S3, CloudFront, Secrets Manager). This split is what makes invariant #1 enforceable at the platform layer: a prototype branch literally cannot reach the production resources because they live in a different cloud account with no network route from the Vercel sandbox. See [`TECH-STACK.md`](../TECH-STACK.md) §1 for the full lane mapping.
 
 ---
 
@@ -694,7 +694,7 @@ PO prompt → Claude prototype branch → preview URL → Spine extraction → D
 | Sensitive domains | `CODEOWNERS` group + manual `sensitivity` flag; a separate Neon project + Vercel project for sensitive sandbox isolation |
 | Runtime isolation | Separate Vercel/Neon (sandbox) and AWS (production) accounts with no network route between them; boot assertions read `branch.yaml#lane` (§9.9) |
 | Cost visibility | Weekly digest with per-branch footprint (Vercel + Neon + AWS broken out) |
-| Tech stack defaults | [`TECH-STACK.md`](./TECH-STACK.md) — preference list, updated by PR |
+| Tech stack defaults | [`TECH-STACK.md`](../TECH-STACK.md) — preference list, updated by PR |
 
 **Scope explicitly deferred until 10–20 changes have run through the flow:**
 

@@ -110,7 +110,7 @@ This is the actual vibe-coding loop.
   Neon ↔ Vercel integration forks a sandbox Postgres branch in milliseconds.
   This is the Tier 1 default for prototype-lane branches; Tier 2 (full AWS
   stack) is blocked here — `branch.yaml#lane: prototype` cannot deploy against
-  production-shaped infrastructure (see [spec §9.9](../../../collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
+  production-shaped infrastructure (see [spec §9.9](../../../docs/collaborative-ai-workflow-spec.md#99-runtime-guarantees--prototypeproduction-isolation)).
 - Wait for the preview-ready signal from Vercel. When it lands, post a single
   message to the PO:
   - Preview URL

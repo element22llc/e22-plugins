@@ -68,7 +68,7 @@ product uses a single canonical one). Scan in this order:
 ### 3. Read the Handoff Bundle pre-flight
 
 The Handoff Bundle lives at `/.workflow/handoff.md` on the branch (see
-[spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)).
+[spec §9.3](../../../docs/collaborative-ai-workflow-spec.md#93-handoff-bundle-format)).
 It contains:
 
 - **§5 New dependencies since `main`** — every package added. Look for: license conflicts, transitive bloat, anything not already on the team's approved list (see [`TECH-STACK.md`](../../../TECH-STACK.md)).

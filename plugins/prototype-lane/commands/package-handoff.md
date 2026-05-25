@@ -30,7 +30,7 @@ Connector capabilities used:
 
 The Handoff Bundle (and the Spine it links) is the artefact that travels. Not
 the chat log. Not the commit list. The engineer will read the Bundle at
-`/validate`, not scroll your conversation. See [spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
+`/validate`, not scroll your conversation. See [spec §9.3](../../../docs/collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
 for the Bundle's required sections — including §10 *"What should NOT be reused"*
 and §11 *"Acceptance checks"*, both of which are mandatory fields.
 
@@ -99,7 +99,7 @@ Delegate to the `handoff-packager` plugin. It will:
 
 Produce the standardized Handoff Bundle and commit it at
 `/.workflow/handoff.md` on the branch. This file follows the template in
-[spec §9.3](../../../collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
+[spec §9.3](../../../docs/collaborative-ai-workflow-spec.md#93-handoff-bundle-format)
 and is what the Dev will read at `/validate`. It MUST include:
 
 - §1 What the PO wanted
@@ -112,7 +112,7 @@ and is what the Dev will read at `/validate`. It MUST include:
 - §8 Suggested decision (Keep / Refactor / Redesign / Reject)
 - §9 Rationale (one paragraph)
 - §10 **What should NOT be reused** — prototype shortcuts, fake data assumptions, hardcoded users, bypassed auth, inlined config. *Required field.*
-- §11 **Acceptance checks** — the observable conditions the PO will verify on the production PR. *Required field.* These anchor product approval under [spec §9.4](../../../collaborative-ai-workflow-spec.md#94-scaled-approval-matrix) so a later refactor cannot silently invalidate the PO's sign-off.
+- §11 **Acceptance checks** — the observable conditions the PO will verify on the production PR. *Required field.* These anchor product approval under [spec §9.4](../../../docs/collaborative-ai-workflow-spec.md#94-scaled-approval-matrix) so a later refactor cannot silently invalidate the PO's sign-off.
 
 Refuse to package if either §10 or §11 is empty or placeholder text.
 
