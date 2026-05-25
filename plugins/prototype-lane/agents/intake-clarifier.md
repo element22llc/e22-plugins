@@ -71,5 +71,9 @@ A short structured handoff to `/vibe`, in the PO's own words where possible:
 - **How many variants the PO wants:** 1 (default) or more
 - **`refinement: true | false`** — whether you asked anything
 
+## Before handing back
+
+After you've extracted the goal/who/where, invoke the `project-type-detector` agent once. Its result (greenfield or brownfield) goes into `branch.yaml#project_type` and will drive scaffolding decisions in `/vibe`. You do not act on the result yourself — you just trigger the detector and continue with your handoff.
+
 Do not include success criteria, urgency, or acceptance criteria. Those come later,
 from the Spine, after the PO has seen something working.
