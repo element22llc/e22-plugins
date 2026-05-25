@@ -12,7 +12,7 @@ branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
 case "$branch" in
   prototype/*)
     lane="prototype"
-    rules="Four Guarantees apply (branch-per-idea, synthetic data, ephemeral URL, sandbox secrets). House rules are lenient. No production data, ever."
+    rules="Sandbox principles apply (branch-per-idea, synthetic data). House rules are lenient. No production data, ever."
     ;;
   feat/*|fix/*|proposal/*|chore/*|infra/*|docs/*)
     lane="production"

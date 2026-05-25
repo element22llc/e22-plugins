@@ -340,7 +340,7 @@ With v0.3, infrastructure decisions live in per-product `CLAUDE.md` files, not i
 
 - **How a prototype branch is previewed** — the URL pattern or the local-run command a PO should use.
 - **Where production runs and how it's accessed** — enough for an engineer to deploy and diagnose.
-- **How secrets are scoped** — prototype branches must never reach production credentials or real data (spec invariant #1). Describe the isolation mechanism (separate env files, separate secret stores, etc.).
+- **How secrets are scoped** — prototype branches must never reach production credentials or real data. Describe the isolation mechanism (separate env files, separate secret stores, etc.).
 
 If you already have a working preview/production split, just write down what you already have. This step is documentation, not migration.
 
