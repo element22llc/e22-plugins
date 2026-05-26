@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
-# spine-writer: PostToolUse hook. After a "meaningful" edit (new endpoint, schema
-# migration, new screen, dependency change), surface a reminder to refresh the
-# Spine. We don't auto-invoke the agent here — that would be costly and noisy;
-# we let Claude decide whether the change is meaningful enough to warrant
-# spine-refresh.
+# spine-writer: PostToolUse hook. After a "meaningful" edit (new endpoint,
+# schema migration, new screen, dependency change) in a GOVERNED repo, surface
+# a reminder to refresh the Spine. We don't auto-invoke the agent here — that
+# would be costly and noisy; we let Claude decide whether the change is
+# meaningful enough to warrant /spine-refresh.
 #
-# This hook never blocks. It only nudges.
+# Zone-gated (spec v0.4 §10.3): no continuous Spine writing during exploration.
+# Silent in the local MVP sandbox; nudges only in governed-production repos.
+# This hook never blocks.
 
 set -uo pipefail
+
+source "${CLAUDE_PLUGIN_ROOT}/../e22-org/lib/zone.sh"
+e22_require_governed || exit 0
 
 payload="$(cat || true)"
 file_path="$(printf '%s' "$payload" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)"
 
 [ -z "$file_path" ] && exit 0
 
-# Files whose edit is "meaningful" for the Spine.
 meaningful=0
 case "$file_path" in
   */routes/*|*/api/*|*/handlers/*) meaningful=1 ;;
@@ -25,25 +29,16 @@ esac
 
 [ "$meaningful" -eq 0 ] && exit 0
 
-# Look for an existing Spine file for this branch.
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
-
-# Prototype lane owns its own doctrine: the prototype IS the spec until
-# /package-handoff. Stay silent here so the PO never sees spec vocabulary
-# mid-vibe. The Spine gets distilled at handoff, not co-authored during.
-case "$branch" in
-  prototype/*) exit 0 ;;
-esac
-
 slug="$(echo "$branch" | sed -E 's|^(proposal|feat|fix)/||')"
 
 if [ -f "proposals/${slug}/product-spine.md" ]; then
   spine_age_minutes=$(( ( $(date +%s) - $(stat -f %m "proposals/${slug}/product-spine.md" 2>/dev/null || stat -c %Y "proposals/${slug}/product-spine.md" 2>/dev/null || echo 0) ) / 60 ))
   if [ "$spine_age_minutes" -gt 60 ]; then
-    echo "spine-writer: meaningful change to '$file_path' but proposals/${slug}/product-spine.md is ${spine_age_minutes} minutes stale. Consider running /spine-refresh before the next handoff." >&2
+    echo "spine-writer: meaningful change to '$file_path' but proposals/${slug}/product-spine.md is ${spine_age_minutes} minutes stale. Consider running /spine-refresh." >&2
   fi
 else
-  echo "spine-writer: meaningful change to '$file_path' on branch '${branch}' but no Product Spine exists at proposals/${slug}/product-spine.md. Run /spine-refresh (or /package-handoff if you're ready to hand off) to create one." >&2
+  echo "spine-writer: meaningful change to '$file_path' on branch '${branch}' but no Product Spine exists at proposals/${slug}/product-spine.md. Run /spine-refresh to create one." >&2
 fi
 
 exit 0

@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/check-spec-exists.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/sandbox-guardrails.sh"
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/announce-lane.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/handoff-cue.sh"
           }
         ]
       }

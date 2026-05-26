@@ -48,5 +48,5 @@ section of a Product Spine (see `PRODUCT_SPINE_TEMPLATE.md` at the repo root):
 
 If during refinement the contributor reveals that the change is genuinely
 exploratory (multiple possible shapes, the answer is "I'll know it when I see it"),
-recommend they run `/vibe` instead and skip this refinement. The prototype lane was
-built for that case.
+recommend local MVP exploration in their own sandbox and skip this refinement. The
+local MVP sandbox workflow was built for that case.

@@ -1,5 +1,13 @@
 # Connectors
 
+## Zone applicability
+
+The connector requirements below apply in the **governed-production zone**
+only. The **local MVP sandbox** (the PO's exploration zone) is
+connector-free — no GitHub connector required, no real-data integrations.
+Zone detection lives in `plugins/e22-org/lib/zone.sh`. See `CLAUDE.md` and
+the spec for the full zone model.
+
 The `e22-plugins` workflow assumes Claude has access to a specific set of MCP
 connectors. This file is the single source of truth for what's required, what's
 recommended, and what each plugin does with them.
@@ -41,13 +49,13 @@ they're degraded; they do not silently skip.
 
 | Capability        | Used by                                                                                                                | What it does                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Branches**      | `/vibe`, `/propose`, `/from-design`, `/validate`                                                                       | Create `prototype/<slug>` and `proposal/<slug>` branches; rename a prototype branch into a proposal at Keep. |
-| **Pull requests** | `/package-handoff`, `/propose`, `/from-design`, `/validate`, `/promote`, `drift-monitor`                               | Open draft PRs, update titles/descriptions/labels, post review-required comments, close on Reject.          |
-| **Issues**        | `/draft-proposal-as-issue` (change-idea-intake skill option), `drift-monitor`, `/proposal-status` (read)               | File intake briefs as labelled issues; report drift findings; surface backlog state to POs.                 |
-| **Projects (v2)** | `/proposal-status` (read), `/vibe` (write item), `/package-handoff` (advance item), `/validate` (advance item)         | Track every proposal as a project-board item with custom fields for lane, champion, status, validation decision. |
+| **Branches**      | `/propose`, `/from-design`, `/validate`                                                                                | Create `proposal/<slug>` branches; rename branches as work progresses. |
+| **Pull requests** | `/propose`, `/from-design`, `/validate`, `/promote`, `drift-monitor`                                                   | Open draft PRs, update titles/descriptions/labels, post review-required comments, close on Reject.          |
+| **Issues**        | `drift-monitor`, `/proposal-status` (read)                                                                             | Report drift findings; surface backlog state.                                                                |
+| **Projects (v2)** | `/proposal-status` (read), `/validate` (advance item)                                                                  | Track every proposal as a project-board item with custom fields for zone, champion, status, validation decision. |
 | **Labels**        | All proposal commands                                                                                                  | Apply `proposal`, `drafting`, `preview-ready`, `review-requested`, `awaiting-validation`, `experimental`, `production-graded`, `tier-{0,1,2}`, `product:<slug>`, `soc2`. |
-| **Comments**      | `/promote`, `drift-monitor`, `/validate` (on reject/redesign)                                                          | Post structured comments — flag rollout state, drift evidence, validation rationale.                        |
-| **Repo contents** (read + write) | `spine-extractor` agent, `handoff-packager`, `spine-writer`                                             | Read PR diffs, manifest files, branch history; write the Spine, the Handoff Bundle (`/.workflow/handoff.md`), and ADRs (`/adr/`) when not running in a local checkout. All documentation is repo-tracked markdown. |
+| **Comments**      | `/promote`, `drift-monitor`, `/validate` (on reject)                                                                   | Post structured comments — flag rollout state, drift evidence, validation rationale.                        |
+| **Repo contents** (read + write) | `spine-extractor` agent, `handoff-packager`, `spine-writer`                                             | Read PR diffs, manifest files, branch history; write the Spine, the Handoff Bundle (`HANDOFF.md`), and ADRs (`/adr/`) when not running in a local checkout. All documentation is repo-tracked markdown. |
 
 ### Setup
 
@@ -66,8 +74,8 @@ they're degraded; they do not silently skip.
 
 | Command           | Without GitHub connector                                                                                  |
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `/vibe`           | In Claude Code: falls back to local `git` for branch creation. In Chat/Cowork: refuses, asks the user to connect GitHub. |
-| `/package-handoff`| Writes the Spine and bundle to the local checkout (Code) or the outputs folder (Cowork); cannot open the draft PR. Surfaces a "paste this to engineering" message instead. |
+| `/propose`        | In Claude Code: falls back to local `git` for branch creation. In Chat/Cowork: refuses, asks the user to connect GitHub. |
+| `HANDOFF.md` trigger | Writes `HANDOFF.md` to the local checkout (Code) or the outputs folder (Cowork); cannot open the draft PR. Surfaces a "send this file to engineering" message instead. |
 | `/proposal-status`| Refuses with a clear message about needing GitHub connected. No silent stale data.                        |
 | `/validate`       | Refuses. Validation is a public state change; it cannot happen without the connector.                     |
 | `/promote`        | Refuses. Promotion is governed and audited.                                                               |
@@ -91,10 +99,9 @@ Sentry to:
 
 ### Microsoft Teams
 
-Used by `change-idea-intake` skill (offers "paste to an engineer in Microsoft Teams" as a
-direct-handoff option) and `/proposal-status` (champion pings, gentle nudges).
-Without it, those flows degrade to "give the user a copy-pasteable message
-block" — still usable, less automated.
+Used by `/proposal-status` (champion pings, gentle nudges). Without it, those
+flows degrade to "give the user a copy-pasteable message block" — still usable,
+less automated.
 
 ### `context7`
 

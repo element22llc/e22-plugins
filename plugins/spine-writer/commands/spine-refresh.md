@@ -8,8 +8,8 @@ argument-hint: [optional path to spine file; defaults to proposals/<branch-slug>
 Re-runs the `spine-extractor` agent against the current branch and updates the
 Product Spine file. Use this:
 
-- After a long vibe-coding session, before `/package-handoff`.
-- Post-merge on a production-lane proposal, when the `drift-monitor` agent flags
+- After a long working session, before packaging the handoff.
+- Post-merge on a governed-production proposal, when the `drift-monitor` agent flags
   that the Spine has diverged from code.
 - Any time the Spine feels stale relative to what's actually been built.
 
@@ -29,6 +29,12 @@ Works on **Claude.ai (Chat), Claude Cowork, and Claude Code**.
 Refuse cleanly in Chat/Cowork if the connector is missing.
 
 ## Workflow
+
+0. **Zone check.** Source `${CLAUDE_PLUGIN_ROOT}/../e22-org/lib/zone.sh` and
+   run `e22_zone`. If the workspace is `sandbox`, refuse cleanly:
+   *"Product Spines are a governed-production artifact. Generate `HANDOFF.md`
+   instead (handoff-packager) — or run this command after the work is imported
+   into a governed repo (one with a GitHub remote)."* Exit without writing.
 
 1. **Locate the Spine.** If `$ARGUMENTS` is provided, use that path. Otherwise:
    - Derive the branch slug from the current branch name.

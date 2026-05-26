@@ -1,12 +1,12 @@
 {
   "name": "security-rails",
-  "version": "0.2.0",
-  "description": "House rule: blocks the universal risky patterns by default. PreToolUse hooks scan Write/Edit content (secrets, AWS access keys, Stripe live keys, raw-SQL f-string interpolation) and Bash commands (force-push, push-to-main, prod database clients). Pairs with Anthropic's `security-guidance` plugin (required complement) for code-injection patterns. Lane-aware production-data blocks were removed in v0.2 with the v0.3 spec revision; they return when the platform substrate is chosen.",
+  "version": "0.2.1",
+  "description": "House rule: blocks universal risky patterns in BOTH zones (sandbox and governed-production). PreToolUse hooks scan Write/Edit content (plaintext secrets, AWS access keys, Stripe live keys, raw-SQL f-string interpolation) and Bash commands (force-push, push-to-main, prod database clients). Pairs with Anthropic's security-guidance plugin (required complement) for code-injection patterns. Complemented by e22-org's sandbox-guardrails hook which adds real-PII pattern blocks.",
   "author": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
   },
   "homepage": "https://github.com/element22llc/e22-plugins/tree/main/plugins/security-rails",
   "license": "UNLICENSED",
-  "keywords": ["element-22", "house-rule", "claude-chat", "claude-cowork", "claude-code", "hooks-claude-code-only", "security", "guardrails"]
+  "keywords": ["element-22", "always-on", "house-rule", "claude-chat", "claude-cowork", "claude-code", "hooks-claude-code-only", "security", "guardrails"]
 }

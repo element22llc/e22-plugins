@@ -1,0 +1,46 @@
+# MVP Handoff — <working title>
+
+## 1. Product intent
+<user problem, target users, desired outcome, success criteria>
+
+## 2. Prototype behavior
+<what the MVP currently does, including main flows and important screens>
+
+## 3. UX decisions
+<copy, layout, interaction, workflow, and variant decisions made during exploration>
+
+## 4. Demo evidence
+<links or references to screenshots, recordings, local preview notes, or artifacts>
+
+## 5. Files and dependencies
+<important files, libraries, tools, generated assets, and external packages>
+
+## 6. Data model implications
+<entities, fields, relationships, persistence assumptions, fake data used>
+
+## 7. External service implications
+<auth, payments, email, maps, AI APIs, storage, queues, or other integrations implied>
+
+## 8. Security, privacy, and compliance risks
+<PII, auth, permissions, billing, secrets, abuse vectors, retention, audit concerns>
+
+## 9. Known shortcuts and hacks
+<prototype shortcuts, hardcoded values, mock services, fake users, fragile paths>
+
+## 10. What must not be reused
+<anything that would be unsafe or irresponsible to carry into production>
+
+## 11. Manual test notes
+<what was tried manually, what worked, what failed, known bugs>
+
+## 12. Suggested production tests
+<unit, integration, E2E, accessibility, security, and regression tests Dev should add>
+
+## 13. Open product questions
+<decisions the PO or team still needs to make>
+
+## 14. Suggested Dev decision
+Harden / Extract / Rewrite / Reject / Continue exploring
+
+## 15. Rationale
+<why Claude recommends that decision>

@@ -1,66 +1,59 @@
 {
   "name": "e22-plugins",
-  "description": "Element 22 plugin catalog — the AI-native collaborative workflow from vibes to production. Two lanes (Prototype, Production), one Product Spine, six house-rule plugins applied to every Claude session. For Claude Code and Claude Cowork.",
+  "description": "Element 22 plugin catalog — three zones (Local MVP Sandbox, Handoff, Governed Production), one always-on org plugin, governance only where it earns its keep. Seven plugins for Claude Code, Claude Chat, and Claude Cowork.",
   "owner": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
   },
   "plugins": [
     {
-      "name": "prototype-lane",
-      "source": "./plugins/prototype-lane",
-      "description": "Prototype Lane plugin for Product Owners. /vibe spins up a sandboxed branch with a live preview within minutes. /package-handoff distills the prototype into a Product Spine and requests engineer validation. /proposal-status reports state without jargon. — auto-detects greenfield/brownfield projects before scaffolding.",
-      "category": "workflow",
-      "keywords": ["element-22", "cowork", "prototype", "vibe-coding", "product-owner", "non-technical", "spine"]
-    },
-    {
-      "name": "production-lane",
-      "source": "./plugins/production-lane",
-      "description": "Production Lane plugin for engineers. /validate is the Keep/Refactor/Redesign/Reject gate. /propose, /from-design, /promote drive the production lifecycle. spec-refiner and drift-monitor agents keep specs honest.",
-      "category": "workflow",
-      "keywords": ["element-22", "proposals", "validation", "governance", "soc2", "feature-flags", "production"]
-    },
-    {
-      "name": "spec-driven-dev",
-      "source": "./plugins/spec-driven-dev",
-      "description": "House rule: a spec or test must exist before code is generated. Lane-aware — lenient on prototype branches, strict on production-lane branches.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "spec", "tests", "spine"]
-    },
-    {
-      "name": "always-test",
-      "source": "./plugins/always-test",
-      "description": "House rule: every new endpoint, screen, or background job ships with at least one smoke test. Lane-aware coverage requirements. — soft warning on prototype, hard block on production per spec §9.10.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "tests", "smoke-tests", "ci"]
-    },
-    {
-      "name": "house-style",
-      "source": "./plugins/house-style",
-      "description": "House rule: naming, folder layout, and lint rules are the same in every PR. Runs the product's configured linter/formatter on edited files.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "lint", "format", "conventions"]
+      "name": "e22-org",
+      "source": "./plugins/e22-org",
+      "description": "Always-on organization plugin. The PO's single required installation. Always-loaded CLAUDE.md, sandbox guardrails (real PII, prod-DB connection strings), natural-language handoff trigger, shared lib/zone.sh zone detector. Installed for both PO and Dev bundles.",
+      "category": "always-on",
+      "keywords": ["element-22", "org-plugin", "sandbox", "handoff", "zone-detection", "always-loaded"]
     },
     {
       "name": "security-rails",
       "source": "./plugins/security-rails",
-      "description": "House rule: blocks universal risky patterns by default (secrets, AWS access keys, Stripe live keys, raw-SQL string interpolation, force-push, push-to-main, prod database clients). Pairs with Anthropic's `security-guidance` for code-injection patterns.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "security", "guardrails", "four-guarantees"]
-    },
-    {
-      "name": "spine-writer",
-      "source": "./plugins/spine-writer",
-      "description": "House rule: the Product Spine stays in sync with the code. /spine-refresh and a PostToolUse hook keep the artefact that travels honest.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "spine", "spec", "handoff", "drift"]
+      "description": "Universal hard guardrails in both zones — secrets, AWS access keys, Stripe live keys, raw-SQL interpolation, force-push, push-to-main, prod database clients. Pairs with Anthropic's security-guidance plugin for code-injection patterns. Installed for both bundles.",
+      "category": "always-on",
+      "keywords": ["element-22", "house-rule", "security", "guardrails"]
     },
     {
       "name": "handoff-packager",
       "source": "./plugins/handoff-packager",
-      "description": "House rule: every prototype-to-production handoff ships with a structured bundle (dependency delta, novel patterns, plugin violations) the engineer can validate in minutes.",
-      "category": "house-rule",
-      "keywords": ["element-22", "house-rule", "handoff", "validation", "review"]
+      "description": "Per-section guidance for filling HANDOFF.md when e22-org's natural-language handoff trigger fires. Single-file output per spec v0.4 §7.2. No slash command. Installed for both bundles.",
+      "category": "always-on",
+      "keywords": ["element-22", "handoff", "mvp", "single-file"]
+    },
+    {
+      "name": "house-style",
+      "source": "./plugins/house-style",
+      "description": "Tech-stack adherence and latest-stable-version guidance as always-loaded CLAUDE.md (both zones); lint/format PostToolUse hook gated to the governed-production zone. Installed for both bundles.",
+      "category": "always-on",
+      "keywords": ["element-22", "house-rule", "lint", "format", "tech-stack", "conventions"]
+    },
+    {
+      "name": "always-test",
+      "source": "./plugins/always-test",
+      "description": "Test-floor enforcement in governed-production repos: every new endpoint, screen, or background job needs at least one smoke test. Zone-gated — silent in sandbox, exit-2 / Stop-continue when governed. Dev bundle only.",
+      "category": "production",
+      "keywords": ["element-22", "house-rule", "tests", "smoke-tests", "ci", "zone-gated"]
+    },
+    {
+      "name": "spine-writer",
+      "source": "./plugins/spine-writer",
+      "description": "Product Spine generation for governed-production work. /spine-refresh (manual) and a PostToolUse hook (automatic, on meaningful file changes). Zone-gated — silent and refuses in sandbox per spec v0.4 §10.3. Dev bundle only.",
+      "category": "production",
+      "keywords": ["element-22", "house-rule", "spine", "spec", "drift", "zone-gated"]
+    },
+    {
+      "name": "production-lane",
+      "source": "./plugins/production-lane",
+      "description": "Governed-production plugin for engineers. /validate is the Harden / Extract / Rewrite / Reject / Continue-exploring gate (spec v0.4 §7.4) that turns a HANDOFF.md into a production proposal. /propose, /from-design, /promote drive the production lifecycle. Auto-trigger skills route Dev intent. SOC2 overlay applies. Dev bundle only.",
+      "category": "production",
+      "keywords": ["element-22", "proposals", "validation", "governance", "soc2", "feature-flags", "production"]
     }
   ]
 }

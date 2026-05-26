@@ -1,5 +1,5 @@
 ---
-description: Auto-triggered when an engineer or contributor describes a production-bound change in plain language without typing /propose — "let's add X", "we need to implement Y", "build a feature that does Z", "fix the bug in W", "ship a change to do V", "create a PR for U", "this needs to land on main by Friday". Routes to the production-lane Proposal flow so the change starts on a `feat/*` or `fix/*` branch with Spine scaffolding and tests, instead of being prototyped, hot-patched, or pushed straight to main.
+description: Auto-triggered when an engineer or contributor describes a production-bound change in plain language without typing /propose — "let's add X", "we need to implement Y", "build a feature that does Z", "fix the bug in W", "ship a change to do V", "create a PR for U", "this needs to land on main by Friday". Routes to the governed-production Proposal flow so the change starts on a `feat/*` or `fix/*` branch with Spine scaffolding and tests, instead of being prototyped, hot-patched, or pushed straight to main.
 ---
 
 An engineer (or a PO crossing into production) has just described a change they
@@ -20,15 +20,15 @@ Trigger on phrasing like:
 ## When NOT to trigger
 
 - The phrasing is exploratory ("can we try", "what if we", "I wonder if",
-  "show me three variants") — that's prototype-lane. Route via
-  `change-idea-intake` (prototype-lane) → `/vibe` instead.
+  "show me three variants") — the PO should explore locally in their MVP sandbox first;
+  respond conversationally and suggest local MVP exploration before committing to a shape.
 - The user is asking a clarifying question about the codebase, not requesting
   work.
 - The user explicitly says "experiment" / "prototype" / "draft" / "spike" /
   "throwaway".
 - The change touches a sensitive domain (auth, payments, PII, permissions,
-  billing, data model) and `branch.yaml#sensitivity` is not already
-  `sensitive` — pause and require an explicit declaration before generating
+  billing, data model) and `HANDOFF.md#sensitivity` is not already
+  declared `sensitive` — pause and require an explicit declaration before generating
   any code (§9.7 of the workflow spec; invariant #12).
 - The user is reviewing an existing handoff — route to `validation-decision`
   instead.
@@ -42,23 +42,21 @@ Follow the `/propose` workflow:
 1. If the description is under 20 words or contains vague phrases ("make it
    better", "improve UX", "fix this"), delegate to the `spec-refiner` agent
    for 1-2 focused clarifying questions before generating code.
-2. Cut a `feat/<slug>` or `fix/<slug>` branch off `main` and write
-   `/.workflow/branch.yaml` with `lane: production`, the correct
-   `change_type`, and the pinned plugin pack version (§9.1).
+2. Cut a `feat/<slug>` or `fix/<slug>` branch off `main`. The governed-production
+   zone is inferred from the branch name; no separate metadata file is required.
 3. Scaffold the Product Spine (Intent, UX, Surface, Architecture, Open
-   Questions) **before** generating code — `spec-driven-dev` is strict on
-   production-lane branches.
+   Questions) **before** generating code — the spec-driven workflow is strict on
+   governed-production branches.
 4. Scaffold tests pinned to the Spine's success criteria — `always-test`
-   requires unit + integration + smoke coverage on the production lane.
+   requires unit + integration + smoke coverage on governed-production branches.
 5. Wire feature-flag scaffolding for any change with non-trivial blast
    radius; risky changes ship dark.
-6. Open the draft PR with a preview URL and the production-lane banner.
+6. Open the draft PR with a preview URL and the governed-production banner.
 
 ## What this skill is not
 
 - Not for prototypes. If the user wants to "see something working" without
-  committing to ship, route to `change-idea-intake` (prototype-lane) →
-  `/vibe`.
+  committing to ship, suggest local MVP exploration in their own sandbox.
 - Not for promotions. Ramping a feature flag is `feature-flag-promotion` →
   `/promote`.
 - Not for validation. Reading a packaged handoff is `validation-decision` →

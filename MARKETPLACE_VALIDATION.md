@@ -2,29 +2,31 @@
 
 Validated against: <https://code.claude.com/docs/en/plugin-marketplaces> (fetched 2026-05-19).
 Last verified locally: `claude plugin validate .` should be re-run after the
-2026-05-21 two-lane realignment (this commit).
+2026-05-25 simplified-workflow refactor (this commit).
 
 ## Status
 
-Conformant in design. Shipping eight plugins reflecting the deck *"From Vibes to
-Production — an AI-native collaborative workflow"*:
+Conformant in design. Shipping seven plugins reflecting the v0.4 spec
+(simplified, three-zone workflow):
 
-- Two lane plugins: `prototype-lane`, `production-lane`
-- Six house-rule plugins: `spec-driven-dev`, `always-test`, `house-style`,
-  `security-rails`, `spine-writer`, `handoff-packager`
+- Always-on (sandbox + governed): `e22-org`, `security-rails`,
+  `handoff-packager`, `house-style`
+- Production (governed only): `always-test`, `spine-writer`, `production-lane`
+
+Two v0.3 plugins were removed in the same change set: the sandbox-exploration
+plugin and the spec-enforcement plugin.
 
 ## Naming
 
 | Surface              | Value                                                | Where it's set                                              |
 | -------------------- | ---------------------------------------------------- | ----------------------------------------------------------- |
 | Marketplace name     | `e22-plugins`                                        | `.claude-plugin/marketplace.json` → `name`                  |
-| Plugin names         | `prototype-lane`, `production-lane`, `spec-driven-dev`, `always-test`, `house-style`, `security-rails`, `spine-writer`, `handoff-packager` | each `plugins/<name>/.claude-plugin/plugin.json` and the marketplace entry |
+| Plugin names         | `e22-org`, `security-rails`, `handoff-packager`, `house-style`, `always-test`, `spine-writer`, `production-lane` | each `plugins/<name>/.claude-plugin/plugin.json` and the marketplace entry |
 | Install handles      | `<name>@e22-plugins`                                 | derived                                                     |
 | Suggested GitHub repo| `element22llc/e22-plugins`                           | external — directory on disk is `e22-plugins/`              |
 
-Reserved-name check: none of the plugin names collide with the Anthropic reserved
-list and none include the word `claude`, so they won't trip the Claude.ai
-marketplace sync's impersonation rules.
+Reserved-name check: none of the plugin names collide with the Anthropic
+reserved list, and none include the word `claude`.
 
 ## Layout
 
@@ -33,35 +35,36 @@ e22-plugins/
 ├── .claude-plugin/
 │   └── marketplace.json
 ├── plugins/
-│   ├── prototype-lane/
+│   ├── e22-org/
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── agents/intake-clarifier.md
-│   │   ├── commands/{vibe,package-handoff,proposal-status}.md
-│   │   └── skills/{change-idea-intake,proposal-glossary}/SKILL.md
-│   ├── production-lane/
-│   │   ├── .claude-plugin/plugin.json
-│   │   ├── agents/{spec-refiner,drift-monitor}.md
-│   │   └── commands/{validate,propose,from-design,promote}.md
-│   ├── spec-driven-dev/
-│   │   ├── .claude-plugin/plugin.json
-│   │   └── hooks/{hooks.json,check-spec-exists.sh,announce-lane.sh}
-│   ├── always-test/
-│   │   ├── .claude-plugin/plugin.json
-│   │   └── hooks/{hooks.json,check-test-coverage.sh,remind-smoke-test.sh}
-│   ├── house-style/
-│   │   ├── .claude-plugin/plugin.json
-│   │   └── hooks/{hooks.json,run-house-style.sh}
+│   │   ├── CLAUDE.md
+│   │   ├── hooks/{hooks.json,sandbox-guardrails.sh,handoff-cue.sh}
+│   │   ├── lib/zone.sh
+│   │   └── templates/HANDOFF.md.template
 │   ├── security-rails/
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── hooks/{hooks.json,scan-content.sh,scan-bash.sh}
+│   ├── handoff-packager/
+│   │   ├── .claude-plugin/plugin.json
+│   │   └── CLAUDE.md
+│   ├── house-style/
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── CLAUDE.md
+│   │   └── hooks/{hooks.json,run-house-style.sh}
+│   ├── always-test/
+│   │   ├── .claude-plugin/plugin.json
+│   │   └── hooks/{hooks.json,check-test-coverage.sh,remind-smoke-test.sh}
 │   ├── spine-writer/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── agents/spine-extractor.md
 │   │   ├── commands/spine-refresh.md
-│   │   └── hooks/{hooks.json,maybe-refresh.sh}
-│   └── handoff-packager/
+│   │   ├── hooks/{hooks.json,maybe-refresh.sh}
+│   │   └── skills/spine-staleness-cue/SKILL.md
+│   └── production-lane/
 │       ├── .claude-plugin/plugin.json
-│       └── commands/package.md
+│       ├── agents/{spec-refiner,drift-monitor}.md
+│       ├── commands/{validate,propose,from-design,promote}.md
+│       └── skills/{validation-decision,proposal-intake,feature-flag-promotion}/SKILL.md
 ├── templates/
 │   ├── claude-settings.json
 │   └── README.md
@@ -78,14 +81,15 @@ From the repo root:
 ```bash
 claude plugin validate .
 claude plugin marketplace add ./
-claude plugin install prototype-lane@e22-plugins
-claude plugin install production-lane@e22-plugins
-claude plugin install spec-driven-dev@e22-plugins
-claude plugin install always-test@e22-plugins
-claude plugin install house-style@e22-plugins
+# PO bundle:
+claude plugin install e22-org@e22-plugins
 claude plugin install security-rails@e22-plugins
-claude plugin install spine-writer@e22-plugins
 claude plugin install handoff-packager@e22-plugins
+claude plugin install house-style@e22-plugins
+# Dev bundle adds:
+claude plugin install always-test@e22-plugins
+claude plugin install spine-writer@e22-plugins
+claude plugin install production-lane@e22-plugins
 ```
 
 Once on GitHub at `element22llc/e22-plugins`:
@@ -95,47 +99,37 @@ claude plugin marketplace add element22llc/e22-plugins
 # install handles above with the @e22-plugins suffix
 ```
 
-## Auto-prompt teammates in other repos
-
-In any Element 22 product repo, drop `templates/claude-settings.json` at
-`.claude/settings.json` — see [`templates/README.md`](./templates/README.md). All
-eight plugins are pre-enabled there.
-
 ## Hooks notes
 
 - Every hook script under `plugins/*/hooks/*.sh` must be executable
   (`chmod +x`). The marketplace install does not chmod for you.
-- Hook scripts use `${CLAUDE_PLUGIN_ROOT}` for portable referencing — see
-  `plugins/*/hooks/hooks.json` for the convention.
-- Hooks parse the hook payload from stdin with `python3` (assumed present in the
-  user's environment). If a product can't rely on Python, swap for `jq` or
-  inline parsing in shell.
+- Hook scripts use `${CLAUDE_PLUGIN_ROOT}` for portable referencing.
+- Zone-gated hooks source `${CLAUDE_PLUGIN_ROOT}/../e22-org/lib/zone.sh`.
+  This means `e22-org` must be installed for the other plugins' hooks to
+  work — install it first, or always (it's part of both bundles).
+- Hooks parse the hook payload from stdin with `python3` (assumed present).
 
 ## Outstanding manual steps
 
-1. **Push to GitHub.** Repo `element22llc/e22-plugins` should host this checkout.
-2. **Re-run `claude plugin validate .`** locally after the 2026-05-21 rewrite to
+1. **Re-run `claude plugin validate .`** locally after this commit to
    re-establish a clean validation timestamp.
-3. **Commit the rewrite.** Conventional commit suggested:
-   `feat: realign marketplace to two-lane + Product Spine workflow per Slide-deck v1`.
+2. **Push to GitHub** when the branch is ready.
 
 ## Things to know for later
 
-- **Adding a ninth plugin.** Create `plugins/<new-plugin>/.claude-plugin/plugin.json`
-  and add a new entry to `marketplace.json#plugins` with
-  `"source": "./plugins/<new-plugin>"`. We use explicit repo-rooted paths rather
-  than `metadata.pluginRoot` because the Claude.ai org marketplace sync did not
-  honor `pluginRoot` and reported `No files found at source path '<name>'` for
-  every plugin until we switched.
-- **Versioning.** Lane plugins are at `0.2.0` (post-rewrite); house rules are at
-  `0.1.0` (fresh). Bump on every functional change or users won't see updates.
-- **Release channels.** When ready, create two marketplaces pointing at the same
-  repo on different refs (`stable`, `latest`) and assign them via managed settings.
+- **Adding an eighth plugin.** Create
+  `plugins/<new-plugin>/.claude-plugin/plugin.json` and a new entry in
+  `marketplace.json#plugins` with `"source": "./plugins/<new-plugin>"`.
+  Use explicit repo-rooted paths (we tried `metadata.pluginRoot` and the
+  Claude.ai org sync did not honor it).
+- **Versioning.** Bump on every functional change or users won't see
+  updates. Current versions: see README.md "Versions" table.
+- **Zone detection.** All zone-gated hooks source
+  `plugins/e22-org/lib/zone.sh`. The discriminator is the `origin` remote
+  pointing at GitHub. Don't change this casually — every zone-gated plugin
+  depends on it.
+- **Release channels.** When ready, create two marketplaces pointing at the
+  same repo on different refs (`stable`, `latest`) and assign them via
+  managed settings.
 - **Private repo auto-updates.** Background updates need `GITHUB_TOKEN` or
-  `GH_TOKEN` in the user's env — interactive credential prompts are suppressed.
-- **`CLAUDE_PLUGIN_ROOT`.** Hooks already use this env var; reference plugin-internal
-  files via it so plugins remain relocatable.
-- **Lane detection.** All lane-aware hooks read the lane from `git rev-parse
-  --abbrev-ref HEAD`. If a product repo doesn't use the `prototype/*` prefix
-  convention, the hooks treat the branch as production-lane and apply strict
-  rules. Don't change the convention casually — it's load-bearing.
+  `GH_TOKEN` in the user's env.

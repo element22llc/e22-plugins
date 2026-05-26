@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# house-style: PostToolUse hook. Run the product's configured linter/formatter on
-# the edited file. Lane-aware:
-#   prototype/*: surface lint findings as warnings to stderr, exit 0
-#   production: exit 2 on lint failures so Claude must fix before continuing
+# house-style: PostToolUse hook. Run the product's configured linter/formatter
+# on the edited file. Zone-gated (spec v0.4 §11.3): silent in the local MVP
+# sandbox — lint nags during exploration are exactly the friction v0.4 removes
+# — full enforcement (exit 2 on failure) in governed-production repos.
 #
-# We do not encode the lint tool here — the product's CLAUDE.md should declare it.
-# This hook just dispatches on common extensions to common tools, falling back to
-# silently passing if no tool is installed.
+# Tech-stack and latest-stable-version guidance is delivered separately as
+# always-loaded instructions in plugins/house-style/CLAUDE.md (loaded in both
+# zones so the PO benefits from the team's tech-stack choices during MVP work).
+#
+# We do not encode the lint tool here — the product's CLAUDE.md should declare
+# it. This hook dispatches on common extensions to common tools, falling back
+# to silently passing if no tool is installed.
 
 set -uo pipefail
+
+source "${CLAUDE_PLUGIN_ROOT}/../e22-org/lib/zone.sh"
+e22_require_governed || exit 0
 
 payload="$(cat || true)"
 file_path="$(printf '%s' "$payload" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || true)"
 
 [ -z "$file_path" ] && exit 0
 [ ! -f "$file_path" ] && exit 0
-
-branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
-case "$branch" in
-  prototype/*) strict=0 ;;
-  *)           strict=1 ;;
-esac
 
 output=""
 rc=0
@@ -41,7 +42,6 @@ case "$file_path" in
     fi
     ;;
   *.tf|*.tofu)
-    # Prefer OpenTofu (the team's standard); fall back to Terraform for legacy products.
     if command -v tofu >/dev/null 2>&1; then
       output="$(tofu fmt -check=true -diff=true "$file_path" 2>&1)" || rc=$?
     elif command -v terraform >/dev/null 2>&1; then
@@ -49,7 +49,6 @@ case "$file_path" in
     fi
     ;;
   *.hcl)
-    # Terragrunt config files.
     if command -v terragrunt >/dev/null 2>&1; then
       output="$(terragrunt hclfmt --terragrunt-check --terragrunt-diff "$file_path" 2>&1)" || rc=$?
     fi
@@ -65,15 +64,9 @@ case "$file_path" in
 esac
 
 if [ "$rc" -ne 0 ]; then
-  if [ "$strict" -eq 1 ]; then
-    echo "house-style (production lane, strict): lint failed for $file_path" >&2
-    [ -n "$output" ] && echo "$output" >&2
-    exit 2
-  else
-    echo "house-style (prototype lane, lenient): lint findings for $file_path — not blocking, but expect to clean these up at /package-handoff" >&2
-    [ -n "$output" ] && echo "$output" >&2
-    exit 0
-  fi
+  echo "house-style (governed, BLOCK): lint failed for $file_path" >&2
+  [ -n "$output" ] && echo "$output" >&2
+  exit 2
 fi
 
 exit 0

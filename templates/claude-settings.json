@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings",
-  "_comment": "Drop this into any Element 22 product repo as .claude/settings.json. When teammates trust the project folder, Claude Code, Claude Cowork, and Claude.ai (Chat) will prompt them to install the e22-plugins marketplace and connect GitHub. This file IS meant to be committed; it is per-project, not per-user. User-specific overrides go in .claude/settings.local.json which is gitignored.",
+  "_comment": "Drop this into any Element 22 product repo as .claude/settings.json. When teammates trust the project folder, Claude Code, Claude Cowork, and Claude.ai (Chat) will prompt them to install the e22-plugins marketplace. This file IS meant to be committed; it is per-project, not per-user. User-specific overrides go in .claude/settings.local.json which is gitignored.",
 
   "extraKnownMarketplaces": {
     "e22-plugins": {
@@ -12,23 +12,22 @@
   },
 
   "enabledPlugins": {
-    "_comment_lanes": "The two lane plugins. POs typically only need prototype-lane (Chat/Cowork). Engineers benefit from both — they receive handoffs into production-lane and may /propose directly.",
-    "prototype-lane@e22-plugins": true,
-    "production-lane@e22-plugins": true,
-
-    "_comment_house_rules": "The six house-rule plugins. These apply lane-aware rules to every Claude session (PO or Dev). In Claude Code they enforce via hooks; in Chat and Cowork they enforce via in-prompt rules + PR-level CI. The net effect is identical for anything that ships. Disable any individual one in .claude/settings.local.json if you need to opt out temporarily, but the team default is all six enabled.",
-    "spec-driven-dev@e22-plugins": true,
-    "always-test@e22-plugins": true,
-    "house-style@e22-plugins": true,
+    "_comment_always_on": "The four always-on plugins. PO bundle AND Dev bundle install these. e22-org is the load-bearing one — it ships the always-loaded CLAUDE.md, the sandbox guardrails, the natural-language handoff trigger, and the shared lib/zone.sh that the production plugins source.",
+    "e22-org@e22-plugins": true,
     "security-rails@e22-plugins": true,
+    "handoff-packager@e22-plugins": true,
+    "house-style@e22-plugins": true,
+
+    "_comment_production": "The three production-only plugins. Zone-gated — silent in the local MVP sandbox, full enforcement when the workspace is a git repo with a GitHub remote. Engineers want these enabled. POs can keep them enabled too — they're no-ops in the sandbox so they don't add noise. Disable any individual one in .claude/settings.local.json if needed.",
+    "always-test@e22-plugins": true,
     "spine-writer@e22-plugins": true,
-    "handoff-packager@e22-plugins": true
+    "production-lane@e22-plugins": true
   },
 
-  "_comment_connectors": "The e22-plugins workflow REQUIRES the GitHub connector. Claude will prompt the user to connect on first use of any lane command. Recommended: Sentry, Statsig (accessed via the OpenFeature SDK for /promote), Microsoft Teams, context7. See CONNECTORS.md in the marketplace repo for the full reference. The keys below are documentary metadata, not validated settings.",
+  "_comment_connectors": "GitHub is required only for the governed-production zone. The local MVP sandbox (PO exploration) is connector-free. Recommended: Sentry, Statsig (accessed via the OpenFeature SDK for /promote), context7. See CONNECTORS.md in the marketplace repo for the full reference. The keys below are documentary metadata, not validated settings.",
   "_recommendedConnectors": {
-    "required": ["github"],
-    "recommended": ["sentry", "statsig", "microsoft-teams", "context7"],
+    "required-for-governed-zone": ["github"],
+    "recommended": ["sentry", "statsig", "context7"],
     "notes": {
       "statsig": "Accessed through the OpenFeature SDK so the flag platform stays swappable."
     }
