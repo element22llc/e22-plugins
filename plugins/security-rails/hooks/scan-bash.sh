@@ -7,9 +7,9 @@
 #   - Direct push to main/master
 #   - Direct production database client (psql against a prod-named host)
 #
-# IaC-apply blocks (terragrunt/tofu/terraform) and prototype-lane PROD_
-# env-var blocks were removed with the v0.3 spec revision — infra-coupled,
-# return when platform decisions land.
+# IaC-apply blocks (terragrunt/tofu/terraform) and PROD_ env-var blocks were
+# removed with the v0.3 spec revision — infra-coupled; return when platform
+# decisions land.
 
 set -uo pipefail
 

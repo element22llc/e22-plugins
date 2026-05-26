@@ -85,11 +85,9 @@ The plugin must let the PO speak naturally:
 
 For Local MVP Sandbox work, do **not** require:
 
-- `/vibe`
-- `/package-handoff`
-- `/validate`
-- auto-triggered prototype-lane skills
-- `/.workflow/branch.yaml`
+- slash commands for PO actions (handoff is triggered by natural language)
+- auto-triggered intent skills the PO has to know about
+- hand-crafted branch metadata files
 - branch lifecycle rules
 - continuous Product Spine writing
 - GitHub connector access
@@ -199,12 +197,12 @@ reuse existing components, but the PO should not need to know that.
 
 For the Local MVP Sandbox:
 
-- remove PO-facing prototype-lane skills
-- remove command dependency from the PO flow
-- keep always-loaded instructions
-- keep safety hooks where supported
-- keep handoff templates
-- keep simple secret and real-data checks
+- no PO-facing intent skills
+- no required slash commands in the PO flow
+- always-loaded instructions
+- safety hooks where supported
+- handoff templates
+- simple secret and real-data checks
 
 For production:
 
