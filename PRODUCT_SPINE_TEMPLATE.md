@@ -1,5 +1,12 @@
 # Product Spine — `<product or proposal name>`
 
+> **Scope:** This template is for **governed-production** work after Dev
+> has imported the MVP into a repo. It is not required, and not
+> recommended, during the local MVP sandbox (PO exploration) phase. The
+> sandbox uses `HANDOFF.md` as its single durable artifact (spec v0.4
+> §7.2). The Product Spine becomes useful once production-bound code lives
+> in a versioned repo and needs durable spec memory.
+
 > The **Spine** is the artefact that travels from prototype to production.
 > Not the chat log. Not the commit list. This file.
 >
@@ -151,8 +158,8 @@ before the proposal can transition past `review-requested`.
 - **Decision:** `Keep` | `Refactor` | `Redesign` | `Reject`
 - **Decided by:** `@<engineer>`
 - **Decided on:** `<YYYY-MM-DD>`
-- **Notes:** `<what changes, if any, are required before this can enter the
-  production lane; or why this was rejected/redesigned>`
+- **Notes:** `<what changes, if any, are required before this can enter
+  governed production; or why this was rejected>`
 
 ---
 
