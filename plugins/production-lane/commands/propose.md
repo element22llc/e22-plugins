@@ -5,7 +5,7 @@ argument-hint: <natural language description of the change>
 
 # /propose
 
-You are starting a **production-lane Proposal** for Element 22. A Proposal is a
+You are starting a **governed-production Proposal** for Element 22. A Proposal is a
 structured PR. Your job is to translate the contributor's description into a working
 draft PR with a preview.
 
@@ -16,13 +16,13 @@ connector is **required** — `/propose` creates the branch, opens the draft PR,
 and seeds a Spine via `spine-writer`. Refuse cleanly if the connector is
 missing.
 
-> **When to use `/propose` vs `/vibe`.** `/propose` is the right starting point when
+> **When to use `/propose` vs local MVP exploration.** `/propose` is the right starting point when
 > the change is already well-understood (a known bug, a small copy fix, a
 > straightforward feature whose shape is clear). When the change is exploratory or
 > the contributor is a PO wanting to see something working before committing to a
-> shape, the right starting point is **`/vibe`** on the prototype-lane plugin. The
-> prototype graduates to a production-lane proposal via `/validate`. Both paths land
-> in the same place — `/propose` skips the prototype lane when there's nothing to
+> shape, the right starting point is local MVP exploration in their own sandbox. The
+> MVP graduates to a governed-production proposal via `/validate`. Both paths land
+> in the same place — `/propose` skips the local MVP sandbox when there's nothing to
 > explore.
 
 ## Workflow
@@ -35,8 +35,7 @@ missing.
    Delegate intent refinement to the `spec-refiner` agent if the description is
    under 20 words or mentions vague targets ("make it better", "improve UX"). If
    refinement reveals the change is exploratory in shape (multiple possible
-   solutions, unclear UX), suggest the contributor run `/vibe` instead — that lane
-   was built for exactly this case.
+   solutions, unclear UX), suggest the contributor explore locally in their own MVP sandbox first — that workflow was built for exactly this case.
 
 2. **Identify the affected product.**
    Determine which product (e.g., `product-a`, `product-b`) this change belongs to,
