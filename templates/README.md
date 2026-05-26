@@ -8,11 +8,10 @@ across Element 22 product repos.
 Copy this file into any Element 22 product repo at `.claude/settings.json`. Commit
 it. When teammates open the repo in Claude Code or Cowork and trust the project
 folder, they'll be prompted to install the `e22-plugins` marketplace and the
-**eight** Element 22 plugins will be enabled by default:
+**seven** Element 22 plugins will be enabled by default:
 
-- Lane plugins (2): `prototype-lane`, `production-lane`
-- House-rule plugins (6): `spec-driven-dev`, `always-test`, `house-style`,
-  `security-rails`, `spine-writer`, `handoff-packager`
+- Always-on (4): `e22-org`, `security-rails`, `handoff-packager`, `house-style`
+- Production (3): `always-test`, `spine-writer`, `production-lane`
 
 ```bash
 # From the product repo root
@@ -32,12 +31,13 @@ git commit -m "chore: auto-prompt teammates to install e22-plugins marketplace"
 
 ### Per-role install footprint
 
-- **POs working in Cowork only** strictly need `prototype-lane` plus the six
-  house-rule plugins. The template enables `production-lane` too because POs are
-  also expected to read engineer notes and check status across both lanes — but
-  it's safe to disable for non-engineering accounts via
-  `.claude/settings.local.json`.
-- **Engineers in Claude Code** want all eight enabled.
+- **POs in any surface** strictly need the four always-on plugins (`e22-org`,
+  `security-rails`, `handoff-packager`, `house-style`). The template enables the
+  three production plugins too, but they zone-gate to silent in the sandbox so
+  there's no PO-facing noise.
+- **Engineers in Claude Code** want all seven enabled — the production plugins
+  fire normally once the workspace is a governed-production repo (git repo with
+  a GitHub remote).
 
 ### What's NOT in here
 
@@ -57,13 +57,12 @@ affecting the team, they should put their override in
 ### Connector requirement
 
 The template includes a `_recommendedConnectors` block (descriptive, not
-validated) that names the required and recommended connectors. The lane plugins
-**require the GitHub connector** and will refuse to mutate state without it.
-Make sure every contributor — POs in Chat or Cowork, engineers in Claude Code —
-has GitHub connected in their account before they run their first `/vibe`,
-`/package-handoff`, `/validate`, `/propose`, or `/promote`.
+validated) that names the required and recommended connectors. **GitHub is
+required only for the governed-production zone**; the local MVP sandbox (PO
+exploration) is connector-free. Production-lane commands (`/propose`,
+`/validate`, `/promote`) and the production hook plugins assume GitHub is
+connected once the workspace flips to governed.
 
 See [`CONNECTORS.md`](../CONNECTORS.md) at the marketplace root for the full
 reference (which capabilities each command uses, degraded behavior when missing,
 SOC2 overlay).
-

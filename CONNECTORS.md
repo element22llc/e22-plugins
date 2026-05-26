@@ -51,7 +51,7 @@ they're degraded; they do not silently skip.
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Branches**      | `/propose`, `/from-design`, `/validate`                                                                                | Create `proposal/<slug>` branches; rename branches as work progresses. |
 | **Pull requests** | `/propose`, `/from-design`, `/validate`, `/promote`, `drift-monitor`                                                   | Open draft PRs, update titles/descriptions/labels, post review-required comments, close on Reject.          |
-| **Issues**        | `/draft-proposal-as-issue` (change-idea-intake skill option), `drift-monitor`, `/proposal-status` (read)               | File intake briefs as labelled issues; report drift findings; surface backlog state to POs.                 |
+| **Issues**        | `drift-monitor`, `/proposal-status` (read)                                                                             | Report drift findings; surface backlog state.                                                                |
 | **Projects (v2)** | `/proposal-status` (read), `/validate` (advance item)                                                                  | Track every proposal as a project-board item with custom fields for zone, champion, status, validation decision. |
 | **Labels**        | All proposal commands                                                                                                  | Apply `proposal`, `drafting`, `preview-ready`, `review-requested`, `awaiting-validation`, `experimental`, `production-graded`, `tier-{0,1,2}`, `product:<slug>`, `soc2`. |
 | **Comments**      | `/promote`, `drift-monitor`, `/validate` (on reject)                                                                   | Post structured comments — flag rollout state, drift evidence, validation rationale.                        |
@@ -99,10 +99,9 @@ Sentry to:
 
 ### Microsoft Teams
 
-Used by `change-idea-intake` skill (offers "paste to an engineer in Microsoft Teams" as a
-direct-handoff option) and `/proposal-status` (champion pings, gentle nudges).
-Without it, those flows degrade to "give the user a copy-pasteable message
-block" — still usable, less automated.
+Used by `/proposal-status` (champion pings, gentle nudges). Without it, those
+flows degrade to "give the user a copy-pasteable message block" — still usable,
+less automated.
 
 ### `context7`
 
