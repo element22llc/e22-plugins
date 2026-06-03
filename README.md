@@ -42,10 +42,10 @@ prompted to install when they trust the folder:
 ```json
 {
   "extraKnownMarketplaces": {
-    "e22": { "source": { "source": "github", "repo": "element22llc/e22-plugins" } }
+    "e22-plugins": { "source": { "source": "github", "repo": "element22llc/e22-plugins" } }
   },
   "enabledPlugins": {
-    "e22-standards@e22": true
+    "e22-standards@e22-plugins": true
   }
 }
 ```
@@ -60,7 +60,7 @@ plugin — so updating org standards needs no change in any product repo:
 1. Edit the rules/skills/templates here, bump `version` in
    `plugins/e22-standards/.claude-plugin/plugin.json`, add a `CHANGELOG.md` entry,
    and merge to `main` (changes go through `feat/*` / `fix/*` branches + PR).
-2. In any product repo, a dev runs `/plugin update e22-standards@e22`.
+2. In any product repo, a dev runs `/plugin update e22-standards@e22-plugins`.
 3. The next session injects the updated ruleset. The version banner at the top of
    the injected context shows which version is live.
 

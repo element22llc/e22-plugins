@@ -19,7 +19,7 @@ PLUGIN_JSON="${ROOT}/.claude-plugin/plugin.json"
 VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${PLUGIN_JSON}" 2>/dev/null | head -n 1)"
 [ -z "${VERSION}" ] && VERSION="unknown"
 
-printf '<!-- Element 22 org standards — e22-standards plugin v%s. Run `/plugin update e22-standards@e22` to refresh. -->\n\n' "${VERSION}"
+printf '<!-- Element 22 org standards — e22-standards plugin v%s. Run `/plugin update e22-standards@e22-plugins` to refresh. -->\n\n' "${VERSION}"
 
 if [ -d "${RULES_DIR}" ]; then
   for f in "${RULES_DIR}"/*.md; do
