@@ -1,59 +1,17 @@
 {
   "name": "e22-plugins",
-  "description": "Element 22 plugin catalog — three zones (Local MVP Sandbox, Handoff, Governed Production), one always-on org plugin, governance only where it earns its keep. Seven plugins for Claude Code, Claude Chat, and Claude Cowork.",
+  "description": "Element 22 organization standards for Claude Code. One plugin (e22-standards) that injects E22's always-on operating rules every session and ships the spec-workflow skills and templates, so org standards live in one place and update centrally instead of being frozen into every forked repo.",
   "owner": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
   },
   "plugins": [
     {
-      "name": "e22-org",
-      "source": "./plugins/e22-org",
-      "description": "Always-on organization plugin. The PO's single required installation. Always-loaded CLAUDE.md, sandbox guardrails (real PII, prod-DB connection strings), natural-language handoff trigger, shared lib/zone.sh zone detector. Installed for both PO and Dev bundles.",
-      "category": "always-on",
-      "keywords": ["element-22", "org-plugin", "sandbox", "handoff", "zone-detection", "always-loaded"]
-    },
-    {
-      "name": "security-rails",
-      "source": "./plugins/security-rails",
-      "description": "Universal hard guardrails in both zones — secrets, AWS access keys, Stripe live keys, raw-SQL interpolation, force-push, push-to-main, prod database clients. Pairs with Anthropic's security-guidance plugin for code-injection patterns. Installed for both bundles.",
-      "category": "always-on",
-      "keywords": ["element-22", "house-rule", "security", "guardrails"]
-    },
-    {
-      "name": "handoff-packager",
-      "source": "./plugins/handoff-packager",
-      "description": "Per-section guidance for filling HANDOFF.md when e22-org's natural-language handoff trigger fires. Single-file output per spec v0.4 §7.2. No slash command. Installed for both bundles.",
-      "category": "always-on",
-      "keywords": ["element-22", "handoff", "mvp", "single-file"]
-    },
-    {
-      "name": "house-style",
-      "source": "./plugins/house-style",
-      "description": "Tech-stack adherence and latest-stable-version guidance as always-loaded CLAUDE.md (both zones); lint/format PostToolUse hook gated to the governed-production zone. Installed for both bundles.",
-      "category": "always-on",
-      "keywords": ["element-22", "house-rule", "lint", "format", "tech-stack", "conventions"]
-    },
-    {
-      "name": "always-test",
-      "source": "./plugins/always-test",
-      "description": "Test-floor enforcement in governed-production repos: every new endpoint, screen, or background job needs at least one smoke test. Zone-gated — silent in sandbox, exit-2 / Stop-continue when governed. Dev bundle only.",
-      "category": "production",
-      "keywords": ["element-22", "house-rule", "tests", "smoke-tests", "ci", "zone-gated"]
-    },
-    {
-      "name": "spine-writer",
-      "source": "./plugins/spine-writer",
-      "description": "Product Spine generation for governed-production work. /spine-refresh (manual) and a PostToolUse hook (automatic, on meaningful file changes). Zone-gated — silent and refuses in sandbox per spec v0.4 §10.3. Dev bundle only.",
-      "category": "production",
-      "keywords": ["element-22", "house-rule", "spine", "spec", "drift", "zone-gated"]
-    },
-    {
-      "name": "production-lane",
-      "source": "./plugins/production-lane",
-      "description": "Governed-production plugin for engineers. /validate is the Harden / Extract / Rewrite / Reject / Continue-exploring gate (spec v0.4 §7.4) that turns a HANDOFF.md into a production proposal. /propose, /from-design, /promote drive the production lifecycle. Auto-trigger skills route Dev intent. SOC2 overlay applies. Dev bundle only.",
-      "category": "production",
-      "keywords": ["element-22", "proposals", "validation", "governance", "soc2", "feature-flags", "production"]
+      "name": "e22-standards",
+      "source": "./plugins/e22-standards",
+      "description": "Element 22's always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, testing rules, Definition of Done, high-risk areas, secrets handling, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for first-run setup, spec scaffolding, and ADRs.",
+      "category": "development",
+      "keywords": ["element-22", "org-standards", "conventions", "spec-workflow", "always-on", "operating-manual"]
     }
   ]
 }
