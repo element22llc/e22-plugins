@@ -5,6 +5,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.1.0
+
+- Local-dev `.env` bootstrap: the Stack and Secrets rules now require that when
+  setting up or running an app locally, `.env` is created and populated with
+  the base variables the app needs to boot — e.g. `DATABASE_URL` pointing at
+  the local Compose PostgreSQL and freshly generated local-only secrets (auth
+  secret, API tokens) — instead of leaving the dev to hand-assemble it from the
+  README. Deployed/production secret values must never be copied into it.
+
 ### 1.0.0
 
 - Initial release. Fresh start: replaces the earlier experimental 7-plugin

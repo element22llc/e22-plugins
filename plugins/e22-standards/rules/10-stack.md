@@ -37,4 +37,9 @@ project's intent clearly warrants a different stack, propose the better fit and
   `.env.local`), which is git-ignored and **never committed**. There is no
   committed `.env.example`; document required variables in the relevant app's
   `README.md` instead, and keep deployed secrets in AWS Secrets Manager (see
-  Secrets handling).
+  Secrets handling). **When setting up or running an app locally, make sure
+  `.env` exists and carries the base variables the app needs to boot** — e.g.
+  `DATABASE_URL` pointing at the local Compose PostgreSQL, and freshly generated
+  local-only secrets (auth secret, API tokens). Create or fill it as part of
+  getting local dev running — don't leave the dev to hand-assemble it from the
+  README. Never copy deployed/production secret values into it.
