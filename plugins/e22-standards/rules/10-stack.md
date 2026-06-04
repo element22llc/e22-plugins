@@ -32,7 +32,11 @@ project's intent clearly warrants a different stack, propose the better fit and
   **Docker Compose** via a committed `compose.yaml`, so local matches deployed.
   **Do not substitute a different engine for local dev** (e.g. SQLite in place of
   PostgreSQL) — develop against the same database you deploy. `pnpm dev` /
-  `uv run` should assume the Compose services are up.
+  `uv run` should assume the Compose services are up. The standard entry point
+  is **`mise run dev:setup`** (idempotent: services up → migrate → seed), defined
+  in `mise.toml` — keep it working as the stack evolves; environment
+  orchestration tasks belong there, not in `package.json` (run `/e22-conventions`
+  for the rationale).
 - **Environment variables:** store local config in a **`.env`** file (or
   `.env.local`), which is git-ignored and **never committed**. There is no
   committed `.env.example`; document required variables in the relevant app's

@@ -16,6 +16,9 @@ It covers, in detail:
 - **Toolchain** — mise with `latest` in `mise.toml` and the exact versions pinned
   in the committed `mise.lock`; pin-on-adoption via `mise install`; bump via
   `mise upgrade`.
+- **Standard mise tasks** — `mise run dev:setup` (idempotent: services up →
+  migrate → seed) and friends; why environment tasks live in `mise.toml`, not
+  `package.json`; how `/e22-init` adapts them per product.
 - **Monorepo layout** — `/apps`, `/packages`, `/configs`; polyrepo across
   products, monorepo within one.
 - **Workspace tooling** — pnpm (Node), uv (Python).

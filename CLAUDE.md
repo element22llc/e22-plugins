@@ -4,12 +4,15 @@ This repo is the **Element 22 plugin marketplace**. It is not a product; it
 hosts a single plugin, `e22-standards`, that injects E22's org-wide engineering
 standards into every product Claude session.
 
-**Source of truth:** the standards mirror the
-[`repository-template`](https://github.com/element22llc/repository-template)
-repo. When that template's generic rules change, update the corresponding
-`plugins/e22-standards/rules/*.md` (and bundled reference/templates) here. Do not
-invent new standards here that the template doesn't carry — this is a mirror, not
-a second source.
+**Source of truth: this repo.** The org standards live in
+`plugins/e22-standards/` (rules, skills, reference prose) and are consumed by
+every product repo — including
+[`repository-template`](https://github.com/element22llc/repository-template) —
+via the marketplace. Standards prose is **not** duplicated into the template or
+any product `CLAUDE.md`; those hold only product-specific context. When a
+standard implies concrete scaffolding (CI workflows, `mise.toml` tasks,
+`compose.yaml`, README quickstart), the template carries those *files* — update
+both repos in the same change, but the normative text lives only here.
 
 ## Layout
 

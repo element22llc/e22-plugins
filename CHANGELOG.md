@@ -5,6 +5,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.3.0
+
+- New org standard: **standard mise tasks**. Every repo exposes
+  `mise run dev:setup` — the idempotent one-command local environment (Compose
+  services up → `db:migrate` → `db:seed`) — plus `docker:up/down` and
+  `db:migrate`/`db:seed`. Environment-orchestration tasks live in `mise.toml`
+  (polyglot, owns tooling outside the workspace), not `package.json`, whose
+  scripts stay app-level.
+- Stack rule's Local-services bullet now names `mise run dev:setup` as the
+  standard entry point and requires keeping it green as the stack evolves; the
+  always-on commands cheat-sheet includes it in first-time setup.
+- `CONVENTIONS.md` gains a "Standard mise tasks" section (the task vocabulary,
+  the idempotency contract, and the mise-vs-package.json rationale), surfaced
+  in the `/e22-conventions` skill summary.
+- `/e22-init` gains step 6: adapt the template's baseline tasks to the product
+  being built — real services in `compose.yaml`, real migrate/seed scripts,
+  `uv run` instead of pnpm for Python products, or delete the docker/db tasks
+  when there are no backing services.
+- Pairs with `repository-template`, which now ships the baseline `[tasks]`
+  block in `mise.toml` and a Postgres `compose.yaml` (host port overridable via
+  `POSTGRES_PORT` so parallel products don't collide on 5432).
+
 ### 1.2.0
 
 - New always-on rule **Commit autonomy** (`rules/45-commit-autonomy.md`): on a

@@ -37,6 +37,19 @@ placeholders are still present anywhere in the repo, this is a fresh clone.
    fresh clone. It is a placeholder, not the real stack — replace it with the
    actual first app (the default frontend is Next.js), or delete both folders if
    `web` isn't your first app. See `apps/web/README.md`.
+6. **Adapt the standard tasks to this product.** The template's `mise.toml`
+   ships a baseline `dev:setup` task (plus `docker:up/down`, `db:migrate`,
+   `db:seed`) wired to the default stack: Postgres in `compose.yaml`,
+   migrate/seed fanned out via `pnpm --recursive --if-present`. Make it real for
+   this product:
+   - add the services the product actually needs to `compose.yaml` (or delete
+     it and the docker/db tasks if there are no backing services);
+   - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
+     drizzle-kit + a seed script) so the fan-out picks them up;
+   - Python products: swap the `pnpm …` task commands for `uv run …`.
+   The contract (run `/e22-conventions` for the prose): `mise run dev:setup` is
+   idempotent and, from a fresh clone after `mise install`, must produce a
+   working local environment.
 
 ## When the repo is already customized
 
