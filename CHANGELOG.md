@@ -5,6 +5,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.5.0
+
+- **New: enforced version-pin verification.** The "default to current stable /
+  don't trust training-data memory" rule was advisory only, and the failure
+  mode is being *confidently* stale (e.g. a fresh app scaffolded with
+  `postgres:16` when current stable is 18), so the "if unsure, ask" escape
+  hatch never fired. A new `PreToolUse` hook
+  (`hooks/check-version-pins.sh`) now denies Write/Edit/Bash calls that pin a
+  stale major for common images (`postgres:`, `node:`, `python:`, `redis:`,
+  `valkey:`, `nginx:`, `mysql:`, `mariadb:`, `mongo:`), with current stable
+  resolved live from the endoflife.date API — the hook hardcodes no versions.
+  Fails open offline; Markdown exempt; deliberate older pins pass with an ADR
+  plus a same-line `# pin-ok: <reason>` marker. Documented in
+  `CONVENTIONS.md` (Versioning policy → Enforcement).
+- **Versioning policy reworded:** verification of current stable is now
+  unconditional before writing any pin, instead of "if unsure, say so" —
+  models are not unsure, they are confidently stale.
+- New stack rule: **don't author `compose.yaml` from scratch** — start from
+  the `repository-template` one and adapt, so generated services can't
+  reintroduce stale image majors.
+- **Fix: hooks no longer depend on the executable bit.** `hooks.json` now
+  invokes both hook scripts via an explicit `sh` prefix; marketplace install
+  does not chmod, so a missing `+x` could previously leave a session with no
+  org standards injected at all.
+
 ### 1.4.0
 
 - **Fix: toolchain pinning silently produced no lock.** mise only writes

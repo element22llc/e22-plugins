@@ -30,6 +30,11 @@ project's intent clearly warrants a different stack, propose the better fit and
   DSNs and tokens in Secrets Manager, never committed (see Secrets handling).
 - **Local services:** run backing services (PostgreSQL, Redis, etc.) with
   **Docker Compose** via a committed `compose.yaml`, so local matches deployed.
+  **Don't author `compose.yaml` from scratch** — start from the
+  `repository-template` one and adapt. **Verify image versions, don't recall
+  them:** a plugin hook denies writes pinning a stale major for common images
+  (checked live against endoflife.date); a deliberately older pin needs an ADR
+  plus `# pin-ok: <reason>` on the same line (run `/e22-conventions`).
   **Do not substitute a different engine for local dev** (e.g. SQLite in place of
   PostgreSQL) — develop against the same database you deploy. `pnpm dev` /
   `uv run` should assume the Compose services are up. The standard entry point

@@ -37,7 +37,9 @@ plugins/e22-standards/
   skill, not into `rules/`.
 - The `rules/` files concatenate in **lexical order** (numeric prefixes). Keep
   prefixes spaced so new rules can slot between existing ones.
-- Hook scripts under `hooks/*.sh` must be executable (`chmod +x`); marketplace
-  install does not chmod for you. The injector is POSIX `sh`, no `jq` dependency.
+- Hook commands in `hooks.json` invoke their scripts via an explicit `sh` prefix,
+  so the executable bit doesn't matter (marketplace install does not chmod) —
+  keep that prefix when adding hooks. All hook scripts are POSIX `sh`, no `jq`
+  dependency.
 - Never put first-run-only content (placeholder resolution) into `rules/` — it
   would re-fire every session. That lives in the `e22-init` skill.
