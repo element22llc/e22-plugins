@@ -3,6 +3,8 @@
 ```bash
 # First-time setup
 mise trust && mise install     # see the product README for the full mise setup
+mise run dev:setup             # local env in one command: Docker services up,
+                               # migrations applied, dev data seeded (idempotent)
 
 # Local development — pnpm (Node) / uv (Python) are the defaults
 pnpm install && pnpm dev       # Node apps/packages
