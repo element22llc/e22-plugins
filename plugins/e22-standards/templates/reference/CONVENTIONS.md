@@ -20,8 +20,30 @@ libraries.
 - For existing products, upgrade intentionally and verify with CI and the
   non-prod environment before production.
 
-If you, Claude, are unsure what the current stable version is, say so and ask
-the dev to confirm or check a registry. Do not guess.
+Before writing **any** pinned version (Docker image tag, base image, runtime,
+engines field), verify what current stable is **in this session** — check the
+registry, [endoflife.date](https://endoflife.date), or the official site. Treat
+training-data memory of versions as stale by default: the failure mode is being
+*confidently* wrong, not unsure, so "ask when unsure" is not enough. If you
+cannot verify, say so and ask the dev. Do not guess.
+
+### Enforcement: the version-pin hook
+
+The plugin backs the rule above mechanically with a `PreToolUse` hook
+(`hooks/check-version-pins.sh`): writes that pin a stale major for common
+images (`postgres:`, `node:`, `python:`, `redis:`, `valkey:`, `nginx:`,
+`mysql:`, `mariadb:`, `mongo:`) are denied, with current stable resolved from
+the endoflife.date API at write time — the hook hardcodes no version numbers,
+so it cannot itself go stale.
+
+- **Deliberate older pins are allowed** (deploy-target/RDS parity, Node LTS
+  policy): record an ADR and append `# pin-ok: <reason>` on the same line as
+  the pin; the hook then passes it.
+- **Major-only tags float the minor** — `postgres:18` only compares the major;
+  `python:3.11` compares at maj.min granularity.
+- The hook **fails open**: no network, or a product it doesn't know, and the
+  write proceeds — it enforces the common path, it doesn't replace the rule.
+- Markdown/text files are exempt; prose legitimately mentions old versions.
 
 ### Toolchain: `latest` in config, pinned in the lockfile
 
