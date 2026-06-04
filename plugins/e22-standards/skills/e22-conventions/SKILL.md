@@ -14,8 +14,12 @@ It covers, in detail:
 - **Versioning policy** — default to current stable; check a registry rather than
   trusting training-data memory; avoid prerelease without a reason.
 - **Toolchain** — mise with `latest` in `mise.toml` and the exact versions pinned
-  in the committed `mise.lock`; pin-on-adoption via `mise install`; bump via
-  `mise upgrade`.
+  in the committed `mise.lock`; pin-on-adoption via `mise install` (mise only
+  writes the lock if the file exists — the template ships placeholders); bump
+  via `mise upgrade`; backends must work on both macOS and Linux.
+- **Lockfile discipline** — `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+  `.terraform.lock.hcl` are committed and updated with every dependency/tool
+  change; never deleted or ignored to dodge an error.
 - **Standard mise tasks** — `mise run dev:setup` (idempotent: services up →
   migrate → seed) and friends; why environment tasks live in `mise.toml`, not
   `package.json`; how `/e22-init` adapts them per product.

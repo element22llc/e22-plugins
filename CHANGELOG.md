@@ -5,6 +5,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.4.0
+
+- **Fix: toolchain pinning silently produced no lock.** mise only writes
+  `mise.lock` when the file already exists, so the documented
+  "`mise install` generates the lock" flow pinned nothing on a fresh fork.
+  `CONVENTIONS.md` and `/e22-init` step 4 now document the caveat, require
+  restoring a missing lock (`touch mise.lock` / `mise lock`) before installing,
+  and require verifying the lock contains real `[[tools.*]]` entries before
+  committing. Pairs with `repository-template`, which now ships committed
+  placeholder `mise.lock` files (root and `infra/`).
+- New org standard: **lockfile discipline** (always-on rule in the practices
+  baseline + a `CONVENTIONS.md` section). `mise.lock`, `pnpm-lock.yaml`,
+  `uv.lock`, `.terraform.lock.hcl` are committed and updated in the same change
+  that touches their config/deps; never deleted or git-ignored to dodge an
+  error; lockfile-only diffs get real review.
+- New org standard: **mise backends must be cross-platform** (macOS + Linux).
+  The registry default backend is not always usable everywhere — e.g. plain
+  `pnpm` → `aqua:pnpm/pnpm` has no valid macOS asset, so repos pin `"npm:pnpm"`
+  explicitly. Verify `mise install` works on both platforms when adding a tool.
+- `/e22-init` step 5 now covers workspace lockfile adoption: the template ships
+  no `pnpm-lock.yaml` on purpose (the starter's would go stale); generate and
+  commit it (or `uv.lock`) once the real workspace exists.
+
 ### 1.3.0
 
 - New org standard: **standard mise tasks**. Every repo exposes

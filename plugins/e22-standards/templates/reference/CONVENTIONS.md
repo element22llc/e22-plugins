@@ -33,17 +33,46 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
 
 - `[settings] lockfile = true` is enabled, so `mise install` writes the exact
   resolved versions to `mise.lock` (one per config dir: root and `infra/`).
+  **Caveat: mise only writes `mise.lock` if the file already exists.** The
+  template therefore ships committed placeholder `mise.lock` files — never
+  delete them. If a repo is missing one, recreate it (`touch mise.lock`, or run
+  `mise lock`) before installing, otherwise the install silently succeeds
+  without pinning anything.
 - **Commit `mise.lock`.** It is the real pin — CI and every developer machine
   install from it, so they always agree. `latest` in `mise.toml` only decides
   what gets resolved the next time the lock is *regenerated*.
-- **First use:** run `mise install` (and `cd infra && mise install`) and commit
-  the generated lockfiles. This is the "pin on adoption" step.
+- **First use:** run `mise install` (and `cd infra && mise install`), **verify
+  the `mise.lock` files now contain real `[[tools.*]]` entries** (not just the
+  placeholder comment), and commit them. This is the "pin on adoption" step —
+  it has not happened until the populated lockfiles are committed.
 - **Bumping:** run `mise upgrade` to move the lock forward, review the diff like
   any other change, and — for infra tools — validate in non-prod before prod.
+
+**Backends must be cross-platform (macOS + Linux).** The mise registry's
+default backend for a tool is not always usable on every platform — e.g. plain
+`pnpm` resolves to `aqua:pnpm/pnpm`, which has no valid macOS asset; E22 repos
+pin `"npm:pnpm"` explicitly instead. When adding a tool to `mise.toml`, choose
+a backend whose binaries exist for both macOS (devs) and Linux (CI), and verify
+`mise install` succeeds before committing.
 
 This keeps the "default to current stable" rule above (you resolve `latest` once,
 at adoption) without leaving an unpinned `latest` in any active product.
 mise setup steps are in the product README.
+
+### Lockfiles are maintained, never bypassed
+
+This applies to **every** lockfile in the repo, not just mise's:
+
+- `mise.lock` (toolchain), `pnpm-lock.yaml` (Node workspaces), `uv.lock`
+  (Python), `.terraform.lock.hcl` (infra providers) — all are **committed and
+  kept in sync** with their config file as part of the change that touches it.
+  Adding/removing a dependency or tool without the matching lockfile diff is an
+  incomplete change.
+- **Never delete or `.gitignore` a lockfile to make an error go away.** Fix the
+  resolution problem, or regenerate the lock with the owning tool
+  (`mise install` / `mise upgrade`, `pnpm install`, `uv lock`, `tofu init`).
+- Lockfile-only diffs deserve the same review as code: an unexplained large
+  lockfile change is a smell, not noise.
 
 ### Standard mise tasks
 

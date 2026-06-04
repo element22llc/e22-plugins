@@ -28,15 +28,25 @@ placeholders are still present anywhere in the repo, this is a fresh clone.
 3. Propose all edits in a single batch for review; do not commit until the dev
    approves.
 4. **Pin the toolchain.** The template's `mise.toml` files use `latest` so they
-   carry no stale versions. Have the dev run `mise install` (and
-   `cd infra && mise install` if they'll touch infra) to resolve `latest` into
-   the generated `mise.lock` files, then commit those lockfiles — they are the
-   real version pins (run `/e22-conventions` for the rationale).
+   carry no stale versions; the committed placeholder `mise.lock` files are
+   what `mise install` writes the resolved versions into (mise only writes the
+   lock if the file already exists — if a placeholder is missing, restore it
+   with `touch mise.lock` or run `mise lock` first; never delete it). Have the
+   dev run `mise install` (and `cd infra && mise install` if they'll touch
+   infra), then **verify each `mise.lock` now contains real `[[tools.*]]`
+   version entries** — a still-empty lock means nothing was pinned — and commit
+   them. They are the real version pins (run `/e22-conventions` for the
+   rationale, including the cross-platform backend rule and lockfile-maintenance
+   discipline).
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
    `packages/core` workspace so `pnpm install && pnpm dev` boots a page on a
    fresh clone. It is a placeholder, not the real stack — replace it with the
    actual first app (the default frontend is Next.js), or delete both folders if
-   `web` isn't your first app. See `apps/web/README.md`.
+   `web` isn't your first app. See `apps/web/README.md`. The template
+   deliberately ships **no** workspace lockfile (the starter's would go stale);
+   once the real workspace exists, run `pnpm install` (or `uv lock` for Python)
+   and commit the generated `pnpm-lock.yaml` / `uv.lock` — from then on it is
+   maintained with every dependency change.
 6. **Adapt the standard tasks to this product.** The template's `mise.toml`
    ships a baseline `dev:setup` task (plus `docker:up/down`, `db:migrate`,
    `db:seed`) wired to the default stack: Postgres in `compose.yaml`,

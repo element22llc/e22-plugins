@@ -24,6 +24,11 @@ team-learned patterns on top.
 - **One validated config module** for environment access instead of scattered
   `process.env` reads.
 - **`async/await` with no floating promises** — handle or `await` every promise.
+- **Lockfiles are maintained, not optional.** `mise.lock`, `pnpm-lock.yaml`,
+  `uv.lock`, `.terraform.lock.hcl` are committed and updated in the same change
+  that touches their config/deps. Caveat: mise only writes `mise.lock` if the
+  file already exists — restore a missing one (`touch` / `mise lock`) instead of
+  skipping the pin. (run `/e22-conventions` for the full discipline.)
 
 ## Things to avoid (E22 anti-patterns)
 
@@ -43,6 +48,9 @@ team-learned patterns on top.
   filtering/joins into the query.
 - **Untracked or non-reproducible DB changes** — ad-hoc schema edits outside
   Drizzle migrations; destructive migrations without a reviewed forward path.
+- **Deleting or ignoring a lockfile to make an error go away** — fix the
+  resolution problem or regenerate the lock with its owning tool; a dependency
+  change without the matching lockfile diff is an incomplete change.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
 (parameterized, migration-tracked), Pydantic v2 for boundary validation, Ruff
