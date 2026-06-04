@@ -5,6 +5,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.2.0
+
+- New always-on rule **Commit autonomy** (`rules/45-commit-autonomy.md`): on a
+  `feat/*`/`fix/*` branch, commit coherent units of work without asking the dev
+  for permission — the PR review is the gate, not each commit. Never commit to
+  `main` directly. When the work is judged complete (Definition of Done holds),
+  proactively propose opening the PR and wait for the dev's confirmation before
+  pushing/creating it.
+- End-of-session checklist gains a matching item: all finished work committed,
+  PR proposed if the change is complete.
+
 ### 1.1.0
 
 - Local-dev `.env` bootstrap: the Stack and Secrets rules now require that when

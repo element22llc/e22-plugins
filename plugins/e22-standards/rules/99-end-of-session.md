@@ -10,6 +10,7 @@ tooling so nothing is dropped:
 - [ ] Spec/code drift resolved now, not deferred to "later"?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Any remaining template placeholders flagged or resolved? (Fresh forks: run `/e22-init`.)
+- [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is
 complete.
