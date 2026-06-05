@@ -43,9 +43,8 @@ project's intent clearly warrants a different stack, propose the better fit and
   orchestration tasks belong there, not in `package.json` (run `/e22-conventions`
   for the rationale).
 - **Environment variables:** store local config in a **`.env`** file (or
-  `.env.local`), which is git-ignored and **never committed**. There is no
-  committed `.env.example`; document required variables in the relevant app's
-  `README.md` instead, and keep deployed secrets in AWS Secrets Manager (see
+  `.env.local`), which is git-ignored and **never committed**. Document required variables
+  in the relevant locations in a `.env.example` file, and keep deployed secrets in AWS Secrets Manager (see
   Secrets handling). **When setting up or running an app locally, make sure
   `.env` exists and carries the base variables the app needs to boot** — e.g.
   `DATABASE_URL` pointing at the local Compose PostgreSQL, and freshly generated

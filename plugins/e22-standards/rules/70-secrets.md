@@ -6,13 +6,13 @@ or transmitted.
 
 - **Never commit secrets.** No secret values in git — not in code, configs,
   `mise.toml`, specs, or commit messages. `.env` / `.env.local` are git-ignored
-  and hold local secrets; there is no committed `.env.example`.
+  and hold local secrets; old environment variable example in `.env.example`.
 - **Local development:** put config in a git-ignored `.env` / `.env.local`,
   populated with the base variables the app needs to run — local Compose
   service URLs (e.g. `DATABASE_URL` for the local PostgreSQL) and freshly
   generated local-only secret values, never values copied from deployed
   environments. Document the *names* of required variables (not their values)
-  in the relevant app's `README.md`.
+  in the relevant app's `.env.example`.
 - **Deployed environments:** store secrets in **AWS Secrets Manager** and inject
   them at deploy/runtime — never bake them into images or CI logs.
 - **Non-secret config** may live in `mise.toml`'s `[env]` block; secrets must
