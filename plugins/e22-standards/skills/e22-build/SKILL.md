@@ -39,7 +39,12 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
    to `/spec/SPEC-QUESTIONS.md`. If the PO has a Claude Design export, read it
    per `/e22-design-sources`.
 3. **Draft feature intents.** For each capability the product clearly needs,
-   run `/e22-spec-scaffold <id>` and fill `intent.md` from the conversation.
+   run `/e22-spec-scaffold <id>` and fill `intent.md` from the conversation —
+   including **Key concepts & data** and **Lifecycle expectations**: ask the
+   PO plainly what each thing is, what it must remember, and what "delete"
+   should mean (*gone forever or recoverable? for how long? what happens to
+   related items?*). The PO defines these **semantics**; the schema and
+   deletion mechanics derived from them are the dev's to confirm at review.
 4. **PO validation gate.** Walk the PO through each `intent.md` in plain
    language ("here's what I understood — is this right?"). Check the
    **PO acceptance** boxes only on their explicit approval and note where the
@@ -55,14 +60,20 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
    work (Definition of Done). Commit coherent units without asking
    (Commit-autonomy rule) on a `feat/*` branch.
 7. **Respect the PO-mode guardrails.**
-   - **Never deploy** (`pnpm deploy:*`) and **never touch `/infra`**.
-   - **High-risk areas** (auth, secrets, migrations beyond local, billing,
-     deletion) get the *minimum* needed to demo — e.g. a clearly-marked
-     stubbed sign-in and freshly generated local-only `.env` secrets. Record
-     every stub in the feature's `contract.md` and `/spec/SPEC-QUESTIONS.md`.
-     Tell the PO plainly, e.g. *"sign-in is a placeholder until a developer
-     wires it in securely."* Never wire real auth or real secrets without dev
-     scoping (High-risk rule).
+   - **Never deploy** (`pnpm deploy:*`), **never touch `/infra`**, and
+     **never use real secrets or real third-party accounts** — generate
+     local-only `.env` values.
+   - Everything else may be **built for real**: a Greenfield build is
+     pre-production (High-risk rule's relaxation), so the data model,
+     soft-delete with a visible restore, and library-backed local sign-in are
+     fair game. Record every high-risk choice in the feature's `contract.md`
+     (marked `proposed — dev confirms at review`) and open questions in
+     `/spec/SPEC-QUESTIONS.md`.
+   - Anything that only matters against real users or real data — hard
+     deletes, retention/cleanup jobs, real payment flows, production auth
+     config — gets the *minimum* needed to demo, clearly marked. Tell the PO
+     plainly, e.g. *"sign-in works on your computer; a developer hardens it
+     before real users touch it."*
 8. **Run it and demo it.** `mise run dev:setup`, then `pnpm dev` — making sure
    `.env` exists with the base variables (Stack rule). Give the PO the
    localhost URL and a plain-language walkthrough of what to click. Iterate
@@ -73,7 +84,8 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
    description is the dev's productionization brief; include:
    - that this is a **PO-built v0 via `/e22-build`**;
    - links to the approved `intent.md` files;
-   - the list of **stubbed/deferred high-risk items** (especially auth);
+   - the list of **built-for-real high-risk choices** (marked `proposed` in
+     the contracts) and **remaining stubs** — especially auth;
    - open items from `/spec/SPEC-QUESTIONS.md`.
 
    The dev PR review is the unchanged gate: it merges to `main` as v0 only
