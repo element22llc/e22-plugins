@@ -1,6 +1,6 @@
 ---
 name: e22-spec-scaffold
-description: Create a new feature's spec (intent.md + contract.md) from the Element 22 templates. Use when starting a user-facing feature, or when the dev says "spec out X", "create the intent for Y", or "scaffold a feature".
+description: Create a feature's spec (intent.md + contract.md) from the E22 templates. Use when starting a user-facing feature or asked to spec out / scaffold a feature.
 ---
 
 # Scaffold a feature spec

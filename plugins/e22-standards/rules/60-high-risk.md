@@ -12,7 +12,6 @@ architectural changes here speculatively:
 - **Billing & payments** — pricing, charging, refunds, subscription state
 - **Deployment & release logic** — CI/CD workflows, release scripts, feature-flag rollouts
 
-How to handle these: scope manually with the dev **before** any code; write the
-contract or ADR first; keep PRs smaller than usual; the dev reviews
-line-by-line; validate in non-prod before prod. `@claude implement this` is not
-appropriate here without a comment naming what is in and out of scope.
+Handling: scope with the dev **before** any code; contract or ADR first;
+smaller PRs; line-by-line review; validate in non-prod before prod. `@claude
+implement this` is not appropriate here without explicit in/out scope.

@@ -1,6 +1,6 @@
 ---
 name: e22-design-sources
-description: The full Element 22 guide to handling Claude Design (and other) design exports — the URL-vs-local-export distinction, where each artifact lives, what to read and what not to invent, and DESIGN.md vs intent.md. Use when a feature originates from a Claude Design export/URL, Figma, or screenshots, or when the dev asks how to use a design source.
+description: E22 guide to design exports — URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md. Use when a feature originates from a Claude Design export/URL, Figma, or screenshots.
 ---
 
 # Element 22 design-sources reference

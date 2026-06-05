@@ -5,6 +5,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.7.0
+
+- **Token slim: the always-on ruleset shrinks ~27%** (~20.4 KB → ~14.9 KB
+  injected per session — roughly 1.4k tokens saved in *every* session of
+  *every* product repo), following Anthropic's guidance that long always-on
+  context both costs tokens and degrades rule adherence. No standard was
+  dropped — prose moved behind the existing on-demand skills (progressive
+  disclosure), keeping rules imperative and pointer-style per this repo's own
+  `rules/` policy:
+  - `10-stack.md` rewritten as lean bullets; backend-placement rationale and
+    the local-services prose (compose-from-template, same-engine rule) moved to
+    `CONVENTIONS.md` (new **Backend placement** and **Local services**
+    sections). The `.env` bootstrap detail now lives only in the Secrets rule
+    (it was duplicated across `10-stack.md` and `70-secrets.md`).
+  - `85-practices.md` condensed to the E22-specific baseline (Drizzle-only,
+    Zod boundaries, server-first, `packages/` for domain logic, nothing
+    silenced, lockfile discipline); the full patterns/anti-patterns prose moved
+    to `CONVENTIONS.md` (new **Baseline patterns & anti-patterns** section).
+  - `30-spec-workflow.md` keeps the triggers; the 4-step Greenfield walkthrough
+    moved to the spec-framework reference (new **Greenfield flow** section),
+    which `/e22-build` now cites directly.
+  - `15-commands.md` command block compacted; `00-router.md`, `20-layout.md`,
+    `60-high-risk.md`, `70-secrets.md`, and `90-design-sources.md` tightened
+    (duplication with Stack/Spec-workflow removed, pointer phrasing).
+- **Skill descriptions trimmed ~35%.** All six SKILL.md frontmatter descriptions
+  (loaded every session) cut to one-line what-it-does + when-to-use; the
+  `/e22-conventions` summary now lists the new reference sections.
+
 ### 1.6.0
 
 - **New: PO path — `/e22-build` skill + command.** Non-technical product

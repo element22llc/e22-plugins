@@ -1,6 +1,6 @@
 ---
 name: e22-adr
-description: Create a numbered Architecture Decision Record from the Element 22 ADR template. Use when making a hard-to-reverse or cross-cutting choice (stack, database, auth approach, deployment model, a new pattern), or when the dev says "write an ADR" / "record this decision".
+description: Create a numbered ADR from the E22 template. Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern) or when asked to record a decision.
 ---
 
 # Write an ADR

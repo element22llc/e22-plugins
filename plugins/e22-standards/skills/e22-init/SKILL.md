@@ -1,6 +1,6 @@
 ---
 name: e22-init
-description: One-time first-run setup for a freshly forked Element 22 template repo — resolve placeholders, pin the toolchain, replace the starter app. Use when a repo still has [Replace …], [Product Name], [e.g., …], or @github-handle placeholders, or when the dev says "set up this new repo" / "I just cloned the template".
+description: One-time setup for a freshly forked E22 template repo — resolve placeholders, pin the toolchain, replace the starter app. Use when template placeholders ([Replace …], [Product Name], @github-handle) remain or the dev says "set up this new repo".
 ---
 
 # First-run setup (template just forked)

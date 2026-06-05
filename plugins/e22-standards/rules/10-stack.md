@@ -1,53 +1,30 @@
 ## Stack
 
-These are E22's **default biases**, not mandates. Lean toward them, but when a
-project's intent clearly warrants a different stack, propose the better fit and
-**record the choice as an ADR under `/spec/decisions/`** (run `/e22-adr`).
+E22 **default biases**, not mandates — when a project's intent clearly warrants
+a different stack, propose the better fit and record an ADR under
+`/spec/decisions/` (run `/e22-adr`). Rationale and full setup detail for every
+bullet: run `/e22-conventions`.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
-- **Backend:** Node + TypeScript + PostgreSQL + Drizzle by default. **For the UI
-  web app, keep the backend *inside* the Next.js app** — use Route Handlers
-  (`app/api/**`), Server Actions, and server components / server-side data
-  fetching rather than standing up a separate API app. This is the default to
-  keep the stack simple; only split out a standalone `apps/api` when the intent
-  clearly warrants it (a non-web consumer, independent scaling/deploy, or a
-  different runtime). Switch to Python + FastAPI + PostgreSQL when the project
-  intent calls for it — data- or ML-heavy work, or a Python-ecosystem
-  dependency; that case is a deliberate split and should be recorded as an ADR.
-- **Infra:** AWS, provisioned with **OpenTofu + Terragrunt** — see `/infra`.
-- **CI:** GitHub Actions.
-- **Deployment:** AWS (e.g. ECS) via GitHub Actions — confirm the target per app.
-- **Package managers:** **pnpm** for Node, **uv** for Python. On Windows, develop
-  inside **WSL2**. Rationale and setup: run `/e22-conventions`.
-- **Linting & formatting:** **Biome** for Node/TypeScript, **Ruff** for Python.
-  Both are the default lint *and* format tools — don't add ESLint/Prettier or
-  Flake8/Black/isort alongside them without an ADR.
-- **Testing:** **Vitest** for Node/TypeScript, **pytest** for Python.
-- **Auth:** **[Better Auth](https://better-auth.com/)** for the Node/Next.js
-  stack. Auth is a high-risk area — scope with the dev and write an ADR before
-  wiring it in.
-- **Error tracking:** **Sentry** for error capture (frontend + backend). Keep
-  DSNs and tokens in Secrets Manager, never committed (see Secrets handling).
-- **Local services:** run backing services (PostgreSQL, Redis, etc.) with
-  **Docker Compose** via a committed `compose.yaml`, so local matches deployed.
-  **Don't author `compose.yaml` from scratch** — start from the
-  `repository-template` one and adapt. **Verify image versions, don't recall
-  them:** a plugin hook denies writes pinning a stale major for common images
-  (checked live against endoflife.date); a deliberately older pin needs an ADR
-  plus `# pin-ok: <reason>` on the same line (run `/e22-conventions`).
-  **Do not substitute a different engine for local dev** (e.g. SQLite in place of
-  PostgreSQL) — develop against the same database you deploy. `pnpm dev` /
-  `uv run` should assume the Compose services are up. The standard entry point
-  is **`mise run dev:setup`** (idempotent: services up → migrate → seed), defined
-  in `mise.toml` — keep it working as the stack evolves; environment
-  orchestration tasks belong there, not in `package.json` (run `/e22-conventions`
-  for the rationale).
-- **Environment variables:** store local config in a **`.env`** file (or
-  `.env.local`), which is git-ignored and **never committed**. Document required variables
-  in the relevant locations in a `.env.example` file, and keep deployed secrets in AWS Secrets Manager (see
-  Secrets handling). **When setting up or running an app locally, make sure
-  `.env` exists and carries the base variables the app needs to boot** — e.g.
-  `DATABASE_URL` pointing at the local Compose PostgreSQL, and freshly generated
-  local-only secrets (auth secret, API tokens). Create or fill it as part of
-  getting local dev running — don't leave the dev to hand-assemble it from the
-  README. Never copy deployed/production secret values into it.
+- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
+  Next.js app (Route Handlers, Server Actions, server components). A standalone
+  `apps/api`, or Python + FastAPI + PostgreSQL, only when intent clearly
+  warrants it — either split is an ADR.
+- **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
+  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app.
+- **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
+- **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
+  format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
+- **Testing:** Vitest (Node/TS), pytest (Python).
+- **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
+  **Error tracking:** Sentry; DSNs/tokens in Secrets Manager, never committed.
+- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
+  `repository-template` one, don't author from scratch. **Same engine locally
+  as deployed** (no SQLite stand-in for PostgreSQL). Standard entry point:
+  `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
+  green; environment tasks live in `mise.toml`, not `package.json`. A plugin
+  hook denies stale image-major pins; a deliberately older pin needs an ADR
+  plus `# pin-ok: <reason>` on the same line.
+- **Environment variables:** local config in a git-ignored `.env` /
+  `.env.local`; names documented in `.env.example` — bootstrap and storage
+  rules are in Secrets handling.

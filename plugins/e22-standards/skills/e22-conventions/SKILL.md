@@ -1,6 +1,6 @@
 ---
 name: e22-conventions
-description: The full Element 22 conventions reference — versioning policy, mise toolchain (latest-in-config, pinned-in-lockfile), monorepo layout, workspace tools (pnpm/uv), lint/format (Biome/Ruff), testing (Vitest/pytest), auth/error-tracking, and the Windows-WSL rule. Use when the dev asks about tooling/versioning conventions or you need the rationale behind a stack default.
+description: Full E22 conventions reference — versioning, mise toolchain & lockfiles, backend placement, local services, monorepo layout, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns. Use for any tooling/convention question or the rationale behind a stack default.
 ---
 
 # Element 22 conventions reference
@@ -23,6 +23,10 @@ It covers, in detail:
 - **Standard mise tasks** — `mise run dev:setup` (idempotent: services up →
   migrate → seed) and friends; why environment tasks live in `mise.toml`, not
   `package.json`; how `/e22-init` adapts them per product.
+- **Backend placement** — backend inside the Next.js app by default; when a
+  standalone `apps/api` or the Python/FastAPI switch is warranted (ADR either way).
+- **Local services** — Docker Compose from the template `compose.yaml`, the
+  same-engine-as-deployed rule, and how `dev:setup` ties in.
 - **Monorepo layout** — `/apps`, `/packages`, `/configs`; polyrepo across
   products, monorepo within one.
 - **Workspace tooling** — pnpm (Node), uv (Python).
@@ -30,6 +34,8 @@ It covers, in detail:
   or Flake8/Black/isort alongside them without an ADR.
 - **Testing** — Vitest (Node/TS), pytest (Python).
 - **Auth & error tracking** — Better Auth, Sentry.
+- **Baseline patterns & anti-patterns** — the full prose behind the always-on
+  practices baseline (Drizzle/Zod/server-first, what to avoid, Python mapping).
 - **Windows** — develop inside WSL2.
 
 Open that file and answer from it. If a convention is genuinely unclear or the

@@ -127,6 +127,32 @@ or delete the docker/db tasks if the product has no backing services — and kee
 `dev:setup` green as the stack evolves: a fresh clone plus `mise install &&
 mise run dev:setup` must always produce a working local environment.
 
+## Backend placement
+
+For the UI web app, keep the backend **inside** the Next.js app — Route
+Handlers (`app/api/**`), Server Actions, and server components / server-side
+data fetching — rather than standing up a separate API app. This is the default
+to keep the stack simple. Only split out a standalone `apps/api` when the
+intent clearly warrants it: a non-web consumer, independent scaling/deploy
+needs, or a different runtime. Switch to Python + FastAPI + PostgreSQL when the
+project intent calls for it — data- or ML-heavy work, or a Python-ecosystem
+dependency. Either split is a deliberate choice: record it as an ADR.
+
+## Local services
+
+Run backing services (PostgreSQL, Redis, etc.) with Docker Compose via a
+committed `compose.yaml`, so local matches deployed:
+
+- **Don't author `compose.yaml` from scratch** — start from the
+  `repository-template` one and adapt, so generated services can't reintroduce
+  stale image majors (the version-pin hook enforces the common path; see
+  Versioning policy → Enforcement).
+- **Do not substitute a different engine for local dev** (e.g. SQLite in place
+  of PostgreSQL) — develop against the same database you deploy, or you'll ship
+  behavior the real engine doesn't have.
+- `pnpm dev` / `uv run` assume the Compose services are up; the standard entry
+  point is `mise run dev:setup` (see Standard mise tasks).
+
 ## Internal monorepo layout
 
 Code lives at the repo root in three top-level directories:
@@ -196,6 +222,60 @@ Testing rules.
 - **Error tracking → [Sentry](https://sentry.io)** for error capture on both
   frontend and backend. Keep DSNs and auth tokens in Secrets Manager — never
   commit them.
+
+## Baseline patterns & anti-patterns (full prose)
+
+The always-on rules carry the condensed baseline; this is the full version for
+the default stack (Next.js + TS + Tailwind; Node/TS + PostgreSQL + Drizzle
+inside the Next.js app; Biome; Vitest/pytest; Better Auth; Sentry; Zod).
+
+Patterns:
+
+- **Data access through Drizzle, always parameterized.** Use the query builder /
+  prepared statements; let Drizzle generate SQL. Manage schema changes with
+  Drizzle Kit migrations, checked into git and reviewed.
+- **Validate at every boundary with Zod.** Route Handler / Server Action inputs,
+  external API responses, and environment variables are parsed through a schema
+  before use; derive TS types from the schema rather than hand-writing them.
+- **Server-first.** Prefer Server Components and server-side data fetching;
+  secrets and DB access stay server-side. Mark Client Components explicitly and
+  keep them lean. Only expose `NEXT_PUBLIC_*` for genuinely public values.
+- **Keep route/action handlers thin.** Put reusable domain logic in `packages/`
+  so it is testable in isolation and shared across apps.
+- **Strict typing.** TS `strict` on; prefer `unknown` + narrowing over `any`;
+  infer types from Drizzle schema and Zod. A `@ts-expect-error` carries a
+  comment explaining why.
+- **Explicit error handling + Sentry.** Catch where you can act; otherwise let
+  it propagate. Report unexpected errors to Sentry with context; never swallow.
+- **One validated config module** for environment access instead of scattered
+  `process.env` reads.
+- **`async/await` with no floating promises** — handle or `await` every promise.
+
+Anti-patterns to avoid:
+
+- **Raw / string-interpolated SQL** or concatenating user input into queries —
+  injection risk; go through Drizzle with parameters.
+- **`any` casts or blanket `@ts-ignore`** to silence the compiler instead of
+  modeling the type, and disabling Biome rules wholesale rather than fixing.
+- **Trusting unvalidated input** from requests, params, env, or external APIs
+  reaching the DB, filesystem, or shell.
+- **Leaking server-only code or secrets to the client** — server modules
+  imported into Client Components, sensitive values behind `NEXT_PUBLIC_`.
+- **Silent failures** — empty `catch`, swallowing errors, or returning a
+  fallback that hides a real fault.
+- **Business logic inside React components or route handlers** instead of a
+  shared, testable `packages/` module.
+- **N+1 query patterns** and fetching whole tables to filter in JS — push
+  filtering/joins into the query.
+- **Untracked or non-reproducible DB changes** — ad-hoc schema edits outside
+  Drizzle migrations; destructive migrations without a reviewed forward path.
+- **Deleting or ignoring a lockfile to make an error go away** — fix the
+  resolution problem or regenerate the lock with its owning tool; a dependency
+  change without the matching lockfile diff is an incomplete change.
+
+For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
+(parameterized, migration-tracked), Pydantic v2 for boundary validation, Ruff
+for lint/format.
 
 ## Windows: use WSL
 

@@ -1,6 +1,6 @@
 ---
 name: e22-build
-description: Guided flow for a non-technical product owner (PO) to turn an idea into a working local app — Claude interviews them, drafts the spec, they approve the intent, then Claude builds and runs the app on their machine and proposes the PR for dev review. Use when someone says "I have an idea for an app", "help me build/prototype my idea", "I'm not a developer", or types /e22-build, /e22-idea, or /e22-prototype.
+description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling. Use when a non-developer wants to build or prototype an app idea, or types /e22-build, /e22-idea, or /e22-prototype.
 ---
 
 # Build a working app from a PO's idea
@@ -32,8 +32,9 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
      `brew install mise` on macOS), run `mise install`, and verify the
      `mise.lock` files gained real `[[tools.*]]` entries (see `/e22-init`
      step 4). Confirm Docker Desktop is running; help start it if not.
-2. **Interview → product spec.** Follow Greenfield step 1 of the Spec-workflow
-   rules: ask plain-language questions to fill `spec/vision.md`,
+2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
+   reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`):
+   ask plain-language questions to fill `spec/vision.md`,
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; ambiguity goes
    to `/spec/SPEC-QUESTIONS.md`. If the PO has a Claude Design export, read it
    per `/e22-design-sources`.
