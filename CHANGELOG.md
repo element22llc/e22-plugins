@@ -5,6 +5,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.8.0
+
+- **Pre-production relaxation of the high-risk gates.** The gates exist to
+  protect real systems and real data; while a product is **pre-production**
+  (nothing deployed, no real users or data) high-risk areas may be built for
+  real locally without prior dev scoping — document choices as you go
+  (`contract.md`, ADRs, `/spec/SPEC-QUESTIONS.md`) and the dev PR review
+  hardens them at productionization. Pre-production is a property of the
+  *product, not the laptop* — local work in a deployed product gets no
+  relaxation. Never relaxed: real secrets/credentials, `/infra`, deploys,
+  real third-party calls. (`rules/60-high-risk.md`)
+- **PO mode unblocked for exploration.** PO guardrails narrowed to the truly
+  irreversible (deploy, `/infra`, real secrets/third-party accounts); a
+  pre-production PO build may implement the data model, soft-delete with
+  restore, and library-backed local sign-in for real. New principle: the PO
+  owns data **semantics** (what exists, what "delete" means to a user); the
+  dev confirms the **mechanics** (schema, cascades, retention) at review.
+  (`rules/05-roles.md`, `skills/e22-build`)
+- **Intent template captures data semantics.** New PO-facing **Key concepts &
+  data** and **Lifecycle expectations** sections in `feature-intent.md` give
+  data-model and deletion intent a structured home; `contract.md`'s Data model
+  now derives from them and is marked `proposed — dev confirms at review`
+  when drafted pre-production. `/e22-build` now interviews for deletion
+  semantics explicitly (recoverable? how long? related items?).
+
 ### 1.7.0
 
 - **Token slim: the always-on ruleset shrinks ~27%** (~20.4 KB → ~14.9 KB

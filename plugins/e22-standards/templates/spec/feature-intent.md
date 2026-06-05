@@ -40,6 +40,23 @@ If this feature was explored in Claude Design or another design tool, link the s
 2. System shows Y
 3. User confirms, sees Z
 
+## Key concepts & data
+
+[Plain language — what things does this feature deal with, what must the
+system remember about each, and how do they relate? No tables or types; the
+dev derives the schema in `contract.md` from this.]
+
+- [Thing] — [what it is; what it must remember; what it belongs to]
+
+## Lifecycle expectations
+
+[What happens to those things over time — especially deletion. Omit if
+nothing is ever deleted or archived.]
+
+- What does "delete" mean here: gone forever, recoverable, or just hidden?
+- If recoverable — for how long, and by whom?
+- What happens to related things when this is deleted?
+
 ## What is in scope
 
 -

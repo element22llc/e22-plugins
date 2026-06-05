@@ -14,7 +14,9 @@
 
 ## Data model
 
-[Tables, fields, types. Only the parts that matter for this feature.]
+[Tables, fields, types. Only the parts that matter for this feature. Derive
+from the intent's "Key concepts & data" / "Lifecycle expectations". If drafted
+pre-production (e.g. a PO build), mark it `proposed — dev confirms at review`.]
 
 ```text
 table: example
