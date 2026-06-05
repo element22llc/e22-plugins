@@ -10,7 +10,7 @@ rules state only *when* to create artifacts.
 |---|---|---|---|
 | Intake | GitHub Issues | PO | Conversational, ephemeral |
 | Exploration | `/spec/design` for Greenfield; the originating issue + `intent.md` `Design source` for Brownfield | PO + Dev | Disposable / preserved as a link |
-| Spec | `/spec` | Dev writes, PO approves | Durable |
+| Spec | `/spec` | Dev or PO (via `/e22-build`) writes; PO approves intent; dev approves the PR | Durable |
 | Implementation | `/apps` + `/packages` | Dev | Must conform to spec |
 | Non-prod validation | Non-prod environment | PO validates, Dev supports | Working but not production |
 | Production | AWS | Dev | Deployed |
@@ -22,7 +22,6 @@ validation, and operation. Treat it as infrastructure.
 
 ```text
 /spec
-├── README.md
 ├── vision.md                 # Why this product exists
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
@@ -30,10 +29,6 @@ validation, and operation. Treat it as infrastructure.
 ├── design/                   # Greenfield product-level design export + traceability link
 │   ├── README.md
 │   └── source.md
-├── _templates/               # Reusable templates for specs and ADRs
-│   ├── feature-intent.md
-│   ├── feature-contract.md
-│   └── adr.md
 ├── features/
 │   └── [feature-id]/
 │       ├── intent.md         # The what and why — PO-facing
@@ -48,7 +43,7 @@ ADR — both copy from the bundled templates so structure never drifts per featu
 
 ## Rules
 
-1. **Specs are written by Devs with Claude's help, and approved by the PO.** POs are not expected to write specs from scratch.
+1. **Specs are written with Claude's help — by a dev, or by a PO via `/e22-build`.** The PO approves intent; a dev approves the PR before merge. POs are not expected to write specs from scratch.
 
 2. **Specs are organized by user-facing feature, not by code layout.** Code lives in `/apps` and `/packages`, organized however the stack wants. A single feature may span several apps and packages. The link between a spec feature and its code is the optional pointer section in `contract.md` — at most a hint naming the owning app(s)/package(s), not a folder-mirroring rule or a maintained index. If it's stale or absent, find the code by searching the repo.
 

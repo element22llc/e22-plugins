@@ -5,6 +5,45 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.6.0
+
+- **New: PO path — `/e22-build` skill + command.** Non-technical product
+  owners can now go idea → auto-drafted spec → intent validation → working
+  local app entirely in Claude Code. The skill is a thin driver over the
+  existing Greenfield flow: PO-adapted first-run setup (Claude installs and
+  runs mise/Docker/pnpm itself, asks the PO only product name + one-liner,
+  keeps the default stack), interview → `vision.md`/`users.md`/`glossary.md`,
+  intents via `/e22-spec-scaffold`, an explicit PO-acceptance gate before
+  broad implementation, feature-by-feature build with `contract.md` + tests,
+  local demo via `mise run dev:setup` + `pnpm dev`, and handoff as a PR whose
+  description is the dev's productionization brief (PO-built v0, approved
+  intents, stubbed high-risk items, open questions).
+- **New always-on rule `05-roles.md` (PO vs dev).** Defines the two audiences
+  and PO-mode behavior: plain language, spec-first, Claude drives the
+  toolchain; guardrails — never deploy, never touch `/infra`, high-risk areas
+  (auth, secrets, migrations, billing, deletion) stubbed minimally and flagged
+  for a dev. Standards are never softened for a non-technical user, and the
+  gate is unchanged: a PO-built app merges to `main` as v0 only after a dev
+  approves the PR.
+- **Spec framework broadened to both audiences.** Rule 1 and the lifecycle
+  table now say specs are written with Claude's help by a dev *or* a PO via
+  `/e22-build` (PO approves intent, dev approves the PR). Fixed structure-
+  diagram drift: removed `/spec/README.md` and `/spec/_templates/`, which the
+  template repo doesn't ship (templates are bundled in this plugin).
+- README: dropped the hand-maintained Versions table (already stale at 1.0.0)
+  in favor of `plugin.json` + this changelog.
+- Pairs with `repository-template`: PO quickstart in the README, `/e22-build`
+  in the `CLAUDE.md` fork note, broadened `spec/vision.md` header, and two
+  fresh-fork CI fixes — (1) `pnpm install --frozen-lockfile` failed every
+  fresh fork's first PR (`ERR_PNPM_NO_LOCKFILE`, the template deliberately
+  ships no `pnpm-lock.yaml`); the install step now freezes only once a
+  lockfile exists; (2) mise-action v4 auto-runs `mise install --locked` when
+  a `mise.lock` exists, so the comment-only placeholder locks failed every
+  tool with "not in the lockfile"; CI now drops placeholder locks (no
+  `[[tools]]` entries) from the runner workspace before setup and installs
+  the exact pins once `/e22-init` commits populated locks. Both fixes are
+  self-correcting at lock adoption.
+
 ### 1.5.0
 
 - **New: enforced version-pin verification.** The "default to current stable /
