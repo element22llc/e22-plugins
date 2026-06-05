@@ -1,6 +1,6 @@
 ---
 name: e22-build
-description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling. Use when a non-developer wants to build or prototype an app idea, or types /e22-build, /e22-idea, or /e22-prototype.
+description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling. Use when a non-developer wants to build or prototype an app idea, types /e22-build, /e22-idea, or /e22-prototype, or resumes an in-progress PO build (the repo has /spec/BUILD-STATUS.md).
 ---
 
 # Build a working app from a PO's idea
@@ -20,6 +20,14 @@ everything before it becomes the official version."*
 only after a dev approves the PR, so it must meet the org standards from the
 start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
 
+**Flow state lives in `/spec/BUILD-STATUS.md`, not in the conversation.** Copy
+`${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md` there when you first
+create `/spec` (step 2), and update + commit it at **every step transition**:
+current step, per-feature progress, handoff readiness. Sessions end; the file
+is how the next one picks up. **Resuming:** if `/spec/BUILD-STATUS.md` already
+exists, read it (and the `intent.md` statuses) first and continue from the
+recorded step — don't restart the interview or re-ask settled questions.
+
 ## Steps
 
 1. **Fresh fork? Set it up yourself (PO-adapted `/e22-init`).** If template
@@ -37,7 +45,8 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
    ask plain-language questions to fill `spec/vision.md`,
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; ambiguity goes
    to `/spec/SPEC-QUESTIONS.md`. If the PO has a Claude Design export, read it
-   per `/e22-design-sources`.
+   per `/e22-design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
+   template now, and keep it current from here on.
 3. **Draft feature intents.** For each capability the product clearly needs,
    run `/e22-spec-scaffold <id>` and fill `intent.md` from the conversation —
    including **Key concepts & data** and **Lifecycle expectations**: ask the
@@ -78,18 +87,32 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
    `.env` exists with the base variables (Stack rule). Give the PO the
    localhost URL and a plain-language walkthrough of what to click. Iterate
    with them; spec changes from feedback update the relevant `intent.md` /
-   `contract.md`.
-9. **Hand off via the PR.** When the Definition of Done holds, propose opening
-   the PR (it waits for confirmation — Commit-autonomy rule). The PR
-   description is the dev's productionization brief; include:
-   - that this is a **PO-built v0 via `/e22-build`**;
-   - links to the approved `intent.md` files;
-   - the list of **built-for-real high-risk choices** (marked `proposed` in
-     the contracts) and **remaining stubs** — especially auth;
-   - open items from `/spec/SPEC-QUESTIONS.md`.
+   `contract.md`. **Stay in this loop — do not propose handoff from here.**
+   Handoff has its own gate (step 9), and the PO may take days of real use to
+   get there, possibly across many sessions.
+9. **PO demo-validation gate.** Handoff is *pulled by the PO, not pushed by
+   you*. Your own judgment that the app is done — even the Definition of Done
+   holding — never opens this gate; it is a precondition, not the trigger.
+   Once the PO has actually used the running app and their step-8 feedback is
+   incorporated, you may ask plainly: *"Does this do everything you wanted?
+   Anything missing before a developer takes over?"* Only on their explicit
+   yes: check **PO validated the working demo** in each `intent.md`, set its
+   Status to `validated`, and mark the gate passed in `/spec/BUILD-STATUS.md`
+   (with where the confirmation happened). If the PO says "it's done" or
+   "ready for the developer" unprompted, that is the gate — record it the
+   same way.
+10. **Hand off via the PR.** When the demo-validation gate has passed and the
+    Definition of Done holds, propose opening the PR (it waits for
+    confirmation — Commit-autonomy rule). The PR
+    description is the dev's productionization brief; include:
+    - that this is a **PO-built v0 via `/e22-build`**;
+    - links to the approved (and demo-validated) `intent.md` files;
+    - the list of **built-for-real high-risk choices** (marked `proposed` in
+      the contracts) and **remaining stubs** — especially auth;
+    - open items from `/spec/SPEC-QUESTIONS.md`.
 
-   The dev PR review is the unchanged gate: it merges to `main` as v0 only
-   with a dev's approval.
+    Link the PR in `/spec/BUILD-STATUS.md`. The dev PR review is the
+    unchanged gate: it merges to `main` as v0 only with a dev's approval.
 
 ## When not to use this
 

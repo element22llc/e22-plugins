@@ -5,6 +5,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.9.0
+
+- **PO demo-validation gate before handoff.** `/e22-build` no longer proposes
+  the handoff PR on its own judgment that the app is done — the Definition of
+  Done is a precondition, never the trigger. New step 9: after the PO has
+  actually used the running app and demo feedback is incorporated, the gate
+  opens only on the PO's explicit "this does what I wanted" (asked plainly, or
+  volunteered). Step 8 is now an explicit iterate-loop that may span many
+  sessions. (`skills/e22-build`, `commands/e22-build.md`)
+- **Build-flow state persists across sessions.** New `/spec/BUILD-STATUS.md`
+  (bundled template), created at interview time and updated at every step
+  transition: current step, per-feature progress, handoff-readiness checklist.
+  A fresh session reads it and resumes from the recorded step instead of
+  restarting the flow; the skill description now triggers on resuming too.
+  (`templates/spec/build-status.md`, `skills/e22-build`,
+  `templates/reference/spec-framework.md`)
+- **Per-feature demo validation is traceable.** `feature-intent.md` gains a
+  `validated` status (between `implemented` and `live`) and a
+  **PO validated the working demo** acceptance checkbox, checked only on the
+  PO's explicit confirmation. (`templates/spec/feature-intent.md`)
+- Command alias cleanup: `commands/e22-build.md` guardrail wording aligned
+  with the 1.8.0 pre-production relaxation (was still "high-risk areas
+  stubbed and flagged").
+
 ### 1.8.0
 
 - **Pre-production relaxation of the high-risk gates.** The gates exist to

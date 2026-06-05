@@ -1,7 +1,7 @@
 # [Feature Name]
 
 > Owner: [PO github handle]
-> Status: draft | approved | implemented | live
+> Status: draft | approved | implemented | validated | live
 > Created: YYYY-MM-DD
 
 ## PO acceptance
@@ -9,6 +9,8 @@
 - [ ] PO reviewed this intent
 - [ ] Open questions resolved or explicitly deferred
 - [ ] Approved for implementation
+- [ ] PO validated the working demo (after implementation — check only on the
+      PO's explicit confirmation after using the running app)
 
 Approval comment/link: [GitHub PR or issue comment]
 

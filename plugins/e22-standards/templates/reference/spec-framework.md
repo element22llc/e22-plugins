@@ -26,6 +26,7 @@ validation, and operation. Treat it as infrastructure.
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
 ├── SPEC-QUESTIONS.md         # Open ambiguities flagged during spec work
+├── BUILD-STATUS.md           # PO builds only — /e22-build flow state (step, per-feature progress, handoff gate)
 ├── design/                   # Greenfield product-level design export + traceability link
 │   ├── README.md
 │   └── source.md
