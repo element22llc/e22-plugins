@@ -33,11 +33,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - README: dropped the hand-maintained Versions table (already stale at 1.0.0)
   in favor of `plugin.json` + this changelog.
 - Pairs with `repository-template`: PO quickstart in the README, `/e22-build`
-  in the `CLAUDE.md` fork note, broadened `spec/vision.md` header, and a CI
-  fix — `pnpm install --frozen-lockfile` failed every fresh fork's first PR
-  (`ERR_PNPM_NO_LOCKFILE`, the template deliberately ships no
-  `pnpm-lock.yaml`); the install step now uses `--frozen-lockfile` only once
-  a lockfile exists.
+  in the `CLAUDE.md` fork note, broadened `spec/vision.md` header, and two
+  fresh-fork CI fixes — (1) `pnpm install --frozen-lockfile` failed every
+  fresh fork's first PR (`ERR_PNPM_NO_LOCKFILE`, the template deliberately
+  ships no `pnpm-lock.yaml`); the install step now freezes only once a
+  lockfile exists; (2) mise-action v4 auto-runs `mise install --locked` when
+  a `mise.lock` exists, so the comment-only placeholder locks failed every
+  tool with "not in the lockfile"; CI now drops placeholder locks (no
+  `[[tools]]` entries) from the runner workspace before setup and installs
+  the exact pins once `/e22-init` commits populated locks. Both fixes are
+  self-correcting at lock adoption.
 
 ### 1.5.0
 
