@@ -62,7 +62,21 @@ use the normal spec workflow (`/e22-spec-scaffold`).
    hardening brief and doubles as the resumable adoption checklist (a later
    session reads it first and continues from where it stopped).
 
-7. **Sync the template scaffolding.** Fetch `element22llc/repository-template`
+7. **Check dependency freshness and flag bad practices.** A vibe-coded app pins
+   to whatever versions the generating model knew at *its* training cutoff —
+   typically a major or two behind, sometimes on a library that's since been
+   superseded. **Do not trust your own memory of "latest"** — it has the same
+   cutoff problem. Query the registry **live** (`npm view <pkg> version`,
+   `uv pip index versions <pkg>`, the current Node LTS) and diff against what the
+   manifests pin. Record every dependency that is a major behind or superseded,
+   plus any as-built anti-patterns (raw / string-interpolated SQL, swallowed
+   errors, `any` / blanket `@ts-ignore`, unvalidated boundaries, secrets read
+   straight from `process.env`), in the **Outdated dependencies & bad practices**
+   section of `PRODUCTION-READINESS.md`. The dev owns the upgrade, on a clean
+   branch with tests green — propose, don't force, and never bump majors silently
+   in the adoption branch.
+
+8. **Sync the template scaffolding.** Fetch `element22llc/repository-template`
    (e.g. `gh repo clone element22llc/repository-template` into a temp dir, or a
    sparse `git` checkout) and bring in the files it carries that this repo lacks —
    `mise.toml` + the standard `[tasks]` (`dev:setup`, `docker:up/down`,
@@ -76,12 +90,12 @@ use the normal spec workflow (`/e22-spec-scaffold`).
    Then pin the toolchain (`mise install`) and commit the populated locks
    (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the workspace resolves).
 
-8. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
+9. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
    low-risk and clearly worth it; otherwise record the deviation in
    `PRODUCTION-READINESS.md` for the dev to decide. **Propose** any large
    restructure — never force it silently. The dev's PR review is the hard gate.
 
-9. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTION-READINESS.md` is the
+10. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTION-READINESS.md` is the
    dev's productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
@@ -97,5 +111,9 @@ use the normal spec workflow (`/e22-spec-scaffold`).
   overwriting any existing file; reconcile scaffolding rather than replacing it.
 - **Propose big restructures, don't force them.** Layout moves and risky changes
   go through the dev's PR review.
+- **Up-to-date by default; verify against the registry.** Flag outdated majors
+  and superseded libraries from **live** registry data, not memory — but the dev
+  owns the upgrade, on its own branch with tests green. Never bump majors
+  silently in the adoption branch.
 - **Ask, don't invent.** Product intent and ambiguous behavior go to the human
   and to `/spec/SPEC-QUESTIONS.md` — never guessed into the spec.

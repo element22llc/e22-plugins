@@ -5,6 +5,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.11.0
+
+- **`/e22-adopt` now flags outdated deps and bad practices.** Vibe-coded apps
+  pin to whatever versions the generating model knew at *its* training cutoff —
+  usually a major or two behind. New step 7 has the skill query the registry
+  **live** (`npm view`, `uv pip index versions`, current Node LTS) — not from
+  memory, which has the same cutoff problem — and record every major-behind /
+  superseded dependency plus as-built anti-patterns (raw SQL, swallowed errors,
+  `any`/`@ts-ignore`, unvalidated boundaries, `process.env` reads). New
+  **Outdated dependencies & bad practices** section + `Dependency freshness`
+  gap-analysis row in the `production-readiness.md` template; the dev owns the
+  upgrade on a clean branch with tests green (propose, don't force).
+
 ### 1.10.0
 
 - **New: adopt an existing non-template repo — `/e22-adopt`.** Until now the

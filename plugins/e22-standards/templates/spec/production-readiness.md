@@ -21,6 +21,7 @@
 - [ ] Feature specs extracted (`intent.md` + `contract.md` per feature)
 - [ ] As-built decisions captured as ADRs (`/spec/decisions/`)
 - [ ] Gap analysis below filled
+- [ ] Dependency freshness checked (live registry) + bad practices flagged
 - [ ] Template scaffolding synced (mise, compose, CI, configs, plugin install)
 - [ ] Toolchain pinned and locks committed
 - [ ] PR proposed/opened: [link]
@@ -38,7 +39,26 @@
 | High-risk areas              | high-risk (60)         |               |        |
 | CI                           | Definition of Done (50)|               |        |
 | Zod boundaries / error model | practices (85)         |               |        |
+| Dependency freshness         | stack (10), practices (85)|            |        |
 | Layout (`/apps`, `/packages`)| layout (20)            |               |        |
+
+## Outdated dependencies & bad practices
+
+> A vibe-coded app pins to whatever versions the generating model knew at **its**
+> training cutoff — usually a major or two behind, sometimes a library since
+> superseded. Versions below are checked **live against the registry**
+> (`npm view <pkg> version`, `uv pip index versions <pkg>`, current Node LTS) —
+> not from memory, which has the same cutoff problem. Flag every major behind and
+> any superseded library; the dev owns the upgrade, on a clean branch with tests
+> green. Leave the relevant rows empty if nothing is behind.
+
+| Package / runtime | Pinned | Latest stable | Majors behind | Note / action |
+| ----------------- | ------ | ------------- | ------------- | ------------- |
+|                   |        |               |               |               |
+
+Bad practices found in the as-built code (anti-patterns vs the `practices` rule):
+
+- [none / `path:line` — what it is — why it's a problem — fix]
 
 ## Open questions
 
