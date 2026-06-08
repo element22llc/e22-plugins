@@ -25,14 +25,25 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
 create `/spec` (step 2), and update + commit it at **every step transition**:
 current step, per-feature progress, handoff readiness. Sessions end; the file
 is how the next one picks up. **Resuming:** if `/spec/BUILD-STATUS.md` already
-exists, read it (and the `intent.md` statuses) first and continue from the
-recorded step — don't restart the interview or re-ask settled questions. The
-file may have been written by an older plugin version; before continuing,
-**reconcile it** against the current bundled `build-status.md` — splice in any
-sections/checklist items the older template lacked, leaving them unchecked and
-preserving everything already filled in (the plugin-wide *Template
-reconciliation* convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`).
-This makes new flow-state gates self-healing on the next `/e22-build` run.
+exists, your **first action** — before reading the recorded step or re-running the
+interview — is to **reconcile it** against the current bundled `build-status.md`,
+which may have gained sections under a later `/plugin update`. Don't eyeball it;
+run the diff and act on its output:
+
+```sh
+comm -13 \
+  <(grep -hE '^(#{2,3} |- \[)' spec/BUILD-STATUS.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
+  <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+```
+
+It surfaces the `##` sections and checklist items the bundled template has that the
+file lacks (it over-reports filled/reworded lines — treat it as a candidate list).
+Splice in the genuinely-new ones unchecked, preserving everything already filled in;
+never re-add a placeholder the dev replaced (the plugin-wide *Template reconciliation*
+convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`). Then read
+the `intent.md` statuses and continue from the recorded step — don't restart the
+interview or re-ask settled questions. This makes new flow-state gates self-healing
+on the next `/e22-build` run.
 
 ## Steps
 

@@ -21,10 +21,22 @@ feature, using the canonical E22 templates bundled with this plugin.
 
    For a **new** feature, copy them in. For an **existing** feature (a re-run, or a
    feature spec'd under an older plugin version), **reconcile instead of copy** —
-   splice in any sections the current templates add that the files lack, leaving
-   them empty and preserving everything already written. Never overwrite filled-in
-   intent/contract content. This is the plugin-wide **Template reconciliation**
-   convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
+   don't eyeball it; run the diff first and act on its output (per file, intent then
+   contract):
+
+   ```sh
+   comm -13 \
+     <(grep -hE '^(#{2,3} |- \[)' spec/features/[id]/intent.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
+     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+   # repeat with contract.md vs feature-contract.md
+   ```
+
+   It surfaces the sections the current templates add that the files lack (it
+   over-reports filled/reworded lines — treat it as a candidate list). Splice the
+   genuinely-new ones in empty, preserving everything already written; never
+   overwrite filled-in intent/contract content and never re-add a placeholder the
+   dev replaced. This is the plugin-wide **Template reconciliation** convention:
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
    ambiguity in `/spec/SPEC-QUESTIONS.md` rather than inventing details.

@@ -5,6 +5,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.13.0
+
+- **Self-healing reconciliation now actually fires on resume.** 1.12.0 shipped the
+  reconcile logic but buried it mid-list, so the model resumed "from the checklist"
+  and silently skipped it — a repo adopted under an older version still missed newly
+  added sections (e.g. the `## Outdated dependencies & bad practices` gate). The fix
+  replaces "remember to diff" with a **forcing function**: each template-copying skill
+  now runs a concrete `comm -13` diff (bundled template vs. existing file, normalizing
+  `[x]`→`[ ]`) as its **first action on resume**, and acts on the printed candidate
+  list. The diff over-reports (filled-in placeholders, reworded items) by design — it
+  is a candidate list that guarantees the comparison happens; splicing still applies
+  the additive rules with judgment (never re-add a placeholder the dev filled).
+  - **Shared convention** (`templates/reference/spec-framework.md` → *Template
+    reconciliation*) now prescribes the forcing-command pattern and the "reconcile
+    first, before status/next-steps" ordering rule.
+  - **`/e22-adopt`** — new **Resume gate** before `## Steps`; step 2 embeds the diff
+    command with imperative "run first" language; the competing "continue from
+    unchecked items" framing in step 7 and the guardrail now defer to reconcile-first.
+  - **`/e22-build`** and **`/e22-spec-scaffold`** — their resume/reconcile branches
+    now carry the concrete diff command too.
+
 ### 1.12.0
 
 - **Template self-healing, standardized plugin-wide.** Skills that copy a bundled

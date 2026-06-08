@@ -162,6 +162,29 @@ against the current bundled template:
 - On a **fresh** run (the file doesn't exist yet) this is a no-op — the file is
   created from the current template as usual.
 
+**Reconcile FIRST, with a forcing command — do not rely on remembering.** On a
+resume, reconciliation is the **first action** — before you summarize status,
+choose next steps, or continue from the unchecked/empty items. Resuming "from the
+checklist" without this step is the exact failure this convention exists to
+prevent: the new gate isn't in the file, so it never gets noticed. To guarantee
+the comparison actually happens, **run a diff command and act on its output**
+instead of eyeballing — surface the headings/checklist items the bundled template
+has that the existing file lacks (substitute the real paths):
+
+```sh
+comm -13 \
+  <(grep -hE '^(#{2,3} |- \[)' <existing-file>                          | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
+  <(grep -hE '^(#{2,3} |- \[)' "$CLAUDE_PLUGIN_ROOT/<bundled-template>" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+```
+
+The command **over-reports**: a placeholder the dev replaced with real content, or
+a checklist item they reworded, shows up as "missing" when it isn't. It is a
+*candidate* list, not a splice list — it forces you to open the bundled template
+and confront the gaps, but you still apply the additive rules above with judgment.
+Splice in genuinely-new `##` sections and items; **never re-add a placeholder the
+dev already filled in**, and treat a reworded equivalent as already present. Empty
+output means the file is already current.
+
 This makes template additions **self-healing**: a repo touched under an older
 plugin version picks up newly added sections on its next run instead of silently
 missing them.

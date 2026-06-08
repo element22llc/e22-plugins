@@ -16,6 +16,17 @@ This is whole-repo Brownfield adoption. For a fresh fork of the template, use
 `/e22-init` instead; for a single feature change to an already-adopted repo,
 use the normal spec workflow (`/e22-spec-scaffold`).
 
+## Resuming? Reconcile before anything else
+
+If `/spec/PRODUCTION-READINESS.md` **already exists**, you are resuming a prior
+adoption — and that file may have been written under an **older** plugin version
+whose template lacked sections this version adds. **Before** you read its checklist,
+summarize status, or pick next steps, your **first action** is to reconcile it
+against the current bundled template (step 2). Do not skip this because the file
+"looks complete" — a newly added gate is invisible *precisely because* it isn't in
+the file yet. Run the diff command in step 2 and act on its output, then continue
+from the unchecked items.
+
 ## Steps
 
 1. **Confirm it's an adoption case.** There's no `/spec` spine, no
@@ -25,21 +36,35 @@ use the normal spec workflow (`/e22-spec-scaffold`).
    frameworks, database, auth). Work on a `feat/e22-adopt` branch — never commit
    to `main` (commit-autonomy rule). Nothing is committed until the dev approves.
 
-2. **Reconcile the adoption checklist (resume safety).** If
-   `/spec/PRODUCTION-READINESS.md` does **not** exist yet, this is a fresh
+2. **Reconcile the adoption checklist (resume safety) — do this FIRST on a resume.**
+   If `/spec/PRODUCTION-READINESS.md` does **not** exist yet, this is a fresh
    adoption — skip ahead; the file is created from the current bundled template in
-   step 7. If it **does** exist, this is a resume, and it may have been written by
-   an *older* plugin version whose template lacked sections this version adds. Diff
-   the bundled template (`${CLAUDE_PLUGIN_ROOT}/templates/spec/production-readiness.md`)
-   against the existing file and **splice in** anything the file is missing — `##`
-   sections, `## Adoption progress` checkboxes, and `## Gap analysis` table rows —
-   leaving the spliced-in items **unchecked / empty**. Match on the section
-   heading, the checkbox label, and the gap-analysis **Area** cell; never duplicate
-   an item already present, never reorder or overwrite filled-in content, and never
-   delete a row the dev added. **Preserve every value already there.** Then
-   continue from the unchecked items — the freshly spliced ones included. This is
-   the plugin-wide **Template reconciliation** convention — full rules (match on
-   stable anchors, additive only, never overwrite/reorder/delete) in
+   step 7. If it **does** exist, you are resuming, and it may have been written by
+   an *older* plugin version whose template lacked sections this version adds —
+   **before reading its checklist or proposing anything, run this diff** and act on
+   its output (don't trust your memory of the template, and don't skip because the
+   file looks complete):
+
+   ```sh
+   comm -13 \
+     <(grep -hE '^(#{2,3} |- \[)' spec/PRODUCTION-READINESS.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
+     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/production-readiness.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+   ```
+
+   It prints the `##` sections and checklist items the bundled template has that the
+   existing file lacks (e.g. a later-added `## Outdated dependencies & bad practices`
+   section). The list **over-reports** — a placeholder the dev replaced with real
+   content, or a checklist item they reworded, shows as "missing" when it isn't. So
+   it's a *candidate* list: open the bundled template, and **splice in** the
+   genuinely-new `##` sections, `## Adoption progress` checkboxes, and `## Gap
+   analysis` table rows, leaving the spliced-in items **unchecked / empty**. Match on
+   the section heading, checkbox label, and gap-analysis **Area** cell; never
+   duplicate an item already present (filled-in or reworded), never re-add a
+   placeholder the dev filled in, never reorder or overwrite filled-in content, and
+   never delete a row the dev added. **Preserve every value already there.** Empty
+   output means the file is already current. Only then continue from the unchecked
+   items — the freshly spliced ones included. This is the plugin-wide **Template
+   reconciliation** convention — full rules in
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
 
 3. **Survey the codebase.** Map the apps and entry points, routes/pages,
@@ -79,7 +104,8 @@ use the normal spec workflow (`/e22-spec-scaffold`).
    stop-and-rotate** (secrets rule): call them out at the top, tell the dev, and
    have the secret rotated — do not just delete the line. This doc is the dev's
    hardening brief and doubles as the resumable adoption checklist (a later
-   session reads it first and continues from where it stopped).
+   session reconciles it against the current template per step 2, then continues
+   from where it stopped).
 
 8. **Check dependency freshness and flag bad practices.** A vibe-coded app pins
    to whatever versions the generating model knew at *its* training cutoff —
@@ -136,8 +162,9 @@ use the normal spec workflow (`/e22-spec-scaffold`).
   silently in the adoption branch.
 - **Ask, don't invent.** Product intent and ambiguous behavior go to the human
   and to `/spec/SPEC-QUESTIONS.md` — never guessed into the spec.
-- **Resume is additive, never destructive.** On a re-run, reconcile the existing
-  `PRODUCTION-READINESS.md` by splicing in sections/rows the current template adds
-  (step 2) — never overwrite filled-in analysis, never restart adoption from
-  scratch. A repo adopted under an older plugin version must pick up newly added
-  gates on its next run.
+- **Resume is additive, never destructive — and reconcile first.** On a re-run, the
+  first action is to reconcile the existing `PRODUCTION-READINESS.md` by running the
+  step-2 diff and splicing in the sections/rows the current template adds — before
+  reading the checklist or proposing next steps. Never overwrite filled-in analysis,
+  never restart adoption from scratch. A repo adopted under an older plugin version
+  must pick up newly added gates on its next run.
