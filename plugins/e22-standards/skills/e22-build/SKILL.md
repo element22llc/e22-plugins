@@ -26,7 +26,13 @@ create `/spec` (step 2), and update + commit it at **every step transition**:
 current step, per-feature progress, handoff readiness. Sessions end; the file
 is how the next one picks up. **Resuming:** if `/spec/BUILD-STATUS.md` already
 exists, read it (and the `intent.md` statuses) first and continue from the
-recorded step — don't restart the interview or re-ask settled questions.
+recorded step — don't restart the interview or re-ask settled questions. The
+file may have been written by an older plugin version; before continuing,
+**reconcile it** against the current bundled `build-status.md` — splice in any
+sections/checklist items the older template lacked, leaving them unchecked and
+preserving everything already filled in (the plugin-wide *Template
+reconciliation* convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`).
+This makes new flow-state gates self-healing on the next `/e22-build` run.
 
 ## Steps
 

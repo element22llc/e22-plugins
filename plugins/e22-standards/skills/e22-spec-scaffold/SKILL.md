@@ -12,10 +12,19 @@ feature, using the canonical E22 templates bundled with this plugin.
 
 1. Determine the feature `[id]` — a short kebab-case slug (`user-login`,
    `export-csv`). Ask the dev if it isn't obvious.
-2. Create the folder `spec/features/[id]/` in the product repo.
-3. Copy the bundled templates into it:
+2. Create the folder `spec/features/[id]/` in the product repo. **If it already
+   exists**, this `[id]` was scaffolded before — do not clobber it; go to step 3's
+   reconcile branch.
+3. Instantiate the two spec files from the bundled templates:
    - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` → `spec/features/[id]/intent.md`
    - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-contract.md` → `spec/features/[id]/contract.md`
+
+   For a **new** feature, copy them in. For an **existing** feature (a re-run, or a
+   feature spec'd under an older plugin version), **reconcile instead of copy** —
+   splice in any sections the current templates add that the files lack, leaving
+   them empty and preserving everything already written. Never overwrite filled-in
+   intent/contract content. This is the plugin-wide **Template reconciliation**
+   convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
    ambiguity in `/spec/SPEC-QUESTIONS.md` rather than inventing details.

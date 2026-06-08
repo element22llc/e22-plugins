@@ -5,6 +5,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.12.0
+
+- **Template self-healing, standardized plugin-wide.** Skills that copy a bundled
+  template into the product repo now reconcile it against the current template on
+  re-run instead of silently missing sections added by a later `/plugin update`.
+  The convention is defined once in the shared reference
+  (`templates/reference/spec-framework.md` → *Template reconciliation*) and
+  applied by every instantiating skill: on a re-run they **splice in** the `##`
+  sections, checklist items, and table rows the older template lacked — matched on
+  stable anchors, left unchecked/empty, with every filled-in value preserved
+  (purely additive; never overwrite, reorder, or delete).
+  - **`/e22-adopt`** — new step 2 reconciles `/spec/PRODUCTION-READINESS.md`
+    (so e.g. the 1.11.0 dependency-freshness section is picked up by repos adopted
+    under 1.10.0). Steps 2–10 renumbered to 3–11; new "Resume is additive, never
+    destructive" guardrail.
+  - **`/e22-build`** — reconciles `/spec/BUILD-STATUS.md` on resume.
+  - **`/e22-spec-scaffold`** — reconciles an existing feature's `intent.md` /
+    `contract.md` instead of clobbering it (also fixes a latent overwrite-on-rerun
+    risk).
+  - **Exempt:** reference prose (read in place, always current via `/plugin
+    update`) and **ADRs** (immutable point-in-time records — supersede, never
+    retrofit a newer template into an accepted ADR).
+
 ### 1.11.0
 
 - **`/e22-adopt` now flags outdated deps and bad practices.** Vibe-coded apps
