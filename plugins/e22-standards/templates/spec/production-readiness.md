@@ -1,0 +1,46 @@
+# Production readiness — [Product name]
+
+> Written by `/e22-adopt` when an existing (non-template) repo is brought into
+> E22 standards. It is the **dev's productionization brief** — every gap and
+> as-built risk to harden before this app is production-grade — and the
+> **resumable adoption checklist**. A fresh session reads this first and
+> continues from the unchecked items; never restart adoption from scratch.
+
+## Stop-and-rotate
+
+> Secrets found committed in the repo or its history. These are stop-and-rotate
+> (secrets rule): tell the dev, rotate the credential — do **not** just delete
+> the line. Leave empty if none found.
+
+- [none found / `path:line` — what it is — rotated? ]
+
+## Adoption progress
+
+- [ ] Codebase surveyed; user-facing features listed
+- [ ] Product spec reverse-engineered (`vision.md`, `users.md`, `glossary.md`)
+- [ ] Feature specs extracted (`intent.md` + `contract.md` per feature)
+- [ ] As-built decisions captured as ADRs (`/spec/decisions/`)
+- [ ] Gap analysis below filled
+- [ ] Template scaffolding synced (mise, compose, CI, configs, plugin install)
+- [ ] Toolchain pinned and locks committed
+- [ ] PR proposed/opened: [link]
+
+## Gap analysis
+
+> Current state vs the E22 standard, with the action for the dev. Mark each
+> action as the work is done.
+
+| Area                         | Standard (rule)        | Current state | Action |
+| ---------------------------- | ---------------------- | ------------- | ------ |
+| Automated tests              | tests per change (40)  |               |        |
+| Lockfiles & version pins     | conventions (85)       |               |        |
+| Secrets handling             | secrets (70)           |               |        |
+| High-risk areas              | high-risk (60)         |               |        |
+| CI                           | Definition of Done (50)|               |        |
+| Zod boundaries / error model | practices (85)         |               |        |
+| Layout (`/apps`, `/packages`)| layout (20)            |               |        |
+
+## Open questions
+
+- See `/spec/SPEC-QUESTIONS.md` for product/behavior ambiguities surfaced during
+  adoption.

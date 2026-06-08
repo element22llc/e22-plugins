@@ -29,3 +29,8 @@ in the spec-framework reference (`/e22-spec-scaffold`); a PO driving it uses
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →
 update the owning `contract.md` if behavior changed.
+
+**Adopting a whole repo** that was never forked from the template (a
+"vibe-coded" app with no `/spec`): run **`/e22-adopt`** once to reverse-engineer
+the spec from the code, assess production readiness, and sync in the template
+scaffolding — distinct from a per-feature Brownfield change above.

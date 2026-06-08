@@ -22,7 +22,7 @@ plugins/e22-standards/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── hooks/                          # SessionStart hook → injects rules/*.md
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
-├── skills/                         # on-demand: e22-init, e22-build, e22-spec-scaffold, e22-adr, e22-conventions, e22-design-sources
+├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-spec-scaffold, e22-adr, e22-conventions, e22-design-sources
 ├── commands/                       # /e22-init and /e22-build aliases
 └── templates/                      # bundled spec templates + full reference prose
 ```
