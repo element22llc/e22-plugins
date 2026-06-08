@@ -19,8 +19,8 @@ distributable plugin.
 | Component | Contents |
 |---|---|
 | **Always-on rules** (`rules/*.md`) | Injected into every session by a SessionStart hook: PO/dev roles, stack defaults, monorepo layout, spec workflow, testing rules, Definition of Done, high-risk areas, secrets handling, change-size model, baseline patterns/anti-patterns, design-sources summary, end-of-session checklist. |
-| **Skills** (on-demand) | `/e22-init` (first-run setup), `/e22-build` (PO-guided idea→working-app flow), `/e22-spec-scaffold` (feature intent+contract), `/e22-adr` (ADR), `/e22-conventions` and `/e22-design-sources` (full reference prose). |
-| **Templates** | Bundled spec templates (`feature-intent`, `feature-contract`, `adr`) and the full reference prose, so scaffolding always uses the latest org templates. |
+| **Skills** (on-demand) | `/e22-init` (first-run setup), `/e22-adopt` (adopt an existing non-template "vibe-coded" repo), `/e22-build` (PO-guided idea→working-app flow), `/e22-spec-scaffold` (feature intent+contract), `/e22-adr` (ADR), `/e22-conventions` and `/e22-design-sources` (full reference prose). |
+| **Templates** | Bundled spec templates (`feature-intent`, `feature-contract`, `adr`, `production-readiness`) and the full reference prose, so scaffolding always uses the latest org templates. |
 
 The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/e22-standards/rules/*.md` to stdout (which Claude Code injects as

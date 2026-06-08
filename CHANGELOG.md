@@ -5,6 +5,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.10.0
+
+- **New: adopt an existing non-template repo — `/e22-adopt`.** Until now the
+  plugin assumed every repo was forked from `repository-template` (`/e22-init`
+  only resolves placeholders in an already-scaffolded fork). The new skill
+  covers the "vibe-coded" case — working code, but no `/spec`, no `mise.toml`,
+  no plugin install — by reversing the Greenfield flow: survey the code,
+  reverse-engineer `vision.md`/`users.md`/`glossary.md` (ask, don't invent),
+  extract `intent.md` + `contract.md` per feature via `/e22-spec-scaffold`,
+  capture as-built choices as ADRs via `/e22-adr`, then fetch
+  `element22llc/repository-template` and sync in the scaffolding it lacks (mise
+  tasks, `compose.yaml`, CI, `/configs`, `.env.example`, plugin install) —
+  adapting to the existing stack, reconciling rather than replacing, and never
+  clobbering working code. Ends in a `feat/e22-adopt` branch and a PR for dev
+  review. (`skills/e22-adopt`, `commands/e22-adopt.md`)
+- **New `/spec/PRODUCTION-READINESS.md` (bundled template).** The findings
+  output of `/e22-adopt`: a gap analysis vs E22 standards (tests, lockfiles &
+  pins, secrets, high-risk areas, CI, Zod/error model, layout) with a
+  stop-and-rotate callout for any committed secret. Doubles as the resumable
+  adoption checklist — a fresh session reads it first and continues from the
+  unchecked items. (`templates/spec/production-readiness.md`)
+- Router and spec-workflow rules point whole-repo adoption at `/e22-adopt`,
+  distinct from a per-feature Brownfield change. (`rules/00-router.md`,
+  `rules/30-spec-workflow.md`)
+
 ### 1.9.0
 
 - **PO demo-validation gate before handoff.** `/e22-build` no longer proposes
