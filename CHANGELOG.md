@@ -5,6 +5,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.14.0
+
+- **Template reconciliation is now enforced by a hook, not skill prose.** 1.12.0
+  shipped the reconcile logic and 1.13.0 added a forcing-command + resume gate, but
+  both lived in `SKILL.md` — advisory context the model reliably skipped when a spec
+  file looked complete (it resumed "from the checklist" and never diffed). The fix
+  moves detection out of the model's discretion: a new **SessionStart hook**
+  (`hooks/check-template-drift.sh`) runs the heading diff deterministically at the
+  start of every session and, when an instantiated file is behind the current
+  bundled template, injects a high-salience notice naming the exact missing sections
+  (e.g. `## Outdated dependencies & bad practices`). Same `additionalContext` path as
+  the always-on rules, so it's unavoidable — and it stays **silent when there is no
+  drift**, clearing itself once the files are reconciled.
+  - Covers all instantiated files: `PRODUCTION-READINESS.md`, `BUILD-STATUS.md`, and
+    every feature `intent.md` / `contract.md` under `spec/features/*/`.
+  - POSIX sh, no jq, no process substitution (per repo conventions); headings are the
+    drift signal (checklist-item diffing over-reports and would inject false
+    positives). The skills' in-prose reconcile steps (1.13.0) remain as the
+    how-to-splice guidance the notice points the model toward.
+
 ### 1.13.0
 
 - **Self-healing reconciliation now actually fires on resume.** 1.12.0 shipped the
