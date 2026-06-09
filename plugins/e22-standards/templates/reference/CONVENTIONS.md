@@ -265,8 +265,11 @@ Patterns:
 
 Anti-patterns to avoid:
 
-- **Raw / string-interpolated SQL** or concatenating user input into queries —
-  injection risk; go through Drizzle with parameters.
+- **Raw SQL at all** — `db.execute`, tagged-template SQL, or hand-built query
+  strings — even when parameterized. The standard is data access through Drizzle;
+  parameterizing a raw query clears the injection risk but not the bypass of the
+  ORM's typing and migration tracking. String-interpolating user input is the
+  worst case (injection), but raw SQL is the anti-pattern regardless.
 - **`any` casts or blanket `@ts-ignore`** to silence the compiler instead of
   modeling the type, and disabling Biome rules wholesale rather than fixing.
 - **Trusting unvalidated input** from requests, params, env, or external APIs
@@ -279,8 +282,10 @@ Anti-patterns to avoid:
   shared, testable `packages/` module.
 - **N+1 query patterns** and fetching whole tables to filter in JS — push
   filtering/joins into the query.
-- **Untracked or non-reproducible DB changes** — ad-hoc schema edits outside
-  Drizzle migrations; destructive migrations without a reviewed forward path.
+- **Untracked or non-reproducible DB changes** — no schema defined in code at
+  all (schema living only in a running database), ad-hoc schema edits outside
+  Drizzle migrations, or a missing migrations history; destructive migrations
+  without a reviewed forward path.
 - **Deleting or ignoring a lockfile to make an error go away** — fix the
   resolution problem or regenerate the lock with its owning tool; a dependency
   change without the matching lockfile diff is an incomplete change.

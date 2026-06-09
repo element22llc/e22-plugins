@@ -5,6 +5,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.19.0
+
+- **`/e22-adopt` stops waving raw SQL and missing schemas through as "clean."**
+  A run was observed declaring a repo's data layer "verified clean" because its
+  raw SQL was *parameterized* — and never flagging that the DB schema wasn't
+  defined anywhere. Both are violations of the `practices` rule (data access
+  through Drizzle/SQLAlchemy only; schema defined in code and migration-tracked).
+  The misfire traced to ambiguous guidance: the anti-pattern list read "raw /
+  string-interpolated SQL" (taken to mean only the *non*-parameterized case), and
+  nothing prompted a data-layer check at all. Fixes:
+  - The adopt skill's step-8 anti-pattern list now spells out that **raw SQL is
+    a violation parameterized or not** (parameterization clears injection, not the
+    ORM bypass), and that **a missing/untracked schema is a flagged gap, not an
+    absence of findings** — with an explicit "don't mark data-layer practices
+    clean without confirming ORM access *and* a migration-tracked schema."
+  - Step 7's gap-analysis prompts and the `PRODUCTION-READINESS.md` template gain
+    a dedicated **Data layer (ORM, schema, migrations)** dimension.
+  - `CONVENTIONS.md` anti-patterns reframed: raw SQL is the anti-pattern
+    regardless of injection safety, and "no schema defined at all" is called out
+    alongside ad-hoc schema edits.
+
 ### 1.18.0
 
 - **Cowork fallback: load the standards on demand where hooks don't fire.** Some

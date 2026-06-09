@@ -100,7 +100,9 @@ from the unchecked items.
    fill the gap analysis against E22 standards
    — tests present? lockfiles committed and pinned? secrets handling? high-risk
    areas (auth, authorization, migrations, deletion, billing, deploy)? CI present?
-   Zod-at-boundaries and no-silenced-errors? layout? **Committed secrets are
+   Zod-at-boundaries and no-silenced-errors? **data layer — is access through
+   Drizzle/SQLAlchemy (not raw SQL), and is the schema defined in code and
+   migration-tracked?** layout? **Committed secrets are
    stop-and-rotate** (secrets rule): call them out at the top, tell the dev, and
    have the secret rotated — do not just delete the line. This doc is the dev's
    hardening brief and doubles as the resumable adoption checklist (a later
@@ -114,10 +116,24 @@ from the unchecked items.
    cutoff problem. Query the registry **live** (`npm view <pkg> version`,
    `uv pip index versions <pkg>`, the current Node LTS) and diff against what the
    manifests pin. Record every dependency that is a major behind or superseded,
-   plus any as-built anti-patterns (raw / string-interpolated SQL, swallowed
-   errors, `any` / blanket `@ts-ignore`, unvalidated boundaries, secrets read
-   straight from `process.env`), in the **Outdated dependencies & bad practices**
-   section of `PRODUCTION-READINESS.md`. The dev owns the upgrade, on a clean
+   plus any as-built anti-patterns, in the **Outdated dependencies & bad
+   practices** section of `PRODUCTION-READINESS.md`. Anti-patterns to flag (vs
+   the `practices` rule):
+   - **Raw SQL of any kind** — `db.execute`, tagged-template SQL, hand-built
+     query strings. The standard is data access through Drizzle/SQLAlchemy only.
+     **Parameterized raw SQL is still a violation** — parameterization clears
+     injection, not the raw-SQL-bypasses-the-ORM gap. Never mark it "clean"
+     because it's parameterized.
+   - **No schema / untracked schema** — the data model isn't defined in code
+     (no Drizzle schema or SQLAlchemy models, no migrations directory, schema
+     existing only in a live DB). A missing schema is a *flagged gap*, not an
+     absence of findings.
+   - Swallowed errors (empty `catch`), `any` / blanket `@ts-ignore`, unvalidated
+     boundaries (no Zod/Pydantic), secrets read straight from `process.env`.
+
+   Don't write a "verified clean" verdict on any data-layer practice without
+   confirming both that access goes through the ORM *and* that the schema is
+   defined in code and migration-tracked. The dev owns the upgrade, on a clean
    branch with tests green — propose, don't force, and never bump majors silently
    in the adoption branch.
 

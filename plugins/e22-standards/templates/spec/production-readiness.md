@@ -39,6 +39,7 @@
 | High-risk areas              | high-risk (60)         |               |        |
 | CI                           | Definition of Done (50)|               |        |
 | Zod boundaries / error model | practices (85)         |               |        |
+| Data layer (ORM, schema, migrations) | practices (85) |             |        |
 | Dependency freshness         | stack (10), practices (85)|            |        |
 | Layout (`/apps`, `/packages`)| layout (20)            |               |        |
 
@@ -57,6 +58,18 @@
 |                   |        |               |               |               |
 
 Bad practices found in the as-built code (anti-patterns vs the `practices` rule):
+
+> Measure against the E22 standard, not against a weaker bar. Two traps the
+> as-built code commonly hides:
+> - **Raw SQL is the violation, parameterized or not.** The standard is data
+>   access through Drizzle/SQLAlchemy only. Parameterization clears *injection*,
+>   it does **not** clear raw SQL — flag every raw/`db.execute`/string-built
+>   query as a gap even when it's safely parameterized. Don't write it off as
+>   "verified clean."
+> - **No schema is a gap, not an absence of findings.** If the data model isn't
+>   defined anywhere (no Drizzle schema / SQLAlchemy models, no migrations
+>   directory, schema living only in a running DB), that is a flagged gap — the
+>   schema must be defined in code and migration-tracked.
 
 - [none / `path:line` — what it is — why it's a problem — fix]
 
