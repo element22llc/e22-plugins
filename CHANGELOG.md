@@ -5,6 +5,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.21.0
+
+- **Repo housekeeping: a `housekeeping` rule + the `/e22-tidy` skill.** A PO
+  building from the template tends to commit a pile of source material at the
+  repo root — vendor metadata spreadsheets, SQL/DDL dumps, architecture and flow
+  decks, system inventories, PII/CMDB docs — and nothing in the standards gave
+  those a home or told Claude to keep the root clean. The layout rule defined
+  where *code* and *design exports* live, but the canonical `/spec` tree had no
+  slot for the research inputs the spec is built from. Added:
+  - New always-on `rules/22-housekeeping.md`: the root holds scaffolding + config
+    only; loose source/research materials belong in `/spec/reference/` (diagrams
+    in `/spec/design/`). When Claude notices root clutter it **proposes** moving
+    it — never silently moves, never auto-deletes, flags junk and duplicates for
+    confirmation first.
+  - `/spec/reference` added to the layout rule as the home for source material.
+  - New `e22-tidy` skill + `/e22-tidy` command and bundled
+    `templates/reference/HOUSEKEEPING.md`: a sweep that lists root strays,
+    classifies them against a destination taxonomy, and presents a plan table
+    with a `move` / `rename + move` / `delete` action column for approval, then
+    `git mv`s on a yes (so history follows). It **renames** cryptic or
+    inconsistent filenames to clear ones as it moves them — a bad name is a
+    reason to rename, not to bury or delete. A confusing or duplicate-looking
+    name (`Copy of …`, `(002)`, case-variant pairs) is **not** treated as junk:
+    those may be the important file, so the sweep **asks the PO/dev what the file
+    is for and which version is current** before deciding, then moves + renames
+    or (only on confirmation) deletes. Only true OS junk (`desktop.ini`,
+    `.DS_Store`, `Thumbs.db`) is ever a deletion candidate, and even that waits
+    for a yes — and when junk is deleted, its pattern is added to `.gitignore`
+    (broad, tree-wide, only if absent) so it can't be re-committed and
+    re-introduced later.
+
 ### 1.20.0
 
 - **`practices` rule rephrased principle-first so it applies beyond the default
