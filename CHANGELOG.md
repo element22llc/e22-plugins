@@ -5,6 +5,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.20.0
+
+- **`practices` rule rephrased principle-first so it applies beyond the default
+  stack.** The always-on patterns read as Next.js/Drizzle/Zod-only, which made
+  them feel inapplicable on other stacks. Each bullet now leads with the general
+  principle (parameterized query layer, validate input at the boundary,
+  server-first, domain logic in shared modules) and names the default-stack
+  instance in parens — keeping the opinion actionable on the default stack while
+  stating the rule any stack must satisfy. No change to what is required; only
+  how it is framed.
+
 ### 1.19.0
 
 - **`/e22-adopt` stops waving raw SQL and missing schemas through as "clean."**

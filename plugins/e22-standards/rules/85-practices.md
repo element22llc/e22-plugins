@@ -1,27 +1,28 @@
 ## Patterns we follow (E22 baseline)
 
-Org baseline for the default stack; a product's own `CLAUDE.md` adds
-team-learned patterns on top. Full patterns + anti-patterns prose (and the
-Python/FastAPI mapping): run `/e22-conventions`.
+Org baseline stated as principles; each names the **default-stack** instance in
+parens so it stays actionable on the default stack and still applies on any
+other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
+patterns + anti-patterns prose: run `/e22-conventions`.
 
-- **Data access through Drizzle only, parameterized** — never raw or
-  string-interpolated SQL. Schema changes via Drizzle Kit migrations, committed
-  and reviewed; no ad-hoc schema edits.
-- **Zod at every boundary** — Route Handler / Server Action inputs, external
-  API responses, env vars — parsed before use; derive TS types from the schema.
-  One validated config module instead of scattered `process.env` reads.
-- **Server-first** — secrets and DB access stay server-side; Client Components
-  explicit and lean; `NEXT_PUBLIC_*` only for genuinely public values.
-- **Domain logic in `packages/`**, not in React components or route handlers —
-  thin handlers, testable shared modules.
+- **All data access goes through a parameterized query layer — never raw or
+  string-interpolated SQL.** Schema is defined in code and changed via
+  committed, reviewed migrations; no ad-hoc schema edits. *(Default: Drizzle +
+  Drizzle Kit; Python: SQLAlchemy 2.x + Alembic.)*
+- **Validate every external input at the boundary before use** — request inputs,
+  external API responses, env vars — and derive types from the schema. One
+  validated config module instead of scattered raw env reads. *(Default: Zod;
+  Python: Pydantic v2.)*
+- **Server-first** — secrets and DB access stay server-side; client code is
+  explicit and lean; only genuinely public values are exposed to the client.
+  *(Default: Next.js Server Components / `NEXT_PUBLIC_*`.)*
+- **Domain logic lives in shared, testable modules**, not in UI components or
+  route handlers — keep handlers thin. *(Default: monorepo `packages/`.)*
 - **Nothing silenced** — no empty `catch` / swallowed errors (unexpected errors
-  go to Sentry with context); no `any` casts or blanket `@ts-ignore` (a
-  `@ts-expect-error` carries a why-comment); no disabling lint rules wholesale.
-- **Lockfiles are maintained, not optional** — `mise.lock`, `pnpm-lock.yaml`,
-  `uv.lock`, `.terraform.lock.hcl` are committed and updated in the same change
-  that touches their config/deps; never deleted or ignored to dodge an error.
-  (mise only writes `mise.lock` if the file already exists — restore a missing
-  one first.)
-
-Python/FastAPI path maps the same: SQLAlchemy 2.x + Alembic (parameterized,
-migration-tracked), Pydantic v2 at boundaries, Ruff.
+  go to Sentry with context); no escape hatches without a why-comment (`any`
+  casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule disabling).
+- **Lockfiles are maintained, not optional** — they are committed and updated in
+  the same change that touches their config/deps; never deleted or ignored to
+  dodge an error. *(Default: `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+  `.terraform.lock.hcl` — and mise only writes `mise.lock` if the file already
+  exists, so restore a missing one first.)*
