@@ -5,6 +5,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.18.0
+
+- **Cowork fallback: load the standards on demand where hooks don't fire.** Some
+  POs work in Claude Cowork (the desktop app) instead of Claude Code. Plugins are
+  cross-compatible and the skills/commands/templates work there unchanged, but
+  Cowork runs the agent in a sandbox VM that currently ignores plugin hooks
+  ([anthropics/claude-code#40495]) — so the `SessionStart` auto-injection of the
+  always-on rules and the `PreToolUse` version-pin guard silently no-op, leaving
+  a Cowork session with none of the org standards in context. New **`/e22-standards`**
+  skill loads the same `rules/*.md` ruleset on demand; run it once at the start of
+  a Cowork session. The router (`00-router.md`) and README now point to it, and
+  the README documents the Cowork limitation. When #40495 ships, auto-injection
+  works in Cowork with no plugin change and the skill becomes a harmless repeat.
+
+[anthropics/claude-code#40495]: https://github.com/anthropics/claude-code/issues/40495
+
 ### 1.17.0
 
 - **Host port bindings must be overridable, so concurrent products don't
