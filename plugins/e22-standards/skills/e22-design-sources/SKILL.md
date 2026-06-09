@@ -22,5 +22,10 @@ Key points (read the file for the full detail):
   validation — anything not visible goes to `/spec/SPEC-QUESTIONS.md`.
 - The design is authoritative for **visual behavior and flow**; the spec is
   authoritative for **what the system does**. Conflicts → `/spec/SPEC-QUESTIONS.md`.
+- The export is a **spec to realize in the standard stack, not code to ship**.
+  Rebuild the UI (Next.js + TS + Tailwind); the prototype's delivery tech (UMD
+  React, in-browser Babel, hand-rolled CSS) is disposable. Serving the prototype
+  runtime as a maintained surface is an **ADR-gated, kill-dated exception** — see
+  "Realizing the design vs. serving the prototype" in the reference.
 - Reusable product-wide UI rules live in the product's `DESIGN.md`;
   feature-specific details stay in the feature's `intent.md`.

@@ -5,6 +5,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.15.0
+
+- **Design exports are a spec to realize, not code to ship.** The design-sources
+  standard previously told the model to *read* an export and treat it as
+  authoritative for visual behavior/flow, but was silent on the delivery question:
+  may you serve the prototype's runtime (UMD React + in-browser Babel + hand-rolled
+  CSS) as the actual front-end? That silence let an ADR treat "serve the prototype
+  as-is" as a peer to "rebuild in the stack." It is not — the delivery tech is
+  disposable scaffolding; the durable artifact is the design itself.
+  - `rules/90-design-sources.md` (always-on) now states the export is a **spec to
+    realize in the standard stack, not code to ship**, and that serving the
+    prototype runtime as a maintained surface is an **ADR-gated, kill-dated
+    exception**, never the default.
+  - `templates/reference/DESIGN-SOURCES.md` gains a **"Realizing the design vs.
+    serving the prototype"** section with the decision rule (default: rebuild in
+    Next.js + TS + Tailwind, no ADR needed; deviation: keep the prototype runtime
+    only for genuine throwaways, ADR with a lifespan + named port trigger; never:
+    untracked "temporary" hosting that becomes permanent). Notes that the
+    rewrite-is-too-expensive objection has expired now that the port is a
+    mechanical agent task with the prototype as the pixel-diff oracle.
+  - The `e22-design-sources` skill summary gains a matching key-point bullet.
+
 ### 1.14.0
 
 - **Template reconciliation is now enforced by a hook, not skill prose.** 1.12.0
