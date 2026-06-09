@@ -13,6 +13,7 @@ This is a lean **router**: short always-on rules below, full prose on demand:
 - Spec ↔ code coupling rules → opened by **`/e22-spec-scaffold`**.
 - Fresh fork? → run **`/e22-init`** once.
 - Existing repo not forked from the template (a "vibe-coded" app)? → run **`/e22-adopt`** once.
+- On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected) → run **`/e22-standards`** at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
 (run `/e22-conventions`) — don't trust training-data memory.

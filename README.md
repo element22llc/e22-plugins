@@ -19,15 +19,30 @@ distributable plugin.
 | Component | Contents |
 |---|---|
 | **Always-on rules** (`rules/*.md`) | Injected into every session by a SessionStart hook: PO/dev roles, stack defaults, monorepo layout, spec workflow, testing rules, Definition of Done, high-risk areas, secrets handling, change-size model, baseline patterns/anti-patterns, design-sources summary, end-of-session checklist. |
-| **Skills** (on-demand) | `/e22-init` (first-run setup), `/e22-adopt` (adopt an existing non-template "vibe-coded" repo), `/e22-build` (PO-guided idea→working-app flow), `/e22-spec-scaffold` (feature intent+contract), `/e22-adr` (ADR), `/e22-conventions` and `/e22-design-sources` (full reference prose). |
+| **Skills** (on-demand) | `/e22-standards` (load the always-on rules on demand — for Cowork, see below), `/e22-init` (first-run setup), `/e22-adopt` (adopt an existing non-template "vibe-coded" repo), `/e22-build` (PO-guided idea→working-app flow), `/e22-spec-scaffold` (feature intent+contract), `/e22-adr` (ADR), `/e22-conventions` and `/e22-design-sources` (full reference prose). |
 | **Templates** | Bundled spec templates (`feature-intent`, `feature-contract`, `adr`, `production-readiness`) and the full reference prose, so scaffolding always uses the latest org templates. |
 
 The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/e22-standards/rules/*.md` to stdout (which Claude Code injects as
-session context). It runs once per session when the plugin is enabled, on all
-surfaces that support hooks (Claude Code today). On Chat/Cowork the same rules
-apply as instructions; hooks are hard controls only where the surface supports
-them.
+session context). It runs once per session when the plugin is enabled.
+
+## Claude Cowork / desktop app
+
+Some POs work in **Claude Cowork** (the desktop app's Cowork tab) rather than
+Claude Code. The plugin's **skills, commands, and templates work there
+unchanged** — Cowork is cross-compatible with Claude Code plugins. But its
+**hooks do not fire**: Cowork runs the agent in a sandbox VM that currently
+ignores plugin and user hooks ([anthropics/claude-code#40495], still open). That
+means the `SessionStart` auto-injection — the always-on rules — and the
+`PreToolUse` version-pin guard silently do nothing in Cowork.
+
+So a Cowork session starts with *none* of the org rules in context. The fallback
+is the **`/e22-standards`** skill: run it once at the start of a Cowork session
+and it loads the same `rules/*.md` ruleset on demand. When #40495 ships,
+auto-injection will work in Cowork with no plugin change and the skill becomes a
+no-op repeat.
+
+[anthropics/claude-code#40495]: https://github.com/anthropics/claude-code/issues/40495
 
 ## Install
 
