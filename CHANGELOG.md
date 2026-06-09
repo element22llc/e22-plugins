@@ -5,6 +5,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.17.0
+
+- **Host port bindings must be overridable, so concurrent products don't
+  collide.** POs and devs routinely run several E22 products at once; any repo
+  that hardcoded `"5432:5432"` in `compose.yaml` made the second `docker compose
+  up` fail with `port is already allocated`. The stack rule (`10-stack.md`) and
+  the Local services reference (`CONVENTIONS.md`) now require every published
+  host port to bind through an env var defaulting to the canonical port —
+  `"${POSTGRES_PORT:-5432}:5432"` — with the override variable listed in
+  `.env.example`. A dev hitting a collision sets `POSTGRES_PORT=5433` in their
+  git-ignored `.env` and mirrors it in `DATABASE_URL`; nothing else changes. The
+  guidance notes that container/network/volume *names* need no such treatment —
+  Compose namespaces those per project directory. The `repository-template`
+  `compose.yaml` already follows the pattern for Postgres; a paired template
+  change adds the `.env.example` documenting `POSTGRES_PORT` and `DATABASE_URL`.
+
 ### 1.16.0
 
 - **Plugin freshness check at session start.** The always-on standards only help
