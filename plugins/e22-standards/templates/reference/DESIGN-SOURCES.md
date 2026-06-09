@@ -50,6 +50,41 @@ If an export is ever committed loose at the repo root (or anywhere outside
    to the spec for **what the system actually does**. If they conflict, flag the
    conflict in `/spec/SPEC-QUESTIONS.md` rather than silently picking one.
 
+## Realizing the design vs. serving the prototype
+
+A Claude Design export (and most front-end design bundles) is **two things welded
+together**, and only one of them is durable:
+
+- **The design** — layout, components, design tokens (color/type/spacing), copy,
+  states, flows. This is the valuable, long-lived artifact.
+- **The delivery tech** — React over UMD `<script>` tags, Babel-standalone
+  compiling JSX *in the browser at runtime*, a hand-rolled CSS file, no build, no
+  types, no tests, no dependency management. This is disposable scaffolding,
+  optimized for "open it in a browser instantly" — **not** for maintenance.
+
+The export is a **spec to realize**, not code to ship. Decide by one question —
+*is this surface going to be maintained?*
+
+- **Default — maintained surface → realize the design in the standard stack.**
+  Treat the export as spec + pixel reference (committed under `spec/design/`), and
+  rebuild the UI in Next.js + TypeScript + Tailwind (per Stack). This is
+  *following* the standard, so it needs **no ADR**. The bar that matters is a real
+  build with types, a bundler, and tests — Next is E22's path of least resistance
+  to that, not the point in itself.
+- **Deviation — keep the prototype's runtime → ADR with a kill date and a named
+  trigger.** Legitimate only for genuine throwaways (a demo, a spike, a pitch with
+  a known death, or an explicitly time-boxed pre-production stage). The ADR
+  (`/e22-adr`) must state the lifespan and the condition that forces the port. Even
+  then, runtime Babel + UMD should move to a real build (e.g. Vite + React + TS)
+  before it is anyone's daily front-end.
+- **Never** let "temporary" prototype hosting silently become the permanent
+  front-end with no tracked trigger — that is the real failure mode.
+
+The old "rewriting 250 KB of JSX is too expensive" objection assumed a human
+re-typing it by hand. The port is now a mechanical agent task, and the original
+prototype is the **pixel-diff oracle** to verify against — so the cost that used
+to justify serving-as-is is much smaller than it looks.
+
 ## DESIGN.md vs. intent.md
 
 `DESIGN.md` (at the repo root, or `apps/<app>/DESIGN.md` for an app with a
