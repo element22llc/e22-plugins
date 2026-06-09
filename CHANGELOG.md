@@ -5,6 +5,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.16.0
+
+- **Plugin freshness check at session start.** The always-on standards only help
+  if the consumer is running a current copy, but nothing nudged anyone to
+  `/plugin update`, so a repo could drift versions behind unnoticed. New
+  SessionStart hook `hooks/check-plugin-updates.sh` compares the installed
+  marketplace clone's `HEAD` against the remote default-branch tip and, when they
+  differ, injects a notice naming the installed version and the two required
+  steps: `/plugin update e22-standards@<marketplace>` to pull the new version,
+  **then** `/clear` (or a fresh session) to reload — because the update only
+  writes files to disk and the current session keeps running the already-injected
+  (stale) rules until SessionStart re-fires.
+  - Works against the **private** marketplace repo: it uses the clone's existing
+    git auth via `git ls-remote` (a raw https fetch would 404), not an
+    unauthenticated download.
+  - Fail-soft and silent by construction — unknown install layout, no clone,
+    offline, or any git error exits 0 with no output, and an up-to-date repo emits
+    nothing. The network call is bounded (`ssh -o ConnectTimeout=4 -o BatchMode=yes`,
+    `GIT_TERMINAL_PROMPT=0`) so it can never hang or prompt at session start.
+  - Self-clearing: the notice disappears once `/plugin update` lands, the same
+    self-healing shape as the template-drift hook.
+
 ### 1.15.0
 
 - **Design exports are a spec to realize, not code to ship.** The design-sources
