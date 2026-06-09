@@ -24,7 +24,10 @@ bullet: run `/e22-conventions`.
   `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
   green; environment tasks live in `mise.toml`, not `package.json`. A plugin
   hook denies stale image-major pins; a deliberately older pin needs an ADR
-  plus `# pin-ok: <reason>` on the same line.
+  plus `# pin-ok: <reason>` on the same line. **Make every published host port
+  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
+  with the override var in `.env.example`, so a dev running several E22 products
+  at once isn't blocked by `port is already allocated`.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules are in Secrets handling.

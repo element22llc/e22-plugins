@@ -150,6 +150,18 @@ committed `compose.yaml`, so local matches deployed:
 - **Do not substitute a different engine for local dev** (e.g. SQLite in place
   of PostgreSQL) — develop against the same database you deploy, or you'll ship
   behavior the real engine doesn't have.
+- **Make published host ports overridable.** A PO or dev often has several E22
+  products running at once, and every repo that hardcodes `"5432:5432"` collides
+  on the second `docker compose up` (`Bind for 0.0.0.0:5432 failed: port is
+  already allocated`). Bind through an env var with the canonical port as the
+  default — `"${POSTGRES_PORT:-5432}:5432"` — and list that var in `.env.example`.
+  A dev hitting a collision then sets `POSTGRES_PORT=5433` in their git-ignored
+  `.env` (Compose reads it automatically) and mirrors it in `DATABASE_URL`; the
+  container-internal port and every other service are untouched. The
+  `repository-template` `compose.yaml` already does this for Postgres — keep the
+  pattern when you add Redis, MinIO, or any other service. (Container, network,
+  and volume *names* don't need this — Compose namespaces them per project
+  directory automatically; only host port bindings collide.)
 - `pnpm dev` / `uv run` assume the Compose services are up; the standard entry
   point is `mise run dev:setup` (see Standard mise tasks).
 
