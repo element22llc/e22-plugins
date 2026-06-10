@@ -5,6 +5,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.22.0
+
+- **One readiness concept, named for what it is.** `PRODUCTION-READINESS.md` is
+  renamed to **`PRODUCTIONIZATION.md`** — it's the dev's standing list of
+  hardening *work*, not a go/no-go *judgment*, and "readiness" collided with the
+  build flow's handoff gate. `/e22-adopt` migrates an existing
+  `PRODUCTION-READINESS.md` to the new name on its next run (resume-safe), so
+  already-adopted repos pick it up without losing filled-in content.
+- **Productionization is now a decision, not just a to-do list.** The gap
+  analysis gains a **disposition** per area — **Keep / Refactor / Rewrite /
+  Reject** — plus an **Overall recommendation**. `/e22-adopt` proposes
+  dispositions (the dev ratifies at PR review); when most areas trend
+  Rewrite/Reject it recommends **rebuilding from the now-extracted `/spec`**
+  rather than hardening a mess, and escalates a project-level Rewrite/Reject to
+  an ADR (`/e22-adr`).
+- **`/e22-build` now leaves the same durable brief.** A PO-built v0 writes
+  `/spec/PRODUCTIONIZATION.md` at handoff (the same artifact `/e22-adopt`
+  produces) instead of letting the gaps evaporate with the PR description. On a
+  PO build the dispositions trend Keep/Refactor — there's no legacy to triage,
+  only stubs to finish.
+- **Renamed the build flow's `Handoff readiness` checklist to `Handoff gate`**
+  in `BUILD-STATUS.md`, matching the reference and ending the "two readinesses"
+  ambiguity.
+
 ### 1.21.0
 
 - **Repo housekeeping: a `housekeeping` rule + the `/e22-tidy` skill.** A PO

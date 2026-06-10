@@ -32,5 +32,6 @@ update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that was never forked from the template (a
 "vibe-coded" app with no `/spec`): run **`/e22-adopt`** once to reverse-engineer
-the spec from the code, assess production readiness, and sync in the template
+the spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject
+per area in `PRODUCTIONIZATION.md`), and sync in the template
 scaffolding — distinct from a per-feature Brownfield change above.

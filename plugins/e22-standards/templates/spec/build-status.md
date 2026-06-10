@@ -15,11 +15,12 @@
 | ------- | ---------------- | -------------- | ----------------------- |
 | [id]    | draft / approved | no / yes       | no / yes (date)         |
 
-## Handoff readiness
+## Handoff gate
 
 - [ ] All approved intents built and demoed to the PO
 - [ ] PO explicitly confirmed the app does what they wanted (step 9 gate)
 - [ ] Definition of Done holds (tests, contracts, high-risk choices recorded)
+- [ ] `PRODUCTIONIZATION.md` written — stubs, provisional high-risk choices, and what the dev must harden
 - [ ] PR proposed/opened: [link]
 
 ## Notes / blockers

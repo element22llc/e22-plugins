@@ -23,7 +23,7 @@ start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
 **Flow state lives in `/spec/BUILD-STATUS.md`, not in the conversation.** Copy
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md` there when you first
 create `/spec` (step 2), and update + commit it at **every step transition**:
-current step, per-feature progress, handoff readiness. Sessions end; the file
+current step, per-feature progress, handoff gate. Sessions end; the file
 is how the next one picks up. **Resuming:** if `/spec/BUILD-STATUS.md` already
 exists, your **first action** — before reading the recorded step or re-running the
 interview — is to **reconcile it** against the current bundled `build-status.md`,
@@ -121,13 +121,27 @@ on the next `/e22-build` run.
 10. **Hand off via the PR.** When the demo-validation gate has passed and the
     Definition of Done holds, propose opening the PR (it waits for
     confirmation — Commit-autonomy rule). The PR
-    description is the dev's productionization brief; include:
+    description is the dev's productionization brief. First write the durable
+    brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/e22-adopt`
+    produces**, so a dev inheriting a PO-built v0 gets the same brief as one
+    inheriting an adopted repo, instead of gaps that evaporate with the PR text.
+    Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` if it doesn't
+    exist yet; if it already does (resumed handoff), reconcile it against the
+    bundled template first (the plugin-wide *Template reconciliation* convention).
+    Capture:
     - that this is a **PO-built v0 via `/e22-build`**;
-    - links to the approved (and demo-validated) `intent.md` files;
-    - the list of **built-for-real high-risk choices** (marked `proposed` in
-      the contracts) and **remaining stubs** — especially auth;
-    - open items from `/spec/SPEC-QUESTIONS.md`.
+    - the **built-for-real high-risk choices** (marked `proposed` in the
+      contracts) and **remaining stubs** — especially auth;
+    - the gap analysis vs the Definition of Done.
 
+    This code was written to spec under E22 standards, so dispositions trend
+    **Keep/Refactor** (finish the stubs) — there's no legacy to Rewrite/Reject;
+    leave the disposition column at that default. Product questions stay in
+    `/spec/SPEC-QUESTIONS.md`, not here.
+
+    Then propose opening the PR (it waits for confirmation — Commit-autonomy
+    rule); its description links to `/spec/PRODUCTIONIZATION.md`, the
+    demo-validated `intent.md` files, and open `/spec/SPEC-QUESTIONS.md` items.
     Link the PR in `/spec/BUILD-STATUS.md`. The dev PR review is the
     unchanged gate: it merges to `main` as v0 only with a dev's approval.
 

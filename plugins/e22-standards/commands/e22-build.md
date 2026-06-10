@@ -14,5 +14,6 @@ build the app with the E22 default stack, run it locally
 tooling (mise, Docker, pnpm) yourself. Respect the PO-mode guardrails: no
 deploy, no `/infra`, no real secrets or third-party accounts. Propose the
 handoff PR only after the PO explicitly confirms the demoed app does what
-they wanted (the skill's demo-validation gate); its description is the dev's
-productionization brief.
+they wanted (the skill's demo-validation gate); write the dev's durable
+handoff brief to `/spec/PRODUCTIONIZATION.md` (the same artifact `/e22-adopt`
+produces) and link it from the PR.
