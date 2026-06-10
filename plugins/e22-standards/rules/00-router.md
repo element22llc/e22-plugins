@@ -11,8 +11,9 @@ This is a lean **router**: short always-on rules below, full prose on demand:
 - Full conventions (versioning, toolchain, lint/test, patterns) → **`/e22-conventions`**.
 - Design-source handling → **`/e22-design-sources`**.
 - Spec ↔ code coupling rules → opened by **`/e22-spec-scaffold`**.
-- Fresh fork? → run **`/e22-init`** once.
-- Existing repo not forked from the template (a "vibe-coded" app)? → run **`/e22-adopt`** once.
+- Fresh fork, **or** a brand-new non-template repo you're starting from scratch? → run **`/e22-init`** once — it bootstraps the spec spine + scaffolding either way, *before* feature code.
+- Existing repo with working code but no `/spec` (a "vibe-coded" app to reverse-engineer)? → run **`/e22-adopt`** once.
+- No `/spec` spine yet? The SessionStart hook flags it — bootstrap (`/e22-init` greenfield, or `/e22-adopt`) before writing feature code; don't degrade to toolchain-only.
 - Loose files cluttering the repo root? → run **`/e22-tidy`** to sort them into `/spec`.
 - Built app vs. its specs/tickets — looking for drift? → run **`/e22-drift`** (read-only audit).
 - Open questions piling up in the specs? → run **`/e22-questions`** to sweep and answer them.
