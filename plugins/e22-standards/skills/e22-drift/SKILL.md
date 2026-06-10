@@ -1,87 +1,106 @@
 ---
 name: e22-drift
-description: Audit implemented code against the full spec — and a batch of source tickets (pasted or exported) — to expose drift. Use when asked to compare a built app to its specs, check for spec drift, or verify code matches a set of Jira/issue tickets. Read-only: reports findings and proposes Rule-5 resolutions, never edits.
+description: Compare the as-built /spec (reverse-engineered from the code by /e22-adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Use when asked to check a built app against its tracker specs, audit spec drift, or confirm the code did what the tickets asked. Read-only: reports findings and proposes Rule-5 resolutions, never edits.
 ---
 
-# Audit code against the spec (drift report)
+# Compare the as-built spec against the tracker spec (drift report)
 
-A **manual, read-only conformance audit.** It compares what the product is
-*supposed* to do — the `/spec` spine plus a batch of source tickets the dev
-brings — against what the code *actually* does, and surfaces every divergence.
+A **manual, read-only conformance audit.** It compares two specs:
+
+- the **as-built spec** — the `/spec` spine `/e22-adopt` reverse-engineered from
+  the code, i.e. a faithful description of what the product *actually does*; and
+- the **tracker spec** — what the product was *supposed* to do, exported from
+  your issue tracker (Jira, Linear, GitHub Issues, …) as markdown, one file per
+  epic/issue or per user story / task.
+
+It surfaces every place the two diverge.
 
 **It never edits code or spec.** Its outputs are a drift report, a proposed
 Rule-5 resolution per finding, and `spec-drift` issues for anything needing a
 human decision. Resolving drift is a separate, approved step (see the
 spec-framework reference, Rule 5).
 
-This is the inverse of `/e22-adopt` (which goes code → spec when no spec
-exists). Here a spec exists and you verify the code conforms to it.
+## Relationship to `/e22-adopt` — sequential, not inverse
+
+`/e22-drift` **consumes** what `/e22-adopt` produces. `/e22-adopt` reverse-
+engineers the as-built `/spec` from the code (reality). `/e22-drift` then diffs
+that as-built spec against the tracker spec (intent). They are two stages of one
+flow — adopt builds the picture of reality, drift checks it against what was
+asked for — **not** opposites. (This supersedes the 1.24.0 framing of drift as
+"the inverse of `/e22-adopt`.")
+
+**If there is no `/spec` spine yet, stop and run `/e22-adopt` first** — there is
+no as-built spec to compare against until the code has been reverse-engineered.
 
 ## When to run
 
-- After landing a batch of work that spanned several tickets, to confirm the
-  build matches the combined intent.
+- After landing a batch of work that spanned several epics/stories/issues, to
+  confirm the build matches the combined intent.
 - Periodically, to catch drift that accumulated across many small PRs.
-- Before a release or handoff, as a conformance check.
+- Before a release or handoff, as a conformance check against the tracker.
 
 ## Inputs
 
-1. **Source tickets** — the "intended behavior" set the dev is checking against.
-   The dev either **pastes them into the chat** or **points to an export**
-   (e.g. a Jira CSV/JSON/Markdown dump or a directory). Ask which, if not given.
-2. **The `/spec` spine** — `features/*/intent.md` + `contract.md`, `decisions/*`,
-   `vision.md`, `glossary.md`.
-3. **The code** — `/apps` and `/packages`.
+1. **The as-built `/spec` spine** — `features/*/intent.md` + `contract.md`,
+   `decisions/*`, `vision.md`, `glossary.md`, as produced by a prior
+   `/e22-adopt` run. This stands in for the code: its `contract.md` sections were
+   *derived from the real code* and carry the `path:line` pointers. If it's
+   absent, redirect to `/e22-adopt` and stop.
+2. **The tracker spec export** — markdown files from any issue tracker (Jira,
+   Linear, GitHub Issues, …), **one file per epic/issue or per story / task**. A
+   coarse-grained file (epic, large issue) contains several sub-items with their
+   own acceptance criteria; a story/task/sub-issue file is a single unit. The dev
+   either **pastes them into the chat** or **points to a directory/path**. Ask
+   which, if not given.
 
-## Phase 1 — Reconcile tickets ↔ spec (flag gaps; do NOT write)
+## Phase 1 — Parse the tracker spec into intended-behavior units
 
-The `/spec` spine is the durable source of truth; tickets are intake. This phase
-checks whether the spec has absorbed everything the tickets asked for.
+The tracker export is the *intended* spec. Decompose it into comparable units.
 
-1. **Gather the ticket set.** If pasted, use the chat text. If pointed to an
-   export, read the files at that path. Normalize each ticket to a one-line
-   *intended behavior* + its acceptance criteria. Don't invent detail the ticket
-   doesn't state — flag vagueness instead.
-2. **Map each ticket to a `/spec` feature** (the `contract.md`/`intent.md` whose
-   behavior it belongs to). Classify:
-   - **In spec** — the ticket's behavior is captured in a contract.
-   - **Spec gap** — the ticket's behavior is in **no** spec (spec lags tickets).
-   - **Spec-only** — spec behavior with no backing ticket (usually fine; note it).
-3. **Emit a coverage table** (ticket → feature → In spec / Spec gap). Per the
-   *report + propose only* autonomy: for each spec gap, **propose** the spec
-   addition (which `contract.md`/`intent.md`, what to add) — **do not write it.**
-   Treat the spec, after these proposed additions are mentally folded in, as the
-   "now-current spec" that Phase 2 audits against.
+1. **Read the export.** If pasted, use the chat text; if pointed to a path, read
+   the markdown files there.
+2. **Decompose each file by its grain.** A coarse-grained file (**epic**, large
+   **issue**) fans out into its constituent stories/tasks/sub-issues, each with
+   its acceptance criteria; a fine-grained file (**story / task / sub-issue**) is
+   a single unit. Normalize each unit to a one-line *intended behavior* + its
+   acceptance criteria, keeping the tracker key/title (e.g. `PROJ-123`, issue #)
+   for traceability.
+3. **Don't invent detail the tracker spec doesn't state** — where a unit is
+   vague, flag it as Ambiguous rather than guessing what it meant.
 
-## Phase 2 — Audit code against the spec (+ ticket expectations)
+## Phase 2 — Diff the as-built spec against the tracker spec
 
-For every expected behavior in the reconciled set (spec contracts, augmented by
-the ticket behaviors from Phase 1), locate the owning code — via the
-`contract.md` pointer if present, else search the repo — and classify it with
-**file:line evidence**:
+Map each intended-behavior unit to the as-built `/spec` feature
+(`contract.md`/`intent.md`) that owns it, and classify the comparison. The
+**as-built spec is reality** (it describes the code); the **tracker spec is
+intent**. Cite the as-built evidence — the `contract.md` section and the
+`path:line` pointer it already carries — never assert a match from the tracker
+spec alone.
 
 | Verdict | Meaning |
 |---|---|
-| ✅ **Conforms** | Code matches the spec'd behavior. |
-| ⚠️ **Drifted** | Code does something different from the spec. |
-| 🔴 **Missing** | Spec'd (or ticketed) but not implemented. |
-| 🟡 **Extra** | Implemented behavior in no spec or ticket — often where un-spec'd tickets landed. |
-| ❓ **Ambiguous** | Spec too vague to judge; needs clarification. |
+| ✅ **Matches** | The as-built spec captures the tracker-specified behavior. |
+| ⚠️ **Diverged** | The as-built behavior differs from what the tracker spec asked for. |
+| 🔴 **Missing** | Tracker spec'd it, but the as-built spec (the code) has no such behavior — not built. |
+| 🟡 **Unspecified** | As-built behavior with no backing tracker unit — built, but never asked for. |
+| ❓ **Ambiguous** | One side too vague to judge; needs clarification. |
 
-Read the real code as the evidence — never assert conformance from the spec
-alone. Cite `path:line`. For many features this fans out cleanly (one reviewer
-per feature); do that if the audit is large.
+For many features this fans out cleanly (one reviewer per feature) — do that if
+the comparison is large.
 
 ## Output — report + propose only
 
-1. **Drift report.** Print it: the Phase-1 coverage table, then a per-feature
-   findings table (verdict + evidence + one-line note). Offer to also write it to
-   `/spec/DRIFT-REPORT.md` on a `feat/e22-drift` branch **only if the dev wants it
-   tracked** — it's a point-in-time artifact, not part of the durable spine.
+1. **Drift report.** Print it: a coverage table (tracker unit → as-built feature
+   → verdict), then a per-feature findings table (verdict + as-built evidence +
+   one-line note). Offer to also write it to `/spec/DRIFT-REPORT.md` on a
+   `feat/e22-drift` branch **only if the dev wants it tracked** — it's a
+   point-in-time artifact, not part of the durable spine.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
-   reference): fix the code to match the spec, **or** update the spec to match the
-   code. Note which path needs **PO** approval (user-facing behavior changed) vs.
-   **dev** approval (internal/architectural).
+   reference): reconcile the divergence by changing the code to match the tracker
+   intent, **or** updating the spec/tracker to match the as-built reality (when
+   the build is right and the tracker spec is stale). Note which path needs **PO**
+   approval (user-facing behavior changed) vs. **dev** approval
+   (internal/architectural).
 3. **Open `spec-drift`-labelled issues** for findings that need a human decision,
    so drift becomes a tracked item rather than a quiet failure.
 4. **Make no code or spec edits, and don't commit.** This skill stops at the

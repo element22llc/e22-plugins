@@ -5,6 +5,42 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.27.0
+
+- **`/e22-drift` is now a spec-vs-spec diff that *consumes* `/e22-adopt`, not its
+  inverse.** 1.24.0 framed drift as "the inverse of `/e22-adopt`" — a spec
+  already exists, audit the code against it — and had it compare **code** against
+  the `/spec` spine **plus a batch of source tickets**. That's the wrong axis for
+  the actual workflow: run `/e22-adopt` to reverse-engineer the **as-built spec**
+  from the code (a faithful picture of what the product *does*), then compare that
+  as-built spec against the **tracker spec** (what it was *supposed* to do,
+  exported as markdown from whatever issue tracker the team uses). Adopt and drift
+  are **sequential stages of one flow**, not opposites — drift consumes adopt's
+  output. Reworked:
+  - **New comparison axis: as-built `/spec` ↔ tracker spec** (pure spec-vs-spec).
+    The as-built spec stands in for the code (its `contract.md` sections were
+    derived from the real code and carry the `path:line` pointers), so drift cites
+    that evidence rather than re-auditing code from scratch.
+  - **Tracker-agnostic markdown export is a first-class input, decomposed by
+    grain.** The intended spec is exported from any issue tracker — **Jira,
+    Linear, GitHub Issues, …** — as markdown; the skill never hardcodes one
+    vendor. Phase 1 parses the export — **one file per epic/issue or per
+    story/task** — fanning a coarse-grained file out into its constituent
+    sub-items + acceptance criteria, normalizing each to an intended-behavior unit
+    (tracker key/title kept for traceability).
+  - **New verdicts** matched to the spec-vs-spec direction (as-built = reality,
+    tracker = intent): ✅ Matches / ⚠️ Diverged / 🔴 Missing (tracker asked, not built) /
+    🟡 Unspecified (built, never asked) / ❓ Ambiguous — replacing the old
+    Conforms/Drifted/Missing/Extra/Ambiguous code-audit verdicts.
+  - **Guard: redirect to `/e22-adopt` when there's no `/spec` spine** — there's no
+    as-built spec to diff against until the code has been reverse-engineered.
+  - Still **report + propose only** — no code/spec edits, Rule-5 resolution per
+    finding (PO vs dev approval noted), `spec-drift` issues for decisions,
+    ambiguities to `## Open questions` for `/e22-questions`.
+  - Updated `skills/e22-drift/SKILL.md`, the `commands/e22-drift.md` alias, and the
+    router (`rules/00-router.md`). The 1.24.0 entry below is left intact as a
+    record of what shipped then; this entry supersedes its framing.
+
 ### 1.26.0
 
 - **Detect greenfield repos that have no spec spine — push the bootstrap.** A

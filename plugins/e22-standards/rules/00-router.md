@@ -15,7 +15,7 @@ This is a lean **router**: short always-on rules below, full prose on demand:
 - Existing repo with working code but no `/spec` (a "vibe-coded" app to reverse-engineer)? → run **`/e22-adopt`** once.
 - No `/spec` spine yet? The SessionStart hook flags it — bootstrap (`/e22-init` greenfield, or `/e22-adopt`) before writing feature code; don't degrade to toolchain-only.
 - Loose files cluttering the repo root? → run **`/e22-tidy`** to sort them into `/spec`.
-- Built app vs. its specs/tickets — looking for drift? → run **`/e22-drift`** (read-only audit).
+- As-built `/spec` (from `/e22-adopt`) vs. the tracker spec export (Jira/Linear/GitHub Issues, …) — looking for drift? → run **`/e22-drift`** (read-only spec-vs-spec audit; needs `/spec` first).
 - Open questions piling up in the specs? → run **`/e22-questions`** to sweep and answer them.
 - On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected) → run **`/e22-standards`** at session start to load these rules on demand.
 

@@ -1,6 +1,6 @@
 {
   "name": "e22-standards",
-  "version": "1.26.0",
+  "version": "1.27.0",
   "description": "Element 22's always-on engineering operating manual plus spec-workflow skills and templates. Org standards centralized so every product repo picks up changes via /plugin update.",
   "author": {
     "name": "Element 22 Platform",
