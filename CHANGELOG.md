@@ -5,6 +5,44 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.26.0
+
+- **Detect greenfield repos that have no spec spine — push the bootstrap.** A
+  brand-new repo with the plugin enabled but no `/spec` (code written from
+  scratch with the standards active, but never forked from the template) fell
+  through every existing path: the always-on rules were injected, but nothing
+  *pushed* the spec-first bootstrap, so sessions silently degraded to toolchain
+  conventions only — feature code written ahead of any vision/intent/contract.
+  New `hooks/check-unmanaged-repo.sh` (SessionStart) fires when there's no
+  `/spec` spine, presenting both bootstrap routes (greenfield `/e22-init` vs
+  reverse-engineering `/e22-adopt`) rather than guessing from code volume.
+  Fail-soft, silent once `/spec` exists (self-clearing), and silent in the
+  plugin's own repo (`.claude-plugin/` guard). Registered after
+  `check-open-questions.sh` in `hooks/hooks.json`.
+- **Point-of-action nudge when source code is written ahead of a spec.** The
+  SessionStart flag fires once, at startup — but a repo that's empty at startup
+  can grow its first feature code mid-session, after the banner. New
+  `hooks/check-code-before-spec.sh` (PreToolUse, `Write|Edit|MultiEdit`)
+  re-asserts spec-first at the moment it's about to be broken: the first write
+  of real source code (extension allowlist) into a repo with no `/spec` spine.
+  **Non-blocking** — emits `hookSpecificOutput.additionalContext` and exits 0,
+  so the write proceeds and the model just sees the reminder — and fires **at
+  most once per session+repo** (marker in `TMPDIR` keyed by `session_id` + cwd),
+  so it nudges without nagging. Exempts docs/config/scaffolding and anything
+  under `spec/` or `.claude/` (writing those is bootstrapping), and is silent
+  once `/spec` exists or in the plugin's own repo.
+- **Generalized `/e22-init` to cover non-template greenfield, not just forks.**
+  `e22-init` previously bailed the moment it found no placeholders — leaving a
+  from-scratch non-template repo with no working bootstrap path (the route the
+  new hook points greenfield repos at). It's now a two-path skill: **Path A**
+  (fresh template fork — the existing placeholder-resolution flow) and **Path B**
+  (non-template greenfield — bring the spine + scaffolding in from
+  `repository-template`, interview to fill `vision`/`users`/`glossary`, record
+  the initial stack as the first ADR, pin the toolchain, then proceed
+  spec-first). Repos with substantial pre-existing code still redirect to
+  `/e22-adopt`. Updated the skill description, the `commands/e22-init.md` alias,
+  and the router (`rules/00-router.md`) accordingly.
+
 ### 1.25.0
 
 - **New `/e22-questions` skill — stop open questions from rotting.** Open
