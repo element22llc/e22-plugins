@@ -22,8 +22,12 @@ plugins/e22-standards/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── hooks/                          # SessionStart hook → injects rules/*.md
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
-├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-spec-scaffold, e22-adr, e22-conventions, e22-design-sources
-├── commands/                       # /e22-init and /e22-build aliases
+├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-conventions,
+│                                   #            e22-design-sources, e22-spec-scaffold, e22-adr,
+│                                   #            e22-drift, e22-tidy, e22-standards
+├── commands/                       # optional /slash aliases for a subset of skills
+│                                   #   (e22-init, e22-build, e22-adopt, e22-drift, e22-tidy);
+│                                   #   skills without an alias are still invokable as /<skill-name>
 └── templates/                      # bundled spec templates + full reference prose
 ```
 
@@ -36,7 +40,13 @@ plugins/e22-standards/
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.
 - The `rules/` files concatenate in **lexical order** (numeric prefixes). Keep
-  prefixes spaced so new rules can slot between existing ones.
+  prefixes spaced so new rules can slot between existing ones. Gaps in the
+  sequence (e.g. `20` → `22` → `30`) are intentional headroom — do not renumber
+  files to make the prefixes contiguous.
+- Command files in `commands/` are **optional aliases** — they exist only where a
+  skill benefits from a short `/slash` entry point. Every skill is directly
+  invokable as `/<skill-name>` regardless, so a skill having no command file
+  (e.g. `e22-adr`, `e22-spec-scaffold`, `e22-conventions`) is not a defect.
 - Hook commands in `hooks.json` invoke their scripts via an explicit `sh` prefix,
   so the executable bit doesn't matter (marketplace install does not chmod) —
   keep that prefix when adding hooks. All hook scripts are POSIX `sh`, no `jq`
