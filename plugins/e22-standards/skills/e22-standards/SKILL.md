@@ -19,7 +19,7 @@ Do this now:
 
    The files concatenate to form the full operating manual:
    `00-router`, `05-roles`, `10-stack`, `15-commands`, `20-layout`,
-   `30-spec-workflow`, `40-testing`, `45-commit-autonomy`,
+   `22-housekeeping`, `30-spec-workflow`, `40-testing`, `45-commit-autonomy`,
    `50-definition-of-done`, `60-high-risk`, `70-secrets`, `80-change-size`,
    `85-practices`, `90-design-sources`, `95-not-the-gate`, `99-end-of-session`.
 
@@ -30,7 +30,7 @@ Do this now:
 
 3. Give the user a one-line confirmation naming the plugin version (read it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`) — e.g. "Element 22
-   standards v1.18.0 loaded." Do **not** dump the full ruleset back to the user;
+   standards vX.Y.Z loaded." Do **not** dump the full ruleset back to the user;
    just confirm and proceed.
 
 The router (`00-router.md`) points to the on-demand reference skills
