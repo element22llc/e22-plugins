@@ -60,8 +60,9 @@ on the next `/e22-build` run.
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`):
    ask plain-language questions to fill `spec/vision.md`,
-   `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; ambiguity goes
-   to `/spec/SPEC-QUESTIONS.md`. If the PO has a Claude Design export, read it
+   `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
+   ambiguity goes to `vision.md` → `## Open questions`. If the PO has a Claude
+   Design export, read it
    per `/e22-design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
    template now, and keep it current from here on.
 3. **Draft feature intents.** For each capability the product clearly needs,
@@ -94,7 +95,7 @@ on the next `/e22-build` run.
      soft-delete with a visible restore, and library-backed local sign-in are
      fair game. Record every high-risk choice in the feature's `contract.md`
      (marked `proposed — dev confirms at review`) and open questions in
-     `/spec/SPEC-QUESTIONS.md`.
+     the feature's `intent.md` → `## Open questions`.
    - Anything that only matters against real users or real data — hard
      deletes, retention/cleanup jobs, real payment flows, production auth
      config — gets the *minimum* needed to demo, clearly marked. Tell the PO
@@ -136,12 +137,15 @@ on the next `/e22-build` run.
 
     This code was written to spec under E22 standards, so dispositions trend
     **Keep/Refactor** (finish the stubs) — there's no legacy to Rewrite/Reject;
-    leave the disposition column at that default. Product questions stay in
-    `/spec/SPEC-QUESTIONS.md`, not here.
+    leave the disposition column at that default. Product questions stay in the
+    feature intents' `## Open questions` (and `vision.md` for product-level),
+    not here.
 
     Then propose opening the PR (it waits for confirmation — Commit-autonomy
     rule); its description links to `/spec/PRODUCTIONIZATION.md`, the
-    demo-validated `intent.md` files, and open `/spec/SPEC-QUESTIONS.md` items.
+    demo-validated `intent.md` files, and any remaining `## Open questions`
+    across the feature intents / `vision.md` (run `/e22-questions` to work them
+    down).
     Link the PR in `/spec/BUILD-STATUS.md`. The dev PR review is the
     unchanged gate: it merges to `main` as v0 only with a dev's approval.
 

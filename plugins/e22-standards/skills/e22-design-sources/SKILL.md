@@ -19,9 +19,11 @@ Key points (read the file for the full detail):
   section.
 - Read only what's visible (screens, flows, components, copy, states). **Do not
   invent** business rules, permissions, backend behavior, data models, or
-  validation — anything not visible goes to `/spec/SPEC-QUESTIONS.md`.
+  validation — anything not visible goes to the feature's `intent.md` →
+  `## Open questions`.
 - The design is authoritative for **visual behavior and flow**; the spec is
-  authoritative for **what the system does**. Conflicts → `/spec/SPEC-QUESTIONS.md`.
+  authoritative for **what the system does**. Conflicts → the feature's
+  `intent.md` → `## Open questions`.
 - The export is a **spec to realize in the standard stack, not code to ship**.
   Rebuild the UI (Next.js + TS + Tailwind); the prototype's delivery tech (UMD
   React, in-browser Babel, hand-rolled CSS) is disposable. Serving the prototype

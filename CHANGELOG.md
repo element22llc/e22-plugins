@@ -5,6 +5,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.25.0
+
+- **New `/e22-questions` skill — stop open questions from rotting.** Open
+  questions were written down once, gated at PO acceptance, then forgotten,
+  spread across per-feature `intent.md` sections and a free-floating
+  `SPEC-QUESTIONS.md`. The new skill sweeps every open question across the
+  `/spec` spine and walks the PO/dev through answering each (read-then-propose:
+  it never guesses an answer or edits without a yes), folding each decision back
+  into the spec or recording an explicit deferral. Added a `commands/e22-questions.md`
+  alias and registered the skill in the router (`rules/00-router.md`) and
+  spec-workflow (`rules/30-spec-workflow.md`) rules.
+- **SessionStart nudge so questions can't rot silently.** A new
+  `hooks/check-open-questions.sh` counts outstanding open questions across
+  `vision.md`, every feature's `intent.md`, and `PRODUCTIONIZATION.md` (scoped to
+  the `## Open questions` section, skipping resolved `- [x]` items and the
+  template's placeholder seed) and surfaces the backlog every session, pointing
+  at `/e22-questions`. Fail-soft and silent when there are none — the notice
+  clears itself once questions are answered or explicitly deferred.
+- **Retired `SPEC-QUESTIONS.md`; questions now live next to their context.**
+  Per-feature questions live in that feature's `intent.md` → `## Open questions`;
+  product-level questions (greenfield vision interview, whole-repo adoption) live
+  in a new `vision.md` → `## Open questions` convention. Rerouted all references
+  across rules 30/60/90, the spec-framework and design-sources references, the
+  `productionization.md` template, and the `e22-spec-scaffold`, `e22-design-sources`,
+  `e22-drift`, `e22-build`, and `e22-adopt` skills.
+
 ### 1.24.1
 
 - **Fix documentation drift in the `e22-standards` loader skill.** The on-demand

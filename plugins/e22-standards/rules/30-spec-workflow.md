@@ -11,6 +11,9 @@ populated. **Create the artifact when the trigger fires — do not defer it:**
   `/spec/decisions/000N-[slug].md` (run **`/e22-adr <slug>`**). The initial
   stack choice is usually the first ADR.
 - **Behavior changes** → update the relevant `contract.md` in the same PR.
+- **Open questions** → live in each feature's `intent.md` → `## Open questions`
+  (product-level ones in `vision.md`); run **`/e22-questions`** to sweep and
+  answer them before they rot.
 
 The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference (opened by
@@ -20,7 +23,8 @@ ADR, ask the dev rather than skipping it.
 **Greenfield** (new product): the input can be anything — an idea, a brief,
 screenshots, or a Claude Design export; don't assume a design artifact exists.
 Interview first to fill `/spec/vision.md`, `users.md`, `glossary.md` (ask,
-don't invent; ambiguity → `/spec/SPEC-QUESTIONS.md`), draft feature intents,
+don't invent; product-level ambiguity → `vision.md` → `## Open questions`),
+draft feature intents,
 and get PO approval before broad implementation. The full step-by-step flow is
 in the spec-framework reference (`/e22-spec-scaffold`); a PO driving it uses
 **`/e22-build`**. Design exports: read the **local export** via

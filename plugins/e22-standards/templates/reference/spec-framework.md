@@ -22,10 +22,9 @@ validation, and operation. Treat it as infrastructure.
 
 ```text
 /spec
-├── vision.md                 # Why this product exists
+├── vision.md                 # Why this product exists — plus an `## Open questions` section for product-level ambiguities
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
-├── SPEC-QUESTIONS.md         # Open ambiguities flagged during spec work
 ├── BUILD-STATUS.md           # PO builds only — /e22-build flow state (step, per-feature progress, handoff gate)
 ├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/e22-adopt, and /e22-build at handoff)
 ├── design/                   # Greenfield product-level design export + traceability link
@@ -42,6 +41,13 @@ validation, and operation. Treat it as infrastructure.
 The canonical templates are shipped by this plugin. Use `/e22-spec-scaffold <id>`
 to create a feature's `intent.md` + `contract.md`, and `/e22-adr <slug>` for an
 ADR — both copy from the bundled templates so structure never drifts per feature.
+
+**Open questions live next to their context, not in a separate file.** A question
+about one feature goes in that feature's `intent.md` → `## Open questions`; a
+product-level question (flagged before any feature exists — greenfield vision
+interview, whole-repo adoption) goes in `vision.md` → `## Open questions`. Run
+**`/e22-questions`** to sweep every open question across the spine and drive each
+to an answer (or an explicit deferral) — otherwise they accumulate and rot.
 
 ## Rules
 
@@ -82,14 +88,14 @@ conversation, a written brief, screenshots, or a Claude Design export. Do
 1. **Interview** to fill `/spec/vision.md` (what it is, why it exists, what
    success looks like, what it is NOT), `/spec/users.md` (who it serves, their
    job-to-be-done), and `/spec/glossary.md` (shared vocabulary). Ask, don't
-   invent.
+   invent — product-level ambiguities go in `vision.md` → `## Open questions`.
 2. Draft initial `/spec/features/[id]/intent.md` files for the capabilities the
-   product clearly needs. Keep scope honest — flag anything ambiguous in
-   `/spec/SPEC-QUESTIONS.md` instead of guessing.
+   product clearly needs. Keep scope honest — flag anything ambiguous in that
+   feature's `intent.md` → `## Open questions` instead of guessing.
 3. If a Claude Design export exists, read the **local export** (run
    `/e22-design-sources`) — never fetch the URL (it 403s). The design is
    authoritative for visual behavior; the spec for what the system does. Flag
-   conflicts in `/spec/SPEC-QUESTIONS.md`.
+   conflicts in the relevant feature's `intent.md` → `## Open questions`.
 4. Get PO approval on the intent specs before broad implementation, then build
    under `/apps` and `/packages`, writing `contract.md` as you go.
 

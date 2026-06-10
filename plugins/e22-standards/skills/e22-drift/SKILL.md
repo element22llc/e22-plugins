@@ -85,8 +85,9 @@ per feature); do that if the audit is large.
 3. **Open `spec-drift`-labelled issues** for findings that need a human decision,
    so drift becomes a tracked item rather than a quiet failure.
 4. **Make no code or spec edits, and don't commit.** This skill stops at the
-   report and proposals. Ambiguities go to a proposed `/spec/SPEC-QUESTIONS.md`
-   entry, not a guess.
+   report and proposals. Ambiguities go to a proposed `## Open questions` entry
+   in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
+   guess — run `/e22-questions` to drive them to answers.
 
 ## Coupling rules
 
