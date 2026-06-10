@@ -42,13 +42,14 @@ If an export is ever committed loose at the repo root (or anywhere outside
    interactions.
 4. Do not invent business rules, permissions, backend behavior, data models,
    validation rules, security requirements, or edge cases. Anything not visible
-   in the export goes into `/spec/SPEC-QUESTIONS.md`.
+   in the export goes into the feature's `intent.md` → `## Open questions`.
 5. When you write or update an `intent.md`, preserve both the URL (traceability)
    and the local export path (extraction source) in the `Design source`
    section. Do not drop either.
 6. Treat the design as authoritative for **visual behavior and flow**, but defer
    to the spec for **what the system actually does**. If they conflict, flag the
-   conflict in `/spec/SPEC-QUESTIONS.md` rather than silently picking one.
+   conflict in the feature's `intent.md` → `## Open questions` rather than
+   silently picking one.
 
 ## Realizing the design vs. serving the prototype
 

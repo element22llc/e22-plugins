@@ -85,8 +85,8 @@ from the unchecked items.
 4. **Reverse-engineer the product spec.** Interview the dev (or PO) to fill
    `/spec/vision.md`, `/spec/users.md`, `/spec/glossary.md` — **ask, don't
    invent**. Seed each from what the code implies, then confirm with a human;
-   unresolved product questions go to `/spec/SPEC-QUESTIONS.md`, not into guessed
-   prose.
+   unresolved product-level questions go to `vision.md` → `## Open questions`,
+   not into guessed prose.
 
 5. **Extract a spec per feature.** For each feature from step 3, run
    **`/e22-spec-scaffold <id>`** to create `intent.md` + `contract.md`. Fill
@@ -94,8 +94,8 @@ from the unchecked items.
    and mark derived sections `derived from existing code — dev confirms` (the
    same "confirm at review" convention the contract template already uses). Draft
    `intent.md`'s what/why from the feature's behavior but leave the PO-acceptance
-   boxes **unchecked** — the PO has not validated these yet. Ambiguities →
-   `/spec/SPEC-QUESTIONS.md`.
+   boxes **unchecked** — the PO has not validated these yet. Ambiguities → that
+   feature's `## Open questions`.
 
 6. **Document as-built decisions.** For hard-to-reverse choices already baked into
    the app (database, auth approach, framework, tenancy, deployment shape) run
@@ -199,7 +199,9 @@ from the unchecked items.
   owns the upgrade, on its own branch with tests green. Never bump majors
   silently in the adoption branch.
 - **Ask, don't invent.** Product intent and ambiguous behavior go to the human
-  and to `/spec/SPEC-QUESTIONS.md` — never guessed into the spec.
+  and to the owning feature's `## Open questions` (or `vision.md` for
+  product-level) — never guessed into the spec. Run `/e22-questions` to resolve
+  them.
 - **Resume is additive, never destructive — and reconcile first.** On a re-run, the
   first action is to reconcile the existing `PRODUCTIONIZATION.md` by running the
   step-2 diff and splicing in the sections/rows the current template adds — before

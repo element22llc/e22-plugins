@@ -24,9 +24,9 @@ plugins/e22-standards/
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-conventions,
 │                                   #            e22-design-sources, e22-spec-scaffold, e22-adr,
-│                                   #            e22-drift, e22-tidy, e22-standards
+│                                   #            e22-drift, e22-questions, e22-tidy, e22-standards
 ├── commands/                       # optional /slash aliases for a subset of skills
-│                                   #   (e22-init, e22-build, e22-adopt, e22-drift, e22-tidy);
+│                                   #   (e22-init, e22-build, e22-adopt, e22-drift, e22-questions, e22-tidy);
 │                                   #   skills without an alias are still invokable as /<skill-name>
 └── templates/                      # bundled spec templates + full reference prose
 ```

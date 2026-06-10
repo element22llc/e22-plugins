@@ -20,7 +20,8 @@ implement this` is not appropriate here without explicit in/out scope.
 While a product is **pre-production** (nothing deployed, no real users or
 data), high-risk areas may be built for real locally without prior dev
 scoping — document the choices as you go (`contract.md`, ADR for
-hard-to-reverse picks, `/spec/SPEC-QUESTIONS.md` for open items) and list them
+hard-to-reverse picks, the feature's `intent.md` → `## Open questions` for open
+items) and list them
 in the PR description so dev review hardens them at productionization.
 "Pre-production" is a property of the **product, not the laptop**: working
 locally in a deployed product still produces migrations/deletions that reach

@@ -39,7 +39,8 @@ feature, using the canonical E22 templates bundled with this plugin.
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
-   ambiguity in `/spec/SPEC-QUESTIONS.md` rather than inventing details.
+   ambiguity in this feature's own `## Open questions` section rather than
+   inventing details (run `/e22-questions` later to drive them to answers).
 5. For a Greenfield/design-originated feature, populate the `Design source`
    section per `/e22-design-sources`.
 

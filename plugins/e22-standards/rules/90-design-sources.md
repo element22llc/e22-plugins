@@ -3,7 +3,8 @@
 Features often originate from a **Claude Design** export. Claude **cannot**
 fetch a Claude Design URL (it 403s) — read the **local export** the PO
 committed. The design is authoritative for visual behavior and flow; the spec
-for what the system does — conflicts go to `/spec/SPEC-QUESTIONS.md`. The export
+for what the system does — conflicts go to the feature's `intent.md` →
+`## Open questions`. The export
 is a **spec to realize in the standard stack, not code to ship**: its delivery
 tech (UMD React, in-browser Babel, hand-rolled CSS) is disposable scaffolding —
 serving the prototype runtime as a maintained surface is an **ADR-gated,

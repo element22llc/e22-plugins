@@ -103,5 +103,6 @@ Bad practices found in the as-built code (anti-patterns vs the `practices` rule)
 
 ## Open questions
 
-- See `/spec/SPEC-QUESTIONS.md` for product/behavior ambiguities surfaced during
-  adoption.
+- [Dev-facing hardening ambiguities surfaced during adoption.] Product/behavior
+  ambiguities live in each feature's `intent.md` → `## Open questions` (and
+  `vision.md` for product-level). Run `/e22-questions` to work them all down.
