@@ -5,6 +5,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.24.1
+
+- **Fix documentation drift in the `e22-standards` loader skill.** The on-demand
+  loader (`skills/e22-standards/SKILL.md`, used on Cowork/desktop where the
+  SessionStart hook does not fire) had two stale spots: its enumerated rule list
+  omitted `22-housekeeping`, and its version-confirmation example hardcoded an
+  old version string. Added `22-housekeeping` to the list (now matches all 17
+  `rules/` files) and made the example placeholder-based (`vX.Y.Z`) so it can't
+  drift again — the real version is still read from `plugin.json` at runtime. No
+  behavior change.
+
 ### 1.24.0
 
 - **New `/e22-drift` skill — audit the built app against its specs.** A manual,
