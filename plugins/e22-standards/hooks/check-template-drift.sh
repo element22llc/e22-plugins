@@ -3,7 +3,7 @@
 #
 # WHY THIS EXISTS
 #   Skills that copy a bundled template into the product repo
-#   (PRODUCTION-READINESS.md / BUILD-STATUS.md / feature intent.md+contract.md)
+#   (PRODUCTIONIZATION.md / BUILD-STATUS.md / feature intent.md+contract.md)
 #   carry an in-prose "reconcile against the current template on resume" step. In
 #   practice the model routinely SKIPS that step: when the file looks complete it
 #   resumes "from the checklist" and never diffs, so sections added by a later
@@ -52,7 +52,7 @@ check_pair() {
 $(printf '%s\n' "$_out" | sed 's/^/    - /')"
 }
 
-check_pair "PRODUCTION-READINESS.md" "spec/PRODUCTION-READINESS.md" "${TPL}/production-readiness.md"
+check_pair "PRODUCTIONIZATION.md" "spec/PRODUCTIONIZATION.md" "${TPL}/productionization.md"
 check_pair "BUILD-STATUS.md"         "spec/BUILD-STATUS.md"         "${TPL}/build-status.md"
 
 # Feature specs — there may be many; glob guards against the no-match literal.

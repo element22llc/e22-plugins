@@ -1,6 +1,6 @@
 ---
 name: e22-adopt
-description: Adopt an existing repo that was NOT forked from the E22 template (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, assess production readiness, and sync the template's scaffolding without clobbering working code. Use when a repo has working code but no /spec, no mise.toml, and was not created from repository-template.
+description: Adopt an existing repo that was NOT forked from the E22 template (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the template's scaffolding without clobbering working code. Use when a repo has working code but no /spec, no mise.toml, and was not created from repository-template.
 ---
 
 # Adopt an existing repo into E22 standards
@@ -18,7 +18,7 @@ use the normal spec workflow (`/e22-spec-scaffold`).
 
 ## Resuming? Reconcile before anything else
 
-If `/spec/PRODUCTION-READINESS.md` **already exists**, you are resuming a prior
+If `/spec/PRODUCTIONIZATION.md` **already exists**, you are resuming a prior
 adoption — and that file may have been written under an **older** plugin version
 whose template lacked sections this version adds. **Before** you read its checklist,
 summarize status, or pick next steps, your **first action** is to reconcile it
@@ -37,7 +37,11 @@ from the unchecked items.
    to `main` (commit-autonomy rule). Nothing is committed until the dev approves.
 
 2. **Reconcile the adoption checklist (resume safety) — do this FIRST on a resume.**
-   If `/spec/PRODUCTION-READINESS.md` does **not** exist yet, this is a fresh
+   **Migrate the old name first:** if `/spec/PRODUCTION-READINESS.md` exists (it was
+   renamed to `PRODUCTIONIZATION.md` in v1.22.0), `git mv` it to
+   `/spec/PRODUCTIONIZATION.md` before doing anything else, so the reconcile below
+   sees it.
+   If `/spec/PRODUCTIONIZATION.md` does **not** exist yet, this is a fresh
    adoption — skip ahead; the file is created from the current bundled template in
    step 7. If it **does** exist, you are resuming, and it may have been written by
    an *older* plugin version whose template lacked sections this version adds —
@@ -47,8 +51,8 @@ from the unchecked items.
 
    ```sh
    comm -13 \
-     <(grep -hE '^(#{2,3} |- \[)' spec/PRODUCTION-READINESS.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
-     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/production-readiness.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+     <(grep -hE '^(#{2,3} |- \[)' spec/PRODUCTIONIZATION.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
+     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
    ```
 
    It prints the `##` sections and checklist items the bundled template has that the
@@ -93,9 +97,9 @@ from the unchecked items.
    retroactively during adoption. This captures the *why* a future dev would ask
    about, even though the choice predates the spec.
 
-7. **Assess production readiness.** Copy
-   `${CLAUDE_PLUGIN_ROOT}/templates/spec/production-readiness.md` to
-   `/spec/PRODUCTION-READINESS.md` (only if it doesn't exist yet — on a resume it's
+7. **Triage productionization.** Copy
+   `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` to
+   `/spec/PRODUCTIONIZATION.md` (only if it doesn't exist yet — on a resume it's
    already there and was reconciled against the current template in step 2) and
    fill the gap analysis against E22 standards
    — tests present? lockfiles committed and pinned? secrets handling? high-risk
@@ -104,7 +108,19 @@ from the unchecked items.
    Drizzle/SQLAlchemy (not raw SQL), and is the schema defined in code and
    migration-tracked?** layout? **Committed secrets are
    stop-and-rotate** (secrets rule): call them out at the top, tell the dev, and
-   have the secret rotated — do not just delete the line. This doc is the dev's
+   have the secret rotated — do not just delete the line.
+   **Propose a disposition for every gap-analysis area** — Keep (production-grade
+   as-is), Refactor (sound, harden in place), Rewrite (discard the implementation,
+   rebuild from the now-extracted spec), or Reject (remove; not in spec, dead, or a
+   liability) — with a one-line rationale. You **propose**; the dev **ratifies at PR
+   review**. Then roll the dispositions into the `## Overall recommendation`: **when
+   most areas trend Rewrite/Reject, recommend rebuilding from `/spec` rather than
+   hardening in place** — the spec exists now, so a rewrite is a safe, often cheaper
+   route to production than fixing a pile of issues. A project-level Rewrite or
+   Reject is hard-to-reverse and cross-cutting → record it as an ADR
+   (**`/e22-adr`**, high-risk rule) for the dev to ratify; never force a large
+   restructure silently.
+   This doc is the dev's
    hardening brief and doubles as the resumable adoption checklist (a later
    session reconciles it against the current template per step 2, then continues
    from where it stopped).
@@ -117,7 +133,7 @@ from the unchecked items.
    `uv pip index versions <pkg>`, the current Node LTS) and diff against what the
    manifests pin. Record every dependency that is a major behind or superseded,
    plus any as-built anti-patterns, in the **Outdated dependencies & bad
-   practices** section of `PRODUCTION-READINESS.md`. Anti-patterns to flag (vs
+   practices** section of `PRODUCTIONIZATION.md`. Anti-patterns to flag (vs
    the `practices` rule):
    - **Raw SQL of any kind** — `db.execute`, tagged-template SQL, hand-built
      query strings. The standard is data access through Drizzle/SQLAlchemy only.
@@ -153,10 +169,10 @@ from the unchecked items.
 
 10. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
    low-risk and clearly worth it; otherwise record the deviation in
-   `PRODUCTION-READINESS.md` for the dev to decide. **Propose** any large
+   `PRODUCTIONIZATION.md` for the dev to decide. **Propose** any large
    restructure — never force it silently. The dev's PR review is the hard gate.
 
-11. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTION-READINESS.md` is the
+11. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTIONIZATION.md` is the
    dev's productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
@@ -179,7 +195,7 @@ from the unchecked items.
 - **Ask, don't invent.** Product intent and ambiguous behavior go to the human
   and to `/spec/SPEC-QUESTIONS.md` — never guessed into the spec.
 - **Resume is additive, never destructive — and reconcile first.** On a re-run, the
-  first action is to reconcile the existing `PRODUCTION-READINESS.md` by running the
+  first action is to reconcile the existing `PRODUCTIONIZATION.md` by running the
   step-2 diff and splicing in the sections/rows the current template adds — before
   reading the checklist or proposing next steps. Never overwrite filled-in analysis,
   never restart adoption from scratch. A repo adopted under an older plugin version

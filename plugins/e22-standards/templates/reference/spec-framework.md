@@ -27,6 +27,7 @@ validation, and operation. Treat it as infrastructure.
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
 ├── SPEC-QUESTIONS.md         # Open ambiguities flagged during spec work
 ├── BUILD-STATUS.md           # PO builds only — /e22-build flow state (step, per-feature progress, handoff gate)
+├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/e22-adopt, and /e22-build at handoff)
 ├── design/                   # Greenfield product-level design export + traceability link
 │   ├── README.md
 │   └── source.md
@@ -137,8 +138,8 @@ Brownfield repo with no Greenfield phase can delete the folder. See
 ## Template reconciliation (self-healing on re-run)
 
 Some skills **copy** a bundled template into the product repo, where it then
-lives on and is revisited across sessions — `PRODUCTION-READINESS.md`
-(`/e22-adopt`), `BUILD-STATUS.md` (`/e22-build`), and per-feature `intent.md` /
+lives on and is revisited across sessions — `PRODUCTIONIZATION.md`
+(`/e22-adopt`, and `/e22-build` at handoff), `BUILD-STATUS.md` (`/e22-build`), and per-feature `intent.md` /
 `contract.md` (`/e22-spec-scaffold`). The bundled templates evolve (a `/plugin
 update` may add a new section, checklist item, or table row), but a file copied
 under an older plugin version is frozen at that older shape. Skills that resume
