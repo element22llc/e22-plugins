@@ -11,6 +11,8 @@ one repo.
   why. Design exports: `/spec/design` (product) or
   `/spec/features/[id]/design-export/` (feature).
 - **`/spec/decisions`** — ADRs.
+- **`/spec/reference`** — source/research materials feeding the spec
+  (inventories, vendor metadata, schema/DDL dumps, discovery docs).
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 
 Specs are organized by user-facing feature; code however the stack wants — a
