@@ -5,6 +5,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.23.1
+
+- **`/e22-adopt` resume migration: close the gap inside the skill, not just the
+  command.** 1.23.0 fixed the command's resume *routing* but left the actual
+  `git mv` reachable only via a fragile path: the migration line lived solely in
+  `SKILL.md` step 2, while every salient resume gate in the skill keyed on the
+  **new** `PRODUCTIONIZATION.md` — which is absent in a repo adopted under ≤1.21.0.
+  The "## Resuming?" header (`If PRODUCTIONIZATION.md already exists…`) and step
+  2's "if PRODUCTIONIZATION.md does not exist, this is a fresh adoption — skip
+  ahead" gate both evaluated false/fresh against the old filename, so the agent
+  could settle on the fresh-adoption branch and never reach the one buried line
+  that migrates the old name. Now: the skill's resume header recognizes **either**
+  filename; step 2 runs the `git mv` **before** the fresh-vs-resume decision and
+  bases that decision on whether *neither* file existed; and the command inlines
+  the literal `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` so
+  migration no longer depends on the agent fully entering the skill.
+
 ### 1.23.0
 
 - **`/e22-adopt` now actually migrates the old filename on resume.** The

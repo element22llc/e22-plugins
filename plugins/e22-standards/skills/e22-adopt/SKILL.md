@@ -18,9 +18,12 @@ use the normal spec workflow (`/e22-spec-scaffold`).
 
 ## Resuming? Reconcile before anything else
 
-If `/spec/PRODUCTIONIZATION.md` **already exists**, you are resuming a prior
-adoption — and that file may have been written under an **older** plugin version
-whose template lacked sections this version adds. **Before** you read its checklist,
+If `/spec/PRODUCTIONIZATION.md` **or** the older `/spec/PRODUCTION-READINESS.md`
+exists, you are resuming a prior adoption — and that file may have been written
+under an **older** plugin version whose template lacked sections this version
+adds (the file itself was renamed `PRODUCTION-READINESS.md` → `PRODUCTIONIZATION.md`
+in v1.22.0, so the old name on disk *is* a resume signal — step 2 `git mv`s it
+first). **Before** you read its checklist,
 summarize status, or pick next steps, your **first action** is to reconcile it
 against the current bundled template (step 2). Do not skip this because the file
 "looks complete" — a newly added gate is invisible *precisely because* it isn't in
@@ -37,13 +40,16 @@ from the unchecked items.
    to `main` (commit-autonomy rule). Nothing is committed until the dev approves.
 
 2. **Reconcile the adoption checklist (resume safety) — do this FIRST on a resume.**
-   **Migrate the old name first:** if `/spec/PRODUCTION-READINESS.md` exists (it was
-   renamed to `PRODUCTIONIZATION.md` in v1.22.0), `git mv` it to
-   `/spec/PRODUCTIONIZATION.md` before doing anything else, so the reconcile below
-   sees it.
-   If `/spec/PRODUCTIONIZATION.md` does **not** exist yet, this is a fresh
-   adoption — skip ahead; the file is created from the current bundled template in
-   step 7. If it **does** exist, you are resuming, and it may have been written by
+   **Migrate the old name before deciding anything else:** if
+   `/spec/PRODUCTION-READINESS.md` exists (it was renamed to `PRODUCTIONIZATION.md`
+   in v1.22.0), run `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md`
+   **now** — before the fresh-vs-resume check below, so the old name on disk can't
+   be mistaken for a fresh adoption.
+   Then check: if **neither** `/spec/PRODUCTIONIZATION.md` nor (pre-migration)
+   `/spec/PRODUCTION-READINESS.md` existed, this is a fresh adoption — skip ahead;
+   the file is created from the current bundled template in step 7. Otherwise
+   `/spec/PRODUCTIONIZATION.md` now exists (either already, or from the `git mv`
+   above), you are resuming, and it may have been written by
    an *older* plugin version whose template lacked sections this version adds —
    **before reading its checklist or proposing anything, run this diff** and act on
    its output (don't trust your memory of the template, and don't skip because the
