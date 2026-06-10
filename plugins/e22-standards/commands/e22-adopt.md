@@ -7,7 +7,12 @@ Adopt this existing repository into Element 22 standards by following the
 
 This is for a repo that was **not** forked from `repository-template` — working
 code, but no `/spec`, no `mise.toml`, no plugin install. If `/spec/PRODUCTIONIZATION.md`
-already exists, read it first and resume from its unchecked items. Otherwise:
+**or** the older `/spec/PRODUCTION-READINESS.md` exists, you are **resuming** a
+prior adoption — invoke the `e22-adopt` skill and run its step-2 reconcile
+**first** (it `git mv`s the old filename to `PRODUCTIONIZATION.md` and splices in
+sections newer plugin versions added) **before** reading the checklist,
+summarizing status, or proposing next steps; do not skip this because the file
+looks complete. Otherwise (fresh adoption):
 survey the codebase, reverse-engineer the product spec (`vision.md`, `users.md`,
 `glossary.md` — ask, don't invent), extract `intent.md` + `contract.md` per
 feature via `/e22-spec-scaffold`, capture as-built choices as ADRs via
