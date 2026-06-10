@@ -5,6 +5,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.24.0
+
+- **New `/e22-drift` skill — audit the built app against its specs.** A manual,
+  read-only conformance audit for the inverse of `/e22-adopt`: a spec exists and
+  you want to confirm the code still matches it. The dev brings a batch of source
+  tickets (pasted into the chat or pointed to a Jira export path); Phase 1
+  reconciles those tickets against the `/spec` spine and flags spec gaps
+  (proposed, not written); Phase 2 audits `/apps` + `/packages` against the spec
+  plus the ticket behaviors, classifying each as Conforms / Drifted / Missing /
+  Extra / Ambiguous with `path:line` evidence. Output is a drift report, a
+  proposed Rule-5 resolution per finding (PO vs dev approval noted), and
+  `spec-drift` issues for items needing a decision. **Report + propose only — it
+  makes no code or spec edits and does not commit.** Discoverable via the router
+  in `rules/00-router.md` and the `/e22-drift` command alias.
+
 ### 1.23.1
 
 - **`/e22-adopt` resume migration: close the gap inside the skill, not just the
