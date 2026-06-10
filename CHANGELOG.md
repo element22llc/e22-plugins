@@ -5,6 +5,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.23.0
+
+- **`/e22-adopt` now actually migrates the old filename on resume.** The
+  always-injected `commands/e22-adopt.md` recognized only the new
+  `PRODUCTIONIZATION.md` on resume and inlined a "read it first and resume from
+  its unchecked items" shortcut. For a repo adopted under ≤1.21.0 — i.e. every
+  existing adoption, since the rename landed in 1.22.0 — the file on disk is
+  still `PRODUCTION-READINESS.md`, so the resume branch didn't match and the
+  agent improvised: it read the old file and summarized status without ever
+  loading the skill or running its step-2 reconcile, so the `git mv` migration
+  (which lives only in `SKILL.md`) never fired. The command now treats **either**
+  filename as a resume, and routes to the skill's step-2 reconcile **first**
+  rather than inlining a competing shortcut — closing the gap for every repo
+  adopted before 1.22.0.
+
 ### 1.22.0
 
 - **One readiness concept, named for what it is.** `PRODUCTION-READINESS.md` is
