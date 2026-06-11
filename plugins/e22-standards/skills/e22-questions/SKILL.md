@@ -27,6 +27,11 @@ There is **no `SPEC-QUESTIONS.md`** — questions live next to their context:
 - If present, `spec/PRODUCTIONIZATION.md` → `## Open questions` (dev-facing
   hardening ambiguities).
 
+A fork from an older template revision (pre-1.25.0) may still carry the retired
+standalone `spec/SPEC-QUESTIONS.md`. If it does, step 1 migrates its questions
+into the locations above and removes it — so this skill also self-heals the
+drift, not just consumes it.
+
 ## When to run
 
 - Periodically, to work the backlog down before it accumulates.
@@ -41,7 +46,28 @@ accumulate — this skill is how you act on that nudge and clear it.
 
 ## Steps
 
-1. **Gather.** Collect every open question across the spine. A grep over the
+1. **Heal a legacy `SPEC-QUESTIONS.md` first.** Before gathering, check for the
+   retired standalone file a pre-1.25.0 fork may still carry:
+
+   ```sh
+   test -f spec/SPEC-QUESTIONS.md && echo "legacy SPEC-QUESTIONS.md present — migrate it before gathering"
+   ```
+
+   If it exists, migrate it into the current model, then remove it:
+   - Read its `## Open` items. Route each to its context — a question tied to a
+     specific feature → that feature's `spec/features/*/intent.md` →
+     `## Open questions`; anything product-level → `spec/vision.md` →
+     `## Open questions`. Preserve each item's Context / Options / Owner notes;
+     create the `## Open questions` section in the destination if it's absent.
+   - Read its `## Resolved` items. If the decision is already reflected in the
+     owning `intent.md` / `contract.md`, drop it; otherwise fold the decision
+     there first so it isn't lost.
+   - This is a **move, not an answer** — never invent or resolve anything while
+     migrating. Propose the migration (which items land where), and on a yes
+     apply it and **delete `spec/SPEC-QUESTIONS.md`** so the retired artifact is
+     gone. The migrated questions then flow into the normal sweep below.
+
+2. **Gather.** Collect every open question across the spine. A grep over the
    `## Open questions` sections finds them — for example:
 
    ```sh
@@ -53,12 +79,12 @@ accumulate — this skill is how you act on that nudge and clear it.
    self-explanatory. Skip items already resolved (`- [x]`) or already annotated
    as a deliberate deferral.
 
-2. **Present a worklist.** Print a consolidated table — **product-level
+3. **Present a worklist.** Print a consolidated table — **product-level
    (`vision.md`) first**, then per feature — with the source file and the
    question. If there are none, say so and stop. Don't bury the list; this is
    the artifact the PO/dev acts on.
 
-3. **Route each question to its owner.** Reuse the standard PO-vs-dev split:
+4. **Route each question to its owner.** Reuse the standard PO-vs-dev split:
    - **Product / behavior** ambiguities ("what should delete mean?", "which
      users see this?") → ask the **PO** in plain language.
    - **Technical / architectural** ambiguities (data model shape, integration
@@ -66,7 +92,7 @@ accumulate — this skill is how you act on that nudge and clear it.
 
    Ask, don't invent. Work through them oldest/most-blocking first.
 
-4. **Fold each answer back into the spec (report + propose).** Per E22 autonomy,
+5. **Fold each answer back into the spec (report + propose).** Per E22 autonomy,
    **propose** the spec edit and apply it on a yes — never blind-write
    user-facing behavior. For each answered question:
    - Update the owning `intent.md` / `contract.md` (or `vision.md`) so the
@@ -78,12 +104,12 @@ accumulate — this skill is how you act on that nudge and clear it.
      **dev** approval (spec-framework Rule 5).
    - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**.
 
-5. **Explicit deferral is a valid outcome.** If a question genuinely can't be
+6. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, keep the item but annotate it with **why** it's deferred (and a
    revisit trigger if there is one) so it reads as a deliberate decision, not
    neglect. A deferred question is tracked, not rotting.
 
-6. **Never guess.** Anything the human can't answer stays open, unchanged. Don't
+7. **Never guess.** Anything the human can't answer stays open, unchanged. Don't
    resolve a question by inventing the answer.
 
 ## Coupling rules

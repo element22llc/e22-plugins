@@ -5,6 +5,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.29.0
+
+- **`/e22-questions` now auto-heals a retired `SPEC-QUESTIONS.md`.** The
+  standalone file was retired in 1.25.0 (questions moved into `## Open questions`
+  sections next to their context), but a repo forked from a pre-1.25.0
+  `repository-template` still carried `spec/SPEC-QUESTIONS.md` on disk — and a
+  fresh greenfield build dutifully *filled the stub it found*, re-introducing the
+  retired artifact. The skill no longer just *avoids* the file, it migrates it: a
+  new **step 1** detects `spec/SPEC-QUESTIONS.md`, routes each `## Open` item to
+  its context (feature-specific → that feature's `intent.md` → `## Open
+  questions`; product-level → `vision.md` → `## Open questions`), folds any
+  `## Resolved` decision into the owning spec if not already captured, then — on a
+  yes — deletes the stray file. It's a **move, not an answer**: nothing is
+  invented or resolved during migration, preserving the skill's read-then-propose
+  contract.
+- **SessionStart nudge surfaces the legacy file.** `check-open-questions.sh`
+  counts `## Open questions` items, which never matched the legacy file's `##
+  Open` section — so a repo carrying only `SPEC-QUESTIONS.md` got no nudge and the
+  heal was never triggered. The hook now also fires when `spec/SPEC-QUESTIONS.md`
+  exists (independent of the open-question count), pointing at `/e22-questions` to
+  migrate it. Fail-soft, still silent once the file is gone, composes with the
+  existing open-question notice. Companion fix in `repository-template` removes
+  the stub from the template's spine and adds `## Open questions` to its
+  `vision.md`, so new forks no longer ship it.
+- Updated `skills/e22-questions/SKILL.md` and `hooks/check-open-questions.sh`.
+
 ### 1.28.0
 
 - **`/e22-drift` verdicts are now status-aware, and `🟠 Partial` is a first-class
