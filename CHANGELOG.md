@@ -5,6 +5,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.30.0
+
+- **`/e22-questions` no longer balloons into a costly codebase sweep.** The skill
+  was cheap by design (grep the `## Open questions` sections, ask a human), but it
+  had a blind spot: in an `/e22-adopt`-reverse-engineered spec, most open
+  questions are *factual* — "is `X` dead code?", "does the client or server
+  enforce this?", "what roles exist?" — not decisions. With no guidance on that
+  class, a model correctly refuses to ask the PO/dev what their own code does and
+  investigates instead — reaching for the most expensive tool available (one
+  Explore agent per subsystem). One real run fanned out 4 agents and burned
+  ~350k tokens to answer questions a handful of greps would settle. The skill now
+  closes the gap with an explicit **triage step (step 4)**: split the worklist
+  into **code-fact** (ground by targeted inline reads of the named file/symbol,
+  batched, proposed as dev-sign-off) vs **human-decision** (route to PO/dev as
+  before). A hard cost guardrail forbids per-question / per-subsystem
+  investigation fan-out — at most one bounded subagent for the *entire* batch, and
+  only when a broad cross-file search genuinely can't be done inline. Questions
+  too costly to ground are left open and flagged rather than swept.
+- **Leaner gather.** Step 2 now treats the grep's `-A20` window as sufficient
+  context and tells the skill not to read each owning file wholesale — open a file
+  only for a bullet the grep didn't capture, and only its `## Open questions`
+  section.
+- **Aligned the "never guess" contract.** The intro and step 8 now distinguish
+  *inventing a decision* (still forbidden) from *grounding a code-fact in the
+  actual code* (the cheap, correct move), so the read-then-propose guarantee no
+  longer reads as "never look at the code."
+- Updated `skills/e22-questions/SKILL.md`.
+
 ### 1.29.1
 
 - **Fix: `/e22-drift` skill frontmatter failed to parse, breaking the whole
