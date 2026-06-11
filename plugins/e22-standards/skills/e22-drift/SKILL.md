@@ -65,7 +65,11 @@ The tracker export is the *intended* spec. Decompose it into comparable units.
    a single unit. Normalize each unit to a one-line *intended behavior* + its
    acceptance criteria, keeping the tracker key/title (e.g. `PROJ-123`, issue #)
    for traceability.
-3. **Don't invent detail the tracker spec doesn't state** — where a unit is
+3. **Capture each unit's tracker status** (Backlog / To Do / In Progress / In
+   Review / Done / …) alongside its key. Status is not cosmetic — it decides
+   whether a "not built" finding is a *defect* or just *unbuilt roadmap* (see the
+   status rule in Phase 2). A unit with no status is treated as unknown, not Done.
+4. **Don't invent detail the tracker spec doesn't state** — where a unit is
    vague, flag it as Ambiguous rather than guessing what it meant.
 
 ## Phase 2 — Diff the as-built spec against the tracker spec
@@ -81,20 +85,51 @@ spec alone.
 |---|---|
 | ✅ **Matches** | The as-built spec captures the tracker-specified behavior. |
 | ⚠️ **Diverged** | The as-built behavior differs from what the tracker spec asked for. |
+| 🟠 **Partial** | The unit's acceptance criteria are split — some met by the as-built spec, others Missing or Diverged. Name which criteria fall on each side; don't let one verdict hide the gap. |
 | 🔴 **Missing** | Tracker spec'd it, but the as-built spec (the code) has no such behavior — not built. |
 | 🟡 **Unspecified** | As-built behavior with no backing tracker unit — built, but never asked for. |
 | ❓ **Ambiguous** | One side too vague to judge; needs clarification. |
+
+**Assign a verdict per unit, not per epic.** An epic is a *rollup* of units with
+mixed verdicts — never collapse it to a single verdict (and never invent a
+compound like "Partial / Missing" at epic grain). If you summarize at epic grain,
+report the **verdict spread** across its child units; the single-verdict cell
+belongs to the units. `🟠 Partial` is the one verdict that *is* legitimate for a
+single unit — when that one story's acceptance criteria are themselves split.
+
+**Status gates whether Missing is a defect or just roadmap.** A `🔴 Missing`
+verdict means different things depending on the unit's tracker status (captured
+in Phase 1):
+
+- **Done (or no longer open) but Missing → true drift / defect.** The tracker
+  says this shipped, yet the as-built spec has no such behavior. This is a real
+  conformance failure and the priority signal of the audit.
+- **Backlog / To Do / In Progress but Missing → unbuilt roadmap, expected, not
+  drift.** The tracker hasn't claimed it exists yet. Report it as planned-not-yet-
+  built, not as a failure — and don't file a `spec-drift` issue for it (it's
+  normal backlog, belongs in feature speccing once any blocking decisions land).
+
+Lead the report with the Done-but-Missing and Diverged findings; a tracker that
+is mostly open work will be mostly expected-Missing, so don't let that volume
+bury the few findings that are actual drift.
+
+**The verdict emoji denotes *kind*, not *severity*.** Don't reuse `🔴` to flag a
+"critical" Diverged finding — that collides with Missing. Convey severity in a
+separate marker (e.g. a `[blocker]` tag or a severity column) so kind and
+severity stay independent.
 
 For many features this fans out cleanly (one reviewer per feature) — do that if
 the comparison is large.
 
 ## Output — report + propose only
 
-1. **Drift report.** Print it: a coverage table (tracker unit → as-built feature
-   → verdict), then a per-feature findings table (verdict + as-built evidence +
-   one-line note). Offer to also write it to `/spec/DRIFT-REPORT.md` on a
-   `feat/e22-drift` branch **only if the dev wants it tracked** — it's a
-   point-in-time artifact, not part of the durable spine.
+1. **Drift report.** Print it: a coverage table (tracker unit → **tracker status**
+   → as-built feature → verdict), then a per-feature findings table (verdict +
+   as-built evidence + one-line note). Include the status column so a reader can
+   tell Done-but-Missing (defect) from Backlog-but-Missing (roadmap) at a glance.
+   Offer to also write it to `/spec/DRIFT-REPORT.md` on a `feat/e22-drift` branch
+   **only if the dev wants it tracked** — it's a point-in-time artifact, not part
+   of the durable spine.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when
@@ -102,7 +137,9 @@ the comparison is large.
    approval (user-facing behavior changed) vs. **dev** approval
    (internal/architectural).
 3. **Open `spec-drift`-labelled issues** for findings that need a human decision,
-   so drift becomes a tracked item rather than a quiet failure.
+   so drift becomes a tracked item rather than a quiet failure. Scope these to
+   *actual* drift — Diverged, Done-but-Missing, and genuine conflicts — **not**
+   expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
 4. **Make no code or spec edits, and don't commit.** This skill stops at the
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
