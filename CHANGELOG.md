@@ -5,6 +5,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.29.1
+
+- **Fix: `/e22-drift` skill frontmatter failed to parse, breaking the whole
+  plugin.** The `e22-drift` `SKILL.md` description was an unquoted YAML plain
+  scalar containing `Read-only: ` — the colon-space made the parser treat it as
+  a nested mapping key and silently drop all frontmatter, so `claude plugin
+  validate` errored and the loader rejected the plugin (every skill/command,
+  e.g. `/e22-questions`, showed as "command not found"). Wrapped the description
+  in double quotes. Guard for the future: any skill/command `description:`
+  containing `: ` (colon-space), `#`, leading `[`/`{`/`*`/`&`, or a leading
+  quote must be quoted.
+
 ### 1.29.0
 
 - **`/e22-questions` now auto-heals a retired `SPEC-QUESTIONS.md`.** The
