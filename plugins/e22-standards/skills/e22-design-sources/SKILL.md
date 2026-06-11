@@ -11,6 +11,9 @@ Read the full design-sources walkthrough bundled with this plugin:
 
 Key points (read the file for the full detail):
 
+- **Most features have no export, or only a partial one — that is normal.** A
+  committed export is one useful input; its absence is not a blocker. The
+  constant across every path is the product's `DESIGN.md` (below).
 - A **Claude Design URL** is a human-only traceability link — Claude **cannot**
   fetch it (it returns `403`). The **local committed export** (ZIP/HTML) is what
   you actually read.
@@ -29,5 +32,13 @@ Key points (read the file for the full detail):
   React, in-browser Babel, hand-rolled CSS) is disposable. Serving the prototype
   runtime as a maintained surface is an **ADR-gated, kill-dated exception** — see
   "Realizing the design vs. serving the prototype" in the reference.
-- Reusable product-wide UI rules live in the product's `DESIGN.md`;
-  feature-specific details stay in the feature's `intent.md`.
+- **No / partial export (the common case):** build the UI deliberately, not in
+  generic AI defaults. Use the **`frontend-design`** plugin re-listed in this
+  marketplace (`/plugin install frontend-design@e22-plugins`) for the craft
+  layer — scoped to a professional/enterprise default, the standard stack
+  (Next + TS + Tailwind), and accessibility. It fills gaps; it never overrides a
+  screen a committed export already designed.
+- Reusable product-wide UI rules live in the product's `DESIGN.md` — populated
+  as you build (third origin: established while building without an export) so
+  every feature stays uniform; feature-specific details stay in the feature's
+  `intent.md`.

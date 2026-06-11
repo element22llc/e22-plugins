@@ -1,8 +1,12 @@
 # CLAUDE.md — e22-plugins
 
 This repo is the **Element 22 plugin marketplace**. It is not a product; it
-hosts a single plugin, `e22-standards`, that injects E22's org-wide engineering
-standards into every product Claude session.
+hosts one plugin of its own, `e22-standards`, which injects E22's org-wide
+engineering standards into every product Claude session. The marketplace also
+**re-lists** Anthropic's upstream `frontend-design` plugin via a `git-subdir`
+source pinned to a SHA — that plugin is *referenced, not vendored*; its content
+is never copied here, and updating it means bumping the SHA in
+`.claude-plugin/marketplace.json`.
 
 **Source of truth: this repo.** The org standards live in
 `plugins/e22-standards/` (rules, skills, reference prose) and are consumed by

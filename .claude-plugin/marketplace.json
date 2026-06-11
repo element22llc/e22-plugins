@@ -1,6 +1,6 @@
 {
   "name": "e22-plugins",
-  "description": "Element 22 organization standards for Claude Code. One plugin (e22-standards) that injects E22's always-on operating rules every session and ships the spec-workflow skills and templates, so org standards live in one place and update centrally instead of being frozen into every forked repo.",
+  "description": "Element 22 organization standards for Claude Code. Ships e22-standards (E22's always-on operating rules + spec-workflow skills and templates) and re-lists Anthropic's frontend-design plugin (pinned, not forked) so product repos get distinctive UI craft from the same marketplace — org standards live in one place and update centrally instead of being frozen into every forked repo.",
   "owner": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
@@ -12,6 +12,18 @@
       "description": "Element 22's always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, testing rules, Definition of Done, high-risk areas, secrets handling, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for first-run setup, spec scaffolding, and ADRs.",
       "category": "development",
       "keywords": ["element-22", "org-standards", "conventions", "spec-workflow", "always-on", "operating-manual"]
+    },
+    {
+      "name": "frontend-design",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/anthropics/claude-code.git",
+        "path": "plugins/frontend-design",
+        "sha": "c91a6b660de1b1a607f8d7ec3eea53ec567d710a"
+      },
+      "description": "Anthropic's official frontend-design skill, re-listed (not forked) so E22 product repos install distinctive, non-generic UI craft from one marketplace. Pinned by SHA — bump it to update. Scoped to E22's stack and DESIGN.md uniformity discipline by e22-standards' /e22-design-sources; defer to a committed design export when one exists.",
+      "category": "development",
+      "keywords": ["frontend", "ui", "design", "aesthetics", "anthropic", "upstream"]
     }
   ]
 }

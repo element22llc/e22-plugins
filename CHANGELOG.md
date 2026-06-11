@@ -5,6 +5,33 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.32.0
+
+- **UI craft now comes from Anthropic's `frontend-design`, re-listed not
+  re-authored.** Until now nothing in the standards guided *aesthetic* UI
+  quality when there was no design export — Claude fell back to generic AI
+  defaults. Rather than maintain our own design skill, the marketplace now
+  re-lists Anthropic's official `frontend-design` plugin via a `git-subdir`
+  source pinned to a SHA (`/plugin install frontend-design@e22-plugins`; bump
+  the SHA to update). We carry a pointer, not the prose — zero duplicated
+  content.
+- **Design-source guidance reweighted toward the common case: no / partial
+  export.** Rule `90-design-sources.md` and `DESIGN-SOURCES.md` previously led
+  with "features originate from a Claude Design export" and framed the export as
+  authoritative. Most features have **no export, or only a partial one**, so the
+  guidance now leads there: build the UI deliberately with `frontend-design`
+  (scoped to a professional/enterprise default, the standard Next + TS + Tailwind
+  stack, and accessibility), defer to a committed export only for the screens it
+  actually covers, and anchor product-wide uniformity in `DESIGN.md`.
+- **`DESIGN.md` gains a third origin — "established while building without an
+  export."** Joins "distilled from an export" and "reverse-engineered by
+  `/e22-adopt`": when there is nothing to distill, `DESIGN.md` *is* the record of
+  the design decisions made while building, seeded from the first feature and
+  grown as patterns recur — the thing that stops an export-less product drifting
+  into differently-styled screens. The `/e22-design-sources` skill summary and
+  the reference's new "Building UI without a (full) export" section spell out the
+  workflow.
+
 ### 1.31.0
 
 - **`/e22-adopt` now captures the as-built design, not just the spec.** Adoption

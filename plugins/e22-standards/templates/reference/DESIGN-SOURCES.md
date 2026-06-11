@@ -1,11 +1,18 @@
 # Design sources
 
-How a design exploration becomes something Claude can actually read, and how to
-reference it from a spec. The always-on rules keep only a short summary; this is
-the full walkthrough, loaded on demand via `/e22-design-sources`.
+How a feature's UI gets designed and built to a uniform standard — whether it
+starts from a design export, a partial sketch, or nothing at all. The always-on
+rules keep only a short summary; this is the full walkthrough, loaded on demand
+via `/e22-design-sources`.
 
-Features in E22 products often originate from a **Claude Design** exploration by
-the PO. There are two distinct artifacts and they are not interchangeable:
+**Set expectations first: most features have no design export, or only a partial
+one.** A committed export is a useful input when it exists, but its absence is
+the normal case, not a blocker — see "Building UI without a (full) export" below.
+The constant across every path is the product's **`DESIGN.md`**, which keeps the
+UI uniform feature to feature regardless of where any one screen came from.
+
+When a feature *does* originate from a **Claude Design** exploration by the PO,
+there are two distinct artifacts and they are not interchangeable:
 
 - **Claude Design URL** — traceability link only. Lets a human re-open the
   design in their browser. Claude **cannot** fetch it; the URL requires a
@@ -86,6 +93,34 @@ re-typing it by hand. The port is now a mechanical agent task, and the original
 prototype is the **pixel-diff oracle** to verify against — so the cost that used
 to justify serving-as-is is much smaller than it looks.
 
+## Building UI without a (full) export
+
+This is the common path — a `/e22-build` idea with no mockup, a feature the PO
+described in prose, or an export that covers one screen but not the five around
+it. Do **not** fall back to generic, default-looking AI UI. Build deliberately:
+
+- E22 re-lists Anthropic's **`frontend-design`** plugin in the same marketplace
+  as `e22-standards` (`/plugin install frontend-design@e22-plugins`). Its skill
+  activates automatically on frontend work and supplies the craft layer:
+  intentional typography, a committed color system, motion, considered layout,
+  and an explicit list of generic-AI anti-patterns to avoid (Inter/Roboto
+  defaults, purple-on-white gradients, cookie-cutter sections).
+- **Scope it to E22.** `frontend-design` defaults to "pick the most extreme
+  aesthetic." For Element 22's financial-services context, keep the *discipline*
+  (intentional, cohesive, non-generic, accessible) but default to a
+  professional/enterprise register unless the PO asks otherwise. Build in the
+  standard stack — Next.js + TypeScript + Tailwind — not the plugin's example
+  HTML/CSS. The cookbook it links
+  (`prompting_for_frontend_aesthetics`) is the deeper reference.
+- **A committed export still wins where it exists.** `frontend-design` fills the
+  *gap* — it does not override a screen the PO actually designed. Realize the
+  export for the screens it covers; design the rest deliberately around it so the
+  whole flow reads as one product.
+- **Capture as you go.** Every reusable decision you make while building —
+  palette, type scale, spacing, component shapes, states — goes into `DESIGN.md`
+  immediately (see below), so the next feature inherits it instead of
+  re-deciding and drifting.
+
 ## DESIGN.md vs. intent.md
 
 `DESIGN.md` (at the repo root, or `apps/<app>/DESIGN.md` for an app with a
@@ -94,7 +129,7 @@ typography, colors, components, forms, tables, navigation, empty/loading/error
 states, accessibility, copy tone. Update it only when the design introduces a
 reusable pattern. Feature-specific details stay in the feature's `intent.md`.
 
-`DESIGN.md` has **two legitimate origins** — a design export is *not* a
+`DESIGN.md` has **three legitimate origins** — a design export is *not* a
 prerequisite:
 
 - **Distilled from a design export** (Greenfield / feature flow): the PO's
@@ -105,10 +140,15 @@ prerequisite:
   custom properties, fonts, the palette/spacing/radius scales in use, and
   recurring component styling, then writes `DESIGN.md` directly — no export
   needed.
+- **Established while building without an export** (the common path, above):
+  there is nothing to distill or reverse-engineer yet, so `DESIGN.md` *is* the
+  record of the design decisions you make — seed it from the first feature's
+  deliberate choices and grow it as patterns recur. This is what keeps an
+  export-less product from drifting into five differently-styled screens.
 
-Either way the file follows the same format and the same "promote only what
-recurs (3+ places)" rule. See the product's `DESIGN.md` for the format and the
-validation command.
+Whatever the origin, the file follows the same format and the same "promote only
+what recurs (3+ places)" rule. See the product's `DESIGN.md` for the format and
+the validation command.
 
 ## Other design tools
 
