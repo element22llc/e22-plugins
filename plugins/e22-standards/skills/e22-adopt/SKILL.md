@@ -8,9 +8,10 @@ description: Adopt an existing repo that was NOT forked from the E22 template (a
 Bring a repo that was **not** forked from the E22 `repository-template` — a
 "vibe-coded" app with working code but no `/spec`, no `mise.toml`, no CI, no
 plugin install — into E22 standards. You reverse the Greenfield spec flow:
-read the code, write the spec it implies, assess what's missing for production,
-and sync in the scaffolding the template carries. The result is a `feat/*`
-branch and a PR for dev review — that review is the productionization gate.
+read the code, write the spec **and the design** it implies, assess what's
+missing for production, and sync in the scaffolding the template carries. The
+result is a `feat/*` branch and a PR for dev review — that review is the
+productionization gate.
 
 This is whole-repo Brownfield adoption. For a fresh fork of the template, use
 `/e22-init` instead; for a single feature change to an already-adopted repo,
@@ -47,7 +48,7 @@ from the unchecked items.
    be mistaken for a fresh adoption.
    Then check: if **neither** `/spec/PRODUCTIONIZATION.md` nor (pre-migration)
    `/spec/PRODUCTION-READINESS.md` existed, this is a fresh adoption — skip ahead;
-   the file is created from the current bundled template in step 7. Otherwise
+   the file is created from the current bundled template in step 8. Otherwise
    `/spec/PRODUCTIONIZATION.md` now exists (either already, or from the `git mv`
    above), you are resuming, and it may have been written by
    an *older* plugin version whose template lacked sections this version adds —
@@ -103,7 +104,27 @@ from the unchecked items.
    retroactively during adoption. This captures the *why* a future dev would ask
    about, even though the choice predates the spec.
 
-7. **Triage productionization.** Copy
+7. **Capture the as-built design.** *Skip this step only if the repo has no UI
+   surface* (backend-only API, library, CLI) — note "no UI surface — no
+   `DESIGN.md`" in `PRODUCTIONIZATION.md` and move on. Otherwise reverse-engineer
+   the product's visual identity from the **real code** into a root `DESIGN.md`,
+   the same way step 5 reverse-engineers the spec — **a Claude Design export is
+   not required**; the running UI is the source. First pull the format schema
+   into context (`npx @google/design.md spec`) so the file is valid — don't guess
+   the token shape. Then read what the code actually defines: the Tailwind theme
+   config, CSS custom properties / `:root` variables, the global stylesheet,
+   fonts loaded, and the color, spacing, and radius scales **in use**, plus
+   component styling that **recurs** (buttons, inputs, cards, tables, nav,
+   empty/loading/error states). Apply the `DESIGN.md` **3+ places** rule — only
+   promote a token or component that recurs; one-off, feature-specific styling
+   stays in that feature's `intent.md`. Write a valid root `DESIGN.md` in the
+   `@google/design.md` format and validate it (`npx @google/design.md lint
+   DESIGN.md`). **Same as-built discipline as steps 4–5:** seed from what the
+   code shows, mark derived or uncertain values for the dev to confirm, and route
+   anything *not* evidenced in the code (intended brand tone, colors that don't
+   appear anywhere) to `## Open questions` — **never invent** visual rules.
+
+8. **Triage productionization.** Copy
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` to
    `/spec/PRODUCTIONIZATION.md` (only if it doesn't exist yet — on a resume it's
    already there and was reconciled against the current template in step 2) and
@@ -131,7 +152,7 @@ from the unchecked items.
    session reconciles it against the current template per step 2, then continues
    from where it stopped).
 
-8. **Check dependency freshness and flag bad practices.** A vibe-coded app pins
+9. **Check dependency freshness and flag bad practices.** A vibe-coded app pins
    to whatever versions the generating model knew at *its* training cutoff —
    typically a major or two behind, sometimes on a library that's since been
    superseded. **Do not trust your own memory of "latest"** — it has the same
@@ -159,7 +180,7 @@ from the unchecked items.
    branch with tests green — propose, don't force, and never bump majors silently
    in the adoption branch.
 
-9. **Sync the template scaffolding.** Fetch `element22llc/repository-template`
+10. **Sync the template scaffolding.** Fetch `element22llc/repository-template`
    (e.g. `gh repo clone element22llc/repository-template` into a temp dir, or a
    sparse `git` checkout) and bring in the files it carries that this repo lacks —
    `mise.toml` + the standard `[tasks]` (`dev:setup`, `docker:up/down`,
@@ -170,15 +191,18 @@ from the unchecked items.
    the app needs). **Reconcile, don't replace** — if the repo already has its own
    CI, compose, or config, merge into it rather than overwriting, and **never
    clobber working app code**: diff and ask before touching anything that exists.
-   Then pin the toolchain (`mise install`) and commit the populated locks
-   (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the workspace resolves).
+   The template carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md`
+   step 7 already reverse-engineered**; only bring in the stub for a UI repo where
+   step 7 somehow produced nothing. Then pin the toolchain (`mise install`) and
+   commit the populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once
+   the workspace resolves).
 
-10. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
+11. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
    low-risk and clearly worth it; otherwise record the deviation in
    `PRODUCTIONIZATION.md` for the dev to decide. **Propose** any large
    restructure — never force it silently. The dev's PR review is the hard gate.
 
-11. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTIONIZATION.md` is the
+12. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTIONIZATION.md` is the
    dev's productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
@@ -192,6 +216,10 @@ from the unchecked items.
   stop-and-rotate, not a quiet deletion.
 - **Never clobber working code.** The app already runs — diff and ask before
   overwriting any existing file; reconcile scaffolding rather than replacing it.
+- **Design is captured as-built, not invented.** Reverse-engineer `DESIGN.md`
+  from the code's real tokens (no Claude Design export required); unknown visual
+  intent goes to `## Open questions`, never guessed — and a captured `DESIGN.md`
+  is never overwritten by the template stub.
 - **Propose big restructures, don't force them.** Layout moves and risky changes
   go through the dev's PR review.
 - **Up-to-date by default; verify against the registry.** Flag outdated majors

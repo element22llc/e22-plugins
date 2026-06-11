@@ -94,7 +94,21 @@ typography, colors, components, forms, tables, navigation, empty/loading/error
 states, accessibility, copy tone. Update it only when the design introduces a
 reusable pattern. Feature-specific details stay in the feature's `intent.md`.
 
-See the product's `DESIGN.md` for the format and the validation command.
+`DESIGN.md` has **two legitimate origins** — a design export is *not* a
+prerequisite:
+
+- **Distilled from a design export** (Greenfield / feature flow): the PO's
+  Claude Design export, Figma, or screenshots are the source of the reusable
+  patterns.
+- **Reverse-engineered from the as-built UI** (Brownfield `/e22-adopt`): the
+  running code *is* the source. `/e22-adopt` reads the Tailwind theme, CSS
+  custom properties, fonts, the palette/spacing/radius scales in use, and
+  recurring component styling, then writes `DESIGN.md` directly — no export
+  needed.
+
+Either way the file follows the same format and the same "promote only what
+recurs (3+ places)" rule. See the product's `DESIGN.md` for the format and the
+validation command.
 
 ## Other design tools
 
