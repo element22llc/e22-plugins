@@ -5,6 +5,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.28.0
+
+- **`/e22-drift` verdicts are now status-aware, and `🟠 Partial` is a first-class
+  verdict.** A drift run against a tracker whose work is mostly open would
+  previously flatten every unbuilt unit to `🔴 Missing` with no way to tell a real
+  conformance failure from normal backlog — and reviewers smuggled in ad-hoc
+  compound verdicts ("Partial / Missing") at epic grain to cope with mixed
+  acceptance criteria. Both are now codified:
+  - **Tracker status gates Missing.** Phase 1 captures each unit's status
+    (Backlog / To Do / In Progress / Done / …). In Phase 2, **Done-but-Missing =
+    true drift / defect** (the priority signal of the audit) while
+    **Backlog/To-Do-but-Missing = unbuilt roadmap, expected, not drift** — the
+    latter no longer generates `spec-drift` issues. The report leads with the
+    real-drift findings so expected-Missing volume can't bury them.
+  - **New `🟠 Partial` verdict** for a single unit whose acceptance criteria are
+    split (some met, some Missing/Diverged), naming which criteria fall on each
+    side. Verdicts are assigned **per unit, not per epic** — an epic is a rollup
+    reported as a *verdict spread*, never collapsed to one cell or a compound.
+  - **Verdict emoji denotes *kind*, not *severity*** — don't reuse `🔴` to mark a
+    "critical" Diverged finding (it collides with Missing); carry severity in a
+    separate marker.
+  - Coverage table gains a **tracker-status column** so Done-but-Missing reads
+    differently from Backlog-but-Missing at a glance.
+  - Updated `skills/e22-drift/SKILL.md` only (no `commands/` alias change).
+
 ### 1.27.0
 
 - **`/e22-drift` is now a spec-vs-spec diff that *consumes* `/e22-adopt`, not its
