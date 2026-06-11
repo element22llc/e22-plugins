@@ -5,6 +5,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.33.0
+
+- **New `/e22-audit` skill — a repeatable, read-only, whole-repo health audit.**
+  Until now the standards had a one-time onboarding triage (`/e22-adopt`), a
+  spec-vs-spec conformance check (`/e22-drift`), and diff-scoped reviews
+  (`/code-review`, `/security-review`, `/simplify`) — but nothing that sweeps an
+  already-adopted, steady-state repo across the standards dimensions and returns a
+  **leverage-ranked** cleanup backlog. `/e22-audit` fills that gap. It audits nine
+  dimensions anchored to the E22 baseline (spec coverage, architecture &
+  boundaries, data layer, input validation & config, error handling & escape
+  hatches, testing, toolchain & dependency health, design consistency, DX & docs),
+  **vets** every candidate finding against the cited `path:line` (subagents
+  over-report), ranks survivors by leverage (impact ÷ effort × confidence), and
+  routes results into the existing flow: `audit` issues for code-health findings,
+  `/e22-adr` for architectural calls, `## Open questions` for spec gaps. It is
+  **read-only** — no code/spec edits, no commit — and **defers** correctness to
+  `/code-review`, security to `/security-review`, and mechanical cleanup to
+  `/simplify` rather than re-implementing them. Invokable as `/e22-audit` (command
+  alias) or the `e22-audit` skill.
+
 ### 1.32.0
 
 - **UI craft now comes from Anthropic's `frontend-design`, re-listed not
