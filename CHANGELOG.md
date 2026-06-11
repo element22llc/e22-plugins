@@ -5,6 +5,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.31.0
+
+- **`/e22-adopt` now captures the as-built design, not just the spec.** Adoption
+  reverse-engineered `/spec`, ADRs, and a productionization brief from a
+  vibe-coded app's code — but never the **design**, so an adopted repo had no
+  `DESIGN.md` to iterate on (the scaffolding sync didn't even pull in the
+  template's stub). A new **step 7, "Capture the as-built design,"** reverse-
+  engineers a root `DESIGN.md` from the running UI — the Tailwind theme, CSS
+  custom properties, fonts, the palette/spacing/radius scales in use, and
+  recurring component styling — written in the `@google/design.md` format and
+  linted, under the same "as-built, dev-confirms, never invent" discipline as
+  the spec extraction. **Crucially, a Claude Design export is no longer a
+  prerequisite** — the code itself is the source. The step is skipped (and noted
+  in `PRODUCTIONIZATION.md`) for backend-only repos with no UI surface, and the
+  scaffolding-sync step (now step 10) is told never to overwrite a captured
+  `DESIGN.md` with the template stub. Old steps 7–11 shift to 8–12.
+- **`DESIGN.md` framing decoupled from exports.** `DESIGN-SOURCES.md` now states
+  `DESIGN.md` has two legitimate origins — distilled from a design export
+  (Greenfield/feature) **or** reverse-engineered from the as-built UI
+  (Brownfield `/e22-adopt`) — so the file is no longer presented as something
+  that only exists when a design export does.
+
 ### 1.30.0
 
 - **`/e22-questions` no longer balloons into a costly codebase sweep.** The skill
