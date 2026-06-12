@@ -49,14 +49,19 @@ accumulate — this skill is how you act on that nudge and clear it.
 
 ## Steps
 
-1. **Heal a legacy `SPEC-QUESTIONS.md` first.** Before gathering, check for the
-   retired standalone file a pre-1.25.0 fork may still carry:
+1. **Heal a legacy `SPEC-QUESTIONS.md` first — migrate *and delete* before you
+   answer anything.** Before gathering, check for the retired standalone file a
+   pre-1.25.0 fork may still carry:
 
    ```sh
    test -f spec/SPEC-QUESTIONS.md && echo "legacy SPEC-QUESTIONS.md present — migrate it before gathering"
    ```
 
-   If it exists, migrate it into the current model, then remove it:
+   If it exists, this migration is a **hard gate**: the file's questions move
+   into the spine and `spec/SPEC-QUESTIONS.md` is **deleted as part of this
+   step**, before the sweep touches them. Do not skip it because the spine's
+   `## Open questions` sections look empty — empty/placeholder sections are
+   exactly the pre-state this step fills. Migrate:
    - Read its `## Open` items. Route each to its context — a question tied to a
      specific feature → that feature's `spec/features/*/intent.md` →
      `## Open questions`; anything product-level → `spec/vision.md` →
@@ -66,9 +71,17 @@ accumulate — this skill is how you act on that nudge and clear it.
      owning `intent.md` / `contract.md`, drop it; otherwise fold the decision
      there first so it isn't lost.
    - This is a **move, not an answer** — never invent or resolve anything while
-     migrating. Propose the migration (which items land where), and on a yes
-     apply it and **delete `spec/SPEC-QUESTIONS.md`** so the retired artifact is
-     gone. The migrated questions then flow into the normal sweep below.
+     migrating. Propose the migration (which items land where) **and the
+     deletion together**, and on a yes apply it and **delete
+     `spec/SPEC-QUESTIONS.md`**. Only the migrated copies in the spine survive;
+     they flow into the normal sweep below, where you answer them.
+   - **Never keep the file alive as a working store.** Do not "update
+     `SPEC-QUESTIONS.md` in place," move its resolved items into a `## Resolved`
+     section, leave its deferred items under `## Open`, or defer its retirement
+     to "a later step." Once its content is preserved in the spine the file is
+     deleted in this same step — its continued existence after this skill runs is
+     a failure, not a deferral. The deletion is unconditional and does **not**
+     wait on the questions being answered.
 
 2. **Gather.** Collect every open question across the spine. A grep over the
    `## Open questions` sections finds them — for example:
@@ -145,6 +158,15 @@ accumulate — this skill is how you act on that nudge and clear it.
 8. **Never guess a decision.** A human-decision the human can't answer stays
    open, unchanged — don't invent it. (Grounding a *code-fact* in the actual code
    is not guessing; that's the cheap, correct move from step 4.)
+
+## Done when
+
+- `spec/SPEC-QUESTIONS.md` does **not** exist if it did at the start — its
+  questions were migrated into the spine (step 1) and the file deleted in that
+  same step. A run that leaves the legacy file behind — answered, partially
+  migrated, or "to retire later" — is **not** done.
+- Every swept question is either struck with its decision or left open with an
+  explicit deferral reason. None were silently dropped or guessed.
 
 ## Coupling rules
 

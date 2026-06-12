@@ -5,6 +5,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.35.1
+
+- **`/e22-questions` now reliably retires a legacy `SPEC-QUESTIONS.md`.** The
+  skill already intended to migrate the retired standalone file into the spine
+  and delete it before sweeping, but the instruction was weak enough that a run
+  could treat `SPEC-QUESTIONS.md` as a live working store — answering questions
+  in place and deferring the file's retirement to "a later step," leaving it on
+  disk. Step 1 is now a hard gate: migration and deletion happen together,
+  unconditionally, before any answering; keeping the file alive (updating it in
+  place, parking resolved/deferred items in it, or deferring retirement) is
+  explicitly forbidden. Added a "Done when" backstop: a run that leaves the
+  legacy file behind is not done.
+
 ### 1.35.0
 
 - **New `/e22-sync` skill — carry an already-bootstrapped repo forward to the
