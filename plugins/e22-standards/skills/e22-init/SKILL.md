@@ -156,8 +156,18 @@ the dev approves.
    same PR, plus the app guide and an action-history entry (Living
    documentation rule).
 7. **Hand off.** Seed `/spec/HISTORY.md` with the bootstrap entry (what, why,
-   who asked, the bootstrap PR). Commit on the `feat/*` branch and open a PR
-   for dev review — that review is the productionization gate.
+   who asked, the bootstrap PR). **Stamp the spine version:** write
+   `/spec/.version` with the current plugin version (resolve it from
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a
+   later `/e22-sync` knows which structural migrations this repo predates:
+
+   ```
+   # E22 spec-spine version — managed by /e22-init, /e22-adopt, /e22-sync. Do not edit by hand.
+   <plugin version>
+   ```
+
+   Commit on the `feat/*` branch and open a PR for dev review — that review is
+   the productionization gate.
 
 ### Guardrails
 

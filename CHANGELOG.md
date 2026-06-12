@@ -5,6 +5,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.35.0
+
+- **New `/e22-sync` skill — carry an already-bootstrapped repo forward to the
+  current plugin.** `/plugin update` refreshes the plugin, but the `/spec` spine
+  and bundled scaffold a repo *materialized* at bootstrap stay frozen at the
+  version that wrote them. `/e22-sync` closes that gap: it applies pending
+  structural migrations, runs the additive Template reconciliation across the
+  materialized spine + scaffold, and re-stamps the spine version — read-then-
+  propose, never clobbers, lands a `feat/*` PR. It is the
+  repo-structure-vs-plugin-conventions axis, distinct from `/e22-drift`
+  (spec-vs-tracker) and `/e22-audit` (code-vs-standards). Has a `/e22-sync`
+  command alias.
+- **Spec-spine version stamp (`/spec/.version`).** `/e22-init` and `/e22-adopt`
+  now write the plugin version they bootstrapped at; `/e22-sync` reads it,
+  applies migrations newer than it, and re-stamps. Resolved from `plugin.json`,
+  never memory.
+- **Migration ledger (`templates/reference/MIGRATIONS.md`).** Single source of
+  truth for **non-additive** structural changes (renames/moves/deletions) the
+  purely-additive Template reconciliation can't express. Each entry is keyed by
+  introducing version and is idempotent + self-detecting (precondition + action).
+  Seeded with the v1.22.0 `PRODUCTION-READINESS.md` → `PRODUCTIONIZATION.md`
+  rename, which `/e22-adopt` previously hard-coded inline; adopt and build now
+  delegate to the ledger so future renames need no skill edits. The
+  spec-framework reconciliation convention documents the additive-vs-structural
+  split and the stamp.
+
 ### 1.34.0
 
 - **The plugin replaces `repository-template` as the bootstrap source.** The

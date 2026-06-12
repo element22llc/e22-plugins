@@ -19,6 +19,7 @@ This is a lean **router**: short always-on rules below, full prose on demand:
 - As-built `/spec` (from `/e22-adopt`) vs. the tracker spec export (Jira/Linear/GitHub Issues, …) — looking for drift? → run **`/e22-drift`** (read-only spec-vs-spec audit; needs `/spec` first).
 - Want the highest-leverage cleanup backlog for a steady-state repo? → run **`/e22-audit`** (read-only, whole-repo code-vs-standards health audit, leverage-ranked; defers correctness/security to `/code-review` & `/security-review`).
 - Open questions piling up in the specs? → run **`/e22-questions`** to sweep and answer them.
+- Plugin moved on since this repo was bootstrapped (a spec file/section renamed upstream, scaffold changed)? → run **`/e22-sync`** — applies pending structural migrations + reconciles the materialized spine/scaffold to the current plugin, then re-stamps `/spec/.version` (needs `/spec` first; structure only, never refactors code).
 - On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected) → run **`/e22-standards`** at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
