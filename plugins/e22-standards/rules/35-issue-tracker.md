@@ -9,3 +9,8 @@ tracker item's acceptance criteria into the intent — the spec is the in-repo
 source of truth; the ref points back. Questions not yet tracked externally →
 `## Open questions`; promote to a tracker item when they need scheduling or an
 external owner, then replace the question with the ref.
+
+When the tracker is **GitHub Issues**, `/e22-tracker-sync` automates this
+boundary both ways — pull issues into the markdown export `/e22-drift` consumes,
+or push `spec-drift` issues and promoted questions back out (MCP-first, `gh`
+fallback). It's a GitHub accelerator only; other trackers use the manual export.
