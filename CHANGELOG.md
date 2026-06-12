@@ -5,6 +5,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.36.0
+
+- **`/e22-questions` resolves settled answers in the same change instead of
+  asking per item.** The skill folded *every* answer back into the spec only on
+  an explicit yes — including code-facts it had just grounded from the code and
+  decisions the human had already made in the session — so a sweep stalled on a
+  string of "shall I apply this?" confirmations for edits that decided nothing
+  new. Step 6 is now tiered: an answer that **makes no new decision** (a
+  code-fact, or a decision already made) is applied in the same change — along
+  with the docs that must stay consistent with it, like a `CLAUDE.md` one-liner
+  or a superseding ADR — with the **PR as the gate**; only a **genuine unmade
+  decision** (product/policy/architecture, or anything high-risk) is routed for
+  a yes, and an unanswerable one still stays open rather than being guessed.
+- **New org rule: *applying a decision already made is not a new decision*
+  (`32-living-docs`).** Propagating a settled choice into the artifacts that
+  should reflect it is living-docs upkeep — make the edit in the same change and
+  let the PR (rule `95-not-the-gate`) be the gate. Pausing for a yes is reserved
+  for an *unmade* decision, a high-risk area, or an edit that would clobber
+  filled-in content. The read-only audits (`/e22-drift`, `/e22-audit`) and the
+  anti-clobber sweeps (`/e22-sync`, `/e22-tidy`) are unchanged.
+
 ### 1.35.1
 
 - **`/e22-questions` now reliably retires a legacy `SPEC-QUESTIONS.md`.** The

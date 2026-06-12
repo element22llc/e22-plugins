@@ -11,12 +11,15 @@ answers them** — it gathers every open question across the `/spec` spine,
 walks the PO/dev through each, and folds the decision back into the spec so the
 question stops being open.
 
-It is a **read-then-propose** sweep, like `/e22-drift` and `/e22-tidy`: it gathers
-and proposes resolutions, and only edits the spec on a yes. It never *invents* a
-decision — but many open questions in a reverse-engineered spec are factual
-"what does the code do?" questions, which it answers cheaply by reading the code
-(step 4), not by asking the human. A genuine decision the human can't make stays
-open rather than being guessed.
+It gathers every open question, then resolves each **by tier**. Answers that
+**make no new decision** — code-facts grounded from the code (step 4), and
+decisions already made — are folded straight back into the spec in the same
+change, with the **PR as the gate**; the skill does not stop to ask "shall I
+apply this?" for those (rule `32-living-docs`: *applying a decision already made
+is not a new decision*). A **genuine decision the human hasn't made** — a
+product/policy/architecture call — is routed to them (step 5) and applied only
+on a yes. It never *invents* a decision; an unanswerable one stays open rather
+than being guessed.
 
 ## Where open questions live
 
@@ -136,19 +139,34 @@ accumulate — this skill is how you act on that nudge and clear it.
 
    Ask, don't invent. Work through them oldest/most-blocking first.
 
-6. **Fold each answer back into the spec (report + propose).** Per E22 autonomy,
-   **propose** the spec edit and apply it on a yes — never blind-write
-   user-facing behavior. For each answered question:
+6. **Fold each answer back into the spec — by tier** (rule `32-living-docs`:
+   *applying a decision already made is not a new decision*).
+   - **Auto-apply, no per-edit yes** — answers that decide nothing new: a
+     **code-fact** grounded from the code (step 4), or a human-decision the
+     PO/dev *just made* in this session. Write the spec edit (and any docs that
+     must stay consistent with it — a `CLAUDE.md` one-liner, a superseding ADR)
+     in the same change and let the **PR be the gate** (rule `95-not-the-gate`).
+     This is the friction this skill exists to remove — don't stop to ask
+     "shall I apply this?".
+   - **Ask first** — a genuine product/policy/architecture decision *not yet
+     made*, or anything under **High-risk areas** (rule `60-high-risk`): never
+     blind-write it. Route it (step 5) and apply only once the human answers.
+     Never invent a decision (step 8).
+
+   For each answered question:
    - Update the owning `intent.md` / `contract.md` (or `vision.md`) so the
      decision lives in the durable spec, not just the chat.
    - **Strike the question from its `## Open questions` list** — mark it `- [x]`
      with the decision, or remove it once the decision is captured elsewhere in
      the spec.
-   - **Code-fact answers** carry the grounding (`file:line`) and are marked as
-     **dev-sign-off** — the dev confirms the as-built reading rather than
-     deciding. User-facing answers need **PO** approval; other internal/technical
-     answers need **dev** approval (spec-framework Rule 5).
-   - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**.
+   - **Code-fact answers** carry the grounding (`file:line`) and are marked
+     **dev-sign-off** — the dev confirms the as-built reading at PR review
+     rather than deciding now. User-facing answers reflect **PO** decisions,
+     other internal/technical answers reflect **dev** decisions (spec-framework
+     Rule 5); that sign-off is the PR, not a per-edit yes.
+   - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**;
+     propagating a decision *already made* into a new or superseding ADR is
+     itself auto-apply, not a fresh ask.
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, keep the item but annotate it with **why** it's deferred (and a

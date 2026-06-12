@@ -19,3 +19,13 @@ PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
 conventions + worked examples: run **`/e22-traceability`**.
+
+**Applying a decision already made is not a new decision.** Propagating a
+settled choice into the artifacts that should reflect it — a one-liner into
+`CLAUDE.md`, a consistency edit, a superseding ADR, a fact grounded from the
+code — is living-docs upkeep: make the edit in the same change and let the
+**PR be the gate** (you are not it — see rule `95-not-the-gate`).
+Pause for a yes only when the *decision itself* is unmade — a genuine
+product / policy / architecture call, or anything under **High-risk areas** —
+or when an edit would clobber filled-in content. Don't stop to ask "shall I
+apply this?" once the decision exists.
