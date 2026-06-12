@@ -9,7 +9,12 @@ one repo.
 - **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
 - **`/spec`** — product intent; source of truth for what the product does and
   why. Design exports: `/spec/design` (product) or
-  `/spec/features/[id]/design-export/` (feature).
+  `/spec/features/[id]/design-export/` (feature). Also home to
+  `/spec/HISTORY.md` (action history) and `/spec/tracker.md` (issue-tracker
+  declaration).
+- **`/spec/app`** — app knowledge docs: usage, workflows, roles,
+  configuration, limitations, troubleshooting, release notes (PO + dev
+  facing).
 - **`/spec/decisions`** — ADRs.
 - **`/spec/reference`** — source/research materials feeding the spec
   (inventories, vendor metadata, schema/DDL dumps, discovery docs).

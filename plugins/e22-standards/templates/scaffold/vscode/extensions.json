@@ -1,0 +1,37 @@
+{
+  // Recommended extensions for this monorepo. VS Code prompts contributors to
+  // install these on first open. Each maps to a tool already in the stack
+  // (see CLAUDE.md "Stack" and mise.toml). Keep this list aligned with the
+  // toolchain — do not add ESLint/Prettier here, Biome is the lint+format tool.
+  "recommendations": [
+    // Lint + format (Node/TypeScript) — the canonical formatter for this repo
+    "biomejs.biome",
+
+    // Toolchain — resolves tool versions from mise.toml / mise.lock
+    "hverlin.mise-vscode",
+
+    // Frontend — Next.js default stack
+    "bradlc.vscode-tailwindcss",
+
+    // Database — browse/query the PostgreSQL instance (Drizzle stack)
+    "ms-ossdata.vscode-pgsql",
+
+    // Infrastructure — HCL for OpenTofu + Terragrunt under /infra
+    "hashicorp.terraform",
+
+    // CI — GitHub Actions workflow authoring + validation
+    "github.vscode-github-actions",
+
+    // Shell scripts — matches the shellcheck/actionlint tools in mise.toml
+    "timonwong.shellcheck",
+
+    // Cross-editor consistency + config-file ergonomics
+    "editorconfig.editorconfig",
+    "redhat.vscode-yaml",
+    "mikestead.dotenv"
+
+    // Python stack is optional (FastAPI/data work — see CLAUDE.md). When you
+    // enable it in mise.toml, also recommend:
+    //   "charliermarsh.ruff", "ms-python.python"
+  ]
+}

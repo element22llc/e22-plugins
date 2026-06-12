@@ -1,21 +1,20 @@
 ---
 name: e22-adopt
-description: Adopt an existing repo that was NOT forked from the E22 template (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the template's scaffolding without clobbering working code. Use when a repo has working code but no /spec, no mise.toml, and was not created from repository-template.
+description: Adopt an existing repo that never went through E22 bootstrap (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the plugin's bundled scaffolding without clobbering working code. Use when a repo has working code but no /spec and no mise.toml.
 ---
 
 # Adopt an existing repo into E22 standards
 
-Bring a repo that was **not** forked from the E22 `repository-template` — a
-"vibe-coded" app with working code but no `/spec`, no `mise.toml`, no CI, no
-plugin install — into E22 standards. You reverse the Greenfield spec flow:
-read the code, write the spec **and the design** it implies, assess what's
-missing for production, and sync in the scaffolding the template carries. The
-result is a `feat/*` branch and a PR for dev review — that review is the
-productionization gate.
+Bring a repo that never went through the E22 bootstrap — a "vibe-coded" app
+with working code but no `/spec`, no `mise.toml`, no CI, no plugin install —
+into E22 standards. You reverse the Greenfield spec flow: read the code, write
+the spec **and the design** it implies, assess what's missing for production,
+and sync in the scaffolding the plugin bundles. The result is a `feat/*`
+branch and a PR for dev review — that review is the productionization gate.
 
-This is whole-repo Brownfield adoption. For a fresh fork of the template, use
-`/e22-init` instead; for a single feature change to an already-adopted repo,
-use the normal spec workflow (`/e22-spec-scaffold`).
+This is whole-repo Brownfield adoption. For a brand-new repo (or a legacy
+template fork), use `/e22-init` instead; for a single feature change to an
+already-adopted repo, use the normal spec workflow (`/e22-spec-scaffold`).
 
 ## Resuming? Reconcile before anything else
 
@@ -180,22 +179,29 @@ from the unchecked items.
    branch with tests green — propose, don't force, and never bump majors silently
    in the adoption branch.
 
-10. **Sync the template scaffolding.** Fetch `element22llc/repository-template`
-   (e.g. `gh repo clone element22llc/repository-template` into a temp dir, or a
-   sparse `git` checkout) and bring in the files it carries that this repo lacks —
-   `mise.toml` + the standard `[tasks]` (`dev:setup`, `docker:up/down`,
-   `db:migrate`, `db:seed`), `compose.yaml`, CI under `.github/workflows/`,
-   `/configs`, `.env.example`, and `.claude/settings.json` enabling the
-   `e22-standards` plugin via the marketplace. **Adapt to the existing stack**
-   (Python → `uv` task commands; add/remove `compose.yaml` services to match what
-   the app needs). **Reconcile, don't replace** — if the repo already has its own
-   CI, compose, or config, merge into it rather than overwriting, and **never
-   clobber working app code**: diff and ask before touching anything that exists.
-   The template carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md`
-   step 7 already reverse-engineered**; only bring in the stub for a UI repo where
-   step 7 somehow produced nothing. Then pin the toolchain (`mise install`) and
-   commit the populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once
-   the workspace resolves).
+10. **Sync the bundled scaffolding.** The plugin carries the full repo
+   scaffold at `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/` — read its
+   `MANIFEST.md` and bring in the files this repo lacks: `mise.toml` + the
+   standard `[tasks]` (`dev:setup`, `docker:up/down`, `db:migrate`,
+   `db:seed`), `compose.yaml`, CI under `.github/workflows/`, the PR template
+   (drift-gate + living-docs checklists), `/configs`, `.env.example`, and
+   `.claude/settings.json` enabling the `e22-standards` plugin via the
+   marketplace (dotfiles are stored without their leading dot — rename per the
+   MANIFEST map). Also instantiate the living-docs artifacts from
+   `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask which
+   tracker the team uses), `/spec/app/README.md` (seed the usage/roles
+   sections from what steps 3–5 learned about the app — as-built, dev
+   confirms), and `/spec/HISTORY.md` seeded with the adoption itself as the
+   first entry. **Adapt to the existing stack** (Python → `uv` task commands;
+   add/remove `compose.yaml` services to match what the app needs).
+   **Reconcile, don't replace** — if the repo already has its own CI, compose,
+   or config, merge into it rather than overwriting, and **never clobber
+   working app code**: diff and ask before touching anything that exists. The
+   scaffold carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md`
+   step 7 already reverse-engineered**; only bring in the stub for a UI repo
+   where step 7 somehow produced nothing. Then pin the toolchain
+   (`mise install`) and commit the populated locks (`mise.lock`, plus
+   `pnpm-lock.yaml` / `uv.lock` once the workspace resolves).
 
 11. **Reconcile layout.** Relate code to `/apps` + `/packages` only where it's
    low-risk and clearly worth it; otherwise record the deviation in

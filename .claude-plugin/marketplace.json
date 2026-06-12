@@ -9,7 +9,7 @@
     {
       "name": "e22-standards",
       "source": "./plugins/e22-standards",
-      "description": "Element 22's always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, testing rules, Definition of Done, high-risk areas, secrets handling, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for first-run setup, spec scaffolding, and ADRs.",
+      "description": "Element 22's always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation & action history, client-agnostic issue-tracker integration, testing rules, Definition of Done, pre-merge drift gates, high-risk areas, secrets handling, SOC 2 / ISO 27001-aligned delivery, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for repo bootstrap (the plugin bundles the full scaffold — no template repo), spec scaffolding, and ADRs.",
       "category": "development",
       "keywords": ["element-22", "org-standards", "conventions", "spec-workflow", "always-on", "operating-manual"]
     },

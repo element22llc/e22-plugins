@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# This `ci` job is the single required status check on `main`. Out of the box it
+# runs only stack-AGNOSTIC repo hygiene (shellcheck, actionlint). Those are real
+# checks, but they are NOT your stack's lint/test/build — the per-app/per-package
+# steps further down are commented examples the product team activates once the
+# stack exists. Until then, a green `ci` does not mean tests ran. See
+# README.md#branch-protection.
+#
+# Note on testing: there is deliberately NO test-file-detection gate here. A
+# filename check can't tell a real test from an empty one — it just trains people
+# to tick an opt-out box. Test coverage is enforced by the rule in CLAUDE.md, the
+# Definition of Done, and human review. See CLAUDE.md#definition-of-done.
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # mise-action auto-runs `mise install --locked` whenever a mise.lock
+      # exists. The template ships comment-only placeholder locks (pin on
+      # adoption — /e22-init step 4), and --locked against a placeholder fails
+      # every tool with "not in the lockfile". Until a lock holds real
+      # [[tools]] entries, drop it for this CI run so tools resolve to latest;
+      # once /e22-init commits the populated lock, this step no-ops and CI
+      # installs the exact pins. (Runner workspace only — the committed
+      # placeholder files are untouched.)
+      - name: Drop placeholder mise.lock files (pre-/e22-init forks)
+        run: |
+          for lock in mise.lock infra/mise.lock; do
+            if [ -f "$lock" ] && ! grep -q '^\[\[tools' "$lock"; then
+              echo "$lock is a placeholder (no [[tools]] entries) — removing for this run."
+              rm "$lock"
+            fi
+          done
+
+      # Install all tools defined in mise.toml — Node, Python, OpenTofu,
+      # Terragrunt, shellcheck, actionlint, etc. Nested mise.toml files (e.g.
+      # /infra/mise.toml) are picked up automatically. This replaces per-tool
+      # setup actions such as setup-node or setup-python.
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      # ────────────────────────────────────────────────────────────────────
+      # ACTIVE — stack-agnostic checks. These run today and make the required
+      # `ci` check do real work regardless of the product's stack.
+      # ────────────────────────────────────────────────────────────────────
+
+      - name: Lint GitHub Actions workflows (actionlint)
+        run: actionlint -color
+
+      - name: Lint shell scripts (shellcheck)
+        run: |
+          # Lint every tracked shell script. Passes cleanly when there are none.
+          mapfile -t scripts < <(git ls-files '*.sh' '*.bash')
+          if [ ${#scripts[@]} -eq 0 ]; then
+            echo "No shell scripts found — nothing to lint."
+          else
+            printf '%s\n' "${scripts[@]}"
+            shellcheck "${scripts[@]}"
+          fi
+
+      # Secret scanning: enable GitHub-native secret scanning + push protection
+      # in repo Settings → Code security (free for public repos; GHAS for
+      # private). It runs outside Actions and is the canonical secret-scan
+      # mechanism — see README.md#branch-protection. No CI step is
+      # needed for it.
+
+      # ────────────────────────────────────────────────────────────────────
+      # ACTIVE — Node/TS workspace checks. These run against the pnpm workspace
+      # (apps/* + packages/*) the template ships. pnpm and Biome are installed
+      # by mise above. A green `ci` therefore means lint + types + tests passed.
+      # The root scripts fan out across every app/package (pnpm --recursive), so
+      # these steps need no edits as you add apps. Remove them only if you delete
+      # the Node workspace.
+      # ────────────────────────────────────────────────────────────────────
+
+      - name: Install dependencies
+        # The template deliberately ships NO pnpm-lock.yaml (the starter's would
+        # go stale; /e22-init step 5 generates and commits it once the real
+        # workspace exists). --frozen-lockfile with no lockfile fails with
+        # ERR_PNPM_NO_LOCKFILE, which would block every fresh fork's first PR —
+        # so freeze only once the lockfile exists. Self-correcting: the moment
+        # pnpm-lock.yaml is committed, CI tightens automatically (lockfile
+        # discipline — run /e22-conventions).
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "No pnpm-lock.yaml yet (fresh fork, pre-/e22-init) — installing without frozen lockfile."
+            pnpm install --no-frozen-lockfile
+          fi
+
+      - name: Lint + format check (Biome — Node/TS)
+        run: biome ci .
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
+
+      # ────────────────────────────────────────────────────────────────────
+      # EXAMPLES — uncomment when they apply to your stack.
+      # ────────────────────────────────────────────────────────────────────
+
+      # Build: the starter runs from source via tsx, so there is no build yet.
+      # Add a `build` script per app (Next.js, tsup, …) and uncomment — the root
+      # `build` script already fans out with --if-present.
+      # - name: Build
+      #   run: pnpm run build
+
+      # Python (uv + Ruff), once a Python app exists. Uncomment python/uv/ruff in
+      # mise.toml first so they install above.
+      # - name: Lint + format check (Ruff — Python)
+      #   run: |
+      #     ruff check .
+      #     ruff format --check .
+      # - name: Test (Python)
+      #   run: uv run pytest
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # ADVISORY — runs the design.md linter when any DESIGN.md changes. This is
+  # NOT a required check and does NOT gate merges; it surfaces token/format
+  # issues for reviewers. Remove the `continue-on-error` line to make it block.
+  # ──────────────────────────────────────────────────────────────────────────
+  design-lint:
+    name: design.md lint (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find changed DESIGN.md files
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base="${BASE_SHA:-HEAD~1}"
+          files=$(git diff --name-only "$base" HEAD -- '**/DESIGN.md' 'DESIGN.md' || true)
+          {
+            echo "files<<EOF"
+            echo "$files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Lint changed DESIGN.md files
+        if: steps.changed.outputs.files != ''
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+        run: |
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            echo "Linting $f"
+            npx --yes @google/design.md lint "$f"
+          done <<< "$CHANGED_FILES"

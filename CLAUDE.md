@@ -8,15 +8,21 @@ source pinned to a SHA — that plugin is *referenced, not vendored*; its conten
 is never copied here, and updating it means bumping the SHA in
 `.claude-plugin/marketplace.json`.
 
-**Source of truth: this repo.** The org standards live in
-`plugins/e22-standards/` (rules, skills, reference prose) and are consumed by
-every product repo — including
-[`repository-template`](https://github.com/element22llc/repository-template) —
-via the marketplace. Standards prose is **not** duplicated into the template or
-any product `CLAUDE.md`; those hold only product-specific context. When a
-standard implies concrete scaffolding (CI workflows, `mise.toml` tasks,
-`compose.yaml`, README quickstart), the template carries those *files* — update
-both repos in the same change, but the normative text lives only here.
+**Source of truth: this repo — for standards *and* bootstrap.** The org
+standards live in `plugins/e22-standards/` (rules, skills, reference prose),
+consumed by every product repo via the marketplace. The plugin also carries the
+**bundled repo scaffold** (`plugins/e22-standards/templates/scaffold/` +
+spec-spine templates in `templates/spec/`), which `/e22-init` / `/e22-adopt`
+install — this **replaces** the old static
+[`repository-template`](https://github.com/element22llc/repository-template)
+as the bootstrap source; do not point new work at that repo. When a standard
+implies concrete scaffolding (CI workflows, `mise.toml` tasks, `compose.yaml`,
+README quickstart, PR template), update the scaffold bundle here in the same
+change as the rule. Standards prose is **not** duplicated into any product
+`CLAUDE.md`; those hold only product-specific context. Scaffold dotfiles are
+stored **without the leading dot** (`gitignore`, `env.example`, `claude/`,
+`github/`, …) so they don't act on this repo itself — `MANIFEST.md` maps the
+install paths; keep it in sync when adding scaffold files.
 
 ## Layout
 
@@ -27,12 +33,18 @@ plugins/e22-standards/
 ├── hooks/                          # SessionStart hook → injects rules/*.md
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-conventions,
-│                                   #            e22-design-sources, e22-spec-scaffold, e22-adr,
-│                                   #            e22-drift, e22-audit, e22-questions, e22-tidy, e22-standards
+│                                   #            e22-traceability, e22-design-sources, e22-spec-scaffold,
+│                                   #            e22-adr, e22-drift, e22-audit, e22-questions, e22-tidy,
+│                                   #            e22-standards
 ├── commands/                       # optional /slash aliases for a subset of skills
 │                                   #   (e22-init, e22-build, e22-adopt, e22-drift, e22-audit, e22-questions, e22-tidy);
 │                                   #   skills without an alias are still invokable as /<skill-name>
-└── templates/                      # bundled spec templates + full reference prose
+└── templates/
+    ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
+    │                               #   vision/users/glossary, history, tracker, app-docs, …)
+    ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, …)
+    └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, …)
+                                    #   — see its MANIFEST.md for the install map
 ```
 
 ## Working in this repo

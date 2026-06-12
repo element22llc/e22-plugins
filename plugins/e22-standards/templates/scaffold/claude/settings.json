@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(git push origin:*)",
+      "Bash(git push -u origin:*)",
+      "Bash(git push --set-upstream origin:*)"
+    ],
+    "deny": [
+      "Bash(git push*--force*)",
+      "Bash(git push*--delete*)",
+      "Bash(git push*--mirror*)",
+      "Bash(git commit*--no-verify*)",
+      "Bash(git commit*--no-gpg-sign*)",
+      "Bash(git add -f*)",
+      "Bash(git add --force*)",
+      "Bash(git add*.env*)"
+    ]
+  },
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "e22-standards@e22-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "e22-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "element22llc/e22-plugins"
+      },
+      "autoUpdate": true
+    }
+  }
+}

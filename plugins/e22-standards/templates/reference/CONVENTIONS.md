@@ -143,8 +143,8 @@ dependency. Either split is a deliberate choice: record it as an ADR.
 Run backing services (PostgreSQL, Redis, etc.) with Docker Compose via a
 committed `compose.yaml`, so local matches deployed:
 
-- **Don't author `compose.yaml` from scratch** — start from the
-  `repository-template` one and adapt, so generated services can't reintroduce
+- **Don't author `compose.yaml` from scratch** — start from the plugin's
+  bundled scaffold one and adapt, so generated services can't reintroduce
   stale image majors (the version-pin hook enforces the common path; see
   Versioning policy → Enforcement).
 - **Do not substitute a different engine for local dev** (e.g. SQLite in place
@@ -158,7 +158,7 @@ committed `compose.yaml`, so local matches deployed:
   A dev hitting a collision then sets `POSTGRES_PORT=5433` in their git-ignored
   `.env` (Compose reads it automatically) and mirrors it in `DATABASE_URL`; the
   container-internal port and every other service are untouched. The
-  `repository-template` `compose.yaml` already does this for Postgres — keep the
+  scaffold `compose.yaml` already does this for Postgres — keep the
   pattern when you add Redis, MinIO, or any other service. (Container, network,
   and volume *names* don't need this — Compose namespaces them per project
   directory automatically; only host port bindings collide.)
