@@ -16,7 +16,9 @@ This is a lean **router**: short always-on rules below, full prose on demand:
 - Existing repo with working code but no `/spec` (a "vibe-coded" app to reverse-engineer)? → run **`/e22-adopt`** once.
 - No `/spec` spine yet? The SessionStart hook flags it — bootstrap (`/e22-init` greenfield, or `/e22-adopt`) before writing feature code; don't degrade to toolchain-only.
 - Loose files cluttering the repo root? → run **`/e22-tidy`** to sort them into `/spec`.
+- Want to design a feature without building it? → run **`/e22-spec`** — author and iterate the spec (intent + open questions) and stop at an approved intent; the no-build counterpart to `/e22-build`.
 - As-built `/spec` (from `/e22-adopt`) vs. the tracker spec export (Jira/Linear/GitHub Issues, …) — looking for drift? → run **`/e22-drift`** (read-only spec-vs-spec audit; needs `/spec` first).
+- Tracker is GitHub Issues and you want to skip the copy-paste? → run **`/e22-tracker-sync`** — pull issues into the export `/e22-drift` consumes, or push `spec-drift` issues / promoted questions back out (MCP-first, `gh` fallback; moves pointers, not the spec).
 - Want the highest-leverage cleanup backlog for a steady-state repo? → run **`/e22-audit`** (read-only, whole-repo code-vs-standards health audit, leverage-ranked; defers correctness/security to `/code-review` & `/security-review`).
 - Open questions piling up in the specs? → run **`/e22-questions`** to sweep and answer them.
 - Plugin moved on since this repo was bootstrapped (a spec file/section renamed upstream, scaffold changed)? → run **`/e22-sync`** — applies pending structural migrations + reconciles the materialized spine/scaffold to the current plugin, then re-stamps `/spec/.version` (needs `/spec` first; structure only, never refactors code).

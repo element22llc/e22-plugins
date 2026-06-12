@@ -167,6 +167,10 @@ accumulate — this skill is how you act on that nudge and clear it.
    - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**;
      propagating a decision *already made* into a new or superseding ADR is
      itself auto-apply, not a fresh ask.
+   - A question that needs an external owner or scheduling rather than an answer
+     now → promote it to a tracker item. On a GitHub tracker, **`/e22-tracker-sync
+     push`** opens the issue and replaces the question with its ref; on other
+     trackers, file it per `/spec/tracker.md` and swap in the ref.
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, keep the item but annotate it with **why** it's deferred (and a

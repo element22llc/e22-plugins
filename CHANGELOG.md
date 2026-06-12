@@ -5,6 +5,33 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.37.0
+
+- **New skill `/e22-spec` — brainstorm a feature spec without building it.** The
+  no-build counterpart to `/e22-build`: it scaffolds the feature spine, drives
+  the intent interactively (problem → users → outcome → acceptance criteria),
+  sweeps open questions to resolution, and **stops at an approved intent**. Its
+  defining guardrail is that it never creates or edits anything under `/apps` or
+  `/packages` — if asked to build, it points to `/e22-build` rather than crossing
+  the line. Fills the gap where the only way to "just think about the spec" was
+  to chain `/e22-spec-scaffold` + `/e22-questions` while dodging `/e22-build`.
+- **New skill `/e22-tracker-sync` — GitHub Issues pull/push for the `/spec`
+  spine.** Removes the manual copy-paste at the tracker boundary. **pull**
+  materializes issues as the one-file-per-issue markdown export `/e22-drift`
+  consumes (and can import a ticket's acceptance criteria into an `intent.md`);
+  **push** files the `spec-drift` issues `/e22-drift` previously only *described*,
+  promotes `## Open questions` to issues (swapping in the ref), and opens
+  feature-request issues from an approved intent. Integration is **MCP-first**
+  (the GitHub MCP server already shipped in `scaffold/mcp.json`), falling back to
+  the **`gh` CLI**, then to **manual export** — and it stays a GitHub-only
+  accelerator: a non-GitHub tracker (Jira/Linear/…) keeps the manual export path.
+  Pushes are idempotent and confirmed once before creating. It moves *pointers
+  and findings*, never the spec itself — `/spec` remains the source of truth.
+- **Wiring.** `/e22-drift` now offers `/e22-tracker-sync pull` instead of pasting
+  (GitHub trackers) and hands its findings to `push`; `/e22-questions` delegates
+  question-promotion to `push`; rule `35-issue-tracker` notes the accelerator;
+  the router (`00-router`) lists both new skills. Both ship `/slash` aliases.
+
 ### 1.36.0
 
 - **`/e22-questions` resolves settled answers in the same change instead of

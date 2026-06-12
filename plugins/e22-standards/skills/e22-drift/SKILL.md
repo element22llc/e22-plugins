@@ -53,6 +53,12 @@ no as-built spec to compare against until the code has been reverse-engineered.
    either **pastes them into the chat** or **points to a directory/path**. Ask
    which, if not given.
 
+   **If the tracker is GitHub Issues, offer `/e22-tracker-sync pull` instead of
+   pasting** — it materializes one markdown file per issue in exactly this shape
+   (title, `#` key, labels, state, acceptance criteria) and hands the directory
+   straight back here. For Jira/Linear/other, the paste/path export above stays
+   the path.
+
 ## Phase 1 — Parse the tracker spec into intended-behavior units
 
 The tracker export is the *intended* spec. Decompose it into comparable units.
@@ -140,6 +146,9 @@ the comparison is large.
    so drift becomes a tracked item rather than a quiet failure. Scope these to
    *actual* drift — Diverged, Done-but-Missing, and genuine conflicts — **not**
    expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
+   On a GitHub tracker, hand this finding set to **`/e22-tracker-sync push`** to
+   file them (idempotent, confirmed once) rather than opening them ad hoc; for
+   other trackers, propose the issues for the dev to file.
 4. **Make no code or spec edits, and don't commit.** This skill stops at the
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
