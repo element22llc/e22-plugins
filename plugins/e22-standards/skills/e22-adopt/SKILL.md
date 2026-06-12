@@ -40,11 +40,16 @@ from the unchecked items.
    to `main` (commit-autonomy rule). Nothing is committed until the dev approves.
 
 2. **Reconcile the adoption checklist (resume safety) — do this FIRST on a resume.**
-   **Migrate the old name before deciding anything else:** if
-   `/spec/PRODUCTION-READINESS.md` exists (it was renamed to `PRODUCTIONIZATION.md`
-   in v1.22.0), run `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md`
-   **now** — before the fresh-vs-resume check below, so the old name on disk can't
-   be mistaken for a fresh adoption.
+   **Apply pending structural migrations before deciding anything else.** The
+   non-additive transforms (renames/moves) live in the ledger at
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md` — that ledger is the
+   source of truth, not this skill. Walk it by precondition and apply each entry
+   that still fires. The one that gates this step is the v1.22.0 rename: if
+   `/spec/PRODUCTION-READINESS.md` exists, run
+   `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` **now** —
+   before the fresh-vs-resume check below, so the old name on disk can't be
+   mistaken for a fresh adoption. (On an already-bootstrapped repo, `/e22-sync`
+   applies these; here we apply them inline so a resumed adoption isn't blocked.)
    Then check: if **neither** `/spec/PRODUCTIONIZATION.md` nor (pre-migration)
    `/spec/PRODUCTION-READINESS.md` existed, this is a fresh adoption — skip ahead;
    the file is created from the current bundled template in step 8. Otherwise
@@ -208,8 +213,18 @@ from the unchecked items.
    `PRODUCTIONIZATION.md` for the dev to decide. **Propose** any large
    restructure — never force it silently. The dev's PR review is the hard gate.
 
-12. **Hand off.** Commit on `feat/e22-adopt`. `PRODUCTIONIZATION.md` is the
-   dev's productionization brief — every gap and as-built risk is listed there.
+12. **Hand off.** **Stamp the spine version:** write `/spec/.version` with the
+   current plugin version (resolve it from
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory), so a
+   later `/e22-sync` knows which structural migrations this repo already carries:
+
+   ```
+   # E22 spec-spine version — managed by /e22-init, /e22-adopt, /e22-sync. Do not edit by hand.
+   <plugin version>
+   ```
+
+   Commit on `feat/e22-adopt`. `PRODUCTIONIZATION.md` is the dev's
+   productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
 

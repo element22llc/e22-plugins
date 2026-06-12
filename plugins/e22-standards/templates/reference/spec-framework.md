@@ -200,6 +200,39 @@ This makes template additions **self-healing**: a repo touched under an older
 plugin version picks up newly added sections on its next run instead of silently
 missing them.
 
+### Non-additive changes: the migration ledger + version stamp
+
+Reconciliation above is **purely additive** — it can splice in a new section but
+cannot express a **rename, move, or deletion**. A renamed file looks to the diff
+like *old-present + new-absent*, so reconciliation would add the new file and
+orphan the old one. Those structural transforms live in the **migration ledger**,
+[`templates/reference/MIGRATIONS.md`](MIGRATIONS.md) — the single source of truth
+for them. Land a ledger entry in the same change that renames/moves a
+`templates/spec/` or `templates/scaffold/` artifact; never hand-code the transform
+inline in a skill.
+
+Each ledger entry is keyed by the plugin version that introduced it and is
+**idempotent and self-detecting** (a precondition that fires only while the
+migration is still pending, plus an action). To know which entries a repo
+predates, the spine carries a stamp:
+
+- **`/spec/.version`** records the plugin version the spine was last materialized
+  or synced at. `/e22-init` and `/e22-adopt` write it at hand-off; `/e22-sync`
+  reads it, applies pending migrations, and re-stamps. Resolve the current plugin
+  version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from
+  memory.
+- The stamp is an **optimization, not the safety mechanism**: a consumer skips
+  entries at/below the stamp, then applies the rest by precondition. Because every
+  entry self-detects, a missing or wrong stamp costs extra no-op checks, never a
+  bad transform — an unstamped repo is brought current by walking the whole ledger
+  by precondition.
+
+**`/e22-sync` is the dedicated driver** for an already-bootstrapped repo;
+`/e22-adopt` and `/e22-build` apply the same ledger inline on a resume so a paused
+bootstrap isn't blocked. Structural migrations follow the same discipline as
+additive reconciliation — read-then-propose, never clobber filled-in content,
+`git mv` so history follows, land through a `feat/*` PR.
+
 **Exempt — do not reconcile:**
 
 - **Reference prose** (`templates/reference/*`) is read in place from the plugin,
