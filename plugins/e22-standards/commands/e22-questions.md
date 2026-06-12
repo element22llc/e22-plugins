@@ -1,5 +1,5 @@
 ---
-description: Sweep every open question across the /spec spine (each feature's intent.md and vision.md) and walk the PO/dev through answering each, folding decisions back into the spec. Read-then-propose — never guesses an answer or edits without a yes.
+description: Sweep every open question across the /spec spine (each feature's intent.md and vision.md) and resolve each, folding decisions back into the spec. Code-facts and decisions already made are applied in the same change (the PR is the gate); a genuine unmade decision is routed for a yes, and an unanswerable one stays open — never guessed.
 ---
 
 Resolve this product's open questions by following the `e22-questions` skill.
