@@ -1,0 +1,31 @@
+# mise — infra-folder tool pins
+#
+# These tools are needed only when working under /infra. Pinning them here keeps
+# the root mise.toml stack-agnostic so non-infra contributors do not have to
+# install OpenTofu / Terragrunt on their machines.
+#
+# With mise activated in your shell, cd-ing into /infra (or any subfolder) picks
+# up these tools automatically. Run `mise install` from this directory the first
+# time — that resolves the exact versions into the committed placeholder
+# `infra/mise.lock`. CAUTION: mise only writes the lock if the file already
+# exists; never delete the placeholder.
+#
+# Version strategy (same as the root mise.toml):
+#   - Tools resolve to `latest`, so the template carries no stale pins.
+#   - The committed `infra/mise.lock` is the REAL pin — CI and every machine
+#     install from it, so OpenTofu/Terragrunt/AWS CLI versions always agree. This
+#     is what protects against the compatibility breakage that an unpinned
+#     `latest` would cause; do NOT skip committing the lockfile for infra.
+#   - Bump intentionally with `mise upgrade`, then VALIDATE IN NON-PROD before
+#     prod — infra is a high-risk area. Check compatibility before bumping:
+#       OpenTofu:   https://github.com/opentofu/opentofu/releases
+#       Terragrunt: https://github.com/gruntwork-io/terragrunt/releases
+#       AWS CLI:    https://github.com/aws/aws-cli/tags  (v2 line)
+
+[settings]
+lockfile = true
+
+[tools]
+opentofu = "latest"
+terragrunt = "latest"
+"aqua:aws/aws-cli" = { version = "latest", symlink_bins = true }

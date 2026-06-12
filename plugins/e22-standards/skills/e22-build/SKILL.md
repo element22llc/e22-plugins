@@ -47,8 +47,10 @@ on the next `/e22-build` run.
 
 ## Steps
 
-1. **Fresh fork? Set it up yourself (PO-adapted `/e22-init`).** If template
-   placeholders remain, run the `e22-init` flow but adapted to a PO:
+1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/e22-init`).** If
+   there is no `/spec` spine (run the plugin-driven bootstrap from the bundled
+   scaffold) or template placeholders remain (legacy fork), run the `e22-init`
+   flow but adapted to a PO:
    - Ask only for the **product name** and a **one-line description**. Set
      Mode = Greenfield, PO = this user's GitHub handle, Devs = "to be assigned
      at review". Keep the **E22 default stack** — no override interview; the
@@ -146,8 +148,12 @@ on the next `/e22-build` run.
     demo-validated `intent.md` files, and any remaining `## Open questions`
     across the feature intents / `vision.md` (run `/e22-questions` to work them
     down).
-    Link the PR in `/spec/BUILD-STATUS.md`. The dev PR review is the
-    unchanged gate: it merges to `main` as v0 only with a dev's approval.
+    Link the PR in `/spec/BUILD-STATUS.md`. Sync the living docs before
+    proposing it: seed the app guide (`/spec/app/README.md` — how to use the
+    app, workflows, roles, in the PO's plain language, from the demo-validated
+    intents) and append the build to `/spec/HISTORY.md` (what was built, why,
+    requested by the PO, refs to the intents and the PR). The dev PR review is
+    the unchanged gate: it merges to `main` as v0 only with a dev's approval.
 
 ## When not to use this
 

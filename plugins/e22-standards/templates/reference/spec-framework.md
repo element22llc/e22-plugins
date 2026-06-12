@@ -8,7 +8,7 @@ rules state only *when* to create artifacts.
 
 | Stage | Lives in | Owner | Stability |
 |---|---|---|---|
-| Intake | GitHub Issues | PO | Conversational, ephemeral |
+| Intake | The product's issue tracker (`/spec/tracker.md` — GitHub Issues, Jira, Linear, …) | PO | Conversational, ephemeral |
 | Exploration | `/spec/design` for Greenfield; the originating issue + `intent.md` `Design source` for Brownfield | PO + Dev | Disposable / preserved as a link |
 | Spec | `/spec` | Dev or PO (via `/e22-build`) writes; PO approves intent; dev approves the PR | Durable |
 | Implementation | `/apps` + `/packages` | Dev | Must conform to spec |
@@ -25,8 +25,12 @@ validation, and operation. Treat it as infrastructure.
 ├── vision.md                 # Why this product exists — plus an `## Open questions` section for product-level ambiguities
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
+├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /e22-traceability)
+├── tracker.md                # Which issue tracker this product uses + reference conventions (client-agnostic)
 ├── BUILD-STATUS.md           # PO builds only — /e22-build flow state (step, per-feature progress, handoff gate)
 ├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/e22-adopt, and /e22-build at handoff)
+├── app/                      # App knowledge docs — usage, workflows, roles, configuration, troubleshooting, release notes
+│   └── README.md
 ├── design/                   # Greenfield product-level design export + traceability link
 │   ├── README.md
 │   └── source.md

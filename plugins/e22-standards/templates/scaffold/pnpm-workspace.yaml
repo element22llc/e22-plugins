@@ -1,0 +1,21 @@
+# pnpm workspace — the internal monorepo. Apps and packages are discovered here;
+# /configs holds shared config consumed by relative path, not as workspace packages.
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm gates dependency build scripts behind its supply-chain policy. esbuild
+# (pulled in via tsx) needs its postinstall to link its native binary, so it
+# must be explicitly approved here or `pnpm install` fails with
+# ERR_PNPM_IGNORED_BUILDS. Add an entry per dependency that legitimately needs
+# to run a build script.
+allowBuilds:
+  esbuild: true
+
+# Dependency versions are centralized here and referenced as "catalog:" in each
+# package.json, so every app/package shares one version. Bump in one place; the
+# exact installed versions are pinned in pnpm-lock.yaml (commit it).
+catalog:
+  typescript: ^6.0.3
+  tsx: ^4.22.4
+  "@types/node": ^25.9.1

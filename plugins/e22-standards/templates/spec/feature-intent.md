@@ -3,6 +3,7 @@
 > Owner: [PO github handle]
 > Status: draft | approved | implemented | validated | live
 > Created: YYYY-MM-DD
+> Tracker: [ref in this product's format — see /spec/tracker.md — or "none yet"]
 
 ## PO acceptance
 
@@ -22,7 +23,7 @@ Approval comment/link: [GitHub PR or issue comment]
 
 [1 paragraph. What problem does this solve? Link the originating issue if there is one.]
 
-Related issue: #
+Related issue: [tracker ref(s) per `/spec/tracker.md` — e.g. `PROJ-123`, `#123`, `ENG-123` — or "none yet". When work starts from a tracker item, copy its acceptance criteria into this intent; the ref is the pointer back, the spec is the in-repo source of truth.]
 
 ## Design source
 

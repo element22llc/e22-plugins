@@ -1,0 +1,13 @@
+{
+  "name": "@repo/root",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --recursive --parallel --if-present run dev",
+    "build": "pnpm --recursive --if-present run build",
+    "typecheck": "pnpm --recursive --if-present run typecheck",
+    "test": "pnpm --recursive --if-present run test",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  }
+}

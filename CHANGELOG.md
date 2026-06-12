@@ -5,6 +5,70 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.34.0
+
+- **The plugin replaces `repository-template` as the bootstrap source.** The
+  full repo scaffold is now **bundled** at `templates/scaffold/` (mise.toml +
+  standard tasks, compose.yaml, CI + `@claude` workflows, PR/issue templates,
+  configs, `.env.example`, `.claude/settings.json`, editor config, infra
+  conventions — dotfiles stored without the leading dot; `MANIFEST.md` carries
+  the install map and per-file adapt notes). `/e22-init` Path B and
+  `/e22-adopt` step 10 now instantiate from this bundle instead of fetching
+  `element22llc/repository-template`; `/e22-init` Path A is reframed as the
+  *legacy-fork* path and back-fills the new artifacts. The spec spine templates
+  (`vision`, `users`, `glossary`, `design-source`) moved into `templates/spec/`
+  alongside the per-feature ones. The starter app is deliberately **not**
+  bundled — bootstrap scaffolds the real first app. README gains
+  bootstrap-with-the-plugin + migration-from-the-template sections.
+- **Living documentation is now an always-on rule (`32-living-docs.md`).**
+  Claude's natural-language-to-spec role is explicit: the PO/dev speaks plainly;
+  Claude routes each statement to its owning artifact *as the work happens*
+  (intent/acceptance → `intent.md`, decisions/trade-offs → `contract.md`/ADR,
+  ambiguity → `## Open questions` — never guessed, usage/roles/config →
+  the app guide, what/why/who-asked → action history) in the same PR as the
+  code, in the right register per audience (PO plain-language, dev precise).
+- **New `/spec` artifacts, all template-backed (`templates/spec/`):**
+  `/spec/HISTORY.md` (**action history** — append-only what/why/who-asked/refs
+  log for auditability, onboarding, review evidence, and drift-over-time;
+  `history.md`), `/spec/tracker.md` (**client-agnostic issue-tracker
+  declaration** — Jira/GitHub Issues/Linear/Azure DevOps/other; `tracker.md`),
+  and `/spec/app/README.md` (**app knowledge docs** — usage, workflows, roles &
+  permissions, configuration, limitations, troubleshooting, runbook, release
+  notes; `app-docs.md`). `feature-intent.md` gains a `> Tracker:` header line
+  and tracker-agnostic issue-ref guidance. Layout rule and spec-framework
+  structure updated to match.
+- **Issue-tracker integration is an always-on rule (`35-issue-tracker.md`).**
+  Only `/spec/tracker.md` knows which tracker is in use; specs/PRs/history
+  write refs in its declared format. Tracker-item acceptance criteria are
+  copied into the intent (repo stands alone; ref points back); untracked
+  questions live in `## Open questions` and are promoted to tracker items when
+  they need scheduling.
+- **Pre-merge drift gates (`55-drift-gates.md`) + PR-template checklist.**
+  Eight review-sensitive classes — intent drift, contract drift, undocumented
+  behavior change, security-sensitive, compliance-impacting, operational,
+  local-setup/deployment, app-docs invalidation — must be flagged in the PR
+  when noticed and block merge until the human reviewer explicitly resolves
+  them (Claude may not waive its own flag). The scaffold's PR template carries
+  the checklist plus a living-docs sync section; Definition of Done and the
+  end-of-session checklist gain matching items.
+- **Audit-aligned delivery rule (`75-compliance.md`).** The workflow is SOC 2 /
+  ISO 27001-**aligned** — explicitly *not* a compliance claim — mapping the
+  artifacts to traceability, review evidence, change history, access-conscious
+  defaults, and human accountability (PO approves intent; dev approves the PR;
+  humans own production readiness).
+- **New `/e22-traceability` skill + `templates/reference/TRACEABILITY.md`.**
+  The full prose behind the four new lean rules: the NL→artifact routing
+  table, extraction discipline, PO-facing vs dev-facing register split, action
+  history format, app-docs conventions, the tracker adapter table, drift-gate
+  mechanics, the SOC 2 / ISO 27001 expectation→artifact evidence map, and
+  worked PO-day/dev-day examples. Registered in the router; the `e22-standards`
+  loader skill's rule list updated (17 → 21 files).
+- **`/e22-build` bootstraps and documents like the rest of the flow.** Step 1
+  now covers the no-scaffold case (plugin-driven bootstrap, PO-adapted), and
+  handoff seeds the app guide from the demo-validated intents and appends the
+  build to `/spec/HISTORY.md`. `check-unmanaged-repo.sh`'s nudge names the
+  bundled scaffold and the living-docs spine.
+
 ### 1.33.0
 
 - **New `/e22-audit` skill — a repeatable, read-only, whole-repo health audit.**

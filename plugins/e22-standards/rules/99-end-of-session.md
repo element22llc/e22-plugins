@@ -7,9 +7,10 @@ tooling so nothing is dropped:
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
 - [ ] Tests added/updated for the change; bug fix has a regression test?
-- [ ] Spec/code drift resolved now, not deferred to "later"?
+- [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
+- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Any remaining template placeholders flagged or resolved? (Fresh forks: run `/e22-init`.)
+- [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/e22-init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is

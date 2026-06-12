@@ -1,0 +1,16 @@
+{
+  // Shared workspace defaults. Wires Biome (the repo's lint+format tool) in as
+  // the formatter so format-on-save matches `pnpm format` / CI. Per-user
+  // overrides belong in .vscode/settings.local.json (gitignored), not here.
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+  "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true
+}

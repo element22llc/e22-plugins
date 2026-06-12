@@ -19,7 +19,8 @@ bullet: run `/e22-conventions`.
 - **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
   **Error tracking:** Sentry; DSNs/tokens in Secrets Manager, never committed.
 - **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
-  `repository-template` one, don't author from scratch. **Same engine locally
+  plugin's bundled scaffold one (`templates/scaffold/compose.yaml`), don't
+  author from scratch. **Same engine locally
   as deployed** (no SQLite stand-in for PostgreSQL). Standard entry point:
   `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
   green; environment tasks live in `mise.toml`, not `package.json`. A plugin

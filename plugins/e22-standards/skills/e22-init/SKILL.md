@@ -1,6 +1,6 @@
 ---
 name: e22-init
-description: One-time setup for a new E22 repo — either a freshly forked template (resolve placeholders, replace the starter) or a brand-new non-template repo started from scratch (bootstrap the /spec spine + scaffolding). In both cases pin the toolchain and leave the repo working spec-first. Use when template placeholders ([Replace …], [Product Name], @github-handle) remain, when a repo has no /spec spine and was not forked from the template, or when the dev says "set up this new repo".
+description: One-time setup for a new E22 repo — bootstrap the /spec spine + repo scaffolding from the plugin's bundled scaffold (the plugin replaces the old static repository-template as the bootstrap source), or resolve placeholders in a legacy template fork. In both cases pin the toolchain and leave the repo working spec-first. Use when the dev says "set up this new repo", when a repo has no /spec spine, or when template placeholders ([Replace …], [Product Name], @github-handle) remain.
 ---
 
 # First-run setup for a new repo
@@ -10,16 +10,20 @@ which of two entry conditions applies and follow that path — both end with the
 toolchain pinned and the repo working spec-first, on a `feat/*` branch with
 nothing committed until the dev approves.
 
-**A. Freshly forked from the E22 template** — `[Replace …]`, `[Product Name]`,
-`[e.g., …]`, or `@github-handle` placeholders are still present. The template
-already ships the `/spec` skeleton and scaffolding; this path resolves the
-placeholders and swaps the starter app. → **Path A** below.
+**A. Legacy fork of the old `repository-template`** — `[Replace …]`,
+`[Product Name]`, `[e.g., …]`, or `@github-handle` placeholders are still
+present. The fork already ships a `/spec` skeleton and scaffolding; this path
+resolves the placeholders, swaps the starter app, and back-fills the newer
+scaffold artifacts the old template lacked. → **Path A** below. (New repos no
+longer start from that template — the plugin's bundled scaffold is the
+bootstrap source; this path exists for forks that predate it.)
 
-**B. Brand-new non-template repo, greenfield** — there is **no `/spec` spine**
-and the repo was **not** forked from the template (no placeholders), and you are
-building the product from scratch (little or no app code exists yet, or you are
-about to write it). The template's spine and scaffolding never came along, so
-this path brings them in and starts the spec-first workflow. → **Path B** below.
+**B. Plugin-driven bootstrap (the default for new repos)** — there is **no
+`/spec` spine** and no template placeholders, and you are building the product
+from scratch (little or no app code exists yet, or you are about to write it).
+This path stands up the full repo scaffolding and spec spine from the
+plugin's bundled scaffold and starts the spec-first workflow. → **Path B**
+below.
 
 **Not a match:** if the repo has **substantial pre-existing code** but no
 `/spec` (a "vibe-coded" app you'd be *reverse-engineering*, not writing fresh),
@@ -29,11 +33,12 @@ don't re-propose it.
 
 ---
 
-## Path A — fresh template fork
+## Path A — legacy template fork
 
 If any `[Replace …]`, `[Product Name]`, `[e.g., …]`, or `@github-handle`
-placeholders are still present anywhere in the repo, this is a fresh clone.
-**Before doing any other work**, offer to resolve them:
+placeholders are still present anywhere in the repo, this is an unresolved
+fork of the old template. **Before doing any other work**, offer to resolve
+them:
 
 1. Scan for placeholders across at minimum:
    - `README.md` (product name, status, PO/dev handles)
@@ -80,6 +85,16 @@ placeholders are still present anywhere in the repo, this is a fresh clone.
    The contract (run `/e22-conventions` for the prose): `mise run dev:setup` is
    idempotent and, from a fresh clone after `mise install`, must produce a
    working local environment.
+7. **Back-fill the newer scaffold artifacts.** A fork of the old template
+   predates the plugin-bundled scaffold, so it lacks the living-docs spine —
+   instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
+   `/spec/HISTORY.md` (from `history.md`, seeded with a bootstrap entry),
+   `/spec/tracker.md` (from `tracker.md` — ask which tracker the product
+   uses), and `/spec/app/README.md` (from `app-docs.md`). Reconcile the PR
+   template against the bundled
+   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/github/pull_request_template.md`
+   so the drift-gate and living-docs checklists come in (additive — never
+   drop sections the team added).
 
 ### When the repo is already customized
 
@@ -88,37 +103,41 @@ already run. Do not re-propose it; just confirm the repo is set up and move on.
 
 ---
 
-## Path B — non-template greenfield bootstrap
+## Path B — plugin-driven bootstrap (default)
 
-The repo has no `/spec` spine and was not forked from the template, but you are
-starting a new product here. The goal: stand up the same spine + scaffolding a
-fork would have had, then proceed spec-first — so feature code is never written
+The repo has no `/spec` spine, and you are starting a new product here. The
+goal: stand up the full repo scaffolding + spec spine from the plugin's
+bundled scaffold, then proceed spec-first — so feature code is never written
 ahead of its intent/contract. Work on a `feat/*` branch; commit nothing until
 the dev approves.
 
-1. **Confirm the mode.** Verify there's no `/spec` and no template lineage, and
-   that this is genuinely greenfield (you're writing the code from scratch), not
-   reverse-engineering a pre-existing app — that would be `/e22-adopt`. If a
-   design export/URL or screenshots are the input, read them via
-   `/e22-design-sources` first (never fetch a Claude Design URL — it 403s).
-2. **Bring in the spine + scaffolding from the template.** The plugin bundles
-   the per-feature/ADR templates under `${CLAUDE_PLUGIN_ROOT}/templates/spec/`,
-   but the product-level spine (`spec/vision.md`, `spec/users.md`,
-   `spec/glossary.md`) and the repo scaffolding (`mise.toml` + the standard
-   `dev:setup`/`docker`/`db` tasks, `compose.yaml`, GitHub Actions CI,
-   `.env.example`, `.claude/settings.json`) live in
-   [`element22llc/repository-template`](https://github.com/element22llc/repository-template).
-   Fetch that repo (`gh repo clone element22llc/repository-template` into a temp
-   dir) and bring those files in, **adapting to the chosen stack and never
-   clobbering working code** — same scaffolding-sync discipline as `/e22-adopt`
-   step 9. If the clone isn't reachable, scaffold the spine from the bundled
-   `templates/spec/` plus a minimal stack-appropriate `mise.toml`/`compose.yaml`,
-   and note what couldn't be synced.
+1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
+   greenfield (you're writing the code from scratch), not reverse-engineering
+   a pre-existing app — that would be `/e22-adopt`. If a design export/URL or
+   screenshots are the input, read them via `/e22-design-sources` first (never
+   fetch a Claude Design URL — it 403s).
+2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
+   external template repo to fetch. Read
+   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
+   install map: copy each scaffold file to its target path (renaming the
+   dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
+   `.env.example`, `claude/`, `vscode/`, `github/`, `mcp.json`), and
+   instantiate the spec spine from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
+   `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
+   `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
+   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`). Create empty
+   `spec/features/` and `spec/decisions/` dirs. **Adapt to the chosen stack
+   and never clobber existing files** (the MANIFEST's per-file notes say what
+   to adapt — e.g. drop `package.json`/`pnpm-workspace.yaml`/`biome.json` for
+   a Python-only product, swap task commands to `uv run …`).
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
-   `vision.md`, `users.md`, `glossary.md` — **ask, don't invent**; route
-   product-level ambiguity to `vision.md` → `## Open questions` rather than
-   guessing. Confirm or override the E22 stack defaults (the always-on Stack
-   rules). A PO-driven idea→app flow runs through `/e22-build` instead.
+   `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
+   `/spec/tracker.md`** (which issue tracker does this product use — Jira,
+   GitHub Issues, Linear, Azure DevOps, other, none yet — and its
+   project/reference format). **Ask, don't invent**; route product-level
+   ambiguity to `vision.md` → `## Open questions` rather than guessing.
+   Confirm or override the E22 stack defaults (the always-on Stack rules). A
+   PO-driven idea→app flow runs through `/e22-build` instead.
 4. **Record the initial stack as the first ADR.** The stack choice is usually
    the first decision worth an ADR — run `/e22-adr`. **Any deviation from the
    E22 defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or
@@ -134,9 +153,11 @@ the dev approves.
    `/spec/features/[id]/intent.md` + `contract.md` via **`/e22-spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before
    broad implementation. Behavior changes update the owning `contract.md` in the
-   same PR.
-7. **Hand off.** Commit on the `feat/*` branch and open a PR for dev review —
-   that review is the productionization gate.
+   same PR, plus the app guide and an action-history entry (Living
+   documentation rule).
+7. **Hand off.** Seed `/spec/HISTORY.md` with the bootstrap entry (what, why,
+   who asked, the bootstrap PR). Commit on the `feat/*` branch and open a PR
+   for dev review — that review is the productionization gate.
 
 ### Guardrails
 
