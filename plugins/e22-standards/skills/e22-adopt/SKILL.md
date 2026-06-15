@@ -103,11 +103,24 @@ from the unchecked items.
    boxes **unchecked** — the PO has not validated these yet. Ambiguities → that
    feature's `## Open questions`.
 
-6. **Document as-built decisions.** For hard-to-reverse choices already baked into
-   the app (database, auth approach, framework, tenancy, deployment shape) run
-   **`/e22-adr <slug>`**, Status `Accepted`, noting the ADR was recorded
-   retroactively during adoption. This captures the *why* a future dev would ask
-   about, even though the choice predates the spec.
+6. **Inventory as-built architectural choices — without inventing decisions.**
+   For hard-to-reverse choices already present in the app (database,
+   authentication, framework, tenancy, deployment shape, data-access strategy,
+   and the like), record in `PRODUCTIONIZATION.md` → **`## Architectural choices
+   requiring decision`**: the observed implementation, concrete evidence from the
+   repo, its conformance with E22 standards, the proposed
+   Keep/Refactor/Rewrite/Reject disposition, and whether a forward decision is
+   required. **Do not author an ADR just because the implementation exists.** The
+   code proves a choice *exists* — it does not prove *why* it was made, that
+   alternatives were consciously rejected, or that anyone authorized it; inferring
+   a rationale and stamping an ADR `Accepted` silently converts a standards
+   violation (e.g. raw SQL — flagged in step 9) into an approved exception. **Do
+   not invent historical context, alternatives, rejection reasons, deciders, or
+   approval status.** When the dev *explicitly* chooses a forward direction during
+   adoption (retain Postgres, replace custom auth with Cognito, rebuild the data
+   layer on Drizzle, …), create a **`Proposed`** ADR via **`/e22-adr`** — it stays
+   `Proposed` until the named decider explicitly accepts it; generic approval of
+   the adoption PR does **not** ratify it.
 
 7. **Capture the as-built design.** *Skip this step only if the repo has no UI
    surface* (backend-only API, library, CLI) — note "no UI surface — no
@@ -149,9 +162,10 @@ from the unchecked items.
    most areas trend Rewrite/Reject, recommend rebuilding from `/spec` rather than
    hardening in place** — the spec exists now, so a rewrite is a safe, often cheaper
    route to production than fixing a pile of issues. A project-level Rewrite or
-   Reject is hard-to-reverse and cross-cutting → record it as an ADR
-   (**`/e22-adr`**, high-risk rule) for the dev to ratify; never force a large
-   restructure silently.
+   Reject is one kind of explicit forward decision (step 6): hard-to-reverse and
+   cross-cutting → record it as a **`Proposed`** ADR (**`/e22-adr`**, high-risk
+   rule) for the dev to ratify; it stays `Proposed` until they accept, and you
+   never force a large restructure silently.
    This doc is the dev's
    hardening brief and doubles as the resumable adoption checklist (a later
    session reconciles it against the current template per step 2, then continues
@@ -238,6 +252,12 @@ from the unchecked items.
   stop-and-rotate, not a quiet deletion.
 - **Never clobber working code.** The app already runs — diff and ask before
   overwriting any existing file; reconcile scaffolding rather than replacing it.
+- **Decisions are recorded, never inferred.** As-built architectural choices are
+  captured as **facts + evidence + conformance disposition + decision candidate**
+  (`PRODUCTIONIZATION.md`), not as ratified ADRs. An ADR is authored only when a
+  human makes an explicit forward decision, and stays `Proposed` until the named
+  decider accepts it — adoption never manufactures a rationale or an `Accepted`
+  status from code alone.
 - **Design is captured as-built, not invented.** Reverse-engineer `DESIGN.md`
   from the code's real tokens (no Claude Design export required); unknown visual
   intent goes to `## Open questions`, never guessed — and a captured `DESIGN.md`

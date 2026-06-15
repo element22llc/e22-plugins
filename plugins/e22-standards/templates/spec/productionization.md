@@ -36,7 +36,9 @@
 - [ ] Codebase surveyed; user-facing features listed
 - [ ] Product spec reverse-engineered (`vision.md`, `users.md`, `glossary.md`)
 - [ ] Feature specs extracted (`intent.md` + `contract.md` per feature)
-- [ ] As-built decisions captured as ADRs (`/spec/decisions/`)
+- [ ] As-built architectural choices captured as facts with evidence and a
+      conformance disposition (below); explicit forward decisions recorded as
+      `Proposed` ADRs where required
 - [ ] Gap analysis below filled
 - [ ] Dependency freshness checked (live registry) + bad practices flagged
 - [ ] Template scaffolding synced (mise, compose, CI, configs, plugin install)
@@ -70,6 +72,21 @@
 | Data layer (ORM, schema, migrations) | practices (85) |             |             |                    |
 | Dependency freshness         | stack (10), practices (85)|            |             |                    |
 | Layout (`/apps`, `/packages`)| layout (20)            |               |             |                    |
+
+## Architectural choices requiring decision
+
+> Hard-to-reverse choices the gap table above doesn't capture (auth model,
+> tenancy, deployment platform, database engine, sync-vs-event processing,
+> monolith-vs-services, data-access strategy). These are **observed
+> implementations, not approved decisions** — the code proves a choice *exists*,
+> not *why* it was made or that anyone authorized it. **Never infer an ADR from
+> the code.** An ADR is created only after a **named human** chooses a forward
+> direction, and stays `Proposed` until that decider explicitly accepts it.
+
+| Choice | Observed implementation | Evidence | Conformance | Proposed direction | Decision status | ADR |
+| ------ | ----------------------- | -------- | ----------- | ------------------ | --------------- | --- |
+| Data access | Raw SQL via `pg` pool | `src/db/…` | Does not conform (rule 85) | Replace with Drizzle | Pending | — |
+| Database | PostgreSQL | `compose.yaml`, migrations | Conforms | Retain | Pending | — |
 
 ## Outdated dependencies & bad practices
 

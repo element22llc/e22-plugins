@@ -17,8 +17,12 @@ reading the checklist, summarizing status, or proposing next steps; do not skip
 this because the file looks complete. Otherwise (fresh adoption):
 survey the codebase, reverse-engineer the product spec (`vision.md`, `users.md`,
 `glossary.md` — ask, don't invent), extract `intent.md` + `contract.md` per
-feature via `/e22-spec-scaffold`, capture as-built choices as ADRs via
-`/e22-adr`, and write `/spec/PRODUCTIONIZATION.md` (the dev's hardening
+feature via `/e22-spec-scaffold`, inventory as-built architectural choices as
+**facts + evidence + conformance + decision candidates** (never inferred ADRs —
+the code proves a choice exists, not that it was decided or approved; create a
+`Proposed` ADR via `/e22-adr` only for an *explicit* forward decision the dev
+makes, and keep it `Proposed` until they accept), and write
+`/spec/PRODUCTIONIZATION.md` (the dev's hardening
 brief — propose a Keep/Refactor/Rewrite/Reject disposition per area, and when
 most areas trend Rewrite/Reject recommend rebuilding from the extracted spec).
 Then sync in the scaffolding it lacks from the plugin's bundled scaffold
