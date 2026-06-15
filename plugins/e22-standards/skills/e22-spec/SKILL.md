@@ -1,6 +1,6 @@
 ---
 name: e22-spec
-description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /e22-build. Use to think a feature through before committing to implementation, shape acceptance criteria, or refine a spec you intend to compare against the code later via /e22-drift. Never touches /apps or /packages; ends at an approved intent, not a build."
+description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /e22-build. Also runs `/e22-spec validate [feature-id|--all]`: a local, GitHub-independent structural check over the open-question contract that blocks approval while a blocking question is open. Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /e22-drift. Never touches /apps or /packages; ends at an approved intent, not a build."
 ---
 
 # Brainstorm a feature spec — no build
@@ -58,12 +58,40 @@ implementation.
    integration, security, or future maintenance — not as ceremony. `intent.md`
    is the what/why (PO-facing); `contract.md` is the testable behavior + data/API
    surface (dev-owned).
-6. **Approval gate — both exits stay code-free.** Present the intent for PO
-   approval. On approval, offer:
+6. **Approval gate — both exits stay code-free.** First **run `validate` on this
+   feature** (below) — an approval **cannot proceed while a blocking question is
+   `open`**; resolve or explicitly reclassify it first. Then present the intent
+   for PO approval. On approval, flip `Status:` to `approved` and offer:
    - `/e22-tracker-sync push` → file or refresh the tracker item from this
      intent, writing the ref back into the `> Tracker:` line.
    - hand to a dev (or `/e22-build`) for implementation **in a separate
      session** — this skill stops here.
+
+## Validate mode — `/e22-spec validate [feature-id|--all]`
+
+A **local, GitHub-independent** structural check over the open-question contract
+(`spec-framework.md`): the defense-in-depth floor that holds even when the
+tracker is unreachable. It is read-only — it reports failures and (with a yes)
+proposes fixes; it never invents a decision. Given a `[feature-id]` it checks one
+feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
+
+Flag each of these, citing the `Q-NNN` and file:
+
+- ✗ an **approved** intent (`Status: approved`/`implemented`/`validated`/`live`)
+  that still contains an `open` `blocking` question;
+- ✗ a `deferred` question missing `owner` or `required_before`;
+- ✗ a `resolved` question with no resolution folded into the spec's normative
+  prose (only a `_Resolution:_` line, or nothing);
+- ⚠ a question with a `tracker:` ref whose issue is **closed** but whose
+  `status:` is still `open` — the closed-issue / stale-spec trap;
+- ✗ a **promoted** question (an open `spec-question` issue references its
+  `question-id`) with no `tracker:` ref back.
+
+The closed-issue check needs the tracker; when GitHub is unavailable, run the
+GitHub-independent checks and **say** the tracker-coupled ones were skipped —
+silence must never read as "passed." A failing check **blocks the relevant gate**
+(approval, `/e22-issues materialize`, a spec-changing PR). `/e22-issues`
+(`materialize`, `status`, `reconcile`) and `/e22-drift` call this before acting.
 
 ## Relationship to neighbors
 

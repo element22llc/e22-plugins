@@ -146,9 +146,15 @@ the comparison is large.
    so drift becomes a tracked item rather than a quiet failure. Scope these to
    *actual* drift — Diverged, Done-but-Missing, and genuine conflicts — **not**
    expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
-   On a GitHub tracker, hand this finding set to **`/e22-tracker-sync push`** to
-   file them (idempotent, confirmed once) rather than opening them ad hoc; for
-   other trackers, propose the issues for the dev to file.
+   Each issue uses the **decision-checklist** body
+   (`${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/spec-drift.md`): *Spec
+   says* / *Implementation does* / *Evidence* / *Human decision required* (the
+   checklist). The agent may propose a direction but **never resolves behavioural
+   drift autonomously** — a PO or dev decides by ownership. On a GitHub tracker,
+   hand this finding set to **`/e22-issues publish-drift`** (which routes through
+   `/e22-tracker-sync`) to file them — idempotent, confirmed once — rather than
+   opening them ad hoc; for other trackers, propose the issues for the dev to
+   file.
 4. **Make no code or spec edits, and don't commit.** This skill stops at the
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a

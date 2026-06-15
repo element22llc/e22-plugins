@@ -138,9 +138,14 @@ of dimension.
    `/spec/AUDIT-REPORT.md` on a `feat/e22-audit` branch **only if the dev wants
    it tracked** — it's a point-in-time artifact, not part of the durable spine.
 2. **Route each finding** to where it belongs in the E22 flow:
-   - **Code-health findings** → open `audit`-labelled issues so they become
-     tracked work rather than a quiet report. Scope issues to genuine,
-     high-leverage findings — don't file an issue for every nit.
+   - **Code-health findings** → a **two-level** issue set, filed via
+     **`/e22-issues publish-audit`** (which routes through `/e22-tracker-sync`):
+     one **audit-run** parent (scope, plugin version, audited SHA, dimensions
+     run/skipped, summary, report path) plus selected **finding** children, each
+     carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
+     — never line-based) so re-runs *reconcile* (update/close) rather than pile
+     up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-{run,finding}.md`.
+     Scope children to genuine, high-leverage findings — don't file one per nit.
    - **Architectural / cross-cutting calls** → propose an ADR via `/e22-adr`.
    - **Spec coverage & conformance gaps** → a proposed `## Open questions` entry
      in the owning feature's `intent.md` (or `vision.md` if cross-cutting),
