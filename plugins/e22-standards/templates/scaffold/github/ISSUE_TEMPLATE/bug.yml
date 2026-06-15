@@ -1,7 +1,8 @@
 name: Bug
 description: Something is broken or not working as expected
 title: "[Bug] "
-labels: ["bug", "source:po", "needs:triage"]
+type: Bug
+labels: ["source:human", "needs:triage"]
 body:
   - type: textarea
     id: what-happened

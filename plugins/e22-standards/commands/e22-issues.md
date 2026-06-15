@@ -26,9 +26,15 @@ Then run the requested mode:
 - **reconcile #N|feature-id|--all** — bounded (one issue/feature) or repo-wide
   reconcile; enforce the question-reconciliation floor; never auto-resolve drift
   or product decisions.
-- **project [bootstrap|sync]** — optional GitHub Project enrichment via
-  `gh project` (fields/views, item field values); degrades gracefully when
-  Projects/org fields are unavailable.
+- **bootstrap-labels** — idempotently create/reconcile the `source:*` /
+  `needs:*` / `risk:*` label taxonomy (`gh label create --force`) so Issue Forms
+  and agent labels actually apply. Run by `/e22-init` and `/e22-adopt`.
+- **project [bootstrap|sync]** — optional GitHub Project enrichment, gated on
+  `project.enabled` + `owner` + `number`. `bootstrap` creates/reconciles fields +
+  options and **outputs manual view-creation steps** (`gh` cannot create saved
+  views); `sync` discovers field/option IDs at runtime, adds the issue if absent,
+  mirrors `e22:state` → `Status`. Degrades gracefully when Projects/org fields or
+  the `project` scope are unavailable.
 - **publish-audit / publish-drift** — file the audit-run+findings / decision-
   checklist drift issues from `/e22-audit` / `/e22-drift`. Audits **reconcile**
   across runs (stable `finding-key`), never duplicate.

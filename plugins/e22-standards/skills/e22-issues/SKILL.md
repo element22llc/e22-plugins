@@ -82,15 +82,29 @@ format (markers, headings, **managed blocks**, idempotency) in
   Preview: available
   Blocking: #134 telemetry
   ```
+- **`bootstrap-labels`** — idempotently create/reconcile the supported label
+  taxonomy so Issue Forms and agent labels actually apply (GitHub silently drops a
+  form label that doesn't exist). Reconciles the exact `source:*` / `needs:*` /
+  `risk:*` set in `templates/reference/LABELS.md` (the canonical list; `source:*`
+  mirrors the `e22:source` enum) via `gh label create --force` (create-or-update;
+  safe to re-run). `/e22-init` and `/e22-adopt` call this during setup. Kind is
+  **not** a label (it's the `e22:kind` marker + Issue Type).
 - **`project [bootstrap|sync]`** — **optional** GitHub Project enrichment, gated
-  on `project.enabled: true` + a `project.number` in `tracker.md`. `bootstrap`
-  creates the recommended fields + views (see `ISSUE-WORKFLOW.md`) via
-  `gh project` (field-create / view); `sync` sets an issue's field values
-  (`Status`, `Priority`, …) from `tracker.md`'s `fields:` mapping. **Degrade
-  gracefully:** org-level issue fields are public preview and may be
-  unavailable — when a `gh project` call isn't supported, **skip that field, say
-  so, and continue**; labels + the base lifecycle never depend on Projects.
-  Never block the lifecycle on a missing Project.
+  on `project.enabled: true` + `project.owner` + `project.number` in `tracker.md`
+  (numbers are owner-scoped). `bootstrap` creates/reconciles the recommended
+  **fields and single-select options** (see `ISSUE-WORKFLOW.md`) via `gh project
+  field-create`, links the repo, and adds items — but **`gh` has no API to create
+  saved views**, so it **outputs manual view-creation instructions rather than
+  claiming to have made them**. `sync` is deterministic: discover field + option
+  IDs from their names at runtime, **add the issue to the Project if absent**
+  (when `project.enabled`), map `e22:state` → the `Status` option (the marker is
+  the base source of truth; the field mirrors it), set the other field values
+  from `tracker.md`'s `fields:` mapping, and **report missing/renamed fields**.
+  **Degrade gracefully:** org-level issue fields are public preview and may be
+  unavailable, and the `project` scope may be missing from `gh` auth — when a
+  call isn't supported or permitted, **skip that field, say so, and continue**.
+  Labels + the base lifecycle never depend on Projects; never block on a missing
+  Project.
 - **`reconcile #N | feature-id | --all`** — verify issue ↔ spec pointers agree
   and the lifecycle is internally consistent; update only the managed block of
   any issue it touches; **never auto-resolve behavioural drift or a product

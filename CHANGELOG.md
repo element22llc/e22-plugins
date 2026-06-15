@@ -5,6 +5,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.45.0
+
+- **Repository bootstrap for the issue-first backlog.** Makes a GitHub-adopted
+  repo actually carry the contract: real Issue Types, an existing label
+  taxonomy, a Project owner, and honest Project-bootstrap claims.
+  - **Issue Forms set the GitHub Issue Type** — `bug.yml` → `type: Bug`,
+    `feature.yml` → `type: Feature`, `product-question.yml` → `type: Task`;
+    `improvement.yml` sets no Type (classified at triage into Feature/Task/Bug).
+    Dropped the duplicate `bug`/`feature` kind labels; reconciled `source:po` →
+    `source:human` to match the canonical `e22:source` vocabulary.
+  - **`/e22-issues bootstrap-labels`** (new) — idempotently creates/reconciles the
+    canonical `source:*` / `needs:*` / `risk:*` set (`gh label create --force`)
+    so form and agent labels actually apply (GitHub silently drops a label that
+    doesn't exist). The canonical list lives in `templates/reference/LABELS.md`.
+    `/e22-init` and `/e22-adopt` now run it when the tracker is GitHub Issues.
+  - **`tracker.md` gains `project.owner`** (Project numbers are owner-scoped) and
+    documents the `Status`-mirrors-`e22:state` relationship; the `labels:` map is
+    reconciled to the canonical `source:*` vocabulary.
+  - **Project bootstrap is honest** — `/e22-issues project bootstrap` creates/
+    reconciles fields + options and **outputs manual view-creation instructions**
+    (`gh` has no saved-view API) rather than claiming to have created views.
+    `sync` is specified deterministically: discover field/option IDs from names
+    at runtime, add the issue if absent, mirror `e22:state` → `Status`, report
+    missing/renamed fields, and degrade when the `project` scope is missing.
+
 ### 1.44.0
 
 - **Local execution workflow — issue-first routing and the `/e22-work` skill.**

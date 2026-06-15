@@ -1,7 +1,8 @@
 name: Feature
 description: Request a new capability or a change to an existing one
 title: "[Feature] "
-labels: ["feature", "source:po", "needs:triage"]
+type: Feature
+labels: ["source:human", "needs:triage"]
 body:
   - type: markdown
     attributes:
