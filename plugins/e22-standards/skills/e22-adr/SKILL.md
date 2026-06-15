@@ -1,6 +1,7 @@
 ---
 name: e22-adr
-description: Create a numbered ADR from the E22 template. Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern) or when asked to record a decision.
+description: Create a numbered ADR from the E22 template.
+when_to_use: Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern) or when asked to record a decision.
 ---
 
 # Write an ADR

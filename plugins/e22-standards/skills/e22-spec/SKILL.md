@@ -1,6 +1,8 @@
 ---
 name: e22-spec
-description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /e22-build. Also runs `/e22-spec validate [feature-id|--all]`: a local, GitHub-independent structural check over the open-question contract that blocks approval while a blocking question is open. Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /e22-drift. Never touches /apps or /packages; ends at an approved intent, not a build."
+description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /e22-build. Also runs `/e22-spec validate [feature-id|--all]`: a local, GitHub-independent structural check over the open-question contract that blocks approval while a blocking question is open. Never touches /apps or /packages; ends at an approved intent, not a build."
+when_to_use: Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /e22-drift.
+argument-hint: "[feature-id | validate [feature-id | --all]]"
 ---
 
 # Brainstorm a feature spec — no build

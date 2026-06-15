@@ -1,6 +1,7 @@
 ---
 name: e22-traceability
-description: "Full E22 traceability & living-documentation reference — natural-language-to-spec routing, action history (/spec/HISTORY.md), app knowledge docs (/spec/app/), client-agnostic issue-tracker integration (/spec/tracker.md), pre-merge drift gates, and SOC 2 / ISO 27001-aligned delivery. Use for any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing artifact split."
+description: "Full E22 traceability & living-documentation reference — natural-language-to-spec routing, action history (/spec/HISTORY.md), app knowledge docs (/spec/app/), client-agnostic issue-tracker integration (/spec/tracker.md), pre-merge drift gates, and SOC 2 / ISO 27001-aligned delivery."
+when_to_use: Use for any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing artifact split.
 ---
 
 # Element 22 traceability & living-docs reference

@@ -1,6 +1,8 @@
 ---
 name: e22-issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /e22-spec, audit findings to /e22-audit, drift to /e22-drift, and question promotion to /e22-questions, and routes ALL GitHub reads/writes through /e22-tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer. Use to drive a PO idea from capture to a proposed spec to decomposed work without losing open questions or overwriting human content."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /e22-spec, audit findings to /e22-audit, drift to /e22-drift, and question promotion to /e22-questions, and routes ALL GitHub reads/writes through /e22-tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+when_to_use: Use to drive a PO idea from capture to a proposed spec to decomposed work without losing open questions or overwriting human content.
+argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
 ---
 
 # Drive the GitHub Issues lifecycle for the /spec spine

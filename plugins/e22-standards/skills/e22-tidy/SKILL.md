@@ -1,6 +1,7 @@
 ---
 name: e22-tidy
-description: Sweep loose files out of the repo root into their correct E22 home — source/research materials to /spec/reference, diagrams to /spec/design — moving, renaming, and (with confirmation) deleting. Proposes a plan first and never acts without a yes. Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize/clean up/tidy the repo.
+description: Sweep loose files out of the repo root into their correct E22 home — source/research materials to /spec/reference, diagrams to /spec/design — moving, renaming, and (with confirmation) deleting. Proposes a plan first and never acts without a yes.
+when_to_use: Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
 ---
 
 # Element 22 repo housekeeping (`/e22-tidy`)

@@ -1,6 +1,7 @@
 ---
 name: e22-adopt
-description: Adopt an existing repo that never went through E22 bootstrap (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the plugin's bundled scaffolding without clobbering working code. Use when a repo has working code but no /spec and no mise.toml.
+description: Adopt an existing repo that never went through E22 bootstrap (a "vibe-coded" app) into E22 standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the plugin's bundled scaffolding without clobbering working code.
+when_to_use: Use when a repo has working code but no /spec spine and no mise.toml, or when asked to adopt or onboard an existing app onto E22 standards.
 ---
 
 # Adopt an existing repo into E22 standards

@@ -1,6 +1,8 @@
 ---
 name: e22-tracker-sync
 description: "Bidirectional GitHub Issues sync for the /spec spine. PULL: materialize issues as the markdown export /e22-drift consumes, and import a tracker item's acceptance criteria into a feature's intent.md. PUSH: file spec-drift issues from a drift run, promote /spec open questions to issues, and open a feature-request issue from an approved intent.md. A GitHub-only accelerator — MCP-first, gh CLI fallback, manual export floor — that moves pointers and findings, never the spec itself. Reads /spec/tracker.md and refuses to invent tracker state."
+when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need to pull issues into the markdown export /e22-drift consumes, import acceptance criteria into an intent, or push spec-drift issues, promoted open questions, or feature requests out.
+argument-hint: "[pull | push] [#issue | feature-id]"
 ---
 
 # Sync the /spec spine with GitHub Issues

@@ -1,6 +1,7 @@
 ---
 name: e22-sync
-description: Bring an already-bootstrapped E22 repo up to date with the current plugin — update the plugin, apply pending structural migrations from the ledger (renames/moves the additive reconciliation can't express), reconcile the materialized spec spine + scaffold against the current templates, re-stamp /spec/.version, and land a PR. Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, or when asked to "sync to the latest standards / plugin version". Read-then-propose, never clobbers, never commits to main.
+description: Bring an already-bootstrapped E22 repo up to date with the current plugin — update the plugin, apply pending structural migrations from the ledger (renames/moves the additive reconciliation can't express), reconcile the materialized spec spine + scaffold against the current templates, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers, never commits to main.
+when_to_use: 'Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, or when asked to "sync to the latest standards / plugin version".'
 ---
 
 # Sync a repo to the current E22 plugin
