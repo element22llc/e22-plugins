@@ -5,6 +5,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.41.0
+
+- **Skill discovery metadata.** Frontmatter housekeeping across all skills — no
+  workflow-body changes.
+  - **`when_to_use` split.** Separated each skill's capability `description` from
+    its automatic-invocation triggers using the supported `when_to_use`
+    frontmatter field, across all 17 skills. Cleaner classification; the combined
+    `description` + `when_to_use` stays under Claude Code's 1,536-char listing cap.
+  - **Removed nonexistent aliases.** Dropped `/e22-idea` and `/e22-prototype` from
+    `e22-build`'s metadata — they were never real commands (skill command names
+    are structural, derived from the directory, not from prose).
+  - **`argument-hint` autocomplete.** Added `argument-hint` to the arg-taking
+    skills (`e22-build`, `e22-spec`, `e22-spec-scaffold`, `e22-issues`,
+    `e22-tracker-sync`) using their actual accepted argument values.
+
 ### 1.40.0
 
 - **GitHub Issues lifecycle — Phase 3: reconciliation and Projects.** Completes

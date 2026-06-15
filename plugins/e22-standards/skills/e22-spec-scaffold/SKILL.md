@@ -1,6 +1,8 @@
 ---
 name: e22-spec-scaffold
-description: Create a feature's spec (intent.md + contract.md) from the E22 templates. Use when starting a user-facing feature or asked to spec out / scaffold a feature.
+description: Create a feature's spec (intent.md + contract.md) from the E22 templates.
+when_to_use: Use when starting a user-facing feature or asked to spec out or scaffold a feature.
+argument-hint: "[feature-id]"
 ---
 
 # Scaffold a feature spec

@@ -1,6 +1,7 @@
 ---
 name: e22-questions
-description: Sweep every open question across the /spec spine — each feature's intent.md and vision.md — and walk the PO/dev through answering each one, folding the decision back into the spec. Use to work down accumulated open questions, before a release or PO→dev handoff, or when asked to resolve / review open questions.
+description: Sweep every open question across the /spec spine — each feature's intent.md and vision.md — and walk the PO/dev through answering each one, folding the decision back into the spec.
+when_to_use: Use to work down accumulated open questions, before a release or PO→dev handoff, or when asked to resolve or review open questions.
 ---
 
 # Resolve open questions (`/e22-questions`)

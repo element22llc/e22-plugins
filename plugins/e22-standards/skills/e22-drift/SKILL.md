@@ -1,6 +1,7 @@
 ---
 name: e22-drift
-description: "Compare the as-built /spec (reverse-engineered from the code by /e22-adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Use when asked to check a built app against its tracker specs, audit spec drift, or confirm the code did what the tickets asked. Read-only: reports findings and proposes Rule-5 resolutions, never edits."
+description: "Compare the as-built /spec (reverse-engineered from the code by /e22-adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Read-only: reports findings and proposes Rule-5 resolutions, never edits."
+when_to_use: Use when asked to check a built app against its tracker specs, audit spec drift, or confirm the code did what the tickets asked.
 ---
 
 # Compare the as-built spec against the tracker spec (drift report)

@@ -1,6 +1,8 @@
 ---
 name: e22-build
-description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling. Use when a non-developer wants to build or prototype an app idea, types /e22-build, /e22-idea, or /e22-prototype, or resumes an in-progress PO build (the repo has /spec/BUILD-STATUS.md).
+description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling.
+when_to_use: Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
+argument-hint: "[idea or product description]"
 ---
 
 # Build a working app from a PO's idea

@@ -1,6 +1,7 @@
 ---
 name: e22-audit
-description: "Repeatable, read-only, whole-repo health audit of an E22 repo — sweeps the code across standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), and routes results into /spec + the tracker. Use to audit overall code health, find the highest-leverage improvements, or do a periodic standards-conformance pass on a steady-state repo. Read-only: reports and proposes, never edits code or spec, never commits. Defers correctness to /code-review and security to /security-review."
+description: "Repeatable, read-only, whole-repo health audit of an E22 repo — sweeps the code across standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), and routes results into /spec + the tracker. Read-only: reports and proposes, never edits code or spec, never commits. Defers correctness to /code-review and security to /security-review."
+when_to_use: Use to audit overall code health, find the highest-leverage improvements, or do a periodic standards-conformance pass on a steady-state repo.
 ---
 
 # Audit a repo's health against E22 standards (leverage-ranked)

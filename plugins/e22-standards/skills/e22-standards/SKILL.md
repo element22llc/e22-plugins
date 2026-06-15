@@ -1,6 +1,7 @@
 ---
 name: e22-standards
-description: Load Element 22's always-on operating manual on demand. Use this at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably Claude Cowork / the Claude desktop app, where plugin hooks currently do not fire. In Claude Code the rules are already injected, so this only repeats them.
+description: Load Element 22's always-on operating manual on demand. In Claude Code the rules are already injected, so this only repeats them.
+when_to_use: Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably Claude Cowork or the Claude desktop app, where plugin hooks currently do not fire.
 ---
 
 # Element 22 operating manual — on-demand load
