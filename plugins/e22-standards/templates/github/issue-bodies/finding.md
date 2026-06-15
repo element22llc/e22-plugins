@@ -1,20 +1,29 @@
-<!-- e22:schema=1 -->
-<!-- e22:kind=audit-finding -->
-<!-- e22:finding-key=DIMENSION:RULE:FILE_OR_COMPONENT:SYMBOL -->
+<!-- e22:schema=2 -->
+<!-- e22:kind=finding -->
+<!-- e22:state=inbox -->
+<!-- e22:source=audit -->
+<!-- e22:finding-key=SOURCE_OR_DIMENSION:RULE:FILE_OR_COMPONENT:SYMBOL -->
 <!-- e22:evidence=EVIDENCE_FINGERPRINT -->
 <!-- e22:audit-id=AUDIT_ID -->
 <!-- e22:audit-commit=COMMIT_SHA -->
+<!-- e22:parent-issue=PARENT_RUN -->
 <!-- e22:managed:start -->
 ## Finding
 
 [What is wrong, conceptually — the durable defect, not the line numbers. The
 `finding-key` marker above is the stable identity used to reconcile this finding
-across audit runs; it is never line-based.]
+across runs; it is never line-based. Set `e22:source` to the origin —
+`audit` · `adoption` · `security-review` · `code-review` · `ci` ·
+`dependency` · `implementation`.]
 
 ## Evidence
 
 - `path/to/file.ts:42-186` — [current observed evidence; may change run to run
   without forging a new finding]
+
+> Security findings (`source:security-review`): redact secrets and
+> exploit-enabling detail here — link to private handling rather than publishing
+> sensitive evidence into a broadly visible issue.
 
 ## Standard missed
 
@@ -32,7 +41,8 @@ it here.]
 
 ## Origin
 
-- **Parent audit:** #PARENT_RUN
-- **Audited commit:** `COMMIT_SHA`
+- **Source:** [audit | adoption | security-review | code-review | ci | dependency | implementation]
+- **Parent record:** #PARENT_RUN (audit runs only; omit otherwise)
+- **Observed commit:** `COMMIT_SHA`
 - **Resolution mode (on close):** [deterministic — no longer reproduces | reviewer-confirmed — judgment call]
 <!-- e22:managed:end -->

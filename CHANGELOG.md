@@ -5,6 +5,53 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.43.0
+
+- **Issue contract v2 — the schema groundwork for an issue-first, local-first
+  backlog.** This is the normative-contract PR; no rule or skill behavior depends
+  on it yet (routing, `/e22-work`, and bootstrap land in following changes). The
+  machine-readable issue format in `ISSUE-SCHEMA.md` and the lifecycle in
+  `ISSUE-WORKFLOW.md` now describe a backlog where every repository mutation has
+  a GitHub issue first.
+  - **Closed `e22:kind` enum** — `feature · bug · task · finding · spec-question ·
+    spec-drift · audit-run`. The former `audit-finding` kind is replaced by a
+    generic `finding` keyed by `finding-key` + `e22:source`; parsers still accept
+    `audit-finding` as a prior alias and migrate it.
+  - **New canonical markers** — `e22:state` (base lifecycle source of truth, with
+    a Project field mirroring it when enabled), `e22:source` (canonical origin;
+    the `source:*` label is derived), `e22:dedupe-key` (generic conceptual
+    identity), plus optional `e22:claimed-by` / `e22:branch` / `e22:pull-request`.
+    `e22:schema` is bumped to `2` and documented as the schema-version marker
+    (no second marker introduced — one source of truth).
+  - **Marker requirement matrix** — which markers are required for agent-created
+    vs human issues before/after first agent touch.
+  - **Lifecycle is a closed enum with per-kind readiness** — `inbox · exploring ·
+    ready-for-spec · ready-for-dev · in-progress · validate · blocked · done`
+    (no standalone `ready`). Bugs/tasks/deterministic findings skip the spec
+    gates; questions/drift need a human decision first. Completion is explicit:
+    opening a PR → `validate`, never `done`; `done` ⇔ a closed issue; a PR closed
+    without merge returns to `in-progress`/`blocked`; `blocked` is reachable from
+    any non-terminal state and returns to the prior state.
+  - **Concurrency-safe managed-block protocol** — re-fetch-before-write, recompute
+    once on a detected change, stop and report on a second change, never overwrite
+    unseen edits; duplicate/malformed blocks **fail closed** (body unchanged +
+    proposed repair). Original human Issue-Form content is immutable — agents
+    append a managed block, never rewrite form responses.
+  - **Taxonomy table** — GitHub Issue **Type** × `e22:kind` × `source:*` as three
+    orthogonal axes, with capability degradation when org-level Issue Types are
+    unavailable (continue on `e22:kind`, no duplicate kind-labels).
+  - **Exact-only deduplication** — explicit `#N` → `finding-key` → `feature-id`+kind
+    → `question-id` → `dedupe-key` auto-reuse; semantic title search yields
+    candidates only; searches all states, scoped to the current repo; multiple
+    exact matches stop and report.
+  - **New/updated body templates** in `templates/github/issue-bodies/` —
+    `feature`, `bug`, `spec-question`, `generic-task`, and `finding` (migrated
+    from `audit-finding`); existing templates carry `e22:state`/`e22:source` and
+    `schema=2`. **Normative conformance fixtures** added under
+    `templates/reference/fixtures/managed-block/` (paired input/expected — not a
+    test runner). Fixed the stale `../github/issue-forms/` link to the real
+    `../scaffold/github/ISSUE_TEMPLATE/` path.
+
 ### 1.42.0
 
 - **`/e22-adopt` no longer manufactures ADRs from inference.** Adoption used to
