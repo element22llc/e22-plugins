@@ -199,6 +199,22 @@ accumulate — this skill is how you act on that nudge and clear it.
 - Every swept question is either struck with its decision or left open with an
   explicit deferral reason. None were silently dropped or guessed.
 
+## Recommend the next action
+
+End with a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to the
+questions just swept (locality rule).
+
+| Observed state | Category | Action / suggested command |
+|---|---|---|
+| Open question still `impact: blocking` | Blocking now | Route to its `owner` (product/dev/design/security) for a decision (no command) |
+| Genuine unmade product/architecture decision left open | Human decision required | The owning human decides (no command) |
+| All blocking questions resolved | Recommended | Re-check the spec gate — `/e22-spec validate` |
+| Only non-blocking deferrals remain | Complete | `No action is currently required.` |
+
+Pick one `Current recommended action` by precedence; an unanswerable question
+stays open rather than being guessed.
+
 ## Coupling rules
 
 The spec ↔ code coupling rules — drift resolution (Rule 5), behavior vs.

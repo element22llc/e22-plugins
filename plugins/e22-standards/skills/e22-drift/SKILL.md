@@ -160,6 +160,19 @@ the comparison is large.
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
    guess — run `/e22-questions` to drive them to answers.
+5. **Recommend the next action.** Close with a `## Recommended next actions` block
+   per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this
+   drift run's findings (locality rule).
+
+   | Observed state | Category | Action / suggested command |
+   |---|---|---|
+   | Behavioural drift needing a human call | Human decision required | PO/dev decides by ownership (no command) |
+   | Drift findings not yet filed (GitHub) | Recommended | `/e22-issues publish-drift` |
+   | Ambiguities surfaced | Required before production | Resolve them — `/e22-questions` |
+   | No actual drift (only expected-Missing backlog) | Complete | `No action is currently required.` |
+
+   Choose one `Current recommended action` by precedence. Read-only — proposes,
+   never edits or commits.
 
 ## Coupling rules
 

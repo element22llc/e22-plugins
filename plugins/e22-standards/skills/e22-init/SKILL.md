@@ -179,3 +179,20 @@ the dev approves.
 Never clobber working code or overwrite a value the dev already filled in.
 Never commit secrets — `.env`/`.env.local` stay git-ignored, names documented in
 `.env.example`. Propose batches for approval; don't commit to `main`.
+
+## Recommend the next action
+
+Whichever path ran, close with a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
+bootstrapped repo's state.
+
+| Observed state | Category | Action / suggested command |
+|---|---|---|
+| Unresolved template placeholders (`[Replace …]`, `@github-handle`) | Blocking now | Resolve them before feature work |
+| Bootstrap PR open, awaiting dev review | Human decision required | A dev reviews/merges the bootstrap PR (no command) |
+| Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
+| Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature — `/e22-spec` or `/e22-build` |
+| Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
+
+Pick one `Current recommended action` by precedence. A tracker intentionally set
+to `none`/manual is not a gap. Read-only — it recommends, the dev decides.

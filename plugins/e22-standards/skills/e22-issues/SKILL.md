@@ -151,6 +151,26 @@ This is the trap the whole layer exists to prevent: a question promoted to an
 issue, answered, and never returned to the spec, with implementation proceeding
 on stale intent.
 
+## Recommend the next action
+
+After any mode, emit a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. As an orchestrator,
+recommend the **next valid lifecycle transition** for the issue(s) just touched
+(locality rule), delegating the action to its owning skill.
+
+| Issue lifecycle state | Category | Action / suggested command |
+|---|---|---|
+| `inbox`, not yet triaged | Recommended | `/e22-issues triage` |
+| `exploring` (feature needs a spec) | Human decision required | Shape intent — `/e22-issues materialize` → `/e22-spec` |
+| `ready-for-spec`, intent not approved | Human decision required | PO approves the intent (no command) |
+| `ready-for-dev`, decomposed and actionable | Recommended | Start it — `/e22-work start #N` |
+| `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
+| Unresolved `blocking` question on the item | Blocking now | `/e22-questions` |
+| Nothing queued | Complete | `No action is currently required.` |
+
+Pick one `Current recommended action` by precedence. Read-only and idempotent —
+it recommends the transition; it does not perform unapproved writes.
+
 ## Guardrails
 
 - **Orchestrate, don't duplicate.** Delegate to the owning skill; never restate

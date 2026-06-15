@@ -91,6 +91,26 @@ risk, or is separately deliverable; necessary **localized supporting changes**
 stay in the current issue and are documented in its managed block. Continue with
 the separate work only when the current issue requires it.
 
+## Recommend the next action
+
+End every invocation with a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the **locality
+rule**, consider only this issue, its branch, PR, criteria, validation, and any
+blocker directly hit — not the wider workspace. Map execution state to actions
+without redefining the subcommands above:
+
+| State | Category | Action / suggested command |
+|---|---|---|
+| Acceptance criteria not yet met | Blocking now (next transition) | Continue — `/e22-work resume #N` |
+| Required validation failing | Blocking now | Fix failures, then `/e22-work finish #N` |
+| Implemented, PR not opened | Blocking now (next transition) | `/e22-work finish #N` |
+| PR open, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
+| PR merged but issue still `validate` (stale) | Blocking now | Reconcile to `done` — `/e22-work resume #N` |
+| Issue `done` | Complete | Optional: start another ready issue — `/e22-work start #N`, else `No action is currently required.` |
+
+Choose one `Current recommended action` by precedence. The block recommends only
+— it never merges, deploys, or auto-advances state.
+
 ## Guardrails
 
 - **Managed block only.** Progress updates rewrite only the `e22:managed` block,

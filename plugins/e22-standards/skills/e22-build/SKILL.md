@@ -157,6 +157,26 @@ on the next `/e22-build` run.
     requested by the PO, refs to the intents and the PR). The dev PR review is
     the unchanged gate: it merges to `main` as v0 only with a dev's approval.
 
+## Recommend the next action
+
+After the build step, emit a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from
+`/spec/BUILD-STATUS.md` and this build's state. Keep it in the PO's plain
+language.
+
+| Observed state | Category | Action / suggested command |
+|---|---|---|
+| Intent not yet PO-approved | Human decision required | PO reviews & approves the drafted intent (no command) |
+| Build incomplete / failing locally | Blocking now | Continue the build |
+| Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
+| Demo-validated, PR not opened | Blocking now (next transition) | Open the PR for dev review |
+| PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
+| Remaining `## Open questions` | Required before production | Work them down — `/e22-questions` |
+| Merged | Complete | Optional: build the next feature |
+
+Pick one `Current recommended action` by precedence; offer a `Suggested command`
+only where one truly applies. Read-only — it recommends, the PO/dev decides.
+
 ## When not to use this
 
 A developer driving a Greenfield product doesn't need this skill — follow the

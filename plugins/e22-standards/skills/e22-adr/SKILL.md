@@ -36,3 +36,17 @@ one — do not delete or renumber it. Full guidance:
 ADRs are **exempt from template reconciliation** — they are immutable,
 point-in-time records. Never retrofit a newer `adr.md` template's sections into an
 existing ADR; supersede it with a new one instead.
+
+## Recommend the next action
+
+After drafting the ADR, emit a `## Recommended next actions` block per
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. A freshly written ADR
+is `Proposed`, so the next step is a human decision — not a command.
+
+| Observed state | Category | Action / suggested command |
+|---|---|---|
+| ADR drafted, `Status: Proposed` | Human decision required | The Deciders ratify (`Accepted`) or reject it (no command) |
+| ADR accepted, supersedes an older one | Recommended | Mark the old ADR `Superseded by [link]` |
+| Accepted, no follow-up | Complete | `No action is currently required.` |
+
+The block recommends; ratifying the decision stays with the named Deciders.

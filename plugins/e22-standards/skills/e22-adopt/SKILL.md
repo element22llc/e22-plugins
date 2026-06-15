@@ -251,6 +251,31 @@ from the unchecked items.
      `PRODUCTIONIZATION.md` stays the assessment snapshot + evidence, recording
      the issue ref but not tracking its implementation status.
 
+13. **Recommend the next action.** As the final output, emit a
+   `## Recommended next actions` block per the shared contract at
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md` (categories,
+   two-level precedence, output format, read-only + locality rules — adoption is
+   repo-wide *by purpose*, so a whole-repo sweep is in scope here). Derive it from
+   the adoption state observed, mapping these states to categories:
+
+   | Observed state | Category | Action / suggested command |
+   |---|---|---|
+   | Confirmed committed secret / critical exposure | Blocking now | Rotate & invalidate the value; then `/security-review` |
+   | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
+   | Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files (no command) |
+   | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/e22-adr` |
+   | Adoption PR not yet opened | Blocking now (next transition) | Open the adoption PR (after dev confirmation) |
+   | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |
+   | Unresolved production blocker among findings | Required before production | Fix or explicitly accept it |
+   | Selected findings not published | Recommended | `/e22-issues publish-adoption` |
+   | Findings published, not shaped | Recommended | `/e22-issues triage` / `decompose` |
+   | `/spec/.version` stale | Recommended | `/e22-sync` |
+   | Nothing remaining | Complete | Optional: begin feature work — `/e22-spec` |
+
+   Pick exactly one `Current recommended action` by precedence; offer a
+   `Suggested command` only where a real command applies. The block is read-only
+   — it recommends, it does not act.
+
 ## Guardrails
 
 - **Standards are not softened.** Adoption produces real spec, real tests, real
