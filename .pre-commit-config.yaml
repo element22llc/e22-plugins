@@ -1,0 +1,51 @@
+# Fast local hygiene gate. Heavier checks (golden fixtures, pytest) run in CI.
+# Install with: uv run pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff lint
+        entry: uv run ruff check .
+        language: system
+        pass_filenames: false
+
+      - id: ruff-format-check
+        name: Ruff format check
+        entry: uv run ruff format --check .
+        language: system
+        pass_filenames: false
+
+      - id: plugin-hygiene
+        name: Plugin hygiene checks
+        entry: uv run python scripts/check_plugin.py
+        language: system
+        pass_filenames: false
+
+      - id: claude-plugin-validate
+        name: Claude plugin validate
+        entry: claude plugin validate plugins/e22-standards
+        language: system
+        pass_filenames: false
+
+      - id: actionlint
+        name: GitHub Actions lint
+        entry: actionlint
+        language: system
+        pass_filenames: false
+        files: ^\.github/workflows/.*\.ya?ml$
+
+      - id: shellcheck
+        name: ShellCheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+
+      - id: shfmt
+        name: shfmt
+        entry: shfmt -d
+        language: system
+        types: [shell]
+        # The existing e22-standards hook scripts predate this formatter and are
+        # grandfathered (CI treats shfmt as advisory for them too). shfmt still
+        # gates any *new* shell script you add or touch elsewhere.
+        exclude: ^plugins/e22-standards/hooks/
