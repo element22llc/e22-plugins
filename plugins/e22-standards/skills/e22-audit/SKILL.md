@@ -162,6 +162,26 @@ of dimension.
    report, the proposed routing, and (with a yes) opened issues + the optional
    `AUDIT-REPORT.md`. Fixing anything is a separate, approved step on its own
    branch + PR.
+4. **Recommend the next action.** End with a `## Recommended next actions` block
+   per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md` (categories,
+   precedence, output format, read-only rule — auditing is repo-wide *by
+   purpose*). **Assert no severity beyond the audit's evidence**: route *potential*
+   concerns to the specialist that confirms them; only a *confirmed* exposure is a
+   stop.
+
+   | Audit observation | Action |
+   |---|---|
+   | Confirmed exposed secret found during inspection | Stop & rotate the value; then `/security-review` |
+   | Potential security concern needing validation | Run `/security-review` |
+   | Potential correctness defect needing diff analysis | Run `/code-review` |
+   | Vetted code-health findings ready for tracking | `/e22-issues publish-audit` |
+   | Architectural / cross-cutting call | Propose an ADR via `/e22-adr` |
+   | Spec coverage / conformance gap | `/e22-questions` |
+   | Mechanical cleanup only | `/simplify` |
+   | Nothing actionable | Complete |
+
+   Choose one `Current recommended action` by precedence; the block recommends
+   and never edits.
 
 ## Reconciliation across runs — audits are reconciling, not additive
 

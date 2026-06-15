@@ -104,6 +104,22 @@ spec-vs-tracker drift check (`/e22-drift`), and **not** a code-health audit
    and wait for the dev's confirmation before pushing/creating it — that review
    is the gate. Run the end-of-session checklist.
 
+8. **Recommend the next action.** Emit a `## Recommended next actions` block per
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
+   sync's state.
+
+   | Observed state | Category | Action / suggested command |
+   |---|---|---|
+   | Failed migration or merge conflict | Blocking now | Resolve it before continuing |
+   | Pending migrations in the ledger | Blocking now (next transition) | Apply them |
+   | Reconcile batch proposed, not approved | Human decision required | Dev reviews the proposed batch (no command) |
+   | Sync PR open, awaiting review | Human decision required | A dev reviews/merges the PR (no command) — execution is done, integration is not |
+   | Nothing pending; `/spec/.version` current | Complete | `No action is currently required.` |
+
+   Pick one `Current recommended action` by precedence. An opened-but-unmerged
+   sync PR is **not** `Complete`. Read-only; never clobbers, never commits to
+   `main`.
+
 ## Guardrails
 
 - **Structure only, never behavior.** Sync moves/renames artifacts and splices

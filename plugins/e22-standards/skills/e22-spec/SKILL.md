@@ -68,6 +68,21 @@ implementation.
      intent, writing the ref back into the `> Tracker:` line.
    - hand to a dev (or `/e22-build`) for implementation **in a separate
      session** — this skill stops here.
+7. **Recommend the next action.** Close with a `## Recommended next actions` block
+   per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the
+   **locality rule**, consider only *this* feature's intent, open questions,
+   contract, tracker state, and directly relevant ADRs — not the wider workspace.
+
+   | Observed state | Category | Action / suggested command |
+   |---|---|---|
+   | Open `impact: blocking` question on this feature | Blocking now | Resolve it — `/e22-questions` |
+   | Intent drafted, not yet PO-approved | Human decision required | PO reviews & approves the intent (no command) |
+   | Behavior demands a contract that isn't written | Required before production | Author `contract.md` |
+   | Approved, tracker configured, not yet filed | Recommended | `/e22-tracker-sync push` |
+   | Approved | Complete | Optional: hand to a dev or `/e22-build` in a separate session |
+
+   Pick one `Current recommended action` by precedence; the block stays code-free,
+   like the rest of this skill.
 
 ## Validate mode — `/e22-spec validate [feature-id|--all]`
 

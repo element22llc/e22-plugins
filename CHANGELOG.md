@@ -5,6 +5,62 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.48.0
+
+- **New `/e22-next` — read-only workspace navigator.** Delivers the cross-workflow
+  arbitrator that 1.47.0 deferred. Where each workflow skill's
+  `## Recommended next actions` block is locality-bound (it recommends only from
+  its own invocation), `/e22-next` is the one tool that reconstructs the **whole
+  workspace state cold** and arbitrates the single best action across *unrelated*
+  workflows.
+  - **Reconstructs** branch/PR + CI/merge state, `/spec` feature `Status`, open
+    questions (`impact`/`required_before`), `Proposed` ADRs, tracker issue
+    lifecycle states (via `/e22-tracker-sync`, MCP-first/`gh` fallback), work
+    claims (`e22:state`/`e22:branch`), and `spec/.version` drift — then emits a
+    state-reconstruction summary plus the standard `## Recommended next actions`
+    block ending in one `Current recommended action`.
+  - **Reuses, never forks, the contract** in `templates/reference/NEXT-ACTIONS.md`
+    (same five categories + shared safety precedence). It carries its own
+    workspace-level dimension table and defers *how* to resolve each state to the
+    owning skill (`/e22-work`, `/e22-spec`, `/e22-questions`, …); it never edits,
+    commits, publishes, merges, or advances state. No `/spec` spine → the only
+    action is bootstrap (`/e22-init`/`/e22-adopt`).
+  - **New `templates/reference/next-fixtures/`** — prose golden scenarios (not
+    executable) pinning the cross-workflow arbitration: secret > PR review,
+    blocking question > ready work, stale-reconcile > new work, the human-decision
+    tie-break, release-gating > optional bookkeeping, all-clean, and the
+    no-spine short-circuit.
+  - Wired into the router (`00-router.md`) and surfaced as the `/e22-next`
+    command; the 1.47.0 "not yet built" forward-reference in `NEXT-ACTIONS.md` now
+    points at the shipped navigator.
+
+### 1.47.0
+
+- **Standardized "Recommended next actions" handoff.** Every major workflow now
+  ends with a deterministic, read-only `## Recommended next actions` block that
+  derives the next step from observed repo/spec/tracker state — so a workflow
+  reconnects its artifacts to the next human or agent action instead of just
+  stopping.
+  - **New shared convention** `templates/reference/NEXT-ACTIONS.md` owns all the
+    shared logic: the five categories (`Blocking now`, `Human decision required`,
+    `Required before production`, `Recommended`, `Complete`), a two-level
+    precedence (universal safety + skill-local lifecycle), the derivation rule
+    (reuse existing state enums; never "always run X"), the output format, and the
+    **read-only + locality** rules. The canonical field is `Current recommended
+    action` (an *action*, not a command); a `Suggested command` is offered only
+    when a real command applies, and `No action is currently required.` is allowed.
+  - **New `templates/reference/next-actions-fixtures/`** — prose golden scenarios
+    (not executable) that pin the intended arbitration and guard against drift.
+  - **Wired into ten skills**, each with its own domain state→action table:
+    `/e22-adopt`, `/e22-audit`, `/e22-spec`, `/e22-work` (Phase 1) and
+    `/e22-build`, `/e22-drift`, `/e22-questions`, `/e22-init`, `/e22-sync`,
+    `/e22-issues`, `/e22-adr` (Phase 2). `/e22-audit` keeps its boundary (routes
+    *potential* concerns to specialists; only a confirmed secret is a stop), and
+    `/e22-work` post-merge reconciliation is owned by `resume` (no redefinition of
+    `finish`).
+  - A repo-wide `/e22-next` navigator that arbitrates across unrelated workspace
+    state is intentionally **deferred** to a later release.
+
 ### 1.46.0
 
 - **Backlog producers — findings flow into the backlog.** Closes the loop so the
