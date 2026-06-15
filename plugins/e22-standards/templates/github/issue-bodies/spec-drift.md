@@ -1,5 +1,7 @@
-<!-- e22:schema=1 -->
+<!-- e22:schema=2 -->
 <!-- e22:kind=spec-drift -->
+<!-- e22:state=inbox -->
+<!-- e22:source=spec -->
 <!-- e22:feature-id=FEATURE_ID -->
 <!-- e22:spec-path=spec/features/FEATURE_ID/contract.md -->
 <!-- e22:managed:start -->

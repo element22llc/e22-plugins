@@ -1,5 +1,7 @@
-<!-- e22:schema=1 -->
+<!-- e22:schema=2 -->
 <!-- e22:kind=audit-run -->
+<!-- e22:state=done -->
+<!-- e22:source=audit -->
 <!-- e22:audit-id=AUDIT_ID -->
 <!-- e22:audit-commit=COMMIT_SHA -->
 <!-- e22:managed:start -->

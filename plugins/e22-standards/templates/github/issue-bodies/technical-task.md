@@ -1,5 +1,7 @@
-<!-- e22:schema=1 -->
+<!-- e22:schema=2 -->
 <!-- e22:kind=task -->
+<!-- e22:state=ready-for-dev -->
+<!-- e22:source=human -->
 <!-- e22:feature-id=FEATURE_ID -->
 <!-- e22:spec-path=spec/features/FEATURE_ID/intent.md -->
 <!-- e22:parent-issue=PARENT_ISSUE -->
