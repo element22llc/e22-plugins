@@ -153,7 +153,11 @@ of dimension.
      drivable to answers by `/e22-questions`.
    - **Correctness** → defer to `/code-review`; **security** → defer to
      `/security-review`; **mechanical cleanup** → defer to `/simplify`. Name the
-     skill; don't re-run it here.
+     skill; don't re-run it here. To turn an unresolved `/code-review` or
+     `/security-review` finding into a tracked issue, route it through
+     **`/e22-issues publish-findings --source code-review|security-review`**
+     (`kind=finding` + the matching `source:*`; security findings redact secrets
+     / exploit detail and default to human review before public disclosure).
 3. **Make no code or spec edits, and don't commit.** This skill stops at the
    report, the proposed routing, and (with a yes) opened issues + the optional
    `AUDIT-REPORT.md`. Fixing anything is a separate, approved step on its own

@@ -134,6 +134,18 @@ public preview. So:
   non-blocking capability warning, and **do not** reintroduce duplicate
   `bug`/`feature` labels to compensate.
 
+## CI failures — when to file
+
+Not every red build is an issue. To avoid both lost signal and duplicate noise:
+
+- **Transient failure** (flake on retry, infra blip) → no issue.
+- **Reproducible failure on the default branch** → create/reconcile a `bug` with
+  `source:ci` (stable `finding-key` so repeat failures reconcile, not duplicate).
+- **Recurring flaky test** → one issue keyed by a stable `finding-key`; reconcile
+  each recurrence rather than opening a new one.
+- **PR-specific failure** → comment on the PR; only file an issue if it outlives
+  that PR (lands on the default branch).
+
 ## Suggested Project (optional enrichment)
 
 Projects are optional (org-level issue fields are public preview — don't depend
