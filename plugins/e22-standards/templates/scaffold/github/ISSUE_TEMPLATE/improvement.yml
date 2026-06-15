@@ -1,7 +1,9 @@
 name: Improvement
 description: Make something that already works better — clearer, faster, easier
 title: "[Improvement] "
-labels: ["source:po", "needs:triage"]
+# No Issue Type: an improvement is classified at triage into Feature (user-visible),
+# Task (internal/refactor), or Bug (wrong behavior) — it is not a permanent kind.
+labels: ["source:human", "needs:triage"]
 body:
   - type: textarea
     id: today

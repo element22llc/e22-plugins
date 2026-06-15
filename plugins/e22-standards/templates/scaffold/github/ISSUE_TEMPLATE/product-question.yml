@@ -1,7 +1,8 @@
 name: Product question
 description: A product decision that needs an owner or stakeholder input
 title: "[Question] "
-labels: ["source:po", "needs:product-decision"]
+type: Task
+labels: ["source:human", "needs:product-decision"]
 body:
   - type: markdown
     attributes:

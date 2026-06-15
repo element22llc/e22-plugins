@@ -12,18 +12,26 @@ item_url_pattern:           # e.g. https://example.atlassian.net/browse/{ref}
 # Projects are optional enrichment; leave disabled until one exists.
 project:
   enabled: false
+  owner:                    # Project owner (org or user login) — numbers are owner-scoped
   number:                   # GitHub Project number, when enabled
 workflow:
   issue_is_work_record: true
   spec_is_product_truth: true
   require_tracker_ref_for_features: true
   close_parent_after_product_validation: true
+# Labels mirror the canonical e22:source marker (the marker is the source of
+# truth; the label is derived/searchable). Kind is the e22:kind marker, not a label.
 labels:
   audit: source:audit
-  drift: source:spec-drift
-  question: source:spec-question
+  adoption: source:adoption
+  security: source:security-review
+  code_review: source:code-review
+  ci: source:ci
+  dependency: source:dependency
+  drift: source:spec
+  question: source:spec
 fields:
-  status: Status
+  status: Status            # mirrors the e22:state marker (marker is the base source of truth)
   priority: Priority
   effort: Effort
   spec_state: Spec state

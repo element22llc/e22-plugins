@@ -139,6 +139,10 @@ the dev approves.
    ambiguity to `vision.md` → `## Open questions` rather than guessing.
    Confirm or override the E22 stack defaults (the always-on Stack rules). A
    PO-driven idea→app flow runs through `/e22-build` instead.
+   - **If the tracker is GitHub Issues**, run `/e22-issues bootstrap-labels` to
+     create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
+     a form label that doesn't exist), and set `project.owner`/`number` in
+     `tracker.md` if the team uses a Project.
 4. **Record the initial stack as the first ADR.** The stack choice is usually
    the first decision worth an ADR — run `/e22-adr`. **Any deviation from the
    E22 defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or
