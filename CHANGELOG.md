@@ -5,6 +5,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.42.0
+
+- **`/e22-adopt` no longer manufactures ADRs from inference.** Adoption used to
+  reverse-engineer an `Accepted` ADR for each hard-to-reverse as-built choice —
+  inventing the context, "alternatives considered," and approval status from the
+  code alone. The code proves a choice *exists*, not *why* it was made or that
+  anyone ratified it, so this could silently launder a standards violation (e.g.
+  raw SQL stamped `Accepted` while the same run flagged it as a gap) into an
+  approved exception.
+  - **Governing rule: no ADR from inference.** Step 6 now *inventories* as-built
+    architectural choices as **facts + evidence + conformance + disposition + a
+    decision candidate** in `PRODUCTIONIZATION.md`. An ADR is authored only when a
+    **human makes an explicit forward decision** during adoption (retain, replace,
+    rewrite, reject), and stays `Proposed` until a named decider accepts it —
+    generic adoption-PR approval does not ratify it.
+  - **New `PRODUCTIONIZATION.md` section** — *Architectural choices requiring
+    decision* — preserves choices the gap table doesn't capture (auth model,
+    tenancy, deployment platform, db engine, …) without fabricating rationale.
+  - Updated `skills/e22-adopt/SKILL.md`, `commands/e22-adopt.md`, and
+    `templates/spec/productionization.md` (the adoption-progress checklist + the
+    new section). `e22-audit` remains the defense-in-depth net that later flags
+    architectural choices still lacking an ADR.
+
 ### 1.41.0
 
 - **Skill discovery metadata.** Frontmatter housekeeping across all skills — no
