@@ -53,6 +53,50 @@ interview, whole-repo adoption) goes in `vision.md` → `## Open questions`. Run
 **`/e22-questions`** to sweep every open question across the spine and drive each
 to an answer (or an explicit deferral) — otherwise they accumulate and rot.
 
+### Open-question format (machine-readable)
+
+Each question carries a stable ID and structured fields so a tool can reason
+about it — whether it blocks a gate, who owns it, and whether a promoted issue
+is in sync. Write them under `## Open questions` like this:
+
+```md
+### Q-001 — Should archived records be shown by default?
+
+- status: open            # open | investigating | resolved | deferred | cancelled
+- impact: blocking        # blocking | non-blocking
+- owner: product          # product | development | design | security | shared
+- required_before: intent-approval   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
+- tracker:                # issue ref once promoted (e.g. #142), else empty
+
+_Resolution:_ recorded here when answered, then folded into the normative
+section of the spec above.
+```
+
+IDs are stable per feature (`Q-001`, `Q-002`, …) and never reused. When a
+question is promoted to an issue, the issue carries the same ID via
+`<!-- e22:question-id=Q-001 -->` (see [`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md)); the
+keep-vs-promote test is in [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md). Resolving a
+question means writing the answer into the spec's normative prose, not leaving it
+only in the `_Resolution:_` line or the issue.
+
+### Spec validation (`/e22-spec validate`)
+
+A local, GitHub-independent structural check over the question contract — the
+defense-in-depth floor that holds even when the tracker is unreachable. It flags:
+
+- an **approved** intent that still contains an `open` `blocking` question;
+- a `deferred` question missing `owner` or `required_before`;
+- a question with a `tracker:` ref whose issue is closed but `status:` is still
+  `open` (the closed-issue / stale-spec trap);
+- a **promoted** question (referenced by an open `spec-question` issue) with no
+  `tracker:` ref back;
+- a `resolved` question with no recorded resolution folded into the spec.
+
+`validate` runs at `/e22-spec approve` and is called by `/e22-issues`
+(`materialize`, `status`, `reconcile`) and `/e22-drift`; a spec-changing PR
+should run it too. A failing check blocks the relevant gate — e.g. an approval
+cannot proceed while a blocking question is open.
+
 ## Rules
 
 1. **Specs are written with Claude's help — by a dev, or by a PO via `/e22-build`.** The PO approves intent; a dev approves the PR before merge. POs are not expected to write specs from scratch.

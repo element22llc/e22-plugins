@@ -72,4 +72,18 @@ nothing is ever deleted or archived.]
 
 ## Open questions
 
-- [ ] [Anything ambiguous the PO needs to decide]
+Structured so a tool can tell what blocks a gate and who owns it — see the
+open-question format in the spec-framework reference (`/e22-spec-scaffold`). Use
+stable IDs (`Q-001`, `Q-002`, …). A promoted question keeps its ID and gains a
+`tracker:` ref.
+
+### Q-001 — [Anything ambiguous the PO needs to decide]
+
+- status: open            # open | investigating | resolved | deferred | cancelled
+- impact: blocking        # blocking | non-blocking
+- owner: product          # product | development | design | security | shared
+- required_before: intent-approval   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
+- tracker:                # issue ref once promoted (e.g. #142), else empty
+
+_Resolution:_ recorded here when answered, then folded into the relevant
+normative section above.

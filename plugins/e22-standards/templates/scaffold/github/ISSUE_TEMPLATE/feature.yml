@@ -1,0 +1,56 @@
+name: Feature
+description: Request a new capability or a change to an existing one
+title: "[Feature] "
+labels: ["feature", "source:po", "needs:triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the outcome you want in plain language. You do **not** need to
+        choose a feature name, write acceptance criteria, or know how it's built —
+        an agent and a developer derive those later.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should users be able to do?
+      description: One or two sentences. What can someone do after this is built that they can't today?
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why is it valuable?
+      description: What problem does this solve, or what does it make better?
+    validations:
+      required: true
+  - type: input
+    id: who
+    attributes:
+      label: Who is affected?
+      description: Which users — existing, new, internal team, admins, a specific role?
+  - type: input
+    id: where
+    attributes:
+      label: Where does it happen?
+      description: A screen, page, or flow, if it applies to a specific place.
+  - type: textarea
+    id: design
+    attributes:
+      label: Supporting screenshots or design links
+      description: If you explored this in Claude Design, paste the URL — that's the canonical way to share a design. Figma links, screenshots, and recordings work too.
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Approximate importance
+      options:
+        - Critical — blocking users today
+        - High — want it soon
+        - Medium — would be nice
+        - Low — backlog
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Anything explicitly out of scope?
+      description: Optional. Things you do not want this to include.

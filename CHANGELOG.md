@@ -5,6 +5,44 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.38.0
+
+- **GitHub Issues lifecycle — Phase 1: contracts and scaffold.** Lays the
+  machine-readable foundation for an issue-driven product lifecycle, ahead of the
+  `/e22-issues` orchestrator skill (Phase 2) and repository-wide reconciliation
+  (Phase 3).
+  - **Machine-readable issue contract.** New `templates/reference/ISSUE-SCHEMA.md`
+    defines hidden identity markers (`e22:schema`, `kind`, `feature-id`,
+    `finding-key`, `audit-id`, …), stable section headings, **managed-block
+    boundaries** (`<!-- e22:managed:start/end -->` so agent updates never clobber
+    human edits), idempotency rules, and a schema-compatibility policy.
+  - **Lifecycle reference.** New `templates/reference/ISSUE-WORKFLOW.md` owns the
+    capture → brainstorm → validate → materialize → shape → implement lifecycle,
+    the `Status` state model + **authority table** (which transitions an AI may
+    propose vs perform), the small label taxonomy (`source:*`/`needs:*`/`risk:*`),
+    issue types, and optional GitHub Project field/view guidance.
+  - **Structured open questions.** `spec-framework.md` now defines a normative
+    machine-readable question format — stable `Q-NNN` IDs with
+    `status`/`impact`/`owner`/`required_before`/`tracker` — plus the
+    `/e22-spec validate` contract (the GitHub-independent floor that blocks an
+    approval while a blocking question is open). Adopted in the `feature-intent.md`
+    and `vision.md` templates.
+  - **Agent issue-body templates** (plugin-internal, not installed):
+    `templates/github/issue-bodies/{audit-run,audit-finding,spec-drift,technical-task}.md`,
+    each managed-block-wrapped with identity markers — including the stable,
+    never-line-based audit `finding-key`.
+  - **YAML Issue Forms.** The bundled scaffold's Markdown issue templates are
+    replaced by PO-friendly forms (`feature.yml`, `bug.yml`,
+    `product-question.yml`, `improvement.yml`); forms are human UI only — agents
+    render the same semantic fields into the issue contract, never submit a form.
+  - **`tracker.md` frontmatter.** A deterministic config block (system,
+    repository, ref format, optional `project`/`workflow`/`labels`/`fields`) with
+    **safe unset defaults** — no fabricated repository or project number.
+  - **Wiring.** Rules `35-issue-tracker` (keep-vs-promote, names `/e22-issues`)
+    and `30-spec-workflow` (capture-first → materialize path) updated; `MANIFEST`
+    and a `MIGRATIONS` ledger entry cover the form swap + frontmatter splice for
+    existing repos via `/e22-sync`.
+
 ### 1.37.1
 
 - **Docs: de-dup open-questions placement between reference files.** The

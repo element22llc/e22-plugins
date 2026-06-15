@@ -38,7 +38,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `github/workflows/ci.yml` | `.github/workflows/ci.yml` | Stack-agnostic hygiene CI; per-stack steps ship commented — activate them early. |
 | `github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
 | `github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
-| `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | Bug report + feature request (used when GitHub Issues is the tracker; harmless otherwise). |
+| `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Used when GitHub Issues is the tracker; harmless otherwise. Agent-authored issue bodies (audit/drift/task) are **not** installed — they live in the plugin at `templates/github/issue-bodies/`. |
 | `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
 | `apps/README.md` | `apps/README.md` | What belongs in `/apps`. |
 | `packages/README.md` | `packages/README.md` | What belongs in `/packages` (if bundled). |

@@ -59,8 +59,9 @@ shell escaping. Detect capability **in this order, every run**:
   external owner or scheduling, open an issue from it, then **replace the
   question with the ref** (`#123`) — closing the Rule-35 loop automatically.
 - **New feature request.** From an approved `intent.md`, open a feature-request
-  issue using the repo's `.github/ISSUE_TEMPLATE/feature-request.md` shape, and
-  write the returned `#` back into the intent's `> Tracker:` line.
+  issue using the repo's `.github/ISSUE_TEMPLATE/feature.yml` form fields (or the
+  machine-readable issue contract — see the issue-schema reference), and write
+  the returned `#` back into the intent's `> Tracker:` line.
 
 ## Guardrails
 

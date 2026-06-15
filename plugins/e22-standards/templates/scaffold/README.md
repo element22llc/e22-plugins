@@ -37,8 +37,8 @@ inside **WSL2** — see [Windows: develop in WSL](#windows-develop-in-wsl).
 - [Action history](./spec/HISTORY.md) — what changed, why, who asked, and where it's specified
 - [Issue tracker](./spec/tracker.md) — which tracker this product uses and how work items are referenced
 - [CLAUDE.md](./CLAUDE.md) — the operating manual: stack, spec workflow, testing, change-size model
-- [File a feature request](../../issues/new?template=feature-request.md)
-- [File a bug report](../../issues/new?template=bug-report.md)
+- [File a feature request](../../issues/new?template=feature.yml)
+- [File a bug report](../../issues/new?template=bug.yml)
 
 ## Quickstart for POs (non-technical)
 
