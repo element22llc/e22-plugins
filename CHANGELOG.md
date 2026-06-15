@@ -5,6 +5,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.40.0
+
+- **GitHub Issues lifecycle — Phase 3: reconciliation and Projects.** Completes
+  the integration on top of Phases 1–2 (v1.38.0, v1.39.0).
+  - **Reconciling audit.** `/e22-audit` now defines the full cross-run lifecycle:
+    findings are keyed by a stable, never-line-based **`finding-key`** (the
+    conceptual defect) with a separate **`evidence`** fingerprint for the observed
+    lines, so moving code updates evidence rather than forging a new finding.
+    Re-runs reconcile — same key → update; gone → comment + close; changed →
+    update evidence; new → create; false positive → stays closed. Auto-close is
+    gated by a confidence rule (**`resolution_mode: deterministic`** may
+    auto-close; **`reviewer-confirmed`** judgment calls need a human yes).
+    **Audit-run records are immutable history** — one per run (`audit-id`), never
+    re-edited. Schema + `audit-finding` template gain the `evidence` marker.
+  - **Repo-wide reconcile.** `/e22-issues reconcile --all` sweeps the spine +
+    tracker and reports every disagreement (dangling refs, closed-feature/open-
+    issue mismatches, approved specs missing a tracker ref, drift issues that no
+    longer reproduce, parentless sub-issues, stale `Status` after merge, closed
+    question issues with a still-`open` `Q-NNN`). Bounded single-issue reconcile
+    stays the Phase 2 behavior.
+  - **Optional Projects.** New `/e22-issues project [bootstrap|sync]` creates the
+    recommended fields/views and sets item field values via `gh project`, gated
+    on `project.enabled` in `tracker.md` and **degrading gracefully** when
+    Projects / org-level issue fields (public preview) are unavailable — the base
+    lifecycle never depends on them.
+  - **Sub-issue fallback** is explicit in `decompose`: native GitHub parent/
+    sub-issue links when available, else `Parent: #N` + `<!-- e22:parent-issue=N -->`
+    and a generated checklist.
+
 ### 1.39.0
 
 - **GitHub Issues lifecycle — Phase 2: the `/e22-issues` orchestrator + safe local

@@ -23,10 +23,15 @@ Then run the requested mode:
   (native sub-issues, else `Parent: #N` fallback); `--prototype` for pre-approval.
 - **status [#N|feature-id]** — unified issue + intent/contract + sub-issue
   progress + blockers view (runs validate).
-- **reconcile #N|feature-id** — bounded local reconcile; enforce the
-  question-reconciliation floor; never auto-resolve drift or product decisions.
+- **reconcile #N|feature-id|--all** — bounded (one issue/feature) or repo-wide
+  reconcile; enforce the question-reconciliation floor; never auto-resolve drift
+  or product decisions.
+- **project [bootstrap|sync]** — optional GitHub Project enrichment via
+  `gh project` (fields/views, item field values); degrades gracefully when
+  Projects/org fields are unavailable.
 - **publish-audit / publish-drift** — file the audit-run+findings / decision-
-  checklist drift issues from `/e22-audit` / `/e22-drift`.
+  checklist drift issues from `/e22-audit` / `/e22-drift`. Audits **reconcile**
+  across runs (stable `finding-key`), never duplicate.
 
 All GitHub reads/writes route through `/e22-tracker-sync`. Issue updates touch
 only the `e22:managed` block (human content preserved); creates are idempotent

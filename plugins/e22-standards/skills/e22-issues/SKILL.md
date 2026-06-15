@@ -80,11 +80,30 @@ format (markers, headings, **managed blocks**, idempotency) in
   Preview: available
   Blocking: #134 telemetry
   ```
-- **`reconcile #N | feature-id`** — **bounded local** reconcile of one issue or
-  feature (repo-wide `--all` is Phase 3). Enforce the question-reconciliation
-  floor below; verify the issue ↔ spec pointers agree; update only the managed
-  block of any issue it touches. Report disagreements; **never auto-resolve
-  behavioural drift or a product decision** — route those to a human.
+- **`project [bootstrap|sync]`** — **optional** GitHub Project enrichment, gated
+  on `project.enabled: true` + a `project.number` in `tracker.md`. `bootstrap`
+  creates the recommended fields + views (see `ISSUE-WORKFLOW.md`) via
+  `gh project` (field-create / view); `sync` sets an issue's field values
+  (`Status`, `Priority`, …) from `tracker.md`'s `fields:` mapping. **Degrade
+  gracefully:** org-level issue fields are public preview and may be
+  unavailable — when a `gh project` call isn't supported, **skip that field, say
+  so, and continue**; labels + the base lifecycle never depend on Projects.
+  Never block the lifecycle on a missing Project.
+- **`reconcile #N | feature-id | --all`** — verify issue ↔ spec pointers agree
+  and the lifecycle is internally consistent; update only the managed block of
+  any issue it touches; **never auto-resolve behavioural drift or a product
+  decision** — route those to a human. Two scopes:
+  - **bounded** (`#N` / `feature-id`) — one issue or feature. Enforce the
+    question-reconciliation floor below.
+  - **repo-wide** (`--all`) — sweep the spine + tracker and report every
+    disagreement: referenced issues that no longer exist; closed features whose
+    issues are still open (or vice versa); approved specs missing a tracker ref
+    (`require_tracker_ref_for_features`); open `spec-drift` issues that no longer
+    reproduce; sub-issues with no parent link; merged PRs that left a stale
+    `Status`; promoted questions whose issue is closed but whose `Q-NNN` is still
+    `open`. Output is a reconciliation report + proposed actions, confirmed once
+    before any write. `--all` is read-heavy — route all fetches through
+    `/e22-tracker-sync` and say so.
 
 ## Question-reconciliation floor (safe from the first release)
 
