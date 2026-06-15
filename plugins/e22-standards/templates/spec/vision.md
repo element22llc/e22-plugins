@@ -33,6 +33,17 @@
 
 Product-level ambiguities not yet tied to a single feature (greenfield vision
 gaps, whole-repo decisions). Per-feature questions live in that feature's
-`spec/features/*/intent.md`. Work these down with `/e22-questions`.
+`spec/features/*/intent.md`. Work these down with `/e22-questions`. Use the
+structured format (stable `Q-NNN` IDs, `status`/`impact`/`owner`/
+`required_before`/`tracker`) — see the spec-framework reference.
 
-- [ ] [Anything ambiguous about the product the PO/dev still needs to decide]
+### Q-001 — [Anything ambiguous about the product the PO/dev still needs to decide]
+
+- status: open            # open | investigating | resolved | deferred | cancelled
+- impact: blocking        # blocking | non-blocking
+- owner: product          # product | development | design | security | shared
+- required_before: intent-approval   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
+- tracker:                # issue ref once promoted (e.g. #142), else empty
+
+_Resolution:_ recorded here when answered, then folded into the normative
+sections above.

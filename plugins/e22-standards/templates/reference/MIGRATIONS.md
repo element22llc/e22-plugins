@@ -41,6 +41,25 @@ preserve filled-in content, and land on a `feat/*` branch through a PR. Use
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v1.38.0 — GitHub Issue Forms replace Markdown templates; `tracker.md` gains frontmatter
+
+- **What & why:** the bundled GitHub issue templates moved from Markdown
+  (`bug-report.md`, `feature-request.md`) to PO-friendly YAML Issue Forms
+  (`feature.yml`, `bug.yml`, `product-question.yml`, `improvement.yml`).
+  Additive reconciliation adds the `.yml` forms but cannot delete the superseded
+  `.md` files, and `spec/tracker.md` now carries a machine-readable frontmatter
+  block the prose-only version lacks.
+- **Precondition:** `.github/ISSUE_TEMPLATE/bug-report.md` or
+  `feature-request.md` exists, or `spec/tracker.md` has no YAML frontmatter.
+- **Action:** `git rm .github/ISSUE_TEMPLATE/bug-report.md
+  .github/ISSUE_TEMPLATE/feature-request.md` (only those superseded by the new
+  forms — keep any product-authored templates). Then run additive
+  [Template reconciliation](spec-framework.md) against `templates/spec/tracker.md`
+  to splice in the frontmatter **without overwriting edited values** (system,
+  repository, ref format). Converting existing free-form `## Open questions` to
+  the structured `Q-NNN` format is **opportunistic** — let `/e22-questions` do it
+  when it next touches a question, not as a bulk rewrite.
+
 ### v1.22.0 — `PRODUCTION-READINESS.md` → `PRODUCTIONIZATION.md`
 
 - **What & why:** the adoption/productionization brief was renamed from

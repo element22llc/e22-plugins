@@ -16,6 +16,11 @@ populated. **Create the artifact when the trigger fires — do not defer it:**
 - **Open questions** → live in each feature's `intent.md` → `## Open questions`
   (product-level ones in `vision.md`); run **`/e22-questions`** to sweep and
   answer them before they rot.
+- **A feature that began as a tracker issue** (PO capture) → on a GitHub tracker,
+  **`/e22-issues brainstorm`** shapes it in the issue, then
+  **`/e22-issues materialize`** writes the approved product intent into
+  `intent.md` as `Status: proposed`; an explicit approval flips it to
+  `approved`. The issue is the work record; the spec stays product truth.
 
 The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference (opened by

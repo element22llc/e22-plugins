@@ -1,0 +1,38 @@
+name: Improvement
+description: Make something that already works better — clearer, faster, easier
+title: "[Improvement] "
+labels: ["source:po", "needs:triage"]
+body:
+  - type: textarea
+    id: today
+    attributes:
+      label: What works today, but could be better?
+      description: Describe the current experience.
+    validations:
+      required: true
+  - type: textarea
+    id: better
+    attributes:
+      label: What would "better" look like?
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where in the app?
+      description: A screen, page, or flow, if it applies to a specific place.
+  - type: textarea
+    id: media
+    attributes:
+      label: Supporting screenshots or examples
+      description: Optional. Anything that shows what you mean.
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Approximate importance
+      options:
+        - High — want it soon
+        - Medium — would be nice
+        - Low — backlog
+    validations:
+      required: true

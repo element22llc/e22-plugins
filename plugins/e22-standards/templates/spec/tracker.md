@@ -1,23 +1,49 @@
+---
+# Repository-local tracker contract. Read by /e22-tracker-sync and /e22-issues.
+# /e22-init resolves the placeholders — never ship fabricated values (a real
+# project number here could mutate the wrong GitHub Project).
+system:                     # github | jira | linear | azure-devops | other | none-yet
+repository:                 # "[owner/repository]" for GitHub; project key or URL otherwise
+reference_format:           # "#123" | "PROJ-123" | "ENG-123" | "AB#123"
+item_url_pattern:           # e.g. https://example.atlassian.net/browse/{ref}
+
+# --- Optional: GitHub Issues workflow (ignored on other trackers) -----------
+# The base workflow needs only authenticated GitHub access + repository above.
+# Projects are optional enrichment; leave disabled until one exists.
+project:
+  enabled: false
+  number:                   # GitHub Project number, when enabled
+workflow:
+  issue_is_work_record: true
+  spec_is_product_truth: true
+  require_tracker_ref_for_features: true
+  close_parent_after_product_validation: true
+labels:
+  audit: source:audit
+  drift: source:spec-drift
+  question: source:spec-question
+fields:
+  status: Status
+  priority: Priority
+  effort: Effort
+  spec_state: Spec state
+---
+
 # Issue tracker — [Product name]
 
 > Declares which external tracker this product uses and how work items are
-> referenced everywhere else (specs, PRs, action history). The workflow is
-> **client-agnostic**: any tracker works; only this file knows which one.
-> Full conventions: run `/e22-traceability`.
-
-## Tracker
-
-- **System:** [Jira | GitHub Issues | Linear | Azure DevOps | other | none yet]
-- **Project/board:** [key or URL, e.g. `PROJ`, `org/repo/issues`, team key]
-- **Reference format:** [`PROJ-123` | `#123` | `ENG-123` | `AB#123`]
-- **Item URL pattern:** [e.g. `https://example.atlassian.net/browse/{ref}`]
+> referenced everywhere else (specs, PRs, action history). The machine-readable
+> contract is the **frontmatter above**; the prose below is the human summary.
+> The workflow is **client-agnostic** — any tracker works; only this file knows
+> which one. Full conventions: run `/e22-traceability`. GitHub Issues lifecycle:
+> see the issue-workflow reference, driven by `/e22-issues`.
 
 ## Conventions (summary)
 
 - **Specs:** each feature's `intent.md` carries its tracker ref(s) in the
   header (`> Tracker:`); a feature with no tracked item yet says `none yet`.
-- **PRs:** the description references the tracker item using the format above
-  (use the tracker's auto-linking/closing syntax where it has one).
+- **PRs:** the description references the tracker item using `reference_format`
+  above (use the tracker's auto-linking/closing syntax where it has one).
 - **Action history:** every `/spec/HISTORY.md` entry lists the tracker ref in
   its `Refs:` line when one exists.
 - **Unresolved product questions** that are *not yet* tracked externally live

@@ -1,0 +1,43 @@
+name: Product question
+description: A product decision that needs an owner or stakeholder input
+title: "[Question] "
+labels: ["source:po", "needs:product-decision"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for a decision that needs a named owner, blocks more than one
+        feature, or needs stakeholder input. A question that's local to one
+        feature and answerable while specifying it should stay in that feature's
+        spec instead.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What needs to be decided?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this matters
+      description: What does the answer change — user expectations, cost, scope?
+    validations:
+      required: true
+  - type: input
+    id: affected
+    attributes:
+      label: Affected features or areas
+      description: Which parts of the product does this touch?
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Decision needed from
+      options:
+        - Product
+        - Development
+        - Design
+        - Security
+        - Shared
+    validations:
+      required: true
