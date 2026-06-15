@@ -244,6 +244,12 @@ from the unchecked items.
    productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
+   - **To make selected gaps actionable** (GitHub tracker), run **`/e22-issues
+     publish-adoption`** — it reconciles chosen gaps into `kind=finding` +
+     `source:adoption` issues (stable `finding-key`, reconcile not duplicate).
+     After publication the **issue is canonical** for ownership/lifecycle/closure;
+     `PRODUCTIONIZATION.md` stays the assessment snapshot + evidence, recording
+     the issue ref but not tracking its implementation status.
 
 ## Guardrails
 

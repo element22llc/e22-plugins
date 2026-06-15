@@ -50,6 +50,18 @@ format (markers, headings, **managed blocks**, idempotency) in
   `/e22-tracker-sync`.
 - **`publish-drift [report]`** — take an `/e22-drift` finding set and file
   decision-checklist `spec-drift` issues (see `/e22-drift`); never auto-resolve.
+- **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps
+  into `kind=finding` + `source:adoption` issues (stable `finding-key` per gap;
+  **reconcile, don't duplicate**). After publication, **`PRODUCTIONIZATION.md` is
+  an adoption assessment snapshot + evidence source — the GitHub issue is
+  canonical** for ownership, lifecycle, progress, and closure; the report records
+  the resulting issue ref but does not independently track implementation status.
+- **`publish-findings --source code-review|security-review`** — file
+  `kind=finding` issues with the matching `source:*` from a `/code-review` or
+  `/security-review` pass (stable `finding-key`; reconcile). **Security findings
+  support redaction / private handling** — never auto-publish secrets or
+  exploit-enabling detail into a broadly visible issue (link to private handling;
+  flag `risk:security`; default to human review before public disclosure).
 
 ### Net-new modes (logic lives here)
 

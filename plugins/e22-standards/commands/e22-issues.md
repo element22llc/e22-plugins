@@ -38,6 +38,12 @@ Then run the requested mode:
 - **publish-audit / publish-drift** — file the audit-run+findings / decision-
   checklist drift issues from `/e22-audit` / `/e22-drift`. Audits **reconcile**
   across runs (stable `finding-key`), never duplicate.
+- **publish-adoption** — reconcile `spec/PRODUCTIONIZATION.md` gaps into
+  `kind=finding` + `source:adoption` issues; the issue becomes canonical, the
+  report stays an assessment snapshot.
+- **publish-findings --source code-review|security-review** — file
+  `kind=finding` issues from a review pass; security findings redact secrets /
+  exploit detail and default to human review before public disclosure.
 
 All GitHub reads/writes route through `/e22-tracker-sync`. Issue updates touch
 only the `e22:managed` block (human content preserved); creates are idempotent

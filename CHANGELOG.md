@@ -5,6 +5,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.46.0
+
+- **Backlog producers — findings flow into the backlog.** Closes the loop so the
+  backlog is fed from every source, not just PO capture.
+  - **`/e22-issues publish-adoption`** — reconciles selected
+    `spec/PRODUCTIONIZATION.md` gaps into `kind=finding` + `source:adoption`
+    issues (stable `finding-key`; reconcile, don't duplicate). After publication
+    the **GitHub issue is canonical** for ownership/lifecycle/closure;
+    `PRODUCTIONIZATION.md` stays an assessment snapshot + evidence source that
+    records the issue ref but does not track its status. Pointer added to
+    `/e22-adopt`.
+  - **`/e22-issues publish-findings --source code-review|security-review`** —
+    files `kind=finding` issues with the matching `source:*` from a review pass.
+    **Security findings redact secrets / exploit detail** and default to human
+    review before public disclosure. Pointer added to `/e22-audit`.
+  - **CI-failure policy** in `ISSUE-WORKFLOW.md` — transient → none; reproducible
+    on the default branch → create/reconcile a `bug` with `source:ci` (stable
+    key); recurring flake → one keyed issue; PR-specific → comment on the PR
+    unless it outlives the PR.
+  - (Implementation-discovered work and the closed `e22:kind`×`source` taxonomy
+    were already established in 1.44.0 / 1.43.0.)
+
 ### 1.45.0
 
 - **Repository bootstrap for the issue-first backlog.** Makes a GitHub-adopted
