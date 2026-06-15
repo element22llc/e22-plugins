@@ -25,6 +25,7 @@ marker before creating, to dedupe**.
 | `<!-- e22:spec-path=… -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |
 | `<!-- e22:question-id=Q-NNN -->` | The stable question ID this issue tracks (see `spec-framework.md`). | spec-question |
 | `<!-- e22:finding-key=… -->` | Stable conceptual identity of an audit finding — `<dimension>:<rule>:<file-or-component>:<symbol>`. **Never line-based.** | audit-finding |
+| `<!-- e22:evidence=… -->` | Fingerprint of the *currently observed* evidence (e.g. a short hash of the offending lines/region). Changes as the code moves; the `finding-key` does not. | audit-finding |
 | `<!-- e22:audit-id=… -->` | One audit run, `<iso-timestamp>-<short-sha>`. Immutable per run. | audit-run, audit-finding |
 | `<!-- e22:audit-commit=… -->` | The commit SHA the audit observed. | audit-run, audit-finding |
 | `<!-- e22:parent-issue=N -->` | Parent issue, when native sub-issue links are unavailable (fallback). | task, audit-finding |

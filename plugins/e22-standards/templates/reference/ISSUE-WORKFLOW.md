@@ -95,8 +95,12 @@ durable *record*.
 
 - **Audit** (`/e22-audit` → `/e22-issues publish-audit`) uses a two-level model:
   one immutable **audit-run** record per run (`audit-id`) plus selected
-  **finding** children keyed by a stable `finding-key`. Re-runs update/close
-  existing findings rather than duplicating. See `ISSUE-SCHEMA.md` for the keys.
+  **finding** children keyed by a stable `finding-key` (the conceptual defect),
+  with an `evidence` fingerprint tracking the *observed* lines separately. Re-runs
+  reconcile: same key → update; gone → comment + close (auto-close only for
+  `resolution_mode: deterministic`; judgment calls need a human yes); new →
+  create; false positive → stays closed. Reconciling, never additive. See
+  `ISSUE-SCHEMA.md` for the keys and `/e22-audit` for the full lifecycle.
 - **Drift** (`/e22-drift` → `/e22-issues publish-drift`) files decision-checklist
   issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
   required`. The agent may propose a direction but **never resolves behavioural

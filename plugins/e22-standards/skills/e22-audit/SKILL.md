@@ -158,6 +158,37 @@ of dimension.
    `AUDIT-REPORT.md`. Fixing anything is a separate, approved step on its own
    branch + PR.
 
+## Reconciliation across runs — audits are reconciling, not additive
+
+Re-running the audit must **update the existing issue set**, never pile up
+duplicates. Each run is filed via `/e22-issues publish-audit`, which keys off the
+markers (see `ISSUE-SCHEMA.md`). Two distinct identities:
+
+- **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
+  stable across runs and **never line-based** — so moving the offending code
+  without changing the defect still maps to the same finding.
+- **`evidence`** = a fingerprint of the *currently observed* lines/region. It
+  changes as code moves; that alone is an evidence update, not a new finding.
+
+Per finding, on the next run:
+
+- **Same `finding-key` still present** → update the existing issue's managed
+  block (refresh evidence/impact). Don't reopen if a human closed it as
+  `resolution:false-positive`.
+- **`finding-key` gone (no longer reproduces)** → **comment with the evidence and
+  close**, but gate the auto-close on confidence: only **`resolution_mode:
+  deterministic`** findings (a check that objectively no longer fires) may
+  auto-close; **`resolution_mode: reviewer-confirmed`** judgment calls (e.g.
+  "unclear module responsibility") are proposed-for-close and need a human yes.
+- **Evidence changed substantially, same key** → update evidence only.
+- **New `finding-key`** → create.
+- **False positive** → close with `resolution:false-positive`; it stays closed.
+
+**Audit-run records are immutable history.** Each run files one `audit-run`
+parent stamped with its own `audit-id` (`<iso-timestamp>-<short-sha>`); never
+re-edit a prior run's parent to represent a later run. Finding children reconcile
+across runs; the run parents accumulate as a timeline.
+
 ## Coupling rules
 
 The canonical spec ↔ code rules (drift resolution, behavior vs. incidental

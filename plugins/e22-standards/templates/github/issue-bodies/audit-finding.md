@@ -1,6 +1,7 @@
 <!-- e22:schema=1 -->
 <!-- e22:kind=audit-finding -->
 <!-- e22:finding-key=DIMENSION:RULE:FILE_OR_COMPONENT:SYMBOL -->
+<!-- e22:evidence=EVIDENCE_FINGERPRINT -->
 <!-- e22:audit-id=AUDIT_ID -->
 <!-- e22:audit-commit=COMMIT_SHA -->
 <!-- e22:managed:start -->
