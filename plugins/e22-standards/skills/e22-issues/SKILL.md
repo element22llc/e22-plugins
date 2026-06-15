@@ -134,9 +134,10 @@ on stale intent.
 - **Managed blocks only.** Updating an issue rewrites **only** the
   `e22:managed` block; markers, human sections, and unknown content are
   preserved verbatim.
-- **Confirm before creating.** Issue creation is outward-facing — present the
-  full batch and get **one** yes before the first create. Reads need no
-  confirmation.
+- **Intent-aware confirmation.** Reads never confirm. An explicit capture or
+  implementation request creates without confirmation; a large inferred batch of
+  unrelated issues takes one confirmation; ambiguous conversation does not create;
+  security-sensitive public disclosure takes human review (see Issue-first).
 - **Authority.** Perform a state transition only where the authority table in
   `ISSUE-WORKFLOW.md` permits; everywhere else propose and wait for the named
   human. Never resolve behavioural drift or a product/policy decision
@@ -144,7 +145,8 @@ on stale intent.
 - **No code, no spec rewrites beyond pointers + materialized intent.** The spec
   edits this skill drives are the materialized `intent.md` (via `/e22-spec`) and
   `> Tracker:` / `tracker:` pointer lines. It never edits `/apps`, `/packages`,
-  or `contract.md` behavior.
+  or `contract.md` behavior. **Execution from an issue — claim, branch,
+  implement, test, open the PR, transition — belongs to `/e22-work`**, not here.
 
 ## Coupling rules
 
