@@ -11,6 +11,11 @@ prefer the GitHub MCP tools (shipped in `scaffold/mcp.json`), fall back to `gh`
 CLI (`gh issue list --json`, `gh issue create --body-file`), then to manual
 export. Then run the requested mode:
 
+- **issue `<op>`** — the generic tracker-metadata gateway `/e22-issues` and
+  `/e22-work` call: `search` · `get` · `find-or-create` · `create` · `update`
+  (managed block only) · `comment` · `set-type` (capability-degrading) · `label`
+  · `transition` · `assign/claim` · `link-parent` · `link-pr` · `close/reopen` ·
+  `add-to-project`. Tracker metadata only — **never** git or PR delivery.
 - **pull** — materialize issues as one-markdown-file-per-issue for `/e22-drift`,
   or import an issue's acceptance criteria into a feature's `intent.md`
   (append/merge, set `> Tracker:`, never clobber prose).

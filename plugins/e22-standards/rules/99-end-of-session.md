@@ -10,6 +10,7 @@ tooling so nothing is dropped:
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
 - [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
+- [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/e22-init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
 

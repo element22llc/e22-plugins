@@ -34,11 +34,11 @@ plugins/e22-standards/
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-conventions,
 │                                   #            e22-traceability, e22-design-sources, e22-spec-scaffold,
-│                                   #            e22-spec, e22-issues, e22-tracker-sync, e22-adr, e22-drift,
-│                                   #            e22-audit, e22-sync, e22-questions, e22-tidy, e22-standards
+│                                   #            e22-spec, e22-issues, e22-tracker-sync, e22-work, e22-adr,
+│                                   #            e22-drift, e22-audit, e22-sync, e22-questions, e22-tidy, e22-standards
 ├── commands/                       # optional /slash aliases for a subset of skills
 │                                   #   (e22-init, e22-build, e22-adopt, e22-spec, e22-issues, e22-tracker-sync,
-│                                   #    e22-drift, e22-audit, e22-sync, e22-questions, e22-tidy);
+│                                   #    e22-work, e22-drift, e22-audit, e22-sync, e22-questions, e22-tidy);
 │                                   #   skills without an alias are still invokable as /<skill-name>
 └── templates/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,

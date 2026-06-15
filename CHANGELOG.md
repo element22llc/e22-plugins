@@ -5,6 +5,48 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.44.0
+
+- **Local execution workflow — issue-first routing and the `/e22-work` skill.**
+  Builds on the issue contract (1.43.0) to make the local, issue-first model
+  operational. `/e22-issues` owns the backlog; the new `/e22-work` owns execution.
+  - **New always-on rule `36-issue-first`** — in a GitHub-adopted repo
+    (`system: github`), every code/config/infra/behavior change has a GitHub
+    issue before the first repository mutation; explicit fix/implement/add
+    requests create without confirmation, capture-only/ambiguous language does
+    not. Scoped to GitHub-adopted repos; non-GitHub and pre-`/spec` repos keep
+    today's flow.
+  - **Router** now sends bare issue work ("work on #123", "fix #123", "implement
+    #123 and #124") to `/e22-work`, and unissued mutations through find-or-create
+    then `/e22-work`; capture-only → `/e22-issues capture`, backlog list →
+    `/e22-issues status`.
+  - **New `/e22-work` skill + command** — `start` / `resume` / `status` /
+    `finish` with distinct, idempotent semantics: validate → claim (refusing to
+    override a conflicting claim/branch) → branch (repo convention, else
+    `issue/<n>-<slug>`) → load specs → implement → test → update the managed
+    block → open the PR → transition. Completion is explicit (PR opened →
+    `validate`, never `done`); one branch/PR per issue by default; discovered
+    out-of-scope work becomes a separate linked issue. A CLI implement request
+    authorizes local edits + tests; commit/push/PR follow autonomy rules;
+    merge/deploy are never implied.
+  - **`/e22-tracker-sync` is now the generic tracker-metadata gateway** — adds
+    `search`/`get`/`find-or-create`/`create`/`update`/`comment`/`set-type`/
+    `label`/`transition`/`assign`/`link-parent`/`link-pr`/`close`/`add-to-project`
+    as the single low-level layer `/e22-issues` and `/e22-work` call. The boundary
+    is tracker metadata only — **git and PR delivery are not gateway operations**.
+    `set-type` degrades when org Issue Types are unavailable. Fixed the tracker
+    detection to read the `system: github` frontmatter key (not the old
+    `System: GitHub Issues` prose).
+  - **Intent-aware confirmation** replaces the blanket "creating issues is
+    outward-facing → confirm" in `/e22-issues` and `/e22-tracker-sync`.
+  - **Definition of Done, End of session, and Commit autonomy** updated for the
+    issue-first model (issue exists before first mutation; `e22:state` reflects
+    reality; PR references the issue; discovered work filed separately).
+  - **New safety-net hook `check-issue-before-mutation.sh`** — a non-blocking,
+    once-per-session POSIX-`sh` nudge (no `jq`) that fires on the first
+    source-code write in a `system: github` repo. Primary enforcement stays in
+    routing + skills.
+
 ### 1.43.0
 
 - **Issue contract v2 — the schema groundwork for an issue-first, local-first

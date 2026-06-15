@@ -1,8 +1,8 @@
 ---
 name: e22-tracker-sync
-description: "Bidirectional GitHub Issues sync for the /spec spine. PULL: materialize issues as the markdown export /e22-drift consumes, and import a tracker item's acceptance criteria into a feature's intent.md. PUSH: file spec-drift issues from a drift run, promote /spec open questions to issues, and open a feature-request issue from an approved intent.md. A GitHub-only accelerator — MCP-first, gh CLI fallback, manual export floor — that moves pointers and findings, never the spec itself. Reads /spec/tracker.md and refuses to invent tracker state."
-when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need to pull issues into the markdown export /e22-drift consumes, import acceptance criteria into an intent, or push spec-drift issues, promoted open questions, or feature requests out.
-argument-hint: "[pull | push] [#issue | feature-id]"
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /e22-issues and /e22-work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, transition, assign/claim, link, close/reopen, add-to-project) plus the higher-level PULL (materialize issues for /e22-drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, link a PR, pull issues into the /e22-drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
+argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 ---
 
 # Sync the /spec spine with GitHub Issues
@@ -22,7 +22,8 @@ The org ships GitHub MCP in every repo via `scaffold/mcp.json`
 take a JSON `body` field, making multi-line markdown issue bodies clean with no
 shell escaping. Detect capability **in this order, every run**:
 
-1. **Read `/spec/tracker.md`.** Confirm `System: GitHub Issues`. If the tracker
+1. **Read `/spec/tracker.md`.** Confirm the frontmatter key `system: github`
+   (the lowercase enum value — not prose). If the tracker
    is Jira/Linear/Azure DevOps/other, print the manual-export instructions (the
    same paste/path flow `/e22-drift` uses today) and **stop** — there is no
    GitHub API path for a non-GitHub tracker. Don't fabricate one.
@@ -34,6 +35,52 @@ shell escaping. Detect capability **in this order, every run**:
    multi-line text).
 4. **Else** → manual paste/path export, same as `/e22-drift`. Say which path you
    took so the user knows whether issues were actually touched.
+
+## Issue operations (the gateway)
+
+This is the **only** layer that touches the GitHub API. `/e22-issues` and
+`/e22-work` call these operations; they never hit `gh`/MCP directly. The boundary
+is **tracker metadata only** — issues, relationships, comments, labels, Issue
+Types, assignments, the `e22:state` marker, and optional Project sync. **Git
+operations and pull-request delivery are NOT gateway operations** — they belong
+to `/e22-work` under the repo's execution/autonomy rules (otherwise `git push`
+would violate the boundary).
+
+Each operation is MCP-first → `gh` → manual, and reports which path it took:
+
+- **`search`** — find issues by marker (`e22:finding-key`, `e22:feature-id`+kind,
+  `e22:question-id`, `e22:dedupe-key`), label, type, or text. Searches **all**
+  states (open + closed), scoped to this repo.
+- **`get #N`** — fetch one issue's full body + metadata.
+- **`find-or-create`** — resolve identity in the dedup order (explicit `#N` →
+  `finding-key` → `feature-id`+kind → `question-id` → `dedupe-key` → semantic
+  title = candidates only). Exact match → reuse; multiple exact matches → stop
+  and report; semantic candidate → never silently reuse. No match → create.
+- **`create`** — open an issue from a rendered contract body (markers + headings
+  + managed block). Set the GitHub Issue **Type** when available (see below).
+- **`update #N`** — rewrite **only** the `e22:managed` block, following the
+  concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before write, stop on
+  a second concurrent change, fail closed on duplicate/malformed blocks).
+- **`comment #N`** — add a comment (e.g. progress, AI synthesis on a human issue).
+- **`set-type #N <Feature|Bug|Task>`** — set the Issue Type via
+  `gh issue edit --type` / MCP. **Capability-degrading:** detect support + the
+  configured Type names first; if Issue Types are unavailable or unknown, keep
+  the `e22:kind` marker, emit a non-blocking warning, and do **not** add a
+  duplicate `bug`/`feature` label to compensate.
+- **`label #N`** — add/remove labels. The `source:*` label is *derived* from the
+  `e22:source` marker; never treat the label as the source of truth.
+- **`transition #N <state>`** — set the `e22:state` marker (base source of truth)
+  and, when `project.enabled`, mirror it to the Project `Status` field. Honor the
+  authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
+- **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
+  `e22:claimed-by` marker (active execution context). A conflicting existing
+  claim/assignment is reported, **never** auto-overridden.
+- **`link-parent #N <parent>`** — native sub-issue link, else `e22:parent-issue`.
+- **`link-pr #N <pr>`** — record `e22:pull-request` / cross-link the PR.
+- **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened
+  issue is re-assessed before returning to `inbox`/`exploring`/`ready-for-dev`.
+- **`add-to-project #N`** — add the issue to the configured Project when
+  `project.enabled`; degrade cleanly when permissions are insufficient.
 
 ## Modes
 
@@ -72,10 +119,13 @@ shell escaping. Detect capability **in this order, every run**:
 - **Idempotent pushes.** Before creating any issue, search existing open issues
   for a match (finding key / question text / feature id) and **skip duplicates**;
   log what was skipped. Re-running `push` must not double-file.
-- **Confirm before creating.** Creating issues is outward-facing. Present the
-  full list of issues to be opened and **get one yes** before the first create
-  (a single confirmed batch is fine — don't prompt per issue). Pulling is
-  read-only and needs no confirmation.
+- **Intent-aware confirmation.** Reads never confirm. Creation follows intent,
+  not a blanket "outward-facing → confirm" rule: an explicit capture or
+  implementation request ("create an issue for…", "add to the backlog", "fix
+  this bug", "implement #123") creates without confirmation. A **large inferred
+  batch of unrelated** issues takes one confirmation; ambiguous conversation that
+  did not request capture does **not** create; security-sensitive public
+  disclosure takes human review.
 - **No code, no spec rewrites beyond refs.** The only spec edits this skill makes
   are: an `intent.md` `> Tracker:` line, importing acceptance criteria
   (append/merge), and striking a promoted `## Open questions` item for its ref.

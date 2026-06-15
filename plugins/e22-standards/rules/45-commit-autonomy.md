@@ -6,6 +6,9 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
 - Work on a `feat/*` / `fix/*` branch off `main` — never commit to `main`
   directly. If you find yourself on `main` with changes, create the branch
   first, then commit.
+- In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
+  an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
+  that issue exists.
 - **Commit without asking** whenever a coherent unit of work is done — tests
   pass, lint is clean, the code builds. Keep commits small with conventional
   messages (`feat:`, `fix:`, `chore:`, ...).
