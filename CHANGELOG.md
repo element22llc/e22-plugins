@@ -5,6 +5,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.37.1
+
+- **Docs: de-dup open-questions placement between reference files.** The
+  `intent.md`-vs-`vision.md` placement rule for `## Open questions` was stated in
+  both `spec-framework.md` (canonical, under Structure) and re-derived in
+  `TRACEABILITY.md`'s routing table. The routing-table row now points to
+  `spec-framework.md` instead of restating the split, keeping a single source of
+  truth. No behavior change.
+
 ### 1.37.0
 
 - **New skill `/e22-spec` — brainstorm a feature spec without building it.** The
