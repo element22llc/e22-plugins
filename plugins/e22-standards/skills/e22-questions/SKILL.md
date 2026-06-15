@@ -167,10 +167,18 @@ accumulate — this skill is how you act on that nudge and clear it.
    - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**;
      propagating a decision *already made* into a new or superseding ADR is
      itself auto-apply, not a fresh ask.
-   - A question that needs an external owner or scheduling rather than an answer
-     now → promote it to a tracker item. On a GitHub tracker, **`/e22-tracker-sync
-     push`** opens the issue and replaces the question with its ref; on other
-     trackers, file it per `/spec/tracker.md` and swap in the ref.
+   - A question that needs a **named owner, blocks multiple features, needs
+     stakeholder/research input, or could outlive the session** → promote it to a
+     tracker item (the keep-vs-promote test is in `ISSUE-WORKFLOW.md`). Keep the
+     structured `Q-NNN` in the spec and set its `tracker:` field to the ref —
+     don't delete the question; the issue carries the same id via
+     `<!-- e22:question-id=Q-NNN -->`. On a GitHub tracker, **`/e22-issues`**
+     (routing through `/e22-tracker-sync`) opens the `spec-question` issue; on
+     other trackers, file it per `/spec/tracker.md` and write the ref back.
+     **Reconciliation floor:** a promoted question must carry its ref, and once
+     its issue is answered/closed the decision must be folded into the spec's
+     normative prose — a closed issue with a still-`open` question is a
+     validation failure (`/e22-spec validate`).
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, keep the item but annotate it with **why** it's deferred (and a

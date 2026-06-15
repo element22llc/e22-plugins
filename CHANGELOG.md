@@ -5,6 +5,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.39.0
+
+- **GitHub Issues lifecycle — Phase 2: the `/e22-issues` orchestrator + safe local
+  lifecycle.** Builds on the Phase 1 contracts (v1.38.0).
+  - **New skill `/e22-issues`** — the PO-facing lifecycle workflow above the
+    low-level `/e22-tracker-sync` gateway. A **thin orchestrator**: delegating
+    modes (`brainstorm`/`materialize` → `/e22-spec`, `publish-audit` →
+    `/e22-audit`, `publish-drift` → `/e22-drift`) and net-new modes (`capture`,
+    `triage`, `decompose`, `status`, bounded `reconcile #issue|feature-id`). All
+    GitHub reads/writes route through `/e22-tracker-sync`; issue updates touch
+    only the `e22:managed` block; creates are idempotent (find-by-marker).
+    `materialize` sets `Status: proposed` only — approval stays a separate
+    explicit step; `decompose` requires an approved intent unless `--prototype`.
+    Ships a `/slash` alias.
+  - **`/e22-spec validate [feature-id|--all]`** — a local, GitHub-independent
+    structural check over the open-question contract: open blocking question in
+    an approved intent, deferred missing `owner`/`required_before`, closed-issue
+    but still-`open` question, promoted-without-ref, resolved-without-resolution.
+    Runs at `/e22-spec approve` (a blocking question **blocks approval**) and is
+    called by `/e22-issues` and `/e22-drift`. Defense in depth: correctness holds
+    even when the tracker is unreachable.
+  - **Question-reconciliation floor** — enforced from this release so the
+    per-feature lifecycle can't silently lose a promoted-then-answered question
+    before implementation proceeds on stale intent.
+  - **Wiring.** `/e22-audit` now emits the two-level audit-run + finding-key
+    children; `/e22-drift` emits decision-checklist `spec-drift` bodies and
+    reaffirms it never auto-resolves; `/e22-questions` applies the keep-vs-promote
+    test, keeps the structured `Q-NNN` and sets its `tracker:` field on promotion;
+    `/e22-spec` gates approval on `validate`. The router lists `/e22-issues`.
+
 ### 1.38.0
 
 - **GitHub Issues lifecycle — Phase 1: contracts and scaffold.** Lays the
