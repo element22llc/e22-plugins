@@ -1,6 +1,0 @@
-# Placeholder lockfile — committed on purpose, do NOT delete.
-# mise only writes `mise.lock` if the file already exists, so this placeholder
-# is what makes `mise install` (run from /infra) resolve the `latest` entries
-# in infra/mise.toml into exact pinned versions here. On a fresh fork: run
-# `cd infra && mise install`, then commit the populated result — it is the real
-# pin for OpenTofu/Terragrunt/AWS CLI (see /e22-standards:e22-init step 4).

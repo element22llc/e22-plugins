@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+__pycache__/
+*.pyc
+.venv/
+venv/
+target/
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Environment
+# Store local config in .env / .env.local — never committed. Document required
+# var NAMES (not values) in the committed .env.example, and keep deployed
+# secrets in AWS Secrets Manager. See CLAUDE.md "Stack".
+.env
+.env.local
+.env.*.local
+# (.env.example is committed — it is not matched by the patterns above)
+
+# mise local overrides
+# Committed: mise.toml, mise.lock (the real version pins — must be committed)
+# Gitignored: local machine overrides
+.mise.local.toml
+
+# Claude Code local settings
+# Committed: .claude/settings.json (shared plugins/permissions)
+# Gitignored: per-user allowlists and personal overrides
+.claude/settings.local.json
+
+# Local work markers — /steer:work records the claimed issue for a
+# branch here so the Stop-hook reconciliation recognizes it. Local execution
+# state, never committed.
+spec/.work/
+
+# IDE
+# Share the workspace's recommended extensions + Biome formatter defaults;
+# keep per-user overrides (settings.local.json, launch/tasks) out of git.
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test output
+coverage/
+.nyc_output/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Important:
+# Do not ignore .terraform.lock.hcl.
+# It should usually be committed to pin provider versions.
+
+# OS
+Thumbs.db

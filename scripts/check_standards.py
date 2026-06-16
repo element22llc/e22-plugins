@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Standards-consistency checks for the e22-standards plugin.
+"""Standards-consistency checks for the steer plugin.
 
 Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with the
 *semantic* contracts introduced by the audit-mitigation work:
@@ -8,11 +8,11 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    folded ``>-`` or a double-quoted scalar; bare single-quotes wrapping inner
    quotes are flagged.
 2. Bidirectional declared-mode check: each multi-mode skill's
-   ``<!-- e22:modes ... -->`` marker agrees with its argument-hint subcommands,
+   ``<!-- steer:modes ... -->`` marker agrees with its argument-hint subcommands,
    the modes documented in its body, and every cross-skill mode reference.
 3. ``commands/`` is absent/empty (the shims were removed); skill names are unique.
-4. Every ``/e22-*`` slash reference is namespaced (``/e22-standards:<skill>``) and
-   resolves to a real skill — no bare ``/e22-*``, no phantom skill.
+4. Every ``/steer:<skill>`` slash reference resolves to a real skill (no phantom
+   skill), and no stale ``/e22-*`` reference survives the rebrand.
 5. Every Status:/question-field/marker/next-action token in rules, skills,
    templates, and active fixtures is a member of ``enums.registry``; ENUMS.md
    agrees with the registry; the deprecated "Required before production" category
@@ -111,11 +111,11 @@ def check_when_to_use_format(errors: list[str]) -> None:
 
 # --- check 2: bidirectional declared-mode markers ---
 
-_MODE_MARKER_RE = re.compile(r"<!--\s*e22:modes\s+([a-z0-9,_-]+)\s*-->")
+_MODE_MARKER_RE = re.compile(r"<!--\s*steer:modes\s+([a-z0-9,_-]+)\s*-->")
 _HINT_RE = re.compile(r'^argument-hint:\s*"(.*)"\s*$', re.MULTILINE)
 # a code-span reference to a namespaced skill, capturing an optional trailing
 # bare keyword (the mode) inside the same span.
-_REF_RE = re.compile(r"`/e22-standards:(e22-[a-z][a-z-]*)((?:\s+[^`]*)?)`")
+_REF_RE = re.compile(r"`/steer:([a-z][a-z-]*)((?:\s+[^`]*)?)`")
 
 
 _SUBCOMMAND_LEADING: set[str] = set()
@@ -178,7 +178,7 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
             if hint_subs:
                 errors.append(
                     f"{skill_md}: argument-hint has subcommands {sorted(hint_subs)} "
-                    f"but no <!-- e22:modes ... --> marker"
+                    f"but no <!-- steer:modes ... --> marker"
                 )
             continue
         modes = {m.strip() for m in marker.group(1).split(",") if m.strip()}
@@ -199,8 +199,8 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
         # Only skills whose every argument-hint alternative is a bare keyword
         # (no positional placeholder like feature-id, no `<op>` sublayer) can have
         # their cross-references mode-validated — otherwise a trailing token is
-        # indistinguishable from a feature-id argument. e22-work / e22-issues
-        # qualify; e22-spec (positional) and e22-tracker-sync (`issue <op>`) don't.
+        # indistinguishable from a feature-id argument. work / issues
+        # qualify; spec (positional) and tracker-sync (`issue <op>`) don't.
         if hint_m and _is_subcommand_leading(hint_m.group(1)):
             _SUBCOMMAND_LEADING.add(name)
     # direction C: cross-skill mode references against subcommand-leading skills
@@ -215,7 +215,7 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
                 continue  # an arg like #N / --all
             if first not in declared[target]:
                 errors.append(
-                    f"{md}: reference '/e22-standards:{target} {first}' uses a "
+                    f"{md}: reference '/steer:{target} {first}' uses a "
                     f"mode not declared by {target} {sorted(declared[target])}"
                 )
 
@@ -231,23 +231,26 @@ def check_commands_gone(errors: list[str]) -> None:
 
 # --- check 4: command refs are namespaced and resolve ---
 
-_SKILL_ALT_CACHE: list[str] = []
+# Skill names dropped the distinctive ``e22-`` prefix in the rebrand, so a "bare"
+# skill reference (e.g. ``/spec``) is now indistinguishable from the ``/spec``
+# directory and ordinary path tokens — there is no reliable bare-ref check to make.
+# Instead we (a) verify every ``/steer:<skill>`` resolves to a real skill, and
+# (b) reject any stale ``/e22-*`` slash reference left over from before the rebrand.
+_STALE_E22_RE = re.compile(r"(?<![A-Za-z0-9])/e22-[a-z][a-z-]*")
 
 
 def check_command_refs(errors: list[str], skills: set[str]) -> None:
-    alt = "|".join(sorted(skills, key=len, reverse=True))
-    bare_re = re.compile(r"(?<![A-Za-z0-9/:_])/(" + alt + r")(?![a-z-])(?!:)")
-    ns_re = re.compile(r"/e22-standards:(e22-[a-z][a-z-]*)")
+    ns_re = re.compile(r"/steer:([a-z][a-z-]*)")
     for md in _iter_md(SCAN_DIRS):
         text = md.read_text(encoding="utf-8")
         for i, line in enumerate(text.splitlines(), 1):
-            for m in bare_re.finditer(line):
-                errors.append(f"{md}:{i}: bare '/{m.group(1)}' — use '/e22-standards:{m.group(1)}'")
+            for m in _STALE_E22_RE.finditer(line):
+                errors.append(
+                    f"{md}:{i}: stale '{m.group(0)}' — rebrand to the '/steer:' namespace"
+                )
             for m in ns_re.finditer(line):
                 if m.group(1) not in skills:
-                    errors.append(
-                        f"{md}:{i}: '/e22-standards:{m.group(1)}' does not resolve to a skill"
-                    )
+                    errors.append(f"{md}:{i}: '/steer:{m.group(1)}' does not resolve to a skill")
 
 
 # --- check 5: token membership + ENUMS.md agreement ---
@@ -323,7 +326,11 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
                 for t in tokens(m.group(1)):
                     if t not in rbef:
                         errors.append(f"{loc}: required_before token '{t}' not in registry")
-            for key, vals in (("e22:state", istate), ("e22:source", isrc), ("e22:kind", ikind)):
+            for key, vals in (
+                ("steer:state", istate),
+                ("steer:source", isrc),
+                ("steer:kind", ikind),
+            ):
                 for mm in re.finditer(rf"{key}=([a-z-]+)", line):
                     if mm.group(1) not in vals:
                         errors.append(f"{loc}: {key} value '{mm.group(1)}' not in registry")
@@ -387,14 +394,12 @@ def check_readme_inventory(errors: list[str], skills: set[str]) -> None:
     if not README.is_file():
         return
     text = README.read_text(encoding="utf-8")
-    # whole-token match so e22-spec is not satisfied by e22-spec-scaffold
-    missing = {
-        s for s in skills if not re.search(rf"/e22-standards:{re.escape(s)}(?![a-z-])", text)
-    }
+    # whole-token match so spec is not satisfied by spec-scaffold
+    missing = {s for s in skills if not re.search(rf"/steer:{re.escape(s)}(?![a-z-])", text)}
     if missing:
         errors.append(
             f"README.md: skill inventory missing {sorted(missing)} "
-            f"(every skill should appear as /e22-standards:<skill>)"
+            f"(every skill should appear as /steer:<skill>)"
         )
 
 
@@ -443,9 +448,9 @@ def check_authorization(errors: list[str]) -> None:
 
     # 2. init/adopt prose must NOT contradict Rule 45.
     for rel in (
-        "skills/e22-init/SKILL.md",
-        "skills/e22-adopt/SKILL.md",
-        "skills/e22-adopt/PROCEDURE.md",
+        "skills/init/SKILL.md",
+        "skills/adopt/SKILL.md",
+        "skills/adopt/PROCEDURE.md",
     ):
         p = PLUGIN_ROOT / rel
         if p.is_file() and _NO_COMMIT_RE.search(p.read_text(encoding="utf-8")):
@@ -473,15 +478,13 @@ def check_authorization(errors: list[str]) -> None:
         if "Bash(git commit:*)" not in allow:
             errors.append(f"{settings}: 'Bash(git commit:*)' should stay under permissions.allow")
 
-    # 4. e22-build documents both modes and delegates governed implementation to
-    #    e22-work (the sole execution owner).
-    build = PLUGIN_ROOT / "skills/e22-build/SKILL.md"
+    # 4. build documents both modes and delegates governed implementation to
+    #    work (the sole execution owner).
+    build = PLUGIN_ROOT / "skills/build/SKILL.md"
     if build.is_file():
         bt = build.read_text(encoding="utf-8")
-        if "/e22-standards:e22-work" not in bt:
-            errors.append(
-                f"{build}: governed implementation must delegate to /e22-standards:e22-work"
-            )
+        if "/steer:work" not in bt:
+            errors.append(f"{build}: governed implementation must delegate to /steer:work")
         if "prototype" not in bt.lower():
             errors.append(f"{build}: must document the prototype/local build mode")
 

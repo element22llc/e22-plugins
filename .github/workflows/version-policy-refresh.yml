@@ -28,7 +28,7 @@ jobs:
         id: check
         run: |
           set +e
-          out="$(sh plugins/e22-standards/scripts/check-policy-freshness.sh)"
+          out="$(sh plugins/steer/scripts/check-policy-freshness.sh)"
           rc=$?
           {
             echo "rc=${rc}"
@@ -45,7 +45,7 @@ jobs:
           REPORT: ${{ steps.check.outputs.report }}
         run: |
           title="version-policy: floors behind upstream EOL"
-          body="$(printf '%s\n\n%s\n' "${REPORT}" "_Filed by version-policy-refresh. Raise the listed minimum_supported floors in policy/versions.yml (this is E22 policy; bump deliberately). Enforcement is unaffected until the file changes._")"
+          body="$(printf '%s\n\n%s\n' "${REPORT}" "_Filed by version-policy-refresh. Raise the listed minimum_supported floors in policy/versions.yml (this is the version policy; bump deliberately). Enforcement is unaffected until the file changes._")"
           existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number' 2>/dev/null)"
           if [ -n "${existing}" ]; then
             gh issue comment "${existing}" --body "${body}"

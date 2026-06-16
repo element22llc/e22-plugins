@@ -1,0 +1,36 @@
+# Local backing services — committed so local matches deployed (org standard:
+# never substitute a different engine for local dev, e.g. SQLite for Postgres).
+# Start everything with `mise run dev:setup` (or just services: `mise run docker:up`).
+#
+# Baseline matches the default stack: PostgreSQL only. Adapt on fork
+# (/steer:init): add the services the product needs (Redis, MinIO, …) or delete
+# this file — and the docker:*/db:* tasks in mise.toml — if the product has no
+# backing services.
+#
+# Credentials below are local-only by design; deployed credentials live in AWS
+# Secrets Manager. Matching local app config (git-ignored .env):
+#   DATABASE_URL=postgresql://app:app@localhost:5432/app
+#
+# Running several products locally? Each binds 5432 by default and they
+# collide. Set POSTGRES_PORT in this repo's .env (docker compose reads it
+# automatically) and mirror it in DATABASE_URL — both vars are in .env.example.
+
+services:
+  postgres:
+    image: postgres:18 # major-only tag; confirm current stable major on adoption
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql # postgres:18+ mounts the parent dir, not …/data
+    healthcheck: # lets `docker compose up --wait` block until the DB accepts connections
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:

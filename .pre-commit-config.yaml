@@ -23,7 +23,7 @@ repos:
 
       - id: claude-plugin-validate
         name: Claude plugin validate
-        entry: claude plugin validate plugins/e22-standards
+        entry: claude plugin validate plugins/steer
         language: system
         pass_filenames: false
 
@@ -45,7 +45,7 @@ repos:
         entry: shfmt -d
         language: system
         types: [shell]
-        # The existing e22-standards hook scripts predate this formatter and are
+        # The existing steer hook scripts predate this formatter and are
         # grandfathered (CI treats shfmt as advisory for them too). shfmt still
         # gates any *new* shell script you add or touch elsewhere.
-        exclude: ^plugins/e22-standards/hooks/
+        exclude: ^plugins/steer/hooks/

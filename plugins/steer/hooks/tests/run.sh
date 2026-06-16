@@ -1,0 +1,523 @@
+#!/usr/bin/env sh
+# steer hook fixture suite — POSIX sh. Version-pin checks are
+# deterministic against the bundled policy/versions.yml (no network, no jq).
+# Feeds canned PreToolUse JSON on stdin and asserts the hook's decision
+# (deny / advisory additionalContext / silent allow) plus the field-extraction
+# and classification behaviour. Run from anywhere:
+#
+#     sh plugins/steer/hooks/tests/run.sh
+#
+# Exit 0 when all cases pass, 1 otherwise.
+#
+# NOTE: pin literals are assembled at runtime via pin() so this file's *source*
+# never contains a `name:NN` token — otherwise the plugin's own version-pin hook
+# (active in the authoring session) would block writing this test.
+
+# shellcheck disable=SC2015,SC2034
+# SC2015 — the assert helpers use the `cond && ok || bad` idiom; `ok` only bumps a
+#          counter and never fails, so the `|| bad` branch runs only on a real
+#          assertion failure. Intentional, not the if-then-else footgun.
+# SC2034 — STEER_INPUT is read by the sourced lib/json.sh functions (which ShellCheck
+#          does not follow), so it reads as "unused" here though it is the input.
+
+set -u
+
+HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+PLUGIN="$(CDPATH='' cd -- "${HERE}/../.." && pwd)"
+HOOKS="${PLUGIN}/hooks"
+export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
+
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/steer-hooktests.XXXXXX")"
+trap 'rm -rf "${WORK}"' EXIT
+PASS=0
+FAIL=0
+
+pin() { printf '%s:%s' "$1" "$2"; } # pin postgres 11 -> the matchable token
+
+run_hook() { # <hook-file> <stdin>   (env via $ENV)
+	# SC2086: ${ENV:-} is deliberately unquoted so "KEY=val KEY2=val2" splits into
+	# separate env assignments; quoting it would pass one bogus assignment.
+	# shellcheck disable=SC2086
+	printf '%s' "$2" | env ${ENV:-} sh "${HOOKS}/$1" 2>/dev/null
+}
+
+ok() { PASS=$((PASS + 1)); }
+bad() {
+	FAIL=$((FAIL + 1))
+	printf 'FAIL: %s\n' "$1" >&2
+}
+
+assert_empty() { [ -z "$2" ] && ok || bad "$1 (expected silent, got: $2)"; }
+assert_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
+assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
+assert_ctx() { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
+assert_block() { printf '%s' "$2" | grep -q '"decision":"block"' && ok || bad "$1 (expected block, got: $2)"; }
+assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (unexpected block: $2)" || ok; }
+assert_eq() { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
+assert_rc() { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
+
+new_repo() {
+	_r="${WORK}/$1"
+	mkdir -p "${_r}"
+	printf '' >"${_r}/.git"
+	printf '%s' "${_r}"
+}
+
+# Real git repo on a named branch, with a GitHub tracker, for the Stop hook.
+git_repo() { # <name> <branch>  -> prints repo path
+	_r="${WORK}/$1"
+	mkdir -p "${_r}"
+	(cd "${_r}" &&
+		git init -q &&
+		git config user.email t@e.com &&
+		git config user.name t &&
+		git commit -q --allow-empty -m init &&
+		git checkout -q -B "$2") >/dev/null 2>&1
+	mkdir -p "${_r}/spec"
+	printf 'system: github\n' >"${_r}/spec/tracker.md"
+	printf '%s' "${_r}"
+}
+
+json_write() { # <cwd> <session> <file_path> <content>
+	printf '{"session_id":"%s","cwd":"%s","tool_name":"Write","tool_input":{"file_path":"%s","content":"%s"}}' \
+		"$2" "$1" "$3" "$4"
+}
+
+stop_json() { # <cwd> <session> [stop_hook_active=false]
+	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"Stop","stop_hook_active":%s}' \
+		"$2" "$1" "${3:-false}"
+}
+
+session_json() { # <cwd> <session>
+	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart"}' "$2" "$1"
+}
+
+json_notebook() { # <cwd> <session> <notebook_path>
+	printf '{"session_id":"%s","cwd":"%s","tool_name":"NotebookEdit","tool_input":{"notebook_path":"%s","new_source":"x"}}' \
+		"$2" "$1" "$3"
+}
+
+managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
+	mkdir -p "$1/spec"
+	printf '1.0.0\n' >"$1/spec/.version"
+	for _sf in vision.md users.md glossary.md tracker.md HISTORY.md; do
+		printf 'x\n' >"$1/spec/${_sf}"
+	done
+}
+
+. "${HOOKS}/lib/json.sh"
+. "${HOOKS}/lib/classify.sh"
+
+# --- extraction (lib/json.sh) ---
+STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"src/a.ts","content":"say \"hi\" and \"file_path\":\"DECOY.ts\""}}'
+assert_eq "extract: escaped quotes / decoy file_path" "$(steer_field file_path)" "src/a.ts"
+
+# JSON "a\\nb.ts" decodes to a-backslash-n-b (a literal backslash + 'n'), NOT a
+# newline — the escaped-backslash case.
+STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"a\\nb.ts","content":"x"}}'
+assert_eq "extract: escaped backslash preserved" "$(steer_field file_path)" 'a\nb.ts'
+
+STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"real.ts","content":"\"file_path\":\"fake.ts\""}}'
+assert_eq "extract: repeated file_path not shadowed" "$(steer_field file_path)" "real.ts"
+
+# steer_target_path: file_path for Write/Edit/MultiEdit, notebook_path for NotebookEdit.
+STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"f.ts","content":"x"}}'
+assert_eq "extract: target_path uses file_path" "$(steer_target_path)" "f.ts"
+STEER_INPUT='{"tool_name":"NotebookEdit","tool_input":{"notebook_path":"nb.ipynb","new_source":"x"}}'
+assert_eq "extract: target_path falls back to notebook_path" "$(steer_target_path)" "nb.ipynb"
+
+_p11="$(pin postgres 11)"
+STEER_INPUT="{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"x\",\"content\":\"${_p11}\"}}"
+assert_eq "extract: Write content" "$(steer_mutation_content)" "${_p11}"
+
+STEER_INPUT="{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"x\",\"old_string\":\"${_p11}\",\"new_string\":\"$(pin postgres 18)\"}}"
+assert_eq "extract: Edit uses new_string" "$(steer_mutation_content)" "$(pin postgres 18)"
+printf '%s' "$(steer_mutation_content)" | grep -q "${_p11}" && bad "extract: Edit must not include old_string" || ok
+
+STEER_INPUT="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo ${_p11}\"}}"
+assert_eq "extract: Bash content skipped" "$(steer_mutation_content)" ""
+
+# --- classifier ---
+assert_eq "classify ts" "$(steer_classify_path src/app.ts)" "implementation"
+assert_eq "classify tf" "$(steer_classify_path infra/main.tf)" "operations"
+assert_eq "classify compose" "$(steer_classify_path compose.yaml)" "operations"
+assert_eq "classify .env" "$(steer_classify_path .env)" "operations"
+assert_eq "classify Makefile" "$(steer_classify_path Makefile)" "operations"
+assert_eq "classify toml" "$(steer_classify_path mise.toml)" "operations"
+assert_eq "classify Dockerfile" "$(steer_classify_path Dockerfile)" "operations"
+assert_eq "classify md" "$(steer_classify_path README.md)" "documentation"
+assert_eq "classify lock" "$(steer_classify_path uv.lock)" "lockfile"
+assert_eq "classify generated" "$(steer_classify_path dist/app.js)" "generated"
+assert_eq "classify spec" "$(steer_classify_path spec/features/x/intent.md)" "spec"
+assert_eq "classify unknown" "$(steer_classify_path data.bin)" "unknown"
+
+# --- check-version-pins.sh (deterministic, policy-driven; uses the bundled
+#     policy/versions.yml via CLAUDE_PLUGIN_ROOT — no network, no jq) ---
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
+assert_deny "version-pins: denied major denied" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
+assert_no_deny "version-pins: supported-behind not denied" "${out}"
+assert_ctx "version-pins: supported-behind advisory" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 18)")")"
+assert_empty "version-pins: at/above recommended silent" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9)")")"
+assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
+
+out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"compose.yaml\",\"old_string\":\"$(pin postgres 11)\",\"new_string\":\"$(pin postgres 18)\"}}")"
+assert_empty "version-pins: upgrade edit silent (F13, old value ignored)" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # steer:allow-pin vendor LTS")")"
+assert_empty "version-pins: steer:allow-pin bypass" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # pin-ok: legacy alias")")"
+assert_empty "version-pins: legacy pin-ok bypass" "${out}"
+
+out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"docker run $(pin postgres 11)\"}}")"
+assert_empty "version-pins: Bash skipped (CI scanner is the backstop)" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 NOTES.md "we used $(pin postgres 11) once")")"
+assert_empty "version-pins: docs exempt" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin node 18)")")"
+assert_deny "version-pins: node denied major denied" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin redis 7)")")"
+assert_no_deny "version-pins: at recommended (redis 7) not denied" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: foo:1")")"
+assert_empty "version-pins: unknown product not enforced" "${out}"
+
+# Repo-local policy/versions.yml overrides the bundled default.
+RP="$(new_repo repoPolicy)"
+mkdir -p "${RP}/policy"
+printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    recommended: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
+out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "image: $(pin postgres 17)")")"
+assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
+
+# --- check-code-before-spec.sh (no /spec spine) ---
+unset ENV
+R1="$(new_repo repoA)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/app.ts 'x')")"
+assert_ctx "spec-before-code: code write nudges" "${out}"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/other.ts 'y')")"
+assert_empty "spec-before-code: one nudge per session+repo" "${out}"
+
+R2="$(new_repo repoB)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R2}" sA src/app.ts 'x')")"
+assert_ctx "spec-before-code: second repo, same session, nudges" "${out}"
+
+R3="$(new_repo repoC)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R3}" sC compose.yaml 'services: {}')")"
+assert_ctx "spec-before-code: operations write nudges" "${out}"
+
+R4="$(new_repo repoD)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R4}" sD README.md '# hi')")"
+assert_empty "spec-before-code: docs exempt" "${out}"
+
+# Bare spec/ (no .version) is NOT a managed spine — must still nudge (foreign),
+# per the spec/.version predicate. An empty/foreign/partial spec/ no longer
+# silences the spec-first nudge.
+R5="$(new_repo repoE)"
+mkdir -p "${R5}/spec"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R5}" sE src/app.ts 'x')")"
+assert_ctx "spec-before-code: bare spec/ without .version still nudges" "${out}"
+
+# Complete, version-stamped spine -> managed -> silent.
+R5b="$(new_repo repoEok)"
+managed_spine "${R5b}"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R5b}" sEok src/app.ts 'x')")"
+assert_empty "spec-before-code: complete .version spine -> silent" "${out}"
+
+# .version present but a spine file missing -> damaged -> nudge.
+R5c="$(new_repo repoEdmg)"
+mkdir -p "${R5c}/spec"
+printf '1.0.0\n' >"${R5c}/spec/.version"
+printf 'x\n' >"${R5c}/spec/vision.md"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R5c}" sEdmg src/app.ts 'x')")"
+assert_ctx "spec-before-code: damaged spine (missing files) nudges" "${out}"
+
+# NotebookEdit (notebook_path) is governed like an ordinary code write.
+R5n="$(new_repo repoEnb)"
+out="$(run_hook check-code-before-spec.sh "$(json_notebook "${R5n}" sEnb analysis.ipynb)")"
+assert_ctx "spec-before-code: NotebookEdit write nudges" "${out}"
+
+# Invocation from a SUBDIRECTORY resolves the repo root (cwd may be apps/web).
+R5s="$(new_repo repoEsub)"
+mkdir -p "${R5s}/apps/web/src"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R5s}/apps/web" sEsub src/app.ts 'x')")"
+assert_ctx "spec-before-code: subdir cwd resolves root and nudges" "${out}"
+
+R6="${WORK}/repoWT"
+mkdir -p "${R6}"
+printf 'gitdir: /elsewhere\n' >"${R6}/.git"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R6}" sWT src/app.ts 'x')")"
+assert_ctx "spec-before-code: .git-as-file worktree engages" "${out}"
+
+R7="$(new_repo repoSpace)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R7}" sSp 'src/my file.ts' 'x')")"
+assert_ctx "spec-before-code: path with spaces" "${out}"
+
+# --- check-issue-before-mutation.sh (GitHub tracker) ---
+R8="$(new_repo repoGH)"
+mkdir -p "${R8}/spec"
+printf 'system: github\n' >"${R8}/spec/tracker.md"
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/app.ts 'x')")"
+assert_ctx "issue-first: github repo code write nudges" "${out}"
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/two.ts 'x')")"
+assert_empty "issue-first: one nudge per session+repo" "${out}"
+
+R9="$(new_repo repoJira)"
+mkdir -p "${R9}/spec"
+printf 'system: jira\n' >"${R9}/spec/tracker.md"
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R9}" sJ src/app.ts 'x')")"
+assert_empty "issue-first: non-github tracker silent" "${out}"
+
+R10="$(new_repo repoNoTracker)"
+mkdir -p "${R10}/spec"
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
+assert_empty "issue-first: no tracker silent" "${out}"
+
+# --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
+if command -v git >/dev/null 2>&1; then
+	# D: Bash-mediated source change on a number-free branch (main) -> reported.
+	S1="$(git_repo stopMain main)"
+	mkdir -p "${S1}/src"
+	printf 'export const x = 1\n' >"${S1}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S1}" stS1)")"
+	assert_block "stop-reconcile: governed change on main reported" "${out}"
+	# fires at most once per session+repo (marker set by the call above)
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S1}" stS1)")"
+	assert_no_block "stop-reconcile: silent on second Stop (once per session)" "${out}"
+
+	# E: same change on an issue-referenced branch -> already governed, silent.
+	S2="$(git_repo stopIssue issue/123-example)"
+	mkdir -p "${S2}/src"
+	printf 'export const x = 1\n' >"${S2}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S2}" stS2)")"
+	assert_no_block "stop-reconcile: issue branch silent" "${out}"
+
+	# F: exempt-only changes (spec + docs) -> silent.
+	S3="$(git_repo stopExempt main)"
+	printf '# notes\n' >"${S3}/README.md"
+	mkdir -p "${S3}/spec/features/example"
+	printf '# intent\n' >"${S3}/spec/features/example/intent.md"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S3}" stS3)")"
+	assert_no_block "stop-reconcile: exempt-only changes silent" "${out}"
+
+	# Loop guard: stop_hook_active=true never blocks, even with a governed change.
+	S4="$(git_repo stopLoop main)"
+	mkdir -p "${S4}/src"
+	printf 'x\n' >"${S4}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S4}" stS4 true)")"
+	assert_no_block "stop-reconcile: stop_hook_active=true never blocks (loop guard)" "${out}"
+
+	# Non-GitHub tracker -> out of scope, silent.
+	S5="$(git_repo stopJira main)"
+	printf 'system: jira\n' >"${S5}/spec/tracker.md"
+	mkdir -p "${S5}/src"
+	printf 'x\n' >"${S5}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S5}" stS5)")"
+	assert_no_block "stop-reconcile: non-github tracker silent" "${out}"
+
+	# Clean working tree -> nothing to reconcile, silent.
+	S6="$(git_repo stopClean main)"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S6}" stS6)")"
+	assert_no_block "stop-reconcile: clean tree silent" "${out}"
+
+	# G: a date branch (release/2026-06) is NOT issue-governed -> reported. The old
+	# broad regex wrongly treated any embedded number as an issue ref.
+	S7="$(git_repo stopRelease main)"
+	git -C "${S7}" checkout -q -b release/2026-06
+	mkdir -p "${S7}/src"
+	printf 'x\n' >"${S7}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S7}" stS7)")"
+	assert_block "stop-reconcile: date branch release/2026-06 reported (not issue-governed)" "${out}"
+
+	# H: marker-first — a non-issue branch with a spec/.work/<branch> marker is
+	# governed via the marker even though its name carries no issue number.
+	S8="$(git_repo stopMarker main)"
+	git -C "${S8}" checkout -q -b prototype-x
+	mkdir -p "${S8}/spec/.work"
+	: >"${S8}/spec/.work/prototype-x"
+	mkdir -p "${S8}/src"
+	printf 'x\n' >"${S8}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S8}" stS8)")"
+	assert_no_block "stop-reconcile: spec/.work marker governs non-issue branch" "${out}"
+else
+	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
+fi
+
+# ---------------------------------------------------------------------------
+# check-open-questions.sh — structured Q-NNN parser + gate classification
+# (SessionStart hook: emits plain markdown, wrapped into additionalContext by
+#  the harness — assert on content, not on JSON shape.)
+# ---------------------------------------------------------------------------
+oq_repo() {
+	_r="${WORK}/$1"
+	mkdir -p "${_r}/spec/features/$2"
+	printf '' >"${_r}/.git"
+	printf '%s' "${_r}"
+}
+oq_grep() { printf '%s' "$3" | grep -q "$2" && ok || bad "$1 (got: $3)"; }
+
+# Placeholder-marked seed (the bundled template) must NOT fire on a fresh scaffold.
+OQ1="$(oq_repo oq1 seed)"
+cp "${PLUGIN}/templates/spec/feature-intent.md" "${OQ1}/spec/features/seed/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ1}" oq1)")"
+assert_empty "open-questions: placeholder seed -> silent" "${out}"
+
+# Real open blocking question at intent-approval on a draft feature -> blocks now.
+OQ2="$(oq_repo oq2 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — real one\n- status: open\n- impact: blocking\n- required_before: intent-approval\n'
+} >"${OQ2}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ2}" oq2)")"
+oq_grep "open-questions: open blocking question classified blocking-now" 'block work now' "${out}"
+
+# Resolved question -> not counted -> silent.
+OQ3="$(oq_repo oq3 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — done\n- status: resolved\n- impact: blocking\n- required_before: intent-approval\n'
+} >"${OQ3}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ3}" oq3)")"
+assert_empty "open-questions: resolved question -> silent" "${out}"
+
+# Non-blocking open question -> backlog (fires, classified non-blocking).
+OQ4="$(oq_repo oq4 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — later\n- status: open\n- impact: non-blocking\n- required_before: implementation\n'
+} >"${OQ4}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ4}" oq4)")"
+oq_grep "open-questions: non-blocking question classified backlog" 'non-blocking' "${out}"
+
+# Malformed block (missing status/impact) -> needs-attention, never silently dropped.
+OQ5="$(oq_repo oq5 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — broken\n- impact: blocking\n'
+} >"${OQ5}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ5}" oq5)")"
+oq_grep "open-questions: malformed block flagged" 'malformed' "${out}"
+
+# Blocking question for a LATER gate (production-release) on a draft feature ->
+# blocks a later transition, not now (shared lifecycle ordering).
+OQ6="$(oq_repo oq6 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — prod\n- status: open\n- impact: blocking\n- required_before: production-release\n'
+} >"${OQ6}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ6}" oq6)")"
+oq_grep "open-questions: distant gate classified later-transition" 'later transition' "${out}"
+
+# Retired SPEC-QUESTIONS.md present -> migration notice.
+OQ7="$(oq_repo oq7 f)"
+printf '# questions\n' >"${OQ7}/spec/SPEC-QUESTIONS.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ7}" oq7)")"
+oq_grep "open-questions: retired SPEC-QUESTIONS.md migration notice" 'SPEC-QUESTIONS.md' "${out}"
+
+# Legacy `- [ ]` checkbox still detected for one deprecation window.
+OQ8="$(oq_repo oq8 f)"
+printf '> Status: draft\n\n## Open questions\n\n- [ ] a real legacy question\n' >"${OQ8}/spec/features/f/intent.md"
+out="$(run_hook check-open-questions.sh "$(session_json "${OQ8}" oq8)")"
+oq_grep "open-questions: legacy checkbox still detected" 'open question' "${out}"
+
+# ---------------------------------------------------------------------------
+# scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
+# (pins assembled via pin() so this file's source carries no name:NN literal.)
+# ---------------------------------------------------------------------------
+SCAN="${PLUGIN}/scripts/scan-version-pins.sh"
+BUNDLED_POLICY="${PLUGIN}/policy/versions.yml"
+scan() { # <dir>  -> sets `rc`; uses the bundled policy
+	STEER_POLICY_FILE="${BUNDLED_POLICY}" sh "${SCAN}" "$1" >/dev/null 2>&1
+	rc=$?
+}
+
+SD="${WORK}/scan1"
+mkdir -p "${SD}"
+printf 'services:\n  db:\n    image: %s\n' "$(pin postgres 11)" >"${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: denied pin -> exit 1" "${rc}" 1
+
+printf 'services:\n  db:\n    image: %s # steer:allow-pin vendor LTS\n' "$(pin postgres 11)" >"${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: suppressed pin -> exit 0" "${rc}" 0
+
+printf 'FROM %s\n' "$(pin node 22)" >"${SD}/Dockerfile"
+rm -f "${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: supported pin -> exit 0" "${rc}" 0
+
+# Templated / variable values are NOT resolved -> never false-positived.
+printf 'services:\n  db:\n    image: postgres:${PG_MAJOR}\n' >"${SD}/compose.yaml"
+rm -f "${SD}/Dockerfile"
+scan "${SD}"
+assert_rc "scan: templated value not flagged" "${rc}" 0
+
+# Excluded dependency trees are skipped even with a denied pin inside.
+mkdir -p "${SD}/node_modules/x"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SD}/node_modules/x/compose.yaml"
+rm -f "${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: excluded dir (node_modules) skipped" "${rc}" 0
+
+# Bash-mediated pin in a committed script IS caught (the hook can't see it).
+printf '#!/bin/sh\ndocker run %s\n' "$(pin postgres 11)" >"${SD}/run.sh"
+scan "${SD}"
+assert_rc "scan: committed Bash pin caught -> exit 1" "${rc}" 1
+rm -f "${SD}/run.sh"
+
+# No policy file -> config error.
+SDNP="${WORK}/scan-nopolicy"
+mkdir -p "${SDNP}"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SDNP}/compose.yaml"
+sh "${SCAN}" "${SDNP}" >/dev/null 2>&1
+assert_rc "scan: missing policy -> exit 2" "$?" 2
+
+# ---------------------------------------------------------------------------
+# scripts/template-reconcile.sh — read-only structural diff (not a hook)
+# ---------------------------------------------------------------------------
+RECON="${PLUGIN}/scripts/template-reconcile.sh"
+RDIR="${WORK}/recon"
+mkdir -p "${RDIR}"
+
+printf '## A\n- [ ] one\n' >"${RDIR}/existing.md"
+printf '## A\n## B\n- [ ] one\n- [ ] two\n' >"${RDIR}/bundled.md"
+
+out="$(sh "${RECON}" "${RDIR}/existing.md" "${RDIR}/bundled.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: gaps run exits 0" "${rc}" 0
+printf '%s' "${out}" | grep -q '## B' && ok || bad "reconcile: missing heading reported (got: ${out})"
+printf '%s' "${out}" | grep -q -- '- \[ \] two' && ok || bad "reconcile: missing checklist item reported (got: ${out})"
+printf '%s' "${out}" | grep -q '## A' && bad "reconcile: shared anchor wrongly reported (got: ${out})" || ok
+
+# identical anchors -> file already current -> silent
+out="$(sh "${RECON}" "${RDIR}/bundled.md" "${RDIR}/bundled.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: current run exits 0" "${rc}" 0
+assert_empty "reconcile: current file -> silent" "${out}"
+
+# checkbox state normalized: [x] in existing vs [ ] in bundled is NOT a diff
+printf '## A\n- [x] one\n' >"${RDIR}/checked.md"
+printf '## A\n- [ ] one\n' >"${RDIR}/unchecked.md"
+out="$(sh "${RECON}" "${RDIR}/checked.md" "${RDIR}/unchecked.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: checkbox-normalization exits 0" "${rc}" 0
+assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
+
+# usage + unreadable inputs
+out="$(sh "${RECON}" "${RDIR}/existing.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: wrong arg count -> exit 2" "${rc}" 2
+out="$(sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
+
+printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
+[ "${FAIL}" -eq 0 ]

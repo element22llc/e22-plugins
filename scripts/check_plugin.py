@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Plugin hygiene checks for the e22-standards Claude Code plugin.
+"""Plugin hygiene checks for the steer Claude Code plugin.
 
 Deterministic, dependency-light structural validation that complements
 `claude plugin validate` (the authoritative plugin gate). This script enforces
@@ -20,7 +20,7 @@ Scope notes (kept deliberately narrow so the checks stay honest):
   repos — so it is allowed to carry placeholders and product-repo-relative
   links. Placeholder and link checks therefore skip it (link checks still cover
   ``templates/reference/``, whose cross-links must resolve within the plugin).
-- ``e22-init`` documents the ``[Replace …]`` placeholder vocabulary, so those
+- ``init`` documents the ``[Replace …]`` placeholder vocabulary, so those
   two files are exempt from the placeholder scan.
 
 Run from the repo root::
@@ -40,7 +40,7 @@ from pathlib import Path
 
 import yaml
 
-PLUGIN_ROOT = Path("plugins/e22-standards")
+PLUGIN_ROOT = Path("plugins/steer")
 
 FORBIDDEN_PLACEHOLDERS = ["[Replace", "TODO", "FIXME"]
 REQUIRED_SKILL_FRONTMATTER = ["name", "description", "when_to_use"]
@@ -54,7 +54,7 @@ PLACEHOLDER_SCAN_DIRS = ["skills", "rules"]
 # Files (relative to PLUGIN_ROOT) exempt from the placeholder scan because they
 # document the placeholder vocabulary itself.
 PLACEHOLDER_ALLOWLIST = {
-    "skills/e22-init/SKILL.md",
+    "skills/init/SKILL.md",
 }
 
 # Dirs (relative to PLUGIN_ROOT) whose relative markdown links must resolve.
@@ -221,7 +221,7 @@ def run_checks(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run e22-standards plugin hygiene checks.")
+    parser = argparse.ArgumentParser(description="Run steer plugin hygiene checks.")
     parser.add_argument(
         "--plugin-root",
         type=Path,

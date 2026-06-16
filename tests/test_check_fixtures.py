@@ -26,7 +26,7 @@ def test_category_value_absent():
 
 
 def test_state_marker_regex():
-    assert check_fixtures._STATE_MARKER_RE.findall("<!-- e22:state=ready-for-dev -->") == [
+    assert check_fixtures._STATE_MARKER_RE.findall("<!-- steer:state=ready-for-dev -->") == [
         "ready-for-dev"
     ]
 
@@ -38,7 +38,7 @@ def test_invalid_lifecycle_state_is_caught(tmp_path: Path, monkeypatch):
     block = tmp_path / "reference" / "fixtures" / "managed-block"
     block.mkdir(parents=True)
     (block / "bad.expected.md").write_text(
-        "<!-- e22:state=not-a-real-state -->\n", encoding="utf-8"
+        "<!-- steer:state=not-a-real-state -->\n", encoding="utf-8"
     )
     monkeypatch.setattr(check_fixtures, "REFERENCE", tmp_path / "reference")
     errors: list[str] = []
@@ -50,7 +50,7 @@ def test_malformed_state_marker_is_caught(tmp_path: Path, monkeypatch):
     block = tmp_path / "reference" / "fixtures" / "managed-block"
     block.mkdir(parents=True)
     # Valid state value but not wrapped in the canonical comment form.
-    (block / "bad.expected.md").write_text("e22:state=inbox\n", encoding="utf-8")
+    (block / "bad.expected.md").write_text("steer:state=inbox\n", encoding="utf-8")
     monkeypatch.setattr(check_fixtures, "REFERENCE", tmp_path / "reference")
     errors: list[str] = []
     check_fixtures.check_lifecycle_and_markers(errors)
@@ -65,7 +65,7 @@ def test_misleading_production_language_is_caught(tmp_path: Path, monkeypatch):
     prod.mkdir(parents=True)
     (prod / "next-actions.md").write_text(
         "## Recommended next actions\n\n### Recommended\n\n"
-        "<!-- e22:state=in-progress -->\n"
+        "<!-- steer:state=in-progress -->\n"
         "Required before production: tidy the backlog.\n",
         encoding="utf-8",
     )
