@@ -1,0 +1,106 @@
+# shellcheck shell=sh
+# (sourced, not executed — no shebang; the directive sets ShellCheck's dialect.)
+#
+# steer hook helper — deterministic best-effort field extraction.
+#
+# NOT a general JSON parser, and it does not claim arbitrary-JSON correctness.
+# It extracts a small set of *known top-level / tool_input fields* from the exact
+# PreToolUse hook-input shapes the plugin's hooks use, with two strategies:
+#
+#   1. `jq` when present (authoritative).
+#   2. otherwise a narrow grep/sed extractor for those exact shapes.
+#
+# If neither can confidently extract, the caller fails open (the hooks treat an
+# empty result as "nothing to act on"). POSIX sh; source this file.
+#
+# Functions read the hook input from the variable $STEER_INPUT (set by the caller
+# once, so the raw stdin is read a single time).
+
+# Unescape a JSON string body (the bytes between the surrounding quotes).
+# Handles \\ \" \/ \n \t \r correctly, including escaped backslashes, by parking
+# \\ on a sentinel control char first so \\n is NOT turned into a newline.
+steer_json_unescape() {
+	_S="$(printf '\001')"
+	sed -e "s/\\\\\\\\/${_S}/g" \
+		-e 's/\\"/"/g' \
+		-e 's/\\\//\//g' \
+		-e 's/\\n/\n/g' \
+		-e 's/\\t/\t/g' \
+		-e 's/\\r/\r/g' \
+		-e "s/${_S}/\\\\/g"
+}
+
+# steer_have_jq — true if a usable jq is on PATH.
+steer_have_jq() { command -v jq >/dev/null 2>&1; }
+
+# steer_field <name> — value of a string field, preferring tool_input.<name> then
+# top-level .<name>. Empty if absent/unextractable. Picks the FIRST matching
+# occurrence (so a repeated key buried inside a later `content` value can't shadow
+# the real tool_input field) and tolerates escaped quotes/backslashes in values.
+steer_field() {
+	_name="$1"
+	if steer_have_jq; then
+		printf '%s' "${STEER_INPUT}" |
+			jq -r --arg k "${_name}" '(.tool_input[$k] // .[$k]) // empty' 2>/dev/null
+		return
+	fi
+	# Fallback: first JSON string value for the key. The value pattern allows
+	# escaped chars (\\.) so an embedded \" does not end the match early.
+	printf '%s' "${STEER_INPUT}" |
+		grep -oE "\"${_name}\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" |
+		head -n 1 |
+		sed -E "s/^\"${_name}\"[[:space:]]*:[[:space:]]*\"//; s/\"$//" |
+		steer_json_unescape
+}
+
+# steer_target_path — the path a mutating tool would write: tool_input.file_path
+# for Write/Edit/MultiEdit, tool_input.notebook_path for NotebookEdit. Empty if
+# neither is present (e.g. a Bash call). Lets the point-of-action hooks classify
+# notebook writes the same way they classify ordinary file writes.
+steer_target_path() {
+	_fp="$(steer_field file_path)"
+	if [ -n "${_fp}" ]; then
+		printf '%s' "${_fp}"
+		return
+	fi
+	steer_field notebook_path
+}
+
+# steer_tool — the tool name (top-level .tool_name).
+steer_tool() {
+	if steer_have_jq; then
+		printf '%s' "${STEER_INPUT}" | jq -r '.tool_name // empty' 2>/dev/null
+		return
+	fi
+	printf '%s' "${STEER_INPUT}" |
+		grep -oE "\"tool_name\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" |
+		head -n 1 | sed -E 's/.*:[[:space:]]*"//; s/"$//'
+}
+
+# steer_mutation_content — the *added/new* text a tool would write, unescaped, so a
+# content check inspects only what is being introduced (F13: tool-aware):
+#   Write     -> content
+#   Edit      -> new_string   (NEVER old_string, so version upgrades aren't blocked)
+#   MultiEdit -> every edits[].new_string, newline-joined
+#   Bash      -> nothing (command text is intentionally skipped; the CI repo-scan
+#                is the stronger backstop) — documented bypass.
+# Empty for any other tool.
+steer_mutation_content() {
+	_tool="$(steer_tool)"
+	case "${_tool}" in
+	Write) steer_field content ;;
+	Edit) steer_field new_string ;;
+	MultiEdit)
+		if steer_have_jq; then
+			printf '%s' "${STEER_INPUT}" |
+				jq -r '[.tool_input.edits[]?.new_string] | join("\n")' 2>/dev/null
+		else
+			printf '%s' "${STEER_INPUT}" |
+				grep -oE "\"new_string\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" |
+				sed -E 's/^"new_string"[[:space:]]*:[[:space:]]*"//; s/"$//' |
+				steer_json_unescape
+		fi
+		;;
+	*) : ;;
+	esac
+}

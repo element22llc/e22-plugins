@@ -1,6 +1,6 @@
 # ShellCheck config for this repo's POSIX sh hook scripts.
 #
-# Two *info*-level checks fire on the e22-standards hooks and are intentional,
+# Two *info*-level checks fire on the steer hooks and are intentional,
 # not bugs — so they are disabled here (every other check stays on, at all
 # severities, so ShellCheck remains a real gate):
 #

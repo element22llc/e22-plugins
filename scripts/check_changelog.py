@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Changelog + release-integrity checks for the e22-standards plugin.
+"""Changelog + release-integrity checks for the steer plugin.
 
 Two checks, so the same script serves local runs and the CI PR gate:
 
 1. **Release validator** (always — no git needed): the version in
-   ``plugin.json`` equals the newest *released* heading under ``## e22-standards``
+   ``plugin.json`` equals the newest *released* heading under ``## steer``
    in ``CHANGELOG.md``, released headings are in strictly descending semver order,
    and a ``### [Unreleased]`` section (optional) is allowed above them. During
    normal development plugin.json is NOT bumped, so it equals the last release;
@@ -33,19 +33,19 @@ import subprocess
 import sys
 from pathlib import Path
 
-PLUGIN_JSON = Path("plugins/e22-standards/.claude-plugin/plugin.json")
+PLUGIN_JSON = Path("plugins/steer/.claude-plugin/plugin.json")
 CHANGELOG = Path("CHANGELOG.md")
 
 # Behaviour paths: a change here requires a CHANGELOG.md entry (tests/ exempt).
 BEHAVIOUR_PREFIXES = (
-    "plugins/e22-standards/skills/",
-    "plugins/e22-standards/hooks/",
-    "plugins/e22-standards/rules/",
-    "plugins/e22-standards/templates/",
-    "plugins/e22-standards/scripts/",
-    "plugins/e22-standards/policy/",
+    "plugins/steer/skills/",
+    "plugins/steer/hooks/",
+    "plugins/steer/rules/",
+    "plugins/steer/templates/",
+    "plugins/steer/scripts/",
+    "plugins/steer/policy/",
 )
-BEHAVIOUR_EXACT = ("plugins/e22-standards/.claude-plugin/plugin.json",)
+BEHAVIOUR_EXACT = ("plugins/steer/.claude-plugin/plugin.json",)
 EXEMPT_SUBSTRINGS = ("/tests/",)
 
 _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
@@ -58,14 +58,14 @@ def _semver(s: str) -> tuple[int, int, int]:
 
 
 def released_headings() -> list[str]:
-    """Released (semver) ### headings under '## e22-standards', in document order."""
+    """Released (semver) ### headings under '## steer', in document order."""
     if not CHANGELOG.is_file():
         return []
     out: list[str] = []
     in_section = False
     for line in CHANGELOG.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
-            in_section = line.strip() == "## e22-standards"
+            in_section = line.strip() == "## steer"
             continue
         if not in_section:
             continue
@@ -90,7 +90,7 @@ def check_release(errors: list[str]) -> None:
 
     rel = released_headings()
     if not rel:
-        errors.append(f"{CHANGELOG}: no released '### X.Y.Z' heading under '## e22-standards'")
+        errors.append(f"{CHANGELOG}: no released '### X.Y.Z' heading under '## steer'")
         return
     if rel[0] != version:
         errors.append(
@@ -142,12 +142,12 @@ def check_behaviour_gate(base: str, errors: list[str]) -> None:
     if behaviour and "CHANGELOG.md" not in changed:
         errors.append(
             "CHANGELOG.md must change when plugin behaviour changes. Add an entry under "
-            f"'## e22-standards' → '### [Unreleased]'. Behaviour files changed: {behaviour[:8]}"
+            f"'## steer' → '### [Unreleased]'. Behaviour files changed: {behaviour[:8]}"
         )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="e22-standards changelog/release checks.")
+    parser = argparse.ArgumentParser(description="steer changelog/release checks.")
     parser.add_argument("--base", help="Base git ref for the behaviour-change gate.")
     args = parser.parse_args(argv)
 

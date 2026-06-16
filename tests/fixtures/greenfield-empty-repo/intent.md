@@ -46,4 +46,4 @@ PO to validate the drafted intent for `customer-export`.
 ### Current recommended action
 
 PO reviews and approves the `customer-export` intent.
-Suggested command: `/e22-spec customer-export`
+Suggested command: `/steer:spec customer-export`

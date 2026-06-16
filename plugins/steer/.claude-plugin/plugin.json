@@ -1,0 +1,16 @@
+{
+  "name": "steer",
+  "version": "2.0.0",
+  "description": "An always-on engineering operating manual plus spec-workflow skills and templates. Org standards centralized so every product repo picks up changes via /plugin update.",
+  "author": {
+    "name": "Element 22 Platform",
+    "email": "alexis.valotaire@element-22.com"
+  },
+  "homepage": "https://github.com/element22llc/e22-plugins",
+  "keywords": [
+    "org-standards",
+    "conventions",
+    "spec-workflow",
+    "always-on"
+  ]
+}

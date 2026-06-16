@@ -12,7 +12,7 @@ from pathlib import Path
 import check_plugin
 from conftest import REPO_ROOT
 
-REAL_PLUGIN = REPO_ROOT / "plugins" / "e22-standards"
+REAL_PLUGIN = REPO_ROOT / "plugins" / "steer"
 
 
 def _make_plugin(tmp_path: Path) -> Path:

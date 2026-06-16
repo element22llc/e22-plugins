@@ -1,7 +1,7 @@
 [project]
 name = "plugin-quality"
 version = "0.1.0"
-description = "Quality tooling for the Element 22 plugin marketplace (hygiene checks, fixtures, tests)."
+description = "Quality tooling for the steer plugin marketplace (hygiene checks, fixtures, tests)."
 requires-python = ">=3.14"
 dependencies = [
   "pyyaml>=6.0.2",

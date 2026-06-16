@@ -16,7 +16,7 @@ lockfile = true
 # so `claude plugin validate` is reproducible and the authoritative result can't
 # drift without a repo change. Bump deliberately after reviewing a new release.
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
-E22_CLAUDE_CODE_VERSION = "2.1.153"
+STEER_CLAUDE_CODE_VERSION = "2.1.153"
 
 [tasks.lint]
 description = "Lint and format-check Python code"
@@ -34,7 +34,7 @@ run = [
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
   "claude plugin validate .",
-  "claude plugin validate plugins/e22-standards",
+  "claude plugin validate plugins/steer",
 ]
 
 [tasks.fixtures]
@@ -59,22 +59,22 @@ run = [
 description = "Lint and format-check shell scripts (plugin hooks + libs + scripts + tests)"
 run = [
   # ShellCheck is the hard gate (see .shellcheckrc for the few intentional disables).
-  "shellcheck plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh plugins/e22-standards/scripts/*.sh",
+  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh",
   # shfmt is advisory: report style drift but don't fail CI on the hooks'
   # hand-written formatting. Run `shfmt -w` locally to apply.
-  "shfmt -d plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh plugins/e22-standards/scripts/*.sh || true",
+  "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh || true",
 ]
 
 [tasks.hooktests]
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = [
-  "sh plugins/e22-standards/hooks/tests/run.sh",
+  "sh plugins/steer/hooks/tests/run.sh",
 ]
 
 [tasks.version-scan]
 description = "Scan the repo for version pins that violate policy/versions.yml"
 run = [
-  "sh plugins/e22-standards/scripts/scan-version-pins.sh .",
+  "sh plugins/steer/scripts/scan-version-pins.sh .",
 ]
 
 [tasks.check]

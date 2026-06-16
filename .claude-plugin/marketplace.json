@@ -1,17 +1,17 @@
 {
   "name": "e22-plugins",
-  "description": "Element 22 organization standards for Claude Code. Ships e22-standards (E22's always-on operating rules + spec-workflow skills and templates) and re-lists Anthropic's frontend-design plugin (pinned, not forked) so product repos get distinctive UI craft from the same marketplace — org standards live in one place and update centrally instead of being frozen into every forked repo.",
+  "description": "Org-wide engineering standards for Claude Code. Ships steer (always-on operating rules + spec-workflow skills and templates) and re-lists Anthropic's frontend-design plugin (pinned, not forked) so product repos get distinctive UI craft from the same marketplace — org standards live in one place and update centrally instead of being frozen into every forked repo.",
   "owner": {
     "name": "Element 22 Platform",
     "email": "alexis.valotaire@element-22.com"
   },
   "plugins": [
     {
-      "name": "e22-standards",
-      "source": "./plugins/e22-standards",
-      "description": "Element 22's always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation & action history, client-agnostic issue-tracker integration, testing rules, Definition of Done, pre-merge drift gates, high-risk areas, secrets handling, SOC 2 / ISO 27001-aligned delivery, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for repo bootstrap (the plugin bundles the full scaffold — no template repo), spec scaffolding, and ADRs.",
+      "name": "steer",
+      "source": "./plugins/steer",
+      "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation & action history, client-agnostic issue-tracker integration, testing rules, Definition of Done, pre-merge drift gates, high-risk areas, secrets handling, SOC 2 / ISO 27001-aligned delivery, change-size model, and the baseline patterns/anti-patterns. Injected every session via a SessionStart hook, with on-demand skills for repo bootstrap (the plugin bundles the full scaffold — no template repo), spec scaffolding, and ADRs.",
       "category": "development",
-      "keywords": ["element-22", "org-standards", "conventions", "spec-workflow", "always-on", "operating-manual"]
+      "keywords": ["org-standards", "conventions", "spec-workflow", "always-on", "operating-manual"]
     },
     {
       "name": "frontend-design",
@@ -21,7 +21,7 @@
         "path": "plugins/frontend-design",
         "sha": "c91a6b660de1b1a607f8d7ec3eea53ec567d710a"
       },
-      "description": "Anthropic's official frontend-design skill, re-listed (not forked) so E22 product repos install distinctive, non-generic UI craft from one marketplace. Pinned by SHA — bump it to update. Scoped to E22's stack and DESIGN.md uniformity discipline by e22-standards' /e22-design-sources; defer to a committed design export when one exists.",
+      "description": "Anthropic's official frontend-design skill, re-listed (not forked) so product repos install distinctive, non-generic UI craft from one marketplace. Pinned by SHA — bump it to update. Scoped to the stack and DESIGN.md uniformity discipline by steer's /steer:design-sources; defer to a committed design export when one exists.",
       "category": "development",
       "keywords": ["frontend", "ui", "design", "aesthetics", "anthropic", "upstream"]
     }

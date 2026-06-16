@@ -1,0 +1,204 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# The `ci` job is the single required status check on `main`. It ALWAYS runs
+# stack-AGNOSTIC hygiene (actionlint, shellcheck, the version-pin scan), then
+# runs the checks for whatever stack it DETECTS in the repo:
+#   - Node/TS   when package.json or pnpm-workspace.yaml is present
+#   - Python    when a pyproject.toml is present
+# A detected stack with NO test contract FAILS the build — so a green `ci` is
+# never a false "tests ran". Before any app exists, the stack steps simply don't
+# run and the job reports that application validation is not yet active. See
+# README.md#branch-protection.
+#
+# Note on testing: there is deliberately NO test-file-name gate (a filename check
+# can't tell a real test from an empty one). Coverage is enforced by the rule in
+# CLAUDE.md, the Definition of Done, human review, and the "stack detected but no
+# test script -> fail" guards below. See CLAUDE.md#definition-of-done.
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # mise-action auto-runs `mise install --locked` whenever a mise.lock
+      # exists. The template ships comment-only placeholder locks (pin on
+      # adoption — /steer:init step 4), and --locked against a placeholder fails
+      # every tool with "not in the lockfile". Until a lock holds real
+      # [[tools]] entries, drop it for this CI run so tools resolve to latest;
+      # once /steer:init commits the populated lock, this step no-ops and CI
+      # installs the exact pins. (Runner workspace only — the committed
+      # placeholder files are untouched.)
+      - name: Drop placeholder mise.lock files (pre-/steer:init forks)
+        run: |
+          for lock in mise.lock infra/mise.lock; do
+            if [ -f "$lock" ] && ! grep -q '^\[\[tools' "$lock"; then
+              echo "$lock is a placeholder (no [[tools]] entries) — removing for this run."
+              rm "$lock"
+            fi
+          done
+
+      # Install all tools defined in mise.toml — Node, Python, OpenTofu,
+      # shellcheck, actionlint, etc. Nested mise.toml files (e.g. /infra/mise.toml)
+      # are picked up automatically.
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      # ────────────────────────────────────────────────────────────────────
+      # ACTIVE — stack-agnostic hygiene. Always runs; makes the required `ci`
+      # check do real work regardless of the product's stack.
+      # ────────────────────────────────────────────────────────────────────
+
+      - name: Lint GitHub Actions workflows (actionlint)
+        run: actionlint -color
+
+      - name: Lint shell scripts (shellcheck)
+        run: |
+          # Lint every tracked shell script. Passes cleanly when there are none.
+          mapfile -t scripts < <(git ls-files '*.sh' '*.bash')
+          if [ ${#scripts[@]} -eq 0 ]; then
+            echo "No shell scripts found — nothing to lint."
+          else
+            printf '%s\n' "${scripts[@]}"
+            shellcheck "${scripts[@]}"
+          fi
+
+      # Version-pin policy: the committed-state backstop for the interactive
+      # version-pin hook. Fails on an image/tool major pinned below
+      # policy/versions.yml. Deterministic — no network, no jq.
+      - name: Version-pin policy scan
+        run: sh scripts/scan-version-pins.sh .
+
+      # Secret scanning: enable GitHub-native secret scanning + push protection in
+      # repo Settings → Code security. It runs outside Actions and is the canonical
+      # secret-scan mechanism — see README.md#branch-protection. No CI step needed.
+
+      # ────────────────────────────────────────────────────────────────────
+      # Stack detection — which stacks are actually present in this repo.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Detect stack
+        id: detect
+        run: |
+          node=false
+          python=false
+          if [ -f package.json ] || [ -f pnpm-workspace.yaml ]; then node=true; fi
+          if [ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .; then python=true; fi
+          echo "node=$node" >> "$GITHUB_OUTPUT"
+          echo "python=$python" >> "$GITHUB_OUTPUT"
+          if [ "$node" = false ] && [ "$python" = false ]; then
+            echo "::notice::No application stack detected (no package.json / pyproject.toml). Stack-agnostic hygiene ran; application validation is not yet active."
+          fi
+
+      # ────────────────────────────────────────────────────────────────────
+      # Node/TS — runs only when a Node workspace is detected. pnpm + Biome are
+      # installed by mise. Root scripts fan out across apps/* + packages/*.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Install dependencies (Node)
+        if: steps.detect.outputs.node == 'true'
+        # Freeze only once a lockfile exists (a fresh fork has none until
+        # /steer:init generates it); self-tightening thereafter.
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "No pnpm-lock.yaml yet — installing without frozen lockfile."
+            pnpm install --no-frozen-lockfile
+          fi
+
+      - name: Lint + format check (Biome — Node/TS)
+        if: steps.detect.outputs.node == 'true'
+        run: biome ci .
+
+      - name: Type check (Node/TS)
+        if: steps.detect.outputs.node == 'true'
+        run: pnpm run typecheck
+
+      - name: Test (Node/TS)
+        if: steps.detect.outputs.node == 'true'
+        # A detected stack with no test script would let `pnpm run test`
+        # (--if-present) no-op to green. Fail instead — green must mean tests ran.
+        run: |
+          if ! git ls-files '*package.json' | xargs grep -lE '"test"[[:space:]]*:' >/dev/null 2>&1; then
+            echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
+            exit 1
+          fi
+          pnpm run test
+
+      # ────────────────────────────────────────────────────────────────────
+      # Python — runs only when a pyproject.toml is detected. Uncomment
+      # python/uv/ruff in mise.toml so they install above.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Lint + format check (Ruff — Python)
+        if: steps.detect.outputs.python == 'true'
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Test (Python)
+        if: steps.detect.outputs.python == 'true'
+        # pytest exit 5 = no tests collected; treat a detected-but-untested project
+        # as a failure rather than a false green.
+        run: |
+          rc=0
+          uv run pytest || rc=$?
+          if [ "$rc" -eq 5 ]; then
+            echo "::error::Python project detected but pytest collected no tests. Add tests (Definition of Done)."
+            exit 1
+          fi
+          exit "$rc"
+
+      # ────────────────────────────────────────────────────────────────────
+      # EXAMPLES — uncomment when they apply to your stack.
+      # ────────────────────────────────────────────────────────────────────
+      # Build: add a `build` script per app (Next.js, tsup, …); the root `build`
+      # script fans out with --if-present.
+      # - name: Build
+      #   if: steps.detect.outputs.node == 'true'
+      #   run: pnpm run build
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # ADVISORY — runs the design.md linter when any DESIGN.md changes. NOT a
+  # required check; remove `continue-on-error` to make it block.
+  # ──────────────────────────────────────────────────────────────────────────
+  design-lint:
+    name: design.md lint (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find changed DESIGN.md files
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base="${BASE_SHA:-HEAD~1}"
+          files=$(git diff --name-only "$base" HEAD -- '**/DESIGN.md' 'DESIGN.md' || true)
+          {
+            echo "files<<EOF"
+            echo "$files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Lint changed DESIGN.md files
+        if: steps.changed.outputs.files != ''
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+        run: |
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            echo "Linting $f"
+            npx --yes @google/design.md lint "$f"
+          done <<< "$CHANGED_FILES"
