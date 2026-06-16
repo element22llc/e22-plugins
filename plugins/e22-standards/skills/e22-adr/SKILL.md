@@ -14,7 +14,8 @@ the product repo, from the bundled E22 template.
 1. Decide the next sequential number: list `spec/decisions/` and use the highest
    existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
 2. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
-3. Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` → `spec/decisions/000N-[slug].md`.
+3. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
+   `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` → `spec/decisions/000N-[slug].md`.
 4. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
    until accepted; set Deciders.
