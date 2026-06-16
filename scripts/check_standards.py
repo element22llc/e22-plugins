@@ -417,6 +417,75 @@ def check_cross_field(errors: list[str], reg: dict[str, list[str]]) -> None:
                 errors.append(f"{intent}: missing approval-evidence field '{field}'")
 
 
+# --- check 9: git-authorization + workflow-ownership coherence ---
+
+# The contradictory "do not commit until approval" phrasing that Rule 45 (commit
+# autonomy) forbids — init/adopt must not reintroduce it.
+_NO_COMMIT_RE = re.compile(
+    r"(?i)(nothing\s+(?:is\s+)?committed|commit\s+nothing|do\s+not\s+commit)"
+    r"[^.\n]*until[^.\n]*approv"
+)
+
+
+def check_authorization(errors: list[str]) -> None:
+    import json
+
+    # 1. Rule 45 states the model: commit autonomous, push/PR gated.
+    rule = PLUGIN_ROOT / "rules/45-commit-autonomy.md"
+    if not rule.is_file():
+        errors.append(f"{rule}: commit-autonomy rule is missing")
+    else:
+        t = rule.read_text(encoding="utf-8")
+        if "Commit without asking" not in t:
+            errors.append(f"{rule}: must state 'Commit without asking' (commit autonomy)")
+        if "waits for the dev" not in t and "once they confirm" not in t:
+            errors.append(f"{rule}: must gate publishing (push/PR) on dev confirmation")
+
+    # 2. init/adopt prose must NOT contradict Rule 45.
+    for rel in (
+        "skills/e22-init/SKILL.md",
+        "skills/e22-adopt/SKILL.md",
+        "skills/e22-adopt/PROCEDURE.md",
+    ):
+        p = PLUGIN_ROOT / rel
+        if p.is_file() and _NO_COMMIT_RE.search(p.read_text(encoding="utf-8")):
+            errors.append(
+                f"{p}: contradicts Rule 45 — drop 'nothing committed until approval'; "
+                f"commit is autonomous, only push/PR wait for the dev"
+            )
+
+    # 3. Scaffold settings enforce the gate: git push under `ask`, not `allow`;
+    #    commit stays autonomous.
+    settings = PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
+    if settings.is_file():
+        try:
+            perms = json.loads(settings.read_text(encoding="utf-8")).get("permissions", {})
+        except json.JSONDecodeError as exc:
+            errors.append(f"{settings}: invalid JSON ({exc})")
+            perms = {}
+        allow = set(perms.get("allow", []))
+        ask = set(perms.get("ask", []))
+        push = "Bash(git push)"
+        if push in allow:
+            errors.append(f"{settings}: '{push}' must be under permissions.ask, not allow")
+        if push not in ask:
+            errors.append(f"{settings}: '{push}' must be listed under permissions.ask")
+        if "Bash(git commit:*)" not in allow:
+            errors.append(f"{settings}: 'Bash(git commit:*)' should stay under permissions.allow")
+
+    # 4. e22-build documents both modes and delegates governed implementation to
+    #    e22-work (the sole execution owner).
+    build = PLUGIN_ROOT / "skills/e22-build/SKILL.md"
+    if build.is_file():
+        bt = build.read_text(encoding="utf-8")
+        if "/e22-standards:e22-work" not in bt:
+            errors.append(
+                f"{build}: governed implementation must delegate to /e22-standards:e22-work"
+            )
+        if "prototype" not in bt.lower():
+            errors.append(f"{build}: must document the prototype/local build mode")
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -430,6 +499,7 @@ def run_checks(errors: list[str]) -> None:
         check_cross_field(errors, reg)
     check_manifest(errors)
     check_readme_inventory(errors, skills)
+    check_authorization(errors)
 
 
 def main() -> int:

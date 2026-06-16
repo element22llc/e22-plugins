@@ -12,8 +12,9 @@ There's no `/spec` spine, no `mise.toml`/E22 layout, and the repo was not forked
 from the template. If it *was* forked (placeholders, existing `/spec`), redirect
 to `/e22-standards:e22-init` and stop. Detect the stack from the repo itself
 (`package.json` / `pyproject.toml`, frameworks, database, auth). Work on a
-`feat/e22-adopt` branch — never commit to `main` (commit-autonomy rule). Nothing
-is committed until the dev approves.
+`feat/e22-adopt` branch — never commit to `main` (commit-autonomy rule). Commit
+the spine + scaffold as coherent units without asking; **push and the PR wait for
+the dev**.
 
 ## Phase 2 — Reconcile the adoption checklist (resume safety) — do this FIRST on a resume
 

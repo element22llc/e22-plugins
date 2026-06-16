@@ -34,6 +34,11 @@ out/
 # Gitignored: per-user allowlists and personal overrides
 .claude/settings.local.json
 
+# e22 local work markers — /e22-standards:e22-work records the claimed issue for a
+# branch here so the Stop-hook reconciliation recognizes it. Local execution
+# state, never committed.
+spec/.work/
+
 # IDE
 # Share the workspace's recommended extensions + Biome formatter defaults;
 # keep per-user overrides (settings.local.json, launch/tasks) out of git.

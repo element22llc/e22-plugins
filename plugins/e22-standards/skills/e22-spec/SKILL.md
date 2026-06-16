@@ -68,8 +68,12 @@ implementation.
    approval and flip `Status:` to `approved` in one change, then offer:
    - `/e22-standards:e22-tracker-sync push` → file or refresh the tracker item from this
      intent, writing the ref back into the `> Tracker:` line.
-   - hand to a dev (or `/e22-standards:e22-build`) for implementation **in a separate
-     session** — this skill stops here.
+   - hand off for implementation **in a separate session** — this skill stops
+     here. In a GitHub-adopted repo (`tracker.md` → `system: github`),
+     implementation runs through `/e22-standards:e22-work` (decompose via
+     `/e22-standards:e22-issues` first); PO-driven builds go through
+     `/e22-standards:e22-build` (which itself delegates to `e22-work` once
+     governed). Don't hand off to a "just implement it" path that skips the issue.
 7. **Recommend the next action.** Close with a `## Recommended next actions` block
    per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the
    **locality rule**, consider only *this* feature's intent, open questions,
@@ -81,7 +85,7 @@ implementation.
    | Intent drafted, not yet PO-approved | Human decision required | PO reviews & approves the intent (no command) |
    | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |
    | Approved, tracker configured, not yet filed | Recommended | `/e22-standards:e22-tracker-sync push` |
-   | Approved | Complete | Optional: hand to a dev or `/e22-standards:e22-build` in a separate session |
+   | Approved | Complete | Optional: implement in a separate session — `/e22-standards:e22-work` (after `/e22-standards:e22-issues decompose`) or `/e22-standards:e22-build` |
 
    Pick one `Current recommended action` by precedence; the block stays code-free,
    like the rest of this skill.
@@ -157,8 +161,10 @@ stale-spec checks fire too.
 2. Flip `> Status:` to `approved`.
 3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs).
 4. Recommend the local next action — decompose into work
-   (`/e22-standards:e22-issues decompose`) or implement (`/e22-standards:e22-build` or a dev in a separate
-   session) — per the `## Recommended next actions` block.
+   (`/e22-standards:e22-issues decompose`, then execute each via
+   `/e22-standards:e22-work`) or, for a PO-driven build,
+   `/e22-standards:e22-build` (which delegates to `e22-work` once governed) — per
+   the `## Recommended next actions` block.
 
 `approve` writes only under `/spec/**` (the intent header, PO-acceptance block,
 and HISTORY); it stays as code-free as the rest of this skill.
