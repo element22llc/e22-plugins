@@ -35,8 +35,10 @@ PR-autonomy rules; merge and deploy are never implied.**
 - **`start #N`** — resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
   **claim** it (`assign` + `e22:claimed-by`, `transition` → `in-progress`);
-  create or reuse the branch; load linked specs (`e22:spec-path`,
-  acceptance criteria); begin implementation.
+  create or reuse the branch; **write the local work marker**
+  `spec/.work/<branch>` (slashes → underscores) naming this issue, so the
+  end-of-turn Stop-hook reconciliation recognizes the branch as issue-governed;
+  load linked specs (`e22:spec-path`, acceptance criteria); begin implementation.
 - **`resume #N`** — reconstruct context from the issue + recorded `e22:branch` /
   `e22:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away); continue
@@ -71,7 +73,12 @@ evidence (a merged PR is necessary for `done`, not sufficient on its own).
 
 Use the repository's configured branch convention if one exists. Otherwise fall
 back to `issue/<number>-<slug>` — **not** `fix/…`, which would mislabel feature,
-docs, or infra work. Record the branch in `e22:branch`.
+docs, or infra work. Record the branch in `e22:branch` (tracker metadata) **and**
+in the local marker `spec/.work/<branch>` (slashes → underscores; local-only —
+`spec/.work/` is git-ignored). The marker is what the Stop-hook reconciliation
+checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
+unconventional but claimed branch is still recognized. Optional housekeeping:
+remove the marker when the issue is closed.
 
 ## Concurrency & claims
 

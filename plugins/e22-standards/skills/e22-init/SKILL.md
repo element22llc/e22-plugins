@@ -8,8 +8,10 @@ when_to_use: 'Use when the dev says "set up this new repo", when a repo has no /
 
 Run this once when a repo is first brought under Element 22 standards. Detect
 which of two entry conditions applies and follow that path — both end with the
-toolchain pinned and the repo working spec-first, on a `feat/*` branch with
-nothing committed until the dev approves.
+toolchain pinned and the repo working spec-first, on a `feat/*` branch. Per
+**Commit autonomy**, commit the bootstrap as coherent units without asking; the
+one step that waits for the dev is **publishing** — push and the PR (see the
+push/PR gate in Commit autonomy).
 
 **A. Legacy fork of the old `repository-template`** — `[Replace …]`,
 `[Product Name]`, `[e.g., …]`, or `@github-handle` placeholders are still
@@ -28,9 +30,16 @@ below.
 
 **Not a match:** if the repo has **substantial pre-existing code** but no
 `/spec` (a "vibe-coded" app you'd be *reverse-engineering*, not writing fresh),
-that is adoption, not init — stop and use **`/e22-standards:e22-adopt`**. If `/spec` already
-exists and no placeholders remain, setup has already run — say so and stop;
-don't re-propose it.
+that is adoption, not init — stop and use **`/e22-standards:e22-adopt`**.
+
+**Already initialized?** Test the spine marker, not the bare directory: a
+**complete** spine — `spec/.version` present **and** the spine files exist
+(`vision.md`, `users.md`, `glossary.md`, `tracker.md`, `HISTORY.md`) — with no
+placeholders remaining means setup has already run; say so and stop, don't
+re-propose it. A bare or partial `spec/` (no `spec/.version`, or `.version` but
+missing spine files) is **not** "initialized": it's a foreign or half-migrated
+spine — run **`/e22-standards:e22-sync`** to repair rather than re-bootstrapping
+over it.
 
 ---
 
@@ -51,8 +60,9 @@ them:
    production URL (if any). For the stack, confirm or override the E22 defaults
    (the always-on Stack rules) rather than asking from scratch — and if the dev
    overrides them, record the choice as an ADR (run `/e22-standards:e22-adr`).
-3. Propose all edits in a single batch for review; do not commit until the dev
-   approves.
+3. Propose all edits in a single batch so the dev can confirm the filled-in
+   values (product name, handles, …) before they're applied. Once applied,
+   commit them (Commit autonomy) — **push and the PR wait for the dev**.
 4. **Pin the toolchain.** The template's `mise.toml` files use `latest` so they
    carry no stale versions; the committed placeholder `mise.lock` files are
    what `mise install` writes the resolved versions into (mise only writes the
@@ -99,8 +109,10 @@ them:
 
 ### When the repo is already customized
 
-If a scan finds no placeholders **and** `/spec` already exists, this setup has
-already run. Do not re-propose it; just confirm the repo is set up and move on.
+If a scan finds no placeholders **and** a **complete** spine exists
+(`spec/.version` plus the spine files), this setup has already run. Do not
+re-propose it; just confirm the repo is set up and move on. (A bare or partial
+`spec/` is not "already set up" — see "Already initialized?" above.)
 
 ---
 
@@ -109,8 +121,8 @@ already run. Do not re-propose it; just confirm the repo is set up and move on.
 The repo has no `/spec` spine, and you are starting a new product here. The
 goal: stand up the full repo scaffolding + spec spine from the plugin's
 bundled scaffold, then proceed spec-first — so feature code is never written
-ahead of its intent/contract. Work on a `feat/*` branch; commit nothing until
-the dev approves.
+ahead of its intent/contract. Work on a `feat/*` branch and commit the bootstrap
+as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
 
 1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
    greenfield (you're writing the code from scratch), not reverse-engineering

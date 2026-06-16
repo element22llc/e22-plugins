@@ -7,6 +7,39 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+Workflow + authorization coherence — one git-authorization model and one
+implementation-execution owner.
+
+- **Single git-authorization model (commit autonomy preserved).** Rule 45 is
+  unchanged — branch + local commit are autonomous; **publishing waits for the
+  dev**. The contradictory "nothing is committed until the dev approves" wording
+  is removed from `e22-init` and `e22-adopt` (SKILL + PROCEDURE); they now commit
+  the bootstrap/spine as coherent units and gate only push + PR. The scaffold
+  `claude/settings.json` enforces the gate: `git push` (all forms) and
+  `gh pr create` / `gh pr merge` move from `permissions.allow` to
+  `permissions.ask`; `git add` / `git commit` stay autonomous; force/delete/mirror
+  push stay denied.
+- **e22-build orchestrates, e22-work executes.** `e22-build` now has two explicit
+  modes: a **prototype/local** mode (the default — greenfield with no GitHub
+  tracker; build the v0 locally, no per-feature issue ceremony, one v0 handoff PR)
+  and a **governed** mode (repo already `system: github`) that materializes/reuses
+  an issue per delivery slice and delegates each to **`/e22-standards:e22-work`**,
+  invisibly to the PO. `e22-work` stays the sole owner of
+  claim → branch → implement → test → PR → transition; no e22-build↔e22-work
+  recursion. `e22-spec` handoffs point implementation at `e22-work`
+  (after `e22-issues decompose`) or `e22-build`, never a "just implement it" path.
+- **Issue-governed branch marker.** `e22-work` records a local
+  `spec/.work/<branch>` marker (git-ignored) naming the claimed issue; the
+  Stop-hook reconciliation prefers it over branch-name inference, so an
+  unconventional but properly-claimed branch is recognized as governed.
+- **`e22-init` "already initialized" predicate** now tests the spine marker
+  (`spec/.version` + spine files), not a bare `spec/` directory, so a foreign or
+  half-migrated `spec/` routes to repair (`e22-sync`) instead of being treated as
+  done.
+- `check_standards.py` gains an authorization/ownership check: Rule 45 states the
+  model, init/adopt don't contradict it, the scaffold settings gate push under
+  `ask`, and `e22-build` documents both modes + delegates to `e22-work`.
+
 Runtime hook correctness — fixes silent-failure modes in the always-on hooks
 without changing the workflow model.
 
@@ -52,6 +85,7 @@ without changing the workflow model.
 - Expanded the POSIX hook fixture suite (59 → 75 cases) covering the structured
   question parser + gate classification, the spine-state predicate, subdirectory
   resolution, NotebookEdit, and the tightened Stop-hook branch/marker logic.
+
 
 ### 1.51.2
 

@@ -94,10 +94,31 @@ on the next `/e22-standards:e22-build` run.
    `/e22-standards:e22-init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
    discipline). Draft the initial stack ADR yourself via `/e22-standards:e22-adr` — the PO
    approves intent, not ADR prose.
-6. **Build feature by feature.** For each approved intent: write `contract.md`,
-   implement under `/apps` + `/packages`, and write tests in the same unit of
-   work (Definition of Done). Commit coherent units without asking
-   (Commit-autonomy rule) on a `feat/*` branch.
+6. **Build feature by feature.** Who *owns implementation* depends on whether this
+   repo is GitHub-adopted (`/spec/tracker.md` declares `system: github`):
+
+   - **Prototype/local mode — the default (greenfield, no GitHub tracker yet).**
+     Issue-first (rule 36) is scoped to `system: github`, so it does not apply
+     here. Build the v0 yourself: for each approved intent write `contract.md`,
+     implement under `/apps` + `/packages`, and write tests in the same unit of
+     work (Definition of Done). Commit coherent units without asking
+     (Commit-autonomy rule) on a single `feat/*` build branch. The work stays
+     local and provisional until the one v0 handoff PR (step 10). This keeps the
+     PO's inner loop fast — no per-feature issue/branch/PR ceremony.
+
+   - **Governed mode — repo already GitHub-adopted (`system: github`).**
+     Issue-first applies, so implementation runs through
+     **`/e22-standards:e22-work`**, the sole owner of
+     claim → branch → implement → test → PR → transition. For each approved intent
+     (or coherent delivery slice), materialize or reuse a GitHub issue via
+     **`/e22-standards:e22-issues`** (which routes tracker I/O through
+     `/e22-standards:e22-tracker-sync`), then hand that issue to
+     `/e22-standards:e22-work` — **invisibly**: the PO never types a technical
+     command and never needs to see an issue number. You keep the PO conversation,
+     intent approval (step 4), the app scaffold (step 5), the demo (step 8), and
+     the handoff framing (step 10); `e22-work` owns execution. Do **not** branch,
+     implement, or open PRs yourself in this mode, and `e22-work` must **not**
+     re-enter `/e22-standards:e22-build` (no recursion) — drive one slice at a time.
 7. **Respect the PO-mode guardrails.**
    - **Never deploy** (`pnpm deploy:*`), **never touch `/infra`**, and
      **never use real secrets or real third-party accounts** — generate
@@ -131,7 +152,11 @@ on the next `/e22-standards:e22-build` run.
    (with where the confirmation happened). If the PO says "it's done" or
    "ready for the developer" unprompted, that is the gate — record it the
    same way.
-10. **Hand off via the PR.** When the demo-validation gate has passed and the
+10. **Hand off via the PR.** This is the **prototype-mode** handoff: a single v0
+    PR for the whole build. (In **governed mode** each slice already shipped as its
+    own `/e22-standards:e22-work` issue→PR, so there is no separate v0 PR — the
+    productionization brief below still applies, written once for the build.)
+    When the demo-validation gate has passed and the
     Definition of Done holds, propose opening the PR (it waits for
     confirmation — Commit-autonomy rule). The PR
     description is the dev's productionization brief. First write the durable

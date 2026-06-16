@@ -56,7 +56,9 @@ runbook seems to conflict with one of these, the guardrail wins.
   restart from scratch.
 
 Work on a `feat/e22-adopt` branch — **never commit to `main`** (commit-autonomy
-rule). Nothing is committed until the dev approves.
+rule). Commit the reverse-engineered spine + scaffold as coherent units without
+asking; **push and the PR wait for the dev** (the one publishing step Commit
+autonomy gates).
 
 ## Resuming? Reconcile before anything else
 

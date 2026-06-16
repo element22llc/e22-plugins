@@ -2,11 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit:*)",
+      "Bash(git commit:*)"
+    ],
+    "ask": [
       "Bash(git push)",
       "Bash(git push origin:*)",
       "Bash(git push -u origin:*)",
-      "Bash(git push --set-upstream origin:*)"
+      "Bash(git push --set-upstream origin:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr merge:*)"
     ],
     "deny": [
       "Bash(git push*--force*)",
