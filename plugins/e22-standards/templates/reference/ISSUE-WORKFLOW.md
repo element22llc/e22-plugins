@@ -60,7 +60,8 @@ Two invariants underpin everything:
    `spec/features/<id>/intent.md` with `Status: draft`, links the issue, and
    requests PO approval. **Materialize never approves** — only an explicit
    `/e22-standards:e22-spec approve` flips `Status: approved`.
-5. **Technical shaping** — `/e22-standards:e22-spec contract <id>`; large features become a
+5. **Technical shaping** — `/e22-standards:e22-spec` authors the feature's
+   `contract.md` where behavior demands it; large features become a
    parent feature issue with implementation sub-issues
    (`/e22-standards:e22-issues decompose #N`).
 6. **Implementation & product validation** — PRs use closing refs

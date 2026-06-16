@@ -4,6 +4,7 @@ description: "High-level GitHub Issues lifecycle for the /spec spine — capture
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
 ---
+<!-- e22:modes capture,triage,brainstorm,materialize,decompose,status,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels,project -->
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 

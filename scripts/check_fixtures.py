@@ -38,26 +38,30 @@ REFERENCE = PLUGIN_ROOT / "templates" / "reference"
 SPEC_TEMPLATES = PLUGIN_ROOT / "templates" / "spec"
 REPO_FIXTURES = Path("tests/fixtures")
 
-# NEXT-ACTIONS.md §1 — the five and only categories.
-VALID_CATEGORIES = {
-    "Blocking now",
-    "Human decision required",
-    "Required before production",
-    "Recommended",
-    "Complete",
-}
 
-# ISSUE-WORKFLOW.md — the canonical issue lifecycle states.
-VALID_LIFECYCLE_STATES = {
-    "inbox",
-    "exploring",
-    "ready-for-spec",
-    "ready-for-dev",
-    "in-progress",
-    "validate",
-    "blocked",
-    "done",
-}
+def _registry() -> dict[str, list[str]]:
+    """Parse enums.registry — the single source of truth for controlled
+    vocabularies. The category and lifecycle-state sets below derive from it so
+    they cannot drift from the canonical enums."""
+    reg: dict[str, list[str]] = {}
+    path = REFERENCE / "enums.registry"
+    if path.is_file():
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            reg[key.strip()] = [v.strip() for v in val.split("|") if v.strip()]
+    return reg
+
+
+_REG = _registry()
+
+# NEXT-ACTIONS.md §1 categories — derived from the registry (next_action).
+VALID_CATEGORIES = set(_REG.get("next_action", []))
+
+# ISSUE-WORKFLOW.md issue lifecycle states — derived from the registry (issue_state).
+VALID_LIFECYCLE_STATES = set(_REG.get("issue_state", []))
 
 # Stable headings every next-actions / next golden fixture must keep.
 NEXT_FIXTURE_HEADINGS = [

@@ -4,6 +4,7 @@ description: "Spec-only brainstorm for a feature — author and iterate intent.m
 when_to_use: Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /e22-standards:e22-drift.
 argument-hint: "[feature-id | approve <feature-id> | validate [feature-id | --all]]"
 ---
+<!-- e22:modes default,approve,validate -->
 
 # Brainstorm a feature spec — no build
 

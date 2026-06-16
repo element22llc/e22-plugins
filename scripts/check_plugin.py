@@ -44,24 +44,23 @@ PLUGIN_ROOT = Path("plugins/e22-standards")
 
 FORBIDDEN_PLACEHOLDERS = ["[Replace", "TODO", "FIXME"]
 REQUIRED_SKILL_FRONTMATTER = ["name", "description", "when_to_use"]
-REQUIRED_COMMAND_FRONTMATTER = ["description"]
 
 # Dirs (relative to PLUGIN_ROOT) whose authored markdown must be placeholder-free.
 # templates/ is excluded: it is meant to be instantiated and legitimately holds
-# placeholders like [Replace …] and [Product Name].
-PLACEHOLDER_SCAN_DIRS = ["skills", "commands", "rules"]
+# placeholders like [Replace …] and [Product Name]. (The legacy commands/ dir was
+# removed — skills are namespaced; see check_standards.py.)
+PLACEHOLDER_SCAN_DIRS = ["skills", "rules"]
 
 # Files (relative to PLUGIN_ROOT) exempt from the placeholder scan because they
 # document the placeholder vocabulary itself.
 PLACEHOLDER_ALLOWLIST = {
     "skills/e22-init/SKILL.md",
-    "commands/e22-init.md",
 }
 
 # Dirs (relative to PLUGIN_ROOT) whose relative markdown links must resolve.
 # templates/scaffold and templates/spec describe the *product* repo layout
 # (./spec/vision.md, ../apps/README.md, …) and are intentionally not checked.
-LINK_SCAN_DIRS = ["skills", "commands", "rules", "templates/reference"]
+LINK_SCAN_DIRS = ["skills", "rules", "templates/reference"]
 
 # Optional: client names that must never appear when --client-agnostic is set.
 # Populated per engagement; empty by default so the mode is a no-op until used.
@@ -146,32 +145,6 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
                 seen_names[name] = skill_md
 
 
-def check_commands(root: Path, errors: list[str], verify_command_skills: bool) -> None:
-    seen_names: dict[str, Path] = {}
-    commands_dir = root / "commands"
-    skills_dir = root / "skills"
-    for cmd in _iter_markdown(commands_dir):
-        fm, err = parse_frontmatter(cmd.read_text(encoding="utf-8"))
-        if err:
-            errors.append(f"{cmd}: {err}")
-            continue
-        for key in REQUIRED_COMMAND_FRONTMATTER:
-            value = fm.get(key)
-            if not (isinstance(value, str) and value.strip()):
-                errors.append(f"{cmd}: missing or empty frontmatter '{key}'")
-
-        name = cmd.stem
-        if name in seen_names:
-            errors.append(f"{cmd}: duplicate command name '{name}' (also {seen_names[name]})")
-        else:
-            seen_names[name] = cmd
-
-        if verify_command_skills and not (skills_dir / name / "SKILL.md").is_file():
-            errors.append(
-                f"{cmd}: command '{name}' has no matching skill (expected skills/{name}/SKILL.md)"
-            )
-
-
 def check_placeholders(root: Path, errors: list[str]) -> None:
     for rel in PLACEHOLDER_SCAN_DIRS:
         for md in _iter_markdown(root / rel):
@@ -233,7 +206,6 @@ def run_checks(
     root: Path,
     *,
     require_when_to_use: bool = True,
-    verify_command_skills: bool = True,
     client_agnostic: bool = False,
 ) -> list[str]:
     errors: list[str] = []
@@ -241,7 +213,6 @@ def run_checks(
         return [f"{root}: plugin root directory not found"]
     check_plugin_json(root, errors)
     check_skills(root, errors, require_when_to_use)
-    check_commands(root, errors, verify_command_skills)
     check_placeholders(root, errors)
     check_links(root, errors)
     if client_agnostic:
@@ -263,11 +234,6 @@ def main(argv: list[str] | None = None) -> int:
         help="Do not require when_to_use in skill frontmatter.",
     )
     parser.add_argument(
-        "--no-verify-command-skills",
-        action="store_true",
-        help="Do not require each command to wrap a real skill.",
-    )
-    parser.add_argument(
         "--client-agnostic",
         action="store_true",
         help="Fail on configured client-specific terms (CLIENT_SPECIFIC_TERMS).",
@@ -277,7 +243,6 @@ def main(argv: list[str] | None = None) -> int:
     errors = run_checks(
         args.plugin_root,
         require_when_to_use=not args.no_require_when_to_use,
-        verify_command_skills=not args.no_verify_command_skills,
         client_agnostic=args.client_agnostic,
     )
 

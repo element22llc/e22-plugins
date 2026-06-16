@@ -19,9 +19,10 @@ run = [
 ]
 
 [tasks.plugin-check]
-description = "Run plugin hygiene checks"
+description = "Run plugin hygiene + standards-consistency checks"
 run = [
   "uv run python scripts/check_plugin.py",
+  "uv run python scripts/check_standards.py",
   "claude plugin validate plugins/e22-standards",
 ]
 
