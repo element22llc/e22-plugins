@@ -43,18 +43,38 @@ run_hook() {  # <hook-file> <stdin>   (env via $ENV)
 ok()  { PASS=$((PASS + 1)); }
 bad() { FAIL=$((FAIL + 1)); printf 'FAIL: %s\n' "$1" >&2; }
 
-assert_empty()   { [ -z "$2" ] && ok || bad "$1 (expected silent, got: $2)"; }
-assert_deny()    { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
-assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
-assert_ctx()     { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
-assert_eq()      { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
-assert_rc()      { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
+assert_empty()    { [ -z "$2" ] && ok || bad "$1 (expected silent, got: $2)"; }
+assert_deny()     { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
+assert_no_deny()  { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
+assert_ctx()      { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
+assert_block()    { printf '%s' "$2" | grep -q '"decision":"block"' && ok || bad "$1 (expected block, got: $2)"; }
+assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (unexpected block: $2)" || ok; }
+assert_eq()       { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
+assert_rc()       { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
 
 new_repo() { _r="${WORK}/$1"; mkdir -p "${_r}"; printf '' > "${_r}/.git"; printf '%s' "${_r}"; }
+
+# Real git repo on a named branch, with a GitHub tracker, for the Stop hook.
+git_repo() {  # <name> <branch>  -> prints repo path
+  _r="${WORK}/$1"; mkdir -p "${_r}"
+  ( cd "${_r}" \
+    && git init -q \
+    && git config user.email t@e.com \
+    && git config user.name t \
+    && git commit -q --allow-empty -m init \
+    && git checkout -q -B "$2" ) >/dev/null 2>&1
+  mkdir -p "${_r}/spec"; printf 'system: github\n' > "${_r}/spec/tracker.md"
+  printf '%s' "${_r}"
+}
 
 json_write() {  # <cwd> <session> <file_path> <content>
   printf '{"session_id":"%s","cwd":"%s","tool_name":"Write","tool_input":{"file_path":"%s","content":"%s"}}' \
     "$2" "$1" "$3" "$4"
+}
+
+stop_json() {  # <cwd> <session> [stop_hook_active=false]
+  printf '{"session_id":"%s","cwd":"%s","hook_event_name":"Stop","stop_hook_active":%s}' \
+    "$2" "$1" "${3:-false}"
 }
 
 . "${HOOKS}/lib/json.sh"
@@ -178,6 +198,51 @@ assert_empty "issue-first: non-github tracker silent" "${out}"
 R10="$(new_repo repoNoTracker)" ; mkdir -p "${R10}/spec"
 out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
 assert_empty "issue-first: no tracker silent" "${out}"
+
+# --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
+if command -v git >/dev/null 2>&1; then
+  # D: Bash-mediated source change on a number-free branch (main) -> reported.
+  S1="$(git_repo stopMain main)"
+  mkdir -p "${S1}/src" ; printf 'export const x = 1\n' > "${S1}/src/app.ts"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S1}" stS1)")"
+  assert_block "stop-reconcile: governed change on main reported" "${out}"
+  # fires at most once per session+repo (marker set by the call above)
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S1}" stS1)")"
+  assert_no_block "stop-reconcile: silent on second Stop (once per session)" "${out}"
+
+  # E: same change on an issue-referenced branch -> already governed, silent.
+  S2="$(git_repo stopIssue issue/123-example)"
+  mkdir -p "${S2}/src" ; printf 'export const x = 1\n' > "${S2}/src/app.ts"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S2}" stS2)")"
+  assert_no_block "stop-reconcile: issue branch silent" "${out}"
+
+  # F: exempt-only changes (spec + docs) -> silent.
+  S3="$(git_repo stopExempt main)"
+  printf '# notes\n' > "${S3}/README.md"
+  mkdir -p "${S3}/spec/features/example"
+  printf '# intent\n' > "${S3}/spec/features/example/intent.md"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S3}" stS3)")"
+  assert_no_block "stop-reconcile: exempt-only changes silent" "${out}"
+
+  # Loop guard: stop_hook_active=true never blocks, even with a governed change.
+  S4="$(git_repo stopLoop main)"
+  mkdir -p "${S4}/src" ; printf 'x\n' > "${S4}/src/app.ts"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S4}" stS4 true)")"
+  assert_no_block "stop-reconcile: stop_hook_active=true never blocks (loop guard)" "${out}"
+
+  # Non-GitHub tracker -> out of scope, silent.
+  S5="$(git_repo stopJira main)" ; printf 'system: jira\n' > "${S5}/spec/tracker.md"
+  mkdir -p "${S5}/src" ; printf 'x\n' > "${S5}/src/app.ts"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S5}" stS5)")"
+  assert_no_block "stop-reconcile: non-github tracker silent" "${out}"
+
+  # Clean working tree -> nothing to reconcile, silent.
+  S6="$(git_repo stopClean main)"
+  out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S6}" stS6)")"
+  assert_no_block "stop-reconcile: clean tree silent" "${out}"
+else
+  printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
+fi
 
 # ---------------------------------------------------------------------------
 # scripts/template-reconcile.sh — read-only structural diff (not a hook)

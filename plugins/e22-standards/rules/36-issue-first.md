@@ -1,9 +1,12 @@
 ## Issue-first (GitHub-adopted repos)
 
-When `/spec/tracker.md` declares `system: github`, every requested code, config,
-infrastructure, or behavior change has a GitHub issue **before the first
-repository mutation**. Reuse the issue the user names; otherwise find-or-create
-one through `/e22-standards:e22-tracker-sync` — an explicit "fix / implement / add / create"
+When `/spec/tracker.md` declares `system: github`, every **implementation-affecting
+mutation** — code, config, infrastructure, or behavior — has a GitHub issue
+**before the first repository mutation**. This is scoped to implementation:
+editing the `/spec` spine, documentation, generated output, and lockfiles is
+*not* an implementation-affecting mutation and needs no issue. Reuse the issue
+the user names; otherwise find-or-create one through
+`/e22-standards:e22-tracker-sync` — an explicit "fix / implement / add / create"
 request does **not** need confirmation to create the issue.
 
 - **Capture-only and ambiguous language do not auto-create.** "Note this", "we

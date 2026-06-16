@@ -23,9 +23,14 @@ Two invariants underpin everything:
 
 1. **Local interactive Claude Code is the primary worker.** Unattended GitHub
    Actions execution is out of scope and would require a separate explicit signal.
-2. **Every repository mutation has a GitHub issue first** — in a GitHub-adopted
-   repo (`/spec/tracker.md` → `system: github`), reuse the issue the user names
-   or create one before the first code/config/infra/behavior change.
+2. **Every implementation-affecting mutation has a GitHub issue first** — in a
+   GitHub-adopted repo (`/spec/tracker.md` → `system: github`), reuse the issue
+   the user names or create one before the first code/config/infra/behavior
+   change. "Implementation-affecting" is the scope: editing the `/spec` spine,
+   documentation, generated output, and lockfiles is exempt. Two non-blocking
+   safety nets reinforce this — a PreToolUse nudge at the first editor write, and
+   a Stop-time working-tree reconciliation that catches Bash-mediated mutations
+   the editor nudge never sees. Both report; neither enforces.
 3. **Explicit capture/implementation requests create issues without confirmation**
    ("create an issue for…", "add to the backlog", "fix this bug", "implement
    #123"). Ambiguous conversation that did not request capture does **not**
