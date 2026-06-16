@@ -40,6 +40,18 @@ Desktop.ini
 /Element 22 AI collaborative dev workflow/
 
 # ---------------------------------------------------------------------------
+# Other AI / editor tool state — per-developer local config, never committed.
+# (.claude/ is handled above; the project-level .claude/settings.json there
+# stays committable on purpose.) .codegraph/ also carries its own .gitignore,
+# but ignore the whole dir so its pid/marker files don't surface either.
+# ---------------------------------------------------------------------------
+.cursor/
+.gemini/
+.kiro/
+.codegraph/
+.mcp.json
+
+# ---------------------------------------------------------------------------
 # Node / npm (defensive — no JS today, but harmless)
 # ---------------------------------------------------------------------------
 node_modules/

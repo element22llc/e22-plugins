@@ -5,10 +5,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
-### [Unreleased]
+### 1.49.0
 
-Audit-mitigation series (rev. 2). Implementation PRs accumulate here; the release
-PR assigns the version and converts this to a versioned entry.
+Audit-mitigation series (rev. 2) — corrects the spec/issue state model, removes
+the legacy command shims, adds a canonical enum registry plus a standards
+validation gate, formalizes the productionization lifecycle and a single
+authorization authority, and hardens the point-of-action hooks.
 
 - **Lifecycle coherence (audit F2, F3, F7, F8, F19).** Corrects the spec/issue
   state model before it is canonicalized:
