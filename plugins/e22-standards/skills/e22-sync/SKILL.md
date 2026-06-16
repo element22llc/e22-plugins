@@ -37,12 +37,23 @@ spec-vs-tracker drift check (`/e22-standards:e22-drift`), and **not** a code-hea
 
 ## Steps
 
-1. **Confirm it's a sync case.** There must be an existing `/spec` spine — this
-   repo already went through `/e22-standards:e22-init` or `/e22-standards:e22-adopt`. If there's **no
-   `/spec`**, stop and redirect: `/e22-standards:e22-init` (greenfield / template fork) or
-   `/e22-standards:e22-adopt` (existing app to reverse-engineer). Work on a `feat/e22-sync`
-   branch — never commit to `main` (commit-autonomy rule). Nothing is committed
-   until the dev approves.
+1. **Confirm it's a sync case, and capture the base branch.** There must be an
+   existing `/spec` spine — this repo already went through `/e22-standards:e22-init`
+   or `/e22-standards:e22-adopt`. If there's **no `/spec`**, stop and redirect:
+   `/e22-standards:e22-init` (greenfield / template fork) or `/e22-standards:e22-adopt`
+   (existing app to reverse-engineer). **Before creating any branch, record the
+   currently checked-out branch — call it `BASE`:**
+
+   ```sh
+   BASE=$(git rev-parse --abbrev-ref HEAD)
+   ```
+
+   `BASE` is the branch the dev invoked the sync from; the sync's PR targets it
+   (step 7), so the sync lands back onto the work it continues, not `main`. Then
+   branch a `feat/e22-sync` off `BASE` and work there — never commit to `main` or
+   to `BASE` directly (commit-autonomy rule). If `BASE` *is* `main` (the dev ran
+   sync from a clean trunk), that's the one case the PR targets `main`. Nothing is
+   committed until the dev approves.
 
 2. **Update the plugin first.** The ledger and templates this skill reads are
    only current if the plugin is. Tell the dev to run
@@ -101,8 +112,17 @@ spec-vs-tracker drift check (`/e22-standards:e22-drift`), and **not** a code-hea
 7. **Record and hand off.** Append a `/spec/HISTORY.md` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled — why,
    who asked, refs). Commit on `feat/e22-sync`, then **propose** opening the PR
-   and wait for the dev's confirmation before pushing/creating it — that review
-   is the gate. Run the end-of-session checklist.
+   **against `BASE`** (the branch captured in step 1) and wait for the dev's
+   confirmation before pushing/creating it — that review is the gate. The PR base
+   is **always `BASE`**, not `main` — the sync rejoins the work it continues. Do
+   not ask the dev which base to use; state that the PR targets `BASE` and let
+   them correct it if wrong. When you create it:
+
+   ```sh
+   gh pr create --base "$BASE" --head feat/e22-sync ...
+   ```
+
+   Run the end-of-session checklist.
 
 8. **Recommend the next action.** Emit a `## Recommended next actions` block per
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, derived from the
@@ -136,3 +156,8 @@ spec-vs-tracker drift check (`/e22-standards:e22-drift`), and **not** a code-hea
   `/spec/.version` — never from training-data memory.
 - **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
   review is the hard gate; propose the PR, don't push it unasked.
+- **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
+  dev invoked the sync from (captured in step 1), so the sync lands back onto the
+  work it continues. Only when `BASE` is itself `main` does the PR target `main`.
+  Never silently default `gh pr create` to the repo's default branch, and never
+  ask the dev to pick the base — `BASE` already answers that.
