@@ -91,7 +91,7 @@ uv run <your-dev-command>
 
 > On **Windows**, run all of the above inside WSL2 — see [Windows: develop in WSL](#windows-develop-in-wsl).
 
-Before the `@claude` and Claude Code Review GitHub workflows will run, add an `ANTHROPIC_API_KEY` repository secret — see [GitHub Actions secret](#github-actions-secret) below. To use the GitHub MCP server from local Claude Code sessions, export a `GITHUB_PAT` — see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
+Before the `@claude` GitHub workflow will run, add an `ANTHROPIC_API_KEY` repository secret — see [GitHub Actions secret](#github-actions-secret) below. To use the GitHub MCP server from local Claude Code sessions, export a `GITHUB_PAT` — see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
 
 ## Windows: develop in WSL
 
@@ -109,7 +109,7 @@ On Windows, do all development inside **WSL2** (Ubuntu recommended), not native 
 
 - **`ANTHROPIC_API_KEY`** — create at <https://console.anthropic.com/settings/keys>, scoped to this project's billing workspace (not a personal key). Add it under **Settings → Secrets and variables → Actions → New repository secret**.
 
-Verify: open any PR and wait for `Claude Code Review` to leave a comment. A 401 in the workflow log means the secret is missing, wrong, or scoped to a different workspace. These workflows use `anthropics/claude-code-action@v1` and do **not** consume `.mcp.json` or `GITHUB_PAT`.
+Verify: comment `@claude` on any PR or issue and wait for it to reply (the shipped `claude.yml` is the `@claude` mention workflow; there is no automatic-review workflow unless you add one). A 401 in the workflow log means the secret is missing, wrong, or scoped to a different workspace. This workflow uses `anthropics/claude-code-action@v1` and does **not** consume `.mcp.json` or `GITHUB_PAT`.
 
 ## GitHub MCP server (local Claude Code only)
 
@@ -125,4 +125,4 @@ Never put the token in a repo file (even gitignored), commit a `.mcp.json` with 
 
 On `main`, require: a PR before merging; 1 approval; dismiss stale approvals on new commits; the `ci` status check; linear history; and no bypassing — even for admins — unless the team explicitly approves. In **Settings → Code security**, enable Secret scanning + push protection.
 
-Be honest about what `ci` verifies: out of the box it runs only stack-agnostic hygiene (`actionlint`, `shellcheck`). Your per-app lint/test/build steps ship commented-out in `.github/workflows/ci.yml` — activate them early so a green `ci` actually means tests passed. The `design.md` lint job is advisory and intentionally not required.
+Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the e22 version-pin scan), then auto-detects your stack and runs its checks — Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran". Before any app exists, only the hygiene phase runs and `ci` reports that application validation is not yet active. The `design.md` lint job is advisory and intentionally not required.

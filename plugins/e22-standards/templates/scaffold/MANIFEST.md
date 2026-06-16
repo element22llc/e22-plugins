@@ -35,7 +35,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `claude/settings.json` | `.claude/settings.json` | Enables `e22-standards` + companion plugins; git permission guardrails. Merge if one exists. |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
-| `github/workflows/ci.yml` | `.github/workflows/ci.yml` | Stack-agnostic hygiene CI; per-stack steps ship commented — activate them early. |
+| `github/workflows/ci.yml` | `.github/workflows/ci.yml` | CI: always-on stack-agnostic hygiene + auto-detected stack checks (Node/Python); a detected stack with no tests fails. |
 | `github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
 | `github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
 | `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/e22-standards:e22-issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/e22-standards:e22-init` and `/e22-standards:e22-adopt`. Used when GitHub Issues is the tracker; harmless otherwise. Agent-authored issue bodies (feature/bug/finding/spec-question/drift/task) are **not** installed — they live in the plugin at `templates/github/issue-bodies/`. |
@@ -62,7 +62,8 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |
-| *(empty dirs)* | `spec/features/.gitkeep`, `spec/decisions/.gitkeep` | Created empty; populated by `/e22-standards:e22-spec-scaffold` and `/e22-standards:e22-adr`. |
+| `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/e22-standards:e22-spec-scaffold` populates it. |
+| `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/e22-standards:e22-adr` populates it. |
 
 The per-feature (`feature-intent.md`, `feature-contract.md` via
 `/e22-standards:e22-spec-scaffold`) and per-decision (`adr.md` via
