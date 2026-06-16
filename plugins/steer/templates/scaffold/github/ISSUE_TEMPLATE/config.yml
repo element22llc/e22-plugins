@@ -1,5 +1,8 @@
 blank_issues_enabled: false
-contact_links:
-  - name: Ask a question
-    url: https://github.com/orgs/element-22/discussions
-    about: Not sure if it is a bug or a feature? Start a discussion.
+# Optional contact link. Ships disabled so the scaffold carries no org-specific
+# URL — uncomment and set your own org/repo to point contributors at a
+# discussions board or chat. `/steer:init` / `/steer:adopt` will offer to enable it.
+# contact_links:
+#   - name: Ask a question
+#     url: https://github.com/orgs/<your-org>/discussions
+#     about: Not sure if it is a bug or a feature? Start a discussion.

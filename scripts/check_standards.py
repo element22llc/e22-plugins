@@ -21,6 +21,8 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
 7. README skill inventory matches the skills on disk.
 8. Cross-field invariants (registry internal consistency; approval-evidence
    fields present in the intent template).
+9. Installed payload (templates/scaffold, templates/spec, templates/reference)
+   carries no org-specific brand — the scaffold stays client-agnostic.
 
 Usage::
 
@@ -517,6 +519,39 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
             )
 
 
+# --- check 11: installed payload carries no org-specific branding ---
+
+# Files under these dirs are copied verbatim into consumer repos by
+# /steer:init / /steer:adopt, so they must stay client-agnostic. The company
+# brand is always written with a separator ("element-22" / "Element 22"); the
+# marketplace org "element22llc" has none, so this never flags the legitimate
+# `element22llc/e22-plugins` repo reference, and the author email retained in
+# the manifests lives outside these payload dirs.
+_PAYLOAD_DIRS = ["templates/scaffold", "templates/spec", "templates/reference"]
+_BRAND_RE = re.compile(r"element[\s-]22", re.IGNORECASE)
+
+
+def check_payload_debranded(errors: list[str]) -> None:
+    for d in _PAYLOAD_DIRS:
+        base = PLUGIN_ROOT / d
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*")):
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError, OSError:
+                continue
+            for lineno, line in enumerate(text.splitlines(), 1):
+                if _BRAND_RE.search(line):
+                    rel = path.relative_to(PLUGIN_ROOT)
+                    errors.append(
+                        f"{rel}:{lineno}: org-specific brand in installed payload "
+                        f"({line.strip()!r}) — keep the scaffold client-agnostic"
+                    )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -532,6 +567,7 @@ def run_checks(errors: list[str]) -> None:
     check_readme_inventory(errors, skills)
     check_authorization(errors)
     check_scaffold_version_copies(errors)
+    check_payload_debranded(errors)
 
 
 def main() -> int:

@@ -5,6 +5,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Scaffold de-branded (client-agnostic).** The bundled
+  `.github/ISSUE_TEMPLATE/config.yml` no longer ships a hardcoded
+  `element-22` discussions URL — its contact link is now commented out by
+  default, with init/adopt offering to point it at the team's own
+  discussions/chat. The `MANIFEST.md` per-file note records this.
+- **New CI guard against brand leaks in installed payload.**
+  `check_standards.py` now fails if any company-specific brand (`element-22` /
+  `Element 22`) appears under `templates/scaffold`, `templates/spec`, or
+  `templates/reference` — the dirs copied verbatim into consumer repos. The
+  marketplace org `element22llc` and repo `e22-plugins` are unaffected (no
+  separator), and the retained author email in the manifests is out of scope.
+- **Doc fix.** `CLAUDE.md`'s skill list named the meta-skill `steer`; it is
+  `standards`, invoked `/steer:standards`.
+- **Version-pin bypass marker now honors multi-segment pins.** The same-line
+  `steer:allow-pin` boundary check in `check-version-pins.sh` excluded `.`, so a
+  3-segment pin (e.g. `node:18.20.1`) ignored its justification marker; the
+  boundary now excludes only digits while still blocking partial-major matches.
+
 ### 2.0.0
 
 **Client-agnostic rebrand — `e22-standards` → `steer` (breaking).** The plugin is
