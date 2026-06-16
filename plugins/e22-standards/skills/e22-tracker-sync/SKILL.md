@@ -3,6 +3,10 @@ name: e22-tracker-sync
 description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /e22-standards:e22-issues and /e22-standards:e22-work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, transition, assign/claim, link, close/reopen, add-to-project) plus the higher-level PULL (materialize issues for /e22-standards:e22-drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
 when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, link a PR, pull issues into the /e22-standards:e22-drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
+# Internal gateway: invoked by /e22-standards:e22-issues and /e22-standards:e22-work
+# (and the read flows of e22-drift), never a direct user entry point. Model-callable,
+# hidden from the slash menu, so it never competes with the orchestrators above it.
+user-invocable: false
 ---
 <!-- e22:modes issue,pull,push -->
 

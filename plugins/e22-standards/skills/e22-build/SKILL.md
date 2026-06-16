@@ -81,10 +81,14 @@ on the next `/e22-standards:e22-build` run.
    related items?*). The PO defines these **semantics**; the schema and
    deletion mechanics derived from them are the dev's to confirm at review.
 4. **PO validation gate.** Walk the PO through each `intent.md` in plain
-   language ("here's what I understood — is this right?"). Check the
-   **PO acceptance** boxes only on their explicit approval and note where the
-   approval happened. **Do not start broad implementation before the intents
-   are approved.**
+   language ("here's what I understood — is this right?"). On the PO's explicit
+   approval, **delegate the transition to `/e22-standards:e22-spec approve
+   <feature-id>`** — that mode is the single owner of `draft → approved` and
+   writes the `## PO acceptance` boxes, the `> Approved by:` / `> Approved at:`
+   header, the `Status:` flip, and the HISTORY entry. Do **not** edit those
+   approval fields here; an explicit PO statement authorizes the delegated run,
+   and the PO never types a command. **Do not start broad implementation before
+   the intents are approved.**
 5. **Scaffold the real app.** Replace the starter `apps/web` with the default
    stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
    `/e22-standards:e22-init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile

@@ -38,6 +38,6 @@ Do this now:
 
 The router (`00-router.md`) points to the on-demand reference skills
 (`/e22-standards:e22-conventions`, `/e22-standards:e22-traceability`, `/e22-standards:e22-design-sources`,
-`/e22-standards:e22-spec-scaffold`, `/e22-standards:e22-init`, `/e22-standards:e22-adopt`) — those work normally in
+`/e22-standards:e22-init`, `/e22-standards:e22-adopt`) — those work normally in
 Cowork since skills are supported there; only the always-on injection needed
 this fallback.

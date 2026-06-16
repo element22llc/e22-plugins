@@ -114,10 +114,17 @@ silence must never read as "passed." A failing check **blocks the relevant gate*
 
 ## Approve mode — `/e22-standards:e22-spec approve <feature-id>`
 
+<!-- e22:transition-owner feature-status:draft->approved -->
+
 Records a PO's intent approval as a **structural, mechanically-checkable**
-transition — never a free-form "looks good." It is the **only** path that flips a
-feature's `Status:` to `approved`; `/e22-standards:e22-issues materialize` deliberately stops
-at `draft`.
+transition — never a free-form "looks good." This mode is the **single owner and
+only writer** of the `draft → approved` transition; `/e22-standards:e22-issues
+materialize` deliberately stops at `draft`. Other workflows (notably
+`/e22-standards:e22-build`) **delegate** here after an explicit PO approval —
+they invoke this operation but **must not reproduce its field-editing logic**
+(the `## PO acceptance` checkboxes, `> Approved by:` / `> Approved at:`, the
+`Status:` flip, or the HISTORY entry). An explicit PO statement authorizes Claude
+to run this operation; the PO never has to know or type the slash command.
 
 **Allowed transition — `draft → approved` only.**
 

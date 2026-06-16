@@ -17,7 +17,11 @@ a silent regression in the shared vocabulary is caught in CI:
   ``Accepted`` ADRs from inferred code);
 - the repo's own ``tests/fixtures/`` scenarios encode the spec's minimum
   assertions (next-actions present, no misleading "Required before production"
-  language on optional work, valid lifecycle, stable markers).
+  language on optional work, valid lifecycle, stable markers);
+- the workflow-authority contracts hold: exactly one skill owns ``draft ->
+  approved``, ``e22-build`` delegates approval, the issue-first scope wording is
+  "implementation-affecting mutation", and the Stop-time reconciliation hook is
+  registered with its loop guard intact.
 
 Run from the repo root::
 
@@ -36,7 +40,14 @@ from pathlib import Path
 PLUGIN_ROOT = Path("plugins/e22-standards")
 REFERENCE = PLUGIN_ROOT / "templates" / "reference"
 SPEC_TEMPLATES = PLUGIN_ROOT / "templates" / "spec"
+SKILLS = PLUGIN_ROOT / "skills"
+RULES = PLUGIN_ROOT / "rules"
+HOOKS = PLUGIN_ROOT / "hooks"
 REPO_FIXTURES = Path("tests/fixtures")
+
+# The single canonical marker that names the owner of the draft -> approved
+# feature transition. Exactly one skill (e22-spec) may carry it.
+_TRANSITION_OWNER_RE = re.compile(r"e22:transition-owner\s+feature-status:draft->approved")
 
 
 def _registry() -> dict[str, list[str]]:
@@ -273,6 +284,84 @@ def check_repo_fixtures(errors: list[str]) -> None:
             errors.append(f"{drift}: invalid Expected category '{category}'")
 
 
+def check_workflow_authority(errors: list[str]) -> None:
+    """Lock the workflow-authority and lifecycle-transition contracts.
+
+    These are *semantic* contracts about who may do what — not vocabulary or file
+    structure — so a refactor that silently re-scatters approval authority, breaks
+    the issue-first scope wording, or drops the Stop-time loop guard is caught in
+    CI rather than at pilot time:
+
+    - exactly one skill (``e22-spec``) owns the ``draft -> approved`` transition,
+      marked by the canonical transition-owner comment;
+    - ``e22-build`` *delegates* approval to ``e22-spec approve`` and never owns the
+      transition or re-implements its field edits;
+    - the issue-first contract (rule 36 + ISSUE-WORKFLOW) is scoped to an
+      "implementation-affecting mutation", not "every repository change";
+    - the Stop-time reconciliation hook exists, is registered, classifies changes
+      through the shared classifier, and carries the ``stop_hook_active`` loop
+      guard so it cannot loop indefinitely.
+    """
+    # 1. Exactly one skill owns draft -> approved, and it is e22-spec.
+    owners = sorted(
+        skill_md.parent.name
+        for skill_md in SKILLS.glob("*/SKILL.md")
+        if _TRANSITION_OWNER_RE.search(_read(skill_md))
+    )
+    if owners != ["e22-spec"]:
+        errors.append(
+            "workflow authority: the draft->approved transition-owner marker must "
+            f"appear in exactly one skill (e22-spec); found {owners or 'none'}"
+        )
+
+    # 2. e22-build delegates approval and never owns the transition itself.
+    build = SKILLS / "e22-build" / "SKILL.md"
+    if not build.is_file():
+        errors.append(f"{build}: e22-build skill is missing")
+    else:
+        btext = _read(build)
+        if "e22-spec approve" not in btext or "delegate" not in btext.lower():
+            errors.append(
+                f"{build}: e22-build must delegate approval to "
+                "'/e22-standards:e22-spec approve' (delegation directive not found)"
+            )
+        if _TRANSITION_OWNER_RE.search(btext):
+            errors.append(
+                f"{build}: e22-build must not own the draft->approved transition — "
+                "delegate to e22-spec instead of carrying the transition-owner marker"
+            )
+
+    # 3. Issue-first contract uses the scoped "implementation-affecting mutation".
+    for path in (RULES / "36-issue-first.md", REFERENCE / "ISSUE-WORKFLOW.md"):
+        if not path.is_file():
+            errors.append(f"{path}: issue-first source is missing")
+        elif "implementation-affecting mutation" not in _read(path):
+            errors.append(
+                f"{path}: issue-first contract must use the scoped phrase "
+                "'implementation-affecting mutation'"
+            )
+
+    # 4. The Stop-time reconciliation hook exists, is registered, and is safe.
+    stop_hook = HOOKS / "reconcile-issue-first.sh"
+    if not stop_hook.is_file():
+        errors.append(f"{stop_hook}: Stop reconciliation hook is missing")
+    else:
+        htext = _read(stop_hook)
+        if "stop_hook_active" not in htext:
+            errors.append(
+                f"{stop_hook}: must guard re-entry via stop_hook_active "
+                "(the Stop hook must not loop indefinitely)"
+            )
+        if "e22_class_nudges" not in htext:
+            errors.append(
+                f"{stop_hook}: must classify changes through the shared classifier "
+                "(lib/classify.sh) so editor and Bash mutations reconcile consistently"
+            )
+    hooks_json = HOOKS / "hooks.json"
+    if hooks_json.is_file() and "reconcile-issue-first.sh" not in _read(hooks_json):
+        errors.append(f"{hooks_json}: Stop reconciliation hook is not registered under Stop")
+
+
 def run_checks() -> list[str]:
     errors: list[str] = []
     check_next_actions_contract(errors)
@@ -281,6 +370,7 @@ def run_checks() -> list[str]:
     check_spec_headings(errors)
     check_adr_default_proposed(errors)
     check_repo_fixtures(errors)
+    check_workflow_authority(errors)
     return errors
 
 

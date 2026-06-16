@@ -5,6 +5,51 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.51.0
+
+Pre-pilot coherence and safety hardening — makes five workflow guarantees
+consistent and executable before other developers rely on the plugin. No
+lifecycle enum, tracker marker, or managed-block contract changes.
+
+- **One canonical `draft → approved` transition.** `/e22-standards:e22-spec
+  approve` is now marked (hidden `e22:transition-owner` comment) as the **single
+  owner and only writer** of the feature approval transition.
+  `/e22-standards:e22-build`'s PO validation gate **delegates** to it on explicit
+  PO approval instead of editing the `## PO acceptance` boxes, `> Approved by:` /
+  `> Approved at:`, the `Status:` flip, or the HISTORY entry itself — so approval
+  authority lives in exactly one place and the approve-time validation gate
+  always runs.
+- **Issue-first scope made precise + a Stop-time backstop.** Rule 36 and
+  `ISSUE-WORKFLOW.md` now scope the requirement to an **implementation-affecting
+  mutation** (code/config/infra/behavior) and state explicitly that editing the
+  `/spec` spine, docs, generated output, and lockfiles is exempt — no claim that
+  *every* repository change needs an issue. A new **`Stop` hook**
+  (`reconcile-issue-first.sh`) reconciles the working tree at end-of-turn and
+  reports implementation-affecting changes left on a branch that does not
+  reference an issue — catching **Bash-mediated** mutations the PreToolUse editor
+  nudge never sees. It shares the classifier with that nudge, stays silent on
+  issue branches and exempt-only changes, fires at most once per session+repo,
+  and carries a `stop_hook_active` loop guard. Non-blocking and POSIX-sh,
+  fail-open, no `jq`/network — it reports, it does not enforce.
+- **Internal skill invocation boundaries.** `/e22-standards:e22-tracker-sync`
+  (the GitHub tracker-metadata gateway) and `/e22-standards:e22-spec-scaffold`
+  (template instantiation) are now `user-invocable: false` — still callable by
+  Claude as orchestration helpers, but hidden from the slash menu so they don't
+  compete with the high-level entry points (`e22-issues`/`e22-work` and
+  `e22-spec`/`e22-build`). Router and rule prose reframed to reach them through
+  the orchestrators rather than advertising them as direct commands.
+- **`e22-adopt` split for compaction resilience.** The skill's detailed
+  thirteen-phase runbook moves to a co-located `PROCEDURE.md`; `SKILL.md`
+  (21.6 KiB → 7.1 KiB) becomes a lean spine that hoists the **non-negotiable
+  guardrails** (no fabricated ADRs, humans decide intent, never clobber working
+  code, secrets are stop-and-rotate, reconcile-on-resume) to the top and maps each
+  phase to its procedure — so the critical guards survive context compaction.
+- **Workflow-authority fixtures.** `check_fixtures.py` gains a semantic contract
+  group that fails CI if approval authority re-scatters (more than one
+  transition-owner, or `e22-build` stops delegating), the issue-first scope
+  wording drifts, or the Stop reconciliation hook loses its registration or loop
+  guard — protecting lifecycle *behavior*, not just vocabulary and file shape.
+
 ### 1.50.0
 
 Audit-mitigation series tail — closes the two residual findings left after
