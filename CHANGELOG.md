@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
-### [Unreleased]
+### 1.51.0
 
 Pre-pilot coherence and safety hardening — makes five workflow guarantees
 consistent and executable before other developers rely on the plugin. No
