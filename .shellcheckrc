@@ -1,0 +1,11 @@
+# ShellCheck config for this repo's POSIX sh hook scripts.
+#
+# Two *info*-level checks fire on the e22-standards hooks and are intentional,
+# not bugs — so they are disabled here (every other check stays on, at all
+# severities, so ShellCheck remains a real gate):
+#
+#   SC2016 — the hooks `printf` literal markdown containing backticks and text
+#            that resembles shell expansions, and use the `printf '...%s...' "$var"`
+#            idiom where %s (not the shell) does the expansion.
+#   SC1003 — `tr -d '"\\'` strips quote/backslash chars and is correct as written.
+disable=SC2016,SC1003

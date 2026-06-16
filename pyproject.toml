@@ -1,0 +1,31 @@
+[project]
+name = "plugin-quality"
+version = "0.1.0"
+description = "Quality tooling for the Element 22 plugin marketplace (hygiene checks, fixtures, tests)."
+requires-python = ">=3.14"
+dependencies = [
+  "pyyaml>=6.0.2",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4",
+  "pre-commit>=4.2",
+  "ruff>=0.12",
+]
+
+[tool.uv]
+# This project is a collection of validation scripts, not an installable
+# package — don't look for a build backend or a package layout.
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
