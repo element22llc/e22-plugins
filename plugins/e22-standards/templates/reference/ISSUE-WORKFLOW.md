@@ -44,6 +44,28 @@ Two invariants underpin everything:
 7. **Original human Issue-Form content is immutable** — agents append a managed
    block, never rewrite form responses (see `ISSUE-SCHEMA.md`).
 
+### Authorization & confirmation
+
+The **single authority** for *when an agent acts without asking* vs *when it
+confirms first*. Skills and hooks **reference this block; none restates it.**
+
+- **Explicit implement / capture request → no extra confirmation.** "fix #123",
+  "implement this", "create an issue for…" authorize find-or-create plus the
+  bounded action set (principle 4) with no second ask.
+- **Bulk publish of audit / drift / adoption findings → one batch confirmation.**
+  Filing many issues from one report (`publish-audit` / `publish-drift` /
+  `publish-adoption`) takes a single confirmation for the whole batch, then
+  proceeds.
+- **Unsolicited idea / capture-only language → confirm before any external
+  publish.** "we should eventually…" is captured deliberately, never inferred
+  into issues; security-sensitive public disclosure takes human review.
+- **Managed-block update inside an already-authorized workflow → no repeated
+  confirmation.** Rewriting the `e22:managed` block (progress, state) needs no
+  further ask; human content stays immutable (principle 7).
+- **State transitions** obey the authority table below; wherever it does not
+  permit *perform*, the agent **proposes and waits** for the named human, and
+  never resolves behavioural drift or a product/policy decision autonomously.
+
 ## The lifecycle
 
 1. **Capture** — a PO opens an issue from a form (feature / bug / product
@@ -60,7 +82,8 @@ Two invariants underpin everything:
    `spec/features/<id>/intent.md` with `Status: draft`, links the issue, and
    requests PO approval. **Materialize never approves** — only an explicit
    `/e22-standards:e22-spec approve` flips `Status: approved`.
-5. **Technical shaping** — `/e22-standards:e22-spec contract <id>`; large features become a
+5. **Technical shaping** — `/e22-standards:e22-spec` authors the feature's
+   `contract.md` where behavior demands it; large features become a
    parent feature issue with implementation sub-issues
    (`/e22-standards:e22-issues decompose #N`).
 6. **Implementation & product validation** — PRs use closing refs

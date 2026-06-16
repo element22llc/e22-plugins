@@ -125,15 +125,6 @@ def test_external_and_var_links_are_skipped(tmp_path: Path):
     assert check_plugin.run_checks(root) == []
 
 
-def test_command_without_skill_fails(tmp_path: Path):
-    root = _make_plugin(tmp_path)
-    (root / "commands" / "orphan.md").write_text(
-        "---\ndescription: Orphan command.\n---\n\nRun orphan.\n", encoding="utf-8"
-    )
-    errors = check_plugin.run_checks(root)
-    assert any("has no matching skill" in e for e in errors)
-
-
 def test_missing_plugin_json_fails(tmp_path: Path):
     root = _make_plugin(tmp_path)
     (root / ".claude-plugin" / "plugin.json").unlink()

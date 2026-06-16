@@ -4,6 +4,7 @@ description: "The GitHub Issues tracker-metadata gateway for the /spec spine —
 when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, link a PR, pull issues into the /e22-standards:e22-drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 ---
+<!-- e22:modes issue,pull,push -->
 
 # Sync the /spec spine with GitHub Issues
 

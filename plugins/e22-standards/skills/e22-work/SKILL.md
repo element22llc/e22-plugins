@@ -4,6 +4,7 @@ description: "Execute a GitHub issue end-to-end from local Claude Code — read 
 when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented.
 argument-hint: "[start | resume | status | finish] [#issue ...]"
 ---
+<!-- e22:modes start,resume,status,finish -->
 
 Implement work from a GitHub issue by following the `e22-work` skill. This is the
 **execution** layer of the issue-first workflow: `/e22-standards:e22-issues` manages the
