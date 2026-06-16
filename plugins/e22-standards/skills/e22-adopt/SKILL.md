@@ -62,9 +62,8 @@ from the unchecked items.
    file looks complete):
 
    ```sh
-   comm -13 \
-     <(grep -hE '^(#{2,3} |- \[)' spec/PRODUCTIONIZATION.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
-     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+   sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+     spec/PRODUCTIONIZATION.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md"
    ```
 
    It prints the `##` sections and checklist items the bundled template has that the

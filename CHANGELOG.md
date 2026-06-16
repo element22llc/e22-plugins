@@ -8,8 +8,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 Audit-mitigation series tail — closes the two residual findings left after
-rev. 2. Prose-only; no behavioral logic or hook changes.
+rev. 2, plus an `e22-build` onboarding-accuracy fix and a small reconciliation-
+tooling refactor. No change to hook behavior.
 
+- **e22-build onboarding accuracy + shared reconciliation helper.**
+  `/e22-standards:e22-build`'s "PO needs only Claude Code and Docker Desktop" line
+  now states the PO installs those two on a *supported machine* (macOS / Linux /
+  Windows-via-WSL2, per the `Stack` rule) while Claude verifies and drives the
+  rest. The duplicated `comm -13 <(…)` process-substitution reconciliation
+  snippet (the canonical *Template reconciliation* convention plus the
+  `e22-build`, `e22-adopt`, and `e22-spec-scaffold` skills) is replaced by one
+  bundled POSIX-sh helper, `scripts/template-reconcile.sh` — read-only, with a
+  documented contract (inputs, what it compares, exit codes) and fixture
+  coverage in the hook test suite.
 - **Initialization ADR status (audit F17).** `/e22-standards:e22-init` step 4 now
   states that the initial-stack ADR's status follows who decided: an *explicit*
   stack choice in the interactive setup is authored `Accepted` with the dev as

@@ -27,9 +27,8 @@ feature, using the canonical E22 templates bundled with this plugin.
    contract):
 
    ```sh
-   comm -13 \
-     <(grep -hE '^(#{2,3} |- \[)' spec/features/[id]/intent.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
-     <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+   sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+     spec/features/[id]/intent.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md"
    # repeat with contract.md vs feature-contract.md
    ```
 

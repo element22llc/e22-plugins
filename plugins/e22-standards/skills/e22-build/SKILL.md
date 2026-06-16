@@ -9,8 +9,12 @@ argument-hint: "[idea or product description]"
 
 This is the PO-facing path through the standard E22 Greenfield flow
 (`Spec workflow` rules): interview → spec → PO approval → build → demo → PR.
-The PO needs only **Claude Code and Docker Desktop** installed; you drive all
-other tooling yourself. Speak plainly throughout — no git/stack jargon (see the
+The PO personally installs only **Claude Code and Docker Desktop**, on a
+supported machine — **macOS, Linux, or Windows via WSL2** (the org toolchain
+assumes a POSIX shell; see the `Stack` rule). You verify and drive everything
+else yourself: install the supported local toolchain (mise, then pnpm/uv, git)
+where the OS permits, and handle GitHub auth for the eventual PR — never hand the
+PO commands. Speak plainly throughout — no git/stack jargon (see the
 "Who you are working with" rule).
 
 Set expectations up front, in plain language: *"I'll ask you questions, write
@@ -33,9 +37,8 @@ which may have gained sections under a later `/plugin update`. Don't eyeball it;
 run the diff and act on its output:
 
 ```sh
-comm -13 \
-  <(grep -hE '^(#{2,3} |- \[)' spec/BUILD-STATUS.md | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
-  <(grep -hE '^(#{2,3} |- \[)' "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
+  spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
 It surfaces the `##` sections and checklist items the bundled template has that the
@@ -58,9 +61,10 @@ on the next `/e22-standards:e22-build` run.
      at review". Keep the **E22 default stack** — no override interview; the
      defaults exist for exactly this case.
    - Drive the toolchain yourself: install mise if missing (e.g.
-     `brew install mise` on macOS), run `mise install`, and verify the
-     `mise.lock` files gained real `[[tools.*]]` entries (see `/e22-standards:e22-init`
-     step 4). Confirm Docker Desktop is running; help start it if not.
+     `brew install mise` on macOS; on Linux/WSL2 use mise's install script), run
+     `mise install`, and verify the `mise.lock` files gained real `[[tools.*]]`
+     entries (see `/e22-standards:e22-init` step 4). Confirm Docker Desktop is
+     running; help start it if not.
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`):
    ask plain-language questions to fill `spec/vision.md`,

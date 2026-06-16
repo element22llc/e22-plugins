@@ -48,6 +48,7 @@ assert_deny()    { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && o
 assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
 assert_ctx()     { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
 assert_eq()      { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
+assert_rc()      { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
 
 new_repo() { _r="${WORK}/$1"; mkdir -p "${_r}"; printf '' > "${_r}/.git"; printf '%s' "${_r}"; }
 
@@ -177,6 +178,39 @@ assert_empty "issue-first: non-github tracker silent" "${out}"
 R10="$(new_repo repoNoTracker)" ; mkdir -p "${R10}/spec"
 out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
 assert_empty "issue-first: no tracker silent" "${out}"
+
+# ---------------------------------------------------------------------------
+# scripts/template-reconcile.sh — read-only structural diff (not a hook)
+# ---------------------------------------------------------------------------
+RECON="${PLUGIN}/scripts/template-reconcile.sh"
+RDIR="${WORK}/recon" ; mkdir -p "${RDIR}"
+
+printf '## A\n- [ ] one\n' > "${RDIR}/existing.md"
+printf '## A\n## B\n- [ ] one\n- [ ] two\n' > "${RDIR}/bundled.md"
+
+out="$(sh "${RECON}" "${RDIR}/existing.md" "${RDIR}/bundled.md" 2>/dev/null)" ; rc=$?
+assert_rc "reconcile: gaps run exits 0" "${rc}" 0
+printf '%s' "${out}" | grep -q '## B' && ok || bad "reconcile: missing heading reported (got: ${out})"
+printf '%s' "${out}" | grep -q -- '- \[ \] two' && ok || bad "reconcile: missing checklist item reported (got: ${out})"
+printf '%s' "${out}" | grep -q '## A' && bad "reconcile: shared anchor wrongly reported (got: ${out})" || ok
+
+# identical anchors -> file already current -> silent
+out="$(sh "${RECON}" "${RDIR}/bundled.md" "${RDIR}/bundled.md" 2>/dev/null)" ; rc=$?
+assert_rc "reconcile: current run exits 0" "${rc}" 0
+assert_empty "reconcile: current file -> silent" "${out}"
+
+# checkbox state normalized: [x] in existing vs [ ] in bundled is NOT a diff
+printf '## A\n- [x] one\n' > "${RDIR}/checked.md"
+printf '## A\n- [ ] one\n' > "${RDIR}/unchecked.md"
+out="$(sh "${RECON}" "${RDIR}/checked.md" "${RDIR}/unchecked.md" 2>/dev/null)" ; rc=$?
+assert_rc "reconcile: checkbox-normalization exits 0" "${rc}" 0
+assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
+
+# usage + unreadable inputs
+out="$(sh "${RECON}" "${RDIR}/existing.md" 2>/dev/null)" ; rc=$?
+assert_rc "reconcile: wrong arg count -> exit 2" "${rc}" 2
+out="$(sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md" 2>/dev/null)" ; rc=$?
+assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
