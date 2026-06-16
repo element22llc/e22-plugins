@@ -266,7 +266,9 @@ from the unchecked items.
    | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/e22-adr` |
    | Adoption PR not yet opened | Blocking now (next transition) | Open the adoption PR (after dev confirmation) |
    | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |
-   | Unresolved production blocker among findings | Required before production | Fix or explicitly accept it |
+   | Unresolved production blocker, app not yet live | Required before initial production | Fix or explicitly accept it |
+   | Unresolved blocker on an already-live app, actively harming users | Urgent live-system remediation | Fix or explicitly accept it now |
+   | Unresolved blocker on an already-live app, not an active incident | Required before next production release | Fix or explicitly accept it |
    | Selected findings not published | Recommended | `/e22-issues publish-adoption` |
    | Findings published, not shaped | Recommended | `/e22-issues triage` / `decompose` |
    | `/spec/.version` stale | Recommended | `/e22-sync` |

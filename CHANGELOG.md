@@ -5,6 +5,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### [Unreleased]
+
+Audit-mitigation series (rev. 2). Implementation PRs accumulate here; the release
+PR assigns the version and converts this to a versioned entry.
+
+- **Lifecycle coherence (audit F2, F3, F7, F8, F19).** Corrects the spec/issue
+  state model before it is canonicalized:
+  - **F2** — materialized intents are written as `Status: draft` (not
+    `proposed`); only `/e22-spec approve` flips to `approved`. Prose aligned in
+    `e22-issues`, rule `30-spec-workflow`, and `ISSUE-WORKFLOW.md`.
+  - **F3** — new **`/e22-spec approve <feature-id>`** subcommand with an explicit
+    transition contract: `draft → approved` only (refuses to downgrade
+    `implemented`/`validated`/`live`; idempotent on `approved`); an exact
+    blocking-question predicate (blocking impact ∧ unresolved status ∧
+    `intent-approval` gate); and structural approval evidence (`> Approved by:` /
+    `> Approved at:` added to the intent template) plus one HISTORY entry.
+  - **F7** — lifecycle-aware production categories replace the single "Required
+    before production": **Required before initial production**, **Required before
+    next production release**, and **Urgent live-system remediation**, so an
+    already-live system never gets a pre-launch instruction. Updated across
+    `NEXT-ACTIONS.md`, `e22-spec`/`e22-build`/`e22-drift`/`e22-adopt`/`e22-next`,
+    and the next-action fixtures.
+  - **F8** — closure **reason**, not mere closure, decides the terminal state:
+    new `cancelled` state added to the issue-state enum; `validate → done` only
+    when closed as `completed`; `rejected`/`duplicate`/`obsolete`/`not-planned`/
+    `superseded` → `cancelled`. Wired into `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`,
+    `e22-work`, and `e22-next`.
+  - **F19** — **contract readiness** is a mechanically-derived signal
+    (`ready | incomplete | missing`, never `approved`) defined in
+    `spec-framework.md`; `/e22-issues status` and the `decompose` precondition
+    share the one derivation so they cannot disagree.
+
 ### 1.48.0
 
 - **New `/e22-next` — read-only workspace navigator.** Delivers the cross-workflow

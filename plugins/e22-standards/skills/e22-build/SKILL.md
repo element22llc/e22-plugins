@@ -171,7 +171,7 @@ language.
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
 | Demo-validated, PR not opened | Blocking now (next transition) | Open the PR for dev review |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
-| Remaining `## Open questions` | Required before production | Work them down — `/e22-questions` |
+| Remaining `## Open questions` | Required before initial production | Work them down — `/e22-questions` |
 | Merged | Complete | Optional: build the next feature |
 
 Pick one `Current recommended action` by precedence; offer a `Suggested command`

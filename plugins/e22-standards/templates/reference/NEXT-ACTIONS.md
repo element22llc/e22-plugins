@@ -17,17 +17,23 @@ definitions or the precedence.
 
 ---
 
-## 1. The five categories
+## 1. The categories
 
 Each recommended action falls into exactly one category. The categories separate
 *workflow criticality* (can this workflow safely advance?) from *release timing*
-(must this be resolved before production?).
+(when must this be resolved relative to production?). Release timing is
+**lifecycle-aware**: an app that is not yet launched, an app already serving
+users, and a defect actively harming a live system are three different
+obligations — so an already-live system never receives a "before production"
+instruction that reads as pre-launch.
 
 | Category | Meaning |
 |---|---|
 | **Blocking now** | The current workflow cannot safely complete, publish, merge, or advance until this is resolved. |
+| **Urgent live-system remediation** | A **deployed, live** system is actively exposing data, breaching users, or losing integrity. Highest urgency — it is a safety stop on something already in production, not a release-timing item. |
 | **Human decision required** | Progress depends on an explicit human product, architecture, risk, or release decision — including PR review/approval, PO intent validation, and ratifying a `Proposed` ADR. The agent routes it; it never guesses it. |
-| **Required before production** | The workflow may complete, but this must be resolved before a production release. *Publishing* a finding is not the requirement — *fixing or explicitly accepting* it is. |
+| **Required before initial production** | The system is **not yet launched**; this must be resolved before it first goes to production. *Publishing* a finding is not the requirement — *fixing or explicitly accepting* it is. |
+| **Required before next production release** | The system is **already live**; this must be resolved before the next production release, but does not require emergency remediation now. Again, *fixing or accepting* — not merely filing — is the requirement. |
 | **Recommended** | Valuable follow-up that is neither blocking nor release-mandatory — including backlog bookkeeping (publishing or shaping optional findings). |
 | **Complete** | This workflow has no remaining action in its own lifecycle. May name an *optional* continuation, never a mandatory one. |
 
@@ -47,13 +53,22 @@ states.
 
 ### Shared safety precedence (applies everywhere)
 
-1. immediate security or destructive-risk stop;
+1. immediate security or destructive-risk stop — including **urgent remediation
+   of a live, deployed system** that is actively exposing data, breaching users,
+   or losing integrity (the *Urgent live-system remediation* category), and a
+   committed-secret / destructive exposure (a *Blocking now* stop);
 2. failed required gate in the current workflow;
 3. unresolved required human decision in the current workflow;
 4. the current workflow's next lifecycle transition;
-5. downstream release requirement;
+5. downstream release requirement — *Required before next production release*
+   (already live) or *Required before initial production* (not yet launched);
 6. optional follow-up;
 7. no action required.
+
+The two release-timing categories both sit at level 5; *Urgent live-system
+remediation* sits at level 1 because a live system actively at risk outranks any
+workflow gate. The category names carry the lifecycle nuance; the numeric levels
+carry the precedence.
 
 ### Skill-local precedence
 
@@ -73,11 +88,17 @@ hardcoded as "always run X next." Reuse the existing E22 state vocabulary rather
 than inventing a parallel one:
 
 - open-question `impact: blocking | non-blocking` and `required_before:` →
-  separates **Blocking now** / **Human decision required** from **Required before
-  production**;
-- feature `Status: draft | approved | implemented | validated | live`;
+  separates **Blocking now** / **Human decision required** from the
+  release-timing categories;
+- feature `Status: draft | approved | implemented | validated | live` — and this
+  status (plus repo deploy state) is what **picks which release category
+  applies**: a system not yet in production (`draft … implemented`, no live
+  deployment) → **Required before initial production**; one already
+  `live`/deployed → **Required before next production release**, escalating to
+  **Urgent live-system remediation** when the live system is actively exposing
+  data, breaching users, or losing integrity *now*;
 - issue lifecycle states (`inbox … ready-for-dev … in-progress … validate …
-  done`);
+  done · cancelled`);
 - ADR `Proposed | Accepted | Superseded | Deprecated` (a `Proposed` ADR is a
   **Human decision required**).
 
@@ -117,11 +138,17 @@ section that is empty.
 ### Blocking now
 [Only actions preventing the current workflow from safely advancing.]
 
+### Urgent live-system remediation
+[A live, deployed system actively at risk. Omit when nothing is deployed/at risk.]
+
 ### Human decision required
 [Explicit product, architecture, risk, or release decisions.]
 
-### Required before production
-[Release obligations that do not block completion of the current workflow.]
+### Required before initial production
+[Pre-launch release obligations — system not yet in production.]
+
+### Required before next production release
+[Release obligations on an already-live system; do not block the current workflow.]
 
 ### Recommended
 [Optional or lower-priority follow-up.]
@@ -133,6 +160,10 @@ section that is empty.
 [Exactly one concrete action, or "No action is currently required."]
 Suggested command: `/e22-...`
 ```
+
+Omit every category section that is empty — a typical block shows only one or two
+of these. The two release-timing sections are mutually exclusive for a given
+system (it is either pre-launch or live), so at most one appears.
 
 ### Rules
 

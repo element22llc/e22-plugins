@@ -4,6 +4,8 @@
 > Status: draft | approved | implemented | validated | live
 > Created: YYYY-MM-DD
 > Tracker: [ref in this product's format — see /spec/tracker.md — or "none yet"]
+> Approved by: [PO github handle — written by `/e22-spec approve`, else "not yet"]
+> Approved at: [YYYY-MM-DD — written by `/e22-spec approve`, else "not yet"]
 
 ## PO acceptance
 

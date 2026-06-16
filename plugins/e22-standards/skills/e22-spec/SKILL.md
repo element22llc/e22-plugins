@@ -2,7 +2,7 @@
 name: e22-spec
 description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /e22-build. Also runs `/e22-spec validate [feature-id|--all]`: a local, GitHub-independent structural check over the open-question contract that blocks approval while a blocking question is open. Never touches /apps or /packages; ends at an approved intent, not a build."
 when_to_use: Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /e22-drift.
-argument-hint: "[feature-id | validate [feature-id | --all]]"
+argument-hint: "[feature-id | approve <feature-id> | validate [feature-id | --all]]"
 ---
 
 # Brainstorm a feature spec — no build
@@ -63,7 +63,8 @@ implementation.
 6. **Approval gate — both exits stay code-free.** First **run `validate` on this
    feature** (below) — an approval **cannot proceed while a blocking question is
    `open`**; resolve or explicitly reclassify it first. Then present the intent
-   for PO approval. On approval, flip `Status:` to `approved` and offer:
+   for PO approval. On PO approval, run **`approve <id>`** (below) to record the
+   approval and flip `Status:` to `approved` in one change, then offer:
    - `/e22-tracker-sync push` → file or refresh the tracker item from this
      intent, writing the ref back into the `> Tracker:` line.
    - hand to a dev (or `/e22-build`) for implementation **in a separate
@@ -77,7 +78,7 @@ implementation.
    |---|---|---|
    | Open `impact: blocking` question on this feature | Blocking now | Resolve it — `/e22-questions` |
    | Intent drafted, not yet PO-approved | Human decision required | PO reviews & approves the intent (no command) |
-   | Behavior demands a contract that isn't written | Required before production | Author `contract.md` |
+   | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |
    | Approved, tracker configured, not yet filed | Recommended | `/e22-tracker-sync push` |
    | Approved | Complete | Optional: hand to a dev or `/e22-build` in a separate session |
 
@@ -109,6 +110,50 @@ GitHub-independent checks and **say** the tracker-coupled ones were skipped —
 silence must never read as "passed." A failing check **blocks the relevant gate**
 (approval, `/e22-issues materialize`, a spec-changing PR). `/e22-issues`
 (`materialize`, `status`, `reconcile`) and `/e22-drift` call this before acting.
+
+## Approve mode — `/e22-spec approve <feature-id>`
+
+Records a PO's intent approval as a **structural, mechanically-checkable**
+transition — never a free-form "looks good." It is the **only** path that flips a
+feature's `Status:` to `approved`; `/e22-issues materialize` deliberately stops
+at `draft`.
+
+**Allowed transition — `draft → approved` only.**
+
+- Refuse on `implemented`, `validated`, or `live`: approval never downgrades or
+  rewrites a feature past implementation — report the current state and stop,
+  appending nothing.
+- **Idempotent on `approved`** — if the feature is already `approved`, report the
+  existing `> Approved by:` / `> Approved at:` and append **no** duplicate
+  HISTORY entry.
+
+**Blocking-question gate (exact predicate).** Refuse the approval **iff** there
+exists a question with **all** of:
+
+- `impact: blocking`, **and**
+- `required_before: intent-approval`, **and**
+- `status` ∈ the unresolved set `{open, investigating, deferred}`.
+
+A blocking-but-`deferred` question **still blocks** intent approval until its
+`impact:` is explicitly reclassified `non-blocking` — deferral is not resolution.
+Questions gated only at `contract-approval`, `implementation`,
+`non-prod-validation`, or `production-release` do **not** block intent approval
+(they block their own later gate). Run `validate` first so the closed-issue /
+stale-spec checks fire too.
+
+**On a clean approval, in one change:**
+
+1. Fill the intent header block — `> Approved by: @<po-handle>` and
+   `> Approved at: <YYYY-MM-DD>` — and tick the `## PO acceptance` checkboxes (the
+   human-facing mirror) with the `Approval comment/link:`.
+2. Flip `> Status:` to `approved`.
+3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs).
+4. Recommend the local next action — decompose into work
+   (`/e22-issues decompose`) or implement (`/e22-build` or a dev in a separate
+   session) — per the `## Recommended next actions` block.
+
+`approve` writes only under `/spec/**` (the intent header, PO-acceptance block,
+and HISTORY); it stays as code-free as the rest of this skill.
 
 ## Relationship to neighbors
 
