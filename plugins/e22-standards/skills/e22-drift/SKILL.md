@@ -168,7 +168,7 @@ the comparison is large.
    |---|---|---|
    | Behavioural drift needing a human call | Human decision required | PO/dev decides by ownership (no command) |
    | Drift findings not yet filed (GitHub) | Recommended | `/e22-issues publish-drift` |
-   | Ambiguities surfaced | Required before production | Resolve them — `/e22-questions` |
+   | Ambiguities surfaced | Required before next production release | Resolve them — `/e22-questions` |
    | No actual drift (only expected-Missing backlog) | Complete | `No action is currently required.` |
 
    Choose one `Current recommended action` by precedence. Read-only — proposes,

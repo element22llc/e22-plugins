@@ -26,7 +26,7 @@ rules live in `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Read
 it first. This skill is the **cross-workflow arbitrator** that the locality rule
 defers to; it owns one thing the per-skill blocks intentionally do not: a
 workspace-wide reconstruction plus arbitration across *unrelated* state. It uses
-the same five categories and the same shared safety precedence — it does not fork
+the same categories and the same shared safety precedence — it does not fork
 them, and it does not duplicate each skill's domain table.
 
 ## Relationship to the workflow skills — it routes, it doesn't run them
@@ -72,7 +72,7 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
   lifecycle state via `/e22-tracker-sync` (MCP-first, `gh` fallback): the
   `<!-- e22:state=... -->` marker
   (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
-  blocked · done`). If `none-yet`/manual, reconstruct from spec + git only and
+  blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
   **say so** — never invent tracker state.
 - **Work claims** — detect in-progress work from `e22:state=in-progress` plus an
   `e22:branch=` / `e22:claimed-by=` marker, cross-checked against the live branch
@@ -88,7 +88,7 @@ reads as "nothing there."
 
 ## Phase 2 — Classify each observed state
 
-Map every reconstructed state to exactly one of the five categories using this
+Map every reconstructed state to exactly one of the categories using this
 workspace-level table — `/e22-next`'s own domain (cross-workflow arbitration),
 keyed by reconstruction dimension, derived from the same vocabulary. The
 parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
@@ -96,6 +96,7 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Reconstructed state | Category (safety level) | Routes to |
 |---|---|---|
 | Committed secret / destructive-risk exposure observed | Blocking now (L1) | Rotate & invalidate; then `/security-review` (no command rotates it) |
+| Live, deployed feature actively exposing data / breaching users / losing integrity | Urgent live-system remediation (L1) | Remediate the live system now; then `/security-review` (no command remediates it) |
 | Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/e22-questions` |
 | Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject (no command) |
 | Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves (no command) |
@@ -103,14 +104,17 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/e22-work resume #N` |
 | PR merged but issue still `validate` (stale tracker) | Blocking now — next transition (L4) | `/e22-work resume #N` |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now — next transition (L4) | owning skill |
-| Open question `required_before: production-release` (non-blocking now) | Required before production (L5) | `/e22-questions` |
+| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/e22-questions` |
+| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/e22-questions` |
 | `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/e22-work start #N`, `/e22-issues …`, `/e22-sync` |
 | Every workflow settled across all dimensions | Complete — no action required (L7) | — |
 
 When the same state could plausibly fit two categories, the **derivation rule**
 decides: a question's `impact:` and `required_before:` separate *Blocking now*
-from *Required before production*; an unmerged PR is *Human decision required*,
-never *Complete*.
+from the release-timing categories, and the feature's `Status` (live vs not)
+chooses between *Required before initial production* and *Required before next
+production release*; an unmerged PR is *Human decision required*, never
+*Complete*.
 
 ## Phase 3 — Arbitrate to one action
 
@@ -131,7 +135,7 @@ Emit, in order:
    what you found (this is the navigator's value: it shows the basis for the
    recommendation). Mark clean / not-applicable dimensions explicitly.
 2. **`## Recommended next actions`** — the standard block per NEXT-ACTIONS.md §5:
-   the five `###` sections (omit empties), then `### Current recommended action`
+   the `###` category sections (omit empties), then `### Current recommended action`
    naming the single arbitrated action, with a `Suggested command:` line **only**
    when a real command performs it (human gates — PR review, PO approval, secret
    rotation, ADR ratification — get no command). Aggregate candidates across the

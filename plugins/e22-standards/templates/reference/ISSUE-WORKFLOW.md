@@ -57,7 +57,7 @@ Two invariants underpin everything:
 3. **Product validation** — the PO approves intent, answers questions, rejects
    assumptions, attaches design sources, in GitHub. Moves to `ready-for-spec`.
 4. **Materialize** — `/e22-issues materialize #N` writes/updates
-   `spec/features/<id>/intent.md` with `Status: proposed`, links the issue, and
+   `spec/features/<id>/intent.md` with `Status: draft`, links the issue, and
    requests PO approval. **Materialize never approves** — only an explicit
    `/e22-spec approve` flips `Status: approved`.
 5. **Technical shaping** — `/e22-spec contract <id>`; large features become a
@@ -73,7 +73,11 @@ The **base source of truth is the `e22:state` issue-body marker**; a Project
 `Status` field *mirrors* it when Projects are enabled (never the other way). The
 closed enum (no standalone `ready`):
 
-`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done`
+`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done · cancelled`
+
+`done` and `cancelled` are the two terminal states, and **which one a closed
+issue lands in is decided by its closure reason, not by the mere fact of
+closure** (see Completion rules).
 
 Readiness and transitions differ **by kind** — the feature flow is the long
 path; smaller work skips the spec gates:
@@ -96,17 +100,29 @@ path; smaller work skips the spec gates:
 | inbox → ready-for-dev | Bug/task/deterministic finding meets its readiness rule above | dev | propose + perform |
 | ready-for-dev → in-progress | Work claimed and started | dev | propose + perform |
 | in-progress → validate | Acceptance criteria implemented; **PR opened** | dev | propose + perform |
-| validate → done | Acceptance criteria **validated**; PR merged or issue closed | PO/dev per kind | propose only (features: PO) |
+| validate → done | Acceptance criteria **validated** AND closure reason = `completed` (PR merged & accepted) | PO/dev per kind | propose only (features: PO) |
+| any state → cancelled | Closed for a non-completion reason (`rejected` / `duplicate` / `obsolete` / `not-planned` / `superseded`) | PO/dev per kind | propose + perform |
 | any non-terminal → blocked | Work cannot proceed | dev | propose + perform |
 | blocked → previous | Blocker resolved | dev | propose + perform (returns to the prior meaningful state) |
 | drift open → resolved | Spec or implementation intentionally reconciled | human (PO/dev) | propose only — **never auto-resolve** |
 
 Completion rules: **opening a PR moves the issue to `validate`, never `done`.**
-`done` corresponds to a **closed** issue (PR merged or the issue otherwise
-closed); a PR closed without merge returns the issue to `in-progress` or
-`blocked`. A reopened issue moves `done → inbox|exploring|ready-for-dev` after
-reassessment. `/e22-work status|resume|finish` reconciles stale markers on the
-next interaction. An AI may *perform* a transition only where the table says so;
+**Closure reason — not the mere fact of closure — decides the terminal state:**
+
+- Closed as **`completed`** (the work was delivered: PR merged & the acceptance
+  criteria accepted) → `done`.
+- Closed as **`rejected` / `duplicate` / `obsolete` / `not-planned` /
+  `superseded`** → **`cancelled`**, never `done`. Record a replacement pointer
+  where one applies (a `duplicate`/`superseded` issue points at its replacement).
+  `cancelled` work was **not** delivered, so it must never count toward
+  done/throughput or read as a satisfied acceptance.
+
+A PR closed without merge returns the issue to `in-progress` or `blocked` (the
+issue itself is not closed). A reopened issue moves `done|cancelled →
+inbox|exploring|ready-for-dev` after reassessment. `/e22-work status|resume|finish`
+reconciles stale markers on the next interaction — and **inspects the closure
+reason before transitioning a closed issue**, keeping merge state as independent
+evidence. An AI may *perform* a transition only where the table says so;
 everywhere else it proposes and waits for the named human.
 
 ## Labels (small, deliberate set — status/priority/effort live in the Project)

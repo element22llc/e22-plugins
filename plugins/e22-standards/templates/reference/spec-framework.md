@@ -97,6 +97,30 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
 should run it too. A failing check blocks the relevant gate — e.g. an approval
 cannot proceed while a blocking question is open.
 
+### Contract readiness (mechanically determinable)
+
+Contract **readiness is a derived quality signal, not a human "approved"
+decision** — there is no `Status:` field on `contract.md`. Any consumer
+(`/e22-issues status`, the `decompose` precondition) derives one of three values
+the same way, so `validate` and `decompose` can never disagree:
+
+- **`missing`** — `contract.md` does not exist.
+- **`ready`** — all of:
+  1. `contract.md` exists;
+  2. every **required** heading is present **and populated** — required =
+     `## Behavior rules`, `## Data model` (or an explicit `N/A` under it),
+     `## Dependencies`, `## Notable decisions`; optional (not required for
+     `ready`) = `## API surface`, `## Implementation pointers`;
+  3. no unresolved (`open` / `investigating` / `deferred`) `blocking` question
+     with `required_before: contract-approval`.
+- **`incomplete`** — `contract.md` exists but fails (2) or (3).
+
+**"Populated" is precise:** a section **fails** if it is empty, whitespace-only,
+contains only a bare `*`/`-` bullet, or still contains an unreplaced bracket
+prompt (`[…]`). Real prose (or an explicit `N/A` for `## Data model`) passes.
+
+Readiness is reported as `ready | incomplete | missing` — **never** `approved`.
+
 ## Rules
 
 1. **Specs are written with Claude's help — by a dev, or by a PO via `/e22-build`.** The PO approves intent; a dev approves the PR before merge. POs are not expected to write specs from scratch.

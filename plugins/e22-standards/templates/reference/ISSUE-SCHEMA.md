@@ -24,7 +24,7 @@ source of truth.
 |---|---|---|
 | `<!-- e22:schema=2 -->` | **Schema-version marker** — the contract version this body was written against. Required on every agent issue. | all |
 | `<!-- e22:kind=… -->` | Closed enum (work shape): `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
-| `<!-- e22:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done`. A Project field *mirrors* this when Projects are enabled. | all |
+| `<!-- e22:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project field *mirrors* this when Projects are enabled. | all |
 | `<!-- e22:source=… -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
 | `<!-- e22:feature-id=… -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
 | `<!-- e22:spec-path=… -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |

@@ -23,4 +23,4 @@ Recommended
 
 ## Must not recommend first
 
-Any `Blocking now` or `Human decision required` action — there are none, so backlog bookkeeping is correctly the top remaining step. Note: publishing is **Recommended**, not **Required before production**; the production requirement is *fixing or accepting* each finding, not filing it.
+Any `Blocking now` or `Human decision required` action — there are none, so backlog bookkeeping is correctly the top remaining step. Note: publishing is **Recommended**, not a production-readiness category (**Required before initial production** / **next production release**); the production requirement is *fixing or accepting* each finding, not filing it.

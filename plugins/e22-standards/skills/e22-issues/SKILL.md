@@ -1,7 +1,7 @@
 ---
 name: e22-issues
 description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /e22-spec, audit findings to /e22-audit, drift to /e22-drift, and question promotion to /e22-questions, and routes ALL GitHub reads/writes through /e22-tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
-when_to_use: Use to drive a PO idea from capture to a proposed spec to decomposed work without losing open questions or overwriting human content.
+when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
 ---
 
@@ -41,7 +41,7 @@ format (markers, headings, **managed blocks**, idempotency) in
   stays human-owned. Discovery reasoning follows `/e22-spec`'s interview style.
 - **`materialize #N`** — turn approved product intent into a spec. Hand to
   `/e22-spec` to write/update `spec/features/<id>/intent.md`, **set `Status:
-  proposed`** (never `approved` — that's a later explicit `/e22-spec approve`),
+  draft`** (never `approved` — that's a later explicit `/e22-spec approve`),
   link the issue in `> Tracker:`, run `/e22-spec validate` on the feature, and
   present the diff / open a PR. Comment back on the issue with the exact spec
   path + commit/PR.
@@ -76,20 +76,25 @@ format (markers, headings, **managed blocks**, idempotency) in
   identify missing information, and suggest routing + the next transition. Propose
   Inbox → Exploring; perform it only where the authority table allows.
 - **`decompose #N`** — create implementation sub-issues from a parent feature.
-  **Preconditions:** the feature's `intent.md` exists, `Status: approved`, no
-  blocking question `required_before: contract-approval`, and a `contract.md`
-  exists (or shaping is explicitly in scope). Use native GitHub parent/sub-issue
+  **Preconditions:** the feature's `intent.md` exists, `Status: approved`, and
+  its **contract readiness is `ready`** — the mechanically-derived signal in
+  `spec-framework.md` (Contract readiness), which already folds in "a populated
+  `contract.md` exists" and "no unresolved blocking question
+  `required_before: contract-approval`." Pointing both `decompose` and `status`
+  at the **same** derivation is deliberate: they can never disagree. (`--prototype`
+  is the only way to decompose before that bar — see below.) Use native GitHub parent/sub-issue
   links when available; else fall back to `Parent: #N` + `<!-- e22:parent-issue=N -->`
   and a generated checklist in the parent. Each child uses the `technical-task`
   body. `--prototype` is the **only** way to decompose before approval, and those
   tasks are clearly marked non-production.
 - **`status [#N|feature-id]`** — a unified read-only view: issue state + intent
-  status + contract status + sub-issue progress + blockers. Runs `/e22-spec
-  validate` and surfaces any failures. Example shape:
+  status + **contract readiness** (`ready | incomplete | missing`, the derivation
+  in `spec-framework.md` — never `approved`) + sub-issue progress + blockers. Runs
+  `/e22-spec validate` and surfaces any failures. Example shape:
   ```
   Feature customer-export
   Issue: #123 — Validate
-  Intent: approved   Contract: approved
+  Intent: approved   Contract: ready
   Implementation: 3/4 sub-issues closed
   Preview: available
   Blocking: #134 telemetry

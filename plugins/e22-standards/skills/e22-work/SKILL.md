@@ -52,10 +52,19 @@ phase reconciles rather than duplicates.
 
 ## Completion semantics
 
+**Closure reason — not the mere fact of closure — decides the terminal state.**
+Inspect it before transitioning a closed issue; keep merge state as independent
+evidence (a merged PR is necessary for `done`, not sufficient on its own).
+
 - Opening a PR → `validate` (never `done`).
-- PR merged or issue otherwise closed → `done` (a closed issue).
+- Closed as **`completed`** (PR merged **and** acceptance criteria accepted) →
+  `done`.
+- Closed as **`rejected` / `duplicate` / `obsolete` / `not-planned` /
+  `superseded`** → **`cancelled`**, never `done` — record a replacement pointer
+  where one applies. Cancelled work was not delivered.
 - PR closed **without** merge → back to `in-progress` or `blocked`.
-- `status` / `resume` / `finish` reconcile stale markers on the next interaction.
+- `status` / `resume` / `finish` reconcile stale markers on the next interaction,
+  reading the closure reason rather than assuming "closed == done."
 
 ## Branch naming
 
