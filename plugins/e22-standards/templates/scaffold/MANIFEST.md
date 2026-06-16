@@ -61,6 +61,12 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |
 | *(empty dirs)* | `spec/features/.gitkeep`, `spec/decisions/.gitkeep` | Created empty; populated by `/e22-standards:e22-spec-scaffold` and `/e22-standards:e22-adr`. |
 
+The per-feature (`feature-intent.md`, `feature-contract.md` via
+`/e22-standards:e22-spec-scaffold`) and per-decision (`adr.md` via
+`/e22-standards:e22-adr`) templates also live in `templates/spec/`, but are
+instantiated **on demand** by those skills — not copied at bootstrap — so they
+are not in this install map.
+
 ## Deliberately not bundled
 
 - **A starter app** (the old template's `apps/web` + `packages/core`): the

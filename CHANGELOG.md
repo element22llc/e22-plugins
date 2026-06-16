@@ -5,6 +5,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.51.1
+
+- `e22-adr`: ensure `spec/decisions/` exists (`mkdir -p`) before copying the ADR
+  template, so the skill no longer fails in a repo where the dir was never
+  created (e.g. an adopted repo or a cleaned tree).
+- Scaffold docs: `env.example` now flags that `DATABASE_URL`'s host port must
+  track `POSTGRES_PORT`; `MANIFEST.md` notes that the per-feature and
+  per-decision spec templates are instantiated on demand, not at bootstrap.
+
 ### 1.51.0
 
 Pre-pilot coherence and safety hardening — makes five workflow guarantees
