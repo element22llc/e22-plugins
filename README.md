@@ -12,7 +12,7 @@ instead of being copied into every forked product repo and then frozen.
 **This repo is the canonical source** of the standards *and* of repository
 bootstrap: the plugin bundles the full repo scaffold
 (`plugins/e22-standards/templates/scaffold/`) and the spec-spine templates, so
-`/e22-init` and `/e22-adopt` stand a repo up without any external template.
+`/e22-standards:e22-init` and `/e22-standards:e22-adopt` stand a repo up without any external template.
 The old static
 [`repository-template`](https://github.com/element22llc/repository-template)
 is **replaced** by this plugin-driven bootstrap — see
@@ -23,9 +23,9 @@ is **replaced** by this plugin-driven bootstrap — see
 | Component | Contents |
 |---|---|
 | **Always-on rules** (`rules/*.md`) | Injected into every session by a SessionStart hook: PO/dev roles, stack defaults, monorepo layout, spec workflow, **living documentation** (natural-language → spec, action history, app docs), **issue-tracker integration** (client-agnostic), testing rules, Definition of Done, **pre-merge drift gates**, high-risk areas, secrets handling, **audit-aligned delivery** (SOC 2 / ISO 27001-*aligned*, not compliant), change-size model, baseline patterns/anti-patterns, design-sources summary, end-of-session checklist. |
-| **Skills** (on-demand) | `/e22-standards` (load the always-on rules on demand — for Cowork, see below), `/e22-init` (repo bootstrap from the bundled scaffold), `/e22-adopt` (adopt an existing "vibe-coded" repo), `/e22-build` (PO-guided idea→working-app flow), `/e22-spec-scaffold` (feature intent+contract), `/e22-adr` (ADR), `/e22-conventions`, `/e22-traceability`, and `/e22-design-sources` (full reference prose), `/e22-drift`, `/e22-audit`, `/e22-questions`, `/e22-tidy`. |
+| **Skills** (on-demand) | `/e22-standards:e22-standards` (load the always-on rules on demand — for Cowork, see below), `/e22-standards:e22-init` (repo bootstrap from the bundled scaffold), `/e22-standards:e22-adopt` (adopt an existing "vibe-coded" repo), `/e22-standards:e22-build` (PO-guided idea→working-app flow), `/e22-standards:e22-spec-scaffold` (feature intent+contract), `/e22-standards:e22-adr` (ADR), `/e22-standards:e22-conventions`, `/e22-standards:e22-traceability`, and `/e22-standards:e22-design-sources` (full reference prose), `/e22-standards:e22-drift`, `/e22-standards:e22-audit`, `/e22-standards:e22-questions`, `/e22-standards:e22-tidy`. |
 | **Templates** | Bundled spec templates (`feature-intent`, `feature-contract`, `adr`, `productionization`, `vision`/`users`/`glossary`, `history` (action log), `tracker`, `app-docs`) and the full reference prose, so scaffolding always uses the latest org templates. |
-| **Repo scaffold** (`templates/scaffold/`) | The complete bootstrap bundle — `mise.toml` + standard tasks, `compose.yaml`, CI, the drift-gate PR template, issue templates, `configs/`, `.env.example`, `.claude/settings.json`, editor config, infra conventions — installed by `/e22-init`/`/e22-adopt` per its `MANIFEST.md`. |
+| **Repo scaffold** (`templates/scaffold/`) | The complete bootstrap bundle — `mise.toml` + standard tasks, `compose.yaml`, CI, the drift-gate PR template, issue templates, `configs/`, `.env.example`, `.claude/settings.json`, editor config, infra conventions — installed by `/e22-standards:e22-init`/`/e22-standards:e22-adopt` per its `MANIFEST.md`. |
 
 The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/e22-standards/rules/*.md` to stdout (which Claude Code injects as
@@ -36,13 +36,13 @@ session context). It runs once per session when the plugin is enabled.
 The plugin is the bootstrap mechanism — no template repo to fork:
 
 1. Create an empty repo (or open an existing app), install the plugin (below).
-2. **New product** → run **`/e22-init`**: instantiates the bundled scaffold
+2. **New product** → run **`/e22-standards:e22-init`**: instantiates the bundled scaffold
    (toolchain + tasks, Docker Compose, CI, PR/issue templates, editor config,
    `.env.example`) and the spec spine (`vision.md`, `users.md`, `glossary.md`,
    action history, tracker declaration, app guide), interviews you to fill it,
    pins the toolchain, and leaves the repo working spec-first.
-   **Existing app with no `/spec`** → run **`/e22-adopt`** instead.
-   **Non-technical PO** → type **`/e22-build`** and describe the idea.
+   **Existing app with no `/spec`** → run **`/e22-standards:e22-adopt`** instead.
+   **Non-technical PO** → type **`/e22-standards:e22-build`** and describe the idea.
 3. From there, Claude documents in parallel as you talk: intents/contracts per
    feature, ADRs for decisions, open questions for ambiguity, the app guide
    for behavior, an action-history entry per change — and flags drift
@@ -56,9 +56,9 @@ The plugin is the bootstrap mechanism — no template repo to fork:
 `element22llc/repository-template` is no longer the bootstrap source; this
 plugin carries everything it provided (latest versions, centrally updated).
 
-- **New repos:** don't fork the template — start empty and run `/e22-init`.
+- **New repos:** don't fork the template — start empty and run `/e22-standards:e22-init`.
 - **Existing forks keep working.** Nothing breaks; the fork already has the
-  scaffolding. On the next `/e22-init` run (or by asking Claude), back-fill
+  scaffolding. On the next `/e22-standards:e22-init` run (or by asking Claude), back-fill
   the artifacts the template never shipped: `/spec/HISTORY.md`,
   `/spec/tracker.md`, `/spec/app/README.md`, and the drift-gate PR template —
   all instantiated from the plugin's bundle.
@@ -79,7 +79,7 @@ means the `SessionStart` auto-injection — the always-on rules — and the
 `PreToolUse` version-pin guard silently do nothing in Cowork.
 
 So a Cowork session starts with *none* of the org rules in context. The fallback
-is the **`/e22-standards`** skill: run it once at the start of a Cowork session
+is the **`/e22-standards:e22-standards`** skill: run it once at the start of a Cowork session
 and it loads the same `rules/*.md` ruleset on demand. When #40495 ships,
 auto-injection will work in Cowork with no plugin change and the skill becomes a
 no-op repeat.

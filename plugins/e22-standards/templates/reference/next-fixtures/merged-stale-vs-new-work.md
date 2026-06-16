@@ -21,11 +21,11 @@ Blocking now
 
 ## Expected suggested command
 
-`/e22-work resume #123`
+`/e22-standards:e22-work resume #123`
 
 ## Must not recommend first
 
-`/e22-work start #160`, or claiming the workspace is `Complete`. Finishing the
+`/e22-standards:e22-work start #160`, or claiming the workspace is `Complete`. Finishing the
 current workflow's own next lifecycle transition (level 4) outranks starting
 unrelated optional work (level 6); a merged-but-unreconciled issue is not
 `Complete`.

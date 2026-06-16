@@ -23,10 +23,10 @@ Blocking now
 
 ## Expected suggested command
 
-`/e22-questions`
+`/e22-standards:e22-questions`
 
 ## Must not recommend first
 
-`/e22-work start #145`. A failed required gate (level 2) outranks optional
+`/e22-standards:e22-work start #145`. A failed required gate (level 2) outranks optional
 follow-up / starting new ready work (level 6), even though #145 is unblocked —
 the blocking question is the more critical workspace state.

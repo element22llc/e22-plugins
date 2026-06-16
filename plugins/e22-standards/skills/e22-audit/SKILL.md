@@ -13,13 +13,13 @@ finding against the code it cites (subagents over-report), ranks what survives b
 tracker. The output is a ranked report and proposed routing — **it never edits
 code or spec and never commits.**
 
-This is the steady-state counterpart to one-time adoption: where `/e22-adopt`
-builds the spec for a repo that has none, `/e22-audit` is run again and again on
+This is the steady-state counterpart to one-time adoption: where `/e22-standards:e22-adopt`
+builds the spec for a repo that has none, `/e22-standards:e22-audit` is run again and again on
 a repo that already has one, to keep it healthy and standards-aligned.
 
 ## Relationship to the review skills — complementary, not overlapping
 
-`/e22-audit` is **whole-repo, multi-dimension, and leverage-ranked**. It does
+`/e22-standards:e22-audit` is **whole-repo, multi-dimension, and leverage-ranked**. It does
 *not* re-implement the focused review skills — it names them and defers:
 
 - **`/code-review`** — diff-scoped correctness bugs + cleanups. Audit does **not**
@@ -31,16 +31,16 @@ a repo that already has one, to keep it healthy and standards-aligned.
 
 And against the other spec skills:
 
-- **`/e22-adopt`** — one-time onboarding triage (Keep/Refactor/Rewrite/Reject)
+- **`/e22-standards:e22-adopt`** — one-time onboarding triage (Keep/Refactor/Rewrite/Reject)
   that **creates** the `/spec` from code. Audit **assumes** the spec exists and
   is repeatable.
-- **`/e22-drift`** — read-only **spec-vs-spec** conformance (as-built vs tracker
+- **`/e22-standards:e22-drift`** — read-only **spec-vs-spec** conformance (as-built vs tracker
   intent). Audit is read-only **code-vs-standards** health. Both route genuine
   findings to issues; they answer different questions ("did we build what was
   asked?" vs. "is what we built healthy and standards-aligned?").
 
 **If there is no `/spec` spine yet,** the spec-coverage dimension can't run.
-Note that and redirect to `/e22-adopt` for the spec — the code-health dimensions
+Note that and redirect to `/e22-standards:e22-adopt` for the spec — the code-health dimensions
 (2–9 below) still run without it.
 
 ## When to run
@@ -93,7 +93,7 @@ cleanup → `/simplify`.
 Detect the stack from the repo itself (`package.json` / `pyproject.toml`,
 frameworks, database, auth) — don't trust training-data memory. Map the apps,
 entry points, and user-facing features. Check whether a `/spec` spine exists; if
-not, note it and mark dimension 1 as **not run — redirect to `/e22-adopt`**.
+not, note it and mark dimension 1 as **not run — redirect to `/e22-standards:e22-adopt`**.
 Decide which dimensions apply.
 
 ## Phase 1 — Audit
@@ -140,22 +140,22 @@ of dimension.
    it tracked** — it's a point-in-time artifact, not part of the durable spine.
 2. **Route each finding** to where it belongs in the E22 flow:
    - **Code-health findings** → a **two-level** issue set, filed via
-     **`/e22-issues publish-audit`** (which routes through `/e22-tracker-sync`):
+     **`/e22-standards:e22-issues publish-audit`** (which routes through `/e22-standards:e22-tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
      run/skipped, summary, report path) plus selected **finding** children, each
      carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
      — never line-based) so re-runs *reconcile* (update/close) rather than pile
      up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-{run,finding}.md`.
      Scope children to genuine, high-leverage findings — don't file one per nit.
-   - **Architectural / cross-cutting calls** → propose an ADR via `/e22-adr`.
+   - **Architectural / cross-cutting calls** → propose an ADR via `/e22-standards:e22-adr`.
    - **Spec coverage & conformance gaps** → a proposed `## Open questions` entry
      in the owning feature's `intent.md` (or `vision.md` if cross-cutting),
-     drivable to answers by `/e22-questions`.
+     drivable to answers by `/e22-standards:e22-questions`.
    - **Correctness** → defer to `/code-review`; **security** → defer to
      `/security-review`; **mechanical cleanup** → defer to `/simplify`. Name the
      skill; don't re-run it here. To turn an unresolved `/code-review` or
      `/security-review` finding into a tracked issue, route it through
-     **`/e22-issues publish-findings --source code-review|security-review`**
+     **`/e22-standards:e22-issues publish-findings --source code-review|security-review`**
      (`kind=finding` + the matching `source:*`; security findings redact secrets
      / exploit detail and default to human review before public disclosure).
 3. **Make no code or spec edits, and don't commit.** This skill stops at the
@@ -174,9 +174,9 @@ of dimension.
    | Confirmed exposed secret found during inspection | Stop & rotate the value; then `/security-review` |
    | Potential security concern needing validation | Run `/security-review` |
    | Potential correctness defect needing diff analysis | Run `/code-review` |
-   | Vetted code-health findings ready for tracking | `/e22-issues publish-audit` |
-   | Architectural / cross-cutting call | Propose an ADR via `/e22-adr` |
-   | Spec coverage / conformance gap | `/e22-questions` |
+   | Vetted code-health findings ready for tracking | `/e22-standards:e22-issues publish-audit` |
+   | Architectural / cross-cutting call | Propose an ADR via `/e22-standards:e22-adr` |
+   | Spec coverage / conformance gap | `/e22-standards:e22-questions` |
    | Mechanical cleanup only | `/simplify` |
    | Nothing actionable | Complete |
 
@@ -186,7 +186,7 @@ of dimension.
 ## Reconciliation across runs — audits are reconciling, not additive
 
 Re-running the audit must **update the existing issue set**, never pile up
-duplicates. Each run is filed via `/e22-issues publish-audit`, which keys off the
+duplicates. Each run is filed via `/e22-standards:e22-issues publish-audit`, which keys off the
 markers (see `ISSUE-SCHEMA.md`). Two distinct identities:
 
 - **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
@@ -221,5 +221,5 @@ implementation, PO vs. dev approval) live in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`; the full
 conventions and patterns behind the dimensions are in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/CONVENTIONS.md` (open via
-`/e22-conventions`). This skill *detects, ranks, and routes*; those references
+`/e22-standards:e22-conventions`). This skill *detects, ranks, and routes*; those references
 govern how each finding gets *resolved*.

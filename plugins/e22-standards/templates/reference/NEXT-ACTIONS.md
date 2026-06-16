@@ -72,10 +72,10 @@ carry the precedence.
 
 ### Skill-local precedence
 
-Each skill orders only its own states (e.g. for `/e22-adopt`: secret exposure →
+Each skill orders only its own states (e.g. for `/e22-standards:e22-adopt`: secret exposure →
 incomplete artifacts → PO/ADR decisions → adoption PR → publish → shape → begin
 work → normal flow). Arbitration across *unrelated* workspace state is **out of
-scope** for any single skill — that belongs to `/e22-next`, the cross-workflow
+scope** for any single skill — that belongs to `/e22-standards:e22-next`, the cross-workflow
 navigator that reconstructs the whole workspace and arbitrates one action across
 all workflows using these same categories and this same shared precedence.
 
@@ -113,17 +113,17 @@ A skill recommends actions from **the workflow invocation and the artifacts it
 directly read or changed**. It may surface a repository-wide **safety** blocker it
 happened to observe during execution (e.g. a committed secret), but it does
 **not** run a general workspace scan for unrelated state. Cross-workflow
-workspace reconstruction belongs to `/e22-next`.
+workspace reconstruction belongs to `/e22-standards:e22-next`.
 
-- `/e22-spec customer-export` evaluates that feature's intent, questions, contract,
+- `/e22-standards:e22-spec customer-export` evaluates that feature's intent, questions, contract,
   tracker state, and relevant ADRs — not every other feature's open questions.
-- `/e22-work #123` evaluates issue #123, its branch, PR, criteria, validation, and
+- `/e22-standards:e22-work #123` evaluates issue #123, its branch, PR, criteria, validation, and
   any blocker it directly hit.
-- `/e22-adopt` and `/e22-audit` may evaluate the **whole repository** — repo-wide
+- `/e22-standards:e22-adopt` and `/e22-standards:e22-audit` may evaluate the **whole repository** — repo-wide
   discovery is their explicit purpose.
 
 This keeps handoffs fast, predictable, and explainable, and stops each skill from
-silently becoming a partial `/e22-next`.
+silently becoming a partial `/e22-standards:e22-next`.
 
 ---
 

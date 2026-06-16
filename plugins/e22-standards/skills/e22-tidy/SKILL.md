@@ -4,7 +4,7 @@ description: Sweep loose files out of the repo root into their correct E22 home 
 when_to_use: Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
 ---
 
-# Element 22 repo housekeeping (`/e22-tidy`)
+# Element 22 repo housekeeping (`/e22-standards:e22-tidy`)
 
 Read the full sweep procedure bundled with this plugin:
 
@@ -19,7 +19,7 @@ Key points (read the file for the full detail):
   metadata, schema/DDL dumps, discovery docs, PII/CMDB files) → `/spec/reference/`.
   An existing `Technical Metadata/`-style folder → `/spec/reference/technical-metadata/`.
 - **Architecture/flow diagrams** (SVG, "Flows for Review" decks) → `/spec/design/`.
-  A **Claude Design export** also → `/spec/design/` — defer to `/e22-design-sources`.
+  A **Claude Design export** also → `/spec/design/` — defer to `/e22-standards:e22-design-sources`.
 - Three actions, all proposed first: **move** (clear name), **rename + move**
   (cryptic/inconsistent name → a clear one in the right home), and **delete**
   (only true junk, only on confirmation). A bad filename is a reason to rename,

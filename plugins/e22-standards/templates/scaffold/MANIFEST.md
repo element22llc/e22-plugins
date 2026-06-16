@@ -6,7 +6,7 @@ always current (`/plugin update`) and needs no external template repo. It
 replaces the old static `element22llc/repository-template` as the bootstrap
 source — see the README's migration notes.
 
-It is consumed by **`/e22-init`** (greenfield bootstrap) and **`/e22-adopt`**
+It is consumed by **`/e22-standards:e22-init`** (greenfield bootstrap) and **`/e22-standards:e22-adopt`**
 (scaffolding sync into an existing app). Both follow the same discipline:
 **copy-and-adapt, never clobber** — if the target file already exists, diff and
 reconcile into it instead of overwriting, and adapt stack-specific content
@@ -20,9 +20,9 @@ this plugin repo itself); rename on copy as mapped below.
 
 | Bundled path | Install as | Notes |
 |---|---|---|
-| `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/e22-init`. |
+| `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/e22-standards:e22-init`. |
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
-| `DESIGN.md` | `DESIGN.md` | Visual-identity stub. **Never overwrite** a `DESIGN.md` that `/e22-adopt` reverse-engineered or a team populated. |
+| `DESIGN.md` | `DESIGN.md` | Visual-identity stub. **Never overwrite** a `DESIGN.md` that `/e22-standards:e22-adopt` reverse-engineered or a team populated. |
 | `mise.toml` | `mise.toml` | Toolchain + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack. |
 | `mise.lock` | `mise.lock` | Placeholder — mise only writes the lock if the file exists. `mise install` populates it; commit the result. |
 | `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). |
@@ -38,7 +38,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `github/workflows/ci.yml` | `.github/workflows/ci.yml` | Stack-agnostic hygiene CI; per-stack steps ship commented — activate them early. |
 | `github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
 | `github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
-| `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/e22-issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/e22-init` and `/e22-adopt`. Used when GitHub Issues is the tracker; harmless otherwise. Agent-authored issue bodies (feature/bug/finding/spec-question/drift/task) are **not** installed — they live in the plugin at `templates/github/issue-bodies/`. |
+| `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/e22-standards:e22-issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/e22-standards:e22-init` and `/e22-standards:e22-adopt`. Used when GitHub Issues is the tracker; harmless otherwise. Agent-authored issue bodies (feature/bug/finding/spec-question/drift/task) are **not** installed — they live in the plugin at `templates/github/issue-bodies/`. |
 | `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
 | `apps/README.md` | `apps/README.md` | What belongs in `/apps`. |
 | `packages/README.md` | `packages/README.md` | What belongs in `/packages` (if bundled). |
@@ -59,7 +59,7 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |
-| *(empty dirs)* | `spec/features/.gitkeep`, `spec/decisions/.gitkeep` | Created empty; populated by `/e22-spec-scaffold` and `/e22-adr`. |
+| *(empty dirs)* | `spec/features/.gitkeep`, `spec/decisions/.gitkeep` | Created empty; populated by `/e22-standards:e22-spec-scaffold` and `/e22-standards:e22-adr`. |
 
 ## Deliberately not bundled
 

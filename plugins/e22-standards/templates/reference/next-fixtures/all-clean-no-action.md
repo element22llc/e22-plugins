@@ -23,11 +23,11 @@ Complete
 
 ## Expected suggested command
 
-none — an optional continuation (`/e22-spec` or `/e22-build`) may be named, but
+none — an optional continuation (`/e22-standards:e22-spec` or `/e22-standards:e22-build`) may be named, but
 never as a mandatory command.
 
 ## Must not recommend first
 
-Presenting `/e22-spec`/`/e22-build` as required, or inventing a cleanup task.
+Presenting `/e22-standards:e22-spec`/`/e22-standards:e22-build` as required, or inventing a cleanup task.
 Level 7 (no action required) is the honest answer; a `Complete` workspace must
 not name a mandatory continuation.

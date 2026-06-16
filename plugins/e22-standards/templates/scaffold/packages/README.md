@@ -10,4 +10,4 @@ independently deployed** — they ship as part of an app that depends on them.
   [`/configs`](../configs/README.md), not here.
 
 Workspace tooling is the product team's choice — record it in an ADR under
-[`/spec/decisions`](../spec/decisions) (run `/e22-adr`).
+[`/spec/decisions`](../spec/decisions) (run `/e22-standards:e22-adr`).

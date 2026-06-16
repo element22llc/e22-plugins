@@ -7,7 +7,7 @@
 #   rule is always-on prose, but prose is easy to skip mid-session. This hook
 #   re-asserts it at the moment it's about to be broken: the first write of real
 #   source code in a repo whose /spec/tracker.md declares `system: github`. It is
-#   the lightweight safety net; primary enforcement is routing (/e22-work) + the
+#   the lightweight safety net; primary enforcement is routing (/e22-standards:e22-work) + the
 #   skills, which actually find-or-create the issue. The hook cannot know whether
 #   an issue exists — it only reminds.
 #
@@ -63,7 +63,7 @@ MARK="${TMPDIR:-/tmp}/e22-issuefirst-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 
 SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
 
-CTX="Element 22 issue-first check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to write source code (${SAFE_FILE}). Every code/config/infra/behavior change needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /e22-tracker-sync (an explicit fix/implement/add request needs no confirmation to create it), then run implementation through /e22-work. This nudge does not block the write and fires once per session."
+CTX="Element 22 issue-first check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to write source code (${SAFE_FILE}). Every code/config/infra/behavior change needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /e22-standards:e22-tracker-sync (an explicit fix/implement/add request needs no confirmation to create it), then run implementation through /e22-standards:e22-work. This nudge does not block the write and fires once per session."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0

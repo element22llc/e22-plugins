@@ -1,6 +1,6 @@
 # [Product Name]
 
-> Replace this section after bootstrapping the repo (`/e22-init`).
+> Replace this section after bootstrapping the repo (`/e22-standards:e22-init`).
 
 One-sentence description of what this product does and who it serves.
 
@@ -25,14 +25,14 @@ monorepo** — multiple apps and shared packages live in this one product repo
 - **`CLAUDE.md`** is the operating manual for Claude when working in this repo.
 
 E22 defaults for package managers: **pnpm** for Node, **uv** for Python (rationale
-via the `e22-standards` plugin — run `/e22-conventions`). They're biases, not mandates —
+via the `e22-standards` plugin — run `/e22-standards:e22-conventions`). They're biases, not mandates —
 record a different choice in an ADR under `/spec/decisions`. On Windows, develop
 inside **WSL2** — see [Windows: develop in WSL](#windows-develop-in-wsl).
-- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up — that writes/refreshes `mise.lock`, which you commit. The scaffold ships placeholder `mise.lock` files because mise only writes the lock when the file already exists — don't delete them. Bump later with `mise upgrade`. Run `/e22-conventions` for the latest-in-config / pinned-in-lockfile rationale.
+- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up — that writes/refreshes `mise.lock`, which you commit. The scaffold ships placeholder `mise.lock` files because mise only writes the lock when the file already exists — don't delete them. Bump later with `mise upgrade`. Run `/e22-standards:e22-conventions` for the latest-in-config / pinned-in-lockfile rationale.
 
 ## Quick links
 
-- [Product spec](./spec/vision.md) — what this product does and why. Spec ↔ code rules and templates come from the `e22-standards` plugin: run `/e22-spec-scaffold`, `/e22-adr`, or `/e22-conventions`
+- [Product spec](./spec/vision.md) — what this product does and why. Spec ↔ code rules and templates come from the `e22-standards` plugin: run `/e22-standards:e22-spec-scaffold`, `/e22-standards:e22-adr`, or `/e22-standards:e22-conventions`
 - [App guide](./spec/app/README.md) — how to use the product: workflows, roles, configuration, limitations, troubleshooting
 - [Action history](./spec/HISTORY.md) — what changed, why, who asked, and where it's specified
 - [Issue tracker](./spec/tracker.md) — which tracker this product uses and how work items are referenced
@@ -47,7 +47,7 @@ You don't need to read code or run commands — Claude does the setup.
 1. **One time:** install [Claude Code](https://claude.com/claude-code) and
    [Docker Desktop](https://www.docker.com/products/docker-desktop/) (start it).
 2. Open this repo's folder in Claude Code.
-3. Type **`/e22-build`** and describe your idea. Claude interviews you, writes
+3. Type **`/e22-standards:e22-build`** and describe your idea. Claude interviews you, writes
    the spec for you to approve, then builds the app and runs it on your machine.
 
 A developer reviews everything before it becomes the official version.
@@ -81,7 +81,7 @@ uv run <your-dev-command>
 > environment. The baseline starts the PostgreSQL in [`compose.yaml`](./compose.yaml)
 > and fans `db:migrate` / `db:seed` out to workspace packages that define them
 > (those steps no-op until the first real app lands).
-> Adapt the tasks in `mise.toml` to the product during `/e22-init`.
+> Adapt the tasks in `mise.toml` to the product during `/e22-standards:e22-init`.
 
 > Local config vars are documented in [`.env.example`](./.env.example) — copy it
 > to a git-ignored `.env` and fill in real values. Running several E22 products

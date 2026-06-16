@@ -9,8 +9,8 @@
 #   this hook: a brand-new non-template repo where code was written from scratch
 #   with the plugin active, but the spec spine never appeared). The drift and
 #   open-questions hooks only fire once /spec ALREADY exists — they cannot catch
-#   a repo that never got a spine. /e22-init (plugin-driven bootstrap, or a
-#   legacy fork) and /e22-adopt (reverse-engineer existing code) are the fixes,
+#   a repo that never got a spine. /e22-standards:e22-init (plugin-driven bootstrap, or a
+#   legacy fork) and /e22-standards:e22-adopt (reverse-engineer existing code) are the fixes,
 #   but a skill is pull, not push: it only runs when someone invokes it, and the
 #   router prose that mentions it is easy to deprioritize while coding. This hook
 #   makes the missing spine a high-salience session-start signal so the bootstrap
@@ -49,14 +49,14 @@ printf 'written ahead of any vision/intent/contract.\n\n'
 printf 'Before writing (or continuing to write) feature code, bootstrap the repo '
 printf -- '— pick the path that matches:\n\n'
 printf -- '- **Starting a new product from scratch here** (greenfield — you are '
-printf 'writing the code; little or no app exists yet) → run **`/e22-init`**. It '
+printf 'writing the code; little or no app exists yet) → run **`/e22-standards:e22-init`**. It '
 printf 'sets up the `/spec` spine (`vision.md`, `users.md`, `glossary.md`, '
 printf 'action history, tracker, app guide), `CLAUDE.md`, and the repo '
 printf 'scaffolding from the plugin'"'"'s bundled scaffold, then drives spec-first: each '
-printf 'feature through **`/e22-spec-scaffold`** before its code, the initial '
-printf 'stack recorded via **`/e22-adr`**.\n'
+printf 'feature through **`/e22-standards:e22-spec-scaffold`** before its code, the initial '
+printf 'stack recorded via **`/e22-standards:e22-adr`**.\n'
 printf -- '- **Reverse-engineering an existing app** (substantial code already '
-printf 'here, not written this session) → run **`/e22-adopt`**. It reconstructs '
+printf 'here, not written this session) → run **`/e22-standards:e22-adopt`**. It reconstructs '
 printf 'the spec from the code and triages productionization.\n\n'
 printf 'This notice clears itself once `/spec` exists. (Not an Element 22 product '
 printf 'repo? Ignore it.)\n'

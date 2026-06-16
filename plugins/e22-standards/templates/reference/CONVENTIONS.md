@@ -1,7 +1,7 @@
 # Conventions
 
 Cross-cutting conventions for Element 22 product repos. The always-on rules keep
-only pointers; this is the full prose, loaded on demand via `/e22-conventions`.
+only pointers; this is the full prose, loaded on demand via `/e22-standards:e22-conventions`.
 
 ## Versioning policy
 
@@ -122,7 +122,7 @@ Why `mise.toml` and not `package.json`:
 
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
-`/e22-init`** — wire real migrate/seed commands, add services, swap pnpm for uv,
+`/e22-standards:e22-init`** — wire real migrate/seed commands, add services, swap pnpm for uv,
 or delete the docker/db tasks if the product has no backing services — and keep
 `dev:setup` green as the stack evolves: a fresh clone plus `mise install &&
 mise run dev:setup` must always produce a working local environment.

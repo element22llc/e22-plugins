@@ -1,6 +1,6 @@
 # Fixture: adopt — PR opened but not reviewed is the current gate
 
-Workflow: `/e22-adopt`
+Workflow: `/e22-standards:e22-adopt`
 
 ## Given
 

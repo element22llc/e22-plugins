@@ -1,7 +1,7 @@
 # Traceability & living documentation
 
 Full prose behind the always-on `living-docs`, `issue-tracker`, `drift-gates`,
-and `compliance` rules. Loaded on demand via **`/e22-traceability`**.
+and `compliance` rules. Loaded on demand via **`/e22-standards:e22-traceability`**.
 
 The goal: a PO can express intent in plain language, a dev can review precise
 contracts, and anyone — including an auditor — can walk the chain
@@ -25,7 +25,7 @@ already approved.
 |---|---|
 | "Users should be able to…", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) — PO approves scope changes |
 | "Actually, it should behave like…" (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) — same PR as the code |
-| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/e22-adr`; one line in `/spec/HISTORY.md` |
+| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/e22-standards:e22-adr`; one line in `/spec/HISTORY.md` |
 | "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `spec-framework.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) — usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; `validated` status in `intent.md` |
@@ -78,7 +78,7 @@ lives in the linked spec/ADR/PR.
 It serves: **auditability** (when/why/who for any change), **onboarding**
 (read the last quarter in five minutes), **review evidence** (entry rides in
 the reviewed PR), **decision archaeology** (why is it like this?), and
-**drift detection over time** (`/e22-drift` and `/e22-audit` use it as a
+**drift detection over time** (`/e22-standards:e22-drift` and `/e22-standards:e22-audit` use it as a
 timeline). Never rewrite or delete entries; correct with a new entry that
 references the old one.
 
@@ -138,7 +138,7 @@ connect the two.** Only one file knows which tracker is in use:
 acceptance criteria and constraints into the feature's `intent.md` (don't
 leave them tracker-only — the repo must stand alone for review and audit);
 keep the ref as the pointer back. When tracker state and spec diverge, that's
-exactly what `/e22-drift` audits.
+exactly what `/e22-standards:e22-drift` audits.
 
 **Questions not yet tracked externally** live in `## Open questions`. Promote
 one to a tracker item when it needs scheduling, an external owner, or client
@@ -165,8 +165,8 @@ Mechanics:
   "Resolved" is visible: a code change, an artifact update in the same PR, or
   a written accepted-divergence note (open question or `spec-drift` issue).
 - Claude **may not waive its own flag** — only the human reviewer resolves it.
-- Sweeps for drift that slipped past per-PR gates: `/e22-drift` (as-built spec
-  vs tracker spec), `/e22-audit` (code vs standards), `/e22-questions` (open
+- Sweeps for drift that slipped past per-PR gates: `/e22-standards:e22-drift` (as-built spec
+  vs tracker spec), `/e22-standards:e22-audit` (code vs standards), `/e22-standards:e22-questions` (open
   questions rotting).
 
 ---
@@ -229,5 +229,5 @@ the flag, the contract diff, and the regression test together.
 ### Where each runs
 
 Both flows work in Claude Code and Cowork; the PO typically enters through
-**`/e22-build`**, the dev through the normal spec workflow
-(`/e22-spec-scaffold`, `/e22-adr`) — the artifacts and gates are identical.
+**`/e22-standards:e22-build`**, the dev through the normal spec workflow
+(`/e22-standards:e22-spec-scaffold`, `/e22-standards:e22-adr`) — the artifacts and gates are identical.

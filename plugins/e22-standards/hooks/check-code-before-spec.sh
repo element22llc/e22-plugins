@@ -68,7 +68,7 @@ MARK="${TMPDIR:-/tmp}/e22-gf-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 # but never trust that).
 SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
 
-CTX="Element 22 spec-first check: this repo has no /spec spine, and you are about to write source code (${SAFE_FILE}). A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /e22-spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /e22-adr) — do not let the build degrade to toolchain conventions only. If you are starting this product from scratch, bootstrap first with /e22-init (greenfield path); if you are reverse-engineering pre-existing code, run /e22-adopt. This nudge does not block the write and fires once per session; it stops once /spec exists."
+CTX="Element 22 spec-first check: this repo has no /spec spine, and you are about to write source code (${SAFE_FILE}). A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /e22-standards:e22-spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /e22-standards:e22-adr) — do not let the build degrade to toolchain conventions only. If you are starting this product from scratch, bootstrap first with /e22-standards:e22-init (greenfield path); if you are reverse-engineering pre-existing code, run /e22-standards:e22-adopt. This nudge does not block the write and fires once per session; it stops once /spec exists."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0

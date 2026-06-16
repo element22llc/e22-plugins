@@ -37,6 +37,17 @@ PR assigns the version and converts this to a versioned entry.
     `spec-framework.md`; `/e22-issues status` and the `decompose` precondition
     share the one derivation so they cannot disagree.
 
+- **Remove command shims; correct invocation syntax (audit F4).** A runtime
+  smoke test confirmed plugin skills are invoked **only** as
+  `/e22-standards:<skill>` — Claude Code always namespaces plugin skills, so the
+  bare `/e22-*` form never worked for a user. The 13 thin `commands/*.md` shims
+  (which only restated skill semantics and produced the same namespaced
+  invocation) are deleted, and every `/e22-*` reference across rules, skills,
+  reference prose, templates, scaffold, hooks, README, and CLAUDE.md is rewritten
+  to the namespaced form. CLAUDE.md's "every skill is invokable as `/<skill-name>`"
+  claim is corrected. (Branch names like `feat/e22-adopt` and tracker markers like
+  `e22:state` are unaffected — they are not slash commands.)
+
 ### 1.48.0
 
 - **New `/e22-next` — read-only workspace navigator.** Delivers the cross-workflow

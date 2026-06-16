@@ -2,8 +2,8 @@
 
 E22 **default biases**, not mandates — when a project's intent clearly warrants
 a different stack, propose the better fit and record an ADR under
-`/spec/decisions/` (run `/e22-adr`). Rationale and full setup detail for every
-bullet: run `/e22-conventions`.
+`/spec/decisions/` (run `/e22-standards:e22-adr`). Rationale and full setup detail for every
+bullet: run `/e22-standards:e22-conventions`.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the

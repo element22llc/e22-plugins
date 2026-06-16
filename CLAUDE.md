@@ -12,7 +12,7 @@ is never copied here, and updating it means bumping the SHA in
 standards live in `plugins/e22-standards/` (rules, skills, reference prose),
 consumed by every product repo via the marketplace. The plugin also carries the
 **bundled repo scaffold** (`plugins/e22-standards/templates/scaffold/` +
-spec-spine templates in `templates/spec/`), which `/e22-init` / `/e22-adopt`
+spec-spine templates in `templates/spec/`), which `/e22-standards:e22-init` / `/e22-standards:e22-adopt`
 install — this **replaces** the old static
 [`repository-template`](https://github.com/element22llc/repository-template)
 as the bootstrap source; do not point new work at that repo. When a standard
@@ -32,14 +32,12 @@ plugins/e22-standards/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── hooks/                          # SessionStart hook → injects rules/*.md
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
-├── skills/                         # on-demand: e22-init, e22-adopt, e22-build, e22-conventions,
+├── skills/                         # on-demand, invoked as /e22-standards:<skill>:
+│                                   #            e22-init, e22-adopt, e22-build, e22-conventions,
 │                                   #            e22-traceability, e22-design-sources, e22-spec-scaffold,
 │                                   #            e22-spec, e22-issues, e22-tracker-sync, e22-work, e22-adr,
 │                                   #            e22-drift, e22-audit, e22-sync, e22-questions, e22-next, e22-tidy, e22-standards
-├── commands/                       # optional /slash aliases for a subset of skills
-│                                   #   (e22-init, e22-build, e22-adopt, e22-spec, e22-issues, e22-tracker-sync,
-│                                   #    e22-work, e22-drift, e22-audit, e22-sync, e22-questions, e22-next, e22-tidy);
-│                                   #   skills without an alias are still invokable as /<skill-name>
+│                                   # (no commands/ — see "invocation syntax" below)
 └── templates/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
     │                               #   vision/users/glossary, history, tracker, app-docs, …)
@@ -60,10 +58,14 @@ plugins/e22-standards/
   prefixes spaced so new rules can slot between existing ones. Gaps in the
   sequence (e.g. `20` → `22` → `30`) are intentional headroom — do not renumber
   files to make the prefixes contiguous.
-- Command files in `commands/` are **optional aliases** — they exist only where a
-  skill benefits from a short `/slash` entry point. Every skill is directly
-  invokable as `/<skill-name>` regardless, so a skill having no command file
-  (e.g. `e22-adr`, `e22-spec-scaffold`, `e22-conventions`) is not a defect.
+- **Invocation syntax — skills are plugin-namespaced.** A skill named `<skill>`
+  is invoked as **`/e22-standards:<skill>`** (e.g. `/e22-standards:e22-spec`), never
+  bare `/<skill>` — Claude Code always namespaces plugin skills to avoid
+  cross-plugin collisions. There is no `commands/` directory: the legacy thin
+  command shims were removed (they duplicated skill semantics and only ever
+  produced the same namespaced invocation). When writing docs, rules, or skill
+  cross-references, always use the `/e22-standards:` prefix; a bare `/e22-*` in
+  prose is a bug the validation suite flags.
 - Hook commands in `hooks.json` invoke their scripts via an explicit `sh` prefix,
   so the executable bit doesn't matter (marketplace install does not chmod) —
   keep that prefix when adding hooks. All hook scripts are POSIX `sh`, no `jq`

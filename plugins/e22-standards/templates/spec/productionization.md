@@ -6,9 +6,9 @@
 > session reads this first and continues from the unchecked items; never restart
 > from scratch.
 >
-> Produced by **`/e22-adopt`** (an existing non-template repo brought into E22
+> Produced by **`/e22-standards:e22-adopt`** (an existing non-template repo brought into E22
 > standards — the main case, with real legacy code to triage) and carried into
-> **`/e22-build`** (a PO-built v0 handed to a dev — mostly stubs to finish, see
+> **`/e22-standards:e22-build`** (a PO-built v0 handed to a dev — mostly stubs to finish, see
 > the disposition note below).
 
 ## Overall recommendation
@@ -18,7 +18,7 @@
 > rather than hardening in place** — the spec exists now, so a from-scratch
 > rebuild is a safe, often cheaper route to production than fixing a pile of
 > issues. A project-level Rewrite or Reject is hard-to-reverse: record it as an
-> ADR (`/e22-adr`) for the dev to ratify — Claude proposes, the dev decides.
+> ADR (`/e22-standards:e22-adr`) for the dev to ratify — Claude proposes, the dev decides.
 
 - **Recommendation:** [harden in place / partial rewrite (areas …) / full rewrite from spec / reject]
 - **Why:** [one or two lines]
@@ -58,7 +58,7 @@
 >   action cell if the *design* also changes vs. just the code.
 > - **Reject** — remove it; not in the spec, dead, or a liability to delete.
 >
-> Greenfield PO builds (`/e22-build`) are **Keep/Refactor** by default — there's
+> Greenfield PO builds (`/e22-standards:e22-build`) are **Keep/Refactor** by default — there's
 > no legacy to triage, only stubs to finish before production.
 
 | Area                         | Standard (rule)        | Current state | Disposition | Action / rationale |
@@ -122,4 +122,4 @@ Bad practices found in the as-built code (anti-patterns vs the `practices` rule)
 
 - [Dev-facing hardening ambiguities surfaced during adoption.] Product/behavior
   ambiguities live in each feature's `intent.md` → `## Open questions` (and
-  `vision.md` for product-level). Run `/e22-questions` to work them all down.
+  `vision.md` for product-level). Run `/e22-standards:e22-questions` to work them all down.

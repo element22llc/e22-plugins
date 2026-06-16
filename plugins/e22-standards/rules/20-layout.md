@@ -21,4 +21,4 @@ one repo.
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 
 Specs are organized by user-facing feature; code however the stack wants — a
-feature may span several apps/packages (coupling rules: `/e22-spec-scaffold`).
+feature may span several apps/packages (coupling rules: `/e22-standards:e22-spec-scaffold`).

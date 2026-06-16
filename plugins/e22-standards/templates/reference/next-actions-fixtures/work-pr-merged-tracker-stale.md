@@ -1,6 +1,6 @@
 # Fixture: work — PR merged but issue state not reconciled
 
-Workflow: `/e22-work #123`
+Workflow: `/e22-standards:e22-work #123`
 
 ## Given
 
@@ -17,7 +17,7 @@ Blocking now (the current workflow's own lifecycle transition is unfinished)
 
 ## Expected suggested command
 
-`/e22-work resume #123` — `resume` owns post-merge reconciliation (it reconciles "a PR that merged/closed while away"). `status` only reports the staleness read-only; `finish` transitions to `validate`, never `done`.
+`/e22-standards:e22-work resume #123` — `resume` owns post-merge reconciliation (it reconciles "a PR that merged/closed while away"). `status` only reports the staleness read-only; `finish` transitions to `validate`, never `done`.
 
 ## Must not recommend first
 

@@ -20,8 +20,8 @@ Blocking now
 
 ## Expected suggested command
 
-`/e22-adopt` (existing code). For a greenfield repo with no code yet, the
-command would instead be `/e22-init`.
+`/e22-standards:e22-adopt` (existing code). For a greenfield repo with no code yet, the
+command would instead be `/e22-standards:e22-init`.
 
 ## Must not recommend first
 

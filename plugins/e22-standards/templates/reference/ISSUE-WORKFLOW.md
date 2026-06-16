@@ -12,10 +12,10 @@ Two invariants underpin everything:
 - **`/spec` is durable product truth; GitHub Issues is the work/decision layer.**
   An issue is the *workflow* for reaching a decision; the spec (or an ADR) is the
   durable *record* of it. Neither silently overwrites the other.
-- **`/e22-issues` orchestrates backlog management; `/e22-work` owns execution.**
-  Neither owns domain reasoning — they delegate to `/e22-spec`, `/e22-audit`,
-  `/e22-drift`, `/e22-questions`. All **tracker-metadata** read/write flows
-  through `/e22-tracker-sync` (MCP-first → `gh` → manual floor); git and
+- **`/e22-standards:e22-issues` orchestrates backlog management; `/e22-standards:e22-work` owns execution.**
+  Neither owns domain reasoning — they delegate to `/e22-standards:e22-spec`, `/e22-standards:e22-audit`,
+  `/e22-standards:e22-drift`, `/e22-standards:e22-questions`. All **tracker-metadata** read/write flows
+  through `/e22-standards:e22-tracker-sync` (MCP-first → `gh` → manual floor); git and
   pull-request **delivery** follows the repo's execution/autonomy rules — it is
   not a gateway operation (otherwise `git push` would violate the invariant).
 
@@ -48,21 +48,21 @@ Two invariants underpin everything:
 
 1. **Capture** — a PO opens an issue from a form (feature / bug / product
    question / improvement). Incomplete ideas are fine. No `intent.md`, no
-   feature-id, no architecture. Enters `inbox`. (`/e22-issues capture` can also
+   feature-id, no architecture. Enters `inbox`. (`/e22-standards:e22-issues capture` can also
    open one from a conversation, prototype, or screenshot.)
-2. **Brainstorm** — `/e22-issues brainstorm #N` reads the issue and related
+2. **Brainstorm** — `/e22-standards:e22-issues brainstorm #N` reads the issue and related
    specs, finds overlaps, asks focused questions, and maintains **one** editable
    "AI synthesis" comment (proposed outcome + boundaries). The issue body stays
    human-owned.
 3. **Product validation** — the PO approves intent, answers questions, rejects
    assumptions, attaches design sources, in GitHub. Moves to `ready-for-spec`.
-4. **Materialize** — `/e22-issues materialize #N` writes/updates
+4. **Materialize** — `/e22-standards:e22-issues materialize #N` writes/updates
    `spec/features/<id>/intent.md` with `Status: draft`, links the issue, and
    requests PO approval. **Materialize never approves** — only an explicit
-   `/e22-spec approve` flips `Status: approved`.
-5. **Technical shaping** — `/e22-spec contract <id>`; large features become a
+   `/e22-standards:e22-spec approve` flips `Status: approved`.
+5. **Technical shaping** — `/e22-standards:e22-spec contract <id>`; large features become a
    parent feature issue with implementation sub-issues
-   (`/e22-issues decompose #N`).
+   (`/e22-standards:e22-issues decompose #N`).
 6. **Implementation & product validation** — PRs use closing refs
    (`Closes #131`, `Refs #123`, `Spec: …`). The parent closes only after
    **product** validation, not merely because the last code PR merged.
@@ -119,7 +119,7 @@ Completion rules: **opening a PR moves the issue to `validate`, never `done`.**
 
 A PR closed without merge returns the issue to `in-progress` or `blocked` (the
 issue itself is not closed). A reopened issue moves `done|cancelled →
-inbox|exploring|ready-for-dev` after reassessment. `/e22-work status|resume|finish`
+inbox|exploring|ready-for-dev` after reassessment. `/e22-standards:e22-work status|resume|finish`
 reconciles stale markers on the next interaction — and **inspects the closure
 reason before transitioning a closed issue**, keeping merge state as independent
 evidence. An AI may *perform* a transition only where the table says so;
@@ -172,7 +172,7 @@ area**, **Spec state** (None/Proposed/Approved/Drifted), **Release**, **Owner
 type** (Product/Development/Shared). Suggested views: PO inbox · Product
 exploration · Ready for specification · Developer-ready backlog · In progress ·
 Awaiting PO validation · Audit debt · Spec drift · High-risk changes.
-`/e22-issues project bootstrap` can create/reconcile **fields and options**
+`/e22-standards:e22-issues project bootstrap` can create/reconcile **fields and options**
 best-effort via `gh project`, degrading gracefully when absent — but `gh`
 exposes **no API to create saved views**, so it outputs manual view-creation
 instructions rather than claiming to have made them.
@@ -192,15 +192,15 @@ durable *record*.
 
 ## Audit & drift (reconciling, not additive)
 
-- **Audit** (`/e22-audit` → `/e22-issues publish-audit`) uses a two-level model:
+- **Audit** (`/e22-standards:e22-audit` → `/e22-standards:e22-issues publish-audit`) uses a two-level model:
   one immutable **audit-run** record per run (`audit-id`) plus selected
   **finding** children keyed by a stable `finding-key` (the conceptual defect),
   with an `evidence` fingerprint tracking the *observed* lines separately. Re-runs
   reconcile: same key → update; gone → comment + close (auto-close only for
   `resolution_mode: deterministic`; judgment calls need a human yes); new →
   create; false positive → stays closed. Reconciling, never additive. See
-  `ISSUE-SCHEMA.md` for the keys and `/e22-audit` for the full lifecycle.
-- **Drift** (`/e22-drift` → `/e22-issues publish-drift`) files decision-checklist
+  `ISSUE-SCHEMA.md` for the keys and `/e22-standards:e22-audit` for the full lifecycle.
+- **Drift** (`/e22-standards:e22-drift` → `/e22-standards:e22-issues publish-drift`) files decision-checklist
   issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
   required`. The agent may propose a direction but **never resolves behavioural
   drift autonomously** — a PO or dev decides by ownership.

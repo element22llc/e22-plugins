@@ -10,7 +10,7 @@ A repo materializes part of the plugin into itself at bootstrap time — the
 `/spec` spine, the bundled scaffold (CI, `mise.toml`, PR template, …). Those
 copies are **frozen at the plugin version that wrote them**. `/plugin update`
 refreshes the *plugin* (rules, skills, reference prose read in place), but it
-does **not** touch the files already on disk. `/e22-sync` closes that gap: it
+does **not** touch the files already on disk. `/e22-standards:e22-sync` closes that gap: it
 carries an already-bootstrapped repo forward to the current plugin's
 conventions.
 
@@ -22,9 +22,9 @@ This is the steady-state counterpart to the one-time bootstraps. Use it when:
   without re-running a full adoption;
 - someone asks to "sync to the latest standards / plugin version".
 
-It is **not** a bootstrap (no `/spec` → `/e22-init` or `/e22-adopt`), **not** a
-spec-vs-tracker drift check (`/e22-drift`), and **not** a code-health audit
-(`/e22-audit`). Those operate on different axes; this one is
+It is **not** a bootstrap (no `/spec` → `/e22-standards:e22-init` or `/e22-standards:e22-adopt`), **not** a
+spec-vs-tracker drift check (`/e22-standards:e22-drift`), and **not** a code-health audit
+(`/e22-standards:e22-audit`). Those operate on different axes; this one is
 **repo-structure-vs-plugin-conventions**.
 
 ## Axis at a glance
@@ -38,9 +38,9 @@ spec-vs-tracker drift check (`/e22-drift`), and **not** a code-health audit
 ## Steps
 
 1. **Confirm it's a sync case.** There must be an existing `/spec` spine — this
-   repo already went through `/e22-init` or `/e22-adopt`. If there's **no
-   `/spec`**, stop and redirect: `/e22-init` (greenfield / template fork) or
-   `/e22-adopt` (existing app to reverse-engineer). Work on a `feat/e22-sync`
+   repo already went through `/e22-standards:e22-init` or `/e22-standards:e22-adopt`. If there's **no
+   `/spec`**, stop and redirect: `/e22-standards:e22-init` (greenfield / template fork) or
+   `/e22-standards:e22-adopt` (existing app to reverse-engineer). Work on a `feat/e22-sync`
    branch — never commit to `main` (commit-autonomy rule). Nothing is committed
    until the dev approves.
 
@@ -94,7 +94,7 @@ spec-vs-tracker drift check (`/e22-drift`), and **not** a code-health audit
 6. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
 
    ```
-   # E22 spec-spine version — managed by /e22-init, /e22-adopt, /e22-sync. Do not edit by hand.
+   # E22 spec-spine version — managed by /e22-standards:e22-init, /e22-standards:e22-adopt, /e22-standards:e22-sync. Do not edit by hand.
    <TARGET>
    ```
 
@@ -124,8 +124,8 @@ spec-vs-tracker drift check (`/e22-drift`), and **not** a code-health audit
 
 - **Structure only, never behavior.** Sync moves/renames artifacts and splices
   in template additions; it does not refactor app code, resolve open questions,
-  or re-triage productionization. Code health is `/e22-audit`; drift is
-  `/e22-drift`.
+  or re-triage productionization. Code health is `/e22-standards:e22-audit`; drift is
+  `/e22-standards:e22-drift`.
 - **The ledger is the source of truth for non-additive changes.** Apply
   renames/moves only from `MIGRATIONS.md` entries — never improvise a transform
   from memory of "what changed."
