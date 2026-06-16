@@ -248,12 +248,14 @@ checklist" without this step is the exact failure this convention exists to
 prevent: the new gate isn't in the file, so it never gets noticed. To guarantee
 the comparison actually happens, **run a diff command and act on its output**
 instead of eyeballing — surface the headings/checklist items the bundled template
-has that the existing file lacks (substitute the real paths):
+has that the existing file lacks. The bundled helper
+`scripts/template-reconcile.sh` does exactly this (read-only; prints the
+candidate anchors to stdout). Pass the existing file and the current bundled
+template (substitute the real paths):
 
 ```sh
-comm -13 \
-  <(grep -hE '^(#{2,3} |- \[)' <existing-file>                          | sed -E 's/\[[xX]\]/[ ]/' | sort -u) \
-  <(grep -hE '^(#{2,3} |- \[)' "$CLAUDE_PLUGIN_ROOT/<bundled-template>" | sed -E 's/\[[xX]\]/[ ]/' | sort -u)
+sh "$CLAUDE_PLUGIN_ROOT/scripts/template-reconcile.sh" \
+  <existing-file> "$CLAUDE_PLUGIN_ROOT/<bundled-template>"
 ```
 
 The command **over-reports**: a placeholder the dev replaced with real content, or

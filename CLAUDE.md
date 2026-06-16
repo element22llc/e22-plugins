@@ -31,6 +31,8 @@ install paths; keep it in sync when adding scaffold files.
 plugins/e22-standards/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── hooks/                          # SessionStart hook → injects rules/*.md
+├── scripts/                        # POSIX-sh helpers skills invoke via ${CLAUDE_PLUGIN_ROOT}
+│                                   #   (e.g. template-reconcile.sh — read-only template diff)
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand, invoked as /e22-standards:<skill>:
 │                                   #            e22-init, e22-adopt, e22-build, e22-conventions,
