@@ -45,19 +45,25 @@ run = [
 ]
 
 [tasks.shell]
-description = "Lint and format-check shell scripts (plugin hooks + libs + tests)"
+description = "Lint and format-check shell scripts (plugin hooks + libs + scripts + tests)"
 run = [
   # ShellCheck is the hard gate (see .shellcheckrc for the few intentional disables).
-  "shellcheck plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh",
+  "shellcheck plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh plugins/e22-standards/scripts/*.sh",
   # shfmt is advisory: report style drift but don't fail CI on the hooks'
   # hand-written formatting. Run `shfmt -w` locally to apply.
-  "shfmt -d plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh || true",
+  "shfmt -d plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh plugins/e22-standards/scripts/*.sh || true",
 ]
 
 [tasks.hooktests]
-description = "Run the POSIX-sh hook fixture suite (network stubbed via fixtures)"
+description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = [
   "sh plugins/e22-standards/hooks/tests/run.sh",
+]
+
+[tasks.version-scan]
+description = "Scan the repo for version pins that violate policy/versions.yml"
+run = [
+  "sh plugins/e22-standards/scripts/scan-version-pins.sh .",
 ]
 
 [tasks.check]
@@ -76,4 +82,5 @@ depends = [
   "test",
   "shell",
   "hooktests",
+  "version-scan",
 ]

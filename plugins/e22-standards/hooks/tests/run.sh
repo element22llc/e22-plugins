@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
-# e22-standards hook fixture suite — POSIX sh, network stubbed via
-# E22_EOL_FIXTURE_DIR. Feeds canned PreToolUse JSON on stdin and asserts the
-# hook's decision (deny / advisory additionalContext / silent allow) plus the
-# field-extraction and classification behaviour. Run from anywhere:
+# e22-standards hook fixture suite — POSIX sh. Version-pin checks are
+# deterministic against the bundled policy/versions.yml (no network, no jq).
+# Feeds canned PreToolUse JSON on stdin and asserts the hook's decision
+# (deny / advisory additionalContext / silent allow) plus the field-extraction
+# and classification behaviour. Run from anywhere:
 #
 #     sh plugins/e22-standards/hooks/tests/run.sh
 #
@@ -24,7 +25,6 @@ set -u
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 PLUGIN="$(CDPATH='' cd -- "${HERE}/../.." && pwd)"
 HOOKS="${PLUGIN}/hooks"
-EOL="${HERE}/eol-fixtures"
 export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/e22-hooktests.XXXXXX")"
@@ -151,40 +151,52 @@ assert_eq "classify generated" "$(e22_classify_path dist/app.js)" "generated"
 assert_eq "classify spec" "$(e22_classify_path spec/features/x/intent.md)" "spec"
 assert_eq "classify unknown" "$(e22_classify_path data.bin)" "unknown"
 
-# --- check-version-pins.sh (network stubbed) ---
-ENV="E22_EOL_FIXTURE_DIR=${EOL}"
+# --- check-version-pins.sh (deterministic, policy-driven; uses the bundled
+#     policy/versions.yml via CLAUDE_PLUGIN_ROOT — no network, no jq) ---
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
-assert_deny "version-pins: EOL pin denied" "${out}"
+assert_deny "version-pins: denied major denied" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
 assert_no_deny "version-pins: supported-behind not denied" "${out}"
 assert_ctx "version-pins: supported-behind advisory" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 18)")")"
-assert_empty "version-pins: latest silent" "${out}"
+assert_empty "version-pins: at/above recommended silent" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9)")")"
+assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"compose.yaml\",\"old_string\":\"$(pin postgres 11)\",\"new_string\":\"$(pin postgres 18)\"}}")"
 assert_empty "version-pins: upgrade edit silent (F13, old value ignored)" "${out}"
 
-out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # pin-ok: vendor LTS")")"
-assert_empty "version-pins: pin-ok bypass" "${out}"
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # e22:allow-pin vendor LTS")")"
+assert_empty "version-pins: e22:allow-pin bypass" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # pin-ok: legacy alias")")"
+assert_empty "version-pins: legacy pin-ok bypass" "${out}"
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"docker run $(pin postgres 11)\"}}")"
-assert_empty "version-pins: Bash skipped" "${out}"
+assert_empty "version-pins: Bash skipped (CI scanner is the backstop)" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 NOTES.md "we used $(pin postgres 11) once")")"
 assert_empty "version-pins: docs exempt" "${out}"
 
-mkdir -p "${WORK}/empty"
-out="$(ENV="E22_EOL_FIXTURE_DIR=${WORK}/empty" run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
-assert_empty "version-pins: offline fails open" "${out}"
-
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin node 18)")")"
-assert_deny "version-pins: node EOL(true) denied" "${out}"
+assert_deny "version-pins: node denied major denied" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin redis 7)")")"
-assert_no_deny "version-pins: odd-ordering fixture no false-deny" "${out}"
+assert_no_deny "version-pins: at recommended (redis 7) not denied" "${out}"
+
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: foo:1")")"
+assert_empty "version-pins: unknown product not enforced" "${out}"
+
+# Repo-local policy/versions.yml overrides the bundled default.
+RP="$(new_repo repoPolicy)"
+mkdir -p "${RP}/policy"
+printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    recommended: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
+out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "image: $(pin postgres 17)")")"
+assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
 
 # --- check-code-before-spec.sh (no /spec spine) ---
 unset ENV
@@ -415,6 +427,58 @@ OQ8="$(oq_repo oq8 f)"
 printf '> Status: draft\n\n## Open questions\n\n- [ ] a real legacy question\n' >"${OQ8}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ8}" oq8)")"
 oq_grep "open-questions: legacy checkbox still detected" 'open question' "${out}"
+
+# ---------------------------------------------------------------------------
+# scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
+# (pins assembled via pin() so this file's source carries no name:NN literal.)
+# ---------------------------------------------------------------------------
+SCAN="${PLUGIN}/scripts/scan-version-pins.sh"
+BUNDLED_POLICY="${PLUGIN}/policy/versions.yml"
+scan() { # <dir>  -> sets `rc`; uses the bundled policy
+	E22_POLICY_FILE="${BUNDLED_POLICY}" sh "${SCAN}" "$1" >/dev/null 2>&1
+	rc=$?
+}
+
+SD="${WORK}/scan1"
+mkdir -p "${SD}"
+printf 'services:\n  db:\n    image: %s\n' "$(pin postgres 11)" >"${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: denied pin -> exit 1" "${rc}" 1
+
+printf 'services:\n  db:\n    image: %s # e22:allow-pin vendor LTS\n' "$(pin postgres 11)" >"${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: suppressed pin -> exit 0" "${rc}" 0
+
+printf 'FROM %s\n' "$(pin node 22)" >"${SD}/Dockerfile"
+rm -f "${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: supported pin -> exit 0" "${rc}" 0
+
+# Templated / variable values are NOT resolved -> never false-positived.
+printf 'services:\n  db:\n    image: postgres:${PG_MAJOR}\n' >"${SD}/compose.yaml"
+rm -f "${SD}/Dockerfile"
+scan "${SD}"
+assert_rc "scan: templated value not flagged" "${rc}" 0
+
+# Excluded dependency trees are skipped even with a denied pin inside.
+mkdir -p "${SD}/node_modules/x"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SD}/node_modules/x/compose.yaml"
+rm -f "${SD}/compose.yaml"
+scan "${SD}"
+assert_rc "scan: excluded dir (node_modules) skipped" "${rc}" 0
+
+# Bash-mediated pin in a committed script IS caught (the hook can't see it).
+printf '#!/bin/sh\ndocker run %s\n' "$(pin postgres 11)" >"${SD}/run.sh"
+scan "${SD}"
+assert_rc "scan: committed Bash pin caught -> exit 1" "${rc}" 1
+rm -f "${SD}/run.sh"
+
+# No policy file -> config error.
+SDNP="${WORK}/scan-nopolicy"
+mkdir -p "${SDNP}"
+printf 'image: %s\n' "$(pin postgres 11)" >"${SDNP}/compose.yaml"
+sh "${SCAN}" "${SDNP}" >/dev/null 2>&1
+assert_rc "scan: missing policy -> exit 2" "$?" 2
 
 # ---------------------------------------------------------------------------
 # scripts/template-reconcile.sh — read-only structural diff (not a hook)

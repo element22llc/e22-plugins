@@ -1,0 +1,55 @@
+name: version-policy-refresh
+
+# Keeps policy/versions.yml honest against upstream end-of-life WITHOUT making
+# enforcement depend on the network. This is the ONLY job that consults
+# endoflife.date; it proposes policy bumps by opening an issue. Enforcement (the
+# interactive hook + scan-version-pins.sh) reads only the static policy file.
+#
+# Non-blocking by construction: it never edits the policy and never fails a
+# required check — it just files/refreshes an advisory issue.
+
+on:
+  schedule:
+    # Weekly, Monday 06:17 UTC (off the :00 mark to avoid the cron stampede).
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check policy floors against upstream EOL
+        id: check
+        run: |
+          set +e
+          out="$(sh plugins/e22-standards/scripts/check-policy-freshness.sh)"
+          rc=$?
+          {
+            echo "rc=${rc}"
+            echo "report<<EOF"
+            echo "${out}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Open or refresh the policy-drift issue
+        if: steps.check.outputs.rc == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT: ${{ steps.check.outputs.report }}
+        run: |
+          title="version-policy: floors behind upstream EOL"
+          body="$(printf '%s\n\n%s\n' "${REPORT}" "_Filed by version-policy-refresh. Raise the listed minimum_supported floors in policy/versions.yml (this is E22 policy; bump deliberately). Enforcement is unaffected until the file changes._")"
+          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number' 2>/dev/null)"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --body "${body}"
+          else
+            gh issue create --title "${title}" --body "${body}" --label "maintenance" 2>/dev/null \
+              || gh issue create --title "${title}" --body "${body}"
+          fi
