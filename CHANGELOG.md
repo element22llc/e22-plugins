@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
-### [Unreleased]
+### 1.50.0
 
 Audit-mitigation series tail — closes the two residual findings left after
 rev. 2, plus an `e22-build` onboarding-accuracy fix and a small reconciliation-
@@ -740,12 +740,12 @@ authorization authority, and hardens the point-of-action hooks.
 
 - **Fix: `/e22-drift` skill frontmatter failed to parse, breaking the whole
   plugin.** The `e22-drift` `SKILL.md` description was an unquoted YAML plain
-  scalar containing `Read-only: ` — the colon-space made the parser treat it as
+  scalar containing `Read-only:` — the colon-space made the parser treat it as
   a nested mapping key and silently drop all frontmatter, so `claude plugin
   validate` errored and the loader rejected the plugin (every skill/command,
   e.g. `/e22-questions`, showed as "command not found"). Wrapped the description
   in double quotes. Guard for the future: any skill/command `description:`
-  containing `: ` (colon-space), `#`, leading `[`/`{`/`*`/`&`, or a leading
+  containing `:` (colon-space), `#`, leading `[`/`{`/`*`/`&`, or a leading
   quote must be quoted.
 
 ### 1.29.0
