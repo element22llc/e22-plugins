@@ -49,8 +49,11 @@ plugins/e22-standards/
 ## Working in this repo
 
 - Changes go through `feat/*` / `fix/*` branches off `main` + PR.
-- Any change to plugin behavior needs a `version` bump in
-  `plugins/e22-standards/.claude-plugin/plugin.json` and a `CHANGELOG.md` entry.
+- Any change to plugin behavior needs a `CHANGELOG.md` entry. Accumulate entries
+  under `## e22-standards` → `### [Unreleased]`; implementation PRs do **not**
+  bump `plugins/e22-standards/.claude-plugin/plugin.json`. The `version` bump
+  happens **once**, in the release PR that renames `[Unreleased]` to the new
+  version — so a stream of PRs cuts one coherent release instead of a bump each.
 - `rules/*.md` is **always-on** context injected every session — keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.

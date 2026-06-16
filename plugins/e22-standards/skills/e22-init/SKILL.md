@@ -147,6 +147,14 @@ the dev approves.
    the first decision worth an ADR — run `/e22-standards:e22-adr`. **Any deviation from the
    E22 defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or
    Python + FastAPI instead of the in-Next backend) **must** get one either way.
+   **Status follows who decided.** When the dev *explicitly* chooses the stack in
+   this interactive setup, that is a real forward decision: author the ADR as
+   **`Accepted`** with the dev as the named **Decider** and today's date. When
+   Claude merely *recommended* a default and the dev made no explicit choice,
+   leave it **`Proposed`** until a named decider accepts it — generic
+   bootstrap-PR approval does **not** ratify a `Proposed` ADR. (Contrast
+   **`/e22-standards:e22-adopt`**, which only *observes* existing code and so always
+   authors `Proposed` ADRs.)
 5. **Pin the toolchain and lock the workspace.** Run `mise install`, then verify
    each `mise.lock` contains real `[[tools.*]]` entries and commit it. Once the
    first real app/workspace exists, generate and commit the workspace lock

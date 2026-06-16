@@ -1,6 +1,6 @@
 ---
 name: e22-audit
-description: "Repeatable, read-only, whole-repo health audit of an E22 repo — sweeps the code across standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), and routes results into /spec + the tracker. Read-only: reports and proposes, never edits code or spec, never commits. Defers correctness to /code-review and security to /security-review."
+description: "Repeatable, read-only, whole-repo health audit of an E22 repo — sweeps the code across standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), proposes routing into /spec, and files findings in the tracker. Repository-read-only: it proposes spec changes and files tracker issues, but never edits code or spec and never commits. Defers correctness to /code-review and security to /security-review."
 when_to_use: Use to audit overall code health, find the highest-leverage improvements, or do a periodic standards-conformance pass on a steady-state repo.
 ---
 
@@ -9,9 +9,10 @@ when_to_use: Use to audit overall code health, find the highest-leverage improve
 A **repeatable, read-only health audit** of a steady-state repo. It sweeps the
 whole codebase across the E22 standards dimensions, **vets** every candidate
 finding against the code it cites (subagents over-report), ranks what survives by
-**leverage**, and routes the results into the existing `/spec` spine + issue
-tracker. The output is a ranked report and proposed routing — **it never edits
-code or spec and never commits.**
+**leverage**, and **proposes** routing into the existing `/spec` spine while
+**filing** the findings in the issue tracker. The output is a ranked report and
+proposed spec changes — it is **repository-read-only**: it never edits code or
+spec and never commits, and its only writes are tracker issues.
 
 This is the steady-state counterpart to one-time adoption: where `/e22-standards:e22-adopt`
 builds the spec for a repo that has none, `/e22-standards:e22-audit` is run again and again on

@@ -5,6 +5,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### [Unreleased]
+
+Audit-mitigation series tail — closes the two residual findings left after
+rev. 2. Prose-only; no behavioral logic or hook changes.
+
+- **Initialization ADR status (audit F17).** `/e22-standards:e22-init` step 4 now
+  states that the initial-stack ADR's status follows who decided: an *explicit*
+  stack choice in the interactive setup is authored `Accepted` with the dev as
+  named Decider + date, while a Claude-recommended default with no explicit
+  choice stays `Proposed` until a named decider accepts it (generic bootstrap-PR
+  approval does not ratify). Mirrors the `/e22-standards:e22-adopt` ADR policy into
+  greenfield init, where the dev is the decider in the room.
+- **Read-only write-scope precision (audit F15).** `/e22-standards:e22-audit` and
+  `/e22-standards:e22-drift` reword "read-only" as **repository-read-only**: they
+  propose spec changes and never edit code/spec or commit, and their only writes
+  are tracker issues. Removes the tension between "routes results into /spec" and
+  "never edits spec."
+
 ### 1.49.0
 
 Audit-mitigation series (rev. 2) — corrects the spec/issue state model, removes
