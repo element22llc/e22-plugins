@@ -27,18 +27,20 @@ E22_INPUT="$(cat)"
 [ -z "${E22_INPUT}" ] && exit 0
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/classify.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 
-FILE="$(e22_field file_path)"
+FILE="$(e22_target_path)"
 SID="$(e22_field session_id)"
 CWD="$(e22_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
-# Not a git repo, or the plugin's own source repo → not our concern.
-[ -e "${CWD}/.git" ] || exit 0
-[ -d "${CWD}/.claude-plugin" ] && exit 0
+# Resolve the work-tree root (cwd may be a subdir). Not a git work tree, or the
+# plugin's own source repo → not our concern.
+ROOT="$(e22_repo_root "${CWD}")" || exit 0
+[ -d "${ROOT}/.claude-plugin" ] && exit 0
 
 # Scoped to GitHub-adopted repos: need /spec/tracker.md declaring system: github.
-TRACKER="${CWD}/spec/tracker.md"
+TRACKER="${ROOT}/spec/tracker.md"
 [ -f "${TRACKER}" ] || exit 0
 grep -iq '^[[:space:]]*system:[[:space:]]*github' "${TRACKER}" 2>/dev/null || exit 0
 
@@ -50,11 +52,12 @@ grep -iq '^[[:space:]]*system:[[:space:]]*github' "${TRACKER}" 2>/dev/null || ex
 CLASS="$(e22_classify_path "${FILE}")"
 [ "$(e22_class_nudges "${CLASS}")" = "nudge" ] || exit 0
 
-# Fire at most once per session+repo.
-CWD_KEY="$(printf '%s' "${CWD}" | cksum 2>/dev/null | cut -d' ' -f1)"
+# Fire at most once per session+repo (keyed by resolved root so subdir writes
+# dedupe to one nudge).
+CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
 MARK="${TMPDIR:-/tmp}/e22-issuefirst-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 [ -f "${MARK}" ] && exit 0
-: > "${MARK}" 2>/dev/null || true
+: >"${MARK}" 2>/dev/null || true
 
 SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
 

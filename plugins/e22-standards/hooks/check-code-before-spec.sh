@@ -27,17 +27,24 @@ E22_INPUT="$(cat)"
 [ -z "${E22_INPUT}" ] && exit 0
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/classify.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
 
-FILE="$(e22_field file_path)"
+FILE="$(e22_target_path)"
 SID="$(e22_field session_id)"
 CWD="$(e22_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
-# Already managed — /spec spine exists. Silent.
-[ -d "${CWD}/spec" ] && exit 0
-# Not a git repo, or the plugin's own source repo → not our concern.
-[ -e "${CWD}/.git" ] || exit 0
-[ -d "${CWD}/.claude-plugin" ] && exit 0
+# Resolve the work-tree root (cwd may be a subdir like apps/web). Not a git work
+# tree → not a project we manage. Silent.
+ROOT="$(e22_repo_root "${CWD}")" || exit 0
+# The plugin's own source repo → not our concern.
+[ -d "${ROOT}/.claude-plugin" ] && exit 0
+
+# Only a complete, version-stamped E22 spine counts as "managed". A bare,
+# foreign, or half-migrated spec/ must NOT silence the spec-first nudge.
+STATE="$(e22_spine_state "${ROOT}")"
+[ "${STATE}" = "managed" ] && exit 0
 
 # Need a target file (Bash calls have none → nothing to nudge on).
 [ -n "${FILE}" ] || exit 0
@@ -48,15 +55,29 @@ CLASS="$(e22_classify_path "${FILE}")"
 
 # Fire at most once per session+repo. Marker lives in TMPDIR (never the working
 # tree), keyed by session id + a cheap hash of the repo path.
-CWD_KEY="$(printf '%s' "${CWD}" | cksum 2>/dev/null | cut -d' ' -f1)"
+CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
 MARK="${TMPDIR:-/tmp}/e22-gf-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 [ -f "${MARK}" ] && exit 0
-: > "${MARK}" 2>/dev/null || true
+: >"${MARK}" 2>/dev/null || true
 
 # Sanitize the path before embedding it in JSON.
 SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
 
-CTX="Element 22 spec-first check: this repo has no /spec spine, and you are about to write ${CLASS} (${SAFE_FILE}). A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /e22-standards:e22-spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /e22-standards:e22-adr) — do not let the build degrade to toolchain conventions only. If you are starting this product from scratch, bootstrap first with /e22-standards:e22-init (greenfield path); if you are reverse-engineering pre-existing code, run /e22-standards:e22-adopt. This nudge does not block the write and fires once per session; it stops once /spec exists."
+# State-specific framing: an absent spine vs a foreign spec/ vs a damaged spine
+# call for different first moves.
+case "${STATE}" in
+foreign)
+	SPINE_NOTE="a spec/ directory exists but has no E22 spine marker (spec/.version) — if this repo should be E22-managed, run /e22-standards:e22-adopt to reverse-engineer the spine from the code; otherwise this is not an E22 spine"
+	;;
+damaged)
+	SPINE_NOTE="this repo has an incomplete E22 spine (spec/.version is present but spine files are missing) — run /e22-standards:e22-sync to repair it"
+	;;
+*)
+	SPINE_NOTE="this repo has no /spec spine — if you are starting this product from scratch, bootstrap first with /e22-standards:e22-init (greenfield path); if you are reverse-engineering pre-existing code, run /e22-standards:e22-adopt"
+	;;
+esac
+
+CTX="Element 22 spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /e22-standards:e22-spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /e22-standards:e22-adr) — do not let the build degrade to toolchain conventions only. This nudge does not block the write and fires once per session; it stops once a complete /spec spine exists."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0
