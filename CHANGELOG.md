@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
-### [Unreleased]
+### 1.52.0
 
 Workflow + authorization coherence — one git-authorization model and one
 implementation-execution owner.
