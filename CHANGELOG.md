@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
-### [Unreleased]
+### 1.51.1
 
 - `e22-adr`: ensure `spec/decisions/` exists (`mkdir -p`) before copying the ADR
   template, so the skill no longer fails in a repo where the dir was never
