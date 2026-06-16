@@ -10,4 +10,4 @@ drift · undocumented behavior change · security-sensitive ·
 compliance-impacting · operational (deploy/CI/infra) · local setup or
 deployment changed · app docs invalidated**. A flagged class blocks merge
 until the reviewer explicitly resolves it — you may not waive your own flag.
-Periodic sweeps: `/e22-drift`, `/e22-audit`.
+Periodic sweeps: `/e22-standards:e22-drift`, `/e22-standards:e22-audit`.

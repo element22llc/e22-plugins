@@ -13,7 +13,7 @@
 #     install`), verify both `mise.lock` files now hold real versions, then
 #     commit them.
 #   - Bump intentionally later with `mise upgrade` (updates the lock); review the
-#     bump like any other change. Run /e22-conventions for the full rationale.
+#     bump like any other change. Run /e22-standards:e22-conventions for the full rationale.
 
 [settings]
 lockfile = true
@@ -58,7 +58,7 @@ description = "One-command local env: services up, schema migrated, data seeded 
 # workspace (Docker, DB) and must work identically for Python (uv) products.
 #
 # Baseline wired to the default stack (Postgres via compose.yaml + Drizzle).
-# Adapt on fork (/e22-init): Python products swap the pnpm calls below for
+# Adapt on fork (/e22-standards:e22-init): Python products swap the pnpm calls below for
 # `uv run …`; products without a database delete the db:* tasks and compose.yaml.
 run = [
   "mise run docker:up",

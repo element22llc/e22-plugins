@@ -45,11 +45,11 @@ never re-add a placeholder the dev replaced (the plugin-wide *Template reconcili
 convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`). Then read
 the `intent.md` statuses and continue from the recorded step — don't restart the
 interview or re-ask settled questions. This makes new flow-state gates self-healing
-on the next `/e22-build` run.
+on the next `/e22-standards:e22-build` run.
 
 ## Steps
 
-1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/e22-init`).** If
+1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/e22-standards:e22-init`).** If
    there is no `/spec` spine (run the plugin-driven bootstrap from the bundled
    scaffold) or template placeholders remain (legacy fork), run the `e22-init`
    flow but adapted to a PO:
@@ -59,7 +59,7 @@ on the next `/e22-build` run.
      defaults exist for exactly this case.
    - Drive the toolchain yourself: install mise if missing (e.g.
      `brew install mise` on macOS), run `mise install`, and verify the
-     `mise.lock` files gained real `[[tools.*]]` entries (see `/e22-init`
+     `mise.lock` files gained real `[[tools.*]]` entries (see `/e22-standards:e22-init`
      step 4). Confirm Docker Desktop is running; help start it if not.
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`):
@@ -67,10 +67,10 @@ on the next `/e22-build` run.
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
    ambiguity goes to `vision.md` → `## Open questions`. If the PO has a Claude
    Design export, read it
-   per `/e22-design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
+   per `/e22-standards:e22-design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
    template now, and keep it current from here on.
 3. **Draft feature intents.** For each capability the product clearly needs,
-   run `/e22-spec-scaffold <id>` and fill `intent.md` from the conversation —
+   run `/e22-standards:e22-spec-scaffold <id>` and fill `intent.md` from the conversation —
    including **Key concepts & data** and **Lifecycle expectations**: ask the
    PO plainly what each thing is, what it must remember, and what "delete"
    should mean (*gone forever or recoverable? for how long? what happens to
@@ -83,8 +83,8 @@ on the next `/e22-build` run.
    are approved.**
 5. **Scaffold the real app.** Replace the starter `apps/web` with the default
    stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
-   `/e22-init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
-   discipline). Draft the initial stack ADR yourself via `/e22-adr` — the PO
+   `/e22-standards:e22-init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
+   discipline). Draft the initial stack ADR yourself via `/e22-standards:e22-adr` — the PO
    approves intent, not ADR prose.
 6. **Build feature by feature.** For each approved intent: write `contract.md`,
    implement under `/apps` + `/packages`, and write tests in the same unit of
@@ -127,14 +127,14 @@ on the next `/e22-build` run.
     Definition of Done holds, propose opening the PR (it waits for
     confirmation — Commit-autonomy rule). The PR
     description is the dev's productionization brief. First write the durable
-    brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/e22-adopt`
+    brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/e22-standards:e22-adopt`
     produces**, so a dev inheriting a PO-built v0 gets the same brief as one
     inheriting an adopted repo, instead of gaps that evaporate with the PR text.
     Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` if it doesn't
     exist yet; if it already does (resumed handoff), reconcile it against the
     bundled template first (the plugin-wide *Template reconciliation* convention).
     Capture:
-    - that this is a **PO-built v0 via `/e22-build`**;
+    - that this is a **PO-built v0 via `/e22-standards:e22-build`**;
     - the **built-for-real high-risk choices** (marked `proposed` in the
       contracts) and **remaining stubs** — especially auth;
     - the gap analysis vs the Definition of Done.
@@ -148,7 +148,7 @@ on the next `/e22-build` run.
     Then propose opening the PR (it waits for confirmation — Commit-autonomy
     rule); its description links to `/spec/PRODUCTIONIZATION.md`, the
     demo-validated `intent.md` files, and any remaining `## Open questions`
-    across the feature intents / `vision.md` (run `/e22-questions` to work them
+    across the feature intents / `vision.md` (run `/e22-standards:e22-questions` to work them
     down).
     Link the PR in `/spec/BUILD-STATUS.md`. Sync the living docs before
     proposing it: seed the app guide (`/spec/app/README.md` — how to use the
@@ -171,7 +171,7 @@ language.
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
 | Demo-validated, PR not opened | Blocking now (next transition) | Open the PR for dev review |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
-| Remaining `## Open questions` | Required before initial production | Work them down — `/e22-questions` |
+| Remaining `## Open questions` | Required before initial production | Work them down — `/e22-standards:e22-questions` |
 | Merged | Complete | Optional: build the next feature |
 
 Pick one `Current recommended action` by precedence; offer a `Suggested command`

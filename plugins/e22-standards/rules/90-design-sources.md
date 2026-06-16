@@ -20,4 +20,4 @@ Whichever way a feature's UI originates, **capture the reusable decisions in
 `DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build and
 promoting anything that recurs — so every feature stays visually uniform. Full
 walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
-no-export build): run **`/e22-design-sources`**.
+no-export build): run **`/e22-standards:e22-design-sources`**.

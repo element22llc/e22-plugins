@@ -14,8 +14,8 @@ and sync in the scaffolding the plugin bundles. The result is a `feat/*`
 branch and a PR for dev review — that review is the productionization gate.
 
 This is whole-repo Brownfield adoption. For a brand-new repo (or a legacy
-template fork), use `/e22-init` instead; for a single feature change to an
-already-adopted repo, use the normal spec workflow (`/e22-spec-scaffold`).
+template fork), use `/e22-standards:e22-init` instead; for a single feature change to an
+already-adopted repo, use the normal spec workflow (`/e22-standards:e22-spec-scaffold`).
 
 ## Resuming? Reconcile before anything else
 
@@ -35,7 +35,7 @@ from the unchecked items.
 
 1. **Confirm it's an adoption case.** There's no `/spec` spine, no
    `mise.toml`/E22 layout, and the repo was not forked from the template. If it
-   *was* forked (placeholders, existing `/spec`), redirect to `/e22-init` and
+   *was* forked (placeholders, existing `/spec`), redirect to `/e22-standards:e22-init` and
    stop. Detect the stack from the repo itself (`package.json` / `pyproject.toml`,
    frameworks, database, auth). Work on a `feat/e22-adopt` branch — never commit
    to `main` (commit-autonomy rule). Nothing is committed until the dev approves.
@@ -49,7 +49,7 @@ from the unchecked items.
    `/spec/PRODUCTION-READINESS.md` exists, run
    `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` **now** —
    before the fresh-vs-resume check below, so the old name on disk can't be
-   mistaken for a fresh adoption. (On an already-bootstrapped repo, `/e22-sync`
+   mistaken for a fresh adoption. (On an already-bootstrapped repo, `/e22-standards:e22-sync`
    applies these; here we apply them inline so a resumed adoption isn't blocked.)
    Then check: if **neither** `/spec/PRODUCTIONIZATION.md` nor (pre-migration)
    `/spec/PRODUCTION-READINESS.md` existed, this is a fresh adoption — skip ahead;
@@ -95,7 +95,7 @@ from the unchecked items.
    not into guessed prose.
 
 5. **Extract a spec per feature.** For each feature from step 3, run
-   **`/e22-spec-scaffold <id>`** to create `intent.md` + `contract.md`. Fill
+   **`/e22-standards:e22-spec-scaffold <id>`** to create `intent.md` + `contract.md`. Fill
    `contract.md` from the **real code** (data model, API surface, behavior rules)
    and mark derived sections `derived from existing code — dev confirms` (the
    same "confirm at review" convention the contract template already uses). Draft
@@ -118,7 +118,7 @@ from the unchecked items.
    not invent historical context, alternatives, rejection reasons, deciders, or
    approval status.** When the dev *explicitly* chooses a forward direction during
    adoption (retain Postgres, replace custom auth with Cognito, rebuild the data
-   layer on Drizzle, …), create a **`Proposed`** ADR via **`/e22-adr`** — it stays
+   layer on Drizzle, …), create a **`Proposed`** ADR via **`/e22-standards:e22-adr`** — it stays
    `Proposed` until the named decider explicitly accepts it; generic approval of
    the adoption PR does **not** ratify it.
 
@@ -163,7 +163,7 @@ from the unchecked items.
    hardening in place** — the spec exists now, so a rewrite is a safe, often cheaper
    route to production than fixing a pile of issues. A project-level Rewrite or
    Reject is one kind of explicit forward decision (step 6): hard-to-reverse and
-   cross-cutting → record it as a **`Proposed`** ADR (**`/e22-adr`**, high-risk
+   cross-cutting → record it as a **`Proposed`** ADR (**`/e22-standards:e22-adr`**, high-risk
    rule) for the dev to ratify; it stays `Proposed` until they accept, and you
    never force a large restructure silently.
    This doc is the dev's
@@ -209,7 +209,7 @@ from the unchecked items.
    marketplace (dotfiles are stored without their leading dot — rename per the
    MANIFEST map). Also instantiate the living-docs artifacts from
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask which
-   tracker the team uses — if GitHub Issues, run `/e22-issues bootstrap-labels`
+   tracker the team uses — if GitHub Issues, run `/e22-standards:e22-issues bootstrap-labels`
    to create the `source:*`/`needs:*`/`risk:*` taxonomy and set
    `project.owner`/`number` if a Project is used), `/spec/app/README.md` (seed the usage/roles
    sections from what steps 3–5 learned about the app — as-built, dev
@@ -233,10 +233,10 @@ from the unchecked items.
 12. **Hand off.** **Stamp the spine version:** write `/spec/.version` with the
    current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory), so a
-   later `/e22-sync` knows which structural migrations this repo already carries:
+   later `/e22-standards:e22-sync` knows which structural migrations this repo already carries:
 
    ```
-   # E22 spec-spine version — managed by /e22-init, /e22-adopt, /e22-sync. Do not edit by hand.
+   # E22 spec-spine version — managed by /e22-standards:e22-init, /e22-standards:e22-adopt, /e22-standards:e22-sync. Do not edit by hand.
    <plugin version>
    ```
 
@@ -244,7 +244,7 @@ from the unchecked items.
    productionization brief — every gap and as-built risk is listed there.
    Propose opening the PR and wait for the dev's confirmation before
    pushing/creating it. Run the end-of-session checklist.
-   - **To make selected gaps actionable** (GitHub tracker), run **`/e22-issues
+   - **To make selected gaps actionable** (GitHub tracker), run **`/e22-standards:e22-issues
      publish-adoption`** — it reconciles chosen gaps into `kind=finding` +
      `source:adoption` issues (stable `finding-key`, reconcile not duplicate).
      After publication the **issue is canonical** for ownership/lifecycle/closure;
@@ -263,16 +263,16 @@ from the unchecked items.
    | Confirmed committed secret / critical exposure | Blocking now | Rotate & invalidate the value; then `/security-review` |
    | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
    | Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files (no command) |
-   | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/e22-adr` |
+   | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/e22-standards:e22-adr` |
    | Adoption PR not yet opened | Blocking now (next transition) | Open the adoption PR (after dev confirmation) |
    | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |
    | Unresolved production blocker, app not yet live | Required before initial production | Fix or explicitly accept it |
    | Unresolved blocker on an already-live app, actively harming users | Urgent live-system remediation | Fix or explicitly accept it now |
    | Unresolved blocker on an already-live app, not an active incident | Required before next production release | Fix or explicitly accept it |
-   | Selected findings not published | Recommended | `/e22-issues publish-adoption` |
-   | Findings published, not shaped | Recommended | `/e22-issues triage` / `decompose` |
-   | `/spec/.version` stale | Recommended | `/e22-sync` |
-   | Nothing remaining | Complete | Optional: begin feature work — `/e22-spec` |
+   | Selected findings not published | Recommended | `/e22-standards:e22-issues publish-adoption` |
+   | Findings published, not shaped | Recommended | `/e22-standards:e22-issues triage` / `decompose` |
+   | `/spec/.version` stale | Recommended | `/e22-standards:e22-sync` |
+   | Nothing remaining | Complete | Optional: begin feature work — `/e22-standards:e22-spec` |
 
    Pick exactly one `Current recommended action` by precedence; offer a
    `Suggested command` only where a real command applies. The block is read-only
@@ -305,7 +305,7 @@ from the unchecked items.
   silently in the adoption branch.
 - **Ask, don't invent.** Product intent and ambiguous behavior go to the human
   and to the owning feature's `## Open questions` (or `vision.md` for
-  product-level) — never guessed into the spec. Run `/e22-questions` to resolve
+  product-level) — never guessed into the spec. Run `/e22-standards:e22-questions` to resolve
   them.
 - **Resume is additive, never destructive — and reconcile first.** On a re-run, the
   first action is to reconcile the existing `PRODUCTIONIZATION.md` by running the

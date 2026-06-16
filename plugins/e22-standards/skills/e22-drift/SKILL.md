@@ -1,6 +1,6 @@
 ---
 name: e22-drift
-description: "Compare the as-built /spec (reverse-engineered from the code by /e22-adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Read-only: reports findings and proposes Rule-5 resolutions, never edits."
+description: "Compare the as-built /spec (reverse-engineered from the code by /e22-standards:e22-adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Read-only: reports findings and proposes Rule-5 resolutions, never edits."
 when_to_use: Use when asked to check a built app against its tracker specs, audit spec drift, or confirm the code did what the tickets asked.
 ---
 
@@ -8,7 +8,7 @@ when_to_use: Use when asked to check a built app against its tracker specs, audi
 
 A **manual, read-only conformance audit.** It compares two specs:
 
-- the **as-built spec** — the `/spec` spine `/e22-adopt` reverse-engineered from
+- the **as-built spec** — the `/spec` spine `/e22-standards:e22-adopt` reverse-engineered from
   the code, i.e. a faithful description of what the product *actually does*; and
 - the **tracker spec** — what the product was *supposed* to do, exported from
   your issue tracker (Jira, Linear, GitHub Issues, …) as markdown, one file per
@@ -21,16 +21,16 @@ Rule-5 resolution per finding, and `spec-drift` issues for anything needing a
 human decision. Resolving drift is a separate, approved step (see the
 spec-framework reference, Rule 5).
 
-## Relationship to `/e22-adopt` — sequential, not inverse
+## Relationship to `/e22-standards:e22-adopt` — sequential, not inverse
 
-`/e22-drift` **consumes** what `/e22-adopt` produces. `/e22-adopt` reverse-
-engineers the as-built `/spec` from the code (reality). `/e22-drift` then diffs
+`/e22-standards:e22-drift` **consumes** what `/e22-standards:e22-adopt` produces. `/e22-standards:e22-adopt` reverse-
+engineers the as-built `/spec` from the code (reality). `/e22-standards:e22-drift` then diffs
 that as-built spec against the tracker spec (intent). They are two stages of one
 flow — adopt builds the picture of reality, drift checks it against what was
 asked for — **not** opposites. (This supersedes the 1.24.0 framing of drift as
-"the inverse of `/e22-adopt`.")
+"the inverse of `/e22-standards:e22-adopt`.")
 
-**If there is no `/spec` spine yet, stop and run `/e22-adopt` first** — there is
+**If there is no `/spec` spine yet, stop and run `/e22-standards:e22-adopt` first** — there is
 no as-built spec to compare against until the code has been reverse-engineered.
 
 ## When to run
@@ -44,9 +44,9 @@ no as-built spec to compare against until the code has been reverse-engineered.
 
 1. **The as-built `/spec` spine** — `features/*/intent.md` + `contract.md`,
    `decisions/*`, `vision.md`, `glossary.md`, as produced by a prior
-   `/e22-adopt` run. This stands in for the code: its `contract.md` sections were
+   `/e22-standards:e22-adopt` run. This stands in for the code: its `contract.md` sections were
    *derived from the real code* and carry the `path:line` pointers. If it's
-   absent, redirect to `/e22-adopt` and stop.
+   absent, redirect to `/e22-standards:e22-adopt` and stop.
 2. **The tracker spec export** — markdown files from any issue tracker (Jira,
    Linear, GitHub Issues, …), **one file per epic/issue or per story / task**. A
    coarse-grained file (epic, large issue) contains several sub-items with their
@@ -54,7 +54,7 @@ no as-built spec to compare against until the code has been reverse-engineered.
    either **pastes them into the chat** or **points to a directory/path**. Ask
    which, if not given.
 
-   **If the tracker is GitHub Issues, offer `/e22-tracker-sync pull` instead of
+   **If the tracker is GitHub Issues, offer `/e22-standards:e22-tracker-sync pull` instead of
    pasting** — it materializes one markdown file per issue in exactly this shape
    (title, `#` key, labels, state, acceptance criteria) and hands the directory
    straight back here. For Jira/Linear/other, the paste/path export above stays
@@ -152,14 +152,14 @@ the comparison is large.
    says* / *Implementation does* / *Evidence* / *Human decision required* (the
    checklist). The agent may propose a direction but **never resolves behavioural
    drift autonomously** — a PO or dev decides by ownership. On a GitHub tracker,
-   hand this finding set to **`/e22-issues publish-drift`** (which routes through
-   `/e22-tracker-sync`) to file them — idempotent, confirmed once — rather than
+   hand this finding set to **`/e22-standards:e22-issues publish-drift`** (which routes through
+   `/e22-standards:e22-tracker-sync`) to file them — idempotent, confirmed once — rather than
    opening them ad hoc; for other trackers, propose the issues for the dev to
    file.
 4. **Make no code or spec edits, and don't commit.** This skill stops at the
    report and proposals. Ambiguities go to a proposed `## Open questions` entry
    in the owning feature's `intent.md` (or `vision.md` if cross-cutting), not a
-   guess — run `/e22-questions` to drive them to answers.
+   guess — run `/e22-standards:e22-questions` to drive them to answers.
 5. **Recommend the next action.** Close with a `## Recommended next actions` block
    per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this
    drift run's findings (locality rule).
@@ -167,8 +167,8 @@ the comparison is large.
    | Observed state | Category | Action / suggested command |
    |---|---|---|
    | Behavioural drift needing a human call | Human decision required | PO/dev decides by ownership (no command) |
-   | Drift findings not yet filed (GitHub) | Recommended | `/e22-issues publish-drift` |
-   | Ambiguities surfaced | Required before next production release | Resolve them — `/e22-questions` |
+   | Drift findings not yet filed (GitHub) | Recommended | `/e22-standards:e22-issues publish-drift` |
+   | Ambiguities surfaced | Required before next production release | Resolve them — `/e22-standards:e22-questions` |
    | No actual drift (only expected-Missing backlog) | Complete | `No action is currently required.` |
 
    Choose one `Current recommended action` by precedence. Read-only — proposes,

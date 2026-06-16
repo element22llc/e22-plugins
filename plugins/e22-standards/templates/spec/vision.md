@@ -1,6 +1,6 @@
 # Vision
 
-> Replace this template after creating the repo. Drafted with Claude — by a dev, or by a PO via `/e22-build`; the PO reviews and approves.
+> Replace this template after creating the repo. Drafted with Claude — by a dev, or by a PO via `/e22-standards:e22-build`; the PO reviews and approves.
 
 ## What this product is
 
@@ -33,7 +33,7 @@
 
 Product-level ambiguities not yet tied to a single feature (greenfield vision
 gaps, whole-repo decisions). Per-feature questions live in that feature's
-`spec/features/*/intent.md`. Work these down with `/e22-questions`. Use the
+`spec/features/*/intent.md`. Work these down with `/e22-standards:e22-questions`. Use the
 structured format (stable `Q-NNN` IDs, `status`/`impact`/`owner`/
 `required_before`/`tracker`) — see the spec-framework reference.
 

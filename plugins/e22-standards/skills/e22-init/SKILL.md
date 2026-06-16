@@ -28,7 +28,7 @@ below.
 
 **Not a match:** if the repo has **substantial pre-existing code** but no
 `/spec` (a "vibe-coded" app you'd be *reverse-engineering*, not writing fresh),
-that is adoption, not init — stop and use **`/e22-adopt`**. If `/spec` already
+that is adoption, not init — stop and use **`/e22-standards:e22-adopt`**. If `/spec` already
 exists and no placeholders remain, setup has already run — say so and stop;
 don't re-propose it.
 
@@ -50,7 +50,7 @@ them:
    name, one-line description, PO handle, dev handles, Greenfield-vs-Brownfield,
    production URL (if any). For the stack, confirm or override the E22 defaults
    (the always-on Stack rules) rather than asking from scratch — and if the dev
-   overrides them, record the choice as an ADR (run `/e22-adr`).
+   overrides them, record the choice as an ADR (run `/e22-standards:e22-adr`).
 3. Propose all edits in a single batch for review; do not commit until the dev
    approves.
 4. **Pin the toolchain.** The template's `mise.toml` files use `latest` so they
@@ -61,7 +61,7 @@ them:
    dev run `mise install` (and `cd infra && mise install` if they'll touch
    infra), then **verify each `mise.lock` now contains real `[[tools.*]]`
    version entries** — a still-empty lock means nothing was pinned — and commit
-   them. They are the real version pins (run `/e22-conventions` for the
+   them. They are the real version pins (run `/e22-standards:e22-conventions` for the
    rationale, including the cross-platform backend rule and lockfile-maintenance
    discipline).
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
@@ -83,7 +83,7 @@ them:
    - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
      drizzle-kit + a seed script) so the fan-out picks them up;
    - Python products: swap the `pnpm …` task commands for `uv run …`.
-   The contract (run `/e22-conventions` for the prose): `mise run dev:setup` is
+   The contract (run `/e22-standards:e22-conventions` for the prose): `mise run dev:setup` is
    idempotent and, from a fresh clone after `mise install`, must produce a
    working local environment.
 7. **Back-fill the newer scaffold artifacts.** A fork of the old template
@@ -114,8 +114,8 @@ the dev approves.
 
 1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
    greenfield (you're writing the code from scratch), not reverse-engineering
-   a pre-existing app — that would be `/e22-adopt`. If a design export/URL or
-   screenshots are the input, read them via `/e22-design-sources` first (never
+   a pre-existing app — that would be `/e22-standards:e22-adopt`. If a design export/URL or
+   screenshots are the input, read them via `/e22-standards:e22-design-sources` first (never
    fetch a Claude Design URL — it 403s).
 2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
    external template repo to fetch. Read
@@ -138,13 +138,13 @@ the dev approves.
    project/reference format). **Ask, don't invent**; route product-level
    ambiguity to `vision.md` → `## Open questions` rather than guessing.
    Confirm or override the E22 stack defaults (the always-on Stack rules). A
-   PO-driven idea→app flow runs through `/e22-build` instead.
-   - **If the tracker is GitHub Issues**, run `/e22-issues bootstrap-labels` to
+   PO-driven idea→app flow runs through `/e22-standards:e22-build` instead.
+   - **If the tracker is GitHub Issues**, run `/e22-standards:e22-issues bootstrap-labels` to
      create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
      a form label that doesn't exist), and set `project.owner`/`number` in
      `tracker.md` if the team uses a Project.
 4. **Record the initial stack as the first ADR.** The stack choice is usually
-   the first decision worth an ADR — run `/e22-adr`. **Any deviation from the
+   the first decision worth an ADR — run `/e22-standards:e22-adr`. **Any deviation from the
    E22 defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or
    Python + FastAPI instead of the in-Next backend) **must** get one either way.
 5. **Pin the toolchain and lock the workspace.** Run `mise install`, then verify
@@ -155,7 +155,7 @@ the dev approves.
    `uv run …` task commands; drop `compose.yaml` + docker/db tasks if there are
    no backing services).
 6. **Proceed spec-first.** From here, every user-facing feature gets its
-   `/spec/features/[id]/intent.md` + `contract.md` via **`/e22-spec-scaffold`**
+   `/spec/features/[id]/intent.md` + `contract.md` via **`/e22-standards:e22-spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before
    broad implementation. Behavior changes update the owning `contract.md` in the
    same PR, plus the app guide and an action-history entry (Living
@@ -164,10 +164,10 @@ the dev approves.
    who asked, the bootstrap PR). **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a
-   later `/e22-sync` knows which structural migrations this repo predates:
+   later `/e22-standards:e22-sync` knows which structural migrations this repo predates:
 
    ```
-   # E22 spec-spine version — managed by /e22-init, /e22-adopt, /e22-sync. Do not edit by hand.
+   # E22 spec-spine version — managed by /e22-standards:e22-init, /e22-standards:e22-adopt, /e22-standards:e22-sync. Do not edit by hand.
    <plugin version>
    ```
 
@@ -191,7 +191,7 @@ bootstrapped repo's state.
 | Unresolved template placeholders (`[Replace …]`, `@github-handle`) | Blocking now | Resolve them before feature work |
 | Bootstrap PR open, awaiting dev review | Human decision required | A dev reviews/merges the bootstrap PR (no command) |
 | Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
-| Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature — `/e22-spec` or `/e22-build` |
+| Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature — `/e22-standards:e22-spec` or `/e22-standards:e22-build` |
 | Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. A tracker intentionally set

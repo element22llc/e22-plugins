@@ -73,8 +73,8 @@ printf 'One or more spec files in this repo were instantiated under an OLDER plu
 printf 'version and are missing sections the current bundled template now defines. '
 printf 'These gaps are invisible if you resume "from the checklist" — that is exactly '
 printf 'the failure this notice prevents.\n\n'
-printf '**Before** resuming any E22 spec workflow (/e22-adopt, /e22-build, '
-printf '/e22-spec-scaffold) or summarizing status, splice each missing section into '
+printf '**Before** resuming any E22 spec workflow (/e22-standards:e22-adopt, /e22-standards:e22-build, '
+printf '/e22-standards:e22-spec-scaffold) or summarizing status, splice each missing section into '
 printf 'its file (leave it unchecked/empty), preserving everything already filled in. '
 # shellcheck disable=SC2016  # literal ${CLAUDE_PLUGIN_ROOT} token is intentional notice text
 printf 'Match against the bundled template under `${CLAUDE_PLUGIN_ROOT}/templates/spec/`; '

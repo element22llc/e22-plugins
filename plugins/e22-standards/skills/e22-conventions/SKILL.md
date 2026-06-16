@@ -23,7 +23,7 @@ It covers, in detail:
   change; never deleted or ignored to dodge an error.
 - **Standard mise tasks** — `mise run dev:setup` (idempotent: services up →
   migrate → seed) and friends; why environment tasks live in `mise.toml`, not
-  `package.json`; how `/e22-init` adapts them per product.
+  `package.json`; how `/e22-standards:e22-init` adapts them per product.
 - **Backend placement** — backend inside the Next.js app by default; when a
   standalone `apps/api` or the Python/FastAPI switch is warranted (ADR either way).
 - **Local services** — Docker Compose from the template `compose.yaml`, the
@@ -40,4 +40,4 @@ It covers, in detail:
 - **Windows** — develop inside WSL2.
 
 Open that file and answer from it. If a convention is genuinely unclear or the
-project warrants deviating, record an ADR (run `/e22-adr`) rather than guessing.
+project warrants deviating, record an ADR (run `/e22-standards:e22-adr`) rather than guessing.

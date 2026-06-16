@@ -13,9 +13,9 @@ owner, blocks multiple features, needs stakeholder/research input, or could
 outlive the session — then put the ref in the question's `tracker:` field. The
 issue is the decision *workflow*; the spec (or an ADR) is the durable *record*.
 
-When the tracker is **GitHub Issues**, **`/e22-issues`** is the high-level
+When the tracker is **GitHub Issues**, **`/e22-standards:e22-issues`** is the high-level
 lifecycle workflow (capture → triage → brainstorm → materialize → decompose →
-status → reconcile), and **`/e22-tracker-sync`** is the low-level gateway it
+status → reconcile), and **`/e22-standards:e22-tracker-sync`** is the low-level gateway it
 routes all reads/writes through (MCP-first → `gh` → manual floor). Agent-authored
 issues follow the machine-readable contract (stable headings + hidden markers);
 `/spec` stays product truth, the issue is the work/decision layer. Other trackers

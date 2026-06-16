@@ -1,13 +1,13 @@
 # Build status — [Product name]
 
-> `/e22-build` flow state. Claude updates this at every step transition and
+> `/e22-standards:e22-build` flow state. Claude updates this at every step transition and
 > commits it with the work. A fresh session reads this **first** and resumes
 > from **Current step** — never restart the interview or re-ask settled
 > questions.
 
 ## Current step
 
-[N — step name from `/e22-build`, e.g. "6 — building feature by feature"]
+[N — step name from `/e22-standards:e22-build`, e.g. "6 — building feature by feature"]
 
 ## Features
 

@@ -2,7 +2,7 @@
 
 How to keep an E22 product repo's root clean by sorting loose files into their
 correct home under `/spec`. The always-on rule keeps only a short summary; this
-is the full sweep procedure, loaded on demand via `/e22-tidy`.
+is the full sweep procedure, loaded on demand via `/e22-standards:e22-tidy`.
 
 E22 products are internal monorepos (see the layout rule). The **root** is for
 scaffolding and config — not a dumping ground for the spreadsheets, decks,
@@ -43,7 +43,7 @@ row or none, ask rather than guess (see "Unclear names" below).
 | Inventories, vendor/system metadata spreadsheets, discovery questions, PII asset lists, CMDB docs, SQL DDL / schema dumps | `/spec/reference/` |
 | An existing top-level `Technical Metadata/` (or similarly-named source) folder | `/spec/reference/technical-metadata/` |
 | Architecture diagrams, flow diagrams (`.svg`, "Flows for Review" `.pptx`) | `/spec/design/` |
-| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/e22-design-sources` for the exact path |
+| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/e22-standards:e22-design-sources` for the exact path |
 | Code / config that lives at root | leave in place (allowlist) |
 
 `/spec/reference/` is the catch-all home for durable source material the spec is

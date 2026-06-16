@@ -5,7 +5,7 @@
 #   Open questions in the spec spine (each feature's intent.md → "## Open
 #   questions", and vision.md / PRODUCTIONIZATION.md) get written down once,
 #   gated at PO acceptance, then forgotten. Nothing resurfaces them, so they
-#   rot. The /e22-questions skill resolves them — but a skill is pull, not push:
+#   rot. The /e22-standards:e22-questions skill resolves them — but a skill is pull, not push:
 #   it only runs when someone remembers to invoke it. This hook makes the
 #   backlog visible every session so it can't quietly accumulate.
 #
@@ -59,7 +59,7 @@ check_file "productionization" "spec/PRODUCTIONIZATION.md"
 
 # A pre-1.25.0 fork may still carry the retired standalone SPEC-QUESTIONS.md.
 # Its items live under "## Open" (not "## Open questions"), so count_open never
-# sees them — surface the file itself so /e22-questions can migrate it away.
+# sees them — surface the file itself so /e22-standards:e22-questions can migrate it away.
 LEGACY=""
 [ -f spec/SPEC-QUESTIONS.md ] && LEGACY=1
 
@@ -71,7 +71,7 @@ if [ -n "$LEGACY" ]; then
   printf '⚠ **Retired `spec/SPEC-QUESTIONS.md` present.** Open questions no longer '
   printf 'live in a standalone file — they belong next to their context '
   printf '(`vision.md` / each feature'"'"'s `intent.md` → `## Open questions`). '
-  printf 'Run **/e22-questions** to migrate its questions into the right files and '
+  printf 'Run **/e22-standards:e22-questions** to migrate its questions into the right files and '
   printf 'remove it.\n\n'
 fi
 
@@ -79,7 +79,7 @@ if [ "$TOTAL" -gt 0 ] 2>/dev/null; then
   printf 'ℹ **%s open question(s) await answers** across this product'"'"'s specs:\n' "$TOTAL"
   printf '%s\n\n' "$REPORT"
   printf 'They do not block work, but they rot if left — they were written down '
-  printf 'once and nothing else resurfaces them. Run **/e22-questions** to sweep '
+  printf 'once and nothing else resurfaces them. Run **/e22-standards:e22-questions** to sweep '
   printf 'them and drive each to an answer (or an explicit deferral). This notice '
   printf 'clears itself once they are resolved.\n'
 fi

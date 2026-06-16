@@ -82,6 +82,6 @@ done
 
 [ -z "${STALE}" ] && exit 0
 
-REASON="Stale version pin(s) detected — ${STALE}source: endoflife.date, checked just now. Org standard (run /e22-conventions): default to current stable and do not trust training-data memory for versions. Either bump to current stable, or — if the older pin is deliberate (deploy-target parity, LTS policy) — record an ADR and append ' # pin-ok: <reason>' on the same line, then retry."
+REASON="Stale version pin(s) detected — ${STALE}source: endoflife.date, checked just now. Org standard (run /e22-standards:e22-conventions): default to current stable and do not trust training-data memory for versions. Either bump to current stable, or — if the older pin is deliberate (deploy-target parity, LTS policy) — record an ADR and append ' # pin-ok: <reason>' on the same line, then retry."
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
 exit 0

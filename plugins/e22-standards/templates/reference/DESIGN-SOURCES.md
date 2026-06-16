@@ -3,7 +3,7 @@
 How a feature's UI gets designed and built to a uniform standard — whether it
 starts from a design export, a partial sketch, or nothing at all. The always-on
 rules keep only a short summary; this is the full walkthrough, loaded on demand
-via `/e22-design-sources`.
+via `/e22-standards:e22-design-sources`.
 
 **Set expectations first: most features have no design export, or only a partial
 one.** A committed export is a useful input when it exists, but its absence is
@@ -82,7 +82,7 @@ The export is a **spec to realize**, not code to ship. Decide by one question �
 - **Deviation — keep the prototype's runtime → ADR with a kill date and a named
   trigger.** Legitimate only for genuine throwaways (a demo, a spike, a pitch with
   a known death, or an explicitly time-boxed pre-production stage). The ADR
-  (`/e22-adr`) must state the lifespan and the condition that forces the port. Even
+  (`/e22-standards:e22-adr`) must state the lifespan and the condition that forces the port. Even
   then, runtime Babel + UMD should move to a real build (e.g. Vite + React + TS)
   before it is anyone's daily front-end.
 - **Never** let "temporary" prototype hosting silently become the permanent
@@ -95,7 +95,7 @@ to justify serving-as-is is much smaller than it looks.
 
 ## Building UI without a (full) export
 
-This is the common path — a `/e22-build` idea with no mockup, a feature the PO
+This is the common path — a `/e22-standards:e22-build` idea with no mockup, a feature the PO
 described in prose, or an export that covers one screen but not the five around
 it. Do **not** fall back to generic, default-looking AI UI. Build deliberately:
 
@@ -135,8 +135,8 @@ prerequisite:
 - **Distilled from a design export** (Greenfield / feature flow): the PO's
   Claude Design export, Figma, or screenshots are the source of the reusable
   patterns.
-- **Reverse-engineered from the as-built UI** (Brownfield `/e22-adopt`): the
-  running code *is* the source. `/e22-adopt` reads the Tailwind theme, CSS
+- **Reverse-engineered from the as-built UI** (Brownfield `/e22-standards:e22-adopt`): the
+  running code *is* the source. `/e22-standards:e22-adopt` reads the Tailwind theme, CSS
   custom properties, fonts, the palette/spacing/radius scales in use, and
   recurring component styling, then writes `DESIGN.md` directly — no export
   needed.

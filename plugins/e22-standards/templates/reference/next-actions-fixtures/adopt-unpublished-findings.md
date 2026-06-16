@@ -1,6 +1,6 @@
 # Fixture: adopt — clean decisions, findings ready to publish
 
-Workflow: `/e22-adopt`
+Workflow: `/e22-standards:e22-adopt`
 
 ## Given
 
@@ -19,7 +19,7 @@ Recommended
 
 ## Expected suggested command
 
-`/e22-issues publish-adoption`
+`/e22-standards:e22-issues publish-adoption`
 
 ## Must not recommend first
 

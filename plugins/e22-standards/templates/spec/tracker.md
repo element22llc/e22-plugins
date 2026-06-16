@@ -1,6 +1,6 @@
 ---
-# Repository-local tracker contract. Read by /e22-tracker-sync and /e22-issues.
-# /e22-init resolves the placeholders — never ship fabricated values (a real
+# Repository-local tracker contract. Read by /e22-standards:e22-tracker-sync and /e22-standards:e22-issues.
+# /e22-standards:e22-init resolves the placeholders — never ship fabricated values (a real
 # project number here could mutate the wrong GitHub Project).
 system:                     # github | jira | linear | azure-devops | other | none-yet
 repository:                 # "[owner/repository]" for GitHub; project key or URL otherwise
@@ -43,8 +43,8 @@ fields:
 > referenced everywhere else (specs, PRs, action history). The machine-readable
 > contract is the **frontmatter above**; the prose below is the human summary.
 > The workflow is **client-agnostic** — any tracker works; only this file knows
-> which one. Full conventions: run `/e22-traceability`. GitHub Issues lifecycle:
-> see the issue-workflow reference, driven by `/e22-issues`.
+> which one. Full conventions: run `/e22-standards:e22-traceability`. GitHub Issues lifecycle:
+> see the issue-workflow reference, driven by `/e22-standards:e22-issues`.
 
 ## Conventions (summary)
 
@@ -66,4 +66,4 @@ fields:
 ## Notes
 
 [Anything product-specific: components/labels in use, who triages, sync
-cadence with `/e22-drift`, …]
+cadence with `/e22-standards:e22-drift`, …]

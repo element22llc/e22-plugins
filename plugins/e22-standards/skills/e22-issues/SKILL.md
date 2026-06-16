@@ -1,20 +1,20 @@
 ---
 name: e22-issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /e22-spec, audit findings to /e22-audit, drift to /e22-drift, and question promotion to /e22-questions, and routes ALL GitHub reads/writes through /e22-tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /e22-standards:e22-spec, audit findings to /e22-standards:e22-audit, drift to /e22-standards:e22-drift, and question promotion to /e22-standards:e22-questions, and routes ALL GitHub reads/writes through /e22-standards:e22-tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
 ---
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 
-`/e22-issues` is the **PO-facing lifecycle workflow** above the low-level
-`/e22-tracker-sync` gateway. It **orchestrates; it does not own domain
+`/e22-standards:e22-issues` is the **PO-facing lifecycle workflow** above the low-level
+`/e22-standards:e22-tracker-sync` gateway. It **orchestrates; it does not own domain
 reasoning** — every step delegates to the skill that owns it and routes GitHub
-I/O through `/e22-tracker-sync`. The two invariants from the issue-workflow
+I/O through `/e22-standards:e22-tracker-sync`. The two invariants from the issue-workflow
 reference hold throughout:
 
 - **`/spec` is durable product truth; GitHub Issues is the work/decision layer.**
-- **All reads/writes go through `/e22-tracker-sync`** (MCP-first → `gh` → manual
+- **All reads/writes go through `/e22-standards:e22-tracker-sync`** (MCP-first → `gh` → manual
   floor); this skill never calls the GitHub API directly.
 
 Read the references before acting: the lifecycle, state model, and authority
@@ -26,8 +26,8 @@ format (markers, headings, **managed blocks**, idempotency) in
 
 1. **Read `/spec/tracker.md`.** Confirm `system: github`. On a non-GitHub
    tracker, say so and stop — there is no GitHub path; the manual flows in
-   `/e22-tracker-sync` apply. Never fabricate tracker state.
-2. **Detect capability via `/e22-tracker-sync`** (MCP vs `gh` vs manual) and say
+   `/e22-standards:e22-tracker-sync` apply. Never fabricate tracker state.
+2. **Detect capability via `/e22-standards:e22-tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues were actually touched.
 
 ## Modes
@@ -38,18 +38,18 @@ format (markers, headings, **managed blocks**, idempotency) in
   spec. Read the issue + related specs, find overlapping features/issues, ask
   focused questions, and maintain **one** editable "AI synthesis" comment
   (proposed outcome + boundaries) rather than reposting summaries. The issue body
-  stays human-owned. Discovery reasoning follows `/e22-spec`'s interview style.
+  stays human-owned. Discovery reasoning follows `/e22-standards:e22-spec`'s interview style.
 - **`materialize #N`** — turn approved product intent into a spec. Hand to
-  `/e22-spec` to write/update `spec/features/<id>/intent.md`, **set `Status:
-  draft`** (never `approved` — that's a later explicit `/e22-spec approve`),
-  link the issue in `> Tracker:`, run `/e22-spec validate` on the feature, and
+  `/e22-standards:e22-spec` to write/update `spec/features/<id>/intent.md`, **set `Status:
+  draft`** (never `approved` — that's a later explicit `/e22-standards:e22-spec approve`),
+  link the issue in `> Tracker:`, run `/e22-standards:e22-spec validate` on the feature, and
   present the diff / open a PR. Comment back on the issue with the exact spec
   path + commit/PR.
-- **`publish-audit [report]`** — take an `/e22-audit` finding set and create/update
-  the audit-run parent + selected finding children (see `/e22-audit`); file via
-  `/e22-tracker-sync`.
-- **`publish-drift [report]`** — take an `/e22-drift` finding set and file
-  decision-checklist `spec-drift` issues (see `/e22-drift`); never auto-resolve.
+- **`publish-audit [report]`** — take an `/e22-standards:e22-audit` finding set and create/update
+  the audit-run parent + selected finding children (see `/e22-standards:e22-audit`); file via
+  `/e22-standards:e22-tracker-sync`.
+- **`publish-drift [report]`** — take an `/e22-standards:e22-drift` finding set and file
+  decision-checklist `spec-drift` issues (see `/e22-standards:e22-drift`); never auto-resolve.
 - **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key` per gap;
   **reconcile, don't duplicate**). After publication, **`PRODUCTIONIZATION.md` is
@@ -90,7 +90,7 @@ format (markers, headings, **managed blocks**, idempotency) in
 - **`status [#N|feature-id]`** — a unified read-only view: issue state + intent
   status + **contract readiness** (`ready | incomplete | missing`, the derivation
   in `spec-framework.md` — never `approved`) + sub-issue progress + blockers. Runs
-  `/e22-spec validate` and surfaces any failures. Example shape:
+  `/e22-standards:e22-spec validate` and surfaces any failures. Example shape:
   ```
   Feature customer-export
   Issue: #123 — Validate
@@ -104,7 +104,7 @@ format (markers, headings, **managed blocks**, idempotency) in
   form label that doesn't exist). Reconciles the exact `source:*` / `needs:*` /
   `risk:*` set in `templates/reference/LABELS.md` (the canonical list; `source:*`
   mirrors the `e22:source` enum) via `gh label create --force` (create-or-update;
-  safe to re-run). `/e22-init` and `/e22-adopt` call this during setup. Kind is
+  safe to re-run). `/e22-standards:e22-init` and `/e22-standards:e22-adopt` call this during setup. Kind is
   **not** a label (it's the `e22:kind` marker + Issue Type).
 - **`project [bootstrap|sync]`** — **optional** GitHub Project enrichment, gated
   on `project.enabled: true` + `project.owner` + `project.number` in `tracker.md`
@@ -136,12 +136,12 @@ format (markers, headings, **managed blocks**, idempotency) in
     `Status`; promoted questions whose issue is closed but whose `Q-NNN` is still
     `open`. Output is a reconciliation report + proposed actions, confirmed once
     before any write. `--all` is read-heavy — route all fetches through
-    `/e22-tracker-sync` and say so.
+    `/e22-standards:e22-tracker-sync` and say so.
 
 ## Question-reconciliation floor (safe from the first release)
 
 Even before repo-wide reconcile, the per-feature lifecycle must guarantee — via
-`/e22-spec validate` at every gate and `reconcile`:
+`/e22-standards:e22-spec validate` at every gate and `reconcile`:
 
 - an **approved** intent contains **no `open` `blocking` question**;
 - a `deferred` question has `owner` + `required_before`;
@@ -165,12 +165,12 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 
 | Issue lifecycle state | Category | Action / suggested command |
 |---|---|---|
-| `inbox`, not yet triaged | Recommended | `/e22-issues triage` |
-| `exploring` (feature needs a spec) | Human decision required | Shape intent — `/e22-issues materialize` → `/e22-spec` |
+| `inbox`, not yet triaged | Recommended | `/e22-standards:e22-issues triage` |
+| `exploring` (feature needs a spec) | Human decision required | Shape intent — `/e22-standards:e22-issues materialize` → `/e22-standards:e22-spec` |
 | `ready-for-spec`, intent not approved | Human decision required | PO approves the intent (no command) |
-| `ready-for-dev`, decomposed and actionable | Recommended | Start it — `/e22-work start #N` |
+| `ready-for-dev`, decomposed and actionable | Recommended | Start it — `/e22-standards:e22-work start #N` |
 | `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
-| Unresolved `blocking` question on the item | Blocking now | `/e22-questions` |
+| Unresolved `blocking` question on the item | Blocking now | `/e22-standards:e22-questions` |
 | Nothing queued | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. Read-only and idempotent —
@@ -179,7 +179,7 @@ it recommends the transition; it does not perform unapproved writes.
 ## Guardrails
 
 - **Orchestrate, don't duplicate.** Delegate to the owning skill; never restate
-  its prose here. All GitHub I/O goes through `/e22-tracker-sync`.
+  its prose here. All GitHub I/O goes through `/e22-standards:e22-tracker-sync`.
 - **Idempotent.** Find before create — search by marker (`feature-id`+`kind`,
   `question-id`, `finding-key`). A match means update, not create.
 - **Managed blocks only.** Updating an issue rewrites **only** the
@@ -194,15 +194,15 @@ it recommends the transition; it does not perform unapproved writes.
   human. Never resolve behavioural drift or a product/policy decision
   autonomously.
 - **No code, no spec rewrites beyond pointers + materialized intent.** The spec
-  edits this skill drives are the materialized `intent.md` (via `/e22-spec`) and
+  edits this skill drives are the materialized `intent.md` (via `/e22-standards:e22-spec`) and
   `> Tracker:` / `tracker:` pointer lines. It never edits `/apps`, `/packages`,
   or `contract.md` behavior. **Execution from an issue — claim, branch,
-  implement, test, open the PR, transition — belongs to `/e22-work`**, not here.
+  implement, test, open the PR, transition — belongs to `/e22-standards:e22-work`**, not here.
 
 ## Coupling rules
 
 Lifecycle, state model, and authority are canonical in `ISSUE-WORKFLOW.md`; the
 issue format in `ISSUE-SCHEMA.md`; the open-question + validate contract in
 `spec-framework.md`; tracker conventions in rule `35-issue-tracker` and
-`/e22-traceability`. GitHub I/O is `/e22-tracker-sync`'s job. This skill only
+`/e22-standards:e22-traceability`. GitHub I/O is `/e22-standards:e22-tracker-sync`'s job. This skill only
 sequences those across the lifecycle.

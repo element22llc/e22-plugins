@@ -19,9 +19,9 @@ only by a non-web consumer, independent scaling/deploy, or a different runtime
   identity; otherwise the root [`DESIGN.md`](../DESIGN.md) is the shared default.
 
 Workspace tooling (npm/pnpm/bun workspaces, turbo, nx, …) is the product team's
-choice — record it in an ADR under [`/spec/decisions`](../spec/decisions) (run `/e22-adr`). The
+choice — record it in an ADR under [`/spec/decisions`](../spec/decisions) (run `/e22-standards:e22-adr`). The
 toolchain itself is pinned with mise; see [`mise.toml`](../mise.toml).
 
-This folder starts empty — the bootstrap (`/e22-init`) scaffolds the real
+This folder starts empty — the bootstrap (`/e22-standards:e22-init`) scaffolds the real
 first app here (default frontend: Next.js) instead of shipping a placeholder
 to delete.

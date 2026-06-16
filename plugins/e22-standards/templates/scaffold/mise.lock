@@ -2,4 +2,4 @@
 # mise only writes `mise.lock` if the file already exists, so this placeholder
 # is what makes `mise install` resolve the `latest` entries in mise.toml into
 # exact pinned versions here. On a fresh fork: run `mise install`, then commit
-# the populated result — it is the real version pin (see /e22-init step 4).
+# the populated result — it is the real version pin (see /e22-standards:e22-init step 4).

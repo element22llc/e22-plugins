@@ -1,6 +1,6 @@
 # Fixture: work — PR opened, acceptance met, awaiting review
 
-Workflow: `/e22-work #123`
+Workflow: `/e22-standards:e22-work #123`
 
 ## Given
 
@@ -21,4 +21,4 @@ none — PR review is a human action.
 
 ## Must not recommend first
 
-`/e22-work finish #123` (already in `validate`) or `Complete`. The issue is not `done` until the PR merges, so the workflow is not `Complete`; the open PR is the current human gate.
+`/e22-standards:e22-work finish #123` (already in `validate`) or `Complete`. The issue is not `done` until the PR merges, so the workflow is not `Complete`; the open PR is the current human gate.

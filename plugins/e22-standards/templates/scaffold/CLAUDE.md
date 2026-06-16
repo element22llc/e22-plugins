@@ -9,14 +9,14 @@ centrally in [`element22llc/e22-plugins`](https://github.com/element22llc/e22-pl
 and update via `/plugin update`, so they are **not** duplicated here. This file
 holds only product-specific context.
 
-> **New repo?** Run **`/e22-init`** once to fill the placeholders, pin the
+> **New repo?** Run **`/e22-standards:e22-init`** once to fill the placeholders, pin the
 > toolchain, and finish the bootstrap. Remove this line when setup is done.
-> Non-technical PO? Type **`/e22-build`** to go from idea to a working local
+> Non-technical PO? Type **`/e22-standards:e22-build`** to go from idea to a working local
 > app — it runs the first-run setup for you.
 >
-> On-demand helpers from the plugin: `/e22-spec-scaffold <id>` (new feature
-> spec), `/e22-adr <slug>` (architecture decision), `/e22-conventions`,
-> `/e22-design-sources`, and `/e22-traceability` (full reference prose). If the
+> On-demand helpers from the plugin: `/e22-standards:e22-spec-scaffold <id>` (new feature
+> spec), `/e22-standards:e22-adr <slug>` (architecture decision), `/e22-standards:e22-conventions`,
+> `/e22-standards:e22-design-sources`, and `/e22-standards:e22-traceability` (full reference prose). If the
 > plugin isn't installed, your teammate will be prompted to install it when
 > they trust this folder.
 
@@ -28,7 +28,7 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 ## Stack overrides
 
 The E22 default stack (injected by the plugin) applies unless overridden. Record
-any deviation as an ADR under `/spec/decisions/` (run `/e22-adr`) and note it here:
+any deviation as an ADR under `/spec/decisions/` (run `/e22-standards:e22-adr`) and note it here:
 
 - [none yet — defaults apply]
 

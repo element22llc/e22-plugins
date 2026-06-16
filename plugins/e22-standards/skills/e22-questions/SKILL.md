@@ -4,7 +4,7 @@ description: Sweep every open question across the /spec spine — each feature's
 when_to_use: Use to work down accumulated open questions, before a release or PO→dev handoff, or when asked to resolve or review open questions.
 ---
 
-# Resolve open questions (`/e22-questions`)
+# Resolve open questions (`/e22-standards:e22-questions`)
 
 Open questions are the spine's quiet failure mode: they get written down once,
 gated at PO acceptance, then left to rot. This skill is the **workflow that
@@ -106,7 +106,7 @@ accumulate — this skill is how you act on that nudge and clear it.
    the artifact the PO/dev acts on.
 
 4. **Triage: code-fact vs human-decision (do this before any investigation).**
-   In a reverse-engineered spec (`/e22-adopt`), most open questions are *factual
+   In a reverse-engineered spec (`/e22-standards:e22-adopt`), most open questions are *factual
    questions about what the code already does* — "is `X` dead code?", "does the
    client or server enforce this rule?", "what roles exist?" — **not** decisions.
    These are not for the human: asking the PO/dev what their own code does wastes
@@ -165,7 +165,7 @@ accumulate — this skill is how you act on that nudge and clear it.
      rather than deciding now. User-facing answers reflect **PO** decisions,
      other internal/technical answers reflect **dev** decisions (spec-framework
      Rule 5); that sign-off is the PR, not a per-edit yes.
-   - A hard-to-reverse or cross-cutting answer → record it via **`/e22-adr`**;
+   - A hard-to-reverse or cross-cutting answer → record it via **`/e22-standards:e22-adr`**;
      propagating a decision *already made* into a new or superseding ADR is
      itself auto-apply, not a fresh ask.
    - A question that needs a **named owner, blocks multiple features, needs
@@ -173,13 +173,13 @@ accumulate — this skill is how you act on that nudge and clear it.
      tracker item (the keep-vs-promote test is in `ISSUE-WORKFLOW.md`). Keep the
      structured `Q-NNN` in the spec and set its `tracker:` field to the ref —
      don't delete the question; the issue carries the same id via
-     `<!-- e22:question-id=Q-NNN -->`. On a GitHub tracker, **`/e22-issues`**
-     (routing through `/e22-tracker-sync`) opens the `spec-question` issue; on
+     `<!-- e22:question-id=Q-NNN -->`. On a GitHub tracker, **`/e22-standards:e22-issues`**
+     (routing through `/e22-standards:e22-tracker-sync`) opens the `spec-question` issue; on
      other trackers, file it per `/spec/tracker.md` and write the ref back.
      **Reconciliation floor:** a promoted question must carry its ref, and once
      its issue is answered/closed the decision must be folded into the spec's
      normative prose — a closed issue with a still-`open` question is a
-     validation failure (`/e22-spec validate`).
+     validation failure (`/e22-standards:e22-spec validate`).
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
    answered yet, keep the item but annotate it with **why** it's deferred (and a
@@ -209,7 +209,7 @@ questions just swept (locality rule).
 |---|---|---|
 | Open question still `impact: blocking` | Blocking now | Route to its `owner` (product/dev/design/security) for a decision (no command) |
 | Genuine unmade product/architecture decision left open | Human decision required | The owning human decides (no command) |
-| All blocking questions resolved | Recommended | Re-check the spec gate — `/e22-spec validate` |
+| All blocking questions resolved | Recommended | Re-check the spec gate — `/e22-standards:e22-spec validate` |
 | Only non-blocking deferrals remain | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence; an unanswerable question

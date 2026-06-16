@@ -1,6 +1,6 @@
 # Fixture: complete — nothing left, do not manufacture work
 
-Workflow: `/e22-adopt` (illustrative; the shape applies to any skill)
+Workflow: `/e22-standards:e22-adopt` (illustrative; the shape applies to any skill)
 
 ## Given
 
@@ -18,8 +18,8 @@ Complete
 
 ## Expected suggested command
 
-`/e22-spec` — offered as an **optional** continuation only, not a mandatory step to finish adoption.
+`/e22-standards:e22-spec` — offered as an **optional** continuation only, not a mandatory step to finish adoption.
 
 ## Must not recommend first
 
-Presenting `/e22-spec` (or any command) as required. `Complete` must not name a mandatory continuation; the honest action is "no action required," and the convention explicitly permits that sentence.
+Presenting `/e22-standards:e22-spec` (or any command) as required. `Complete` must not name a mandatory continuation; the honest action is "no action required," and the convention explicitly permits that sentence.

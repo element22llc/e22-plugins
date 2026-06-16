@@ -1,6 +1,6 @@
 # Label taxonomy — the canonical set `bootstrap-labels` reconciles
 
-`/e22-issues bootstrap-labels` creates/reconciles exactly these labels
+`/e22-standards:e22-issues bootstrap-labels` creates/reconciles exactly these labels
 idempotently (`gh label create --force` = create-or-update). GitHub silently
 drops a form/agent label that doesn't exist, so this must run before Issue Forms
 and agent labelling are reliable.
@@ -16,8 +16,8 @@ kind as labels.
 | Label | Meaning | Color |
 |---|---|---|
 | `source:human` | Opened by a person (PO/dev) via a form or conversation | `0e8a16` |
-| `source:adoption` | Productionization gap from `/e22-adopt` | `1d76db` |
-| `source:audit` | Finding from `/e22-audit` | `5319e7` |
+| `source:adoption` | Productionization gap from `/e22-standards:e22-adopt` | `1d76db` |
+| `source:audit` | Finding from `/e22-standards:e22-audit` | `5319e7` |
 | `source:security-review` | Finding from `/security-review` | `b60205` |
 | `source:code-review` | Finding from `/code-review` | `5319e7` |
 | `source:ci` | Durable CI failure | `d93f0b` |

@@ -1,6 +1,6 @@
 # Fixture: adopt — extracted intents need PO validation
 
-Workflow: `/e22-adopt`
+Workflow: `/e22-standards:e22-adopt`
 
 ## Given
 
@@ -23,4 +23,4 @@ none — PO validation is a human action; no E22 command performs it.
 
 ## Must not recommend first
 
-`/e22-issues publish-adoption`. Human product/architecture decisions (level 3) outrank publishing findings (level 5). The `Proposed` ADRs are also Human decision required but the intents gate the product meaning of everything downstream.
+`/e22-standards:e22-issues publish-adoption`. Human product/architecture decisions (level 3) outrank publishing findings (level 5). The `Proposed` ADRs are also Human decision required but the intents gate the product meaning of everything downstream.

@@ -1,6 +1,6 @@
 # Fixture: adopt — committed secret outranks everything
 
-Workflow: `/e22-adopt`
+Workflow: `/e22-standards:e22-adopt`
 
 ## Given
 
@@ -22,4 +22,4 @@ Blocking now
 
 ## Must not recommend first
 
-`/e22-issues publish-adoption`, or opening the adoption PR. A committed secret is a shared-safety-precedence stop (level 1) and dominates the publish/PR steps.
+`/e22-standards:e22-issues publish-adoption`, or opening the adoption PR. A committed secret is a shared-safety-precedence stop (level 1) and dominates the publish/PR steps.

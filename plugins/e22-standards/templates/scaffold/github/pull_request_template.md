@@ -60,7 +60,7 @@ If this PR changes user-facing behavior, has the PO approved the intent or reque
 
 ## Implementation pointers
 
-Pointers are a hint, not a maintained index (the spec ↔ code coupling rules come from the `e22-standards` plugin — run `/e22-conventions`).
+Pointers are a hint, not a maintained index (the spec ↔ code coupling rules come from the `e22-standards` plugin — run `/e22-standards:e22-conventions`).
 
 - [ ] If this feature moved to a different app/package, updated the owning app/package named in its `contract.md`
 - [ ] N/A — no structural change

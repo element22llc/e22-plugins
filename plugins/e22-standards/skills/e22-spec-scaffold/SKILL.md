@@ -42,9 +42,9 @@ feature, using the canonical E22 templates bundled with this plugin.
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
    ambiguity in this feature's own `## Open questions` section rather than
-   inventing details (run `/e22-questions` later to drive them to answers).
+   inventing details (run `/e22-standards:e22-questions` later to drive them to answers).
 5. For a Greenfield/design-originated feature, populate the `Design source`
-   section per `/e22-design-sources`.
+   section per `/e22-standards:e22-design-sources`.
 
 ## Coupling rules
 

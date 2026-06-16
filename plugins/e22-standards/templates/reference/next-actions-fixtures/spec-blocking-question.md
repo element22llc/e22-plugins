@@ -1,6 +1,6 @@
 # Fixture: spec — a blocking open question gates approval
 
-Workflow: `/e22-spec customer-export`
+Workflow: `/e22-standards:e22-spec customer-export`
 
 ## Given
 
@@ -18,8 +18,8 @@ Blocking now
 
 ## Expected suggested command
 
-`/e22-questions` — the command that drives open questions to resolution.
+`/e22-standards:e22-questions` — the command that drives open questions to resolution.
 
 ## Must not recommend first
 
-Presenting the intent for PO approval, or `/e22-tracker-sync push`. A blocking question (`required_before: intent-approval`) is a failed required gate (level 2) and must clear before the approval transition (level 4). Per the locality rule, only this feature's questions are considered.
+Presenting the intent for PO approval, or `/e22-standards:e22-tracker-sync push`. A blocking question (`required_before: intent-approval`) is a failed required gate (level 2) and must clear before the approval transition (level 4). Per the locality rule, only this feature's questions are considered.

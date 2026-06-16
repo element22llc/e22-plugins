@@ -7,9 +7,9 @@ cannot express. A reconciliation diff sees a renamed file as *old-present +
 new-absent* and would happily add the new file while orphaning the old one; only
 an explicit migration knows the two are the same artifact.
 
-This ledger is the **single source of truth** for those transforms. `/e22-sync`
+This ledger is the **single source of truth** for those transforms. `/e22-standards:e22-sync`
 consumes it to carry an already-bootstrapped repo forward when the plugin's
-conventions change; `/e22-adopt` and `/e22-build` consume the same entries on a
+conventions change; `/e22-standards:e22-adopt` and `/e22-standards:e22-build` consume the same entries on a
 resume so a repo first touched under an older plugin version picks up structural
 changes too — not just additive ones. **Add an entry here in the same change
 that lands a rename/move/deletion** in `templates/spec/` or
@@ -57,7 +57,7 @@ preserve filled-in content, and land on a `feat/*` branch through a PR. Use
   [Template reconciliation](spec-framework.md) against `templates/spec/tracker.md`
   to splice in the frontmatter **without overwriting edited values** (system,
   repository, ref format). Converting existing free-form `## Open questions` to
-  the structured `Q-NNN` format is **opportunistic** — let `/e22-questions` do it
+  the structured `Q-NNN` format is **opportunistic** — let `/e22-standards:e22-questions` do it
   when it next touches a question, not as a bulk rewrite.
 
 ### v1.22.0 — `PRODUCTION-READINESS.md` → `PRODUCTIONIZATION.md`

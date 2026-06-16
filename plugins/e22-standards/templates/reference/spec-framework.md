@@ -10,7 +10,7 @@ rules state only *when* to create artifacts.
 |---|---|---|---|
 | Intake | The product's issue tracker (`/spec/tracker.md` — GitHub Issues, Jira, Linear, …) | PO | Conversational, ephemeral |
 | Exploration | `/spec/design` for Greenfield; the originating issue + `intent.md` `Design source` for Brownfield | PO + Dev | Disposable / preserved as a link |
-| Spec | `/spec` | Dev or PO (via `/e22-build`) writes; PO approves intent; dev approves the PR | Durable |
+| Spec | `/spec` | Dev or PO (via `/e22-standards:e22-build`) writes; PO approves intent; dev approves the PR | Durable |
 | Implementation | `/apps` + `/packages` | Dev | Must conform to spec |
 | Non-prod validation | Non-prod environment | PO validates, Dev supports | Working but not production |
 | Production | AWS | Dev | Deployed |
@@ -25,10 +25,10 @@ validation, and operation. Treat it as infrastructure.
 ├── vision.md                 # Why this product exists — plus an `## Open questions` section for product-level ambiguities
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
-├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /e22-traceability)
+├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /e22-standards:e22-traceability)
 ├── tracker.md                # Which issue tracker this product uses + reference conventions (client-agnostic)
-├── BUILD-STATUS.md           # PO builds only — /e22-build flow state (step, per-feature progress, handoff gate)
-├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/e22-adopt, and /e22-build at handoff)
+├── BUILD-STATUS.md           # PO builds only — /e22-standards:e22-build flow state (step, per-feature progress, handoff gate)
+├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/e22-standards:e22-adopt, and /e22-standards:e22-build at handoff)
 ├── app/                      # App knowledge docs — usage, workflows, roles, configuration, troubleshooting, release notes
 │   └── README.md
 ├── design/                   # Greenfield product-level design export + traceability link
@@ -42,15 +42,15 @@ validation, and operation. Treat it as infrastructure.
     └── 000N-[slug].md        # Architecture decisions worth remembering
 ```
 
-The canonical templates are shipped by this plugin. Use `/e22-spec-scaffold <id>`
-to create a feature's `intent.md` + `contract.md`, and `/e22-adr <slug>` for an
+The canonical templates are shipped by this plugin. Use `/e22-standards:e22-spec-scaffold <id>`
+to create a feature's `intent.md` + `contract.md`, and `/e22-standards:e22-adr <slug>` for an
 ADR — both copy from the bundled templates so structure never drifts per feature.
 
 **Open questions live next to their context, not in a separate file.** A question
 about one feature goes in that feature's `intent.md` → `## Open questions`; a
 product-level question (flagged before any feature exists — greenfield vision
 interview, whole-repo adoption) goes in `vision.md` → `## Open questions`. Run
-**`/e22-questions`** to sweep every open question across the spine and drive each
+**`/e22-standards:e22-questions`** to sweep every open question across the spine and drive each
 to an answer (or an explicit deferral) — otherwise they accumulate and rot.
 
 ### Open-question format (machine-readable)
@@ -79,7 +79,7 @@ keep-vs-promote test is in [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md). Resolving a
 question means writing the answer into the spec's normative prose, not leaving it
 only in the `_Resolution:_` line or the issue.
 
-### Spec validation (`/e22-spec validate`)
+### Spec validation (`/e22-standards:e22-spec validate`)
 
 A local, GitHub-independent structural check over the question contract — the
 defense-in-depth floor that holds even when the tracker is unreachable. It flags:
@@ -92,8 +92,8 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `tracker:` ref back;
 - a `resolved` question with no recorded resolution folded into the spec.
 
-`validate` runs at `/e22-spec approve` and is called by `/e22-issues`
-(`materialize`, `status`, `reconcile`) and `/e22-drift`; a spec-changing PR
+`validate` runs at `/e22-standards:e22-spec approve` and is called by `/e22-standards:e22-issues`
+(`materialize`, `status`, `reconcile`) and `/e22-standards:e22-drift`; a spec-changing PR
 should run it too. A failing check blocks the relevant gate — e.g. an approval
 cannot proceed while a blocking question is open.
 
@@ -101,7 +101,7 @@ cannot proceed while a blocking question is open.
 
 Contract **readiness is a derived quality signal, not a human "approved"
 decision** — there is no `Status:` field on `contract.md`. Any consumer
-(`/e22-issues status`, the `decompose` precondition) derives one of three values
+(`/e22-standards:e22-issues status`, the `decompose` precondition) derives one of three values
 the same way, so `validate` and `decompose` can never disagree:
 
 - **`missing`** — `contract.md` does not exist.
@@ -123,7 +123,7 @@ Readiness is reported as `ready | incomplete | missing` — **never** `approved`
 
 ## Rules
 
-1. **Specs are written with Claude's help — by a dev, or by a PO via `/e22-build`.** The PO approves intent; a dev approves the PR before merge. POs are not expected to write specs from scratch.
+1. **Specs are written with Claude's help — by a dev, or by a PO via `/e22-standards:e22-build`.** The PO approves intent; a dev approves the PR before merge. POs are not expected to write specs from scratch.
 
 2. **Specs are organized by user-facing feature, not by code layout.** Code lives in `/apps` and `/packages`, organized however the stack wants. A single feature may span several apps and packages. The link between a spec feature and its code is the optional pointer section in `contract.md` — at most a hint naming the owning app(s)/package(s), not a folder-mirroring rule or a maintained index. If it's stale or absent, find the code by searching the repo.
 
@@ -165,13 +165,13 @@ conversation, a written brief, screenshots, or a Claude Design export. Do
    product clearly needs. Keep scope honest — flag anything ambiguous in that
    feature's `intent.md` → `## Open questions` instead of guessing.
 3. If a Claude Design export exists, read the **local export** (run
-   `/e22-design-sources`) — never fetch the URL (it 403s). The design is
+   `/e22-standards:e22-design-sources`) — never fetch the URL (it 403s). The design is
    authoritative for visual behavior; the spec for what the system does. Flag
    conflicts in the relevant feature's `intent.md` → `## Open questions`.
 4. Get PO approval on the intent specs before broad implementation, then build
    under `/apps` and `/packages`, writing `contract.md` as you go.
 
-A non-technical PO drives this same flow via `/e22-build`, which adapts each
+A non-technical PO drives this same flow via `/e22-standards:e22-build`, which adapts each
 step to plain language and Claude-driven tooling.
 
 **Brownfield** (change to an existing product): triage the issue → size it
@@ -211,14 +211,14 @@ where the exploration happened. It is *not* a prototyping workspace: code
 exploration happens on a branch under `/apps`, never there. Link, do not copy —
 design explorations are disposable; the spec is what carries forward. A purely
 Brownfield repo with no Greenfield phase can delete the folder. See
-`/e22-design-sources` for the full export-handling walkthrough.
+`/e22-standards:e22-design-sources` for the full export-handling walkthrough.
 
 ## Template reconciliation (self-healing on re-run)
 
 Some skills **copy** a bundled template into the product repo, where it then
 lives on and is revisited across sessions — `PRODUCTIONIZATION.md`
-(`/e22-adopt`, and `/e22-build` at handoff), `BUILD-STATUS.md` (`/e22-build`), and per-feature `intent.md` /
-`contract.md` (`/e22-spec-scaffold`). The bundled templates evolve (a `/plugin
+(`/e22-standards:e22-adopt`, and `/e22-standards:e22-build` at handoff), `BUILD-STATUS.md` (`/e22-standards:e22-build`), and per-feature `intent.md` /
+`contract.md` (`/e22-standards:e22-spec-scaffold`). The bundled templates evolve (a `/plugin
 update` may add a new section, checklist item, or table row), but a file copied
 under an older plugin version is frozen at that older shape. Skills that resume
 from such a file by "continuing from the unchecked/empty items" would silently
@@ -285,7 +285,7 @@ migration is still pending, plus an action). To know which entries a repo
 predates, the spine carries a stamp:
 
 - **`/spec/.version`** records the plugin version the spine was last materialized
-  or synced at. `/e22-init` and `/e22-adopt` write it at hand-off; `/e22-sync`
+  or synced at. `/e22-standards:e22-init` and `/e22-standards:e22-adopt` write it at hand-off; `/e22-standards:e22-sync`
   reads it, applies pending migrations, and re-stamps. Resolve the current plugin
   version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from
   memory.
@@ -295,8 +295,8 @@ predates, the spine carries a stamp:
   bad transform — an unstamped repo is brought current by walking the whole ledger
   by precondition.
 
-**`/e22-sync` is the dedicated driver** for an already-bootstrapped repo;
-`/e22-adopt` and `/e22-build` apply the same ledger inline on a resume so a paused
+**`/e22-standards:e22-sync` is the dedicated driver** for an already-bootstrapped repo;
+`/e22-standards:e22-adopt` and `/e22-standards:e22-build` apply the same ledger inline on a resume so a paused
 bootstrap isn't blocked. Structural migrations follow the same discipline as
 additive reconciliation — read-then-propose, never clobber filled-in content,
 `git mv` so history follows, land through a `feat/*` PR.
@@ -306,7 +306,7 @@ additive reconciliation — read-then-propose, never clobber filled-in content,
 - **Reference prose** (`templates/reference/*`) is read in place from the plugin,
   never copied into the repo, so it is always current via `/plugin update` —
   there is nothing to reconcile.
-- **ADRs** (`/e22-adr`) are immutable, point-in-time records. Each run creates a
+- **ADRs** (`/e22-standards:e22-adr`) are immutable, point-in-time records. Each run creates a
   new numbered file; you never retrofit new template sections into an accepted
   ADR. Supersede with a new ADR instead (see *Architecture Decision Records*
   above) — never edit history to match a newer template.

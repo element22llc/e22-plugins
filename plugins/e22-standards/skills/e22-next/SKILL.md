@@ -6,17 +6,17 @@ when_to_use: Use when picking a repo up cold or mid-stream and asking "what shou
 
 # Navigate the workspace to the single best next action (read-only)
 
-`/e22-next` reconstructs the **entire workspace state** as it stands right now —
+`/e22-standards:e22-next` reconstructs the **entire workspace state** as it stands right now —
 independent of session memory — and arbitrates the **one action that matters
 most** across *all* workflows. It is the cross-workflow counterpart to the
 per-skill `## Recommended next actions` blocks: where each workflow skill is
-**locality-bound** (it recommends only from its own invocation), `/e22-next` is
+**locality-bound** (it recommends only from its own invocation), `/e22-standards:e22-next` is
 the only tool that sweeps unrelated workspace state and picks a single winner.
 
 It changes **nothing**. It reconstructs, classifies, arbitrates, and recommends —
 it never edits, commits, publishes, accepts an ADR, claims work, pushes a branch,
 merges, or creates a PR. It also never *resolves* a state itself: it names the
-owning skill (`/e22-work`, `/e22-spec`, `/e22-questions`, …) as the place that
+owning skill (`/e22-standards:e22-work`, `/e22-standards:e22-spec`, `/e22-standards:e22-questions`, …) as the place that
 does.
 
 ## The contract it reuses — do not restate it
@@ -31,9 +31,9 @@ them, and it does not duplicate each skill's domain table.
 
 ## Relationship to the workflow skills — it routes, it doesn't run them
 
-`/e22-next` recommends; the owning skill executes. It surfaces *that* a blocking
-question gates feature A and names `/e22-questions`; it does not answer the
-question. It flags a stale tracker state and names `/e22-work resume #N`; it does
+`/e22-standards:e22-next` recommends; the owning skill executes. It surfaces *that* a blocking
+question gates feature A and names `/e22-standards:e22-questions`; it does not answer the
+question. It flags a stale tracker state and names `/e22-standards:e22-work resume #N`; it does
 not reconcile it. If the single best action is itself running a skill, say so as
 a `Suggested command` — but the human still triggers it.
 
@@ -47,7 +47,7 @@ a `Suggested command` — but the human still triggers it.
 ## Phase 0 — Locate the spine
 
 If there is no `/spec` spine, there is nothing to reconstruct: the single
-recommended action is to **bootstrap** — `/e22-init` (greenfield) or `/e22-adopt`
+recommended action is to **bootstrap** — `/e22-standards:e22-init` (greenfield) or `/e22-standards:e22-adopt`
 (existing "vibe-coded" code). Say which and stop. Don't run the rest.
 
 ## Phase 1 — Reconstruct workspace state (read-only)
@@ -69,7 +69,7 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
 - **Proposed ADRs** — `spec/decisions/NNNN-*.md` with
   `- **Status:** Proposed` (awaiting ratification by its Deciders).
 - **Tracker issues** — read `spec/tracker.md` `system:`. If `github`, query issue
-  lifecycle state via `/e22-tracker-sync` (MCP-first, `gh` fallback): the
+  lifecycle state via `/e22-standards:e22-tracker-sync` (MCP-first, `gh` fallback): the
   `<!-- e22:state=... -->` marker
   (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
   blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
@@ -79,7 +79,7 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
   and PR. Flag the **merged-PR-but-stale-tracker** case (PR merged to `main`, issue
   still `validate`) — an unfinished lifecycle transition, not new work.
 - **Version drift** — compare `spec/.version` against the current plugin version;
-  a stale spine routes to `/e22-sync`.
+  a stale spine routes to `/e22-standards:e22-sync`.
 - **Recent context** — skim `spec/HISTORY.md` (newest first) only to orient; it is
   informational, not a source of actions.
 
@@ -89,7 +89,7 @@ reads as "nothing there."
 ## Phase 2 — Classify each observed state
 
 Map every reconstructed state to exactly one of the categories using this
-workspace-level table — `/e22-next`'s own domain (cross-workflow arbitration),
+workspace-level table — `/e22-standards:e22-next`'s own domain (cross-workflow arbitration),
 keyed by reconstruction dimension, derived from the same vocabulary. The
 parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 
@@ -97,16 +97,16 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 |---|---|---|
 | Committed secret / destructive-risk exposure observed | Blocking now (L1) | Rotate & invalidate; then `/security-review` (no command rotates it) |
 | Live, deployed feature actively exposing data / breaching users / losing integrity | Urgent live-system remediation (L1) | Remediate the live system now; then `/security-review` (no command remediates it) |
-| Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/e22-questions` |
+| Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/e22-standards:e22-questions` |
 | Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject (no command) |
 | Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves (no command) |
 | PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command) |
-| Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/e22-work resume #N` |
-| PR merged but issue still `validate` (stale tracker) | Blocking now — next transition (L4) | `/e22-work resume #N` |
+| Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/e22-standards:e22-work resume #N` |
+| PR merged but issue still `validate` (stale tracker) | Blocking now — next transition (L4) | `/e22-standards:e22-work resume #N` |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now — next transition (L4) | owning skill |
-| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/e22-questions` |
-| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/e22-questions` |
-| `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/e22-work start #N`, `/e22-issues …`, `/e22-sync` |
+| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/e22-standards:e22-questions` |
+| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/e22-standards:e22-questions` |
+| `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/e22-standards:e22-work start #N`, `/e22-standards:e22-issues …`, `/e22-standards:e22-sync` |
 | Every workflow settled across all dimensions | Complete — no action required (L7) | — |
 
 When the same state could plausibly fit two categories, the **derivation rule**
@@ -141,7 +141,7 @@ Emit, in order:
    rotation, ADR ratification — get no command). Aggregate candidates across the
    whole workspace; each entry names its feature/issue so the source is clear.
 
-Read-only coda: the block recommends; it does not act. `/e22-next` never edits,
+Read-only coda: the block recommends; it does not act. `/e22-standards:e22-next` never edits,
 commits, publishes, merges, or advances any workflow's state.
 
 ## Golden fixtures

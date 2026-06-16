@@ -29,7 +29,7 @@ It covers, in detail:
   and how untracked questions get promoted.
 - **Drift gates** — the eight review-sensitive classes, flag-when-noticed
   mechanics, who may resolve a flag, and the periodic sweeps
-  (`/e22-drift`, `/e22-audit`, `/e22-questions`).
+  (`/e22-standards:e22-drift`, `/e22-standards:e22-audit`, `/e22-standards:e22-questions`).
 - **SOC 2 / ISO 27001-aligned delivery** — "aligned, never compliant" wording,
   and the expectation→artifact evidence map.
 - **Worked examples** — a PO's day and a dev's day through the same workflow.

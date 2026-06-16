@@ -4,8 +4,8 @@
 > Status: draft | approved | implemented | validated | live
 > Created: YYYY-MM-DD
 > Tracker: [ref in this product's format — see /spec/tracker.md — or "none yet"]
-> Approved by: [PO github handle — written by `/e22-spec approve`, else "not yet"]
-> Approved at: [YYYY-MM-DD — written by `/e22-spec approve`, else "not yet"]
+> Approved by: [PO github handle — written by `/e22-standards:e22-spec approve`, else "not yet"]
+> Approved at: [YYYY-MM-DD — written by `/e22-standards:e22-spec approve`, else "not yet"]
 
 ## PO acceptance
 
@@ -75,7 +75,7 @@ nothing is ever deleted or archived.]
 ## Open questions
 
 Structured so a tool can tell what blocks a gate and who owns it — see the
-open-question format in the spec-framework reference (`/e22-spec-scaffold`). Use
+open-question format in the spec-framework reference (`/e22-standards:e22-spec-scaffold`). Use
 stable IDs (`Q-001`, `Q-002`, …). A promoted question keeps its ID and gains a
 `tracker:` ref.
 

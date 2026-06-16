@@ -176,8 +176,8 @@ Rules:
   the schema version bumps, a writer rewrites the managed block to the new shape
   and updates `e22:schema`; unknown/human markers are carried forward. The prior
   `audit-finding` kind is accepted and migrated to `finding` + `source:audit`.
-- **Schema migration is explicit.** It happens only through `/e22-sync` or
-  `/e22-issues reconcile` and is reported — never silently during an unrelated
+- **Schema migration is explicit.** It happens only through `/e22-standards:e22-sync` or
+  `/e22-standards:e22-issues reconcile` and is reported — never silently during an unrelated
   command.
 
 ## Human-created issues — original content is immutable
