@@ -3,6 +3,10 @@ name: e22-spec-scaffold
 description: Create a feature's spec (intent.md + contract.md) from the E22 templates.
 when_to_use: Use when starting a user-facing feature or asked to spec out or scaffold a feature.
 argument-hint: "[feature-id]"
+# Internal one-shot helper: invoked by /e22-standards:e22-spec, e22-build, e22-init,
+# and e22-adopt to instantiate the templates. Model-callable, hidden from the slash
+# menu, so spec authoring stays a single user-facing entry point (e22-spec / e22-build).
+user-invocable: false
 ---
 
 # Scaffold a feature spec
