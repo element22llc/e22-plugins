@@ -1,10 +1,14 @@
 # e22-plugins
 
 Element 22's [Claude Code plugin
-marketplace](https://code.claude.com/docs/en/plugin-marketplaces). It hosts a
-single plugin, **`e22-standards`**, which carries E22's organization-wide
-engineering standards so they live in **one place** and update **centrally** —
-instead of being copied into every forked product repo and then frozen.
+marketplace](https://code.claude.com/docs/en/plugin-marketplaces). Its primary
+plugin is **`e22-standards`**, which carries E22's organization-wide engineering
+standards so they live in **one place** and update **centrally** — instead of
+being copied into every forked product repo and then frozen. The marketplace
+also **re-lists** Anthropic's upstream **`frontend-design`** plugin (referenced
+via a SHA-pinned `git-subdir` source, never vendored) so it can be installed from
+the same catalog; it is **not** auto-enabled in product repos — install it
+explicitly if a repo wants it.
 
 > Edit the rules once here; every product repo picks them up on the next
 > `/plugin update`.
@@ -107,7 +111,7 @@ prompted to install when they trust the folder:
 }
 ```
 
-> First install prompts you to trust the `e22` marketplace.
+> First install prompts you to trust the `e22-plugins` marketplace.
 
 ## Keeping product repos in sync
 

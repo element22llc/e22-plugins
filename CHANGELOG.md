@@ -136,6 +136,36 @@ Consumer scaffold correctness — CI tells the truth, and bootstrapped dirs surv
   mention workflow) rather than waiting for a non-existent automatic
   "Claude Code Review" comment.
 
+Marketplace + release integrity.
+
+- **Dropped the custom plugin-update freshness hook.** `check-plugin-updates.sh`
+  compared the marketplace clone's git HEAD against the remote — producing false
+  positives (doc-only/frontend-design commits, pinned refs) and false negatives
+  (clone updated but `plugin.json` not bumped → stale cache, no notice), and its
+  HTTPS call was unbounded. Removed it and its SessionStart registration; rely on
+  Claude Code's native plugin-update mechanism (resolved-version based).
+- **Release/changelog CI gates (`scripts/check_changelog.py`).** A release
+  validator (run in `mise run ci`) asserts `plugin.json`'s version equals the
+  newest *released* `CHANGELOG.md` heading and that releases descend in semver
+  order; a `### [Unreleased]` section is allowed above them. A PR-only behaviour
+  gate asserts that any change under
+  `plugins/e22-standards/{skills,hooks,rules,templates,scripts,policy}` or
+  `plugin.json` is accompanied by a `CHANGELOG.md` change (tests/ exempt).
+- **Validator pinned + dual-scope.** `mise run ci` now validates **both** the
+  marketplace manifest (`claude plugin validate .`) and the plugin
+  (`claude plugin validate plugins/e22-standards`). The required CI job installs a
+  **pinned** Claude Code version (single source of truth: `E22_CLAUDE_CODE_VERSION`
+  in `mise.toml`) so the authoritative result can't drift without a repo change; a
+  separate **non-blocking** job runs `latest` as an early compatibility signal.
+- **Root README corrected.** It no longer claims the marketplace "hosts a single
+  plugin" — it states `e22-standards` plus the re-listed (not vendored, not
+  auto-enabled) `frontend-design` — and the trust prompt names the real
+  marketplace, `e22-plugins` (not `e22`).
+- **Skill invocation matrix** documented (`templates/reference/INVOCATION.md`):
+  safe-to-infer (read-only) vs. requires-explicit-intent (side-effecting) vs.
+  internal-only, with the rationale for **not** broadly setting
+  `disable-model-invocation` yet.
+
 ### 1.51.2
 
 - `e22-sync`: the sync PR now targets the branch the dev invoked the sync from

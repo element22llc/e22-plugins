@@ -11,6 +11,13 @@ idiomatic_version_file_enable_tools = ["python"]
 # Pin every tool resolution into mise.lock for reproducible installs.
 lockfile = true
 
+[env]
+# Single source of truth for the Claude Code version the REQUIRED CI job installs,
+# so `claude plugin validate` is reproducible and the authoritative result can't
+# drift without a repo change. Bump deliberately after reviewing a new release.
+# A separate, non-blocking CI job runs `latest` for an early compatibility signal.
+E22_CLAUDE_CODE_VERSION = "2.1.153"
+
 [tasks.lint]
 description = "Lint and format-check Python code"
 run = [
@@ -19,10 +26,14 @@ run = [
 ]
 
 [tasks.plugin-check]
-description = "Run plugin hygiene + standards-consistency checks"
+description = "Run plugin hygiene + standards-consistency + release checks"
 run = [
   "uv run python scripts/check_plugin.py",
   "uv run python scripts/check_standards.py",
+  # Release validator (no base ref → release-validator only; safe locally).
+  "uv run python scripts/check_changelog.py",
+  # Validate both the marketplace manifest (root) and the plugin manifest.
+  "claude plugin validate .",
   "claude plugin validate plugins/e22-standards",
 ]
 
