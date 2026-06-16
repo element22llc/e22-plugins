@@ -45,13 +45,19 @@ run = [
 ]
 
 [tasks.shell]
-description = "Lint and format-check shell scripts (plugin hooks)"
+description = "Lint and format-check shell scripts (plugin hooks + libs + tests)"
 run = [
-  # ShellCheck is the hard gate (SC2016 is disabled in .shellcheckrc — see there).
-  "shellcheck plugins/e22-standards/hooks/*.sh",
+  # ShellCheck is the hard gate (see .shellcheckrc for the few intentional disables).
+  "shellcheck plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh",
   # shfmt is advisory: report style drift but don't fail CI on the hooks'
   # hand-written formatting. Run `shfmt -w` locally to apply.
-  "shfmt -d plugins/e22-standards/hooks/*.sh || true",
+  "shfmt -d plugins/e22-standards/hooks/*.sh plugins/e22-standards/hooks/lib/*.sh plugins/e22-standards/hooks/tests/*.sh || true",
+]
+
+[tasks.hooktests]
+description = "Run the POSIX-sh hook fixture suite (network stubbed via fixtures)"
+run = [
+  "sh plugins/e22-standards/hooks/tests/run.sh",
 ]
 
 [tasks.check]
@@ -69,4 +75,5 @@ depends = [
   "fixtures",
   "test",
   "shell",
+  "hooktests",
 ]

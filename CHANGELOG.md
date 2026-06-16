@@ -88,6 +88,39 @@ PR assigns the version and converts this to a versioned entry.
     managed-block update in an active workflow → no repeat). `/e22-standards:e22-issues`
     now references it instead of restating the semantics.
 
+- **Hook hardening + fixture suite (audit F9–F13).** The three `PreToolUse` hooks
+  are rebuilt on two shared POSIX-sh libraries and gain a deterministic fixture
+  suite, so hook behaviour is defined by tests rather than asserted in prose.
+  - **Shared field extraction (`hooks/lib/json.sh`, F11).** One best-effort
+    extractor replaces the hooks' ad-hoc `sed` field grabs: `jq` when present, else
+    a narrow grep/sed fallback that tolerates escaped quotes/backslashes and picks
+    the *first* `tool_input` field, so a value buried in a later `content` string
+    cannot shadow the real one. Adds tool-aware `e22_mutation_content` (the new
+    text a Write/Edit/MultiEdit introduces).
+  - **Shared path classifier (`hooks/lib/classify.sh`, F9/F10).** One classifier
+    (spec / documentation / implementation / operations / generated / lockfile /
+    unknown) is shared by both point-of-action nudges, so they can no longer
+    disagree about what a path *is*; coverage broadens past the old source-code
+    allowlist so config/infra writes (compose, Dockerfile, `*.tf`, CI workflows, …)
+    now nudge, while spec/docs/generated/lockfiles stay exempt.
+  - **Three-tier version-pin policy (F12).** `check-version-pins.sh` no longer
+    denies every older major. It reads endoflife.date per cycle: a cycle past its
+    EOL (date in the past, or `eol: true`) is **denied**; a still-supported cycle
+    behind current stable gets a non-blocking **advisory**; the latest stable (or
+    newer) is **silent**. EOL responses are cached per slug per UTC day (atomic
+    write; failures never cached), and the date comparison is portable POSIX
+    (`sort`, not the `<` operator that `test` leaves undefined).
+  - **Tool-aware content inspection (F13).** Only the *introduced* text is checked
+    — `Write.content`, `Edit.new_string`, every `MultiEdit` `new_string` — never
+    `old_string`, so bumping an image tag upward is not blocked by its old value;
+    Bash command text is intentionally skipped (documented bypass; the CI repo-scan
+    is the backstop).
+  - **Fixture suite + CI wiring (`hooks/tests/run.sh`).** 42 hermetic cases assert
+    each hook's decision (deny / advisory / silent) plus the extraction and
+    classification helpers, stubbing the network via `E22_EOL_FIXTURE_DIR`. Wired
+    into `mise run ci` as the new `hooktests` task, and the `shell` lint gate now
+    also covers `hooks/lib` and `hooks/tests`.
+
 ### 1.48.0
 
 - **New `/e22-next` — read-only workspace navigator.** Delivers the cross-workflow

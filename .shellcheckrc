@@ -8,4 +8,8 @@
 #            that resembles shell expansions, and use the `printf '...%s...' "$var"`
 #            idiom where %s (not the shell) does the expansion.
 #   SC1003 — `tr -d '"\\'` strips quote/backslash chars and is correct as written.
-disable=SC2016,SC1003
+#   SC1091 — the point-of-action hooks source `"${CLAUDE_PLUGIN_ROOT}/hooks/lib/*.sh"`
+#            at runtime; Claude Code resolves that path, so ShellCheck cannot follow
+#            it statically (the gate does not pass -x). The libs themselves are linted
+#            directly by the same `mise run shell` task, so coverage is not lost.
+disable=SC2016,SC1003,SC1091
