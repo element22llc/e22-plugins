@@ -138,8 +138,10 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    instantiate the spec spine from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
    `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
-   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`). Create empty
-   `spec/features/` and `spec/decisions/` dirs. **Adapt to the chosen stack
+   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`). Install the
+   bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs
+   survive the first commit (an empty dir does not — `/e22-standards:e22-spec-scaffold`
+   and `/e22-standards:e22-adr` populate them later). **Adapt to the chosen stack
    and never clobber existing files** (the MANIFEST's per-file notes say what
    to adapt — e.g. drop `package.json`/`pnpm-workspace.yaml`/`biome.json` for
    a Python-only product, swap task commands to `uv run …`).

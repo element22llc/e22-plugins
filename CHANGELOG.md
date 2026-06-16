@@ -116,6 +116,26 @@ policy file + a real CI backstop.
   copies stay byte-identical to the plugin sources so consumer CI runs the same
   scanner and policy.
 
+Consumer scaffold correctness — CI tells the truth, and bootstrapped dirs survive.
+
+- **Stack-detection CI (replaces the contradictory "commented out" claim).** The
+  scaffold `ci.yml` always runs stack-agnostic hygiene, then auto-detects the
+  stack from manifests (`package.json`/`pnpm-workspace.yaml` → Node/TS;
+  `pyproject.toml` → Python) and runs its checks. A detected stack with **no test
+  contract fails** (no more silent `--if-present` no-op to green); with no app
+  stack, only hygiene runs and the job reports that application validation isn't
+  active yet. The previous file claimed to run "only stack-agnostic checks" while
+  actively running Node steps — `ci.yml`, `MANIFEST.md`, and the scaffold README
+  are now mutually consistent.
+- **Bootstrapped dirs survive the first commit.** `spec/features/.gitkeep` and
+  `spec/decisions/.gitkeep` are now bundled in the scaffold (an empty dir doesn't
+  survive git); `e22-init` installs them instead of `mkdir`-ing empty dirs, and
+  `MANIFEST.md` maps them.
+- **Scaffold README matches the shipped workflow.** Verification now says to
+  comment `@claude` on a PR/issue (the shipped `claude.yml` is the `@claude`
+  mention workflow) rather than waiting for a non-existent automatic
+  "Claude Code Review" comment.
+
 ### 1.51.2
 
 - `e22-sync`: the sync PR now targets the branch the dev invoked the sync from

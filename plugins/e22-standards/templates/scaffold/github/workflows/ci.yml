@@ -6,17 +6,20 @@ on:
   push:
     branches: [main]
 
-# This `ci` job is the single required status check on `main`. Out of the box it
-# runs only stack-AGNOSTIC repo hygiene (shellcheck, actionlint). Those are real
-# checks, but they are NOT your stack's lint/test/build — the per-app/per-package
-# steps further down are commented examples the product team activates once the
-# stack exists. Until then, a green `ci` does not mean tests ran. See
+# The `ci` job is the single required status check on `main`. It ALWAYS runs
+# stack-AGNOSTIC hygiene (actionlint, shellcheck, the e22 version-pin scan), then
+# runs the checks for whatever stack it DETECTS in the repo:
+#   - Node/TS   when package.json or pnpm-workspace.yaml is present
+#   - Python    when a pyproject.toml is present
+# A detected stack with NO test contract FAILS the build — so a green `ci` is
+# never a false "tests ran". Before any app exists, the stack steps simply don't
+# run and the job reports that application validation is not yet active. See
 # README.md#branch-protection.
 #
-# Note on testing: there is deliberately NO test-file-detection gate here. A
-# filename check can't tell a real test from an empty one — it just trains people
-# to tick an opt-out box. Test coverage is enforced by the rule in CLAUDE.md, the
-# Definition of Done, and human review. See CLAUDE.md#definition-of-done.
+# Note on testing: there is deliberately NO test-file-name gate (a filename check
+# can't tell a real test from an empty one). Coverage is enforced by the rule in
+# CLAUDE.md, the Definition of Done, human review, and the "stack detected but no
+# test script -> fail" guards below. See CLAUDE.md#definition-of-done.
 
 jobs:
   ci:
@@ -43,9 +46,8 @@ jobs:
           done
 
       # Install all tools defined in mise.toml — Node, Python, OpenTofu,
-      # Terragrunt, shellcheck, actionlint, etc. Nested mise.toml files (e.g.
-      # /infra/mise.toml) are picked up automatically. This replaces per-tool
-      # setup actions such as setup-node or setup-python.
+      # shellcheck, actionlint, etc. Nested mise.toml files (e.g. /infra/mise.toml)
+      # are picked up automatically.
       - name: Setup mise
         uses: jdx/mise-action@v4
         with:
@@ -53,8 +55,8 @@ jobs:
           cache: true
 
       # ────────────────────────────────────────────────────────────────────
-      # ACTIVE — stack-agnostic checks. These run today and make the required
-      # `ci` check do real work regardless of the product's stack.
+      # ACTIVE — stack-agnostic hygiene. Always runs; makes the required `ci`
+      # check do real work regardless of the product's stack.
       # ────────────────────────────────────────────────────────────────────
 
       - name: Lint GitHub Actions workflows (actionlint)
@@ -71,75 +73,102 @@ jobs:
             shellcheck "${scripts[@]}"
           fi
 
-      # Version-pin policy (e22): the committed-state backstop for the
-      # interactive version-pin hook. Fails the build on an image/tool major
-      # pinned below policy/versions.yml. Deterministic — no network, no jq.
+      # Version-pin policy (e22): the committed-state backstop for the interactive
+      # version-pin hook. Fails on an image/tool major pinned below
+      # policy/versions.yml. Deterministic — no network, no jq.
       - name: Version-pin policy scan (e22)
         run: sh scripts/scan-version-pins.sh .
 
-      # Secret scanning: enable GitHub-native secret scanning + push protection
-      # in repo Settings → Code security (free for public repos; GHAS for
-      # private). It runs outside Actions and is the canonical secret-scan
-      # mechanism — see README.md#branch-protection. No CI step is
-      # needed for it.
+      # Secret scanning: enable GitHub-native secret scanning + push protection in
+      # repo Settings → Code security. It runs outside Actions and is the canonical
+      # secret-scan mechanism — see README.md#branch-protection. No CI step needed.
 
       # ────────────────────────────────────────────────────────────────────
-      # ACTIVE — Node/TS workspace checks. These run against the pnpm workspace
-      # (apps/* + packages/*) the template ships. pnpm and Biome are installed
-      # by mise above. A green `ci` therefore means lint + types + tests passed.
-      # The root scripts fan out across every app/package (pnpm --recursive), so
-      # these steps need no edits as you add apps. Remove them only if you delete
-      # the Node workspace.
+      # Stack detection — which stacks are actually present in this repo.
       # ────────────────────────────────────────────────────────────────────
+      - name: Detect stack
+        id: detect
+        run: |
+          node=false
+          python=false
+          if [ -f package.json ] || [ -f pnpm-workspace.yaml ]; then node=true; fi
+          if [ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .; then python=true; fi
+          echo "node=$node" >> "$GITHUB_OUTPUT"
+          echo "python=$python" >> "$GITHUB_OUTPUT"
+          if [ "$node" = false ] && [ "$python" = false ]; then
+            echo "::notice::No application stack detected (no package.json / pyproject.toml). Stack-agnostic hygiene ran; application validation is not yet active."
+          fi
 
-      - name: Install dependencies
-        # The template deliberately ships NO pnpm-lock.yaml (the starter's would
-        # go stale; /e22-standards:e22-init step 5 generates and commits it once the real
-        # workspace exists). --frozen-lockfile with no lockfile fails with
-        # ERR_PNPM_NO_LOCKFILE, which would block every fresh fork's first PR —
-        # so freeze only once the lockfile exists. Self-correcting: the moment
-        # pnpm-lock.yaml is committed, CI tightens automatically (lockfile
-        # discipline — run /e22-standards:e22-conventions).
+      # ────────────────────────────────────────────────────────────────────
+      # Node/TS — runs only when a Node workspace is detected. pnpm + Biome are
+      # installed by mise. Root scripts fan out across apps/* + packages/*.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Install dependencies (Node)
+        if: steps.detect.outputs.node == 'true'
+        # Freeze only once a lockfile exists (a fresh fork has none until
+        # /e22-standards:e22-init generates it); self-tightening thereafter.
         run: |
           if [ -f pnpm-lock.yaml ]; then
             pnpm install --frozen-lockfile
           else
-            echo "No pnpm-lock.yaml yet (fresh fork, pre-/e22-standards:e22-init) — installing without frozen lockfile."
+            echo "No pnpm-lock.yaml yet — installing without frozen lockfile."
             pnpm install --no-frozen-lockfile
           fi
 
       - name: Lint + format check (Biome — Node/TS)
+        if: steps.detect.outputs.node == 'true'
         run: biome ci .
 
-      - name: Type check
+      - name: Type check (Node/TS)
+        if: steps.detect.outputs.node == 'true'
         run: pnpm run typecheck
 
-      - name: Test
-        run: pnpm run test
+      - name: Test (Node/TS)
+        if: steps.detect.outputs.node == 'true'
+        # A detected stack with no test script would let `pnpm run test`
+        # (--if-present) no-op to green. Fail instead — green must mean tests ran.
+        run: |
+          if ! git ls-files '*package.json' | xargs grep -lE '"test"[[:space:]]*:' >/dev/null 2>&1; then
+            echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
+            exit 1
+          fi
+          pnpm run test
+
+      # ────────────────────────────────────────────────────────────────────
+      # Python — runs only when a pyproject.toml is detected. Uncomment
+      # python/uv/ruff in mise.toml so they install above.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Lint + format check (Ruff — Python)
+        if: steps.detect.outputs.python == 'true'
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: Test (Python)
+        if: steps.detect.outputs.python == 'true'
+        # pytest exit 5 = no tests collected; treat a detected-but-untested project
+        # as a failure rather than a false green.
+        run: |
+          rc=0
+          uv run pytest || rc=$?
+          if [ "$rc" -eq 5 ]; then
+            echo "::error::Python project detected but pytest collected no tests. Add tests (Definition of Done)."
+            exit 1
+          fi
+          exit "$rc"
 
       # ────────────────────────────────────────────────────────────────────
       # EXAMPLES — uncomment when they apply to your stack.
       # ────────────────────────────────────────────────────────────────────
-
-      # Build: the starter runs from source via tsx, so there is no build yet.
-      # Add a `build` script per app (Next.js, tsup, …) and uncomment — the root
-      # `build` script already fans out with --if-present.
+      # Build: add a `build` script per app (Next.js, tsup, …); the root `build`
+      # script fans out with --if-present.
       # - name: Build
+      #   if: steps.detect.outputs.node == 'true'
       #   run: pnpm run build
 
-      # Python (uv + Ruff), once a Python app exists. Uncomment python/uv/ruff in
-      # mise.toml first so they install above.
-      # - name: Lint + format check (Ruff — Python)
-      #   run: |
-      #     ruff check .
-      #     ruff format --check .
-      # - name: Test (Python)
-      #   run: uv run pytest
-
   # ──────────────────────────────────────────────────────────────────────────
-  # ADVISORY — runs the design.md linter when any DESIGN.md changes. This is
-  # NOT a required check and does NOT gate merges; it surfaces token/format
-  # issues for reviewers. Remove the `continue-on-error` line to make it block.
+  # ADVISORY — runs the design.md linter when any DESIGN.md changes. NOT a
+  # required check; remove `continue-on-error` to make it block.
   # ──────────────────────────────────────────────────────────────────────────
   design-lint:
     name: design.md lint (advisory)
