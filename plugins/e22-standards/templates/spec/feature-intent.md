@@ -77,9 +77,11 @@ nothing is ever deleted or archived.]
 Structured so a tool can tell what blocks a gate and who owns it — see the
 open-question format in the spec-framework reference (`/e22-standards:e22-spec-scaffold`). Use
 stable IDs (`Q-001`, `Q-002`, …). A promoted question keeps its ID and gains a
-`tracker:` ref.
+`tracker:` ref. The seed block below is marked `<!-- e22:placeholder -->` so the
+SessionStart open-questions hook ignores it on a fresh scaffold — **delete the
+marker** (and the bracketed title) when you fill in a real question.
 
-### Q-001 — [Anything ambiguous the PO needs to decide]
+### Q-001 — [Anything ambiguous the PO needs to decide] <!-- e22:placeholder -->
 
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking
