@@ -16,9 +16,9 @@ A **manual, read-only conformance audit.** It compares two specs:
 
 It surfaces every place the two diverge.
 
-**It never edits code or spec.** Its outputs are a drift report, a proposed
-Rule-5 resolution per finding, and `spec-drift` issues for anything needing a
-human decision. Resolving drift is a separate, approved step (see the
+**It is repository-read-only — it never edits code or spec and never commits.**
+Its outputs are a drift report, a proposed Rule-5 resolution per finding, and
+`spec-drift` issues (its only writes) for anything needing a human decision. Resolving drift is a separate, approved step (see the
 spec-framework reference, Rule 5).
 
 ## Relationship to `/e22-standards:e22-adopt` — sequential, not inverse
