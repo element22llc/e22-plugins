@@ -71,6 +71,12 @@ jobs:
             shellcheck "${scripts[@]}"
           fi
 
+      # Version-pin policy (e22): the committed-state backstop for the
+      # interactive version-pin hook. Fails the build on an image/tool major
+      # pinned below policy/versions.yml. Deterministic — no network, no jq.
+      - name: Version-pin policy scan (e22)
+        run: sh scripts/scan-version-pins.sh .
+
       # Secret scanning: enable GitHub-native secret scanning + push protection
       # in repo Settings → Code security (free for public repos; GHAS for
       # private). It runs outside Actions and is the canonical secret-scan

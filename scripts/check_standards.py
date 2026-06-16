@@ -486,6 +486,34 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(f"{build}: must document the prototype/local build mode")
 
 
+# --- check 10: scaffold version-governance copies stay in sync ---
+
+# Files the scaffold ships verbatim from the plugin so consumer CI can run the
+# scanner without the plugin checked out. They MUST stay byte-identical.
+_SCAFFOLD_COPIES = [
+    ("templates/scaffold/scripts/scan-version-pins.sh", "scripts/scan-version-pins.sh"),
+    ("templates/scaffold/scripts/version-policy.sh", "hooks/lib/version-policy.sh"),
+    ("templates/scaffold/policy/versions.yml", "policy/versions.yml"),
+]
+
+
+def check_scaffold_version_copies(errors: list[str]) -> None:
+    for copy_rel, src_rel in _SCAFFOLD_COPIES:
+        copy = PLUGIN_ROOT / copy_rel
+        src = PLUGIN_ROOT / src_rel
+        if not src.is_file():
+            errors.append(f"{src}: version-governance source is missing")
+            continue
+        if not copy.is_file():
+            errors.append(f"{copy}: scaffold copy is missing (ship it from {src_rel})")
+            continue
+        if copy.read_bytes() != src.read_bytes():
+            errors.append(
+                f"{copy}: scaffold copy drifted from {src_rel} — re-copy so consumer CI "
+                f"runs the same scanner/policy"
+            )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -500,6 +528,7 @@ def run_checks(errors: list[str]) -> None:
     check_manifest(errors)
     check_readme_inventory(errors, skills)
     check_authorization(errors)
+    check_scaffold_version_copies(errors)
 
 
 def main() -> int:

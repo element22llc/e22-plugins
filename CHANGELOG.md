@@ -86,6 +86,35 @@ without changing the workflow model.
   question parser + gate classification, the spine-state predicate, subdirectory
   resolution, NotebookEdit, and the tightened Stop-hook branch/marker logic.
 
+Deterministic version governance — replaces the live-API version-pin check with a
+policy file + a real CI backstop.
+
+- **Policy is the source of truth (`policy/versions.yml`).** A static,
+  version-controlled file encodes the E22-approved major-version floors
+  (`minimum_supported` / `recommended` / `denied`) for common backing-service and
+  runtime images. Both the interactive hook and the CI scanner enforce it
+  deterministically — **no network call, no jq** — so a build is reproducible and
+  the gate never fails open for lack of a tool. (This fixes the prior behavior
+  where the "hard deny" silently degraded to advisory without jq, and removes the
+  endoflife.date call from the write path.)
+- **The CI backstop now exists (`scripts/scan-version-pins.sh`).** A conservative
+  literal-pin scanner walks a repo's infra/config/script files
+  (compose/Dockerfile/mise/`.tf`/`.sh`/`.yml`) and fails the build on a pin below
+  policy — catching the Bash-mediated / committed pins the interactive hook can't
+  see (e.g. `docker run postgres:11`, generated Compose). It does not resolve
+  variables/interpolation (no false positives), skips dependency trees, honors a
+  `# e22:allow-pin <reason>` suppression, and exits `0`/`1`/`2`
+  (clean/violation/config-error). Wired into the plugin CI (`mise run ci`) and
+  shipped into the scaffold CI so consumer repos run it too.
+- **Live EOL is separated from enforcement.** A scheduled, non-blocking workflow
+  (`version-policy-refresh.yml` + `check-policy-freshness.sh`) compares the policy
+  floors against upstream endoflife.date and opens an issue when they lag —
+  proposing policy bumps without ever gating a build or calling the network from
+  the enforcement path.
+- The scaffold ships `policy/versions.yml`, `scripts/scan-version-pins.sh`, and
+  the shared `scripts/version-policy.sh`; `check_standards.py` asserts the scaffold
+  copies stay byte-identical to the plugin sources so consumer CI runs the same
+  scanner and policy.
 
 ### 1.51.2
 
