@@ -11,6 +11,25 @@
 > **`/e22-standards:e22-build`** (a PO-built v0 handed to a dev — mostly stubs to finish, see
 > the disposition note below).
 
+## Lifecycle
+
+> One parseable field controls **how this brief is read** — so a resumed session
+> never re-tracks checkboxes that have already become issues, and a live system
+> isn't treated as a fresh adoption:
+>
+> - **`active-adoption`** — the checklist below is **live and resumable**; a fresh
+>   session continues from the unchecked items (the default at adoption time).
+> - **`published-snapshot`** — every intended finding has been filed as an issue;
+>   those **issues are now canonical** for ownership and closure. Follow the
+>   `Published findings:` refs and the tracker — treat the checkboxes below as a
+>   historical snapshot, **not** active work.
+> - **`superseded`** — this brief was replaced (e.g. a full rewrite from spec);
+>   **requires** a `Superseded by:` pointer. Historical only.
+
+> Lifecycle: active-adoption
+> Published findings: [issue refs once published via `/e22-standards:e22-issues publish-adoption`, else empty]
+> Superseded by: [replacement pointer if superseded, else empty]
+
 ## Overall recommendation
 
 > Roll the per-area dispositions below into one steer for the dev. **When most

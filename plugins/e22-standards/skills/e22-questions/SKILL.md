@@ -32,7 +32,10 @@ There is **no `SPEC-QUESTIONS.md`** — questions live next to their context:
   questions — anything not yet tied to one feature) → `spec/vision.md` →
   `## Open questions`.
 - If present, `spec/PRODUCTIONIZATION.md` → `## Open questions` (dev-facing
-  hardening ambiguities).
+  hardening ambiguities). **Honor its `> Lifecycle:` field:** when it is
+  `published-snapshot`, the adoption-progress / gap-analysis **checkboxes are now
+  tracked as issues** — treat them as historical evidence, not open work; only
+  its `## Open questions` are still live here.
 
 A fork from an older template revision (pre-1.25.0) may still carry the retired
 standalone `spec/SPEC-QUESTIONS.md`. If it does, step 1 migrates its questions

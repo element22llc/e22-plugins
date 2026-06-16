@@ -53,10 +53,16 @@ format (markers, headings, **managed blocks**, idempotency) in
   decision-checklist `spec-drift` issues (see `/e22-standards:e22-drift`); never auto-resolve.
 - **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key` per gap;
-  **reconcile, don't duplicate**). After publication, **`PRODUCTIONIZATION.md` is
-  an adoption assessment snapshot + evidence source — the GitHub issue is
-  canonical** for ownership, lifecycle, progress, and closure; the report records
-  the resulting issue ref but does not independently track implementation status.
+  **reconcile, don't duplicate**). **Partial-publication safe:** flip the brief's
+  `> Lifecycle:` to `published-snapshot` **only after all intended findings are
+  created or reconciled**; on partial failure, **leave it `active-adoption`** and
+  record the successfully-published refs under `> Published findings:`. A rerun
+  reconciles by `finding-key` (never duplicates) and completes the flip once the
+  set is whole. After a clean flip, **`PRODUCTIONIZATION.md` is an adoption
+  assessment snapshot + evidence source — the GitHub issue is canonical** for
+  ownership, lifecycle, progress, and closure; the report records the resulting
+  issue ref but does not independently track implementation status, and its
+  checkboxes are a historical snapshot, not active work.
 - **`publish-findings --source code-review|security-review`** — file
   `kind=finding` issues with the matching `source:*` from a `/code-review` or
   `/security-review` pass (stable `finding-key`; reconcile). **Security findings
@@ -186,14 +192,13 @@ it recommends the transition; it does not perform unapproved writes.
 - **Managed blocks only.** Updating an issue rewrites **only** the
   `e22:managed` block; markers, human sections, and unknown content are
   preserved verbatim.
-- **Intent-aware confirmation.** Reads never confirm. An explicit capture or
-  implementation request creates without confirmation; a large inferred batch of
-  unrelated issues takes one confirmation; ambiguous conversation does not create;
-  security-sensitive public disclosure takes human review (see Issue-first).
-- **Authority.** Perform a state transition only where the authority table in
-  `ISSUE-WORKFLOW.md` permits; everywhere else propose and wait for the named
-  human. Never resolve behavioural drift or a product/policy decision
-  autonomously.
+- **Authorization & confirmation.** Reads never confirm. When to act without
+  asking vs confirm first (explicit request → no ask; bulk finding-publish → one
+  batch confirmation; unsolicited idea → confirm before external publish;
+  managed-block update in an active workflow → no repeat) and when a state
+  transition may be *performed* vs only *proposed* are governed by the single
+  **Authorization & confirmation** block + authority table in `ISSUE-WORKFLOW.md`.
+  This skill does not restate them.
 - **No code, no spec rewrites beyond pointers + materialized intent.** The spec
   edits this skill drives are the materialized `intent.md` (via `/e22-standards:e22-spec`) and
   `> Tracker:` / `tracker:` pointer lines. It never edits `/apps`, `/packages`,

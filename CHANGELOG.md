@@ -70,6 +70,24 @@ PR assigns the version and converts this to a versioned entry.
   - `check_plugin.py` loses its now-dead `commands/` handling; the live plugin
     passes the full gate (`mise run check`) and the expanded test suite.
 
+- **Productionization lifecycle + single authority rule (audit F6, F16).**
+  - **F6** — `productionization.md` gains a parseable `> Lifecycle:` field
+    (`active-adoption` → `published-snapshot` → `superseded`, with
+    `> Published findings:` / `> Superseded by:` pointers). `/e22-standards:e22-adopt`
+    writes `active-adoption`; `/e22-standards:e22-issues publish-adoption` is
+    **partial-publication safe** — it flips to `published-snapshot` only after
+    *all* intended findings are filed, else stays `active-adoption` and records
+    the published refs (rerun reconciles by `finding-key`, never duplicates).
+    `/e22-standards:e22-next` and `/e22-standards:e22-questions` honor the field:
+    a `published-snapshot` brief's checkboxes are historical evidence, not active
+    work.
+  - **F16** — one labelled **Authorization & confirmation** block in
+    `ISSUE-WORKFLOW.md` is the single source for when an agent acts without asking
+    vs confirms (explicit request → no ask; bulk finding-publish → one batch
+    confirmation; unsolicited idea → confirm before external publish;
+    managed-block update in an active workflow → no repeat). `/e22-standards:e22-issues`
+    now references it instead of restating the semantics.
+
 ### 1.48.0
 
 - **New `/e22-next` — read-only workspace navigator.** Delivers the cross-workflow

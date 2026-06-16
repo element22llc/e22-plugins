@@ -247,7 +247,10 @@ from the unchecked items.
    - **To make selected gaps actionable** (GitHub tracker), run **`/e22-standards:e22-issues
      publish-adoption`** — it reconciles chosen gaps into `kind=finding` +
      `source:adoption` issues (stable `finding-key`, reconcile not duplicate).
-     After publication the **issue is canonical** for ownership/lifecycle/closure;
+     The brief is written here with `> Lifecycle: active-adoption` (the resumable
+     state); `publish-adoption` flips it to `published-snapshot` **only once all
+     intended findings are filed** (partial-publication safe — see that mode).
+     After a clean flip the **issue is canonical** for ownership/lifecycle/closure;
      `PRODUCTIONIZATION.md` stays the assessment snapshot + evidence, recording
      the issue ref but not tracking its implementation status.
 

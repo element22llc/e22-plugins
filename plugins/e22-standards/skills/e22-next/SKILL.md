@@ -80,6 +80,11 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
   still `validate`) — an unfinished lifecycle transition, not new work.
 - **Version drift** — compare `spec/.version` against the current plugin version;
   a stale spine routes to `/e22-standards:e22-sync`.
+- **Adoption brief** — if `spec/PRODUCTIONIZATION.md` exists, read its
+  `> Lifecycle:`. `active-adoption` means an adoption is mid-flight (resume it);
+  `published-snapshot` means its findings already live as issues (counted under
+  the tracker dimension) — its checkboxes are **historical, not separate work**,
+  so don't double-count them.
 - **Recent context** — skim `spec/HISTORY.md` (newest first) only to orient; it is
   informational, not a source of actions.
 
