@@ -5,6 +5,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### 1.51.2
+
+- `e22-sync`: the sync PR now targets the branch the dev invoked the sync from
+  (`BASE`, captured before branching), not the repo's default `main`. The skill
+  records the checked-out branch in step 1, branches `feat/e22-sync` off it, and
+  opens the PR with `--base "$BASE"` so the sync rejoins the work it continues.
+  Only when the dev runs sync from `main` does the PR target `main`. The skill no
+  longer asks the dev which base to use.
+
 ### 1.51.1
 
 - `e22-adr`: ensure `spec/decisions/` exists (`mkdir -p`) before copying the ADR
