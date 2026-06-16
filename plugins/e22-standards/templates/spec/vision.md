@@ -35,9 +35,12 @@ Product-level ambiguities not yet tied to a single feature (greenfield vision
 gaps, whole-repo decisions). Per-feature questions live in that feature's
 `spec/features/*/intent.md`. Work these down with `/e22-standards:e22-questions`. Use the
 structured format (stable `Q-NNN` IDs, `status`/`impact`/`owner`/
-`required_before`/`tracker`) — see the spec-framework reference.
+`required_before`/`tracker`) — see the spec-framework reference. The seed block
+below is marked `<!-- e22:placeholder -->` so the SessionStart open-questions hook
+ignores it on a fresh scaffold — **delete the marker** (and the bracketed title)
+when you fill in a real question.
 
-### Q-001 — [Anything ambiguous about the product the PO/dev still needs to decide]
+### Q-001 — [Anything ambiguous about the product the PO/dev still needs to decide] <!-- e22:placeholder -->
 
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking

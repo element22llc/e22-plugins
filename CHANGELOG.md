@@ -5,6 +5,54 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## e22-standards
 
+### [Unreleased]
+
+Runtime hook correctness — fixes silent-failure modes in the always-on hooks
+without changing the workflow model.
+
+- **Standards survive context compaction.** The SessionStart hook group is split
+  so `inject-standards.sh` now also matches `compact` (in addition to
+  `startup|resume|clear`); the drift / update / open-questions / unmanaged-repo
+  notices keep their prior cadence and do **not** re-fire on compaction. Long
+  sessions no longer continue without the org rules after a compaction.
+- **Open-questions hook understands the structured contract.**
+  `check-open-questions.sh` now parses the `### Q-NNN` blocks the current
+  templates use (`status:` / `impact:` / `required_before:`) instead of only
+  legacy `- [ ]` checkboxes — which silently counted nothing on real specs. It
+  classifies each open question as **blocking now** vs **blocking a later
+  transition** vs **non-blocking backlog** using the shared lifecycle ordering
+  (`lib/lifecycle.sh`, sourced from `enums.registry`), flags **malformed** blocks
+  instead of dropping them, and still detects legacy checkboxes and a retired
+  `spec/SPEC-QUESTIONS.md` for one deprecation window. The bundled templates mark
+  their seed question `<!-- e22:placeholder -->` so a fresh scaffold stays silent.
+- **A bare `spec/` no longer counts as an initialized spine.** A new
+  `lib/spine.sh` predicate keys "managed" off `spec/.version` **plus** the
+  required spine files; `check-unmanaged-repo.sh` and `check-code-before-spec.sh`
+  now distinguish unmanaged (no `spec/`) / foreign (`spec/` without `.version`) /
+  damaged (`.version` but missing files) / managed, and route each to the right
+  first move. An empty, foreign (e.g. OpenAPI), or half-migrated `spec/` stops
+  silencing the bootstrap nudges.
+- **Hooks work from subdirectories.** A shared `lib/repo-root.sh` resolves the
+  work-tree root by walking up to the nearest `.git` (handling subdirs, worktree
+  `.git`-files, and symlinked cwd), so the point-of-action and Stop hooks keep
+  applying when the session cwd is `apps/web`, `infra`, etc.
+- **NotebookEdit is governed like other writes.** The spec-first / issue-first
+  PreToolUse matcher now includes `NotebookEdit`, and `lib/json.sh` gains
+  `e22_target_path` (file_path, else notebook_path) so notebook mutations are
+  classified the same as ordinary file writes.
+- **Stop-hook accuracy + safety.** `reconcile-issue-first.sh` now prefers an
+  explicit `spec/.work/<branch>` work marker over branch-name inference, tightens
+  the issue-branch heuristic so a date branch like `release/2026-06` is no longer
+  treated as issue-governed, and parses `git` output NUL-delimited
+  (`diff --name-only -z` + `ls-files -z`) instead of `status --porcelain | sed`
+  so renames and unusual filenames are handled safely. Its wording (and the code
+  comments) now describe the `decision:block` mechanism accurately: for a Stop
+  hook that is the only channel to surface a reason and it lets the model
+  **continue** — it is the delivery path for a one-shot advisory, not a gate.
+- Expanded the POSIX hook fixture suite (59 → 75 cases) covering the structured
+  question parser + gate classification, the spine-state predicate, subdirectory
+  resolution, NotebookEdit, and the tightened Stop-hook branch/marker logic.
+
 ### 1.51.2
 
 - `e22-sync`: the sync PR now targets the branch the dev invoked the sync from
