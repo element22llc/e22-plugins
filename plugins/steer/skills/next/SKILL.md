@@ -2,9 +2,16 @@
 name: next
 description: "Read-only workspace navigator — reconstructs the whole workspace state cold (branch/PR, /spec feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action across all workflows using the shared categories + safety precedence. Never edits, commits, publishes, merges, or advances state; defers how to resolve each state to the owning skill."
 when_to_use: Use when picking a repo up cold or mid-stream and asking "what should I do next?" across the whole workspace — when work spans more than one feature/issue/workflow and you need the one action that matters most right now, not a per-skill handoff.
+disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
 # Navigate the workspace to the single best next action (read-only)
+
+> Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
+> unavailable while this skill runs, so navigation cannot mutate the repo. This does
+> not make the repo immutable — shell mutations stay governed by your permission
+> settings and hooks. This skill only *recommends*; the owning skill carries out
+> whatever you choose, as its own step.
 
 `/steer:next` reconstructs the **entire workspace state** as it stands right now —
 independent of session memory — and arbitrates the **one action that matters
