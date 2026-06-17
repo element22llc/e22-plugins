@@ -38,6 +38,6 @@ mise run check   # fast gate: lint, plugin-check, actions (pre-commit equivalent
 mise run ci      # full gate: adds fixtures, test, shell, hooktests, version-scan, docs:check
 ```
 
-`mise run ci` is exactly what CI runs. See [`docs/AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/docs/AUTHORING.md)
+`mise run ci` is exactly what CI runs. See [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md)
 for the per-change "what to run" matrix, or use the repo-local `/preflight`
 helper.

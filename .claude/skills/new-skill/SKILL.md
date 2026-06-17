@@ -19,7 +19,7 @@ allowed-tools:
 
 A repo-local convenience wrapper. It does not bypass any validation — it
 generates a correct starting point and then runs the existing `plugin-check`.
-See `docs/AUTHORING.md` → "Skill frontmatter schema" for the full rules.
+See `AUTHORING.md` → "Skill frontmatter schema" for the full rules.
 
 ## Steps
 
@@ -28,7 +28,7 @@ See `docs/AUTHORING.md` → "Skill frontmatter schema" for the full rules.
      `plugins/steer/skills/`.
    - `description` — one prose sentence.
    - `when_to_use` — when to invoke (use a folded `>-` block if it contains
-     quotes or colons; see the quoting gotcha in `docs/AUTHORING.md`).
+     quotes or colons; see the quoting gotcha in `AUTHORING.md`).
    - **tier** — one of:
      - `read-only` (Tier 1): add `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`.
      - `side-effecting` (Tier 2): may edit/commit; add `allowed-tools` for the

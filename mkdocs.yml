@@ -1,10 +1,18 @@
-# MkDocs configuration for the e22-plugins documentation site.
+# Zensical configuration for the e22-plugins documentation site.
+#
+# Zensical (the Material for MkDocs team's successor) reads this mkdocs.yml
+# natively; the filename is kept so scripts/validate_docs.py and the nav below
+# keep working unchanged.
 #
 # Served locally with `mise run docs:serve` and built (strict) with
 # `mise run docs:build`. The toolchain lives in the `docs` dependency-group
 # (see pyproject.toml). The nav below is the source of truth for site
 # structure; scripts/validate_docs.py asserts every nav entry resolves to a
-# real file and every docs/*.md (outside _templates/) is reachable from it.
+# real file and every docs/*.md is reachable from it.
+#
+# Zensical builds every file under docs_dir (it has no `exclude_docs` setting),
+# so non-page content is kept OUT of docs/: page scaffolds live in the repo-root
+# `docs-templates/` and the authoring guide is the repo-root `AUTHORING.md`.
 site_name: e22-plugins — steer
 site_description: Engineering-standards plugin marketplace — the steer plugin.
 docs_dir: docs
@@ -12,16 +20,9 @@ docs_dir: docs
 site_dir: site
 use_directory_urls: true
 
-# Files under docs/ that are not published site pages. Keep in sync with
-# EXCLUDED_DIRS/EXCLUDED_FILES in scripts/validate_docs.py.
-#   _templates/  — copy-from sources for new pages
-#   AUTHORING.md — repo-internal authoring guide (linked from the site by URL)
-exclude_docs: |
-  _templates/
-  AUTHORING.md
-
 theme:
-  name: material
+  # `classic` matches the Material for MkDocs look & feel (vs Zensical's `modern`).
+  variant: classic
   features:
     - navigation.sections
     - navigation.top

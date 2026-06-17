@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Documentation-site structural + sync checks for the e22-plugins docs.
 
-Lightweight (stdlib + pyyaml only — no MkDocs toolchain), so it runs as part of
+Lightweight (stdlib + pyyaml only — no Zensical toolchain), so it runs as part of
 ``mise run ci`` without pulling in the ``docs`` dependency-group. The strict
 link/render build stays a separate, local-only gate (``mise run docs:build``).
 
@@ -13,8 +13,7 @@ Checks:
    reference page honest.
 2. **Nav integrity** — every file referenced in ``mkdocs.yml`` ``nav:`` exists
    under ``docs/``.
-3. **No orphans** — every ``docs/**/*.md`` (outside ``_templates/``) is reachable
-   from the nav.
+3. **No orphans** — every ``docs/**/*.md`` is reachable from the nav.
 4. **Internal links resolve** — relative markdown links in docs point at real
    files.
 5. **Namespace hygiene** — every ``/steer:<skill>`` reference resolves to a real
@@ -40,13 +39,6 @@ MKDOCS_YML = Path("mkdocs.yml")
 SKILLS_DIR = Path("plugins/steer/skills")
 SKILLS_REF = DOCS_DIR / "reference/skills.md"
 
-# Pages excluded from the nav + orphan checks: they are not published site pages.
-# Keep this in sync with `exclude_docs` in mkdocs.yml.
-#   _templates/  — copy-from sources for new pages
-#   AUTHORING.md — repo-internal authoring guide (linked from the site by URL)
-EXCLUDED_DIRS = ("_templates",)
-EXCLUDED_FILES = ("AUTHORING.md",)
-
 # Reuse the namespace-hygiene patterns from check_standards.py so docs are held
 # to the same standard as rules/skills/templates.
 _NS_RE = re.compile(r"/steer:([a-z][a-z-]*)")
@@ -62,14 +54,10 @@ def skill_names() -> set[str]:
 
 
 def _iter_docs():
-    """All published docs (excludes EXCLUDED_DIRS)."""
-    for md in sorted(DOCS_DIR.rglob("*.md")):
-        rel = md.relative_to(DOCS_DIR)
-        if rel.parts and rel.parts[0] in EXCLUDED_DIRS:
-            continue
-        if rel.as_posix() in EXCLUDED_FILES:
-            continue
-        yield md
+    """All published docs. Non-page content (the ``docs-templates/`` page
+    scaffolds and the repo-root ``AUTHORING.md``) lives outside ``docs/``, so
+    every ``*.md`` under ``docs/`` is a real site page."""
+    yield from sorted(DOCS_DIR.rglob("*.md"))
 
 
 def _load_nav_paths(errors: list[str]) -> set[str]:

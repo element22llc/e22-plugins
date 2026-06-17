@@ -16,7 +16,7 @@ allowed-tools:
 
 # /new-rule — scaffold an always-on rule
 
-Repo-local convenience wrapper. See `docs/AUTHORING.md` → "Rule numbering" for
+Repo-local convenience wrapper. See `AUTHORING.md` → "Rule numbering" for
 the rules it follows.
 
 ## Steps

@@ -1,7 +1,7 @@
 ---
 name: plugin-docs
 description: >-
-  Reconcile the MkDocs documentation site under docs/ with the plugin's source
+  Reconcile the Zensical documentation site under docs/ with the plugin's source
   of truth — refresh the generated reference pages (skills, hooks, rules) from
   plugins/steer/, flag stale concept/workflow prose, run the docs validator, and
   optionally serve the site. Delegates deep accuracy review to the
@@ -60,7 +60,7 @@ nothing).
 
 6. **Report** what changed and what (if anything) still needs a human decision
    (e.g. a new skill that needs its own workflow page written from
-   `docs/_templates/workflow.md`).
+   `docs-templates/workflow.md`).
 
 ## Boundaries
 
@@ -70,5 +70,6 @@ nothing).
 - **No changelog, no version bump.** `docs/` and `.claude/` ship nothing.
 - **Grounded.** Every documented claim must trace to a `SKILL.md`, `hooks.json`,
   rule, or template. When unsure, leave a `TODO` and surface it rather than guess.
-- New pages start from `docs/_templates/` and must be added to the `mkdocs.yml`
-  nav (the validator fails on orphans).
+- New pages start from `docs-templates/` (outside `docs/`, since Zensical builds
+  every file under `docs_dir`) and must be added to the `mkdocs.yml` nav (the
+  validator fails on orphans).
