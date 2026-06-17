@@ -3,6 +3,13 @@
 This walks an idea from nothing to merged code using `steer` skills. Each step
 links to its full reference.
 
+!!! tip "The commands are optional"
+    You don't have to type the `/steer:*` commands below. Just tell Claude what
+    you want in plain language ("set up this repo", "capture this idea", "let's
+    build it") and the router rule has Claude pick and run the right skill,
+    announcing each step. The explicit commands are shown so you can see what's
+    happening — and reach for one directly when you already know it.
+
 ```mermaid
 flowchart LR
     A[Idea] -->|/steer:issues capture| B[Issue]

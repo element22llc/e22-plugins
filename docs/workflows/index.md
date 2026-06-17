@@ -5,6 +5,16 @@ lifecycle. This section documents the ones a developer or PO invokes directly.
 For the full per-command catalog (including internal helpers), see the
 [Skills reference](../reference/skills.md).
 
+!!! tip "You don't have to remember these commands"
+    The always-on router rule makes Claude the dispatcher: **describe what you
+    want in plain language** ("I have an app idea", "fix #123", "what should I do
+    next?") and Claude routes to the matching skill itself, announcing the choice
+    in one line. The `/steer:*` forms below are the explicit way to invoke a
+    workflow — handy when you already know the one you want — not something you
+    must memorize. Decision gates (creating issues, approving a spec, pushing a
+    PR, deploying) still pause for a human regardless of how the skill was
+    reached.
+
 ```mermaid
 flowchart LR
     subgraph Setup
