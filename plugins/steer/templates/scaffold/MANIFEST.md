@@ -35,15 +35,10 @@ this plugin repo itself); rename on copy as mapped below.
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. Merge if one exists. |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
-| `github/workflows/ci.yml` | `.github/workflows/ci.yml` | CI: always-on stack-agnostic hygiene + auto-detected stack checks (Node/Python); a detected stack with no tests fails. |
-| `github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
-| `github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
-| `github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) — offer to enable it and point it at the team's discussions/chat during init/adopt. Agent-authored issue bodies (feature/bug/finding/spec-question/drift/task) are **not** installed — they live in the plugin at `templates/github/issue-bodies/`. |
 | `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
 | `apps/README.md` | `apps/README.md` | What belongs in `/apps`. |
 | `packages/README.md` | `packages/README.md` | What belongs in `/packages` (if bundled). |
 | `infra/README.md`, `infra/mise.toml`, `infra/mise.lock` | `infra/…` | OpenTofu + Terragrunt conventions; infra toolchain pinned separately. |
-| `spec/design/README.md` | `spec/design/README.md` | Where design exports live. |
 | `policy/versions.yml` | `policy/versions.yml` | **Version-pin policy** (approved major-version floors). Enforced deterministically by the version-pin hook and the CI scanner. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |
 | `scripts/version-policy.sh` | `scripts/version-policy.sh` | Shared policy parser/decider the scanner sources. Verbatim copy of the plugin's `hooks/lib/version-policy.sh`. |
@@ -58,6 +53,7 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/vision.md` | `spec/vision.md` | What/who/why/success + product-level `## Open questions`. |
 | `../spec/users.md` | `spec/users.md` | Personas and jobs-to-be-done. |
 | `../spec/glossary.md` | `spec/glossary.md` | Shared vocabulary. |
+| `../spec/design-readme.md` | `spec/design/README.md` | What belongs in `spec/design/` — the design-export home, lifecycle, and brownfield notes. |
 | `../spec/design-source.md` | `spec/design/source.md` | Product-level design-source provenance (Greenfield only). |
 | `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
@@ -70,6 +66,23 @@ The per-feature (`feature-intent.md`, `feature-contract.md` via
 `/steer:adr`) templates also live in `templates/spec/`, but are
 instantiated **on demand** by those skills — not copied at bootstrap — so they
 are not in this install map.
+
+## GitHub templates (instantiate from `../github/`)
+
+All GitHub templates live in one home, `templates/github/`. The installable
+ones are listed here; the agent-authored issue **bodies**
+(`../github/issue-bodies/*.md`) are **not** installed — they are read by the
+plugin at runtime (`/steer:issues`, `/steer:drift`, `/steer:audit`) to author
+issue bodies that satisfy the contract in `reference/ISSUE-SCHEMA.md`. The
+YAML Issue **Forms** below are the human capture UI; the two are different
+artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).
+
+| Template | Install as | Notes |
+|---|---|---|
+| `../github/workflows/ci.yml` | `.github/workflows/ci.yml` | CI: always-on stack-agnostic hygiene + auto-detected stack checks (Node/Python); a detected stack with no tests fails. |
+| `../github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
+| `../github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
+| `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) — offer to enable it and point it at the team's discussions/chat during init/adopt. |
 
 ## Deliberately not bundled
 

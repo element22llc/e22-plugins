@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **One home per template topic — `templates/github/` is now the single source
+  of truth for GitHub templates.** The shipped Issue Forms, CI workflows, and PR
+  template moved out of `templates/scaffold/github/` (now removed) up into
+  `templates/github/`, alongside the agent-authored `issue-bodies/` that already
+  lived there. The scaffold `MANIFEST.md` installs them via a new
+  *GitHub templates (instantiate from `../github/`)* section — the same
+  install-via-`../` pattern the spec spine already uses — so `scaffold/` no
+  longer carries a second copy of template content. The Issue Forms (`.yml`,
+  human capture UI) and issue bodies (`.md`, agent contract) remain distinct
+  artifacts for distinct runtimes; this only removes the directory split, not
+  that layering (see `reference/ISSUE-SCHEMA.md`). Path references in
+  `init`/`ISSUE-SCHEMA.md` updated; the brand-leak guard
+  (`check_standards.py`) now also scans `templates/github`.
+- **Design-dir guidance rehomed.** `scaffold/spec/design/README.md` moved to
+  `templates/spec/design-readme.md` (installed as `spec/design/README.md` via
+  the spec spine), so all spec template content lives under `templates/spec/`
+  and `scaffold/spec/` holds only the `features/`/`decisions/` placeholders.
 - **Dropped GitHub Project (board) bootstrapping/sync.** Testing showed no real
   gain from a Project board per repo, so the optional Project overlay is removed
   in favor of clean, well-maintained GitHub Issues. Gone: the
@@ -68,7 +85,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   behavior are unchanged. The intended benefit — reduced parent-context usage —
   is **not yet proven**: headless validation showed the safety properties hold but
   delegation return was unreliable in that mode; reliable context reduction awaits
-  authenticated interactive validation (see `docs/steer-next-delegation.md`). The
+  authenticated interactive validation. The
   feature is independently revertible (remove the agent + the delegation block).
 
 ### 2.0.1

@@ -205,7 +205,7 @@ The plugin must never rewrite the original form responses.
 ## Issue Forms are human UI, not an agent API
 
 The YAML Issue Forms in
-[`../scaffold/github/ISSUE_TEMPLATE/`](../scaffold/github/ISSUE_TEMPLATE/) are
+[`../github/ISSUE_TEMPLATE/`](../github/ISSUE_TEMPLATE/) are
 **repository UI** for humans opening issues — GitHub exposes no API to submit a
 form programmatically. The form and the agent `capture` path share *equivalent
 semantic fields*; an agent **renders those fields into this contract** (markers

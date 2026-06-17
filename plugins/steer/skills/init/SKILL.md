@@ -103,7 +103,7 @@ them:
    `/spec/tracker.md` (from `tracker.md` — ask which tracker the product
    uses), and `/spec/app/README.md` (from `app-docs.md`). Reconcile the PR
    template against the bundled
-   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/github/pull_request_template.md`
+   `${CLAUDE_PLUGIN_ROOT}/templates/github/pull_request_template.md`
    so the drift-gate and living-docs checklists come in (additive — never
    drop sections the team added).
 
@@ -134,8 +134,11 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
    install map: copy each scaffold file to its target path (renaming the
    dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
-   `.env.example`, `claude/`, `vscode/`, `github/`, `mcp.json`), and
-   instantiate the spec spine from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
+   `.env.example`, `claude/`, `vscode/`, `mcp.json`), instantiate the GitHub
+   templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
+   GitHub-templates section maps the Issue Forms, workflows, and PR template
+   into `.github/`), and instantiate the spec spine from
+   `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
    `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
    `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`). Install the

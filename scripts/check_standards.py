@@ -526,8 +526,16 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
 # brand is always written with a separator ("element-22" / "Element 22"); the
 # marketplace org "element22llc" has none, so this never flags the legitimate
 # `element22llc/e22-plugins` repo reference, and the author email retained in
-# the manifests lives outside these payload dirs.
-_PAYLOAD_DIRS = ["templates/scaffold", "templates/spec", "templates/reference"]
+# the manifests lives outside these payload dirs. `templates/github` is the
+# single home for GitHub templates: the Issue Forms / workflows / PR template
+# under it are installed payload, and the `issue-bodies/` are plugin-internal
+# (read at runtime, not installed) — both are kept brand-free regardless.
+_PAYLOAD_DIRS = [
+    "templates/scaffold",
+    "templates/spec",
+    "templates/github",
+    "templates/reference",
+]
 _BRAND_RE = re.compile(r"element[\s-]22", re.IGNORECASE)
 
 
