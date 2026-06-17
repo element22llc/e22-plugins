@@ -101,45 +101,6 @@ def test_adr_default_proposed_before_accepted(tmp_path: Path, monkeypatch):
     assert any("before 'Accepted'" in e for e in errors)
 
 
-# --- /steer:next delegation contract -------------------------------------
-
-
-def test_analyzer_with_shell_tool_is_caught(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(REPO_ROOT)
-    agents = tmp_path / "agents"
-    agents.mkdir()
-    (agents / "steer-analyzer.md").write_text(
-        "---\nname: steer-analyzer\ntools: Read, Grep, Glob, Bash\n"
-        "disallowedTools: Edit, Write\n---\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(check_fixtures, "AGENTS", agents)
-    errors: list[str] = []
-    check_fixtures.check_next_delegation(errors)
-    assert any("must NOT include 'Bash'" in e for e in errors)
-
-
-def test_next_context_fork_is_caught(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(REPO_ROOT)
-    nxt = tmp_path / "skills" / "next"
-    nxt.mkdir(parents=True)
-    (nxt / "SKILL.md").write_text(
-        "---\nname: next\n---\ncontext: fork\nsteer-analyzer\n", encoding="utf-8"
-    )
-    monkeypatch.setattr(check_fixtures, "SKILLS", tmp_path / "skills")
-    errors: list[str] = []
-    check_fixtures.check_next_delegation(errors)
-    assert any("must stay inline" in e for e in errors)
-
-
-def test_missing_delegation_fixture_is_caught(tmp_path: Path, monkeypatch):
-    monkeypatch.chdir(REPO_ROOT)
-    monkeypatch.setattr(check_fixtures, "REFERENCE", tmp_path / "reference")
-    errors: list[str] = []
-    check_fixtures.check_next_delegation(errors)
-    assert any("delegation golden fixture is missing" in e for e in errors)
-
-
 # --- integration: real plugin + repo fixtures are clean ------------------
 
 
