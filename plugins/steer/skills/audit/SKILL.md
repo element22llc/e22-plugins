@@ -2,9 +2,16 @@
 name: audit
 description: "Repeatable, read-only, whole-repo health audit of a managed repo — sweeps the code across standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), proposes routing into /spec, and files findings in the tracker. Repository-read-only: it proposes spec changes and files tracker issues, but never edits code or spec and never commits. Defers correctness to /code-review and security to /security-review."
 when_to_use: Use to audit overall code health, find the highest-leverage improvements, or do a periodic standards-conformance pass on a steady-state repo.
+disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
 # Audit a repo's health against the standards (leverage-ranked)
+
+> Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
+> unavailable while this skill runs, so the audit cannot edit code or spec. This does
+> not make the repo immutable — shell mutations stay governed by your permission
+> settings and hooks. Findings reach the tracker via `/steer:issues publish-audit`,
+> which runs as its own step.
 
 A **repeatable, read-only health audit** of a steady-state repo. It sweeps the
 whole codebase across the standards dimensions, **vets** every candidate

@@ -2,9 +2,17 @@
 name: drift
 description: "Compare the as-built /spec (reverse-engineered from the code by /steer:adopt) against the intended spec exported from an issue tracker (Jira, Linear, GitHub Issues, … as markdown — one file per epic/issue or story/task) and surface every divergence. Read-only: reports findings and proposes Rule-5 resolutions, never edits."
 when_to_use: Use when asked to check a built app against its tracker specs, audit spec drift, or confirm the code did what the tickets asked.
+disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
 # Compare the as-built spec against the tracker spec (drift report)
+
+> Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
+> unavailable while this skill runs, so the comparison itself cannot mutate the repo.
+> This does not make the repo immutable — shell mutations stay governed by your
+> permission settings and hooks. The optional `/spec/DRIFT-REPORT.md` write below
+> happens only after you confirm it (a fresh message), by which point the restriction
+> has cleared; findings reach the tracker via `/steer:issues publish-drift`.
 
 A **manual, read-only conformance audit.** It compares two specs:
 

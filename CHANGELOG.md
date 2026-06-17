@@ -14,6 +14,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:adr` or `/steer:questions`, never findings; secrets → rotate; questions
   → `/steer:questions`), and `issues/SKILL.md` states the dedup-by-work-shape
   principle (findings are not 1:1 with sections/rows/bullets) and points to it.
+- **Analysis skills can no longer edit files via native tools.** `audit`, `drift`,
+  and `next` declare `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`, so
+  the read-only analysis cannot mutate code or spec through the editing tools. This is
+  not full immutability — Bash mutations stay governed by permissions/hooks — and the
+  restriction clears on the next message, so confirmed follow-up writes (drift's
+  optional `/spec/DRIFT-REPORT.md`) and `/steer:issues publish-*` still run as their own
+  steps. Each skill's body now states the boundary honestly instead of only claiming
+  "read-only" in prose.
+- **`/plugin` picker now shows a human-readable name.** The manifest adds
+  `displayName: "Steer — Engineering Standards"` (Claude Code ≥ 2.1.143); the
+  invocation prefix stays `/steer:*`. A new `plugins/steer/README.md` records why
+  `defaultEnabled` is intentionally omitted (org standards stay enabled by default).
 
 ### 2.0.1
 
