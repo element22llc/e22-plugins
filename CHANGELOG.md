@@ -5,6 +5,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### 2.2.0
+
+- **The router is now an intent dispatcher, not a menu the user has to read.**
+  `rules/00-router.md` was rewritten from a paragraph-per-condition list framed at
+  the user ("New repo? → run `/steer:init`") into a directive framed at the model:
+  *you are the router* — when the user describes a goal in plain language, map it to
+  the owning skill and invoke it yourself, lead with a one-line heads-up, and don't
+  make anyone remember a `/steer:` command. The verbose per-skill rationale (which
+  duplicated each skill's own `description`/`when_to_use`) is dropped in favour of a
+  compact *intent → skill* table, trimming the always-on context. **Plain language
+  is now the only entry point a user needs; no command to memorize.**
+- **Clarify-when-unsure, and bounded auto-continue.** The directive tells the model
+  to ask exactly one compact clarifying question when intent is genuinely ambiguous
+  or underspecified (rather than guessing or stalling), and — once a skill finishes —
+  to continue automatically to its single recommended next action **only when that
+  action is non-gated**. Human decision gates (Issue-first creation, ADR
+  ratification, push / PR / merge / deploy / real secrets) still stop and wait:
+  auto-routing moves *navigation*, never *authority*.
+- **Non-technical owners are auto-routed into the build flow.** `rules/05-roles.md`
+  now starts the guided idea→working-app flow (`/steer:build`) on PO signals with a
+  one-line heads-up, instead of handing the PO a command to type.
+- **New SessionStart orientation nudge — `hooks/orient-session.sh`.** On a fully
+  managed spine (and only there — the unmanaged/foreign/damaged cases stay owned by
+  `check-unmanaged-repo.sh`, so the two never stack), it injects a single
+  high-salience line reminding the model to surface the "just say what you want"
+  affordance to an unsure user. Wired into `hooks.json` for `startup` only;
+  covered by new cases in `hooks/tests/run.sh`.
+- **`/steer:next` now triggers on "where do I start?" / "I'm lost"**, not only
+  "what should I do next?", so the cross-workflow navigator is reachable by a lost
+  user's own words.
+
 ### 2.1.0
 
 - **Prescribed, auto-maintained home for tech-stack + architecture docs — root

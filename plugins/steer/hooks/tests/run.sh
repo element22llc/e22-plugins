@@ -434,6 +434,36 @@ out="$(run_hook check-open-questions.sh "$(session_json "${OQ8}" oq8)")"
 oq_grep "open-questions: legacy checkbox still detected" 'open question' "${out}"
 
 # ---------------------------------------------------------------------------
+# orient-session.sh — natural-language orientation (SessionStart, managed only)
+# (emits plain markdown wrapped into additionalContext by the harness — assert on
+#  content, not JSON shape.)
+# ---------------------------------------------------------------------------
+# Managed, version-stamped spine -> orient.
+OR1="$(new_repo orient1)"
+managed_spine "${OR1}"
+out="$(run_hook orient-session.sh "$(session_json "${OR1}" or1)")"
+oq_grep "orient: managed spine emits orientation" 'need to know skill names' "${out}"
+
+# Bare/foreign spec/ (no .version) -> check-unmanaged-repo.sh owns it -> silent.
+OR2="$(new_repo orient2)"
+mkdir -p "${OR2}/spec"
+out="$(run_hook orient-session.sh "$(session_json "${OR2}" or2)")"
+assert_empty "orient: foreign spine silent (owned by unmanaged hook)" "${out}"
+
+# No spec/ at all -> unmanaged -> silent.
+OR3="$(new_repo orient3)"
+out="$(run_hook orient-session.sh "$(session_json "${OR3}" or3)")"
+assert_empty "orient: unmanaged repo silent" "${out}"
+
+# .version present but a spine file missing -> damaged -> silent (sync owns it).
+OR4="$(new_repo orient4)"
+mkdir -p "${OR4}/spec"
+printf '1.0.0\n' >"${OR4}/spec/.version"
+printf 'x\n' >"${OR4}/spec/vision.md"
+out="$(run_hook orient-session.sh "$(session_json "${OR4}" or4)")"
+assert_empty "orient: damaged spine silent" "${out}"
+
+# ---------------------------------------------------------------------------
 # scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
 # (pins assembled via pin() so this file's source carries no name:NN literal.)
 # ---------------------------------------------------------------------------

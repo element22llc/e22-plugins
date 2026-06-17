@@ -12,6 +12,7 @@ flowchart TD
       drift[check-template-drift.sh]
       oq[check-open-questions.sh]
       unmanaged[check-unmanaged-repo.sh]
+      orient[orient-session.sh]
     end
     subgraph PreToolUse
       pins[check-version-pins.sh]
@@ -31,6 +32,7 @@ flowchart TD
 | `check-template-drift.sh` | `startup\|resume\|clear` | Warns when the materialized spine/scaffold lags the plugin templates. |
 | `check-open-questions.sh` | `startup\|resume\|clear` | Surfaces unresolved spec open questions. |
 | `check-unmanaged-repo.sh` | `startup\|resume\|clear` | Flags a repo that has no `/spec` spine yet. |
+| `orient-session.sh` | `startup` | On a fully managed spine only, reminds the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
 
 ## PreToolUse
 

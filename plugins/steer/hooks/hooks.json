@@ -26,6 +26,15 @@
             "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-unmanaged-repo.sh\""
           }
         ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/orient-session.sh\""
+          }
+        ]
       }
     ],
     "PreToolUse": [
