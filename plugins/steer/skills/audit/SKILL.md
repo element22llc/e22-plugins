@@ -85,7 +85,10 @@ service) and say so.
    high-risk areas without coverage.
 7. **Toolchain & dependency health** — outdated dependencies; missing or drifted
    lockfiles (`mise.lock`, `pnpm-lock.yaml`, `uv.lock`, `.terraform.lock.hcl`);
-   unpinned toolchain versions.
+   unpinned toolchain versions. On a GitHub-tracked repo, also note if `main`
+   lacks branch protection (the real PR gate) — route to `/steer:protect` to
+   verify/apply against `policy/branch-protection.yml`; do not query or change
+   settings here (audit is read-only code-health).
 8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).
@@ -188,6 +191,7 @@ of dimension.
    | Vetted code-health findings ready for tracking | `/steer:issues publish-audit` |
    | Architectural / cross-cutting call | Propose an ADR via `/steer:adr` |
    | Spec coverage / conformance gap | `/steer:questions` |
+   | `main` unprotected / branch-protection drift (GitHub) | `/steer:protect` |
    | Mechanical cleanup only | `/simplify` |
    | Nothing actionable | Complete |
 

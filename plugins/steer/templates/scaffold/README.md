@@ -124,6 +124,16 @@ Never put the token in a repo file (even gitignored), commit a `.mcp.json` with 
 
 ## Branch protection
 
-On `main`, require: a PR before merging; 1 approval; dismiss stale approvals on new commits; the `ci` status check; linear history; and no bypassing — even for admins — unless the team explicitly approves. In **Settings → Code security**, enable Secret scanning + push protection.
+steer is advisory in the local session — it won't *block* a push to `main`. The
+real gate is **GitHub branch protection** on the default branch, and the required
+rules are the single source of truth in [`policy/branch-protection.yml`](policy/branch-protection.yml):
+a PR before merging, 1 approval, dismiss stale approvals on new commits, the `ci`
+status check, linear history, and no bypassing — even for admins. In **Settings →
+Code security**, enable Secret scanning + push protection.
+
+Don't set this up by hand — run **`/steer:protect`**. It reads that policy, diffs
+it against the repo's live settings, and (on your confirmation) applies what's
+missing via the GitHub API. `init`/`adopt` recommend it as the final bootstrap
+step, and `/steer:audit` flags it when it drifts.
 
 Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the version-pin scan), then auto-detects your stack and runs its checks — Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran". Before any app exists, only the hygiene phase runs and `ci` reports that application validation is not yet active. The `design.md` lint job is advisory and intentionally not required.
