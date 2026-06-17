@@ -53,7 +53,12 @@ format (markers, headings, **managed blocks**, idempotency) in
   decision-checklist `spec-drift` issues (see `/steer:drift`); never auto-resolve.
 - **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key` per gap;
-  **reconcile, don't duplicate**). **Partial-publication safe:** flip the brief's
+  **reconcile, don't duplicate**). Findings are **deduplicated by remediation
+  work-shape, not 1:1** with sections/rows/bullets; the canonical
+  **section → destination** map is the brief's "What publishes, and where" note
+  (architectural-choice *decisions* → `/steer:adr` / `/steer:questions`, never
+  findings; committed secrets → rotate; the dependency table → **one** upgrade
+  finding, not per package). **Partial-publication safe:** flip the brief's
   `> Lifecycle:` to `published-snapshot` **only after all intended findings are
   created or reconciled**; on partial failure, **leave it `active-adoption`** and
   record the successfully-published refs under `> Published findings:`. A rerun
