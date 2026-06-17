@@ -30,6 +30,30 @@
 > Published findings: [issue refs once published via `/steer:issues publish-adoption`, else empty]
 > Superseded by: [replacement pointer if superseded, else empty]
 
+> **What publishes, and where.** `/steer:issues publish-adoption` does **not**
+> file one issue per section, row, or bullet — findings are **deduplicated by
+> remediation work-shape** (keyed to a `finding-key`, drawn across sections); the
+> same underlying fix is one finding even if it surfaces in several places. Route
+> each section as follows:
+>
+> - **Gap analysis** rows with an action (Refactor / Rewrite / Reject) →
+>   `kind=finding` + `source:adoption`, **one finding per remediation work-shape**.
+>   `Keep` rows → nothing.
+> - **Outdated dependency table** → at most **one** "upgrade outdated majors
+>   behind green tests" finding (dev-owned, on a branch) — **not one issue per
+>   package**.
+> - **Bad practices** list → findings **only where not already a gap-analysis
+>   row** — never file the same fix twice (e.g. raw SQL already lands as the
+>   Data-layer gap).
+> - **Architectural choices requiring decision** → `/steer:adr` (Proposed) or
+>   `/steer:questions` — **never a finding** (never infer a decision from code).
+>   *But* a concrete code defect inside that area (a swallowed error, an unscoped
+>   query, a silent fallback) **is** still a finding.
+> - **Stop-and-rotate** → rotate the secret; not a finding.
+> - **Open questions** → `/steer:questions`.
+> - **Overall recommendation / Adoption progress / Lifecycle** →
+>   narrative/metadata; never findings.
+
 ## Overall recommendation
 
 > Roll the per-area dispositions below into one steer for the dev. **When most

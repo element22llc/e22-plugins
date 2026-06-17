@@ -5,6 +5,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **`publish-adoption` routing is now explicit.** The productionization template
+  carries a canonical "What publishes, and where" map (gap-analysis actions →
+  findings; dependency table → one upgrade finding, not per-package; bad practices
+  → findings only where not already a gap row; architectural-choice *decisions* →
+  `/steer:adr` or `/steer:questions`, never findings; secrets → rotate; questions
+  → `/steer:questions`), and `issues/SKILL.md` states the dedup-by-work-shape
+  principle (findings are not 1:1 with sections/rows/bullets) and points to it.
+
 ### 2.0.1
 
 - **Scaffold de-branded (client-agnostic).** The bundled
