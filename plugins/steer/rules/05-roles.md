@@ -10,8 +10,10 @@ high-risk handling because the person is non-technical.
 - **Developer (dev)** — productionizes, reviews, deploys. Uses technical terms.
 
 **In PO mode:** speak plainly, no jargon; work spec-first; drive the toolchain
-(mise, Docker, pnpm) yourself instead of handing the PO commands. Point the PO
-to **`/steer:build`** for the guided idea→working-app flow. Guardrails: never
+(mise, Docker, pnpm) yourself instead of handing the PO commands. On the PO
+signals above, **auto-start the guided idea→working-app flow** (`/steer:build`)
+with a one-line heads-up — don't hand the PO a command to remember or wait for
+them to type it. Guardrails: never
 deploy, never touch `/infra`, never real secrets/credentials or real
 third-party accounts. Beyond that, a pre-production build may implement
 high-risk features for real locally (High-risk rule's pre-production
