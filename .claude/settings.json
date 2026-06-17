@@ -1,6 +1,22 @@
 {
   "permissions": {
     "allow": [
+      "Bash(mise run *)",
+      "Bash(mise tasks*)",
+      "Bash(uv run pytest*)",
+      "Bash(uv run ruff *)",
+      "Bash(uv run python scripts/*)",
+      "Bash(claude plugin validate *)",
+      "Bash(shellcheck *)",
+      "Bash(shfmt -d *)",
+      "Bash(actionlint*)",
+      "Bash(sh plugins/steer/hooks/tests/run.sh)",
+      "Bash(sh plugins/steer/scripts/*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch --list*)",
       "mcp__codegraph__codegraph_search",
       "mcp__codegraph__codegraph_context",
       "mcp__codegraph__codegraph_callers",
