@@ -33,6 +33,7 @@ Desktop.ini
 .claude/settings.local.json
 .claude/local/
 .claude/.cache/
+.claude/worktrees/
 
 # Cowork mount artifacts — Cowork sometimes leaves an empty folder named
 # after the connected workspace inside the workspace itself. Ignore any
