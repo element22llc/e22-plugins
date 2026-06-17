@@ -176,6 +176,11 @@ assert_empty "version-pins: steer:allow-pin bypass" "${out}"
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # pin-ok: legacy alias")")"
 assert_empty "version-pins: legacy pin-ok bypass" "${out}"
 
+# Regression: a three-segment pin (extracted at major.minor) must still honor a
+# same-line marker — the boundary class excludes only digits, not the dot.
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11).2.1 # steer:allow-pin three-segment")")"
+assert_empty "version-pins: steer:allow-pin bypass honors 3-segment pin" "${out}"
+
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"docker run $(pin postgres 11)\"}}")"
 assert_empty "version-pins: Bash skipped (CI scanner is the backstop)" "${out}"
 

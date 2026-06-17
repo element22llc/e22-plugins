@@ -59,8 +59,12 @@ for PIN in ${PINS}; do
 	PRODUCT="${PIN%%:*}"
 	VERSION="${PIN#*:}"
 
-	# Same-line justification marker -> deliberate pin, allow.
-	printf '%s' "${CONTENT}" | grep -E "${PIN}([^0-9.]|\$).*(steer:allow-pin|pin-ok)" >/dev/null 2>&1 && continue
+	# Same-line justification marker -> deliberate pin, allow. The boundary
+	# class excludes only digits (not the dot) so a three-segment pin (matched
+	# here at its major.minor) still honors the marker, while a non-digit or
+	# end-of-line after the pin still blocks a partial-major match (a "1" pin
+	# must not match a "189" version).
+	printf '%s' "${CONTENT}" | grep -E "${PIN}([^0-9]|\$).*(steer:allow-pin|pin-ok)" >/dev/null 2>&1 && continue
 
 	VERDICT="$(steer_policy_verdict "${POLICY}" "${PRODUCT}" "${VERSION}")"
 	case "${VERDICT}" in
