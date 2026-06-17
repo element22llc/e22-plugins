@@ -43,11 +43,13 @@ none apply.
 - [ ] **Operational** — deployment, CI/CD, infra, monitoring, backups
 - [ ] **Local setup / deployment changed** — `mise.toml`, `compose.yaml`, `.env.example`, setup docs need updating
 - [ ] **App docs invalidated** — `/spec/app/` (usage, roles, configuration, troubleshooting) describes behavior this PR changes
+- [ ] **Architecture/stack drift** — `ARCHITECTURE.md` describes the stack, an app/package, or data flow this PR changes
 
 ## Living docs sync
 
 - [ ] `/spec/HISTORY.md` has an entry for this change (what, why, who asked, refs)
 - [ ] `/spec/app/` updated if user-facing behavior or configuration changed
+- [ ] `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed
 - [ ] N/A — no behavior, setup, or decision change
 
 ## PO acceptance

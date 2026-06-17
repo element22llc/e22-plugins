@@ -89,8 +89,11 @@ service) and say so.
 8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).
-9. **DX & docs** — README quickstart that no longer matches reality; `mise.toml`
-   missing the tasks a contributor needs (`setup`, `dev`, `test`, `lint`).
+9. **DX & docs** — README quickstart that no longer matches reality;
+   `ARCHITECTURE.md` stale vs the code — stack table diverged from
+   `package.json` / `mise.toml`, or the apps/packages map missing/naming a
+   directory that doesn't match `apps/*`+`packages/*`; `mise.toml` missing the
+   tasks a contributor needs (`setup`, `dev`, `test`, `lint`).
 
 **Out of scope (delegated, never re-run here):** correctness bugs →
 `/code-review`; security vulnerabilities → `/security-review`; mechanical

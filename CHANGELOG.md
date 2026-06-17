@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Prescribed, auto-maintained home for tech-stack + architecture docs — root
+  `ARCHITECTURE.md`.** New scaffold template
+  (`templates/scaffold/ARCHITECTURE.md`, installed at the repo root next to
+  `DESIGN.md`): the engineer's system model — tech-stack table, apps/packages
+  map, how-it-fits-together, cross-cutting concerns — that links to `/spec/design/`
+  diagrams and `/spec/decisions/` ADRs rather than duplicating them. `/steer:init`
+  fills it from the confirmed stack and `/steer:adopt` reverse-engineers it from
+  the as-built code (Phase 6 inventory), both with the `DESIGN.md` "never clobber
+  a populated doc" discipline, so it doesn't rot into an unfilled stub the way a
+  bare `/spec/app/` can. Kept current by a new drift-gate class
+  (*architecture/stack drift*) in the PR template + Definition of Done + living-docs
+  rule, and an `/steer:audit` "DX & docs" check that flags the stack table or
+  apps/packages map drifting from `package.json` / `mise.toml` / the real
+  directories. Audience split is now explicit in the layout rule: `README.md`
+  (front door) → `ARCHITECTURE.md` (how it's built) → `/spec/app/` (how to
+  use/operate) → `/spec/decisions/` (why).
 - **One home per template topic — `templates/github/` is now the single source
   of truth for GitHub templates.** The shipped Issue Forms, CI workflows, and PR
   template moved out of `templates/scaffold/github/` (now removed) up into

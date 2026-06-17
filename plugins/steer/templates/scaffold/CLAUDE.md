@@ -28,7 +28,9 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 ## Stack overrides
 
 The default stack (injected by the plugin) applies unless overridden. Record
-any deviation as an ADR under `/spec/decisions/` (run `/steer:adr`) and note it here:
+any deviation as an ADR under `/spec/decisions/` (run `/steer:adr`) and note it here.
+The current as-built stack and how the pieces fit together live in
+[`ARCHITECTURE.md`](./ARCHITECTURE.md) — this section holds only the *deviations*.
 
 - [none yet — defaults apply]
 
