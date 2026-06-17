@@ -19,6 +19,36 @@ flowchart LR
     APP --> PR[PR for dev review]
 ```
 
+## The PO happy path
+
+You bring the idea and the judgement; Claude drives every tool. The whole loop is
+five plain-language steps — you never type an issue, spec, or work command:
+
+1. **Describe your idea.** In plain language: *"I want an app that lets the team
+   log client visits and see them on a weekly calendar."* Run
+   `/steer:build <your idea>`, or just say it — the always-on router rule sends it
+   to the right skill.
+2. **Claude interviews you and routes the work.** It asks the questions it needs
+   (who uses it, what matters, what's out of scope), turns your answers into a
+   spec, and pauses for you to **approve** before any code is written. Behind the
+   scenes it handles the issue, the spec, and the work items for you.
+3. **Preview it locally.** Claude builds a working local app and tells you how to
+   run it. You click around and react in plain language — *"the date filter
+   should default to this week"* — and it iterates.
+4. **A developer reviews.** When you're happy, the build ends at a **PR for dev
+   review**. This is the hand-off, by design — a developer is the human at the
+   merge gate.
+5. **PR.** Once the developer approves, the change merges. You've shipped without
+   touching the tracker or the code.
+
+If a session is interrupted, just run `/steer:build` again — it resumes from
+`/spec/BUILD-STATUS.md`.
+
+!!! info "Where the gates are"
+    Claude commits on its own, but **approving the spec** and **opening/merging
+    the PR** are always human decisions. See the
+    [Authorization model](../concepts/authorization-model.md).
+
 ## Relationship to other skills
 
 - `/steer:build` is the **build** path; [`/steer:spec`](spec.md) is its

@@ -20,13 +20,21 @@ set up with the plugin, and the `/steer:<skill>` commands become available.
 
 ## Surfaces where hooks do not fire
 
-On Claude Cowork and the Claude desktop app, plugin `SessionStart` hooks do not
-currently fire, so the always-on rules are not auto-injected. On those surfaces,
-load them on demand at the start of a session:
+!!! warning "Hooks don't fire everywhere — rules may not load automatically"
+    `steer` relies on Claude Code's hook lifecycle: the `SessionStart` hook is
+    what injects the always-on rules. On **Claude Cowork and the Claude desktop
+    app** those hooks do **not** currently fire, so the rules are **not**
+    auto-injected and the `PreToolUse` hooks (the spec-first/issue-first nudges
+    and the version-pin block) do not run. Loading the rules is what matters
+    most — run this manually at the start of **every** session before doing
+    anything else:
 
-```text
-/steer:standards
-```
+    ```text
+    /steer:standards
+    ```
+
+    See [Known limitations](../reference/known-limitations.md) for the full list
+    of where this matters.
 
 ## Bootstrapping a repo
 

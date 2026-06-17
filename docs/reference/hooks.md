@@ -5,6 +5,17 @@
 commands are invoked with an explicit `sh` prefix, so the executable bit is
 irrelevant (marketplace install does not `chmod`). No `jq` dependency.
 
+!!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
+    Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
+    `PreToolUse`, `Stop`). Note what each tier actually does: the `SessionStart`
+    hook **injects** the rules; most `PreToolUse` hooks are **advisory nudges**
+    that fire once and let the write proceed (`check-code-before-spec`,
+    `check-issue-before-mutation`); only `check-version-pins` issues a hard
+    `deny`. On surfaces where hooks don't fire — **Claude Cowork and the desktop
+    app** — none of this runs, so load the rules manually with `/steer:standards`
+    and lean on human review. See [Surfaces without hooks](#surfaces-without-hooks)
+    below and [Known limitations](known-limitations.md).
+
 ```mermaid
 flowchart TD
     subgraph SessionStart
@@ -39,8 +50,8 @@ flowchart TD
 | Hook | Matcher | Role |
 | --- | --- | --- |
 | `check-version-pins.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit\|Bash` | Blocks version pins that violate `policy/versions.yml`. |
-| `check-code-before-spec.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Guards against writing code ahead of an approved spec. |
-| `check-issue-before-mutation.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Enforces issue-first: a mutation presupposes an active issue. |
+| `check-code-before-spec.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate): a one-per-session reminder when code is about to be written before a `/spec` spine exists. Non-blocking — the write proceeds. |
+| `check-issue-before-mutation.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate): a one-per-session reminder to work issue-first, only in GitHub-tracked repos. Non-blocking — it cannot know whether an issue exists. |
 
 ## Stop
 
