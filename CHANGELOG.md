@@ -5,6 +5,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **In-CI Claude now runs under the same steer standards as a local session.**
+  The shipped `.github/workflows/claude.yml` (the `@claude` mention workflow) was
+  the stock Anthropic template, so the in-CI agent ran as a standards-less Claude —
+  no stack defaults, no Definition of Done, no spec/drift discipline. It now loads
+  the `steer` plugin via `anthropics/claude-code-action@v1`'s purpose-built
+  `plugins` / `plugin_marketplaces` inputs (a settings.json `enabledPlugins` block
+  does **not** work in headless CI — it is trust-dialog gated and fails silently),
+  so steer's SessionStart hook injects the same `rules/*` it does locally. Because
+  the org marketplace repo is private, the workflow mints a short-lived,
+  repo-scoped token from a shared **GitHub App** (org-level `STEER_APP_ID`
+  variable + `STEER_APP_PRIVATE_KEY` secret) via `actions/create-github-app-token`
+  — one org-controlled credential rather than per-repo PATs (the default
+  `GITHUB_TOKEN` cannot reach another org repo). The scaffold README (with the
+  one-time org App setup), MANIFEST, and a new docs page document the credentials
+  and how to verify the plugin actually loaded.
+- **Optional `gh aw` (GitHub Agentic Workflows) lane — opt-in, not scaffolded.**
+  Ships one example agentic workflow, `templates/github/agentic/triage.md`
+  (scheduled issue triage that classifies against the steer label taxonomy and
+  Issue Types, advisory-only via `safe-outputs` — never closes issues or resolves
+  product/technical questions, preserving the human gate). It is deliberately
+  **not** installed by `/steer:init`/`/steer:adopt` and **not** in `MANIFEST.md`:
+  gh-aw is a research demonstrator and overlaps with `/steer:issues` triage, so
+  teams opt in consciously. A new docs page (Reference → GitHub Actions
+  integration) carries the recipe and the rationale for keeping it out of the
+  default scaffold.
+
 ### 2.3.0
 
 - **Make GitHub branch protection — the real PR gate — reliable instead of a
