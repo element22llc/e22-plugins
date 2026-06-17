@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.0.1
 
 - **Scaffold de-branded (client-agnostic).** The bundled
   `.github/ISSUE_TEMPLATE/config.yml` no longer ships a hardcoded
