@@ -85,7 +85,14 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
 - **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
   actionlint). This is the pre-commit equivalent.
 - **Before push / PR — full gate:** `mise run ci` — exactly what CI runs (adds
-  `fixtures`, `test`, `shell`, `hooktests`, `version-scan` on top of `check`).
+  `fixtures`, `test`, `shell`, `hooktests`, `version-scan`, `docs:check` on top
+  of `check`).
+- **Docs site:** the MkDocs site under `docs/` (config: `mkdocs.yml`) is
+  auto-maintained by the repo-local `/plugin-docs` skill + `documentation-reviewer`
+  agent. Serve it with `mise run docs:serve`; the `docs:check` gate
+  (`scripts/validate_docs.py`) keeps `docs/reference/*` in sync with the plugin.
+  See `docs/AUTHORING.md` → "Documentation site". Docs ship nothing — no changelog
+  entry.
 - **Fast iteration:** when one gate fails, re-run just that script —
   `uv run python scripts/check_standards.py`, `… scripts/check_plugin.py`,
   `… scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh`.

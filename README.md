@@ -150,6 +150,24 @@ For products that need reproducibility, pin a `ref` (tag or SHA) in the
 marketplace `source` in `.claude/settings.json`; updating then becomes a reviewed
 PR that bumps the pin.
 
+## Documentation
+
+A full documentation site (concepts, workflows, and a generated skills/hooks
+reference, with mermaid diagrams) lives under [`docs/`](./docs/) and is built
+with MkDocs Material:
+
+```bash
+mise run docs:serve     # live-reload preview at http://127.0.0.1:8000
+mise run docs:build     # strict build (fails on broken links/nav)
+mise run docs:check     # structural + source-of-truth sync validation
+```
+
+The site is **auto-maintained**: the repo-local `/plugin-docs` skill reconciles
+the reference pages against `plugins/steer/`, and a CI drift gate
+(`validate_docs.py`, `check_docs_impact.py`) fails PRs when docs fall out of
+sync. Authoring conventions for the plugin itself stay in
+[`docs/AUTHORING.md`](./docs/AUTHORING.md).
+
 ## Versions
 
 The current version lives in

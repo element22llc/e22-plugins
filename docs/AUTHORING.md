@@ -25,7 +25,8 @@ regardless — this matrix is for tight iteration on a single failure.
 | `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
 | `.github/workflows/**` | `actions` | `actionlint` |
 | `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
-| `CLAUDE.md`, `docs/`, `.claude/` | nothing ships | — (no changelog entry) |
+| `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
+| `CLAUDE.md`, `.claude/` | nothing ships | — (no changelog entry) |
 
 ## Skill frontmatter schema
 
@@ -154,6 +155,29 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - **Standards prose is never duplicated** into a product repo's `CLAUDE.md` — that
   file holds only product-specific context. The standards live here and reach
   product repos through the marketplace.
+
+## Documentation site
+
+The MkDocs site under `docs/` is auto-maintained. It is **not** the same thing as
+this `AUTHORING.md` (which is about building the plugin); the site documents the
+plugin's *behaviour* for consumers.
+
+- **Serve / build / check:** `mise run docs:serve`, `mise run docs:build`
+  (strict), `mise run docs:check`. The MkDocs toolchain lives in the `docs`
+  dependency-group (`pyproject.toml`) — `serve`/`build` run via
+  `uv run --group docs`, so the CI env stays light. `docs:check` is stdlib-only
+  and runs inside `mise run ci`.
+- **Mermaid** diagrams render via the `pymdownx.superfences` custom fence in
+  `mkdocs.yml`; Material bundles `mermaid.js`, so no extra dependency is needed.
+- **Reconcile with `/plugin-docs`** (repo-local skill) after changing skills,
+  hooks, or rules: it refreshes the generated reference pages and can dispatch the
+  `documentation-reviewer` agent. The `docs:check` gate (`validate_docs.py`) fails
+  CI if a shipped skill is missing from `docs/reference/skills.md`, a nav entry is
+  broken, a page is orphaned, or a link/`/steer:` ref doesn't resolve. The PR-only
+  `check_docs_impact.py` gate fails when `skills/`, `rules/`, or `hooks/` change
+  but no `docs/` file does.
+- **New pages** start from `docs/_templates/` and must be added to the
+  `mkdocs.yml` nav (orphans fail the gate).
 
 ## Built-in helpers (no install needed)
 
