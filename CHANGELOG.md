@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Dropped GitHub Project (board) bootstrapping/sync.** Testing showed no real
+  gain from a Project board per repo, so the optional Project overlay is removed
+  in favor of clean, well-maintained GitHub Issues. Gone: the
+  `/steer:issues project [bootstrap|sync]` mode, `tracker-sync`'s
+  `add-to-project` operation and its `steer:state` → Project `Status` mirror, the
+  `project:` and `fields:` blocks in the `tracker.md` template, the "Suggested
+  Project" section of `ISSUE-WORKFLOW.md`, and the `project.owner`/`number` setup
+  prompts in `init`/`adopt`. The `steer:state` issue-body marker remains the base
+  source of truth; labels and the issue lifecycle never depended on Projects.
+- **Priority and effort are no longer tracked.** They previously existed only as
+  Project fields; with Projects gone they are not reintroduced as labels.
+  `LABELS.md` and `ISSUE-WORKFLOW.md` state this explicitly.
+- **`/steer:issues triage` is stronger.** The mode now keeps the backlog clean
+  and correctly labelled: dedup by marker/title, label correctness for
+  human-created issues (`source:*`/`needs:*`/`risk:*` + inferred `steer:kind`
+  marker and Issue Type when missing), single managed comment for missing
+  required info, cleanup signals (stale `needs:triage`, orphaned sub-issues,
+  conflicting labels), and a `--all` sweep that emits a summary and takes one
+  batch confirmation before writes. All GitHub I/O still routes through
+  `/steer:tracker-sync`.
 - **`publish-adoption` routing is now explicit.** The productionization template
   carries a canonical "What publishes, and where" map (gap-analysis actions →
   findings; dependency table → one upgrade finding, not per-package; bad practices

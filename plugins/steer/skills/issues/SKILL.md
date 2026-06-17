@@ -4,7 +4,7 @@ description: "High-level GitHub Issues lifecycle for the /spec spine — capture
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
 ---
-<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels,project -->
+<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 
@@ -83,10 +83,30 @@ format (markers, headings, **managed blocks**, idempotency) in
   **render them into the machine-readable body** (markers + headings + managed
   block) — do **not** try to submit a Form (it's human UI only). Default labels
   per kind (`source:po`, `needs:triage`); enters **Inbox**.
-- **`triage [#N|--all]`** — for each issue: detect duplicates (search by marker /
-  title / feature-id), classify (type + `source:`/`needs:`/`risk:` labels),
-  identify missing information, and suggest routing + the next transition. Propose
-  Inbox → Exploring; perform it only where the authority table allows.
+- **`triage [#N|--all]`** — keep the backlog clean and correctly labelled. For
+  each issue:
+  - **Deduplicate** — search by marker (`feature-id`+`kind`, `question-id`,
+    `finding-key`) and title; flag duplicates and propose close-as-duplicate
+    (link to the canonical issue), never silently merging human content.
+  - **Label correctness (esp. human-created issues)** — apply the right
+    `source:*` (e.g. `source:human` for manually opened issues), `needs:*`, and
+    `risk:*` labels from `templates/reference/LABELS.md`. When the kind is
+    missing (issue opened without a Form or marker), infer it (feature / bug /
+    product-question / improvement) from the content and set the `steer:kind`
+    marker + GitHub Issue **Type**. Resolve conflicting labels (e.g. both
+    `bug`-ish and `feature`-ish). Kind is never a plain label.
+  - **Missing required information** — bug without repro/expected-vs-actual,
+    feature without acceptance criteria, etc. Post the request in **one** managed
+    comment and apply `needs:triage` rather than guessing the content.
+  - **Cleanup signals** — report stale `needs:triage` issues, orphaned
+    sub-issues (no parent link), and mislabelled items; propose fixes.
+  - **Routing** — suggest the next transition; propose Inbox → Exploring and
+    **perform it only where the authority table in `ISSUE-WORKFLOW.md` allows**.
+  Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
+  report, and takes **one** batch confirmation before any writes. All GitHub
+  reads/writes (labels, types, comments, closes) go through `/steer:tracker-sync`;
+  rewrites touch only the `steer:managed` block. Priority and effort are not
+  tracked — do not invent labels for them.
 - **`decompose #N`** — create implementation sub-issues from a parent feature.
   **Preconditions:** the feature's `intent.md` exists, `Status: approved`, and
   its **contract readiness is `ready`** — the mechanically-derived signal in
@@ -118,22 +138,6 @@ format (markers, headings, **managed blocks**, idempotency) in
   mirrors the `steer:source` enum) via `gh label create --force` (create-or-update;
   safe to re-run). `/steer:init` and `/steer:adopt` call this during setup. Kind is
   **not** a label (it's the `steer:kind` marker + Issue Type).
-- **`project [bootstrap|sync]`** — **optional** GitHub Project enrichment, gated
-  on `project.enabled: true` + `project.owner` + `project.number` in `tracker.md`
-  (numbers are owner-scoped). `bootstrap` creates/reconciles the recommended
-  **fields and single-select options** (see `ISSUE-WORKFLOW.md`) via `gh project
-  field-create`, links the repo, and adds items — but **`gh` has no API to create
-  saved views**, so it **outputs manual view-creation instructions rather than
-  claiming to have made them**. `sync` is deterministic: discover field + option
-  IDs from their names at runtime, **add the issue to the Project if absent**
-  (when `project.enabled`), map `steer:state` → the `Status` option (the marker is
-  the base source of truth; the field mirrors it), set the other field values
-  from `tracker.md`'s `fields:` mapping, and **report missing/renamed fields**.
-  **Degrade gracefully:** org-level issue fields are public preview and may be
-  unavailable, and the `project` scope may be missing from `gh` auth — when a
-  call isn't supported or permitted, **skip that field, say so, and continue**.
-  Labels + the base lifecycle never depend on Projects; never block on a missing
-  Project.
 - **`reconcile #N | feature-id | --all`** — verify issue ↔ spec pointers agree
   and the lifecycle is internally consistent; update only the managed block of
   any issue it touches; **never auto-resolve behavioural drift or a product

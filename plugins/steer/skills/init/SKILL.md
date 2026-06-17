@@ -155,8 +155,7 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    PO-driven idea→app flow runs through `/steer:build` instead.
    - **If the tracker is GitHub Issues**, run `/steer:issues bootstrap-labels` to
      create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
-     a form label that doesn't exist), and set `project.owner`/`number` in
-     `tracker.md` if the team uses a Project.
+     a form label that doesn't exist).
 4. **Record the initial stack as the first ADR.** The stack choice is usually
    the first decision worth an ADR — run `/steer:adr`. **Any deviation from the
    defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or

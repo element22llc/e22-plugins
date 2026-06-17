@@ -1,6 +1,6 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, transition, assign/claim, link, close/reopen, add-to-project) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
 when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: invoked by /steer:issues and /steer:work
@@ -46,7 +46,7 @@ shell escaping. Detect capability **in this order, every run**:
 This is the **only** layer that touches the GitHub API. `/steer:issues` and
 `/steer:work` call these operations; they never hit `gh`/MCP directly. The boundary
 is **tracker metadata only** — issues, relationships, comments, labels, Issue
-Types, assignments, the `steer:state` marker, and optional Project sync. **Git
+Types, assignments, and the `steer:state` marker. **Git
 operations and pull-request delivery are NOT gateway operations** — they belong
 to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
@@ -74,9 +74,8 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   duplicate `bug`/`feature` label to compensate.
 - **`label #N`** — add/remove labels. The `source:*` label is *derived* from the
   `steer:source` marker; never treat the label as the source of truth.
-- **`transition #N <state>`** — set the `steer:state` marker (base source of truth)
-  and, when `project.enabled`, mirror it to the Project `Status` field. Honor the
-  authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
+- **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
+  Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
   `steer:claimed-by` marker (active execution context). A conflicting existing
   claim/assignment is reported, **never** auto-overridden.
@@ -84,8 +83,6 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 - **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR.
 - **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened
   issue is re-assessed before returning to `inbox`/`exploring`/`ready-for-dev`.
-- **`add-to-project #N`** — add the issue to the configured Project when
-  `project.enabled`; degrade cleanly when permissions are insufficient.
 
 ## Modes
 

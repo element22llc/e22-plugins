@@ -6,10 +6,9 @@ drops a form/agent label that doesn't exist, so this must run before Issue Forms
 and agent labelling are reliable.
 
 **Labels are derived, never the source of truth.** `source:*` mirrors the
-`steer:source` marker; lifecycle **state** is the `steer:state` marker (mirrored by
-the Project `Status` field, never a label); **kind** is the `steer:kind` marker +
-the GitHub Issue **Type**. Do not encode status, priority, effort, release, or
-kind as labels.
+`steer:source` marker; lifecycle **state** is the `steer:state` marker (never a
+label); **kind** is the `steer:kind` marker + the GitHub Issue **Type**. Do not
+encode status, release, or kind as labels. Priority and effort are not tracked.
 
 ## `source:*` — origin (mirrors `steer:source`)
 
