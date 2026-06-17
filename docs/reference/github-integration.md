@@ -2,7 +2,7 @@
 
 steer ships two kinds of GitHub Actions integration. One is installed by default
 and keeps CI Claude consistent with local sessions; the other is an opt-in recipe
-for unattended, scheduled automation.
+for unattended automation.
 
 ## `claude.yml` — the `@claude` mention workflow (default)
 
@@ -62,15 +62,15 @@ product-repo-facing version of this.
 
 [GitHub Agentic Workflows](https://github.com/githubnext/gh-aw) (`gh aw`) is a
 GitHub Next tool for authoring CI automation as natural-language Markdown that
-**compiles** to a standard Actions `.lock.yml`. It can run unattended on a
-schedule — something `claude.yml` (which only reacts to `@claude` mentions) and
-the local skills cannot do.
+**compiles** to a standard Actions `.lock.yml`. It can run **unattended** — on
+repository events or a schedule, with no `@claude` mention — something
+`claude.yml` (which only reacts to `@claude`) and the local skills cannot do.
 
 steer ships **one example** workflow,
-`plugins/steer/templates/github/agentic/triage.md` (scheduled issue triage that
-classifies issues against the steer label taxonomy and Issue Types). It is **not**
-installed by `/steer:init` or `/steer:adopt` and is **not** in `MANIFEST.md` —
-you opt in deliberately.
+`plugins/steer/templates/github/agentic/triage.md` (unattended issue triage that
+runs when an issue is opened/reopened and classifies it against the steer label
+taxonomy and Issue Types). It is **not** installed by `/steer:init` or
+`/steer:adopt` and is **not** in `MANIFEST.md` — you opt in deliberately.
 
 ### Why it is not in the default scaffold
 
@@ -92,8 +92,8 @@ you opt in deliberately.
 4. **Review the generated lock file before trusting it** — confirm the only
    write-backs are the declared `safe-outputs` (the example is advisory-only: it
    relabels, sets the Issue Type, and comments, but never closes issues or
-   resolves product/technical questions — those stay human-gated) and **SHA-pin**
-   every action it references (matches steer's version-pin policy).
+   resolves product/technical questions — those stay human-gated) and confirm
+   every action it references is **SHA-pinned** (gh-aw pins by default; keep it).
 5. Set `ANTHROPIC_API_KEY` (the example uses the Claude engine, consistent with
    local sessions) and commit both files.
 
