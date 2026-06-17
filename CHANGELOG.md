@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.2.0
 
 - **The router is now an intent dispatcher, not a menu the user has to read.**
   `rules/00-router.md` was rewritten from a paragraph-per-condition list framed at
