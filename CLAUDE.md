@@ -77,3 +77,25 @@ plugins/steer/
   dependency.
 - Never put first-run-only content (placeholder resolution) into `rules/` — it
   would re-fire every session. That lives in the `init` skill.
+
+## Working loop & verification
+
+The dev loop is driven by `mise` (run `mise tasks` to list everything):
+
+- **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
+  actionlint). This is the pre-commit equivalent.
+- **Before push / PR — full gate:** `mise run ci` — exactly what CI runs (adds
+  `fixtures`, `test`, `shell`, `hooktests`, `version-scan` on top of `check`).
+- **Fast iteration:** when one gate fails, re-run just that script —
+  `uv run python scripts/check_standards.py`, `… scripts/check_plugin.py`,
+  `… scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh`.
+- **Adding a skill / rule / hook / scaffold file?** See
+  [`docs/AUTHORING.md`](docs/AUTHORING.md) for the frontmatter schema, rule
+  numbering, hook rules, and a "what I touched → what to run" matrix. Repo-local
+  helpers `/new-skill`, `/new-rule`, and `/preflight` scaffold and verify for you.
+- **Behaviour changes are gated twice:** a change under `plugins/steer/`
+  (skills, rules, hooks, templates, scripts, policy) needs a `CHANGELOG.md`
+  `## steer` → `### [Unreleased]` entry — `check_changelog.py --base` enforces
+  this on PRs (`tests/` are exempt). The `plugin.json` `version` bump happens
+  **once**, at release. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/`
+  ship nothing and need no changelog entry.
