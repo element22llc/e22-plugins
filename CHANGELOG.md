@@ -5,6 +5,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Make GitHub branch protection — the real PR gate — reliable instead of a
+  manual README step.** steer stays advisory in the local session (rule 95, "you
+  are not the gate"); the hard wall against direct-push-to-`main` is GitHub branch
+  protection, which until now was only prose in the scaffold README that a human
+  set up by hand. New machine-readable policy `policy/branch-protection.yml` (bundled
+  default + scaffold-installed copy, resolved consumer-first then plugin default —
+  same precedence as `policy/versions.yml`) is the single source of truth for the
+  required rules: a PR, 1 approval, dismiss-stale, the `ci` status check, linear
+  history, no admin bypass, secret-scanning push protection. New skill
+  **`/steer:protect`** reads that policy, diffs it against the repo's live settings
+  via `gh api`, reports a per-rule compliant/drifted/absent table, and — only on the
+  dev's explicit confirmation — applies the gap (verify-only by default; the
+  privileged `gh api` write is never auto-run, no broad `gh`/`git` permission globs;
+  surfaces the manual Settings steps when the token lacks admin). `/steer:init` and
+  `/steer:adopt` recommend it as the final bootstrap step, `/steer:audit` routes a
+  missing/drifted-protection finding to it, and the scaffold README §Branch
+  protection now points at the policy + skill rather than restating the values.
+
 ### 2.2.0
 
 - **The router is now an intent dispatcher, not a menu the user has to read.**

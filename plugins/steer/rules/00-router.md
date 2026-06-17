@@ -53,6 +53,7 @@ name one. Plain language is the only entry point a user needs.
 | compare the as-built `/spec` against tracker intent for drift (read-only) | `/steer:drift` |
 | sort loose files out of the repo root into `/spec` | `/steer:tidy` |
 | bring a bootstrapped repo up to date after a plugin release | `/steer:sync` |
+| "protect main" / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
 
 GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal

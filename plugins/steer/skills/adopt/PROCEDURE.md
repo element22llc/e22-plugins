@@ -272,6 +272,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 | Selected findings not published | Recommended | `/steer:issues publish-adoption` |
 | Findings published, not shaped | Recommended | `/steer:issues triage` / `decompose` |
 | `/spec/.version` stale | Recommended | `/steer:sync` |
+| `main` not yet protected on GitHub (GitHub tracker) | Recommended | Establish the PR gate — `/steer:protect` (advisory locally; sets the real server-side wall) |
 | Nothing remaining | Complete | Optional: begin feature work — `/steer:spec` |
 
 Pick exactly one `Current recommended action` by precedence; offer a

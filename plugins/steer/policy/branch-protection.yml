@@ -1,0 +1,48 @@
+# steer — branch-protection policy (the real gate lives on GitHub, not in the session)
+#
+# steer is deliberately ADVISORY in the local session (see rule 95, "You are not
+# the gate — the DEV is"). The hard wall against direct-push-to-main is GitHub
+# branch protection on the default branch. This file is the single, machine-readable
+# source of truth for what that protection must require; /steer:protect reads it,
+# diffs it against the repo's live settings, and — only on the dev's confirmation —
+# applies it via `gh api`. The prose in the scaffold README points HERE; it does
+# not restate these values.
+#
+# Fields map 1:1 to the GitHub classic branch-protection API
+#   (PUT /repos/{owner}/{repo}/branches/{branch}/protection)
+# so /steer:protect can diff and apply directly. Repository rulesets are a modern
+# alternative with the same intent; this policy is API-agnostic enough to back a
+# rulesets path later without changing the values.
+#
+# A repo MAY override this by shipping its own policy/branch-protection.yml
+# (resolved consumer-first, then this plugin-bundled default — same precedence as
+# policy/versions.yml). Tighten, don't quietly loosen: a weaker per-repo policy
+# should be backed by an ADR.
+
+schema: 1
+
+# Which branch to protect. "default" resolves to the repo's default branch.
+branch: default
+
+# A PR — reviewed and approving — before anything lands.
+required_pull_request_reviews:
+  required_approving_review_count: 1
+  dismiss_stale_reviews: true          # new commits invalidate stale approvals
+
+# The `ci` gate must be green and the branch up to date before merge.
+# context is the check-run name; /steer:protect resolves the real name from
+# .github/workflows/ci.yml rather than trusting this string blindly.
+required_status_checks:
+  strict: true                         # branch must be up to date with base
+  contexts:
+    - ci
+
+# No bypassing — even for admins — unless the team explicitly decides otherwise.
+enforce_admins: true
+
+# Keep history linear (squash/rebase merges only).
+required_linear_history: true
+
+# Repo-level security, applied via a SEPARATE settings API by /steer:protect.
+secret_scanning: true
+secret_scanning_push_protection: true

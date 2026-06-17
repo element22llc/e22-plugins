@@ -225,6 +225,7 @@ bootstrapped repo's state.
 | Bootstrap PR open, awaiting dev review | Human decision required | A dev reviews/merges the bootstrap PR (no command) |
 | Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
 | Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature — `/steer:spec` or `/steer:build` |
+| Repo pushed to GitHub, `main` not yet protected (GitHub tracker) | Recommended | Establish the PR gate — run `/steer:protect` (steer is advisory locally; this sets the real server-side wall) |
 | Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. A tracker intentionally set
