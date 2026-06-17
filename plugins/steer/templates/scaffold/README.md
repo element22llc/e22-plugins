@@ -34,6 +34,7 @@ inside **WSL2** — see [Windows: develop in WSL](#windows-develop-in-wsl).
 
 - [Product spec](./spec/vision.md) — what this product does and why. Spec ↔ code rules and templates come from the `steer` plugin: run `/steer:spec-scaffold`, `/steer:adr`, or `/steer:conventions`
 - [App guide](./spec/app/README.md) — how to use the product: workflows, roles, configuration, limitations, troubleshooting
+- [Architecture](./ARCHITECTURE.md) — tech stack, the apps/packages map, and how the pieces fit together
 - [Action history](./spec/HISTORY.md) — what changed, why, who asked, and where it's specified
 - [Issue tracker](./spec/tracker.md) — which tracker this product uses and how work items are referenced
 - [CLAUDE.md](./CLAUDE.md) — the operating manual: stack, spec workflow, testing, change-size model

@@ -8,6 +8,7 @@ review-sensitive classes in the PR description **the moment you notice one**
 (the scaffold's PR template carries the checklist): **intent drift · contract
 drift · undocumented behavior change · security-sensitive ·
 compliance-impacting · operational (deploy/CI/infra) · local setup or
-deployment changed · app docs invalidated**. A flagged class blocks merge
+deployment changed · app docs invalidated · architecture/stack drift
+(`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer explicitly resolves it — you may not waive your own flag.
 Periodic sweeps: `/steer:drift`, `/steer:audit`.

@@ -206,7 +206,12 @@ own CI, compose, or config, merge into it rather than overwriting, and **never
 clobber working app code**: diff and ask before touching anything that exists. The
 scaffold carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md` Phase 7
 already reverse-engineered**; only bring in the stub for a UI repo where Phase 7
-somehow produced nothing. Then pin the toolchain (`mise install`) and commit the
+somehow produced nothing. Reverse-engineer the root `ARCHITECTURE.md` the same
+way: fill its stack table, apps/packages map, and cross-cutting concerns from the
+**as-built choices Phase 6 inventoried** (descriptive — *what is*, never inferring
+ratified decisions; the ADRs stay `Proposed`) plus the actual `package.json` /
+`mise.toml` / `compose.yaml`. **Do not overwrite an `ARCHITECTURE.md` a team
+already populated**; only seed the stub when none exists. Then pin the toolchain (`mise install`) and commit the
 populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the workspace
 resolves).
 

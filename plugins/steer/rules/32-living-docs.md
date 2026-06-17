@@ -12,6 +12,9 @@ the code**:
 - Ambiguity → `## Open questions` — **never guess an answer into the spec**.
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
   release notes → the app guide (`/spec/app/`).
+- Tech stack, the apps/packages map, how the pieces fit together → root
+  `ARCHITECTURE.md`. Any PR that changes the stack, adds/removes/renames an app
+  or package, or reshapes cross-component data flow updates it in the same PR.
 - What changed, why, who asked, refs → append to `/spec/HISTORY.md` (action
   history), one short entry per merged change or ratified decision.
 

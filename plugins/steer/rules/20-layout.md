@@ -19,6 +19,12 @@ one repo.
 - **`/spec/reference`** — source/research materials feeding the spec
   (inventories, vendor metadata, schema/DDL dumps, discovery docs).
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
+- **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
+  engineer's system model: stack, the apps/packages map, how a request flows.
+  Distinct audiences — `ARCHITECTURE.md` is *how it's built*, `/spec/app` is *how
+  to use/operate it*, `/spec/design` holds the *diagrams* `ARCHITECTURE.md` links
+  to, and `/spec/decisions` holds the *why* (ADRs). `README.md` is the front door
+  and links to all of them.
 
 Specs are organized by user-facing feature; code however the stack wants — a
 feature may span several apps/packages (coupling rules: the spec workflow,

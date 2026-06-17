@@ -23,6 +23,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/steer:init`. |
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
 | `DESIGN.md` | `DESIGN.md` | Visual-identity stub. **Never overwrite** a `DESIGN.md` that `/steer:adopt` reverse-engineered or a team populated. |
+| `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:init`, reverse-engineered by `/steer:adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:adopt` reverse-engineered or a team populated. |
 | `mise.toml` | `mise.toml` | Toolchain + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack. |
 | `mise.lock` | `mise.lock` | Placeholder — mise only writes the lock if the file exists. `mise install` populates it; commit the result. |
 | `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). |

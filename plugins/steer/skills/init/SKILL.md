@@ -101,7 +101,11 @@ them:
    instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `/spec/HISTORY.md` (from `history.md`, seeded with a bootstrap entry),
    `/spec/tracker.md` (from `tracker.md` — ask which tracker the product
-   uses), and `/spec/app/README.md` (from `app-docs.md`). Reconcile the PR
+   uses), and `/spec/app/README.md` (from `app-docs.md`). Also back-fill the
+   root `ARCHITECTURE.md` from
+   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/ARCHITECTURE.md` and fill its stack
+   table + apps/packages map from the repo's `package.json` / `mise.toml` and
+   actual `apps/*`+`packages/*`. Reconcile the PR
    template against the bundled
    `${CLAUDE_PLUGIN_ROOT}/templates/github/pull_request_template.md`
    so the drift-gate and living-docs checklists come in (additive — never
@@ -170,7 +174,12 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    leave it **`Proposed`** until a named decider accepts it — generic
    bootstrap-PR approval does **not** ratify a `Proposed` ADR. (Contrast
    **`/steer:adopt`**, which only *observes* existing code and so always
-   authors `Proposed` ADRs.)
+   authors `Proposed` ADRs.) Now that the stack is decided, **fill
+   `ARCHITECTURE.md`** — the stack table from `package.json` / `mise.toml` /
+   `compose.yaml`, the apps/packages map from the scaffold layout, and the
+   cross-cutting concerns from the ADRs just authored. Don't leave the
+   placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
+   suffers when it's left unfilled.
 5. **Pin the toolchain and lock the workspace.** Run `mise install`, then verify
    each `mise.lock` contains real `[[tools.*]]` entries and commit it. Once the
    first real app/workspace exists, generate and commit the workspace lock
