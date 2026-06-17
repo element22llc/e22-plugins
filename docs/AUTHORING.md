@@ -20,7 +20,7 @@ regardless — this matrix is for tight iteration on a single failure.
 | `plugins/steer/skills/**` | `plugin-check` | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
 | `plugins/steer/rules/**` | `plugin-check` | `uv run python scripts/check_plugin.py` |
 | `plugins/steer/hooks/**` | `hooktests` + `shell` | `sh plugins/steer/hooks/tests/run.sh` |
-| `plugins/steer/templates/scaffold/**` | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
+| `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
 | `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
 | `.github/workflows/**` | `actions` | `actionlint` |
@@ -129,10 +129,16 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 `/steer:init` / `/steer:adopt`.
 
 - **Dotfiles are stored without the leading dot** (`gitignore`, `env.example`,
-  `claude/`, `github/`, …) so they don't act on this repo itself.
+  `claude/`, `vscode/`, …) so they don't act on this repo itself.
+- **GitHub templates and the spec spine live in their own topic dirs**, not under
+  `scaffold/`: `plugins/steer/templates/github/` (Issue Forms, workflows, PR
+  template — plus the runtime-only `issue-bodies/`) and
+  `plugins/steer/templates/spec/`. The MANIFEST installs them via its
+  `../github/` and `../spec/` rows. `templates/github/` is the single source of
+  truth for GitHub templates — never add a second copy under `scaffold/`.
 - Keep `plugins/steer/templates/scaffold/MANIFEST.md` in sync — it maps each
-  stored file to its install path. Update it in the same change that adds a
-  scaffold file.
+  stored file (including the `../github/` and `../spec/` topic-dir rows) to its
+  install path. Update it in the same change that adds a template file.
 - Version-governance files exist in two byte-identical copies (e.g.
   `scaffold/scripts/scan-version-pins.sh` ↔ `scripts/scan-version-pins.sh`;
   `scaffold/scripts/version-policy.sh` ↔ `hooks/lib/version-policy.sh`;

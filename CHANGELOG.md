@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **One home per template topic — `templates/github/` is now the single source
+  of truth for GitHub templates.** The shipped Issue Forms, CI workflows, and PR
+  template moved out of `templates/scaffold/github/` (now removed) up into
+  `templates/github/`, alongside the agent-authored `issue-bodies/` that already
+  lived there. The scaffold `MANIFEST.md` installs them via a new
+  *GitHub templates (instantiate from `../github/`)* section — the same
+  install-via-`../` pattern the spec spine already uses — so `scaffold/` no
+  longer carries a second copy of template content. The Issue Forms (`.yml`,
+  human capture UI) and issue bodies (`.md`, agent contract) remain distinct
+  artifacts for distinct runtimes; this only removes the directory split, not
+  that layering (see `reference/ISSUE-SCHEMA.md`). Path references in
+  `init`/`ISSUE-SCHEMA.md` updated; the brand-leak guard
+  (`check_standards.py`) now also scans `templates/github`.
+- **Design-dir guidance rehomed.** `scaffold/spec/design/README.md` moved to
+  `templates/spec/design-readme.md` (installed as `spec/design/README.md` via
+  the spec spine), so all spec template content lives under `templates/spec/`
+  and `scaffold/spec/` holds only the `features/`/`decisions/` placeholders.
 - **Dropped GitHub Project (board) bootstrapping/sync.** Testing showed no real
   gain from a Project board per repo, so the optional Project overlay is removed
   in favor of clean, well-maintained GitHub Issues. Gone: the
@@ -65,8 +82,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   are surfaced, not silently resolved; and when a constraint removes the action
   safety precedence would otherwise pick, it says so. (A `steer-analyzer`
   delegation subagent was trialed for this in the same cycle and removed after
-  interactive validation showed it never fired in practice — see
-  `docs/steer-next-delegation.md`; the precedence rule above is what was kept.)
+  interactive validation showed it never fired in practice; the precedence rule
+  above is what was kept.)
 
 ### 2.0.1
 
