@@ -2,9 +2,10 @@
 
 How to add or change a skill, rule, hook, or scaffold file in the `steer`
 plugin without reverse-engineering the conventions. This consolidates what the
-root [`CLAUDE.md`](../CLAUDE.md), the check scripts under `scripts/`, and
-[`plugins/steer/templates/reference/INVOCATION.md`](../plugins/steer/templates/reference/INVOCATION.md)
+root [`CLAUDE.md`](CLAUDE.md), the check scripts under `scripts/`, and
+[`plugins/steer/templates/reference/INVOCATION.md`](plugins/steer/templates/reference/INVOCATION.md)
 already enforce — it does **not** introduce new policy.
+
 
 > Repo-local helpers do the mechanical parts for you: `/new-skill`, `/new-rule`,
 > and `/preflight` (defined under `.claude/skills/`, not shipped). Read the
@@ -158,17 +159,18 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 ## Documentation site
 
-The MkDocs site under `docs/` is auto-maintained. It is **not** the same thing as
+The Zensical site under `docs/` is auto-maintained. It is **not** the same thing as
 this `AUTHORING.md` (which is about building the plugin); the site documents the
 plugin's *behaviour* for consumers.
 
 - **Serve / build / check:** `mise run docs:serve`, `mise run docs:build`
-  (strict), `mise run docs:check`. The MkDocs toolchain lives in the `docs`
+  (strict), `mise run docs:check`. The Zensical toolchain lives in the `docs`
   dependency-group (`pyproject.toml`) — `serve`/`build` run via
   `uv run --group docs`, so the CI env stays light. `docs:check` is stdlib-only
   and runs inside `mise run ci`.
 - **Mermaid** diagrams render via the `pymdownx.superfences` custom fence in
-  `mkdocs.yml`; Material bundles `mermaid.js`, so no extra dependency is needed.
+  `mkdocs.yml`; Zensical initializes `mermaid.js` natively, so no extra
+  dependency is needed.
 - **Reconcile with `/plugin-docs`** (repo-local skill) after changing skills,
   hooks, or rules: it refreshes the generated reference pages and can dispatch the
   `documentation-reviewer` agent. The `docs:check` gate (`validate_docs.py`) fails
@@ -176,8 +178,11 @@ plugin's *behaviour* for consumers.
   broken, a page is orphaned, or a link/`/steer:` ref doesn't resolve. The PR-only
   `check_docs_impact.py` gate fails when `skills/`, `rules/`, or `hooks/` change
   but no `docs/` file does.
-- **New pages** start from `docs/_templates/` and must be added to the
-  `mkdocs.yml` nav (orphans fail the gate).
+- **New pages** start from the `docs-templates/` scaffolds and must be added to
+  the `mkdocs.yml` nav (orphans fail the gate). The scaffolds (and this
+  `AUTHORING.md`) live **outside** `docs/` on purpose: Zensical builds every file
+  under `docs_dir` (it has no `exclude_docs` yet), so non-page content is kept out
+  of the docs tree rather than excluded.
 
 ## Built-in helpers (no install needed)
 

@@ -15,7 +15,7 @@ allowed-tools:
 
 A thin convenience wrapper over the existing `mise` tasks. It adds no
 validation logic; it just runs the gates and summarizes them. See
-`docs/AUTHORING.md` → "What I touched → what to run".
+`AUTHORING.md` → "What I touched → what to run".
 
 ## Steps
 

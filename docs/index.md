@@ -42,7 +42,7 @@ flowchart LR
 - **Looking for a specific command?** See the [Skills reference](reference/skills.md).
 - **Contributing to the plugin itself?** See
   [Contributing → Documentation](contributing/documentation.md) and
-  [`docs/AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/docs/AUTHORING.md).
+  [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md).
 
 !!! note "Docs are auto-maintained"
     This site is kept in sync with the plugin's source of truth by the repo-local

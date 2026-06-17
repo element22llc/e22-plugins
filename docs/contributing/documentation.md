@@ -11,7 +11,7 @@ mise run docs:build     # strict build (fails on broken links/nav)
 mise run docs:check     # structural + sync validation (no docs deps)
 ```
 
-The MkDocs toolchain lives in the `docs` dependency-group (`pyproject.toml`), so
+The Zensical toolchain lives in the `docs` dependency-group (`pyproject.toml`), so
 `serve`/`build` pull it in via `uv run --group docs`. The lightweight
 `docs:check` uses only stdlib + pyyaml and runs as part of `mise run ci`.
 
@@ -35,14 +35,14 @@ flowchart LR
   code.
 - **`validate_docs.py`** (`mise run docs:check`, in `ci`) asserts: every shipped
   skill appears in `reference/skills.md`; every `mkdocs.yml` nav entry resolves;
-  no orphan pages (outside `_templates/`); internal links resolve; `/steer:` refs
+  no orphan pages; internal links resolve; `/steer:` refs
   are valid and no stale `/e22-*` references remain.
 - **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
   `skills/`, `rules/`, or `hooks/` without touching `docs/`.
 
 ## Page templates
 
-New pages start from `docs/_templates/`:
+New pages start from the repo-root `docs-templates/` directory:
 
 | Template | For |
 | --- | --- |
@@ -50,12 +50,14 @@ New pages start from `docs/_templates/`:
 | `reference.md` | A reference/catalog page. |
 | `concept.md` | A conceptual explainer. |
 
-Templates are excluded from the nav and from the orphan check.
+The scaffolds live outside `docs/` because Zensical builds every file under
+`docs_dir` (it has no `exclude_docs` setting), so keeping them out of the tree is
+what stops them from becoming pages.
 
 ## Authoring the plugin itself
 
 Docs about *building* the plugin (skill frontmatter schema, rule numbering, hook
 rules, the "what I touched → what to run" matrix) live in
-[`docs/AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/docs/AUTHORING.md),
+[`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md),
 not on this site. Changes confined to `docs/`, `.claude/`, or `CLAUDE.md` ship
 nothing and need no `CHANGELOG.md` entry.

@@ -77,19 +77,19 @@ run = [
   "sh plugins/steer/scripts/scan-version-pins.sh .",
 ]
 
-# Documentation site (MkDocs + Material + mermaid). The MkDocs toolchain lives in
+# Documentation site (Zensical + mermaid). The Zensical toolchain lives in
 # the `docs` dependency-group so it is NOT installed by the default `uv sync`
 # the CI env uses — serve/build pull it in on demand via `uv run --group docs`.
 [tasks."docs:serve"]
 description = "Serve the documentation site locally with live reload"
 run = [
-  "uv run --group docs mkdocs serve",
+  "uv run --group docs zensical serve",
 ]
 
 [tasks."docs:build"]
 description = "Build the documentation site (strict: fail on broken links/nav)"
 run = [
-  "uv run --group docs mkdocs build --strict",
+  "uv run --group docs zensical build --strict",
 ]
 
 [tasks."docs:check"]

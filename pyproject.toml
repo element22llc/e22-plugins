@@ -15,11 +15,12 @@ dev = [
 ]
 # Documentation-site toolchain. Kept in its own group (NOT in dev, the default
 # group `uv sync` installs) so the CI quality env stays light — `mise run
-# docs:serve` / `docs:build` pull it in with `uv run --group docs`. mkdocs-material
-# bundles mermaid.js, so mermaid needs no extra dependency, only the superfences
-# config in mkdocs.yml.
+# docs:serve` / `docs:build` pull it in with `uv run --group docs`. Zensical
+# (the Material for MkDocs team's successor) reads our mkdocs.yml natively and
+# initializes mermaid.js for `mermaid` code blocks on its own, so mermaid needs
+# no extra dependency — only the superfences custom_fence config in mkdocs.yml.
 docs = [
-  "mkdocs-material>=9.5",
+  "zensical>=0.0.45",
   "pymdown-extensions>=10",
 ]
 

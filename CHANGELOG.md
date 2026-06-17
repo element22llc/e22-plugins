@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.1.0
 
 - **Prescribed, auto-maintained home for tech-stack + architecture docs — root
   `ARCHITECTURE.md`.** New scaffold template
