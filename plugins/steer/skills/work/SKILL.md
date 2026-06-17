@@ -3,6 +3,16 @@ name: work
 description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules. One issue per branch/PR by default."
 when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented.
 argument-hint: "[start | resume | status | finish] [#issue ...]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git add *)
+  - Bash(git commit *)
 ---
 <!-- steer:modes start,resume,status,finish -->
 
@@ -29,6 +39,15 @@ read/search the issue, create-or-reuse the issue, claim it, update its managed
 state, create/switch the local branch, modify the local repository, and run
 tests. **Commit, push, and open/update PR follow the existing commit- and
 PR-autonomy rules; merge and deploy are never implied.**
+
+> **Pre-approved shell scope (frontmatter `allowed-tools`).** To cut repetitive
+> prompts, this skill pre-approves only read-only git inspection (`status`, `diff`,
+> `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), and the
+> Rule-45-autonomous local mutations `git add` / `git commit`. It deliberately does
+> **not** pre-approve `git push`, `gh pr create/edit/merge`, `gh api`, `gh workflow run`,
+> or destructive git (`reset --hard`, `clean -fdx`, `branch -D`) — those keep the human
+> gate. `gh` is not pre-approved at all; tracker I/O still routes through
+> `/steer:tracker-sync`.
 
 ## Subcommands (distinct, idempotent)
 

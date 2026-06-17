@@ -26,6 +26,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `displayName: "Steer — Engineering Standards"` (Claude Code ≥ 2.1.143); the
   invocation prefix stays `/steer:*`. A new `plugins/steer/README.md` records why
   `defaultEnabled` is intentionally omitted (org standards stay enabled by default).
+- **`/steer:work` prompts less for routine git, without widening the human gate.**
+  The skill now pre-approves (via `allowed-tools`) only read-only git inspection
+  (`status`/`diff`/`log`/`show`/`rev-parse`), branch create/switch
+  (`checkout -b`/`switch`), and the Rule-45-autonomous `git add`/`git commit`. It
+  deliberately does **not** pre-approve `git push`, `gh pr create/edit/merge`,
+  `gh api`, `gh workflow run`, or destructive git (`reset --hard`, `clean -fdx`,
+  `branch -D`) — those keep prompting. No `gh` access is granted (tracker I/O still
+  routes through `/steer:tracker-sync`). `tracker-sync` and `issues` were deliberately
+  left unchanged: `tracker-sync` is MCP-first and its only `gh` reads
+  (`gh auth status`, `gh issue list`) are low-volume, so pre-approval is deferred
+  pending evidence it helps; `issues` never touches `gh` directly.
 
 ### 2.0.1
 
