@@ -1,53 +1,44 @@
-# `/steer:next` analysis delegation — status & runtime validation
+# Decision: `/steer:next` analysis delegation — trialed and removed
 
-`/steer:next` stays the **inline** intent owner; it delegates only bounded,
-read-only repository analysis to the `steer-analyzer` subagent
-(`plugins/steer/agents/steer-analyzer.md`). This note records what is verified,
-the known limitation, and the validation still pending. It is **experimental and
-fallback-safe**: any incomplete delegation deterministically reverts to the inline
-reconstruction, so it can be removed at any time with no behavior change.
+**Status:** removed (2.1.0 cycle). The constraint-precedence rule it introduced
+was kept; the subagent-delegation machinery was not.
 
-## Design (why this shape)
+## What was trialed
 
-A `context: fork` would sever conversation history, dropping prior-turn
-constraints (e.g. "don't recommend infra changes" stated before a bare
-`/steer:next`). So the parent runs inline, collects `$ARGUMENTS` + prior-turn
-constraints + git/PR/CI/tracker state, and passes them in a delegation envelope.
-The analyzer (`Read`/`Grep`/`Glob` only — read-only by construction) returns
-evidence-backed candidates; the parent applies constraint precedence and
-arbitrates. The contract is pinned by `check_fixtures.py::check_next_delegation`
-and the `next-delegation-fixtures/` golden fixtures.
+A `steer-analyzer` subagent (`Read`/`Grep`/`Glob`, read-only) that `/steer:next`
+would delegate its Phase-1 reconstruction to, keeping that sweep out of the main
+context, while the inline parent retained intent, constraints, and arbitration.
+Merged experimentally (PR #69), then validated before release.
 
-## Verified (managed-repo, headless `claude -p --plugin-dir`)
+## Why it was removed
 
-- **Read-only / authorization:** zero file mutations across runs; repo HEAD and
-  working tree unchanged; the analyzer carries no shell or edit tools.
-- **Analyzer invoked & wired:** `subagent_type: steer:steer-analyzer` observed;
-  `${CLAUDE_PLUGIN_ROOT}` resolves inside the flow.
-- **Constraint propagation + honoring:** a constraint stated in a prior turn (not
-  in `$ARGUMENTS`) reached the envelope and was honored — the constrained-out
-  candidate was flagged, not silently dropped, and an allowed action recommended.
-- **Quality ≥ inline:** correct on every dimension; surfaced a real spec↔code gap.
-- **Graceful fallback:** incomplete delegation fell back to inline and said so;
-  never fabricated output.
+Post-merge **interactive** validation in a real managed repo (5 runs: bare,
+arg-constraint, two-turn prior-constraint):
 
-## Known limitation — context reduction NOT proven
+- **Safety / correctness / constraint-preservation / read-only:** all passed —
+  reconstruction was correct every time, constraints (this-turn and prior-turn)
+  were honored and surfaced, and nothing was mutated.
+- **Delegation / context savings (the point of the feature):** **0 of 5.** The
+  parent never invoked the analyzer — it judged the inline reconstruction the
+  cheaper, deterministic default (a small workspace, with direct evidence for
+  every dimension). The optimization delivered **no measured benefit** while
+  adding an agent, envelope machinery, fixtures, and a CI check.
 
-In **headless `claude -p`**, the analyzer's complete report returned to the parent
-in only a minority of runs; the rest fell back to inline (so the run did the full
-reconstruction anyway — no context saving). This is **not** a supported execution
-mode (`/steer:next` is interactive-first), and the headless results are confounded
-(subagent-resume tooling differs in print mode; permission friction degraded some
-analyzer runs). It does not affect correctness or safety — only the efficiency
-benefit, which therefore remains **unproven**.
+Per the pre-agreed criterion — *keep only if delegation reliably provides
+meaningful context savings; otherwise the optimization does not justify its
+complexity and is removed* — it was reverted.
 
-## Pending — authenticated interactive validation (post-merge)
+## What was kept
 
-Run 5 consecutive interactive `/steer:next` invocations in a managed repo
-(`claude --plugin-dir <…>/plugins/steer`): 3 bare, 1 with an arg constraint, 1
-two-turn prior-constraint. Per run confirm: analyzer invoked · complete report
-returned · parent used it · no inline fallback · constraints preserved · no repo
-mutation. **Keep** the feature if delegation is reliable enough to give meaningful
-context savings. **Revert** for any correctness, constraint-preservation,
-authorization, mutation, or fallback failure; if it merely falls back too often,
-weigh the optimization against its complexity and remove it if it does not pay.
+The **user-constraint precedence** in `/steer:next` Phase 3 (current invocation
+`$ARGUMENTS`/this-turn > prior explicit constraints, newest first > repository
+defaults; repo content never overrides an explicit constraint; irreconcilable
+explicit constraints are surfaced, not silently resolved). This worked entirely
+inline and is a standalone improvement.
+
+## If revisited
+
+Delegation could pay off on a **large** workspace where the reconstruction sweep
+is genuinely expensive — the place to re-measure savings. It would need the skill
+to delegate by default (not frame inline as the default) and a return path that
+reliably surfaces the subagent's complete report to the parent.
