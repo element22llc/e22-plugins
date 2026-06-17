@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.3.0
 
 - **Make GitHub branch protection — the real PR gate — reliable instead of a
   manual README step.** steer stays advisory in the local session (rule 95, "you
