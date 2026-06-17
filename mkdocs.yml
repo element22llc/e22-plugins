@@ -70,6 +70,7 @@ nav:
   - Getting started:
       - Installation: getting-started/installation.md
       - First workflow: getting-started/first-workflow.md
+      - Team onboarding: getting-started/team-onboarding.md
   - Concepts:
       - Product spine: concepts/product-spine.md
       - Lifecycle: concepts/lifecycle.md
@@ -86,6 +87,9 @@ nav:
       - Hooks: reference/hooks.md
       - Configuration: reference/configuration.md
       - Repository contract: reference/repository-contract.md
+  - Team rollout:
+      - Known limitations: reference/known-limitations.md
+      - Launch checklist: team-rollout/launch-checklist.md
   - Decisions: decisions/index.md
   - Contributing:
       - Documentation: contributing/documentation.md

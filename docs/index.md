@@ -38,6 +38,9 @@ flowchart LR
 
 - **New to the plugin?** Start with [Installation](getting-started/installation.md)
   and the [First workflow](getting-started/first-workflow.md).
+- **Joining a team that uses it?** Read [Team onboarding](getting-started/team-onboarding.md).
+- **Rolling it out to a team?** See [Known limitations](reference/known-limitations.md)
+  and the [Launch checklist](team-rollout/launch-checklist.md).
 - **Want the mental model?** Read [Concepts](concepts/product-spine.md).
 - **Looking for a specific command?** See the [Skills reference](reference/skills.md).
 - **Contributing to the plugin itself?** See
