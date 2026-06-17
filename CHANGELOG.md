@@ -37,6 +37,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   left unchanged: `tracker-sync` is MCP-first and its only `gh` reads
   (`gh auth status`, `gh issue list`) are low-volume, so pre-approval is deferred
   pending evidence it helps; `issues` never touches `gh` directly.
+- **`/steer:next` can delegate its read-only analysis to a new `steer-analyzer`
+  subagent (experimental, fallback-safe).** `/steer:next` stays inline and owns
+  user intent — it collects the constraints (this turn *and* prior turns) and the
+  git/PR/CI/tracker state, hands the bounded filesystem analysis to a read-only
+  `steer-analyzer` agent (`Read`/`Grep`/`Glob` only) via a delegation envelope,
+  then applies constraint precedence and arbitrates. Any absent, partial,
+  malformed, or failed response deterministically falls back to the existing
+  inline reconstruction, so correctness, constraint-preservation, and read-only
+  behavior are unchanged. The intended benefit — reduced parent-context usage —
+  is **not yet proven**: headless validation showed the safety properties hold but
+  delegation return was unreliable in that mode; reliable context reduction awaits
+  authenticated interactive validation (see `docs/steer-next-delegation.md`). The
+  feature is independently revertible (remove the agent + the delegation block).
 
 ### 2.0.1
 
