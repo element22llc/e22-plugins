@@ -1,0 +1,61 @@
+# Documentation
+
+This site is **auto-maintained**: a repo-local Claude skill keeps it in sync with
+the plugin's source of truth, and a CI gate fails PRs when it drifts.
+
+## Editing locally
+
+```bash
+mise run docs:serve     # live-reload preview at http://127.0.0.1:8000
+mise run docs:build     # strict build (fails on broken links/nav)
+mise run docs:check     # structural + sync validation (no docs deps)
+```
+
+The MkDocs toolchain lives in the `docs` dependency-group (`pyproject.toml`), so
+`serve`/`build` pull it in via `uv run --group docs`. The lightweight
+`docs:check` uses only stdlib + pyyaml and runs as part of `mise run ci`.
+
+## How auto-maintenance works
+
+```mermaid
+flowchart LR
+    SRC["Source of truth<br/>skills · rules · hooks"] --> SKILL["/plugin-docs skill"]
+    SKILL -->|regenerate + reconcile| DOCS[docs/]
+    SKILL -->|deep review| AGENT[documentation-reviewer agent]
+    AGENT -->|findings| SKILL
+    DOCS --> CHECK[validate_docs.py<br/>in mise run ci]
+    PR[Pull request] --> IMPACT[check_docs_impact.py<br/>--base]
+    IMPACT -->|skills/rules/hooks changed<br/>but docs didn't| FAIL[CI fails]
+```
+
+- **`/plugin-docs`** (repo-local, *does not ship*) reconciles
+  `reference/skills.md` against the skills on disk, refreshes generated reference
+  pages, flags stale prose, and runs the validator. It can dispatch the
+  **`documentation-reviewer`** subagent for a deeper accuracy pass against the
+  code.
+- **`validate_docs.py`** (`mise run docs:check`, in `ci`) asserts: every shipped
+  skill appears in `reference/skills.md`; every `mkdocs.yml` nav entry resolves;
+  no orphan pages (outside `_templates/`); internal links resolve; `/steer:` refs
+  are valid and no stale `/e22-*` references remain.
+- **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
+  `skills/`, `rules/`, or `hooks/` without touching `docs/`.
+
+## Page templates
+
+New pages start from `docs/_templates/`:
+
+| Template | For |
+| --- | --- |
+| `workflow.md` | A `/steer:<skill>` workflow page. |
+| `reference.md` | A reference/catalog page. |
+| `concept.md` | A conceptual explainer. |
+
+Templates are excluded from the nav and from the orphan check.
+
+## Authoring the plugin itself
+
+Docs about *building* the plugin (skill frontmatter schema, rule numbering, hook
+rules, the "what I touched → what to run" matrix) live in
+[`docs/AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/docs/AUTHORING.md),
+not on this site. Changes confined to `docs/`, `.claude/`, or `CLAUDE.md` ship
+nothing and need no `CHANGELOG.md` entry.

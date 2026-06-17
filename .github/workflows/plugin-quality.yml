@@ -42,6 +42,10 @@ jobs:
         if: github.event_name == 'pull_request'
         run: uv run python scripts/check_changelog.py --base "${{ github.event.pull_request.base.sha }}"
 
+      - name: Docs-impact gate (PRs)
+        if: github.event_name == 'pull_request'
+        run: uv run python scripts/check_docs_impact.py --base "${{ github.event.pull_request.base.sha }}"
+
   # Non-blocking early-warning signal: does the plugin still validate against the
   # latest Claude Code? Surfaces upstream breakage without gating merges (the
   # pinned job above is authoritative).

@@ -13,6 +13,15 @@ dev = [
   "pre-commit>=4.2",
   "ruff>=0.12",
 ]
+# Documentation-site toolchain. Kept in its own group (NOT in dev, the default
+# group `uv sync` installs) so the CI quality env stays light — `mise run
+# docs:serve` / `docs:build` pull it in with `uv run --group docs`. mkdocs-material
+# bundles mermaid.js, so mermaid needs no extra dependency, only the superfences
+# config in mkdocs.yml.
+docs = [
+  "mkdocs-material>=9.5",
+  "pymdown-extensions>=10",
+]
 
 [tool.uv]
 # This project is a collection of validation scripts, not an installable

@@ -77,6 +77,27 @@ run = [
   "sh plugins/steer/scripts/scan-version-pins.sh .",
 ]
 
+# Documentation site (MkDocs + Material + mermaid). The MkDocs toolchain lives in
+# the `docs` dependency-group so it is NOT installed by the default `uv sync`
+# the CI env uses — serve/build pull it in on demand via `uv run --group docs`.
+[tasks."docs:serve"]
+description = "Serve the documentation site locally with live reload"
+run = [
+  "uv run --group docs mkdocs serve",
+]
+
+[tasks."docs:build"]
+description = "Build the documentation site (strict: fail on broken links/nav)"
+run = [
+  "uv run --group docs mkdocs build --strict",
+]
+
+[tasks."docs:check"]
+description = "Validate docs structure + sync with source of truth (no docs deps)"
+run = [
+  "uv run python scripts/validate_docs.py",
+]
+
 [tasks.check]
 description = "Run fast local checks (pre-commit equivalent)"
 depends = [
@@ -94,4 +115,5 @@ depends = [
   "shell",
   "hooktests",
   "version-scan",
+  "docs:check",
 ]

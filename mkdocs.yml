@@ -1,0 +1,87 @@
+# MkDocs configuration for the e22-plugins documentation site.
+#
+# Served locally with `mise run docs:serve` and built (strict) with
+# `mise run docs:build`. The toolchain lives in the `docs` dependency-group
+# (see pyproject.toml). The nav below is the source of truth for site
+# structure; scripts/validate_docs.py asserts every nav entry resolves to a
+# real file and every docs/*.md (outside _templates/) is reachable from it.
+site_name: e22-plugins — steer
+site_description: Engineering-standards plugin marketplace — the steer plugin.
+docs_dir: docs
+# Repo-local site; not deployed. `mise run docs:build` writes here (gitignored).
+site_dir: site
+use_directory_urls: true
+
+# Files under docs/ that are not published site pages. Keep in sync with
+# EXCLUDED_DIRS/EXCLUDED_FILES in scripts/validate_docs.py.
+#   _templates/  — copy-from sources for new pages
+#   AUTHORING.md — repo-internal authoring guide (linked from the site by URL)
+exclude_docs: |
+  _templates/
+  AUTHORING.md
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  # mermaid.js diagrams: Material renders fenced ```mermaid blocks client-side
+  # via this custom superfence. No extra plugin/dependency required.
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - First workflow: getting-started/first-workflow.md
+  - Concepts:
+      - Product spine: concepts/product-spine.md
+      - Lifecycle: concepts/lifecycle.md
+      - Authorization model: concepts/authorization-model.md
+  - Workflows:
+      - Overview: workflows/index.md
+      - Adopt: workflows/adopt.md
+      - Spec: workflows/spec.md
+      - Issues: workflows/issues.md
+      - Work: workflows/work.md
+      - Build: workflows/build.md
+  - Reference:
+      - Skills: reference/skills.md
+      - Hooks: reference/hooks.md
+      - Configuration: reference/configuration.md
+      - Repository contract: reference/repository-contract.md
+  - Decisions: decisions/index.md
+  - Contributing:
+      - Documentation: contributing/documentation.md
+      - Release process: contributing/release-process.md
