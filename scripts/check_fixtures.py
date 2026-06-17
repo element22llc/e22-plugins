@@ -41,6 +41,7 @@ PLUGIN_ROOT = Path("plugins/steer")
 REFERENCE = PLUGIN_ROOT / "templates" / "reference"
 SPEC_TEMPLATES = PLUGIN_ROOT / "templates" / "spec"
 SKILLS = PLUGIN_ROOT / "skills"
+AGENTS = PLUGIN_ROOT / "agents"
 RULES = PLUGIN_ROOT / "rules"
 HOOKS = PLUGIN_ROOT / "hooks"
 REPO_FIXTURES = Path("tests/fixtures")
@@ -362,6 +363,84 @@ def check_workflow_authority(errors: list[str]) -> None:
         errors.append(f"{hooks_json}: Stop reconciliation hook is not registered under Stop")
 
 
+def check_next_delegation(errors: list[str]) -> None:
+    """Lock the /steer:next -> steer-analyzer delegation contract.
+
+    /steer:next stays the **inline** intent owner and delegates only bounded,
+    read-only repository analysis to the ``steer-analyzer`` subagent; any
+    incomplete delegation falls back to the inline reconstruction. These are
+    safety- and contract-relevant invariants, so a refactor cannot silently widen
+    the agent's tools, turn /steer:next into a context fork, or drop the
+    deterministic fallback without CI catching it.
+    """
+    agent = AGENTS / "steer-analyzer.md"
+    if not agent.is_file():
+        errors.append(f"{agent}: steer-analyzer agent is missing")
+    else:
+        atext = _read(agent)
+        m = re.search(r"^tools:\s*(.+)$", atext, re.M)
+        if not m:
+            errors.append(f"{agent}: missing 'tools:' frontmatter")
+        else:
+            tools = m.group(1)
+            for needed in ("Read", "Grep", "Glob"):
+                if needed not in tools:
+                    errors.append(f"{agent}: tools must include '{needed}'")
+            for forbidden in ("Bash", "Edit", "Write", "NotebookEdit"):
+                if forbidden in tools:
+                    errors.append(
+                        f"{agent}: tools must NOT include '{forbidden}' — the "
+                        "analyzer is read-only by construction"
+                    )
+        if "disallowedTools:" not in atext:
+            errors.append(f"{agent}: must declare disallowedTools (defense in depth)")
+
+    nxt = SKILLS / "next" / "SKILL.md"
+    if not nxt.is_file():
+        errors.append(f"{nxt}: next skill is missing")
+    else:
+        ntext = _read(nxt)
+        if "context: fork" in ntext:
+            errors.append(
+                f"{nxt}: /steer:next must stay inline (no 'context: fork') — it "
+                "owns user intent and constraint arbitration"
+            )
+        if "steer-analyzer" not in ntext:
+            errors.append(f"{nxt}: must delegate analysis to steer-analyzer")
+        for field in (
+            "Current invocation constraints",
+            "Prior explicit user constraints",
+            "Pre-collected git",
+            "Required response contract",
+        ):
+            if field not in ntext:
+                errors.append(f"{nxt}: delegation envelope missing '{field}'")
+        if "delegated analysis was unavailable" not in ntext or "inline" not in ntext.lower():
+            errors.append(f"{nxt}: must define the deterministic inline fallback")
+        if "repository defaults" not in ntext.lower():
+            errors.append(f"{nxt}: must state the constraint-precedence rule")
+
+    deleg_dir = REFERENCE / "next-delegation-fixtures"
+    required = {
+        "delegation-envelope.md": ["## Given", "## Expected envelope fields", "## Must not"],
+        "fallback-on-incomplete.md": [
+            "## Given",
+            "## Accept only",
+            "## Expected behavior",
+            "## Must not",
+        ],
+    }
+    for name, headings in required.items():
+        fixture = deleg_dir / name
+        if not fixture.is_file():
+            errors.append(f"{fixture}: delegation golden fixture is missing")
+            continue
+        ftext = _read(fixture)
+        for heading in headings:
+            if heading not in ftext:
+                errors.append(f"{fixture}: missing stable heading '{heading}'")
+
+
 def run_checks() -> list[str]:
     errors: list[str] = []
     check_next_actions_contract(errors)
@@ -371,6 +450,7 @@ def run_checks() -> list[str]:
     check_adr_default_proposed(errors)
     check_repo_fixtures(errors)
     check_workflow_authority(errors)
+    check_next_delegation(errors)
     return errors
 
 
