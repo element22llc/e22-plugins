@@ -20,10 +20,12 @@ So the headline is good and the caveat is sharp:
 - **Support is tiered ([§3](#3-support-policy--per-surface-matrix)).** Targeted:
   Claude Code **CLI + IDE extensions** (VS Code, JetBrains). Intended: Claude Code
   **desktop**. Everything else — **Cowork, claude.ai chat — is best-effort.**
-- **`steer` can be _installed_ on Cowork and Claude Desktop with no rewrite.**
-- **Whether its hook-driven core _runs_ there is unverified and must be tested** —
-  the always-on rules injection rides a hook mechanism with a documented, still-open
-  reliability bug (see [§4](#4-the-two-risk-mechanisms)).
+- **`steer` can be _installed_ on Cowork and Claude Desktop with no rewrite** — but
+  installing ≠ running its core.
+- **The hook-driven core does _not_ fire on Cowork or the desktop app** (per our own
+  [known-limitations](docs/reference/known-limitations.md)): the always-on rules are
+  not auto-injected and the `PreToolUse` gates don't run there. Load the rules by
+  hand with `/steer:standards` (see [§4](#4-why-the-hook-layer-doesnt-travel)).
 - **The portable nucleus is skills (`SKILL.md`) + MCP.** Those travel everywhere.
 - **claude.ai chat is the outlier — no plugins, no hooks.** Reach it via org-wide
   Skills + MCP connectors + Project instructions; there is no equivalent of the
@@ -54,34 +56,42 @@ three tiers:
   **IDE extensions (VS Code, JetBrains)** — the extensions delegate to the CLI, so
   they inherit the full plugin engine: hooks, always-on rules injection, gates,
   skills, and MCP. Regressions here are **bugs we fix**.
-- **Tier 2 — Intended (expected parity, pending verification).** Claude Code
-  **desktop**. Same plugin engine; parity expected but not yet confirmed
-  ([§6](#6-verification-checklist)). We aim to support it and track gaps; not
-  guaranteed per release.
+- **Tier 2 — Intended.** Claude Code **desktop**. We commit to supporting it, but
+  **plugin hooks do not fire there** ([known-limitations](docs/reference/known-limitations.md)):
+  skills and MCP work; the always-on rules and `PreToolUse` gates do not — run
+  `/steer:standards` to load the rules manually. (The support *tier* is our
+  commitment; the hook layer's availability is a separate axis — see the Hooks
+  column and [§4](#4-why-the-hook-layer-doesnt-travel).)
 - **Tier 3 — Best-effort.** Claude **Cowork** and **claude.ai chat**. The portable
-  nucleus (skills + MCP) may work; the hook-driven core (always-on rules + gates) is
-  **not guaranteed** and we make no per-release testing commitment.
+  nucleus (skills + MCP) is what works; the hook-driven core (always-on rules +
+  gates) **does not fire** (Cowork: confirmed; claude.ai: no hook engine at all). No
+  per-release testing commitment.
 
 | Surface | Tier | Plugin install | Hooks (rules + gates) | Skills | MCP |
 |---|---|---|---|---|---|
 | Claude Code **CLI** | **1 — targeted** | ✅ today | ✅ | ✅ | ✅ |
 | **IDE extensions** (VS Code, JetBrains) | **1 — targeted** | ✅ via CLI | ✅ via CLI | ✅ | ✅ |
-| Claude Code **desktop** | **2 — intended** | ✅ same engine as CLI | ⚠️ **verify** ([§4](#4-the-two-risk-mechanisms)) | ✅ | ✅ |
-| Claude **Cowork** | **3 — best-effort** | ✅ from GitHub marketplace | ⚠️ **verify**, not guaranteed | ✅ | ✅ |
-| **claude.ai** chat | **3 — best-effort** | ❌ no plugin engine | ❌ no hooks | ✅ as org **Skills** | ✅ remote **connectors** |
+| Claude Code **desktop** | **2 — intended** | ✅ same engine as CLI | ❌ don't fire — use `/steer:standards` ([§4](#4-why-the-hook-layer-doesnt-travel)) | ✅ | ✅ |
+| Claude **Cowork** | **3 — best-effort** | ✅ from GitHub marketplace | ❌ don't fire — use `/steer:standards` | ✅ | ✅ |
+| **claude.ai** chat | **3 — best-effort** | ❌ no plugin engine | ❌ no hook engine | ✅ as org **Skills** | ✅ remote **connectors** |
 
-Legend: ✅ supported · ⚠️ supported-in-principle-but-unverified · ❌ not available.
+Legend: ✅ works · ❌ not available, or present but does not fire (see cell note).
 
 Org-wide deployment differs by surface: managed settings (Tier 1/2), per-user
 install today with org-wide sharing "coming" (Cowork), and admin-provisioned Skills
 on Team/Enterprise (claude.ai). See [§5](#5-recommendations-per-surface).
 
-## 4. The two risk mechanisms
+## 4. Why the hook layer doesn't travel
 
 `steer`'s core value — **always-on rules** — depends on a plugin `SessionStart`
-hook surfacing `hookSpecificOutput.additionalContext` to the model. Two reported
-behaviors put that at risk. Both must be treated as **empirically unverified on
-each app runtime**, not assumed working:
+hook surfacing `hookSpecificOutput.additionalContext` to the model, and the
+`PreToolUse`/`Stop` gates depend on the same plugin-hook lifecycle. Our own
+[known-limitations](docs/reference/known-limitations.md) records the tested
+reality: **on Claude Cowork and the desktop app these hooks do not currently
+fire.** Skills and MCP are unaffected; the rules and the gates are.
+
+Two mechanism-level reasons this layer is fragile (consistent with the observed
+behavior):
 
 1. **Plugin `SessionStart` `additionalContext` not surfaced** —
    [anthropics/claude-code#12151](https://github.com/anthropics/claude-code/issues/12151)
@@ -98,15 +108,20 @@ each app runtime**, not assumed working:
    `. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"` line. Latent fragility worth a
    defensive guard if/when we harden.
 
-These are the reason desktop/Cowork parity is a **test**, not an assumption.
+**Mitigation (per known-limitations):** on Cowork/desktop, load the rules by hand
+with `/steer:standards` at the start of each session, and rely on human review
+where the `PreToolUse` gates would have fired.
 
 ## 5. Recommendations per surface
 
 ### Claude Code desktop
-Same plugin engine as the CLI; the expectation is **parity**. Action: run the
-[§6](#6-verification-checklist) checklist. Most likely "just works"; the only real
-exposure is the #12151 `additionalContext` path. No code change anticipated —
-confirm and document.
+Same plugin engine as the CLI **except plugin hooks don't fire** — so skills and
+MCP work, but the always-on rules and `PreToolUse` gates don't
+([known-limitations](docs/reference/known-limitations.md)). Guidance: install
+`steer`, then **run `/steer:standards` at the start of each session** to load the
+rules by hand, and rely on review where the gates would have run. No code change;
+the [§6](#6-verification-checklist) checklist confirms skills/MCP and the manual
+rule-load.
 
 ### Claude Cowork (priority: non-technical POs)
 Add the `steer` GitHub marketplace via **Customize → Plugins**. Highest-value
@@ -119,9 +134,11 @@ the rules hook doesn't fire:
   `conventions`, `drift`, `spec-scaffold`, `sync`, `tidy`, `traceability`,
   `tracker-sync`, `protect`, `work`.
 
-Caveats to flag in rollout: org-wide plugin **sharing is per-user today**
-("coming"), so the first wave is manual install; and the always-on rules may not
-inject (verify) — POs would then get skills without the ambient ruleset.
+Caveats to flag in rollout: the always-on rules **do not inject** on Cowork
+([known-limitations](docs/reference/known-limitations.md)) — POs get skills without
+the ambient ruleset, so have them run `/steer:standards` first (or lean on the
+PO-facing skills, which are self-contained). And org-wide plugin **sharing is
+per-user today** ("coming"), so the first wave is manual install.
 
 ### claude.ai chat
 No plugin/hook engine. Three-part path:
@@ -138,19 +155,20 @@ story for rules where hooks don't run (digest-as-skill is the fallback).
 
 ## 6. Verification checklist
 
-Hook parity is empirical and can't be checked from the CLI — run this on each
-desktop app and record pass/fail back into the [§3 matrix](#3-per-surface-support-matrix):
+Run on each desktop app and record results back into the
+[§3 matrix](#3-support-policy--per-surface-matrix). Hooks are **expected not to
+fire** on Cowork/desktop ([§4](#4-why-the-hook-layer-doesnt-travel)) — so this
+confirms the working path and the manual workaround, not parity:
 
 - [ ] Install/enable `steer`; start a **fresh** session.
-- [ ] **Rules injected?** Ask "what engineering rules are active?" — expect the
-      `00-router` ruleset, not a blank. (Tests #12151.)
-- [ ] **`PreToolUse` gate fires?** Attempt a mutation that
-      `check-issue-before-mutation.sh` should advise/deny.
 - [ ] **Skill invocation works?** Run `/steer:next` (or `/steer:build`) and confirm
       the namespaced invocation resolves.
 - [ ] **MCP found?** Confirm `tracker-sync` locates the GitHub MCP connector.
-- [ ] Record results per surface; if rules don't inject, that's the trigger to scope
-      the hook-hardening / digest-as-skill follow-up.
+- [ ] **Manual rule-load works?** Run `/steer:standards` and confirm the session
+      then reflects the ruleset.
+- [ ] **(Sanity) hooks still silent?** On a fresh session the rules should *not*
+      auto-inject (matches [known-limitations](docs/reference/known-limitations.md)).
+      If they now *do*, the platform changed — update both docs.
 
 ## 7. Out of scope (this pass)
 
@@ -167,5 +185,9 @@ results come back.
   [#12151](https://github.com/anthropics/claude-code/issues/12151),
   [#16538](https://github.com/anthropics/claude-code/issues/16538),
   [#27145](https://github.com/anthropics/claude-code/issues/27145).
+- **Authoritative in-repo statement on hook behavior:**
+  [`docs/reference/known-limitations.md`](docs/reference/known-limitations.md)
+  ("Claude Cowork and the desktop app" — hooks do not fire; load rules via
+  `/steer:standards`).
 - This repo: `plugins/steer/hooks/hooks.json`, `plugins/steer/skills/*`,
   `plugins/steer/rules/*`, root `CLAUDE.md`, `README.md`.
