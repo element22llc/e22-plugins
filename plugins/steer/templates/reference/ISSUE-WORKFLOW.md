@@ -40,9 +40,8 @@ Two invariants underpin everything:
    create-or-reuse issue, claim, branch, local edits, run tests. Commit, push,
    PR open/update follow existing commit/PR-autonomy rules; **merge and deploy
    are never implied.**
-5. **Base lifecycle state is the `steer:state` marker** (see State model); a
-   Project field mirrors it when Projects are enabled. Projects are optional
-   visualization, never a dependency.
+5. **Base lifecycle state is the `steer:state` marker** (see State model) — the
+   single source of truth for where an issue sits in the lifecycle.
 6. **Taxonomy is three orthogonal axes** — GitHub Issue **Type** × `steer:kind`
    (work shape) × `source:*` (origin). The `steer:source` marker is canonical; the
    label is derived. See the table in [`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md).
@@ -97,8 +96,7 @@ confirms first*. Skills and hooks **reference this block; none restates it.**
 
 ## State model (base = `steer:state` marker)
 
-The **base source of truth is the `steer:state` issue-body marker**; a Project
-`Status` field *mirrors* it when Projects are enabled (never the other way). The
+The **base source of truth is the `steer:state` issue-body marker**. The
 closed enum (no standalone `ready`):
 
 `inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate · blocked · done · cancelled`
@@ -153,7 +151,7 @@ reason before transitioning a closed issue**, keeping merge state as independent
 evidence. An AI may *perform* a transition only where the table says so;
 everywhere else it proposes and waits for the named human.
 
-## Labels (small, deliberate set — status/priority/effort live in the Project)
+## Labels (small, deliberate set)
 
 - **source:** mirrors the canonical `steer:source` marker (label is *derived*) —
   `source:human` · `source:adoption` · `source:audit` · `source:security-review`
@@ -163,9 +161,9 @@ everywhere else it proposes and waits for the named human.
   `needs:technical-decision` · `needs:spec` · `needs:validation`
 - **risk:** `risk:high` · `risk:security` · `risk:data`
 
-Do **not** encode status, priority, effort, release, or **kind** as labels —
-state is the `steer:state` marker (mirrored by the Project), priority/effort are
-Project fields, and kind is the `steer:kind` marker + GitHub Issue Type.
+Do **not** encode status, release, or **kind** as labels — state is the
+`steer:state` marker and kind is the `steer:kind` marker + GitHub Issue Type.
+Priority and effort are not tracked.
 
 **Issue Types — capability-degrading.** The standard org Types are
 `Feature · Bug · Task`, but Issue Types are an **org-level** feature whose
@@ -189,21 +187,6 @@ Not every red build is an issue. To avoid both lost signal and duplicate noise:
   each recurrence rather than opening a new one.
 - **PR-specific failure** → comment on the PR; only file an issue if it outlives
   that PR (lands on the default branch).
-
-## Suggested Project (optional enrichment)
-
-Projects are optional (org-level issue fields are public preview — don't depend
-on them). When used, the **Status** field *mirrors* the `steer:state` marker (the
-marker is the base source of truth, never the reverse). Other recommended
-fields: **Priority** (Urgent/High/Medium/Low), **Effort** (XS–XL), **Product
-area**, **Spec state** (None/Proposed/Approved/Drifted), **Release**, **Owner
-type** (Product/Development/Shared). Suggested views: PO inbox · Product
-exploration · Ready for specification · Developer-ready backlog · In progress ·
-Awaiting PO validation · Audit debt · Spec drift · High-risk changes.
-`/steer:issues project bootstrap` can create/reconcile **fields and options**
-best-effort via `gh project`, degrading gracefully when absent — but `gh`
-exposes **no API to create saved views**, so it outputs manual view-creation
-instructions rather than claiming to have made them.
 
 ## Spec questions — keep vs promote
 

@@ -197,8 +197,7 @@ leading dot — rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask
 which tracker the team uses — if GitHub Issues, run
 `/steer:issues bootstrap-labels` to create the
-`source:*`/`needs:*`/`risk:*` taxonomy and set `project.owner`/`number` if a
-Project is used), `/spec/app/README.md` (seed the usage/roles sections from what
+`source:*`/`needs:*`/`risk:*` taxonomy), `/spec/app/README.md` (seed the usage/roles sections from what
 Phases 3–5 learned about the app — as-built, dev confirms), and `/spec/HISTORY.md`
 seeded with the adoption itself as the first entry. **Adapt to the existing
 stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match

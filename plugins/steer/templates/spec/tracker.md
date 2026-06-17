@@ -1,7 +1,6 @@
 ---
 # Repository-local tracker contract. Read by /steer:tracker-sync and /steer:issues.
-# /steer:init resolves the placeholders — never ship fabricated values (a real
-# project number here could mutate the wrong GitHub Project).
+# /steer:init resolves the placeholders — never ship fabricated values.
 system:                     # github | jira | linear | azure-devops | other | none-yet
 repository:                 # "[owner/repository]" for GitHub; project key or URL otherwise
 reference_format:           # "#123" | "PROJ-123" | "ENG-123" | "AB#123"
@@ -9,11 +8,6 @@ item_url_pattern:           # e.g. https://example.atlassian.net/browse/{ref}
 
 # --- Optional: GitHub Issues workflow (ignored on other trackers) -----------
 # The base workflow needs only authenticated GitHub access + repository above.
-# Projects are optional enrichment; leave disabled until one exists.
-project:
-  enabled: false
-  owner:                    # Project owner (org or user login) — numbers are owner-scoped
-  number:                   # GitHub Project number, when enabled
 workflow:
   issue_is_work_record: true
   spec_is_product_truth: true
@@ -30,11 +24,6 @@ labels:
   dependency: source:dependency
   drift: source:spec
   question: source:spec
-fields:
-  status: Status            # mirrors the steer:state marker (marker is the base source of truth)
-  priority: Priority
-  effort: Effort
-  spec_state: Spec state
 ---
 
 # Issue tracker — [Product name]
