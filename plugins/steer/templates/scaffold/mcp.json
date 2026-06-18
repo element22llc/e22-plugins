@@ -6,6 +6,10 @@
       "headers": {
         "Authorization": "Bearer ${GITHUB_PAT}"
       }
+    },
+    "markitdown": {
+      "command": "uvx",
+      "args": ["markitdown-mcp"]
     }
   }
 }

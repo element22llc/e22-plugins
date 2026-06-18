@@ -32,6 +32,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   teams opt in consciously. A new docs page (Reference → GitHub Actions
   integration) carries the recipe and the rationale for keeping it out of the
   default scaffold.
+- **Scaffold ships a `markitdown` MCP server for local document ingestion.** The
+  bundled `.mcp.json` now wires Microsoft's markitdown MCP server (via
+  `uvx markitdown-mcp`) alongside the GitHub one, so bootstrapped repos can
+  convert stakeholder-provided Office documents (`.docx`/`.xlsx`/`.pptx`, plus
+  HTML/EPUB/CSV/…) into clean Markdown locally instead of choking on raw zip+XML.
+  PDFs and images still use Claude's native `Read` (no conversion needed). It
+  requires only `uv` on `PATH` (already in the dev toolchain) — no token — and
+  fails soft (shows disconnected in `/mcp`) when `uv` is absent. Documented in
+  the scaffold README next to the GitHub MCP section.
 
 ### 2.3.0
 
