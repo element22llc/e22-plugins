@@ -554,5 +554,118 @@ out="$(sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md" 2>/dev/null)"
 rc=$?
 assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
 
+# ---------------------------------------------------------------------------
+# scripts/scan-capabilities.sh — read-only capability detector (not a hook)
+# ---------------------------------------------------------------------------
+CAPSCAN="${PLUGIN}/scripts/scan-capabilities.sh"
+CAPS_MD="${PLUGIN}/templates/reference/CAPABILITIES.md"
+capscan() { out="$(sh "${CAPSCAN}" "$1" "${PLUGIN}" 2>/dev/null)"; }
+capstatus() { printf '%s\n' "$1" | awk -F '\t' -v id="$2" '$1==id {print $2}'; }
+
+# Empty repo: capability-critical files absent; stack fingerprint emitted.
+CR0="${WORK}/cap0"
+mkdir -p "${CR0}"
+capscan "${CR0}"
+assert_eq "cap: empty repo plugin-enabled absent" "$(capstatus "${out}" plugin-enabled-local)" "absent"
+assert_eq "cap: empty repo in-ci absent" "$(capstatus "${out}" in-ci-plugin-loading)" "absent"
+assert_eq "cap: empty repo stack=none" "$(capstatus "${out}" stack)" "none"
+
+# settings.json wiring: true -> wired, false -> disabled, present-no-steer -> mis-wired.
+CR1="${WORK}/cap1"
+mkdir -p "${CR1}/.claude"
+printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
+capscan "${CR1}"
+assert_eq "cap: steer true -> present-wired" "$(capstatus "${out}" plugin-enabled-local)" "present-wired"
+printf '{"enabledPlugins":{"steer@e22-plugins":false}}\n' >"${CR1}/.claude/settings.json"
+capscan "${CR1}"
+assert_eq "cap: steer false -> disabled (respected)" "$(capstatus "${out}" plugin-enabled-local)" "disabled"
+printf '{"enabledPlugins":{}}\n' >"${CR1}/.claude/settings.json"
+capscan "${CR1}"
+assert_eq "cap: settings present, no steer -> mis-wired" "$(capstatus "${out}" plugin-enabled-local)" "mis-wired"
+
+# claude.yml: plugin_marketplaces marker required (a stock template is mis-wired).
+CR2="${WORK}/cap2"
+mkdir -p "${CR2}/.github/workflows"
+printf 'jobs:\n  claude:\n    steps: []\n' >"${CR2}/.github/workflows/claude.yml"
+capscan "${CR2}"
+assert_eq "cap: stock claude.yml -> mis-wired" "$(capstatus "${out}" in-ci-plugin-loading)" "mis-wired"
+printf 'with:\n  plugin_marketplaces: e22-plugins\n' >>"${CR2}/.github/workflows/claude.yml"
+capscan "${CR2}"
+assert_eq "cap: claude.yml with marketplace -> present-wired" "$(capstatus "${out}" in-ci-plugin-loading)" "present-wired"
+
+# version-pin-enforcement: policy + byte-identical scripts -> wired; drift -> mis-wired.
+CR3="${WORK}/cap3"
+mkdir -p "${CR3}/policy" "${CR3}/scripts"
+printf 'minimum_supported:\n' >"${CR3}/policy/versions.yml"
+cp "${PLUGIN}/scripts/scan-version-pins.sh" "${CR3}/scripts/scan-version-pins.sh"
+cp "${PLUGIN}/hooks/lib/version-policy.sh" "${CR3}/scripts/version-policy.sh"
+capscan "${CR3}"
+assert_eq "cap: verbatim scripts -> present-wired" "$(capstatus "${out}" version-pin-enforcement)" "present-wired"
+printf '# local edit\n' >>"${CR3}/scripts/scan-version-pins.sh"
+capscan "${CR3}"
+assert_eq "cap: drifted verbatim script -> mis-wired" "$(capstatus "${out}" version-pin-enforcement)" "mis-wired"
+rm -f "${CR3}/policy/versions.yml"
+capscan "${CR3}"
+assert_eq "cap: missing policy -> absent" "$(capstatus "${out}" version-pin-enforcement)" "absent"
+
+# node-tooling conditionality: Python-only n/a; Node without biome absent; with biome wired.
+CR4="${WORK}/cap4"
+mkdir -p "${CR4}"
+printf '[project]\n' >"${CR4}/pyproject.toml"
+capscan "${CR4}"
+assert_eq "cap: python stack -> node-tooling n/a" "$(capstatus "${out}" node-tooling)" "n/a"
+assert_eq "cap: python fingerprint" "$(capstatus "${out}" stack)" "python"
+rm -f "${CR4}/pyproject.toml"
+printf '{}\n' >"${CR4}/package.json"
+capscan "${CR4}"
+assert_eq "cap: node without biome -> absent" "$(capstatus "${out}" node-tooling)" "absent"
+printf '{}\n' >"${CR4}/biome.json"
+capscan "${CR4}"
+assert_eq "cap: node with biome -> present-wired" "$(capstatus "${out}" node-tooling)" "present-wired"
+
+# github-issue-forms: gated on the tracker system in spec/tracker.md.
+CR5="${WORK}/cap5"
+mkdir -p "${CR5}/spec"
+printf 'system: jira\n' >"${CR5}/spec/tracker.md"
+capscan "${CR5}"
+assert_eq "cap: non-github tracker -> issue-forms n/a" "$(capstatus "${out}" github-issue-forms)" "n/a"
+printf 'system: github\n' >"${CR5}/spec/tracker.md"
+capscan "${CR5}"
+assert_eq "cap: github tracker, no forms -> absent" "$(capstatus "${out}" github-issue-forms)" "absent"
+mkdir -p "${CR5}/.github/ISSUE_TEMPLATE"
+printf 'blank_issues_enabled: false\n' >"${CR5}/.github/ISSUE_TEMPLATE/config.yml"
+capscan "${CR5}"
+assert_eq "cap: github tracker with forms -> present-wired" "$(capstatus "${out}" github-issue-forms)" "present-wired"
+
+# toolchain-pin: mise.toml without lock is mis-wired; both -> wired.
+CR6="${WORK}/cap6"
+mkdir -p "${CR6}"
+printf '[tools]\n' >"${CR6}/mise.toml"
+capscan "${CR6}"
+assert_eq "cap: mise.toml without lock -> mis-wired" "$(capstatus "${out}" toolchain-pin)" "mis-wired"
+printf '\n' >"${CR6}/mise.lock"
+capscan "${CR6}"
+assert_eq "cap: mise.toml + lock -> present-wired" "$(capstatus "${out}" toolchain-pin)" "present-wired"
+
+# Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
+printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
+capscan "${CR1}"
+assert_eq "cap: repaired settings -> present-wired on re-scan" "$(capstatus "${out}" plugin-enabled-local)" "present-wired"
+
+# Every capability id the detector emits is documented in CAPABILITIES.md.
+capscan "${CR0}"
+printf '%s\n' "${out}" | awk -F '\t' '$1!="stack"{print $1}' | while IFS= read -r _id; do
+	grep -q "### ${_id} " "${CAPS_MD}" || printf 'UNDOC %s\n' "${_id}"
+done >"${WORK}/cap-undoc"
+assert_empty "cap: all emitted ids documented in CAPABILITIES.md" "$(cat "${WORK}/cap-undoc")"
+
+# Exit-code contract: gaps on stdout (exit 0); usage -> 2; unreadable root -> 3.
+sh "${CAPSCAN}" "${CR0}" "${PLUGIN}" >/dev/null 2>&1
+assert_rc "cap: gaps run exits 0" "$?" 0
+sh "${CAPSCAN}" a b c >/dev/null 2>&1
+assert_rc "cap: too many args -> exit 2" "$?" 2
+sh "${CAPSCAN}" "${WORK}/cap-nope" "${PLUGIN}" >/dev/null 2>&1
+assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
