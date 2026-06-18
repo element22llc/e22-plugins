@@ -33,10 +33,16 @@ biome = "latest"                # default Node linter + formatter (https://biome
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
 github-cli = "latest"           # gh — PRs, releases, CI workflow runs from the terminal
-# Uncomment for Python products. uv is the default Python package/project manager;
-# ruff is the default Python linter + formatter (https://docs.astral.sh/ruff).
-# python = "latest"
-# uv = "latest"
+
+# uv + python are baseline — enabled even for Node-only products: the bundled
+# markitdown MCP server (.mcp.json) runs via `uvx markitdown-mcp`, so every
+# scaffolded repo needs uv (and a Python for it to manage) on PATH to convert
+# provided Office docs. Don't remove them unless you also drop that MCP server.
+# uv doubles as the default Python package/project manager.
+uv = "latest"
+python = "latest"
+# ruff is the default Python linter + formatter (https://docs.astral.sh/ruff) —
+# uncomment for Python products.
 # ruff = "latest"
 # go = "latest"
 # rust = "latest"
