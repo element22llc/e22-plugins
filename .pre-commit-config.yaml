@@ -35,7 +35,8 @@ repos:
         # Structural sync of docs/ with the plugin's source of truth (skill
         # inventory, nav, links, /steer: namespace hygiene). Stateless — checks
         # the working tree, so it fits a per-commit gate (unlike the branch-diff
-        # check_docs_impact.py, which stays a CI-only --base gate). On failure,
+        # check_docs_impact.py, which needs a base ref — that runs in
+        # `mise run ci` via the `delivery-gates` task and in CI). On failure,
         # reconcile with /plugin-docs. Mirrors `mise run docs:check`.
         files: ^(plugins/steer/(skills|rules|hooks)/|docs/|mkdocs\.yml$)
 
