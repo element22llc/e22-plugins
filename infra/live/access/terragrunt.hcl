@@ -20,6 +20,6 @@ inputs = {
   github_client_id      = get_env("GITHUB_OAUTH_CLIENT_ID")
   github_client_secret  = get_env("GITHUB_OAUTH_CLIENT_SECRET")
   access_domain         = "ai.element-22.com"
-  email_domain          = "element-22.com"
+  email_domain          = "tlmgo.com"
   session_duration      = "24h"
 }
