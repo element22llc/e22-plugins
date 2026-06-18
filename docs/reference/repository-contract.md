@@ -33,6 +33,14 @@ plugin repo itself. `MANIFEST.md` maps each stored file to its installed path
 (adding the dot back). When a standard implies concrete scaffolding, the scaffold
 bundle is updated in the **same change** as the rule.
 
+When `/steer:init`, `/steer:adopt`, or `/steer:sync` install a scaffold file that
+already exists in the target repo, they **merge additively and never clobber**:
+Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
+and the structured-config files — `.gitignore` and the JSON configs
+(`.claude/settings.json`, `.mcp.json`, `biome.json`, `tsconfig`) — reconcile with
+`scaffold-reconcile.py`, which unions JSON arrays and adds missing keys/lines
+without overwriting, reordering, or removing any existing value.
+
 ## Versioning the contract
 
 `/spec/.version` records the plugin version the spine was last reconciled
