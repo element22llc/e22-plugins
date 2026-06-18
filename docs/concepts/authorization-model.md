@@ -34,6 +34,14 @@ flowchart TD
 - **Pushing and opening the PR.** This is the one step that waits for the dev.
   Everything before it does not. The **PR review is the gate** — not each commit.
 
+!!! note "The local boundary is advisory — the server enforces it"
+    Rule `95-not-the-gate.md` is explicit that this in-session discipline cannot
+    *stop* a direct push to `main`; it only governs how the agent behaves. The
+    real wall is **GitHub branch protection**, which `/steer:protect` verifies
+    against `policy/branch-protection.yml` and (on the dev's explicit
+    confirmation) applies via `gh api`. Run it as the final step of init/adopt to
+    turn the advisory boundary into an enforced one.
+
 ## Why this matters for the plugin's own skills
 
 The skill frontmatter encodes the same boundary:
