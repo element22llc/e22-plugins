@@ -38,11 +38,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   convert stakeholder-provided Office documents (`.docx`/`.xlsx`/`.pptx`, plus
   HTML/EPUB/CSV/…) into clean Markdown locally instead of choking on raw zip+XML.
   PDFs and images still use Claude's native `Read` (no conversion needed). It
-  needs only `uv` on `PATH` — no token — and the scaffold `mise.toml` now pins
-  `uv` + `python` as baseline tools (enabled even for Node-only products), so it
-  works out of the box after `mise install` rather than degrading to a
-  disconnected server. Documented in the scaffold README next to the GitHub MCP
-  section.
+  needs only `uv` on `PATH` — no token. Relatedly, the scaffold `mise.toml` now
+  groups `node` + `python` + `uv` as an **agent-runtime baseline** installed in
+  every repo regardless of product stack (separate from stack-specific tools you
+  prune): AI agent tooling and MCP servers run packages on demand via `npx`/`uvx`,
+  so these runtimes must always be present. markitdown therefore works out of the
+  box after `mise install` rather than degrading to a disconnected server.
+  Documented in the scaffold README next to the GitHub MCP section.
 
 ### 2.3.0
 
