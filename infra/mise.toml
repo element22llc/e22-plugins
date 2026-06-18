@@ -37,17 +37,17 @@ run = ["terragrunt hcl fmt", "tofu fmt -recursive"]
 
 [tasks."tf:validate"]
 description = "Validate the ai.element-22.com DNS unit"
-dir = "live/shared_services"
+dir = "live/dns"
 run = "terragrunt validate"
 
 [tasks."tf:plan"]
 description = "Plan the ai.element-22.com DNS unit"
-dir = "live/shared_services"
+dir = "live/dns"
 run = "terragrunt plan"
 
 [tasks."tf:apply"]
 description = "Apply the ai.element-22.com DNS unit"
-dir = "live/shared_services"
+dir = "live/dns"
 run = "terragrunt apply"
 
 # --- Cloudflare Pages: test the docs deploy locally before relying on CI ---

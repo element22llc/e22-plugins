@@ -96,3 +96,9 @@ out/
 # Documentation site build output (`mise run docs:build` → site_dir)
 # ---------------------------------------------------------------------------
 site/
+
+# ---------------------------------------------------------------------------
+# Wrangler local state — `mise run cf:deploy:preview` runs from the repo root
+# and wrangler writes its cache here. Generated; never commit.
+# ---------------------------------------------------------------------------
+.wrangler/

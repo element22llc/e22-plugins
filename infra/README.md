@@ -59,7 +59,7 @@ mise run tf:apply      # create/update the CNAME
 ```
 
 The CNAME target is the `pages_hostname` input in
-`live/shared_services/terragrunt.hcl` — set it to the `<project>.pages.dev` value
+`live/dns/terragrunt.hcl` — set it to the `<project>.pages.dev` value
 Cloudflare gives you when you add the custom domain (step 2 below), then apply.
 
 ### Test the Cloudflare deploy locally
@@ -111,7 +111,7 @@ Do these in the Cloudflare dashboard, in order:
    `.github/workflows/docs-deploy.yml` also creates it if absent.
 2. **Custom domain** — project → Custom domains → add `ai.element-22.com`.
    Cloudflare shows a `<project>.pages.dev` CNAME target → put it in
-   `live/shared_services/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
+   `live/dns/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
    Cloudflare auto-validates and issues the TLS cert once the CNAME resolves.
 3. **GitHub identity provider** — Zero Trust → Settings → Authentication → add
    **GitHub** login (creates/uses a GitHub OAuth app; callback to
