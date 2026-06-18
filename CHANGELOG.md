@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:sync` now repairs capability-blocking scaffold drift, not just
+  template drift.** Additive reconciliation only splices into files that already
+  exist and the migration ledger only transforms files that exist — so a repo
+  adopted before a capability shipped (or that lost a wiring file) silently
+  lacked it (no `.claude/settings.json` enabling steer, no `claude.yml` loading
+  the plugin in CI, drifted version-pin scripts, missing `branch-protection.yml`)
+  and sync still reported "current." Sync now walks a new capability map
+  (`templates/reference/CAPABILITIES.md`) via a read-only detector
+  (`scripts/scan-capabilities.sh`) after migrations + reconciliation, and
+  proposes the missing/mis-wired wiring — create-from-scaffold, additive-splice
+  the named marker, or verbatim-recopy the version-pin scripts (diff shown
+  first). It is **presence + wiring only**: conditional files (Node tooling,
+  Issue Forms, `compose.yaml`) are skipped when their stack/tracker predicate
+  doesn't apply, a `"steer@e22-plugins": false` is respected as a deliberate
+  opt-off, and follow-ups it can't do itself (`/steer:protect`,
+  `/steer:issues bootstrap-labels`, the org `STEER_APP_ID` secret) are surfaced
+  in the next-actions block rather than run. A new read-only **`--check`** mode
+  prints the capability status table with no branch or PR. Read-then-propose,
+  never clobber, never commits to `main`, PR targets `BASE` — all unchanged.
 - **In-CI Claude now runs under the same steer standards as a local session.**
   The shipped `.github/workflows/claude.yml` (the `@claude` mention workflow) was
   the stock Anthropic template, so the in-CI agent ran as a standards-less Claude —

@@ -7,6 +7,12 @@ cannot express. A reconciliation diff sees a renamed file as *old-present +
 new-absent* and would happily add the new file while orphaning the old one; only
 an explicit migration knows the two are the same artifact.
 
+This ledger covers non-additive transforms of artifacts that **already exist**.
+Whole-file *presence + wiring* of capability-critical scaffold (a file entirely
+missing, or present-but-not-enabled) is a separate, third axis owned by
+[`CAPABILITIES.md`](CAPABILITIES.md), which `/steer:sync` walks every run — do
+**not** add "create the missing file" entries here.
+
 This ledger is the **single source of truth** for those transforms. `/steer:sync`
 consumes it to carry an already-bootstrapped repo forward when the plugin's
 conventions change; `/steer:adopt` and `/steer:build` consume the same entries on a

@@ -13,6 +13,13 @@ reconcile into it instead of overwriting, and adapt stack-specific content
 (Python → `uv` task commands, services the product actually needs in
 `compose.yaml`) before committing.
 
+The capability-critical subset of these rows is additionally tracked by
+[`../reference/CAPABILITIES.md`](../reference/CAPABILITIES.md), which
+**`/steer:sync`** walks on every sync to repair *missing or mis-wired* wiring in
+already-adopted repos (whole-file presence + wiring — the gap additive
+reconciliation can't reach). When a migration moves a capability file, update its
+path in both this map and that file in the same change.
+
 ## Install map
 
 Dotfiles are stored here **without their leading dot** (so they don't act on

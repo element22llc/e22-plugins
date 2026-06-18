@@ -47,7 +47,7 @@ shipped skill is missing here.
 
 | Skill | Purpose |
 | --- | --- |
-| `/steer:sync` | Bring a managed repo up to date with the current plugin — apply migrations, reconcile spine + scaffold, re-stamp `/spec/.version`, land a PR. |
+| `/steer:sync` | Bring a managed repo up to date with the current plugin — apply migrations, reconcile spine + scaffold, repair missing/mis-wired capability-critical scaffold (plugin enablement, in-CI loading, version-pin enforcement, drift gate, branch-protection), re-stamp `/spec/.version`, land a PR. `--check` runs a read-only capability + drift report. |
 | `/steer:tidy` | Sweep loose files out of the repo root into their correct home (`/spec/reference`, `/spec/design`). |
 | `/steer:conventions` | Answer tooling/convention questions and the rationale behind stack defaults. |
 | `/steer:standards` | Load the always-on operating manual on demand (for surfaces where the SessionStart hook doesn't fire). |
