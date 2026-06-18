@@ -33,16 +33,16 @@ description = "Format all Terragrunt HCL + OpenTofu files under infra/"
 run = ["terragrunt hcl fmt", "tofu fmt -recursive"]
 
 [tasks."tf:validate"]
-description = "Validate the ai.element22.com DNS unit"
+description = "Validate the ai.element-22.com DNS unit"
 dir = "live/shared_services"
 run = "terragrunt validate"
 
 [tasks."tf:plan"]
-description = "Plan the ai.element22.com DNS unit"
+description = "Plan the ai.element-22.com DNS unit"
 dir = "live/shared_services"
 run = "terragrunt plan"
 
 [tasks."tf:apply"]
-description = "Apply the ai.element22.com DNS unit"
+description = "Apply the ai.element-22.com DNS unit"
 dir = "live/shared_services"
 run = "terragrunt apply"

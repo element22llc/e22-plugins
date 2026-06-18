@@ -21,17 +21,17 @@ variable "ttl" {
   default     = 300
 }
 
-# The element22.com hosted zone is managed elsewhere; we only add a record to it.
+# The element-22.com hosted zone is managed elsewhere; we only add a record to it.
 data "aws_route53_zone" "root" {
-  name = "element22.com."
+  name = "element-22.com"
 }
 
-# ai.element22.com → Cloudflare Pages. Traffic is served through Cloudflare's
+# ai.element-22.com → Cloudflare Pages. Traffic is served through Cloudflare's
 # edge, which is what lets Cloudflare Access gate the site even though the zone
 # itself stays in Route 53.
 resource "aws_route53_record" "ai" {
   zone_id = data.aws_route53_zone.root.zone_id
-  name    = "ai.element22.com"
+  name    = "ai.element-22.com"
   type    = "CNAME"
   ttl     = var.ttl
   records = [var.pages_hostname]

@@ -17,7 +17,7 @@ site_name: e22-plugins — steer
 site_description: Engineering-standards plugin marketplace — the steer plugin.
 # Served from the branded root domain (Route 53 CNAME → Cloudflare Pages, behind
 # Cloudflare Access); sets the canonical/asset base for root-path serving.
-site_url: https://ai.element22.com/
+site_url: https://ai.element-22.com/
 docs_dir: docs
 # `mise run docs:build` writes the build here (gitignored). Published to GitHub
 # Pages from this output by .github/workflows/docs-deploy.yml.

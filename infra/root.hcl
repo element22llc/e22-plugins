@@ -1,7 +1,7 @@
 # Root Terragrunt config for Element 22 infrastructure (AWS account 053932564353).
 #
 # DNS-only today: the single managed resource is the Route 53 CNAME that points
-# ai.element22.com at the Cloudflare Pages project serving the docs site. The
+# ai.element-22.com at the Cloudflare Pages project serving the docs site. The
 # Cloudflare Pages project and the Cloudflare Access app that gates it are set up
 # in the Cloudflare dashboard — see README.md.
 #
@@ -12,7 +12,7 @@ locals {
   aws_account_id = "053932564353"
   aws_region     = "us-east-1"
   state_bucket   = "element22-tofu-state" # confirm/create before first apply (see README)
-  aws_profile    = "e22-shared-services-admin"
+  aws_profile    = "e22-main-admin"
 }
 
 # Inherited by every unit via `include "root"`. Each unit gets its own state key
@@ -43,11 +43,12 @@ generate "provider" {
       region              = "${local.aws_region}"
       allowed_account_ids = ["${local.aws_account_id}"]
       profile = "${local.aws_profile}"
-
-      tags = {
-      ManagedBy = "opentofu"
-      IacRepo   = "e22-plugins"
-    }
+      default_tags {
+        tags = {
+          ManagedBy = "opentofu"
+          IacRepo   = "e22-plugins"
+        }
+      }
     }
   EOF
 }

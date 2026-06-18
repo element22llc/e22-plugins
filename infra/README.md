@@ -1,11 +1,11 @@
 # infra/ — Element 22 infrastructure (DNS for the docs site)
 
 OpenTofu + Terragrunt for the AWS resources behind the docs site at
-**https://ai.element22.com**. Today that is exactly one resource: the Route 53
-`CNAME` pointing `ai.element22.com` at the Cloudflare Pages project.
+**<https://ai.element-22.com>**. Today that is exactly one resource: the Route 53
+`CNAME` pointing `ai.element-22.com` at the Cloudflare Pages project.
 
 ```
-ai.element22.com (Route 53, this code)
+ai.element-22.com (Route 53, this code)
     └─CNAME→ e22-docs.pages.dev (Cloudflare Pages — dashboard)
                  └─ served through Cloudflare edge, gated by Cloudflare Access
 ```
@@ -67,7 +67,7 @@ Do these in the Cloudflare dashboard, in order:
    (no Git connection; GitHub Actions pushes builds via
    `cloudflare/wrangler-action`). The first deploy from
    `.github/workflows/docs-deploy.yml` also creates it if absent.
-2. **Custom domain** — project → Custom domains → add `ai.element22.com`.
+2. **Custom domain** — project → Custom domains → add `ai.element-22.com`.
    Cloudflare shows a `<project>.pages.dev` CNAME target → put it in
    `live/shared_services/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
    Cloudflare auto-validates and issues the TLS cert once the CNAME resolves.
@@ -75,7 +75,7 @@ Do these in the Cloudflare dashboard, in order:
    **GitHub** login (creates/uses a GitHub OAuth app; callback to
    `<team>.cloudflareaccess.com/cdn-cgi/access/callback`).
 4. **Access application** — Zero Trust → Access → Applications → **Self-hosted**,
-   hostname `ai.element22.com`. Policy: **Include → Emails ending in
+   hostname `ai.element-22.com`. Policy: **Include → Emails ending in
    `@element-22.com`**, identity provider = GitHub.
 
 ### GitHub secrets for the deploy workflow
@@ -91,7 +91,7 @@ Add under repo Settings → Secrets and variables → Actions:
   whose GitHub primary email is private (`…@users.noreply.github.com`) won't
   match — they must expose a verified `@element-22.com` email on GitHub, or you
   add a One-Time-PIN fallback rule.
-- The `element22.com` zone stays in Route 53; we do **not** delegate NS to
+- The `element-22.com` zone stays in Route 53; we do **not** delegate NS to
   Cloudflare. Access works over the external CNAME because the Pages custom
   domain is served through Cloudflare's edge.
 - Cloudflare Access needs Zero Trust enabled on the account (free tier ≤ 50
