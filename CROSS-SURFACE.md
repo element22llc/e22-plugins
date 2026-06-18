@@ -16,9 +16,9 @@ By mid-2026 "plugins" are a **cross-app concept**, not Claude Code-CLI-only. The
 behave the same. The headline, validated against current docs and changelog:
 
 - **Support is tiered ([§3](#3-support-policy--per-surface-matrix)).** Targeted:
-  **Claude Code** in all its forms — CLI, IDE extensions (VS Code, JetBrains), and
-  the Claude Desktop **Code tab**. Intended: **Cowork**. Best-effort:
-  **the Chat tab + claude.ai web chat.**
+  **Claude Code** — the CLI and IDE extensions (VS Code, JetBrains). Intended: the
+  Claude Desktop **Code tab** and **Cowork**. Best-effort: **the Chat tab +
+  claude.ai web chat.**
 - **The hook-driven core (always-on rules + gates) runs wherever Claude Code runs**
   — including the Claude Desktop **Code tab**, which shares the CLI engine.
 - **Cowork is the _one_ chat-family surface where hooks run** — Anthropic's docs
@@ -55,17 +55,18 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
 
 `steer` is built and tested for the **Claude Code engine**. Support tiers:
 
-- **Tier 1 — Targeted (developed & tested against).** **Claude Code** in every
-  form: the **CLI**, the **IDE extensions (VS Code, JetBrains)**, and the Claude
-  Desktop **Code tab** ("Claude Code Desktop"). All share the same engine, so
-  hooks, always-on rules, gates, skills, and MCP all work. Regressions here are
-  **bugs we fix**. *(This resolves the earlier "possibly Claude Code desktop" — the
-  Code tab is full Claude Code, confirmed.)*
-- **Tier 2 — Intended.** **Cowork** (the Claude Desktop *Cowork* tab). Per
-  Anthropic's docs it is the one chat-family surface that runs hooks + sub-agents;
-  skills + MCP work too. We aim to support it; the one open caveat is whether
-  *plugin-scoped* `SessionStart` fires (see [§4](#4-where-the-hook-layer-runs)) —
-  reconfirm before relying on auto-injected rules.
+- **Tier 1 — Targeted (developed & tested against).** **Claude Code** — the
+  **CLI** and the **IDE extensions (VS Code, JetBrains)** (the extensions delegate
+  to the CLI). Full engine: hooks, always-on rules, gates, skills, and MCP all
+  work. Regressions here are **bugs we fix**.
+- **Tier 2 — Intended (supported, not gated per release).** The Claude Desktop
+  **Code tab** ("Claude Code Desktop") and **Cowork**. The Code tab is full Claude
+  Code (shared engine), so hooks / rules / gates / skills / MCP all work — we just
+  don't run it in the per-release test matrix. **Cowork** is, per Anthropic's docs,
+  the one chat-family surface that runs hooks + sub-agents; the open caveat is
+  whether *plugin-scoped* `SessionStart` fires (see
+  [§4](#4-where-the-hook-layer-runs)) — reconfirm before relying on auto-injected
+  rules.
 - **Tier 3 — Best-effort.** The Claude Desktop **Chat tab** and **claude.ai web
   chat**. Plugins install and the portable nucleus (skills + MCP) works; **hooks
   and sub-agents are grayed out** — no always-on rules, no gates. Use
@@ -75,15 +76,16 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
 |---|---|---|---|---|---|
 | Claude Code **CLI** | **1 — targeted** | ✅ | ✅ | ✅ | ✅ |
 | **IDE extensions** (VS Code, JetBrains) | **1 — targeted** | ✅ via CLI | ✅ via CLI | ✅ | ✅ |
-| Claude Desktop **Code tab** (Claude Code Desktop) | **1 — targeted** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
+| Claude Desktop **Code tab** (Claude Code Desktop) | **2 — intended** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
 | Claude Desktop **Cowork tab** | **2 — intended** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ | ✅ |
 | Claude Desktop **Chat tab** + **claude.ai** web chat | **3 — best-effort** | ✅ (chat) / ✅ as org Skills (web) | ❌ grayed out — use `/steer:standards` | ✅ | ✅ |
 
 Legend: ✅ works · ⚠️ documented but reconfirm · ❌ not available / does not fire.
 
-Org-wide deployment differs by surface: managed settings (Tier 1), per-user install
-today with org-wide sharing "coming" (Cowork), and admin-provisioned Skills on
-Team/Enterprise (claude.ai web). See [§5](#5-recommendations-per-surface).
+Org-wide deployment differs by surface: managed settings (the Claude Code
+surfaces), per-user install today with org-wide sharing "coming" (Cowork), and
+admin-provisioned Skills on Team/Enterprise (claude.ai web). See
+[§5](#5-recommendations-per-surface).
 
 ## 4. Where the hook layer runs
 
@@ -121,17 +123,22 @@ start and rely on human review where the gates would have fired.
 
 ## 5. Recommendations per surface
 
-### Claude Code — CLI, IDE extensions, Code tab (Tier 1)
-Full engine; `steer` works as-is. The Code tab ("Claude Code Desktop") shares CLI
-settings, so install/enable once and hooks, rules, gates, skills, and MCP all
-apply. No adaptation needed — this is the reference experience.
+### Claude Code — CLI & IDE extensions (Tier 1)
+Full engine; `steer` works as-is. The IDE extensions delegate to the CLI, so hooks,
+rules, gates, skills, and MCP all apply. No adaptation needed — this is the
+reference experience.
 
-### Cowork (Tier 2)
-Add the `steer` GitHub marketplace via **Customize → Plugins**. Per docs, hooks run
-here, so the always-on rules *should* inject — but **reconfirm plugin-scoped
-`SessionStart`** ([§6](#6-verification-checklist)); if it doesn't fire on your
-build, fall back to `/steer:standards`. Highest-value pieces for non-technical POs
-are the **PO-facing skills**, which are self-contained regardless of hooks:
+### Claude Desktop Code tab + Cowork (Tier 2)
+The **Code tab** ("Claude Code Desktop") is full Claude Code — it shares CLI
+settings, so install/enable once and the whole engine applies; we keep it at Tier 2
+only because it sits outside the per-release test matrix.
+
+For **Cowork**, add the `steer` GitHub marketplace via **Customize → Plugins**. Per
+docs, hooks run here, so the always-on rules *should* inject — but **reconfirm
+plugin-scoped `SessionStart`** ([§6](#6-verification-checklist)); if it doesn't fire
+on your build, fall back to `/steer:standards`. Highest-value pieces for
+non-technical POs are the **PO-facing skills**, which are self-contained regardless
+of hooks:
 
 - **PO-appropriate:** `build`, `spec`, `questions`, `next`, `issues`,
   `design-sources`, `standards`.
