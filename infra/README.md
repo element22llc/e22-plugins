@@ -33,13 +33,16 @@ dashboard** — see [Cloudflare runbook](#cloudflare-runbook-one-time) below.
 
 ```
 infra/
-├── mise.toml                  # opentofu + terragrunt versions, AWS SSO, tf:* tasks
+├── mise.toml                  # opentofu + terragrunt versions, AWS SSO, tf:*/cf:* tasks
 ├── aws/config                 # repo-local AWS SSO config (AWS_CONFIG_FILE)
 ├── root.hcl                   # root: S3 remote state (use_lockfile) + aws provider
 └── live/
-    └── shared_services/
-        ├── terragrunt.hcl     # include "root" (root.hcl) + inputs: pages_hostname, ttl
-        └── main.tf            # data zone lookup + aws_route53_record CNAME
+    ├── dns/                   # Route 53 CNAME (aws provider)
+    │   ├── terragrunt.hcl     # include "root" + inputs: pages_hostname, ttl
+    │   └── main.tf            # zone lookup + aws_route53_record CNAME
+    └── access/                # Cloudflare Access (cloudflare provider, overrides aws)
+        ├── terragrunt.hcl     # include "root" + cloudflare provider + inputs from env
+        └── main.tf            # GitHub IdP + email policy + self-hosted Access app
 ```
 
 > The root config is named `root.hcl` (not `terragrunt.hcl`) — Terragrunt now
@@ -56,6 +59,9 @@ mise run tf:fmt        # format HCL + tofu
 mise run tf:validate   # validate the DNS unit
 mise run tf:plan       # preview the CNAME change
 mise run tf:apply      # create/update the CNAME
+
+mise run cf:access:plan   # preview the Cloudflare Access setup (live/access)
+mise run cf:access:apply  # create the GitHub IdP + email policy + Access app
 ```
 
 The CNAME target is the `pages_hostname` input in
@@ -113,12 +119,14 @@ Do these in the Cloudflare dashboard, in order:
    Cloudflare shows a `<project>.pages.dev` CNAME target → put it in
    `live/dns/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
    Cloudflare auto-validates and issues the TLS cert once the CNAME resolves.
-3. **GitHub identity provider** — Zero Trust → Settings → Authentication → add
-   **GitHub** login (creates/uses a GitHub OAuth app; callback to
-   `<team>.cloudflareaccess.com/cdn-cgi/access/callback`).
-4. **Access application** — Zero Trust → Access → Applications → **Self-hosted**,
-   hostname `ai.element-22.com`. Policy: **Include → Emails ending in
-   `@element-22.com`**, identity provider = GitHub.
+3. **GitHub OAuth app** — github.com → Settings → Developer settings → OAuth Apps
+   → New. Authorization callback URL:
+   `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback`. Put the client
+   ID + secret in `infra/.env` (`GITHUB_OAUTH_CLIENT_ID` / `_SECRET`).
+4. **GitHub IdP + Access app + policy** — **automated** in the `live/access` unit
+   (`mise run cf:access:apply`). It creates the GitHub identity provider, a
+   self-hosted Access app on `ai.element-22.com` pinned to GitHub login, and an
+   **Include → emails ending `@element-22.com`** policy. No dashboard clicks.
 
 ### GitHub secrets for the deploy workflow
 
