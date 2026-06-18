@@ -7,7 +7,7 @@ name: Docs site
 # (structure-only `validate_docs.py`) does not cover. The `deploy` job uploads
 # the built site to Cloudflare Pages, and only ever runs from `main`.
 #
-# Setup: the Cloudflare Pages project (Direct Upload, name `e22-docs`) and the
+# Setup: the Cloudflare Pages project (Direct Upload, name `e22-ai-docs`) and the
 # CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID repo secrets must exist. The site
 # is served from https://ai.element-22.com (Route 53 CNAME → <project>.pages.dev)
 # behind Cloudflare Access. See infra/README.md.
@@ -77,4 +77,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=e22-docs --branch=main
+          command: pages deploy site --project-name=e22-ai-docs --branch=main

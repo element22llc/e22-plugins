@@ -6,7 +6,7 @@ OpenTofu + Terragrunt for the AWS resources behind the docs site at
 
 ```
 ai.element-22.com (Route 53, this code)
-    └─CNAME→ e22-docs.pages.dev (Cloudflare Pages — dashboard)
+    └─CNAME→ e22-ai-docs.pages.dev (Cloudflare Pages — dashboard)
                  └─ served through Cloudflare edge, gated by Cloudflare Access
 ```
 
@@ -78,11 +78,34 @@ mise run cf:deploy:preview  # build docs/ + deploy a preview; prints a *.pages.d
 yields a throwaway preview URL. Open that URL to confirm the deploy works, then
 let CI handle the production deploy on merge to `main`.
 
+### Test Cloudflare Access
+
+Access is enforced at Cloudflare's **edge against a hostname** — there is no
+`localhost` to test against. Two separate things to verify:
+
+- **Enforcement (is it locked, not public?)** — scriptable:
+
+  ```sh
+  mise run cf:access:verify                       # defaults to https://ai.element-22.com
+  mise run cf:access:verify https://<preview>.pages.dev
+  ```
+
+  It expects a redirect to the Access login (`*.cloudflareaccess.com`); a public
+  `200` fails the task. Run it in CI or before cutover to prove the site isn't
+  exposed.
+
+- **Login path (can an `@element-22.com` GitHub user get in?)** — browser only.
+  Open the URL in an **incognito** window and complete the GitHub login; CLIs
+  can't drive the interactive OAuth flow. To rehearse this without touching
+  production, enable **Settings → General → Enable access policy** on the Pages
+  project (it protects only the preview `*.pages.dev` deployments), then test
+  against the `cf:deploy:preview` URL.
+
 ## Cloudflare runbook (one-time)
 
 Do these in the Cloudflare dashboard, in order:
 
-1. **Pages project** — create a project named `e22-docs` as **Direct Upload**
+1. **Pages project** — create a project named `e22-ai-docs` as **Direct Upload**
    (no Git connection; GitHub Actions pushes builds via
    `cloudflare/wrangler-action`). The first deploy from
    `.github/workflows/docs-deploy.yml` also creates it if absent.

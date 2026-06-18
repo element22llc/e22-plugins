@@ -11,7 +11,7 @@ terraform {
 }
 
 variable "pages_hostname" {
-  description = "Cloudflare Pages custom-domain CNAME target (e.g. e22-docs.pages.dev)."
+  description = "Cloudflare Pages custom-domain CNAME target (e.g. e22-ai-docs.pages.dev)."
   type        = string
 }
 

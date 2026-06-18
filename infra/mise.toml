@@ -66,5 +66,17 @@ run = [
   "mise run docs:build",
   # Any --branch other than the project's production branch publishes a preview
   # deployment with its own *.pages.dev URL, leaving production untouched.
-  "wrangler pages deploy site --project-name=e22-docs --branch=local-preview --commit-dirty=true",
+  "wrangler pages deploy site --project-name=e22-ai-docs --branch=local-preview --commit-dirty=true",
 ]
+
+[tasks."cf:access:verify"]
+description = "Check a URL is gated by Cloudflare Access (expects a 302 redirect to the Access login, NOT a public 200). Pass a preview *.pages.dev URL or the default production host."
+run = '''
+url="{{arg(name='url', default='https://ai.element-22.com')}}"
+result=$(curl -sI -o /dev/null -w '%{http_code} %{redirect_url}' "$url")
+echo "HEAD $url → $result"
+case "$result" in
+  *cloudflareaccess.com*) echo "✅ Access is enforcing — site is gated, not public." ;;
+  *) echo "❌ $url is NOT behind Access (no redirect to the Access login). Do not cut over."; exit 1 ;;
+esac
+'''
