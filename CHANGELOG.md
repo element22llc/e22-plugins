@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
+  records its local marker as `spec/.work/<branch>.md` (was an extensionless,
+  content-free file) with a newest-first list of the Claude Code session(s) that
+  worked the branch. The `reconcile-issue-first.sh` Stop hook keeps the head
+  current each turn — a single fail-open, idempotent, atomic update that never
+  rewrites the `issue:`/`branch:` header — and `/steer:work resume` surfaces a
+  prior session as a context source (`claude --resume <id>` + the transcript path)
+  before continuing. Session ids stay in the git-ignored marker and never reach
+  tracker metadata. The hook honours legacy extensionless markers, so repos mid-
+  transition keep working (no migration needed; markers upgrade on the next
+  `start`/`resume`).
 - **`/steer:sync` now repairs pre-2.0.0 rebrand tokens left in materialized
   files.** A repo bootstrapped under the old `e22-standards` name kept stale
   `/e22-*` command refs, the dead `e22-standards@e22-plugins` settings/CI marker,
