@@ -5,8 +5,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.4.0
 
+- **`/steer:protect` now emits a copy-paste-safe branch-protection command.** The
+  apply example used a quoted heredoc (`<<'JSON'`) whose closing delimiter is
+  indented because the code fence sits inside a numbered list; a heredoc
+  terminator must be at column 0, so the command Claude handed devs hung at the
+  shell's `heredoc>` prompt and never ran. The example now pipes single-quoted
+  JSON from `echo` into `gh api --input -` — no terminator, so it pastes safely
+  at any indentation — and the skill instructs Claude to substitute resolved
+  `OWNER`/`REPO`/`BRANCH` and the real CI context inline rather than leaving
+  `${...}` placeholders or a heredoc in the command it hands over.
 - **`/steer:sync` now repairs capability-blocking scaffold drift, not just
   template drift.** Additive reconciliation only splices into files that already
   exist and the migration ledger only transforms files that exist — so a repo

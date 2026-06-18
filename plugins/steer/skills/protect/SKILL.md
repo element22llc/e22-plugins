@@ -80,19 +80,18 @@ idempotent path: re-running on a protected repo writes nothing.
 When rules are drifted or absent:
 
 1. Show the **exact** request you will run — the full classic-protection body that
-   closes the gap, e.g.:
+   closes the gap. Pipe the JSON from `echo` into `--input -` rather than using a
+   heredoc: a heredoc's closing delimiter must sit at column 0, but these examples
+   are indented inside a list, so a copy-pasted heredoc hangs at the `heredoc>`
+   prompt. The piped form below has no terminator and pastes safely at any
+   indentation (single-quote the JSON so the shell does not expand `$`):
    ```sh
-   gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" \
-     --input - <<'JSON'
-   {
-     "required_status_checks": { "strict": true, "contexts": ["<resolved-ci-context>"] },
-     "enforce_admins": true,
-     "required_pull_request_reviews": { "required_approving_review_count": 1, "dismiss_stale_reviews": true },
-     "required_linear_history": true,
-     "restrictions": null
-   }
-   JSON
+   echo '{"required_status_checks":{"strict":true,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
+     | gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --input -
    ```
+   When you emit the concrete command for a dev, substitute the resolved
+   `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
+   placeholders or a heredoc in the command you hand them to run.
 2. **Wait for the dev's explicit confirmation.** Do not apply without it.
 3. Apply secret scanning + push protection as a **separate** call
    (`gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
