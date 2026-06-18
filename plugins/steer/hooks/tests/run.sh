@@ -352,6 +352,44 @@ if command -v git >/dev/null 2>&1; then
 	printf 'x\n' >"${S8}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S8}" stS8)")"
 	assert_no_block "stop-reconcile: spec/.work marker governs non-issue branch" "${out}"
+
+	# I: .md marker governs via slash→underscore key AND the current session is
+	# stamped at the head of the session list, preserving the issue:/branch: header
+	# and the prior session id.
+	S9="$(git_repo stopMdMarker main)"
+	git -C "${S9}" checkout -q -b proto/x
+	mkdir -p "${S9}/spec/.work"
+	MD9="${S9}/spec/.work/proto_x.md"
+	printf '# Work marker — issue 123\n\n- issue: 123\n- branch: proto/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0002\n' >"${MD9}"
+	mkdir -p "${S9}/src"
+	printf 'x\n' >"${S9}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S9}" sess-new-0001)")"
+	assert_no_block "stop-reconcile: .md marker governs (slash→underscore key)" "${out}"
+	hsess9="$(awk '/^## Claude Code sessions/{f=1;next} f&&/^-[[:space:]]/{s=$0;sub(/^-[[:space:]]+/,"",s);sub(/[[:space:]].*$/,"",s);print s;exit}' "${MD9}")"
+	assert_eq "stop-reconcile: current session stamped at head of .md marker" "${hsess9}" "sess-new-0001"
+	grep -q '^- issue: 123$' "${MD9}" && ok || bad "stop-reconcile: .md marker issue: line preserved"
+	grep -q '^- branch: proto/x$' "${MD9}" && ok || bad "stop-reconcile: .md marker branch: line preserved"
+	grep -q '^- sess-old-0002$' "${MD9}" && ok || bad "stop-reconcile: prior session retained in .md marker"
+
+	# J: re-stamping the same session is a byte-for-byte no-op (head unchanged).
+	cp "${MD9}" "${MD9}.before"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S9}" sess-new-0001)")"
+	assert_no_block "stop-reconcile: re-stamp same session stays silent" "${out}"
+	cmp -s "${MD9}" "${MD9}.before" && ok || bad "stop-reconcile: re-stamp same session is a no-op"
+
+	# K: an empty session id (fail-open) leaves the .md marker untouched but still
+	# governs the branch (no block).
+	S10="$(git_repo stopMdEmptySid main)"
+	git -C "${S10}" checkout -q -b proto2/x
+	mkdir -p "${S10}/spec/.work"
+	MD10="${S10}/spec/.work/proto2_x.md"
+	printf '# Work marker — issue 7\n\n- issue: 7\n- branch: proto2/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0003\n' >"${MD10}"
+	cp "${MD10}" "${MD10}.before"
+	mkdir -p "${S10}/src"
+	printf 'x\n' >"${S10}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S10}" '')")"
+	assert_no_block "stop-reconcile: .md marker governs with empty session id" "${out}"
+	cmp -s "${MD10}" "${MD10}.before" && ok || bad "stop-reconcile: empty session id leaves .md marker intact"
 else
 	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
 fi
