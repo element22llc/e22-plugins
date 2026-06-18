@@ -5,6 +5,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **`/steer:sync` now repairs pre-2.0.0 rebrand tokens left in materialized
+  files.** A repo bootstrapped under the old `e22-standards` name kept stale
+  `/e22-*` command refs, the dead `e22-standards@e22-plugins` settings/CI marker,
+  and `e22:` spec markers — sync left them untouched because the migration ledger
+  had no rebrand entry and additive reconciliation never rewrites an existing line.
+  Added a v2.0.0 in-file token-rewrite entry to `MIGRATIONS.md` that rewrites those
+  tokens to the `steer:` forms under read-then-propose/never-clobber, while leaving
+  the intentionally-unchanged `e22-plugins` marketplace id alone. Widened the ledger
+  preamble + new-entry template and `sync` step 4 so an in-file token rewrite is a
+  first-class ledger action alongside `git mv` / `git rm`, and noted in
+  `CAPABILITIES.md` that the dead settings key is removed by this migration (not by
+  the additive `plugin-enabled-local` repair).
+
 ### 2.4.0
 
 - **`/steer:protect` now emits a copy-paste-safe branch-protection command.** The

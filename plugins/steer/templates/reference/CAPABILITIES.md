@@ -66,7 +66,11 @@ and **Repair**.
 - **Repair:** additive splice the `steer@e22-plugins` entry into `enabledPlugins`
   (and the `e22-plugins` marketplace into `extraKnownMarketplaces`), preserving
   every existing key. Never replace the file. Source:
-  `templates/scaffold/claude/settings.json`.
+  `templates/scaffold/claude/settings.json`. (The pre-2.0.0 dead
+  `e22-standards@e22-plugins` key is *removed* by the v2.0.0 ledger migration in
+  [MIGRATIONS.md](MIGRATIONS.md), not here — that rewrite runs before this repair,
+  so by the time this runs the live key already exists and the splice is a no-op.
+  This repair only ever *adds*.)
 - **Verbatim:** no
 - **Why it matters:** without this, the plugin never loads locally — no skills, no
   rules, no hooks. The repo degrades to stock Claude.

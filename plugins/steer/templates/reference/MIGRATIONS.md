@@ -1,7 +1,9 @@
 # Spec-spine migration ledger
 
 Append-only, ordered record of **non-additive** structural changes to the spec
-spine and bundled scaffold — renames, moves, deletions, and default changes that
+spine and bundled scaffold — renames, moves, deletions, default changes, and
+**in-file token rewrites** (replacing a string that already exists in a
+materialized file) that
 the [purely-additive Template reconciliation](spec-framework.md) convention
 cannot express. A reconciliation diff sees a renamed file as *old-present +
 new-absent* and would happily add the new file while orphaning the old one; only
@@ -40,12 +42,74 @@ memory — and re-stamp to it after applying.
 
 All migrations follow the spine discipline: **read-then-propose, never clobber**,
 preserve filled-in content, and land on a `feat/*` branch through a PR. Use
-`git mv` (not copy+delete) for renames so history follows the file.
+`git mv` (not copy+delete) for renames so history follows the file. An **in-file
+token rewrite** is read-then-propose too: scan only the exact old→new pairs the
+entry lists, show the diff, and replace **only** those tokens — never a broader
+regex, never a string the entry doesn't enumerate. Its precondition must be a grep
+that fires only while a stale token is still present and that cannot match a
+legitimate look-alike (e.g. an unchanged marketplace id).
 
 ## Entries
 
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
+
+### v2.0.0 — `e22-standards` → `steer` rebrand: in-file token rewrite
+
+- **What & why:** 2.0.0 renamed the plugin `e22-standards` → `steer` and dropped
+  the redundant skill prefix. A repo bootstrapped before 2.0.0 still carries old
+  tokens **inside** its materialized spine + scaffold — old slash invocations in
+  `.github/pull_request_template.md`, `mise.toml`, `CLAUDE.md`, `README.md`; the
+  dead marker `e22-standards@e22-plugins` in `.claude/settings.json`; the same
+  marker in `.github/workflows/claude.yml`'s `plugins:` list; and `e22:` metadata
+  markers in the spec spine. These are neither new files (capability repair) nor
+  new sections (additive reconciliation) — they are **rewrites of strings that
+  already exist**, which only a migration may do. The marketplace id `e22-plugins`
+  and repo `element22llc/e22-plugins` are intentionally **unchanged** and must
+  never be rewritten.
+- **Precondition:** any materialized file still contains a stale token — this grep
+  fires (run from repo root; the trailing filter protects the unchanged
+  marketplace id):
+
+  ```sh
+  grep -rIE 'e22-standards|/e22-[a-z]|e22:(modes|state|source|kind|placeholder)' \
+    --include='*.md' --include='*.yml' --include='*.yaml' --include='*.toml' \
+    --include='*.json' . 2>/dev/null \
+    | grep -vE 'element22llc/e22-plugins|steer@e22-plugins|"e22-plugins"'
+  ```
+
+  Empty output ⇒ already migrated (or a fresh post-2.0.0 repo) ⇒ no-op. The
+  `e22-standards` substring is *always* stale (the rebrand removed the name
+  entirely), so it unambiguously flags the dead `e22-standards@e22-plugins` marker
+  too — the marketplace exclusions match only the legitimate `steer@e22-plugins`,
+  `element22llc/e22-plugins`, and `"e22-plugins"` forms, never that dead marker.
+- **Action:** read-then-propose an **in-file token substitution** over the
+  materialized spine + scaffold files only (never the verbatim `scripts/*`
+  version-pin files — those are capability repair's verbatim re-copy). Show the
+  diff, then replace **only** these exact pairs, longest/most-specific first.
+  Old-token cells that begin a slash invocation are shown **without** the leading
+  `/` so this ledger file itself passes the stale-`/e22-*` lint guard; in a managed
+  repo they carry the leading `/`, and the pair applies to that slash-prefixed form.
+
+  | # | Old token | New | Lands in |
+  |---|---|---|---|
+  | 1 | `e22-standards:e22-` (slash-prefixed) | `/steer:` | PR template, CLAUDE.md, README.md, mise.toml |
+  | 2 | `e22-standards:` (slash-prefixed) | `/steer:` | any remaining qualified ref |
+  | 3 | `<!-- e22-standards:` | `<!-- steer:` | HTML markers |
+  | 4 | `"e22-standards@e22-plugins"` | `"steer@e22-plugins"` | `.claude/settings.json` `enabledPlugins` key |
+  | 5 | `e22-standards@e22-plugins` | `steer@e22-plugins` | `claude.yml` `plugins:` (unquoted) |
+  | 6 | `e22-<skill>` (slash-prefixed, a real skill name follows; **never** `plugins`) | `/steer:<skill>` | bare invocations, e.g. `init` → `/steer:init` |
+  | 7 | `e22:{modes,state,source,kind,placeholder}` | `steer:{…}` | spine metadata + `<!-- … -->` markers |
+
+  **False-positive guard:** never rewrite the marketplace id — `e22-plugins`,
+  `@e22-plugins`, or `element22llc/e22-plugins` — even when slash-prefixed. Pairs
+  1–5 and 7 are safe (they carry the `e22-standards` substring, a quoted/`@`-scoped
+  marker, or the `e22:` colon namespace the bare id lacks). Pair 6 is the only
+  dangerous one: apply it **only** when the token after `e22-` is a known skill
+  name and **never** when it is `plugins`. Pair 4 both removes the dead key and
+  produces the live key in one edit, value preserved. Follow with additive
+  [Template reconciliation](spec-framework.md) for any template-tracked file.
+  Idempotent: once applied the precondition is empty, so re-running is a no-op.
 
 ### v1.38.0 — GitHub Issue Forms replace Markdown templates; `tracker.md` gains frontmatter
 
@@ -86,8 +150,10 @@ preserve filled-in content, and land on a `feat/*` branch through a PR. Use
 - **What & why:** <the structural change and the reason a repo must follow it>
 - **Precondition:** <a check that is true only while the migration is still
   pending — e.g. "spec/OLD.md exists", "spec/features/*/spec.md exists">
-- **Action:** <the concrete transform — `git mv …`, move/merge, delete — applied
+- **Action:** <the concrete transform — `git mv …`, move/merge, delete, or an
+  **in-file token rewrite** (an explicit list of old→new string pairs replaced in
+  place across named files, with a false-positive guard) — applied
   read-then-propose, never clobbering filled-in content; follow with additive
-  reconciliation if the renamed file is also template-tracked>
+  reconciliation if a renamed file is also template-tracked>
 
 -->

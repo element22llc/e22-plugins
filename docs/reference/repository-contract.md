@@ -46,3 +46,8 @@ without overwriting, reordering, or removing any existing value.
 `/spec/.version` records the plugin version the spine was last reconciled
 against. After a plugin release, `/steer:sync` applies pending structural
 migrations from the ledger, reconciles additively, and re-stamps `.version`.
+Ledger migrations cover the non-additive changes reconciliation cannot express
+— renames and moves (`git mv`), deletions (`git rm`), and **in-file token
+rewrites** (replacing a string that already exists in a materialized file, e.g.
+the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
+never clobbering filled-in content.

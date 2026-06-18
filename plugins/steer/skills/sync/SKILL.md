@@ -90,10 +90,13 @@ PR'd. Use it to see what a full sync would do.
    only if the precondition holds (entries are idempotent and self-detecting, so
    an entry already applied — or never relevant — is a safe no-op). Because the
    precondition is the real gate, when `FROM` is `unstamped` walk the **whole**
-   ledger by precondition. Apply each as the ledger directs: `git mv` for
-   renames so history follows, **read-then-propose, never clobber** filled-in
-   content. List each migration you're applying (and each skipped, with why)
-   before touching files.
+   ledger by precondition. Apply each as the ledger directs — `git mv` for
+   renames so history follows, `git rm` for deletions, or an **in-file token
+   rewrite** (replace only the exact old→new string pairs the entry enumerates,
+   never a broader match) — all **read-then-propose, never clobber** filled-in
+   content. For a token-rewrite entry, run its precondition grep first and show
+   the diff of proposed substitutions before applying. List each migration
+   you're applying (and each skipped, with why) before touching files.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
@@ -237,8 +240,8 @@ PR'd. Use it to see what a full sync would do.
   or re-triage productionization. Code health is `/steer:audit`; drift is
   `/steer:drift`.
 - **The ledger is the source of truth for non-additive changes.** Apply
-  renames/moves only from `MIGRATIONS.md` entries — never improvise a transform
-  from memory of "what changed."
+  renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
+  improvise a transform from memory of "what changed."
 - **Capability repair is presence + wiring only.** `CAPABILITIES.md` is the
   source of truth for which files unlock which capability and how to repair a gap.
   Create a capability-critical file only when its conditional predicate applies
