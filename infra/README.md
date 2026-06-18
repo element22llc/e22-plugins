@@ -25,6 +25,9 @@ dashboard** — see [Cloudflare runbook](#cloudflare-runbook-one-time) below.
 - A state bucket **`element22-tofu-state`** in that account (us-east-1),
   with versioning enabled. State locking is native (`use_lockfile = true`) — no
   DynamoDB table needed. Create/confirm the bucket before the first apply.
+- To test the Cloudflare deploy locally: copy `.env.example` → `.env` (gitignored)
+  and fill in `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`. mise installs
+  `wrangler` (pinned in `mise.toml`) and loads `.env` automatically.
 
 ## Layout
 
@@ -58,6 +61,22 @@ mise run tf:apply      # create/update the CNAME
 The CNAME target is the `pages_hostname` input in
 `live/shared_services/terragrunt.hcl` — set it to the `<project>.pages.dev` value
 Cloudflare gives you when you add the custom domain (step 2 below), then apply.
+
+### Test the Cloudflare deploy locally
+
+Mirror the CI deploy from your machine before pushing — same build, same
+`wrangler pages deploy`, but to a **preview** deployment so production
+(`ai.element-22.com`) is untouched:
+
+```sh
+mise run cf:check           # confirm CLOUDFLARE_* creds resolve (wrangler whoami)
+mise run cf:deploy:preview  # build docs/ + deploy a preview; prints a *.pages.dev URL
+```
+
+`cf:deploy:preview` builds the site from the repo root and deploys with
+`--branch=local-preview`; any branch other than the project's production branch
+yields a throwaway preview URL. Open that URL to confirm the deploy works, then
+let CI handle the production deploy on merge to `main`.
 
 ## Cloudflare runbook (one-time)
 

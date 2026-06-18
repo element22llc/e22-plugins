@@ -7,6 +7,9 @@
 [tools]
 opentofu = "1.12"
 terragrunt = "1.0"
+# Cloudflare Pages CLI for the local `cf:*` deploy tasks (needs node for the npm backend).
+node = "lts"
+"npm:wrangler" = "4"
 
 [settings]
 lockfile = true
@@ -46,3 +49,22 @@ run = "terragrunt plan"
 description = "Apply the ai.element-22.com DNS unit"
 dir = "live/shared_services"
 run = "terragrunt apply"
+
+# --- Cloudflare Pages: test the docs deploy locally before relying on CI ---
+# wrangler reads CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID from infra/.env
+# (loaded via `_.file = ".env"` above; .env is gitignored — see .env.example).
+
+[tasks."cf:check"]
+description = "Verify Cloudflare credentials (CLOUDFLARE_* from infra/.env) before deploying"
+run = "wrangler whoami"
+
+[tasks."cf:deploy:preview"]
+description = "Build the docs and deploy a Cloudflare Pages PREVIEW from your machine — mirrors the CI deploy so you can verify it before pushing"
+# Build + deploy from the repo root, where `docs:build` and its `site/` output live.
+dir = "{{ config_root }}/.."
+run = [
+  "mise run docs:build",
+  # Any --branch other than the project's production branch publishes a preview
+  # deployment with its own *.pages.dev URL, leaving production untouched.
+  "wrangler pages deploy site --project-name=e22-docs --branch=local-preview --commit-dirty=true",
+]
