@@ -1,0 +1,31 @@
+# Dedicated infra toolchain + tasks. Run these from within infra/ so this config
+# applies — the repo-root mise.toml carries the plugin/docs toolchain and is kept
+# free of infra concerns on purpose.
+#
+# State backend uses native S3 locking (use_lockfile), so OpenTofu must be >= 1.10.
+
+[tools]
+opentofu   = "1.12"
+terragrunt = "1.0"
+
+[tasks."tf:fmt"]
+description = "Format all Terragrunt HCL + OpenTofu files under infra/"
+run = [
+  "terragrunt hcl fmt",
+  "tofu fmt -recursive",
+]
+
+[tasks."tf:validate"]
+description = "Validate the ai.element22.com DNS unit"
+dir = "dns/ai-element22"
+run = "terragrunt validate"
+
+[tasks."tf:plan"]
+description = "Plan the ai.element22.com DNS unit"
+dir = "dns/ai-element22"
+run = "terragrunt plan"
+
+[tasks."tf:apply"]
+description = "Apply the ai.element22.com DNS unit"
+dir = "dns/ai-element22"
+run = "terragrunt apply"

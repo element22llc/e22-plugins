@@ -15,9 +15,9 @@
 # `docs-templates/` and the authoring guide is the repo-root `AUTHORING.md`.
 site_name: e22-plugins — steer
 site_description: Engineering-standards plugin marketplace — the steer plugin.
-# Published to GitHub Pages under the project sub-path; sets the canonical/asset
-# base so the site resolves correctly when served from /e22-plugins/.
-site_url: https://element22llc.github.io/e22-plugins/
+# Served from the branded root domain (Route 53 CNAME → Cloudflare Pages, behind
+# Cloudflare Access); sets the canonical/asset base for root-path serving.
+site_url: https://ai.element22.com/
 docs_dir: docs
 # `mise run docs:build` writes the build here (gitignored). Published to GitHub
 # Pages from this output by .github/workflows/docs-deploy.yml.

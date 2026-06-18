@@ -1,14 +1,16 @@
 name: Docs site
 
-# Builds the Zensical docs site and publishes it to GitHub Pages.
+# Builds the Zensical docs site and publishes it to Cloudflare Pages.
 #
 # The `build` job runs the strict build on every PR and push, so broken docs
 # (dead links/nav) fail before reaching `main` — a gap the `mise run ci` gate
-# (structure-only `validate_docs.py`) does not cover. The `deploy` job publishes
-# the artifact, and only ever runs from `main`.
+# (structure-only `validate_docs.py`) does not cover. The `deploy` job uploads
+# the built site to Cloudflare Pages, and only ever runs from `main`.
 #
-# One-time setup: Settings → Pages → Source must be set to "GitHub Actions",
-# otherwise the deploy job fails with "Pages not enabled".
+# Setup: the Cloudflare Pages project (Direct Upload, name `e22-docs`) and the
+# CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID repo secrets must exist. The site
+# is served from https://ai.element22.com (Route 53 CNAME → <project>.pages.dev)
+# behind Cloudflare Access. See infra/README.md.
 
 on:
   pull_request:
@@ -25,14 +27,15 @@ on:
       - .github/workflows/docs-deploy.yml
   workflow_dispatch:
 
-# Least privilege by default; the deploy job adds pages/id-token below.
+# Least privilege: only read the repo. The deploy job authenticates to Cloudflare
+# with an API token secret, so no extra GITHUB_TOKEN scopes are needed.
 permissions:
   contents: read
 
-# Never run two Pages deploys at once; let a newer push supersede an in-flight
-# one rather than cancelling (avoids a half-published site).
+# Never run two Cloudflare Pages deploys at once; let a newer push supersede an
+# in-flight one rather than cancelling (avoids a half-published site).
 concurrency:
-  group: pages
+  group: cloudflare-pages
   cancel-in-progress: false
 
 jobs:
@@ -50,23 +53,28 @@ jobs:
         # zensical build --strict → site/. --strict fails on broken links/nav.
         run: mise run docs:build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload built site
+        uses: actions/upload-artifact@v4
         with:
+          name: site
           path: site
+          retention-days: 1
 
   deploy:
     # Validate on PRs (build job only); publish only from main.
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Download built site
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site --project-name=e22-docs --branch=main
