@@ -27,6 +27,18 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: docs-sync
+        name: Docs site in sync (validate_docs.py)
+        entry: uv run python scripts/validate_docs.py
+        language: system
+        pass_filenames: false
+        # Structural sync of docs/ with the plugin's source of truth (skill
+        # inventory, nav, links, /steer: namespace hygiene). Stateless — checks
+        # the working tree, so it fits a per-commit gate (unlike the branch-diff
+        # check_docs_impact.py, which stays a CI-only --base gate). On failure,
+        # reconcile with /plugin-docs. Mirrors `mise run docs:check`.
+        files: ^(plugins/steer/(skills|rules|hooks)/|docs/|mkdocs\.yml$)
+
       - id: actionlint
         name: GitHub Actions lint
         entry: actionlint
