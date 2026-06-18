@@ -26,6 +26,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   in the next-actions block rather than run. A new read-only **`--check`** mode
   prints the capability status table with no branch or PR. Read-then-propose,
   never clobber, never commits to `main`, PR targets `BASE` — all unchanged.
+- **Structured-config scaffold files now reconcile mechanically, additively, and
+  never-clobber.** Merging the scaffold into a repo that already has its own
+  `.gitignore` or JSON configs (`.claude/settings.json`, `.mcp.json`,
+  `biome.json`, `tsconfig`) was prose-only: the existing `template-reconcile.sh`
+  diffs Markdown heading/checklist anchors and cannot parse those formats, so
+  `/steer:adopt` and `/steer:sync` relied on the model eyeballing the merge — the
+  highest "break the user's working repo" risk in the bootstrap path. A new
+  `plugins/steer/scripts/scaffold-reconcile.py` (stdlib-only, the structured-config
+  sibling of `template-reconcile.sh`) does a deep **additive** merge: JSON objects
+  recurse, arrays union, existing scalars/lines are **never overwritten, reordered,
+  or removed**, and an unparseable existing file is refused (exit 3) rather than
+  clobbered. Default check mode is read-only and mirrors `template-reconcile.sh`'s
+  exit-code contract; `--apply` writes the merge. `/steer:sync`,
+  `/steer:adopt`, and `/steer:init` now invoke it for those files, and the
+  scaffold `MANIFEST.md` per-file notes point at it. Complements the
+  capability-repair pass (presence + wiring): this handles additive content
+  inside files that already exist; capability repair handles missing/mis-wired
+  whole files.
 - **In-CI Claude now runs under the same steer standards as a local session.**
   The shipped `.github/workflows/claude.yml` (the `@claude` mention workflow) was
   the stock Anthropic template, so the in-CI agent ran as a standards-less Claude —

@@ -109,6 +109,28 @@ PR'd. Use it to see what a full sync would do.
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
+   For the **non-Markdown** scaffold files the heading/checklist convention can't
+   parse — `.gitignore` and the JSON configs (`.claude/settings.json`,
+   `.mcp.json`, `biome.json`, `configs/tsconfig.base.json`) — reconcile with the
+   structured helper instead, which is additive and never overwrites an existing
+   value or line:
+
+   ```
+   # check (read-only): empty output = current; any output = additive delta
+   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" \
+     auto .gitignore "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitignore"
+   # apply the additive merge once you've shown the delta
+   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" \
+     auto .claude/settings.json \
+     "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
+   ```
+
+   This is the **content**-level merge (permission lists, companion-plugin
+   entries, config keys). The plugin-*enablement* wiring inside
+   `.claude/settings.json` — the `steer@e22-plugins` marker — is separately
+   verified by capability repair (step 6); both are additive and the merge here
+   never flips an existing value, so a deliberate `"steer@e22-plugins": false`
+   opt-off is preserved.
 
 6. **Repair capability gaps (missing / mis-wired scaffold wiring).** Additive
    reconciliation (step 5) only splices into files that *already exist* and the
