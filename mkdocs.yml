@@ -86,6 +86,7 @@ nav:
       - Skills: reference/skills.md
       - Hooks: reference/hooks.md
       - Configuration: reference/configuration.md
+      - GitHub Actions integration: reference/github-integration.md
       - Repository contract: reference/repository-contract.md
   - Team rollout:
       - Known limitations: reference/known-limitations.md

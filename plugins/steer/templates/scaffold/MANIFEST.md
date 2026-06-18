@@ -82,7 +82,7 @@ artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).
 | Template | Install as | Notes |
 |---|---|---|
 | `../github/workflows/ci.yml` | `.github/workflows/ci.yml` | CI: always-on stack-agnostic hygiene + auto-detected stack checks (Node/Python); a detected stack with no tests fails. |
-| `../github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; needs the `ANTHROPIC_API_KEY` repo secret. |
+| `../github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; **loads the `steer` plugin in CI** (via the action's `plugins`/`plugin_marketplaces` inputs) so in-CI Claude runs under the same standards as local. Needs the `ANTHROPIC_API_KEY` secret **and** the shared marketplace GitHub App credentials (`STEER_APP_ID` var + `STEER_APP_PRIVATE_KEY` secret, read access to the private marketplace repo) — see scaffold `README.md` → GitHub Actions secrets. |
 | `../github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
 | `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) — offer to enable it and point it at the team's discussions/chat during init/adopt. |
 

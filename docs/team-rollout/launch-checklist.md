@@ -18,6 +18,12 @@ a real (or throwaway) repo, not against production work.
       is green so the path doesn't drop to the manual floor.
 - [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens a
       PR, and the **push/PR gate** correctly pauses for a human.
+- [ ] **In-CI `@claude` provisioned.** The shipped `claude.yml` loads the `steer`
+      plugin in CI, so it needs the `ANTHROPIC_API_KEY` secret **and** the shared
+      marketplace GitHub App (`STEER_APP_ID` / `STEER_APP_PRIVATE_KEY`, set once at
+      the org level). Create the App, then `@claude` on a test PR and confirm the
+      reply reflects steer standards (proves the plugin loaded). See
+      [GitHub Actions integration](../reference/github-integration.md).
 - [ ] **Docs drift CI tested.** `mise run docs:check` passes, and a deliberate
       drift (e.g. add a skill without updating the reference) is caught by CI.
 - [ ] **One PO dry run completed.** A non-developer walks
