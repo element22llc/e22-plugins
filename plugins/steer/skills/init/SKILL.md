@@ -151,7 +151,12 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    and `/steer:adr` populate them later). **Adapt to the chosen stack
    and never clobber existing files** (the MANIFEST's per-file notes say what
    to adapt — e.g. drop `package.json`/`pnpm-workspace.yaml`/`biome.json` for
-   a Python-only product, swap task commands to `uv run …`).
+   a Python-only product, swap task commands to `uv run …`). Greenfield repos
+   rarely have these already, but if a target `.gitignore` or JSON config
+   (`.claude/settings.json`, `.mcp.json`, `biome.json`) **does** exist, reconcile
+   it additively with
+   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" auto <target> <scaffold-template> --apply`
+   instead of overwriting it.
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
    `/spec/tracker.md`** (which issue tracker does this product use — Jira,

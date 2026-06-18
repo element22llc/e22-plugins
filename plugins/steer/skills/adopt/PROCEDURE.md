@@ -203,7 +203,12 @@ seeded with the adoption itself as the first entry. **Adapt to the existing
 stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match
 what the app needs). **Reconcile, don't replace** — if the repo already has its
 own CI, compose, or config, merge into it rather than overwriting, and **never
-clobber working app code**: diff and ask before touching anything that exists. The
+clobber working app code**: diff and ask before touching anything that exists. For
+the structured-config files an existing repo most often already owns — `.gitignore`
+and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`) —
+reconcile with the additive helper rather than by hand, which never overwrites an
+existing value or line (`check` first, show the delta, then `--apply`):
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
 scaffold carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md` Phase 7
 already reverse-engineered**; only bring in the stub for a UI repo where Phase 7
 somehow produced nothing. Reverse-engineer the root `ARCHITECTURE.md` the same

@@ -31,9 +31,9 @@ this plugin repo itself); rename on copy as mapped below.
 | `pnpm-workspace.yaml` | `pnpm-workspace.yaml` | pnpm monorepo + catalog. Skip for Python-only products. |
 | `biome.json` | `biome.json` | Lint + format (Node/TS). Python products use Ruff via `pyproject.toml` instead. |
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
-| `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it. |
-| `mcp.json` | `.mcp.json` | GitHub MCP server for local sessions (`${GITHUB_PAT}` via shell, never committed). |
-| `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. Merge if one exists. |
+| `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold-reconcile.py` (never removes a repo's own lines). |
+| `mcp.json` | `.mcp.json` | GitHub MCP server for local sessions (`${GITHUB_PAT}` via shell, never committed). If one exists, merge additively with `scripts/scaffold-reconcile.py`. |
+| `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold-reconcile.py` (unions permission lists / plugins, never overwrites an existing value). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
 | `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
