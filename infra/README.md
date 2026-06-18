@@ -18,9 +18,10 @@ dashboard** — see [Cloudflare runbook](#cloudflare-runbook-one-time) below.
 
 - `mise` — installs the pinned `opentofu` + `terragrunt` (see `mise.toml`).
   OpenTofu must be ≥ 1.10 for native S3 state locking.
-- AWS credentials for account **053932564353** on your shell (SSO profile or
-  exported env). The provider pins `allowed_account_ids`, so a wrong-account
-  credential fails fast.
+- AWS access to account **053932564353** via SSO. The toolchain reads the
+  repo-local `aws/config` (set through `AWS_CONFIG_FILE` in `mise.toml`); sign in
+  once per session with `mise run aws:sso:login`. The provider pins
+  `allowed_account_ids`, so a wrong-account credential fails fast.
 - A state bucket **`element22-tofu-state`** in that account (us-east-1),
   with versioning enabled. State locking is native (`use_lockfile = true`) — no
   DynamoDB table needed. Create/confirm the bucket before the first apply.
@@ -29,19 +30,25 @@ dashboard** — see [Cloudflare runbook](#cloudflare-runbook-one-time) below.
 
 ```
 infra/
-├── mise.toml                  # opentofu + terragrunt versions, tf:* tasks
-├── terragrunt.hcl             # root: S3 remote state (use_lockfile) + aws provider
-└── dns/
-    └── ai-element22/
-        ├── terragrunt.hcl     # inputs: pages_hostname, ttl
+├── mise.toml                  # opentofu + terragrunt versions, AWS SSO, tf:* tasks
+├── aws/config                 # repo-local AWS SSO config (AWS_CONFIG_FILE)
+├── root.hcl                   # root: S3 remote state (use_lockfile) + aws provider
+└── live/
+    └── shared_services/
+        ├── terragrunt.hcl     # include "root" (root.hcl) + inputs: pages_hostname, ttl
         └── main.tf            # data zone lookup + aws_route53_record CNAME
 ```
+
+> The root config is named `root.hcl` (not `terragrunt.hcl`) — Terragrunt now
+> flags a `terragrunt.hcl` root as a deprecated anti-pattern. Child units
+> reference it with `find_in_parent_folders("root.hcl")`.
 
 ## Usage
 
 Run from inside `infra/`:
 
 ```sh
+mise run aws:sso:login # sign in to AWS SSO (once per session)
 mise run tf:fmt        # format HCL + tofu
 mise run tf:validate   # validate the DNS unit
 mise run tf:plan       # preview the CNAME change
@@ -49,7 +56,7 @@ mise run tf:apply      # create/update the CNAME
 ```
 
 The CNAME target is the `pages_hostname` input in
-`dns/ai-element22/terragrunt.hcl` — set it to the `<project>.pages.dev` value
+`live/shared_services/terragrunt.hcl` — set it to the `<project>.pages.dev` value
 Cloudflare gives you when you add the custom domain (step 2 below), then apply.
 
 ## Cloudflare runbook (one-time)
@@ -62,7 +69,7 @@ Do these in the Cloudflare dashboard, in order:
    `.github/workflows/docs-deploy.yml` also creates it if absent.
 2. **Custom domain** — project → Custom domains → add `ai.element22.com`.
    Cloudflare shows a `<project>.pages.dev` CNAME target → put it in
-   `dns/ai-element22/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
+   `live/shared_services/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
    Cloudflare auto-validates and issues the TLS cert once the CNAME resolves.
 3. **GitHub identity provider** — Zero Trust → Settings → Authentication → add
    **GitHub** login (creates/uses a GitHub OAuth app; callback to

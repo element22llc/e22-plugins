@@ -5,27 +5,44 @@
 # State backend uses native S3 locking (use_lockfile), so OpenTofu must be >= 1.10.
 
 [tools]
-opentofu   = "1.12"
+opentofu = "1.12"
 terragrunt = "1.0"
+
+[settings]
+lockfile = true
+
+[env]
+# OpenTofu, Terragrunt, and aws CLI use this file (not ~/.aws/config). Override in `.env` if needed.
+AWS_CONFIG_FILE = "{{ config_root }}/aws/config"
+AWS_SSO_SESSION = "e22"
+# Ensure named profiles and SSO from the shared config file are honored by AWS SDKs.
+AWS_SDK_LOAD_CONFIG = "1"
+# On a laptop (SSO/profile), the SDK still tries the EC2 metadata endpoint first; each attempt can
+# block ~10s before falling through. Terragrunt re-resolves credentials many times per command
+# (includes, dependency units), which made runs take 60s+. Unset in `.env` if you run IaC from EC2
+# and rely on an instance profile.
+AWS_EC2_METADATA_DISABLED = "true"
+_.file = ".env"
+
+[tasks."aws:sso:login"]
+description = "Authenticate with AWS SSO - run once before IaC commands"
+run = 'aws sso login --sso-session "${AWS_SSO_SESSION}"'
 
 [tasks."tf:fmt"]
 description = "Format all Terragrunt HCL + OpenTofu files under infra/"
-run = [
-  "terragrunt hcl fmt",
-  "tofu fmt -recursive",
-]
+run = ["terragrunt hcl fmt", "tofu fmt -recursive"]
 
 [tasks."tf:validate"]
 description = "Validate the ai.element22.com DNS unit"
-dir = "dns/ai-element22"
+dir = "live/shared_services"
 run = "terragrunt validate"
 
 [tasks."tf:plan"]
 description = "Plan the ai.element22.com DNS unit"
-dir = "dns/ai-element22"
+dir = "live/shared_services"
 run = "terragrunt plan"
 
 [tasks."tf:apply"]
 description = "Apply the ai.element22.com DNS unit"
-dir = "dns/ai-element22"
+dir = "live/shared_services"
 run = "terragrunt apply"

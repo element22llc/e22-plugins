@@ -12,6 +12,7 @@ locals {
   aws_account_id = "053932564353"
   aws_region     = "us-east-1"
   state_bucket   = "element22-tofu-state" # confirm/create before first apply (see README)
+  aws_profile    = "e22-shared-services-admin"
 }
 
 # Inherited by every unit via `include "root"`. Each unit gets its own state key
@@ -28,6 +29,7 @@ remote_state {
     region       = local.aws_region
     encrypt      = true
     use_lockfile = true
+    profile      = local.aws_profile
   }
 }
 
@@ -40,6 +42,12 @@ generate "provider" {
     provider "aws" {
       region              = "${local.aws_region}"
       allowed_account_ids = ["${local.aws_account_id}"]
+      profile = "${local.aws_profile}"
+
+      tags = {
+      ManagedBy = "opentofu"
+      IacRepo   = "e22-plugins"
+    }
     }
   EOF
 }
