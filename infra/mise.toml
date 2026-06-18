@@ -69,15 +69,20 @@ run = [
   "wrangler pages deploy site --project-name=e22-ai-docs --branch=local-preview --commit-dirty=true",
 ]
 
+[tasks."cf:access:init"]
+description = "Init the live/access unit (download the Cloudflare provider)"
+dir = "live/access"
+run = "terragrunt init"
+
 [tasks."cf:access:plan"]
 description = "Plan the Cloudflare Access setup (GitHub IdP + email policy + app) in live/access"
 dir = "live/access"
-run = "terragrunt plan"
+run = ["terragrunt init", "terragrunt plan"]
 
 [tasks."cf:access:apply"]
 description = "Apply the Cloudflare Access setup (GitHub IdP + email policy + app) in live/access"
 dir = "live/access"
-run = "terragrunt apply"
+run = ["terragrunt init", "terragrunt apply"]
 
 [tasks."cf:access:verify"]
 description = "Check a URL is gated by Cloudflare Access (expects a 302 redirect to the Access login, NOT a public 200). Pass a preview *.pages.dev URL or the default production host."

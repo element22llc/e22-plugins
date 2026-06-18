@@ -1,9 +1,10 @@
 # Root Terragrunt config for Element 22 infrastructure (AWS account 053932564353).
 #
-# DNS-only today: the single managed resource is the Route 53 CNAME that points
-# ai.element-22.com at the Cloudflare Pages project serving the docs site. The
-# Cloudflare Pages project and the Cloudflare Access app that gates it are set up
-# in the Cloudflare dashboard — see README.md.
+# Units under live/: dns (Route 53 CNAME, aws provider) and access (Cloudflare
+# Access, cloudflare provider). Providers are generated PER UNIT — not here —
+# because Terragrunt rejects two generate blocks with the same name across the
+# include hierarchy, and the two units need different providers. Root owns only
+# the shared remote state + locals.
 #
 # Remote state lives in S3 with native S3 state locking (use_lockfile, requires
 # OpenTofu >= 1.10) — no DynamoDB lock table.
@@ -31,24 +32,4 @@ remote_state {
     use_lockfile = true
     profile      = local.aws_profile
   }
-}
-
-# Pin the provider to the intended account so a mis-scoped credential fails fast
-# instead of touching the wrong AWS account.
-generate "provider" {
-  path      = "provider.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<-EOF
-    provider "aws" {
-      region              = "${local.aws_region}"
-      allowed_account_ids = ["${local.aws_account_id}"]
-      profile = "${local.aws_profile}"
-      default_tags {
-        tags = {
-          ManagedBy = "opentofu"
-          IacRepo   = "e22-plugins"
-        }
-      }
-    }
-  EOF
 }
