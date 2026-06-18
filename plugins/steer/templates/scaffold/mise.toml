@@ -25,19 +25,26 @@ lockfile = true
 # maps to `aqua:pnpm/pnpm`, which has no valid macOS asset, so we pin `npm:pnpm`
 # explicitly. When adding a tool, verify `mise install` works on macOS and Linux
 # (CI runs Linux) before committing.
-# Delete tools that do not apply to the product.
+#
+# Two groups below: an agent-runtime baseline every repo keeps, and stack-specific
+# tools you prune to match the product.
 
+# --- Agent-runtime baseline: ALWAYS installed, never delete — even in a
+# single-language product. AI agent tooling and MCP servers run packages on
+# demand through these runtimes: `npx <pkg>` (Node) and `uvx <pkg>` (Python) —
+# e.g. the bundled markitdown MCP server (.mcp.json) runs via `uvx markitdown-mcp`.
+# Pruning them breaks document conversion and any npx/uvx-based agent tool.
 node = "latest"
-"npm:pnpm" = "latest"                 # npm backend on purpose — aqua:pnpm/pnpm lacks macOS assets
-biome = "latest"                # default Node linter + formatter (https://biomejs.dev)
-"aqua:koalaman/shellcheck" = "latest"
-"aqua:rhysd/actionlint" = "latest"
+python = "latest"
+uv = "latest"                   # also the default Python package/project manager
 github-cli = "latest"           # gh — PRs, releases, CI workflow runs from the terminal
-# Uncomment for Python products. uv is the default Python package/project manager;
-# ruff is the default Python linter + formatter (https://docs.astral.sh/ruff).
-# python = "latest"
-# uv = "latest"
-# ruff = "latest"
+
+# --- Stack-specific: keep what matches the product, delete the rest.
+"npm:pnpm" = "latest"                 # npm backend on purpose — aqua:pnpm/pnpm lacks macOS assets
+biome = "latest"                      # default Node linter + formatter (https://biomejs.dev)
+"aqua:koalaman/shellcheck" = "latest" # shell lint (CI gate)
+"aqua:rhysd/actionlint" = "latest"    # GitHub Actions workflow lint (CI gate)
+# ruff = "latest"               # default Python linter + formatter (https://docs.astral.sh/ruff) — uncomment for Python products
 # go = "latest"
 # rust = "latest"
 # awscli = "latest"

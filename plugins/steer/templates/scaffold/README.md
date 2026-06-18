@@ -134,6 +134,15 @@ This repo ships a project-scoped `.mcp.json` that wires **local Claude Code sess
 
 Never put the token in a repo file (even gitignored), commit a `.mcp.json` with the literal token, or paste it into a Claude message.
 
+## Document conversion MCP server (markitdown, local Claude Code only)
+
+The same `.mcp.json` also wires **local Claude Code sessions** to Microsoft's [markitdown](https://github.com/microsoft/markitdown) MCP server (`packages/markitdown-mcp`), which converts binary Office documents (`.docx`, `.xlsx`, `.pptx`) — and other formats like HTML, EPUB, and CSV — into clean Markdown. Use it when a stakeholder hands over source material in those formats, so Claude can read it cheaply instead of choking on raw zip+XML. **PDFs and images don't need it — Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for markitdown for the Office binaries specifically.
+
+1. **Prerequisite — `uv`** (provided by default): the server runs via `uvx markitdown-mcp`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box — no per-product opt-in. First use auto-fetches the `markitdown-mcp` package from PyPI — no token or env var required.
+2. **Verify**: restart Claude Code in this repo, run `/mcp`, and confirm `markitdown` is connected. (If you removed `uv`/`python` from `mise.toml` it shows disconnected instead — nothing breaks, but conversion is unavailable.)
+
+markitdown-mcp is meant for **local, trusted use only** — don't expose it over HTTP/SSE.
+
 ## Branch protection
 
 steer is advisory in the local session — it won't *block* a push to `main`. The
