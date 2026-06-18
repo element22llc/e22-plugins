@@ -87,6 +87,7 @@ nav:
       - Hooks: reference/hooks.md
       - Configuration: reference/configuration.md
       - GitHub Actions integration: reference/github-integration.md
+      - MCP servers: reference/mcp-servers.md
       - Repository contract: reference/repository-contract.md
   - Team rollout:
       - Known limitations: reference/known-limitations.md
