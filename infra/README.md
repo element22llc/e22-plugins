@@ -119,11 +119,20 @@ Do these in the Cloudflare dashboard, in order:
    Cloudflare shows a `<project>.pages.dev` CNAME target → put it in
    `live/dns/terragrunt.hcl` (`pages_hostname`) and `mise run tf:apply`.
    Cloudflare auto-validates and issues the TLS cert once the CNAME resolves.
-3. **GitHub OAuth app** — github.com → Settings → Developer settings → OAuth Apps
+3. **Enable Zero Trust / Access** *(one-time, dashboard — cannot be done via
+   Terraform)* — dash.cloudflare.com → Zero Trust → click **Enable Access**, pick
+   a **team name** (your auth domain becomes `<team>.cloudflareaccess.com`), and
+   select the **Free** plan (Cloudflare asks for payment details even on Free).
+   This is what the `access.api.error... Access is not enabled` 403 means: the
+   Access API stays closed until the org is onboarded once. Terraform's
+   `cloudflare_zero_trust_organization` only manages an *already-enabled* org, so
+   it can't bootstrap this.
+4. **GitHub OAuth app** — github.com → Settings → Developer settings → OAuth Apps
    → New. Authorization callback URL:
-   `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback`. Put the client
-   ID + secret in `infra/.env` (`GITHUB_OAUTH_CLIENT_ID` / `_SECRET`).
-4. **GitHub IdP + Access app + policy** — **automated** in the `live/access` unit
+   `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback` (the team name
+   from step 3). Put the client ID + secret in `infra/.env`
+   (`GITHUB_OAUTH_CLIENT_ID` / `_SECRET`).
+5. **GitHub IdP + Access app + policy** — **automated** in the `live/access` unit
    (`mise run cf:access:apply`). It creates the GitHub identity provider, a
    self-hosted Access app on `ai.element-22.com` pinned to GitHub login, and an
    **Include → emails ending `@element-22.com`** policy. No dashboard clicks.
