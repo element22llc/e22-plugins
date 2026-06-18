@@ -173,6 +173,11 @@ def main() -> int:
         print(f"validate_docs: {len(errors)} problem(s) found:", file=sys.stderr)
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
+        print(
+            "  -> Run /plugin-docs to reconcile docs/ with the plugin, "
+            "then re-stage docs/ and commit (docs + code land together).",
+            file=sys.stderr,
+        )
         return 1
     print("validate_docs: OK")
     return 0

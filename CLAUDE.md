@@ -93,7 +93,10 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   agent. Serve it with `mise run docs:serve`; the `docs:check` gate
   (`scripts/validate_docs.py`) keeps `docs/reference/*` in sync with the plugin.
   See `AUTHORING.md` → "Documentation site". Docs ship nothing — no changelog
-  entry.
+  entry. **Auto-reconcile on commit:** the `docs-sync` pre-commit hook runs
+  `validate_docs.py`; if it aborts a commit, that is your cue to run
+  `/plugin-docs` immediately, then re-stage `docs/` and re-commit so docs and
+  code land in the same commit — do not skip the hook or commit around it.
 - **Fast iteration:** when one gate fails, re-run just that script —
   `uv run python scripts/check_standards.py`, `… scripts/check_plugin.py`,
   `… scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh`.
