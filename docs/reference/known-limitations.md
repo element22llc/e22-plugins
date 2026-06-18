@@ -4,20 +4,29 @@ What to know before you rely on `steer`. None of these are bugs — they're the
 edges of what the plugin can guarantee, given the surfaces and tools it runs on.
 When in doubt, fall back to human review.
 
-## Claude Cowork and the desktop app
+## Where hooks fire (Claude Code vs. the chat surfaces)
 
-Plugin hooks are a Claude Code lifecycle feature, and on **Claude Cowork and the
-desktop app** they do not currently fire. Consequences:
+Plugin hooks are a Claude Code lifecycle feature, and **where they fire depends on
+the surface** (validated June 2026). The Claude Desktop app has three tabs —
+**Chat**, **Cowork**, and **Code** — and they don't behave the same:
 
-- The always-on rules are **not** auto-injected — run `/steer:standards` at the
-  start of every session. This is the one that matters: the rules are what make
-  Claude follow the standards.
-- The `PreToolUse` hooks don't run either — the spec-first and issue-first
-  nudges, and the version-pin `deny`. Note that the first two are only advisory
-  reminders even when they *do* fire (see below), so losing them matters less
-  than losing the rules.
+- **Claude Code — the CLI, the IDE extensions (VS Code / JetBrains), and the
+  Claude Desktop *Code* tab — runs hooks fully.** The always-on rules inject, the
+  `PreToolUse` gates run, skills and MCP work. This is the supported path.
+- **Cowork** (the *Cowork* tab) is the one chat-family surface where hooks and
+  sub-agents run — Anthropic's docs state *"hooks and sub-agents run only in
+  Cowork."* Plugin-scoped `SessionStart` hooks had bugs earlier in 2026 (since
+  closed); **reconfirm on your build** before relying on auto-injected rules there.
+- **The Claude Desktop *Chat* tab and claude.ai web chat do NOT run hooks** — they
+  show as grayed out. Plugins install and **skills work**, but the always-on rules
+  are **not** auto-injected and the `PreToolUse` gates don't run.
 
-Treat these surfaces as "load the rules by hand, and rely on review." See
+On the no-hooks surfaces (Chat tab, web chat) — and as a fallback anywhere the
+rules didn't load — run `/steer:standards` at the start of the session to load the
+rules by hand, and rely on human review where the gates would have fired. The
+rules are the one that matters: they're what make Claude follow the standards; the
+`PreToolUse` spec-first and issue-first nudges are only advisory even when they
+*do* fire (see below), so losing them matters less. See
 [Installation](../getting-started/installation.md) and the
 [Hooks reference](hooks.md).
 
