@@ -1,22 +1,26 @@
 #!/usr/bin/env sh
-# steer PreToolUse hook — version-pin policy (deterministic, advisory).
+# steer PreToolUse hook — version-pin policy (deterministic EOL floor).
 #
 # Inspects the *new* content a Write/Edit/MultiEdit/NotebookEdit introduces for
 # pinned major versions of common backing-service / runtime images and applies
 # the org policy in policy/versions.yml:
 #
 #   below minimum_supported / denied  -> DENY  (deterministic, from policy)
-#   supported but below recommended   -> WARN  (advisory additionalContext)
-#   at/above recommended / unknown    -> ALLOW (silent)
+#   at/above the floor / unknown      -> ALLOW (silent)
+#
+# This is a FLOOR, not a version chooser — it blocks dead majors. WHAT to pin
+# (current stable) is decided live, in-session, per the versioning rule
+# (/steer:conventions); there is deliberately no advisory "behind the target" tier.
 #
 # WHY DETERMINISTIC (this is a redesign):
 #   The previous version queried endoflife.date on the write path. That made the
 #   "hard deny" fail OPEN without jq, and put a network call on the hot path. The
 #   gate now reads a static, version-controlled policy file — no network, no jq —
 #   so it is reproducible and never fails open for lack of a tool. Upstream EOL is
-#   tracked by the scheduled refresh workflow that PROPOSES policy bumps; it is
-#   never consulted here. The CI scanner (scripts/scan-version-pins.sh) is the
-#   committed-state backstop and enforces the SAME policy file.
+#   tracked by the scheduled refresh workflow that PROPOSES policy bumps (opens a
+#   PR raising the floors); it is never consulted here. The CI scanner
+#   (scripts/scan-version-pins.sh) is the committed-state backstop and enforces
+#   the SAME policy file.
 #
 # F13 — tool-aware: only introduced content is inspected (Write->content,
 # Edit->new_string, MultiEdit->new_strings). old_string is NEVER inspected, so an
@@ -54,7 +58,6 @@ POLICY="$(steer_policy_resolve "${CWD}")"
 [ -n "${POLICY}" ] || exit 0 # no policy available → cannot enforce, stay silent
 
 DENY=""
-WARN=""
 for PIN in ${PINS}; do
 	PRODUCT="${PIN%%:*}"
 	VERSION="${PIN#*:}"
@@ -69,7 +72,6 @@ for PIN in ${PINS}; do
 	VERDICT="$(steer_policy_verdict "${POLICY}" "${PRODUCT}" "${VERSION}")"
 	case "${VERDICT}" in
 	deny\ *) DENY="${DENY}${VERDICT#deny }; " ;;
-	advise\ *) WARN="${WARN}${VERDICT#advise }; " ;;
 	*) : ;; # ok / unknown → silent
 	esac
 done
@@ -78,13 +80,6 @@ done
 if [ -n "${DENY}" ]; then
 	REASON="Version-pin policy violation — ${DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
 	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
-	exit 0
-fi
-
-# Advisory only — allow the write, surface a reminder.
-if [ -n "${WARN}" ]; then
-	CTX="Version-pin advisory — ${WARN}source: policy/versions.yml. Supported, but behind the target; consider bumping (or record an ADR + ' # steer:allow-pin <reason>' if the pin is deliberate). Not blocking."
-	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 	exit 0
 fi
 

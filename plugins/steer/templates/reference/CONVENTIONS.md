@@ -27,22 +27,41 @@ training-data memory of versions as stale by default: the failure mode is being
 *confidently* wrong, not unsure, so "ask when unsure" is not enough. If you
 cannot verify, say so and ask the dev. Do not guess.
 
-### Enforcement: the version-pin hook
+### Enforcement: the version-pin floor
 
-The plugin backs the rule above mechanically with a `PreToolUse` hook
-(`hooks/check-version-pins.sh`): writes that pin a stale major for common
-images (`postgres:`, `node:`, `python:`, `redis:`, `valkey:`, `nginx:`,
-`mysql:`, `mariadb:`, `mongo:`) are denied, with current stable resolved from
-the endoflife.date API at write time — the hook hardcodes no version numbers,
-so it cannot itself go stale.
+The rule above — verify and pin **current stable**, live, in-session — is how you
+*choose* a version. The plugin backs it with a mechanical **EOL floor** so a stale
+major never slips through when that live check didn't happen. The floor is a
+deterministic, version-controlled policy file (`policy/versions.yml`): a per-product
+`minimum_supported` major plus an explicit `denied` list, enforced **with no network
+call and no `jq`** so it is reproducible and never fails open for lack of a tool.
 
+It is enforced in two places against that one file:
+
+- a `PreToolUse` hook (`hooks/check-version-pins.sh`) on the write path, and
+- a CI scanner (`scripts/scan-version-pins.sh`) over committed config — the
+  backstop for pins the hook can't see (Bash-mediated writes, etc.).
+
+For common images (`postgres:`, `node:`, `python:`, `redis:`, `valkey:`, `nginx:`,
+`mysql:`, `mariadb:`, `mongo:`), a pin **below the floor or in the denied list is
+denied**; anything at or above the floor is allowed silently. There is **no
+advisory "behind the target" tier** — what to pin is the live rule's job, not the
+floor's, so the file never carries a `recommended` value that could silently rot.
+
+- **The floor tracks upstream EOL automatically.** A scheduled workflow
+  (`version-policy-refresh.yml`) is the *only* thing that consults endoflife.date:
+  weekly it raises any floor that has fallen behind to the lowest cycle still
+  supported upstream and opens a **human-reviewed PR**. Enforcement never makes
+  that call. The floor may be deliberately *stricter* than upstream EOL — the
+  refresh only ever raises it, never lowers it.
 - **Deliberate older pins are allowed** (deploy-target/RDS parity, Node LTS
-  policy): record an ADR and append `# pin-ok: <reason>` on the same line as
-  the pin; the hook then passes it.
+  policy): record an ADR and append `# steer:allow-pin <reason>` (legacy alias:
+  `# pin-ok: <reason>`) on the same line as the pin; enforcement then passes it.
 - **Major-only tags float the minor** — `postgres:18` only compares the major;
   `python:3.11` compares at maj.min granularity.
-- The hook **fails open**: no network, or a product it doesn't know, and the
-  write proceeds — it enforces the common path, it doesn't replace the rule.
+- **Unknown products and ambiguity fail open** — a product not in the policy, or
+  anything the scanner can't statically resolve (a pin behind `${VAR}`), is not
+  flagged. The floor enforces the common path; it doesn't replace the rule.
 - Markdown/text files are exempt; prose legitimately mentions old versions.
 
 ### Toolchain: `latest` in config, pinned in the lockfile

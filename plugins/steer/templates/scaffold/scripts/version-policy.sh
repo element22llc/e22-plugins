@@ -53,9 +53,12 @@ steer_policy_denied() {
 
 # steer_policy_verdict <file> <product> <version> — prints one line:
 #   unknown                      product not in policy → not enforced
-#   ok                           at/above the org target
-#   advise <detail>             supported, but below the recommended target
+#   ok                           at/above the EOL floor and not explicitly denied
 #   deny <detail>               below minimum_supported or explicitly denied
+#
+# This is a FLOOR, not a chooser: there is no advisory tier. What to pin (current
+# stable) is decided live, in-session, per the versioning rule — this only blocks
+# dead majors.
 steer_policy_verdict() {
 	_f="$1"
 	_p="$2"
@@ -65,7 +68,6 @@ steer_policy_verdict() {
 		return
 	}
 	_min="$(steer_policy_field "${_f}" "${_p}" minimum_supported)"
-	_rec="$(steer_policy_field "${_f}" "${_p}" recommended)"
 	_vmaj="${_v%%.*}"
 	for _d in $(steer_policy_denied "${_f}" "${_p}"); do
 		if [ "${_d}" = "${_v}" ] || [ "${_d}" = "${_vmaj}" ]; then
@@ -75,10 +77,6 @@ steer_policy_verdict() {
 	done
 	if [ -n "${_min}" ] && [ "$(steer_ver_num "${_v}")" -lt "$(steer_ver_num "${_min}")" ] 2>/dev/null; then
 		printf 'deny %s:%s is below the minimum supported %s' "${_p}" "${_v}" "${_min}"
-		return
-	fi
-	if [ -n "${_rec}" ] && [ "$(steer_ver_num "${_v}")" -lt "$(steer_ver_num "${_rec}")" ] 2>/dev/null; then
-		printf 'advise %s:%s is supported but the target is %s' "${_p}" "${_v}" "${_rec}"
 		return
 	fi
 	printf 'ok'

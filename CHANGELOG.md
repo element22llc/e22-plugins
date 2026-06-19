@@ -7,6 +7,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** bumped the GitHub Actions pinned in the scaffold workflow templates
+  to current majors — `actions/checkout` `@v6` → `@v7` (`ci.yml`, `claude.yml`) and
+  `dependabot/fetch-metadata` `@v2` → `@v3` (`dependabot-auto-merge.yml`). Both are
+  runtime-only majors (Node 24 runner); no input/output contract change, so
+  consumer repos that re-scaffold pick up supported action versions. (`mise-action@v4`,
+  `create-github-app-token@v3`, and `claude-code-action@v1` were already current.)
+- **Changed:** the version-pin policy is now a pure **EOL floor**. Dropped the
+  `recommended` field from `policy/versions.yml` and the advisory ("supported but
+  behind the target") verdict from the hook and `version-policy.sh`. The
+  `recommended` tier duplicated the live versioning rule (verify current stable
+  in-session) and silently rotted — nothing checked it against latest stable. The
+  policy now carries only `minimum_supported` + `denied`, and the hook is
+  deny-or-silent. **What** to pin is still decided live; the file only blocks dead
+  majors. No new deny: a pin that was merely "advised" before is now silent.
+- **Changed:** `version-policy-refresh.yml` now **opens a PR that raises stale
+  floors** instead of filing an advisory issue. `check-policy-freshness.sh` gained
+  a `--write` mode that computes each floor as the lowest cycle still supported
+  upstream (endoflife.date), at the floor's existing granularity, **bump-up-only**
+  (a deliberately stricter-than-EOL floor is preserved), and edits both
+  byte-identical `versions.yml` copies idempotently. The workflow appends a
+  `CHANGELOG` entry and opens/updates a human-reviewed PR (`contents: write` +
+  `pull-requests: write`). endoflife.date is still consulted *only* here, off the
+  enforcement path. (Caveat: token-opened PRs don't auto-run CI; the reviewer
+  re-triggers it before merge.)
+- **Fixed:** stale `CONVENTIONS.md` enforcement prose — it still described the old
+  design that "resolved current stable from the endoflife.date API at write time."
+  Rewritten to describe the deterministic floor, the live rule as the version
+  *chooser*, the `# steer:allow-pin` marker (was `# pin-ok`), and the auto-refresh PR.
 - **Added:** an optional `created: YYYY-MM-DD` field on the `### Q-NNN`
   open-question contract (spec-framework, `feature-intent.md` / `vision.md`
   seeds, `ENUMS.md`). It records when a question was raised so staleness can be
