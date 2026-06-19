@@ -34,6 +34,12 @@ feature sub-task, use `technical-task.md` instead (carries `feature-id` +
 
 [Relevant spec paths, if any.]
 
+## Related issues
+
+- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+  supersedes | superseded-by) + one-line why. Omit this whole section when there
+  are no related issues — never leave an empty stub.]
+
 ## Validation
 
 [How completion is confirmed.]

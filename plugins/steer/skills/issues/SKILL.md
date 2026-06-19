@@ -36,10 +36,31 @@ format (markers, headings, **managed blocks**, idempotency) in
 ### Delegating modes (the owning skill does the thinking)
 
 - **`brainstorm #N`** — product discovery against an issue, *without* writing a
-  spec. Read the issue + related specs, find overlapping features/issues, ask
-  focused questions, and maintain **one** editable "AI synthesis" comment
-  (proposed outcome + boundaries) rather than reposting summaries. The issue body
-  stays human-owned. Discovery reasoning follows `/steer:spec`'s interview style.
+  spec. Discovery reasoning follows `/steer:spec`'s interview style; the issue
+  body stays human-owned. Required steps, in order:
+  1. **Read** the issue + related specs.
+  2. **Search the existing issue corpus first — this is not optional.** Before
+     synthesizing, run **`/steer:tracker-sync search`** across **open *and*
+     closed** issues for the topic, the systems/components named, and adjacent
+     decisions — don't reason only about the one issue you were handed. Search by
+     the obvious keywords *and* their alternatives (e.g. an issue about "Cognito
+     hosting" must also search `auth`, `authentication`, `better-auth`,
+     `login`, `identity`). The goal is to catch the issue that the current one
+     **overlaps, depends on, or — most importantly — silently conflicts with**
+     (a hosting choice that a pending auth-migration issue would invalidate).
+  3. **Surface every relationship you find** in the AI-synthesis comment: name
+     the issue (`#N`), the `issue_relationship` (`ENUMS.md`), and one line of
+     why. Call out **conflicts and supersessions explicitly** as a decision a
+     human must make — never silently pick a side.
+  4. **Propose cross-links.** For each real relationship, propose
+     **`/steer:tracker-sync link-related`** to record it under the issues'
+     `Related issues` headings (the `#N` mention auto-creates the GitHub
+     backlink). With an explicit request or in an active workflow, perform the
+     link; for an unsolicited cluster, take **one** confirmation before writing.
+  5. **Maintain one** editable "AI synthesis" comment (proposed outcome +
+     boundaries + the related-issue cluster) rather than reposting summaries.
+  When the corpus search can't run (no MCP/`gh`/manual path), say so — don't
+  silently skip it and present a relationship-blind synthesis as complete.
 - **`materialize #N`** — turn approved product intent into a spec. Hand to
   `/steer:spec` to write/update `spec/features/<id>/intent.md`, **set `Status:
   draft`** (never `approved` — that's a later explicit `/steer:spec approve`),
@@ -83,6 +104,12 @@ format (markers, headings, **managed blocks**, idempotency) in
   **render them into the machine-readable body** (markers + headings + managed
   block) — do **not** try to submit a Form (it's human UI only). Default labels
   per kind (`source:po`, `needs:triage`); enters **Inbox**.
+  **Before creating, search the corpus** via `/steer:tracker-sync search` (open +
+  closed) — this serves dedup (an exact match means update/skip, not a second
+  issue) *and* relationship-discovery. When the new issue **overlaps, depends on,
+  or conflicts with** an existing one, populate its `Related issues` heading and
+  propose the reciprocal `/steer:tracker-sync link-related`; flag a
+  `conflicts-with`/`supersedes` for human reconciliation rather than deciding it.
 - **`triage [#N|--all]`** — keep the backlog clean and correctly labelled. For
   each issue:
   - **Deduplicate** — search by marker (`feature-id`+`kind`, `question-id`,

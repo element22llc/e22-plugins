@@ -35,6 +35,12 @@ implementation.]
 
 - `spec/features/FEATURE_ID/intent.md`
 
+## Related issues
+
+- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+  supersedes | superseded-by) + one-line why. Omit this whole section when there
+  are no related issues — never leave an empty stub.]
+
 ## Validation
 
 [How completion is confirmed — tests, demo, PO acceptance.]

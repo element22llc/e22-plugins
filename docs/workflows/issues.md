@@ -21,9 +21,9 @@ flowchart LR
 
 | Phase | What it does |
 | --- | --- |
-| `capture` | Record a raw idea as an issue without losing open questions. |
+| `capture` | Record a raw idea as an issue without losing open questions. Searches the existing backlog first — to dedupe and to link related/dependent/conflicting issues. |
 | `triage` | Sort the inbox; set state/labels. |
-| `brainstorm` | Explore an idea before committing to a spec. |
+| `brainstorm` | Explore an idea before committing to a spec. Searches the existing issues (open **and** closed) to surface overlaps, dependencies, and conflicts, and records them as related-issue cross-links. |
 | `materialize` | Turn an explored idea into a `/spec` intent. |
 | `decompose` | Break an approved spec into tracked work items. |
 | `status` | Report lifecycle state across issues. |
@@ -35,6 +35,13 @@ flowchart LR
 - `/spec` stays product truth; the issue is the work/decision layer.
 - Agent-authored issues follow a machine-readable contract (stable headings +
   hidden markers + managed blocks) so they round-trip safely.
+- **Related-issue links.** When `brainstorm`/`capture` find a connection to
+  another issue, it's recorded under a `Related issues` heading as
+  `#N — <relationship> (why)` — `relates-to`, `depends-on`, `blocks`,
+  `conflicts-with`, `supersedes`, or `superseded-by`. The `#N` mention creates
+  GitHub's native backlink (GitHub has no typed relationship beyond
+  parent/sub-issue). A `conflicts-with`/`supersedes` is **surfaced for a human**,
+  never auto-resolved.
 
 See the [Lifecycle](../concepts/lifecycle.md) for the full state set, and
 [`/steer:work`](work.md) for execution.
