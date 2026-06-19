@@ -108,6 +108,7 @@ site/
 *.tfstate.*
 
 # ---------------------------------------------------------------------------
-# Cloudflare Wrangler local cache
+# Cloudflare Wrangler local cache — `mise run cf:deploy:preview` runs from the
+# repo root and wrangler writes its cache here. Generated; never commit.
 # ---------------------------------------------------------------------------
 .wrangler/
