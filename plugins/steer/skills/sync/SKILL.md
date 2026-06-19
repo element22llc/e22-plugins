@@ -100,7 +100,7 @@ PR'd. Use it to see what a full sync would do.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
-   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`) across the
+   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`) across the
    copied-in files this repo has — `PRODUCTIONIZATION.md`, each feature's
    `intent.md` / `contract.md`, `tracker.md`, `app/README.md`, and the scaffold
    files (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …). For
@@ -120,10 +120,10 @@ PR'd. Use it to see what a full sync would do.
 
    ```
    # check (read-only): empty output = current; any output = additive delta
-   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" \
+   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
      auto .gitignore "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitignore"
    # apply the additive merge once you've shown the delta
-   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" \
+   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
      auto .claude/settings.json \
      "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
    ```

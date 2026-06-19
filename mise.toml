@@ -109,7 +109,7 @@ depends = [
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"
 run = [
-  "sh scripts/delivery_gates.sh",
+  "sh scripts/delivery-gates.sh",
 ]
 
 [tasks.ci]

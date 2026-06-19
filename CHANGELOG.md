@@ -7,7 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Changed:** bumped the GitHub Actions pinned in the scaffold workflow templates
+- **Changed:** standardized file naming so one convention governs each file class.
+  Renamed `scripts/scaffold-reconcile.py` → `scaffold_reconcile.py` (Python is
+  `snake_case`) and the reference doc `spec-framework.md` → `SPEC-FRAMEWORK.md`
+  (reference prose is `UPPERCASE.md`, matching its siblings), updating every
+  `${CLAUDE_PLUGIN_ROOT}` invocation, markdown link, and prose path reference.
+  Both are **plugin-internal** — `scaffold_reconcile.py` runs from the plugin
+  root and `SPEC-FRAMEWORK.md` is read in place — so neither is materialized into
+  product repos and `/steer:sync` needs no migration entry. The convention is now
+  documented in `AUTHORING.md` (Cross-cutting conventions). (Repo tooling
+  `scripts/delivery_gates.sh` → `delivery-gates.sh` rides along; not shipped.)
   to current majors — `actions/checkout` `@v6` → `@v7` (`ci.yml`, `claude.yml`) and
   `dependabot/fetch-metadata` `@v2` → `@v3` (`dependabot-auto-merge.yml`). Both are
   runtime-only majors (Node 24 runner); no input/output contract change, so

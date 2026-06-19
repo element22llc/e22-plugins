@@ -1,4 +1,4 @@
-"""Tests for plugins/steer/scripts/scaffold-reconcile.py.
+"""Tests for plugins/steer/scripts/scaffold_reconcile.py.
 
 The helper performs additive, never-clobber merges of the non-Markdown scaffold
 files (JSON + gitignore). The contract under test: existing values/lines are
@@ -16,7 +16,7 @@ from pathlib import Path
 
 from conftest import REPO_ROOT
 
-_SRC = REPO_ROOT / "plugins" / "steer" / "scripts" / "scaffold-reconcile.py"
+_SRC = REPO_ROOT / "plugins" / "steer" / "scripts" / "scaffold_reconcile.py"
 _spec = importlib.util.spec_from_file_location("scaffold_reconcile", _SRC)
 assert _spec and _spec.loader
 sr = importlib.util.module_from_spec(_spec)

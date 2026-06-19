@@ -21,7 +21,7 @@ reference hold throughout:
 Read the references before acting: the lifecycle, state model, and authority
 table in `${CLAUDE_PLUGIN_ROOT}/templates/reference/ISSUE-WORKFLOW.md`; the issue
 format (markers, headings, **managed blocks**, idempotency) in
-`ISSUE-SCHEMA.md`; the open-question contract in `spec-framework.md`.
+`ISSUE-SCHEMA.md`; the open-question contract in `SPEC-FRAMEWORK.md`.
 
 ## First, every run
 
@@ -110,7 +110,7 @@ format (markers, headings, **managed blocks**, idempotency) in
 - **`decompose #N`** — create implementation sub-issues from a parent feature.
   **Preconditions:** the feature's `intent.md` exists, `Status: approved`, and
   its **contract readiness is `ready`** — the mechanically-derived signal in
-  `spec-framework.md` (Contract readiness), which already folds in "a populated
+  `SPEC-FRAMEWORK.md` (Contract readiness), which already folds in "a populated
   `contract.md` exists" and "no unresolved blocking question
   `required_before: contract-approval`." Pointing both `decompose` and `status`
   at the **same** derivation is deliberate: they can never disagree. (`--prototype`
@@ -121,7 +121,7 @@ format (markers, headings, **managed blocks**, idempotency) in
   tasks are clearly marked non-production.
 - **`status [#N|feature-id]`** — a unified read-only view: issue state + intent
   status + **contract readiness** (`ready | incomplete | missing`, the derivation
-  in `spec-framework.md` — never `approved`) + sub-issue progress + blockers. Runs
+  in `SPEC-FRAMEWORK.md` — never `approved`) + sub-issue progress + blockers. Runs
   `/steer:spec validate` and surfaces any failures. Example shape:
   ```
   Feature customer-export
@@ -218,6 +218,6 @@ it recommends the transition; it does not perform unapproved writes.
 
 Lifecycle, state model, and authority are canonical in `ISSUE-WORKFLOW.md`; the
 issue format in `ISSUE-SCHEMA.md`; the open-question + validate contract in
-`spec-framework.md`; tracker conventions in rule `35-issue-tracker` and
+`SPEC-FRAMEWORK.md`; tracker conventions in rule `35-issue-tracker` and
 `/steer:traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those across the lifecycle.
