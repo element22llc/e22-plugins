@@ -29,6 +29,20 @@ CONTRACT (mirrors template-reconcile.sh)
       reordered or removed.
     Never deletes, reorders, or changes an existing value/line.
 
+  PERMISSION TIERS — the one place this merge removes content. A Claude Code
+  `permissions` block has three sibling lists evaluated by precedence
+  deny > ask > allow, so the SAME pattern string in two tiers is a
+  contradiction, never a meaningful choice: the lower-precedence copy is dead
+  weight (e.g. `Bash(git push)` in both `allow` and `ask` always behaves as
+  `ask`). A plain array union manufactures exactly that contradiction — the
+  template carries `git push` in `ask`, a repo that locally allow-listed it
+  ends up with it in both. So after merging, each permission pattern is kept
+  only in its most-restrictive tier and dropped from the others. This both
+  prevents a sync from creating the contradiction and heals one already on
+  disk; it never changes effective behavior (the surviving tier is the one that
+  already governed), so it is not a clobber of any real decision. Reported with
+  a `-` prefix in the delta.
+
   If the existing file is absent, --apply writes the template verbatim (a safe
   install) and check reports the whole template as missing.
 
@@ -102,6 +116,44 @@ def merge_json(existing: object, template: object, path: list[str], added: list[
     return existing
 
 
+# Claude Code permission lists, ordered most → least restrictive. Evaluation
+# precedence is deny > ask > allow, so a pattern present in two of these is a
+# contradiction and only the most-restrictive copy governs.
+_PERMISSION_TIERS = ("deny", "ask", "allow")
+
+
+def _dedupe_permission_tiers(merged: object, added: list[str]) -> None:
+    """Keep each permission pattern only in its most-restrictive tier.
+
+    Mutates ``merged["permissions"]`` in place and records every dropped copy in
+    ``added`` (``-`` prefix). A no-op unless a pattern appears in more than one
+    of allow/ask/deny — see the module docstring for why this single removal is
+    not a clobber. Non-string entries are left untouched (permission patterns
+    are always strings)."""
+    if not isinstance(merged, dict):
+        return
+    perms = merged.get("permissions")
+    if not isinstance(perms, dict):
+        return
+    claimed: set[str] = set()  # patterns already held by a higher-precedence tier
+    for tier in _PERMISSION_TIERS:
+        lst = perms.get(tier)
+        if not isinstance(lst, list):
+            continue
+        kept: list[object] = []
+        for item in lst:
+            if isinstance(item, str) and item in claimed:
+                added.append(
+                    f"- {_fmt_path(['permissions', tier])}[] = "
+                    f"{json.dumps(item, ensure_ascii=False)} (also in a higher-precedence tier)"
+                )
+                continue
+            kept.append(item)
+            if isinstance(item, str):
+                claimed.add(item)
+        perms[tier] = kept
+
+
 def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
     if existing_path.exists():
         try:
@@ -120,6 +172,10 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
         added.append(f"+ (new file) {existing_path.name}")
     else:
         merged = merge_json(existing, template, [], added)
+
+    # Resolve permission-tier contradictions the union may have created (or that
+    # were already on disk): deny > ask > allow, most-restrictive copy wins.
+    _dedupe_permission_tiers(merged, added)
 
     if not added:
         return 0  # already current — no output, exit 0

@@ -43,6 +43,15 @@ and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`,
 adds missing keys/lines without overwriting, reordering, or removing any existing
 value.
 
+The one exception is the `.claude/settings.json` `permissions` block, which
+Claude Code evaluates by precedence **deny > ask > allow**. There, the same
+pattern in two tiers is a contradiction rather than a choice (the
+lower-precedence copy never governs), so after merging, the reconcile keeps each
+permission pattern only in its most-restrictive tier and drops the others —
+preventing a sync from leaving, say, `Bash(git push)` in both `allow` and `ask`,
+and healing a repo already in that state. Because the surviving tier is the one
+that already governed, effective behavior is unchanged.
+
 ## Versioning the contract
 
 `/spec/.version` records the plugin version the spine was last reconciled
