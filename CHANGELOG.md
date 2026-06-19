@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** new always-on rule `87-output-discipline.md` curbing generated noise —
+  comments are the exception (reserved for the non-obvious *why*), and prose
+  responses stay tight (lead with the result, skip self-narration). Backed by a
+  matching "comments carry weight" pattern and a "noise comments" anti-pattern in
+  the `/steer:conventions` reference prose. Reins in Claude's default verbosity,
+  which steer's standards previously never governed.
 - **Changed:** bumped the GitHub Actions pinned in the scaffold workflow templates
   to current majors — `actions/checkout` `@v6` → `@v7` (`ci.yml`, `claude.yml`) and
   `dependabot/fetch-metadata` `@v2` → `@v3` (`dependabot-auto-merge.yml`). Both are
