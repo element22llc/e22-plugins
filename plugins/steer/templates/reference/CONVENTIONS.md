@@ -281,6 +281,10 @@ Patterns:
 - **One validated config module** for environment access instead of scattered
   `process.env` reads.
 - **`async/await` with no floating promises** — handle or `await` every promise.
+- **Comments carry weight or don't exist.** Code is self-documenting through
+  names and structure; reserve comments for the non-obvious *why* (plus the
+  why-comment an escape hatch requires). Match the file's existing comment density
+  rather than adding narration on top of it.
 
 Anti-patterns to avoid:
 
@@ -308,6 +312,9 @@ Anti-patterns to avoid:
 - **Deleting or ignoring a lockfile to make an error go away** — fix the
   resolution problem or regenerate the lock with its owning tool; a dependency
   change without the matching lockfile diff is an incomplete change.
+- **Noise comments** — comments that restate the code, narrate obvious steps,
+  decorative section banners, or commented-out dead code left in the file. They go
+  stale and drown the why-comments that earn their place; delete on sight.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
 (parameterized, migration-tracked), Pydantic v2 for boundary validation, Ruff

@@ -32,6 +32,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-size.md` | Change-size model. |
 | `85-practices.md` | Baseline patterns. |
+| `87-output-discipline.md` | Earn every line — comments are the exception, responses stay tight. |
 | `90-design-sources.md` | Design sources & UI. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, offer `/steer:report` to file it upstream. |
