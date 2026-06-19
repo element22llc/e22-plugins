@@ -5,6 +5,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Fixed:** the scaffold's `policy/branch-protection.yml` is now byte-locked to
+  the plugin's bundled copy. It was already shipped as a verbatim duplicate but,
+  unlike `policy/versions.yml` and the two version-pin scripts, was missing from
+  the `check_standards.py` sync check (`_SCAFFOLD_COPIES`) — so the scaffold seed
+  and the plugin default could silently drift. Added it to the check; no behaviour
+  change for consumers, the two files are identical today.
+
 ### 2.7.0
 
 - **Scaffolded repos now ship Dependabot, and steer manages the PRs.** New
