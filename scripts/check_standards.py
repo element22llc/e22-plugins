@@ -491,14 +491,17 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(f"{build}: must document the prototype/local build mode")
 
 
-# --- check 10: scaffold version-governance copies stay in sync ---
+# --- check 10: scaffold policy/governance copies stay in sync ---
 
-# Files the scaffold ships verbatim from the plugin so consumer CI can run the
-# scanner without the plugin checked out. They MUST stay byte-identical.
+# Files the scaffold ships verbatim from the plugin so a consumer repo carries
+# the same scanner/policy the plugin would apply (consumer CI can run the
+# scanner without the plugin checked out; the same policy seeds the repo).
+# They MUST stay byte-identical.
 _SCAFFOLD_COPIES = [
     ("templates/scaffold/scripts/scan-version-pins.sh", "scripts/scan-version-pins.sh"),
     ("templates/scaffold/scripts/version-policy.sh", "hooks/lib/version-policy.sh"),
     ("templates/scaffold/policy/versions.yml", "policy/versions.yml"),
+    ("templates/scaffold/policy/branch-protection.yml", "policy/branch-protection.yml"),
 ]
 
 
