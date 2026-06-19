@@ -1,0 +1,604 @@
+<!-- Engineering standards (steer plugin). Generated from the plugin's rules/ — do not edit by hand. Refresh after a plugin update by re-running /steer:init's Copilot step. -->
+
+# Engineering Standards — Operating Manual (org standards)
+
+The org-wide engineering standards, injected into every session by the **steer**
+plugin and maintained centrally in
+[`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins) — do not
+copy them into a product's `CLAUDE.md`, which holds only product-specific context
+(Product paragraph, stack overrides, team-learned patterns).
+
+## You are the router
+
+These standards ship as on-demand skills, but **the user never has to know a skill
+name**. When they describe a goal in plain language, map it to the owning skill and
+**invoke it yourself** — do not wait for a `/steer:` command, and do not ask them to
+name one. Plain language is the only entry point a user needs.
+
+- **Announce, then act.** Lead with one short line naming what you heard and the
+  skill you're starting ("→ Sounds like a new feature — I'll shape the spec first
+  with `/steer:spec`."), then proceed. The heads-up lets the user redirect; it is not
+  a request for permission to route.
+- **Clarify only when genuinely unsure.** If the intent is ambiguous between skills,
+  or too underspecified for the target skill to run, ask **one** compact question
+  offering the 2–3 likely intents, then route. Don't interrogate when intent is clear.
+- **Auto-continue, bounded.** When a skill finishes, surface its single best next
+  action and continue automatically **only if that action is non-gated**. A gated
+  next step is announced and then waits for the human.
+- **Never auto-cross a human gate — routing moves navigation, never authority.**
+  Creating issues beyond an explicit "fix / add / implement" ask (Issue-first),
+  ratifying an ADR (High-risk), and push / PR / merge / deploy / real secrets (Commit
+  autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
+  runs; it never relaxes what that skill is allowed to do.
+- **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
+  or build intent through bootstrap first (`/steer:init` greenfield, `/steer:adopt`
+  for existing code) — the SessionStart hook flags this; don't degrade to
+  toolchain-only.
+- **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
+  switch or capture it (`/steer:issues capture`), rather than silently dropping the
+  current thread.
+
+## Intent → skill
+
+| When the user is trying to… | Route to |
+| --- | --- |
+| set up a brand-new repo, or resolve leftover template placeholders | `/steer:init` |
+| bring an existing app (working code, no `/spec`) under the standards | `/steer:adopt` |
+| build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
+| think a feature through / shape acceptance criteria without building it | `/steer:spec` |
+| start, resume, finish, or fix a specific issue ("fix #123") | `/steer:work` |
+| capture an idea, triage, brainstorm, decompose, or check backlog status (GitHub) | `/steer:issues` |
+| record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
+| clear open questions accumulating in the specs | `/steer:questions` |
+| find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
+| audit whole-repo health and highest-leverage cleanups (read-only) | `/steer:audit` |
+| compare the as-built `/spec` against tracker intent for drift (read-only) | `/steer:drift` |
+| sort loose files out of the repo root into `/spec` | `/steer:tidy` |
+| bring a bootstrapped repo up to date after a plugin release | `/steer:sync` |
+| "protect main" / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
+| report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
+| read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
+
+GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal
+`/steer:tracker-sync` gateway, and feature specs are instantiated by the internal
+`/steer:spec-scaffold` — reach both through the skills above, never directly.
+
+On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected), run
+`/steer:standards` at session start to load these rules on demand.
+
+When you pick or change stack pieces, verify current stable versions in-session
+(run `/steer:conventions`) — don't trust training-data memory.
+
+
+## Who you are working with
+
+Two audiences work in managed product repos. The standards below apply identically
+to both — never soften the Definition of Done, testing, spec coupling, or
+high-risk handling because the person is non-technical.
+
+- **Product Owner (PO)** — non-technical; describes ideas, validates intent,
+  doesn't read code. Signals: "I'm not a developer", "I have an idea for an
+  app", asks for plain language, no git/stack vocabulary.
+- **Developer (dev)** — productionizes, reviews, deploys. Uses technical terms.
+
+**In PO mode:** speak plainly, no jargon; work spec-first; drive the toolchain
+(mise, Docker, pnpm) yourself instead of handing the PO commands. On the PO
+signals above, **auto-start the guided idea→working-app flow** (`/steer:build`)
+with a one-line heads-up — don't hand the PO a command to remember or wait for
+them to type it. Guardrails: never
+deploy, never touch `/infra`, never real secrets/credentials or real
+third-party accounts. Beyond that, a pre-production build may implement
+high-risk features for real locally (High-risk rule's pre-production
+relaxation) — record every choice in the spec and the PR's productionization
+brief. The PO owns data **semantics** (what exists, what "delete" means to a
+user); the dev confirms the **mechanics** (schema, cascades, retention) at
+review.
+
+**The gate is unchanged:** a PO-built app is normal `feat/*` work that merges
+to `main` as v0 only after a dev approves the PR. That review *is*
+productionization.
+
+
+## Stack
+
+**Default biases**, not mandates — when a project's intent clearly warrants
+a different stack, propose the better fit and record an ADR under
+`/spec/decisions/` (run `/steer:adr`). Rationale and full setup detail for every
+bullet: run `/steer:conventions`.
+
+- **Frontend:** Next.js + TypeScript + Tailwind.
+- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
+  Next.js app (Route Handlers, Server Actions, server components). A standalone
+  `apps/api`, or Python + FastAPI + PostgreSQL, only when intent clearly
+  warrants it — either split is an ADR.
+- **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
+  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app.
+- **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
+- **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
+  format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
+- **Testing:** Vitest (Node/TS), pytest (Python).
+- **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
+  **Error tracking:** Sentry; DSNs/tokens in Secrets Manager, never committed.
+- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
+  plugin's bundled scaffold one (`templates/scaffold/compose.yaml`), don't
+  author from scratch. **Same engine locally
+  as deployed** (no SQLite stand-in for PostgreSQL). Standard entry point:
+  `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
+  green; environment tasks live in `mise.toml`, not `package.json`. A plugin
+  hook denies stale image-major pins; a deliberately older pin needs an ADR
+  plus `# pin-ok: <reason>` on the same line. **Make every published host port
+  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
+  with the override var in `.env.example`, so a dev running several managed products
+  at once isn't blocked by `port is already allocated`.
+- **Environment variables:** local config in a git-ignored `.env` /
+  `.env.local`; names documented in `.env.example` — bootstrap and storage
+  rules are in Secrets handling.
+
+
+## Useful commands
+
+- **First-time setup:** `mise trust && mise install` (full mise setup in the
+  product README), then `mise run dev:setup` — idempotent local env: services
+  up → migrate → seed.
+- **Develop:** `pnpm install && pnpm dev` (Node) / `uv sync && uv run <cmd>` (Python).
+- **Test:** `pnpm test` (Vitest) / `uv run pytest`.
+- **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
+
+Commands assume mise is activated in the shell; "tool not found" usually means
+it isn't — see the product README.
+
+
+## Where things live
+
+Managed products are **internal monorepos**: multiple apps and shared packages in
+one repo.
+
+- **`/apps`** — deployable applications (e.g. `apps/web`), each independently
+  buildable and deployable (backend placement: see Stack).
+- **`/packages`** — shared libraries consumed by apps/packages; not deployed.
+- **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
+- **`/spec`** — product intent; source of truth for what the product does and
+  why. Design exports: `/spec/design` (product) or
+  `/spec/features/[id]/design-export/` (feature). Also home to
+  `/spec/HISTORY.md` (action history) and `/spec/tracker.md` (issue-tracker
+  declaration).
+- **`/spec/app`** — app knowledge docs: usage, workflows, roles,
+  configuration, limitations, troubleshooting, release notes (PO + dev
+  facing).
+- **`/spec/decisions`** — ADRs.
+- **`/spec/reference`** — source/research materials feeding the spec
+  (inventories, vendor metadata, schema/DDL dumps, discovery docs).
+- **`/infra`** — AWS infrastructure-as-code and deploy scripts.
+- **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
+  engineer's system model: stack, the apps/packages map, how a request flows.
+  Distinct audiences — `ARCHITECTURE.md` is *how it's built*, `/spec/app` is *how
+  to use/operate it*, `/spec/design` holds the *diagrams* `ARCHITECTURE.md` links
+  to, and `/spec/decisions` holds the *why* (ADRs). `README.md` is the front door
+  and links to all of them.
+
+Specs are organized by user-facing feature; code however the stack wants — a
+feature may span several apps/packages (coupling rules: the spec workflow,
+`/steer:spec`).
+
+
+## Keep the repo tidy
+
+The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
+`packages/`, `configs/`, `infra/`, `spec/`) plus root config files
+(`package.json`, `compose.yaml`, `mise.toml`, `biome.json`, lockfiles, dotfiles,
+`CLAUDE.md`, `README.md`, `DESIGN.md`).
+
+Loose **source/research materials** — spreadsheets, inventories, vendor
+metadata, schema/DDL dumps, discovery docs, PII/CMDB documents — do **not**
+belong at the root. Their home is `/spec/reference/`; architecture and flow
+diagrams go to `/spec/design/`.
+
+When you notice stray non-code files sitting at the root, **propose** sorting
+them into the right home — moving, and **renaming** cryptic or inconsistent
+names to clear ones as you go. Don't silently act, and don't leave the mess. Run
+**`/steer:tidy`** for a full sweep. A confusing or duplicate-looking name
+(`Copy of …`, coded names) does not mean a file is disposable — **ask what it's
+for** before deciding, never auto-delete, and only ever remove true junk
+(`desktop.ini`, `.DS_Store`) on confirmation — adding its pattern to
+`.gitignore` so it can't return.
+
+
+## Spec workflow
+
+`/spec/features/` and `/spec/decisions/` only stay useful if they actually get
+populated. **Create the artifact when the trigger fires — do not defer it:**
+
+- **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
+  `contract.md`, before or alongside the code; author them via
+  **`/steer:spec`** (or **`/steer:build`** for a PO),
+  which instantiates the templates for you. `[id]` is a short kebab-case slug
+  (`user-login`, `export-csv`).
+- **Architectural or hard-to-reverse choice** (stack, database, auth approach,
+  deployment model, a new cross-cutting pattern) → ADR at
+  `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
+  stack choice is usually the first ADR.
+- **Behavior changes** → update the relevant `contract.md` in the same PR —
+  plus the app guide (`/spec/app/`) if it describes the old behavior, and an
+  action-history entry (`/spec/HISTORY.md`); see Living documentation.
+- **Open questions** → live in each feature's `intent.md` → `## Open questions`
+  (product-level ones in `vision.md`); run **`/steer:questions`** to sweep and
+  answer them before they rot.
+- **A feature that began as a tracker issue** (PO capture) → on a GitHub tracker,
+  **`/steer:issues brainstorm`** shapes it in the issue, then
+  **`/steer:issues materialize`** writes the approved product intent into
+  `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it to
+  `approved`. The issue is the work record; the spec stays product truth.
+
+The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
+acceptance) are canonical in the spec-framework reference, which the spec
+workflow (`/steer:spec`) draws on as it authors the spec. If unsure
+whether something needs a feature spec or an ADR, ask the dev rather than
+skipping it.
+
+**Greenfield** (new product): the input can be anything — an idea, a brief,
+screenshots, or a Claude Design export; don't assume a design artifact exists.
+Interview first to fill `/spec/vision.md`, `users.md`, `glossary.md` (ask,
+don't invent; product-level ambiguity → `vision.md` → `## Open questions`),
+draft feature intents,
+and get PO approval before broad implementation. The full step-by-step flow is
+in the spec-framework reference, drawn on by the spec workflow
+(**`/steer:spec`**); a PO driving it uses **`/steer:build`**. Design exports: read the **local export** via
+`/steer:design-sources` — never fetch the URL (it 403s).
+
+**Brownfield** (change to an existing product): triage → size it (Change-size
+model) → medium+ work writes/updates the spec or ADR first → implement →
+update the owning `contract.md` if behavior changed.
+
+**Adopting a whole repo** that never went through bootstrap (a
+"vibe-coded" app with no `/spec`): run **`/steer:adopt`** once to reverse-engineer
+the spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject
+per area in `PRODUCTIONIZATION.md`), and sync in the plugin's bundled
+scaffolding — distinct from a per-feature Brownfield change above.
+
+
+## Living documentation — document in parallel, not after
+
+The PO/dev speaks plainly; **you** translate it into durable artifacts *as the
+work happens*, never in a wrap-up pass. Specs are living: when conversation or
+implementation reveals a requirement, constraint, assumption, risk, trade-off,
+or decision, update (or propose) the owning artifact **in the same change as
+the code**:
+
+- Intent, goals, acceptance criteria → the feature's `intent.md` (scope
+  changes need PO approval); behavior/data/API decisions → `contract.md`;
+  hard-to-reverse choices → ADR.
+- Ambiguity → `## Open questions` — **never guess an answer into the spec**.
+- Usage, workflows, roles, configuration, limitations, troubleshooting,
+  release notes → the app guide (`/spec/app/`).
+- Tech stack, the apps/packages map, how the pieces fit together → root
+  `ARCHITECTURE.md`. Any PR that changes the stack, adds/removes/renames an app
+  or package, or reshapes cross-component data flow updates it in the same PR.
+- What changed, why, who asked, refs → append to `/spec/HISTORY.md` (action
+  history), one short entry per merged change or ratified decision.
+
+PO-facing artifacts (intent, vision, app guide) stay plain-language;
+dev-facing ones (contract, ADR) stay precise enough to implement and review
+against. A declined proposal becomes an open question, not silence. Full
+conventions + worked examples: run **`/steer:traceability`**.
+
+**Applying a decision already made is not a new decision.** Propagating a
+settled choice into the artifacts that should reflect it — a one-liner into
+`CLAUDE.md`, a consistency edit, a superseding ADR, a fact grounded from the
+code — is living-docs upkeep: make the edit in the same change and let the
+**PR be the gate** (you are not it — see rule `95-not-the-gate`).
+Pause for a yes only when the *decision itself* is unmade — a genuine
+product / policy / architecture call, or anything under **High-risk areas** —
+or when an edit would clobber filled-in content. Don't stop to ask "shall I
+apply this?" once the decision exists.
+
+
+## Issue tracker integration (client-agnostic)
+
+Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
+Azure DevOps, …). **`/spec/tracker.md`** declares the system + ref format —
+read it before referencing work items; if missing, ask and create it from the
+bundled template. Refs live in `intent.md`'s `> Tracker:` line, the PR
+description (tracker's own linking syntax), and `HISTORY.md` `Refs:`. Copy a
+tracker item's acceptance criteria into the intent — the spec is the in-repo
+source of truth; the ref points back. **Keep a question in the spec's
+`## Open questions`** (structured `Q-NNN`) when it's local to one feature and
+answerable while specifying it; **promote it to an issue** when it needs a named
+owner, blocks multiple features, needs stakeholder/research input, or could
+outlive the session — then put the ref in the question's `tracker:` field. The
+issue is the decision *workflow*; the spec (or an ADR) is the durable *record*.
+
+When the tracker is **GitHub Issues**, **`/steer:issues`** is the high-level
+lifecycle workflow (capture → triage → brainstorm → materialize → decompose →
+status → reconcile), and **`/steer:tracker-sync`** is the low-level gateway it
+routes all reads/writes through (MCP-first → `gh` → manual floor). Agent-authored
+issues follow the machine-readable contract (stable headings + hidden markers);
+`/spec` stays product truth, the issue is the work/decision layer. Other trackers
+use the manual export.
+
+
+## Issue-first (GitHub-adopted repos)
+
+When `/spec/tracker.md` declares `system: github`, every **implementation-affecting
+mutation** — code, config, infrastructure, or behavior — has a GitHub issue
+**before the first repository mutation**. This is scoped to implementation:
+editing the `/spec` spine, documentation, generated output, and lockfiles is
+*not* an implementation-affecting mutation and needs no issue. Reuse the issue
+the user names; otherwise find-or-create one through
+`/steer:tracker-sync` — an explicit "fix / implement / add / create"
+request does **not** need confirmation to create the issue.
+
+- **Capture-only and ambiguous language do not auto-create.** "Note this", "we
+  should eventually…", or open-ended discussion is captured deliberately, never
+  inferred into a batch of issues. A large inferred batch of unrelated issues
+  takes one confirmation; security-sensitive public disclosure takes human review.
+- **Implementation runs through `/steer:work`** — claim, branch, implement, test,
+  open the PR, transition the issue. The CLI request authorizes local edits +
+  tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
+  implied**.
+- **Discovered out-of-scope work** during implementation gets its own linked
+  issue (related/blocking), not silent scope creep in the current one.
+
+Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
+repos without a `/spec` spine keep today's flow.
+
+
+## Testing rules
+
+- Every feature change **includes or updates automated tests** in the same PR — never "later."
+- Every bug fix **MUST add a regression test** that fails before the fix and passes after. This is a hard rule.
+- Do **not** delete or skip failing tests to make CI pass. Fix the cause, or explicitly remove the behavior and say so in the PR.
+
+
+## Commit autonomy
+
+Commits are cheap and local — the PR review is the gate (see "You are not the
+gate"), not each commit. Do **not** pause work to ask "should I commit?".
+
+- Work on a `feat/*` / `fix/*` branch off `main` — never commit to `main`
+  directly. If you find yourself on `main` with changes, create the branch
+  first, then commit.
+- In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
+  an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
+  that issue exists.
+- **Commit without asking** whenever a coherent unit of work is done — tests
+  pass, lint is clean, the code builds. Keep commits small with conventional
+  messages (`feat:`, `fix:`, `chore:`, ...).
+- When you judge the work **complete** (Definition of Done holds, end-of-session
+  checklist is clean), don't just stop: tell the dev the branch is ready and
+  **propose opening the PR** — push and create it once they confirm.
+- Opening the PR is the one step that waits for the dev; everything before it
+  (branching, committing) does not.
+- **After pushing, watch CI to conclusion and fix a red build before treating the
+  work as complete** — that is finishing the work, not crossing the merge gate.
+  Don't hand the dev a running or red PR and stop. (Merge and deploy stay gated.)
+
+
+## Definition of Done
+
+A change is done when **all** of these hold. Reviewers check them; CI cannot.
+
+- [ ] Code follows existing patterns in the touched app/package.
+- [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
+- [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
+- [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
+- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; `/spec/HISTORY.md` entry appended (see Living documentation).
+- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR (see Issue tracker).
+- [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (PR opened → `validate`, never `done`); the PR references the issue with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
+- [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
+- [ ] High-risk areas were scoped first (see High-risk areas).
+- [ ] A dev approved the PR.
+
+
+## Drift gates — surface before merge
+
+Drift — any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔ app
+docs ↔ tests ↔ delivered behavior — is resolved by **explicit human review,
+never silently**: you *surface* it before merge; the reviewer resolves it (fix
+code, fix artifact, or record the accepted divergence). Flag these
+review-sensitive classes in the PR description **the moment you notice one**
+(the scaffold's PR template carries the checklist): **intent drift · contract
+drift · undocumented behavior change · security-sensitive ·
+compliance-impacting · operational (deploy/CI/infra) · local setup or
+deployment changed · app docs invalidated · architecture/stack drift
+(`ARCHITECTURE.md`)**. A flagged class blocks merge
+until the reviewer explicitly resolves it — you may not waive your own flag.
+Periodic sweeps: `/steer:drift`, `/steer:audit`.
+
+
+## High-risk areas
+
+These require **explicit dev scoping before broad changes** — do not propose
+architectural changes here speculatively:
+
+- **Auth & sessions** — sign-in/up, password reset, token issuance, session invalidation
+- **Authorization & permissions** — role checks, access control, multi-tenancy boundaries
+- **Database migrations** — schema changes, backfills, migration scripts
+- **Infrastructure** — anything in `/infra`, especially networking, IAM, Secrets Manager
+- **Secrets handling** — anything reading, writing, or transmitting credentials/keys/tokens
+- **Deletion logic** — hard deletes, cascading deletes, retention/cleanup jobs
+- **Billing & payments** — pricing, charging, refunds, subscription state
+- **Deployment & release logic** — CI/CD workflows, release scripts, feature-flag rollouts
+
+Handling: scope with the dev **before** any code; contract or ADR first;
+smaller PRs; line-by-line review; validate in non-prod before prod. `@claude
+implement this` is not appropriate here without explicit in/out scope.
+
+**Pre-production relaxation:** these gates protect real systems and real data.
+While a product is **pre-production** (nothing deployed, no real users or
+data), high-risk areas may be built for real locally without prior dev
+scoping — document the choices as you go (`contract.md`, ADR for
+hard-to-reverse picks, the feature's `intent.md` → `## Open questions` for open
+items) and list them
+in the PR description so dev review hardens them at productionization.
+"Pre-production" is a property of the **product, not the laptop**: working
+locally in a deployed product still produces migrations/deletions that reach
+real data on merge — no relaxation there. **Never relaxed**, even
+pre-production: real secrets/credentials, `/infra`, deploys, real third-party
+calls.
+
+
+## Secrets handling
+
+Secrets (DSNs, API tokens, DB credentials, `AUTH_SECRET`, AWS keys) are a
+high-risk area — scope with the dev before touching how they are read, written,
+or transmitted.
+
+- **Never commit secrets** — not in code, configs, `mise.toml`, specs, or
+  commit messages.
+- **Local development:** config lives in a git-ignored `.env` / `.env.local`.
+  When setting up or running an app, make sure it exists with the base
+  variables the app needs to boot — local Compose service URLs (e.g.
+  `DATABASE_URL` → the local PostgreSQL) and freshly generated local-only
+  secrets, never values copied from deployed environments. Document variable
+  *names* (not values) in the app's `.env.example`. A Claude Code worktree
+  (`claude --worktree`) starts from git refs only, so the git-ignored `.env` is
+  absent there — the repo-root `.worktreeinclude` carries it (and other local
+  config) into each new worktree so the app still boots.
+- **Deployed environments:** secrets live in **AWS Secrets Manager**, injected
+  at deploy/runtime — never baked into images or CI logs. Non-secret config may
+  live in `mise.toml`'s `[env]` block; secrets must not.
+- A committed secret is compromised: stop, tell the dev, and rotate it — don't
+  just delete the line.
+
+
+## Audit-aligned delivery (SOC 2 / ISO 27001)
+
+The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations —
+say "aligned", never "compliant": no workflow or artifact makes a product
+compliant; certification scope, compliance accountability, and
+production-readiness approval stay with humans. The artifacts double as audit
+evidence — keep the chain intact: traceability (intent → spec → tracker ref →
+PR → `HISTORY.md`), review evidence (dev-approved PRs, drift flags, DoD),
+change history (ADRs + action history), and access-conscious secure defaults
+(secrets rules, high-risk gates, branch protection). Evidence map:
+`/steer:traceability`.
+
+
+## Change-size model
+
+Match the workflow to the change. When uncertain, size **up**.
+
+- **Tiny** (≈<20 lines, no logic change — copy, padding, typo): just open a PR.
+- **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
+- **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
+- **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
+- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above.
+
+
+## Patterns we follow (baseline)
+
+Org baseline stated as principles; each names the **default-stack** instance in
+parens so it stays actionable on the default stack and still applies on any
+other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
+patterns + anti-patterns prose: run `/steer:conventions`.
+
+- **All data access goes through a parameterized query layer — never raw or
+  string-interpolated SQL.** Schema is defined in code and changed via
+  committed, reviewed migrations; no ad-hoc schema edits. *(Default: Drizzle +
+  Drizzle Kit; Python: SQLAlchemy 2.x + Alembic.)*
+- **Validate every external input at the boundary before use** — request inputs,
+  external API responses, env vars — and derive types from the schema. One
+  validated config module instead of scattered raw env reads. *(Default: Zod;
+  Python: Pydantic v2.)*
+- **Server-first** — secrets and DB access stay server-side; client code is
+  explicit and lean; only genuinely public values are exposed to the client.
+  *(Default: Next.js Server Components / `NEXT_PUBLIC_*`.)*
+- **Domain logic lives in shared, testable modules**, not in UI components or
+  route handlers — keep handlers thin. *(Default: monorepo `packages/`.)*
+- **Nothing silenced** — no empty `catch` / swallowed errors (unexpected errors
+  go to Sentry with context); no escape hatches without a why-comment (`any`
+  casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule disabling).
+- **Lockfiles are maintained, not optional** — they are committed and updated in
+  the same change that touches their config/deps; never deleted or ignored to
+  dodge an error. *(Default: `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+  `.terraform.lock.hcl` — and mise only writes `mise.lock` if the file already
+  exists, so restore a missing one first.)*
+
+
+## Output discipline — earn every line
+
+Default to less. Code and prose alike should carry only what the reader can't
+already see; volume is not rigor.
+
+- **Comments are the exception, not the default.** Let names and structure do the
+  explaining; comment only the non-obvious *why* — plus the why-comment an escape
+  hatch requires. No comments that restate the code, narrate obvious steps, mark
+  sections with banners, or leave old code commented out. Match the file's
+  existing comment density instead of adding your own.
+- **Keep responses tight.** Lead with the result or the change; skip preamble,
+  self-narration, and re-explaining the request. Don't list options you won't take
+  or pad with caveats. Expand only when asked or when a real decision needs the
+  context.
+
+
+## Design sources & UI
+
+Most features have **no design export, or only a partial one** — that is the
+normal case, not a blocker. When an export *is* committed (Claude Design ZIP,
+Figma, screenshots), read the **local export** — Claude **cannot** fetch a Claude
+Design URL (it 403s). The export is authoritative for the **visual behavior and
+flow it actually shows**; the spec for what the system does; gaps and conflicts
+go to the feature's `intent.md` → `## Open questions`. It is a **spec to realize
+in the standard stack, not code to ship**: its delivery tech (UMD React,
+in-browser Babel, hand-rolled CSS) is disposable — serving the prototype runtime
+is an **ADR-gated, kill-dated exception**, never the default.
+
+When the design is absent or partial — the common case — **build the UI
+deliberately instead of defaulting to generic AI aesthetics**: the
+**`frontend-design`** plugin (installed from this marketplace) carries that
+craft; these standards scope it to a professional/enterprise default, the standard stack
+(Next + TS + Tailwind), and accessibility.
+
+Whichever way a feature's UI originates, **capture the reusable decisions in
+`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build and
+promoting anything that recurs — so every feature stays visually uniform. Full
+walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
+no-export build): run **`/steer:design-sources`**.
+
+
+## You are not the gate — the DEV is
+
+You have no path-based permission boundary in managed product repos — propose
+changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
+reviewing the PR is the hard gate and catches out-of-scope or risky edits. When
+unsure about scope, ask in a PR comment before making sweeping changes.
+
+
+## When steer itself misbehaves, report it upstream
+
+steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's
+**own machinery** misbehaves, treat it as a plugin defect to report — not a
+thing to silently work around:
+
+- A SessionStart **self-fault notice** flags recorded hook faults.
+- A skill or rule gives **contradictory or impossible** instructions.
+- A referenced **template, script, or helper is missing, malformed, or crashes**.
+
+This is about steer's defects only — ordinary product-code errors, failing
+tests, or your own mistakes are not plugin faults and do not belong here.
+
+On any of the above: surface it plainly, then **offer `/steer:report`** to file a
+scrubbed bug report upstream. Never auto-file — the user confirms first — and
+never put secrets, absolute paths, or product code into the report. If you only
+worked around the defect to keep going, still offer to report it so it gets
+fixed for everyone.
+
+
+## End-of-session checklist
+
+Before wrapping up a working session, present this checklist and confirm each
+item with the dev — don't silently close out. Track open items with your todo
+tooling so nothing is dropped:
+
+- [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
+- [ ] Architectural choice made → ADR written under `/spec/decisions/`?
+- [ ] Tests added/updated for the change; bug fix has a regression test?
+- [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
+- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
+- [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
+- [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
+- [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
+- [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
+
+If any item can't be satisfied, say so plainly rather than implying the work is
+complete.

@@ -50,6 +50,12 @@ bad() {
 assert_empty() { [ -z "$2" ] && ok || bad "$1 (expected silent, got: $2)"; }
 assert_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
 assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
+# Copilot preToolUse envelope: a flat decision object (no hookSpecificOutput wrapper).
+assert_copilot_ask() {
+	printf '%s' "$2" | grep -q '"permissionDecision":"ask"' &&
+		! printf '%s' "$2" | grep -q 'hookSpecificOutput' && ok ||
+		bad "$1 (expected flat copilot ask, got: $2)"
+}
 assert_ctx() { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
 assert_block() { printf '%s' "$2" | grep -q '"decision":"block"' && ok || bad "$1 (expected block, got: $2)"; }
 assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (unexpected block: $2)" || ok; }
@@ -183,6 +189,15 @@ assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"compose.yaml\",\"old_string\":\"$(pin postgres 11)\",\"new_string\":\"$(pin postgres 18)\"}}")"
 assert_empty "version-pins: upgrade edit silent (F13, old value ignored)" "${out}"
+
+# Copilot target (STEER_HOOK_TARGET=copilot): same detection, but a flat
+# permissionDecision envelope with "ask" instead of the Claude deny wrapper.
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
+assert_copilot_ask "version-pins: copilot target emits flat ask, not deny" "${out}"
+
+# Copilot target on a clean pin stays silent (no spurious ask).
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
+assert_empty "version-pins: copilot target silent on supported pin" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # steer:allow-pin vendor LTS")")"
 assert_empty "version-pins: steer:allow-pin bypass" "${out}"

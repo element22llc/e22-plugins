@@ -7,6 +7,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** GitHub Copilot CLI target — skills + a gate hook (Phase 2). A
+  Copilot-specific plugin manifest (`plugins/steer/.github/plugin/plugin.json`,
+  which Copilot prefers over `.claude-plugin/`) loads steer's skills via the
+  cross-tool `SKILL.md` standard and points hooks at a Copilot-native
+  `hooks/copilot-hooks.json` — so Copilot no longer falls back to Claude's
+  `hooks/hooks.json` (whose fail-closed `preToolUse` semantics could otherwise
+  block edits). The version-pin policy gate is ported as a soft `ask`:
+  `check-version-pins.sh` emits Copilot's flat `permissionDecision` envelope when
+  invoked with `STEER_HOOK_TARGET=copilot`, leaving the Claude `deny` path
+  untouched. Skill tool-permission scoping (`allowed-tools`/`disallowed-tools`)
+  is inert on Copilot and skill bodies remain Claude-centric — documented in
+  `docs/concepts/copilot-support.md`. Subagents are not ported.
+- **Added:** GitHub Copilot CLI target (prototype, standards-only). The org
+  engineering standards now reach Copilot CLI users as a generated
+  `.github/copilot-instructions.md`, concatenated from the same
+  `plugins/steer/rules/` that Claude Code receives via the SessionStart hook —
+  Copilot has no context-injecting hook, so the rules ship as its primary
+  always-on custom-instructions file (chosen over `AGENTS.md`, which Copilot
+  merges with `CLAUDE.md` and which Claude Code ignores). New
+  `scripts/gen_copilot_instructions.py` (+ `mise run gen:copilot`) builds the
+  committed artifact under `templates/github/`; `scripts/check_copilot_instructions.py`
+  (wired into `plugin-check`) fails the build if it drifts from the rules.
+  `/steer:init` and `/steer:adopt` install it (overwrite-managed); a Copilot
+  marketplace manifest lands at `.github/plugin/marketplace.json` (steer only).
+  Skills, gate-hooks, and agents are deferred to later phases.
 - **Added:** `/steer:issues brainstorm` and `capture` now treat the **existing
   issue corpus as required context**. Before synthesizing, both search open *and*
   closed issues (via `/steer:tracker-sync search`, by topic and its alternatives)
@@ -27,7 +52,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `enums.registry` + `ENUMS.md`, and a `link-related #N <other> <relationship>`
   operation in `/steer:tracker-sync` that records the cross-link (with optional
   reciprocal line on the other issue) idempotently, MCP-first → `gh` → manual.
-
 - **Changed:** `/steer:work finish` now watches CI to conclusion after pushing
   (`gh pr checks --watch`) and fixes a red build as part of the same unit of work,
   rather than stopping at PR-open. The agent hands the reviewer a green PR instead
