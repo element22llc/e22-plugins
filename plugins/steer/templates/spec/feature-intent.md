@@ -83,6 +83,7 @@ marker** (and the bracketed title) when you fill in a real question.
 
 ### Q-001 — [Anything ambiguous the PO needs to decide] <!-- steer:placeholder -->
 
+- created:                # YYYY-MM-DD this question was raised (optional; drives staleness)
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking
 - owner: product          # product | development | design | security | shared

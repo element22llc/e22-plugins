@@ -27,8 +27,22 @@
 #   rather than silently dropped. Legacy `- [ ]` checkboxes are still counted
 #   (as backlog) for one deprecation window.
 #
+# STALENESS ESCALATION (anti-rot, part 2)
+#   A count is not enough: a question open since January looks identical to one
+#   written today, so nothing escalates as it rots. Each `### Q-NNN` block may
+#   carry an optional `created: YYYY-MM-DD`. A *blocking*, still-open,
+#   *un-promoted* question (no `tracker:` ref) older than STEER_QUESTION_STALE_DAYS
+#   gets its own loud escalation line naming the question, feature, owner role,
+#   and age — the cue to promote it (assign its owner via the tracker.md Owners
+#   map) or defer it. When `created:` is absent we fall back to the heading
+#   line's `git blame` author-time, so legacy questions still get an age; if git
+#   is unavailable the question simply isn't aged (fail-open, never crash).
+#   The hook only *detects* staleness — it never opens issues (writes stay on the
+#   human-gated /steer:questions → /steer:issues path).
+#
 # CONSTRAINTS (per repo CLAUDE.md)
-#   POSIX sh, no jq, no process substitution.
+#   POSIX sh, no jq, no process substitution. Age math is done in awk (the
+#   days-from-civil algorithm) so we never depend on GNU-only `date -d`.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
@@ -44,6 +58,26 @@ CWD="$(steer_field cwd)"
 ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
 
 RB_ORDER="$(steer_required_before_order)"
+
+# A blocking question still open this many days after its `created:` date is
+# escalated. Flat policy (user-chosen 14); edit this constant to retune.
+STEER_QUESTION_STALE_DAYS=14
+
+# Today as a day-number (days since 1970-01-01, UTC). STEER_TODAY (YYYY-MM-DD)
+# overrides for deterministic tests; otherwise `date -u` (POSIX — no -d/-j). If
+# the date is unavailable or malformed, TODAY_DAYS is empty and staleness
+# escalation is skipped entirely (fail-open: counts still work).
+_today_ymd="${STEER_TODAY:-$(date -u +%Y-%m-%d 2>/dev/null)}"
+TODAY_DAYS="$(printf '%s\n' "${_today_ymd}" | awk -F- '
+  function days_from_civil(y, m, d,   era, yoe, doy, doe) {
+    if (m <= 2) y--
+    era = int((y >= 0 ? y : y - 399) / 400); yoe = y - era * 400
+    doy = int((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
+    doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy
+    return era * 146097 + doe - 719468
+  }
+  /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ { print days_from_civil($1 + 0, $2 + 0, $3 + 0); got = 1 }
+  END { if (!got) print "" }')"
 
 # rank_of <token> — 1-based position of a gate token in the lifecycle order, or
 # 0 when absent/unknown.
@@ -120,17 +154,105 @@ count_open() {
   ' "${_f}"
 }
 
+# stale_lines <file> — for each blocking, still-open, un-promoted question, emit
+# one tab-separated record so the shell can decide staleness in one place:
+#   AGE\t<Q-id>\t<owner>\t<age-in-days>   when `created:` is a valid YYYY-MM-DD
+#   BLAME\t<Q-id>\t<owner>\t<heading-line-no>   when `created:` is absent/malformed
+# Promoted questions (non-empty `tracker:`) and placeholder seeds are skipped —
+# a promoted question is already on someone's plate. Mirrors count_open's block
+# parser; kept separate so count_open's four-int contract stays untouched.
+stale_lines() {
+	_f="$1"
+	[ -f "${_f}" ] || return 0
+	[ -n "${TODAY_DAYS}" ] || return 0
+	awk -v today="${TODAY_DAYS}" '
+    function days_from_civil(y, m, d,   era, yoe, doy, doe) {
+      if (m <= 2) y--
+      era = int((y >= 0 ? y : y - 399) / 400); yoe = y - era * 400
+      doy = int((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
+      doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy
+      return era * 146097 + doe - 719468
+    }
+    function endblock(  parts) {
+      if (inblk && !skip && (q_status == "open" || q_status == "investigating") &&
+          q_impact == "blocking" && q_tracker == "") {
+        if (q_created ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) {
+          split(q_created, parts, "-")
+          printf "AGE\t%s\t%s\t%d\n", q_id, q_owner, today - days_from_civil(parts[1] + 0, parts[2] + 0, parts[3] + 0)
+        } else {
+          printf "BLAME\t%s\t%s\t%d\n", q_id, q_owner, q_line
+        }
+      }
+      inblk = 0; skip = 0; q_status = ""; q_impact = ""; q_created = ""; q_owner = ""; q_tracker = ""; q_id = ""; q_line = 0
+    }
+    /^## Open questions/ { endblock(); inq = 1; next }
+    /^## / { endblock(); inq = 0 }
+    /^# /  { endblock(); inq = 0 }
+    inq && /^### / {
+      endblock()
+      inblk = 1
+      skip = ($0 ~ /steer:placeholder/) ? 1 : 0
+      q_line = FNR
+      q_id = $0; sub(/^###[[:space:]]*/, "", q_id); sub(/[[:space:]].*$/, "", q_id)
+      next
+    }
+    inq && inblk {
+      line = $0
+      sub(/^[[:space:]]*-[[:space:]]*/, "", line)
+      if (line ~ /^status:/)              { v = line; sub(/^status:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_status = tolower(v) }
+      else if (line ~ /^impact:/)         { v = line; sub(/^impact:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_impact = tolower(v) }
+      else if (line ~ /^owner:/)          { v = line; sub(/^owner:[[:space:]]*/, "", v);           sub(/[[:space:]].*$/, "", v); q_owner = tolower(v) }
+      else if (line ~ /^created:/)        { v = line; sub(/^created:[[:space:]]*/, "", v);         sub(/[[:space:]].*$/, "", v); q_created = v }
+      else if (line ~ /^tracker:/)        { v = line; sub(/^tracker:[[:space:]]*/, "", v);         sub(/[[:space:]].*$/, "", v); q_tracker = v }
+    }
+    END { endblock() }
+  ' "${_f}"
+}
+
+# format_stale <file> <label> — turn stale_lines records into escalation markdown.
+# Resolves BLAME records to an age via `git blame` author-time (fail-open if git
+# or the commit is unavailable). Applies the staleness threshold in one place.
+# Pure stdout (no global writes) so a pipe-to-while subshell is safe here.
+format_stale() {
+	_ff="$1"
+	_lbl="$2"
+	[ -n "${TODAY_DAYS}" ] || return 0
+	stale_lines "${_ff}" | while IFS="$(printf '\t')" read -r _kind _qid _owner _field; do
+		case "${_kind}" in
+		AGE)
+			_age="${_field}"
+			;;
+		BLAME)
+			command -v git >/dev/null 2>&1 || continue
+			_bt="$(git -C "${ROOT}" blame -L"${_field}","${_field}" --porcelain -- "${_ff}" 2>/dev/null |
+				awk '/^author-time /{print $2; exit}')"
+			[ -n "${_bt}" ] || continue
+			case "${_bt}" in *[!0-9]*) continue ;; esac
+			_age=$((TODAY_DAYS - _bt / 86400))
+			;;
+		*) continue ;;
+		esac
+		[ "${_age}" -ge "${STEER_QUESTION_STALE_DAYS}" ] 2>/dev/null || continue
+		if [ -n "${_owner}" ]; then _own=", owner ${_owner}"; else _own=""; fi
+		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd — promote (assign its owner via tracker.md) or defer: **/steer:questions**\n' \
+			"${_qid}" "${_lbl}" "${_own}" "${_age}"
+	done
+}
+
 NOW=0
 TRANS=0
 BACKLOG=0
 ATTN=0
 REPORT=""
+STALE_REPORT=""
+STALE_COUNT=0
 
 # args: file
 check_file() {
+	_file="$1" # capture before `set --` overwrites the positional params
 	# Intentional word-splitting: count_open prints four space-separated integers.
 	# shellcheck disable=SC2046
-	set -- $(count_open "$1")
+	set -- $(count_open "${_file}")
 	_now="$1"
 	_trans="$2"
 	_backlog="$3"
@@ -148,6 +270,14 @@ check_file() {
 	[ "${_attn}" -gt 0 ] && _breakdown="${_breakdown} ${_attn} malformed"
 	REPORT="${REPORT}
 - \`${_FILE_LABEL}\` —${_breakdown}"
+
+	# Staleness escalation for this file's blocking, un-promoted questions.
+	_esc="$(format_stale "${_file}" "${_FILE_LABEL}")"
+	if [ -n "${_esc}" ]; then
+		STALE_REPORT="${STALE_REPORT}
+${_esc}"
+		STALE_COUNT=$((STALE_COUNT + $(printf '%s\n' "${_esc}" | grep -c .)))
+	fi
 }
 
 _FILE_LABEL="spec/vision.md"
@@ -194,6 +324,11 @@ if [ "${TOTAL}" -gt 0 ] 2>/dev/null; then
 	fi
 	if [ "${ATTN}" -gt 0 ]; then
 		printf -- '- **%s malformed** — a `### Q-NNN` block is missing `status:`/`impact:`; fix the metadata so its gate state is unambiguous.\n' "${ATTN}"
+	fi
+	if [ "${STALE_COUNT}" -gt 0 ] 2>/dev/null; then
+		printf '\n🚨 **%s blocking question(s) have rotted (open >%sd, not yet promoted)** — escalate now:\n' "${STALE_COUNT}" "${STEER_QUESTION_STALE_DAYS}"
+		printf '%s\n' "${STALE_REPORT}"
+		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `spec/tracker.md`.\n'
 	fi
 	printf '\nRun **/steer:questions** to sweep them and drive each to an answer '
 	printf '(or an explicit deferral). This notice clears itself once they are resolved.\n'

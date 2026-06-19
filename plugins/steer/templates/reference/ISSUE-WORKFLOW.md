@@ -201,6 +201,26 @@ issue, close it, and record an ADR **only** when the decision is architectural o
 hard to reverse. The issue is the decision *workflow*; the spec/ADR is the
 durable *record*.
 
+**Staleness is a promotion trigger.** A `blocking` question still `open` after
+`STEER_QUESTION_STALE_DAYS` (14, measured from its `created:` date — the
+SessionStart open-questions hook surfaces these every session) has, by
+definition, outlived the session and needs a named owner — promote it.
+
+**Assignee resolution on promotion.** When promoting, resolve the question's
+`owner:` role to a GitHub login via the **`owners:` map in `/spec/tracker.md`**
+and assign the `spec-question` issue to it (through `/steer:tracker-sync assign`,
+add-don't-replace):
+
+| `owner:` | Assigned to |
+|---|---|
+| `product` / `development` / `design` / `security` | the mapped login for that role |
+| `shared` | both the `product` **and** `development` logins |
+| role missing/blank in the map | leave **unassigned**, apply `needs:triage` |
+
+Never fabricate a login; an empty map row means "no auto-assignment", not an
+error. The bidirectional link (spec `tracker:` ↔ issue `question-id` marker) and
+find-by-`question-id` dedup are unchanged — re-promotion never double-creates.
+
 ## Audit & drift (reconciling, not additive)
 
 - **Audit** (`/steer:audit` → `/steer:issues publish-audit`) uses a two-level model:
