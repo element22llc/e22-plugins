@@ -26,6 +26,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   silently work around it — strictly steer defects, not product-code bugs. Ships a
   `steer-bug` issue-body template, a repo `.github` self-report issue form, and
   `.claude/steer-faults.*` gitignore entries in the scaffold.
+- **Bootstrapped repos now work in Claude Code worktrees out of the box.** The
+  scaffold ships a `.worktreeinclude` (installs at the repo root) listing the
+  git-ignored local config — `.env` / `.env.local` / nested `apps/*/.env` /
+  `infra/.env`, `.mise.local.toml`, `.claude/settings.local.json` — that Claude
+  Code copies into each `claude --worktree`. Worktrees start from git refs only,
+  so without it the app couldn't boot in a worktree (no `DATABASE_URL`, no local
+  secrets). The scaffold `.gitignore` now also ignores `.claude/worktrees/` so
+  those linked working trees don't show as untracked in the parent repo, and the
+  "Secrets handling" rule notes that `.worktreeinclude` is what preserves the
+  git-ignored-`.env` boot guarantee under `--worktree`. `MANIFEST.md` maps the
+  new file, and `scaffold-reconcile.py` now recognizes `.worktreeinclude` as a
+  line-based file so an existing one is merged additively (append missing
+  patterns, never clobber) — same as `.gitignore`.
+
+- **New read-only `steer-reviewer` subagent hardens large-repo fan-out in
+  `/steer:audit` and `/steer:drift`.** Both skills already described fanning out
+  one reviewer per dimension/feature, but that was loose prose and a generically
+  spawned worker wasn't guaranteed to inherit each skill's read-only contract.
+  `plugins/steer/agents/steer-reviewer.md` ships a worker with a `Read`/`Grep`/
+  `Glob`-only allowlist (no shell, no edits — read-only *by construction*), and
+  the two skills now invoke it **explicitly** (not via auto-delegation, the
+  failure mode that retired the earlier `steer-analyzer`) above a size gate —
+  audit per applicable dimension, drift per feature — while keeping vetting,
+  ranking, and tracker I/O in the lead. Below the gate the skills review inline.
+  The subagent grants **no new authority**: its tools are strictly narrower than
+  the skills that call it. `scripts/check_plugin.py` now validates `agents/*.md`
+  frontmatter (requires `name`/`description`, rejects the plugin-ignored
+  `hooks`/`mcpServers`/`permissionMode` fields); `scripts/validate_docs.py` keeps
+  `docs/reference/agents.md` in sync with the shipped subagents.
 - **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
   records its local marker as `spec/.work/<branch>.md` (was an extensionless,
   content-free file) with a newest-first list of the Claude Code session(s) that

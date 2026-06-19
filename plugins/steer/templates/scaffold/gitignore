@@ -40,6 +40,11 @@ out/
 .claude/steer-faults.log
 .claude/steer-faults.surfaced
 
+# Claude Code worktrees — `claude --worktree` creates linked working trees
+# here; they are separate checkouts, not content to track. (.worktreeinclude
+# at the repo root controls which git-ignored locals get copied into them.)
+.claude/worktrees/
+
 # Local work markers — /steer:work records the claimed issue (and the Claude
 # Code session breadcrumbs) for a branch here so the Stop-hook reconciliation
 # recognizes it. Per-developer, per-machine execution state, never committed.

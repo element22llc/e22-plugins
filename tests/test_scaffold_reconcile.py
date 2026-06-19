@@ -149,6 +149,19 @@ def test_auto_infers_kind(tmp_path: Path):
     assert "b/" in existing.read_text(encoding="utf-8").splitlines()
 
 
+def test_auto_infers_worktreeinclude_as_line_based(tmp_path: Path):
+    # .worktreeinclude is the same line-based ignore format as .gitignore, so
+    # `auto` must route it through the additive line merge.
+    existing = tmp_path / ".worktreeinclude"
+    existing.write_text(".env\n", encoding="utf-8")
+    template = tmp_path / "worktreeinclude"
+    template.write_text(".env\n.env.local\n", encoding="utf-8")
+    assert sr.main(["auto", str(existing), str(template), "--apply"]) == 0
+    lines = existing.read_text(encoding="utf-8").splitlines()
+    assert ".env.local" in lines  # added
+    assert lines.count(".env") == 1  # not duplicated
+
+
 def test_usage_error_on_bad_args(tmp_path: Path):
     assert sr.main(["json", "only-one-arg"]) == 2
 
