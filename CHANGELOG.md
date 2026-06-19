@@ -5,6 +5,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Fixed:** the bundled `scripts/scan-version-pins.sh` no longer fails an
+  adopting repo's own `ci` shellcheck step. The policy-violation message embeds
+  the literal markdown `` `# steer:allow-pin <reason>` `` whose backticks tripped
+  ShellCheck **SC2016** in consumer repos (which carry the verbatim script and the
+  scaffold's shellcheck step but not this repo's `.shellcheckrc`). Added a
+  targeted `# shellcheck disable=SC2016` directive on that one line — scoped to the
+  single false positive so every other check stays on — rather than a repo-wide
+  `.shellcheckrc` or a severity downgrade that would weaken the gate. Synced
+  byte-identically into the scaffold copy.
+
 ### 2.8.0
 
 - **Fixed:** low-severity audit nits. The no-jq `steer_field` fallback in

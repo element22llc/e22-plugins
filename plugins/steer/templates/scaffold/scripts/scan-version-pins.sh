@@ -104,6 +104,7 @@ VIOLATIONS="$(
 if [ -n "${VIOLATIONS}" ]; then
 	printf 'Version-pin policy violations (source: %s):\n\n' "${POLICY}" >&2
 	printf '%s\n\n' "${VIOLATIONS}" >&2
+	# shellcheck disable=SC2016  # backticks here are literal markdown in the message, not command substitution
 	printf 'Bump to a supported major, or annotate a deliberate pin with `# steer:allow-pin <reason>` and record an ADR.\n' >&2
 	exit 1
 fi
