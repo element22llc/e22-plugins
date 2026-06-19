@@ -23,6 +23,10 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    fields present in the intent template).
 9. Installed payload (templates/scaffold, templates/spec, templates/reference)
    carries no org-specific brand — the scaffold stays client-agnostic.
+10. Hand-maintained rule/skill enumerations (CLAUDE.md skills block, the
+    ``standards`` skill's rule list, CROSS-SURFACE.md's rule count + SessionStart
+    hook roster) stay in sync with what's actually on disk — so a new rule/skill
+    can't silently desync the docs the way it did before this guard existed.
 
 Usage::
 
@@ -33,6 +37,7 @@ Exit status is 0 when clean, 1 when any check fails.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -42,7 +47,12 @@ from check_plugin import PLUGIN_ROOT
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
 SKILLS_DIR = PLUGIN_ROOT / "skills"
+RULES_DIR = PLUGIN_ROOT / "rules"
+HOOKS_JSON = PLUGIN_ROOT / "hooks/hooks.json"
+STANDARDS_SKILL = SKILLS_DIR / "standards/SKILL.md"
 README = Path("README.md")
+CLAUDE_MD = Path("CLAUDE.md")
+CROSS_SURFACE = Path("CROSS-SURFACE.md")
 
 # Dirs whose markdown is scanned for tokens / command refs.
 SCAN_DIRS = ["rules", "skills", "templates"]
@@ -412,6 +422,72 @@ def check_readme_inventory(errors: list[str], skills: set[str]) -> None:
         )
 
 
+# --- check 10: hand-maintained enumerations stay in sync with disk ---
+
+
+# Whole-token boundary: the same guard used by check_readme_inventory so that,
+# e.g., `spec` is not satisfied by `spec-scaffold`.
+def _token_present(name: str, haystack: str) -> bool:
+    return re.search(rf"(?<![a-z-]){re.escape(name)}(?![a-z-])", haystack) is not None
+
+
+def _sessionstart_hook_basenames() -> set[str]:
+    """Basenames of every SessionStart hook script registered in hooks.json."""
+    data = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for entry in data.get("hooks", {}).get("SessionStart", []):
+        for hook in entry.get("hooks", []):
+            for m in re.finditer(r"hooks/([a-z0-9-]+\.sh)", hook.get("command", "")):
+                names.add(m.group(1))
+    return names
+
+
+def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
+    rules = {p.stem for p in RULES_DIR.glob("*.md")}
+
+    # CLAUDE.md: the `skills/` layout comment must name every skill. Scope to the
+    # block (skill names are common English words elsewhere in the file).
+    if CLAUDE_MD.is_file():
+        text = CLAUDE_MD.read_text(encoding="utf-8")
+        m = re.search(r"skills/.*?\(no commands/", text, re.DOTALL)
+        block = m.group(0) if m else ""
+        missing = {s for s in skills if not _token_present(s, block)}
+        if missing:
+            errors.append(
+                f"CLAUDE.md: Layout skills/ block missing {sorted(missing)} "
+                f"(list every skill under plugins/steer/skills/)"
+            )
+
+    # standards skill: the rule list must name every rules/*.md stem. Scope to
+    # the "operating manual" list paragraph.
+    if STANDARDS_SKILL.is_file():
+        text = STANDARDS_SKILL.read_text(encoding="utf-8")
+        m = re.search(r"operating manual:(.*?)\n\n", text, re.DOTALL)
+        block = m.group(1) if m else ""
+        missing = {r for r in rules if f"`{r}`" not in block}
+        if missing:
+            errors.append(
+                f"skills/standards/SKILL.md: rule enumeration missing "
+                f"{sorted(missing)} (list every rules/*.md file)"
+            )
+
+    # CROSS-SURFACE.md: rule count + SessionStart hook roster match disk.
+    if CROSS_SURFACE.is_file():
+        text = CROSS_SURFACE.read_text(encoding="utf-8")
+        m = re.search(r"\((\d+) files\)", text)
+        if m and int(m.group(1)) != len(rules):
+            errors.append(
+                f"CROSS-SURFACE.md: rule count says ({m.group(1)} files) "
+                f"but rules/ has {len(rules)}"
+            )
+        missing_hooks = {h for h in _sessionstart_hook_basenames() if h not in text}
+        if missing_hooks:
+            errors.append(
+                f"CROSS-SURFACE.md: SessionStart hook roster missing "
+                f"{sorted(missing_hooks)} (registered in hooks.json)"
+            )
+
+
 # --- check 8: cross-field invariants ---
 
 
@@ -583,6 +659,7 @@ def run_checks(errors: list[str]) -> None:
         check_cross_field(errors, reg)
     check_manifest(errors)
     check_readme_inventory(errors, skills)
+    check_enumeration_drift(errors, skills)
     check_authorization(errors)
     check_scaffold_version_copies(errors)
     check_payload_debranded(errors)

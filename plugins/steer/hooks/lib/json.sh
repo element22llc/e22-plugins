@@ -33,10 +33,22 @@ steer_json_unescape() {
 # steer_have_jq — true if a usable jq is on PATH.
 steer_have_jq() { command -v jq >/dev/null 2>&1; }
 
+# _steer_field_grep <name> <json> — FIRST JSON string value for <name> in <json>,
+# returned still-escaped (caller unescapes). The value pattern allows escaped
+# chars (\\.) so an embedded \" does not end the match early.
+_steer_field_grep() {
+	printf '%s' "$2" |
+		grep -oE "\"$1\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" |
+		head -n 1 |
+		sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*\"//; s/\"$//"
+}
+
 # steer_field <name> — value of a string field, preferring tool_input.<name> then
-# top-level .<name>. Empty if absent/unextractable. Picks the FIRST matching
-# occurrence (so a repeated key buried inside a later `content` value can't shadow
-# the real tool_input field) and tolerates escaped quotes/backslashes in values.
+# top-level .<name>. Empty if absent/unextractable. The no-jq fallback mirrors the
+# jq precedence by searching the slice AFTER the "tool_input" key first (so a
+# top-level decoy field of the same name can't win), then the whole document.
+# Within either slice the FIRST match wins, so a repeated key buried in a later
+# `content` value can't shadow the real field. Tolerates escaped quotes/backslashes.
 steer_field() {
 	_name="$1"
 	if steer_have_jq; then
@@ -44,13 +56,9 @@ steer_field() {
 			jq -r --arg k "${_name}" '(.tool_input[$k] // .[$k]) // empty' 2>/dev/null
 		return
 	fi
-	# Fallback: first JSON string value for the key. The value pattern allows
-	# escaped chars (\\.) so an embedded \" does not end the match early.
-	printf '%s' "${STEER_INPUT}" |
-		grep -oE "\"${_name}\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" |
-		head -n 1 |
-		sed -E "s/^\"${_name}\"[[:space:]]*:[[:space:]]*\"//; s/\"$//" |
-		steer_json_unescape
+	_val="$(_steer_field_grep "${_name}" "${STEER_INPUT#*\"tool_input\"}")"
+	[ -n "${_val}" ] || _val="$(_steer_field_grep "${_name}" "${STEER_INPUT}")"
+	printf '%s' "${_val}" | steer_json_unescape
 }
 
 # steer_target_path — the path a mutating tool would write: tool_input.file_path

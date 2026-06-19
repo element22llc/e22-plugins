@@ -21,10 +21,10 @@ Do this now:
    The files concatenate to form the full operating manual:
    `00-router`, `05-roles`, `10-stack`, `15-commands`, `20-layout`,
    `22-housekeeping`, `30-spec-workflow`, `32-living-docs`, `35-issue-tracker`,
-   `40-testing`, `45-commit-autonomy`, `50-definition-of-done`,
+   `36-issue-first`, `40-testing`, `45-commit-autonomy`, `50-definition-of-done`,
    `55-drift-gates`, `60-high-risk`, `70-secrets`, `75-compliance`,
-   `80-change-size`, `85-practices`, `90-design-sources`, `95-not-the-gate`,
-   `99-end-of-session`.
+   `80-change-size`, `85-practices`, `87-output-discipline`, `90-design-sources`,
+   `95-not-the-gate`, `97-self-report`, `99-end-of-session`.
 
 2. Adopt their contents as your standing operating rules for the rest of this
    session — the same status they would have if they had been injected at
