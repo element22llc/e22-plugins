@@ -84,6 +84,7 @@ nav:
       - Build: workflows/build.md
   - Reference:
       - Skills: reference/skills.md
+      - Subagents: reference/agents.md
       - Hooks: reference/hooks.md
       - Configuration: reference/configuration.md
       - GitHub Actions integration: reference/github-integration.md

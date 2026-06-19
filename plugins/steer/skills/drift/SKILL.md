@@ -133,8 +133,14 @@ bury the few findings that are actual drift.
 separate marker (e.g. a `[blocker]` tag or a severity column) so kind and
 severity stay independent.
 
-For many features this fans out cleanly (one reviewer per feature) — do that if
-the comparison is large.
+**Fan out on large comparisons.** This diff parallelizes cleanly — one reviewer
+per feature. When the comparison is large (roughly **more than ~10 intended-behavior
+units**, or any sweep where diffing every feature inline would crowd this context),
+delegate **each feature's diff to the `steer-reviewer` subagent** (one per feature,
+explicitly), handing it the intended-behavior unit, the as-built `/spec` feature
+that owns it, and the verdict scale above; then gather the per-feature verdicts.
+`steer-reviewer` is read-only by construction (`Read`/`Grep`/`Glob` only) — the
+tracker pull stays here in the lead. Below that size, diff the features inline.
 
 ## Output — report + propose only
 

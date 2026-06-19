@@ -38,6 +38,8 @@ DOCS_DIR = Path("docs")
 MKDOCS_YML = Path("mkdocs.yml")
 SKILLS_DIR = Path("plugins/steer/skills")
 SKILLS_REF = DOCS_DIR / "reference/skills.md"
+AGENTS_DIR = Path("plugins/steer/agents")
+AGENTS_REF = DOCS_DIR / "reference/agents.md"
 
 # Reuse the namespace-hygiene patterns from check_standards.py so docs are held
 # to the same standard as rules/skills/templates.
@@ -45,6 +47,12 @@ _NS_RE = re.compile(r"/steer:([a-z][a-z-]*)")
 _STALE_E22_RE = re.compile(r"(?<![A-Za-z0-9])/e22-[a-z][a-z-]*")
 # Markdown inline link target: [text](target)
 _LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+
+
+def agent_names() -> set[str]:
+    if not AGENTS_DIR.is_dir():
+        return set()
+    return {md.stem for md in AGENTS_DIR.glob("*.md")}
 
 
 def skill_names() -> set[str]:
@@ -108,6 +116,27 @@ def check_skill_inventory(errors: list[str], skills: set[str]) -> None:
         )
 
 
+# --- check 1b: agent inventory present in reference/agents.md ---------------
+
+
+def check_agent_inventory(errors: list[str], agents: set[str]) -> None:
+    if not agents:
+        return  # no shipped subagents — nothing to document
+    if not AGENTS_REF.is_file():
+        errors.append(
+            f"{AGENTS_REF}: missing — subagents reference page is required when "
+            f"{AGENTS_DIR}/ is non-empty"
+        )
+        return
+    text = AGENTS_REF.read_text(encoding="utf-8")
+    missing = {a for a in agents if not re.search(rf"`{re.escape(a)}`", text)}
+    if missing:
+        errors.append(
+            f"{AGENTS_REF}: subagents reference missing {sorted(missing)} "
+            "(run /plugin-docs to reconcile)"
+        )
+
+
 # --- check 2 + 3: nav integrity and orphans ---------------------------------
 
 
@@ -161,6 +190,7 @@ def run_checks(errors: list[str]) -> None:
         errors.append(f"{SKILLS_DIR}: no skills found (run from the repo root)")
     nav_paths = _load_nav_paths(errors)
     check_skill_inventory(errors, skills)
+    check_agent_inventory(errors, agent_names())
     check_nav(errors, nav_paths)
     check_links(errors)
     check_namespace(errors, skills)

@@ -21,6 +21,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   line-based file so an existing one is merged additively (append missing
   patterns, never clobber) — same as `.gitignore`.
 
+- **New read-only `steer-reviewer` subagent hardens large-repo fan-out in
+  `/steer:audit` and `/steer:drift`.** Both skills already described fanning out
+  one reviewer per dimension/feature, but that was loose prose and a generically
+  spawned worker wasn't guaranteed to inherit each skill's read-only contract.
+  `plugins/steer/agents/steer-reviewer.md` ships a worker with a `Read`/`Grep`/
+  `Glob`-only allowlist (no shell, no edits — read-only *by construction*), and
+  the two skills now invoke it **explicitly** (not via auto-delegation, the
+  failure mode that retired the earlier `steer-analyzer`) above a size gate —
+  audit per applicable dimension, drift per feature — while keeping vetting,
+  ranking, and tracker I/O in the lead. Below the gate the skills review inline.
+  The subagent grants **no new authority**: its tools are strictly narrower than
+  the skills that call it. `scripts/check_plugin.py` now validates `agents/*.md`
+  frontmatter (requires `name`/`description`, rejects the plugin-ignored
+  `hooks`/`mcpServers`/`permissionMode` fields); `scripts/validate_docs.py` keeps
+  `docs/reference/agents.md` in sync with the shipped subagents.
 - **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
   records its local marker as `spec/.work/<branch>.md` (was an extensionless,
   content-free file) with a newest-first list of the Claude Code session(s) that
