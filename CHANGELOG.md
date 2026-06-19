@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **steer now reports its OWN defects upstream.** New `/steer:report` skill files
+  a bug about the plugin itself in `element22llc/e22-plugins` — it gathers the
+  defect (a recorded hook fault, a contradictory skill/rule instruction, or a
+  missing/broken template or script), **scrubs** it of secrets/absolute-paths/
+  product-code, **deduplicates** against existing upstream issues by a stable
+  `steer:fault-fingerprint`, renders the body for review, and only on explicit
+  confirmation files via `gh` (read-only `allowed-tools`; the upstream write stays
+  permission-prompted, with a paste-ready issue-form URL fallback when access is
+  missing). Detection feeds it from two sides: hooks record their own
+  malfunctions network-free via the new `hooks/lib/report-fault.sh`
+  (`steer_record_fault`, deduped, fail-soft) to a git-ignored
+  `.claude/steer-faults.log`, and the new `surface-faults.sh` SessionStart hook
+  raises any *unreported* faults once (tracked by a `.surfaced` marker, never a
+  per-session nag). `inject-standards.sh` records a fault when its rules dir is
+  missing. New always-on rule `97-self-report.md` tells the model to treat steer's
+  own misbehaviour as a reportable defect and offer `/steer:report` rather than
+  silently work around it — strictly steer defects, not product-code bugs. Ships a
+  `steer-bug` issue-body template, a repo `.github` self-report issue form, and
+  `.claude/steer-faults.*` gitignore entries in the scaffold.
 - **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
   records its local marker as `spec/.work/<branch>.md` (was an extensionless,
   content-free file) with a newest-first list of the Claude Code session(s) that

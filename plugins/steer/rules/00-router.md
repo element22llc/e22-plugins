@@ -54,6 +54,7 @@ name one. Plain language is the only entry point a user needs.
 | sort loose files out of the repo root into `/spec` | `/steer:tidy` |
 | bring a bootstrapped repo up to date after a plugin release | `/steer:sync` |
 | "protect main" / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
+| report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 | read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
 
 GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal
