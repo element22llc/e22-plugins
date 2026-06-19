@@ -77,8 +77,12 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 - **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
   Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
-  `steer:claimed-by` marker (active execution context). A conflicting existing
-  claim/assignment is reported, **never** auto-overridden.
+  `steer:claimed-by` marker (active execution context). **Default subject is the
+  invoking user** (self-assign): resolve it as `@me` on the `gh` path
+  (`gh issue edit #N --add-assignee @me`) or the authenticated user's login on
+  the MCP path. **Add**, never replace — preserve any existing assignees rather
+  than clobbering them. A conflicting existing claim/assignment is reported,
+  **never** auto-overridden.
 - **`link-parent #N <parent>`** — native sub-issue link, else `steer:parent-issue`.
 - **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR.
 - **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened

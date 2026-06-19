@@ -14,7 +14,7 @@ never edits code).
 ```mermaid
 flowchart TD
     START["/steer:work start #123"] --> VALIDATE[Read + validate the issue]
-    VALIDATE --> CLAIM[Claim it · set in-progress]
+    VALIDATE --> CLAIM[Claim it · self-assign · set in-progress]
     CLAIM --> BRANCH[Create or reuse feat/* branch]
     BRANCH --> SPEC[Load linked /spec]
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
@@ -27,7 +27,7 @@ flowchart TD
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, claim, branch, load specs, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch, load specs, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off — including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s). |
 | `finish` | Open the PR and transition lifecycle state. |
