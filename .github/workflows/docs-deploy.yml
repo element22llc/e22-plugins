@@ -38,6 +38,16 @@ concurrency:
   group: cloudflare-pages
   cancel-in-progress: false
 
+# Force mise to install the standard (GIL-enabled) precompiled CPython, not the
+# free-threaded build. Current mise resolves a bare `python = "3.14"` to the
+# free-threaded interpreter and ignores the locked URL for the core:python
+# backend. Zensical ships only abi3 wheels, which can't load on a free-threaded
+# ABI, so uv falls back to compiling zensical from Rust source — which is what
+# broke this build. This env var is the only lever that flips the flavor; it must
+# be set before mise-action runs `mise install`.
+env:
+  MISE_PYTHON_PRECOMPILED_FLAVOR: install_only_stripped
+
 jobs:
   build:
     runs-on: ubuntu-latest
