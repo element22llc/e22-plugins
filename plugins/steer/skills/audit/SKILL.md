@@ -241,7 +241,7 @@ across runs; the run parents accumulate as a timeline.
 
 The canonical spec ↔ code rules (drift resolution, behavior vs. incidental
 implementation, PO vs. dev approval) live in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`; the full
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`; the full
 conventions and patterns behind the dimensions are in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/CONVENTIONS.md` (open via
 `/steer:conventions`). This skill *detects, ranks, and routes*; those references

@@ -12,7 +12,7 @@ after structural migrations + additive reconciliation and **before** re-stamping
 | Mechanism | Owns | Re-evaluated |
 |---|---|---|
 | [MIGRATIONS.md](MIGRATIONS.md) | non-additive transforms of artifacts that *exist* (rename/move/delete) | once, version-keyed |
-| Template reconciliation ([spec-framework.md](spec-framework.md)) | additive splices *within files that exist* (`##` sections, `- [ ]` items, rows) | every sync |
+| Template reconciliation ([SPEC-FRAMEWORK.md](SPEC-FRAMEWORK.md)) | additive splices *within files that exist* (`##` sections, `- [ ]` items, rows) | every sync |
 | **CAPABILITIES.md** (this file) | **whole-file presence + wiring** of capability-critical scaffold | every sync |
 
 The gap this closes: additive reconciliation never *creates* a missing file, and

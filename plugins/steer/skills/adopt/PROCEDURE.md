@@ -58,7 +58,7 @@ never delete a row the dev added. **Preserve every value already there.** Empty
 output means the file is already current. Only then continue from the unchecked
 items — the freshly spliced ones included. This is the plugin-wide **Template
 reconciliation** convention — full rules in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
 
 ## Phase 3 — Survey the codebase
 
@@ -208,7 +208,7 @@ the structured-config files an existing repo most often already owns — `.gitig
 and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`) —
 reconcile with the additive helper rather than by hand, which never overwrites an
 existing value or line (`check` first, show the delta, then `--apply`):
-`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
 scaffold carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md` Phase 7
 already reverse-engineered**; only bring in the stub for a UI repo where Phase 7
 somehow produced nothing. Reverse-engineer the root `ARCHITECTURE.md` the same

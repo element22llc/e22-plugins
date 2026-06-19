@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""scaffold-reconcile.py — additive, never-clobber reconciliation for the
+"""scaffold_reconcile.py — additive, never-clobber reconciliation for the
 non-Markdown scaffold files. The structured-config sibling of
 template-reconcile.sh.
 
@@ -14,7 +14,7 @@ or /steer:sync) was prose-only. This helper closes that gap for:
 CONTRACT (mirrors template-reconcile.sh)
 
   Usage:
-    scaffold-reconcile.py <kind> <existing-file> <template-file> [--apply]
+    scaffold_reconcile.py <kind> <existing-file> <template-file> [--apply]
       kind: json | gitignore | auto   (auto infers from the existing file name)
 
   Default (check) mode — read-only. Prints the additive delta the template
@@ -49,7 +49,7 @@ import sys
 from pathlib import Path
 
 USAGE = (
-    "usage: scaffold-reconcile.py <json|gitignore|auto> <existing-file> <template-file> [--apply]"
+    "usage: scaffold_reconcile.py <json|gitignore|auto> <existing-file> <template-file> [--apply]"
 )
 
 
@@ -108,7 +108,7 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
             existing = json.loads(existing_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
             return _die(
-                3, f"scaffold-reconcile: existing file is not valid JSON: {existing_path}: {exc}"
+                3, f"scaffold_reconcile: existing file is not valid JSON: {existing_path}: {exc}"
             )
     else:
         existing = None
@@ -192,14 +192,14 @@ def main(argv: list[str]) -> int:
     if kind not in ("json", "gitignore", "auto"):
         return _die(2, USAGE)
     if not template_path.is_file():
-        return _die(3, f"scaffold-reconcile: cannot read template: {template_path}")
+        return _die(3, f"scaffold_reconcile: cannot read template: {template_path}")
 
     if kind == "auto":
         inferred = _infer_kind(existing_path)
         if inferred is None:
             return _die(
                 2,
-                f"scaffold-reconcile: cannot infer kind from {existing_path.name}; "
+                f"scaffold_reconcile: cannot infer kind from {existing_path.name}; "
                 "pass json|gitignore",
             )
         kind = inferred
@@ -209,7 +209,7 @@ def main(argv: list[str]) -> int:
             template = json.loads(template_path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
             return _die(
-                3, f"scaffold-reconcile: template is not valid JSON: {template_path}: {exc}"
+                3, f"scaffold_reconcile: template is not valid JSON: {template_path}: {exc}"
             )
         return _reconcile_json(existing_path, template, apply)
 

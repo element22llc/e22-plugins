@@ -5,7 +5,7 @@ How a product idea travels from a PO's rough capture to validated, shipped work
 and the tracker silently disagree**. This is the normative owner of the
 lifecycle, its state model, label taxonomy, and authority rules. The issue
 *format* lives in [`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md); the open-question format
-lives in [`spec-framework.md`](spec-framework.md).
+lives in [`SPEC-FRAMEWORK.md`](SPEC-FRAMEWORK.md).
 
 Two invariants underpin everything:
 
@@ -191,7 +191,7 @@ Not every red build is an issue. To avoid both lost signal and duplicate noise:
 ## Spec questions — keep vs promote
 
 A question stays in the spec's `## Open questions` (structured `Q-NNN`, see
-[`spec-framework.md`](spec-framework.md)) when it is local to one feature,
+[`SPEC-FRAMEWORK.md`](SPEC-FRAMEWORK.md)) when it is local to one feature,
 answerable during active specification, not separately scheduled, and not blocked
 on an external party. **Promote it to a `source:spec-question` issue** when it
 needs a named owner, blocks multiple features, requires stakeholder consultation

@@ -155,7 +155,7 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    rarely have these already, but if a target `.gitignore` or JSON config
    (`.claude/settings.json`, `.mcp.json`, `biome.json`) **does** exist, reconcile
    it additively with
-   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold-reconcile.py" auto <target> <scaffold-template> --apply`
+   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`
    instead of overwriting it.
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
