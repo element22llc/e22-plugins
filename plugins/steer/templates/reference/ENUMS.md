@@ -73,6 +73,32 @@ not mere closure, decides which. (See `ISSUE-WORKFLOW.md` Completion rules.)
 
 `human · adoption · audit · security-review · code-review · ci · dependency · implementation · spec`
 
+## `issue_relationship` — how one issue relates to another
+
+`relates-to · depends-on · blocks · conflicts-with · supersedes · superseded-by`
+
+The relationship vocabulary `/steer:issues` uses when it surfaces a connection
+between issues during `brainstorm`/`capture` and records it (via
+`/steer:tracker-sync link-related`) under the `Related issues` heading. GitHub has
+**no native typed relationship** beyond parent/sub-issue, so the relationship word
+is metadata the workflow owns; the **link itself** is an ordinary `#N`
+cross-reference (GitHub auto-creates the backlink). Meanings:
+
+- **`relates-to`** — a generic association worth a reader's attention; no ordering
+  or exclusivity implied.
+- **`depends-on`** — this issue cannot be completed until the other lands.
+- **`blocks`** — the inverse: the other issue waits on this one.
+- **`conflicts-with`** — the two cannot both proceed as written; a human must
+  reconcile the decision (e.g. a Cognito-hosting issue vs. a `better-auth`
+  migration issue). **Never auto-resolved** — it is surfaced, not decided.
+- **`supersedes`** — this issue replaces the other (the other is a candidate for
+  close-as-`superseded`).
+- **`superseded-by`** — the inverse.
+
+Parent/sub-issue links are **not** in this enum — they are native GitHub links via
+`/steer:tracker-sync link-parent` (or the `steer:parent-issue` marker fallback).
+Duplicates are handled by `triage` close-as-duplicate, not a relationship word.
+
 ## `adr_status` — an ADR's state
 
 `Proposed · Accepted · Superseded · Deprecated`

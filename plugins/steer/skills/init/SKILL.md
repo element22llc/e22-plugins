@@ -140,8 +140,9 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
    `.env.example`, `claude/`, `vscode/`, `mcp.json`), instantiate the GitHub
    templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
-   GitHub-templates section maps the Issue Forms, workflows, and PR template
-   into `.github/`), and instantiate the spec spine from
+   GitHub-templates section maps the Issue Forms, workflows, PR template, and
+   the generated `copilot-instructions.md` into `.github/`), and instantiate the
+   spec spine from
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
    `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from

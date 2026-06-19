@@ -30,6 +30,8 @@ description = "Run plugin hygiene + standards-consistency + release checks"
 run = [
   "uv run python scripts/check_plugin.py",
   "uv run python scripts/check_standards.py",
+  # The committed Copilot instructions artifact must stay in sync with rules/.
+  "uv run python scripts/check_copilot_instructions.py",
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
@@ -75,6 +77,12 @@ run = [
 description = "Scan the repo for version pins that violate policy/versions.yml"
 run = [
   "sh plugins/steer/scripts/scan-version-pins.sh .",
+]
+
+[tasks."gen:copilot"]
+description = "Regenerate the Copilot instructions artifact from plugins/steer/rules/"
+run = [
+  "uv run python scripts/gen_copilot_instructions.py --write",
 ]
 
 # Documentation site (Zensical + mermaid). The Zensical toolchain lives in

@@ -191,7 +191,9 @@ The plugin carries the full repo scaffold at
 the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `docker:up/down`, `db:migrate`, `db:seed`), `compose.yaml`, CI under
 `.github/workflows/`, the PR template (drift-gate + living-docs checklists),
-`/configs`, `.env.example`, and `.claude/settings.json` enabling the
+`.github/copilot-instructions.md` (the generated Copilot standards surface —
+**overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless if
+no one uses Copilot), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
 leading dot — rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask
