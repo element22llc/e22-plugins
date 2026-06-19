@@ -7,6 +7,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the version-pin policy is now a pure **EOL floor**. Dropped the
+  `recommended` field from `policy/versions.yml` and the advisory ("supported but
+  behind the target") verdict from the hook and `version-policy.sh`. The
+  `recommended` tier duplicated the live versioning rule (verify current stable
+  in-session) and silently rotted — nothing checked it against latest stable. The
+  policy now carries only `minimum_supported` + `denied`, and the hook is
+  deny-or-silent. **What** to pin is still decided live; the file only blocks dead
+  majors. No new deny: a pin that was merely "advised" before is now silent.
+- **Changed:** `version-policy-refresh.yml` now **opens a PR that raises stale
+  floors** instead of filing an advisory issue. `check-policy-freshness.sh` gained
+  a `--write` mode that computes each floor as the lowest cycle still supported
+  upstream (endoflife.date), at the floor's existing granularity, **bump-up-only**
+  (a deliberately stricter-than-EOL floor is preserved), and edits both
+  byte-identical `versions.yml` copies idempotently. The workflow appends a
+  `CHANGELOG` entry and opens/updates a human-reviewed PR (`contents: write` +
+  `pull-requests: write`). endoflife.date is still consulted *only* here, off the
+  enforcement path. (Caveat: token-opened PRs don't auto-run CI; the reviewer
+  re-triggers it before merge.)
+- **Fixed:** stale `CONVENTIONS.md` enforcement prose — it still described the old
+  design that "resolved current stable from the endoflife.date API at write time."
+  Rewritten to describe the deterministic floor, the live rule as the version
+  *chooser*, the `# steer:allow-pin` marker (was `# pin-ok`), and the auto-refresh PR.
 - **Fixed:** the scaffold's `policy/branch-protection.yml` is now byte-locked to
   the plugin's bundled copy. It was already shipped as a verbatim duplicate but,
   unlike `policy/versions.yml` and the two version-pin scripts, was missing from

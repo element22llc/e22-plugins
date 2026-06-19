@@ -1,12 +1,22 @@
 name: version-policy-refresh
 
-# Keeps policy/versions.yml honest against upstream end-of-life WITHOUT making
-# enforcement depend on the network. This is the ONLY job that consults
-# endoflife.date; it proposes policy bumps by opening an issue. Enforcement (the
-# interactive hook + scan-version-pins.sh) reads only the static policy file.
+# Keeps policy/versions.yml EOL floors honest against upstream end-of-life WITHOUT
+# making enforcement depend on the network. This is the ONLY job that consults
+# endoflife.date: it raises any floor that has fallen behind to the lowest cycle
+# still supported upstream and opens a PR with the change. Enforcement (the
+# interactive hook + scan-version-pins.sh) reads only the static policy file and
+# never runs this.
 #
-# Non-blocking by construction: it never edits the policy and never fails a
-# required check — it just files/refreshes an advisory issue.
+# The floors are an EOL backstop, not a version chooser — what to actually pin
+# (current stable) is decided live, in-session, per the versioning rule. So the
+# refresh is BUMP-UP-ONLY and always lands via a human-reviewed PR, never an
+# auto-merge: a maintainer confirms the bump and that nothing downstream breaks.
+#
+# CI caveat: the PR is opened with the default GITHUB_TOKEN, which by GitHub design
+# does NOT trigger the `ci` pull_request workflow on the new PR. The PR requires
+# review anyway; the reviewer re-triggers CI (close+reopen, or push a commit)
+# before merge. To have CI run automatically, swap GITHUB_TOKEN for a GitHub App
+# token in the PR step.
 
 on:
   schedule:
@@ -15,41 +25,115 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  issues: write
+  contents: write
+  pull-requests: write
 
 jobs:
-  freshness:
+  refresh:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check policy floors against upstream EOL
-        id: check
+      - name: Raise floors behind upstream EOL
+        id: refresh
         run: |
           set +e
-          out="$(sh plugins/steer/scripts/check-policy-freshness.sh)"
+          report="$(sh plugins/steer/scripts/check-policy-freshness.sh --write)"
           rc=$?
           {
             echo "rc=${rc}"
-            echo "report<<EOF"
-            echo "${out}"
-            echo "EOF"
+            echo "report<<REPORT_EOF"
+            echo "${report}"
+            echo "REPORT_EOF"
           } >> "$GITHUB_OUTPUT"
+          # rc: 0 floors current · 1 bumps applied · 2 config error (missing dep/file)
+          [ "${rc}" = "2" ] && exit 1
           exit 0
 
-      - name: Open or refresh the policy-drift issue
-        if: steps.check.outputs.rc == '1'
+      - name: Detect changes
+        id: changed
+        run: |
+          if git diff --quiet -- \
+            plugins/steer/policy/versions.yml \
+            plugins/steer/templates/scaffold/policy/versions.yml; then
+            echo "changed=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Record the change in the changelog
+        if: steps.changed.outputs.changed == '1'
+        env:
+          REPORT: ${{ steps.refresh.outputs.report }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+
+          report = os.environ.get("REPORT", "")
+          parts = []
+          for raw in report.splitlines():
+              if not raw.lstrip().startswith("- "):
+                  continue
+              line = raw.strip()[2:].strip()  # drop the "- " bullet
+              if ":" not in line:
+                  continue
+              prod, rest = line.split(":", 1)
+              rest = rest.replace("minimum_supported", "").strip()
+              ver = rest.split("(")[0].strip().replace(" ", "")  # "X → Y"
+              parts.append(f"{prod.strip()} {ver}")
+          summary = ", ".join(parts) if parts else "EOL floors raised"
+
+          entry = (
+              "- **Changed:** version-pin policy floors raised to track upstream "
+              "end-of-life (automated by `version-policy-refresh.yml`): "
+              f"{summary}. EOL floors only — what to pin (current stable) is still "
+              "chosen live per the versioning rule; this just stops dead majors.\n"
+          )
+
+          cl = pathlib.Path("CHANGELOG.md")
+          text = cl.read_text(encoding="utf-8")
+          marker = "### [Unreleased]\n"
+          idx = text.find(marker)
+          if idx == -1:
+              raise SystemExit("CHANGELOG.md: no '### [Unreleased]' section found")
+          insert_at = idx + len(marker)
+          rest = text[insert_at:]
+          lead = ""
+          if rest.startswith("\n"):  # keep the blank line after the heading
+              lead, rest = "\n", rest[1:]
+          cl.write_text(text[:insert_at] + lead + entry + rest, encoding="utf-8")
+          PY
+
+      - name: Open or update the refresh PR
+        if: steps.changed.outputs.changed == '1'
         env:
           GH_TOKEN: ${{ github.token }}
-          REPORT: ${{ steps.check.outputs.report }}
+          REPORT: ${{ steps.refresh.outputs.report }}
         run: |
-          title="version-policy: floors behind upstream EOL"
-          body="$(printf '%s\n\n%s\n' "${REPORT}" "_Filed by version-policy-refresh. Raise the listed minimum_supported floors in policy/versions.yml (this is the version policy; bump deliberately). Enforcement is unaffected until the file changes._")"
-          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number' 2>/dev/null)"
+          branch="chore/version-policy-refresh"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Bot-owned branch, reset from the current default-branch HEAD each run so
+          # the diff is always "main + this bump" — a force push is intentional.
+          git checkout -B "${branch}"
+          git add \
+            plugins/steer/policy/versions.yml \
+            plugins/steer/templates/scaffold/policy/versions.yml \
+            CHANGELOG.md
+          git commit -m "chore(version-policy): raise EOL floors to track upstream"
+          git push --force origin "${branch}"
+          body="$(printf '%s\n\n%s\n' \
+            "Automated by \`version-policy-refresh.yml\`. The version-pin policy floors below fell behind upstream end-of-life and were raised to the lowest cycle still supported upstream. These are **EOL floors**, not version recommendations — what to pin (current stable) is still decided live per the versioning rule. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
+            "${REPORT}")"
+          existing="$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number' 2>/dev/null)"
           if [ -n "${existing}" ]; then
-            gh issue comment "${existing}" --body "${body}"
+            gh pr edit "${existing}" --body "${body}"
           else
-            gh issue create --title "${title}" --body "${body}" --label "maintenance" 2>/dev/null \
-              || gh issue create --title "${title}" --body "${body}"
+            gh pr create --base main --head "${branch}" \
+              --title "chore(version-policy): raise EOL floors to track upstream" \
+              --body "${body}" --label "maintenance" 2>/dev/null \
+              || gh pr create --base main --head "${branch}" \
+                --title "chore(version-policy): raise EOL floors to track upstream" \
+                --body "${body}"
           fi

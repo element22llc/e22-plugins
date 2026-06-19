@@ -2,7 +2,7 @@
 # steer hook fixture suite — POSIX sh. Version-pin checks are
 # deterministic against the bundled policy/versions.yml (no network, no jq).
 # Feeds canned PreToolUse JSON on stdin and asserts the hook's decision
-# (deny / advisory additionalContext / silent allow) plus the field-extraction
+# (deny / silent allow) plus the field-extraction
 # and classification behaviour. Run from anywhere:
 #
 #     sh plugins/steer/hooks/tests/run.sh
@@ -158,12 +158,14 @@ assert_eq "classify unknown" "$(steer_classify_path data.bin)" "unknown"
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
 assert_deny "version-pins: denied major denied" "${out}"
 
+# Floor-only policy: a supported-but-older major (≥ minimum_supported, not denied)
+# is silent — there is no advisory "behind the target" tier.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
-assert_no_deny "version-pins: supported-behind not denied" "${out}"
-assert_ctx "version-pins: supported-behind advisory" "${out}"
+assert_no_deny "version-pins: above-floor not denied" "${out}"
+assert_empty "version-pins: above-floor silent (no advisory tier)" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 18)")")"
-assert_empty "version-pins: at/above recommended silent" "${out}"
+assert_empty "version-pins: above-floor major silent" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9)")")"
 assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
@@ -192,7 +194,7 @@ out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image:
 assert_deny "version-pins: node denied major denied" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin redis 7)")")"
-assert_no_deny "version-pins: at recommended (redis 7) not denied" "${out}"
+assert_no_deny "version-pins: at floor (redis 7) not denied" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: foo:1")")"
 assert_empty "version-pins: unknown product not enforced" "${out}"
@@ -200,7 +202,7 @@ assert_empty "version-pins: unknown product not enforced" "${out}"
 # Repo-local policy/versions.yml overrides the bundled default.
 RP="$(new_repo repoPolicy)"
 mkdir -p "${RP}/policy"
-printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    recommended: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
+printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
 out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "image: $(pin postgres 17)")")"
 assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
 
