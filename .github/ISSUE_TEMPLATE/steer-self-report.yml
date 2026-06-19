@@ -1,0 +1,56 @@
+name: steer self-report
+description: A defect in the steer plugin itself, surfaced while using it in a product repo (usually filed for you by `/steer:report`).
+title: "[steer] "
+labels: ["bug", "steer:self-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report a defect in the **steer plugin** — a contradictory skill/rule
+        instruction, a missing or broken template/script, or a recorded hook
+        fault. `/steer:report` normally fills this in for you (scrubbed). Do not
+        paste secrets, absolute paths, or product source.
+  - type: textarea
+    id: what-went-wrong
+    attributes:
+      label: What steer did wrong
+      description: The plugin defect in one or two sentences — the symptom, not a stack trace.
+    validations:
+      required: true
+  - type: input
+    id: surface
+    attributes:
+      label: Where it happened
+      description: The steer surface — skill, rule, hook, or template/script.
+      placeholder: "skill /steer:work · rule 36-issue-first · hook surface-faults.sh"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: steer version
+      description: From the SessionStart banner or plugin.json.
+      placeholder: "2.4.0"
+    validations:
+      required: true
+  - type: textarea
+    id: captured-output
+    attributes:
+      label: Captured output
+      description: Verbatim error/hook output — SCRUBBED (rewrite paths to <repo>/…, redact secrets). Leave blank if none.
+      render: text
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What steer should have done instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Minimal trigger in terms of steer surfaces, not product specifics.
+      placeholder: |
+        1. Run /steer:...
+        2. ...

@@ -51,6 +51,7 @@ shipped skill is missing here.
 | `/steer:tidy` | Sweep loose files out of the repo root into their correct home (`/spec/reference`, `/spec/design`). |
 | `/steer:conventions` | Answer tooling/convention questions and the rationale behind stack defaults. |
 | `/steer:standards` | Load the always-on operating manual on demand (for surfaces where the SessionStart hook doesn't fire). |
+| `/steer:report` | File a bug about the **steer plugin itself** upstream in `element22llc/e22-plugins` — gathers the defect (a recorded hook fault, a contradictory skill/rule, or a missing/broken template/script), scrubs it of secrets/paths/product-code, deduplicates by a stable fingerprint, and files via `gh` only on confirmation (paste-URL fallback). For plugin defects, not product bugs. |
 
 ## Internal (not user-invoked)
 
