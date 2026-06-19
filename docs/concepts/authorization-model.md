@@ -34,6 +34,14 @@ flowchart TD
 - **Pushing and opening the PR.** This is the one step that waits for the dev.
   Everything before it does not. The **PR review is the gate** — not each commit.
 
+!!! note "Watching CI is not crossing the gate"
+    After a push, `/steer:work finish` watches CI to conclusion and fixes a red
+    build before treating the work as done — that is *finishing* the work, not
+    merging. To support this without a prompt per poll, the `work` skill
+    pre-approves **read-only** CI status only (`gh pr checks`, `gh run view`,
+    `gh run watch`). `git push`, `gh pr create/edit/merge`, `gh api`, and merge
+    or deploy stay gated exactly as before.
+
 !!! note "The local boundary is advisory — the server enforces it"
     Rule `95-not-the-gate.md` is explicit that this in-session discipline cannot
     *stop* a direct push to `main`; it only governs how the agent behaves. The

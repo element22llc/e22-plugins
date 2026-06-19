@@ -13,6 +13,9 @@ allowed-tools:
   - Bash(git rev-parse *)
   - Bash(git add *)
   - Bash(git commit *)
+  - Bash(gh pr checks *)
+  - Bash(gh run view *)
+  - Bash(gh run watch *)
 ---
 <!-- steer:modes start,resume,status,finish -->
 
@@ -42,12 +45,14 @@ PR-autonomy rules; merge and deploy are never implied.**
 
 > **Pre-approved shell scope (frontmatter `allowed-tools`).** To cut repetitive
 > prompts, this skill pre-approves only read-only git inspection (`status`, `diff`,
-> `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), and the
-> Rule-45-autonomous local mutations `git add` / `git commit`. It deliberately does
+> `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), the
+> Rule-45-autonomous local mutations `git add` / `git commit`, and **read-only CI
+> status** (`gh pr checks`, `gh run view`, `gh run watch`) so the post-push CI watch
+> (see `finish`) runs without a prompt per poll. It deliberately does
 > **not** pre-approve `git push`, `gh pr create/edit/merge`, `gh api`, `gh workflow run`,
 > or destructive git (`reset --hard`, `clean -fdx`, `branch -D`) — those keep the human
-> gate. `gh` is not pre-approved at all; tracker I/O still routes through
-> `/steer:tracker-sync`.
+> gate. Only those read-only CI reads are pre-approved; every `gh` *write* stays gated,
+> and tracker I/O still routes through `/steer:tracker-sync`.
 
 ## Subcommands (distinct, idempotent)
 
@@ -74,8 +79,18 @@ PR-autonomy rules; merge and deploy are never implied.**
 - **`status #N`** — **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
-  comment); when authorized, commit/push and open-or-update the PR; transition to
-  `validate`. **Never mark `done` merely because a PR was opened.**
+  comment); when authorized, commit/push and open-or-update the PR; **then watch CI
+  to conclusion** (`gh pr checks --watch`) before transitioning. On a red build,
+  diagnose and fix it as part of the same unit of work — re-push (still
+  human-gated) and re-watch — until checks are green or a remaining failure is
+  legitimately non-blocking (and said so). Only transition to `validate` once CI is
+  green; hand the reviewer a green PR, not a running or red one. A PR-scoped failure
+  is fixed or commented on the PR, **not** filed as a tracker issue — defer to the
+  CI-failure triage in `ISSUE-WORKFLOW.md` (only a reproducible default-branch
+  failure becomes a `source:ci` bug). **Never mark `done` merely because a PR was
+  opened.** If you have stepped away, the in-turn watch blocks the turn; re-enter
+  monitoring via the harness `/loop` over `gh pr checks` or a background watch —
+  steer ships no background poller.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent — re-running a
@@ -175,7 +190,9 @@ without redefining the subcommands above:
 | Acceptance criteria not yet met | Blocking now (next transition) | Continue — `/steer:work resume #N` |
 | Required validation failing | Blocking now | Fix failures, then `/steer:work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer:work finish #N` |
-| PR open, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
+| PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: `/loop` over `gh pr checks`) |
+| PR open, CI red | Blocking now | Fix the failure, re-push, re-watch |
+| PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
 | PR merged but issue still `validate` (stale) | Blocking now | Reconcile to `done` — `/steer:work resume #N` |
 | Issue `done` | Complete | Optional: start another ready issue — `/steer:work start #N`, else `No action is currently required.` |
 
@@ -190,6 +207,8 @@ Choose one `Current recommended action` by precedence. The block recommends only
   blocks). Human content is never overwritten.
 - **Never auto-resolve product decisions or drift** — those wait for the named
   human (see `ISSUE-WORKFLOW.md`).
-- **The PR is the human gate.** Propose the PR; don't merge or deploy.
+- **The PR is the human gate.** Propose the PR; don't merge or deploy. Watching CI
+  to conclusion and fixing a red build is **finishing the work**, not crossing that
+  gate — it is expected, not a gate breach. Merge and deploy stay human-gated.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.
