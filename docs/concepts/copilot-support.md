@@ -6,11 +6,12 @@ surfaces share one source of truth and how to install and refresh the Copilot
 side.
 
 !!! note "Prototype scope"
-    Today the Copilot target is **standards-only**: it delivers the always-on
-    engineering rules. The `/steer:*` skills, the PreToolUse gate-hooks, and the
-    subagents are **not** ported yet — those are planned later phases. Copilot
-    users get the operating manual; the interactive workflows still run from
-    Claude Code.
+    The Copilot target covers the **always-on standards** (`.github/copilot-instructions.md`),
+    the **skills** (they load via Copilot's cross-tool `SKILL.md` standard), and
+    a single **gate hook** (the version-pin policy, as a soft `ask`). The
+    subagents are not ported, and skill *enforcement/invocation* differs from
+    Claude Code — see [Skills on Copilot](#skills-on-copilot) and
+    [Gate hooks on Copilot](#gate-hooks-on-copilot) for the caveats.
 
 ## Why the two surfaces differ
 
@@ -77,13 +78,49 @@ The file is **fully steer-managed** — overwritten on refresh and never
 hand-edited. Repo-specific Copilot guidance belongs in a separate
 `*.instructions.md` file, not in this one.
 
+## Skills on Copilot
+
+steer's skills are authored as `SKILL.md` files, which is an **open cross-tool
+standard** Copilot CLI reads natively. A Copilot-specific plugin manifest
+(`plugins/steer/.github/plugin/plugin.json`, which Copilot prefers over the
+`.claude-plugin/` manifest Claude Code uses) points Copilot at `skills/`, so the
+skills load. Two differences from Claude Code matter:
+
+- **Tool-permission scoping is inert.** Copilot's `SKILL.md` does not yet support
+  `allowed-tools` / `disallowed-tools` (an open cross-tool proposal at the time of
+  writing). steer's read-only skills rely on `disallowed-tools` to guarantee they never
+  write; on Copilot that guard is **ignored**. Treat those skills as advisory
+  there — they will not be hard-prevented from editing.
+- **Bodies are Claude-centric.** Skill instructions reference
+  `${CLAUDE_PLUGIN_ROOT}` paths and `/steer:<skill>` invocation. On Copilot they
+  run through Copilot's own skill activation; the workflow intent carries over,
+  but exact invocation and any plugin-root file reads may differ.
+
+## Gate hooks on Copilot
+
+The Copilot manifest points hooks at a **Copilot-native** file
+(`hooks/copilot-hooks.json`) rather than letting Copilot fall back to Claude's
+`hooks/hooks.json` — important because Copilot's `preToolUse` hooks are
+**fail-closed** (a hook that errors *denies* the tool), so a mis-run Claude hook
+could block edits.
+
+Only the **version-pin policy** gate is ported so far, and as a soft **`ask`**
+(Copilot prompts you to confirm) rather than Claude's hard `deny`. The same
+`check-version-pins.sh` logic runs on both surfaces; it emits Copilot's flat
+`permissionDecision` envelope when invoked with `STEER_HOOK_TARGET=copilot`. The
+advisory spec-first / issue-first nudges are **not** ported as hooks (Copilot's
+`preToolUse` cannot inject non-blocking context); their intent is carried by the
+standards in `.github/copilot-instructions.md`.
+
 ## Known limitations
 
-- **Standards only.** Skills, gate-hooks, and agents are not available on Copilot
-  yet. References to `/steer:*` skills inside the standards describe the Claude
-  Code workflow; on Copilot they are context, not runnable commands.
-- **Manual refresh.** Unlike Claude Code's live injection, the Copilot file must
-  be regenerated after a plugin update (see above).
-- **Hooks are not relied upon.** Copilot's plugin hooks are Preview and can be
-  disabled by org policy, so the standards delivery deliberately does not depend
-  on them.
+- **Subagents not ported.** The `steer-reviewer` agent is Claude-only.
+- **Skill enforcement/invocation differs.** See [Skills on Copilot](#skills-on-copilot)
+  — tool-permission scoping is inert and skill bodies are Claude-centric.
+- **One gate only, soft.** Only the version-pin gate is ported, as `ask`. Other
+  gates live in the standards text, not as hooks.
+- **Manual refresh.** Unlike Claude Code's live injection, the Copilot
+  instructions file must be regenerated after a plugin update (see above).
+- **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled
+  by org policy, so the standards delivery never depends on them; the Copilot
+  hook is hardened to fail **open** (it can never block an edit on error).

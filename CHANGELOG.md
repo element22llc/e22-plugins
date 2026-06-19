@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** GitHub Copilot CLI target — skills + a gate hook (Phase 2). A
+  Copilot-specific plugin manifest (`plugins/steer/.github/plugin/plugin.json`,
+  which Copilot prefers over `.claude-plugin/`) loads steer's skills via the
+  cross-tool `SKILL.md` standard and points hooks at a Copilot-native
+  `hooks/copilot-hooks.json` — so Copilot no longer falls back to Claude's
+  `hooks/hooks.json` (whose fail-closed `preToolUse` semantics could otherwise
+  block edits). The version-pin policy gate is ported as a soft `ask`:
+  `check-version-pins.sh` emits Copilot's flat `permissionDecision` envelope when
+  invoked with `STEER_HOOK_TARGET=copilot`, leaving the Claude `deny` path
+  untouched. Skill tool-permission scoping (`allowed-tools`/`disallowed-tools`)
+  is inert on Copilot and skill bodies remain Claude-centric — documented in
+  `docs/concepts/copilot-support.md`. Subagents are not ported.
 - **Added:** GitHub Copilot CLI target (prototype, standards-only). The org
   engineering standards now reach Copilot CLI users as a generated
   `.github/copilot-instructions.md`, concatenated from the same

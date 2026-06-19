@@ -85,7 +85,18 @@ if [ -n "${DENY}" ]; then
 	# against malformed JSON if that prose ever gains a quote, not a live bug.
 	SAFE_DENY="$(printf '%s' "${DENY}" | tr -d '"\\')"
 	REASON="Version-pin policy violation — ${SAFE_DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
-	printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
+	# Output envelope is harness-specific. Claude PreToolUse takes a hard "deny"
+	# wrapped in hookSpecificOutput. GitHub Copilot CLI (registered under the
+	# PascalCase `PreToolUse` event, which feeds the same tool_name/tool_input
+	# shape this hook already parses) takes a flat decision object — and we emit
+	# "ask" rather than "deny": Copilot's preToolUse is fail-closed and the
+	# feature is Preview, so the gate surfaces for confirmation instead of
+	# silently hard-blocking the edit. Default (unset) is the Claude path.
+	if [ "${STEER_HOOK_TARGET:-claude}" = "copilot" ]; then
+		printf '{"permissionDecision":"ask","permissionDecisionReason":"%s"}\n' "${REASON}"
+	else
+		printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "${REASON}"
+	fi
 	exit 0
 fi
 
