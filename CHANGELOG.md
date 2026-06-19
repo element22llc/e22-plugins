@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** GitHub Copilot CLI target (prototype, standards-only). The org
+  engineering standards now reach Copilot CLI users as a generated
+  `.github/copilot-instructions.md`, concatenated from the same
+  `plugins/steer/rules/` that Claude Code receives via the SessionStart hook —
+  Copilot has no context-injecting hook, so the rules ship as its primary
+  always-on custom-instructions file (chosen over `AGENTS.md`, which Copilot
+  merges with `CLAUDE.md` and which Claude Code ignores). New
+  `scripts/gen_copilot_instructions.py` (+ `mise run gen:copilot`) builds the
+  committed artifact under `templates/github/`; `scripts/check_copilot_instructions.py`
+  (wired into `plugin-check`) fails the build if it drifts from the rules.
+  `/steer:init` and `/steer:adopt` install it (overwrite-managed); a Copilot
+  marketplace manifest lands at `.github/plugin/marketplace.json` (steer only).
+  Skills, gate-hooks, and agents are deferred to later phases.
 - **Changed:** `/steer:work finish` now watches CI to conclusion after pushing
   (`gh pr checks --watch`) and fixes a red build as part of the same unit of work,
   rather than stopping at PR-open. The agent hands the reviewer a green PR instead
