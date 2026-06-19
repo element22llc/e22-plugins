@@ -129,7 +129,12 @@ PR'd. Use it to see what a full sync would do.
    ```
 
    This is the **content**-level merge (permission lists, companion-plugin
-   entries, config keys). The plugin-*enablement* wiring inside
+   entries, config keys). For the `permissions` block it also **de-conflicts
+   across precedence tiers** (deny > ask > allow): a pattern that would end up
+   in two tiers — e.g. a locally allow-listed `Bash(git push)` meeting the
+   template's `ask` copy — is kept only in its most-restrictive tier, so the
+   merge never leaves a contradictory `allow`+`ask` pair (a `-` line in the
+   delta shows the dropped copy). The plugin-*enablement* wiring inside
    `.claude/settings.json` — the `steer@e22-plugins` marker — is separately
    verified by capability repair (step 6); both are additive and the merge here
    never flips an existing value, so a deliberate `"steer@e22-plugins": false`

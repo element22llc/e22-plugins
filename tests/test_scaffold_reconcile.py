@@ -111,6 +111,119 @@ def test_invalid_existing_json_exits_3_without_clobber(tmp_path: Path):
     assert existing.read_text(encoding="utf-8") == before
 
 
+# --- permission-tier de-confliction ---------------------------------------
+
+
+def test_permission_merge_does_not_duplicate_across_tiers(tmp_path: Path):
+    # The real-world bug: a repo locally allow-listed `git push`; the template
+    # carries it in `ask`. A plain union would leave it in BOTH. It must end up
+    # only in the more-restrictive tier (ask), and be removed from allow.
+    existing = tmp_path / "settings.json"
+    existing.write_text(
+        json.dumps(
+            {
+                "permissions": {
+                    "allow": ["Bash(git add:*)", "Bash(git push)", "Bash(git push origin:*)"],
+                    "ask": [],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    template = tmp_path / "template.json"
+    template.write_text(
+        json.dumps({"permissions": {"ask": ["Bash(git push)", "Bash(git push origin:*)"]}}),
+        encoding="utf-8",
+    )
+
+    assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
+    perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
+    assert "Bash(git push)" not in perms["allow"]
+    assert "Bash(git push origin:*)" not in perms["allow"]
+    assert "Bash(git add:*)" in perms["allow"]  # unrelated allow entry untouched
+    assert "Bash(git push)" in perms["ask"]
+    assert "Bash(git push origin:*)" in perms["ask"]
+
+
+def test_permission_heals_preexisting_conflict_even_with_no_template_additions(tmp_path: Path):
+    # A repo already in the contradictory state (git push in allow AND ask) is
+    # healed on the next reconcile, even when the template contributes nothing.
+    conflicted = {
+        "permissions": {
+            "allow": ["Bash(git push)"],
+            "ask": ["Bash(git push)"],
+        }
+    }
+    existing = tmp_path / "settings.json"
+    existing.write_text(json.dumps(conflicted), encoding="utf-8")
+    template = tmp_path / "template.json"
+    template.write_text(json.dumps(conflicted), encoding="utf-8")
+
+    assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
+    perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
+    assert perms["allow"] == []  # dropped from the lower-precedence tier
+    assert perms["ask"] == ["Bash(git push)"]  # kept in the tier that governs
+
+
+def test_permission_deny_beats_ask_and_allow(tmp_path: Path):
+    existing = tmp_path / "settings.json"
+    existing.write_text(
+        json.dumps(
+            {
+                "permissions": {
+                    "allow": ["Bash(rm -rf:*)"],
+                    "ask": ["Bash(rm -rf:*)"],
+                    "deny": ["Bash(rm -rf:*)"],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    template = tmp_path / "template.json"
+    template.write_text(json.dumps({"permissions": {}}), encoding="utf-8")
+
+    assert sr.main(["json", str(existing), str(template), "--apply"]) == 0
+    perms = json.loads(existing.read_text(encoding="utf-8"))["permissions"]
+    assert perms["deny"] == ["Bash(rm -rf:*)"]
+    assert perms["ask"] == []
+    assert perms["allow"] == []
+
+
+def test_permission_conflict_reported_in_check_mode_read_only(tmp_path: Path, capsys):
+    conflicted = {"permissions": {"allow": ["Bash(git push)"], "ask": ["Bash(git push)"]}}
+    existing = tmp_path / "settings.json"
+    existing.write_text(json.dumps(conflicted), encoding="utf-8")
+    template = tmp_path / "template.json"
+    template.write_text(json.dumps(conflicted), encoding="utf-8")
+
+    before = existing.read_text(encoding="utf-8")
+    rc = sr.main(["json", str(existing), str(template)])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "permissions.allow[]" in out and "Bash(git push)" in out  # delta reported
+    assert existing.read_text(encoding="utf-8") == before  # check mode never writes
+
+
+def test_permission_no_conflict_is_silent(tmp_path: Path, capsys):
+    # Distinct patterns across tiers are not touched and produce no delta.
+    payload = json.dumps(
+        {
+            "permissions": {
+                "allow": ["Bash(git add:*)"],
+                "ask": ["Bash(git push)"],
+                "deny": ["Bash(git push*--force*)"],
+            }
+        }
+    )
+    existing = tmp_path / "settings.json"
+    template = tmp_path / "template.json"
+    existing.write_text(payload, encoding="utf-8")
+    template.write_text(payload, encoding="utf-8")
+
+    assert sr.main(["json", str(existing), str(template)]) == 0
+    assert capsys.readouterr().out == ""
+
+
 # --- gitignore merge ------------------------------------------------------
 
 

@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:sync` (and `/steer:adopt`) no longer produces a
+  contradictory `.claude/settings.json` where the same permission pattern lands
+  in two precedence tiers — e.g. `Bash(git push)` in both `allow` and `ask`.
+  The `scripts/scaffold_reconcile.py` JSON merge unioned each permission list
+  independently, so when a repo had locally allow-listed `git push` and the
+  template carries it in `ask`, the merge appended to `ask` while leaving the
+  `allow` copy in place. The reconcile now de-conflicts the `permissions`
+  block after merging: each pattern is kept only in its most-restrictive tier
+  (precedence **deny > ask > allow**) and dropped from the others. This both
+  prevents a sync from manufacturing the contradiction and heals one already on
+  disk; effective behavior is unchanged because the surviving tier is the one
+  that already governed.
 - **Fixed:** the bundled `scripts/scan-version-pins.sh` no longer fails an
   adopting repo's own `ci` shellcheck step. The policy-violation message embeds
   the literal markdown `` `# steer:allow-pin <reason>` `` whose backticks tripped
