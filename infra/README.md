@@ -10,9 +10,11 @@ ai.element-22.com (Route 53, this code)
                  └─ served through Cloudflare edge, gated by Cloudflare Access
 ```
 
-Everything Cloudflare-side (the Pages project, the custom domain, the Access
-application, and the GitHub identity provider) is **click-ops in the Cloudflare
-dashboard** — see [Cloudflare runbook](#cloudflare-runbook-one-time) below.
+The Pages project and custom domain are **click-ops in the Cloudflare
+dashboard**; the Access application + email policy are automated in the
+`live/access` unit. Login uses Cloudflare's built-in **One-time PIN** — no
+identity provider or OAuth app to register. See
+[Cloudflare runbook](#cloudflare-runbook-one-time) below.
 
 ## Prerequisites
 
@@ -42,7 +44,7 @@ infra/
     │   └── main.tf            # zone lookup + aws_route53_record CNAME
     └── access/                # Cloudflare Access (cloudflare provider, overrides aws)
         ├── terragrunt.hcl     # include "root" + cloudflare provider + inputs from env
-        └── main.tf            # GitHub IdP + email policy + self-hosted Access app
+        └── main.tf            # email policy + self-hosted Access app (OTP login)
 ```
 
 > The root config is named `root.hcl` (not `terragrunt.hcl`) — Terragrunt now
@@ -61,7 +63,7 @@ mise run tf:plan       # preview the CNAME change
 mise run tf:apply      # create/update the CNAME
 
 mise run cf:access:plan   # preview the Cloudflare Access setup (live/access)
-mise run cf:access:apply  # create the GitHub IdP + email policy + Access app
+mise run cf:access:apply  # create the email policy + self-hosted Access app (OTP login)
 ```
 
 The CNAME target is the `pages_hostname` input in
@@ -100,12 +102,12 @@ Access is enforced at Cloudflare's **edge against a hostname** — there is no
   `200` fails the task. Run it in CI or before cutover to prove the site isn't
   exposed.
 
-- **Login path (can an `@element-22.com` GitHub user get in?)** — browser only.
-  Open the URL in an **incognito** window and complete the GitHub login; CLIs
-  can't drive the interactive OAuth flow. To rehearse this without touching
-  production, enable **Settings → General → Enable access policy** on the Pages
-  project (it protects only the preview `*.pages.dev` deployments), then test
-  against the `cf:deploy:preview` URL.
+- **Login path (can a staff user get in?)** — browser only. Open the URL in an
+  **incognito** window, enter a staff email, and complete the One-time PIN that
+  Cloudflare emails; CLIs can't drive the interactive flow. To rehearse this
+  without touching production, enable **Settings → General → Enable access
+  policy** on the Pages project (it protects only the preview `*.pages.dev`
+  deployments), then test against the `cf:deploy:preview` URL.
 
 ## Cloudflare runbook (one-time)
 
@@ -127,15 +129,13 @@ Do these in the Cloudflare dashboard, in order:
    Access API stays closed until the org is onboarded once. Terraform's
    `cloudflare_zero_trust_organization` only manages an *already-enabled* org, so
    it can't bootstrap this.
-4. **GitHub OAuth app** — github.com → Settings → Developer settings → OAuth Apps
-   → New. Authorization callback URL:
-   `https://<team>.cloudflareaccess.com/cdn-cgi/access/callback` (the team name
-   from step 3). Put the client ID + secret in `infra/.env`
-   (`GITHUB_OAUTH_CLIENT_ID` / `_SECRET`).
-5. **GitHub IdP + Access app + policy** — **automated** in the `live/access` unit
-   (`mise run cf:access:apply`). It creates the GitHub identity provider, a
-   self-hosted Access app on `ai.element-22.com` pinned to GitHub login, and an
-   **Include → emails ending `@element-22.com`** policy. No dashboard clicks.
+4. **Access app + policy** — **automated** in the `live/access` unit
+   (`mise run cf:access:apply`). It creates a self-hosted Access app on
+   `ai.element-22.com` and an **Include → emails ending `@<email_domain>`**
+   policy. No identity provider or OAuth app is needed: with no SSO IdP
+   configured, Access uses its built-in **One-time PIN** flow — Cloudflare emails
+   a code to the address the user enters, and only addresses matching the policy
+   are admitted. No dashboard clicks beyond enabling Access (step 3).
 
 ### GitHub secrets for the deploy workflow
 
@@ -146,10 +146,11 @@ Add under repo Settings → Secrets and variables → Actions:
 
 ## Notes / gotchas
 
-- The `@element-22.com` Access policy matches the email GitHub returns. A user
-  whose GitHub primary email is private (`…@users.noreply.github.com`) won't
-  match — they must expose a verified `@element-22.com` email on GitHub, or you
-  add a One-Time-PIN fallback rule.
+- Login is Cloudflare's built-in **One-time PIN**: the user types their email,
+  Cloudflare emails a 6-digit code, and the Include policy admits only addresses
+  ending in `@<email_domain>`. No OAuth app or identity provider to maintain. The
+  tradeoff vs. SSO is an emailed code instead of a one-click button; the
+  `session_duration` (24h) means roughly one code per day, not per page load.
 - The `element-22.com` zone stays in Route 53; we do **not** delegate NS to
   Cloudflare. Access works over the external CNAME because the Pages custom
   domain is served through Cloudflare's edge.
