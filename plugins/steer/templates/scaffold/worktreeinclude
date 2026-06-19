@@ -1,0 +1,22 @@
+# .worktreeinclude — git-ignored local files Claude Code copies into each
+# `claude --worktree`. Worktrees start from git refs only, so anything not
+# committed (your local .env, per-user config) is absent unless listed here.
+# Patterns use .gitignore syntax and must match files that ARE git-ignored.
+# Keep this to boot-critical local config; regenerable caches, virtualenvs,
+# and build output should NOT be listed (they rebuild in the worktree).
+# See the steer rule "Secrets handling".
+
+# Local env / secrets the app needs to boot (mirrors .gitignore)
+.env
+.env.local
+.env.*.local
+
+# Nested env for monorepo apps + infra
+apps/*/.env
+apps/*/.env.local
+infra/.env
+infra/.env.local
+
+# mise machine overrides + per-user Claude Code settings
+.mise.local.toml
+.claude/settings.local.json
