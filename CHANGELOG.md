@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.8.1
 
 - **Fixed:** `/steer:build` referenced the spec-framework reference with a
   lowercase filename (`templates/reference/spec-framework.md`); the file on disk
