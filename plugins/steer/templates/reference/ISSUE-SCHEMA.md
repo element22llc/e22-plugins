@@ -104,10 +104,11 @@ Inside the managed block, use these headings exactly (skip ones that don't
 apply; never rename them). Per kind:
 
 - **feature / task** — `Outcome` · `User value` · `Scope` · `Out of scope` ·
-  `Acceptance criteria` · `Open questions` · `Spec references` · `Validation`.
+  `Acceptance criteria` · `Open questions` · `Spec references` · `Related issues` ·
+  `Validation`.
 - **bug** — `Problem` · `Observed behavior` · `Expected behavior` ·
   `Reproduction` · `Evidence` · `Acceptance criteria` · `Technical findings` ·
-  `Spec references` · `Validation`.
+  `Spec references` · `Related issues` · `Validation`.
 - **finding** — `Finding` · `Evidence` · `Standard missed` · `Impact` ·
   `Suggested remediation` · `Origin`.
 - **spec-question** — `Question` · `Why this matters` · `Affected specifications`
@@ -118,6 +119,31 @@ apply; never rename them). Per kind:
 
 The body templates in [`../github/issue-bodies/`](../github/issue-bodies/) are
 the canonical starting shapes for the agent-generated kinds.
+
+### `Related issues` — cross-references to other issues
+
+`Related issues` holds connections this issue has to **other issues** that are
+not parent/sub-issue links. Each line is `#N — <relationship> (<one-line why>)`,
+where `<relationship>` is an `issue_relationship` value (`ENUMS.md`). Because each
+line mentions `#N`, GitHub auto-creates the backlink on the other issue — the
+relationship word is workflow-owned metadata layered on top of an ordinary
+cross-reference, since GitHub has no native typed relationship beyond
+parent/sub-issue. Example:
+
+```text
+## Related issues
+
+- #42 — conflicts-with (a `better-auth` migration would supersede the Cognito
+  hosting decision proposed here; a human must reconcile)
+- #18 — depends-on (auth provider must be chosen before hosting is finalized)
+```
+
+The section lives **inside the managed block**, so it is rewritten idempotently
+like any other managed heading. It is **omitted entirely when there are no related
+issues** — never emit an empty `Related issues` stub. Parent/sub-issue
+relationships do **not** go here (they use native links / `Spec references` ·
+`Parent: #N`); a `conflicts-with` line is **surfaced for a human**, never treated
+as resolved.
 
 ## Taxonomy — Type × kind × source
 

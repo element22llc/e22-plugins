@@ -77,9 +77,14 @@ confirms first*. Skills and hooks **reference this block; none restates it.**
    feature-id, no architecture. Enters `inbox`. (`/steer:issues capture` can also
    open one from a conversation, prototype, or screenshot.)
 2. **Brainstorm** — `/steer:issues brainstorm #N` reads the issue and related
-   specs, finds overlaps, asks focused questions, and maintains **one** editable
-   "AI synthesis" comment (proposed outcome + boundaries). The issue body stays
-   human-owned.
+   specs, **searches the existing issue corpus (open + closed) for overlapping,
+   dependent, or conflicting issues** — e.g. a hosting decision that a pending
+   auth-migration issue would invalidate — records those connections under the
+   issues' `Related issues` headings (`/steer:tracker-sync link-related`), asks
+   focused questions, and maintains **one** editable "AI synthesis" comment
+   (proposed outcome + boundaries + the related-issue cluster). Conflicts and
+   supersessions are **surfaced for a human**, never auto-resolved. The issue body
+   stays human-owned.
 3. **Product validation** — the PO approves intent, answers questions, rejects
    assumptions, attaches design sources, in GitHub. Moves to `ready-for-spec`.
 4. **Materialize** — `/steer:issues materialize #N` writes/updates
