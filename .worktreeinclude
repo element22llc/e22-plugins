@@ -1,0 +1,6 @@
+# .worktreeinclude — git-ignored local files Claude Code copies into each
+# `claude --worktree` of this repo. Worktrees start from git refs only, so
+# these per-user locals are absent unless listed here. The .venv, .codegraph
+# index, and other caches are deliberately omitted — they rebuild on demand.
+.claude/settings.local.json
+.mcp.json

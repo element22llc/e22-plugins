@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Bootstrapped repos now work in Claude Code worktrees out of the box.** The
+  scaffold ships a `.worktreeinclude` (installs at the repo root) listing the
+  git-ignored local config — `.env` / `.env.local` / nested `apps/*/.env` /
+  `infra/.env`, `.mise.local.toml`, `.claude/settings.local.json` — that Claude
+  Code copies into each `claude --worktree`. Worktrees start from git refs only,
+  so without it the app couldn't boot in a worktree (no `DATABASE_URL`, no local
+  secrets). The scaffold `.gitignore` now also ignores `.claude/worktrees/` so
+  those linked working trees don't show as untracked in the parent repo, and the
+  "Secrets handling" rule notes that `.worktreeinclude` is what preserves the
+  git-ignored-`.env` boot guarantee under `--worktree`. `MANIFEST.md` maps the
+  new file, and `scaffold-reconcile.py` now recognizes `.worktreeinclude` as a
+  line-based file so an existing one is merged additively (append missing
+  patterns, never clobber) — same as `.gitignore`.
+
 - **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
   records its local marker as `spec/.work/<branch>.md` (was an extensionless,
   content-free file) with a newest-first list of the Claude Code session(s) that
