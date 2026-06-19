@@ -62,6 +62,7 @@ is in sync. Write them under `## Open questions` like this:
 ```md
 ### Q-001 — Should archived records be shown by default?
 
+- created: 2026-06-19     # YYYY-MM-DD the question was first raised (optional; drives staleness)
 - status: open            # open | investigating | resolved | deferred | cancelled
 - impact: blocking        # blocking | non-blocking
 - owner: product          # product | development | design | security | shared
@@ -79,6 +80,14 @@ keep-vs-promote test is in [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md). Resolving a
 question means writing the answer into the spec's normative prose, not leaving it
 only in the `_Resolution:_` line or the issue.
 
+`created:` is **optional** — stamp it (with today's date) when you write a new
+question so staleness can be measured; the SessionStart open-questions hook
+escalates a **blocking** question still open after `STEER_QUESTION_STALE_DAYS`
+(14) so it can't rot unseen. When `created:` is absent the hook falls back to the
+line's `git blame` date, so older questions still get an age. `owner:` is the role
+that should decide; on promotion it resolves to a GitHub assignee via the
+`## Owners` map in `spec/tracker.md` (see [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md)).
+
 ### Spec validation (`/steer:spec validate`)
 
 A local, GitHub-independent structural check over the question contract — the
@@ -90,7 +99,11 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   `open` (the closed-issue / stale-spec trap);
 - a **promoted** question (referenced by an open `spec-question` issue) with no
   `tracker:` ref back;
-- a `resolved` question with no recorded resolution folded into the spec.
+- a `resolved` question with no recorded resolution folded into the spec;
+- a `created:` field present but not a well-formed `YYYY-MM-DD` date (**fails**);
+- a `blocking` question stale past `STEER_QUESTION_STALE_DAYS` (14) with no
+  `tracker:` ref — not yet promoted (**warns**, mirroring the closed-issue trap:
+  it nudges you to promote or defer, it does not block the gate).
 
 `validate` runs at `/steer:spec approve` and is called by `/steer:issues`
 (`materialize`, `status`, `reconcile`) and `/steer:drift`; a spec-changing PR

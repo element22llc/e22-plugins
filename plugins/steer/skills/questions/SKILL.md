@@ -52,7 +52,11 @@ drift, not just consumes it.
 
 A SessionStart hook (`check-open-questions.sh`) counts outstanding open
 questions and surfaces the backlog every session, so it can't quietly
-accumulate — this skill is how you act on that nudge and clear it.
+accumulate — this skill is how you act on that nudge and clear it. The hook also
+**escalates a blocking question still open after 14 days** (measured from its
+`created:` date, or the heading's `git blame` date when absent) with its own
+loud line — that is the cue to promote it to a named owner (step 6) or defer it
+with a reason (step 7).
 
 ## Steps
 
@@ -105,8 +109,15 @@ accumulate — this skill is how you act on that nudge and clear it.
 
 3. **Present a worklist.** Print a consolidated table — **product-level
    (`vision.md`) first**, then per feature — with the source file and the
-   question. If there are none, say so and stop. Don't bury the list; this is
+   question. Flag any the SessionStart hook escalated as **stale** (blocking,
+   open >14 days) — those jump the queue: promote (step 6) or defer (step 7).
+   If there are none, say so and stop. Don't bury the list; this is
    the artifact the PO/dev acts on.
+
+   **Stamp `created:` as you go.** Any question you newly raise gets
+   `created: <today>` so its age is tracked. A pre-existing question missing
+   `created:` is left blank, *not* back-stamped to today — back-stamping would
+   reset its clock and hide the rot; the hook ages it from `git blame` instead.
 
 4. **Triage: code-fact vs human-decision (do this before any investigation).**
    In a reverse-engineered spec (`/steer:adopt`), most open questions are *factual
@@ -173,12 +184,20 @@ accumulate — this skill is how you act on that nudge and clear it.
      itself auto-apply, not a fresh ask.
    - A question that needs a **named owner, blocks multiple features, needs
      stakeholder/research input, or could outlive the session** → promote it to a
-     tracker item (the keep-vs-promote test is in `ISSUE-WORKFLOW.md`). Keep the
+     tracker item (the keep-vs-promote test is in `ISSUE-WORKFLOW.md`). **A
+     blocking question the SessionStart hook flagged as stale (open >14 days)
+     has, by that fact, outlived the session — promote it now** rather than
+     letting it rot another cycle. Keep the
      structured `Q-NNN` in the spec and set its `tracker:` field to the ref —
      don't delete the question; the issue carries the same id via
      `<!-- steer:question-id=Q-NNN -->`. On a GitHub tracker, **`/steer:issues`**
      (routing through `/steer:tracker-sync`) opens the `spec-question` issue; on
      other trackers, file it per `/spec/tracker.md` and write the ref back.
+     **Assign the owner:** resolve the question's `owner:` role to a GitHub login
+     via the `owners:` map in `/spec/tracker.md` and assign the issue to it
+     (`owner: shared` → product **and** development; a blank/missing row → leave
+     unassigned with `needs:triage`; never fabricate a login). The
+     role→login table is in `ISSUE-WORKFLOW.md`.
      **Reconciliation floor:** a promoted question must carry its ref, and once
      its issue is answered/closed the decision must be folded into the spec's
      normative prose — a closed issue with a still-`open` question is a
@@ -210,6 +229,7 @@ questions just swept (locality rule).
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
+| Blocking question stale (open >14d), not promoted | Blocking now | Promote it — `/steer:issues` opens a `spec-question` issue assigned to its `owner` via the tracker.md map |
 | Open question still `impact: blocking` | Blocking now | Route to its `owner` (product/dev/design/security) for a decision (no command) |
 | Genuine unmade product/architecture decision left open | Human decision required | The owning human decides (no command) |
 | All blocking questions resolved | Recommended | Re-check the spec gate — `/steer:spec validate` |

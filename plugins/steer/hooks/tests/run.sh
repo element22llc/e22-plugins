@@ -472,6 +472,49 @@ printf '> Status: draft\n\n## Open questions\n\n- [ ] a real legacy question\n' 
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ8}" oq8)")"
 oq_grep "open-questions: legacy checkbox still detected" 'open question' "${out}"
 
+# Staleness escalation (STEER_TODAY pins "today" for hermetic age math; sentinel
+# created dates make the threshold decision deterministic on any run date).
+oq_ngrep() { printf '%s' "$3" | grep -q "$2" && bad "$1 (unexpected: $3)" || ok; }
+
+# Blocking question created long ago, not promoted -> escalated as rotted.
+OQ9="$(oq_repo oq9 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — old\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+} >"${OQ9}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ9}" oq9)")"
+oq_grep "open-questions: stale blocking question escalated" 'rotted' "${out}"
+
+# Same question but created in the future -> aged negative -> NOT escalated
+# (still fires the normal blocking-now notice, just no rot line).
+OQ10="$(oq_repo oq10 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — future\n- created: 2099-12-31\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+} >"${OQ10}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ10}" oq10)")"
+oq_ngrep "open-questions: fresh question not escalated" 'rotted' "${out}"
+
+# Stale but already promoted (has tracker: ref) -> on someone's plate -> NOT escalated.
+OQ11="$(oq_repo oq11 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — promoted\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- tracker: #42\n'
+} >"${OQ11}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ11}" oq11)")"
+oq_ngrep "open-questions: promoted stale question not re-escalated" 'rotted' "${out}"
+
+# Missing created: with no usable git (fake .git) -> blame fails open: counted as
+# blocking-now, never crashes, no rot line.
+OQ12="$(oq_repo oq12 f)"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 — no created\n- status: open\n- impact: blocking\n- owner: development\n- required_before: intent-approval\n- tracker:\n'
+} >"${OQ12}/spec/features/f/intent.md"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ12}" oq12)")"
+oq_grep "open-questions: missing-created still counted (blame fail-open)" 'block work now' "${out}"
+oq_ngrep "open-questions: missing-created not escalated when git unavailable" 'rotted' "${out}"
+
 # ---------------------------------------------------------------------------
 # orient-session.sh — natural-language orientation (SessionStart, managed only)
 # (emits plain markdown wrapped into additionalContext by the harness — assert on

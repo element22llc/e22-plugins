@@ -34,6 +34,7 @@ A customer record: name, email, created date.
 
 ### Q-001 — Which columns belong in the export?
 
+- created: 2026-06-19
 - status: open
 - impact: non-blocking
 

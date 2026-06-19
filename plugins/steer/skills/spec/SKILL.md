@@ -108,7 +108,13 @@ Flag each of these, citing the `Q-NNN` and file:
 - ⚠ a question with a `tracker:` ref whose issue is **closed** but whose
   `status:` is still `open` — the closed-issue / stale-spec trap;
 - ✗ a **promoted** question (an open `spec-question` issue references its
-  `question-id`) with no `tracker:` ref back.
+  `question-id`) with no `tracker:` ref back;
+- ✗ a `created:` field present but not a well-formed `YYYY-MM-DD` date (the
+  staleness clock can't read it);
+- ⚠ a `blocking` question open past the staleness threshold (14 days from
+  `created:`) with no `tracker:` ref — not yet promoted. This **warns**, it does
+  not block: it mirrors the SessionStart hook's escalation, nudging you to
+  promote (assign its owner via the tracker.md map) or defer with a reason.
 
 The closed-issue check needs the tracker; when GitHub is unavailable, run the
 GitHub-independent checks and **say** the tracker-coupled ones were skipped —

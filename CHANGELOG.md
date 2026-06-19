@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** an optional `created: YYYY-MM-DD` field on the `### Q-NNN`
+  open-question contract (spec-framework, `feature-intent.md` / `vision.md`
+  seeds, `ENUMS.md`). It records when a question was raised so staleness can be
+  measured; it stays optional — when absent, the SessionStart hook ages the
+  question from its heading's `git blame` date instead.
+- **Changed:** the `check-open-questions.sh` SessionStart hook now **escalates a
+  stale question** — a `blocking`, still-open, un-promoted question older than 14
+  days gets its own loud line naming the feature, `Q-NNN`, owner role, and age,
+  so it can't rot unseen. Age math runs in awk (days-from-civil) so it never
+  depends on GNU-only `date -d`; `STEER_TODAY` overrides "today" for tests. The
+  hook only *detects* staleness — issue creation stays on the human-gated
+  `/steer:questions → /steer:issues` path.
+- **Changed:** promoting a spec question now resolves its `owner:` role to a
+  GitHub assignee via a new `owners:` map in `spec/tracker.md` (`shared` → product
+  **and** development; a blank row → unassigned + `needs:triage`). `/steer:questions`
+  treats hook-flagged staleness as a promotion trigger; `/steer:spec validate`
+  fails a malformed `created:` and warns on a stale un-promoted blocking question.
 - **Fixed:** the scaffold's `policy/branch-protection.yml` is now byte-locked to
   the plugin's bundled copy. It was already shipped as a verbatim duplicate but,
   unlike `policy/versions.yml` and the two version-pin scripts, was missing from
