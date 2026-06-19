@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** hardened greenfield bootstrap precedence so a **prototype** can no
+  longer be read as an escape hatch from the bundled scaffold and `/spec` spine.
+  The observed failure: a brand-new repo with the plugin active, asked for a
+  "quick prototype", got a from-scratch `package.json` / `vite.config` / `tsconfig`
+  and **no** `mise.toml` / `compose.yaml` / CI / PR template and no `/spec` — the
+  session treated its own "quick prototype" framing as license to skip bootstrap
+  entirely. Both bootstrap hooks had fired correctly; the gap was that nothing
+  refuted the "prototypes are exempt" reading, and every nudge framed the harm as
+  "skipping the spec" rather than "hand-rolling scaffold-equivalent files instead
+  of installing the bundled scaffold." Now the router rule (`00-router.md`) and
+  the Spec-workflow rule (`30-spec-workflow.md`) state explicitly that
+  "prototype" / "quick" / "throwaway" relax spec *depth* and *ceremony*, never
+  *whether* the bundled scaffold and `/spec` spine exist; both bootstrap hooks
+  (`check-unmanaged-repo.sh`, `check-code-before-spec.sh`) now name the scaffold
+  dimension and the prototype non-exemption in the context they inject; and the
+  `build` skill's "Prototype/local mode" bullet spells out that it relaxes only
+  issue/PR/approval ceremony, not the scaffold or spine.
 - **Added:** GitHub Copilot CLI target — skills + a gate hook (Phase 2). A
   Copilot-specific plugin manifest (`plugins/steer/.github/plugin/plugin.json`,
   which Copilot prefers over `.claude-plugin/`) loads steer's skills via the
