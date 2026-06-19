@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.7.0
 
 - **Scaffolded repos now ship Dependabot, and steer manages the PRs.** New
   `.github/dependabot.yml` (`github-actions` live; `npm`/`pip`/`docker` blocks
