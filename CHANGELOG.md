@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** bumped the GitHub Actions pinned in the scaffold workflow templates
+  to current majors — `actions/checkout` `@v6` → `@v7` (`ci.yml`, `claude.yml`) and
+  `dependabot/fetch-metadata` `@v2` → `@v3` (`dependabot-auto-merge.yml`). Both are
+  runtime-only majors (Node 24 runner); no input/output contract change, so
+  consumer repos that re-scaffold pick up supported action versions. (`mise-action@v4`,
+  `create-github-app-token@v3`, and `claude-code-action@v1` were already current.)
 - **Changed:** the version-pin policy is now a pure **EOL floor**. Dropped the
   `recommended` field from `policy/versions.yml` and the advisory ("supported but
   behind the target") verdict from the hook and `version-policy.sh`. The
