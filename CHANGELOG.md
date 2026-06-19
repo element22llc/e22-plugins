@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.6.0
 
 - **`/steer:work start` now self-assigns the issue to you.** Claiming an issue
   assigns the invoking GitHub user (self-assign) alongside the existing
