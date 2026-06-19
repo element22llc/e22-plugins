@@ -5,6 +5,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **`/steer:work start` now self-assigns the issue to you.** Claiming an issue
+  assigns the invoking GitHub user (self-assign) alongside the existing
+  `steer:claimed-by` marker and `in-progress` transition, so the accountable
+  human is visible on the tracker without a manual `gh issue edit`. The
+  `tracker-sync` `assign/claim` op makes this explicit: the default subject is
+  the invoking user (`@me` on the `gh` path / the authenticated login on MCP),
+  and it **adds** rather than replaces assignees — an existing assignee is
+  preserved and a conflicting claim is still reported, never auto-overridden.
+
 ### 2.5.0
 
 - **steer now reports its OWN defects upstream.** New `/steer:report` skill files

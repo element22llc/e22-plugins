@@ -53,7 +53,8 @@ PR-autonomy rules; merge and deploy are never implied.**
 
 - **`start #N`** — resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
-  **claim** it (`assign` + `steer:claimed-by`, `transition` → `in-progress`);
+  **claim** it (`assign` the invoking GitHub user — self-assign — + set
+  `steer:claimed-by`, `transition` → `in-progress`);
   create or reuse the branch; **write the local work marker**
   `spec/.work/<branch>.md` (slashes → underscores) in the marker format below, so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
