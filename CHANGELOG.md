@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:build` referenced the spec-framework reference with a
+  lowercase filename (`templates/reference/spec-framework.md`); the file on disk
+  is `SPEC-FRAMEWORK.md`. The link resolved on case-insensitive macOS but broke
+  on Linux/CI — i.e. in the consumer repos the skill targets. Corrected both
+  occurrences to the canonical uppercase name.
+- **Fixed:** the four read-only Tier-1 skills `conventions`, `traceability`,
+  `standards`, and `design-sources` were missing the `disallowed-tools: Edit,
+  Write, NotebookEdit, EnterWorktree` declaration that `AUTHORING.md`'s Tier-1
+  list requires (and that `audit`/`drift`/`next` already carried). Added it to
+  all four so the read-only permission boundary is declared consistently.
+- **Fixed:** the `/steer:standards` `when_to_use` claimed plugin hooks "do not
+  fire" on Claude Cowork and the desktop app. Per the June-2026-validated surface
+  map, Cowork *does* run hooks and only the chat-only surfaces (Desktop Chat tab,
+  web chat) don't. Corrected the trigger guidance to match.
 - **Fixed:** `/steer:sync` (and `/steer:adopt`) no longer produces a
   contradictory `.claude/settings.json` where the same permission pattern lands
   in two precedence tiers — e.g. `Bash(git push)` in both `allow` and `ask`.

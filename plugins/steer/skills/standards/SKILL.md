@@ -1,7 +1,8 @@
 ---
 name: standards
 description: Load the always-on operating manual on demand. In Claude Code the rules are already injected, so this only repeats them.
-when_to_use: Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably Claude Cowork or the Claude desktop app, where plugin hooks currently do not fire.
+when_to_use: Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
+disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
 # Operating manual — on-demand load

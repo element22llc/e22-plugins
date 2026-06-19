@@ -72,23 +72,27 @@ plugin carries everything it provided (latest versions, centrally updated).
   maintained **only here**; the template repo should be archived once active
   forks have back-filled.
 
-## Claude Cowork / desktop app
+## Where hooks fire (surfaces)
 
-Some POs work in **Claude Cowork** (the desktop app's Cowork tab) rather than
-Claude Code. The plugin's **skills, commands, and templates work there
-unchanged** — Cowork is cross-compatible with Claude Code plugins. But its
-**hooks do not fire**: Cowork runs the agent in a sandbox VM that currently
-ignores plugin and user hooks ([anthropics/claude-code#40495], still open). That
-means the `SessionStart` auto-injection — the always-on rules — and the
-`PreToolUse` version-pin guard silently do nothing in Cowork.
+Where the plugin's hooks fire depends on the surface (validated June 2026). The
+Claude Desktop app has three tabs — **Chat**, **Cowork**, and **Code** — and they
+don't behave the same:
 
-So a Cowork session starts with *none* of the org rules in context. The fallback
-is the **`/steer:standards`** skill: run it once at the start of a Cowork session
-and it loads the same `rules/*.md` ruleset on demand. When #40495 ships,
-auto-injection will work in Cowork with no plugin change and the skill becomes a
-no-op repeat.
+- **Claude Code** — the CLI, the IDE extensions (VS Code / JetBrains), and the
+  Desktop **Code** tab — **runs hooks fully**: the always-on rules inject, the
+  `PreToolUse` gates run, skills and templates work. This is the supported path.
+- **Cowork** (the *Cowork* tab) is the one chat-family surface where hooks and
+  sub-agents run. Plugin-scoped `SessionStart` hooks had bugs earlier in 2026
+  (since closed) — **reconfirm on your build** before relying on auto-injected
+  rules there.
+- **The Desktop *Chat* tab and claude.ai web chat do NOT run hooks.** Plugins
+  install and **skills work**, but the always-on rules are not auto-injected and
+  the `PreToolUse` gates don't run.
 
-[anthropics/claude-code#40495]: https://github.com/anthropics/claude-code/issues/40495
+On the no-hooks surfaces — and as a fallback anywhere the rules didn't load — run
+**`/steer:standards`** at the start of the session to load the same `rules/*.md`
+ruleset by hand, and rely on human review where the gates would have fired. See
+[Known limitations](docs/reference/known-limitations.md) for the full surface map.
 
 ## Install
 
@@ -139,9 +143,10 @@ Then invoke skills under the new namespace — `/steer:<skill>` (e.g. `/steer:sy
 The rules are **not** committed into product repos — they are injected by the
 plugin — so updating org standards needs no change in any product repo:
 
-1. Edit the rules/skills/templates here, bump `version` in
-   `plugins/steer/.claude-plugin/plugin.json`, add a `CHANGELOG.md` entry,
-   and merge to `main` (changes go through `feat/*` / `fix/*` branches + PR).
+1. Edit the rules/skills/templates here and add a `CHANGELOG.md` `## steer` →
+   `### [Unreleased]` entry, then merge to `main` (changes go through `feat/*` /
+   `fix/*` branches + PR). The `plugin.json` `version` is **not** bumped per PR —
+   it bumps once, in the release PR that renames `[Unreleased]` to the new version.
 2. In any product repo, a dev runs `/plugin update steer@e22-plugins`.
 3. The next session injects the updated ruleset. The version banner at the top of
    the injected context shows which version is live.
