@@ -31,7 +31,14 @@ name one. Plain language is the only entry point a user needs.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
   or build intent through bootstrap first (`/steer:init` greenfield, `/steer:adopt`
   for existing code) — the SessionStart hook flags this; don't degrade to
-  toolchain-only.
+  toolchain-only. **"Prototype" / "quick" / "just try it" / "throwaway" never waives
+  this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
+  (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
+  Those words change spec *depth* and *ceremony* (lighter interview, no per-feature
+  issue/PR), never *whether* the scaffold and spine exist. Hand-writing
+  `package.json`, build config (`vite.config`, `tsconfig`), or CI **from scratch**
+  when `/steer:init` installs them from the bundled scaffold is the bug, not a
+  shortcut — run the bootstrap, then build on top of it.
 - **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
   switch or capture it (`/steer:issues capture`), rather than silently dropping the
   current thread.

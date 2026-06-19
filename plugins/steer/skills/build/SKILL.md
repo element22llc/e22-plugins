@@ -105,6 +105,12 @@ on the next `/steer:build` run.
      (Commit-autonomy rule) on a single `feat/*` build branch. The work stays
      local and provisional until the one v0 handoff PR (step 10). This keeps the
      PO's inner loop fast — no per-feature issue/branch/PR ceremony.
+     **"Prototype mode" relaxes only this ceremony** (issues, per-feature
+     branches/PRs, approval-gate formality) — it does **not** skip the bundled
+     scaffold (step 1) or the spec spine (steps 2–4) or the real-stack app
+     scaffold (step 5). A prototype that hand-rolls `package.json` / build config
+     / CI instead of installing the scaffold, or that ships no `/spec`, has
+     skipped bootstrap, not run it in prototype mode.
 
    - **Governed mode — repo already GitHub-adopted (`system: github`).**
      Issue-first applies, so implementation runs through

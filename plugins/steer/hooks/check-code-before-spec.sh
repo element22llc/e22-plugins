@@ -77,7 +77,7 @@ damaged)
 	;;
 esac
 
-CTX="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr) — do not let the build degrade to toolchain conventions only. This nudge does not block the write and fires once per session; it stops once a complete /spec spine exists."
+CTX="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap installs the plugin's bundled scaffold (mise.toml, compose.yaml, CI, PR template, .gitignore) AND the /spec spine — do not hand-write package.json / build config / CI from scratch, that is what the scaffold is for. A user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr). A 'prototype' or 'quick' build does NOT waive this — it relaxes spec depth and ceremony, never the scaffold or the spine. This nudge does not block the write and fires once per session; it stops once a complete /spec spine exists."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0

@@ -32,13 +32,26 @@ skipping it.
 
 **Greenfield** (new product): the input can be anything — an idea, a brief,
 screenshots, or a Claude Design export; don't assume a design artifact exists.
-Interview first to fill `/spec/vision.md`, `users.md`, `glossary.md` (ask,
+**Bootstrap first** (`/steer:init`, or `/steer:build` for a PO): install the
+plugin's bundled scaffold (`mise.toml`, `compose.yaml`, CI, PR template,
+`.gitignore`, …) **and** the `/spec` spine before feature code — never hand-write
+`package.json` / build config / CI from scratch, that is what the scaffold is for.
+Then interview to fill `/spec/vision.md`, `users.md`, `glossary.md` (ask,
 don't invent; product-level ambiguity → `vision.md` → `## Open questions`),
 draft feature intents,
 and get PO approval before broad implementation. The full step-by-step flow is
 in the spec-framework reference, drawn on by the spec workflow
 (**`/steer:spec`**); a PO driving it uses **`/steer:build`**. Design exports: read the **local export** via
 `/steer:design-sources` — never fetch the URL (it 403s).
+
+**A prototype is greenfield too** — "quick", "just a prototype", "throwaway"
+relax the *ceremony* (lighter interview, no per-feature issue/PR, high-risk
+choices stubbed and marked), **not** the scaffold or the spine. Even a throwaway
+gets the bundled scaffold (so it costs nothing to graduate later) and at least a
+minimal `/spec` (vision + the feature intents being built), with the build
+auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide
+(`/spec/app/`) as features land. `/steer:adopt` is for *un-bootstrapped*
+pre-existing code, not an excuse to skip bootstrap now and reverse-engineer later.
 
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →
