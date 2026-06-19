@@ -85,6 +85,20 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   **never** auto-overridden.
 - **`link-parent #N <parent>`** — native sub-issue link, else `steer:parent-issue`.
 - **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR.
+- **`link-related #N <other> <relationship>`** — record a non-hierarchical
+  connection between two issues. `<relationship>` is an `issue_relationship` value
+  (`relates-to` · `depends-on` · `blocks` · `conflicts-with` · `supersedes` ·
+  `superseded-by` — see `ENUMS.md`); reject anything outside the enum. GitHub has
+  **no native typed relationship** beyond parent/sub-issue, so this writes the
+  link as a managed-block `Related issues` line (`#<other> — <relationship>
+  (why)`) on `#N` per `ISSUE-SCHEMA.md` — the `#<other>` mention makes GitHub
+  auto-create the backlink. **Reciprocity is the caller's choice:** by default
+  record the symmetric line on `<other>` too (`relates-to`/`conflicts-with` are
+  symmetric; `depends-on`↔`blocks` and `supersedes`↔`superseded-by` invert), but
+  only when permitted to write that issue's managed block. Idempotent — a line for
+  the same `(other, relationship)` pair is updated in place, not duplicated.
+  **Never** reclassify or close either issue: a `conflicts-with`/`supersedes` link
+  is surfaced for a human, not acted on.
 - **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened
   issue is re-assessed before returning to `inbox`/`exploring`/`ready-for-dev`.
 

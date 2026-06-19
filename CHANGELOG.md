@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:issues brainstorm` and `capture` now treat the **existing
+  issue corpus as required context**. Before synthesizing, both search open *and*
+  closed issues (via `/steer:tracker-sync search`, by topic and its alternatives)
+  for issues the current one **overlaps, depends on, or conflicts with** — the
+  case a relationship-blind brainstorm misses (e.g. a Cognito-hosting discussion
+  that ignores a pending `better-auth` migration issue). Discovered connections
+  are surfaced in the AI-synthesis comment and recorded as cross-links; conflicts
+  and supersessions are flagged for a human, never auto-resolved. Previously the
+  only guidance was a single "find overlapping features/issues" clause with no
+  mandate to search the corpus and nowhere to record what it found.
+- **Added:** a `Related issues` managed-block heading (feature / task / bug) in
+  `ISSUE-SCHEMA.md` and the issue-body templates, holding `#N — <relationship>
+  (why)` lines. The `#N` mention auto-creates GitHub's native backlink, so the
+  relationship is honest about GitHub having no typed relationship beyond
+  parent/sub-issue. Omitted entirely when there are no related issues.
+- **Added:** `issue_relationship` controlled vocabulary (`relates-to` ·
+  `depends-on` · `blocks` · `conflicts-with` · `supersedes` · `superseded-by`) in
+  `enums.registry` + `ENUMS.md`, and a `link-related #N <other> <relationship>`
+  operation in `/steer:tracker-sync` that records the cross-link (with optional
+  reciprocal line on the other issue) idempotently, MCP-first → `gh` → manual.
+
 - **Changed:** `/steer:work finish` now watches CI to conclusion after pushing
   (`gh pr checks --watch`) and fixes a red build as part of the same unit of work,
   rather than stopping at PR-open. The agent hands the reviewer a green PR instead

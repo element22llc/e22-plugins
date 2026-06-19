@@ -38,6 +38,12 @@ internal tasks.]
 - Intent: `spec/features/FEATURE_ID/intent.md`
 - Contract: `spec/features/FEATURE_ID/contract.md`
 
+## Related issues
+
+- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+  supersedes | superseded-by) + one-line why. Omit this whole section when there
+  are no related issues — never leave an empty stub.]
+
 ## Validation
 
 [How this is verified — tests, preview, manual check.]
