@@ -17,3 +17,6 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   **propose opening the PR** — push and create it once they confirm.
 - Opening the PR is the one step that waits for the dev; everything before it
   (branching, committing) does not.
+- **After pushing, watch CI to conclusion and fix a red build before treating the
+  work as complete** — that is finishing the work, not crossing the merge gate.
+  Don't hand the dev a running or red PR and stop. (Merge and deploy stay gated.)

@@ -5,6 +5,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Changed:** `/steer:work finish` now watches CI to conclusion after pushing
+  (`gh pr checks --watch`) and fixes a red build as part of the same unit of work,
+  rather than stopping at PR-open. The agent hands the reviewer a green PR instead
+  of a running or red one. Previously nothing instructed the agent to monitor CI,
+  so a failing build sat unnoticed until a human poked it. The post-push CI watch
+  is reflected in the `## Recommended next actions` table (new `CI running` /
+  `CI red` / `CI green, awaiting review` rows), in the Commit-autonomy and
+  Definition-of-Done rules, and in `NEXT-ACTIONS.md` (active CI-watch is now a
+  concrete agent step with a command, distinct from the passive "wait for a human
+  to merge" non-command step).
+- **Added:** the `work` skill pre-approves read-only CI-status commands
+  (`gh pr checks`, `gh run view`, `gh run watch`) so the post-push watch runs
+  without a permission prompt per poll. `git push`, `gh pr create/edit/merge`,
+  `gh api`, and destructive git stay human-gated exactly as before — watching CI
+  and fixing red is finishing the work, not crossing the merge gate. The detached
+  case (user stepped away) is documented as an opt-in `/loop` over `gh pr checks`;
+  steer ships no background poller.
+
 ### 2.8.1
 
 - **Fixed:** `/steer:build` referenced the spec-framework reference with a

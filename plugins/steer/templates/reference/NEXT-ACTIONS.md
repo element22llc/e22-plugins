@@ -175,8 +175,11 @@ system (it is either pre-launch or live), so at most one appears.
 - **`Suggested command` is optional.** Include it on its own line *only* when a
   real, applicable plugin (or built-in) command advances the action. Omit it when the
   next step is human or external — rotating a credential, a PO approving an intent,
-  a reviewer reviewing a PR, waiting for CI, or configuring an external system are
-  **not** commands.
+  a reviewer reviewing a PR, or configuring an external system are **not** commands.
+  *Actively watching CI to conclusion and fixing a red build, by contrast, is a
+  concrete agent step* — name its command (`gh pr checks --watch`, or `/loop` over
+  `gh pr checks` when detached). Only the **passive** sense of "wait until a human
+  merges a green PR" is the non-command human step.
 - **Never force a command.** A `Suggested command` that doesn't actually perform
   the action (e.g. `/security-review` does not *rotate* a secret) misleads — name
   the human action, and offer the command only as the follow-up it genuinely is.
