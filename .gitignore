@@ -96,3 +96,18 @@ out/
 # Documentation site build output (`mise run docs:build` → site_dir)
 # ---------------------------------------------------------------------------
 site/
+
+# ---------------------------------------------------------------------------
+# Infrastructure-as-code — local caches and state. Terraform state can carry
+# secrets, so it is never committed; .terraform.lock.hcl is intentionally NOT
+# ignored (it pins providers and belongs in git).
+# ---------------------------------------------------------------------------
+.terraform/
+.terragrunt-cache/
+*.tfstate
+*.tfstate.*
+
+# ---------------------------------------------------------------------------
+# Cloudflare Wrangler local cache
+# ---------------------------------------------------------------------------
+.wrangler/
