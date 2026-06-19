@@ -45,7 +45,7 @@ It surfaces the `##` sections and checklist items the bundled template has that 
 file lacks (it over-reports filled/reworded lines — treat it as a candidate list).
 Splice in the genuinely-new ones unchecked, preserving everything already filled in;
 never re-add a placeholder the dev replaced (the plugin-wide *Template reconciliation*
-convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`). Then read
+convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`). Then read
 the `intent.md` statuses and continue from the recorded step — don't restart the
 interview or re-ask settled questions. This makes new flow-state gates self-healing
 on the next `/steer:build` run.
@@ -66,7 +66,7 @@ on the next `/steer:build` run.
      entries (see `/steer:init` step 4). Confirm Docker Desktop is
      running; help start it if not.
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
-   reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`):
+   reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
    ambiguity goes to `vision.md` → `## Open questions`. If the PO has a Claude

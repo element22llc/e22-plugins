@@ -11,10 +11,11 @@ irrelevant (marketplace install does not `chmod`). No `jq` dependency.
     hook **injects** the rules; most `PreToolUse` hooks are **advisory nudges**
     that fire once and let the write proceed (`check-code-before-spec`,
     `check-issue-before-mutation`); only `check-version-pins` issues a hard
-    `deny`. On surfaces where hooks don't fire — **Claude Cowork and the desktop
-    app** — none of this runs, so load the rules manually with `/steer:standards`
-    and lean on human review. See [Surfaces without hooks](#surfaces-without-hooks)
-    below and [Known limitations](known-limitations.md).
+    `deny`. On surfaces where hooks don't fire — **the Desktop *Chat* tab and
+    claude.ai web chat** — none of this runs, so load the rules manually with
+    `/steer:standards` and lean on human review. See
+    [Surfaces without hooks](#surfaces-without-hooks) below and
+    [Known limitations](known-limitations.md).
 
 ```mermaid
 flowchart TD
@@ -82,5 +83,8 @@ degrades to a missed nudge, never a wrongful block.
 
 ## Surfaces without hooks
 
-On Claude Cowork and the desktop app, plugin hooks do not currently fire — load
-the rules manually with `/steer:standards`. See [Installation](../getting-started/installation.md).
+Claude Code (CLI, IDE extensions, Desktop **Code** tab) and **Cowork** run hooks;
+the Desktop **Chat** tab and claude.ai web chat do **not**. On those chat-only
+surfaces, load the rules manually with `/steer:standards`. See
+[Installation](../getting-started/installation.md) and
+[Known limitations](known-limitations.md).

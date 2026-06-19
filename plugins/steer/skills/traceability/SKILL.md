@@ -2,6 +2,7 @@
 name: traceability
 description: "Full traceability & living-documentation reference — natural-language-to-spec routing, action history (/spec/HISTORY.md), app knowledge docs (/spec/app/), client-agnostic issue-tracker integration (/spec/tracker.md), pre-merge drift gates, and SOC 2 / ISO 27001-aligned delivery."
 when_to_use: Use for any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing artifact split.
+disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
 # Traceability & living-docs reference
