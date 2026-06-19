@@ -41,7 +41,7 @@ feature, using the canonical templates bundled with this plugin.
    genuinely-new ones in empty, preserving everything already written; never
    overwrite filled-in intent/contract content and never re-add a placeholder the
    dev replaced. This is the plugin-wide **Template reconciliation** convention:
-   `${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
    ambiguity in this feature's own `## Open questions` section rather than
@@ -53,7 +53,7 @@ feature, using the canonical templates bundled with this plugin.
 
 The spec ↔ code rules (drift resolution, behavior vs. implementation, PO
 acceptance, naming) are in the bundled reference at
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md` — read it if you
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` — read it if you
 need the full rules. Key points: specs are organized by feature not code layout;
 spec and code change together in the same PR; resolve drift explicitly, never
 silently.

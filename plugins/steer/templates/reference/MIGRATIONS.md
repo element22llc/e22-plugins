@@ -4,7 +4,7 @@ Append-only, ordered record of **non-additive** structural changes to the spec
 spine and bundled scaffold — renames, moves, deletions, default changes, and
 **in-file token rewrites** (replacing a string that already exists in a
 materialized file) that
-the [purely-additive Template reconciliation](spec-framework.md) convention
+the [purely-additive Template reconciliation](SPEC-FRAMEWORK.md) convention
 cannot express. A reconciliation diff sees a renamed file as *old-present +
 new-absent* and would happily add the new file while orphaning the old one; only
 an explicit migration knows the two are the same artifact.
@@ -108,7 +108,7 @@ legitimate look-alike (e.g. an unchanged marketplace id).
   dangerous one: apply it **only** when the token after `e22-` is a known skill
   name and **never** when it is `plugins`. Pair 4 both removes the dead key and
   produces the live key in one edit, value preserved. Follow with additive
-  [Template reconciliation](spec-framework.md) for any template-tracked file.
+  [Template reconciliation](SPEC-FRAMEWORK.md) for any template-tracked file.
   Idempotent: once applied the precondition is empty, so re-running is a no-op.
 
 ### v1.38.0 — GitHub Issue Forms replace Markdown templates; `tracker.md` gains frontmatter
@@ -124,7 +124,7 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 - **Action:** `git rm .github/ISSUE_TEMPLATE/bug-report.md
   .github/ISSUE_TEMPLATE/feature-request.md` (only those superseded by the new
   forms — keep any product-authored templates). Then run additive
-  [Template reconciliation](spec-framework.md) against `templates/spec/tracker.md`
+  [Template reconciliation](SPEC-FRAMEWORK.md) against `templates/spec/tracker.md`
   to splice in the frontmatter **without overwriting edited values** (system,
   repository, ref format). Converting existing free-form `## Open questions` to
   the structured `Q-NNN` format is **opportunistic** — let `/steer:questions` do it
@@ -137,7 +137,7 @@ legitimate look-alike (e.g. an unchanged marketplace id).
   triage vocabulary (Keep/Refactor/Rewrite/Reject) the file now drives.
 - **Precondition:** `spec/PRODUCTION-READINESS.md` exists.
 - **Action:** `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md`.
-  Then run the additive [Template reconciliation](spec-framework.md) against the
+  Then run the additive [Template reconciliation](SPEC-FRAMEWORK.md) against the
   current `templates/spec/productionization.md` so any sections added since are
   spliced in. The old name on disk is itself a resume signal — migrate it
   **before** any fresh-vs-resume decision, so it can't be mistaken for a fresh

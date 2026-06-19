@@ -192,6 +192,6 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
 
 The canonical spec ↔ code rules — drift resolution (Rule 5), behavior vs.
 incidental implementation, PO acceptance, naming — live in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`. Read it for the
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`. Read it for the
 full rules. This skill *detects and reports* drift; that reference governs how
 it gets *resolved*.

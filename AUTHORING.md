@@ -156,6 +156,12 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - **Standards prose is never duplicated** into a product repo's `CLAUDE.md` — that
   file holds only product-specific context. The standards live here and reach
   product repos through the marketplace.
+- **File naming.** Python scripts are `snake_case.py` (PEP 8 + importable as
+  modules); shell scripts are `kebab-case.sh`; reference prose under
+  `templates/reference/` is `UPPERCASE.md` (multiword as `UPPER-KEBAB.md`, e.g.
+  `ISSUE-SCHEMA.md`). Skills, rules, spec artifacts, and `docs/` pages stay
+  `lowercase-kebab`. GitHub-mandated names (`pull_request_template.md`,
+  `ISSUE_TEMPLATE/`) are fixed by GitHub and exempt.
 
 ## Documentation site
 

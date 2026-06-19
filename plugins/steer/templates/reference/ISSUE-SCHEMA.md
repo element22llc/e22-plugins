@@ -10,7 +10,7 @@ block** so human edits are never clobbered.
 This file is the single normative owner of the issue *format*. The lifecycle,
 state model, labels, taxonomy, and authority live in
 [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md); the open-question format lives in
-[`spec-framework.md`](spec-framework.md).
+[`SPEC-FRAMEWORK.md`](SPEC-FRAMEWORK.md).
 
 ## Identity markers
 
@@ -28,7 +28,7 @@ source of truth.
 | `<!-- steer:source=… -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
 | `<!-- steer:feature-id=… -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
 | `<!-- steer:spec-path=… -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |
-| `<!-- steer:question-id=Q-NNN -->` | The stable question ID this issue tracks (see `spec-framework.md`). | spec-question |
+| `<!-- steer:question-id=Q-NNN -->` | The stable question ID this issue tracks (see `SPEC-FRAMEWORK.md`). | spec-question |
 | `<!-- steer:finding-key=… -->` | Stable conceptual identity of a finding — `<dimension-or-source>:<rule>:<file-or-component>:<symbol>`. **Never line-based.** | finding |
 | `<!-- steer:evidence=… -->` | Fingerprint of the *currently observed* evidence (e.g. a short hash of the offending lines/region). Changes as the code moves; the `finding-key` does not. | finding |
 | `<!-- steer:dedupe-key=… -->` | Generic conceptual identity for issues with no stronger identity (no `finding-key`/`feature-id`/`question-id`). Stable and conceptual — e.g. `export:csv:duplicate-header`. **Never** line numbers, timestamps, or generated wording. | any without a stronger identity |

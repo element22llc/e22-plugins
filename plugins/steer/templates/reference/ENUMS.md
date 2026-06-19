@@ -17,7 +17,7 @@ matching enum below (CI enforces this too).
 A materialized intent starts at **`draft`** (`/steer:issues
 materialize` never approves). Only **`/steer:spec approve`** flips it
 to **`approved`**. `implemented` / `validated` / `live` track its progress
-through delivery and into production. (See `spec-framework.md`,
+through delivery and into production. (See `SPEC-FRAMEWORK.md`,
 `ISSUE-WORKFLOW.md`.)
 
 ## `question_status` — an open question's state
@@ -27,7 +27,7 @@ through delivery and into production. (See `spec-framework.md`,
 `open`, `investigating`, and `deferred` are the **unresolved** set that can block
 a gate; `resolved` means the answer is folded into the spec's normative prose;
 `cancelled` means the question no longer applies. (See the open-question format in
-`spec-framework.md`.)
+`SPEC-FRAMEWORK.md`.)
 
 ## `question_impact` — whether a question blocks
 
@@ -78,7 +78,7 @@ not mere closure, decides which. (See `ISSUE-WORKFLOW.md` Completion rules.)
 `Proposed · Accepted · Superseded · Deprecated`
 
 A `Proposed` ADR is a *Human decision required* next action (awaiting its
-Deciders). (See `spec-framework.md` → Architecture Decision Records.)
+Deciders). (See `SPEC-FRAMEWORK.md` → Architecture Decision Records.)
 
 ## `next_action` — the `## Recommended next actions` categories
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # template-reconcile.sh — read-only structural diff for the *Template
-# reconciliation* convention (templates/reference/spec-framework.md).
+# reconciliation* convention (templates/reference/SPEC-FRAMEWORK.md).
 #
 # WHAT IT READS
 #   $1  existing-file   — a file already in the product repo (e.g. spec/BUILD-STATUS.md)

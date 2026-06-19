@@ -242,6 +242,6 @@ stays open rather than being guessed.
 
 The spec ↔ code coupling rules — drift resolution (Rule 5), behavior vs.
 incidental implementation, PO acceptance — are canonical in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`. This skill
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`. This skill
 *drives questions to answers*; that reference governs how an answer is folded
 into the spec.

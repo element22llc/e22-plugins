@@ -32,7 +32,7 @@ code, or single-feature decisions (those go in the feature's `contract.md`).
 
 When superseding an ADR, mark the old one `Superseded by [link]` and link the new
 one — do not delete or renumber it. Full guidance:
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`.
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
 
 ADRs are **exempt from template reconciliation** — they are immutable,
 point-in-time records. Never retrofit a newer `adr.md` template's sections into an

@@ -26,7 +26,7 @@ already approved.
 | "Users should be able to…", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) — PO approves scope changes |
 | "Actually, it should behave like…" (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) — same PR as the code |
 | "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one line in `/spec/HISTORY.md` |
-| "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `spec-framework.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
+| "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) — usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; `validated` status in `intent.md` |
 | Anything merged or ratified | `/spec/HISTORY.md` entry: what, why, who asked, refs |

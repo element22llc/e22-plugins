@@ -93,7 +93,7 @@ implementation.
 ## Validate mode — `/steer:spec validate [feature-id|--all]`
 
 A **local, GitHub-independent** structural check over the open-question contract
-(`spec-framework.md`): the defense-in-depth floor that holds even when the
+(`SPEC-FRAMEWORK.md`): the defense-in-depth floor that holds even when the
 tracker is unreachable. It is read-only — it reports failures and (with a yes)
 proposes fixes; it never invents a decision. Given a `[feature-id]` it checks one
 feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
@@ -191,5 +191,5 @@ and HISTORY); it stays as code-free as the rest of this skill.
 The canonical spec ↔ code rules — feature-organized specs, spec and code
 changing together in the same PR, drift resolution (Rule 5), behavior vs.
 incidental implementation, PO acceptance — live in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/spec-framework.md`. This skill stays
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`. This skill stays
 on the spec side of that boundary by design.
