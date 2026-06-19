@@ -17,7 +17,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   those linked working trees don't show as untracked in the parent repo, and the
   "Secrets handling" rule notes that `.worktreeinclude` is what preserves the
   git-ignored-`.env` boot guarantee under `--worktree`. `MANIFEST.md` maps the
-  new file; reconcile additively into an existing `.worktreeinclude`.
+  new file, and `scaffold-reconcile.py` now recognizes `.worktreeinclude` as a
+  line-based file so an existing one is merged additively (append missing
+  patterns, never clobber) — same as `.gitignore`.
 
 - **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
   records its local marker as `spec/.work/<branch>.md` (was an extensionless,
