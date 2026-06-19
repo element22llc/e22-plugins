@@ -235,7 +235,7 @@ def check_client_terms(root: Path, errors: list[str]) -> None:
     if not CLIENT_SPECIFIC_TERMS:
         return
     lowered = [t.lower() for t in CLIENT_SPECIFIC_TERMS]
-    scan_dirs = ["skills", "commands", "rules", "templates"]
+    scan_dirs = ["skills", "rules", "templates"]
     for rel in scan_dirs:
         for md in _iter_markdown(root / rel):
             for lineno, line in enumerate(md.read_text(encoding="utf-8").splitlines(), 1):

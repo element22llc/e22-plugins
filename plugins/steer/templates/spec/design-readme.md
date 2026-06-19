@@ -1,4 +1,4 @@
-# Design source
+# Design exports
 
 A **readable home for a Greenfield product's design export** — the artifact
 Claude reads to extract the spec — plus a traceability link back to where the

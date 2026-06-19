@@ -110,6 +110,10 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 . "${HOOKS}/lib/report-fault.sh"
 
 # --- extraction (lib/json.sh) ---
+# Force the no-jq fallback for this whole block: CI/dev usually HAS jq, so without
+# this override the hand-rolled grep/sed extractor (the fragile path these cases
+# exist to pin) would ship untested. The real steer_have_jq is restored after.
+steer_have_jq() { return 1; }
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"src/a.ts","content":"say \"hi\" and \"file_path\":\"DECOY.ts\""}}'
 assert_eq "extract: escaped quotes / decoy file_path" "$(steer_field file_path)" "src/a.ts"
 
@@ -120,6 +124,11 @@ assert_eq "extract: escaped backslash preserved" "$(steer_field file_path)" 'a\n
 
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"real.ts","content":"\"file_path\":\"fake.ts\""}}'
 assert_eq "extract: repeated file_path not shadowed" "$(steer_field file_path)" "real.ts"
+
+# A top-level decoy of the same name, BEFORE tool_input, must not win — the no-jq
+# fallback scopes to the post-"tool_input" slice first (mirrors jq's precedence).
+STEER_INPUT='{"tool_name":"Write","file_path":"TOP.ts","tool_input":{"file_path":"INNER.ts","content":"x"}}'
+assert_eq "extract: top-level decoy file_path not preferred" "$(steer_field file_path)" "INNER.ts"
 
 # steer_target_path: file_path for Write/Edit/MultiEdit, notebook_path for NotebookEdit.
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"f.ts","content":"x"}}'
@@ -137,6 +146,8 @@ printf '%s' "$(steer_mutation_content)" | grep -q "${_p11}" && bad "extract: Edi
 
 STEER_INPUT="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo ${_p11}\"}}"
 assert_eq "extract: Bash content skipped" "$(steer_mutation_content)" ""
+
+. "${HOOKS}/lib/json.sh" # restore real steer_have_jq (undo the forced no-jq above)
 
 # --- classifier ---
 assert_eq "classify ts" "$(steer_classify_path src/app.ts)" "implementation"

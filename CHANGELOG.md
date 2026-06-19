@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** low-severity audit nits. The no-jq `steer_field` fallback in
+  `hooks/lib/json.sh` now mirrors jq's precedence — it searches the post-`tool_input`
+  slice before the whole document, so a same-named top-level decoy field can't be
+  picked (now covered by the hook suite, which forces the no-jq path). The
+  `check-version-pins` hook sanitizes the one interpolated value before embedding
+  it in its JSON reason, matching the sibling point-of-action hooks. Scaffold docs
+  fixed: the markitdown server is attributed to `uvx markitdown-mcp` (not a
+  non-existent bundled `packages/markitdown-mcp`), and the `spec/design/README.md`
+  template is retitled "Design exports" so it no longer collides with the
+  `source.md` provenance file (both were titled "Design source").
+- **Fixed:** the `/steer:standards` skill's rule enumeration was missing
+  `36-issue-first`, `87-output-discipline`, and `97-self-report` — three always-on
+  rules a reader of the list would have believed weren't part of the operating
+  manual. Resynced to all 24 `rules/*.md` files. (Repo-side, a new
+  `check_standards.py` guard now fails CI if this list — or the CLAUDE.md skill
+  list or CROSS-SURFACE.md's rule count / SessionStart hook roster — drifts from
+  disk, so the class of bug can't recur.)
 - **Added:** new always-on rule `87-output-discipline.md` curbing generated noise —
   comments are the exception (reserved for the non-obvious *why*), and prose
   responses stay tight (lead with the result, skip self-narration). Backed by a

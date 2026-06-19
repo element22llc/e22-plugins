@@ -61,6 +61,25 @@ flowchart TD
 | --- | --- |
 | `reconcile-issue-first.sh` | End-of-turn reconciliation of issue-first bookkeeping. |
 
+## Shared input extraction (`lib/json.sh`)
+
+The `PreToolUse`/`Stop` hooks read their JSON payload from stdin through one
+shared helper, `hooks/lib/json.sh` — deterministic, dependency-free, and with
+**no `jq` requirement** (it uses `jq` only as a fast path when present, and falls
+back to a narrow POSIX `grep`/`sed` extractor otherwise). The two paths agree on
+the same contract:
+
+- A field resolves to `tool_input.<name>` in preference to a top-level `.<name>`,
+  so a same-named field elsewhere in the payload cannot be mistaken for the tool's
+  real argument (e.g. the `file_path` a `Write` is about).
+- Within that scope the **first** match wins, so a repeated key buried in a later
+  `content` value cannot shadow the real field, and escaped quotes/backslashes in
+  values are tolerated.
+
+This is best-effort extraction for the exact PreToolUse shapes — not a general
+JSON parser — and every consuming hook is fail-open, so an unparseable payload
+degrades to a missed nudge, never a wrongful block.
+
 ## Surfaces without hooks
 
 On Claude Cowork and the desktop app, plugin hooks do not currently fire — load
