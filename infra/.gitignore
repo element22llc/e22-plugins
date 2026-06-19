@@ -1,0 +1,18 @@
+# Terragrunt / OpenTofu generated artifacts — never commit.
+# Terragrunt copies modules and writes the generated backend.tf/provider.tf here.
+.terragrunt-cache/
+# OpenTofu working dir (downloaded providers/modules).
+.terraform/
+# State must live in S3, never on disk.
+*.tfstate
+*.tfstate.*
+# Saved plans and crash logs.
+*.tfplan
+crash.log
+crash.*.log
+
+# Local-only env overrides (referenced by mise.toml `_.file = ".env"`).
+.env
+
+# Committed on purpose (do NOT ignore): .terraform.lock.hcl (provider lockfile),
+# mise.lock, aws/config.
