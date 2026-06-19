@@ -20,7 +20,11 @@ flowchart TD
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
     IMPL --> PROGRESS[Update progress on the issue]
     PROGRESS --> FINISH["/steer:work finish #123"]
-    FINISH --> PR[Open PR · transition state]
+    FINISH --> PR[Open PR]
+    PR --> WATCH[Watch CI to conclusion]
+    WATCH -->|red| FIX[Fix · re-push · re-watch]
+    FIX --> WATCH
+    WATCH -->|green| STATE[Transition to validate · hand reviewer a green PR]
 ```
 
 ## Modes
@@ -30,7 +34,7 @@ flowchart TD
 | `start` | Validate, claim (self-assigns the invoking GitHub user), branch, load specs, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off — including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s). |
-| `finish` | Open the PR and transition lifecycle state. |
+| `finish` | Open the PR, **watch CI to conclusion** (`gh pr checks --watch`) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
 
 ## Local work marker
 
@@ -53,4 +57,10 @@ stay in the git-ignored marker and never reach the tracker.
 - Git and PR delivery follow the repo's commit/PR-autonomy rules — commits are
   autonomous, **pushing/opening the PR is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
+- **After pushing, `finish` watches CI to green and fixes a red build** before
+  treating the work as done — read-only CI status (`gh pr checks`, `gh run
+  view`, `gh run watch`) is pre-approved for this; `git push` and the PR/merge
+  steps stay gated. If you have stepped away, the in-turn watch blocks the turn;
+  re-enter monitoring with a `/loop` over `gh pr checks` (steer ships no
+  background poller). Merge and deploy remain a human's call.
 - All tracker-metadata I/O routes through `/steer:tracker-sync`.
