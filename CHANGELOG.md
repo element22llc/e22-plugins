@@ -5,6 +5,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Scaffolded repos now ship Dependabot, and steer manages the PRs.** New
+  `.github/dependabot.yml` (`github-actions` live; `npm`/`pip`/`docker` blocks
+  commented for `/steer:init`/`/steer:adopt` to uncomment per detected stack,
+  grouped, majors ignored) plus a `dependabot-auto-merge.yml` workflow that
+  **auto-approves and auto-merges patch/minor Dependabot PRs** once the required
+  `ci` check is green. This is a **deliberate, documented exception** to the
+  human-review gate: dependency bumps don't touch application logic, so the human
+  *review* is waived — but the workflow waits for green CI before it merges, so a
+  bump that breaks tests/lint/the version-pin scan never lands. Auto-merge is
+  **scoped to Dependabot by the workflow's `dependabot[bot]` guard** — it does NOT
+  enable GitHub's repo-wide `allow_auto_merge` setting (which would expose an
+  auto-merge button to every PR); the workflow merges the single Dependabot PR
+  directly once `ci` passes. **Major** bumps are never auto-merged (they can break
+  and may need a `policy/versions.yml` decision) and get a "left for a human"
+  comment instead. The exception is documented in `policy/branch-protection.yml`
+  and the scaffold `README.md` branch-protection section. `/steer:protect` now also
+  enables the repo settings the exception needs — Dependabot alerts and security
+  updates — alongside secret scanning, and the new `dependency-automation`
+  capability lets `/steer:sync` wire and repair both files. protect configures
+  settings only; it never opens PRs or merges.
+
 ### 2.6.0
 
 - **`/steer:work start` now self-assigns the issue to you.** Claiming an issue

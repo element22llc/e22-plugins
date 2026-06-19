@@ -46,3 +46,31 @@ required_linear_history: true
 # Repo-level security, applied via a SEPARATE settings API by /steer:protect.
 secret_scanning: true
 secret_scanning_push_protection: true
+
+# Dependabot — keep dependencies patched. Alerts + automated security updates are
+# repo-level settings /steer:protect enables alongside secret scanning (each via
+# its own endpoint). NOTE: GitHub's repo-wide `allow_auto_merge` is deliberately
+# NOT enabled — that switch exposes the auto-merge button to EVERY PR. Auto-merge
+# is scoped to Dependabot by the workflow itself (see the exception below), so no
+# repo-wide setting is needed.
+dependabot_alerts: true
+dependabot_security_updates: true
+
+# ── Documented exception to required_pull_request_reviews ─────────────────────
+# The human-review requirement above (1 approval) is the gate for PRs that touch
+# application logic. Dependabot version bumps do not, so steer waives the *human*
+# review for the low-risk subset and lets those PRs auto-merge:
+#   - SCOPE: patch + minor updates only (where most security fixes land). MAJOR
+#     bumps are EXCLUDED — they can carry breaking changes and may need a
+#     policy/versions.yml floor decision, so they stay human-reviewed.
+#   - STILL ENFORCED: the `ci` required check. Auto-merge only completes once CI
+#     is green and the branch is up to date, so a bump that breaks tests, lint, or
+#     the version-pin scan never lands. CI — not a human — guarantees the bump is
+#     safe; only the review is waived, never the tests.
+#   - ENACTED BY: .github/workflows/dependabot-auto-merge.yml (installed via the
+#     scaffold / /steer:sync), NOT by /steer:protect. That workflow waits for the
+#     required `ci` check, then merges the single Dependabot PR directly — no
+#     repo-wide auto-merge setting is involved. protect configures repo settings;
+#     it never opens PRs or merges.
+# If a repo wants ZERO automated merges, delete that workflow — the human gate
+# then applies to Dependabot too.
