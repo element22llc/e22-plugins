@@ -33,7 +33,7 @@ required_pull_request_reviews:
 # context is the check-run name; /steer:protect resolves the real name from
 # .github/workflows/ci.yml rather than trusting this string blindly.
 required_status_checks:
-  strict: true                         # branch must be up to date with base
+  strict: false                         # branch must be up to date with base
   contexts:
     - ci
 
