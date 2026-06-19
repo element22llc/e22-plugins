@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.9.0
 
 - **Changed:** hardened greenfield bootstrap precedence so a **prototype** can no
   longer be read as an escape hatch from the bundled scaffold and `/spec` spine.
