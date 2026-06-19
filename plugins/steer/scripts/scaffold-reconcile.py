@@ -9,7 +9,7 @@ so merging those into a repo that already has its own copy (during /steer:adopt
 or /steer:sync) was prose-only. This helper closes that gap for:
 
   * JSON   — .claude/settings.json, .mcp.json, biome.json, tsconfig, …
-  * gitignore
+  * gitignore (and the same line-based .worktreeinclude)
 
 CONTRACT (mirrors template-reconcile.sh)
 
@@ -61,6 +61,10 @@ def _die(code: int, msg: str) -> int:
 def _infer_kind(existing: Path) -> str | None:
     name = existing.name
     if name == ".gitignore" or name == "gitignore" or name.endswith(".gitignore"):
+        return "gitignore"
+    # .worktreeinclude is the same line-based ignore-style format, so it uses
+    # the same additive merge (append missing patterns, never clobber).
+    if name == ".worktreeinclude" or name == "worktreeinclude":
         return "gitignore"
     if name.endswith(".json") or name.endswith(".jsonc"):
         return "json"

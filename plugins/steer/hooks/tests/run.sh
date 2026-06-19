@@ -107,6 +107,7 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 
 . "${HOOKS}/lib/json.sh"
 . "${HOOKS}/lib/classify.sh"
+. "${HOOKS}/lib/report-fault.sh"
 
 # --- extraction (lib/json.sh) ---
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"src/a.ts","content":"say \"hi\" and \"file_path\":\"DECOY.ts\""}}'
@@ -352,6 +353,44 @@ if command -v git >/dev/null 2>&1; then
 	printf 'x\n' >"${S8}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S8}" stS8)")"
 	assert_no_block "stop-reconcile: spec/.work marker governs non-issue branch" "${out}"
+
+	# I: .md marker governs via slash→underscore key AND the current session is
+	# stamped at the head of the session list, preserving the issue:/branch: header
+	# and the prior session id.
+	S9="$(git_repo stopMdMarker main)"
+	git -C "${S9}" checkout -q -b proto/x
+	mkdir -p "${S9}/spec/.work"
+	MD9="${S9}/spec/.work/proto_x.md"
+	printf '# Work marker — issue 123\n\n- issue: 123\n- branch: proto/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0002\n' >"${MD9}"
+	mkdir -p "${S9}/src"
+	printf 'x\n' >"${S9}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S9}" sess-new-0001)")"
+	assert_no_block "stop-reconcile: .md marker governs (slash→underscore key)" "${out}"
+	hsess9="$(awk '/^## Claude Code sessions/{f=1;next} f&&/^-[[:space:]]/{s=$0;sub(/^-[[:space:]]+/,"",s);sub(/[[:space:]].*$/,"",s);print s;exit}' "${MD9}")"
+	assert_eq "stop-reconcile: current session stamped at head of .md marker" "${hsess9}" "sess-new-0001"
+	grep -q '^- issue: 123$' "${MD9}" && ok || bad "stop-reconcile: .md marker issue: line preserved"
+	grep -q '^- branch: proto/x$' "${MD9}" && ok || bad "stop-reconcile: .md marker branch: line preserved"
+	grep -q '^- sess-old-0002$' "${MD9}" && ok || bad "stop-reconcile: prior session retained in .md marker"
+
+	# J: re-stamping the same session is a byte-for-byte no-op (head unchanged).
+	cp "${MD9}" "${MD9}.before"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S9}" sess-new-0001)")"
+	assert_no_block "stop-reconcile: re-stamp same session stays silent" "${out}"
+	cmp -s "${MD9}" "${MD9}.before" && ok || bad "stop-reconcile: re-stamp same session is a no-op"
+
+	# K: an empty session id (fail-open) leaves the .md marker untouched but still
+	# governs the branch (no block).
+	S10="$(git_repo stopMdEmptySid main)"
+	git -C "${S10}" checkout -q -b proto2/x
+	mkdir -p "${S10}/spec/.work"
+	MD10="${S10}/spec/.work/proto2_x.md"
+	printf '# Work marker — issue 7\n\n- issue: 7\n- branch: proto2/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0003\n' >"${MD10}"
+	cp "${MD10}" "${MD10}.before"
+	mkdir -p "${S10}/src"
+	printf 'x\n' >"${S10}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S10}" '')")"
+	assert_no_block "stop-reconcile: .md marker governs with empty session id" "${out}"
+	cmp -s "${MD10}" "${MD10}.before" && ok || bad "stop-reconcile: empty session id leaves .md marker intact"
 else
 	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
 fi
@@ -666,6 +705,58 @@ sh "${CAPSCAN}" a b c >/dev/null 2>&1
 assert_rc "cap: too many args -> exit 2" "$?" 2
 sh "${CAPSCAN}" "${WORK}/cap-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
+
+# ---------------------------------------------------------------------------
+# Self-fault recording (lib/report-fault.sh) + surfacing (surface-faults.sh).
+# ---------------------------------------------------------------------------
+
+# Recording is deduped by source|signature so a recurring fault is logged once.
+RF1="$(new_repo rf1)"
+steer_record_fault "${RF1}" "inject-standards.sh" "rules directory missing"
+steer_record_fault "${RF1}" "inject-standards.sh" "rules directory missing"
+assert_eq "fault: identical faults deduped to one record" \
+	"$(grep -c '' "${RF1}/.claude/steer-faults.log")" "1"
+steer_record_fault "${RF1}" "other.sh" "different symptom"
+assert_eq "fault: distinct faults both recorded" \
+	"$(grep -c '' "${RF1}/.claude/steer-faults.log")" "2"
+
+# A signature carrying the delimiter/newline is sanitized, never breaks the row.
+RF1b="$(new_repo rf1b)"
+steer_record_fault "${RF1b}" "x|y" "a|b"
+assert_eq "fault: one record despite embedded delimiter" \
+	"$(grep -c '' "${RF1b}/.claude/steer-faults.log")" "1"
+
+# No log -> surface stays silent.
+RF2="$(new_repo rf2)"
+out="$(run_hook surface-faults.sh "$(session_json "${RF2}" rf2)")"
+assert_empty "surface: no fault log -> silent" "${out}"
+
+# A recorded, unsurfaced fault -> notice in context, marker advanced.
+RF3="$(new_repo rf3)"
+steer_record_fault "${RF3}" "inject-standards.sh" "rules directory missing"
+out="$(run_hook surface-faults.sh "$(session_json "${RF3}" rf3)")"
+oq_grep "surface: unreported fault raises a notice" 'self-fault' "${out}"
+oq_grep "surface: notice points at /steer:report" 'steer:report' "${out}"
+assert_eq "surface: marker records count surfaced" \
+	"$(cat "${RF3}/.claude/steer-faults.surfaced")" "1"
+
+# Second run with no new fault -> silent (surfaced once, never a per-session nag).
+out="$(run_hook surface-faults.sh "$(session_json "${RF3}" rf3)")"
+assert_empty "surface: already-surfaced fault stays silent" "${out}"
+
+# A newly-recorded fault after surfacing -> only the new one is raised.
+steer_record_fault "${RF3}" "surface-faults.sh" "brand new symptom"
+out="$(run_hook surface-faults.sh "$(session_json "${RF3}" rf3)")"
+oq_grep "surface: new fault raised after prior surface" 'brand new symptom' "${out}"
+printf '%s' "${out}" | grep -q 'rules directory missing' &&
+	bad "surface: must not re-raise already-surfaced fault (got: ${out})" || ok
+
+# Inside the plugin's own tree (.claude-plugin present) -> never nag.
+RF4="$(new_repo rf4)"
+mkdir -p "${RF4}/.claude-plugin"
+steer_record_fault "${RF4}" "inject-standards.sh" "rules directory missing"
+out="$(run_hook surface-faults.sh "$(session_json "${RF4}" rf4)")"
+assert_empty "surface: silent inside the plugin's own repo" "${out}"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

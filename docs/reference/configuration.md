@@ -34,6 +34,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `85-practices.md` | Baseline patterns. |
 | `90-design-sources.md` | Design sources & UI. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
+| `97-self-report.md` | When steer itself misbehaves, offer `/steer:report` to file it upstream. |
 | `99-end-of-session.md` | End-of-session checklist. |
 
 ## Tooling knobs

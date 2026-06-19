@@ -44,12 +44,16 @@ PLUGIN_ROOT = Path("plugins/steer")
 
 FORBIDDEN_PLACEHOLDERS = ["[Replace", "TODO", "FIXME"]
 REQUIRED_SKILL_FRONTMATTER = ["name", "description", "when_to_use"]
+REQUIRED_AGENT_FRONTMATTER = ["name", "description"]
+# Frontmatter fields a plugin-scoped subagent silently ignores (Claude Code drops
+# them for security). Authoring one is a bug — fail loudly instead.
+FORBIDDEN_AGENT_FRONTMATTER = ["hooks", "mcpServers", "permissionMode"]
 
 # Dirs (relative to PLUGIN_ROOT) whose authored markdown must be placeholder-free.
 # templates/ is excluded: it is meant to be instantiated and legitimately holds
 # placeholders like [Replace …] and [Product Name]. (The legacy commands/ dir was
 # removed — skills are namespaced; see check_standards.py.)
-PLACEHOLDER_SCAN_DIRS = ["skills", "rules"]
+PLACEHOLDER_SCAN_DIRS = ["skills", "rules", "agents"]
 
 # Files (relative to PLUGIN_ROOT) exempt from the placeholder scan because they
 # document the placeholder vocabulary itself.
@@ -145,6 +149,47 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
                 seen_names[name] = skill_md
 
 
+def check_agents(root: Path, errors: list[str]) -> None:
+    """Validate plugin-scoped subagent definitions under ``agents/``.
+
+    The directory is optional. Each ``*.md`` must carry ``name`` + ``description``,
+    have a ``name`` that matches its filename and is unique, and must not declare a
+    frontmatter field that plugin subagents ignore (``hooks``/``mcpServers``/
+    ``permissionMode``) — those would be silently dropped at load time.
+    """
+    agents_dir = root / "agents"
+    if not agents_dir.is_dir():
+        return
+    seen_names: dict[str, Path] = {}
+    for agent_md in _iter_markdown(agents_dir):
+        fm, err = parse_frontmatter(agent_md.read_text(encoding="utf-8"))
+        if err:
+            errors.append(f"{agent_md}: {err}")
+            continue
+        for key in REQUIRED_AGENT_FRONTMATTER:
+            value = fm.get(key)
+            if not (isinstance(value, str) and value.strip()):
+                errors.append(f"{agent_md}: missing or empty frontmatter '{key}'")
+        for key in FORBIDDEN_AGENT_FRONTMATTER:
+            if key in fm:
+                errors.append(
+                    f"{agent_md}: frontmatter '{key}' is ignored for plugin subagents — remove it"
+                )
+        name = fm.get("name")
+        if isinstance(name, str) and name.strip():
+            if name != agent_md.stem:
+                errors.append(
+                    f"{agent_md}: frontmatter name '{name}' does not match "
+                    f"filename '{agent_md.stem}'"
+                )
+            if name in seen_names:
+                errors.append(
+                    f"{agent_md}: duplicate agent name '{name}' (also {seen_names[name]})"
+                )
+            else:
+                seen_names[name] = agent_md
+
+
 def check_placeholders(root: Path, errors: list[str]) -> None:
     for rel in PLACEHOLDER_SCAN_DIRS:
         for md in _iter_markdown(root / rel):
@@ -213,6 +258,7 @@ def run_checks(
         return [f"{root}: plugin root directory not found"]
     check_plugin_json(root, errors)
     check_skills(root, errors, require_when_to_use)
+    check_agents(root, errors)
     check_placeholders(root, errors)
     check_links(root, errors)
     if client_agnostic:

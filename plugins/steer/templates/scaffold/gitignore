@@ -34,9 +34,20 @@ out/
 # Gitignored: per-user allowlists and personal overrides
 .claude/settings.local.json
 
-# Local work markers — /steer:work records the claimed issue for a
-# branch here so the Stop-hook reconciliation recognizes it. Local execution
-# state, never committed.
+# steer self-fault log — when the steer plugin's own hooks misbehave they record
+# it here for `/steer:report` to file upstream. Local diagnostic state, per-
+# machine, never committed (the .log is also caught by *.log below).
+.claude/steer-faults.log
+.claude/steer-faults.surfaced
+
+# Claude Code worktrees — `claude --worktree` creates linked working trees
+# here; they are separate checkouts, not content to track. (.worktreeinclude
+# at the repo root controls which git-ignored locals get copied into them.)
+.claude/worktrees/
+
+# Local work markers — /steer:work records the claimed issue (and the Claude
+# Code session breadcrumbs) for a branch here so the Stop-hook reconciliation
+# recognizes it. Per-developer, per-machine execution state, never committed.
 spec/.work/
 
 # IDE

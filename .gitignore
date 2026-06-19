@@ -98,7 +98,17 @@ out/
 site/
 
 # ---------------------------------------------------------------------------
-# Wrangler local state — `mise run cf:deploy:preview` runs from the repo root
-# and wrangler writes its cache here. Generated; never commit.
+# Infrastructure-as-code — local caches and state. Terraform state can carry
+# secrets, so it is never committed; .terraform.lock.hcl is intentionally NOT
+# ignored (it pins providers and belongs in git).
+# ---------------------------------------------------------------------------
+.terraform/
+.terragrunt-cache/
+*.tfstate
+*.tfstate.*
+
+# ---------------------------------------------------------------------------
+# Cloudflare Wrangler local cache — `mise run cf:deploy:preview` runs from the
+# repo root and wrangler writes its cache here. Generated; never commit.
 # ---------------------------------------------------------------------------
 .wrangler/

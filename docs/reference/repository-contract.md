@@ -23,6 +23,7 @@ flowchart TD
 | `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. |
 | CI workflows + PR template | scaffold | Quality gates and review template. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. |
+| `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. |
 
 ## Scaffold storage convention
@@ -36,10 +37,11 @@ bundle is updated in the **same change** as the rule.
 When `/steer:init`, `/steer:adopt`, or `/steer:sync` install a scaffold file that
 already exists in the target repo, they **merge additively and never clobber**:
 Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
-and the structured-config files — `.gitignore` and the JSON configs
-(`.claude/settings.json`, `.mcp.json`, `biome.json`, `tsconfig`) — reconcile with
-`scaffold-reconcile.py`, which unions JSON arrays and adds missing keys/lines
-without overwriting, reordering, or removing any existing value.
+and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
+and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`,
+`tsconfig`) — reconcile with `scaffold-reconcile.py`, which unions JSON arrays and
+adds missing keys/lines without overwriting, reordering, or removing any existing
+value.
 
 ## Versioning the contract
 

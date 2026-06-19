@@ -85,8 +85,12 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
 - **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
   actionlint). This is the pre-commit equivalent.
 - **Before push / PR — full gate:** `mise run ci` — exactly what CI runs (adds
-  `fixtures`, `test`, `shell`, `hooktests`, `version-scan`, `docs:check` on top
-  of `check`).
+  `fixtures`, `test`, `shell`, `hooktests`, `version-scan`, `docs:check`, and
+  `delivery-gates` on top of `check`). `delivery-gates` runs the two PR-only
+  branch-diff checks (`check_changelog.py --base` and `check_docs_impact.py
+  --base`) against `origin/main`, so a missing CHANGELOG or docs update is caught
+  here instead of failing CI after you push. It fail-opens when `origin/main`
+  isn't fetched; CI's sha-based steps remain authoritative there.
 - **Docs site:** the Zensical site under `docs/` (config: `mkdocs.yml`, which
   Zensical reads natively) is
   auto-maintained by the repo-local `/plugin-docs` skill + `documentation-reviewer`

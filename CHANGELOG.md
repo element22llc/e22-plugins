@@ -5,8 +5,78 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.6.0
 
+- **`/steer:work start` now self-assigns the issue to you.** Claiming an issue
+  assigns the invoking GitHub user (self-assign) alongside the existing
+  `steer:claimed-by` marker and `in-progress` transition, so the accountable
+  human is visible on the tracker without a manual `gh issue edit`. The
+  `tracker-sync` `assign/claim` op makes this explicit: the default subject is
+  the invoking user (`@me` on the `gh` path / the authenticated login on MCP),
+  and it **adds** rather than replaces assignees — an existing assignee is
+  preserved and a conflicting claim is still reported, never auto-overridden.
+
+### 2.5.0
+
+- **steer now reports its OWN defects upstream.** New `/steer:report` skill files
+  a bug about the plugin itself in `element22llc/e22-plugins` — it gathers the
+  defect (a recorded hook fault, a contradictory skill/rule instruction, or a
+  missing/broken template or script), **scrubs** it of secrets/absolute-paths/
+  product-code, **deduplicates** against existing upstream issues by a stable
+  `steer:fault-fingerprint`, renders the body for review, and only on explicit
+  confirmation files via `gh` (read-only `allowed-tools`; the upstream write stays
+  permission-prompted, with a paste-ready issue-form URL fallback when access is
+  missing). Detection feeds it from two sides: hooks record their own
+  malfunctions network-free via the new `hooks/lib/report-fault.sh`
+  (`steer_record_fault`, deduped, fail-soft) to a git-ignored
+  `.claude/steer-faults.log`, and the new `surface-faults.sh` SessionStart hook
+  raises any *unreported* faults once (tracked by a `.surfaced` marker, never a
+  per-session nag). `inject-standards.sh` records a fault when its rules dir is
+  missing. New always-on rule `97-self-report.md` tells the model to treat steer's
+  own misbehaviour as a reportable defect and offer `/steer:report` rather than
+  silently work around it — strictly steer defects, not product-code bugs. Ships a
+  `steer-bug` issue-body template, a repo `.github` self-report issue form, and
+  `.claude/steer-faults.*` gitignore entries in the scaffold.
+- **Bootstrapped repos now work in Claude Code worktrees out of the box.** The
+  scaffold ships a `.worktreeinclude` (installs at the repo root) listing the
+  git-ignored local config — `.env` / `.env.local` / nested `apps/*/.env` /
+  `infra/.env`, `.mise.local.toml`, `.claude/settings.local.json` — that Claude
+  Code copies into each `claude --worktree`. Worktrees start from git refs only,
+  so without it the app couldn't boot in a worktree (no `DATABASE_URL`, no local
+  secrets). The scaffold `.gitignore` now also ignores `.claude/worktrees/` so
+  those linked working trees don't show as untracked in the parent repo, and the
+  "Secrets handling" rule notes that `.worktreeinclude` is what preserves the
+  git-ignored-`.env` boot guarantee under `--worktree`. `MANIFEST.md` maps the
+  new file, and `scaffold-reconcile.py` now recognizes `.worktreeinclude` as a
+  line-based file so an existing one is merged additively (append missing
+  patterns, never clobber) — same as `.gitignore`.
+
+- **New read-only `steer-reviewer` subagent hardens large-repo fan-out in
+  `/steer:audit` and `/steer:drift`.** Both skills already described fanning out
+  one reviewer per dimension/feature, but that was loose prose and a generically
+  spawned worker wasn't guaranteed to inherit each skill's read-only contract.
+  `plugins/steer/agents/steer-reviewer.md` ships a worker with a `Read`/`Grep`/
+  `Glob`-only allowlist (no shell, no edits — read-only *by construction*), and
+  the two skills now invoke it **explicitly** (not via auto-delegation, the
+  failure mode that retired the earlier `steer-analyzer`) above a size gate —
+  audit per applicable dimension, drift per feature — while keeping vetting,
+  ranking, and tracker I/O in the lead. Below the gate the skills review inline.
+  The subagent grants **no new authority**: its tools are strictly narrower than
+  the skills that call it. `scripts/check_plugin.py` now validates `agents/*.md`
+  frontmatter (requires `name`/`description`, rejects the plugin-ignored
+  `hooks`/`mcpServers`/`permissionMode` fields); `scripts/validate_docs.py` keeps
+  `docs/reference/agents.md` in sync with the shipped subagents.
+- **Work markers now carry Claude Code session breadcrumbs.** `/steer:work`
+  records its local marker as `spec/.work/<branch>.md` (was an extensionless,
+  content-free file) with a newest-first list of the Claude Code session(s) that
+  worked the branch. The `reconcile-issue-first.sh` Stop hook keeps the head
+  current each turn — a single fail-open, idempotent, atomic update that never
+  rewrites the `issue:`/`branch:` header — and `/steer:work resume` surfaces a
+  prior session as a context source (`claude --resume <id>` + the transcript path)
+  before continuing. Session ids stay in the git-ignored marker and never reach
+  tracker metadata. The hook honours legacy extensionless markers, so repos mid-
+  transition keep working (no migration needed; markers upgrade on the next
+  `start`/`resume`).
 - **`/steer:sync` now repairs pre-2.0.0 rebrand tokens left in materialized
   files.** A repo bootstrapped under the old `e22-standards` name kept stale
   `/e22-*` command refs, the dead `e22-standards@e22-plugins` settings/CI marker,

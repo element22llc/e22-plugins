@@ -53,15 +53,24 @@ PR-autonomy rules; merge and deploy are never implied.**
 
 - **`start #N`** — resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
-  **claim** it (`assign` + `steer:claimed-by`, `transition` → `in-progress`);
+  **claim** it (`assign` the invoking GitHub user — self-assign — + set
+  `steer:claimed-by`, `transition` → `in-progress`);
   create or reuse the branch; **write the local work marker**
-  `spec/.work/<branch>` (slashes → underscores) naming this issue, so the
-  end-of-turn Stop-hook reconciliation recognizes the branch as issue-governed;
-  load linked specs (`steer:spec-path`, acceptance criteria); begin implementation.
+  `spec/.work/<branch>.md` (slashes → underscores) in the marker format below, so
+  the end-of-turn Stop-hook reconciliation recognizes the branch as
+  issue-governed; load linked specs (`steer:spec-path`, acceptance criteria);
+  begin implementation.
 - **`resume #N`** — reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
-  branch that no longer exists, a PR that merged/closed while away); continue
-  from the actual lifecycle state.
+  branch that no longer exists, a PR that merged/closed while away). **If the
+  marker's session list (below) has a head session different from the current
+  one, surface it as a context source** — offer `claude --resume <id>` to re-enter
+  that conversation, and (if present) the transcript located by globbing
+  `"$CLAUDE_CONFIG_DIR"/projects/*/<id>.jsonl`. Treat it as a best-effort
+  breadcrumb, never authority: the session may be gone or on another machine, so
+  fall back cleanly to reconstruction from the issue + tree. Then record the
+  current session at the head of the list. Continue from the actual lifecycle
+  state.
 - **`status #N`** — **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
@@ -93,11 +102,37 @@ evidence (a merged PR is necessary for `done`, not sufficient on its own).
 Use the repository's configured branch convention if one exists. Otherwise fall
 back to `issue/<number>-<slug>` — **not** `fix/…`, which would mislabel feature,
 docs, or infra work. Record the branch in `steer:branch` (tracker metadata) **and**
-in the local marker `spec/.work/<branch>` (slashes → underscores; local-only —
+in the local marker `spec/.work/<branch>.md` (slashes → underscores; local-only —
 `spec/.work/` is git-ignored). The marker is what the Stop-hook reconciliation
 checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
 unconventional but claimed branch is still recognized. Optional housekeeping:
 remove the marker when the issue is closed.
+
+### Marker format
+
+The marker is a small Markdown file. The `issue:` / `branch:` lines are written
+once and never rewritten; the session list under the heading is the single source
+of truth for "which Claude Code session(s) worked this branch" — the head is the
+most recent. The Stop hook keeps that head current each turn, and `resume` reads
+it (see above). Session ids are local breadcrumbs and **never** go into tracker
+metadata.
+
+```markdown
+# Work marker — issue 123
+
+- issue: 123
+- branch: issue/123-export-fix
+
+## Claude Code sessions (newest first)
+
+- 64ae4a08-7069-4810-8cd0-d443c8511365
+```
+
+Seed the first session id from `$CLAUDE_CODE_SESSION_ID` (fail-open: if it is
+empty, write the marker without a session bullet — its existence still governs).
+The session heading + list must be the **last** block in the file. If a legacy
+extensionless `spec/.work/<branch>` marker exists, upgrade it: carry over any
+`issue`/`branch` it records, write the new `.md` file, then remove the old one.
 
 ## Concurrency & claims
 

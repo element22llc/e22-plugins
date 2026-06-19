@@ -39,6 +39,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `biome.json` | `biome.json` | Lint + format (Node/TS). Python products use Ruff via `pyproject.toml` instead. |
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
 | `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold-reconcile.py` (never removes a repo's own lines). |
+| `worktreeinclude` | `.worktreeinclude` | Git-ignored local config (`.env*`, `.mise.local.toml`, `.claude/settings.local.json`) Claude Code copies into each `claude --worktree` — worktrees start from git refs only, so without this the app can't boot there. Merge additively if one exists; never add regenerable caches/virtualenvs. |
 | `mcp.json` | `.mcp.json` | GitHub MCP server for local sessions (`${GITHUB_PAT}` via shell, never committed). If one exists, merge additively with `scripts/scaffold-reconcile.py`. |
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold-reconcile.py` (unions permission lists / plugins, never overwrites an existing value). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |

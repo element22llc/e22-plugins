@@ -112,10 +112,18 @@ Decide which dimensions apply.
 
 ## Phase 1 — Audit
 
-Run one reviewer per applicable dimension. For a large repo, **fan out** (one
-subagent per dimension) and gather the results. Each finding must carry
+Run one reviewer per applicable dimension. Each finding must carry
 **`path:line` evidence** — the file and line that demonstrate it — plus a
 one-line statement of which standard it misses. No evidence, no finding.
+
+**Fan out on large repos.** When the repo is large — roughly **5+ applicable
+dimensions over more than ~200 source files**, or any sweep where reading every
+dimension inline would crowd this context — delegate **each applicable dimension
+to the `steer-reviewer` subagent** (one per dimension, explicitly, in parallel)
+and gather their summaries. `steer-reviewer` is read-only by construction
+(`Read`/`Grep`/`Glob` only), so the fan-out cannot edit code or spec. Below that
+size, review the dimensions inline here — the coordination overhead isn't worth
+it. Either way, the next phase vets everything the reviewers return.
 
 ## Phase 2 — Vet
 

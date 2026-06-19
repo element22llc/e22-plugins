@@ -60,11 +60,78 @@ command -v git >/dev/null 2>&1 || exit 0
 
 BRANCH="$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null)"
 
-# Prefer an explicit work marker over branch-name inference. /steer:work
-# records the issue it claimed for a branch under spec/.work/<branch> (slashes →
-# underscores). If this branch has a marker, the work is governed → stay silent.
+# Record the current Claude Code session at the head of an existing .md work
+# marker's session list (newest first), so /steer:work resume can offer to
+# re-enter that conversation. Fail-open and idempotent: no session id, an
+# unwritable marker, missing awk, a malformed marker, or the session already at
+# the head → leave the file byte-for-byte untouched. POSIX awk, atomic temp+mv,
+# and the issue:/branch: header lines (above the sessions heading) are never
+# rewritten. The session list is local-only breadcrumbs; it never leaves the
+# git-ignored marker.
+_steer_stamp_session() {
+	_mf="$1"
+	_sid="$2"
+	[ -n "${_sid}" ] || return 0
+	[ -f "${_mf}" ] && [ -w "${_mf}" ] || return 0
+	# Defensive: the id becomes file content — reject anything but uuid charset.
+	printf '%s' "${_sid}" | grep -qE '^[A-Za-z0-9_-]+$' || return 0
+	command -v awk >/dev/null 2>&1 || return 0
+	_tmp="${_mf}.stamp.$$"
+	# Lines before the "## Claude Code sessions" heading print verbatim (header).
+	# Lines after are session bullets we rebuild: current id first, then the prior
+	# ids (deduped, original order), capped. No heading → no append (untouched).
+	awk -v sid="${_sid}" -v cap=5 '
+		BEGIN { seen = 0; n = 0 }
+		!seen {
+			print
+			if ($0 ~ /^## Claude Code sessions/) { seen = 1 }
+			next
+		}
+		{
+			if ($0 ~ /^[[:space:]]*$/) next
+			if ($0 ~ /^-[[:space:]]+/) {
+				id = $0
+				sub(/^-[[:space:]]+/, "", id)
+				sub(/[[:space:]].*$/, "", id)
+				if (id != "" && id != sid && !(id in have)) { have[id] = 1; ord[++n] = id }
+			}
+			next
+		}
+		END {
+			if (seen) {
+				print ""
+				print "- " sid
+				c = 1
+				for (i = 1; i <= n && c < cap; i++) { print "- " ord[i]; c++ }
+			}
+		}
+	' "${_mf}" >"${_tmp}" 2>/dev/null || {
+		rm -f "${_tmp}" 2>/dev/null
+		return 0
+	}
+	# No-op when nothing changed (session already at the head) — avoid churn.
+	if cmp -s "${_tmp}" "${_mf}" 2>/dev/null; then
+		rm -f "${_tmp}" 2>/dev/null
+	else
+		mv "${_tmp}" "${_mf}" 2>/dev/null || rm -f "${_tmp}" 2>/dev/null
+	fi
+	return 0
+}
+
+# Prefer an explicit work marker over branch-name inference. /steer:work records
+# the claimed issue for a branch under spec/.work/<branch>.md (slashes →
+# underscores); a legacy extensionless marker (repos that predate the .md format)
+# is still honoured. If this branch has a marker the work is governed → stamp the
+# session into the .md marker and stay silent.
 _bkey="$(printf '%s' "${BRANCH}" | tr '/' '_')"
-[ -n "${BRANCH}" ] && [ -f "${ROOT}/spec/.work/${_bkey}" ] && exit 0
+if [ -n "${BRANCH}" ]; then
+	_mdmark="${ROOT}/spec/.work/${_bkey}.md"
+	if [ -f "${_mdmark}" ]; then
+		_steer_stamp_session "${_mdmark}" "${SID}"
+		exit 0
+	fi
+	[ -f "${ROOT}/spec/.work/${_bkey}" ] && exit 0
+fi
 
 # Fallback when no marker exists (older repos / out-of-band branches): recognize
 # only the issue-branch conventions — issue/<n>-slug, a leading issue number,
