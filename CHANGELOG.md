@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.8.0
 
 - **Fixed:** low-severity audit nits. The no-jq `steer_field` fallback in
   `hooks/lib/json.sh` now mirrors jq's precedence — it searches the post-`tool_input`
