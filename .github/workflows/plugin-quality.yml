@@ -9,6 +9,15 @@ on:
 permissions:
   contents: read
 
+# Force mise to install the standard (GIL-enabled) precompiled CPython, not the
+# free-threaded build. Current mise resolves a bare `python = "3.14"` to the
+# free-threaded interpreter and ignores the locked URL for the core:python
+# backend, so without this the gate would silently run on a free-threaded ABI
+# that diverges from local dev (and breaks any abi3-only wheel). Keep CI on the
+# same standard interpreter the docs build uses. Must be set before mise-action.
+env:
+  MISE_PYTHON_PRECOMPILED_FLAVOR: install_only_stripped
+
 jobs:
   plugin-quality:
     runs-on: ubuntu-latest
