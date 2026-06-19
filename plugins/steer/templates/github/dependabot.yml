@@ -1,0 +1,82 @@
+# steer — Dependabot configuration (installs to .github/dependabot.yml)
+#
+# Keeps dependencies patched without manual chasing. Paired with the
+# dependabot-auto-merge.yml workflow, low-risk updates (patch/minor + security)
+# are auto-approved and auto-merged once `ci` is green — see that workflow and
+# README.md#branch-protection for the documented review-gate exception. Major
+# bumps are deliberately left for a human (they can carry breaking changes and
+# may need a policy/versions.yml floor decision), so they are NOT auto-merged
+# and are ignored here for ecosystems governed by the version-pin policy.
+#
+# Ecosystems: `github-actions` is enabled because every scaffolded repo ships
+# workflows. The app-stack blocks (npm / pip / docker) are commented out — the
+# scaffold is stack-agnostic; /steer:init and /steer:adopt UNCOMMENT the block
+# that matches the detected stack (mirrors how ci.yml gates stack steps). Add or
+# remove blocks to match what the repo actually builds.
+version: 2
+
+updates:
+  # GitHub Actions — always applicable; the scaffold ships workflows from day one.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One PR per week for all action bumps instead of one per action.
+      github-actions:
+        patterns:
+          - "*"
+    # Majors can break a workflow contract — leave those for a human.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+
+  # ── Uncomment the block matching the detected stack (init/adopt do this) ──
+
+  # Node / TypeScript — pnpm workspace at the repo root.
+  # - package-ecosystem: npm
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #   open-pull-requests-limit: 5
+  #   groups:
+  #     minor-and-patch:
+  #       update-types:
+  #         - minor
+  #         - patch
+  #   ignore:
+  #     # Major bumps are a deliberate decision (and may touch policy/versions.yml).
+  #     - dependency-name: "*"
+  #       update-types:
+  #         - version-update:semver-major
+
+  # Python — pyproject.toml at the repo root.
+  # - package-ecosystem: pip
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #   open-pull-requests-limit: 5
+  #   groups:
+  #     minor-and-patch:
+  #       update-types:
+  #         - minor
+  #         - patch
+  #   ignore:
+  #     - dependency-name: "*"
+  #       update-types:
+  #         - version-update:semver-major
+
+  # Docker — base images in a Dockerfile / compose.yaml. The version-pin policy
+  # (policy/versions.yml) governs image majors; let Dependabot patch within a
+  # major and leave major bumps to a steer:allow-pin ADR decision.
+  # - package-ecosystem: docker
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #   open-pull-requests-limit: 5
+  #   ignore:
+  #     - dependency-name: "*"
+  #       update-types:
+  #         - version-update:semver-major

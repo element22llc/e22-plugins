@@ -1,0 +1,78 @@
+name: Dependabot auto-merge
+
+# The DOCUMENTED exception to the human-review gate (policy/branch-protection.yml,
+# README.md#branch-protection). steer normally requires a human-approved PR before
+# anything lands on `main`. Dependabot version bumps don't touch application logic,
+# so this workflow auto-approves and merges the LOW-RISK subset — patch and minor
+# updates (most security fixes land here). It deliberately does NOT touch:
+#   - major updates: they can carry breaking changes and may need a
+#     policy/versions.yml floor decision, so a human reviews them (dependabot.yml
+#     also `ignore`s majors for policy-governed ecosystems);
+#   - any non-Dependabot PR: the `if` guard scopes this to dependabot[bot] only.
+#
+# Auto-merge is scoped to Dependabot BY THIS WORKFLOW — it does NOT enable GitHub's
+# repo-wide `allow_auto_merge` setting (which would expose the auto-merge button to
+# every PR). The merge here is a direct, single-PR merge gated on the dependabot[bot]
+# guard, so the auto-merge behaviour exists for Dependabot PRs and nothing else.
+#
+# What stays the HARD gate: the required `ci` check. This job waits for `ci` to go
+# green before it merges (`gh pr checks --watch --required`), so a bump that breaks
+# tests, lint, or the version-pin scan never lands. CI — not human eyes — is what
+# guarantees the bump is safe; the exception only waives the human *review*, never
+# the tests. The approving review is submitted by github-actions[bot]; with
+# count-based required reviews it satisfies the gate. A CODEOWNERS-required review,
+# if the repo adds one, still needs a human — by design.
+
+on: pull_request
+
+# Dependabot-triggered runs get exactly the permissions declared here.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot-auto-merge:
+    name: dependabot-auto-merge
+    runs-on: ubuntu-latest
+    # Scope strictly to Dependabot's own PRs.
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Patch + minor only — the subset that does not touch app logic. Majors fall
+      # through to the comment step below, leaving them for a human.
+      - name: Approve, wait for CI, merge (patch/minor)
+        if: >-
+          ${{ steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+              steps.metadata.outputs.update-type == 'version-update:semver-minor' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review --approve "$PR_URL" \
+            --body "Auto-approved by steer: ${{ steps.metadata.outputs.update-type }} dependency update. CI is the hard gate (see .github/workflows/dependabot-auto-merge.yml)."
+          # Wait for the REQUIRED checks (the `ci` gate) to finish. --required
+          # watches only required checks, so it ignores this non-required job and
+          # cannot deadlock on itself; --fail-fast aborts the moment ci fails.
+          gh pr checks "$PR_URL" --watch --required --fail-fast
+          # Direct single-PR merge — auto-merge scoped to this Dependabot PR, with
+          # no repo-wide `allow_auto_merge`. If branch protection requires the
+          # branch be up to date (`strict: true`) and it is behind, this merge is
+          # refused; bring it current so Dependabot re-runs CI and a later run
+          # merges it. Dependabot rebases its own PRs when the base moves, so this
+          # is the rare path.
+          gh pr merge --squash --delete-branch "$PR_URL" \
+            || gh pr update-branch "$PR_URL"
+
+      - name: Note major update left for human review
+        if: ${{ steps.metadata.outputs.update-type == 'version-update:semver-major' }}
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_URL" \
+            --body "Major version update — **not** auto-merged. steer leaves majors for a human: they can carry breaking changes and may need a \`policy/versions.yml\` decision (\`/steer:adr\` if you raise a floor)."

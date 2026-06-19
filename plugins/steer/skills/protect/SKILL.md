@@ -1,6 +1,6 @@
 ---
 name: protect
-description: "Make GitHub branch protection — the real gate against direct-push-to-main — reliable on a managed repo. Reads the machine-readable policy (policy/branch-protection.yml, consumer-first then plugin default), queries the repo's live protection via gh, reports a per-rule compliant/drifted/absent diff, and on the dev's explicit confirmation applies the missing settings via gh api. Verify by default; never writes repo settings without a yes. Configures the GitHub-side gate only — steer is advisory in the local session (rule 95) and this skill does not and cannot block local pushes."
+description: "Make GitHub branch protection — the real gate against direct-push-to-main — reliable on a managed repo. Reads the machine-readable policy (policy/branch-protection.yml, consumer-first then plugin default), queries the repo's live protection via gh, reports a per-rule compliant/drifted/absent diff, and on the dev's explicit confirmation applies the missing settings via gh api — branch protection plus the repo-level settings the policy declares (secret scanning, Dependabot alerts + security updates). Verify by default; never writes repo settings without a yes. Configures the GitHub-side gate only — steer is advisory in the local session (rule 95) and this skill does not and cannot block local pushes."
 when_to_use: 'Use when asked to "protect main", set up or check branch protection / merge rules on a GitHub-adopted repo, or as the final step of init/adopt to establish the PR gate. Also when /steer:audit flags missing or drifted branch protection.'
 argument-hint: "[verify | apply]"
 allowed-tools:
@@ -67,8 +67,15 @@ Read live state (tolerate `404` = no protection at all):
 gh api "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection"
 ```
 
-Plus repo-level security (secret scanning + push protection) via
-`gh api "repos/${OWNER}/${REPO}"` (the `security_and_analysis` block).
+Plus the repo-level settings the policy declares, read from
+`gh api "repos/${OWNER}/${REPO}"`:
+
+- secret scanning + push protection (the `security_and_analysis` block);
+- Dependabot security updates (`security_and_analysis.dependabot_security_updates`).
+
+Dependabot **alerts** have no field on the repo object — read their state from
+`gh api "repos/${OWNER}/${REPO}/vulnerability-alerts"` (`204` = enabled, `404` =
+disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
 Produce a **per-rule diff table** — for each policy field: `compliant` /
 `drifted (actual → desired)` / `absent`. If every rule is compliant, say
@@ -93,9 +100,13 @@ When rules are drifted or absent:
    `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
    placeholders or a heredoc in the command you hand them to run.
 2. **Wait for the dev's explicit confirmation.** Do not apply without it.
-3. Apply secret scanning + push protection as a **separate** call
-   (`gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
-   block) — surfaced and confirmed the same way.
+3. Apply the repo-level settings as **separate** calls — surfaced and confirmed
+   the same way as the protection PUT:
+   - secret scanning + push protection **and** Dependabot security updates in one
+     `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
+     block;
+   - Dependabot **alerts** via `gh api -X PUT
+     "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
 4. After applying, re-run the verify diff and report the new state.
 
 **Insufficient permissions (`403`/admin required):** you cannot set protection
@@ -111,3 +122,14 @@ mapped to each policy field, and let the dev (or an org admin) apply them.
   than forcing a second mechanism.
 - This skill never opens PRs, never pushes, never runs `gh auth`. It touches repo
   *settings* only, and only with a yes.
+- **Dependabot auto-merge exception.** The policy documents a deliberate carve-out
+  to the required human review: Dependabot **patch/minor** PRs (majors excluded)
+  are auto-approved and auto-merged once the required `ci` check is green — CI, not
+  a human, guarantees the bump is safe. protect's job is only to enable Dependabot
+  alerts + security updates (so security PRs get opened). It deliberately does
+  **not** enable GitHub's repo-wide `allow_auto_merge` — that switch would expose
+  auto-merge to every PR; auto-merge is scoped to Dependabot by the workflow
+  itself. The merge is enacted by `.github/workflows/dependabot-auto-merge.yml`
+  (installed via the scaffold / `/steer:sync`), which waits for `ci` then merges
+  the single Dependabot PR directly — **protect never merges.** If that workflow is
+  absent, say so: alerts are on but nothing auto-merges yet.

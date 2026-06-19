@@ -1,8 +1,9 @@
 # GitHub Actions integration
 
-steer ships two kinds of GitHub Actions integration. One is installed by default
-and keeps CI Claude consistent with local sessions; the other is an opt-in recipe
-for unattended automation.
+steer ships a few kinds of GitHub Actions integration. Two are installed by
+default — `claude.yml` (keeps CI Claude consistent with local sessions) and
+Dependabot (keeps dependencies patched, and manages the resulting PRs); the last
+is an opt-in recipe for unattended automation.
 
 ## `claude.yml` — the `@claude` mention workflow (default)
 
@@ -57,6 +58,43 @@ Verify by mentioning `@claude` and confirming the reply reflects steer standards
 that the action ran. The workflow log's `system/init` event also lists loaded
 plugins. See the scaffold `README.md` → "GitHub Actions secrets" for the
 product-repo-facing version of this.
+
+## Dependabot — dependency updates + scoped auto-merge (default)
+
+`/steer:init` and `/steer:adopt` install two files (sources under
+`plugins/steer/templates/github/`):
+
+- **`.github/dependabot.yml`** — the `github-actions` ecosystem is enabled live
+  (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` blocks are
+  commented out for init/adopt to **uncomment per detected stack** (mirroring how
+  `ci.yml` gates stack steps). Updates are grouped, and **major** bumps are
+  `ignore`d — they're deferred to a deliberate `policy/versions.yml` decision.
+- **`.github/workflows/dependabot-auto-merge.yml`** — auto-approves Dependabot
+  **patch/minor** PRs, waits for the required `ci` check, then merges that single
+  PR. **Major** bumps are never auto-merged; they get a "left for a human" comment.
+
+### The review-gate exception
+
+steer normally requires a human-approved PR before anything lands on `main`. The
+auto-merge workflow is a **deliberate, documented exception**: dependency bumps
+don't touch application logic, so the human *review* is waived. It is **not** a
+waiver of the tests — the workflow waits for the required `ci` check to go green
+before it merges, so a bump that breaks tests, lint, or the version-pin scan never
+lands. **CI, not a human, is what guarantees the bump is safe.** The exception is
+declared in `policy/branch-protection.yml` and the scaffold `README.md`
+branch-protection section.
+
+!!! note "Auto-merge is scoped to Dependabot — no repo-wide switch"
+    The merge is gated by the workflow's `if: github.actor == 'dependabot[bot]'`
+    guard and uses a direct single-PR merge. It deliberately does **not** enable
+    GitHub's repo-wide `allow_auto_merge` setting, which would expose an auto-merge
+    button to every PR. `gh pr checks --watch --required` watches only required
+    checks, so the job never deadlocks on its own non-required run.
+
+`/steer:protect` enables the repo settings the exception relies on — Dependabot
+**alerts** and **security updates** (so security PRs get opened) — alongside secret
+scanning. It configures settings only; the merge itself is enacted by the workflow.
+`/steer:sync` keeps both files wired (the `dependency-automation` capability).
 
 ## Agentic workflows (`gh aw`) — optional, opt-in
 
