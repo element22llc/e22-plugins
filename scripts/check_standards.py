@@ -328,6 +328,13 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
                 for t in tokens(m.group(1)):
                     if t not in rbef:
                         errors.append(f"{loc}: required_before token '{t}' not in registry")
+            # `created:` is optional and a date, not an enum — when present it must
+            # be YYYY-MM-DD so the staleness clock can read it (empty = unset).
+            m = re.match(r"^\s*-\s*created:\s*(.*)$", line)
+            if m:
+                val = m.group(1).split("#")[0].strip()
+                if val and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", val):
+                    errors.append(f"{loc}: question created '{val}' is not a YYYY-MM-DD date")
             for key, vals in (
                 ("steer:state", istate),
                 ("steer:source", isrc),

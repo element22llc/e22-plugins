@@ -30,7 +30,12 @@ These three layers are deliberately distinct:
 
 A question stays in a spec's `## Open questions` (as `Q-NNN`) when it's local to
 one feature; it is **promoted to an issue** when it needs a named owner, blocks
-multiple features, needs stakeholder input, or could outlive the session.
+multiple features, needs stakeholder input, or could outlive the session. A
+blocking question still open after 14 days has, by definition, outlived the
+session: the SessionStart hook escalates it, and promotion assigns it to its
+`owner:` role via the `owners:` map in `tracker.md`. So questions get *pushed*
+at a named human rather than rotting in markdown — without every question
+becoming an issue.
 
 !!! warning "Reverse-engineering never invents decisions"
     `/steer:adopt` builds a spine from existing code, but it must **never infer a
