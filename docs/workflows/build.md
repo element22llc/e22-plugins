@@ -44,6 +44,16 @@ five plain-language steps — you never type an issue, spec, or work command:
 If a session is interrupted, just run `/steer:build` again — it resumes from
 `/spec/BUILD-STATUS.md`.
 
+!!! warning "\"Prototype\" is not an escape hatch"
+    Saying *"just a prototype"*, *"quick"*, or *"throwaway"* relaxes only the
+    **ceremony** — a lighter interview, no per-feature issue/branch/PR, high-risk
+    choices stubbed and marked. It does **not** skip the plugin's **bundled
+    scaffold** (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) or
+    the `/spec` spine. A prototype is still greenfield: it gets the scaffold (so it
+    costs nothing to graduate later) and at least a minimal `/spec`. Hand-rolling
+    `package.json` / build config / CI from scratch instead of installing the
+    scaffold is skipped bootstrap, not prototype mode.
+
 !!! info "Where the gates are"
     Claude commits on its own, but **approving the spec** and **opening/merging
     the PR** are always human decisions. See the
