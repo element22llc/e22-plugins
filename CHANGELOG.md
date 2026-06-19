@@ -5,7 +5,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
-### [Unreleased]
+### 2.5.0
 
 - **steer now reports its OWN defects upstream.** New `/steer:report` skill files
   a bug about the plugin itself in `element22llc/e22-plugins` — it gathers the
