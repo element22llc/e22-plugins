@@ -32,6 +32,9 @@ It covers, in detail:
 - **Monorepo layout** — `/apps`, `/packages`, `/configs`; polyrepo across
   products, monorepo within one.
 - **Workspace tooling** — pnpm (Node), uv (Python).
+- **Editor & IDE** — VS Code as the default editor; committed `.vscode/`
+  config (recommended extensions + Biome format-on-save); prefer in-editor
+  extensions (DB access, etc.) over standalone apps.
 - **Linting & formatting** — Biome (Node/TS), Ruff (Python); no ESLint/Prettier
   or Flake8/Black/isort alongside them without an ADR.
 - **Testing** — Vitest (Node/TS), pytest (Python).

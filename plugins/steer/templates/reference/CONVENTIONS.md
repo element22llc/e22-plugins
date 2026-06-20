@@ -216,6 +216,39 @@ package manager you use.
 Layered task runners (turbo, nx) remain a per-project call — record them in an
 ADR if adopted.
 
+### Editor & IDE
+
+**[Visual Studio Code](https://code.visualstudio.com/) is the default editor.**
+A default bias, not a mandate — use whatever editor you're productive in — but
+the *shared, committed* workspace config targets VS Code, and that's where the
+team's setup is documented and kept in sync.
+
+- **Workspace config is committed, in `.vscode/`.** `extensions.json` lists the
+  recommended extensions (VS Code prompts contributors to install them on first
+  open); `settings.json` carries shared editor defaults (Biome as the
+  format-on-save formatter, so the editor matches `pnpm format` / CI). Both ship
+  in the plugin's bundled scaffold and install during `/steer:init` —
+  per-user overrides go in a git-ignored `.vscode/settings.local.json`, never in
+  the committed file.
+- **Prefer in-editor extensions over standalone apps for adjacent activities.**
+  Lean on VS Code's extension ecosystem to keep day-to-day work in one place
+  rather than juggling separate tools — for example **database access** (browse
+  and query the PostgreSQL instance from the editor), Tailwind IntelliSense,
+  Terraform/HCL for `/infra`, GitHub Actions authoring, ShellCheck, and `.env`
+  ergonomics. Each recommended extension maps to a tool already in the stack, so
+  the list stays aligned with the toolchain (e.g. Biome, not ESLint/Prettier).
+- **Keep `extensions.json` aligned with the stack.** When the stack gains a tool,
+  add the matching extension (and drop ones for tools you remove) so a fresh
+  clone's "recommended extensions" prompt reflects the real toolchain. The
+  Python path (Ruff, Python) is recommended only once you enable Python in
+  `mise.toml`.
+
+Database access through an editor extension is for **browsing and ad-hoc
+queries** during development — application data access still goes through the ORM
+(Drizzle/SQLAlchemy), parameterized and migration-tracked (see Baseline
+patterns). The extension is a window onto the same local Compose database, not a
+second access path in the app.
+
 ### Linting & formatting
 
 One linter+formatter per language, installed via mise (single fast binaries, so
