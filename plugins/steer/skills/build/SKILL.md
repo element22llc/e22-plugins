@@ -60,11 +60,11 @@ on the next `/steer:build` run.
      Mode = Greenfield, PO = this user's GitHub handle, Devs = "to be assigned
      at review". Keep the **default stack** — no override interview; the
      defaults exist for exactly this case.
-   - Drive the toolchain yourself: install mise if missing (e.g.
-     `brew install mise` on macOS; on Linux/WSL2 use mise's install script), run
-     `mise install`, and verify the `mise.lock` files gained real `[[tools.*]]`
-     entries (see `/steer:init` step 4). Confirm Docker Desktop is
-     running; help start it if not.
+   - Drive the toolchain yourself: run **`/steer:doctor`**, which detects and
+     (with the PO's yes) installs mise, runs `mise install`, and checks Docker
+     Desktop — then verify the `mise.lock` files gained real `[[tools.*]]`
+     entries (see `/steer:init` step 4). The PO still installs Claude Code and
+     Docker Desktop by hand (the manual floor doctor can only link, not script).
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,

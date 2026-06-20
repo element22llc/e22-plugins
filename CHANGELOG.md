@@ -38,6 +38,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `2.9.0`. Both are realigned, and `check_plugin.py` now gates their version
   against `.claude-plugin/plugin.json` (the release helper bumps all three) so the
   Copilot marketplace can no longer silently lag a release.
+- **Added:** `/steer:doctor` — a prerequisite detector + confirmation-gated
+  installer that takes a blank or half-set-up machine to the point where
+  `/steer:init`, `/steer:build`, and `mise run dev:setup` work. It runs a new
+  read-only `scripts/scan-prereqs.sh` (detects host OS and git / mise / Docker /
+  the mise-managed node/pnpm/uv, with `compose.yaml`- and stack-aware
+  conditionality), reports status plainly, and installs the scriptable tools
+  (mise, then the runtimes via `mise install`) on the user's yes — handing over
+  manual instructions for the GUI/host steps a skill cannot script (Docker
+  Desktop, Windows→WSL2). `/steer:build` and `/steer:init` now delegate their
+  toolchain setup here instead of carrying their own copies, closing the
+  dev-path gap where `/steer:init` previously assumed `mise` was already
+  installed. `rules/15-commands.md` and the scaffold README dev quickstart now
+  point at it.
 
 ### 2.9.0
 
