@@ -5,6 +5,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ## steer
 
+### [Unreleased]
+
+- **Changed:** normalized the bullet markers in the `SPEC-FRAMEWORK.md` reference
+  template to dashes, so the whole `templates/reference/` set uses one consistent
+  list style. Prose-only; no behavioral change.
+
 ### 2.9.0
 
 - **Changed:** hardened greenfield bootstrap precedence so a **prototype** can no
