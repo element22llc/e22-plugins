@@ -1,7 +1,7 @@
 {
   "name": "steer",
-  "description": "Engineering standards for GitHub Copilot CLI. Loads steer's skills and a Copilot-native hook set. The always-on rules are delivered separately as .github/copilot-instructions.md (installed by /steer:init), since Copilot has no context-injecting SessionStart hook.",
-  "version": "2.8.1",
+  "description": "Engineering standards for GitHub Copilot (CLI and VS Code). On the Copilot CLI this manifest loads steer's skills and a Copilot-native hook set; in both surfaces the always-on rules are delivered as .github/copilot-instructions.md and the skills as .github/prompts/*.prompt.md (installed by /steer:init), since Copilot has no context-injecting SessionStart hook.",
+  "version": "2.9.0",
   "skills": "skills/",
   "hooks": "hooks/copilot-hooks.json"
 }

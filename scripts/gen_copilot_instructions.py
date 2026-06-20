@@ -3,10 +3,11 @@
 
 steer's always-on engineering standards live in ``plugins/steer/rules/*.md`` and
 reach Claude Code via the ``inject-standards.sh`` SessionStart hook, whose stdout
-becomes the session's ``additionalContext``. GitHub Copilot CLI has no equivalent
+becomes the session's ``additionalContext``. GitHub Copilot has no equivalent
 context-injecting hook — its ``sessionStart`` hook ignores stdout — so Copilot's
 always-on context comes from a static custom-instructions file, primarily
-``.github/copilot-instructions.md``.
+``.github/copilot-instructions.md``. This one file serves **both** Copilot
+surfaces: the Copilot CLI and Copilot in VS Code (which reads it natively).
 
 This script concatenates the same ``rules/*.md`` (lexical order, mirroring the
 hook) into ``plugins/steer/templates/github/copilot-instructions.md`` — the

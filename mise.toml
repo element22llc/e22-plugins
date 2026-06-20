@@ -32,6 +32,8 @@ run = [
   "uv run python scripts/check_standards.py",
   # The committed Copilot instructions artifact must stay in sync with rules/.
   "uv run python scripts/check_copilot_instructions.py",
+  # The committed Copilot prompt-file artifacts must stay in sync with skills/.
+  "uv run python scripts/check_copilot_prompts.py",
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
@@ -80,9 +82,10 @@ run = [
 ]
 
 [tasks."gen:copilot"]
-description = "Regenerate the Copilot instructions artifact from plugins/steer/rules/"
+description = "Regenerate the Copilot instructions (from rules/) + prompt-file artifacts (from skills/)"
 run = [
   "uv run python scripts/gen_copilot_instructions.py --write",
+  "uv run python scripts/gen_copilot_prompts.py --write",
 ]
 
 # Documentation site (Zensical + mermaid). The Zensical toolchain lives in

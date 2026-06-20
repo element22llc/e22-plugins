@@ -90,8 +90,13 @@ under `## steer`, and released headings descend in strict semver order.
      prior `Read` of that exact path, and switching into a fresh worktree resets
      that state.
 
-5. **Bump `plugin.json`:** set `"version": "X.Y.Z"` in
-   `plugins/steer/.claude-plugin/plugin.json` to match the new heading exactly.
+5. **Bump every manifest version to `X.Y.Z`** — the plugin ships to two
+   marketplaces, so three files carry the version and must match the new heading
+   exactly (`check_plugin.py`'s version-sync gate fails the build if any drifts):
+   - `plugins/steer/.claude-plugin/plugin.json` (`version`) — the source of truth.
+   - `plugins/steer/.github/plugin/plugin.json` (`version`) — Copilot plugin manifest.
+   - `.github/plugin/marketplace.json` — the `steer` plugin entry's `version`
+     (leave `metadata.version`, the marketplace's own version, alone).
 
 6. **Validate the release invariant:** `uv run python scripts/check_changelog.py`
    (no `--base`, so it runs the release validator only). It must report clean —
