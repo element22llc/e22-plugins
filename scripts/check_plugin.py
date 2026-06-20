@@ -114,6 +114,58 @@ def check_plugin_json(root: Path, errors: list[str]) -> None:
             errors.append(f"{path}: missing required key '{key}'")
 
 
+def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
+    """The Copilot manifests must carry the same version as the plugin.
+
+    steer is published to two marketplaces from one source of truth — the Claude
+    ``.claude-plugin/plugin.json`` ``version`` (the Claude ``marketplace.json``
+    carries no per-plugin version). The Copilot CLI manifests
+    (``.github/plugin/plugin.json`` under the plugin root, and the repo-root
+    ``.github/plugin/marketplace.json``) each declare their own version and so can
+    silently drift from a release. This check anchors both to the plugin version.
+    """
+    claude_manifest = root / ".claude-plugin" / "plugin.json"
+    if not claude_manifest.is_file():
+        return  # check_plugin_json already reports the missing source of truth.
+    try:
+        src_version = json.loads(claude_manifest.read_text(encoding="utf-8")).get("version")
+    except json.JSONDecodeError:
+        return  # check_plugin_json already reports the malformed source of truth.
+    if not src_version:
+        return  # check_plugin_json already reports the missing version.
+
+    # Copilot plugin manifest (lives under the plugin root).
+    copilot_plugin = root / ".github" / "plugin" / "plugin.json"
+    if copilot_plugin.is_file():
+        try:
+            version = json.loads(copilot_plugin.read_text(encoding="utf-8")).get("version")
+            if version != src_version:
+                errors.append(
+                    f"{copilot_plugin}: version '{version}' != plugin version "
+                    f"'{src_version}' (Copilot manifest drifted — keep them in sync at release)"
+                )
+        except json.JSONDecodeError as exc:
+            errors.append(f"{copilot_plugin}: invalid JSON ({exc})")
+
+    # Copilot marketplace manifest (lives at the repo root, two levels above the
+    # plugin root — absent in unit tests with a temp root, in which case skip).
+    copilot_marketplace = root.parent.parent / ".github" / "plugin" / "marketplace.json"
+    if copilot_marketplace.is_file():
+        try:
+            data = json.loads(copilot_marketplace.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"{copilot_marketplace}: invalid JSON ({exc})")
+            return
+        for entry in data.get("plugins", []):
+            if entry.get("name") == "steer":
+                version = entry.get("version")
+                if version != src_version:
+                    errors.append(
+                        f"{copilot_marketplace}: steer entry version '{version}' != "
+                        f"plugin version '{src_version}' (Copilot marketplace drifted)"
+                    )
+
+
 def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> None:
     required = list(REQUIRED_SKILL_FRONTMATTER)
     if not require_when_to_use and "when_to_use" in required:
@@ -257,6 +309,7 @@ def run_checks(
     if not root.is_dir():
         return [f"{root}: plugin root directory not found"]
     check_plugin_json(root, errors)
+    check_copilot_version_sync(root, errors)
     check_skills(root, errors, require_when_to_use)
     check_agents(root, errors)
     check_placeholders(root, errors)

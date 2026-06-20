@@ -12,5 +12,11 @@
     "editor.defaultFormatter": "biomejs.biome"
   },
   "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+  // GitHub Copilot picks up the steer engineering standards from
+  // .github/copilot-instructions.md and the per-skill .github/prompts/*.prompt.md
+  // slash-commands. Both are default-on in recent VS Code; set them explicitly so
+  // the standards load regardless of a teammate's defaults. Remove if Copilot is unused.
+  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+  "chat.promptFiles": true
 }

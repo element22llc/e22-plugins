@@ -146,15 +146,15 @@ Readiness is reported as `ready | incomplete | missing` — **never** `approved`
 
    Example:
 
-   * Spec: User can reset password via email.
-   * Code comment or contract detail: Uses a specific hashing algorithm or queue implementation.
+   - Spec: User can reset password via email.
+   - Code comment or contract detail: Uses a specific hashing algorithm or queue implementation.
 
    Put technical details in `contract.md` only when they matter for behavior, integration, security, or future maintenance.
 
 5. **When spec and code disagree, resolve the drift explicitly.** Do not let the disagreement sit. Decide one way or the other in a single PR:
 
-   * Fix the code to match the spec, or
-   * Update the spec to match the code.
+   - Fix the code to match the spec, or
+   - Update the spec to match the code.
 
    PO approval is needed if user-facing behavior changed. Dev approval is enough if the change is internal or architectural.
 
@@ -193,8 +193,8 @@ implement → update the owning `contract.md` if behavior changed.
 
 ## Naming
 
-* Feature IDs are short kebab-case slugs: `user-login`, `password-reset`, `export-csv`.
-* ADR files are numbered and slugged: `0003-use-postgres-for-search.md`.
+- Feature IDs are short kebab-case slugs: `user-login`, `password-reset`, `export-csv`.
+- ADR files are numbered and slugged: `0003-use-postgres-for-search.md`.
 
 ## Architecture Decision Records (ADRs)
 

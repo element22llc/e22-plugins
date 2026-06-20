@@ -5,15 +5,15 @@
     "email": "alexis.valotaire@element-22.com"
   },
   "metadata": {
-    "description": "Org-wide engineering standards for GitHub Copilot CLI. Lists steer, which installs the same always-on engineering operating manual that the Claude Code marketplace ships — sourced from one set of rules so both surfaces stay in sync.",
+    "description": "Org-wide engineering standards for GitHub Copilot (CLI and VS Code). Lists steer, which installs the same always-on engineering operating manual that the Claude Code marketplace ships — sourced from one set of rules so all surfaces stay in sync.",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "steer",
       "source": "./plugins/steer",
-      "version": "2.8.1",
-      "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation, issue-tracker integration, testing rules, Definition of Done, drift gates, secrets handling, and compliance-aligned delivery. On Copilot, the standards install as .github/copilot-instructions.md (generated from the same rules/ that Claude Code injects via a SessionStart hook); run /steer:init from Claude Code to install or refresh it."
+      "version": "2.9.0",
+      "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation, issue-tracker integration, testing rules, Definition of Done, drift gates, secrets handling, and compliance-aligned delivery. On Copilot (CLI and VS Code) the standards install as .github/copilot-instructions.md and the skills as .github/prompts/*.prompt.md (generated from the same rules/ and skills/ that Claude Code injects via a SessionStart hook); run /steer:init from Claude Code to install or refresh them."
     }
   ]
 }

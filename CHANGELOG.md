@@ -17,6 +17,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   as a default bias, not a mandate, and clarifying that an editor DB extension is
   for ad-hoc dev browsing, not a second app data-access path (the ORM still owns
   that).
+- **Changed:** normalized the bullet markers in the `SPEC-FRAMEWORK.md` reference
+  template to dashes, so the whole `templates/reference/` set uses one consistent
+  list style. Prose-only; no behavioral change.
+- **Added:** GitHub Copilot support now covers **VS Code**, not just the CLI. The
+  always-on standards already reached VS Code via the same
+  `.github/copilot-instructions.md` (read natively); the skills now ship too, as
+  generated `.github/prompts/steer-<skill>.prompt.md` prompt files, surfaced in
+  Copilot Chat as `/steer-<skill>` slash-commands. Generated from `skills/` by
+  `mise run gen:copilot` (new `scripts/gen_copilot_prompts.py`), kept honest by a
+  drift gate (`scripts/check_copilot_prompts.py`, in `plugin-check`), installed by
+  `/steer:init` / `/steer:adopt`, and mapped in the scaffold `MANIFEST.md`. The
+  bundled `.vscode/settings.json` enables instruction- and prompt-file reading
+  explicitly. Prompt files are intent capsules (purpose / when-to-use / arguments),
+  not verbatim skill bodies — the authoritative procedure stays in the plugin. Docs,
+  manifests, and the scaffold MANIFEST are reframed from "Copilot CLI" to
+  "Copilot (CLI + VS Code)".
+- **Fixed:** the Copilot manifests (`.github/plugin/plugin.json` and
+  `.github/plugin/marketplace.json`) had drifted to `2.8.1` behind the plugin's
+  `2.9.0`. Both are realigned, and `check_plugin.py` now gates their version
+  against `.claude-plugin/plugin.json` (the release helper bumps all three) so the
+  Copilot marketplace can no longer silently lag a release.
 
 ### 2.9.0
 
