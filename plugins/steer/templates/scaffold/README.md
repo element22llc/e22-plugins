@@ -28,7 +28,7 @@ Defaults for package managers: **pnpm** for Node, **uv** for Python (rationale
 via the `steer` plugin — run `/steer:conventions`). They're biases, not mandates —
 record a different choice in an ADR under `/spec/decisions`. On Windows, develop
 inside **WSL2** — see [Windows: develop in WSL](#windows-develop-in-wsl).
-- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up — that writes/refreshes `mise.lock`, which you commit. The scaffold ships placeholder `mise.lock` files because mise only writes the lock when the file already exists — don't delete them. Bump later with `mise upgrade`. Run `/steer:conventions` for the latest-in-config / pinned-in-lockfile rationale.
+- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up. On **first adoption only**, follow `mise install` with `mise lock --platform linux-x64,macos-arm64` so the committed `mise.lock` carries asset URLs for CI (`linux-x64`) as well as your host — otherwise CI's `mise install --locked` fails with "No lockfile URL found … on platform linux-x64". The scaffold ships placeholder `mise.lock` files because mise only writes the lock when the file already exists — don't delete them. Bump later with `mise upgrade`. Run `/steer:conventions` for the latest-in-config / pinned-in-lockfile rationale.
 
 ## Quick links
 
@@ -70,6 +70,9 @@ eval "$(mise activate zsh)"
 
 # Per repo
 mise install                               # installs tools; writes/refreshes mise.lock (commit it)
+mise lock --platform linux-x64,macos-arm64 # FIRST ADOPTION ONLY: add per-platform url+checksum so
+                                           # CI (linux-x64) can `mise install --locked`. Add other
+                                           # platforms your team uses; commit the result.
 mise run dev:setup                         # local env in one command: Docker services up,
                                            # migrations applied, dev data seeded (idempotent —
                                            # rerun anytime; needs Docker running)

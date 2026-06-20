@@ -11,6 +11,8 @@ Tool versions are pinned in [`infra/mise.toml`](./mise.toml). With mise activate
 ```bash
 cd infra
 mise install        # installs opentofu + terragrunt at the pinned versions
+mise lock --platform linux-x64,macos-arm64   # FIRST ADOPTION ONLY: per-platform url+checksum so
+                    # CI (linux-x64) can `mise install --locked`. Add other platforms; commit it.
 tofu version
 terragrunt --version
 ```

@@ -82,10 +82,19 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
 - **Commit `mise.lock`.** It is the real pin — CI and every developer machine
   install from it, so they always agree. `latest` in `mise.toml` only decides
   what gets resolved the next time the lock is *regenerated*.
-- **First use:** run `mise install` (and `cd infra && mise install`), **verify
-  the `mise.lock` files now contain real `[[tools.*]]` entries** (not just the
-  placeholder comment), and commit them. This is the "pin on adoption" step —
-  it has not happened until the populated lockfiles are committed.
+- **First use:** run `mise install` (and `cd infra && mise install`), **then
+  `mise lock --platform linux-x64,macos-arm64`** in each directory with a
+  `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
+  platform the team develops on — `linux-x64` is mandatory because CI runs on
+  `ubuntu-latest`). `mise install` only records asset URLs + checksums for the
+  **host** platform, so a lock pinned on macOS has no `linux-x64` entries and CI's
+  `mise install --locked` (mise-action enables locked mode whenever a lock exists)
+  fails with *"No lockfile URL found … on platform linux-x64"*. **Verify** each
+  `mise.lock` now contains a `[tools.<tool>."platforms.linux-x64"]` block with
+  `url` + `checksum` (`grep -q 'platforms.linux-x64' mise.lock`) — a lock with
+  only `[[tools.*]]` version entries still fails `--locked` — and commit them.
+  This is the "pin on adoption" step; it has not happened until the
+  multi-platform lockfiles are committed.
 - **Bumping:** run `mise upgrade` to move the lock forward, review the diff like
   any other change, and — for infra tools — validate in non-prod before prod.
 
@@ -111,7 +120,10 @@ This applies to **every** lockfile in the repo, not just mise's:
   incomplete change.
 - **Never delete or `.gitignore` a lockfile to make an error go away.** Fix the
   resolution problem, or regenerate the lock with the owning tool
-  (`mise install` / `mise upgrade`, `pnpm install`, `uv lock`, `tofu init`).
+  (`mise install` / `mise upgrade` / `mise lock --platform …`, `pnpm install`,
+  `uv lock`, `tofu init`). Once a `mise.lock` holds every CI/dev platform,
+  `mise install` and `mise upgrade` keep all of those platforms in sync; you only
+  re-run `mise lock --platform …` to add a newly-used platform.
 - Lockfile-only diffs deserve the same review as code: an unexplained large
   lockfile change is a smell, not noise.
 
