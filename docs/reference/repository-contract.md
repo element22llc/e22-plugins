@@ -39,9 +39,13 @@ already exists in the target repo, they **merge additively and never clobber**:
 Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
 and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
 and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`,
-`tsconfig`) — reconcile with `scaffold_reconcile.py`, which unions JSON arrays and
-adds missing keys/lines without overwriting, reordering, or removing any existing
-value.
+`tsconfig`, and the committed editor config `.vscode/extensions.json` /
+`.vscode/settings.json`) — reconcile with `scaffold_reconcile.py`, which unions
+JSON arrays and adds missing keys/lines without overwriting, reordering, or
+removing any existing value. The array union is what lets a repo's existing
+`.vscode/extensions.json` recommendations gain the scaffold's (VS Code is the
+default editor; see the Stack rule / `/steer:conventions`) without losing local
+additions.
 
 The one exception is the `.claude/settings.json` `permissions` block, which
 Claude Code evaluates by precedence **deny > ask > allow**. There, the same

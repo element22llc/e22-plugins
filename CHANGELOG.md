@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** documented **VS Code as the default editor** and the
+  extension-driven workflow for adjacent activities (database browsing/queries,
+  Terraform/HCL, GitHub Actions, ShellCheck, `.env`). The scaffold already
+  shipped `.vscode/extensions.json` + `settings.json`, but the standards prose
+  was silent on the convention. A lean pointer now lives in the always-on Stack
+  rule (`10-stack.md`), the full rationale in the Conventions reference
+  (`CONVENTIONS.md` → "Editor & IDE", surfaced via `/steer:conventions`) — framed
+  as a default bias, not a mandate, and clarifying that an editor DB extension is
+  for ad-hoc dev browsing, not a second app data-access path (the ORM still owns
+  that).
 - **Changed:** normalized the bullet markers in the `SPEC-FRAMEWORK.md` reference
   template to dashes, so the whole `templates/reference/` set uses one consistent
   list style. Prose-only; no behavioral change.

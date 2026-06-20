@@ -121,6 +121,9 @@ bullet: run `/steer:conventions`.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
   **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app.
 - **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
+- **Editor:** VS Code is the default; committed `.vscode/` config (recommended
+  extensions + Biome format-on-save) ships in the scaffold. Prefer in-editor
+  extensions for adjacent work (DB browsing/queries, etc.) over standalone apps.
 - **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
   format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
