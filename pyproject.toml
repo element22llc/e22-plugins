@@ -39,3 +39,10 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+# The e2e tier drives the real `claude` CLI (slow, costs tokens). Exclude it from
+# the default run — `mise run e2e` (which appends its own `-m e2e`, last -m wins)
+# opts back in. So `uv run pytest` and `mise run ci` never spend a token.
+addopts = "-m 'not e2e'"
+markers = [
+  "e2e: slow, token-spending end-to-end skill runs (release tier; needs ANTHROPIC_API_KEY)",
+]

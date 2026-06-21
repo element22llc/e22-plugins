@@ -135,3 +135,14 @@ depends = [
   "docs:check",
   "delivery-gates",
 ]
+
+# Headless end-to-end skill suite — drives the real `claude` CLI against a
+# throwaway repo and asserts on the files a skill produces. SLOW and spends
+# tokens, so it is deliberately NOT in `ci`'s depends (stays off the PR path);
+# it runs at release time via .github/workflows/e2e.yml. Skips locally unless
+# ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN is set.
+[tasks."e2e"]
+description = "Run the headless end-to-end skill suite (slow, costs tokens; needs ANTHROPIC_API_KEY)"
+run = [
+  "uv run pytest -m e2e",
+]
