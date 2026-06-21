@@ -16,18 +16,10 @@ from __future__ import annotations
 import pytest
 
 from . import asserts
+from .prompts import INIT
 from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
 pytestmark = pytest.mark.e2e
-
-INIT_PROMPT = (
-    "/steer:init\n\n"
-    "This is an automated, non-interactive test run against a greenfield repo. "
-    "Bootstrap it: install the bundled scaffold and instantiate the full spec "
-    "spine, using sensible placeholder defaults for anything you would normally "
-    "ask a human. Do NOT ask interactive questions. Do NOT commit, push, create "
-    "a branch, or open a pull request — only write the files into the working tree."
-)
 
 
 @pytest.mark.skipif(not claude_available(), reason="claude CLI not on PATH")
@@ -36,7 +28,7 @@ INIT_PROMPT = (
     reason="no ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN / STEER_E2E_LOCAL",
 )
 def test_init_greenfield(seed_repo):
-    run = run_skill(seed_repo, INIT_PROMPT)
+    run = run_skill(seed_repo, INIT)
     summarize_run("/steer:init", run)
 
     assert not run.is_error, (

@@ -17,19 +17,10 @@ from __future__ import annotations
 import pytest
 
 from . import asserts
+from .prompts import ADOPT
 from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
 pytestmark = pytest.mark.e2e
-
-ADOPT_PROMPT = (
-    "/steer:adopt\n\n"
-    "Automated, non-interactive test run. This is an existing app with real code "
-    "and no /spec. Reverse-engineer the spec spine and sync the bundled "
-    "scaffolding ADDITIVELY — never delete or rewrite existing working code, and "
-    "merge (never overwrite) existing config files. Use sensible placeholder "
-    "defaults; do NOT ask interactive questions. Do NOT commit, push, create a "
-    "branch, or open a pull request — only write files into the working tree."
-)
 
 
 @pytest.mark.skipif(not claude_available(), reason="claude CLI not on PATH")
@@ -39,7 +30,7 @@ ADOPT_PROMPT = (
 )
 def test_adopt_existing(existing_app_repo):
     app = existing_app_repo
-    run = run_skill(app.repo, ADOPT_PROMPT)
+    run = run_skill(app.repo, ADOPT)
     summarize_run("/steer:adopt", run)
 
     assert not run.is_error, (
