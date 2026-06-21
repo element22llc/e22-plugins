@@ -1,0 +1,70 @@
+name: E2E (steer skills)
+
+# Slow, token-spending tier — driven by the real `claude` CLI. NEVER on PRs
+# (the deterministic gate in plugin-quality.yml stays the PR blocker). Runs only
+# when a release lands on main (the release PR is the one commit that bumps
+# plugins/steer/.claude-plugin/plugin.json) or on manual dispatch.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  # Match plugin-quality.yml: install the GIL-enabled (not free-threaded) CPython.
+  MISE_PYTHON_PRECOMPILED_FLAVOR: install_only_stripped
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    # Non-blocking signal while the tier proves out. Promote to a required check
+    # once it is reliable.
+    continue-on-error: true
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2 # need HEAD~1 for the release-gate version diff
+
+      - name: Release gate (only run on a plugin.json version bump; manual always runs)
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          manifest="plugins/steer/.claude-plugin/plugin.json"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "manual dispatch -> running"
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          elif git diff HEAD~1 HEAD -- "$manifest" | grep -q '^+.*"version"'; then
+            echo "plugin.json version changed -> release -> running"
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "no version bump -> skipping e2e"
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Install mise
+        if: steps.gate.outputs.run == 'true'
+        uses: jdx/mise-action@v4
+
+      - name: Sync Python environment
+        if: steps.gate.outputs.run == 'true'
+        run: uv sync --locked
+
+      - name: Install Claude Code (pinned)
+        if: steps.gate.outputs.run == 'true'
+        # Reproducible: install the version pinned in mise.toml (single source of
+        # truth), not "latest".
+        run: |
+          ver=$(grep -E '^STEER_CLAUDE_CODE_VERSION' mise.toml | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "Installing Claude Code ${ver}"
+          curl -fsSL https://claude.ai/install.sh | bash -s -- "${ver}"
+          echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+
+      - name: Run E2E skill suite
+        if: steps.gate.outputs.run == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: mise run e2e
