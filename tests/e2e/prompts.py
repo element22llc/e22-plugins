@@ -36,3 +36,14 @@ SYNC = (
     "Automated, non-interactive test run. Reconcile this repo against the current "
     f"plugin version, repairing only genuine gaps. {_NO_SIDE_EFFECTS}"
 )
+
+# drift is read-only by construction; the tracker export lives at ./tracker-export/.
+# Point it there explicitly so it doesn't pause to ask, and keep it report-only
+# (don't file issues / run other skills — there's no real tracker in the fixture).
+DRIFT = (
+    "/steer:drift\n\n"
+    "Automated, non-interactive test run. The as-built /spec spine (with a feature) "
+    "is present. The tracker-spec export is the markdown under ./tracker-export/. "
+    "Compare them and print the drift report. Report and propose only — do NOT file "
+    "issues, run other skills, ask questions, or edit/commit anything."
+)
