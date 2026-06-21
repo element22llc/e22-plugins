@@ -7,8 +7,11 @@
 # With mise activated in your shell, cd-ing into /infra (or any subfolder) picks
 # up these tools automatically. Run `mise install` from this directory the first
 # time — that resolves the exact versions into the committed placeholder
-# `infra/mise.lock`. CAUTION: mise only writes the lock if the file already
-# exists; never delete the placeholder.
+# `infra/mise.lock` — then `mise lock --platform linux-x64,macos-arm64` (add the
+# platforms your infra contributors use; linux-x64 is required if CI loads this
+# infra config) so the lock carries per-platform url + checksum entries and not
+# just versions. CAUTION: mise only writes the lock if the file already exists;
+# never delete the placeholder.
 #
 # Version strategy (same as the root mise.toml):
 #   - Tools resolve to `latest`, so the template carries no stale pins.

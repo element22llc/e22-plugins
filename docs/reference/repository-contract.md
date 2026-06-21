@@ -21,6 +21,7 @@ flowchart TD
 | --- | --- | --- |
 | `/spec` spine | `templates/spec/` | Product truth. See [Product spine](../concepts/product-spine.md). |
 | `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. |
+| `mise.lock` | scaffold | The real version pin (the scaffold ships a placeholder; `mise install` populates it). At bootstrap, follow `mise install` with `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums — CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock. Run `/steer:conventions` for the full toolchain rationale. |
 | CI workflows + PR template | scaffold | Quality gates and review template. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |

@@ -63,19 +63,27 @@ them:
 3. Propose all edits in a single batch so the dev can confirm the filled-in
    values (product name, handles, …) before they're applied. Once applied,
    commit them (Commit autonomy) — **push and the PR wait for the dev**.
-4. **Pin the toolchain.** The template's `mise.toml` files use `latest` so they
-   carry no stale versions; the committed placeholder `mise.lock` files are
-   what `mise install` writes the resolved versions into (mise only writes the
-   lock if the file already exists — if a placeholder is missing, restore it
-   with `touch mise.lock` or run `mise lock` first; never delete it). If `mise`
-   itself (or Docker) isn't installed yet, run **`/steer:doctor`** first — it
-   detects and, with the dev's yes, installs the toolchain. Have the
-   dev run `mise install` (and `cd infra && mise install` if they'll touch
-   infra), then **verify each `mise.lock` now contains real `[[tools.*]]`
-   version entries** — a still-empty lock means nothing was pinned — and commit
-   them. They are the real version pins (run `/steer:conventions` for the
-   rationale, including the cross-platform backend rule and lockfile-maintenance
-   discipline).
+4. **Pin the toolchain — for every CI/dev platform.** The template's `mise.toml`
+   files use `latest` so they carry no stale versions; the committed placeholder
+   `mise.lock` files are what `mise install` writes the resolved versions into
+   (mise only writes the lock if the file already exists — if a placeholder is
+   missing, restore it with `touch mise.lock` or run `mise lock` first; never
+   delete it). If `mise` itself (or Docker) isn't installed yet, run
+   **`/steer:doctor`** first — it detects and, with the dev's yes, installs the
+   toolchain. Have the dev run `mise install` (and `cd infra && mise install` if
+   they'll touch infra) to resolve versions, **then run
+   `mise lock --platform linux-x64,macos-arm64`** in each directory that has a
+   `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
+   platform the team develops on; `linux-x64` is mandatory — CI runs there).
+   Plain `mise install` only writes asset URLs + checksums for the host
+   platform, so a lock pinned on macOS has **no `linux-x64` entries** and CI's
+   `mise install --locked` fails with *"No lockfile URL found … on platform
+   linux-x64"*. **Verify** each `mise.lock` now contains a
+   `[tools.<tool>."platforms.linux-x64"]` block with `url` + `checksum` for every
+   tool (`grep -q 'platforms.linux-x64' mise.lock`) — a lock with only
+   `[[tools.*]]` version entries still fails `--locked` — then commit them. They
+   are the real version pins (run `/steer:conventions` for the rationale,
+   including the cross-platform backend rule and lockfile-maintenance discipline).
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
    `packages/core` workspace so `pnpm install && pnpm dev` boots a page on a
    fresh clone. It is a placeholder, not the real stack — replace it with the
@@ -189,12 +197,19 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    cross-cutting concerns from the ADRs just authored. Don't leave the
    placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
    suffers when it's left unfilled.
-5. **Pin the toolchain and lock the workspace.** If `mise` (or Docker) isn't
-   installed yet, run **`/steer:doctor`** first to detect and install the
-   toolchain (with the dev's confirmation). Run `mise install`, then verify
-   each `mise.lock` contains real `[[tools.*]]` entries and commit it. Once the
-   first real app/workspace exists, generate and commit the workspace lock
-   (`pnpm-lock.yaml` or `uv.lock`); maintain it with every dependency change.
+5. **Pin the toolchain and lock the workspace — for every CI/dev platform.** If
+   `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first to detect
+   and install the toolchain (with the dev's confirmation). Run `mise install`,
+   then `mise lock --platform linux-x64,macos-arm64` (add `macos-x64` /
+   `linux-arm64` / `windows-x64` for any other platform the team uses; `linux-x64`
+   is mandatory — CI runs there). Plain `mise install` only locks the host
+   platform, so the committed lock would have no `linux-x64` entries and CI's
+   `mise install --locked` would fail. Verify each `mise.lock` now has a
+   `[tools.<tool>."platforms.linux-x64"]` block with `url` + `checksum`
+   (`grep -q 'platforms.linux-x64' mise.lock`), not just `[[tools.*]]` version
+   entries, and commit it. Once the first real app/workspace exists, generate and
+   commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`); maintain it with
+   every dependency change.
    Make `mise run dev:setup` real and idempotent for this product (Python:
    `uv run …` task commands; drop `compose.yaml` + docker/db tasks if there are
    no backing services).

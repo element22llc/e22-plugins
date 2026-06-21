@@ -62,9 +62,12 @@ on the next `/steer:build` run.
      defaults exist for exactly this case.
    - Drive the toolchain yourself: run **`/steer:doctor`**, which detects and
      (with the PO's yes) installs mise, runs `mise install`, and checks Docker
-     Desktop — then verify the `mise.lock` files gained real `[[tools.*]]`
-     entries (see `/steer:init` step 4). The PO still installs Claude Code and
-     Docker Desktop by hand (the manual floor doctor can only link, not script).
+     Desktop. Then run `mise lock --platform linux-x64,macos-arm64` so the lock
+     carries CI's `linux-x64` URLs (plain `mise install` locks only the host
+     platform, breaking CI's `mise install --locked`), and verify each `mise.lock`
+     gained a `platforms.linux-x64` `url` + `checksum` block (see `/steer:init`
+     step 4). The PO still installs Claude Code and Docker Desktop by hand (the
+     manual floor doctor can only link, not script).
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,
