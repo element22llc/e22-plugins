@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 2.10.0
+
 - **Added:** documented **VS Code as the default editor** and the
   extension-driven workflow for adjacent activities (database browsing/queries,
   Terraform/HCL, GitHub Actions, ShellCheck, `.env`). The scaffold already
