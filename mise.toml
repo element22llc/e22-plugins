@@ -149,3 +149,15 @@ description = "Run the headless end-to-end skill suite (slow, costs tokens; need
 run = [
   "uv run pytest -m e2e -rP",
 ]
+
+# Local variant: run the suite on your interactive `claude` login (subscription
+# seat) instead of API tokens — run `claude /login` once first. `env -u
+# ANTHROPIC_API_KEY` drops the key for this run so Claude Code bills the seat (it
+# prefers the key when present); STEER_E2E_LOCAL=1 flips the skip-guard on. No
+# --max-budget-usd is sent (no API dollar cost on a seat); the per-scenario
+# wall-clock timeout still bounds a runaway.
+[tasks."e2e:local"]
+description = "Run the E2E suite on your local Claude seat, no API charge (run `claude /login` first)"
+run = [
+  "env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 uv run pytest -m e2e -rP",
+]
