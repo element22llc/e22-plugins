@@ -33,6 +33,13 @@ PLUGIN_DIR = REPO_ROOT / "plugins" / "steer"
 DEFAULT_BUDGET_USD = os.environ.get("STEER_E2E_BUDGET_USD", "2.00")
 DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "1200"))
 
+# These are *structural* tests (assert on the files a skill produces, not prose
+# quality), so they don't need the priciest model. Default to Sonnet — capable
+# enough to follow the long, multi-step init/adopt skills, but far cheaper than
+# Opus. Set STEER_E2E_MODEL=claude-haiku-4-5 for maximum savings (verify it still
+# completes the skills faithfully) or to "" to fall back to the account default.
+DEFAULT_MODEL = os.environ.get("STEER_E2E_MODEL", "claude-sonnet-4-6")
+
 
 @dataclass
 class SkillRun:
@@ -44,6 +51,7 @@ class SkillRun:
     raw: dict | None
     stdout: str
     stderr: str
+    model: str | None = None
 
 
 def claude_available() -> bool:
@@ -60,11 +68,14 @@ def summarize_run(label: str, run: SkillRun) -> None:
     """Surface a run's turns/cost. Prints (visible locally via ``pytest -rP``)
     and, in CI, appends a line to the GitHub step summary so spend is recorded
     on green runs too (pytest swallows stdout when a test passes)."""
-    print(f"\n[e2e] {label}: turns={run.num_turns} cost_usd={run.cost_usd}")
+    print(f"\n[e2e] {label}: model={run.model} turns={run.num_turns} cost_usd={run.cost_usd}")
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as fh:
-            fh.write(f"- `{label}` — turns: {run.num_turns}, cost: ${run.cost_usd}\n")
+            fh.write(
+                f"- `{label}` — model: `{run.model}`, turns: {run.num_turns}, "
+                f"cost: ${run.cost_usd}\n"
+            )
 
 
 def run_skill(
@@ -74,11 +85,16 @@ def run_skill(
     budget_usd: str | None = None,
     timeout_s: int | None = None,
     plugin_dir: Path = PLUGIN_DIR,
+    model: str | None = None,
 ) -> SkillRun:
     """Run ``claude -p <prompt>`` inside ``repo`` with the local plugin loaded,
     permissions bypassed (ephemeral sandbox), and JSON output. Returns the
     parsed result; never raises on a non-zero exit — the caller asserts on
-    ``is_error`` so it can surface ``stderr``."""
+    ``is_error`` so it can surface ``stderr``.
+
+    ``model`` defaults to ``DEFAULT_MODEL`` (Sonnet, env-overridable). Pass an
+    empty string to omit ``--model`` and use the account default."""
+    chosen_model = DEFAULT_MODEL if model is None else model
     cmd = [
         "claude",
         "-p",
@@ -92,6 +108,8 @@ def run_skill(
         "--max-budget-usd",
         str(budget_usd or DEFAULT_BUDGET_USD),
     ]
+    if chosen_model:
+        cmd += ["--model", chosen_model]
     proc = subprocess.run(
         cmd,
         cwd=str(repo),
@@ -124,4 +142,5 @@ def run_skill(
         raw=raw,
         stdout=proc.stdout,
         stderr=proc.stderr,
+        model=chosen_model or "account-default",
     )
