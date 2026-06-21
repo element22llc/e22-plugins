@@ -17,6 +17,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   as a default bias, not a mandate, and clarifying that an editor DB extension is
   for ad-hoc dev browsing, not a second app data-access path (the ORM still owns
   that).
+- **Fixed:** bootstrap now commits a `mise.lock` that passes CI on the first run.
+  Previously `/steer:init` / `/steer:adopt` / `/steer:build` told the dev to run
+  `mise install` and commit the lock, but `mise install` only records asset URLs +
+  checksums for the **host** platform. A repo bootstrapped on macOS therefore
+  committed a lock with no `linux-x64` entries, and the very first CI run failed at
+  `Setup mise` with *"No lockfile URL found … on platform linux-x64 (--locked
+  mode)"* — mise-action enables `--locked` whenever a lock exists. The pin step in
+  all three skills (plus the reference `CONVENTIONS.md`, `/steer:conventions`, and
+  the scaffold `mise.toml` / `mise.lock` / `README.md` / `infra/*` / `MANIFEST.md`)
+  now runs **`mise lock --platform linux-x64,macos-arm64`** after `mise install`
+  (linux-x64 mandatory for CI; add `macos-x64` / `linux-arm64` / `windows-x64` for
+  other dev platforms) and verifies the lock holds a `platforms.linux-x64` `url` +
+  `checksum` block — not just `[[tools.*]]` version entries, which still fail
+  `--locked`. (#122)
+- **Fixed:** `/steer:init` no longer mislabels the greenfield bootstrap PR as
+  "the productionization gate." A greenfield bootstrap ships scaffold + an empty
+  spec spine with no app to harden, so its dev-review PR is the **bootstrap/setup
+  gate** (brings the repo under the standards, lets spec-first work begin on
+  `main`), not productionization. Productionization stays a later, per-app event
+  — the `/steer:build` v0 handoff or `/steer:adopt`, where real code is triaged
+  into `/spec/PRODUCTIONIZATION.md` before a production deploy. Path B step 7 now
+  says so explicitly and tells init to frame the PR body / HISTORY entry as the
+  bootstrap gate. (`/steer:build` and `/steer:adopt`, which inherit real code,
+  are unchanged — their productionization framing is correct.)
 - **Changed:** normalized the bullet markers in the `SPEC-FRAMEWORK.md` reference
   template to dashes, so the whole `templates/reference/` set uses one consistent
   list style. Prose-only; no behavioral change.
