@@ -155,7 +155,8 @@ bullet: run `/steer:conventions`.
 - **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
 
 Commands assume mise is activated in the shell; "tool not found" usually means
-it isn't — see the product README.
+it isn't — run `/steer:doctor` to detect and install missing prerequisites, or
+see the product README.
 
 
 ## Where things live

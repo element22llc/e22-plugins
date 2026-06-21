@@ -35,7 +35,7 @@ plugins/steer/
 │                                   #   (e.g. template-reconcile.sh — read-only template diff)
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand, invoked as /steer:<skill>:
-│                                   #            init, adopt, build, conventions,
+│                                   #            doctor, init, adopt, build, conventions,
 │                                   #            traceability, design-sources, spec-scaffold,
 │                                   #            spec, issues, tracker-sync, work, adr,
 │                                   #            drift, audit, sync, questions, next, tidy, standards,

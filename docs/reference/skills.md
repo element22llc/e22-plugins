@@ -13,6 +13,7 @@ shipped skill is missing here.
 
 | Skill | Purpose |
 | --- | --- |
+| `/steer:doctor` | Detect and install the local prerequisites a repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs. |
 | `/steer:init` | One-time setup for a new repo — bootstrap the `/spec` spine + scaffold, or resolve legacy template placeholders. |
 | `/steer:adopt` | Reverse-engineer a `/spec` spine from an existing app's code and add the scaffold. See [Adopt](../workflows/adopt.md). |
 | `/steer:protect` | Verify (and, on confirmation, apply) GitHub branch protection on `main` against `policy/branch-protection.yml` — the real PR gate — plus the repo-level security settings it declares (secret scanning + push protection, Dependabot alerts + security updates). steer is advisory locally; this configures the server-side wall. Verify-only by default. |

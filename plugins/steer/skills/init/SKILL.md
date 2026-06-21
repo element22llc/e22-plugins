@@ -67,7 +67,9 @@ them:
    carry no stale versions; the committed placeholder `mise.lock` files are
    what `mise install` writes the resolved versions into (mise only writes the
    lock if the file already exists — if a placeholder is missing, restore it
-   with `touch mise.lock` or run `mise lock` first; never delete it). Have the
+   with `touch mise.lock` or run `mise lock` first; never delete it). If `mise`
+   itself (or Docker) isn't installed yet, run **`/steer:doctor`** first — it
+   detects and, with the dev's yes, installs the toolchain. Have the
    dev run `mise install` (and `cd infra && mise install` if they'll touch
    infra), then **verify each `mise.lock` now contains real `[[tools.*]]`
    version entries** — a still-empty lock means nothing was pinned — and commit
@@ -187,7 +189,9 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    cross-cutting concerns from the ADRs just authored. Don't leave the
    placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
    suffers when it's left unfilled.
-5. **Pin the toolchain and lock the workspace.** Run `mise install`, then verify
+5. **Pin the toolchain and lock the workspace.** If `mise` (or Docker) isn't
+   installed yet, run **`/steer:doctor`** first to detect and install the
+   toolchain (with the dev's confirmation). Run `mise install`, then verify
    each `mise.lock` contains real `[[tools.*]]` entries and commit it. Once the
    first real app/workspace exists, generate and commit the workspace lock
    (`pnpm-lock.yaml` or `uv.lock`); maintain it with every dependency change.

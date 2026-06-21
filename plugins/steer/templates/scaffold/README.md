@@ -55,6 +55,11 @@ A developer reviews everything before it becomes the official version.
 
 ## Quickstart for devs
 
+> Prefer an assisted setup? In Claude Code, run **`/steer:doctor`** — it detects
+> what's missing and installs the toolchain (mise, then pnpm/uv/node) with your
+> confirmation, and flags Docker Desktop / WSL2. The manual steps below are the
+> equivalent by hand.
+
 ```bash
 # One-time: install mise
 brew install mise                          # macOS
