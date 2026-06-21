@@ -7,7 +7,12 @@ name: E2E (steer skills)
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      k:
+        description: "pytest -k filter to run a subset (e.g. 'adopt', 'init'); empty = all scenarios"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -69,4 +74,11 @@ jobs:
         if: steps.gate.outputs.run == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: mise run e2e
+          # Empty on push (full suite); set by manual dispatch to run a subset.
+          K: ${{ github.event.inputs.k }}
+        run: |
+          if [ -n "$K" ]; then
+            mise run e2e -- -k "$K"
+          else
+            mise run e2e
+          fi
