@@ -143,6 +143,9 @@ depends = [
 # ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN is set.
 [tasks."e2e"]
 description = "Run the headless end-to-end skill suite (slow, costs tokens; needs ANTHROPIC_API_KEY)"
+# -rP surfaces each scenario's captured turns/cost line even when the test passes
+# (pytest otherwise swallows stdout on green). In CI the same figure is also
+# written to $GITHUB_STEP_SUMMARY.
 run = [
-  "uv run pytest -m e2e",
+  "uv run pytest -m e2e -rP",
 ]
