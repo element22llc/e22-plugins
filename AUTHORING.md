@@ -115,6 +115,19 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   **not** bump `plugins/steer/.claude-plugin/plugin.json` — the version bump
   happens **once**, in the release PR that renames `[Unreleased]` to the new
   version. A stream of PRs thus cuts one coherent release.
+- **No merge conflicts on `CHANGELOG.md`.** Every PR adds bullets under the same
+  `### [Unreleased]` heading, so concurrent PRs would normally collide there.
+  `.gitattributes` marks the file `merge=union`: git's built-in union driver
+  keeps **both** sides' added lines instead of writing conflict markers, and
+  GitHub's merge button honors it too (it's a built-in driver, not a per-clone
+  custom one). For this to stay safe the `### [Unreleased]` heading must be
+  **persistent** — always present so PRs only add bullets under it and never
+  recreate (and duplicate) the heading. The release skill re-seeds an empty
+  `### [Unreleased]` after each cut, and `check_changelog.py` fails the build if
+  the heading is duplicated or not first. Practical notes: add each entry as its
+  **own bullet** (union merges cleanly at line granularity — avoid editing a
+  neighbor's bullet in the same PR), and union does not de-duplicate, so a real
+  semantic clash still needs a human glance at release time.
 - **Behaviour gate:** `check_changelog.py --base <ref>` requires a `CHANGELOG.md`
   edit when any behaviour file changes. Behaviour prefixes are
   `plugins/steer/{skills,hooks,rules,templates,scripts,policy}/` plus
