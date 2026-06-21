@@ -57,6 +57,12 @@ plugins/steer/
   bump `plugins/steer/.claude-plugin/plugin.json`. The `version` bump
   happens **once**, in the release PR that renames `[Unreleased]` to the new
   version — so a stream of PRs cuts one coherent release instead of a bump each.
+  `CHANGELOG.md` is marked `merge=union` in `.gitattributes`, so concurrent PRs
+  appending bullets under `### [Unreleased]` **never conflict** — git keeps both
+  sides. This relies on the `### [Unreleased]` heading being **persistent** (the
+  release skill re-seeds an empty one after each cut); add each change as its own
+  bullet and don't recreate the heading. See `AUTHORING.md` → "CHANGELOG &
+  versioning".
 - `rules/*.md` is **always-on** context injected every session — keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.

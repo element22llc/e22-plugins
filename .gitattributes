@@ -1,0 +1,12 @@
+# CHANGELOG is append-only: every PR adds bullets under `### [Unreleased]`, so
+# concurrent PRs touch the same lines and collide. The built-in `union` merge
+# driver resolves these by keeping BOTH sides' added lines instead of writing
+# conflict markers — honored by local merge/rebase and by GitHub's merge button
+# (it is a built-in driver, not a custom one needing per-clone git config).
+#
+# This is safe only because a persistent `### [Unreleased]` heading always lives
+# in CHANGELOG.md (see AUTHORING.md → "CHANGELOG & versioning"): PRs add bullets
+# under it but never recreate the heading, so union never duplicates it. The
+# release skill leaves a fresh empty `### [Unreleased]` behind after each cut,
+# and check_changelog.py fails the build if the heading is ever duplicated.
+CHANGELOG.md merge=union

@@ -74,11 +74,17 @@ under `## steer`, and released headings descend in strict semver order.
    - Either way, all later edits, the gate, and the PR run from this isolated
      branch — never the shared checkout.
 
-4. **Rename the changelog heading.** In `CHANGELOG.md`, change the single
-   heading line `### [Unreleased]` to `### X.Y.Z` (released headings carry no
-   date in this repo — match the existing format). Keep all the bullets in
-   place. Do **not** leave an empty `[Unreleased]` behind; the next
-   implementation PR re-creates it.
+4. **Rename the changelog heading, then re-seed an empty `[Unreleased]`.** In
+   `CHANGELOG.md`, change the single heading line `### [Unreleased]` to
+   `### X.Y.Z` (released headings carry no date in this repo — match the existing
+   format), keeping all the bullets in place. Then add a fresh, empty
+   `### [Unreleased]` heading back at the top of `## steer`, immediately above
+   the new `### X.Y.Z`. **The `[Unreleased]` heading must always exist** — it is
+   what lets `CHANGELOG.md merge=union` (see `.gitattributes`) resolve concurrent
+   entry additions without conflicts: PRs add bullets *under* a heading that is
+   already present, so union never has to recreate (and thereby duplicate) it.
+   `check_changelog.py` fails the build if the heading is missing, duplicated, or
+   not first.
    - **`### [Unreleased]` is not unique in this file** — it also appears as
      prose inside the changelog's own house-rules bullet much further down. Run
      `grep -n '### \[Unreleased\]' CHANGELOG.md` first and edit only the heading

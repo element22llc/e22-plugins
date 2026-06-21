@@ -57,8 +57,12 @@ def _semver(s: str) -> tuple[int, int, int]:
     return int(a), int(b), int(c)
 
 
-def released_headings() -> list[str]:
-    """Released (semver) ### headings under '## steer', in document order."""
+def heading_sequence() -> list[str]:
+    """All '### ' heading texts under '## steer', in document order.
+
+    Matches heading lines only, so an inline ``### [Unreleased]`` mentioned in
+    prose (the changelog's own house-rules bullet) is not counted.
+    """
     if not CHANGELOG.is_file():
         return []
     out: list[str] = []
@@ -70,9 +74,37 @@ def released_headings() -> list[str]:
         if not in_section:
             continue
         m = _HEADING_RE.match(line)
-        if m and _SEMVER_RE.match(m.group(1)):
+        if m:
             out.append(m.group(1))
     return out
+
+
+def released_headings() -> list[str]:
+    """Released (semver) ### headings under '## steer', in document order."""
+    return [h for h in heading_sequence() if _SEMVER_RE.match(h)]
+
+
+def check_unreleased(errors: list[str]) -> None:
+    """Guard the persistent '### [Unreleased]' heading.
+
+    It must appear at most once and before every released heading. A duplicated
+    heading is the signature of a ``merge=union`` collision on ``CHANGELOG.md``
+    (see ``.gitattributes``): union keeps both sides' added lines, which is what
+    stops merge conflicts on concurrent entry additions, but it would silently
+    duplicate the heading if two branches ever recreated it. Catch that loudly
+    here instead of shipping a malformed changelog.
+    """
+    seq = heading_sequence()
+    count = sum(1 for h in seq if h == "[Unreleased]")
+    if count > 1:
+        errors.append(
+            f"{CHANGELOG}: '### [Unreleased]' appears {count} times under '## steer' — "
+            "merge=union likely duplicated it; collapse to a single heading."
+        )
+    if count == 1 and seq and seq[0] != "[Unreleased]":
+        errors.append(
+            f"{CHANGELOG}: '### [Unreleased]' must be the first heading under '## steer'."
+        )
 
 
 def check_release(errors: list[str]) -> None:
@@ -153,6 +185,7 @@ def main(argv: list[str] | None = None) -> int:
 
     errors: list[str] = []
     check_release(errors)
+    check_unreleased(errors)
     if args.base:
         check_behaviour_gate(args.base, errors)
 
