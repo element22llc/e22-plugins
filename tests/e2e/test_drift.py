@@ -32,7 +32,9 @@ pytestmark = pytest.mark.e2e
     reason="no ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN / STEER_E2E_LOCAL",
 )
 def test_drift_is_read_only_and_reports_divergence(drift_repo):
-    baseline = gitutil.commit_all(drift_repo, "seeded drift fixture")
+    # The fixture already commits the seeded spine, so just capture that clean
+    # baseline (a second commit would fail on a clean tree).
+    baseline = gitutil.head(drift_repo)
 
     run = run_skill(drift_repo, DRIFT)
     summarize_run("/steer:drift", run)
