@@ -36,17 +36,20 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PLUGIN_DIR = REPO_ROOT / "plugins" / "steer"
 
-# Per-run dollar ceiling and wall-clock cap. Tune from the first real run's
-# reported cost (see test output). Override via env in CI if needed.
+# Per-run dollar ceiling and per-scenario wall-clock cap. The timeout is the real
+# fail-fast guard: on a hang it kills the run in minutes instead of letting the
+# job burn to its 20-min ceiling. Opus completes a scenario in ~3 min, so 8 min
+# is comfortable headroom that still fails fast. Override via env in CI if needed.
 DEFAULT_BUDGET_USD = os.environ.get("STEER_E2E_BUDGET_USD", "2.00")
-DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "1200"))
+DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "480"))
 
-# These are *structural* tests (assert on the files a skill produces, not prose
-# quality), so they don't need the priciest model. Default to Sonnet — capable
-# enough to follow the long, multi-step init/adopt skills, but far cheaper than
-# Opus. Set STEER_E2E_MODEL=claude-haiku-4-5 for maximum savings (verify it still
-# completes the skills faithfully) or to "" to fall back to the account default.
-DEFAULT_MODEL = os.environ.get("STEER_E2E_MODEL", "claude-sonnet-4-6")
+# Default to the account model (Opus on this org) — it converges fast (~3 min) and
+# bounded. A cheaper model is NOT cheaper here: Sonnet/Haiku take many more turns
+# on these long, instruction-dense skills, and because --max-budget-usd is a fixed
+# *dollar* cap, a ~5x-cheaper model buys ~5x more runtime before the cap bites — so
+# the run balloons to 15+ min and may not converge (measured: a Sonnet dispatch hung
+# past 15 min and was cancelled). Set STEER_E2E_MODEL to experiment; "" = account default.
+DEFAULT_MODEL = os.environ.get("STEER_E2E_MODEL", "")
 
 
 @dataclass
@@ -113,8 +116,8 @@ def run_skill(
     parsed result; never raises on a non-zero exit — the caller asserts on
     ``is_error`` so it can surface ``stderr``.
 
-    ``model`` defaults to ``DEFAULT_MODEL`` (Sonnet, env-overridable). Pass an
-    empty string to omit ``--model`` and use the account default."""
+    ``model`` defaults to ``DEFAULT_MODEL`` (account default = Opus here,
+    env-overridable). Pass an empty string to omit ``--model``."""
     chosen_model = DEFAULT_MODEL if model is None else model
     cmd = [
         "claude",
