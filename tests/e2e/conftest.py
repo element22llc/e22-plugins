@@ -102,3 +102,82 @@ def existing_app_repo(tmp_path: Path) -> ExistingApp:
         core_src=CORE_SRC,
         gitignore_marker=GITIGNORE_MARKER,
     )
+
+
+# --- drift fixture (for /steer:drift) -------------------------------------
+#
+# drift compares an as-built /spec spine (with a feature) against a tracker-spec
+# export and reports divergences. init never produces a feature (greenfield), and
+# running adopt to get one is a ~$4 extra live run — so we hand-seed a believable
+# adopted-style spine + a tracker export that DIVERGES from it. The as-built spec
+# says the export emits a `phone` column and XLSX; the tracker issue (Done) asks
+# only for CSV with name+email — so phone/XLSX are drift the report should surface.
+
+# Tokens the as-built spec has but the tracker intent does not — drift should name
+# at least one. Lower-cased substrings, matched leniently against the report text.
+DRIFT_SIGNALS = ("phone", "xlsx")
+
+_CONTRACT_MD = """# Contract — customer-export (as-built)
+
+Derived from the code; describes what the export actually does today.
+
+## Behavior
+
+- Emits one row per customer with columns: `name`, `email`, `phone`.
+- Supports two output formats: CSV and XLSX.
+
+Evidence: `src/export.py:1`
+"""
+
+_INTENT_MD = """# Intent — customer-export
+
+Export customer records for downstream billing.
+
+## Open questions
+
+- (none)
+"""
+
+_TRACKER_ISSUE = """# Issue #1 — Customer export
+
+Status: Done
+
+## Acceptance criteria
+
+- Export customers as a CSV file.
+- Columns are exactly `name` and `email`.
+"""
+
+
+@pytest.fixture
+def drift_repo(tmp_path: Path) -> Path:
+    """A bootstrapped repo whose as-built feature spec diverges from its tracker
+    export: the spec emits a `phone` column + XLSX the tracker (Done) never asked
+    for. drift should flag that and, being read-only, mutate nothing."""
+    repo = tmp_path / "drift-app"
+    (repo / "spec" / "features" / "customer-export").mkdir(parents=True)
+    (repo / "src").mkdir()
+    (repo / "tracker-export").mkdir()
+
+    (repo / "spec" / ".version").write_text("2.0.0\n", encoding="utf-8")
+    for name, body in (
+        ("vision.md", "# Vision\n\nA billing tool.\n"),
+        ("users.md", "# Users\n\nBilling ops.\n"),
+        ("glossary.md", "# Glossary\n\n- customer: a billed account.\n"),
+        ("HISTORY.md", "# History\n\n- 2026-01-01 — seeded.\n"),
+        ("tracker.md", "system: github\n"),
+    ):
+        (repo / "spec" / name).write_text(body, encoding="utf-8")
+
+    feat = repo / "spec" / "features" / "customer-export"
+    (feat / "intent.md").write_text(_INTENT_MD, encoding="utf-8")
+    (feat / "contract.md").write_text(_CONTRACT_MD, encoding="utf-8")
+    (repo / "src" / "export.py").write_text(
+        'def export(customers, fmt="csv"):\n'
+        '    """Emit name, email, phone as CSV or XLSX."""\n'
+        "    ...\n",
+        encoding="utf-8",
+    )
+    (repo / "tracker-export" / "issue-1.md").write_text(_TRACKER_ISSUE, encoding="utf-8")
+    _init_commit(repo)
+    return repo
