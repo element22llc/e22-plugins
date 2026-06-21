@@ -31,7 +31,11 @@ pytestmark = pytest.mark.e2e
 )
 def test_adopt_existing(existing_app_repo):
     app = existing_app_repo
-    run = run_skill(app.repo, ADOPT)
+    # adopt is the heaviest skill — it reverse-engineers the app, instantiates the
+    # spine, syncs the scaffold, AND triages productionization, so it runs well past
+    # the default per-scenario timeout (a live run hit the 480s cap still working).
+    # Give it generous headroom; the default still fail-fasts the lighter skills.
+    run = run_skill(app.repo, ADOPT, timeout_s=1200)
     summarize_run("/steer:adopt", run)
 
     with explain_on_failure(app.repo, run):
