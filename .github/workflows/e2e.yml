@@ -22,7 +22,9 @@ jobs:
     # Non-blocking signal while the tier proves out. Promote to a required check
     # once it is reliable.
     continue-on-error: true
-    timeout-minutes: 30
+    # Outer ceiling. The real fail-fast guard is the per-scenario subprocess
+    # timeout in run_steer (DEFAULT_TIMEOUT_S); this just caps total runner time.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
         with:
