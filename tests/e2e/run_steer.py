@@ -11,8 +11,16 @@ download or auth. (Fallback if that ever regresses: write the temp repo a
 ``.claude/settings.json`` with ``extraKnownMarketplaces`` → ``{source: local,
 path: <repo root>}`` + ``enabledPlugins: {"steer@e22-plugins": true}``.)
 
-Cost/runaway control: ``--max-budget-usd`` (this CLI has no ``--max-turns``)
-plus a hard ``subprocess`` wall-clock ``timeout``. Both are env-overridable.
+Cost/runaway control: ``--max-budget-usd`` (API-billing only; this CLI has no
+``--max-turns``) plus a hard ``subprocess`` wall-clock ``timeout``.
+
+Running locally on a subscription seat (no API charge)::
+
+    claude /login            # once, if not already logged in
+    unset ANTHROPIC_API_KEY  # else Claude Code bills the API, not the seat
+    STEER_E2E_LOCAL=1 mise run e2e
+
+In CI the suite authenticates via the ``ANTHROPIC_API_KEY`` secret instead.
 """
 
 from __future__ import annotations
@@ -60,8 +68,21 @@ def claude_available() -> bool:
 
 
 def have_credentials() -> bool:
-    """Some credential the headless run can authenticate with is present."""
-    return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"))
+    """Whether a headless run can authenticate.
+
+    - ``ANTHROPIC_API_KEY`` — API billing (what CI uses).
+    - ``CLAUDE_CODE_OAUTH_TOKEN`` — a long-lived token (e.g. ``claude setup-token``).
+    - ``STEER_E2E_LOCAL=1`` — trust an interactive ``claude`` login on this machine,
+      so a logged-in dev can run the suite on their subscription **seat** without
+      any API key. A subscription login sets no env var, so this opt-in is how the
+      gate knows to run. To bill the seat (not the API), do NOT set
+      ``ANTHROPIC_API_KEY`` in that shell — Claude Code prefers the key when present.
+    """
+    return bool(
+        os.environ.get("ANTHROPIC_API_KEY")
+        or os.environ.get("CLAUDE_CODE_OAUTH_TOKEN")
+        or os.environ.get("STEER_E2E_LOCAL")
+    )
 
 
 def summarize_run(label: str, run: SkillRun) -> None:
@@ -105,9 +126,12 @@ def run_skill(
         "bypassPermissions",
         "--output-format",
         "json",
-        "--max-budget-usd",
-        str(budget_usd or DEFAULT_BUDGET_USD),
     ]
+    # --max-budget-usd is an API-dollar cap; meaningful only under API-key billing.
+    # On a subscription seat there is no per-call dollar cost, so skip it (and rely
+    # on the wall-clock timeout) to avoid a no-op or a rejected flag.
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        cmd += ["--max-budget-usd", str(budget_usd or DEFAULT_BUDGET_USD)]
     if chosen_model:
         cmd += ["--model", chosen_model]
     proc = subprocess.run(

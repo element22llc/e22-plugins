@@ -35,7 +35,7 @@ ADOPT_PROMPT = (
 @pytest.mark.skipif(not claude_available(), reason="claude CLI not on PATH")
 @pytest.mark.skipif(
     not have_credentials(),
-    reason="no ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN",
+    reason="no ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN / STEER_E2E_LOCAL",
 )
 def test_adopt_existing(existing_app_repo):
     app = existing_app_repo
