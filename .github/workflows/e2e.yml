@@ -28,8 +28,10 @@ jobs:
     # once it is reliable.
     continue-on-error: true
     # Outer ceiling. The real fail-fast guard is the per-scenario subprocess
-    # timeout in run_steer (DEFAULT_TIMEOUT_S); this just caps total runner time.
-    timeout-minutes: 20
+    # timeout in run_steer; this just caps total runner time. The full suite runs
+    # ~4 init-class runs (~5 min each) + sync + adopt (up to ~20 min), measured at
+    # ~30+ min — so the cap is generous. Dispatch with -k to run one scenario fast.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
