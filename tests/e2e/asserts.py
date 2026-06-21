@@ -91,3 +91,21 @@ def assert_dependency_automation(repo: Path) -> None:
     """capability ``dependency-automation``: Dependabot + auto-merge workflow."""
     assert_file(repo, ".github/dependabot.yml")
     assert_file(repo, ".github/workflows/dependabot-auto-merge.yml")
+
+
+# A *chosen* "Status: Accepted" — not the ADR template's enumeration line
+# "Status: Proposed | Accepted | ...", which starts "Status: Proposed".
+_ACCEPTED_ADR = re.compile(r"Status:\s*Accepted\b")
+
+
+def assert_no_accepted_adr(repo: Path) -> None:
+    """``/steer:adopt`` reverse-engineers ADRs as Proposed and must NEVER mint an
+    Accepted ADR from inferred code (the adopt-no-adr-from-inference invariant).
+    No Markdown file under ``spec/`` may carry a chosen ``Status: Accepted``."""
+    spec = repo / "spec"
+    offenders = [
+        str(md.relative_to(repo))
+        for md in spec.rglob("*.md")
+        if any(_ACCEPTED_ADR.search(line) for line in md.read_text(encoding="utf-8").splitlines())
+    ]
+    assert not offenders, f"adopt produced Accepted ADR(s) from inference: {offenders}"

@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 
 from . import asserts
-from .run_steer import claude_available, have_credentials, run_skill
+from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
 pytestmark = pytest.mark.e2e
 
@@ -37,9 +37,7 @@ INIT_PROMPT = (
 )
 def test_init_greenfield(seed_repo):
     run = run_skill(seed_repo, INIT_PROMPT)
-
-    # Surface cost so the budget cap can be tuned from a real run.
-    print(f"\n[e2e] /steer:init turns={run.num_turns} cost_usd={run.cost_usd}")
+    summarize_run("/steer:init", run)
 
     assert not run.is_error, (
         f"claude run reported an error (rc={run.returncode}).\n"

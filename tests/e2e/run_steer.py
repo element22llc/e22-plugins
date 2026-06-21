@@ -56,6 +56,17 @@ def have_credentials() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("CLAUDE_CODE_OAUTH_TOKEN"))
 
 
+def summarize_run(label: str, run: SkillRun) -> None:
+    """Surface a run's turns/cost. Prints (visible locally via ``pytest -rP``)
+    and, in CI, appends a line to the GitHub step summary so spend is recorded
+    on green runs too (pytest swallows stdout when a test passes)."""
+    print(f"\n[e2e] {label}: turns={run.num_turns} cost_usd={run.cost_usd}")
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as fh:
+            fh.write(f"- `{label}` — turns: {run.num_turns}, cost: ${run.cost_usd}\n")
+
+
 def run_skill(
     repo: Path,
     prompt: str,
