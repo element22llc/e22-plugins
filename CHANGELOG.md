@@ -31,6 +31,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   other dev platforms) and verifies the lock holds a `platforms.linux-x64` `url` +
   `checksum` block — not just `[[tools.*]]` version entries, which still fail
   `--locked`. (#122)
+- **Fixed:** `/steer:init` no longer mislabels the greenfield bootstrap PR as
+  "the productionization gate." A greenfield bootstrap ships scaffold + an empty
+  spec spine with no app to harden, so its dev-review PR is the **bootstrap/setup
+  gate** (brings the repo under the standards, lets spec-first work begin on
+  `main`), not productionization. Productionization stays a later, per-app event
+  — the `/steer:build` v0 handoff or `/steer:adopt`, where real code is triaged
+  into `/spec/PRODUCTIONIZATION.md` before a production deploy. Path B step 7 now
+  says so explicitly and tells init to frame the PR body / HISTORY entry as the
+  bootstrap gate. (`/steer:build` and `/steer:adopt`, which inherit real code,
+  are unchanged — their productionization framing is correct.)
 - **Changed:** normalized the bullet markers in the `SPEC-FRAMEWORK.md` reference
   template to dashes, so the whole `templates/reference/` set uses one consistent
   list style. Prose-only; no behavioral change.

@@ -27,6 +27,13 @@ app, run [`/steer:adopt`](../workflows/adopt.md). Either way you end up with a
 `/spec` spine and the bundled scaffold (CI, `mise.toml`, `compose.yaml`, PR
 template).
 
+The `/steer:init` PR is the **bootstrap gate** — it brings the repo under the
+standards and opens spec-first work on `main`. It is *not* productionization:
+a greenfield bootstrap ships scaffold and an empty spec spine, with no app to
+harden yet. Productionization is a later, per-app event — the
+[`/steer:build`](../workflows/build.md) v0 handoff or `/steer:adopt`, where real
+code is triaged into `/spec/PRODUCTIONIZATION.md` before a production deploy.
+
 ## 2. Capture the idea
 
 ```text

@@ -230,8 +230,14 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    <plugin version>
    ```
 
-   Commit on the `feat/*` branch and open a PR for dev review — that review is
-   the productionization gate.
+   Commit on the `feat/*` branch and open a PR for dev review — the **bootstrap
+   gate** that brings the repo under the standards and lets spec-first work begin
+   on `main`. This is **not** productionization: a greenfield bootstrap ships
+   scaffold and an empty spec spine, with no app to harden. Productionization is
+   a later, per-app event — the `/steer:build` v0 handoff or `/steer:adopt`,
+   where real code is triaged into `/spec/PRODUCTIONIZATION.md` before a
+   production deploy. Frame the PR (body, HISTORY entry) as the bootstrap/setup
+   gate, never as the productionization gate.
 
 ### Guardrails
 
