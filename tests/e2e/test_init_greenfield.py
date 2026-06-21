@@ -16,6 +16,7 @@ from __future__ import annotations
 import pytest
 
 from . import asserts
+from .diagnostics import explain_on_failure
 from .prompts import INIT
 from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
@@ -31,19 +32,17 @@ def test_init_greenfield(seed_repo):
     run = run_skill(seed_repo, INIT)
     summarize_run("/steer:init", run)
 
-    assert not run.is_error, (
-        f"claude run reported an error (rc={run.returncode}).\n"
-        f"stderr: {run.stderr[:2000]}\nresult: {run.result[:2000]}"
-    )
+    with explain_on_failure(seed_repo, run):
+        assert not run.is_error, f"claude run reported an error (rc={run.returncode})."
 
-    # Spine instantiated + version-stamped.
-    asserts.assert_spec_spine(seed_repo)
+        # Spine instantiated + version-stamped.
+        asserts.assert_spec_spine(seed_repo)
 
-    # "always" capabilities (CAPABILITIES.md) wired into the produced repo.
-    asserts.assert_plugin_enabled_local(seed_repo)
-    asserts.assert_toolchain_pin(seed_repo)
-    asserts.assert_version_pin_enforcement(seed_repo)
-    asserts.assert_branch_protection_policy(seed_repo)
-    asserts.assert_drift_gate(seed_repo)
-    asserts.assert_in_ci_plugin_loading(seed_repo)
-    asserts.assert_dependency_automation(seed_repo)
+        # "always" capabilities (CAPABILITIES.md) wired into the produced repo.
+        asserts.assert_plugin_enabled_local(seed_repo)
+        asserts.assert_toolchain_pin(seed_repo)
+        asserts.assert_version_pin_enforcement(seed_repo)
+        asserts.assert_branch_protection_policy(seed_repo)
+        asserts.assert_drift_gate(seed_repo)
+        asserts.assert_in_ci_plugin_loading(seed_repo)
+        asserts.assert_dependency_automation(seed_repo)

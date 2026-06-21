@@ -17,6 +17,7 @@ from __future__ import annotations
 import pytest
 
 from . import asserts
+from .diagnostics import explain_on_failure
 from .prompts import ADOPT
 from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
@@ -33,20 +34,18 @@ def test_adopt_existing(existing_app_repo):
     run = run_skill(app.repo, ADOPT)
     summarize_run("/steer:adopt", run)
 
-    assert not run.is_error, (
-        f"claude run reported an error (rc={run.returncode}).\n"
-        f"stderr: {run.stderr[:2000]}\nresult: {run.result[:2000]}"
-    )
+    with explain_on_failure(app.repo, run):
+        assert not run.is_error, f"claude run reported an error (rc={run.returncode})."
 
-    # Spine reverse-engineered + version-stamped.
-    asserts.assert_spec_spine(app.repo)
+        # Spine reverse-engineered + version-stamped.
+        asserts.assert_spec_spine(app.repo)
 
-    # The invariant: no Accepted ADR minted from inferred code.
-    asserts.assert_no_accepted_adr(app.repo)
+        # The invariant: no Accepted ADR minted from inferred code.
+        asserts.assert_no_accepted_adr(app.repo)
 
-    # Non-clobber: existing working code untouched (byte-identical).
-    produced = (app.repo / app.core_rel).read_text(encoding="utf-8")
-    assert produced == app.core_src, "adopt rewrote existing working code"
+        # Non-clobber: existing working code untouched (byte-identical).
+        produced = (app.repo / app.core_rel).read_text(encoding="utf-8")
+        assert produced == app.core_src, "adopt rewrote existing working code"
 
-    # Non-clobber: the custom .gitignore line survived the additive merge.
-    asserts.assert_contains(app.repo, ".gitignore", app.gitignore_marker)
+        # Non-clobber: the custom .gitignore line survived the additive merge.
+        asserts.assert_contains(app.repo, ".gitignore", app.gitignore_marker)

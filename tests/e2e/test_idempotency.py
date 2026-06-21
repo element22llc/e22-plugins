@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 
 from . import asserts, gitutil
+from .diagnostics import explain_on_failure
 from .prompts import INIT, SYNC
 from .run_steer import claude_available, have_credentials, run_skill, summarize_run
 
@@ -42,7 +43,8 @@ def test_init_is_rerun_safe(seed_repo):
     summarize_run("/steer:init (2nd)", second)
     # The re-run may legitimately refuse (non-zero exit) — what matters is that it
     # changed nothing. So we assert on repo state, not on the second run's status.
-    gitutil.assert_unchanged(seed_repo, baseline)
+    with explain_on_failure(seed_repo, second):
+        gitutil.assert_unchanged(seed_repo, baseline)
 
 
 @_skip
@@ -57,5 +59,6 @@ def test_sync_is_noop_when_current(seed_repo):
 
     sync = run_skill(seed_repo, SYNC)
     summarize_run("/steer:sync", sync)
-    assert not sync.is_error, f"sync failed: {sync.stderr[:1500]}"
-    gitutil.assert_unchanged(seed_repo, baseline)
+    with explain_on_failure(seed_repo, sync):
+        assert not sync.is_error, f"sync failed: {sync.stderr[:1500]}"
+        gitutil.assert_unchanged(seed_repo, baseline)

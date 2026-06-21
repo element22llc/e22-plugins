@@ -156,6 +156,11 @@ run = [
 # prefers the key when present); STEER_E2E_LOCAL=1 flips the skip-guard on. No
 # --max-budget-usd is sent (no API dollar cost on a seat); the per-scenario
 # wall-clock timeout still bounds a runaway.
+#
+# Run a single scenario (one ~3-min skill run instead of all) by forwarding -k:
+#   mise run e2e:local -- -k init        # init scenarios only
+#   mise run e2e:local -- -k adopt       # the adopt scenario
+#   mise run e2e:local -- -k test_sync_is_noop_when_current
 [tasks."e2e:local"]
 description = "Run the E2E suite on your local Claude seat, no API charge (run `claude /login` first)"
 run = [
