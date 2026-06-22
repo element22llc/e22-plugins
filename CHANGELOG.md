@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:sync` no longer trips the issue-first hooks on its own
+  sanctioned flow. The skill reconciles the materialized spine + scaffold (CI,
+  `mise.toml`, `compose.yaml`, version-pin scripts, …) on its own `feat/sync`
+  branch — operations-class files that, on any other branch, the issue-first
+  point-of-action nudge (`check-issue-before-mutation`) and the end-of-turn
+  reconciliation advisory (`reconcile-issue-first`) both flag as needing a GitHub
+  issue (rule `36-issue-first`). Both hooks now recognize `feat/sync` (and
+  `feat/sync-<ver>` / `feat/sync/*`) as a plugin-maintenance branch and stay
+  silent there — same rationale as the existing `/spec`-spine exemption, since
+  sync carries the scaffold forward identically. The exemption is **flow-scoped,
+  not path-scoped** (so a hand-edited `compose.yaml` on a feature branch still
+  nudges) and is **withdrawn if app source changes** on `feat/sync`, surfacing a
+  sync that violated its "structure only, never app code" contract. Rule
+  `36-issue-first` documents the carve-out.
+
 ### 2.12.0
 
 - **Added:** solo **trunk mode** for greenfield. `/steer:init` now offers it when one person is both PO and dev with no MVP yet — commit directly to `main` (no `feat/*` branch, no per-feature PR) until graduation, declared in the product `CLAUDE.md` `## Delivery mode` section. The scaffold, spine, tests, Definition of Done, and CI-on-push are unchanged; only the branch/PR ceremony relaxes (there is no second reviewer yet, so the PR gate has nothing behind it). **Graduate** to the normal `feat/*` + PR flow by running `/steer:protect` — which raises the server-side PR wall and ends the mode — the moment the MVP works, you first deploy, or a second contributor joins. `/steer:protect` (verify) and `/steer:audit` treat a declared-trunk unprotected `main` as intentional, not drift.

@@ -52,6 +52,16 @@ grep -iq '^[[:space:]]*system:[[:space:]]*github' "${TRACKER}" 2>/dev/null || ex
 CLASS="$(steer_classify_path "${FILE}")"
 [ "$(steer_class_nudges "${CLASS}")" = "nudge" ] || exit 0
 
+# Plugin-maintenance flow exemption (rule 36 carve-out): /steer:sync runs on its
+# own feat/sync branch and writes operations-class scaffold (CI, mise.toml,
+# compose.yaml, …) — structural reconciliation against plugin templates, not
+# feature implementation. Stay silent there UNLESS the write is app source
+# (implementation-class), which sync's contract forbids and is worth surfacing.
+if [ "${CLASS}" != "implementation" ] && command -v git >/dev/null 2>&1; then
+	BRANCH="$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+	case "${BRANCH}" in feat/sync|feat/sync-*|feat/sync/*) exit 0 ;; esac
+fi
+
 # Fire at most once per session+repo (keyed by resolved root so subdir writes
 # dedupe to one nudge).
 CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"

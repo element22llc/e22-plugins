@@ -315,6 +315,17 @@ mkdir -p "${R10}/spec"
 out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
 assert_empty "issue-first: no tracker silent" "${out}"
 
+# Plugin-maintenance branch exemption (needs a real git repo for branch detection).
+# /steer:sync writes operations-class scaffold on its own feat/sync branch ->
+# silent (rule 36 carve-out); app source on feat/sync still nudges.
+if command -v git >/dev/null 2>&1; then
+	RSY="$(git_repo repoSyncPre feat/sync)"
+	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RSY}" sSY1 compose.yaml 'x')")"
+	assert_empty "issue-first: feat/sync operations write exempt" "${out}"
+	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RSY}" sSY2 src/app.ts 'x')")"
+	assert_ctx "issue-first: feat/sync app source still nudges" "${out}"
+fi
+
 # --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
 if command -v git >/dev/null 2>&1; then
 	# D: Bash-mediated source change on a number-free branch (main) -> reported.
@@ -419,6 +430,30 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S10}" '')")"
 	assert_no_block "stop-reconcile: .md marker governs with empty session id" "${out}"
 	cmp -s "${MD10}" "${MD10}.before" && ok || bad "stop-reconcile: empty session id leaves .md marker intact"
+
+	# L: /steer:sync runs on feat/sync. Operations-class scaffold reconciliation
+	# (compose/mise) is structural plugin-maintenance, not feature work -> silent
+	# (rule 36 carve-out), even though those paths nudge on every other branch.
+	S11="$(git_repo stopSyncBranch feat/sync)"
+	printf 'services: {}\n' >"${S11}/compose.yaml"
+	printf '[env]\n' >"${S11}/mise.toml"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S11}" stS11)")"
+	assert_no_block "stop-reconcile: feat/sync scaffold reconciliation silent" "${out}"
+
+	# L2: the feat/sync-<ver> variant is exempt the same way.
+	S12="$(git_repo stopSyncVer main)"
+	git -C "${S12}" checkout -q -b feat/sync-2.8.0
+	printf 'services: {}\n' >"${S12}/compose.yaml"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S12}" stS12)")"
+	assert_no_block "stop-reconcile: feat/sync-<ver> variant exempt" "${out}"
+
+	# M: but a feat/sync turn that touched app source violates sync's contract
+	# (structure only, never app code) -> still reported, not exempted.
+	S13="$(git_repo stopSyncAppSrc feat/sync)"
+	mkdir -p "${S13}/src"
+	printf 'export const x = 1\n' >"${S13}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S13}" stS13)")"
+	assert_block "stop-reconcile: feat/sync app source still reported (sync must not touch app code)" "${out}"
 else
 	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
 fi
