@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** new always-on rule `31-decision-capture` — durable design decisions (stack, auth, data model, a locked MVP scope) belong in `/spec` (intent/contract/ADR), the single source of truth a teammate inherits; conversation and assistant memory are working notes, never the record. On a repo with no `/spec` spine, bootstrap (`/steer:init` / `/steer:adopt`) **before** persisting a decision, so it lands traceable in the bootstrap PR rather than memory- or chat-only.
+- **Changed:** router bootstrap-precedence now directs that bootstrap be the **first move, announced up front** on a spineless repo — not a closing offer after a long scoping pass; the scoping dialogue folds into `/steer:init`'s own interview and durable decisions wait for the spine.
+- **Changed:** `/steer:init` Path B step 1 now states that scoping a brief/spec happens **as the setup interview** and its decisions are captured into the just-created spine (ADR / `vision.md`), never left chat- or memory-only.
+
 ### 2.11.0
 
 - **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): mongo 6→7, node 20→22, nginx 1.26→1.30. EOL floors only — what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.

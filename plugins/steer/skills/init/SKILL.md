@@ -142,7 +142,13 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    greenfield (you're writing the code from scratch), not reverse-engineering
    a pre-existing app — that would be `/steer:adopt`. If a design export/URL or
    screenshots are the input, read them via `/steer:design-sources` first (never
-   fetch a Claude Design URL — it 403s).
+   fetch a Claude Design URL — it 403s). If the dev arrived with a brief or spec
+   and wants to scope it, do that scoping **here, as this setup's interview**
+   (steps 3–4) rather than ahead of the spine — bootstrap is the first move, not
+   an afterthought. Every decision the scoping produces (stack, auth, a locked
+   MVP cut) is captured **into the spine you are about to create** — as an ADR
+   (step 4) or a `vision.md` entry — never left as a chat- or memory-only note
+   (rule `31-decision-capture`).
 2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
    external template repo to fetch. Read
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
