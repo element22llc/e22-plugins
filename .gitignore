@@ -51,6 +51,8 @@ Desktop.ini
 .kiro/
 .codegraph/
 .mcp.json
+# …except the plugin's own shipped MCP config, which is a tracked source file.
+!plugins/steer/.mcp.json
 
 # ---------------------------------------------------------------------------
 # Node / npm (defensive — no JS today, but harmless)

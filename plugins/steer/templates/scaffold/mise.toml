@@ -38,7 +38,7 @@ lockfile = true
 # --- Agent-runtime baseline: ALWAYS installed, never delete — even in a
 # single-language product. AI agent tooling and MCP servers run packages on
 # demand through these runtimes: `npx <pkg>` (Node) and `uvx <pkg>` (Python) —
-# e.g. the bundled markitdown MCP server (.mcp.json) runs via `uvx markitdown-mcp`.
+# e.g. the steer plugin's markitdown MCP server runs via `uvx markitdown-mcp`.
 # Pruning them breaks document conversion and any npx/uvx-based agent tool.
 node = "latest"
 python = "latest"

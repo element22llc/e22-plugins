@@ -1,17 +1,22 @@
 # MCP servers
 
-The bundled scaffold ships a project-scoped `.mcp.json` (source:
-`plugins/steer/templates/scaffold/mcp.json`) that wires **local Claude Code
-sessions** to a small set of [Model Context Protocol](https://modelcontextprotocol.io)
-servers. This page is kept in sync with that file and the scaffold `README.md` by
-`/plugin-docs`; the nav/orphan check in `scripts/validate_docs.py` guards that it
-stays linked, but its server-by-server content is reconciled by hand against the
-source of truth.
+The **steer plugin** ships an `.mcp.json` (source: `plugins/steer/.mcp.json`)
+that wires **local Claude Code sessions** to a small set of
+[Model Context Protocol](https://modelcontextprotocol.io) servers. Because they
+ship with the plugin rather than the scaffold, every repo that enables steer
+picks them up centrally and they refresh on `/plugin update` — there is no
+per-repo `.mcp.json` to scaffold, drift, or reconcile. Each server still goes
+through Claude Code's per-server approval the first time it connects, and a repo
+may add its own project `.mcp.json` for product-specific servers (it merges
+additively with the plugin's). This page is kept in sync with the plugin's
+`.mcp.json` and the scaffold `README.md` by `/plugin-docs`; the nav/orphan check
+in `scripts/validate_docs.py` guards that it stays linked, but its
+server-by-server content is reconciled by hand against the source of truth.
 
 !!! info "Local sessions only — not CI"
-    `.mcp.json` configures the Claude Code **you run on your machine**. GitHub
-    Actions does *not* read it — the in-CI agent loads steer and its tools
-    through the action's inputs instead (see
+    The plugin's `.mcp.json` configures the Claude Code **you run on your
+    machine**. GitHub Actions does *not* read it — the in-CI agent loads steer
+    and its tools through the action's inputs instead (see
     [GitHub Actions integration](github-integration.md)). Interactively
     authenticated MCP servers may also be absent in headless/cron runs (see
     [Known limitations](known-limitations.md)).
@@ -36,8 +41,8 @@ export, secret-manager option) is in the scaffold `README.md` → "GitHub MCP
 server", reachable from any bootstrapped repo.
 
 !!! warning "Never commit the token"
-    Don't put the PAT in a repo file (even a gitignored one), commit a
-    `.mcp.json` with the literal token, or paste it into a Claude message.
+    Don't put the PAT in a repo file (even a gitignored one) or paste it into a
+    Claude message.
 
 ## `markitdown`
 

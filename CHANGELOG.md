@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the `github` + `markitdown` MCP servers now ship with the
+  **plugin itself** (`plugins/steer/.mcp.json`) instead of being scaffolded as a
+  per-repo `.mcp.json`. Every repo that enables steer picks them up centrally and
+  they refresh on `/plugin update` — no frozen per-repo copy to drift or
+  reconcile. Each server still goes through Claude Code's per-server approval, and
+  a repo may still add its own project `.mcp.json` for product-specific servers
+  (it merges additively with the plugin's). Removed `templates/scaffold/mcp.json`
+  and its `MANIFEST.md` row; updated `/steer:init`, `/steer:adopt`,
+  `/steer:tracker-sync`, the scaffold `README.md` / `mise.toml`, and the docs
+  `reference/mcp-servers.md`. A **v2.11.0 migration** (`MIGRATIONS.md`) has
+  `/steer:sync` remove the now-redundant repo-local `.mcp.json` (or just the
+  duplicated `github`/`markitdown` keys, preserving product-specific servers) from
+  repos bootstrapped before this change.
+
 ### 2.10.0
 
 - **Added:** documented **VS Code as the default editor** and the
