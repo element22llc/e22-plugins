@@ -7,6 +7,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): mongo 6→7, node 20→22, nginx 1.26→1.30. EOL floors only — what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
 - **Changed:** the `github` + `markitdown` MCP servers now ship with the
   **plugin itself** (`plugins/steer/.mcp.json`) instead of being scaffolded as a
   per-repo `.mcp.json`. Every repo that enables steer picks them up centrally and
