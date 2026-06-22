@@ -11,6 +11,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Added:** `/steer:protect` and `policy/branch-protection.yml` now cover **additional protected branches** beyond the default (schema bumped to 2, additive — v1 policies stay valid). Ships a `prod` entry (required PR review, no direct push, no admin bypass) so the production gate is enforceable without GitHub Enterprise deployment-environment approvals. The skill protects the default branch plus each declared branch, reads/diffs/applies per branch, and reports a not-yet-created `prod` as informational rather than drift.
 - **Changed:** secrets-at-rest default is now **SSM Parameter Store (`SecureString`)** — cheaper than Secrets Manager and sufficient for most needs — with Secrets Manager reserved for rotation / cross-account / large-or-binary values. Updated across `70-secrets`, `10-stack`, `60-high-risk`, `CONVENTIONS.md`, `TRACEABILITY.md`, and the scaffold (`infra/README.md`, `env.example`, `compose.yaml`, `gitignore`, `mise.toml`).
 - **Changed:** scaffold `infra/README.md` release-flow section rewritten for the branch-based promotion model + review apps + an Observability baseline section; `ARCHITECTURE.md` cross-cutting concerns now enumerate the observability baseline, the deployment/environments shape, and the Parameter-Store secrets default for products to fill in.
+- **Fixed:** `/steer:sync` no longer trips the issue-first hooks on its own
+  sanctioned flow. The skill reconciles the materialized spine + scaffold (CI,
+  `mise.toml`, `compose.yaml`, version-pin scripts, …) on its own `feat/sync`
+  branch — operations-class files that, on any other branch, the issue-first
+  point-of-action nudge (`check-issue-before-mutation`) and the end-of-turn
+  reconciliation advisory (`reconcile-issue-first`) both flag as needing a GitHub
+  issue (rule `36-issue-first`). Both hooks now recognize `feat/sync` (and
+  `feat/sync-<ver>` / `feat/sync/*`) as a plugin-maintenance branch and stay
+  silent there — same rationale as the existing `/spec`-spine exemption, since
+  sync carries the scaffold forward identically. The exemption is **flow-scoped,
+  not path-scoped** (so a hand-edited `compose.yaml` on a feature branch still
+  nudges) and is **withdrawn if app source changes** on `feat/sync`, surfacing a
+  sync that violated its "structure only, never app code" contract. Rule
+  `36-issue-first` documents the carve-out.
 
 ### 2.12.0
 
