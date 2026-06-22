@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules. One issue per branch/PR by default."
+description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules and delivery mode — in solo-trunk mode it commits straight to main and closes the issue from the trunk commit instead of branching and opening a PR. One issue per branch/PR (or trunk commit) by default."
 when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented.
 argument-hint: "[start | resume | status | finish] [#issue ...]"
 allowed-tools:
@@ -54,16 +54,40 @@ PR-autonomy rules; merge and deploy are never implied.**
 > gate. Only those read-only CI reads are pre-approved; every `gh` *write* stays gated,
 > and tracker I/O still routes through `/steer:tracker-sync`.
 
+## Delivery mode
+
+How the work reaches `main` is governed by the repo's **delivery mode**, declared
+on the product `CLAUDE.md`'s `## Delivery mode` section — the same
+machine-readable marker the steer hooks read (`<!-- steer:delivery-mode=solo-trunk -->`
+vs `<!-- steer:delivery-mode=pr-flow -->`; absent or unreadable → **pr-flow**).
+Determine it once at `start` / `finish`. **Issue-first holds in both modes** —
+every implementation-affecting change is tied to a GitHub issue; the modes differ
+only in the branch/PR ceremony around that issue.
+
+- **pr-flow** (default) — the full flow this skill describes throughout: claim →
+  `issue/<n>` branch + `spec/.work` marker → implement → push → open PR → CI green
+  → transition. The PR is the human gate.
+- **solo-trunk** (pre-MVP greenfield, before `/steer:protect` graduates the repo)
+  — commit **straight to `main`**: **no `issue/<n>` branch, no `spec/.work`
+  marker, no PR**. Still claim the issue and implement, but close it **from the
+  trunk commit** (`Closes #N`) under Commit autonomy (rule 45) rather than via a
+  PR. Committing to `main` is itself authorized in this mode; **deploy is still
+  never implied**, and the spine, tests, and Definition of Done are unchanged.
+  Wherever a step below says *branch*, *marker*, or *PR*, skip it and substitute
+  the trunk commit — everything else (validation, managed-block progress, reading
+  the closure reason for the terminal state) is identical.
+
 ## Subcommands (distinct, idempotent)
 
 - **`start #N`** — resolve + validate the issue (actionable? readiness met for
   its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
   **claim** it (`assign` the invoking GitHub user — self-assign — + set
   `steer:claimed-by`, `transition` → `in-progress`);
-  create or reuse the branch; **write the local work marker**
+  **(pr-flow)** create or reuse the branch and **write the local work marker**
   `spec/.work/<branch>.md` (slashes → underscores) in the marker format below, so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
-  issue-governed; load linked specs (`steer:spec-path`, acceptance criteria);
+  issue-governed — **in solo-trunk, skip both: stay on `main`, no marker**;
+  load linked specs (`steer:spec-path`, acceptance criteria);
   begin implementation.
 - **`resume #N`** — reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
@@ -80,7 +104,10 @@ PR-autonomy rules; merge and deploy are never implied.**
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
   comment); when authorized, commit/push and open-or-update the PR; **then watch CI
-  to conclusion** (`gh pr checks --watch`) before transitioning. On a red build,
+  to conclusion** (`gh pr checks --watch`) before transitioning. **In solo-trunk,
+  there is no PR: commit straight to `main` with a `Closes #N` trailer and watch
+  CI on the trunk push** (`gh run watch`) the same way — the closed issue, not a
+  merged PR, is the terminal evidence. On a red build,
   diagnose and fix it as part of the same unit of work — re-push (still
   human-gated) and re-watch — until checks are green or a remaining failure is
   legitimately non-blocking (and said so). Only transition to `validate` once CI is
@@ -99,12 +126,15 @@ phase reconciles rather than duplicates.
 ## Completion semantics
 
 **Closure reason — not the mere fact of closure — decides the terminal state.**
-Inspect it before transitioning a closed issue; keep merge state as independent
-evidence (a merged PR is necessary for `done`, not sufficient on its own).
+Inspect it before transitioning a closed issue; keep delivery state as independent
+evidence (a merged PR — or, in solo-trunk, the `Closes #N` trunk commit — is
+necessary for `done`, not sufficient on its own).
 
-- Opening a PR → `validate` (never `done`).
-- Closed as **`completed`** (PR merged **and** acceptance criteria accepted) →
-  `done`.
+- Opening a PR → `validate` (never `done`). **(Solo-trunk has no PR — the
+  trunk commit that closes the issue is the delivery; go straight to the closure
+  reasons below.)**
+- Closed as **`completed`** (delivered — PR merged or trunk commit landed — **and**
+  acceptance criteria accepted) → `done`.
 - Closed as **`rejected` / `duplicate` / `obsolete` / `not-planned` /
   `superseded`** → **`cancelled`**, never `done` — record a replacement pointer
   where one applies. Cancelled work was not delivered.
@@ -161,7 +191,8 @@ context.
 
 ## Multiple issues
 
-`Implement #123 and #124` → **one branch + PR per issue** by default. Combine only
+`Implement #123 and #124` → **one branch + PR per issue** by default (in
+solo-trunk, **one trunk commit per issue**, each closing its own `#N`). Combine only
 when one issue explicitly depends on the other, separating them would produce an
 invalid intermediate state, or the user explicitly asks for combined delivery —
 otherwise issue-first traceability degrades into many-issues-to-one-PR.
@@ -199,6 +230,12 @@ without redefining the subcommands above:
 Choose one `Current recommended action` by precedence. The block recommends only
 — it never merges, deploys, or auto-advances state.
 
+In **solo-trunk**, read the PR rows as the trunk commit: "PR not opened" → "change
+not yet committed to `main`"; "PR open, CI running/red" → the same, watched via
+`gh run watch` on the trunk push; there is **no awaiting-review row** — a green
+trunk commit that closes the issue with acceptance accepted is `done` (deploy
+still excluded).
+
 ## Guardrails
 
 - **Managed block only.** Progress updates rewrite only the `steer:managed` block,
@@ -210,5 +247,9 @@ Choose one `Current recommended action` by precedence. The block recommends only
 - **The PR is the human gate.** Propose the PR; don't merge or deploy. Watching CI
   to conclusion and fixing a red build is **finishing the work**, not crossing that
   gate — it is expected, not a gate breach. Merge and deploy stay human-gated.
+  **In solo-trunk there is no PR gate** — committing to `main` is authorized (rule
+  45), so the trunk commit *is* delivery; but **deploy stays human-gated** all the
+  same, and graduating the repo to the PR flow is `/steer:protect`'s job, never
+  this skill's.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.

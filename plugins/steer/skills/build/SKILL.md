@@ -118,7 +118,9 @@ on the next `/steer:build` run.
    - **Governed mode — repo already GitHub-adopted (`system: github`).**
      Issue-first applies, so implementation runs through
      **`/steer:work`**, the sole owner of
-     claim → branch → implement → test → PR → transition. For each approved intent
+     claim → branch → implement → test → PR → transition — and of adapting that
+     flow to the repo's delivery mode (in solo-trunk it commits straight to `main`
+     and closes the issue from the trunk commit, no branch/PR). For each approved intent
      (or coherent delivery slice), materialize or reuse a GitHub issue via
      **`/steer:issues`** (which routes tracker I/O through
      `/steer:tracker-sync`), then hand that issue to
@@ -162,8 +164,9 @@ on the next `/steer:build` run.
    "ready for the developer" unprompted, that is the gate — record it the
    same way.
 10. **Hand off via the PR.** This is the **prototype-mode** handoff: a single v0
-    PR for the whole build. (In **governed mode** each slice already shipped as its
-    own `/steer:work` issue→PR, so there is no separate v0 PR — the
+    PR for the whole build. (In **governed mode** each slice already shipped via
+    `/steer:work` as its own issue → delivery — a PR in pr-flow, or a `Closes #N`
+    trunk commit in solo-trunk — so there is no separate v0 PR; the
     productionization brief below still applies, written once for the build.)
     When the demo-validation gate has passed and the
     Definition of Done holds, propose opening the PR (it waits for
