@@ -4,6 +4,7 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 
 - [ ] Code follows existing patterns in the touched app/package.
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
+- [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
 - [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; `/spec/HISTORY.md` entry appended (see Living documentation).

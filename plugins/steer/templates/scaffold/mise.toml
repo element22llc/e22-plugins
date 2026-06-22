@@ -51,6 +51,9 @@ biome = "latest"                      # default Node linter + formatter (https:/
 "aqua:koalaman/shellcheck" = "latest" # shell lint (CI gate)
 "aqua:rhysd/actionlint" = "latest"    # GitHub Actions workflow lint (CI gate)
 # ruff = "latest"               # default Python linter + formatter (https://docs.astral.sh/ruff) — uncomment for Python products
+# Coverage tooling is a project dependency, not pinned here: add pytest-cov
+# (Python) / @vitest/coverage-v8 (Node) to the app. CI reports coverage and gates
+# changed lines via `uvx diff-cover` (uv is already pinned above). See CONVENTIONS.md.
 # go = "latest"
 # rust = "latest"
 # awscli = "latest"
