@@ -59,6 +59,15 @@ If a session is interrupted, just run `/steer:build` again — it resumes from
     the PR** are always human decisions. See the
     [Authorization model](../concepts/authorization-model.md).
 
+!!! note "Prototype-mode vs. governed-mode delivery"
+    The single v0 PR above is the **prototype-mode** hand-off. In a repo that is
+    already GitHub-adopted (**governed mode**), each approved slice instead ships
+    through [`/steer:work`](work.md) as its own issue → delivery — a PR in
+    pr-flow, or a `Closes #N` trunk commit in
+    [solo-trunk](../concepts/authorization-model.md) — so there is no separate v0
+    PR. Either way the productionization brief still applies, and merge/deploy stay
+    human-gated.
+
 ## Relationship to other skills
 
 - `/steer:build` is the **build** path; [`/steer:spec`](spec.md) is its

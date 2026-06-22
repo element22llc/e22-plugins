@@ -15,7 +15,7 @@ never edits code).
 flowchart TD
     START["/steer:work start #123"] --> VALIDATE[Read + validate the issue]
     VALIDATE --> CLAIM[Claim it · self-assign · set in-progress]
-    CLAIM --> BRANCH[Create or reuse feat/* branch]
+    CLAIM --> BRANCH[Create or reuse issue/* branch + work marker]
     BRANCH --> SPEC[Load linked /spec]
     SPEC --> IMPL[Implement + test<br/>commit autonomously]
     IMPL --> PROGRESS[Update progress on the issue]
@@ -27,14 +27,36 @@ flowchart TD
     WATCH -->|green| STATE[Transition to validate · hand reviewer a green PR]
 ```
 
+## Delivery mode
+
+How the work reaches `main` is governed by the repo's **delivery mode**, declared
+in the product `CLAUDE.md` `## Delivery mode` section (the same marker the steer
+hooks read — `solo-trunk` vs `pr-flow`; absent or unreadable → **pr-flow**).
+**Issue-first holds in both modes** — every implementation-affecting change is tied
+to a GitHub issue; the modes differ only in the branch/PR ceremony around it.
+
+| | **pr-flow** (default) | **solo-trunk** (pre-MVP greenfield) |
+| --- | --- | --- |
+| Branch | `issue/<n>` branch + `spec/.work` marker | none — commit straight to `main` |
+| Marker | written for Stop-hook reconciliation | skipped (stay on `main`) |
+| Delivery | open a PR; the PR is the human gate | `Closes #N` trunk commit under [Commit autonomy](../concepts/authorization-model.md) (rule 45) |
+| Terminal evidence | merged PR | closed issue from the trunk commit |
+
+Determine the mode once at `start` / `finish`. In solo-trunk, wherever a step below
+says *branch*, *marker*, or *PR*, skip it and substitute the trunk commit —
+validation, managed-block progress, CI-watch (via `gh run watch` on the trunk push),
+and the Definition of Done are unchanged. Committing to `main` is authorized in this
+mode; **deploy stays human-gated all the same**, and graduating the repo to the PR
+flow is [`/steer:protect`](../reference/skills.md)'s job, never this skill's.
+
 ## Modes
 
 | Mode | What it does |
 | --- | --- |
-| `start` | Validate, claim (self-assigns the invoking GitHub user), branch, load specs, begin implementing. |
+| `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off — including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s). |
-| `finish` | Open the PR, **watch CI to conclusion** (`gh pr checks --watch`) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
+| `finish` | Open the PR (pr-flow) or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
 
 ## Local work marker
 
@@ -53,7 +75,8 @@ stay in the git-ignored marker and never reach the tracker.
 
 ## Rules it follows
 
-- **One issue per branch/PR** by default.
+- **One issue per branch/PR** by default (in solo-trunk, **one trunk commit per
+  issue**, each closing its own `#N`).
 - Git and PR delivery follow the repo's commit/PR-autonomy rules — commits are
   autonomous, **pushing/opening the PR is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
