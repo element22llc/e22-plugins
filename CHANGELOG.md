@@ -9,6 +9,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 - **Fixed:** solo-trunk delivery mode no longer collides with issue-first. A managed repo can be solo-trunk **and** GitHub-adopted at once (`/steer:init` recommends solo trunk for solo greenfield *and* can configure a GitHub tracker), but rule 36, the Definition of Done, and the two issue-first hooks were blind to delivery mode — so a declared-trunk repo got every-session advisories telling it to open a PR / create an `issue/<N>` branch that solo-trunk explicitly relaxes, and the DoD required a PR that does not exist. Resolved by a single source of truth: a machine-readable marker (`<!-- steer:delivery-mode=solo-trunk|pr-flow -->`) on the product `CLAUDE.md` `## Delivery mode` section. `/steer:init` writes it, `/steer:protect` flips it to `pr-flow` at graduation, and a new `steer_delivery_mode` hook helper reads it (fail-open to `pr-flow`). In solo-trunk, issue-first **still holds** (the issue stays the audit-evidence anchor) — only the branch/PR ceremony relaxes: the PreToolUse and Stop issue-first hooks now keep requiring the issue but tell you to close it from the trunk commit (`Closes #N`) instead of opening a PR or an issue branch. Rules `36-issue-first`, `50-definition-of-done`, `45-commit-autonomy`, `30-spec-workflow`, and `00-router` reworded to match; calling work a "prototype" no longer purports to waive the per-feature issue — declaring solo-trunk mode is the only durable opt-out, and it drops the PR/branch, not the issue.
 - **Changed:** router Intent→skill table disambiguates `/steer:work` vs `/steer:issues` — implementing a change *now* (with or without an issue number) routes to `/steer:work` (find-or-creates the issue, then implements); pure backlog management routes to `/steer:issues` — and adds a routable row for `/steer:doctor` ("command not found", mise/docker errors, fresh-machine setup), which previously had no entry in the routing table.
+- **Added:** new always-on rule `52-deployment` — deployment & environments as a first-class standard. Defines branch-driven promotion (merge to `main` auto-deploys non-prod; a reviewed PR from `main` into a long-lived `prod` branch is the production approval gate and auto-deploys prod on merge), a review app per feature PR, an observability baseline (logs, metrics + alarms, error tracking, health checks, alerting), and rollback + expand/contract migrations. Detail in the scaffold `infra/README.md` and `/steer:conventions`.
+- **Added:** `/steer:protect` and `policy/branch-protection.yml` now cover **additional protected branches** beyond the default (schema bumped to 2, additive — v1 policies stay valid). Ships a `prod` entry (required PR review, no direct push, no admin bypass) so the production gate is enforceable without GitHub Enterprise deployment-environment approvals. The skill protects the default branch plus each declared branch, reads/diffs/applies per branch, and reports a not-yet-created `prod` as informational rather than drift.
+- **Changed:** secrets-at-rest default is now **SSM Parameter Store (`SecureString`)** — cheaper than Secrets Manager and sufficient for most needs — with Secrets Manager reserved for rotation / cross-account / large-or-binary values. Updated across `70-secrets`, `10-stack`, `60-high-risk`, `CONVENTIONS.md`, `TRACEABILITY.md`, and the scaffold (`infra/README.md`, `env.example`, `compose.yaml`, `gitignore`, `mise.toml`).
+- **Changed:** scaffold `infra/README.md` release-flow section rewritten for the branch-based promotion model + review apps + an Observability baseline section; `ARCHITECTURE.md` cross-cutting concerns now enumerate the observability baseline, the deployment/environments shape, and the Parameter-Store secrets default for products to fill in.
+- **Fixed:** `/steer:sync` no longer trips the issue-first hooks on its own
+  sanctioned flow. The skill reconciles the materialized spine + scaffold (CI,
+  `mise.toml`, `compose.yaml`, version-pin scripts, …) on its own `feat/sync`
+  branch — operations-class files that, on any other branch, the issue-first
+  point-of-action nudge (`check-issue-before-mutation`) and the end-of-turn
+  reconciliation advisory (`reconcile-issue-first`) both flag as needing a GitHub
+  issue (rule `36-issue-first`). Both hooks now recognize `feat/sync` (and
+  `feat/sync-<ver>` / `feat/sync/*`) as a plugin-maintenance branch and stay
+  silent there — same rationale as the existing `/spec`-spine exemption, since
+  sync carries the scaffold forward identically. The exemption is **flow-scoped,
+  not path-scoped** (so a hand-edited `compose.yaml` on a feature branch still
+  nudges) and is **withdrawn if app source changes** on `feat/sync`, surfacing a
+  sync that violated its "structure only, never app code" contract. Rule
+  `36-issue-first` documents the carve-out.
 
 ### 2.12.0
 

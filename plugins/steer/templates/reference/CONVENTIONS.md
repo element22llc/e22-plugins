@@ -296,8 +296,38 @@ Testing rules.
   Auth is a high-risk area — scope with the dev and record an ADR before wiring
   it in.
 - **Error tracking → [Sentry](https://sentry.io)** for error capture on both
-  frontend and backend. Keep DSNs and auth tokens in Secrets Manager — never
-  commit them.
+  frontend and backend. Keep DSNs and auth tokens in encrypted config at rest —
+  SSM Parameter Store `SecureString` by default (cheaper), Secrets Manager when
+  you need rotation / cross-account / large values — never commit them.
+
+## Deployment & environments
+
+The always-on "Deployment & environments" rule carries the condensed model; this
+is the rationale and the AWS-specific shape. Full operational detail lives in the
+scaffold's [`infra/README.md`](../scaffold/infra/README.md).
+
+- **Environments** — `non-prod` (shared validation) and `prod`, plus a **review
+  app** per open feature PR (torn down on merge/close). The review-app mechanism
+  is product-specific — pick one and record it in an ADR.
+- **Branch-driven promotion** — promotion moves code between branches rather than
+  triggering environments by hand:
+  - merge to `main` → **auto-deploy non-prod**;
+  - a reviewed promotion PR from `main` into a long-lived **`prod` branch** is the
+    **production approval gate**, and merging it → **auto-deploy prod**.
+  - **Why a branch, not an environment approval?** GitHub's native
+    deployment-environment "required reviewers" gate is Enterprise-only for
+    private repos; a protected `prod` branch (required PR review, no direct push,
+    no admin bypass) gives the same human gate on any plan. `/steer:protect`
+    applies that protection — see the `prod` entry in
+    `policy/branch-protection.yml`.
+- **Observable by default** — a deployed environment ships logs, metrics with
+  alarms, error tracking (Sentry), per-app health checks, and alerting routed to a
+  human. "Deployed but unobservable" is not done; capture the wiring in
+  `ARCHITECTURE.md`.
+- **Rollback & migrations** — every prod deploy has a known rollback (revert the
+  `prod` merge / redeploy the prior SHA); migrations are **expand/contract** so the
+  running version survives the deploy and a rollback never leaves schema ahead of
+  code.
 
 ## Baseline patterns & anti-patterns (full prose)
 

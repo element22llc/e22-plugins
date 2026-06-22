@@ -131,7 +131,8 @@ bullet: run `/steer:conventions`.
   `apps/api`, or Python + FastAPI + PostgreSQL, only when intent clearly
   warrants it — either split is an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app.
+  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app. Promotion,
+  environments, and the `prod`-branch gate are in Deployment & environments.
 - **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
 - **Editor:** VS Code is the default; committed `.vscode/` config (recommended
   extensions + Biome format-on-save) ships in the scaffold. Prefer in-editor
@@ -140,7 +141,9 @@ bullet: run `/steer:conventions`.
   format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
 - **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
-  **Error tracking:** Sentry; DSNs/tokens in Secrets Manager, never committed.
+  **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest (Parameter
+  Store `SecureString`, or Secrets Manager when warranted), never committed — see
+  Secrets handling.
 - **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
   plugin's bundled scaffold one (`templates/scaffold/compose.yaml`), don't
   author from scratch. **Same engine locally
@@ -421,7 +424,10 @@ When `/spec/tracker.md` declares `system: github`, every **implementation-affect
 mutation** — code, config, infrastructure, or behavior — has a GitHub issue
 **before the first repository mutation**. This is scoped to implementation:
 editing the `/spec` spine, documentation, generated output, and lockfiles is
-*not* an implementation-affecting mutation and needs no issue. Reuse the issue
+*not* an implementation-affecting mutation and needs no issue — nor is a
+plugin-maintenance sync (`/steer:sync`), which reconciles the materialized spine
++ scaffold against the plugin's own templates on its own `feat/sync` branch
+(structural, not feature work; it never touches app source). Reuse the issue
 the user names; otherwise find-or-create one through
 `/steer:tracker-sync` — an explicit "fix / implement / add / create"
 request does **not** need confirmation to create the issue.
@@ -508,6 +514,34 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 - [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where `main` is intentionally unprotected and there is no PR gate until graduation (see Commit autonomy).
 
 
+## Deployment & environments
+
+How code reaches users. Deploy/release logic is a high-risk area (see High-risk
+areas) — validate in non-prod before prod, and scope pipeline changes with the dev
+first. Detail and the AWS/Terragrunt specifics live in `/infra/README.md`; run
+`/steer:conventions` for the rationale.
+
+- **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
+  also gets an isolated, auto-provisioned **review app**, torn down when the PR
+  merges or closes. The review-app mechanism is product-specific — record it in an
+  ADR (see Decision capture).
+- **Promotion** — merge to `main` **auto-deploys non-prod**. Prod is gated by a
+  **reviewed PR from `main` into a long-lived `prod` branch**; merging that PR
+  **auto-deploys prod**. Never push directly to `prod`. The branch-protection
+  approval on `prod` *is* the production gate (run `/steer:protect`), standing in
+  for deployment-environment approvals that GitHub Enterprise would otherwise
+  provide.
+- **Observable by default** — a deployed environment ships logs, metrics with
+  alarms, error tracking (Sentry), health checks, and alerting routed somewhere a
+  human sees it. "Deployed but unobservable" is not done; capture the wiring in
+  `ARCHITECTURE.md`.
+- **Rollback** — every prod deploy has a known rollback: revert the `prod` merge or
+  redeploy the prior SHA. Database migrations are expand/contract so the previous
+  version keeps running through a deploy (see High-risk areas).
+- **Secrets & config at rest** — injected at deploy/runtime, never baked into images
+  or CI logs (see Secrets handling).
+
+
 ## Drift gates — surface before merge
 
 Drift — any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔ app
@@ -532,7 +566,7 @@ architectural changes here speculatively:
 - **Auth & sessions** — sign-in/up, password reset, token issuance, session invalidation
 - **Authorization & permissions** — role checks, access control, multi-tenancy boundaries
 - **Database migrations** — schema changes, backfills, migration scripts
-- **Infrastructure** — anything in `/infra`, especially networking, IAM, Secrets Manager
+- **Infrastructure** — anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
 - **Secrets handling** — anything reading, writing, or transmitting credentials/keys/tokens
 - **Deletion logic** — hard deletes, cascading deletes, retention/cleanup jobs
 - **Billing & payments** — pricing, charging, refunds, subscription state
@@ -573,9 +607,13 @@ or transmitted.
   (`claude --worktree`) starts from git refs only, so the git-ignored `.env` is
   absent there — the repo-root `.worktreeinclude` carries it (and other local
   config) into each new worktree so the app still boots.
-- **Deployed environments:** secrets live in **AWS Secrets Manager**, injected
-  at deploy/runtime — never baked into images or CI logs. Non-secret config may
-  live in `mise.toml`'s `[env]` block; secrets must not.
+- **Deployed environments:** secrets live in **SSM Parameter Store
+  (`SecureString`)** by default — it is cheaper than Secrets Manager and covers
+  most needs (DSNs, tokens, DB credentials). Use **AWS Secrets Manager** only when
+  you actually need its features: automatic rotation, cross-account sharing, or
+  large/binary values. Either way they are injected at deploy/runtime — never
+  baked into images or CI logs. Non-secret config may live in `mise.toml`'s
+  `[env]` block; secrets must not.
 - A committed secret is compromised: stop, tell the dev, and rotate it — don't
   just delete the line.
 

@@ -11,7 +11,8 @@ bullet: run `/steer:conventions`.
   `apps/api`, or Python + FastAPI + PostgreSQL, only when intent clearly
   warrants it — either split is an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app.
+  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app. Promotion,
+  environments, and the `prod`-branch gate are in Deployment & environments.
 - **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
 - **Editor:** VS Code is the default; committed `.vscode/` config (recommended
   extensions + Biome format-on-save) ships in the scaffold. Prefer in-editor
@@ -20,7 +21,9 @@ bullet: run `/steer:conventions`.
   format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
 - **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
-  **Error tracking:** Sentry; DSNs/tokens in Secrets Manager, never committed.
+  **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest (Parameter
+  Store `SecureString`, or Secrets Manager when warranted), never committed — see
+  Secrets handling.
 - **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
   plugin's bundled scaffold one (`templates/scaffold/compose.yaml`), don't
   author from scratch. **Same engine locally

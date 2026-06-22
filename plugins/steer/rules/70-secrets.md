@@ -15,8 +15,12 @@ or transmitted.
   (`claude --worktree`) starts from git refs only, so the git-ignored `.env` is
   absent there — the repo-root `.worktreeinclude` carries it (and other local
   config) into each new worktree so the app still boots.
-- **Deployed environments:** secrets live in **AWS Secrets Manager**, injected
-  at deploy/runtime — never baked into images or CI logs. Non-secret config may
-  live in `mise.toml`'s `[env]` block; secrets must not.
+- **Deployed environments:** secrets live in **SSM Parameter Store
+  (`SecureString`)** by default — it is cheaper than Secrets Manager and covers
+  most needs (DSNs, tokens, DB credentials). Use **AWS Secrets Manager** only when
+  you actually need its features: automatic rotation, cross-account sharing, or
+  large/binary values. Either way they are injected at deploy/runtime — never
+  baked into images or CI logs. Non-secret config may live in `mise.toml`'s
+  `[env]` block; secrets must not.
 - A committed secret is compromised: stop, tell the dev, and rotate it — don't
   just delete the line.

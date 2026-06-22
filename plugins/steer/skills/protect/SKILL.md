@@ -1,7 +1,7 @@
 ---
 name: protect
-description: "Make GitHub branch protection — the real gate against direct-push-to-main — reliable on a managed repo. Reads the machine-readable policy (policy/branch-protection.yml, consumer-first then plugin default), queries the repo's live protection via gh, reports a per-rule compliant/drifted/absent diff, and on the dev's explicit confirmation applies the missing settings via gh api — branch protection plus the repo-level settings the policy declares (secret scanning, Dependabot alerts + security updates). Verify by default; never writes repo settings without a yes. Configures the GitHub-side gate only — steer is advisory in the local session (rule 95) and this skill does not and cannot block local pushes."
-when_to_use: 'Use when asked to "protect main", set up or check branch protection / merge rules on a GitHub-adopted repo, or as the final step of init/adopt to establish the PR gate. Also when /steer:audit flags missing or drifted branch protection.'
+description: "Make GitHub branch protection — the real gate against direct-push-to-main — reliable on a managed repo. Reads the machine-readable policy (policy/branch-protection.yml, consumer-first then plugin default), queries the repo's live protection via gh, reports a per-rule compliant/drifted/absent diff, and on the dev's explicit confirmation applies the missing settings via gh api — branch protection plus the repo-level settings the policy declares (secret scanning, Dependabot alerts + security updates). Protects the default branch and any additional branches the policy declares (e.g. a `prod` promotion branch, whose required PR review is the production approval gate). Verify by default; never writes repo settings without a yes. Configures the GitHub-side gate only — steer is advisory in the local session (rule 95) and this skill does not and cannot block local pushes."
+when_to_use: 'Use when asked to "protect main", protect a `prod` / promotion branch, set up or check branch protection / merge rules on a GitHub-adopted repo, or as the final step of init/adopt to establish the PR gate. Also when /steer:audit flags missing or drifted branch protection.'
 argument-hint: "[verify | apply]"
 allowed-tools:
   - Bash(gh auth status *)
@@ -67,14 +67,29 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   will block forever on a context that never arrives. If the workflow is absent,
   flag that the `ci` gate cannot be required yet and recommend installing it
   (`/steer:sync` / scaffold) first.
+- **Additional branches.** If the policy declares a `protected_branches:` list
+  (schema 2 — optional; absent in older policies), each entry is a further branch
+  to protect with its own fields (the canonical case is a `prod` promotion branch
+  whose required PR review is the production approval gate — see the "Deployment &
+  environments" rule). Resolve each entry's literal `name` and its CI context the
+  same way. Treat the whole set — default branch **plus** every declared branch —
+  as the desired state; the steps below apply to each.
 
 ## Verify (default mode)
 
-Read live state (tolerate `404` = no protection at all):
+Read live state **for each branch in scope** (the default branch, plus every
+declared `protected_branches` entry), tolerating `404` = no protection at all:
 
 ```sh
 gh api "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection"
 ```
+
+For a **declared additional branch** (e.g. `prod`), first confirm the branch
+exists — `gh api "repos/${OWNER}/${REPO}/branches/${BRANCH}"` (`404` = not
+created). You cannot protect a branch that doesn't exist, so report a missing
+`prod` as **"not created yet"** (informational — create it when adopting the
+branch-based prod gate: `git branch prod main && git push -u origin prod`), not as
+drift, and move on without failing.
 
 Plus the repo-level settings the policy declares, read from
 `gh api "repos/${OWNER}/${REPO}"`:
@@ -87,7 +102,9 @@ Dependabot **alerts** have no field on the repo object — read their state from
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
 Produce a **per-rule diff table** — for each policy field: `compliant` /
-`drifted (actual → desired)` / `absent`. If every rule is compliant, say
+`drifted (actual → desired)` / `absent`. With more than one branch in scope, give
+**one table per branch** (default branch first, then each declared branch),
+labelled by branch name. If every rule on every present branch is compliant, say
 **"branch protection is compliant — nothing to do"** and stop. This is the
 idempotent path: re-running on a protected repo writes nothing.
 
@@ -112,9 +129,12 @@ When rules are drifted or absent:
    ```
    When you emit the concrete command for a dev, substitute the resolved
    `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
-   placeholders or a heredoc in the command you hand them to run.
+   placeholders or a heredoc in the command you hand them to run. Run this PUT
+   **once per branch in scope** (default branch, then each declared branch that
+   exists), substituting that branch's `BRANCH` and resolved fields each time.
 2. **Wait for the dev's explicit confirmation.** Do not apply without it.
-3. Apply the repo-level settings as **separate** calls — surfaced and confirmed
+3. Apply the repo-level settings as **separate** calls — once for the repo, not
+   per branch — surfaced and confirmed
    the same way as the protection PUT:
    - secret scanning + push protection **and** Dependabot security updates in one
      `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`

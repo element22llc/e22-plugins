@@ -6,7 +6,7 @@ architectural changes here speculatively:
 - **Auth & sessions** — sign-in/up, password reset, token issuance, session invalidation
 - **Authorization & permissions** — role checks, access control, multi-tenancy boundaries
 - **Database migrations** — schema changes, backfills, migration scripts
-- **Infrastructure** — anything in `/infra`, especially networking, IAM, Secrets Manager
+- **Infrastructure** — anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
 - **Secrets handling** — anything reading, writing, or transmitting credentials/keys/tokens
 - **Deletion logic** — hard deletes, cascading deletes, retention/cleanup jobs
 - **Billing & payments** — pricing, charging, refunds, subscription state

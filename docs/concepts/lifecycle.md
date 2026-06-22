@@ -42,6 +42,12 @@ active issue (the *issue-first* rule). `/steer:work` will find-or-create the iss
 before the first change. Commit autonomy is unchanged once that issue exists — see
 the [Authorization model](authorization-model.md).
 
+Plugin-maintenance flows are exempt, just as editing the `/spec` spine is:
+`/steer:sync` reconciles the materialized spine and scaffold against the plugin's
+own templates on its own `feat/sync` branch — structural, not feature work — so the
+issue-first hooks stay silent there (unless app source changes, which sync's
+contract forbids).
+
 `done` and `cancelled` are terminal. Both must always be present in the state set;
 the fixture suite asserts this so the lifecycle can't silently lose a terminal
 state.

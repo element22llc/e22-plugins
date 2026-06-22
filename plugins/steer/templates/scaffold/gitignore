@@ -18,7 +18,7 @@ out/
 # Environment
 # Store local config in .env / .env.local — never committed. Document required
 # var NAMES (not values) in the committed .env.example, and keep deployed
-# secrets in AWS Secrets Manager. See CLAUDE.md "Stack".
+# secrets in SSM Parameter Store (SecureString) / Secrets Manager. See CLAUDE.md "Stack".
 .env
 .env.local
 .env.*.local
