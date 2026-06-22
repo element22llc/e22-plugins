@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the scaffold CI's "Drop placeholder mise.lock files" step no longer
+  silently degrades a real lock to `latest`. It previously dropped any
+  `mise.lock` that failed a `grep '^\[\[tools'` heuristic — so a populated lock
+  that was malformed, truncated, or had lost its `[[tools]]` lines (bad merge,
+  partial write) was deleted on the runner, and `mise install` resolved every
+  tool to `latest` behind a green build: invisible non-reproducible state, the
+  exact thing pinning exists to prevent (#159). The step now drops a lock **only
+  when it is a genuine comment-only placeholder** (no TOML content at all). Any
+  lock with real content is trusted and kept, so `mise install --locked` fails
+  **loudly** on a bad lock instead of degrading. When a placeholder *is* dropped,
+  the step now emits a GitHub `::warning::` annotation stating pinning is
+  disabled for that run, rather than a buried log line.
+
 ### 2.13.0
 
 - **Fixed:** solo-trunk delivery mode no longer collides with issue-first. A managed repo can be solo-trunk **and** GitHub-adopted at once (`/steer:init` recommends solo trunk for solo greenfield *and* can configure a GitHub tracker), but rule 36, the Definition of Done, and the two issue-first hooks were blind to delivery mode — so a declared-trunk repo got every-session advisories telling it to open a PR / create an `issue/<N>` branch that solo-trunk explicitly relaxes, and the DoD required a PR that does not exist. Resolved by a single source of truth: a machine-readable marker (`<!-- steer:delivery-mode=solo-trunk|pr-flow -->`) on the product `CLAUDE.md` `## Delivery mode` section. `/steer:init` writes it, `/steer:protect` flips it to `pr-flow` at graduation, and a new `steer_delivery_mode` hook helper reads it (fail-open to `pr-flow`). In solo-trunk, issue-first **still holds** (the issue stays the audit-evidence anchor) — only the branch/PR ceremony relaxes: the PreToolUse and Stop issue-first hooks now keep requiring the issue but tell you to close it from the trunk commit (`Closes #N`) instead of opening a PR or an issue branch. Rules `36-issue-first`, `50-definition-of-done`, `45-commit-autonomy`, `30-spec-workflow`, and `00-router` reworded to match; calling work a "prototype" no longer purports to waive the per-feature issue — declaring solo-trunk mode is the only durable opt-out, and it drops the PR/branch, not the issue.
