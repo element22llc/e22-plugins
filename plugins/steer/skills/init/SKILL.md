@@ -13,6 +13,12 @@ toolchain pinned and the repo working spec-first, on a `feat/*` branch. Per
 one step that waits for the dev is **publishing** — push and the PR (see the
 push/PR gate in Commit autonomy).
 
+**Solo greenfield?** When one person is both PO and dev with no MVP or deploy yet,
+Path B offers **solo trunk mode** (Commit autonomy): the bootstrap and early features
+land **directly on `main`** — no `feat/*` branch, no bootstrap PR — until graduation
+via `/steer:protect`. The `feat/*` + PR default below is for repos with a reviewer;
+the per-step notes call out the trunk-mode variant.
+
 **A. Legacy fork of the old `repository-template`** — `[Replace …]`,
 `[Product Name]`, `[e.g., …]`, or `@github-handle` placeholders are still
 present. The fork already ships a `/spec` skeleton and scaffolding; this path
@@ -136,7 +142,9 @@ The repo has no `/spec` spine, and you are starting a new product here. The
 goal: stand up the full repo scaffolding + spec spine from the plugin's
 bundled scaffold, then proceed spec-first — so feature code is never written
 ahead of its intent/contract. Work on a `feat/*` branch and commit the bootstrap
-as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
+as coherent units (Commit autonomy) — **push and the PR wait for the dev**. (In
+**solo trunk mode** — offered in step 1 when one person is both PO and dev —
+commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
 1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
    greenfield (you're writing the code from scratch), not reverse-engineering
@@ -149,6 +157,13 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    MVP cut) is captured **into the spine you are about to create** — as an ADR
    (step 4) or a `vision.md` entry — never left as a chat- or memory-only note
    (rule `31-decision-capture`).
+   - **Offer solo trunk mode when solo.** If one person is both PO and dev and there
+     is no MVP or deploy yet, **offer and recommend** solo trunk mode: commit straight
+     to `main` (no `feat/*` branch, no per-feature PR) until graduation. A one-line
+     confirm is enough. Record the choice in the product `CLAUDE.md` `## Delivery mode`
+     section (`solo trunk (pre-MVP)` with the graduation trigger) when you fill the
+     scaffold in steps 2–3. A repo with a second contributor keeps the `feat/*` + PR
+     default — don't offer trunk there.
 2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
    external template repo to fetch. Read
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
@@ -236,7 +251,10 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    <plugin version>
    ```
 
-   Commit on the `feat/*` branch and open a PR for dev review — the **bootstrap
+   **Solo trunk mode:** commit the bootstrap **directly to `main`** with no PR, and
+   note in the `HISTORY.md` entry that the repo runs on trunk until graduation
+   (`/steer:protect`) — there is no bootstrap PR. Otherwise (a repo with a reviewer):
+   commit on the `feat/*` branch and open a PR for dev review — the **bootstrap
    gate** that brings the repo under the standards and lets spec-first work begin
    on `main`. This is **not** productionization: a greenfield bootstrap ships
    scaffold and an empty spec spine, with no app to harden. Productionization is
@@ -249,7 +267,8 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
 
 Never clobber working code or overwrite a value the dev already filled in.
 Never commit secrets — `.env`/`.env.local` stay git-ignored, names documented in
-`.env.example`. Propose batches for approval; don't commit to `main`.
+`.env.example`. Propose batches for approval; don't commit to `main` (except in
+solo trunk mode — see step 1).
 
 ## Recommend the next action
 
@@ -261,9 +280,10 @@ bootstrapped repo's state.
 |---|---|---|
 | Unresolved template placeholders (`[Replace …]`, `@github-handle`) | Blocking now | Resolve them before feature work |
 | Bootstrap PR open, awaiting dev review | Human decision required | A dev reviews/merges the bootstrap PR (no command) |
+| Solo trunk mode: bootstrap committed to `main`, no PR | Recommended | Spec or build the first feature; graduate via `/steer:protect` when the MVP works |
 | Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
 | Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature — `/steer:spec` or `/steer:build` |
-| Repo pushed to GitHub, `main` not yet protected (GitHub tracker) | Recommended | Establish the PR gate — run `/steer:protect` (steer is advisory locally; this sets the real server-side wall) |
+| Repo pushed to GitHub, `main` not yet protected (GitHub tracker) | Recommended | Establish the PR gate — run `/steer:protect` (steer is advisory locally; this sets the real server-side wall). **In solo trunk mode, defer this until graduation** (MVP works / first deploy / second contributor). |
 | Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. A tracker intentionally set
