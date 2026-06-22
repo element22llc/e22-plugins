@@ -96,6 +96,25 @@ branch-protection section.
 scanning. It configures settings only; the merge itself is enacted by the workflow.
 `/steer:sync` keeps both files wired (the `dependency-automation` capability).
 
+## Production promotion gate
+
+Branch protection covers more than the default branch. `policy/branch-protection.yml`
+also describes a long-lived **`prod`** branch, and `/steer:protect` applies
+protection to every entry in its `protected_branches` list, not just `main`.
+
+This is how the [deployment standard](../concepts/deployment.md) enforces its
+production gate without GitHub Enterprise. Promotion to production is a **reviewed
+PR from `main` into `prod`**; the required-review approval on that PR *is* the
+production approval — it stands in for the deployment-environment approvals that
+only GitHub Enterprise provides. Merging the `prod` PR auto-deploys production, and
+nothing is ever pushed to `prod` directly.
+
+`/steer:protect` reads `protected_branches` and configures each branch's rules
+(required PR, required `ci` check, no direct pushes); `/steer:sync` keeps the
+policy file and the protection in step as the plugin evolves. See
+[Deployment & environments](../concepts/deployment.md#promotion) for the full
+promotion model.
+
 ## Agentic workflows (`gh aw`) — optional, opt-in
 
 [GitHub Agentic Workflows](https://github.com/githubnext/gh-aw) (`gh aw`) is a
