@@ -8,6 +8,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 - **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): mongo 6→7, node 20→22, nginx 1.26→1.30. EOL floors only — what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
+- **Added:** the **`context7`** MCP server now ships with the plugin
+  (`plugins/steer/.mcp.json`), giving every steer session up-to-date,
+  version-accurate library/API documentation on demand. It uses context7's
+  **hosted HTTP transport** (`https://mcp.context7.com/mcp`) — like the `github`
+  server there is no local process, package fetch, or runtime dependency, so it
+  connects out of the box with **no token** (the anonymous free tier). A
+  `CONTEXT7_API_KEY` is optional and only raises rate limits; export it and add an
+  `Authorization` header in your own project `.mcp.json` (which merges additively)
+  if you hit them. Documented in `reference/mcp-servers.md` and the scaffold
+  `README.md`. It complements `markitdown`/`Read` (document conversion) by
+  covering live library docs, not files you hand over.
 - **Changed:** the `github` + `markitdown` MCP servers now ship with the
   **plugin itself** (`plugins/steer/.mcp.json`) instead of being scaffolded as a
   per-repo `.mcp.json`. Every repo that enables steer picks them up centrally and
