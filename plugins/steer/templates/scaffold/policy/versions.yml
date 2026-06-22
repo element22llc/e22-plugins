@@ -41,7 +41,7 @@ products:
     minimum_supported: "10"
     denied: []
   mongo:
-    minimum_supported: "6"
+    minimum_supported: "7"
     denied: ["4", "5"]
   redis:
     minimum_supported: "7"
@@ -50,11 +50,11 @@ products:
     minimum_supported: "7"
     denied: []
   node:
-    minimum_supported: "20"
+    minimum_supported: "22"
     denied: ["16", "18"]
   python:
     minimum_supported: "3.10"
     denied: ["3.7", "3.8", "3.9"]
   nginx:
-    minimum_supported: "1.26"
+    minimum_supported: "1.30"
     denied: []
