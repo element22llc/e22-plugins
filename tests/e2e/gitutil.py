@@ -34,6 +34,27 @@ def porcelain(repo: Path) -> str:
     return git(repo, "status", "--porcelain").strip()
 
 
+def changed_paths(repo: Path) -> list[str]:
+    """Repo-relative paths of every working-tree change (modified + untracked)."""
+    paths = []
+    for line in porcelain(repo).splitlines():
+        # porcelain v1: 2 status cols then the path. Strip the 2 status chars and
+        # any separating space(s) rather than slicing a fixed offset.
+        p = line[2:].lstrip().strip('"')
+        if " -> " in p:  # rename: keep the destination
+            p = p.split(" -> ", 1)[1]
+        paths.append(p)
+    return paths
+
+
+def assert_changes_confined_to(repo: Path, *prefixes: str) -> None:
+    """Every working-tree change sits under one of ``prefixes`` (e.g. ``spec/``).
+    Catches a skill that wrote outside its allowed area — e.g. spec, which must
+    never touch code."""
+    stray = [p for p in changed_paths(repo) if not p.startswith(prefixes)]
+    assert not stray, f"writes escaped {prefixes}: {stray}"
+
+
 def assert_unchanged(repo: Path, since_head: str) -> None:
     """The repo is byte-for-byte as it was at ``since_head``: clean working tree
     and HEAD not moved. This is the idempotency assertion — a re-run that

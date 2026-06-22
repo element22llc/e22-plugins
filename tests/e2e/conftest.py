@@ -149,27 +149,36 @@ Status: Done
 """
 
 
+# A minimal but believable /spec spine, shared by the fixtures that need a
+# bootstrapped repo without paying for a live init/adopt.
+_SPINE_FILES = (
+    ("vision.md", "# Vision\n\nA billing tool.\n"),
+    ("users.md", "# Users\n\nBilling ops.\n"),
+    ("glossary.md", "# Glossary\n\n- customer: a billed account.\n"),
+    ("HISTORY.md", "# History\n\n- 2026-01-01 — seeded.\n"),
+    ("tracker.md", "system: github\n"),
+)
+
+
+def _seed_spine(repo: Path, version: str = "2.0.0") -> None:
+    (repo / "spec").mkdir(parents=True, exist_ok=True)
+    (repo / "spec" / ".version").write_text(f"{version}\n", encoding="utf-8")
+    for name, body in _SPINE_FILES:
+        (repo / "spec" / name).write_text(body, encoding="utf-8")
+
+
 @pytest.fixture
 def drift_repo(tmp_path: Path) -> Path:
     """A bootstrapped repo whose as-built feature spec diverges from its tracker
     export: the spec emits a `phone` column + XLSX the tracker (Done) never asked
     for. drift should flag that and, being read-only, mutate nothing."""
     repo = tmp_path / "drift-app"
-    (repo / "spec" / "features" / "customer-export").mkdir(parents=True)
+    _seed_spine(repo)
+    feat = repo / "spec" / "features" / "customer-export"
+    feat.mkdir(parents=True)
     (repo / "src").mkdir()
     (repo / "tracker-export").mkdir()
 
-    (repo / "spec" / ".version").write_text("2.0.0\n", encoding="utf-8")
-    for name, body in (
-        ("vision.md", "# Vision\n\nA billing tool.\n"),
-        ("users.md", "# Users\n\nBilling ops.\n"),
-        ("glossary.md", "# Glossary\n\n- customer: a billed account.\n"),
-        ("HISTORY.md", "# History\n\n- 2026-01-01 — seeded.\n"),
-        ("tracker.md", "system: github\n"),
-    ):
-        (repo / "spec" / name).write_text(body, encoding="utf-8")
-
-    feat = repo / "spec" / "features" / "customer-export"
     (feat / "intent.md").write_text(_INTENT_MD, encoding="utf-8")
     (feat / "contract.md").write_text(_CONTRACT_MD, encoding="utf-8")
     (repo / "src" / "export.py").write_text(
@@ -179,5 +188,16 @@ def drift_repo(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (repo / "tracker-export" / "issue-1.md").write_text(_TRACKER_ISSUE, encoding="utf-8")
+    _init_commit(repo)
+    return repo
+
+
+@pytest.fixture
+def spec_repo(tmp_path: Path) -> Path:
+    """A bootstrapped repo with a spine but no features yet — the state
+    ``/steer:spec`` drafts a new feature into."""
+    repo = tmp_path / "spec-app"
+    _seed_spine(repo)
+    (repo / "spec" / "features").mkdir()
     _init_commit(repo)
     return repo
