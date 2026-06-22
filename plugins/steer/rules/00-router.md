@@ -31,7 +31,11 @@ name one. Plain language is the only entry point a user needs.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
   or build intent through bootstrap first (`/steer:init` greenfield, `/steer:adopt`
   for existing code) — the SessionStart hook flags this; don't degrade to
-  toolchain-only. **"Prototype" / "quick" / "just try it" / "throwaway" never waives
+  toolchain-only. **Make bootstrap the first move, announced up front** — not a
+  closing offer after a long scoping pass; that scoping folds into `init`'s own
+  interview, and durable design decisions wait for the spine to hold them
+  (`31-decision-capture`), never a memory- or chat-only record.
+  **"Prototype" / "quick" / "just try it" / "throwaway" never waives
   this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
   (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
   Those words change spec *depth* and *ceremony* (lighter interview, no per-feature

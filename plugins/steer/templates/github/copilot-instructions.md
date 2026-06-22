@@ -33,7 +33,11 @@ name one. Plain language is the only entry point a user needs.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
   or build intent through bootstrap first (`/steer:init` greenfield, `/steer:adopt`
   for existing code) — the SessionStart hook flags this; don't degrade to
-  toolchain-only. **"Prototype" / "quick" / "just try it" / "throwaway" never waives
+  toolchain-only. **Make bootstrap the first move, announced up front** — not a
+  closing offer after a long scoping pass; that scoping folds into `init`'s own
+  interview, and durable design decisions wait for the spine to hold them
+  (`31-decision-capture`), never a memory- or chat-only record.
+  **"Prototype" / "quick" / "just try it" / "throwaway" never waives
   this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
   (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
   Those words change spec *depth* and *ceremony* (lighter interview, no per-feature
@@ -278,6 +282,26 @@ update the owning `contract.md` if behavior changed.
 the spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject
 per area in `PRODUCTIONIZATION.md`), and sync in the plugin's bundled
 scaffolding — distinct from a per-feature Brownfield change above.
+
+
+## Durable decisions land in the spine, not in side-channels
+
+A durable design decision — stack, auth model, data model, architecture, a
+locked scope or MVP cut — belongs in `/spec`: a feature's `intent.md`, a
+`contract.md`, or an ADR (`/steer:adr`). That is the single source of truth a
+teammate inherits from the repo. Scoping conversation, chat summaries, and
+**assistant memory** are working notes, not the record — never let a decision
+survive only there, where the repo carries no trace of it.
+
+**No `/spec` spine yet? Bootstrap before you commit the decision, not after.**
+On a repo with no spine, do not persist architectural choices or a locked scope
+to memory or prose as a stand-in for the missing spine — that is the
+single-source-of-truth break this rule exists to prevent. Run `/steer:init`
+(greenfield) or `/steer:adopt` (existing code) first so the decision lands where
+it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
+is fine and expected — `init`'s own interview is where it belongs; what waits
+for the spine is the **durable capture** of what was decided. See bootstrap
+precedence in the router and Living documentation (`32-living-docs`).
 
 
 ## Living documentation — document in parallel, not after

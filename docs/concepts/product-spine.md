@@ -42,6 +42,24 @@ becoming an issue.
     ratified ADR from code**. ADRs record human decisions; an as-built spine
     captures what *is*, not a decision that was never made.
 
+## Decisions land in the spine, not in side-channels
+
+A durable design decision — the stack, an auth model, a data model, a locked MVP
+scope — belongs in the spine: a feature's `intent.md`, a `contract.md`, or an
+ADR. Conversation, chat summaries, and assistant memory are working notes, not
+the record; a decision that survives only there leaves the repo with no trace of
+it, and a teammate cloning the repo inherits nothing.
+
+This has a sharp edge on a **brand-new repo with no spine yet**. The scoping
+dialogue that shapes a product is expected — but bootstrap is the *first move*,
+not a closing step: run [`/steer:init`](../workflows/index.md) (greenfield) or
+[`/steer:adopt`](../workflows/adopt.md) (existing code) before persisting any
+decision, so the scoping folds into the setup interview and each choice lands as
+an ADR or `vision.md` entry, reviewable in the bootstrap PR. Capturing decisions
+to memory or prose *instead of* a spine that doesn't exist yet is the
+single-source-of-truth break the always-on `31-decision-capture` rule exists to
+prevent.
+
 ## How the spine stays current
 
 - [`/steer:drift`](../workflows/index.md) compares the as-built spine against the
