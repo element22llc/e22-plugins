@@ -37,6 +37,18 @@ SYNC = (
     f"plugin version, repairing only genuine gaps. {_NO_SIDE_EFFECTS}"
 )
 
+# spec drafts a feature into /spec/ and must never touch code. Give it the feature
+# id + a one-line description so it doesn't pause to interview, and keep it at draft
+# (don't approve).
+SPEC_FEATURE_ID = "export-csv"
+SPEC = (
+    f"/steer:spec {SPEC_FEATURE_ID}\n\n"
+    "Automated, non-interactive test run. Draft the intent for a feature that lets "
+    "a user export their records as a CSV file. Use sensible placeholder defaults "
+    "for acceptance criteria; do NOT ask interactive questions. Leave it at draft — "
+    "do NOT approve it, do NOT build or touch any code, do NOT commit or open a PR."
+)
+
 # drift is read-only by construction; the tracker export lives at ./tracker-export/.
 # Point it there explicitly so it doesn't pause to ask, and keep it report-only
 # (don't file issues / run other skills — there's no real tracker in the fixture).

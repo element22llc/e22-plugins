@@ -52,6 +52,7 @@ proves out. Each scenario's model/turns/cost is written to the GitHub step summa
 | `test_init_is_rerun_safe` | `/steer:init` twice | second run (greenfield-guard) leaves the bootstrapped repo unchanged |
 | `test_sync_is_noop_when_current` | `/steer:init` then `/steer:sync` | sync finds the repo current and changes nothing |
 | `test_drift_is_read_only_and_reports_divergence` | `/steer:drift` on a seeded spine + diverging tracker export | **read-only** (repo unchanged, even under bypassPermissions); the printed report names the seeded divergence + closes with the next-actions block |
+| `test_spec_drafts_feature_confined_to_spec` | `/steer:spec` on a seeded spine | drafts `features/<id>/intent.md` left at **draft** (not approved); **all writes confined to `spec/`** (the never-builds guardrail) |
 
 Idempotency scenarios are **2 live runs each** (a first run to re-run against).
 `drift` hand-seeds an adopted-style spine (no live `adopt`), so it's **1 run**;
