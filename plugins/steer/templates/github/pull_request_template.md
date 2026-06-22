@@ -74,6 +74,7 @@ review aids, not CI gates.
 
 - [ ] Added or updated automated tests for this change (same PR, not "later")
 - [ ] **Bug fix:** added a regression test that fails before the fix and passes after
+- [ ] Changed code is covered — critical paths/branches/errors exercised, no unexplained coverage drop on touched lines
 - [ ] N/A — no behavior change (refactor, copy, dependency bump, docs)
 - [ ] Manually tested locally
 - [ ] Will validate in non-prod after merge

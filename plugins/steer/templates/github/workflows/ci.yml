@@ -17,9 +17,11 @@ on:
 # README.md#branch-protection.
 #
 # Note on testing: there is deliberately NO test-file-name gate (a filename check
-# can't tell a real test from an empty one). Coverage is enforced by the rule in
-# CLAUDE.md, the Definition of Done, human review, and the "stack detected but no
-# test script -> fail" guards below. See CLAUDE.md#definition-of-done.
+# can't tell a real test from an empty one). Test presence is enforced by the rule
+# in CLAUDE.md, the Definition of Done, human review, and the "stack detected but no
+# test script -> fail" guards below. Coverage is a SIGNAL, not a target: the Coverage
+# step reports it and gates only the lines a PR changes (no global %). See
+# CLAUDE.md#definition-of-done and CONVENTIONS.md -> Coverage.
 
 jobs:
   ci:
@@ -27,6 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history so the coverage step can diff changed lines against the
+          # PR base branch (diff-cover). Cheap; harmless on push builds.
+          fetch-depth: 0
 
       # mise-action auto-runs `mise install --locked` whenever a mise.lock
       # exists. The template ships comment-only placeholder locks (pin on
@@ -132,7 +138,14 @@ jobs:
             echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
             exit 1
           fi
-          pnpm run test
+          # Emit coverage (coverage/lcov.info) when a Vitest coverage provider is
+          # wired; otherwise run tests plain. The changed-line gate below stays
+          # fail-open when no report is produced. See CONVENTIONS.md -> Coverage.
+          if git ls-files '*package.json' | xargs grep -lq '@vitest/coverage' 2>/dev/null; then
+            pnpm run test -- --coverage --coverage.reporter=lcov
+          else
+            pnpm run test
+          fi
 
       # ────────────────────────────────────────────────────────────────────
       # Python — runs only when a pyproject.toml is detected. Uncomment
@@ -149,13 +162,56 @@ jobs:
         # pytest exit 5 = no tests collected; treat a detected-but-untested project
         # as a failure rather than a false green.
         run: |
+          # Emit coverage (coverage.xml) when pytest-cov is available; otherwise
+          # run tests plain. The changed-line gate below stays fail-open when no
+          # report is produced. See CONVENTIONS.md -> Coverage.
+          cov_args=""
+          if uv run python -c "import pytest_cov" >/dev/null 2>&1; then
+            cov_args="--cov --cov-report=xml --cov-report=term-missing"
+          fi
           rc=0
-          uv run pytest || rc=$?
+          # shellcheck disable=SC2086
+          uv run pytest $cov_args || rc=$?
           if [ "$rc" -eq 5 ]; then
             echo "::error::Python project detected but pytest collected no tests. Add tests (Definition of Done)."
             exit 1
           fi
           exit "$rc"
+
+      # Coverage is a SIGNAL, not a target: we report it and gate only the lines
+      # this PR changes ("cover what you touch") — never a global percentage.
+      # Fail-open when no coverage report was produced or the base branch can't be
+      # resolved, so this never blocks a repo that hasn't wired coverage yet.
+      # Tune the changed-line floor with the COVERAGE_DIFF_MIN env var.
+      # See rules 41-coverage and CONVENTIONS.md -> Coverage.
+      - name: Coverage (changed-line gate)
+        if: >-
+          github.event_name == 'pull_request' &&
+          (steps.detect.outputs.node == 'true' || steps.detect.outputs.python == 'true')
+        env:
+          COVERAGE_DIFF_MIN: "80"
+        run: |
+          report=""
+          if [ -f coverage/lcov.info ]; then report="coverage/lcov.info"; fi
+          if [ -f coverage.xml ]; then report="coverage.xml"; fi
+          if [ -z "$report" ]; then
+            echo "::notice::No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (see CONVENTIONS.md -> Coverage). Skipping changed-line gate."
+            exit 0
+          fi
+          base="${{ github.base_ref }}"
+          if ! git fetch --no-tags --quiet origin "$base" 2>/dev/null; then
+            echo "::notice::Could not fetch base branch '$base' — skipping changed-line coverage (fail-open)."
+            exit 0
+          fi
+          echo "## Coverage (changed lines vs origin/$base)" >> "$GITHUB_STEP_SUMMARY"
+          uvx diff-cover "$report" \
+            --compare-branch "origin/$base" \
+            --fail-under "$COVERAGE_DIFF_MIN" \
+            --markdown-report coverage-diff.md \
+          || { cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"; \
+               echo "::error::Changed lines are under ${COVERAGE_DIFF_MIN}% covered — cover the code you touched (rule 41-coverage)."; \
+               exit 1; }
+          cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"
 
       # ────────────────────────────────────────────────────────────────────
       # EXAMPLES — uncomment when they apply to your stack.

@@ -26,6 +26,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing rules. |
+| `41-coverage.md` | Coverage as a signal — cover what you touch; no vanity threshold. |
 | `45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). |
 | `50-definition-of-done.md` | Definition of Done. |
 | `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |

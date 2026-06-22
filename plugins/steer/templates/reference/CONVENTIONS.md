@@ -287,8 +287,25 @@ One test runner per language:
   it over Jest; don't run both in one repo.
 - **Python → [pytest](https://docs.pytest.org/).** Run with `uv run pytest`.
 
-Coverage expectations and the "tests in the same PR" rule are in the always-on
-Testing rules.
+The "tests in the same PR" rule is in the always-on Testing rules.
+
+#### Coverage
+
+Coverage is a **signal to find untested behavior, not a target** — see the always-on
+Coverage rules. Measure it every run and keep it visible; gate only the lines a PR
+**changes**, never a global percentage.
+
+One coverage tool per language, emitting a standard report:
+
+- **Node / TypeScript → Vitest `--coverage`** (`@vitest/coverage-v8`). Run
+  `pnpm test -- --coverage`; emits `coverage/lcov.info`.
+- **Python → [`pytest-cov`](https://pytest-cov.readthedocs.io/).** Run
+  `uv run pytest --cov --cov-report=xml`; emits `coverage.xml`.
+- **Changed-line regression → [`diff-cover`](https://github.com/Bachmann1234/diff_cover).**
+  Language-agnostic: it consumes `lcov.info` / `coverage.xml`, compares against the
+  base branch, and fails when too little of the **changed** code is exercised
+  ("cover what you touch"). CI wires this into the test step; there is deliberately
+  **no** global `--cov-fail-under` gate.
 
 ### Auth & error tracking
 
