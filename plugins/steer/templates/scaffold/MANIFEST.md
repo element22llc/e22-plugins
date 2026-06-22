@@ -51,6 +51,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `policy/branch-protection.yml` | `policy/branch-protection.yml` | **Branch-protection policy** (the GitHub-side PR gate `main` must enforce). Read by `/steer:protect`, which diffs it against the repo's live settings and applies the gap on confirmation. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |
 | `scripts/version-policy.sh` | `scripts/version-policy.sh` | Shared policy parser/decider the scanner sources. Verbatim copy of the plugin's `hooks/lib/version-policy.sh`. |
+| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. |
 
 ## Spec spine (instantiate from `../spec/`)
 

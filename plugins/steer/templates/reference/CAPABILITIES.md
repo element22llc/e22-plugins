@@ -194,6 +194,25 @@ and **Repair**.
   services — but a service-less product correctly has none, so this is the
   highest false-positive risk and stays propose-only.
 
+### worktree-port-isolation — collision-free parallel worktrees
+- **Files:** `scripts/worktree-env.sh`, `mise.toml`
+- **Conditional:** only if the repo has a local runtime that binds host ports —
+  i.e. a `compose.yaml` is present **or** the stack is Node/Python. A repo with
+  no services and no app stack reports `n/a`, not missing.
+- **Wired-when:** `scripts/worktree-env.sh` exists **and** `mise.toml`'s `[env]`
+  sources it (`_.source = "scripts/worktree-env.sh"`). The script gives each
+  Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a per-worktree host-port
+  offset so parallel agents don't collide on Docker/ports; the primary checkout
+  gets offset 0 (ports unchanged).
+- **Repair:** create `scripts/worktree-env.sh` from the scaffold and additive-splice
+  the `_.source` line into `mise.toml`'s `[env]` table. Preserve any product
+  edits to the script's BASELINE port block.
+- **Verbatim:** no — keep the `_.source` wiring and the offset logic; adapt only
+  the BASELINE block (host ports per the product's services).
+- **Why it matters:** without it, two agents in parallel worktrees both bind
+  5432/3000 and share container/volume names — `docker compose up` in the second
+  worktree fails and teardown in one can clobber the other.
+
 <!-- Template for a new capability entry — copy, fill, and add a matching check to
      scripts/scan-capabilities.sh (same id) in the SAME change.
 

@@ -60,6 +60,13 @@ biome = "latest"                      # default Node linter + formatter (https:/
 # under /infra need it installed. See /infra/README.md.
 
 [env]
+# Per-worktree runtime isolation: derive a stable host-port offset + a unique
+# COMPOSE_PROJECT_NAME so parallel Claude Code worktrees of this repo don't
+# collide on Docker containers/volumes or host ports (Postgres, the dev server).
+# The primary checkout gets offset 0 (ports unchanged), so single-checkout dev
+# is unaffected. Sourced on every `mise run …`; see scripts/worktree-env.sh.
+_.source = "scripts/worktree-env.sh"
+
 # Project-specific non-secret environment variables may go here.
 # Secrets do NOT belong in this file.
 # Use a git-ignored .env / .env.local for local secrets and AWS Secrets Manager for deployed environments.
@@ -84,8 +91,18 @@ description = "Start local backing services (compose.yaml) and wait until health
 run = "docker compose up -d --wait"
 
 [tasks."docker:down"]
-description = "Stop local backing services (data volumes are kept)"
+description = "Stop this worktree's backing services (data volumes are kept)"
+# Scoped to COMPOSE_PROJECT_NAME (set per worktree by scripts/worktree-env.sh),
+# so it only stops the containers this checkout started.
 run = "docker compose down"
+
+[tasks."docker:clean"]
+description = "Tear down this worktree's services AND volumes (run before removing a worktree)"
+# Full teardown for end-of-worktree cleanup: removes this worktree's containers,
+# named volumes, and orphans — leaving no leaked Docker resources behind. Scoped
+# to this worktree's COMPOSE_PROJECT_NAME, so a sibling worktree's stack is
+# untouched. Stop any background dev server (the WEB_PORT process) separately.
+run = "docker compose down --volumes --remove-orphans"
 
 [tasks."db:migrate"]
 description = "Apply DB migrations in every workspace package that defines db:migrate"

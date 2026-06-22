@@ -23,8 +23,9 @@ flowchart TD
 | `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. |
 | `mise.lock` | scaffold | The real version pin (the scaffold ships a placeholder; `mise install` populates it). At bootstrap, follow `mise install` with `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums — CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock. Run `/steer:conventions` for the full toolchain rationale. |
 | CI workflows + PR template | scaffold | Quality gates and review template. |
-| `compose.yaml`, README quickstart | scaffold | Local run + onboarding. |
+| `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |
+| `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged). `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree. See the always-on **Parallel worktrees** rule. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. |
 
 ## Scaffold storage convention

@@ -10,6 +10,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Added:** new always-on rule `31-decision-capture` — durable design decisions (stack, auth, data model, a locked MVP scope) belong in `/spec` (intent/contract/ADR), the single source of truth a teammate inherits; conversation and assistant memory are working notes, never the record. On a repo with no `/spec` spine, bootstrap (`/steer:init` / `/steer:adopt`) **before** persisting a decision, so it lands traceable in the bootstrap PR rather than memory- or chat-only.
 - **Changed:** router bootstrap-precedence now directs that bootstrap be the **first move, announced up front** on a spineless repo — not a closing offer after a long scoping pass; the scoping dialogue folds into `/steer:init`'s own interview and durable decisions wait for the spine.
 - **Changed:** `/steer:init` Path B step 1 now states that scoping a brief/spec happens **as the setup interview** and its decisions are captured into the just-created spine (ADR / `vision.md`), never left chat- or memory-only.
+- **Added:** per-worktree runtime isolation so parallel Claude Code worktrees of
+  the same repo don't collide on Docker containers/volumes or host ports. New
+  scaffold `scripts/worktree-env.sh`, sourced by `mise.toml` (`[env]._.source`),
+  derives a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port
+  offset for `POSTGRES_PORT`, `WEB_PORT`, and `DATABASE_URL`; the primary checkout
+  gets offset 0 (ports unchanged), so single-checkout dev is unaffected. Two
+  agents can each `mise run docker:up` without clashing. Wired into `compose.yaml`,
+  `env.example`, `.worktreeinclude`, and `MANIFEST.md`.
+- **Added:** `docker:clean` mise task (down + volumes + orphans, scoped to the
+  worktree's `COMPOSE_PROJECT_NAME`) for end-of-worktree teardown, and a new
+  always-on rule `24-worktrees.md` that requires isolating runtime resources and
+  tearing down services/dev servers before a worktree is closed — no leaked
+  containers, volumes, or held ports. Added to the end-of-session checklist.
+- **Added:** `worktree-port-isolation` capability to `reference/CAPABILITIES.md`
+  and `scripts/scan-capabilities.sh`, so `/steer:sync` detects and repairs the
+  deriver + mise wiring in already-adopted repos (applicable when the repo has a
+  compose.yaml or a Node/Python stack).
 
 ### 2.11.0
 
