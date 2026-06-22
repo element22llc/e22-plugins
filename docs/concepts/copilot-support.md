@@ -65,7 +65,7 @@ the files; they do not need to generate them.
 
 ```shell
 copilot plugin marketplace add element22llc/e22-plugins
-copilot plugin install steer
+copilot plugin install steer@e22-plugins
 ```
 
 The CLI loads the skills via the Copilot plugin manifest and reads the standards
