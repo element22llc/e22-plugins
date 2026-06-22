@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the SessionStart ruleset is now **scope-aware**. A rule may
+  declare `<!-- steer:inject-when=<token> -->` on its first line, and
+  `inject-standards.sh` injects it only when that scope holds for the consumer
+  repo — reclaiming context budget for rules that are dead weight where they
+  can't apply. Applied to `36-issue-first` (injected only when `/spec/tracker.md`
+  declares `system: github`) and `52-deployment` (only when an `/infra` directory
+  exists); every other rule stays always-on, and the marker line is stripped
+  before injection. **Fail-open:** a missing signal or an unknown token still
+  injects the rule, so a typo never silently drops one. GitHub-tracker detection
+  is now a single shared helper (`hooks/lib/scope.sh`), reused by the issue-first
+  hooks (`check-issue-before-mutation`, `reconcile-issue-first`).
 - **Fixed:** the scaffold CI's "Drop placeholder mise.lock files" step no longer
   silently degrades a real lock to `latest`. It previously dropped any
   `mise.lock` that failed a `grep '^\[\[tools'` heuristic — so a populated lock

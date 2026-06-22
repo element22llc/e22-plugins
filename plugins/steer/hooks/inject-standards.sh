@@ -8,12 +8,19 @@
 # Design notes:
 #   - cwd is the CONSUMER repo, not the plugin, so paths use ${CLAUDE_PLUGIN_ROOT}.
 #   - rules/*.md concatenate in lexical order (hence the numeric file prefixes).
+#   - A rule may declare an injection scope on its first line
+#     (`<!-- steer:inject-when=<token> -->`); it is then injected only when that
+#     scope applies to the consumer repo (see lib/scope.sh). This reclaims
+#     context budget for rules that are dead weight where they can't apply
+#     (e.g. issue-first on a non-GitHub repo). Fail-open: a missing signal or an
+#     unknown token injects the rule, so a typo never silently drops one.
 #   - Fail-soft: even if the rules dir is missing we still emit the banner, so a
 #     session is never left with silently-empty org context.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/report-fault.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 ROOT="${CLAUDE_PLUGIN_ROOT}"
 RULES_DIR="${ROOT}/rules"
@@ -36,7 +43,21 @@ printf '<!-- Engineering standards — steer plugin v%s. Run `/plugin update ste
 if [ -d "${RULES_DIR}" ]; then
   for f in "${RULES_DIR}"/*.md; do
     [ -e "${f}" ] || continue
-    cat "${f}"
+    # A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
+    # marker. Inject it only when that scope applies; strip the marker line so it
+    # never reaches context. No marker (the common case) → emit unchanged.
+    IFS= read -r _first <"${f}" || _first=""
+    case "${_first}" in
+    '<!-- steer:inject-when='*' -->')
+      _token="${_first#<!-- steer:inject-when=}"
+      _token="${_token% -->}"
+      steer_inject_when_ok "${_token}" "${CONSUMER_ROOT}" || continue
+      tail -n +2 "${f}"
+      ;;
+    *)
+      cat "${f}"
+      ;;
+    esac
     printf '\n\n'
   done
 else

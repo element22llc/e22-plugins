@@ -1,3 +1,4 @@
+<!-- steer:inject-when=tracker-github -->
 ## Issue-first (GitHub-adopted repos)
 
 When `/spec/tracker.md` declares `system: github`, every **implementation-affecting

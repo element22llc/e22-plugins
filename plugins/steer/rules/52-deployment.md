@@ -1,3 +1,4 @@
+<!-- steer:inject-when=has-infra -->
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk

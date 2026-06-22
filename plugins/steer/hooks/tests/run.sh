@@ -941,5 +941,44 @@ steer_record_fault "${RF4}" "inject-standards.sh" "rules directory missing"
 out="$(run_hook surface-faults.sh "$(session_json "${RF4}" rf4)")"
 assert_empty "surface: silent inside the plugin's own repo" "${out}"
 
+# ----- inject-standards.sh: conditional (inject-when) rule scoping -----
+# 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-infra.
+# A scoped rule is injected only when its predicate holds; always-on rules
+# (e.g. 00-router) appear regardless; the marker line never leaks into output.
+
+# GitHub tracker -> issue-first injected, its marker stripped.
+CRI_GH="$(new_repo cri_gh)"
+mkdir -p "${CRI_GH}/spec"
+printf 'system: github\n' >"${CRI_GH}/spec/tracker.md"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_GH}" cri_gh)")"
+oq_grep "inject: github repo includes issue-first rule" 'Issue-first (GitHub-adopted repos)' "${out}"
+oq_grep "inject: always-on router present (github repo)" 'You are the router' "${out}"
+printf '%s' "${out}" | grep -q 'steer:inject-when' &&
+	bad "inject: inject-when marker line must be stripped from output" || ok
+
+# Non-GitHub tracker -> issue-first skipped.
+CRI_JIRA="$(new_repo cri_jira)"
+mkdir -p "${CRI_JIRA}/spec"
+printf 'system: jira\n' >"${CRI_JIRA}/spec/tracker.md"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_JIRA}" cri_jira)")"
+printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
+	bad "inject: non-github repo must omit issue-first rule" || ok
+oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
+
+# /infra present -> deployment injected.
+CRI_INFRA="$(new_repo cri_infra)"
+mkdir -p "${CRI_INFRA}/infra"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_INFRA}" cri_infra)")"
+oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
+
+# No /infra and no GitHub tracker -> both scoped rules skipped.
+CRI_BARE="$(new_repo cri_bare)"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_BARE}" cri_bare)")"
+printf '%s' "${out}" | grep -q 'auto-deploys non-prod' &&
+	bad "inject: repo without /infra must omit deployment rule" || ok
+printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
+	bad "inject: repo without github tracker must omit issue-first rule" || ok
+oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${out}"
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
