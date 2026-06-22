@@ -8,10 +8,12 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 # Operating manual — on-demand load
 
 The standards are normally injected once per session by the `steer`
-SessionStart hook. That hook **does not fire in Claude Cowork / the desktop app**
-today (Cowork runs the agent in a sandbox VM that silently ignores plugin hooks —
-tracked upstream in anthropics/claude-code#40495). On those surfaces a session
-starts with *none* of the org rules in context, so run this skill first.
+SessionStart hook. That hook **does not fire on the Claude Desktop *Chat* tab or
+claude.ai web chat** — those surfaces install plugins (so skills and MCP work) but
+do **not** run hooks, so a session there starts with *none* of the org rules in
+context. Run this skill first on those surfaces. (On Claude Code — the CLI, the
+IDE extensions, and the Desktop *Code* tab — and in Cowork, the hook injects the
+rules automatically and you don't need this skill.)
 
 Do this now:
 
@@ -39,6 +41,6 @@ Do this now:
 
 The router (`00-router.md`) points to the on-demand reference skills
 (`/steer:conventions`, `/steer:traceability`, `/steer:design-sources`,
-`/steer:init`, `/steer:adopt`) — those work normally in
-Cowork since skills are supported there; only the always-on injection needed
+`/steer:init`, `/steer:adopt`) — those work normally on the Chat tab and
+web chat since skills are supported there; only the always-on injection needed
 this fallback.

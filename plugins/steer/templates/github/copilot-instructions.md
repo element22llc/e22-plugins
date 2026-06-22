@@ -70,8 +70,8 @@ GitHub reads/writes for `/steer:issues` and `/steer:work` route through the inte
 `/steer:tracker-sync` gateway, and feature specs are instantiated by the internal
 `/steer:spec-scaffold` — reach both through the skills above, never directly.
 
-On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected), run
-`/steer:standards` at session start to load these rules on demand.
+On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
+auto-injected), run `/steer:standards` at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
 (run `/steer:conventions`) — don't trust training-data memory.
@@ -378,9 +378,10 @@ repos without a `/spec` spine keep today's flow.
 Commits are cheap and local — the PR review is the gate (see "You are not the
 gate"), not each commit. Do **not** pause work to ask "should I commit?".
 
-- Work on a `feat/*` / `fix/*` branch off `main` — never commit to `main`
-  directly. If you find yourself on `main` with changes, create the branch
-  first, then commit.
+- Work on a branch off `main` — never commit to `main` directly. Use the
+  repository's configured branch convention if it has one; otherwise `feat/*` /
+  `fix/*` (issue-first work via `/steer:work` defaults to `issue/<number>-<slug>`).
+  If you find yourself on `main` with changes, create the branch first, then commit.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.

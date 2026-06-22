@@ -42,7 +42,7 @@ shipped skill is missing here.
 | `/steer:drift` | Compare the as-built `/spec` against the tracker's intent and surface divergences. Read-only. |
 | `/steer:audit` | Repeatable whole-repo standards-conformance health audit, ranked by leverage. Read-only. |
 | `/steer:next` | "What should I do next?" across the workspace. Read-only. |
-| `/steer:traceability` | Trace the links between specs, issues, ADRs, and code. |
+| `/steer:traceability` | Living-docs & traceability reference — how specs, issues, ADRs, tracker refs, and drift gates link up. Read-only. |
 
 ## Maintenance
 

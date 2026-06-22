@@ -68,8 +68,8 @@ GitHub reads/writes for `/steer:issues` and `/steer:work` route through the inte
 `/steer:tracker-sync` gateway, and feature specs are instantiated by the internal
 `/steer:spec-scaffold` — reach both through the skills above, never directly.
 
-On **Claude Cowork / the desktop app** (where this manual is *not* auto-injected), run
-`/steer:standards` at session start to load these rules on demand.
+On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
+auto-injected), run `/steer:standards` at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
 (run `/steer:conventions`) — don't trust training-data memory.

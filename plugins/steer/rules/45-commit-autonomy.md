@@ -3,9 +3,10 @@
 Commits are cheap and local — the PR review is the gate (see "You are not the
 gate"), not each commit. Do **not** pause work to ask "should I commit?".
 
-- Work on a `feat/*` / `fix/*` branch off `main` — never commit to `main`
-  directly. If you find yourself on `main` with changes, create the branch
-  first, then commit.
+- Work on a branch off `main` — never commit to `main` directly. Use the
+  repository's configured branch convention if it has one; otherwise `feat/*` /
+  `fix/*` (issue-first work via `/steer:work` defaults to `issue/<number>-<slug>`).
+  If you find yourself on `main` with changes, create the branch first, then commit.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.

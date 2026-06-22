@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 2.11.0
+
 - **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): mongo 6→7, node 20→22, nginx 1.26→1.30. EOL floors only — what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
 - **Added:** the **`context7`** MCP server now ships with the plugin
   (`plugins/steer/.mcp.json`), giving every steer session up-to-date,
@@ -32,6 +34,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:sync` remove the now-redundant repo-local `.mcp.json` (or just the
   duplicated `github`/`markitdown` keys, preserving product-specific servers) from
   repos bootstrapped before this change.
+- **Fixed:** corrected the Cowork hook-firing guidance in the `standards` skill,
+  the `00-router` rule, and the scaffold `copilot-instructions.md` template. They
+  no longer claim plugin hooks "don't fire in Cowork" (the superseded position,
+  which cited a since-closed upstream issue). The scope now matches
+  `known-limitations.md` / `CROSS-SURFACE.md`: hooks run on Claude Code (CLI, IDE
+  extensions, Desktop *Code* tab) **and in Cowork**; only the Desktop *Chat* tab
+  and claude.ai web chat lack them — which is where `/steer:standards` remains the
+  load-by-hand fallback.
+- **Fixed:** reconciled the branch-naming guidance in the `45-commit-autonomy`
+  rule with `/steer:work` — the rule now points to the repository's configured
+  convention and the issue-first `issue/<number>-<slug>` default instead of
+  asserting `feat/*` / `fix/*` flatly.
 
 ### 2.10.0
 
