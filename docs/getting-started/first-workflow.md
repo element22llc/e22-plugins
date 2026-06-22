@@ -32,7 +32,8 @@ standards and opens spec-first work on `main`. It is *not* productionization:
 a greenfield bootstrap ships scaffold and an empty spec spine, with no app to
 harden yet. Productionization is a later, per-app event — the
 [`/steer:build`](../workflows/build.md) v0 handoff or `/steer:adopt`, where real
-code is triaged into `/spec/PRODUCTIONIZATION.md` before a production deploy.
+code is triaged into `/spec/PRODUCTIONIZATION.md` before a
+[production deploy](../concepts/deployment.md).
 
 For a **solo greenfield** repo (one person is both PO and dev, no MVP yet),
 `/steer:init` can instead start in [**solo trunk mode**](../concepts/authorization-model.md):

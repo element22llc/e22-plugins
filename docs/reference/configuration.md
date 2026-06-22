@@ -28,7 +28,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `40-testing.md` | Testing rules. |
 | `45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). |
 | `50-definition-of-done.md` | Definition of Done. |
-| `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback. |
+| `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
 | `70-secrets.md` | Secrets handling. |
