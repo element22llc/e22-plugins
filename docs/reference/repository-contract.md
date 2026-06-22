@@ -39,7 +39,7 @@ When `/steer:init`, `/steer:adopt`, or `/steer:sync` install a scaffold file tha
 already exists in the target repo, they **merge additively and never clobber**:
 Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
 and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
-and the JSON configs (`.claude/settings.json`, `.mcp.json`, `biome.json`,
+and the JSON configs (`.claude/settings.json`, `biome.json`,
 `tsconfig`, and the committed editor config `.vscode/extensions.json` /
 `.vscode/settings.json`) — reconcile with `scaffold_reconcile.py`, which unions
 JSON arrays and adds missing keys/lines without overwriting, reordering, or

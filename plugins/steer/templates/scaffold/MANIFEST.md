@@ -40,7 +40,6 @@ this plugin repo itself); rename on copy as mapped below.
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
 | `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold_reconcile.py` (never removes a repo's own lines). |
 | `worktreeinclude` | `.worktreeinclude` | Git-ignored local config (`.env*`, `.mise.local.toml`, `.claude/settings.local.json`) Claude Code copies into each `claude --worktree` — worktrees start from git refs only, so without this the app can't boot there. Merge additively if one exists; never add regenerable caches/virtualenvs. |
-| `mcp.json` | `.mcp.json` | GitHub MCP server for local sessions (`${GITHUB_PAT}` via shell, never committed). If one exists, merge additively with `scripts/scaffold_reconcile.py`. |
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
@@ -108,3 +107,8 @@ artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).
   committed once the real workspace exists (a bundled one would be stale).
 - **`/infra` `.hcl`/`.tf` files**: each product provisions when ready —
   `infra/README.md` carries the layout.
+- **An `.mcp.json`** (GitHub + markitdown MCP servers): these now ship with the
+  **plugin itself** (`plugins/steer/.mcp.json`), so every repo that enables steer
+  gets them centrally and they refresh on `/plugin update` — no per-repo copy to
+  scaffold, drift, or reconcile. A repo may still add its *own* project `.mcp.json`
+  for product-specific servers; it merges additively with the plugin's.

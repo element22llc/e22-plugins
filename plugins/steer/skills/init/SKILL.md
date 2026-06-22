@@ -148,7 +148,7 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
    install map: copy each scaffold file to its target path (renaming the
    dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
-   `.env.example`, `claude/`, `vscode/`, `mcp.json`), instantiate the GitHub
+   `.env.example`, `claude/`, `vscode/`), instantiate the GitHub
    templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
    GitHub-templates section maps the Issue Forms, workflows, PR template, the
    generated `copilot-instructions.md`, and the generated `prompts/*.prompt.md`
@@ -165,7 +165,7 @@ as coherent units (Commit autonomy) — **push and the PR wait for the dev**.
    to adapt — e.g. drop `package.json`/`pnpm-workspace.yaml`/`biome.json` for
    a Python-only product, swap task commands to `uv run …`). Greenfield repos
    rarely have these already, but if a target `.gitignore` or JSON config
-   (`.claude/settings.json`, `.mcp.json`, `biome.json`) **does** exist, reconcile
+   (`.claude/settings.json`, `biome.json`) **does** exist, reconcile
    it additively with
    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`
    instead of overwriting it.

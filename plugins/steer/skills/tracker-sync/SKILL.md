@@ -22,8 +22,9 @@ manual export. It is glue, not a new source of truth.
 
 ## Integration: MCP-first → `gh` fallback → manual floor
 
-The org ships GitHub MCP in every repo via `scaffold/mcp.json`
-(`api.githubcopilot.com/mcp/`, `GITHUB_PAT`), so MCP is preferred — its tools
+The steer plugin ships GitHub MCP to every repo that enables it (the plugin's
+own `.mcp.json` — `api.githubcopilot.com/mcp/`, `GITHUB_PAT`), so MCP is
+preferred — its tools
 take a JSON `body` field, making multi-line markdown issue bodies clean with no
 shell escaping. Detect capability **in this order, every run**:
 

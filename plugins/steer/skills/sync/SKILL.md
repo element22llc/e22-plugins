@@ -114,7 +114,7 @@ PR'd. Use it to see what a full sync would do.
    config), adapt to the repo's real stack, and never touch working app code.
    For the **non-Markdown** scaffold files the heading/checklist convention can't
    parse — `.gitignore` and the JSON configs (`.claude/settings.json`,
-   `.mcp.json`, `biome.json`, `configs/tsconfig.base.json`) — reconcile with the
+   `biome.json`, `configs/tsconfig.base.json`) — reconcile with the
    structured helper instead, which is additive and never overwrites an existing
    value or line:
 
@@ -139,6 +139,15 @@ PR'd. Use it to see what a full sync would do.
    verified by capability repair (step 6); both are additive and the merge here
    never flips an existing value, so a deliberate `"steer@e22-plugins": false`
    opt-off is preserved.
+
+   **No `.mcp.json` reconcile.** The `github` + `markitdown` MCP servers ship
+   with the **plugin** (`plugins/steer/.mcp.json`), not the scaffold — so they
+   refresh with the `/plugin update` in step 2 and are **not** part of scaffold
+   reconciliation; there is no scaffold template to diff a repo `.mcp.json`
+   against. A repo bootstrapped before v2.11.0 still has the old repo-local
+   `.mcp.json`, whose entries now duplicate the plugin's; the **v2.11.0 migration
+   in step 4** removes the redundant copy (or just the duplicated keys, keeping
+   product-specific servers). Don't reconcile `.mcp.json` here.
 
 6. **Repair capability gaps (missing / mis-wired scaffold wiring).** Additive
    reconciliation (step 5) only splices into files that *already exist* and the

@@ -54,6 +54,38 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v2.11.0 — MCP servers move from the scaffold into the plugin
+
+- **What & why:** the `github` + `markitdown` MCP servers used to be scaffolded as
+  a per-repo `.mcp.json` (from `templates/scaffold/mcp.json`). They now ship with
+  the **plugin itself** (`plugins/steer/.mcp.json`), so every repo that enables
+  steer picks them up centrally and they refresh on `/plugin update` — no frozen
+  per-repo copy to drift. A repo bootstrapped before this change still carries the
+  old repo-local `.mcp.json`; its `github`/`markitdown` entries now **duplicate**
+  the plugin-shipped ones (same server keys from two sources), so the repo-local
+  copy is redundant and, being frozen, would silently diverge from the maintained
+  plugin copy. Additive reconciliation can't remove it (a deletion), and it isn't
+  a capability gap — so it's a migration.
+- **Precondition:** a repo-local `.mcp.json` exists whose servers duplicate the
+  plugin's — this grep fires:
+
+  ```sh
+  test -f .mcp.json && grep -qE 'api\.githubcopilot\.com|markitdown-mcp' .mcp.json && echo pending
+  ```
+
+  No file, or a `.mcp.json` that defines only product-specific servers ⇒ no-op.
+- **Action:** read-then-propose, show the diff first.
+  - If `.mcp.json` defines **only** the `github` and `markitdown` servers (an
+    unmodified old-scaffold copy), `git rm .mcp.json` — the plugin now provides
+    both.
+  - If it **also** defines product-specific servers, **keep the file** and remove
+    only the `github` and `markitdown` keys, preserving every other server and
+    value — never clobber a dev-added entry. The remaining repo-local servers
+    merge additively with the plugin's.
+
+  Idempotent: once the duplicated keys are gone the precondition is empty, so
+  re-running is a no-op.
+
 ### v2.0.0 — `e22-standards` → `steer` rebrand: in-file token rewrite
 
 - **What & why:** 2.0.0 renamed the plugin `e22-standards` → `steer` and dropped
