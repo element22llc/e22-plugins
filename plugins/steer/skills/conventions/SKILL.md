@@ -41,7 +41,11 @@ It covers, in detail:
 - **Linting & formatting** — Biome (Node/TS), Ruff (Python); no ESLint/Prettier
   or Flake8/Black/isort alongside them without an ADR.
 - **Testing** — Vitest (Node/TS), pytest (Python).
-- **Auth & error tracking** — Better Auth, Sentry.
+- **Auth & error tracking** — Better Auth, Sentry; secrets at rest in SSM
+  Parameter Store `SecureString` by default, Secrets Manager when warranted.
+- **Deployment & environments** — non-prod/prod + review apps, branch-driven
+  promotion with the `prod`-branch approval gate, observability baseline, rollback
+  & expand/contract migrations.
 - **Baseline patterns & anti-patterns** — the full prose behind the always-on
   practices baseline (Drizzle/Zod/server-first, what to avoid, Python mapping).
 - **Windows** — develop inside WSL2.

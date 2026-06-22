@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** new always-on rule `52-deployment` — deployment & environments as a first-class standard. Defines branch-driven promotion (merge to `main` auto-deploys non-prod; a reviewed PR from `main` into a long-lived `prod` branch is the production approval gate and auto-deploys prod on merge), a review app per feature PR, an observability baseline (logs, metrics + alarms, error tracking, health checks, alerting), and rollback + expand/contract migrations. Detail in the scaffold `infra/README.md` and `/steer:conventions`.
+- **Added:** `/steer:protect` and `policy/branch-protection.yml` now cover **additional protected branches** beyond the default (schema bumped to 2, additive — v1 policies stay valid). Ships a `prod` entry (required PR review, no direct push, no admin bypass) so the production gate is enforceable without GitHub Enterprise deployment-environment approvals. The skill protects the default branch plus each declared branch, reads/diffs/applies per branch, and reports a not-yet-created `prod` as informational rather than drift.
+- **Changed:** secrets-at-rest default is now **SSM Parameter Store (`SecureString`)** — cheaper than Secrets Manager and sufficient for most needs — with Secrets Manager reserved for rotation / cross-account / large-or-binary values. Updated across `70-secrets`, `10-stack`, `60-high-risk`, `CONVENTIONS.md`, `TRACEABILITY.md`, and the scaffold (`infra/README.md`, `env.example`, `compose.yaml`, `gitignore`, `mise.toml`).
+- **Changed:** scaffold `infra/README.md` release-flow section rewritten for the branch-based promotion model + review apps + an Observability baseline section; `ARCHITECTURE.md` cross-cutting concerns now enumerate the observability baseline, the deployment/environments shape, and the Parameter-Store secrets default for products to fill in.
 - **Fixed:** `/steer:sync` no longer trips the issue-first hooks on its own
   sanctioned flow. The skill reconciles the materialized spine + scaffold (CI,
   `mise.toml`, `compose.yaml`, version-pin scripts, …) on its own `feat/sync`

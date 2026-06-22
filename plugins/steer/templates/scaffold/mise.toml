@@ -69,7 +69,7 @@ _.source = "scripts/worktree-env.sh"
 
 # Project-specific non-secret environment variables may go here.
 # Secrets do NOT belong in this file.
-# Use a git-ignored .env / .env.local for local secrets and AWS Secrets Manager for deployed environments.
+# Use a git-ignored .env / .env.local for local secrets and SSM Parameter Store (SecureString) / Secrets Manager for deployed environments.
 
 [tasks."dev:setup"]
 description = "One-command local env: services up, schema migrated, data seeded (idempotent)"

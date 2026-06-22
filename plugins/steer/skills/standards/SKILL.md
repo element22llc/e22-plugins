@@ -26,7 +26,7 @@ Do this now:
    `22-housekeeping`, `24-worktrees`, `30-spec-workflow`, `31-decision-capture`,
    `32-living-docs`, `35-issue-tracker`,
    `36-issue-first`, `40-testing`, `45-commit-autonomy`, `50-definition-of-done`,
-   `55-drift-gates`, `60-high-risk`, `70-secrets`, `75-compliance`,
+   `52-deployment`, `55-drift-gates`, `60-high-risk`, `70-secrets`, `75-compliance`,
    `80-change-size`, `85-practices`, `87-output-discipline`, `90-design-sources`,
    `95-not-the-gate`, `97-self-report`, `99-end-of-session`.
 

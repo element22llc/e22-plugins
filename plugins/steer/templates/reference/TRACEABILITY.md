@@ -187,7 +187,7 @@ What the workflow contributes, mapped to what auditors typically ask for:
 | Review evidence | dev-approved PRs as the production gate; drift flags + DoD in the PR record |
 | Change history | ADRs (decisions), action history (what/why/who), git history (code) |
 | Access-conscious workflow | branch protection, least-scope tokens, no direct-to-`main`, PO/dev role split |
-| Secure defaults | secrets rules (never committed, Secrets Manager), high-risk gates, validated boundaries |
+| Secure defaults | secrets rules (never committed; encrypted config at rest — Parameter Store / Secrets Manager), high-risk gates, validated boundaries |
 | Documented operations | runbook in `/spec/app/`, `.env.example`, CI/deploy under version control |
 | Auditable decisions | ADR status lifecycle (Proposed/Accepted/Superseded), append-only history |
 | Human accountability | PO approves intent; dev approves the PR; humans own production readiness |
