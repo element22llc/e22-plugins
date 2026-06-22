@@ -27,6 +27,7 @@ server-by-server content is reconciled by hand against the source of truth.
 | --- | --- | --- | --- |
 | `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${GITHUB_PAT}` (your shell) | Read issues, comment on PRs, inspect workflow runs. |
 | `markitdown` | local process (`uvx markitdown-mcp`) | none | Convert provided Office documents to Markdown. |
+| `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
 
@@ -66,6 +67,31 @@ use auto-fetches the package from PyPI.
 
 !!! warning "Local, trusted use only"
     markitdown-mcp is meant for local use — don't expose it over HTTP/SSE.
+
+## `context7`
+
+Wires the session to [Context7](https://context7.com)'s hosted MCP server, which
+returns **up-to-date, version-accurate documentation** for thousands of libraries
+and frameworks on demand. Reach for it when you're working against a fast-moving
+dependency and want the *current* API surface rather than what training data
+remembers — it pulls the docs for the exact version in play instead of guessing.
+
+Like `github`, it's an **HTTP** server (`https://mcp.context7.com/mcp`), so there
+is **no local process, package fetch, or runtime dependency** — nothing to install
+and nothing on `PATH` to break. It connects **with no token**: the anonymous free
+tier works out of the box.
+
+!!! tip "Optional API key for higher rate limits"
+    A `CONTEXT7_API_KEY` is **optional** — it only raises rate limits. If you hit
+    them, get a key from [context7.com](https://context7.com), export it from your
+    shell, and add it via your own project `.mcp.json` (which merges additively
+    with the plugin's) as an `Authorization` header — don't edit the
+    plugin-managed `.mcp.json`, which refreshes on `/plugin update`.
+
+!!! warning "Hosted service — queries leave your machine"
+    Like the `github` server, context7 is a third-party hosted service: the
+    library names and queries you send go to context7's API. Don't send anything
+    sensitive through it.
 
 ## Verifying
 

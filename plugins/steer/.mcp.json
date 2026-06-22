@@ -10,6 +10,10 @@
     "markitdown": {
       "command": "uvx",
       "args": ["markitdown-mcp"]
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
     }
   }
 }

@@ -151,6 +151,15 @@ The same steer-plugin MCP config also wires **local Claude Code sessions** to Mi
 
 markitdown-mcp is meant for **local, trusted use only** — don't expose it over HTTP/SSE.
 
+## Library docs MCP server (context7, local Claude Code only)
+
+The same steer-plugin MCP config also wires **local Claude Code sessions** to [Context7](https://context7.com)'s hosted MCP server, which returns **up-to-date, version-accurate documentation** for thousands of libraries and frameworks on demand. Reach for it when you're working against a fast-moving dependency and want the *current* API surface rather than what training data remembers. Like the GitHub server it's **HTTP** (`https://mcp.context7.com/mcp`), so there's **nothing to install** — no `PATH` prerequisite, no package fetch.
+
+1. **No token required**: the anonymous free tier connects out of the box. A `CONTEXT7_API_KEY` is **optional** — it only raises rate limits. If you hit them, get a key from [context7.com](https://context7.com), export it from your shell, and add it as an `Authorization` header via your own project `.mcp.json` (it merges additively) — don't edit the plugin-managed config, which refreshes on `/plugin update`.
+2. **Verify**: restart Claude Code in this repo, run `/mcp`, and confirm `context7` is connected.
+
+Like the GitHub server, context7 is a **third-party hosted service** — the library names and queries you send go to its API. Don't send anything sensitive through it.
+
 ## Branch protection
 
 steer is advisory in the local session — it won't *block* a push to `main`. The
