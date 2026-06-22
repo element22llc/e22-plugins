@@ -19,7 +19,9 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `15-commands.md` | Useful commands. |
 | `20-layout.md` | Where things live. |
 | `22-housekeeping.md` | Keep the repo tidy. |
+| `24-worktrees.md` | Parallel worktrees — isolate runtime, clean up after. |
 | `30-spec-workflow.md` | Spec workflow. |
+| `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
 | `32-living-docs.md` | Document in parallel, not after. |
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
