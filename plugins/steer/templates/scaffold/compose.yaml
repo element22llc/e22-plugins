@@ -14,6 +14,13 @@
 # Running several products locally? Each binds 5432 by default and they
 # collide. Set POSTGRES_PORT in this repo's .env (docker compose reads it
 # automatically) and mirror it in DATABASE_URL — both vars are in .env.example.
+#
+# Parallel Claude Code worktrees of THIS repo are handled automatically: mise
+# sources scripts/worktree-env.sh, which gives each worktree a distinct
+# POSTGRES_PORT and a unique COMPOSE_PROJECT_NAME — so two agents can each run
+# `mise run docker:up` without clashing, and `mise run docker:clean` tears down
+# only the worktree it's run from. Don't hardcode container_name or a fixed
+# host port here; that would defeat the per-worktree isolation.
 
 services:
   postgres:

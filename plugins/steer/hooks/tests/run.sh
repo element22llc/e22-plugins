@@ -757,6 +757,23 @@ printf '\n' >"${CR6}/mise.lock"
 capscan "${CR6}"
 assert_eq "cap: mise.toml + lock -> present-wired" "$(capstatus "${out}" toolchain-pin)" "present-wired"
 
+# worktree-port-isolation: n/a without a runtime; with a runtime, deriver +
+# mise [env]._.source -> wired; deriver present but mise unwired -> mis-wired.
+CR7="${WORK}/cap7"
+mkdir -p "${CR7}/scripts"
+capscan "${CR7}"
+assert_eq "cap: no runtime -> worktree isolation n/a" "$(capstatus "${out}" worktree-port-isolation)" "n/a"
+printf '{}\n' >"${CR7}/package.json"
+capscan "${CR7}"
+assert_eq "cap: node stack, no deriver -> absent" "$(capstatus "${out}" worktree-port-isolation)" "absent"
+printf 'export X=1\n' >"${CR7}/scripts/worktree-env.sh"
+printf '[tools]\n' >"${CR7}/mise.toml"
+capscan "${CR7}"
+assert_eq "cap: deriver present, mise unwired -> mis-wired" "$(capstatus "${out}" worktree-port-isolation)" "mis-wired"
+printf '[env]\n_.source = "scripts/worktree-env.sh"\n' >>"${CR7}/mise.toml"
+capscan "${CR7}"
+assert_eq "cap: deriver + mise sources it -> present-wired" "$(capstatus "${out}" worktree-port-isolation)" "present-wired"
+
 # Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
 printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
 capscan "${CR1}"

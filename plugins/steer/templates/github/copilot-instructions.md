@@ -218,6 +218,40 @@ for** before deciding, never auto-delete, and only ever remove true junk
 `.gitignore` so it can't return.
 
 
+## Parallel worktrees — isolate runtime, clean up after
+
+You may be one of several agents working the same repo at once, each in its own
+worktree. Your local services must not collide with — or outlive — a sibling's.
+
+**Isolate runtime resources.** Two worktrees that both bind host port 5432
+(Postgres) or 3000 (dev server), or share a Docker container/volume name, will
+break each other. The scaffold prevents this automatically: `mise` sources
+`scripts/worktree-env.sh`, which gives each worktree a unique
+`COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset
+(`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL` — primary checkout keeps the
+defaults). So:
+
+- Start services and the dev server through `mise run …` (`docker:up`,
+  `dev:setup`, the app's dev task) so the per-worktree env applies — never with a
+  bare `docker compose up` / hardcoded port that ignores it.
+- Don't pin a fixed `container_name` or a literal host port in `compose.yaml`,
+  and don't hardcode `localhost:5432`/`localhost:3000` in app config — read the
+  env vars. Hardcoding defeats the isolation and reintroduces the clash.
+- If two worktrees still draw the same offset (a host port is already in use),
+  set `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing the
+  shared files.
+
+**Clean up before the worktree closes.** Containers, volumes, and background
+dev servers you start outlive the git worktree unless you tear them down — the
+worktree's removal does **not** stop them. Before closing or removing a
+worktree:
+
+- Run `mise run docker:clean` (down + volumes + orphans, scoped to this
+  worktree's `COMPOSE_PROJECT_NAME`) — it won't touch a sibling's stack.
+- Stop any background dev server / watcher you launched, freeing its port.
+- Leave no orphaned containers, volumes, processes, or held ports behind.
+
+
 ## Spec workflow
 
 `/spec/features/` and `/spec/decisions/` only stay useful if they actually get
@@ -645,6 +679,7 @@ tooling so nothing is dropped:
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
 - [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
+- [ ] Working in a worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?

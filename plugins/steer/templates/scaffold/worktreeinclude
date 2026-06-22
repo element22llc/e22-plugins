@@ -4,7 +4,14 @@
 # Patterns use .gitignore syntax and must match files that ARE git-ignored.
 # Keep this to boot-critical local config; regenerable caches, virtualenvs,
 # and build output should NOT be listed (they rebuild in the worktree).
-# See the steer rule "Secrets handling".
+# See the steer rules "Secrets handling" and "Parallel worktrees".
+#
+# Note: committed files (e.g. scripts/worktree-env.sh) already arrive via the
+# git refs — only git-IGNORED local files need listing here. The copied .env
+# below keeps its fixed POSTGRES_PORT, but mise re-derives a per-worktree port
+# on top of it (scripts/worktree-env.sh), so the copy does not cause a clash.
+# Before removing a worktree, run `mise run docker:clean` so its containers and
+# volumes don't leak.
 
 # Local env / secrets the app needs to boot (mirrors .gitignore)
 .env

@@ -198,4 +198,21 @@ else
 	emit "backing-services-compose" "absent" "$F"
 fi
 
+# --- worktree-port-isolation — collision-free parallel worktrees ---
+# Applicable only where a local runtime binds host ports: a compose.yaml is
+# present OR the stack is Node/Python. Wired when the deriver script exists AND
+# mise.toml sources it (per-worktree COMPOSE_PROJECT_NAME + host-port offset).
+WTE="scripts/worktree-env.sh"
+WT_MT="mise.toml"
+wt_files="$WTE,$WT_MT"
+if ! exists "compose.yaml" && [ "$stack" = "none" ]; then
+	emit "worktree-port-isolation" "n/a" "$wt_files"
+elif ! exists "$WTE"; then
+	emit "worktree-port-isolation" "absent" "$wt_files"
+elif has "$WT_MT" "worktree-env.sh"; then
+	emit "worktree-port-isolation" "present-wired" "$wt_files"
+else
+	emit "worktree-port-isolation" "mis-wired" "$wt_files"
+fi
+
 exit 0
