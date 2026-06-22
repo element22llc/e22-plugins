@@ -411,7 +411,10 @@ When `/spec/tracker.md` declares `system: github`, every **implementation-affect
 mutation** — code, config, infrastructure, or behavior — has a GitHub issue
 **before the first repository mutation**. This is scoped to implementation:
 editing the `/spec` spine, documentation, generated output, and lockfiles is
-*not* an implementation-affecting mutation and needs no issue. Reuse the issue
+*not* an implementation-affecting mutation and needs no issue — nor is a
+plugin-maintenance sync (`/steer:sync`), which reconciles the materialized spine
++ scaffold against the plugin's own templates on its own `feat/sync` branch
+(structural, not feature work; it never touches app source). Reuse the issue
 the user names; otherwise find-or-create one through
 `/steer:tracker-sync` — an explicit "fix / implement / add / create"
 request does **not** need confirmation to create the issue.
