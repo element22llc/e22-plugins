@@ -88,7 +88,10 @@ service) and say so.
    unpinned toolchain versions. On a GitHub-tracked repo, also note if `main`
    lacks branch protection (the real PR gate) — route to `/steer:protect` to
    verify/apply against `policy/branch-protection.yml`; do not query or change
-   settings here (audit is read-only code-health).
+   settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
+   declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
+   intentional — report it as expected and recommend graduating via `/steer:protect`
+   when the MVP is ready, not as drift.
 8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).
@@ -199,7 +202,7 @@ of dimension.
    | Vetted code-health findings ready for tracking | `/steer:issues publish-audit` |
    | Architectural / cross-cutting call | Propose an ADR via `/steer:adr` |
    | Spec coverage / conformance gap | `/steer:questions` |
-   | `main` unprotected / branch-protection drift (GitHub) | `/steer:protect` |
+   | `main` unprotected / branch-protection drift (GitHub) — unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation | `/steer:protect` |
    | Mechanical cleanup only | `/simplify` |
    | Nothing actionable | Complete |
 

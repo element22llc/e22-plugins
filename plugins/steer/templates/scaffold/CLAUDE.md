@@ -25,6 +25,19 @@ holds only product-specific context.
 [Replace with one paragraph: what this product does, who uses it, and what
 success looks like. Pull from `/spec/vision.md` once it exists.]
 
+## Delivery mode
+
+**`PR flow`** — work on `feat/*` branches, one PR per change, merged after a dev
+reviews it (Commit autonomy). This is the default.
+
+Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
+`/steer:init` when one person is both PO and dev with no MVP yet): commit directly
+to `main`, no per-feature branch or PR, until graduation. CI still runs on every
+push, and the spine, tests, and Definition of Done are unchanged. **Graduate** to
+`PR flow` — run **`/steer:protect`**, which raises the server-side PR wall — the
+moment the MVP works, you first deploy, or a second contributor joins, whichever
+comes first; then set this line to `PR flow`.
+
 ## Stack overrides
 
 The default stack (injected by the plugin) applies unless overridden. Record

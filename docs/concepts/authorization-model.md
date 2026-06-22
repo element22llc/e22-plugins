@@ -29,6 +29,16 @@ flowchart TD
 - **Committing** whenever a coherent unit of work is done (tests pass, lint is
   clean, it builds). Do not pause to ask "should I commit?".
 
+!!! note "Exception — solo trunk mode (pre-MVP greenfield)"
+    When one person is both PO and dev with no MVP yet, `/steer:init` can put the
+    repo in **solo trunk mode** (declared in the product `CLAUDE.md` `## Delivery
+    mode` section): commits land **directly on `main`**, with no `feat/*` branch and
+    no per-feature PR — there is no second reviewer yet, so the PR gate has nothing
+    behind it. CI still runs on every push, and the spine, tests, and Definition of
+    Done are unchanged. The mode ends at **graduation** — run `/steer:protect`, which
+    raises the server-side PR wall — once the MVP works, you first deploy, or a second
+    contributor joins.
+
 ## What is gated
 
 - **Pushing and opening the PR.** This is the one step that waits for the dev.

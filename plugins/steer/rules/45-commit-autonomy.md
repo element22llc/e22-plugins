@@ -7,6 +7,14 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   repository's configured branch convention if it has one; otherwise `feat/*` /
   `fix/*` (issue-first work via `/steer:work` defaults to `issue/<number>-<slug>`).
   If you find yourself on `main` with changes, create the branch first, then commit.
+- **Exception — solo trunk mode (pre-MVP greenfield).** If the product `CLAUDE.md`
+  declares `Delivery mode: solo trunk (pre-MVP)`, commit **directly to `main`** until
+  graduation — no `feat/*` branch, no per-feature PR. There is no second reviewer yet,
+  so the PR gate has nothing behind it (see "You are not the gate"); CI still runs on
+  every push, and the spine, tests, and Definition of Done are **unchanged** — only the
+  branch/PR ceremony relaxes. **Graduate** the moment the MVP works, you first deploy, or
+  a second contributor joins — whichever comes first — by running **`/steer:protect`**,
+  which raises the server-side PR wall and ends the mode.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.

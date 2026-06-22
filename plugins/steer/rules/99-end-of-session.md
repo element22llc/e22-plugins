@@ -14,6 +14,7 @@ tooling so nothing is dropped:
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
+- [ ] Solo trunk mode and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is
 complete.

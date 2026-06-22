@@ -24,6 +24,13 @@ actually configured on the repo — this skill verifies it is, and helps set it 
 **Be honest in every report:** this configures the GitHub-side gate. It does not
 change anything about the local session and cannot prevent a local commit or push.
 
+**This is the graduation gate for solo trunk mode.** A repo whose `CLAUDE.md` declares
+`Delivery mode: solo trunk (pre-MVP)` runs with `main` intentionally unprotected
+(Commit autonomy). Running `apply` here **is** the graduation: it raises the PR wall and
+ends trunk mode. After applying in that case, also update the product `CLAUDE.md`
+`## Delivery mode` section to `PR flow` (the mode is over — the server wall now enforces
+it) and append a graduation entry to `/spec/HISTORY.md`.
+
 ## Authorization (what invoking this grants)
 
 A "protect main" / "check branch protection" request authorizes, without extra
@@ -81,6 +88,11 @@ Produce a **per-rule diff table** — for each policy field: `compliant` /
 `drifted (actual → desired)` / `absent`. If every rule is compliant, say
 **"branch protection is compliant — nothing to do"** and stop. This is the
 idempotent path: re-running on a protected repo writes nothing.
+
+When the repo's `CLAUDE.md` declares **solo trunk mode**, an absent protection is
+**intentional (pre-MVP)**, not drift — report it that way and frame `apply` as
+*graduation* (offer it once the MVP works / a deploy or second contributor is near),
+not as a compliance gap to fix immediately.
 
 ## Apply (only on confirmation)
 

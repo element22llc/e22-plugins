@@ -66,7 +66,7 @@ name one. Plain language is the only entry point a user needs.
 | compare the as-built `/spec` against tracker intent for drift (read-only) | `/steer:drift` |
 | sort loose files out of the repo root into `/spec` | `/steer:tidy` |
 | bring a bootstrapped repo up to date after a plugin release | `/steer:sync` |
-| "protect main" / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
+| "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 | read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
 
@@ -307,6 +307,13 @@ auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide
 (`/spec/app/`) as features land. `/steer:adopt` is for *un-bootstrapped*
 pre-existing code, not an excuse to skip bootstrap now and reverse-engineer later.
 
+**Solo greenfield can run on trunk.** When one person is both PO and dev pre-MVP,
+`/steer:init` offers **solo trunk mode**: commit straight to `main` — no `feat/*`
+branch, no per-feature PR — until the MVP works, declared in the product `CLAUDE.md`
+(`Delivery mode: solo trunk (pre-MVP)`) and unwound at graduation (MVP works / first
+deploy / second contributor → `/steer:protect`). This relaxes only the branch/PR
+ceremony; the scaffold, spine, tests, and Definition of Done all hold. See Commit autonomy.
+
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →
 update the owning `contract.md` if behavior changed.
@@ -440,6 +447,14 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   repository's configured branch convention if it has one; otherwise `feat/*` /
   `fix/*` (issue-first work via `/steer:work` defaults to `issue/<number>-<slug>`).
   If you find yourself on `main` with changes, create the branch first, then commit.
+- **Exception — solo trunk mode (pre-MVP greenfield).** If the product `CLAUDE.md`
+  declares `Delivery mode: solo trunk (pre-MVP)`, commit **directly to `main`** until
+  graduation — no `feat/*` branch, no per-feature PR. There is no second reviewer yet,
+  so the PR gate has nothing behind it (see "You are not the gate"); CI still runs on
+  every push, and the spine, tests, and Definition of Done are **unchanged** — only the
+  branch/PR ceremony relaxes. **Graduate** the moment the MVP works, you first deploy, or
+  a second contributor joins — whichever comes first — by running **`/steer:protect`**,
+  which raises the server-side PR wall and ends the mode.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.
@@ -683,6 +698,7 @@ tooling so nothing is dropped:
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
+- [ ] Solo trunk mode and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is
 complete.

@@ -34,6 +34,11 @@ harden yet. Productionization is a later, per-app event — the
 [`/steer:build`](../workflows/build.md) v0 handoff or `/steer:adopt`, where real
 code is triaged into `/spec/PRODUCTIONIZATION.md` before a production deploy.
 
+For a **solo greenfield** repo (one person is both PO and dev, no MVP yet),
+`/steer:init` can instead start in [**solo trunk mode**](../concepts/authorization-model.md):
+the bootstrap and early features land directly on `main` with no PR, until you
+graduate to the PR flow with `/steer:protect`.
+
 ## 2. Capture the idea
 
 ```text
