@@ -12,7 +12,7 @@
     {
       "name": "steer",
       "source": "./plugins/steer",
-      "version": "2.11.0",
+      "version": "2.12.0",
       "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation, issue-tracker integration, testing rules, Definition of Done, drift gates, secrets handling, and compliance-aligned delivery. On Copilot (CLI and VS Code) the standards install as .github/copilot-instructions.md and the skills as .github/prompts/*.prompt.md (generated from the same rules/ and skills/ that Claude Code injects via a SessionStart hook); run /steer:init from Claude Code to install or refresh them."
     }
   ]
