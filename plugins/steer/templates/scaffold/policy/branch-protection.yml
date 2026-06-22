@@ -19,7 +19,7 @@
 # policy/versions.yml). Tighten, don't quietly loosen: a weaker per-repo policy
 # should be backed by an ADR.
 
-schema: 1
+schema: 2          # v1 files (no `protected_branches`) remain valid — it is additive.
 
 # Which branch to protect. "default" resolves to the repo's default branch.
 branch: default
@@ -42,6 +42,29 @@ enforce_admins: true
 
 # Keep history linear (squash/rebase merges only).
 required_linear_history: true
+
+# ── Additional protected branches (optional) ─────────────────────────────────
+# Present when the product uses a branch-based production gate (see the
+# "Deployment & environments" rule). Each entry is protected with the same
+# classic-protection fields as the default branch above. The canonical case is a
+# long-lived `prod` branch: GitHub Enterprise deployment-environment approvals
+# aren't available, so the required PR review on `prod` IS the production approval
+# gate — a reviewed PR from `main` into `prod` is the only way commits reach prod,
+# and merging it triggers the prod deploy. /steer:protect applies protection to
+# each branch listed here; a branch that does not exist on the repo yet is
+# reported as "not created" (informational), never forced. Delete this block, or
+# the `prod` entry, for a product that has no such branch.
+protected_branches:
+  - name: prod
+    required_pull_request_reviews:
+      required_approving_review_count: 1
+      dismiss_stale_reviews: true
+    required_status_checks:
+      strict: false
+      contexts:
+        - ci
+    enforce_admins: true
+    required_linear_history: true
 
 # Repo-level security, applied via a SEPARATE settings API by /steer:protect.
 secret_scanning: true

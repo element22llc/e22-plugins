@@ -7,8 +7,8 @@
 # this file — and the docker:*/db:* tasks in mise.toml — if the product has no
 # backing services.
 #
-# Credentials below are local-only by design; deployed credentials live in AWS
-# Secrets Manager. Matching local app config (git-ignored .env):
+# Credentials below are local-only by design; deployed credentials live in SSM
+# Parameter Store (SecureString) / Secrets Manager. Matching local app config (git-ignored .env):
 #   DATABASE_URL=postgresql://app:app@localhost:5432/app
 #
 # Running several products locally? Each binds 5432 by default and they
