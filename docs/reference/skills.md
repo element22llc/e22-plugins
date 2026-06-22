@@ -14,9 +14,9 @@ shipped skill is missing here.
 | Skill | Purpose |
 | --- | --- |
 | `/steer:doctor` | Detect and install the local prerequisites a repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs. |
-| `/steer:init` | One-time setup for a new repo — bootstrap the `/spec` spine + scaffold, or resolve legacy template placeholders. |
+| `/steer:init` | One-time setup for a new repo — bootstrap the `/spec` spine + scaffold, or resolve legacy template placeholders. Offers solo **trunk mode** when one person is both PO and dev with no MVP yet (commit directly to `main`, no `feat/*`/PR ceremony, declared in the product `CLAUDE.md` `## Delivery mode`). |
 | `/steer:adopt` | Reverse-engineer a `/spec` spine from an existing app's code and add the scaffold. See [Adopt](../workflows/adopt.md). |
-| `/steer:protect` | Verify (and, on confirmation, apply) GitHub branch protection on `main` against `policy/branch-protection.yml` — the real PR gate — plus the repo-level security settings it declares (secret scanning + push protection, Dependabot alerts + security updates). steer is advisory locally; this configures the server-side wall. Verify-only by default. |
+| `/steer:protect` | Verify (and, on confirmation, apply) GitHub branch protection on `main` against `policy/branch-protection.yml` — the real PR gate — plus the repo-level security settings it declares (secret scanning + push protection, Dependabot alerts + security updates). steer is advisory locally; this configures the server-side wall. Verify-only by default. Also the **graduation gate** out of solo trunk mode: running it raises the PR wall and ends the mode. Treats a declared-trunk unprotected `main` as intentional, not drift. |
 
 ## Backlog & specs
 
@@ -40,7 +40,7 @@ shipped skill is missing here.
 | Skill | Purpose |
 | --- | --- |
 | `/steer:drift` | Compare the as-built `/spec` against the tracker's intent and surface divergences. Read-only. |
-| `/steer:audit` | Repeatable whole-repo standards-conformance health audit, ranked by leverage. Read-only. |
+| `/steer:audit` | Repeatable whole-repo standards-conformance health audit, ranked by leverage. Read-only. Treats a declared-trunk unprotected `main` (solo trunk mode) as intentional, not a finding. |
 | `/steer:next` | "What should I do next?" across the workspace. Read-only. |
 | `/steer:traceability` | Living-docs & traceability reference — how specs, issues, ADRs, tracker refs, and drift gates link up. Read-only. |
 
