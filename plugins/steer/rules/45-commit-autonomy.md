@@ -12,7 +12,9 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   graduation — no `feat/*` branch, no per-feature PR. There is no second reviewer yet,
   so the PR gate has nothing behind it (see "You are not the gate"); CI still runs on
   every push, and the spine, tests, and Definition of Done are **unchanged** — only the
-  branch/PR ceremony relaxes. **Graduate** the moment the MVP works, you first deploy, or
+  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still required and
+  closed from the trunk commit (`Closes #N`), not via a PR (see Issue-first).
+  **Graduate** the moment the MVP works, you first deploy, or
   a second contributor joins — whichever comes first — by running **`/steer:protect`**,
   which raises the server-side PR wall and ends the mode.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes

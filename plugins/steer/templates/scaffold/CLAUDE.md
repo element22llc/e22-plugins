@@ -27,16 +27,23 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 
 ## Delivery mode
 
+<!-- steer:delivery-mode=pr-flow -->
+<!-- ^ machine-readable marker (steer hooks read this line; values: pr-flow | solo-trunk).
+     /steer:init sets it; /steer:protect flips it to pr-flow at graduation. Keep it in sync
+     with the prose below. -->
+
 **`PR flow`** — work on `feat/*` branches, one PR per change, merged after a dev
 reviews it (Commit autonomy). This is the default.
 
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:init` when one person is both PO and dev with no MVP yet): commit directly
-to `main`, no per-feature branch or PR, until graduation. CI still runs on every
-push, and the spine, tests, and Definition of Done are unchanged. **Graduate** to
-`PR flow` — run **`/steer:protect`**, which raises the server-side PR wall — the
-moment the MVP works, you first deploy, or a second contributor joins, whichever
-comes first; then set this line to `PR flow`.
+to `main`, no per-feature branch or PR, until graduation. Issue-first still holds
+(every change keeps a GitHub issue, closed from the trunk commit); only the branch
+and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
+Definition of Done are unchanged. **Graduate** to `PR flow` — run
+**`/steer:protect`**, which raises the server-side PR wall — the moment the MVP
+works, you first deploy, or a second contributor joins, whichever comes first; then
+set this marker and the prose to `PR flow`.
 
 ## Stack overrides
 

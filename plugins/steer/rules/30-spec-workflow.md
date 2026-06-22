@@ -45,8 +45,10 @@ in the spec-framework reference, drawn on by the spec workflow
 `/steer:design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick", "just a prototype", "throwaway"
-relax the *ceremony* (lighter interview, no per-feature issue/PR, high-risk
-choices stubbed and marked), **not** the scaffold or the spine. Even a throwaway
+relax the *ceremony* (lighter interview, no per-feature PR — durably via solo-trunk
+mode, below; a GitHub-adopted repo still keeps the issue, closed from the commit, see
+Issue-first — high-risk choices stubbed and marked), **not** the scaffold or the
+spine. Even a throwaway
 gets the bundled scaffold (so it costs nothing to graduate later) and at least a
 minimal `/spec` (vision + the feature intents being built), with the build
 auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide

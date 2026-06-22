@@ -162,8 +162,13 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
      to `main` (no `feat/*` branch, no per-feature PR) until graduation. A one-line
      confirm is enough. Record the choice in the product `CLAUDE.md` `## Delivery mode`
      section (`solo trunk (pre-MVP)` with the graduation trigger) when you fill the
-     scaffold in steps 2–3. A repo with a second contributor keeps the `feat/*` + PR
-     default — don't offer trunk there.
+     scaffold in steps 2–3, and **set the machine-readable marker on that section's
+     first line** to match — `<!-- steer:delivery-mode=solo-trunk -->` for solo trunk,
+     `<!-- steer:delivery-mode=pr-flow -->` (the scaffold default) otherwise. The
+     steer hooks read this marker to relax the per-feature branch/PR in solo trunk
+     while still requiring the GitHub issue; keep it in sync with the prose. A repo
+     with a second contributor keeps the `feat/*` + PR default — don't offer trunk
+     there.
 2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
    external template repo to fetch. Read
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its

@@ -40,8 +40,10 @@ name one. Plain language is the only entry point a user needs.
   **"Prototype" / "quick" / "just try it" / "throwaway" never waives
   this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
   (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview, no per-feature
-  issue/PR), never *whether* the scaffold and spine exist. Hand-writing
+  Those words change spec *depth* and *ceremony* (lighter interview, and — by
+  declaring solo-trunk mode — no per-feature branch or PR, though a GitHub-adopted
+  repo still keeps the issue per change, see Issue-first), never *whether* the
+  scaffold and spine exist. Hand-writing
   `package.json`, build config (`vite.config`, `tsconfig`), or CI **from scratch**
   when `/steer:init` installs them from the bundled scaffold is the bug, not a
   shortcut — run the bootstrap, then build on top of it.
@@ -55,10 +57,11 @@ name one. Plain language is the only entry point a user needs.
 | --- | --- |
 | set up a brand-new repo, or resolve leftover template placeholders | `/steer:init` |
 | bring an existing app (working code, no `/spec`) under the standards | `/steer:adopt` |
+| set up a fresh machine, or fix a missing prerequisite ("command not found", mise/docker errors) | `/steer:doctor` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it | `/steer:spec` |
-| start, resume, finish, or fix a specific issue ("fix #123") | `/steer:work` |
-| capture an idea, triage, brainstorm, decompose, or check backlog status (GitHub) | `/steer:issues` |
+| start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
+| manage the backlog without implementing now — capture, triage, brainstorm, decompose, or check status (GitHub) | `/steer:issues` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | clear open questions accumulating in the specs | `/steer:questions` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
@@ -69,6 +72,11 @@ name one. Plain language is the only entry point a user needs.
 | "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 | read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
+
+**`work` vs `issues`:** implementing a change *now* — with or without an issue
+number — routes to `/steer:work`, which find-or-creates the issue and then
+implements. Pure backlog management (capture / triage / brainstorm / decompose /
+status, with no implementation this turn) routes to `/steer:issues`.
 
 GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal
 `/steer:tracker-sync` gateway, and feature specs are instantiated by the internal
@@ -299,8 +307,10 @@ in the spec-framework reference, drawn on by the spec workflow
 `/steer:design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick", "just a prototype", "throwaway"
-relax the *ceremony* (lighter interview, no per-feature issue/PR, high-risk
-choices stubbed and marked), **not** the scaffold or the spine. Even a throwaway
+relax the *ceremony* (lighter interview, no per-feature PR — durably via solo-trunk
+mode, below; a GitHub-adopted repo still keeps the issue, closed from the commit, see
+Issue-first — high-risk choices stubbed and marked), **not** the scaffold or the
+spine. Even a throwaway
 gets the bundled scaffold (so it costs nothing to graduate later) and at least a
 minimal `/spec` (vision + the feature intents being built), with the build
 auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide
@@ -424,11 +434,20 @@ request does **not** need confirmation to create the issue.
   open the PR, transition the issue. The CLI request authorizes local edits +
   tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
   implied**.
+- **Solo trunk keeps the issue, drops the branch/PR.** When the product `CLAUDE.md`
+  declares solo-trunk delivery mode (Commit autonomy), issue-first still holds —
+  every implementation-affecting mutation has a GitHub issue — but you commit
+  straight to `main` and **close the issue from the trunk commit** (`Closes #N`):
+  no `issue/<N>` branch, no per-feature PR. Only the branch/PR ceremony relaxes;
+  the issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
 
 Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
-repos without a `/spec` spine keep today's flow.
+repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does
+not waive it** — the only durable opt-out from the per-feature branch/PR is
+declaring solo-trunk delivery mode; a prototype that stays in PR flow still gets a
+GitHub issue per change.
 
 
 ## Testing rules
@@ -452,7 +471,9 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   graduation — no `feat/*` branch, no per-feature PR. There is no second reviewer yet,
   so the PR gate has nothing behind it (see "You are not the gate"); CI still runs on
   every push, and the spine, tests, and Definition of Done are **unchanged** — only the
-  branch/PR ceremony relaxes. **Graduate** the moment the MVP works, you first deploy, or
+  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still required and
+  closed from the trunk commit (`Closes #N`), not via a PR (see Issue-first).
+  **Graduate** the moment the MVP works, you first deploy, or
   a second contributor joins — whichever comes first — by running **`/steer:protect`**,
   which raises the server-side PR wall and ends the mode.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
@@ -480,11 +501,11 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
 - [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; `/spec/HISTORY.md` entry appended (see Living documentation).
-- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR (see Issue tracker).
-- [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (PR opened → `validate`, never `done`); the PR references the issue with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
+- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
+- [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR.
+- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where `main` is intentionally unprotected and there is no PR gate until graduation (see Commit autonomy).
 
 
 ## Drift gates — surface before merge

@@ -60,6 +60,12 @@ command -v git >/dev/null 2>&1 || exit 0
 
 BRANCH="$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null)"
 
+# Delivery mode governs how this turn is reconciled. In solo-trunk, main is the
+# expected working branch and there is no issue/<n> branch or spec/.work marker
+# (those are PR-flow / /steer:work constructs), so the branch-name inference below
+# would wrongly fire every session — skip it and reword the advisory instead.
+MODE="$(steer_delivery_mode "${ROOT}")"
+
 # Record the current Claude Code session at the head of an existing .md work
 # marker's session list (newest first), so /steer:work resume can offer to
 # re-enter that conversation. Fail-open and idempotent: no session id, an
@@ -118,28 +124,33 @@ _steer_stamp_session() {
 	return 0
 }
 
-# Prefer an explicit work marker over branch-name inference. /steer:work records
-# the claimed issue for a branch under spec/.work/<branch>.md (slashes →
-# underscores); a legacy extensionless marker (repos that predate the .md format)
-# is still honoured. If this branch has a marker the work is governed → stamp the
-# session into the .md marker and stay silent.
-_bkey="$(printf '%s' "${BRANCH}" | tr '/' '_')"
-if [ -n "${BRANCH}" ]; then
-	_mdmark="${ROOT}/spec/.work/${_bkey}.md"
-	if [ -f "${_mdmark}" ]; then
-		_steer_stamp_session "${_mdmark}" "${SID}"
-		exit 0
+# Branch-based governance (marker + issue-branch conventions) is a PR-flow concept.
+# Solo-trunk has no feature branch or spec/.work marker, so skip this whole block
+# there — the advisory below is reworded for trunk instead.
+if [ "${MODE}" != "solo-trunk" ]; then
+	# Prefer an explicit work marker over branch-name inference. /steer:work records
+	# the claimed issue for a branch under spec/.work/<branch>.md (slashes →
+	# underscores); a legacy extensionless marker (repos that predate the .md format)
+	# is still honoured. If this branch has a marker the work is governed → stamp the
+	# session into the .md marker and stay silent.
+	_bkey="$(printf '%s' "${BRANCH}" | tr '/' '_')"
+	if [ -n "${BRANCH}" ]; then
+		_mdmark="${ROOT}/spec/.work/${_bkey}.md"
+		if [ -f "${_mdmark}" ]; then
+			_steer_stamp_session "${_mdmark}" "${SID}"
+			exit 0
+		fi
+		[ -f "${ROOT}/spec/.work/${_bkey}" ] && exit 0
 	fi
-	[ -f "${ROOT}/spec/.work/${_bkey}" ] && exit 0
-fi
 
-# Fallback when no marker exists (older repos / out-of-band branches): recognize
-# only the issue-branch conventions — issue/<n>-slug, a leading issue number,
-# or a Jira-style KEY-123. A date branch like release/2026-06 must NOT count as
-# issue-governed; main/master/develop and topic branches get reconciled.
-printf '%s' "${BRANCH}" | grep -qE '^issue/[0-9]+([/_-]|$)' && exit 0
-printf '%s' "${BRANCH}" | grep -qE '^[0-9]+[/_-]' && exit 0
-printf '%s' "${BRANCH}" | grep -qE '(^|/)[A-Z][A-Z0-9]+-[0-9]+([/_-]|$)' && exit 0
+	# Fallback when no marker exists (older repos / out-of-band branches): recognize
+	# only the issue-branch conventions — issue/<n>-slug, a leading issue number,
+	# or a Jira-style KEY-123. A date branch like release/2026-06 must NOT count as
+	# issue-governed; main/master/develop and topic branches get reconciled.
+	printf '%s' "${BRANCH}" | grep -qE '^issue/[0-9]+([/_-]|$)' && exit 0
+	printf '%s' "${BRANCH}" | grep -qE '^[0-9]+[/_-]' && exit 0
+	printf '%s' "${BRANCH}" | grep -qE '(^|/)[A-Z][A-Z0-9]+-[0-9]+([/_-]|$)' && exit 0
+fi
 
 # Changed paths (staged + unstaged + untracked), NUL-delimited from git so odd
 # filenames and renames are handled safely. --name-only avoids the porcelain
@@ -181,7 +192,11 @@ MARK="${TMPDIR:-/tmp}/steer-issuefirst-stop.${SID:-nosid}.${CWD_KEY:-0}"
 SAFE_BRANCH="$(printf '%s' "${BRANCH}" | tr -d '"\\')"
 SAFE_LIST="$(printf '%s' "${GOVERNED}" | tr -d '"\\' | cut -c1-400)"
 
-REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker); if it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+if [ "${MODE}" = "solo-trunk" ]; then
+	REASON="Issue-first reconciliation (solo-trunk mode): this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree: ${SAFE_LIST}Solo-trunk commits straight to main, but issue-first (rule 36) still ties every implementation-affecting mutation to a GitHub issue. Before committing, make sure this work carries an issue reference in the trunk commit — close the issue from the commit (a 'Closes #N' trailer, or '(#N)' in the subject). If you have no issue yet, capture or reuse one via /steer:tracker-sync. Do NOT create an issue/<N> branch or a PR — that ceremony is relaxed pre-MVP. If this work is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+else
+	REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker); if it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+fi
 
 # Stop hooks have exactly one channel for surfacing text to the model:
 # {"decision":"block","reason":...}, which hands `reason` back and lets Claude
