@@ -98,6 +98,13 @@ session_json() { # <cwd> <session>
 	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart"}' "$2" "$1"
 }
 
+# Write a product CLAUDE.md carrying the machine-readable delivery-mode marker,
+# plus prose that names BOTH modes — so the tests prove the matcher is anchored to
+# the marker line and never matches the explanatory prose word "solo trunk".
+claude_md_mode() { # <repo_root> <solo-trunk|pr-flow>
+	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n\nProse names solo trunk (pre-MVP) and PR flow both.\n' "$2" >"$1/CLAUDE.md"
+}
+
 json_notebook() { # <cwd> <session> <notebook_path>
 	printf '{"session_id":"%s","cwd":"%s","tool_name":"NotebookEdit","tool_input":{"notebook_path":"%s","new_source":"x"}}' \
 		"$2" "$1" "$3"
@@ -315,6 +322,28 @@ mkdir -p "${R10}/spec"
 out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
 assert_empty "issue-first: no tracker silent" "${out}"
 
+# Solo-trunk mode: issue-first still nudges, but with trunk wording (no /steer:work,
+# no issue branch — close the issue from the commit instead).
+R8st="$(new_repo repoGHsolo)"
+mkdir -p "${R8st}/spec"
+printf 'system: github\n' >"${R8st}/spec/tracker.md"
+claude_md_mode "${R8st}" solo-trunk
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8st}" sGHst src/app.ts 'x')")"
+assert_ctx "issue-first: solo-trunk repo still nudges" "${out}"
+printf '%s' "${out}" | grep -q 'solo-trunk mode' && ok || bad "issue-first: solo-trunk wording present (got: ${out})"
+printf '%s' "${out}" | grep -q '/steer:work' && bad "issue-first: solo-trunk must NOT mention /steer:work (got: ${out})" || ok
+
+# PR-flow repo whose CLAUDE.md prose names "solo trunk" still gets PR-flow wording
+# — proves the marker matcher is anchored, not a substring of the prose.
+R8pf="$(new_repo repoGHpr)"
+mkdir -p "${R8pf}/spec"
+printf 'system: github\n' >"${R8pf}/spec/tracker.md"
+claude_md_mode "${R8pf}" pr-flow
+out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8pf}" sGHpf src/app.ts 'x')")"
+assert_ctx "issue-first: pr-flow repo nudges (prose mentions solo trunk)" "${out}"
+printf '%s' "${out}" | grep -q '/steer:work' && ok || bad "issue-first: pr-flow keeps /steer:work (got: ${out})"
+printf '%s' "${out}" | grep -q 'solo-trunk mode' && bad "issue-first: pr-flow must NOT use solo wording (got: ${out})" || ok
+
 # Plugin-maintenance branch exemption (needs a real git repo for branch detection).
 # /steer:sync writes operations-class scaffold on its own feat/sync branch ->
 # silent (rule 36 carve-out); app source on feat/sync still nudges.
@@ -431,28 +460,59 @@ if command -v git >/dev/null 2>&1; then
 	assert_no_block "stop-reconcile: .md marker governs with empty session id" "${out}"
 	cmp -s "${MD10}" "${MD10}.before" && ok || bad "stop-reconcile: empty session id leaves .md marker intact"
 
-	# L: /steer:sync runs on feat/sync. Operations-class scaffold reconciliation
-	# (compose/mise) is structural plugin-maintenance, not feature work -> silent
-	# (rule 36 carve-out), even though those paths nudge on every other branch.
-	S11="$(git_repo stopSyncBranch feat/sync)"
-	printf 'services: {}\n' >"${S11}/compose.yaml"
-	printf '[env]\n' >"${S11}/mise.toml"
+	# L: solo-trunk mode — a governed change on main is STILL surfaced (issue-first
+	# holds), but with trunk wording: reference the issue in the commit, no /steer:work.
+	S11="$(git_repo stopSolo main)"
+	claude_md_mode "${S11}" solo-trunk
+	mkdir -p "${S11}/src"
+	printf 'export const x = 1\n' >"${S11}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S11}" stS11)")"
-	assert_no_block "stop-reconcile: feat/sync scaffold reconciliation silent" "${out}"
+	assert_block "stop-reconcile: solo-trunk governed change on main still surfaced" "${out}"
+	printf '%s' "${out}" | grep -q 'solo-trunk mode' && ok || bad "stop-reconcile: solo-trunk wording present (got: ${out})"
+	printf '%s' "${out}" | grep -q '/steer:work' && bad "stop-reconcile: solo-trunk must NOT mention /steer:work (got: ${out})" || ok
 
-	# L2: the feat/sync-<ver> variant is exempt the same way.
-	S12="$(git_repo stopSyncVer main)"
-	git -C "${S12}" checkout -q -b feat/sync-2.8.0
-	printf 'services: {}\n' >"${S12}/compose.yaml"
+	# M: solo-trunk advisory is independent of any prior committed issue ref — the
+	# new work is uncommitted at Stop time, so there is no commit-scan to silence it.
+	S12="$(git_repo stopSoloPriorRef main)"
+	claude_md_mode "${S12}" solo-trunk
+	git -C "${S12}" commit -q --allow-empty -m 'feat: earlier work (#99)'
+	mkdir -p "${S12}/src"
+	printf 'export const y = 2\n' >"${S12}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S12}" stS12)")"
-	assert_no_block "stop-reconcile: feat/sync-<ver> variant exempt" "${out}"
+	assert_block "stop-reconcile: solo-trunk advisory independent of prior commit issue ref" "${out}"
 
-	# M: but a feat/sync turn that touched app source violates sync's contract
-	# (structure only, never app code) -> still reported, not exempted.
-	S13="$(git_repo stopSyncAppSrc feat/sync)"
+	# N: PR-flow repo whose CLAUDE.md prose names "solo trunk" reconciles normally
+	# with PR-flow wording (matcher anchored to the marker line, not the prose).
+	S13="$(git_repo stopPrProse main)"
+	claude_md_mode "${S13}" pr-flow
 	mkdir -p "${S13}/src"
 	printf 'export const x = 1\n' >"${S13}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S13}" stS13)")"
+	assert_block "stop-reconcile: pr-flow repo (prose says solo trunk) reported normally" "${out}"
+	printf '%s' "${out}" | grep -q '/steer:work' && ok || bad "stop-reconcile: pr-flow keeps /steer:work (got: ${out})"
+
+	# O: /steer:sync runs on feat/sync. Operations-class scaffold reconciliation
+	# (compose/mise) is structural plugin-maintenance, not feature work -> silent
+	# (rule 36 carve-out), even though those paths nudge on every other branch.
+	S14="$(git_repo stopSyncBranch feat/sync)"
+	printf 'services: {}\n' >"${S14}/compose.yaml"
+	printf '[env]\n' >"${S14}/mise.toml"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S14}" stS14)")"
+	assert_no_block "stop-reconcile: feat/sync scaffold reconciliation silent" "${out}"
+
+	# O2: the feat/sync-<ver> variant is exempt the same way.
+	S15="$(git_repo stopSyncVer main)"
+	git -C "${S15}" checkout -q -b feat/sync-2.8.0
+	printf 'services: {}\n' >"${S15}/compose.yaml"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S15}" stS15)")"
+	assert_no_block "stop-reconcile: feat/sync-<ver> variant exempt" "${out}"
+
+	# P: but a feat/sync turn that touched app source violates sync's contract
+	# (structure only, never app code) -> still reported, not exempted.
+	S16="$(git_repo stopSyncAppSrc feat/sync)"
+	mkdir -p "${S16}/src"
+	printf 'export const x = 1\n' >"${S16}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S16}" stS16)")"
 	assert_block "stop-reconcile: feat/sync app source still reported (sync must not touch app code)" "${out}"
 else
 	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2

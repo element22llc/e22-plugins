@@ -28,8 +28,10 @@ change anything about the local session and cannot prevent a local commit or pus
 `Delivery mode: solo trunk (pre-MVP)` runs with `main` intentionally unprotected
 (Commit autonomy). Running `apply` here **is** the graduation: it raises the PR wall and
 ends trunk mode. After applying in that case, also update the product `CLAUDE.md`
-`## Delivery mode` section to `PR flow` (the mode is over — the server wall now enforces
-it) and append a graduation entry to `/spec/HISTORY.md`.
+`## Delivery mode` section to `PR flow` — both the prose **and** the machine-readable
+marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so the
+steer hooks resume the per-feature branch/PR flow (the mode is over — the server wall
+now enforces it) — and append a graduation entry to `/spec/HISTORY.md`.
 
 ## Authorization (what invoking this grants)
 

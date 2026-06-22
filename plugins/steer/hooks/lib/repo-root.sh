@@ -30,3 +30,26 @@ steer_repo_root() {
 	done
 	return 1
 }
+
+# steer_delivery_mode <repo_root> — prints the repo's declared delivery mode,
+# 'solo-trunk' or 'pr-flow', read from the machine-readable marker on the
+# product CLAUDE.md's `## Delivery mode` section:
+#   <!-- steer:delivery-mode=solo-trunk -->   (or =pr-flow)
+#
+# Fail-open: no CLAUDE.md, no marker, or anything unreadable → 'pr-flow', which
+# preserves the pre-marker behavior (issue-first branch/PR flow). The matcher is
+# anchored to the comment line and uses the hyphenated token `=solo-trunk`, so the
+# explanatory prose in the default template — which names "solo trunk (pre-MVP)"
+# while staying in PR flow — never matches.
+steer_delivery_mode() {
+	_cm="${1:-.}/CLAUDE.md"
+	[ -f "${_cm}" ] || {
+		printf 'pr-flow'
+		return 0
+	}
+	if grep -Eiq '^[[:space:]]*<!--[[:space:]]*steer:delivery-mode=solo-trunk[[:space:]]*-->' "${_cm}" 2>/dev/null; then
+		printf 'solo-trunk'
+		return 0
+	fi
+	printf 'pr-flow'
+}

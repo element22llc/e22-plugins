@@ -38,8 +38,10 @@ name one. Plain language is the only entry point a user needs.
   **"Prototype" / "quick" / "just try it" / "throwaway" never waives
   this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
   (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview, no per-feature
-  issue/PR), never *whether* the scaffold and spine exist. Hand-writing
+  Those words change spec *depth* and *ceremony* (lighter interview, and — by
+  declaring solo-trunk mode — no per-feature branch or PR, though a GitHub-adopted
+  repo still keeps the issue per change, see Issue-first), never *whether* the
+  scaffold and spine exist. Hand-writing
   `package.json`, build config (`vite.config`, `tsconfig`), or CI **from scratch**
   when `/steer:init` installs them from the bundled scaffold is the bug, not a
   shortcut — run the bootstrap, then build on top of it.
@@ -53,10 +55,11 @@ name one. Plain language is the only entry point a user needs.
 | --- | --- |
 | set up a brand-new repo, or resolve leftover template placeholders | `/steer:init` |
 | bring an existing app (working code, no `/spec`) under the standards | `/steer:adopt` |
+| set up a fresh machine, or fix a missing prerequisite ("command not found", mise/docker errors) | `/steer:doctor` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it | `/steer:spec` |
-| start, resume, finish, or fix a specific issue ("fix #123") | `/steer:work` |
-| capture an idea, triage, brainstorm, decompose, or check backlog status (GitHub) | `/steer:issues` |
+| start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
+| manage the backlog without implementing now — capture, triage, brainstorm, decompose, or check status (GitHub) | `/steer:issues` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | clear open questions accumulating in the specs | `/steer:questions` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
@@ -67,6 +70,11 @@ name one. Plain language is the only entry point a user needs.
 | "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 | read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
+
+**`work` vs `issues`:** implementing a change *now* — with or without an issue
+number — routes to `/steer:work`, which find-or-creates the issue and then
+implements. Pure backlog management (capture / triage / brainstorm / decompose /
+status, with no implementation this turn) routes to `/steer:issues`.
 
 GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal
 `/steer:tracker-sync` gateway, and feature specs are instantiated by the internal

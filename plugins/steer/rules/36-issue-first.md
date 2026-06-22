@@ -20,8 +20,17 @@ request does **not** need confirmation to create the issue.
   open the PR, transition the issue. The CLI request authorizes local edits +
   tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
   implied**.
+- **Solo trunk keeps the issue, drops the branch/PR.** When the product `CLAUDE.md`
+  declares solo-trunk delivery mode (Commit autonomy), issue-first still holds —
+  every implementation-affecting mutation has a GitHub issue — but you commit
+  straight to `main` and **close the issue from the trunk commit** (`Closes #N`):
+  no `issue/<N>` branch, no per-feature PR. Only the branch/PR ceremony relaxes;
+  the issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
 
 Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
-repos without a `/spec` spine keep today's flow.
+repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does
+not waive it** — the only durable opt-out from the per-feature branch/PR is
+declaring solo-trunk delivery mode; a prototype that stays in PR flow still gets a
+GitHub issue per change.

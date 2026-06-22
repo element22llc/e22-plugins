@@ -71,7 +71,15 @@ MARK="${TMPDIR:-/tmp}/steer-issuefirst-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 
 SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
 
-CTX="Issue-first check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, or lockfiles) needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
+# Issue-first holds in BOTH delivery modes (the issue is the audit-evidence anchor);
+# solo-trunk relaxes only the branch/PR ceremony, so its nudge keeps the issue
+# requirement but drops the /steer:work branch/PR guidance.
+MODE="$(steer_delivery_mode "${ROOT}")"
+if [ "${MODE}" = "solo-trunk" ]; then
+	CTX="Issue-first check (solo-trunk mode): this repo's /spec/tracker.md uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, or lockfiles) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit (a 'Closes #N' trailer, or '(#N)' in the subject) — do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
+else
+	CTX="Issue-first check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, or lockfiles) needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
+fi
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0
