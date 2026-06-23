@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:work` pr-flow and the commit-autonomy rule now direct the
+  first push of a new `issue/<n>` branch to set the upstream
+  (`git push -u origin <branch>`), avoiding the `no upstream branch` failure
+  (issue #172).
 - **Fixed:** the bundled scaffold `claude/settings.json` now allowlists
   `Bash(git rev-parse:*)` (issue #170). Steer machinery runs `git rev-parse`
   constantly — `worktree-env.sh` (`--show-toplevel`, `--git-dir`,
