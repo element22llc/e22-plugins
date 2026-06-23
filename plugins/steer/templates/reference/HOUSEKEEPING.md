@@ -11,13 +11,22 @@ often commits a pile of source material at the root; this sweep **relocates,
 renames, and (with confirmation) removes** it so the tree reflects what each
 file actually is.
 
-The three actions, all proposed before anything happens:
+The three actions differ in how much they wait on you:
 
-- **Move** — a clearly-named file to its correct home.
-- **Rename + move** — a file whose name is cryptic, inconsistent, or misleading,
-  to a clear descriptive name in the right home. A bad name is not a reason to
-  bury or delete a file; it's a reason to rename it.
-- **Delete** — only true junk, and only after the user confirms.
+- **Move** — a clearly-named file you can confidently classify goes to its
+  correct home **immediately**, under its existing name, no confirmation. The
+  obvious strays just get sorted; you never block on a yes for a move that was
+  never in doubt.
+- **Rename + move** — a file whose name is cryptic, inconsistent, or misleading
+  gets moved now under its current name, and a cleaner name is **proposed**
+  separately (never renamed silently). A bad name is not a reason to bury or
+  delete a file; it's a reason to rename it — with a yes.
+- **Delete** — only true junk, and only after the user confirms. Never
+  automatic.
+
+Anything you **can't confidently classify** — an unfamiliar purpose, a
+`Copy of …` / look-alike pair — is **not** auto-moved: ask first (see "Unclear
+names" below). Confidence is the gate on the automatic move; absent it, you ask.
 
 ## Root allowlist — leave these in place
 
@@ -41,6 +50,7 @@ row or none, ask rather than guess (see "Unclear names" below).
 | Material | Destination |
 |---|---|
 | Inventories, vendor/system metadata spreadsheets, discovery questions, PII asset lists, CMDB docs, SQL DDL / schema dumps | `/spec/reference/` |
+| Specification / requirements documents — a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW (source material feeding the spec, not the structured spec spine itself) | `/spec/reference/` |
 | An existing top-level `Technical Metadata/` (or similarly-named source) folder | `/spec/reference/technical-metadata/` |
 | Architecture diagrams, flow diagrams (`.svg`, "Flows for Review" `.pptx`) | `/spec/design/` |
 | A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/steer:design-sources` for the exact path |
@@ -111,24 +121,31 @@ not recurring junk.
 
 1. **List** the repo root (one level). Drop everything on the allowlist and the
    known dirs — what remains are the strays.
-2. **Classify** each stray into the taxonomy table, and note a clearer name for
-   any cryptic/inconsistent one. Collect files you can't confidently classify or
-   tell apart into a **questions** list.
-3. **Ask** the PO/dev about the questions list — what each unclear or
-   duplicate-looking file is for and which version is current — before finalizing
-   the plan.
-4. **Present the plan** as a table with a column for the action — `move`,
-   `rename + move`, or `delete` — showing source → destination/new name. Include
-   junk and confirmed leftovers as `delete` rows. Do not touch anything yet.
-5. **On approval**, apply it:
-   - Tracked files: `git mv <src> <dest>` (this both moves and renames; history
-     follows).
-   - Untracked files: plain `mv`.
+2. **Classify** each stray into the taxonomy table. Sort each into one of three
+   buckets:
+   - **Confident + clear name** → an automatic move.
+   - **Confident + cryptic/inconsistent name** → an automatic move *plus* a
+     proposed rename. Note the cleaner name.
+   - **Can't confidently classify, or look-alike/duplicate** → a **questions**
+     list; do not move yet.
+3. **Auto-move the confident strays now**, before asking anything:
+   - Tracked files: `git mv <src> <dest>` under their **existing** filename
+     (history follows). Untracked files: plain `mv`.
    - Create destination folders (`/spec/reference/…`, `/spec/design/…`) as needed.
+   - If a moved file is referenced by a spec (`source.md`, an `intent.md` `Design
+     source` section), update the reference so the link still resolves.
+4. **Ask** the PO/dev about the questions list — what each unclear or
+   duplicate-looking file is for and which version is current — before moving it.
+5. **Present a plan** for the gated work only: a table with an action column —
+   `rename` (for files already auto-moved), `move` (for the now-answered
+   ambiguous ones), or `delete` — showing source → destination/new name. Include
+   junk and confirmed leftovers as `delete` rows. Do not rename or delete
+   anything yet.
+6. **On approval**, apply the gated actions:
+   - Renames and answered moves: `git mv` (tracked) / `mv` (untracked); create
+     folders as needed; fix any spec references.
    - Handle approved deletions only after the moves. For each deleted junk file,
      add its pattern to `.gitignore` (if not already there) so it can't return.
-6. **Report** what moved/renamed where, list anything you left in place, and flag
-   anything still ambiguous. If a moved or renamed file is referenced by a spec
-   (`source.md`, an `intent.md` `Design source` section), update the reference so
-   the link still resolves.
-7. **Don't commit** until the user approves the result.
+7. **Report** what was auto-moved, what renamed/moved/deleted on approval, and
+   what you left in place or flagged ambiguous.
+8. **Don't commit** until the user approves the result.
