@@ -37,7 +37,7 @@ plugins/steer/
 ├── skills/                         # on-demand, invoked as /steer:<skill>:
 │                                   #            doctor, init, adopt, build, conventions,
 │                                   #            traceability, design-sources, spec-scaffold,
-│                                   #            spec, issues, tracker-sync, work, adr,
+│                                   #            spec, issues, tracker-sync, work, deliver, adr,
 │                                   #            drift, audit, sync, questions, next, tidy, standards,
 │                                   #            protect, report
 │                                   # (no commands/ — see "invocation syntax" below)

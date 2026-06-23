@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:deliver` — runs a task through a review-gated execution loop
+  (plan → independent plan-gate review → sign-off → implementation
+  **delegated to `/steer:work`** in GitHub-adopted repos, or direct in
+  prototype/local mode → independent `/code-review` code-gate → bounded ≤2-round
+  fix loop → report). It orchestrates and reviews rather than owning a second
+  governed-implementation path. New reference
+  `templates/reference/REVIEW-LOOP.md` documents the protocol; `steer-reviewer`
+  gains `/steer:deliver` as an explicit (never auto-delegated) caller for the
+  optional code-gate standards check.
 - **Changed:** the point-of-action bootstrap nudge (`check-code-before-spec.sh`)
   now treats **scaffold** and **/spec spine** as two independent dimensions with
   different cadences (issue #171). The `/spec` spine is product-dependent, so its
