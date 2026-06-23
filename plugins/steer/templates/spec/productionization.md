@@ -107,6 +107,7 @@
 | Area                         | Standard (rule)        | Current state | Disposition | Action / rationale |
 | ---------------------------- | ---------------------- | ------------- | ----------- | ------------------ |
 | Automated tests              | tests per change (40)  |               |             |                    |
+| Test coverage                | coverage signal (41)   |               |             |                    |
 | Lockfiles & version pins     | conventions (85)       |               |             |                    |
 | Secrets handling             | secrets (70)           |               |             |                    |
 | High-risk areas              | high-risk (60)         |               |             |                    |

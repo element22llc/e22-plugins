@@ -463,6 +463,19 @@ GitHub issue per change.
 - Do **not** delete or skip failing tests to make CI pass. Fix the cause, or explicitly remove the behavior and say so in the PR.
 
 
+## Coverage rules
+
+- Coverage is a **signal to find untested behavior, not a target to hit** — never
+  write shallow tests, or relax assertions, to move a number.
+- **Cover what you touch:** new and changed code paths ship exercised. Prioritize
+  **critical paths, branches, and error handling** over blanket line %.
+- Coverage is **measured and visible every run** (per-stack tooling in `CONVENTIONS`).
+  A coverage drop on changed code is **drift** — surface it for human review, never
+  silently (see Drift gates).
+- No global "fail under N%" vanity gate; CI gates only **changed-line** coverage. The
+  reviewer judges adequacy (see You are not the gate).
+
+
 ## Commit autonomy
 
 Commits are cheap and local — the PR review is the gate (see "You are not the
@@ -504,6 +517,7 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 
 - [ ] Code follows existing patterns in the touched app/package.
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
+- [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
 - [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; `/spec/HISTORY.md` entry appended (see Living documentation).
