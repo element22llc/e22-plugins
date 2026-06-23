@@ -66,8 +66,7 @@ native parent/sub-issue links — so you can build an (org-level) board or roadm
 on top without the plugin owning it. Project custom fields (Status, dates,
 iteration, priority, size) live on the Project *item*, set Project-side, and are
 never written into the issue; `steer:state` stays canonical in the body and is
-mirrored at most one-directionally by a Project Status field. See the
-*GitHub Projects v2 — compatibility boundary* in the issue-schema reference.
+mirrored at most one-directionally by a Project Status field.
 
 ## What the hooks do (and don't) enforce
 
