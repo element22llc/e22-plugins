@@ -17,6 +17,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   looping, and the `reconcile-issue-first.sh` Stop advisory acknowledges that a
   blocked create is a host gate, not a skipped step. `check_standards.py` locks the
   new allow-list entries.
+
 ### 2.14.0
 
 - **Added:** `/steer:roadmap` — generates a release-milestone timeline for the
