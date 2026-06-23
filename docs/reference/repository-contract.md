@@ -28,6 +28,25 @@ flowchart TD
 | `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged). `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree. See the always-on **Parallel worktrees** rule. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. |
 
+## Root housekeeping
+
+The root holds scaffolding and config only — not the spreadsheets, decks,
+diagrams, and **specification / requirements documents** (`.pdf`, `.docx`, decks
+— specs, briefs, RFP/SOW) that feed the spec. Those are **source material**:
+their home is `/spec/reference/`; architecture and flow diagrams go to
+`/spec/design/`.
+
+Steer keeps the root clean as it works. When a session notices a loose root file
+it can **confidently classify**, it **moves it to the right home immediately**
+(`git mv`, filename preserved) — no confirmation for a move that was never in
+doubt. Confirmation is reserved for where judgment or loss is at stake:
+**renaming** a cryptic name to a cleaner one is *proposed* (the file still moves
+now, under its existing name); a file whose purpose or correct home is
+**ambiguous** — or a `Copy of …` / look-alike pair — is **asked about** before
+anything happens; and **deletion** is never automatic (only true OS junk like
+`.DS_Store`, on confirmation, with a `.gitignore` pattern added). Run
+[`/steer:tidy`](skills.md) for a full sweep of an accumulated pile.
+
 ## Scaffold storage convention
 
 Scaffold dotfiles are stored in the plugin **without the leading dot**
