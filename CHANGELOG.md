@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:roadmap` — generates a release-milestone timeline for the
+  `/spec` spine, viewable as a GitHub Projects v2 roadmap. It turns
+  intended-but-unshipped work into milestone-grouped GitHub issues from two
+  front-doors: `from-features` (target `intent.md`s not yet `live`) and `from-gap`
+  (the expected-unbuilt `Missing`/`Partial` units `/steer:drift` separates from
+  Done-but-Missing defects); plus a `sync` mode that reconciles the plan
+  create-or-leave. A thin orchestrator — it delegates issue creation to
+  `/steer:issues`, gap detection to `/steer:drift`, and routes all GitHub I/O
+  through `/steer:tracker-sync`. It writes only native issue attributes (Milestone,
+  links, labels, Type), proposes a dependency-ordered plan, and **never fabricates
+  a date** — dates are human-confirmed. Per-issue Gantt bars via Project-side
+  GraphQL fields are a deliberate future phase, out of scope here.
+- **Added:** `/steer:tracker-sync milestone-ensure <title> [--due <date>]` —
+  create-if-missing for a repo Milestone so `/steer:roadmap` can fill a release
+  before attaching issues. The only op that creates a milestone; **strictly
+  confirmation-gated**, never invents a due date, and **create-or-leave** on re-run
+  (never overwrites a human-edited title/date).
 - **Added:** `ISSUE-SCHEMA.md` now documents the **GitHub Projects v2
   compatibility boundary**. Native issue attributes — Issue **Type**, labels,
   assignees, milestone, and native parent/sub-issue links — are the surface a

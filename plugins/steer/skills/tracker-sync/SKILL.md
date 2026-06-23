@@ -1,7 +1,7 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
-when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set a milestone, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: invoked by /steer:issues and /steer:work
 # (and the read flows of drift), never a direct user entry point. Model-callable,
@@ -84,6 +84,18 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   name the old value when you change it. Milestone assignment is **on-demand**,
   not auto-managed — the issue and `/spec` stay the source of truth (see the
   Projects-v2 compatibility boundary in `ISSUE-SCHEMA.md`).
+- **`milestone-ensure <title> [--due <date>]`** — create a repo **Milestone** if it
+  does not already exist (else fetch the existing one), so a milestone can be filled
+  before `set-milestone` attaches issues to it. This is the **only** op that creates
+  a milestone, and it preserves the "never silently fabricate" guarantee by being
+  **strictly confirmation-gated**: invoke it only after the caller (e.g.
+  `/steer:roadmap`) has shown the proposed milestone set + due dates and a human
+  confirmed them. It **never invents a due date** — `--due` carries the
+  human-confirmed date, and is omitted when the human set none. Create via the MCP
+  create-milestone tool, else `gh api --method POST repos/{owner}/{repo}/milestones`
+  (`-f title=… -f due_on=…`), else the manual floor (tell the user to create it in
+  the GitHub UI). **Create-or-leave on re-run:** if the milestone exists, leave its
+  title and due date as they are — never overwrite a value a human edited.
 - **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
   Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
