@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** Root housekeeping now **moves** a confidently-classified stray to
+  its `/spec` home immediately, instead of waiting for a yes. Rule 22, the
+  `/steer:tidy` skill, and `HOUSEKEEPING.md` reframe the policy: confident
+  classification is the gate on the automatic move (`git mv`, filename
+  preserved); **renames, deletes, and anything ambiguous stay gated** behind a
+  confirmation. This removes the friction of being asked to approve obvious moves
+  (the case that prompted it) while keeping the human boundary exactly where loss
+  or judgment is at stake.
+- **Added:** Specification / requirements documents (`.pdf`, `.docx`, decks —
+  specs, briefs, RFP/SOW) are now named explicitly in the housekeeping taxonomy
+  as source material destined for `/spec/reference/`, so a spec doc dropped at the
+  repo root is reliably recognized and relocated rather than read as ambiguous.
+
 - **Fixed:** Issue-first no longer dead-ends when the host blocks autonomous issue
   creation (#180). The bundled scaffold now pre-authorizes the tracker-metadata
   write verbs (`gh issue create`/`edit`/`comment`) under `.claude/settings.json` →

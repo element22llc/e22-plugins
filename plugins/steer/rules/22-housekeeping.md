@@ -6,15 +6,29 @@ The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
 `CLAUDE.md`, `README.md`, `DESIGN.md`).
 
 Loose **source/research materials** — spreadsheets, inventories, vendor
-metadata, schema/DDL dumps, discovery docs, PII/CMDB documents — do **not**
-belong at the root. Their home is `/spec/reference/`; architecture and flow
-diagrams go to `/spec/design/`.
+metadata, schema/DDL dumps, discovery docs, PII/CMDB documents, and
+**specification / requirements documents** (a `.pdf`, `.docx`, or deck spec,
+brief, RFP/SOW) — do **not** belong at the root. Their home is
+`/spec/reference/`; architecture and flow diagrams go to `/spec/design/`. A spec
+*document* is **source material** feeding the spec spine — not the structured
+spec itself — so it belongs under `/spec/reference/`, never loose at the root.
 
-When you notice stray non-code files sitting at the root, **propose** sorting
-them into the right home — moving, and **renaming** cryptic or inconsistent
-names to clear ones as you go. Don't silently act, and don't leave the mess. Run
-**`/steer:tidy`** for a full sweep. A confusing or duplicate-looking name
-(`Copy of …`, coded names) does not mean a file is disposable — **ask what it's
-for** before deciding, never auto-delete, and only ever remove true junk
-(`desktop.ini`, `.DS_Store`) on confirmation — adding its pattern to
-`.gitignore` so it can't return.
+When you notice a stray non-code file at the root that you can **confidently
+classify** into one of those homes, **move it there immediately** (preserving
+its filename) — don't wait for a yes. Use `git mv` for tracked files so history
+follows. This is the default for the obvious cases; the mess never lingers and
+you never block on a confirmation for a move that was never in doubt.
+
+Hold for confirmation only where judgment or loss is at stake:
+
+- **Renaming** a cryptic or inconsistent name to a cleaner one — **propose** it,
+  never rename silently; move the file now under its existing name and offer the
+  rename separately.
+- **Ambiguous** files — a name or purpose you can't classify from a quick look,
+  or `Copy of …` / look-alike pairs where picking wrong loses real work —
+  **ask** what it's for before moving; never guess.
+- **Deleting** — never auto-delete. Only true junk (`desktop.ini`, `.DS_Store`)
+  is a candidate, only on confirmation, and add its pattern to `.gitignore` so
+  it can't return.
+
+Run **`/steer:tidy`** for a full sweep.
