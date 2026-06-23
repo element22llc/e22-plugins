@@ -37,6 +37,7 @@ STEER_INPUT="$(cat)"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/classify.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # Loop guard 1: never re-enter while Claude is already continuing from our block.
 printf '%s' "${STEER_INPUT}" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true' && exit 0
@@ -51,9 +52,7 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
 # Scoped to GitHub-adopted repos: need /spec/tracker.md declaring system: github.
-TRACKER="${ROOT}/spec/tracker.md"
-[ -f "${TRACKER}" ] || exit 0
-grep -iq '^[[:space:]]*system:[[:space:]]*github' "${TRACKER}" 2>/dev/null || exit 0
+steer_tracker_is_github "${ROOT}" || exit 0
 
 # Need git to inspect the working tree; fail open if unavailable.
 command -v git >/dev/null 2>&1 || exit 0

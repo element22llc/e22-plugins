@@ -31,11 +31,18 @@ Run from the repo root::
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
 RULES_DIR = Path("plugins/steer/rules")
 ARTIFACT = Path("plugins/steer/templates/github/copilot-instructions.md")
+
+# A rule may open with `<!-- steer:inject-when=<token> -->`, directing the Claude
+# SessionStart hook to inject it only where its scope applies (inject-standards.sh
+# strips the line before emitting). Copilot's static artifact carries every rule
+# unconditionally, so the marker is noise here — drop it, mirroring the hook.
+_INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
 # (`/steer:init` resolves to a real skill). The refresh path is the explicit
@@ -60,7 +67,7 @@ def render(rules_dir: Path = RULES_DIR) -> str:
     ``inject-standards.sh`` minus its Claude-specific banner)."""
     parts: list[str] = [HEADER, "\n\n"]
     for f in iter_rule_files(rules_dir):
-        parts.append(f.read_text(encoding="utf-8"))
+        parts.append(_INJECT_WHEN_MARKER.sub("", f.read_text(encoding="utf-8"), count=1))
         parts.append("\n\n")
     return "".join(parts).rstrip("\n") + "\n"
 
