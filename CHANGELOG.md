@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:deliver` — runs a task through a review-gated execution loop
+  (plan → independent plan-gate review → sign-off → implementation
+  **delegated to `/steer:work`** in GitHub-adopted repos, or direct in
+  prototype/local mode → independent `/code-review` code-gate → bounded ≤2-round
+  fix loop → report). It orchestrates and reviews rather than owning a second
+  governed-implementation path. New reference
+  `templates/reference/REVIEW-LOOP.md` documents the protocol; `steer-reviewer`
+  gains `/steer:deliver` as an explicit (never auto-delegated) caller for the
+  optional code-gate standards check.
 - **Fixed:** `/steer:work` pr-flow and the commit-autonomy rule now direct the
   first push of a new `issue/<n>` branch to set the upstream
   (`git push -u origin <branch>`), avoiding the `no upstream branch` failure

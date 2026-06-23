@@ -15,10 +15,11 @@ already have, and its tool allowlist is strictly narrower.
 ## `steer-reviewer`
 
 A read-only reviewer invoked **explicitly** by `/steer:audit` (one per audit
-dimension) and `/steer:drift` (one per feature diff) when the comparison is large
-enough that inline review would crowd the main context. It analyzes one bounded
-slice in its own context window and returns a compact, `path:line`-evidenced
-findings summary; the calling skill vets, ranks, and routes what it returns.
+dimension), `/steer:drift` (one per feature diff), and `/steer:deliver` (the
+optional code-gate standards check) when the comparison is large enough that
+inline review would crowd the main context. It analyzes one bounded slice in its own context window
+and returns a compact, `path:line`-evidenced findings summary; the calling skill
+vets, ranks, and routes what it returns.
 
 | Field | Value |
 | :---- | :---- |
@@ -30,8 +31,9 @@ findings summary; the calling skill vets, ranks, and routes what it returns.
 
 - **Explicit invocation, not auto-delegation.** An earlier auto-delegating
   analyzer was trialed and removed because it never fired reliably in practice.
-  `steer-reviewer` is named directly in the `audit`/`drift` skill bodies, so the
-  fan-out is deterministic rather than dependent on description matching.
+  `steer-reviewer` is named directly in the `audit`/`drift`/`deliver` skill
+  bodies, so the fan-out is deterministic rather than dependent on description
+  matching.
 - **Read-only is enforced, not requested.** The `Read`/`Grep`/`Glob` allowlist
   omits `Bash`, so there is no shell mutation path. This holds the fan-out to the
   same read-only contract the calling skills declare via `disallowed-tools`. See
