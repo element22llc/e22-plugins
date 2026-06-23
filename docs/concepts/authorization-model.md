@@ -28,6 +28,20 @@ flowchart TD
   directly.
 - **Committing** whenever a coherent unit of work is done (tests pass, lint is
   clean, it builds). Do not pause to ask "should I commit?".
+- **Creating or reusing the tracking issue** on an explicit implement/capture
+  request, in a GitHub-adopted repo (issue-first, rule `36-issue-first.md`). The
+  issue and the bounded action set behind it do not need a second confirmation.
+
+!!! note "Issue creation is autonomous — but a host can still gate it"
+    Some Claude Code permission modes classify an unprompted `gh issue create` as
+    an external write and block it, even though steer authorizes it. The bundled
+    scaffold therefore pre-authorizes the tracker-metadata write verbs
+    (`gh issue create` / `edit` / `comment`) under `.claude/settings.json` →
+    `permissions.allow`, so the find-or-create path is reachable in a
+    default-permission session. Delivery (`git push`, `gh pr create`/`merge`)
+    stays under `ask`/`deny`. Where a host still blocks the create, it is a
+    *host-permission gate, not a missing issue* — confirm with the user or run
+    `!gh issue create` under their identity, rather than looping.
 
 !!! note "Exception — solo trunk mode (pre-MVP greenfield)"
     When one person is both PO and dev with no MVP yet, `/steer:init` can put the

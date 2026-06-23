@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** Issue-first no longer dead-ends when the host blocks autonomous issue
+  creation (#180). The bundled scaffold now pre-authorizes the tracker-metadata
+  write verbs (`gh issue create`/`edit`/`comment`) under `.claude/settings.json` →
+  `allow`, so the documented find-or-create path is reachable in default-permission
+  sessions; delivery (push/PR/merge) stays human-gated under `ask`/`deny`. Rule 36
+  and `ISSUE-WORKFLOW.md` now name the host-gating case and route it gracefully
+  (confirm with the user, or `!gh issue create` under their identity) instead of
+  looping, and the `reconcile-issue-first.sh` Stop advisory acknowledges that a
+  blocked create is a host gate, not a skipped step. `check_standards.py` locks the
+  new allow-list entries.
+
 ### 2.14.0
 
 - **Added:** `/steer:roadmap` — generates a release-milestone timeline for the

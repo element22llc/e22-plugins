@@ -35,7 +35,14 @@ Two invariants underpin everything:
    ("create an issue for…", "add to the backlog", "fix this bug", "implement
    #123"). Ambiguous conversation that did not request capture does **not**
    auto-create; a large inferred batch of unrelated issues takes one confirmation;
-   security-sensitive public disclosure takes human review.
+   security-sensitive public disclosure takes human review. **Host gating:** the
+   scaffold pre-authorizes the tracker-metadata write verbs (`gh issue
+   create`/`edit`/`comment` under `.claude/settings.json` → `allow`), but some
+   Claude Code permission modes still classify an unprompted `gh issue create` as
+   an external write and block it regardless. A blocked create is a host-permission
+   gate, **not** a missing issue — don't loop retrying it; ask the user to confirm
+   the create, or suggest they run `!gh issue create …` under their own identity,
+   then continue.
 4. **A CLI implement request authorizes a bounded action set** — read/search,
    create-or-reuse issue, claim, branch, local edits, run tests. Commit, push,
    PR open/update follow existing commit/PR-autonomy rules; **merge and deploy
@@ -55,7 +62,10 @@ confirms first*. Skills and hooks **reference this block; none restates it.**
 
 - **Explicit implement / capture request → no extra confirmation.** "fix #123",
   "implement this", "create an issue for…" authorize find-or-create plus the
-  bounded action set (principle 4) with no second ask.
+  bounded action set (principle 4) with no second ask. *No extra confirmation*
+  is steer's stance; the **host** can still gate the underlying `gh issue create`
+  (principle 3). When it does, fall back gracefully (confirm with the user or
+  `!gh issue create`) — never read the host block as "no issue was wanted".
 - **Bulk publish of audit / drift / adoption findings → one batch confirmation.**
   Filing many issues from one report (`publish-audit` / `publish-drift` /
   `publish-adoption`) takes a single confirmation for the whole batch, then

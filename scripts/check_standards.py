@@ -567,6 +567,24 @@ def check_authorization(errors: list[str]) -> None:
                 f"{settings}: 'Bash(git rev-parse:*)' should stay under permissions.allow "
                 f"(read-only; steer machinery invokes it constantly — see issue #170)"
             )
+        # Issue-first (rule 36) authorizes autonomous tracker-metadata writes on an
+        # explicit implement/capture request. Some hosts' auto-mode classifiers block
+        # an unprompted `gh issue create` as an external write, making the documented
+        # find-or-create path unreachable — so the scaffold pre-authorizes the
+        # tracker-metadata write verbs under `allow` (see issue #180). Delivery
+        # (push/PR/merge) stays human-gated under `ask`/`deny`; these are metadata only.
+        gh_issue_ops = (
+            "Bash(gh issue create:*)",
+            "Bash(gh issue edit:*)",
+            "Bash(gh issue comment:*)",
+        )
+        for gh_op in gh_issue_ops:
+            if gh_op not in allow:
+                errors.append(
+                    f"{settings}: '{gh_op}' should stay under permissions.allow "
+                    f"(issue-first tracker-metadata write; host classifiers otherwise "
+                    f"block the autonomous find-or-create path — see issue #180)"
+                )
 
     # 4. build documents both modes and delegates governed implementation to
     #    work (the sole execution owner).
