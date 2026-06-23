@@ -34,33 +34,15 @@ jobs:
           # PR base branch (diff-cover). Cheap; harmless on push builds.
           fetch-depth: 0
 
-      # mise-action auto-runs `mise install --locked` whenever a mise.lock
-      # exists. The template ships comment-only placeholder locks (pin on
-      # adoption — /steer:init step 4), and --locked against a placeholder fails
-      # every tool with "not in the lockfile". Drop a lock for this CI run ONLY
-      # when it is a genuine placeholder — i.e. it has NO TOML content at all,
-      # just comments/blank lines. Any lock with real content is TRUSTED and
-      # kept: if it is malformed, truncated, or lost its [[tools]] entries,
-      # `mise install --locked` fails LOUDLY instead of silently degrading to
-      # `latest` (the whole point of pinning). Once /steer:init commits a
-      # populated lock, this step no-ops and CI installs the exact pins.
-      # (Runner workspace only — the committed placeholder files are untouched.)
-      - name: Drop placeholder mise.lock files (pre-/steer:init forks)
-        run: |
-          for lock in mise.lock infra/mise.lock; do
-            [ -f "$lock" ] || continue
-            # A line whose first non-blank char is not '#' is real TOML content.
-            if grep -qE '^[[:space:]]*[^[:space:]#]' "$lock"; then
-              echo "$lock has content — trusting it; --locked will fail loudly if it is bad."
-              continue
-            fi
-            echo "::warning file=$lock::Comment-only placeholder mise.lock — dropping for this CI run; tool pinning is DISABLED until /steer:init commits a populated lock."
-            rm "$lock"
-          done
-
       # Install all tools defined in mise.toml — Node, Python, OpenTofu,
       # shellcheck, actionlint, etc. Nested mise.toml files (e.g. /infra/mise.toml)
-      # are picked up automatically.
+      # are picked up automatically. mise-action auto-adds `--locked` whenever a
+      # `mise.lock` exists, so a committed (populated) lock installs the exact
+      # pins and fails LOUDLY if it is malformed — never silently degrading to
+      # `latest`. Before /steer:init|adopt pins the toolchain there is no lock
+      # at all, so this runs a plain unlocked install instead of failing. The
+      # template ships no placeholder lock; /steer:init|adopt creates and commits
+      # a populated one (see /steer:conventions).
       - name: Setup mise
         uses: jdx/mise-action@v4
         with:

@@ -58,9 +58,18 @@ def assert_plugin_enabled_local(repo: Path) -> None:
 
 
 def assert_toolchain_pin(repo: Path) -> None:
-    """capability ``toolchain-pin``: mise.toml + mise.lock present."""
+    """capability ``toolchain-pin``: ``mise.toml`` present and the toolchain
+    pinned. The scaffold ships no ``mise.lock``; ``init``/``adopt`` create it
+    when they pin, so a produced repo must carry a *populated* lock — an empty /
+    comment-only lock pins nothing and breaks CI's ``--locked`` (issue #159)."""
     assert_file(repo, "mise.toml")
-    assert_file(repo, "mise.lock")
+    lock = assert_file(repo, "mise.lock")
+    # Real TOML content = any line whose first non-blank char is not '#'.
+    has_content = any(
+        line.strip() and not line.lstrip().startswith("#")
+        for line in lock.read_text(encoding="utf-8").splitlines()
+    )
+    assert has_content, "mise.lock is empty / comment-only — toolchain not pinned"
 
 
 def assert_version_pin_enforcement(repo: Path) -> None:

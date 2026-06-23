@@ -16,12 +16,13 @@ It covers, in detail:
 - **Versioning policy** — default to current stable; check a registry rather than
   trusting training-data memory; avoid prerelease without a reason.
 - **Toolchain** — mise with `latest` in `mise.toml` and the exact versions pinned
-  in the committed `mise.lock`; pin-on-adoption via `mise install` followed by
-  `mise lock --platform linux-x64,macos-arm64` (mise only writes the lock if the
-  file exists — the template ships placeholders; `mise install` alone locks only
-  the host platform, so the lock must be re-locked for every CI/dev platform or
-  CI's `mise install --locked` fails on `linux-x64`); bump via `mise upgrade`;
-  backends must work on both macOS and Linux.
+  in the committed `mise.lock`; pin-on-adoption via `touch mise.lock` (no lock
+  ships — mise only writes the lock if the file exists), then `mise install`,
+  then `mise lock --platform linux-x64,macos-arm64` (`mise install` alone locks
+  only the host platform, so the lock must be re-locked for every CI/dev platform
+  or CI's `mise install --locked` fails on `linux-x64`). Until a populated lock
+  is committed CI installs unlocked; never commit an empty / comment-only lock.
+  Bump via `mise upgrade`; backends must work on both macOS and Linux.
 - **Lockfile discipline** — `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
   `.terraform.lock.hcl` are committed and updated with every dependency/tool
   change; never deleted or ignored to dodge an error.

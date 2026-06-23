@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the scaffold no longer ships placeholder `mise.lock` files, and
+  the bundled CI workflow drops its "Drop placeholder mise.lock" step (issue
+  #159). That step silently `rm`'d any lock failing a `grep` heuristic, which
+  could degrade a real-but-malformed lock to an unpinned `latest` install — the
+  exact non-reproducible state pinning exists to prevent. New model: a repo has
+  **no `mise.lock` until `/steer:init`/`/steer:adopt` pins the toolchain**
+  (`touch mise.lock` → `mise install` → `mise lock --platform …`) and commits a
+  *populated* lock. mise-action runs a plain unlocked `mise install` while no
+  lock exists, and `--locked` (fails loudly on a bad lock) once one does — the
+  comment-only placeholder state simply never occurs. `init`, `adopt`,
+  `conventions`, CAPABILITIES, CONVENTIONS, the scaffold README/MANIFEST, and the
+  toolchain-pin e2e assert are updated accordingly; never commit an empty /
+  comment-only lock.
 - **Changed:** the SessionStart ruleset is now **scope-aware**. A rule may
   declare `<!-- steer:inject-when=<token> -->` on its first line, and
   `inject-standards.sh` injects it only when that scope holds for the consumer
