@@ -104,7 +104,9 @@ only in the branch/PR ceremony around that issue.
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
   comment); when authorized, commit/push and open-or-update the PR; **then watch CI
-  to conclusion** (`gh pr checks --watch`) before transitioning. **In solo-trunk,
+  to conclusion** (`gh pr checks --watch`) before transitioning. The first push of
+  the new `issue/<n>` branch sets the upstream — `git push -u origin <branch>` —
+  or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
   there is no PR: commit straight to `main` with a `Closes #N` trailer and watch
   CI on the trunk push** (`gh run watch`) the same way — the closed issue, not a
   merged PR, is the terminal evidence. On a red build,

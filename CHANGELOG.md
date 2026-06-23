@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:work` pr-flow and the commit-autonomy rule now direct the
+  first push of a new `issue/<n>` branch to set the upstream
+  (`git push -u origin <branch>`), avoiding the `no upstream branch` failure
+  (issue #172).
 - **Changed:** the point-of-action bootstrap nudge (`check-code-before-spec.sh`)
   now treats **scaffold** and **/spec spine** as two independent dimensions with
   different cadences (issue #171). The `/spec` spine is product-dependent, so its
