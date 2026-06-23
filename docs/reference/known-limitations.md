@@ -67,9 +67,13 @@ the tiers:
 
 - **`SessionStart` → `inject-standards.sh`** injects the rules. Real and load-bearing.
 - **`PreToolUse` → `check-code-before-spec.sh` / `check-issue-before-mutation.sh`**
-  are **advisory nudges**: they emit a one-per-session reminder and let the write
-  proceed. They are explicitly *"a nudge, not a gate,"* fail open on any
-  ambiguity, and the issue-first one only fires in GitHub-tracked repos.
+  are **advisory nudges** that let the write proceed. They are explicitly *"a
+  nudge, not a gate,"* fail open on any ambiguity, and the issue-first one only
+  fires in GitHub-tracked repos. `check-code-before-spec.sh` reminds once per
+  session about the missing `/spec` spine, but its **scaffold** reminder is
+  sticky — it re-fires on each new feature file while the repo has no root
+  `mise.toml`, since the bundled scaffold is product-independent and shouldn't be
+  silently skipped (it still never blocks).
 - **`PreToolUse` → `check-version-pins.sh`** is the only hard **`deny`** — it
   blocks image/runtime pins below the supported floor.
 - The **push / PR gate is not a hook at all** — it's a rule Claude follows

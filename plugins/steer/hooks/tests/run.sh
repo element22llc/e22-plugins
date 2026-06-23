@@ -240,12 +240,43 @@ out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "ima
 assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
 
 # --- check-code-before-spec.sh (no /spec spine) ---
+# Two dimensions (issue #171): the /spec SPINE nudge fires once per session+repo;
+# the SCAFFOLD nudge is sticky — it re-fires on each NEW feature file while the
+# repo has no root mise.toml, and self-clears the moment a mise.toml exists.
 unset ENV
 R1="$(new_repo repoA)"
 out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/app.ts 'x')")"
-assert_ctx "spec-before-code: code write nudges" "${out}"
+assert_ctx "spec-before-code: first code write nudges" "${out}"
+printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: first write carries scaffold clause (${out})"
+printf '%s' "${out}" | grep -q 'Spec-first check' && ok || bad "spec-before-code: first write carries spine clause (${out})"
+
+# Second DISTINCT file, same session+repo, still no mise.toml: spine fired once
+# already, but the SCAFFOLD nudge re-fires — and ONLY the scaffold clause.
 out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/other.ts 'y')")"
-assert_empty "spec-before-code: one nudge per session+repo" "${out}"
+assert_ctx "spec-before-code: new file re-fires scaffold nudge" "${out}"
+printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: re-fire carries scaffold clause (${out})"
+printf '%s' "${out}" | grep -q 'Spec-first check' && bad "spec-before-code: spine clause must NOT repeat (${out})" || ok
+
+# SAME file written again → no dimension due → silent (scaffold dedup, never nag).
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/other.ts 'y2')")"
+assert_empty "spec-before-code: same file again is silent (scaffold dedup)" "${out}"
+
+# Root mise.toml present (scaffold landed) but no spine: the SPINE nudge fires
+# once, the SCAFFOLD dimension stays silent — proving the sticky nudge self-clears.
+R1b="$(new_repo repoAmise)"
+printf '[tools]\n' >"${R1b}/mise.toml"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1b}" sAm src/app.ts 'x')")"
+assert_ctx "spec-before-code: scaffold present still nudges spine" "${out}"
+printf '%s' "${out}" | grep -q 'Scaffold check' && bad "spec-before-code: no scaffold clause once mise.toml present (${out})" || ok
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1b}" sAm src/other.ts 'y')")"
+assert_empty "spec-before-code: scaffold present + spine fired -> later files silent" "${out}"
+
+# Writing mise.toml IS the act of scaffolding — never scaffold-nudge that write.
+R1c="$(new_repo repoAmk)"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1c}" sMk src/app.ts 'x')")"
+assert_ctx "spec-before-code: prime spine nudge before mise.toml write" "${out}"
+out="$(run_hook check-code-before-spec.sh "$(json_write "${R1c}" sMk mise.toml '[tools]')")"
+assert_empty "spec-before-code: writing mise.toml is not scaffold-nudged" "${out}"
 
 R2="$(new_repo repoB)"
 out="$(run_hook check-code-before-spec.sh "$(json_write "${R2}" sA src/app.ts 'x')")"
