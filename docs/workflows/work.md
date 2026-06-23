@@ -56,7 +56,7 @@ flow is [`/steer:protect`](../reference/skills.md)'s job, never this skill's.
 | `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, begin implementing. |
 | `resume` | Pick a claimed issue back up where it left off — including offering to re-enter the Claude Code session that last worked it. |
 | `status` | Report progress on the issue(s). |
-| `finish` | Open the PR (pr-flow) or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
+| `finish` | Open the PR (pr-flow) — the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) — or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
 
 ## Local work marker
 
