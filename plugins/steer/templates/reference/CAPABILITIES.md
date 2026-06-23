@@ -147,17 +147,23 @@ and **Repair**.
   a human even though they're safe once CI is green.
 
 ### toolchain-pin — pinned dev toolchain
-- **Files:** `mise.toml`, `mise.lock`
+- **Files:** `mise.toml` (required), `mise.lock` (created at pin time)
 - **Conditional:** always
-- **Wired-when:** both present. **Do not compare `mise.lock` contents** — it is a
-  placeholder until `mise install` populates it, and a populated lock must not be
-  flagged against the bundled placeholder.
-- **Repair:** create a missing `mise.toml` from the scaffold; create a missing
-  placeholder `mise.lock`. Never overwrite a populated lock.
+- **Wired-when:** `mise.toml` present. The scaffold ships **no** `mise.lock` —
+  `/steer:init`/`/steer:adopt` create and commit it when they pin the toolchain.
+  An absent lock means "not pinned yet", not a gap: CI installs unlocked until a
+  populated lock lands. **Do not compare `mise.lock` contents** — they are
+  per-machine/per-platform. An empty / comment-only lock is a defect (it pins
+  nothing and breaks CI's `--locked`); a populated lock must never be flagged.
+- **Repair:** create a missing `mise.toml` from the scaffold. For a missing
+  `mise.lock`, pin the toolchain (`touch mise.lock`, `mise install`,
+  `mise lock --platform linux-x64,macos-arm64`) rather than committing an empty
+  one; flag (don't auto-write) an empty / comment-only lock. Never overwrite a
+  populated lock.
 - **Verbatim:** no
 - **Why it matters:** no `mise.toml` ⇒ none of the standard tasks
   (`dev:setup`, `db:migrate`, …) exist; no `mise.lock` ⇒ the toolchain isn't
-  pinned.
+  pinned yet.
 
 ### node-tooling — Node lint/format baseline
 - **Files:** `biome.json`, `configs/tsconfig.base.json` (+ `package.json`,

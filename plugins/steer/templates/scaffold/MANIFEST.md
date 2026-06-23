@@ -31,8 +31,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
 | `DESIGN.md` | `DESIGN.md` | Visual-identity stub. **Never overwrite** a `DESIGN.md` that `/steer:adopt` reverse-engineered or a team populated. |
 | `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:init`, reverse-engineered by `/steer:adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:adopt` reverse-engineered or a team populated. |
-| `mise.toml` | `mise.toml` | Toolchain + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack. |
-| `mise.lock` | `mise.lock` | Placeholder — mise only writes the lock if the file exists. `mise install` then `mise lock --platform linux-x64,macos-arm64` populates it with per-platform url+checksum (linux-x64 required for CI's `--locked`); commit the result. |
+| `mise.toml` | `mise.toml` | Toolchain + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack. No `mise.lock` ships — `/steer:init`/`/steer:adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. |
 | `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). |
 | `package.json` | `package.json` | Root workspace scripts (Node products). Skip for Python-only products. |
 | `pnpm-workspace.yaml` | `pnpm-workspace.yaml` | pnpm monorepo + catalog. Skip for Python-only products. |
@@ -46,7 +45,7 @@ this plugin repo itself); rename on copy as mapped below.
 | `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
 | `apps/README.md` | `apps/README.md` | What belongs in `/apps`. |
 | `packages/README.md` | `packages/README.md` | What belongs in `/packages` (if bundled). |
-| `infra/README.md`, `infra/mise.toml`, `infra/mise.lock` | `infra/…` | OpenTofu + Terragrunt conventions; infra toolchain pinned separately. |
+| `infra/README.md`, `infra/mise.toml` | `infra/…` | OpenTofu + Terragrunt conventions; infra toolchain pinned separately (create `infra/mise.lock` at pin time, same as the root). |
 | `policy/versions.yml` | `policy/versions.yml` | **Version-pin policy** (approved major-version floors). Enforced deterministically by the version-pin hook and the CI scanner. Seeded from the plugin default; the product may tighten it. |
 | `policy/branch-protection.yml` | `policy/branch-protection.yml` | **Branch-protection policy** (the GitHub-side PR gate `main` must enforce). Read by `/steer:protect`, which diffs it against the repo's live settings and applies the gap on confirmation. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |

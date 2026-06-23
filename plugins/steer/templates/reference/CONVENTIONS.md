@@ -75,14 +75,16 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
 - `[settings] lockfile = true` is enabled, so `mise install` writes the exact
   resolved versions to `mise.lock` (one per config dir: root and `infra/`).
   **Caveat: mise only writes `mise.lock` if the file already exists.** The
-  template therefore ships committed placeholder `mise.lock` files — never
-  delete them. If a repo is missing one, recreate it (`touch mise.lock`, or run
-  `mise lock`) before installing, otherwise the install silently succeeds
-  without pinning anything.
+  template ships **no** `mise.lock` — you create it the first time you pin
+  (`touch mise.lock`, or run `mise lock`, before installing), otherwise the
+  install silently succeeds without pinning anything. Until a populated lock is
+  committed, CI runs a plain unlocked `mise install`; **never commit an empty /
+  comment-only `mise.lock`** — it pins nothing yet makes CI's `--locked` fail.
 - **Commit `mise.lock`.** It is the real pin — CI and every developer machine
   install from it, so they always agree. `latest` in `mise.toml` only decides
   what gets resolved the next time the lock is *regenerated*.
-- **First use:** run `mise install` (and `cd infra && mise install`), **then
+- **First use:** create the lock if it doesn't exist yet (`touch mise.lock`),
+  run `mise install` (and the same in `infra/`), **then
   `mise lock --platform linux-x64,macos-arm64`** in each directory with a
   `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
   platform the team develops on — `linux-x64` is mandatory because CI runs on

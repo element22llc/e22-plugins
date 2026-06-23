@@ -219,16 +219,21 @@ way: fill its stack table, apps/packages map, and cross-cutting concerns from th
 **as-built choices Phase 6 inventoried** (descriptive — *what is*, never inferring
 ratified decisions; the ADRs stay `Proposed`) plus the actual `package.json` /
 `mise.toml` / `compose.yaml`. **Do not overwrite an `ARCHITECTURE.md` a team
-already populated**; only seed the stub when none exists. Then pin the toolchain:
-run `mise install`, then `mise lock --platform linux-x64,macos-arm64` in each
-directory with a `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for
-any other platform the team develops on — `linux-x64` is mandatory because CI runs
+already populated**; only seed the stub when none exists. Then pin the toolchain.
+The scaffold ships no `mise.lock`, so for each config dir (the repo's existing
+`mise.toml` dirs plus any the scaffold added, e.g. `infra/`) create the lock if
+it is missing (`touch mise.lock`, or `mise lock` — mise only writes the lock if
+the file already exists), run `mise install`, then `mise lock --platform
+linux-x64,macos-arm64` (add `macos-x64` / `linux-arm64` / `windows-x64` for any
+other platform the team develops on — `linux-x64` is mandatory because CI runs
 there). Plain `mise install` only writes the host platform's asset URLs, so a lock
 pinned on macOS has no `linux-x64` entries and CI's `mise install --locked` fails;
 verify each lock has a `[tools.<tool>."platforms.linux-x64"]` `url` + `checksum`
 block (`grep -q 'platforms.linux-x64' mise.lock`), not just version entries. Commit
 the populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the
-workspace resolves).
+workspace resolves). **If the toolchain can't be installed now, commit no
+`mise.lock`** — CI installs unlocked until a populated lock lands; never commit an
+empty / comment-only one.
 
 ## Phase 11 — Reconcile layout
 
