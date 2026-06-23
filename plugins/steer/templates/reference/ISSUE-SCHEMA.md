@@ -24,7 +24,7 @@ source of truth.
 |---|---|---|
 | `<!-- steer:schema=2 -->` | **Schema-version marker** — the contract version this body was written against. Required on every agent issue. | all |
 | `<!-- steer:kind=… -->` | Closed enum (work shape): `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
-| `<!-- steer:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project field *mirrors* this when Projects are enabled. | all |
+| `<!-- steer:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical — see *GitHub Projects v2 — compatibility boundary* below. | all |
 | `<!-- steer:source=… -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
 | `<!-- steer:feature-id=… -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
 | `<!-- steer:spec-path=… -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |
@@ -175,6 +175,40 @@ Three orthogonal axes; do not collapse them into one another:
 `audit-run` is a parent/history record, **not** implementable work. A generic
 `finding` (keyed by `finding-key` + `source`) replaces the former
 `audit-finding` kind, which parsers still accept as a prior alias.
+
+## GitHub Projects v2 — compatibility boundary
+
+GitHub Projects v2 builds boards and roadmaps from **fields stored on the Project
+*item*, not on the issue** — Status, Start/Target date, Iteration, Priority,
+Size, and any custom single-select. The plugin **never writes these into an issue
+body**; a Project-side tool — not this contract — owns them.
+
+What the issue *does* expose to Projects, and what steer already sets, are its
+**native attributes**: the GitHub **Issue Type**, **labels** (`source:*` ·
+`needs:*` · `risk:*`), **assignees**, the **milestone**, and **native
+parent/sub-issue links**. A board or roadmap groups, filters, and lays out items
+from exactly these — so steer issues are **Projects-v2-compatible by
+construction**, with no field-mirroring machinery to maintain. Two of these are
+**capability-degrading**: where the org disables Issue Types or native
+sub-issues, they fall back to the `steer:kind` / `steer:parent-issue` markers,
+which — being markers — are **not** board-visible (see below). **Labels,
+assignees, and milestone are always board-visible.**
+
+Because **markers are invisible to Projects** (it cannot read HTML comments):
+
+- **`steer:kind` reaches the board only through the Issue Type** it maps to (the
+  Taxonomy table above). The marker stays canonical.
+- **`steer:state` is the base source of truth and stays in the body.** A Project
+  **Status** field may *mirror* it, but the mirror is a **derived,
+  one-directional** reflection — never a gate, never re-read as truth. A board
+  with no mirror still gets a coarse Status from GitHub's built-in Project
+  workflows (item-added / issue-closed / PR-merged).
+
+Direction of truth is fixed: the **issue and `/spec` are canonical; a Project is
+a derived view/overlay.** Pure planning fields with no home in the issue — dates,
+iteration, priority, size — live **only** on the Project item and are never
+mirrored back into the issue. (This is why priority and effort are not issue
+markers or labels — see `ISSUE-WORKFLOW.md`.)
 
 ## Idempotency & deduplication
 

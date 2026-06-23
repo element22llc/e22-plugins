@@ -1,7 +1,7 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
-when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set a milestone, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: invoked by /steer:issues and /steer:work
 # (and the read flows of drift), never a direct user entry point. Model-callable,
@@ -47,7 +47,7 @@ shell escaping. Detect capability **in this order, every run**:
 This is the **only** layer that touches the GitHub API. `/steer:issues` and
 `/steer:work` call these operations; they never hit `gh`/MCP directly. The boundary
 is **tracker metadata only** — issues, relationships, comments, labels, Issue
-Types, assignments, and the `steer:state` marker. **Git
+Types, assignments, milestones, and the `steer:state` marker. **Git
 operations and pull-request delivery are NOT gateway operations** — they belong
 to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
@@ -75,6 +75,15 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   duplicate `bug`/`feature` label to compensate.
 - **`label #N`** — add/remove labels. The `source:*` label is *derived* from the
   `steer:source` marker; never treat the label as the source of truth.
+- **`set-milestone #N <title>`** — set or clear the issue's native GitHub
+  **Milestone** (the field a Projects v2 release/roadmap view groups by) via
+  `gh issue edit #N --milestone "<title>"` (clear with `--remove-milestone`) or
+  the MCP equivalent. The milestone **must already exist** in the repo; if it does
+  not, **report it and stop** — never fabricate or silently create one. GitHub
+  allows a single milestone per issue, so changing it replaces the prior value:
+  name the old value when you change it. Milestone assignment is **on-demand**,
+  not auto-managed — the issue and `/spec` stay the source of truth (see the
+  Projects-v2 compatibility boundary in `ISSUE-SCHEMA.md`).
 - **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
   Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
