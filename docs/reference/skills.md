@@ -34,7 +34,7 @@ shipped skill is missing here.
 | Skill | Purpose |
 | --- | --- |
 | `/steer:work` | Execute a GitHub issue end-to-end — validate, claim, branch, implement, test, PR. See [Work](../workflows/work.md). |
-| `/steer:deliver` | Run a task through a review-gated loop — plan, independent plan-gate review, sign-off, implementation (delegated to `/steer:work` in GitHub-adopted repos, direct in prototype mode), an independent `/code-review` gate, and a bounded fix loop. Orchestrates and reviews rather than owning a second implementation path. |
+| `/steer:deliver` | Run a task through a review-gated loop — plan, independent plan-gate review, sign-off, implementation (delegated to `/steer:work` in GitHub-adopted repos, direct in prototype/local mode), an independent `/code-review` gate, and a bounded fix loop. Orchestrates and reviews rather than owning a second implementation path. |
 | `/steer:adr` | Record a hard-to-reverse or cross-cutting decision as an ADR. See [Decisions](../decisions/index.md). |
 
 ## Steady state (read-only)

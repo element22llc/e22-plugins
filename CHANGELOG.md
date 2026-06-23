@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 2.14.0
+
 - **Added:** `/steer:roadmap` — generates a release-milestone timeline for the
   `/spec` spine, viewable as a GitHub Projects v2 roadmap. It turns
   intended-but-unshipped work into milestone-grouped GitHub issues from two
@@ -98,18 +100,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   is now a single shared helper (`hooks/lib/scope.sh`), reused by the issue-first
   hooks (`check-issue-before-mutation`, `reconcile-issue-first`).
 - **Added:** test **coverage** as a first-class standard, complementing the existing test-presence rules. New always-on rule `41-coverage` frames coverage as a *signal to find untested behavior, not a target* — cover the code you touch (critical paths, branches, error handling), keep it measured and visible, and treat a coverage drop on changed code as drift for human review; deliberately **no** global vanity threshold (ties to `95-not-the-gate`). `CONVENTIONS.md` gains a Coverage subsection with per-stack tooling (Vitest `--coverage` / `@vitest/coverage-v8`, `pytest-cov`, language-agnostic `diff-cover` for changed-line regression), replacing the dangling "coverage expectations are in the Testing rules" reference. The scaffold `ci.yml` now emits coverage when the tooling is wired and gates only the **changed lines** against the PR base via `uvx diff-cover` (fail-open when no report or base branch is available; floor tunable via `COVERAGE_DIFF_MIN`); `mise.toml` documents the coverage deps. Coverage lines added to the Definition of Done (`50`), the scaffold PR template, and the `productionization` gap-analysis table.
-- **Fixed:** the scaffold CI's "Drop placeholder mise.lock files" step no longer
-  silently degrades a real lock to `latest`. It previously dropped any
-  `mise.lock` that failed a `grep '^\[\[tools'` heuristic — so a populated lock
-  that was malformed, truncated, or had lost its `[[tools]]` lines (bad merge,
-  partial write) was deleted on the runner, and `mise install` resolved every
-  tool to `latest` behind a green build: invisible non-reproducible state, the
-  exact thing pinning exists to prevent (#159). The step now drops a lock **only
-  when it is a genuine comment-only placeholder** (no TOML content at all). Any
-  lock with real content is trusted and kept, so `mise install --locked` fails
-  **loudly** on a bad lock instead of degrading. When a placeholder *is* dropped,
-  the step now emits a GitHub `::warning::` annotation stating pinning is
-  disabled for that run, rather than a buried log line.
 
 ### 2.13.0
 
