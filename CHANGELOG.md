@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the point-of-action bootstrap nudge (`check-code-before-spec.sh`)
+  now treats **scaffold** and **/spec spine** as two independent dimensions with
+  different cadences (issue #171). The `/spec` spine is product-dependent, so its
+  reminder still fires **at most once per session+repo**. The bundled **scaffold**
+  (`mise.toml`, CI, PR template, `compose.yaml`, `.gitignore`) is
+  product-*independent*, so its reminder is now **sticky**: it re-fires on each
+  **new** feature file written while the repo has no root `mise.toml`, dedups
+  per file so re-editing the same file never re-nags, and **self-clears** the
+  instant a `mise.toml` lands (or the spine becomes managed). The scaffold clause
+  names the concrete cost ("zero toolchain/CI/PR-template") so proceeding bare is
+  unmistakable. Writing `mise.toml` itself is never scaffold-nudged. Previously a
+  single non-blocking once-per-session nudge let a greenfield build proceed with
+  none of the bundled scaffold; the nudge stays non-blocking but is now much
+  harder to silently skip.
 - **Changed:** the scaffold no longer ships placeholder `mise.lock` files, and
   the bundled CI workflow drops its "Drop placeholder mise.lock" step (issue
   #159). That step silently `rm`'d any lock failing a `grep` heuristic, which

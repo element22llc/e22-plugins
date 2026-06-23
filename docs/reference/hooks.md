@@ -9,7 +9,7 @@ irrelevant (marketplace install does not `chmod`). No `jq` dependency.
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
     `PreToolUse`, `Stop`). Note what each tier actually does: the `SessionStart`
     hook **injects** the rules; most `PreToolUse` hooks are **advisory nudges**
-    that fire once and let the write proceed (`check-code-before-spec`,
+    that let the write proceed (`check-code-before-spec`,
     `check-issue-before-mutation`); only `check-version-pins` issues a hard
     `deny`. On surfaces where hooks don't fire — **the Desktop *Chat* tab and
     claude.ai web chat** — none of this runs, so load the rules manually with
@@ -53,7 +53,7 @@ flowchart TD
 | Hook | Matcher | Role |
 | --- | --- | --- |
 | `check-version-pins.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit\|Bash` | Enforces the **EOL floor** in `policy/versions.yml` (deterministic, no network, no `jq`): a pin below `minimum_supported` or in the `denied` list is denied; anything at or above the floor is silent. It is a floor, not a chooser — there is no advisory "behind the target" tier; **what** to pin (current stable) is decided live per the versioning rule (`/steer:conventions`). A scheduled workflow (`version-policy-refresh.yml`) keeps the floor current by opening a human-reviewed PR when it falls behind upstream end-of-life — the only place endoflife.date is consulted. |
-| `check-code-before-spec.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate): a one-per-session reminder when code is about to be written before a `/spec` spine exists. Non-blocking — the write proceeds. |
+| `check-code-before-spec.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate) with two dimensions. The **spine** reminder fires once per session+repo when code is about to be written before a `/spec` spine exists. The **scaffold** reminder is sticky — it re-fires on each new feature file while the repo has no root `mise.toml` (dedups per file, self-clears once a `mise.toml` lands or the spine is managed). Non-blocking — the write always proceeds. |
 | `check-issue-before-mutation.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate): a one-per-session reminder to work issue-first, only in GitHub-tracked repos. Non-blocking — it cannot know whether an issue exists. In solo-trunk mode (the `steer:delivery-mode=solo-trunk` marker in `CLAUDE.md`) it still nudges — issue-first holds — but rewords to "close the issue from the trunk commit," not "open a PR / branch." Stays silent on the `/steer:sync` plugin-maintenance branch (`feat/sync`), whose scaffold reconciliation is structural, not feature work — unless the write is app source, which sync must not touch. |
 
 ## Stop
