@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the bundled scaffold `claude/settings.json` now allowlists
+  `Bash(git rev-parse:*)` (issue #170). Steer machinery runs `git rev-parse`
+  constantly — `worktree-env.sh` (`--show-toplevel`, `--git-dir`,
+  `--git-common-dir`) and the `work`/`report`/`protect`/`sync` skills all invoke
+  it — but it was absent from the default allow list, so consumers hit a
+  permission prompt on routine steer operations. `git rev-parse` is read-only and
+  side-effect-free, so it joins `git add`/`git commit` in the pre-approved set.
 - **Changed:** the point-of-action bootstrap nudge (`check-code-before-spec.sh`)
   now treats **scaffold** and **/spec spine** as two independent dimensions with
   different cadences (issue #171). The `/spec` spine is product-dependent, so its
