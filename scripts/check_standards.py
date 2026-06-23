@@ -562,6 +562,11 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(f"{settings}: '{push}' must be listed under permissions.ask")
         if "Bash(git commit:*)" not in allow:
             errors.append(f"{settings}: 'Bash(git commit:*)' should stay under permissions.allow")
+        if "Bash(git rev-parse:*)" not in allow:
+            errors.append(
+                f"{settings}: 'Bash(git rev-parse:*)' should stay under permissions.allow "
+                f"(read-only; steer machinery invokes it constantly — see issue #170)"
+            )
 
     # 4. build documents both modes and delegates governed implementation to
     #    work (the sole execution owner).
