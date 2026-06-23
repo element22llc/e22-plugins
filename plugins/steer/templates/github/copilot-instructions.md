@@ -503,7 +503,9 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   messages (`feat:`, `fix:`, `chore:`, ...).
 - When you judge the work **complete** (Definition of Done holds, end-of-session
   checklist is clean), don't just stop: tell the dev the branch is ready and
-  **propose opening the PR** — push and create it once they confirm.
+  **propose opening the PR** — push and create it once they confirm. The first
+  push of a freshly created branch has no upstream, so set it then:
+  `git push -u origin <branch>` (subsequent pushes are a plain `git push`).
 - Opening the PR is the one step that waits for the dev; everything before it
   (branching, committing) does not.
 - **After pushing, watch CI to conclusion and fix a red build before treating the
