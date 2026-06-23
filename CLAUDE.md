@@ -39,7 +39,7 @@ plugins/steer/
 │                                   #            traceability, design-sources, spec-scaffold,
 │                                   #            spec, issues, tracker-sync, work, deliver, adr,
 │                                   #            drift, audit, sync, questions, next, tidy, standards,
-│                                   #            protect, report
+│                                   #            protect, report, roadmap
 │                                   # (no commands/ — see "invocation syntax" below)
 └── templates/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,

@@ -23,6 +23,7 @@ shipped skill is missing here.
 | Skill | Purpose |
 | --- | --- |
 | `/steer:issues` | High-level GitHub Issues lifecycle for the spine — capture, triage, brainstorm, materialize, decompose, status, reconcile. See [Issues](../workflows/issues.md). |
+| `/steer:roadmap` | Generate a release-milestone timeline (viewable as a GitHub Projects v2 roadmap) by turning intended-but-unshipped work into milestone-grouped issues — `from-features` (target specs not yet live) or `from-gap` (a `/steer:drift` spec-gap), plus a `sync` reconcile. Proposes a dependency-ordered plan; never fabricates dates. A thin orchestrator over `/steer:issues`, `/steer:drift`, and `/steer:tracker-sync`. |
 | `/steer:spec` | Spec-only brainstorm for a feature — author/iterate `intent.md` (+ `contract.md`), drive open questions, approve. See [Spec](../workflows/spec.md). |
 | `/steer:build` | Guided flow for a non-technical PO: idea → spec → working app → PR. See [Build](../workflows/build.md). |
 | `/steer:questions` | Promote a spec's open question into a tracked issue when it outgrows the feature. |
