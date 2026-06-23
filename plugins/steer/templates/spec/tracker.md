@@ -71,6 +71,12 @@ owners:
   acceptance criteria into the feature's `intent.md` rather than leaving them
   only in the tracker — the spec is the in-repo source of truth; the tracker
   ref is the pointer back.
+- **Milestones (release grouping):** when a release/version is tracked as a
+  GitHub Milestone, attach issues to it with `/steer:tracker-sync set-milestone`
+  so a GitHub Projects v2 release or roadmap view can group by it. Milestones are
+  assigned **on demand**, not auto-managed; the issue and `/spec` stay the source
+  of truth. Project planning fields (Status, dates, priority, size) live on the
+  Project, not the issue — see the issue-schema reference.
 
 ## Notes
 

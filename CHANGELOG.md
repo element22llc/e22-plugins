@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `ISSUE-SCHEMA.md` now documents the **GitHub Projects v2
+  compatibility boundary**. Native issue attributes — Issue **Type**, labels,
+  assignees, milestone, and native parent/sub-issue links — are the surface a
+  Projects board/roadmap reads, so steer issues are Projects-v2-compatible by
+  construction. Project *custom* fields (Status, dates, iteration, priority,
+  size) live on the Project **item**, set Project-side, and are never written
+  into the issue; body markers are invisible to Projects, so `steer:state` stays
+  canonical and is mirrored at most one-directionally by a Project Status field.
+  `known-limitations.md` is reconciled (steer still does not automate a board).
+- **Added:** `/steer:tracker-sync set-milestone #N <title>` sets or clears an
+  issue's native GitHub **Milestone** for release grouping (MCP-first →
+  `gh issue edit --milestone`/`--remove-milestone` → manual floor). The milestone
+  must already exist — never fabricated; assignment is **on-demand**, not
+  auto-managed. Milestone joins the tracker-metadata gateway boundary, and the
+  `tracker.md` template documents the release-grouping convention.
 - **Added:** `/steer:deliver` — runs a task through a review-gated execution loop
   (plan → independent plan-gate review → sign-off → implementation
   **delegated to `/steer:work`** in GitHub-adopted repos, or direct in

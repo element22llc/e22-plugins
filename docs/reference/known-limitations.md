@@ -55,10 +55,19 @@ underlying capability still has to be there.
 
 ## GitHub Projects automation
 
-`steer` does **not** automate GitHub Projects. There is no per-repo project
-board, and priority/effort fields are not managed by the plugin. The backlog is
-**issue-first / local-first**; triage lives in issues and the `/spec` spine, not
-a Projects board.
+`steer` does **not** automate or manage a GitHub Projects board, and
+priority/effort fields are not tracked by the plugin. The backlog is
+**issue-first / local-first**; triage lives in issues and the `/spec` spine.
+
+What steer *does* guarantee is that issues are **Projects v2-compatible by
+construction**: it sets the native attributes a board or roadmap reads — Issue
+**Type**, labels, assignees, milestone (`/steer:tracker-sync set-milestone`), and
+native parent/sub-issue links — so you can build an (org-level) board or roadmap
+on top without the plugin owning it. Project custom fields (Status, dates,
+iteration, priority, size) live on the Project *item*, set Project-side, and are
+never written into the issue; `steer:state` stays canonical in the body and is
+mirrored at most one-directionally by a Project Status field. See the
+*GitHub Projects v2 — compatibility boundary* in the issue-schema reference.
 
 ## What the hooks do (and don't) enforce
 
