@@ -204,13 +204,18 @@ its own last escalation as one **ledger** line inside the `steer:managed` block 
 — a *record of what the agent did*, **never** the authoritative value. If the
 field and the ledger disagree, the **field wins** and the ledger is the evidence
 the agent reconciles against (one-directional, like `steer:state` ↔ Project
-Status). To avoid fighting a human, the agent escalates only when the floor
-exceeds the current value **and** the last field-change actor (GitHub timeline)
-was not human; a human downgrade below the floor is recorded as suppressed and
-left alone. `field-set` is a separate mutation with **no managed-block
-concurrency guard** — the timeline-actor check is the concurrency story for
-fields. Where the org has not enabled issue fields, they are omitted and ranking
-treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`).
+Status). To avoid fighting a human, the agent escalates only when `floor > value`
+**and** the current value is one the agent itself last set — **(value unset and no
+prior ledger line) or (a ledger line exists and value equals that ledger value)**;
+otherwise the value is human-owned (set but unequal to the agent's recorded
+escalation, or set with no ledger at all) and the agent records
+`human override of floor X — suppressed` and leaves it. This guard is computable
+from the ledger plus a `field-get` read — it needs **no** field-change-actor read
+(the gateway exposes none). `field-set` is a separate mutation with **no
+managed-block concurrency guard**, so this ledger comparison *is* the concurrency
+story for fields: a concurrent human edit shows up as `value ≠ ledger` and
+suppresses. Where the org has not enabled issue fields, they are omitted and
+ranking treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`).
 
 A **Project** still builds boards/roadmaps from **Project-*item* fields** —
 Status, Iteration, and any custom single-select that is *not* a native issue

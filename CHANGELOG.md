@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added (auto-set):** `/steer:issues triage` now **escalate-only auto-sets** the
+  native Priority field from a closed, mechanical floor table (`risk:security` →
+  `Urgent`; an open blocking question gating the issue → `High`; live-feature
+  `spec-drift` → `High`; blocks a `ready-for-dev` issue → `Medium`). It sets
+  `max(current, floor)` — never downgrades a human value, idempotent, and suppressed
+  when the value differs from the agent's own `steer:priority-floor` **ledger** line
+  (a human touched it) — a guard computable from the ledger + `field-get`, needing
+  no field-change-actor read (the gateway exposes none). Effort/dates stay human-set
+  (surfaced as
+  field gaps, never auto-filled). `publish-audit`/`-drift`/`-findings` set the same
+  floor on creation.
 - **Added (board view):** `/steer:issues board` — a read-only backlog overview that
   shows the open issue set as one ranked (composite sort key from `NEXT-ACTIONS.md`),
   relationship-clustered, dedup-flagged, hygiene-flagged view. It ranks *issues* and

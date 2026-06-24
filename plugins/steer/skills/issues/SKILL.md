@@ -96,6 +96,13 @@ format (markers, headings, **managed blocks**, idempotency) in
   exploit-enabling detail into a broadly visible issue (link to private handling;
   flag `risk:security`; default to human review before public disclosure).
 
+All `publish-*` modes **set the native Priority field to the derived floor on
+creation** (the floor table in `triage` below) via `/steer:tracker-sync field-set`
+— e.g. a `risk:security` finding is created at `Urgent`, a finding blocking a gate
+at `High`. Same floor, applied once at create time; on a reconcile rerun it is
+escalate-only (`max(current, floor)`), so a human who later adjusts Priority is
+never overridden.
+
 ### Net-new modes (logic lives here)
 
 - **`capture`** — open an issue from the current conversation, prototype,
@@ -127,6 +134,37 @@ format (markers, headings, **managed blocks**, idempotency) in
     comment and apply `needs:triage` rather than guessing the content.
   - **Cleanup signals** — report stale `needs:triage` issues, orphaned
     sub-issues (no parent link), and mislabelled items; propose fixes.
+  - **Priority (escalate-only auto-set) & field gaps** — set the native
+    **Priority** field to a **floor** derived from mechanical signals — this is the
+    canonical floor table (the only place it lives); `publish-*` reuses it:
+
+    | Mechanical signal on the issue | Priority floor |
+    |---|---|
+    | `risk:security` finding / committed-secret remediation | `Urgent` |
+    | Open `impact: blocking` question gating a `required_before` gate on this issue | `High` |
+    | `spec-drift` on a live/deployed feature | `High` |
+    | Native blocked-by: this issue blocks ≥1 `ready-for-dev` issue | `Medium` |
+    | none of the above | *no floor — leave unset for the PO* |
+
+    Every row is a **mechanical, observable** signal — a label, an open question
+    with a gate, drift on a live feature, or a native blocked-by edge count — never
+    a judgment of product value (that is the PO's, via the field directly). Keep the
+    table closed; adding a "this feature looks important" row would be deciding
+    product. **Escalate-only, never a product call:** set `Priority = max(current, floor)`
+    via `/steer:tracker-sync field-set` — it raises an unset/too-low value, **never
+    downgrades** a human's. Idempotent (`max` is a no-op at/above the floor). Record
+    each escalation as the managed-block **ledger** line
+    (`<!-- steer:priority-floor=… applied=… reason=… -->`, `ISSUE-SCHEMA.md`).
+    **Never fight a human (computable from the ledger + `field-get`, no actor read
+    required):** escalate only when `floor > value` **and** the current value is one
+    the agent itself last set — i.e. **(value unset and no prior
+    `steer:priority-floor` ledger line) or (a ledger line exists and value equals
+    that ledger value)**. Otherwise a human owns it — value is set but differs from
+    the agent's recorded escalation, or is set with no ledger at all (first sight of
+    a human value): record `human override of floor X — suppressed` and leave it.
+    **Effort/dates are human-set only** — surface a *missing* Effort
+    or a missing **Priority on a `ready-for-dev`** issue as a field gap; propose,
+    never auto-fill them.
   - **Routing** — suggest the next transition; propose Inbox → Exploring and
     **perform it only where the authority table in `ISSUE-WORKFLOW.md` allows**.
   Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
