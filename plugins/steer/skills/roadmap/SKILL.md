@@ -1,7 +1,7 @@
 ---
 name: roadmap
 user-invocable: false
-description: "Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work (target features, or a /steer:drift spec-gap) into GitHub issues grouped under release Milestones with due dates. A thin orchestrator: it delegates issue creation to /steer:issues, gap detection to /steer:drift, and routes ALL GitHub I/O through /steer:tracker-sync. The issue + /spec stay canonical; the Project is a derived view. It proposes a dependency-ordered milestone plan and never fabricates dates."
+description: "Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work (target features, or a spec-gap surfaced by /steer:audit spec) into GitHub issues grouped under release Milestones with due dates. A thin orchestrator: it delegates issue creation to /steer:issues, gap detection to /steer:audit spec, and routes ALL GitHub I/O through /steer:tracker-sync. The issue + /spec stay canonical; the Project is a derived view. It proposes a dependency-ordered milestone plan and never fabricates dates."
 when_to_use: >-
   Use to lay out where the product is going on a timeline — when asked for a
   roadmap, a release plan, or a Projects v2 timeline, or to turn target features
@@ -15,7 +15,7 @@ argument-hint: "[from-features | from-gap | sync]"
 `/steer:roadmap` turns **intended-but-unshipped work** into GitHub issues grouped
 under release **Milestones**, so an existing GitHub Projects v2 roadmap/timeline
 view can lay the work out by milestone. It is a **thin orchestrator above
-`/steer:issues` and `/steer:drift`** — it sequences the timeline; it does not own
+`/steer:issues` and `/steer:audit spec`** — it sequences the timeline; it does not own
 domain reasoning and never touches the GitHub API directly. Two invariants from
 the issue-workflow reference hold throughout:
 
@@ -65,9 +65,9 @@ The work-set is every `spec/features/*/intent.md` whose `> Status:` is not yet
 
 ### `from-gap` — spec-vs-implemented gap → timeline (the backlog you must still build)
 
-Run `/steer:drift` (read-only) to diff the as-built `/spec` against the intended
+Run `/steer:audit spec` (read-only) to diff the as-built `/spec` against the intended
 spec, then take **only the expected-unbuilt units** — `🔴 Missing` / `🟠 Partial`
-whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer:drift`
+whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer:audit spec`
 already separates from **Done-but-Missing defects**. Do **not** put Done-but-Missing
 or Diverged findings on the roadmap — those are drift to resolve via
 `/steer:issues publish-drift`, not planned work. Materialize the expected-unbuilt
@@ -148,7 +148,7 @@ writes.
 
 The Projects-v2 compatibility boundary and issue format are canonical in
 `ISSUE-SCHEMA.md`; lifecycle/state/authority in `ISSUE-WORKFLOW.md`; the spec-gap
-verdict model in `/steer:drift`; contract readiness + the open-question contract in
+verdict model in `/steer:audit spec`; contract readiness + the open-question contract in
 `SPEC-FRAMEWORK.md`; milestone conventions in `/spec/tracker.md` and rule
 `35-issue-tracker`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those into a release timeline.

@@ -14,7 +14,7 @@ Two invariants underpin everything:
   durable *record* of it. Neither silently overwrites the other.
 - **`/steer:issues` orchestrates backlog management; `/steer:work` owns execution.**
   Neither owns domain reasoning — they delegate to `/steer:spec`, `/steer:audit`,
-  `/steer:drift`, `/steer:questions`. All **tracker-metadata** read/write flows
+  `/steer:audit spec`, `/steer:questions`. All **tracker-metadata** read/write flows
   through `/steer:tracker-sync` (MCP-first → `gh` → manual floor); git and
   pull-request **delivery** follows the repo's execution/autonomy rules — it is
   not a gateway operation (otherwise `git push` would violate the invariant).
@@ -246,7 +246,7 @@ find-by-`question-id` dedup are unchanged — re-promotion never double-creates.
   `resolution_mode: deterministic`; judgment calls need a human yes); new →
   create; false positive → stays closed. Reconciling, never additive. See
   `ISSUE-SCHEMA.md` for the keys and `/steer:audit` for the full lifecycle.
-- **Drift** (`/steer:drift` → `/steer:issues publish-drift`) files decision-checklist
+- **Drift** (`/steer:audit spec` → `/steer:issues publish-drift`) files decision-checklist
   issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
   required`. The agent may propose a direction but **never resolves behavioural
   drift autonomously** — a PO or dev decides by ownership.

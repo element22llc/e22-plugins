@@ -53,7 +53,7 @@ SPEC = (
 # Point it there explicitly so it doesn't pause to ask, and keep it report-only
 # (don't file issues / run other skills — there's no real tracker in the fixture).
 DRIFT = (
-    "/steer:drift\n\n"
+    "/steer:audit spec\n\n"
     "Automated, non-interactive test run. The as-built /spec spine (with a feature) "
     "is present. The tracker-spec export is the markdown under ./tracker-export/. "
     "Compare them and print the drift report. Report and propose only — do NOT file "

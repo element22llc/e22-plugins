@@ -3,7 +3,7 @@
 **Default biases**, not mandates — when a project's intent clearly warrants
 a different stack, propose the better fit and record an ADR under
 `/spec/decisions/` (run `/steer:adr`). Rationale and full setup detail for every
-bullet: run `/steer:conventions`.
+bullet: run `/steer:reference conventions`.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the

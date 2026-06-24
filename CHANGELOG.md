@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed (breaking):** Merged the three reference-prose loader skills
+  (`conventions`, `traceability`, `design-sources`) into one topic-driven
+  `/steer:reference [conventions | traceability | design-sources]` skill (hidden,
+  reached via `/steer:standards` or the model, as the originals were). Each topic
+  loads the same bundled `templates/reference/*.md` as before. The three
+  standalone skills are **removed**; use `/steer:reference <topic>`.
+- **Changed (breaking):** Merged the `drift` skill into `/steer:audit` as a
+  `spec` mode. `/steer:audit` now takes `[code | spec | all]`: `code` (default) is
+  the existing whole-repo code-vs-standards health sweep, `spec` is the as-built
+  `/spec`-vs-tracker-intent conformance audit (the former `drift`), and `all` runs
+  both. The standalone `/steer:drift` is **removed**; use `/steer:audit spec`. All
+  cross-references and the publish-drift handoff are rewired accordingly.
 - **Changed (breaking):** Merged the `deliver` skill into `/steer:work` as a
   `--reviewed` flag. The standalone `/steer:deliver` is **removed**; run
   `/steer:work --reviewed` to wrap issue execution in the same review-gated loop

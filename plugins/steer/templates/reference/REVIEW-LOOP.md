@@ -90,7 +90,7 @@ fix loop open.
 - **`steer-reviewer`** is the shipped read-only subagent the code gate's optional
   standards check invokes explicitly (it cites `path:line` evidence in existing
   code, so it is *not* used for the plan gate) — the same explicit-invocation
-  pattern `/steer:audit` and `/steer:drift` use. The plan gate uses a fresh
+  pattern `/steer:audit` and `/steer:audit spec` use. The plan gate uses a fresh
   general reviewer subagent instead.
 
 ## 6. Cost

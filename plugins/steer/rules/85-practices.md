@@ -3,7 +3,7 @@
 Org baseline stated as principles; each names the **default-stack** instance in
 parens so it stays actionable on the default stack and still applies on any
 other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
-patterns + anti-patterns prose: run `/steer:conventions`.
+patterns + anti-patterns prose: run `/steer:reference conventions`.
 
 - **All data access goes through a parameterized query layer — never raw or
   string-interpolated SQL.** Schema is defined in code and changed via

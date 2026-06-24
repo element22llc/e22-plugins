@@ -15,10 +15,10 @@ holds only product-specific context.
 > app — it runs the first-run setup for you.
 >
 > On-demand helpers from the plugin: `/steer:spec-scaffold <id>` (new feature
-> spec), `/steer:adr <slug>` (architecture decision), `/steer:conventions`,
-> `/steer:design-sources`, and `/steer:traceability` (full reference prose). If the
-> plugin isn't installed, your teammate will be prompted to install it when
-> they trust this folder.
+> spec), `/steer:adr <slug>` (architecture decision), and
+> `/steer:reference [conventions|traceability|design-sources]` (full reference
+> prose). If the plugin isn't installed, your teammate will be prompted to install
+> it when they trust this folder.
 
 ## Product
 

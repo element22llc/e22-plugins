@@ -2,7 +2,7 @@
 
 The high-level GitHub Issues lifecycle for the `/spec` spine. A thin
 orchestrator: it delegates product/spec reasoning to `/steer:spec`, audit
-findings to `/steer:audit`, drift to `/steer:drift`, and question promotion to
+findings to `/steer:audit`, drift to `/steer:audit spec`, and question promotion to
 `/steer:questions` — and routes **all** GitHub reads/writes through
 `/steer:tracker-sync`.
 

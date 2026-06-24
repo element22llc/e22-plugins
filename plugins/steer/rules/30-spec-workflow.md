@@ -42,7 +42,7 @@ draft feature intents,
 and get PO approval before broad implementation. The full step-by-step flow is
 in the spec-framework reference, drawn on by the spec workflow
 (**`/steer:spec`**); a PO driving it uses **`/steer:build`**. Design exports: read the **local export** via
-`/steer:design-sources` — never fetch the URL (it 403s).
+`/steer:reference design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick", "just a prototype", "throwaway"
 relax the *ceremony* (lighter interview, no per-feature PR — durably via solo-trunk
