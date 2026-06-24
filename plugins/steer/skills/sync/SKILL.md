@@ -196,6 +196,7 @@ PR'd. Use it to see what a full sync would do.
    | Capability | Files | Status | Action |
    |---|---|---|---|
    | plugin-enabled-local | .claude/settings.json | mis-wired | splice enabledPlugins.steer (proposed) |
+   | delivery-mode-declared | CLAUDE.md | mis-wired | splice ## Delivery mode, default pr-flow (proposed); ask if solo-trunk fits |
    | in-ci-plugin-loading | .github/workflows/claude.yml | absent | create from scaffold (proposed); needs STEER_APP_ID |
    | version-pin-enforcement | policy/versions.yml, scripts/… | mis-wired | re-copy verbatim scripts (proposed, diff shown) |
    | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |

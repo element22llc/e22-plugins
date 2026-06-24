@@ -75,6 +75,31 @@ and **Repair**.
 - **Why it matters:** without this, the plugin never loads locally — no skills, no
   rules, no hooks. The repo degrades to stock Claude.
 
+### delivery-mode-declared — explicit delivery mode in CLAUDE.md
+- **Files:** `CLAUDE.md`
+- **Conditional:** always (every managed repo has a `CLAUDE.md` and runs in some
+  delivery mode).
+- **Wired-when:** `CLAUDE.md` carries a `steer:delivery-mode=` marker
+  (`<!-- steer:delivery-mode=pr-flow|solo-trunk -->`). Without it the
+  commit-autonomy and issue-first hooks **fail open to `pr-flow`** — functionally
+  safe, but the choice is invisible and a solo, pre-MVP dev never discovers
+  solo-trunk. `CLAUDE.md` present without the marker is `mis-wired`; an absent
+  `CLAUDE.md` is `absent`.
+- **Repair:** a **human decision** — `sync` never picks the mode. Propose
+  additive-splicing the `## Delivery mode` section from
+  `templates/scaffold/CLAUDE.md` (which documents both modes) with the marker
+  defaulting to `pr-flow` — matching the hooks' fail-open, so behaviour is
+  unchanged — and **surface the solo-trunk option**, recommending it when the repo
+  is a solo PO+dev with no MVP/deploy yet (rule `45-commit-autonomy`). Additive
+  only: never edit or overwrite an existing `## Delivery mode` section. To adopt
+  solo-trunk on an existing repo the dev flips the marker; `/steer:protect`
+  graduates it back to `pr-flow`.
+- **Verbatim:** no
+- **Why it matters:** a repo bootstrapped before solo-trunk existed (≤ 2.11.0)
+  silently runs `pr-flow` forever — the solo-trunk offer lives only in `init`'s
+  run-once interview, and `sync` carries the spine forward without re-asking. This
+  is the one place a later sync can surface the choice.
+
 ### in-ci-plugin-loading — @claude CI runs under steer standards
 - **Files:** `.github/workflows/claude.yml`
 - **Conditional:** always (GitHub-hosted repos)
