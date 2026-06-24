@@ -23,6 +23,17 @@ See `AUTHORING.md` → "Skill frontmatter schema" for the full rules.
 
 ## Steps
 
+0. **Could this be a mode or a hidden delegate instead?** (See `AUTHORING.md` →
+   "Skill vs. mode".) Every new *visible* skill widens the menu, so ask first:
+   - Does an existing skill already own this area? → prefer a **mode** on it
+     (`argument-hint` + `<!-- steer:modes … -->`), not a new skill.
+   - Is it only ever reached as a step of another skill? → make it a **hidden
+     delegate** (`user-invocable: false`) and add the hand-off to its parent.
+   - Is the choice really repo-state, not user intent? → fold it behind a
+     **dispatcher** (e.g. `/steer:setup`).
+   Only continue scaffolding a new front door if none of these fit. If the new
+   skill is hidden, also add a routing line to `plugins/steer/rules/00-router.md`.
+
 1. **Gather inputs** (ask the user, or take them from the invocation):
    - `name` — kebab-case, no `/steer:` prefix. Must not already exist under
      `plugins/steer/skills/`.
