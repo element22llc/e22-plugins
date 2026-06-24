@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** **Repo profiles** — steer no longer assumes every managed repo is a
+  Node/TS app monorepo. A repo now carries a `<!-- steer:profile=app -->` marker
+  (or `infra`/`service`/`library`/`cli`) on the `CLAUDE.md` `## Profile` section,
+  sibling of the delivery-mode marker; absent ⇒ `app` (back-compat). The
+  **universal core** — mise toolchain pinning, the `/spec` spine, and
+  stack-agnostic CI hygiene — is now installed for **every** profile, so a non-app
+  repo (e.g. an Ansible/Terraform repo) is never skipped at bootstrap; only the
+  stack-specific extras vary. `/steer:init` and `/steer:adopt` detect, confirm,
+  and stamp the profile; `/steer:sync` back-fills `=app` when missing (idempotent
+  ledger entry).
+- **Added:** **`infra` profile** — Terraform/OpenTofu/Ansible/Pulumi repos get a
+  tofu/terragrunt/ansible-flavored **root** `mise.toml`
+  (`templates/scaffold/profiles/infra/mise.toml`) instead of
+  `package.json`/`compose.yaml`, plus CI that auto-detects `*.tf`/`*.hcl` and
+  Ansible layouts and runs `tofu fmt`/`ansible-lint` (no cloud credentials
+  needed). New always-on rule fragment `rules/12-stack-infra.md` (injected when
+  the repo does IaC). Dependabot gains a commented `terraform` ecosystem block.
+- **Added:** rule-injection trait predicates `has-apps`, `has-compose`, and
+  `has-iac` in `hooks/lib/scope.sh` (joining `has-infra`/`tracker-github`), and a
+  `steer_repo_profile` reader in `hooks/lib/repo-root.sh`. Always-on rules gate on
+  filesystem **traits**, never on the profile marker, so a repo's rule context
+  always matches what is on disk (a monorepo with a nested `/infra` gets the infra
+  fragment automatically).
+- **Changed:** the bootstrap nudges (`check-unmanaged-repo.sh`,
+  `check-code-before-spec.sh`) no longer frame the scaffold as `package.json` /
+  build config — they state the universal core applies to every profile including
+  infra/IaC, libraries, and CLIs, and that `/steer:init` picks the matching
+  profile. Stack/layout/commands rules (`10`/`15`/`20`/`24`) note their defaults
+  are the app/service profile's biases.
+
 ### 3.0.1
 
 - **Fixed:** `hooks/lib/spine.sh` `steer_spine_state` misclassified a fully

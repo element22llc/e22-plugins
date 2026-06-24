@@ -1,10 +1,13 @@
-<!-- steer:inject-when=has-infra -->
+<!-- steer:inject-when=has-iac -->
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
 areas) — validate in non-prod before prod, and scope pipeline changes with the dev
-first. Detail and the AWS/Terragrunt specifics live in `/infra/README.md`; run
-`/steer:reference conventions` for the rationale.
+first. Detail and the AWS/Terragrunt specifics live in the repo's infra README
+(`/infra/README.md` for a nested infra dir, the root README for an infra-profile
+repo); run `/steer:reference conventions` for the rationale. The AWS app-promotion
+model below is the default — an infra-profile repo with a different target records
+its flow in an ADR.
 
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR

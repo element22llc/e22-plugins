@@ -174,10 +174,21 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
      while still requiring the GitHub issue; keep it in sync with the prose. A repo
      with a second contributor keeps the `feat/*` + PR default — don't offer trunk
      there.
-2. **Instantiate the bundled scaffold.** Everything lives in the plugin — no
-   external template repo to fetch. Read
+   - **Pick the repo profile.** Determine whether this repo is an `app` (internal
+     monorepo — the default), `infra` (Terraform/OpenTofu/Ansible/Pulumi IaC),
+     `service` (a single deployable), `library`, or `cli`, and **confirm with the
+     dev** (a one-line confirm; default `app`). For greenfield, the dev's intent
+     decides; if any code already exists, the same signals `/steer:adopt` uses
+     apply (`*.tf`/`*.hcl`, `ansible.cfg`/`site.yml`/`roles/`, `Pulumi.yaml` →
+     `infra`; `apps/`+`packages/` → `app`; a single publishable package → `library`;
+     a declared `bin`/entrypoint → `cli`). The profile chooses which scaffold the
+     next step lays down — it does **not** change the universal core (mise pinning,
+     the `/spec` spine, CI hygiene), which every profile gets.
+2. **Instantiate the bundled scaffold — core plus the profile's extras.** Everything
+   lives in the plugin — no external template repo to fetch. Read
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
-   install map: copy each scaffold file to its target path (renaming the
+   install map **and its "Profile overlays" section**: copy each scaffold file to
+   its target path (renaming the
    dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
    `.env.example`, `claude/`, `vscode/`), instantiate the GitHub
    templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
@@ -200,6 +211,20 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    it additively with
    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`
    instead of overwriting it.
+   - **Apply the profile overlay** (MANIFEST "Profile overlays"). For
+     **`infra`**, install `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/infra/mise.toml`
+     as the **repo-root `mise.toml`** (instead of the app one) and **omit**
+     `package.json`, `pnpm-workspace.yaml`, `biome.json`, `compose.yaml`,
+     `configs/`, `apps/`, `packages/`, and `scripts/worktree-env.sh` (with its
+     `[env]._.source` line); enable the matching IaC engine in that `mise.toml`
+     and adapt `ARCHITECTURE.md`/README to the IaC layout. For `service` /
+     `library` / `cli`, lay the flat scaffold and omit the app-only rows the
+     MANIFEST lists for that profile (e.g. no `compose.yaml`/`worktree-env.sh`
+     for a library). **Set the profile marker:** write the chosen profile into the
+     `CLAUDE.md` `## Profile` marker (`<!-- steer:profile=<profile> -->`) and its
+     prose — the scaffold ships `=app`; rewrite the token for any other profile.
+     A **root `mise.toml` must always land** (app or infra flavor) — it is what
+     clears the scaffold nudge.
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
    `/spec/tracker.md`** (which issue tracker does this product use — Jira,

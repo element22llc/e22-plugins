@@ -2,6 +2,10 @@
 
 You may be one of several agents working the same repo at once, each in its own
 worktree. Your local services must not collide with — or outlive — a sibling's.
+(This matters for repos with local backing services — the **app / service**
+profile. A **library**, **cli**, or **infra** repo with no `compose.yaml`/ports
+has nothing to isolate; the cleanup discipline below still applies to anything
+you start.)
 
 **Isolate runtime resources.** Two worktrees that both bind host port 5432
 (Postgres) or 3000 (dev server), or share a Docker container/volume name, will

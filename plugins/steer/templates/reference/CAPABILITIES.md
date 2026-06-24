@@ -22,11 +22,22 @@ otherwise report "current." This file is what makes sync repair that.
 
 Detection is deterministic via
 [`scripts/scan-capabilities.sh`](../../scripts/scan-capabilities.sh), which emits
-`present-wired | absent | mis-wired | disabled | n/a` per capability plus a
-`stack` fingerprint. **Keep the capability set in that script in lockstep with
+`present-wired | absent | mis-wired | disabled | n/a` per capability plus two
+informational fingerprints, `stack` (`node | python | polyglot | none`) and
+`profile` (`app | infra | service | library | cli`, from the `CLAUDE.md`
+`## Profile` marker). **Keep the capability set in that script in lockstep with
 the entries below** (the hook test suite asserts every id the script emits is
-documented here). This doc owns the repair semantics + conditionality the script
-can't decide.
+documented here, exempting the `stack`/`profile` fingerprints). This doc owns the
+repair semantics + conditionality the script can't decide.
+
+**Profile and capability conditionality.** Capabilities are conditioned on the
+`stack` fingerprint, not on `profile` — and `stack=none` already does the right
+thing for an `infra` repo (no `package.json`/`pyproject.toml`), dropping
+`node-tooling` and `worktree-port-isolation` to `n/a`. The `profile` emit is for
+reporting only (`/steer:sync`, `/steer:report`); do **not** add a second,
+profile-keyed conditioning axis for a decision `stack` already makes. `toolchain-pin`
+is profile-agnostic — it checks the repo-root `mise.toml`, which every profile
+installs (the `infra` profile's is the tofu/terragrunt/ansible flavor).
 
 ## Discipline
 

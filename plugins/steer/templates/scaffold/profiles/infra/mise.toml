@@ -1,0 +1,78 @@
+# mise — ROOT toolchain for an INFRASTRUCTURE / IaC repo (the `infra` profile).
+#
+# This is the infra-profile replacement for the app scaffold's root mise.toml:
+# /steer:init installs THIS as the repo-root `mise.toml` when the profile is
+# `infra`, and does NOT install package.json / pnpm-workspace.yaml / biome.json /
+# compose.yaml / scripts/worktree-env.sh (an infra repo has no Node/web layer and
+# no local backing services). The universal core is unchanged — mise pinning, the
+# /spec spine, and CI hygiene apply here exactly as they do to an app repo.
+#
+# Distinct from templates/scaffold/infra/mise.toml: THAT one pins tools for a
+# NESTED /infra dir inside an app monorepo (so non-infra contributors skip them).
+# THIS one is the whole repo's root toolchain.
+#
+# Version strategy (same as every steer mise.toml):
+#   - Tools resolve to `latest`; the committed `mise.lock` is the REAL pin. mise
+#     only writes the lock if the file already exists, so create it on first run:
+#     `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`
+#     (add other platforms your team uses; linux-x64 is mandatory — CI runs there).
+#   - Infra is a high-risk area: bump intentionally with `mise upgrade` and
+#     VALIDATE IN NON-PROD before prod. Run /steer:reference conventions for the rationale.
+
+[settings]
+lockfile = true
+
+[tools]
+# --- Baseline: always installed. uv/python back ansible-lint, yamllint, and any
+# uvx-based agent tooling; gh drives PRs/releases; shellcheck + actionlint are CI gates.
+python = "latest"
+uv = "latest"
+github-cli = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"aqua:rhysd/actionlint" = "latest"
+
+# --- IaC engine: keep what matches this repo, delete the rest (/steer:init
+# enables the detected engine and comments out the others).
+opentofu = "latest"                                              # Terraform/OpenTofu repos
+terragrunt = "latest"                                            # OpenTofu/Terraform orchestration (DRY)
+"aqua:aws/aws-cli" = { version = "latest", symlink_bins = true } # AWS provider/CLI
+# "pipx:ansible-core" = "latest"                                 # Ansible repos — uncomment
+# pulumi = "latest"                                              # Pulumi repos (ADR) — uncomment
+
+# Secrets do NOT belong in mise config. Use a git-ignored .env / .env.local for
+# local values, and the cloud secret store (SSM Parameter Store SecureString /
+# Secrets Manager) or Ansible Vault for deployed environments.
+
+# --- Tasks. `mise run dev:setup` must, from a fresh clone after `mise install`,
+# leave a working local environment (the universal convention). Prune the tasks
+# of the engine you don't use.
+
+[tasks."dev:setup"]
+description = "One-command local setup: install IaC deps (provider/module init or Ansible roles)"
+# Terraform/OpenTofu: `terragrunt run-all init` (or `tofu init`).
+# Ansible: `uvx ansible-galaxy install -r requirements.yml` if present.
+run = [
+  "echo 'Adapt dev:setup to this repo: tofu/terragrunt init, or ansible-galaxy install -r requirements.yml'",
+]
+
+# --- Terraform / OpenTofu tasks (delete for an Ansible-only repo) ---
+[tasks."infra:fmt"]
+description = "Check IaC formatting (tofu fmt + terragrunt hclfmt)"
+run = "tofu fmt -recursive -check -diff"
+
+[tasks."infra:validate"]
+description = "Validate IaC configuration across all units"
+run = "terragrunt run-all validate"
+
+[tasks."infra:plan"]
+description = "Plan changes across all units (read-only; never auto-applies)"
+run = "terragrunt run-all plan"
+
+# --- Ansible tasks (uncomment for an Ansible repo; delete the tofu tasks above) ---
+# [tasks."ansible:lint"]
+# description = "Lint playbooks and roles (ansible-lint + yamllint)"
+# run = ["uvx yamllint .", "uvx ansible-lint"]
+#
+# [tasks."ansible:check"]
+# description = "Syntax-check the main playbook without applying"
+# run = "uvx --from ansible-core ansible-playbook --syntax-check site.yml"

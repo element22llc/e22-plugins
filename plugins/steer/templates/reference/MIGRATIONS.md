@@ -54,6 +54,32 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.1.0 — repo profile marker back-fill
+
+- **What & why:** repos now carry a **profile** marker (`<!-- steer:profile=app -->`,
+  or `infra`/`service`/`library`/`cli`) on the `CLAUDE.md` `## Profile` section,
+  read by `/steer:sync` and `scripts/scan-capabilities.sh` to decide which scaffold
+  overlay applies. A repo bootstrapped before profiles has no marker. Readers
+  default a missing marker to `app` (every pre-profiles repo was an app monorepo),
+  so this is not a *capability gap* (nothing is broken) — but stamping the marker
+  makes the profile explicit and lets a later profile change be a deliberate edit.
+  It is an **in-file write into an existing materialized file** (CLAUDE.md), not a
+  new file, so it belongs here rather than on the capability axis.
+- **Precondition:** `CLAUDE.md` exists and carries no profile marker — this grep
+  fires:
+
+  ```sh
+  test -f CLAUDE.md && ! grep -qiE '<!--[[:space:]]*steer:profile=' CLAUDE.md && echo pending
+  ```
+
+  No `CLAUDE.md`, or a marker already present ⇒ no-op.
+- **Action:** read-then-propose. Add a `## Profile` section carrying
+  `<!-- steer:profile=app -->` (the safe default — only change it to another
+  profile if the repo is *clearly* infra/library/cli/service and the dev confirms),
+  modeled on `templates/scaffold/CLAUDE.md`. Place it near the `## Delivery mode`
+  section. Idempotent: once the marker is present the precondition is empty, so
+  re-running is a no-op.
+
 ### v2.11.0 — MCP servers move from the scaffold into the plugin
 
 - **What & why:** the `github` + `markitdown` MCP servers used to be scaffolded as

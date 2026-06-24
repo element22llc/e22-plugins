@@ -138,6 +138,13 @@ a different stack, propose the better fit and record an ADR under
 `/spec/decisions/` (run `/steer:adr`). Rationale and full setup detail for every
 bullet: run `/steer:reference conventions`.
 
+The bullets below describe the **app / service** repo profile (the default).
+An **infra** repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra
+bullet its *primary* stack — IaC toolchain at the repo root, no Node/web layer;
+a **library** or **cli** follows its own package language and skips the
+app/web/compose bullets. `/steer:init` records the profile; the universal core
+(mise pinning, the `/spec` spine, CI hygiene) is the same for all of them.
+
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
   Next.js app (Route Handlers, Server Actions, server components). A standalone
@@ -173,6 +180,33 @@ bullet: run `/steer:reference conventions`.
   rules are in Secrets handling.
 
 
+## Stack — infrastructure / IaC
+
+This repo does infrastructure-as-code. The universal core still applies (mise
+pinning, the `/spec` spine, CI hygiene); the stack below replaces the app
+defaults. Deviations are ADRs, same as any stack choice.
+
+- **IaC engine:** OpenTofu (or Terraform) for cloud resources; Ansible for host
+  configuration/provisioning; Pulumi only with an ADR. **Orchestration/DRY:**
+  Terragrunt for OpenTofu/Terraform.
+- **Toolchain:** pinned in the **root** `mise.toml` for a root-level infra repo
+  (`opentofu`/`terragrunt`/`ansible`/`uv`), or in `infra/mise.toml` for a nested
+  `/infra` dir of an app monorepo. Commit `mise.lock`. No Node/web layer, no
+  `compose.yaml`, no `package.json`.
+- **Layout:** `live/` (deployable units, per-env `terragrunt.hcl`) + `modules/`
+  for OpenTofu/Terraform; `roles/` + `playbooks/` (or `site.yml`) + `inventory/`
+  for Ansible. Detail in `/infra/README.md` (monorepo) or the repo README.
+- **Validate locally before CI:** `tofu fmt -check` + `tofu validate` /
+  `terragrunt run-all validate`; `ansible-lint` + `yamllint` for Ansible. These
+  run in CI too.
+- **State & secrets:** remote state with locking (S3 `use_lockfile`); secrets in
+  the cloud secret store (SSM Parameter Store `SecureString` / Secrets Manager),
+  Ansible Vault for Ansible — never committed (see Secrets handling). Commit
+  provider lockfiles (`.terraform.lock.hcl`).
+- **Pin image/provider/role majors** the same way app stacks pin them; a
+  deliberately older pin needs an ADR plus `# pin-ok: <reason>`.
+
+
 ## Useful commands
 
 - **First-time setup:** `mise trust && mise install` (full mise setup in the
@@ -182,6 +216,11 @@ bullet: run `/steer:reference conventions`.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
 - **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
 
+The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
+uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
+`infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
+infrastructure. The `mise trust && mise install` first step is universal.
+
 Commands assume mise is activated in the shell; "tool not found" usually means
 it isn't — run `/steer:doctor` to detect and install missing prerequisites, or
 see the product README.
@@ -189,8 +228,11 @@ see the product README.
 
 ## Where things live
 
-Managed products are **internal monorepos**: multiple apps and shared packages in
-one repo.
+The layout below is the **app** profile: an internal monorepo with multiple apps
+and shared packages in one repo. A **library** / **cli** is a single package (no
+`/apps` split); an **infra** repo is organized as IaC (`live/` + `modules/`, or
+Ansible `roles/` + `playbooks/`) — see Stack — infrastructure. The `/spec` spine
+is identical across all profiles.
 
 - **`/apps`** — deployable applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).
@@ -260,6 +302,10 @@ Run **`/steer:tidy`** for a full sweep.
 
 You may be one of several agents working the same repo at once, each in its own
 worktree. Your local services must not collide with — or outlive — a sibling's.
+(This matters for repos with local backing services — the **app / service**
+profile. A **library**, **cli**, or **infra** repo with no `compose.yaml`/ports
+has nothing to isolate; the cleanup discipline below still applies to anything
+you start.)
 
 **Isolate runtime resources.** Two worktrees that both bind host port 5432
 (Postgres) or 3000 (dev server), or share a Docker container/volume name, will
@@ -568,8 +614,11 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
 areas) — validate in non-prod before prod, and scope pipeline changes with the dev
-first. Detail and the AWS/Terragrunt specifics live in `/infra/README.md`; run
-`/steer:reference conventions` for the rationale.
+first. Detail and the AWS/Terragrunt specifics live in the repo's infra README
+(`/infra/README.md` for a nested infra dir, the root README for an infra-profile
+repo); run `/steer:reference conventions` for the rationale. The AWS app-promotion
+model below is the default — an infra-profile repo with a different target records
+its flow in an ADR.
 
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
