@@ -1,13 +1,13 @@
 ---
 name: reference
 user-invocable: false
-description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), or `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md). A read-only loader: it points at the bundled reference file and answers from it."
-when_to_use: Use for any tooling/convention question or the rationale behind a stack default (conventions); any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing split (traceability); or a feature originating from a Claude Design export/URL, Figma, or screenshots (design-sources).
-argument-hint: "[conventions | traceability | design-sources]"
+description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md), or `context-hygiene` (delegating heavy runs to subagents, keeping durable state in files so it survives compaction). A read-only loader: it points at the bundled reference file and answers from it."
+when_to_use: Use for any tooling/convention question or the rationale behind a stack default (conventions); any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing split (traceability); a feature originating from a Claude Design export/URL, Figma, or screenshots (design-sources); or how to keep a long/multi-phase run from bloating the session or losing constraints across compaction (context-hygiene).
+argument-hint: "[conventions | traceability | design-sources | context-hygiene]"
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene -->
 
 # Reference prose loader
 
@@ -22,6 +22,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `conventions` | `CONVENTIONS.md` | Tooling/convention questions, stack-default rationale. |
 | `traceability` | `TRACEABILITY.md` | Living docs, tracker refs, drift flags, audit evidence, PO vs dev split. |
 | `design-sources` | `DESIGN-SOURCES.md` | Features from a Claude Design export/URL, Figma, or screenshots. |
+| `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 
 ## `conventions`
 
@@ -142,3 +143,29 @@ Key points (read the file for the full detail):
   as you build (third origin: established while building without an export) so
   every feature stays uniform; feature-specific details stay in the feature's
   `intent.md`.
+
+## `context-hygiene`
+
+Read the full context-hygiene reference bundled with this plugin:
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/CONTEXT-HYGIENE.md`
+
+It covers, in detail:
+
+- **The honest boundary** — why a plugin and the model cannot see context usage,
+  trigger `/compact`, or start a new session (only the user can), so the design
+  makes switching *unnecessary* rather than automatic.
+- **Delegate heavy runs to a subagent** — when a run is long, multi-phase, or
+  search-heavy, fork it (fresh context by construction) and return only the
+  structured result; the steer exemplars (`/steer:audit` → `steer-reviewer`,
+  `/steer:work --reviewed`) and when *not* to fork.
+- **Keep durable state in files** — what survives compaction (`/spec/**`, rules,
+  CLAUDE.md) vs the chat (which does not); the run-state and constraint sidecar
+  contract, with an example shape.
+- **The fallback nudge** — only when the thread is genuinely overloaded, recommend
+  `/compact` or a fresh session and pre-compose the hand-off, honest that it is a
+  recommendation you cannot perform.
+- **A worked example** — the part-regeneration scenario end to end.
+
+The lean always-on version of this is rule `26-context-hygiene` — this reference is
+its full rationale and how-to.
