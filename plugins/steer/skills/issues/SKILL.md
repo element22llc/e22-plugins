@@ -1,10 +1,10 @@
 ---
 name: issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
-argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
+argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | board | reconcile] [#issue | feature-id]"
 ---
-<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
+<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 
@@ -96,6 +96,13 @@ format (markers, headings, **managed blocks**, idempotency) in
   exploit-enabling detail into a broadly visible issue (link to private handling;
   flag `risk:security`; default to human review before public disclosure).
 
+All `publish-*` modes **set the native Priority field to the derived floor on
+creation** (the floor table in `triage` below) via `/steer:tracker-sync field-set`
+— e.g. a `risk:security` finding is created at `Urgent`, a finding blocking a gate
+at `High`. Same floor, applied once at create time; on a reconcile rerun it is
+escalate-only (`max(current, floor)`), so a human who later adjusts Priority is
+never overridden.
+
 ### Net-new modes (logic lives here)
 
 - **`capture`** — open an issue from the current conversation, prototype,
@@ -127,13 +134,45 @@ format (markers, headings, **managed blocks**, idempotency) in
     comment and apply `needs:triage` rather than guessing the content.
   - **Cleanup signals** — report stale `needs:triage` issues, orphaned
     sub-issues (no parent link), and mislabelled items; propose fixes.
+  - **Priority (escalate-only auto-set) & field gaps** — set the native
+    **Priority** field to a **floor** derived from mechanical signals — this is the
+    canonical floor table (the only place it lives); `publish-*` reuses it:
+
+    | Mechanical signal on the issue | Priority floor |
+    |---|---|
+    | `risk:security` finding / committed-secret remediation | `Urgent` |
+    | Open `impact: blocking` question gating a `required_before` gate on this issue | `High` |
+    | `spec-drift` on a live/deployed feature | `High` |
+    | Native blocked-by: this issue blocks ≥1 `ready-for-dev` issue | `Medium` |
+    | none of the above | *no floor — leave unset for the PO* |
+
+    Every row is a **mechanical, observable** signal — a label, an open question
+    with a gate, drift on a live feature, or a native blocked-by edge count — never
+    a judgment of product value (that is the PO's, via the field directly). Keep the
+    table closed; adding a "this feature looks important" row would be deciding
+    product. **Escalate-only, never a product call:** set `Priority = max(current, floor)`
+    via `/steer:tracker-sync field-set` — it raises an unset/too-low value, **never
+    downgrades** a human's. Idempotent (`max` is a no-op at/above the floor). Record
+    each escalation as the managed-block **ledger** line
+    (`<!-- steer:priority-floor=… applied=… reason=… -->`, `ISSUE-SCHEMA.md`).
+    **Never fight a human (computable from the ledger + `field-get`, no actor read
+    required):** escalate only when `floor > value` **and** the current value is one
+    the agent itself last set — i.e. **(value unset and no prior
+    `steer:priority-floor` ledger line) or (a ledger line exists and value equals
+    that ledger value)**. Otherwise a human owns it — value is set but differs from
+    the agent's recorded escalation, or is set with no ledger at all (first sight of
+    a human value): record `human override of floor X — suppressed` and leave it.
+    **Effort/dates are human-set only** — surface a *missing* Effort
+    or a missing **Priority on a `ready-for-dev`** issue as a field gap; propose,
+    never auto-fill them.
   - **Routing** — suggest the next transition; propose Inbox → Exploring and
     **perform it only where the authority table in `ISSUE-WORKFLOW.md` allows**.
   Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
   report, and takes **one** batch confirmation before any writes. All GitHub
   reads/writes (labels, types, comments, closes) go through `/steer:tracker-sync`;
-  rewrites touch only the `steer:managed` block. Priority and effort are not
-  tracked — do not invent labels for them.
+  rewrites touch only the `steer:managed` block. Priority and effort are **native
+  issue fields, never labels** (`ISSUE-SCHEMA.md`) — never invent `priority:*` /
+  `effort:*` labels for them.
 - **`decompose #N`** — create implementation sub-issues from a parent feature.
   **Preconditions:** the feature's `intent.md` exists, `Status: approved`, and
   its **contract readiness is `ready`** — the mechanically-derived signal in
@@ -158,6 +197,28 @@ format (markers, headings, **managed blocks**, idempotency) in
   Preview: available
   Blocking: #134 telemetry
   ```
+- **`board [--all]`** — a **read-only** backlog overview: the open issue set as one
+  ranked, relationship-aware, hygiene-flagged view. **Never writes.** Reads through
+  `/steer:tracker-sync` (`search`, `field-get`) and says which capability path it
+  took. Four sections:
+  - **Ranked** — issues ordered by the **composite sort key** in `NEXT-ACTIONS.md`
+    (safety level → native **Priority** field → unblock-count → milestone proximity
+    → lifecycle depth → created-at/#N). Show each issue's Priority and lifecycle
+    state. The board **does not** re-derive the cross-workflow "single most critical
+    thing" — that is `/steer:next`'s job (locality: a board ranks *issues*; it does
+    not arbitrate ADRs, PR-review gates, or secrets). Where issue fields are
+    unavailable, Priority shows as unset and the remaining terms order the list.
+  - **Relationships** — dependency clusters from native blocked-by edges (and the
+    `Related issues` markers where native is unavailable): what blocks what, and any
+    `conflicts-with`/`supersedes` pair surfaced for a human. Never auto-resolve.
+  - **Dedup candidates** — likely duplicates by marker (`feature-id`+kind,
+    `question-id`, `finding-key`, `dedupe-key`) and semantic title overlap; propose,
+    don't merge (close-as-duplicate is a `triage` action).
+  - **Hygiene** — stale `needs:triage`, orphaned sub-issues (no parent), missing
+    **Priority** on `ready-for-dev`, missing kind/Type, and mislabelled items —
+    each with the `triage`/owning action that fixes it. Surfaces work; performs none.
+  `#N`/`feature-id` scopes to one item's neighborhood; `--all` (default) sweeps open
+  issues. It ends with the `## Recommended next actions` block (below).
 - **`bootstrap-labels`** — idempotently create/reconcile the supported label
   taxonomy so Issue Forms and agent labels actually apply (GitHub silently drops a
   form label that doesn't exist). Reconciles the exact `source:*` / `needs:*` /

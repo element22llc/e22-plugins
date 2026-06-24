@@ -77,9 +77,10 @@ owners:
   timeline — turn target features or a spec-gap from `/steer:audit spec` into milestone-grouped
   issues — run `/steer:roadmap` (it proposes a dependency-ordered milestone plan and
   attaches issues on confirmation). Milestones are assigned **on demand**, not
-  auto-managed; the issue and `/spec` stay the source of truth. Project planning
-  fields (Status, dates, priority, size) live on the Project, not the issue — see
-  the issue-schema reference.
+  auto-managed; the issue and `/spec` stay the source of truth. Priority, effort,
+  and start/target dates are **native issue fields** on the issue; only Project
+  *item* fields (Status, iteration, size) live on the Project — see the
+  issue-schema reference.
 
 ## Notes
 

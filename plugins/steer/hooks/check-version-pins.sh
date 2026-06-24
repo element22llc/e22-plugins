@@ -10,7 +10,7 @@
 #
 # This is a FLOOR, not a version chooser — it blocks dead majors. WHAT to pin
 # (current stable) is decided live, in-session, per the versioning rule
-# (/steer:conventions); there is deliberately no advisory "behind the target" tier.
+# (/steer:reference conventions); there is deliberately no advisory "behind the target" tier.
 #
 # WHY DETERMINISTIC (this is a redesign):
 #   The previous version queried endoflife.date on the write path. That made the
@@ -84,7 +84,7 @@ if [ -n "${DENY}" ]; then
 	# verdict text is policy-derived + a numeric pin today, so this is hardening
 	# against malformed JSON if that prose ever gains a quote, not a live bug.
 	SAFE_DENY="$(printf '%s' "${DENY}" | tr -d '"\\')"
-	REASON="Version-pin policy violation — ${SAFE_DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
+	REASON="Version-pin policy violation — ${SAFE_DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:reference conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
 	# Output envelope is harness-specific. Claude PreToolUse takes a hard "deny"
 	# wrapped in hookSpecificOutput. GitHub Copilot CLI (registered under the
 	# PascalCase `PreToolUse` event, which feeds the same tool_name/tool_input

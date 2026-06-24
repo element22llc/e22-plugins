@@ -11,6 +11,9 @@ territory). Same safety level; the tie-break must be deterministic.
   `payments` feature's contract depends on this decision.
 - Feature `search` intent is `draft`, drafted but not yet PO-approved — it does
   **not** depend on the ADR.
+- Neither candidate has a human-set **Priority** field (an ADR has no issue
+  field; the `search` issue's Priority is unset), so the composite sort key's
+  Priority term is equal — the tie falls through to the unblock-count term below.
 - No PRs open.
 
 ## Expected highest-priority action

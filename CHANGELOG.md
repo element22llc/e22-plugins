@@ -26,6 +26,55 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `deliver` already delegated governed implementation to `work`, so this drops the
   duplicate entry point; the shared protocol still lives in
   `templates/reference/REVIEW-LOOP.md`.
+- **Added (ranking + roadmap dates):** `/steer:next` now reads each candidate's
+  native **Priority** field and blocked-by edges during state reconstruction and
+  orders within a safety level by the composite sort key (Priority first), saying so
+  when issue fields are unavailable. `/steer:roadmap` now writes the human-confirmed
+  **Start/Target date** native issue fields (via `field-set`) so a Projects v2
+  roadmap lays out per-issue Gantt bars without Project-item mirroring — still never
+  fabricating a date, capability-degrading to Milestone grouping alone when fields
+  are unavailable.
+- **Added (auto-set):** `/steer:issues triage` now **escalate-only auto-sets** the
+  native Priority field from a closed, mechanical floor table (`risk:security` →
+  `Urgent`; an open blocking question gating the issue → `High`; live-feature
+  `spec-drift` → `High`; blocks a `ready-for-dev` issue → `Medium`). It sets
+  `max(current, floor)` — never downgrades a human value, idempotent, and suppressed
+  when the value differs from the agent's own `steer:priority-floor` **ledger** line
+  (a human touched it) — a guard computable from the ledger + `field-get`, needing
+  no field-change-actor read (the gateway exposes none). Effort/dates stay human-set
+  (surfaced as
+  field gaps, never auto-filled). `publish-audit`/`-drift`/`-findings` set the same
+  floor on creation.
+- **Added (board view):** `/steer:issues board` — a read-only backlog overview that
+  shows the open issue set as one ranked (composite sort key from `NEXT-ACTIONS.md`),
+  relationship-clustered, dedup-flagged, hygiene-flagged view. It ranks *issues* and
+  defers the cross-workflow "single most critical thing" to `/steer:next`; it never
+  writes (every fix routes to `triage`/the owning skill).
+- **Added (gateway):** `/steer:tracker-sync` gains native issue-field + relationship
+  ops — `field-get` / `field-set` (Priority/Effort/Start/Target date via the
+  `setIssueFieldValue` GraphQL mutation; GraphQL-only, no `gh` REST path),
+  `bootstrap-fields` (detect-and-report the org-level field definitions, never
+  fabricate options — reports a `P0/P1`-style option mismatch and stops), and
+  `link-blocked-by` (native issue dependency; degrades to a `depends-on` managed-block
+  line, writing **one** representation so ranking never double-counts; informs but
+  never sets `steer:state=blocked`). `link-related` now prefers the native edge for
+  `depends-on`/`blocks`. `/steer:init` runs `bootstrap-fields` alongside
+  `bootstrap-labels`. Field writes are GraphQL and remain host-gated (not added to
+  the scaffold allow-list).
+- **Added (foundation):** GitHub **native issue fields** are now first-class in the
+  issue model. `issue_priority=Urgent|High|Medium|Low` joins the enum registry
+  (`enums.registry` + `ENUMS.md`); `ISSUE-SCHEMA.md` reframes the Projects-v2
+  boundary so Priority/Effort/Start/Target date are **writable issue attributes**
+  (distinct from Project-*item* fields), documents the field-value-vs-managed-block
+  **ledger** provenance and the no-managed-block-guard concurrency note, and
+  `ISSUE-WORKFLOW.md` adds *issue fields* as a third capability-degrading axis
+  (alongside Issue Types and native sub-issues). `LABELS.md` reverses the former
+  "priority and effort are not tracked" stance — they are native fields, **never**
+  `priority:*` labels. `NEXT-ACTIONS.md` defines the **composite sort key** (safety
+  level first, then the Priority field as a *within-level* tie-break, then derived
+  signals), and `/steer:next` golden fixtures pin that Priority never crosses the
+  safety precedence. (Gateway ops, auto-set, board view, ranking, and roadmap dates
+  land in follow-up changes.)
 - **Added:** `/steer:setup` — one front door for getting a repo onto the
   standards. It detects the `/spec` spine state (via `hooks/lib/spine.sh`) and
   routes to the right path instead of making the user choose: greenfield

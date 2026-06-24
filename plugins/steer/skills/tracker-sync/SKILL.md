@@ -1,6 +1,6 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, transition, assign/claim, link, close/reopen) plus the higher-level PULL (materialize issues for /steer:audit spec, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, field-get, field-set, bootstrap-fields, transition, assign/claim, link, link-blocked-by, close/reopen) plus the higher-level PULL (materialize issues for /steer:audit spec, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
 when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:audit spec export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: invoked by /steer:issues and /steer:work
@@ -96,6 +96,38 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   (`-f title=… -f due_on=…`), else the manual floor (tell the user to create it in
   the GitHub UI). **Create-or-leave on re-run:** if the milestone exists, leave its
   title and due date as they are — never overwrite a value a human edited.
+- **`field-get #N [<field>]`** — read native **issue field** values (Priority,
+  Effort, Start/Target date, and any org custom field) for one issue. **Native
+  issue fields are GraphQL-only** — there is no `gh issue` subcommand and no REST
+  path; query via `gh api graphql` (the issue's field-values connection), else the
+  MCP github tool if it exposes issue fields, else report the capability is
+  unavailable. Read-only; never confirms.
+- **`field-set #N <field> <value>`** — set one native issue field. Resolve the
+  field's node id, its **type**, and (for single-selects like **Priority**) the
+  option id from the **org field definition** via `gh api graphql`, then call the
+  `setIssueFieldValue` mutation (`issueId` + `fieldId` + the typed `value` variant
+  the definition declares — `singleSelectOptionId` for a single-select like
+  Priority, `date` for a date field, `number`/`text` as the field's type dictates;
+  never assume Effort's type — read it). **Capability-degrading:** if the
+  org has not enabled issue fields, or the named field / option does not exist,
+  emit a non-blocking warning and **stop** — **never** fabricate a field, fabricate
+  an option, or fall back to a `priority:*`/`effort:*` label or a body marker (the
+  field is the only home; see `ISSUE-SCHEMA.md`). The value is the **single source
+  of truth**; callers that auto-set Priority own the escalate-only + managed-block
+  **ledger** provenance (`/steer:issues`), not this op. `field-set` is a separate
+  mutation with **no managed-block concurrency guard** — report the prior value
+  when you change it so a concurrent human edit is visible.
+- **`bootstrap-fields`** — verify/reconcile the **org-level** issue-field
+  definitions `steer` relies on (Priority + the default Effort / Start date /
+  Target date set), so `field-set` can attach values. Issue fields are an **org
+  setting**, not a repo file: this op **detects and reports**, it does not create
+  org config silently. Probe via `gh api graphql`: if issue fields are unavailable
+  → report capability absent and stop. If the **Priority** field exists but its
+  options differ from `issue_priority` (`Urgent|High|Medium|Low` — e.g. an org using
+  `P0/P1/P2`) → **report the mismatch and stop**; never rename or fabricate options.
+  Like `milestone-ensure`, it is **create-or-leave**: never overwrite an option set
+  a human configured. `/steer:init` and `/steer:adopt` call it during setup (next to
+  `bootstrap-labels`); it is safe to re-run.
 - **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
   Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
@@ -110,10 +142,13 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 - **`link-related #N <other> <relationship>`** — record a non-hierarchical
   connection between two issues. `<relationship>` is an `issue_relationship` value
   (`relates-to` · `depends-on` · `blocks` · `conflicts-with` · `supersedes` ·
-  `superseded-by` — see `ENUMS.md`); reject anything outside the enum. GitHub has
-  **no native typed relationship** beyond parent/sub-issue, so this writes the
-  link as a managed-block `Related issues` line (`#<other> — <relationship>
-  (why)`) on `#N` per `ISSUE-SCHEMA.md` — the `#<other>` mention makes GitHub
+  `superseded-by` — see `ENUMS.md`); reject anything outside the enum. For
+  **`depends-on`/`blocks`**, prefer the native relationship via `link-blocked-by`
+  (below) when available — it is board-visible and feeds ranking. Otherwise (and
+  for the relationship types GitHub has no native form for —
+  `relates-to`/`conflicts-with`/`supersedes`), this writes the link as a
+  managed-block `Related issues` line (`#<other> — <relationship> (why)`) on `#N`
+  per `ISSUE-SCHEMA.md` — the `#<other>` mention makes GitHub
   auto-create the backlink. **Reciprocity is the caller's choice:** by default
   record the symmetric line on `<other>` too (`relates-to`/`conflicts-with` are
   symmetric; `depends-on`↔`blocks` and `supersedes`↔`superseded-by` invert), but
@@ -121,6 +156,18 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   the same `(other, relationship)` pair is updated in place, not duplicated.
   **Never** reclassify or close either issue: a `conflicts-with`/`supersedes` link
   is surfaced for a human, not acted on.
+- **`link-blocked-by #N <blocker>`** — record a **native** GitHub issue
+  dependency (`#N` is blocked by `#blocker`; the reciprocal "blocks" edge is
+  created by GitHub automatically). Native relationships are GraphQL-only — use the
+  blocked-by add/remove mutations via `gh api graphql` (issue **node id**, not
+  number), else the MCP equivalent. **Capability-degrading:** where native issue
+  relationships are unavailable, fall back to `link-related #N <blocker>
+  depends-on`. **One representation only:** when the native edge is written, do
+  **not** also add a managed-block `depends-on`/`blocks` line for the same pair —
+  the native edge is canonical, the marker is the fallback (this avoids
+  double-counting in ranking; see `ISSUE-SCHEMA.md`). Idempotent. A blocked-by edge
+  **informs** ranking and may *suggest* `steer:state=blocked`, but **never sets**
+  it — `steer:state` stays canonical and a transition is the caller's decision.
 - **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened
   issue is re-assessed before returning to `inbox`/`exploring`/`ready-for-dev`.
 
