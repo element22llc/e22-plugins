@@ -47,7 +47,7 @@ feature, using the canonical templates bundled with this plugin.
    ambiguity in this feature's own `## Open questions` section rather than
    inventing details (run `/steer:questions` later to drive them to answers).
 5. For a Greenfield/design-originated feature, populate the `Design source`
-   section per `/steer:design-sources`.
+   section per `/steer:reference design-sources`.
 
 ## Coupling rules
 

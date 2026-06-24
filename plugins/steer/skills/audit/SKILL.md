@@ -459,5 +459,5 @@ incidental implementation, PO vs. dev approval, naming — live in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`; the full
 conventions and patterns behind the `code`-mode dimensions are in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/CONVENTIONS.md` (open via
-`/steer:conventions`). This skill *detects, ranks, and routes*; those references
+`/steer:reference conventions`). This skill *detects, ranks, and routes*; those references
 govern how each finding gets *resolved*.

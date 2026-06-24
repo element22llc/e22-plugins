@@ -91,15 +91,15 @@ them directly when an intent maps cleanly to one:
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
   specs are instantiated by the internal `/steer:spec-scaffold` — never call these
   directly.
-- The full reference prose (`/steer:conventions`, `/steer:traceability`,
-  `/steer:design-sources`) is materialized into `/spec/reference/` once a repo is set
-  up; run those skills directly only on web chat or when asked for the deep dive.
+- The full reference prose (`/steer:reference [conventions|traceability|design-sources]`)
+  is materialized into `/spec/reference/` once a repo is set up; run that skill
+  directly only on web chat or when asked for the deep dive.
 
 On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
 auto-injected), run `/steer:standards` at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
-(run `/steer:conventions`) — don't trust training-data memory.
+(run `/steer:reference conventions`) — don't trust training-data memory.
 
 
 ## Who you are working with
@@ -136,7 +136,7 @@ productionization.
 **Default biases**, not mandates — when a project's intent clearly warrants
 a different stack, propose the better fit and record an ADR under
 `/spec/decisions/` (run `/steer:adr`). Rationale and full setup detail for every
-bullet: run `/steer:conventions`.
+bullet: run `/steer:reference conventions`.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
@@ -334,7 +334,7 @@ draft feature intents,
 and get PO approval before broad implementation. The full step-by-step flow is
 in the spec-framework reference, drawn on by the spec workflow
 (**`/steer:spec`**); a PO driving it uses **`/steer:build`**. Design exports: read the **local export** via
-`/steer:design-sources` — never fetch the URL (it 403s).
+`/steer:reference design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick", "just a prototype", "throwaway"
 relax the *ceremony* (lighter interview, no per-feature PR — durably via solo-trunk
@@ -408,7 +408,7 @@ the code**:
 PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
-conventions + worked examples: run **`/steer:traceability`**.
+conventions + worked examples: run **`/steer:reference traceability`**.
 
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it — a one-liner into
@@ -569,7 +569,7 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
 areas) — validate in non-prod before prod, and scope pipeline changes with the dev
 first. Detail and the AWS/Terragrunt specifics live in `/infra/README.md`; run
-`/steer:conventions` for the rationale.
+`/steer:reference conventions` for the rationale.
 
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
@@ -678,7 +678,7 @@ evidence — keep the chain intact: traceability (intent → spec → tracker re
 PR → `HISTORY.md`), review evidence (dev-approved PRs, drift flags, DoD),
 change history (ADRs + action history), and access-conscious secure defaults
 (secrets rules, high-risk gates, branch protection). Evidence map:
-`/steer:traceability`.
+`/steer:reference traceability`.
 
 
 ## Change-size model
@@ -697,7 +697,7 @@ Match the workflow to the change. When uncertain, size **up**.
 Org baseline stated as principles; each names the **default-stack** instance in
 parens so it stays actionable on the default stack and still applies on any
 other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
-patterns + anti-patterns prose: run `/steer:conventions`.
+patterns + anti-patterns prose: run `/steer:reference conventions`.
 
 - **All data access goes through a parameterized query layer — never raw or
   string-interpolated SQL.** Schema is defined in code and changed via
@@ -760,7 +760,7 @@ Whichever way a feature's UI originates, **capture the reusable decisions in
 `DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build and
 promoting anything that recurs — so every feature stays visually uniform. Full
 walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
-no-export build): run **`/steer:design-sources`**.
+no-export build): run **`/steer:reference design-sources`**.
 
 
 ## You are not the gate — the DEV is

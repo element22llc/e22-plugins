@@ -19,7 +19,7 @@
 #     Verify each `mise.lock` now holds `[tools.<tool>."platforms.linux-x64"]`
 #     url + checksum blocks (not just versions), then commit them.
 #   - Bump intentionally later with `mise upgrade` (updates the lock); review the
-#     bump like any other change. Run /steer:conventions for the full rationale.
+#     bump like any other change. Run /steer:reference conventions for the full rationale.
 
 [settings]
 lockfile = true

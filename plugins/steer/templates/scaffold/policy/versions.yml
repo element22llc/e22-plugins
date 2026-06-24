@@ -13,7 +13,7 @@
 #                      specific bad pins), denied even if the floor logic wouldn't.
 #
 # This is an EOL FLOOR, not a version chooser. WHAT to pin (current stable) is
-# resolved live, in-session, per the versioning rule (/steer:conventions → check
+# resolved live, in-session, per the versioning rule (/steer:reference conventions → check
 # the registry / endoflife.date) and then committed to compose / mise.lock; this
 # file only blocks dead majors when that live check didn't happen. There is
 # deliberately no "recommended"/advisory tier — it would duplicate the live rule

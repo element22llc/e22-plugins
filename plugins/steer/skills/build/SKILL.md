@@ -74,7 +74,7 @@ on the next `/steer:build` run.
    `spec/users.md`, and `spec/glossary.md`. Ask, don't invent; product-level
    ambiguity goes to `vision.md` → `## Open questions`. If the PO has a Claude
    Design export, read it
-   per `/steer:design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
+   per `/steer:reference design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
    template now, and keep it current from here on.
 3. **Draft feature intents.** For each capability the product clearly needs,
    run `/steer:spec-scaffold <id>` and fill `intent.md` from the conversation —

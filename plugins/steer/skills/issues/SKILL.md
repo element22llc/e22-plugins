@@ -247,5 +247,5 @@ it recommends the transition; it does not perform unapproved writes.
 Lifecycle, state model, and authority are canonical in `ISSUE-WORKFLOW.md`; the
 issue format in `ISSUE-SCHEMA.md`; the open-question + validate contract in
 `SPEC-FRAMEWORK.md`; tracker conventions in rule `35-issue-tracker` and
-`/steer:traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
+`/steer:reference traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those across the lifecycle.

@@ -1,7 +1,7 @@
 # Traceability & living documentation
 
 Full prose behind the always-on `living-docs`, `issue-tracker`, `drift-gates`,
-and `compliance` rules. Loaded on demand via **`/steer:traceability`**.
+and `compliance` rules. Loaded on demand via **`/steer:reference traceability`**.
 
 The goal: a PO can express intent in plain language, a dev can review precise
 contracts, and anyone — including an auditor — can walk the chain
