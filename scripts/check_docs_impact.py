@@ -29,8 +29,12 @@ DOC_BEARING_PREFIXES = (
     "plugins/steer/rules/",
     "plugins/steer/hooks/",
 )
-# Test-only changes don't change documented behaviour.
-EXEMPT_SUBSTRINGS = ("/tests/",)
+# Test-only changes don't change documented behaviour. Internal hook *libraries*
+# (``hooks/lib/*``) are sourced plumbing — they carry no event/matcher of their
+# own and never appear in ``hooks.json``, so the docs site does not describe them
+# (``docs/reference/hooks.md`` documents the ``hooks.json`` entries). A change
+# confined to a lib helper therefore has no documented surface to drift from.
+EXEMPT_SUBSTRINGS = ("/tests/", "/hooks/lib/")
 DOCS_PREFIX = "docs/"
 
 
