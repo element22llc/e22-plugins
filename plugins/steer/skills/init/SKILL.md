@@ -210,7 +210,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    PO-driven idea→app flow runs through `/steer:build` instead.
    - **If the tracker is GitHub Issues**, run `/steer:issues bootstrap-labels` to
      create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
-     a form label that doesn't exist).
+     a form label that doesn't exist), then `/steer:tracker-sync bootstrap-fields`
+     to verify the native **Priority/Effort/date** issue fields are available (it
+     reports a capability gap or option mismatch; it never fabricates org config).
 4. **Record the initial stack as the first ADR.** The stack choice is usually
    the first decision worth an ADR — run `/steer:adr`. **Any deviation from the
    defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or

@@ -21,7 +21,7 @@ specialized skills below as needed, so you rarely reach past this set.
 | `/steer:spec` | Spec-only brainstorm for a feature — author/iterate `intent.md` (+ `contract.md`), drive open questions, approve. See [Spec](../workflows/spec.md). |
 | `/steer:work` | Execute a GitHub issue end-to-end — validate, claim, branch, implement, test, PR. See [Work](../workflows/work.md). |
 | `/steer:deliver` | Run a task through a review-gated loop — plan, independent plan-gate review, sign-off, implementation (delegated to `/steer:work` in GitHub-adopted repos, direct in prototype/local mode), an independent `/code-review` gate, and a bounded fix loop. Orchestrates and reviews rather than owning a second implementation path. |
-| `/steer:issues` | High-level GitHub Issues lifecycle for the spine — capture, triage, brainstorm, materialize, decompose, status, reconcile, and sequence into a release timeline. See [Issues](../workflows/issues.md). |
+| `/steer:issues` | High-level GitHub Issues lifecycle for the spine — capture, triage, brainstorm, materialize, decompose, status, a read-only ranked relationship-aware `board`, reconcile, and sequence into a release timeline. Triage escalate-only auto-sets the native Priority field. See [Issues](../workflows/issues.md). |
 | `/steer:audit` | Repeatable whole-repo standards-conformance health audit, ranked by leverage. Read-only. Hands off to `/steer:drift` and `/steer:tidy`. Treats a declared-trunk unprotected `main` (solo trunk mode) as intentional, not a finding. |
 | `/steer:adr` | Record a hard-to-reverse or cross-cutting decision as an ADR. See [Decisions](../decisions/index.md). |
 | `/steer:next` | "What should I do next?" across the workspace. Read-only. |
@@ -43,7 +43,7 @@ cleanly to one. Each is reached through the front door noted.
 | `/steer:doctor` | `/steer:setup` | Detect and install the local prerequisites a repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs. |
 | `/steer:drift` | `/steer:audit` | Compare the as-built `/spec` against the tracker's intent and surface divergences. Read-only. |
 | `/steer:tidy` | `/steer:audit` | Sweep loose files out of the repo root into their correct home (`/spec/reference`, `/spec/design`). |
-| `/steer:roadmap` | `/steer:issues` | Generate a release-milestone timeline (viewable as a GitHub Projects v2 roadmap) by turning intended-but-unshipped work into milestone-grouped issues — `from-features` (target specs not yet live) or `from-gap` (a `/steer:drift` spec-gap), plus a `sync` reconcile. Proposes a dependency-ordered plan; never fabricates dates. |
+| `/steer:roadmap` | `/steer:issues` | Generate a release-milestone timeline (viewable as a GitHub Projects v2 roadmap) by turning intended-but-unshipped work into milestone-grouped issues — `from-features` (target specs not yet live) or `from-gap` (a `/steer:drift` spec-gap), plus a `sync` reconcile. Writes the human-confirmed native Start/Target **date** issue fields (for per-issue Gantt bars) in addition to milestone grouping; proposes a dependency-ordered plan; never fabricates dates. |
 | `/steer:questions` | `/steer:spec`, `/steer:issues` | Promote a spec's open question into a tracked issue when it outgrows the feature. |
 | `/steer:conventions` | reference prose | Answer tooling/convention questions and the rationale behind stack defaults. Materialized into `/spec/reference/` once a repo is set up. |
 | `/steer:traceability` | reference prose | Living-docs & traceability reference — how specs, issues, ADRs, tracker refs, and drift gates link up. Read-only. |
@@ -55,5 +55,5 @@ cleanly to one. Each is reached through the front door noted.
 
 | Skill | Purpose |
 | --- | --- |
-| `/steer:tracker-sync` | The single gateway for all GitHub tracker reads/writes (MCP-first, `gh` fallback, manual floor). |
+| `/steer:tracker-sync` | The single gateway for all GitHub tracker reads/writes (MCP-first, `gh` fallback, manual floor). Also reads/writes **native issue fields** (`field-get`/`field-set`/`bootstrap-fields` for Priority/Effort/dates) and records **native blocked-by relationships** (`link-blocked-by`). |
 | `/steer:spec-scaffold` | Materialize the `/spec` spine files from the bundled templates. |

@@ -99,6 +99,27 @@ Parent/sub-issue links are **not** in this enum — they are native GitHub links
 `/steer:tracker-sync link-parent` (or the `steer:parent-issue` marker fallback).
 Duplicates are handled by `triage` close-as-duplicate, not a relationship word.
 
+## `issue_priority` — relative urgency (a native GitHub **issue field**, not a label)
+
+`Urgent · High · Medium · Low`
+
+The single-select **Priority** issue field (GitHub's default option set), read for
+ranking and **escalate-only** auto-set. It lives on the issue as a native field
+set via `/steer:tracker-sync field-set` — **never** a `priority:*` label and never
+in the issue body (see `LABELS.md`, `ISSUE-SCHEMA.md` → native issue fields). The
+ranking weight is `Urgent > High > Medium > Low`, with **unset = lowest** (never
+fabricate a value). It orders the backlog *within* the shared safety precedence —
+it never overrides it (see `NEXT-ACTIONS.md`).
+
+`steer` auto-sets only a **floor**, never a ceiling, from mechanical signals
+(`risk:security` → `Urgent`; an open `blocking` question gating this issue →
+`High`; …) and never silently downgrades a human-set value. **Effort, Start date,
+and Target date** are the other default issue fields; `steer` reads them and (for
+dates) writes them under human confirmation via `/steer:roadmap`, but their option
+sets are **org-defined** — read from the field definition, not pinned here. Where
+the org has not enabled issue fields, ranking treats Priority as unset and the
+field is omitted (capability degradation in `ISSUE-WORKFLOW.md`).
+
 ## `adr_status` — an ADR's state
 
 `Proposed · Accepted · Superseded · Deprecated`

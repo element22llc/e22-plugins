@@ -9,7 +9,10 @@ state is stale) vs. picking up an unrelated ready issue.
 - Issue #123's PR was merged to `main`, but the issue is still marked `validate`
   (`<!-- steer:state=validate -->`) — the tracker transition to `done` was never
   completed.
-- Issue #160 is `ready-for-dev` and actionable, not started.
+- Issue #160 is `ready-for-dev` and actionable, not started — even if a human set
+  its **Priority** to `Urgent`, that does **not** change the outcome: Priority is a
+  within-level tie-break, below the structural safety level, so it cannot lift #160
+  above the level-4 transition on #123.
 
 ## Expected highest-priority action
 

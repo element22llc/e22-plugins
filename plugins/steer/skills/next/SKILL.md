@@ -80,7 +80,10 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
   `<!-- steer:state=... -->` marker
   (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
   blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
-  **say so** — never invent tracker state.
+  **say so** — never invent tracker state. Also read each candidate issue's native
+  **Priority** field (`/steer:tracker-sync field-get`) and native **blocked-by**
+  edges — they feed the within-level tie-break (the composite sort key below). Where
+  issue fields are unavailable, treat Priority as unset and **say so**.
 - **Work claims** — detect in-progress work from `steer:state=in-progress` plus an
   `steer:branch=` / `steer:claimed-by=` marker, cross-checked against the live branch
   and PR. Flag the **merged-PR-but-stale-tracker** case (PR merged to `main`, issue
@@ -148,8 +151,11 @@ Then collect every surviving candidate and apply the **shared safety precedence*
 across all of them — regardless of which workflow each came from. Lower level
 wins: a committed secret (L1) in one feature outranks a PR awaiting review (L3)
 in another, which outranks a `ready-for-dev` issue (L6). Within a single level,
-prefer the candidate that unblocks the most downstream work; if still tied,
-order by feature/issue id for determinism and say a tie was broken. The result
+order by the **composite sort key** in `NEXT-ACTIONS.md`: the native **Priority**
+field first (`Urgent > High > Medium > Low`, unset lowest), then the candidate that
+unblocks the most downstream work, then milestone proximity / lifecycle depth, and
+finally created-at / feature-id for determinism — say a tie was broken. Priority
+orders *within* a level and never lifts a candidate across the precedence. The result
 is exactly one `Current recommended action`, or `No action is currently
 required.`
 

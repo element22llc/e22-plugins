@@ -10,23 +10,24 @@ findings to `/steer:audit`, drift to `/steer:drift`, and question promotion to
     Use to manage the backlog: capture an idea, triage the inbox, brainstorm,
     materialize a spec, decompose into work, check status, or reconcile.
 
-**Argument hint:** `[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]`
+**Argument hint:** `[capture | triage | brainstorm | materialize | decompose | status | board | reconcile] [#issue | feature-id]`
 
 ## Phases
 
 ```mermaid
 flowchart LR
-    capture --> triage --> brainstorm --> materialize --> decompose --> status --> reconcile
+    capture --> triage --> brainstorm --> materialize --> decompose --> status --> board --> reconcile
 ```
 
 | Phase | What it does |
 | --- | --- |
 | `capture` | Record a raw idea as an issue without losing open questions. Searches the existing backlog first — to dedupe and to link related/dependent/conflicting issues. |
-| `triage` | Sort the inbox; set state/labels. |
+| `triage` | Sort the inbox; set state/labels, and **escalate-only auto-set the native Priority field** from mechanical signals (`risk:security`→Urgent, blocking-question gate→High, …) — `max(current, floor)`, never downgrading a human's value. Effort/dates stay human-set. |
 | `brainstorm` | Explore an idea before committing to a spec. Searches the existing issues (open **and** closed) to surface overlaps, dependencies, and conflicts, and records them as related-issue cross-links. |
 | `materialize` | Turn an explored idea into a `/spec` intent. |
 | `decompose` | Break an approved spec into tracked work items. |
 | `status` | Report lifecycle state across issues. |
+| `board` | Read-only ranked, relationship-aware backlog overview (Ranked / Relationships / Dedup candidates / Hygiene). Never writes; defers cross-workflow "what's most critical" to `/steer:next`. |
 | `reconcile` | Bounded re-sync of issues against the spine. |
 
 ## Boundaries

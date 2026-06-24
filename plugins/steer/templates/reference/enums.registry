@@ -24,5 +24,6 @@ issue_kind=feature|bug|task|finding|spec-question|spec-drift|audit-run
 issue_state=inbox|exploring|ready-for-spec|ready-for-dev|in-progress|validate|blocked|done|cancelled
 issue_source=human|adoption|audit|security-review|code-review|ci|dependency|implementation|spec
 issue_relationship=relates-to|depends-on|blocks|conflicts-with|supersedes|superseded-by
+issue_priority=Urgent|High|Medium|Low
 adr_status=Proposed|Accepted|Superseded|Deprecated
 next_action=Blocking now|Human decision required|Required before initial production|Required before next production release|Urgent live-system remediation|Recommended|Complete
