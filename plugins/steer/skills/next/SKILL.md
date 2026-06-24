@@ -80,7 +80,10 @@ vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only
   `<!-- steer:state=... -->` marker
   (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
   blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
-  **say so** — never invent tracker state.
+  **say so** — never invent tracker state. Also read each candidate issue's native
+  **Priority** field (`/steer:tracker-sync field-get`) and native **blocked-by**
+  edges — they feed the within-level tie-break (the composite sort key below). Where
+  issue fields are unavailable, treat Priority as unset and **say so**.
 - **Work claims** — detect in-progress work from `steer:state=in-progress` plus an
   `steer:branch=` / `steer:claimed-by=` marker, cross-checked against the live branch
   and PR. Flag the **merged-PR-but-stale-tracker** case (PR merged to `main`, issue

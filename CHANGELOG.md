@@ -7,6 +7,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added (ranking + roadmap dates):** `/steer:next` now reads each candidate's
+  native **Priority** field and blocked-by edges during state reconstruction and
+  orders within a safety level by the composite sort key (Priority first), saying so
+  when issue fields are unavailable. `/steer:roadmap` now writes the human-confirmed
+  **Start/Target date** native issue fields (via `field-set`) so a Projects v2
+  roadmap lays out per-issue Gantt bars without Project-item mirroring — still never
+  fabricating a date, capability-degrading to Milestone grouping alone when fields
+  are unavailable.
 - **Added (auto-set):** `/steer:issues triage` now **escalate-only auto-sets** the
   native Priority field from a closed, mechanical floor table (`risk:security` →
   `Urgent`; an open blocking question gating the issue → `High`; live-feature

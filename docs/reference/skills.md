@@ -22,8 +22,8 @@ shipped skill is missing here.
 
 | Skill | Purpose |
 | --- | --- |
-| `/steer:issues` | High-level GitHub Issues lifecycle for the spine — capture, triage, brainstorm, materialize, decompose, status, reconcile. See [Issues](../workflows/issues.md). |
-| `/steer:roadmap` | Generate a release-milestone timeline (viewable as a GitHub Projects v2 roadmap) by turning intended-but-unshipped work into milestone-grouped issues — `from-features` (target specs not yet live) or `from-gap` (a `/steer:drift` spec-gap), plus a `sync` reconcile. Proposes a dependency-ordered plan; never fabricates dates. A thin orchestrator over `/steer:issues`, `/steer:drift`, and `/steer:tracker-sync`. |
+| `/steer:issues` | High-level GitHub Issues lifecycle for the spine — capture, triage, brainstorm, materialize, decompose, status, a read-only ranked relationship-aware `board`, reconcile. Triage escalate-only auto-sets the native Priority field. See [Issues](../workflows/issues.md). |
+| `/steer:roadmap` | Generate a release-milestone timeline (viewable as a GitHub Projects v2 roadmap) by turning intended-but-unshipped work into milestone-grouped issues — `from-features` (target specs not yet live) or `from-gap` (a `/steer:drift` spec-gap), plus a `sync` reconcile. Writes the human-confirmed native Start/Target **date** issue fields (for per-issue Gantt bars) in addition to milestone grouping; never fabricates dates. A thin orchestrator over `/steer:issues`, `/steer:drift`, and `/steer:tracker-sync`. |
 | `/steer:spec` | Spec-only brainstorm for a feature — author/iterate `intent.md` (+ `contract.md`), drive open questions, approve. See [Spec](../workflows/spec.md). |
 | `/steer:build` | Guided flow for a non-technical PO: idea → spec → working app → PR. See [Build](../workflows/build.md). |
 | `/steer:questions` | Promote a spec's open question into a tracked issue when it outgrows the feature. |
@@ -63,5 +63,5 @@ menu, but documented here for completeness:
 
 | Skill | Purpose |
 | --- | --- |
-| `/steer:tracker-sync` | The single gateway for all GitHub tracker reads/writes (MCP-first, `gh` fallback, manual floor). |
+| `/steer:tracker-sync` | The single gateway for all GitHub tracker reads/writes (MCP-first, `gh` fallback, manual floor). Also reads/writes **native issue fields** (`field-get`/`field-set`/`bootstrap-fields` for Priority/Effort/dates) and records **native blocked-by relationships** (`link-blocked-by`). |
 | `/steer:spec-scaffold` | Materialize the `/spec` spine files from the bundled templates. |

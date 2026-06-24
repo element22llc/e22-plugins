@@ -28,9 +28,10 @@ It writes **only native issue attributes** the Projects-v2 boundary already
 sanctions — Milestone, parent/sub-issue links, labels, Type. **Priority, Effort,
 and Start/Target date are native issue fields** (`ISSUE-SCHEMA.md`), not
 Project-item fields — Priority is escalate-only auto-set by `/steer:issues triage`,
-and writing native Start/Target **date** fields onto issues is a forthcoming
-roadmap capability; only **Status, Iteration, and Size** remain Project-item-only
-and out of scope here. It **never fabricates a date**: dates come from the human at
+and this skill writes the **Start/Target date** fields onto issues (human-confirmed)
+so a Projects v2 roadmap lays out per-issue Gantt bars with no Project-item
+mirroring; only **Status, Iteration, and Size** remain Project-item-only and out of
+scope here. It **never fabricates a date**: dates come from the human at
 confirmation.
 
 ## First, every run
@@ -101,6 +102,12 @@ After resolving the work-set in any writing mode:
    - **`milestone-ensure <title> [--due <date>]`** — create each confirmed
      milestone if missing (it is confirmation-gated and never invents a date).
    - **`set-milestone #N <title>`** — attach each work-set issue to its milestone.
+   - **`field-set #N "Target date" <date>`** (and `"Start date"` when the human
+     gave one) — write the **human-confirmed** dates to the native date **issue
+     fields**, so a Projects v2 roadmap can lay out per-issue Gantt bars without any
+     Project-item mirroring. Use the same dates the human just confirmed — **never
+     fabricate one**. Capability-degrades: if issue fields are unavailable, skip the
+     date fields and rely on the Milestone grouping alone (say so).
 4. **Report** the milestone set, the issue refs under each, and the org Project
    roadmap URL if `/spec/tracker.md` records one. Note that the Projects v2 timeline
    axis (group/lay-out by Milestone) is a **one-time view setup in the GitHub UI** —
@@ -113,8 +120,9 @@ After resolving the work-set in any writing mode:
   prose. All GitHub I/O goes through `/steer:tracker-sync`.
 - **Idempotent.** Find before create (`feature-id`+`kind` / `finding-key`); a match
   is an update. Re-running a mode must not double-file issues or milestones.
-- **Native attributes only.** Writes are Milestone, links, labels, Type — never a
-  Project-item planning field, never mirrored into an issue body.
+- **Native attributes only.** Writes are Milestone, links, labels, Type, and the
+  native Start/Target **date** issue fields — never a Project-*item* planning field
+  (Status/Iteration/Size), never mirrored into an issue body.
 - **No fabricated planning data.** Never invent a date, priority, or effort. Dates
   are human-supplied; ordering follows declared dependencies only.
 - **Authorization & confirmation.** Reads (preview) never confirm. The full plan
