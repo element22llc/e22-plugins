@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.0.1
+
 - **Fixed:** `hooks/lib/spine.sh` `steer_spine_state` misclassified a fully
   managed repo as `damaged` under zsh. The required-files loop relied on
   word-splitting an unquoted `${STEER_SPINE_REQUIRED}`, which POSIX sh does but
