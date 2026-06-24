@@ -1,7 +1,7 @@
 # Conventions
 
 Cross-cutting conventions for product repos. The always-on rules keep
-only pointers; this is the full prose, loaded on demand via `/steer:conventions`.
+only pointers; this is the full prose, loaded on demand via `/steer:reference conventions`.
 
 ## Versioning policy
 

@@ -44,7 +44,7 @@ owners:
 > referenced everywhere else (specs, PRs, action history). The machine-readable
 > contract is the **frontmatter above**; the prose below is the human summary.
 > The workflow is **client-agnostic** — any tracker works; only this file knows
-> which one. Full conventions: run `/steer:traceability`. GitHub Issues lifecycle:
+> which one. Full conventions: run `/steer:reference traceability`. GitHub Issues lifecycle:
 > see the issue-workflow reference, driven by `/steer:issues`.
 
 ## Conventions (summary)

@@ -189,7 +189,7 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 ## Coupling rules
 
 Tracker-integration conventions are canonical in rule `35-issue-tracker` and the
-`/steer:traceability` reference; the spec ↔ code resolution rules live in
+`/steer:reference traceability` reference; the spec ↔ code resolution rules live in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`. This skill only
 moves pointers and findings across the GitHub boundary — those references govern
 what the pointers mean and how drift gets resolved.

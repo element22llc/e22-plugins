@@ -4,7 +4,7 @@
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
 areas) — validate in non-prod before prod, and scope pipeline changes with the dev
 first. Detail and the AWS/Terragrunt specifics live in `/infra/README.md`; run
-`/steer:conventions` for the rationale.
+`/steer:reference conventions` for the rationale.
 
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR

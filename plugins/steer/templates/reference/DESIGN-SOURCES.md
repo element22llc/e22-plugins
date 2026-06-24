@@ -3,7 +3,7 @@
 How a feature's UI gets designed and built to a uniform standard — whether it
 starts from a design export, a partial sketch, or nothing at all. The always-on
 rules keep only a short summary; this is the full walkthrough, loaded on demand
-via `/steer:design-sources`.
+via `/steer:reference design-sources`.
 
 **Set expectations first: most features have no design export, or only a partial
 one.** A committed export is a useful input when it exists, but its absence is

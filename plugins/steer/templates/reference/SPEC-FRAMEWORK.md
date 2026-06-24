@@ -25,7 +25,7 @@ validation, and operation. Treat it as infrastructure.
 ├── vision.md                 # Why this product exists — plus an `## Open questions` section for product-level ambiguities
 ├── users.md                  # Who uses it and what they need
 ├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
-├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /steer:traceability)
+├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /steer:reference traceability)
 ├── tracker.md                # Which issue tracker this product uses + reference conventions (client-agnostic)
 ├── BUILD-STATUS.md           # PO builds only — /steer:build flow state (step, per-feature progress, handoff gate)
 ├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
@@ -178,7 +178,7 @@ conversation, a written brief, screenshots, or a Claude Design export. Do
    product clearly needs. Keep scope honest — flag anything ambiguous in that
    feature's `intent.md` → `## Open questions` instead of guessing.
 3. If a Claude Design export exists, read the **local export** (run
-   `/steer:design-sources`) — never fetch the URL (it 403s). The design is
+   `/steer:reference design-sources`) — never fetch the URL (it 403s). The design is
    authoritative for visual behavior; the spec for what the system does. Flag
    conflicts in the relevant feature's `intent.md` → `## Open questions`.
 4. Get PO approval on the intent specs before broad implementation, then build
@@ -224,7 +224,7 @@ where the exploration happened. It is *not* a prototyping workspace: code
 exploration happens on a branch under `/apps`, never there. Link, do not copy —
 design explorations are disposable; the spec is what carries forward. A purely
 Brownfield repo with no Greenfield phase can delete the folder. See
-`/steer:design-sources` for the full export-handling walkthrough.
+`/steer:reference design-sources` for the full export-handling walkthrough.
 
 ## Template reconciliation (self-healing on re-run)
 

@@ -21,7 +21,7 @@ the code**:
 PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
-conventions + worked examples: run **`/steer:traceability`**.
+conventions + worked examples: run **`/steer:reference traceability`**.
 
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it — a one-liner into

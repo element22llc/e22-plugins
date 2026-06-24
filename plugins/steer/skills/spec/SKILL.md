@@ -45,7 +45,7 @@ implementation.
    - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` → `spec/features/[id]/intent.md`
    - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-contract.md` → `spec/features/[id]/contract.md` (only when behavior/data/API surface is in play — see step 5).
    For a design-originated feature, populate the `Design source` section per
-   `/steer:design-sources`.
+   `/steer:reference design-sources`.
 3. **Brainstorm the intent interactively.** Walk the PO/dev through, in plain
    user-facing language: the problem, who it's for, the user-visible outcome,
    and concrete **acceptance criteria**. Keep it stack-free — this is the *what

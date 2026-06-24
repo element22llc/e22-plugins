@@ -16,9 +16,7 @@ Read-only or purely advisory; inferring them from a question is fine.
 
 | Skill | What it does |
 |---|---|
-| `/steer:conventions` | Reference prose (versioning, toolchain, lint/test). |
-| `/steer:traceability` | Reference prose (living docs, tracker, drift gates). |
-| `/steer:design-sources` | Reference prose (design exports). |
+| `/steer:reference [conventions\|traceability\|design-sources]` | Reference prose by topic — conventions (versioning, toolchain, lint/test), traceability (living docs, tracker, drift gates), design-sources (design exports). |
 | `/steer:standards` | Re-loads the always-on rules on demand. |
 | `/steer:next` | Read-only workspace navigator — never edits or publishes. |
 | `/steer:audit` | Read-only health audit — reports, never edits. |
