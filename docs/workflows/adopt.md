@@ -34,5 +34,5 @@ flowchart TD
 
 ## After adopting
 
-- Run `/steer:drift` to compare the as-built spine against the tracker's intent.
+- Run `/steer:audit spec` to compare the as-built spine against the tracker's intent.
 - Run `/steer:sync` after future plugin releases to stay current.

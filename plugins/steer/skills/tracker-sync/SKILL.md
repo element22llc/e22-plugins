@@ -1,7 +1,7 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, field-get, field-set, bootstrap-fields, transition, assign/claim, link, link-blocked-by, close/reopen) plus the higher-level PULL (materialize issues for /steer:drift, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
-when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:drift export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
+description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, field-get, field-set, bootstrap-fields, transition, assign/claim, link, link-blocked-by, close/reopen) plus the higher-level PULL (materialize issues for /steer:audit spec, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
+when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:audit spec export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: invoked by /steer:issues and /steer:work
 # (and the read flows of drift), never a direct user entry point. Model-callable,
@@ -14,7 +14,7 @@ user-invocable: false
 
 The plugin treats the tracker as a **pointer**, with `/spec` as the source of
 truth. This skill is the **GitHub accelerator** for that pointer: it pulls issues
-in (so `/steer:drift` doesn't need copy-paste) and pushes findings out (so
+in (so `/steer:audit spec` doesn't need copy-paste) and pushes findings out (so
 `spec-drift` issues and promoted questions actually get filed). It moves
 **pointers and findings across the GitHub boundary** — it never makes GitHub
 Issues the spec home, and for any non-GitHub tracker it degrades to the existing
@@ -31,7 +31,7 @@ shell escaping. Detect capability **in this order, every run**:
 1. **Read `/spec/tracker.md`.** Confirm the frontmatter key `system: github`
    (the lowercase enum value — not prose). If the tracker
    is Jira/Linear/Azure DevOps/other, print the manual-export instructions (the
-   same paste/path flow `/steer:drift` uses today) and **stop** — there is no
+   same paste/path flow `/steer:audit spec` uses today) and **stop** — there is no
    GitHub API path for a non-GitHub tracker. Don't fabricate one.
 2. **Probe for GitHub MCP tools** (e.g. an issues list/get/create tool exposed by
    the github MCP server). If present → **MCP path**.
@@ -39,7 +39,7 @@ shell escaping. Detect capability **in this order, every run**:
    (`gh issue list --json …`, `gh issue create --body-file …` — use
    `--body-file`/heredoc for markdown bodies, never inline `--body` for
    multi-line text).
-4. **Else** → manual paste/path export, same as `/steer:drift`. Say which path you
+4. **Else** → manual paste/path export, same as `/steer:audit spec`. Say which path you
    took so the user knows whether issues were actually touched.
 
 ## Issue operations (the gateway)
@@ -177,8 +177,8 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 
 - **Export for drift.** Fetch issues (filterable by label / milestone / state)
   and write **one markdown file per issue** into a temp export directory in the
-  shape `/steer:drift` expects: title, tracker key (`#123`), labels, state, body,
-  and acceptance criteria. Then offer to chain straight into `/steer:drift` with
+  shape `/steer:audit spec` expects: title, tracker key (`#123`), labels, state, body,
+  and acceptance criteria. Then offer to chain straight into `/steer:audit spec` with
   that directory as its tracker-spec input — no pasting.
 - **Import criteria into an intent.** Given an issue ref and a feature `[id]`,
   copy the issue's acceptance criteria into `spec/features/[id]/intent.md` and
@@ -188,9 +188,9 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 
 ### `push` — spec → tracker (create)
 
-- **`spec-drift` issues.** Consume a `/steer:drift` finding set (from a just-run
+- **`spec-drift` issues.** Consume a `/steer:audit spec` finding set (from a just-run
   drift report or a findings file) and open one `spec-drift`-labelled issue per
-  finding that needs a human decision — the step `/steer:drift` describes but does
+  finding that needs a human decision — the step `/steer:audit spec` describes but does
   not execute. Scope to *actual* drift (Diverged, Done-but-Missing, genuine
   conflicts) — **never** expected-Missing backlog.
 - **Promote an open question.** Take a `## Open questions` entry that needs an
@@ -223,7 +223,7 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 ## Steps (happy path — `push` from a drift run)
 
 1. Read `/spec/tracker.md`; confirm GitHub. Detect MCP vs `gh` (above).
-2. Take the drift findings (from a just-run `/steer:drift`, or a findings file the
+2. Take the drift findings (from a just-run `/steer:audit spec`, or a findings file the
    dev points to).
 3. Dedup against existing open `spec-drift` issues.
 4. Show the proposed issue list (title + which finding/feature each maps to); get
@@ -236,7 +236,7 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 ## Coupling rules
 
 Tracker-integration conventions are canonical in rule `35-issue-tracker` and the
-`/steer:traceability` reference; the spec ↔ code resolution rules live in
+`/steer:reference traceability` reference; the spec ↔ code resolution rules live in
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`. This skill only
 moves pointers and findings across the GitHub boundary — those references govern
 what the pointers mean and how drift gets resolved.

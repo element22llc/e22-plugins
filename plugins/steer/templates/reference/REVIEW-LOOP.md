@@ -1,13 +1,13 @@
 # The review-gated execution loop
 
-The protocol behind `/steer:deliver`. The loop takes a task and produces a
-**vetted** result instead of a first draft, by inserting two *independent* review
-gates — one on the plan, one on the diff — and a bounded fix loop around an
-implementation step that stays owned by `/steer:work`.
+The protocol behind `/steer:work --reviewed`. The loop takes a task and produces
+a **vetted** result instead of a first draft, by inserting two *independent*
+review gates — one on the plan, one on the diff — and a bounded fix loop around
+the implementation step that `/steer:work` already owns.
 
 This file owns the **shared logic**: the three disciplines, the per-gate rubric,
 the stopping rules, and how the loop relates to the other execution skills. The
-`/steer:deliver` skill owns only the step-by-step it runs.
+`/steer:work` skill's `--reviewed` mode owns only the step-by-step it runs.
 
 ---
 
@@ -78,10 +78,10 @@ fix loop open.
 ## 5. Where the loop sits among the skills
 
 - **`/steer:work`** owns governed implementation — branch, commits, tests, PR,
-  tracker — in GitHub-adopted repos. `/steer:deliver` delegates step 4 to it there,
-  keeping a single governed implementation path. In prototype/local mode (no
-  tracker) there is no `/steer:work`; `/steer:deliver` implements directly, exactly
-  as `/steer:build` does in that mode.
+  tracker — in GitHub-adopted repos. Its `--reviewed` mode *is* this loop: step 4
+  runs the same governed implementation path, with the gates added around it. In
+  prototype/local mode (no tracker) there is no `/steer:work`; apply this protocol
+  directly around implementation, exactly as `/steer:build` does in that mode.
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
   routes implementation through `/steer:work`; in its default prototype/local mode
   it implements directly.
@@ -90,7 +90,7 @@ fix loop open.
 - **`steer-reviewer`** is the shipped read-only subagent the code gate's optional
   standards check invokes explicitly (it cites `path:line` evidence in existing
   code, so it is *not* used for the plan gate) — the same explicit-invocation
-  pattern `/steer:audit` and `/steer:drift` use. The plan gate uses a fresh
+  pattern `/steer:audit` and `/steer:audit spec` use. The plan gate uses a fresh
   general reviewer subagent instead.
 
 ## 6. Cost

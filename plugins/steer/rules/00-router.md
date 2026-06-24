@@ -81,19 +81,20 @@ them directly when an intent maps cleanly to one:
 - **`/steer:setup`** detects and hands off to `/steer:init` (greenfield), `/steer:adopt`
   (existing code), `/steer:sync` (steady-state update/repair), and `/steer:doctor`
   (prerequisites).
-- **`/steer:audit`** hands off to `/steer:drift` (as-built `/spec` vs tracker intent)
-  and `/steer:tidy` (sort repo-root strays into `/spec`).
+- **`/steer:audit`** runs in two modes — `code` (whole-repo health, the default) and
+  `spec` (as-built `/spec` vs tracker intent) — and hands off to `/steer:tidy`
+  (sort repo-root strays into `/spec`).
 - **`/steer:issues`** and `/steer:spec` hand off to `/steer:questions` (clear open
   spec questions); `/steer:issues` hands off to `/steer:roadmap` (release timeline).
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
   specs are instantiated by the internal `/steer:spec-scaffold` — never call these
   directly.
-- The full reference prose (`/steer:conventions`, `/steer:traceability`,
-  `/steer:design-sources`) is materialized into `/spec/reference/` once a repo is set
-  up; run those skills directly only on web chat or when asked for the deep dive.
+- The full reference prose (`/steer:reference [conventions|traceability|design-sources]`)
+  is materialized into `/spec/reference/` once a repo is set up; run that skill
+  directly only on web chat or when asked for the deep dive.
 
 On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
 auto-injected), run `/steer:standards` at session start to load these rules on demand.
 
 When you pick or change stack pieces, verify current stable versions in-session
-(run `/steer:conventions`) — don't trust training-data memory.
+(run `/steer:reference conventions`) — don't trust training-data memory.

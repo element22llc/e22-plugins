@@ -21,7 +21,7 @@ flowchart TD
 | --- | --- | --- |
 | `/spec` spine | `templates/spec/` | Product truth. See [Product spine](../concepts/product-spine.md). |
 | `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. |
-| `mise.lock` | created at pin time | The real version pin. The scaffold ships **no** lock — `/steer:init`/`/steer:adopt` create it when they pin the toolchain (`touch mise.lock`, `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums — CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock). Until a populated lock is committed, CI runs a plain unlocked install; never commit an empty / comment-only lock. Run `/steer:conventions` for the full toolchain rationale. |
+| `mise.lock` | created at pin time | The real version pin. The scaffold ships **no** lock — `/steer:init`/`/steer:adopt` create it when they pin the toolchain (`touch mise.lock`, `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums — CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock). Until a populated lock is committed, CI runs a plain unlocked install; never commit an empty / comment-only lock. Run `/steer:reference conventions` for the full toolchain rationale. |
 | CI workflows + PR template | scaffold | Quality gates and review template. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |
@@ -65,7 +65,7 @@ and the JSON configs (`.claude/settings.json`, `biome.json`,
 JSON arrays and adds missing keys/lines without overwriting, reordering, or
 removing any existing value. The array union is what lets a repo's existing
 `.vscode/extensions.json` recommendations gain the scaffold's (VS Code is the
-default editor; see the Stack rule / `/steer:conventions`) without losing local
+default editor; see the Stack rule / `/steer:reference conventions`) without losing local
 additions.
 
 The one exception is the `.claude/settings.json` `permissions` block, which

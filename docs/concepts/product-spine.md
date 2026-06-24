@@ -62,7 +62,7 @@ prevent.
 
 ## How the spine stays current
 
-- [`/steer:drift`](../workflows/index.md) compares the as-built spine against the
+- [`/steer:audit spec`](../workflows/index.md) compares the as-built spine against the
   tracker's intent (read-only).
 - [`/steer:sync`](../workflows/index.md) reconciles the materialized spine and
   scaffold against the current plugin templates after a release.

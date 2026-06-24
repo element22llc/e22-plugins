@@ -1,8 +1,8 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules and delivery mode — in solo-trunk mode it commits straight to main and closes the issue from the trunk commit instead of branching and opening a PR. One issue per branch/PR (or trunk commit) by default."
-when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented.
-argument-hint: "[start | resume | status | finish] [#issue ...]"
+description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules and delivery mode — in solo-trunk mode it commits straight to main and closes the issue from the trunk commit instead of branching and opening a PR. One issue per branch/PR (or trunk commit) by default. Pass --reviewed to wrap execution in independent plan- and code-review gates plus a bounded fix loop (the review-gated path formerly the deliver skill) — vetted, not first-draft."
+when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed ("deliver X carefully", "do this with review", any change costly to unwind) to gate the work through independent plan and code review.
+argument-hint: "[start | resume | status | finish] [--reviewed] [#issue ...]"
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -124,6 +124,49 @@ only in the branch/PR ceremony around that issue.
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent — re-running a
 phase reconciles rather than duplicates.
+
+## Reviewed mode (`--reviewed`)
+
+`--reviewed` wraps the `start`→`finish` flow above in two **independent** review
+gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
+This is the review-gated path formerly carried by the standalone `deliver` skill; the execution
+itself is unchanged — the same claim, branch, implement, test, PR, and transition
+steps run, with gates added around them. Full protocol, rubric structure, and
+stopping rules: [`REVIEW-LOOP.md`](../../templates/reference/REVIEW-LOOP.md).
+
+- **Triage first.** If the task is trivial (typo, one-liner, rename), run it
+  without the gates and say they were skipped — honesty over ceremony. The gates
+  earn their cost only on non-trivial work.
+- **Plan gate — independent.** Before implementing, draft the approach (what
+  changes, where, why), then spawn a **fresh reviewer subagent** — a separate
+  context, **not** `steer-reviewer` (that agent reviews existing on-disk code and
+  needs `path:line` evidence a prospective plan can't supply). Give it the plan,
+  the **restated requirements** (what success means, in your words), and the
+  relevant **steer rules** as the rubric. Ask for severity-ranked findings plus a
+  "what's missing" pass. **Revise on every high-severity finding**; never review
+  your own plan.
+- **Human plan sign-off.** Present the vetted plan for sign-off before a
+  significant change (Rules `45-commit-autonomy`, `95-not-the-gate`). This covers
+  the **plan**; the push/PR autonomy gates in `finish` still apply at delivery.
+- **Implement** via the normal `start`→`finish` flow — do not stand up a second
+  path.
+- **Code gate — independent.** After implementing, run `/code-review` on the diff
+  for correctness bugs and fidelity to the approved plan; in
+  spec/standards-sensitive repos additionally invoke `steer-reviewer` to check the
+  on-disk result against the standards (read-only, no git access — it reviews
+  state, not the diff). In **pr-flow** this gate runs **before** merge; in
+  **solo-trunk** it reviews the trunk commit after the fact and its findings
+  become immediate follow-up fixes — say so rather than implying it blocked a
+  merge.
+- **Bounded fix loop.** Apply fixes for confirmed findings, then re-review.
+  **Cap at 2 rounds**; exit as soon as a round surfaces no high-severity findings.
+  If you stop at the cap with findings still open, say what was left and why.
+- **Report.** Summarize what each gate checked, which findings were resolved, and
+  any residual risk, folded into the `## Recommended next actions` block below.
+
+In **prototype/local mode** there is no tracker and therefore no `/steer:work` to
+run — apply the same `REVIEW-LOOP.md` protocol directly around `/steer:build`'s
+implementation, which is the path that population uses.
 
 ## Completion semantics
 

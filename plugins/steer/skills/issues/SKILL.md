@@ -1,6 +1,6 @@
 ---
 name: issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:drift, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | board | reconcile] [#issue | feature-id]"
 ---
@@ -70,8 +70,8 @@ format (markers, headings, **managed blocks**, idempotency) in
 - **`publish-audit [report]`** — take an `/steer:audit` finding set and create/update
   the audit-run parent + selected finding children (see `/steer:audit`); file via
   `/steer:tracker-sync`.
-- **`publish-drift [report]`** — take an `/steer:drift` finding set and file
-  decision-checklist `spec-drift` issues (see `/steer:drift`); never auto-resolve.
+- **`publish-drift [report]`** — take an `/steer:audit spec` finding set and file
+  decision-checklist `spec-drift` issues (see `/steer:audit spec`); never auto-resolve.
 - **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key` per gap;
   **reconcile, don't duplicate**). Findings are **deduplicated by remediation
@@ -308,5 +308,5 @@ it recommends the transition; it does not perform unapproved writes.
 Lifecycle, state model, and authority are canonical in `ISSUE-WORKFLOW.md`; the
 issue format in `ISSUE-SCHEMA.md`; the open-question + validate contract in
 `SPEC-FRAMEWORK.md`; tracker conventions in rule `35-issue-tracker` and
-`/steer:traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
+`/steer:reference traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those across the lifecycle.

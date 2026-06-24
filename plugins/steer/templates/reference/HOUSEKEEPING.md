@@ -53,7 +53,7 @@ row or none, ask rather than guess (see "Unclear names" below).
 | Specification / requirements documents — a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW (source material feeding the spec, not the structured spec spine itself) | `/spec/reference/` |
 | An existing top-level `Technical Metadata/` (or similarly-named source) folder | `/spec/reference/technical-metadata/` |
 | Architecture diagrams, flow diagrams (`.svg`, "Flows for Review" `.pptx`) | `/spec/design/` |
-| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/steer:design-sources` for the exact path |
+| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/steer:reference design-sources` for the exact path |
 | Code / config that lives at root | leave in place (allowlist) |
 
 `/spec/reference/` is the catch-all home for durable source material the spec is

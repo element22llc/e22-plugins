@@ -16,13 +16,11 @@ Read-only or purely advisory; inferring them from a question is fine.
 
 | Skill | What it does |
 |---|---|
-| `/steer:conventions` | Reference prose (versioning, toolchain, lint/test). |
-| `/steer:traceability` | Reference prose (living docs, tracker, drift gates). |
-| `/steer:design-sources` | Reference prose (design exports). |
+| `/steer:reference [conventions\|traceability\|design-sources]` | Reference prose by topic — conventions (versioning, toolchain, lint/test), traceability (living docs, tracker, drift gates), design-sources (design exports). |
 | `/steer:standards` | Re-loads the always-on rules on demand. |
 | `/steer:next` | Read-only workspace navigator — never edits or publishes. |
 | `/steer:audit` | Read-only health audit — reports, never edits. |
-| `/steer:drift` | Read-only spec-vs-tracker comparison — reports, never edits. |
+| `/steer:audit spec` | Read-only spec-vs-tracker comparison — reports, never edits. |
 
 ## Tier 2 — requires explicit user intent (side-effecting)
 
@@ -37,8 +35,7 @@ an unrelated question.
 | `/steer:sync` | Updates the plugin + reconciles spine/scaffold, lands a PR. |
 | `/steer:tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec → working app → PR. |
-| `/steer:work` | Executes an issue end-to-end (branch → PR → transition). |
-| `/steer:deliver` | Runs a task through a review-gated loop; delegates governed implementation to `/steer:work` (direct in prototype mode). |
+| `/steer:work` | Executes an issue end-to-end (branch → PR → transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
 | `/steer:spec` | Authors/iterates a feature spec. |
 | `/steer:spec-scaffold` | Creates a feature's spec files. |
 | `/steer:adr` | Creates a numbered ADR. |

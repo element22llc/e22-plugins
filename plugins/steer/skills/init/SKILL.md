@@ -92,7 +92,7 @@ them:
    toolchain isn't installed and the dev defers it), leave the repo with **no**
    `mise.lock`: CI runs a plain unlocked `mise install` until a populated lock is
    committed. **Never commit an empty / comment-only `mise.lock`** — that pins
-   nothing while making CI's `--locked` fail. Run `/steer:conventions` for the
+   nothing while making CI's `--locked` fail. Run `/steer:reference conventions` for the
    rationale, including the cross-platform backend rule and lockfile-maintenance
    discipline.
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
@@ -114,7 +114,7 @@ them:
    - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
      drizzle-kit + a seed script) so the fan-out picks them up;
    - Python products: swap the `pnpm …` task commands for `uv run …`.
-   The contract (run `/steer:conventions` for the prose): `mise run dev:setup` is
+   The contract (run `/steer:reference conventions` for the prose): `mise run dev:setup` is
    idempotent and, from a fresh clone after `mise install`, must produce a
    working local environment.
 7. **Back-fill the newer scaffold artifacts.** A fork of the old template
@@ -154,7 +154,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 1. **Confirm the mode.** Verify there's no `/spec`, and that this is genuinely
    greenfield (you're writing the code from scratch), not reverse-engineering
    a pre-existing app — that would be `/steer:adopt`. If a design export/URL or
-   screenshots are the input, read them via `/steer:design-sources` first (never
+   screenshots are the input, read them via `/steer:reference design-sources` first (never
    fetch a Claude Design URL — it 403s). If the dev arrived with a brief or spec
    and wants to scope it, do that scoping **here, as this setup's interview**
    (steps 3–4) rather than ahead of the spine — bootstrap is the first move, not

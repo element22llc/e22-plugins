@@ -30,7 +30,7 @@ flowchart LR
     end
     subgraph Steady state
       sync["/steer:sync"]
-      drift["/steer:drift"]
+      drift["/steer:audit spec"]
       audit["/steer:audit"]
     end
     Setup --> issues --> spec --> work --> drift
@@ -51,8 +51,7 @@ flowchart LR
 | --- | --- |
 | [`/steer:issues`](issues.md) | Drive an idea from capture → draft spec → decomposed work. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. |
-| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. |
-| `/steer:deliver` | Run an issue through a review-gated loop (plan → plan-gate review → `/steer:work` → `/code-review` → bounded fix) — vetted, not first-draft. |
+| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan → plan-gate review → implement → `/code-review` → bounded fix) — vetted, not first-draft. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
 ## Steady state
@@ -60,7 +59,6 @@ flowchart LR
 | Skill | Use when |
 | --- | --- |
 | `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. |
-| `/steer:drift` | Audit the built app against its tracker specs (read-only). |
-| `/steer:audit` | Periodic whole-repo standards-conformance health pass (read-only). |
+| `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to audit the built app against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace (read-only). |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |

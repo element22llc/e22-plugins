@@ -79,7 +79,7 @@ flowchart TD
 The skill frontmatter encodes the same boundary:
 
 - **Tier 1 (read-only)** skills set `disallowed-tools: Edit, Write, NotebookEdit,
-  EnterWorktree` — e.g. `drift`, `audit`, `next`, `standards`.
+  EnterWorktree` — e.g. `audit`, `next`, `standards`.
 - **Tier 2 (side-effecting)** skills may edit and commit but never push to `main`
   without confirmation — e.g. `sync`, `work`, `tidy`.
 

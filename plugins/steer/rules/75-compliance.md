@@ -8,4 +8,4 @@ evidence — keep the chain intact: traceability (intent → spec → tracker re
 PR → `HISTORY.md`), review evidence (dev-approved PRs, drift flags, DoD),
 change history (ADRs + action history), and access-conscious secure defaults
 (secrets rules, high-risk gates, branch protection). Evidence map:
-`/steer:traceability`.
+`/steer:reference traceability`.

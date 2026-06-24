@@ -21,7 +21,7 @@ Key points (read the file for the full detail):
   **spec/requirements documents** — `.pdf`/`.docx`/decks) → `/spec/reference/`.
   An existing `Technical Metadata/`-style folder → `/spec/reference/technical-metadata/`.
 - **Architecture/flow diagrams** (SVG, "Flows for Review" decks) → `/spec/design/`.
-  A **Claude Design export** also → `/spec/design/` — defer to `/steer:design-sources`.
+  A **Claude Design export** also → `/spec/design/` — defer to `/steer:reference design-sources`.
 - **Move confidently-classified strays immediately** — a file that maps cleanly
   to one home and isn't ambiguous gets `git mv`'d there now, under its existing
   name, no confirmation. The obvious cases just happen.

@@ -1,6 +1,6 @@
-"""End-to-end: ``/steer:drift`` is a read-only conformance audit.
+"""End-to-end: ``/steer:audit spec`` is a read-only conformance audit.
 
-drift compares the as-built ``/spec`` against a tracker-spec export and *reports*
+The spec audit compares the as-built ``/spec`` against a tracker-spec export and *reports*
 divergences — it never edits code/spec and never commits (``disallowed-tools``).
 Its report is printed in the response, not written to a file (the optional
 ``DRIFT-REPORT.md`` write needs a follow-up confirmation a headless run can't give).
@@ -37,7 +37,7 @@ def test_drift_is_read_only_and_reports_divergence(drift_repo):
     baseline = gitutil.head(drift_repo)
 
     run = run_skill(drift_repo, DRIFT)
-    summarize_run("/steer:drift", run)
+    summarize_run("/steer:audit spec", run)
 
     with explain_on_failure(drift_repo, run):
         assert not run.is_error, f"drift run failed: {run.stderr[:1500]}"
