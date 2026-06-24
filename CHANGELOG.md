@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added (foundation):** GitHub **native issue fields** are now first-class in the
+  issue model. `issue_priority=Urgent|High|Medium|Low` joins the enum registry
+  (`enums.registry` + `ENUMS.md`); `ISSUE-SCHEMA.md` reframes the Projects-v2
+  boundary so Priority/Effort/Start/Target date are **writable issue attributes**
+  (distinct from Project-*item* fields), documents the field-value-vs-managed-block
+  **ledger** provenance and the no-managed-block-guard concurrency note, and
+  `ISSUE-WORKFLOW.md` adds *issue fields* as a third capability-degrading axis
+  (alongside Issue Types and native sub-issues). `LABELS.md` reverses the former
+  "priority and effort are not tracked" stance — they are native fields, **never**
+  `priority:*` labels. `NEXT-ACTIONS.md` defines the **composite sort key** (safety
+  level first, then the Priority field as a *within-level* tie-break, then derived
+  signals), and `/steer:next` golden fixtures pin that Priority never crosses the
+  safety precedence. (Gateway ops, auto-set, board view, ranking, and roadmap dates
+  land in follow-up changes.)
 - **Changed:** Root housekeeping now **moves** a confidently-classified stray to
   its `/spec` home immediately, instead of waiting for a yes. Rule 22, the
   `/steer:tidy` skill, and `HOUSEKEEPING.md` reframe the policy: confident

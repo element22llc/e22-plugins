@@ -83,8 +83,9 @@ bootstrap-labels`):
   `risk:security` (auth/secrets/exploitable surface), `risk:data` (data
   integrity / migrations).
 
-Do **not** encode status, release, priority, or effort as labels — steer does not
-track those, and lifecycle **state** lives in markers, not labels.
+Do **not** encode status, release, priority, or effort as labels — lifecycle
+**state** lives in markers, and **priority/effort are native issue fields**, not
+labels (never create `priority:*` / `effort:*` labels).
 
 ## 3. Spam / quality check
 

@@ -148,8 +148,11 @@ Then collect every surviving candidate and apply the **shared safety precedence*
 across all of them — regardless of which workflow each came from. Lower level
 wins: a committed secret (L1) in one feature outranks a PR awaiting review (L3)
 in another, which outranks a `ready-for-dev` issue (L6). Within a single level,
-prefer the candidate that unblocks the most downstream work; if still tied,
-order by feature/issue id for determinism and say a tie was broken. The result
+order by the **composite sort key** in `NEXT-ACTIONS.md`: the native **Priority**
+field first (`Urgent > High > Medium > Low`, unset lowest), then the candidate that
+unblocks the most downstream work, then milestone proximity / lifecycle depth, and
+finally created-at / feature-id for determinism — say a tie was broken. Priority
+orders *within* a level and never lifts a candidate across the precedence. The result
 is exactly one `Current recommended action`, or `No action is currently
 required.`
 

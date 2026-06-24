@@ -178,7 +178,8 @@ everywhere else it proposes and waits for the named human.
 
 Do **not** encode status, release, or **kind** as labels — state is the
 `steer:state` marker and kind is the `steer:kind` marker + GitHub Issue Type.
-Priority and effort are not tracked.
+**Priority and effort are native issue fields, never labels** (see below and
+`ISSUE-SCHEMA.md`).
 
 **Issue Types — capability-degrading.** The standard org Types are
 `Feature · Bug · Task`, but Issue Types are an **org-level** feature whose
@@ -190,6 +191,18 @@ public preview. So:
 - **Type unavailable/unknown** → continue on `steer:kind` alone, emit a
   non-blocking capability warning, and **do not** reintroduce duplicate
   `bug`/`feature` labels to compensate.
+
+**Issue fields — capability-degrading.** Native issue fields (Priority, Effort,
+Start/Target date) are an **org-level** GitHub feature, currently public preview,
+reachable only via GraphQL (not `gh` REST, not the manual floor). So:
+
+- **Fields available** → read them for ranking; escalate-only auto-set Priority;
+  write dates under human confirmation (`/steer:roadmap`). Their option sets are
+  org-defined — read them from the field definition, never fabricate option names.
+- **Fields unavailable/unknown** → **omit** them, emit a non-blocking capability
+  warning, and rank Priority as unset. **Never** reintroduce `priority:*`/`effort:*`
+  labels or body markers to compensate — the field is the only home (the value vs.
+  managed-block ledger provenance is in `ISSUE-SCHEMA.md`).
 
 ## CI failures — when to file
 

@@ -70,6 +70,29 @@ remediation* sits at level 1 because a live system actively at risk outranks any
 workflow gate. The category names carry the lifecycle nuance; the numeric levels
 carry the precedence.
 
+### Within-level tie-break (the composite sort key)
+
+The safety level is the **first and dominant** term; it is never crossed. When two
+candidates sit at the **same** level, order them by this lexicographic key
+(smaller = higher), so a single navigator pick and a ranked backlog view agree:
+
+```
+(safetyLevel,             # 1..7 above — STRUCTURAL, dominates everything
+ -priorityRank,           # native Priority field: Urgent=3 High=2 Medium=1 Low/unset=0
+ -dependencyUnblockCount,  # native blocked-by edges this item unblocks (most first)
+ milestoneDueProximity,   # nearer Target date / milestone due first
+ lifecycleDepth,          # further along the lifecycle first (finish before start)
+ createdAt, issueNumber)  # oldest first, then #N — a deterministic total order
+```
+
+The native **Priority** issue field (`issue_priority`, `ENUMS.md`) is the primary
+tie-break *within* a level — it **cannot** lift an item across the safety levels
+above (a `Priority: Urgent` backlog item never outranks a level-2 gate or a level-3
+review). Security / blocking-question urgency reaches the top by raising the item's
+**safety level** (and, via escalate-only auto-set, its Priority *floor*), not by
+the Priority field punching through the precedence. Where issue fields are
+unavailable, Priority ranks as unset (0) and the remaining terms order the level.
+
 ### Skill-local precedence
 
 Each skill orders only its own states (e.g. for `/steer:adopt`: secret exposure →

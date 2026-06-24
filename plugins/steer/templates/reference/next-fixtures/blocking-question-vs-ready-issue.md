@@ -9,7 +9,9 @@ territory) vs. a fully decomposed, ready-to-start issue B (work territory).
 - Feature `billing` intent is `draft` with `Q-003`: `status: open`,
   `impact: blocking`, `required_before: intent-approval`, `owner: product`.
 - Unrelated issue #145 (`reporting`) is `ready-for-dev`, decomposed and
-  actionable, on no branch yet.
+  actionable, on no branch yet — a human-set **Priority** on #145 (even `Urgent`)
+  does not change this: Priority tie-breaks *within* the safety level, never across
+  it, so it cannot lift #145 above the level-2 blocking gate.
 - No PRs open.
 
 ## Expected highest-priority action

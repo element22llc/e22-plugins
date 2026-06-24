@@ -132,8 +132,9 @@ format (markers, headings, **managed blocks**, idempotency) in
   Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
   report, and takes **one** batch confirmation before any writes. All GitHub
   reads/writes (labels, types, comments, closes) go through `/steer:tracker-sync`;
-  rewrites touch only the `steer:managed` block. Priority and effort are not
-  tracked — do not invent labels for them.
+  rewrites touch only the `steer:managed` block. Priority and effort are **native
+  issue fields, never labels** (`ISSUE-SCHEMA.md`) — never invent `priority:*` /
+  `effort:*` labels for them.
 - **`decompose #N`** — create implementation sub-issues from a parent feature.
   **Preconditions:** the feature's `intent.md` exists, `Status: approved`, and
   its **contract readiness is `ready`** — the mechanically-derived signal in

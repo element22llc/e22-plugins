@@ -176,23 +176,58 @@ Three orthogonal axes; do not collapse them into one another:
 `finding` (keyed by `finding-key` + `source`) replaces the former
 `audit-finding` kind, which parsers still accept as a prior alias.
 
-## GitHub Projects v2 — compatibility boundary
+## Native issue fields & the Projects v2 boundary
 
-GitHub Projects v2 builds boards and roadmaps from **fields stored on the Project
-*item*, not on the issue** — Status, Start/Target date, Iteration, Priority,
-Size, and any custom single-select. The plugin **never writes these into an issue
-body**; a Project-side tool — not this contract — owns them.
+GitHub now ships **native issue fields** — typed metadata (single-select, text,
+number, date) defined org-wide and stored **on the issue itself**, distinct from
+Project-item fields. The org's default set pins **Priority, Effort, Start date,
+and Target date** to issue types. These are *not* labels and *not* in the issue
+body — they are first-class issue attributes, board-visible by construction, set
+via GraphQL (`/steer:tracker-sync field-set`). **`steer` uses them:**
+
+- **Priority** (`issue_priority`, `ENUMS.md`) — read for ranking; **escalate-only**
+  auto-set (raise to a mechanical floor, never lower a human value).
+- **Effort** — read for ranking/tie-break; **human-set only** (never auto-derived
+  — deriving effort would be deciding product).
+- **Start / Target date** — written by `/steer:roadmap` under human confirmation,
+  never fabricated; read for milestone-proximity ranking.
+
+Their option sets are **org-defined**: read them from the field definition rather
+than assuming names. `Urgent/High/Medium/Low` is GitHub's Priority default; where
+an org renamed them, `/steer:tracker-sync bootstrap-fields` reports the mismatch
+rather than fabricating options.
+
+**Provenance — the field value is the single source of truth.** A field lives
+*outside* the body, so it cannot carry an HTML marker. The agent therefore records
+its own last escalation as one **ledger** line inside the `steer:managed` block —
+`<!-- steer:priority-floor=High applied=YYYY-MM-DD reason=blocking-question:Q-NNN -->`
+— a *record of what the agent did*, **never** the authoritative value. If the
+field and the ledger disagree, the **field wins** and the ledger is the evidence
+the agent reconciles against (one-directional, like `steer:state` ↔ Project
+Status). To avoid fighting a human, the agent escalates only when the floor
+exceeds the current value **and** the last field-change actor (GitHub timeline)
+was not human; a human downgrade below the floor is recorded as suppressed and
+left alone. `field-set` is a separate mutation with **no managed-block
+concurrency guard** — the timeline-actor check is the concurrency story for
+fields. Where the org has not enabled issue fields, they are omitted and ranking
+treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`).
+
+A **Project** still builds boards/roadmaps from **Project-*item* fields** —
+Status, Iteration, and any custom single-select that is *not* a native issue
+field. The plugin **never writes those into an issue body**; a Project-side tool
+owns them.
 
 What the issue *does* expose to Projects, and what steer already sets, are its
 **native attributes**: the GitHub **Issue Type**, **labels** (`source:*` ·
-`needs:*` · `risk:*`), **assignees**, the **milestone**, and **native
-parent/sub-issue links**. A board or roadmap groups, filters, and lays out items
-from exactly these — so steer issues are **Projects-v2-compatible by
-construction**, with no field-mirroring machinery to maintain. Two of these are
-**capability-degrading**: where the org disables Issue Types or native
-sub-issues, they fall back to the `steer:kind` / `steer:parent-issue` markers,
-which — being markers — are **not** board-visible (see below). **Labels,
-assignees, and milestone are always board-visible.**
+`needs:*` · `risk:*`), **assignees**, the **milestone**, **native
+parent/sub-issue links**, and the **native issue fields** above (Priority, Effort,
+dates). A board or roadmap groups, filters, and lays out items from exactly these
+— so steer issues are **Projects-v2-compatible by construction**, with no
+field-mirroring machinery to maintain. Three of these are **capability-degrading**:
+where the org disables Issue Types, native sub-issues, or native issue fields,
+they fall back to the `steer:kind` / `steer:parent-issue` markers (or, for fields,
+are simply omitted) — and markers are **not** board-visible (see below). **Labels,
+assignees, milestone, and any enabled issue fields are always board-visible.**
 
 Because **markers are invisible to Projects** (it cannot read HTML comments):
 
@@ -205,10 +240,11 @@ Because **markers are invisible to Projects** (it cannot read HTML comments):
   workflows (item-added / issue-closed / PR-merged).
 
 Direction of truth is fixed: the **issue and `/spec` are canonical; a Project is
-a derived view/overlay.** Pure planning fields with no home in the issue — dates,
-iteration, priority, size — live **only** on the Project item and are never
-mirrored back into the issue. (This is why priority and effort are not issue
-markers or labels — see `ISSUE-WORKFLOW.md`.)
+a derived view/overlay.** Planning fields that are **native issue fields**
+(priority, effort, start/target date) now live **on the issue** (the section
+above) — they are neither markers nor labels. The planning fields with **no home
+on the issue** — iteration, size, and any other custom Project-*item* single-select
+— live **only** on the Project item and are never mirrored back into the issue.
 
 ## Idempotency & deduplication
 

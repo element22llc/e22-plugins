@@ -25,11 +25,13 @@ the issue-workflow reference hold throughout:
   floor); this skill never calls the GitHub API directly.
 
 It writes **only native issue attributes** the Projects-v2 boundary already
-sanctions — Milestone, parent/sub-issue links, labels, Type. It **never** writes
-Project-item planning fields (Status, Start/Target date, Iteration, Priority,
-Size); those live only on the Project item and are out of scope here (per-issue
-Gantt bars via Project-side GraphQL are a future phase). It **never fabricates a
-date**: the spine has no date home, so dates come from the human at confirmation.
+sanctions — Milestone, parent/sub-issue links, labels, Type. **Priority, Effort,
+and Start/Target date are native issue fields** (`ISSUE-SCHEMA.md`), not
+Project-item fields — Priority is escalate-only auto-set by `/steer:issues triage`,
+and writing native Start/Target **date** fields onto issues is a forthcoming
+roadmap capability; only **Status, Iteration, and Size** remain Project-item-only
+and out of scope here. It **never fabricates a date**: dates come from the human at
+confirmation.
 
 ## First, every run
 
@@ -92,8 +94,8 @@ After resolving the work-set in any writing mode:
    auto-resolve it.
 2. **Propose milestone titles + due dates** as a structure only. The skill chooses
    neither the dates nor the priority order beyond dependency constraints — those
-   are human planning calls (steer tracks no priority/effort). **Ask the human to
-   supply or confirm each milestone title and due date.**
+   are human planning calls. **Ask the human to supply or confirm each milestone
+   title and due date.**
 3. **Take one confirmation** for the whole plan, then materialize via
    `/steer:tracker-sync`:
    - **`milestone-ensure <title> [--due <date>]`** — create each confirmed
