@@ -46,6 +46,9 @@ And against the other spec skills:
   intent). Audit is read-only **code-vs-standards** health. Both route genuine
   findings to issues; they answer different questions ("did we build what was
   asked?" vs. "is what we built healthy and standards-aligned?").
+- **`/steer:tidy`** — repo-root hygiene (move stray source/design files into
+  `/spec`). If the audit trips over a cluttered root, hand off to `/steer:tidy`
+  rather than reporting each stray as a finding.
 
 **If there is no `/spec` spine yet,** the spec-coverage dimension can't run.
 Note that and redirect to `/steer:adopt` for the spec — the code-health dimensions

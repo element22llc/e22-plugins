@@ -275,6 +275,7 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 | `ready-for-dev`, decomposed and actionable | Recommended | Start it — `/steer:work start #N` |
 | `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
 | Unresolved `blocking` question on the item | Blocking now | `/steer:questions` |
+| Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline — `/steer:roadmap` |
 | Nothing queued | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. Read-only and idempotent —

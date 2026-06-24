@@ -22,12 +22,12 @@ flowchart LR
 
 ## 1. Set up the repo
 
-For a brand-new repo, run [`/steer:init`](../workflows/index.md); for an existing
-app, run [`/steer:adopt`](../workflows/adopt.md). Either way you end up with a
-`/spec` spine and the bundled scaffold (CI, `mise.toml`, `compose.yaml`, PR
-template).
+Run [`/steer:setup`](../workflows/index.md) — it detects whether this is a
+brand-new repo or an existing app and routes accordingly (to `/steer:init` or
+[`/steer:adopt`](../workflows/adopt.md)). Either way you end up with a `/spec`
+spine and the bundled scaffold (CI, `mise.toml`, `compose.yaml`, PR template).
 
-The `/steer:init` PR is the **bootstrap gate** — it brings the repo under the
+The bootstrap PR is the **bootstrap gate** — it brings the repo under the
 standards and opens spec-first work on `main`. It is *not* productionization:
 a greenfield bootstrap ships scaffold and an empty spec spine, with no app to
 harden yet. Productionization is a later, per-app event — the

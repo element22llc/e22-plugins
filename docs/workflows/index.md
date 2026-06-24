@@ -18,8 +18,10 @@ For the full per-command catalog (including internal helpers), see the
 ```mermaid
 flowchart LR
     subgraph Setup
+      setup["/steer:setup<br/>detect & route"]
       init["/steer:init<br/>new repo"]
       adopt["/steer:adopt<br/>existing app"]
+      setup --> init & adopt
     end
     subgraph Build loop
       issues["/steer:issues"]
@@ -39,8 +41,9 @@ flowchart LR
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:init` | A new repo with no `/spec` spine — installs the bundled scaffold + spine. |
-| [`/steer:adopt`](adopt.md) | An existing app with working code but no spine. |
+| `/steer:setup` | **The front door** — detects the repo state and routes to the right path below. Start here. |
+| `/steer:init` | (via setup) A new repo with no `/spec` spine — installs the bundled scaffold + spine. |
+| [`/steer:adopt`](adopt.md) | (via setup) An existing app with working code but no spine. |
 
 ## Build loop
 
@@ -56,7 +59,7 @@ flowchart LR
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:sync` | After a plugin release — apply migrations, reconcile spine + scaffold. |
+| `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. |
 | `/steer:drift` | Audit the built app against its tracker specs (read-only). |
 | `/steer:audit` | Periodic whole-repo standards-conformance health pass (read-only). |
 | `/steer:next` | "What should I do next?" across the whole workspace (read-only). |

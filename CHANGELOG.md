@@ -56,6 +56,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   signals), and `/steer:next` golden fixtures pin that Priority never crosses the
   safety precedence. (Gateway ops, auto-set, board view, ranking, and roadmap dates
   land in follow-up changes.)
+- **Added:** `/steer:setup` — one front door for getting a repo onto the
+  standards. It detects the `/spec` spine state (via `hooks/lib/spine.sh`) and
+  routes to the right path instead of making the user choose: greenfield
+  `/steer:init`, existing-code `/steer:adopt`, or steady-state `/steer:sync`
+  (running `/steer:doctor` first if the toolchain is missing).
+- **Changed:** Decluttered the slash menu so the front doors are obvious. Eleven
+  skills are now `user-invocable: false` (hidden from the menu, still
+  model-callable, reached through a front door): `init`/`adopt`/`sync`/`doctor`
+  via `/steer:setup`; `drift`/`tidy` via `/steer:audit`; `roadmap` via
+  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; and the
+  reference skills `conventions`/`traceability`/`design-sources`. No skills were
+  removed and no `/steer:<name>` reference broke — this is reversible declutter.
+- **Changed:** `rules/00-router.md` reorganized around the ~11 front doors with a
+  compact "reached through a front door" note, and bootstrap precedence now routes
+  through `/steer:setup`. `/steer:audit` now hands off to `/steer:tidy`, and
+  `/steer:issues` surfaces `/steer:roadmap` for release sequencing.
+- **Docs:** `AUTHORING.md` gains a "Skill vs. mode — hold the line on surface area"
+  principle and the `/new-skill` helper gates new skills on it; `docs/` reference
+  and getting-started pages lead with `/steer:setup`.
 - **Changed:** Root housekeeping now **moves** a confidently-classified stray to
   its `/spec` home immediately, instead of waiting for a yes. Rule 22, the
   `/steer:tidy` skill, and `HOUSEKEEPING.md` reframe the policy: confident

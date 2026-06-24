@@ -1,0 +1,61 @@
+---
+name: setup
+description: "One front door for getting a repo onto the standards — detect the repo's /spec spine state and route to the right bootstrap path (greenfield init, brownfield adopt, or steady-state sync), installing prerequisites first if the toolchain is missing. A thin dispatcher that decides which path applies and hands off — it does not duplicate their logic."
+when_to_use: >-
+  Use whenever someone wants to "set up", "onboard", "bootstrap", "adopt", or
+  "bring this repo onto the standards", or to "sync to the latest plugin" — any
+  time you'd otherwise have to guess between /steer:init, /steer:adopt, and
+  /steer:sync. This is the single entry point; it auto-detects which applies.
+argument-hint: "[init | adopt | sync]"
+---
+<!-- steer:modes init,adopt,sync -->
+
+# Set up a repo on the standards
+
+This is the **one door** for onboarding a repo. The init / adopt / sync split is a
+real distinction, but it's one the tool can decide from repo state — so the user
+should never have to. Detect the state, announce the path you're taking, then hand
+off to the owning skill. Do **not** re-implement their steps here.
+
+## Detect, then route
+
+Compute the spine state with the existing helper rather than inventing detection:
+
+```sh
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
+```
+
+| Detected state | Meaning | Route to |
+| --- | --- | --- |
+| `unmanaged` + little/no app code | brand-new repo, building from scratch | **`/steer:init`** (greenfield, Path B) |
+| `foreign` / `unmanaged` + substantial existing code | a "vibe-coded" app to reverse-engineer | **`/steer:adopt`** |
+| unresolved template placeholders present (`@github-handle`, bracketed fill-in markers) | legacy template fork | **`/steer:init`** (Path A) |
+| `damaged` | spine stamped but files missing | **`/steer:sync`** (repair) |
+| `managed` + template drift flagged | bootstrapped but behind a plugin release | **`/steer:sync`** (update) |
+| `managed`, no drift | already current | nothing to do — say so, suggest `/steer:next` |
+
+The `unmanaged`-with-code vs `unmanaged`-greenfield call is the one judgment the
+state helper can't make alone: check for app code (a populated `apps/`/`src/`,
+`package.json` with real deps, etc.). If genuinely ambiguous, ask **one** question
+("Is there existing code to reverse-engineer, or are we starting fresh?") then route.
+
+**Prerequisites first.** If the toolchain is missing (`git`, `mise`, Docker — "command
+not found", mise/docker errors), the bootstrap paths can't run. `/steer:init` and
+`/steer:build` already invoke `/steer:doctor` when prerequisites are absent; surface
+that here too rather than failing partway.
+
+## Explicit override
+
+Power users can skip detection by naming the path: `setup init`, `setup adopt`, or
+`setup sync`. Honor the explicit mode, but if it clearly contradicts the detected
+state (e.g. `setup init` on a repo that's already `managed`), say what you detected
+and confirm before proceeding.
+
+## Why this exists
+
+`init`, `adopt`, and `sync` remain the skills that do the work — they're just no
+longer something a user has to choose between. They stay model-callable (the router
+can still reach them directly) but are hidden from the slash menu so this one front
+door is the obvious starting point.

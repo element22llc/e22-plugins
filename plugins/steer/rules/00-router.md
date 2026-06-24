@@ -29,8 +29,9 @@ name one. Plain language is the only entry point a user needs.
   autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
   runs; it never relaxes what that skill is allowed to do.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
-  or build intent through bootstrap first (`/steer:init` greenfield, `/steer:adopt`
-  for existing code) — the SessionStart hook flags this; don't degrade to
+  or build intent through bootstrap first via **`/steer:setup`**, which detects the
+  repo state and hands off to the right path (greenfield, existing-code adoption, or
+  steady-state sync) — the SessionStart hook flags this; don't degrade to
   toolchain-only. **Make bootstrap the first move, announced up front** — not a
   closing offer after a long scoping pass; that scoping folds into `init`'s own
   interview, and durable design decisions wait for the spine to hold them
@@ -51,34 +52,45 @@ name one. Plain language is the only entry point a user needs.
 
 ## Intent → skill
 
+These are the **front doors** — the handful of skills a user picks from. Each
+detects context and hands off to specialized skills as needed, so you rarely route
+to anything outside this table.
+
 | When the user is trying to… | Route to |
 | --- | --- |
-| set up a brand-new repo, or resolve leftover template placeholders | `/steer:init` |
-| bring an existing app (working code, no `/spec`) under the standards | `/steer:adopt` |
-| set up a fresh machine, or fix a missing prerequisite ("command not found", mise/docker errors) | `/steer:doctor` |
+| get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it | `/steer:spec` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
-| manage the backlog without implementing now — capture, triage, brainstorm, decompose, or check status (GitHub) | `/steer:issues` |
+| manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
+| audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
-| clear open questions accumulating in the specs | `/steer:questions` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
-| audit whole-repo health and highest-leverage cleanups (read-only) | `/steer:audit` |
-| compare the as-built `/spec` against tracker intent for drift (read-only) | `/steer:drift` |
-| sort loose files out of the repo root into `/spec` | `/steer:tidy` |
-| bring a bootstrapped repo up to date after a plugin release | `/steer:sync` |
 | "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
-| read the full conventions / traceability / design-source prose | `/steer:conventions`, `/steer:traceability`, `/steer:design-sources` |
 
 **`work` vs `issues`:** implementing a change *now* — with or without an issue
 number — routes to `/steer:work`, which find-or-creates the issue and then
 implements. Pure backlog management (capture / triage / brainstorm / decompose /
 status, with no implementation this turn) routes to `/steer:issues`.
 
-GitHub reads/writes for `/steer:issues` and `/steer:work` route through the internal
-`/steer:tracker-sync` gateway, and feature specs are instantiated by the internal
-`/steer:spec-scaffold` — reach both through the skills above, never directly.
+**Specialized skills, reached through a front door.** These do real work but are
+hidden from the slash menu so the front doors stay obvious — you may still invoke
+them directly when an intent maps cleanly to one:
+
+- **`/steer:setup`** detects and hands off to `/steer:init` (greenfield), `/steer:adopt`
+  (existing code), `/steer:sync` (steady-state update/repair), and `/steer:doctor`
+  (prerequisites).
+- **`/steer:audit`** hands off to `/steer:drift` (as-built `/spec` vs tracker intent)
+  and `/steer:tidy` (sort repo-root strays into `/spec`).
+- **`/steer:issues`** and `/steer:spec` hand off to `/steer:questions` (clear open
+  spec questions); `/steer:issues` hands off to `/steer:roadmap` (release timeline).
+- GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
+  specs are instantiated by the internal `/steer:spec-scaffold` — never call these
+  directly.
+- The full reference prose (`/steer:conventions`, `/steer:traceability`,
+  `/steer:design-sources`) is materialized into `/spec/reference/` once a repo is set
+  up; run those skills directly only on web chat or when asked for the deep dive.
 
 On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
 auto-injected), run `/steer:standards` at session start to load these rules on demand.
