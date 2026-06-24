@@ -1,10 +1,10 @@
 ---
 name: issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:drift, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:drift, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
-argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | reconcile] [#issue | feature-id]"
+argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | board | reconcile] [#issue | feature-id]"
 ---
-<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
+<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 
@@ -159,6 +159,28 @@ format (markers, headings, **managed blocks**, idempotency) in
   Preview: available
   Blocking: #134 telemetry
   ```
+- **`board [--all]`** — a **read-only** backlog overview: the open issue set as one
+  ranked, relationship-aware, hygiene-flagged view. **Never writes.** Reads through
+  `/steer:tracker-sync` (`search`, `field-get`) and says which capability path it
+  took. Four sections:
+  - **Ranked** — issues ordered by the **composite sort key** in `NEXT-ACTIONS.md`
+    (safety level → native **Priority** field → unblock-count → milestone proximity
+    → lifecycle depth → created-at/#N). Show each issue's Priority and lifecycle
+    state. The board **does not** re-derive the cross-workflow "single most critical
+    thing" — that is `/steer:next`'s job (locality: a board ranks *issues*; it does
+    not arbitrate ADRs, PR-review gates, or secrets). Where issue fields are
+    unavailable, Priority shows as unset and the remaining terms order the list.
+  - **Relationships** — dependency clusters from native blocked-by edges (and the
+    `Related issues` markers where native is unavailable): what blocks what, and any
+    `conflicts-with`/`supersedes` pair surfaced for a human. Never auto-resolve.
+  - **Dedup candidates** — likely duplicates by marker (`feature-id`+kind,
+    `question-id`, `finding-key`, `dedupe-key`) and semantic title overlap; propose,
+    don't merge (close-as-duplicate is a `triage` action).
+  - **Hygiene** — stale `needs:triage`, orphaned sub-issues (no parent), missing
+    **Priority** on `ready-for-dev`, missing kind/Type, and mislabelled items —
+    each with the `triage`/owning action that fixes it. Surfaces work; performs none.
+  `#N`/`feature-id` scopes to one item's neighborhood; `--all` (default) sweeps open
+  issues. It ends with the `## Recommended next actions` block (below).
 - **`bootstrap-labels`** — idempotently create/reconcile the supported label
   taxonomy so Issue Forms and agent labels actually apply (GitHub silently drops a
   form label that doesn't exist). Reconciles the exact `source:*` / `needs:*` /

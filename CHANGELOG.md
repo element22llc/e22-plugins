@@ -7,6 +7,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added (board view):** `/steer:issues board` — a read-only backlog overview that
+  shows the open issue set as one ranked (composite sort key from `NEXT-ACTIONS.md`),
+  relationship-clustered, dedup-flagged, hygiene-flagged view. It ranks *issues* and
+  defers the cross-workflow "single most critical thing" to `/steer:next`; it never
+  writes (every fix routes to `triage`/the owning skill).
 - **Added (gateway):** `/steer:tracker-sync` gains native issue-field + relationship
   ops — `field-get` / `field-set` (Priority/Effort/Start/Target date via the
   `setIssueFieldValue` GraphQL mutation; GraphQL-only, no `gh` REST path),
