@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed (breaking):** Merged the `deliver` skill into `/steer:work` as a
+  `--reviewed` flag. The standalone `/steer:deliver` is **removed**; run
+  `/steer:work --reviewed` to wrap issue execution in the same review-gated loop
+  (independent plan-gate review → implement → `/code-review` gate → bounded fix).
+  `deliver` already delegated governed implementation to `work`, so this drops the
+  duplicate entry point; the shared protocol still lives in
+  `templates/reference/REVIEW-LOOP.md`.
 - **Added:** `/steer:setup` — one front door for getting a repo onto the
   standards. It detects the `/spec` spine state (via `hooks/lib/spine.sh`) and
   routes to the right path instead of making the user choose: greenfield

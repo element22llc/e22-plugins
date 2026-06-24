@@ -32,7 +32,7 @@ stateDiagram-v2
 | Capture / triage / decompose | [`/steer:issues`](../workflows/issues.md) |
 | Shape & approve the spec | [`/steer:spec`](../workflows/spec.md) |
 | Implement & finish | [`/steer:work`](../workflows/work.md) |
-| Implement, review-gated | `/steer:deliver` (plan → independent plan-gate review → `/steer:work` → independent `/code-review` → bounded fix loop) |
+| Implement, review-gated | [`/steer:work --reviewed`](../workflows/work.md) (plan → independent plan-gate review → implement → independent `/code-review` → bounded fix loop) |
 | Read/write the tracker | `/steer:tracker-sync` (gateway, called by the above) |
 | "What should I do next?" | `/steer:next` |
 

@@ -37,8 +37,7 @@ an unrelated question.
 | `/steer:sync` | Updates the plugin + reconciles spine/scaffold, lands a PR. |
 | `/steer:tidy` | Moves/renames/deletes loose files. |
 | `/steer:build` | PO build: spec → working app → PR. |
-| `/steer:work` | Executes an issue end-to-end (branch → PR → transition). |
-| `/steer:deliver` | Runs a task through a review-gated loop; delegates governed implementation to `/steer:work` (direct in prototype mode). |
+| `/steer:work` | Executes an issue end-to-end (branch → PR → transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
 | `/steer:spec` | Authors/iterates a feature spec. |
 | `/steer:spec-scaffold` | Creates a feature's spec files. |
 | `/steer:adr` | Creates a numbered ADR. |
