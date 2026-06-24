@@ -42,7 +42,7 @@ jobs:
       # `latest`. Before /steer:init|adopt pins the toolchain there is no lock
       # at all, so this runs a plain unlocked install instead of failing. The
       # template ships no placeholder lock; /steer:init|adopt creates and commits
-      # a populated one (see /steer:conventions).
+      # a populated one (see /steer:reference conventions).
       - name: Setup mise
         uses: jdx/mise-action@v4
         with:
