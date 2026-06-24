@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `hooks/lib/spine.sh` `steer_spine_state` misclassified a fully
+  managed repo as `damaged` under zsh. The required-files loop relied on
+  word-splitting an unquoted `${STEER_SPINE_REQUIRED}`, which POSIX sh does but
+  zsh does not — so under macOS's default zsh the loop ran once over the whole
+  string and the `[ -f ]` test failed. The `/steer:setup` skill sources this
+  helper and runs it in the host shell, so the misfire routed healthy repos to
+  the repair/sync path. Replaced the loop with shell-agnostic parameter
+  expansion that behaves identically in sh, bash, and zsh.
+
 ### 3.0.0
 
 - **Changed (breaking):** Merged the three reference-prose loader skills

@@ -31,7 +31,20 @@ steer_spine_state() {
 		printf 'foreign'
 		return 0
 	}
-	for _f in ${STEER_SPINE_REQUIRED}; do
+	# Walk the space-separated list by parameter expansion rather than relying
+	# on word-splitting of an unquoted `${STEER_SPINE_REQUIRED}`. Field-splitting
+	# of unquoted variables is a POSIX-sh behaviour that zsh does NOT perform by
+	# default, so a plain `for _f in ${STEER_SPINE_REQUIRED}` iterates once with
+	# the whole string under zsh and misclassifies a managed repo as damaged.
+	# This helper is sourced by the /steer:setup skill snippet, which the model
+	# runs in the host shell (zsh on macOS), so it must be correct there too.
+	_rest="${STEER_SPINE_REQUIRED}"
+	while [ -n "${_rest}" ]; do
+		_f="${_rest%% *}"
+		case "${_rest}" in
+			*' '*) _rest="${_rest#* }" ;;
+			*) _rest="" ;;
+		esac
 		[ -f "${_root}/spec/${_f}" ] || {
 			printf 'damaged'
 			return 0
