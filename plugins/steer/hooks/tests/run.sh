@@ -900,6 +900,19 @@ printf '[env]\n_.source = "scripts/worktree-env.sh"\n' >>"${CR7}/mise.toml"
 capscan "${CR7}"
 assert_eq "cap: deriver + mise sources it -> present-wired" "$(capstatus "${out}" worktree-port-isolation)" "present-wired"
 
+# delivery-mode-declared: no CLAUDE.md -> absent; present without the marker ->
+# mis-wired (implicit fail-open pr-flow); marker present -> wired.
+CR8="${WORK}/cap8"
+mkdir -p "${CR8}"
+capscan "${CR8}"
+assert_eq "cap: no CLAUDE.md -> delivery-mode absent" "$(capstatus "${out}" delivery-mode-declared)" "absent"
+printf '# Product\n\nsome prose\n' >"${CR8}/CLAUDE.md"
+capscan "${CR8}"
+assert_eq "cap: CLAUDE.md without marker -> mis-wired" "$(capstatus "${out}" delivery-mode-declared)" "mis-wired"
+printf '<!-- steer:delivery-mode=solo-trunk -->\n' >>"${CR8}/CLAUDE.md"
+capscan "${CR8}"
+assert_eq "cap: CLAUDE.md with marker -> present-wired" "$(capstatus "${out}" delivery-mode-declared)" "present-wired"
+
 # Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
 printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
 capscan "${CR1}"
