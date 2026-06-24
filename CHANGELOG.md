@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added (gateway):** `/steer:tracker-sync` gains native issue-field + relationship
+  ops — `field-get` / `field-set` (Priority/Effort/Start/Target date via the
+  `setIssueFieldValue` GraphQL mutation; GraphQL-only, no `gh` REST path),
+  `bootstrap-fields` (detect-and-report the org-level field definitions, never
+  fabricate options — reports a `P0/P1`-style option mismatch and stops), and
+  `link-blocked-by` (native issue dependency; degrades to a `depends-on` managed-block
+  line, writing **one** representation so ranking never double-counts; informs but
+  never sets `steer:state=blocked`). `link-related` now prefers the native edge for
+  `depends-on`/`blocks`. `/steer:init` runs `bootstrap-fields` alongside
+  `bootstrap-labels`. Field writes are GraphQL and remain host-gated (not added to
+  the scaffold allow-list).
 - **Added (foundation):** GitHub **native issue fields** are now first-class in the
   issue model. `issue_priority=Urgent|High|Medium|Low` joins the enum registry
   (`enums.registry` + `ENUMS.md`); `ISSUE-SCHEMA.md` reframes the Projects-v2
