@@ -97,6 +97,35 @@ artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).
 | `../github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
 | `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) — offer to enable it and point it at the team's discussions/chat during init/adopt. |
 
+## Profile overlays
+
+A managed repo has a **profile** that decides which stack-specific extras the
+bootstrap lays down on top of the universal core (mise pinning, the `/spec`
+spine, CI hygiene — installed for *every* profile). The profile is recorded as a
+machine-readable marker on the product `CLAUDE.md`'s `## Profile` section —
+`<!-- steer:profile=app -->` (or `infra` / `service` / `library` / `cli`),
+sibling of the `## Delivery mode` marker. **Absent marker → `app`** (back-compat:
+every repo predating profiles was an app monorepo). `/steer:init` and
+`/steer:adopt` detect, confirm, and stamp it; `/steer:sync` back-fills `=app`
+when missing. Rules do **not** read this marker — always-on rules self-gate on
+filesystem *traits* (`has-apps` / `has-compose` / `has-infra` / `has-iac`), so a
+repo's rule context always matches what is actually on disk.
+
+| Profile | Install | Omit (vs the flat app scaffold) |
+|---|---|---|
+| app (default) | The flat scaffold above, as-is. | — |
+| service | Flat scaffold; keep `compose.yaml` only if it has backing services. | `apps/`+`packages/` split if it's a single deployable; `pnpm-workspace.yaml` if not a monorepo. |
+| library | Flat scaffold for the package's language. | `compose.yaml`, `apps/`, `scripts/worktree-env.sh`, db tasks (no local services / no app). |
+| cli | Flat scaffold for the package's language. | `compose.yaml`, `apps/`, `scripts/worktree-env.sh`, db tasks. |
+| infra | **`profiles/infra/mise.toml` as the repo-root `mise.toml`** (tofu/terragrunt/ansible/uv), plus an infra-flavored `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `compose.yaml`, `scripts/worktree-env.sh`, `configs/`, `apps/`, `packages/`, db/docker tasks. |
+
+Only `infra` carries a distinct overlay file (`profiles/infra/mise.toml`); the
+other profiles are the flat scaffold with the app-only rows above omitted — the
+same copy-and-adapt the install map already applies for Python-only products. A
+monorepo that *also* has a nested `/infra` dir stays profile `app` and gets the
+infra rule fragment + infra CI automatically because `/infra` exists (trait, not
+marker) — it does not become profile `infra`.
+
 ## Deliberately not bundled
 
 - **A starter app** (the old template's `apps/web` + `packages/core`): the

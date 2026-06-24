@@ -53,3 +53,36 @@ steer_delivery_mode() {
 	fi
 	printf 'pr-flow'
 }
+
+# steer_repo_profile <repo_root> — prints the repo's declared profile, read from
+# the machine-readable marker on the product CLAUDE.md's `## Profile` section:
+#   <!-- steer:profile=infra -->   (or =app / =service / =library / =cli)
+#
+# The profile is a SCAFFOLD-TIME concept (it decides what /steer:init lays down);
+# always-on rules gate on filesystem traits (has-apps / has-compose / has-infra),
+# not on this marker, so the two can never disagree. This reader exists for
+# scaffold/sync/report/docs consumers and is a sibling of steer_delivery_mode.
+#
+# Fail-open: no CLAUDE.md, no marker, or anything unreadable → 'app', which
+# preserves the pre-marker behavior (every managed repo was an app monorepo).
+# Read once per hook invocation, never per rule.
+steer_repo_profile() {
+	_cm="${1:-.}/CLAUDE.md"
+	[ -f "${_cm}" ] || {
+		printf 'app'
+		return 0
+	}
+	# Case-sensitive on purpose: the marker is machine-written lowercase, and the
+	# grep character class + the case arms below must agree (a `-i` grep would
+	# match `=Infra` then fall through every lowercase arm to the `app` default —
+	# a silent misclassification). A mis-cased hand edit is malformed → app.
+	_p="$(grep -Eo '^[[:space:]]*<!--[[:space:]]*steer:profile=[a-z]+[[:space:]]*-->' "${_cm}" 2>/dev/null | head -n 1)"
+	case "${_p}" in
+	*=app*) printf 'app' ;;
+	*=infra*) printf 'infra' ;;
+	*=service*) printf 'service' ;;
+	*=library*) printf 'library' ;;
+	*=cli*) printf 'cli' ;;
+	*) printf 'app' ;;
+	esac
+}

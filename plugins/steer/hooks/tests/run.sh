@@ -919,8 +919,9 @@ capscan "${CR1}"
 assert_eq "cap: repaired settings -> present-wired on re-scan" "$(capstatus "${out}" plugin-enabled-local)" "present-wired"
 
 # Every capability id the detector emits is documented in CAPABILITIES.md.
+# `stack` and `profile` are informational fingerprints, not capabilities — exempt.
 capscan "${CR0}"
-printf '%s\n' "${out}" | awk -F '\t' '$1!="stack"{print $1}' | while IFS= read -r _id; do
+printf '%s\n' "${out}" | awk -F '\t' '$1!="stack" && $1!="profile"{print $1}' | while IFS= read -r _id; do
 	grep -q "### ${_id} " "${CAPS_MD}" || printf 'UNDOC %s\n' "${_id}"
 done >"${WORK}/cap-undoc"
 assert_empty "cap: all emitted ids documented in CAPABILITIES.md" "$(cat "${WORK}/cap-undoc")"
@@ -1009,20 +1010,68 @@ printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: non-github repo must omit issue-first rule" || ok
 oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
 
-# /infra present -> deployment injected.
+# /infra present -> deployment AND infra-stack fragment injected (has-infra + has-iac).
 CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
 out="$(run_hook inject-standards.sh "$(session_json "${CRI_INFRA}" cri_infra)")"
 oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
+oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
 
-# No /infra and no GitHub tracker -> both scoped rules skipped.
+# Root-level IaC (Ansible site.yml, no /infra dir) -> infra-stack fragment injected
+# via has-iac. This is the case steer used to skip entirely.
+CRI_ANSIBLE="$(new_repo cri_ansible)"
+printf -- '- hosts: all\n' >"${CRI_ANSIBLE}/site.yml"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_ANSIBLE}" cri_ansible)")"
+oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
+printf '%s' "${out}" | grep -q 'steer:inject-when' &&
+	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
+
+# No /infra, no IaC, no GitHub tracker -> all scoped rules skipped.
 CRI_BARE="$(new_repo cri_bare)"
 out="$(run_hook inject-standards.sh "$(session_json "${CRI_BARE}" cri_bare)")"
 printf '%s' "${out}" | grep -q 'auto-deploys non-prod' &&
 	bad "inject: repo without /infra must omit deployment rule" || ok
+printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
+	bad "inject: repo without IaC must omit infra-stack fragment" || ok
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: repo without github tracker must omit issue-first rule" || ok
 oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${out}"
+
+# ----- scope.sh: trait predicates + repo-root.sh: profile reader -----
+. "${HOOKS}/lib/scope.sh"
+. "${HOOKS}/lib/repo-root.sh"
+
+TRAITS_INFRA="$(new_repo traits_infra)"
+mkdir -p "${TRAITS_INFRA}/infra"
+steer_inject_when_ok has-infra "${TRAITS_INFRA}" && ok || bad "scope: has-infra true when /infra exists"
+steer_inject_when_ok has-iac "${TRAITS_INFRA}" && ok || bad "scope: has-iac true when /infra exists"
+steer_inject_when_ok has-apps "${TRAITS_INFRA}" && bad "scope: has-apps false for infra repo" || ok
+
+TRAITS_ANSIBLE="$(new_repo traits_ansible)"
+printf 'x\n' >"${TRAITS_ANSIBLE}/ansible.cfg"
+steer_inject_when_ok has-iac "${TRAITS_ANSIBLE}" && ok || bad "scope: has-iac true for root ansible.cfg"
+steer_inject_when_ok has-infra "${TRAITS_ANSIBLE}" && bad "scope: has-infra false without /infra dir" || ok
+
+TRAITS_TF="$(new_repo traits_tf)"
+printf 'terraform {}\n' >"${TRAITS_TF}/main.tf"
+steer_inject_when_ok has-iac "${TRAITS_TF}" && ok || bad "scope: has-iac true for root *.tf"
+
+TRAITS_APP="$(new_repo traits_app)"
+printf '{}\n' >"${TRAITS_APP}/package.json"
+printf 'services:\n' >"${TRAITS_APP}/compose.yaml"
+steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true with package.json"
+steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
+steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
+
+# profile reader: marker -> value; absent -> app (back-compat).
+PROF_INFRA="$(new_repo prof_infra)"
+printf '## Profile\n<!-- steer:profile=infra -->\n' >"${PROF_INFRA}/CLAUDE.md"
+assert_eq "profile: marker=infra" "$(steer_repo_profile "${PROF_INFRA}")" "infra"
+PROF_NONE="$(new_repo prof_none)"
+assert_eq "profile: no CLAUDE.md -> app" "$(steer_repo_profile "${PROF_NONE}")" "app"
+PROF_BARE="$(new_repo prof_bare)"
+printf '# title\n' >"${PROF_BARE}/CLAUDE.md"
+assert_eq "profile: CLAUDE.md without marker -> app" "$(steer_repo_profile "${PROF_BARE}")" "app"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

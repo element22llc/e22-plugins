@@ -86,12 +86,28 @@ jobs:
         run: |
           node=false
           python=false
+          tf=false
+          ansible=false
+          pulumi=false
           if [ -f package.json ] || [ -f pnpm-workspace.yaml ]; then node=true; fi
           if [ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .; then python=true; fi
-          echo "node=$node" >> "$GITHUB_OUTPUT"
-          echo "python=$python" >> "$GITHUB_OUTPUT"
-          if [ "$node" = false ] && [ "$python" = false ]; then
-            echo "::notice::No application stack detected (no package.json / pyproject.toml). Stack-agnostic hygiene ran; application validation is not yet active."
+          # Infra / IaC. Keep these signals in lockstep with steer_repo_does_iac
+          # in plugins/steer/hooks/lib/scope.sh (the rule-injection predicate):
+          # Ansible needs ansible.cfg, a site playbook, or roles/ AND playbooks/
+          # together — a bare roles/ dir (RBAC/IAM roles, a roles/ package) is NOT
+          # Ansible and must not trip the lint.
+          if git ls-files '*.tf' '*.hcl' | grep -q .; then tf=true; fi
+          if [ -f ansible.cfg ] || [ -f site.yml ] || [ -f site.yaml ] || { [ -d roles ] && [ -d playbooks ]; }; then ansible=true; fi
+          if [ -f Pulumi.yaml ] || [ -f Pulumi.yml ]; then pulumi=true; fi
+          {
+            echo "node=$node"
+            echo "python=$python"
+            echo "tf=$tf"
+            echo "ansible=$ansible"
+            echo "pulumi=$pulumi"
+          } >> "$GITHUB_OUTPUT"
+          if [ "$node" = false ] && [ "$python" = false ] && [ "$tf" = false ] && [ "$ansible" = false ] && [ "$pulumi" = false ]; then
+            echo "::notice::No application or infra stack detected (no package.json / pyproject.toml / *.tf / Ansible / Pulumi layout). Stack-agnostic hygiene ran; stack validation is not yet active."
           fi
 
       # ────────────────────────────────────────────────────────────────────
@@ -166,6 +182,39 @@ jobs:
             exit 1
           fi
           exit "$rc"
+
+      # ────────────────────────────────────────────────────────────────────
+      # Infra / IaC — runs only when Terraform/OpenTofu (*.tf/*.hcl) or an
+      # Ansible layout is detected. Tools install from mise (opentofu, uv); these
+      # checks need no cloud credentials (format + lint only, no init/plan/apply).
+      # ────────────────────────────────────────────────────────────────────
+      - name: Format check (OpenTofu/Terraform)
+        if: steps.detect.outputs.tf == 'true'
+        # `*.tf`/`*.hcl` is detected repo-wide, but `tofu` is only on PATH when the
+        # ROOT toolchain pins it — i.e. an infra-profile repo. An app-profile
+        # monorepo keeps its IaC tools in `infra/mise.toml` (not the root), so
+        # `tofu` is absent here: skip with a notice rather than failing the
+        # required `ci` check with `tofu: command not found`. That repo's infra is
+        # validated from its own toolchain. Format only — no `init`/`validate`,
+        # which would need a backend and creds.
+        run: |
+          if ! command -v tofu >/dev/null 2>&1; then
+            echo "::notice::*.tf/*.hcl present but 'tofu' is not on PATH at the repo root (an app-profile repo pins IaC tools under infra/, not root). Skipping the root format check."
+            exit 0
+          fi
+          tofu fmt -check -recursive -diff
+
+      - name: Lint Ansible (ansible-lint)
+        if: steps.detect.outputs.ansible == 'true'
+        # ansible-lint auto-discovers playbooks/roles and is well-targeted. Run via
+        # uvx (uv is pinned by the infra mise.toml). yamllint runs too, but only
+        # when the repo opts in with a .yamllint config (avoids flagging unrelated
+        # YAML like workflow files).
+        run: |
+          if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
+            uvx yamllint .
+          fi
+          uvx ansible-lint
 
       # Coverage is a SIGNAL, not a target: we report it and gate only the lines
       # this PR changes ("cover what you touch") — never a global percentage.

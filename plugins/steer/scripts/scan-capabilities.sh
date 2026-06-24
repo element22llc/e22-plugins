@@ -92,6 +92,21 @@ else
 fi
 emit "stack" "$stack" "-"
 
+# --- profile fingerprint (informational) — the repo profile from the CLAUDE.md
+# `## Profile` marker; absent -> app (back-compat). Capabilities are conditioned
+# on the `stack` fingerprint above (stack=none already drops node-tooling /
+# worktree-port-isolation to n/a for infra), NOT re-gated on profile — this emit
+# is for reporting (sync, /steer:report) only. Reuse the canonical reader in
+# hooks/lib/repo-root.sh so this never drifts from the hook-side parser (same
+# anchoring + case handling — single source of truth).
+profile=app
+if [ -f "$PLUGIN/hooks/lib/repo-root.sh" ]; then
+	# shellcheck source=/dev/null
+	. "$PLUGIN/hooks/lib/repo-root.sh"
+	profile="$(steer_repo_profile "$ROOT")"
+fi
+emit "profile" "$profile" "CLAUDE.md"
+
 # --- plugin-enabled-local — local sessions load steer ---
 # A `false` value is a deliberate opt-off and is respected, never repaired.
 F=".claude/settings.json"

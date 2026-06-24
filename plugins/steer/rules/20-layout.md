@@ -1,7 +1,10 @@
 ## Where things live
 
-Managed products are **internal monorepos**: multiple apps and shared packages in
-one repo.
+The layout below is the **app** profile: an internal monorepo with multiple apps
+and shared packages in one repo. A **library** / **cli** is a single package (no
+`/apps` split); an **infra** repo is organized as IaC (`live/` + `modules/`, or
+Ansible `roles/` + `playbooks/`) — see Stack — infrastructure. The `/spec` spine
+is identical across all profiles.
 
 - **`/apps`** — deployable applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).

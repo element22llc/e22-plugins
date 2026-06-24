@@ -22,7 +22,7 @@ Do this now:
    `${CLAUDE_PLUGIN_ROOT}/rules/`
 
    The files concatenate to form the full operating manual:
-   `00-router`, `05-roles`, `10-stack`, `15-commands`, `20-layout`,
+   `00-router`, `05-roles`, `10-stack`, `12-stack-infra`, `15-commands`, `20-layout`,
    `22-housekeeping`, `24-worktrees`, `26-context-hygiene`, `30-spec-workflow`, `31-decision-capture`,
    `32-living-docs`, `35-issue-tracker`,
    `36-issue-first`, `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,

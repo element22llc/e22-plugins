@@ -15,7 +15,8 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | --- | --- |
 | `00-router.md` | Operating-manual entry point. |
 | `05-roles.md` | Who you are working with. |
-| `10-stack.md` | Stack defaults. |
+| `10-stack.md` | Stack defaults (app / service profile). |
+| `12-stack-infra.md` | Stack — infrastructure / IaC (injected when the repo does IaC). |
 | `15-commands.md` | Useful commands. |
 | `20-layout.md` | Where things live. |
 | `22-housekeeping.md` | Keep the repo tidy. |

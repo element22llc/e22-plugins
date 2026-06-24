@@ -84,6 +84,15 @@ PR'd. Use it to see what a full sync would do.
    no pending migrations; skip to step 5 (additive reconciliation can still find
    template drift) — say so rather than going silent.
 
+   **Establish the repo profile.** Read the `CLAUDE.md` `## Profile` marker
+   (`<!-- steer:profile=… -->`); **absent → `app`** (back-compat). The back-fill
+   migration in the ledger writes `=app` when the marker is missing (idempotent —
+   it fires only while absent). The profile selects which scaffold overlay
+   steps 5–6 reconcile against (an `infra` repo reconciles the root infra
+   `mise.toml` + infra CI, never `package.json`/`compose.yaml`). If the marker
+   was changed since the last sync, **offer the newly-matching overlay
+   additively** — never remove the prior profile's files (clobber-free).
+
 4. **Apply pending structural migrations.** Open the ledger at
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md`. Walk its entries
    oldest→newest. For each entry whose introducing version is **greater than

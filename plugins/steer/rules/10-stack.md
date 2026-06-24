@@ -5,6 +5,13 @@ a different stack, propose the better fit and record an ADR under
 `/spec/decisions/` (run `/steer:adr`). Rationale and full setup detail for every
 bullet: run `/steer:reference conventions`.
 
+The bullets below describe the **app / service** repo profile (the default).
+An **infra** repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra
+bullet its *primary* stack — IaC toolchain at the repo root, no Node/web layer;
+a **library** or **cli** follows its own package language and skips the
+app/web/compose bullets. `/steer:init` records the profile; the universal core
+(mise pinning, the `/spec` spine, CI hygiene) is the same for all of them.
+
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
   Next.js app (Route Handlers, Server Actions, server components). A standalone

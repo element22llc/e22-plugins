@@ -80,3 +80,16 @@ updates:
   #     - dependency-name: "*"
   #       update-types:
   #         - version-update:semver-major
+
+  # Terraform / OpenTofu — provider + module versions (the `infra` profile, or a
+  # nested /infra dir; set `directory` to where the .tf/.hcl roots live). Majors
+  # can change provider/resource contracts — left for a human, like Docker images.
+  # - package-ecosystem: terraform
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #   open-pull-requests-limit: 5
+  #   ignore:
+  #     - dependency-name: "*"
+  #       update-types:
+  #         - version-update:semver-major

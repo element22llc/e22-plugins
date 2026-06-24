@@ -11,7 +11,16 @@ runbook and a guardrail seem to conflict, the guardrail wins.
 There's no `/spec` spine, no `mise.toml`/standard layout, and the repo was not forked
 from the template. If it *was* forked (placeholders, existing `/spec`), redirect
 to `/steer:init` and stop. Detect the stack from the repo itself
-(`package.json` / `pyproject.toml`, frameworks, database, auth). Work on a
+(`package.json` / `pyproject.toml`, frameworks, database, auth). **Also infer the
+repo profile** from the same survey and **confirm it with the dev**: `infra`
+(`*.tf`/`*.hcl`, `ansible.cfg`/`site.yml`/`roles/`, `Pulumi.yaml`/`terragrunt.hcl`),
+`app` (`apps/`+`packages/` monorepo or a web framework), `service` (a single
+deployable, not a monorepo), `library` (a publishable package, no app entry), or
+`cli` (a declared `bin`/entrypoint). The profile decides which scaffold Phase 10
+syncs (an `infra` repo gets a tofu/terragrunt/ansible **root** `mise.toml` and
+infra CI, not `package.json`/`compose.yaml`); the universal core is the same for
+all. Adoption only *observes* — record the profile in the `CLAUDE.md` `## Profile`
+marker (`<!-- steer:profile=<profile> -->`) at handoff, default `app`. Work on a
 `feat/adopt` branch — never commit to `main` (commit-autonomy rule). Commit
 the spine + scaffold as coherent units without asking; **push and the PR wait for
 the dev**.
@@ -204,7 +213,14 @@ which tracker the team uses — if GitHub Issues, run
 Phases 3–5 learned about the app — as-built, dev confirms), and `/spec/HISTORY.md`
 seeded with the adoption itself as the first entry. **Adapt to the existing
 stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match
-what the app needs). **Reconcile, don't replace** — if the repo already has its
+what the app needs). **Apply the profile overlay** (MANIFEST "Profile overlays")
+for the profile confirmed in Phase 1: an `infra` repo gets
+`templates/scaffold/profiles/infra/mise.toml` as the **root `mise.toml`** and
+omits `package.json`/`pnpm-workspace.yaml`/`biome.json`/`compose.yaml`/
+`scripts/worktree-env.sh`/`apps`/`packages` (its CI auto-detects `*.tf`/Ansible);
+`service`/`library`/`cli` omit the app-only rows the MANIFEST lists. A **root
+`mise.toml` must always land** (it clears the scaffold nudge). **Reconcile, don't
+replace** — if the repo already has its
 own CI, compose, or config, merge into it rather than overwriting, and **never
 clobber working app code**: diff and ask before touching anything that exists. For
 the structured-config files an existing repo most often already owns — `.gitignore`
@@ -253,6 +269,11 @@ migrations this repo already carries:
 # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.
 <plugin version>
 ```
+
+**Stamp the profile marker:** ensure the `CLAUDE.md` `## Profile` section carries
+`<!-- steer:profile=<profile> -->` for the profile confirmed in Phase 1 (default
+`app`). It is read by `/steer:sync` and is a sibling of the `## Delivery mode`
+marker.
 
 Commit on `feat/adopt`. `PRODUCTIONIZATION.md` is the dev's productionization
 brief — every gap and as-built risk is listed there. Propose opening the PR and

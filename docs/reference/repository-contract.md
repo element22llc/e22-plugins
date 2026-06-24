@@ -26,7 +26,37 @@ flowchart TD
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |
 | `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged). `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree. See the always-on **Parallel worktrees** rule. |
-| `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. |
+| `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. Carries the `<!-- steer:profile=… -->` marker (see Repo profiles). |
+
+## Repo profiles
+
+Not every managed repo is an app monorepo. A repo carries a **profile** —
+`app` (default), `infra`, `service`, `library`, or `cli` — recorded as a
+`<!-- steer:profile=… -->` marker on the `CLAUDE.md` `## Profile` section (a
+sibling of the delivery-mode marker; **absent ⇒ `app`**, for back-compat).
+
+The profile is a **bootstrap-time** choice: it decides which stack-specific
+extras `/steer:init` / `/steer:adopt` lay down. The **universal core is the same
+for every profile** — `mise.toml` toolchain pinning, the `/spec` spine, and
+stack-agnostic CI hygiene — so a non-app repo is never skipped at bootstrap. Only
+the extras vary:
+
+- **`app`** (default) — the full scaffold above (monorepo `apps/`+`packages/`,
+  `package.json`, `compose.yaml`, …).
+- **`infra`** (Terraform / OpenTofu / Ansible / Pulumi) — a
+  tofu/terragrunt/ansible-flavored **root** `mise.toml` instead of
+  `package.json`/`compose.yaml`, and CI that auto-detects `*.tf`/Ansible and runs
+  `tofu fmt` / `ansible-lint`. No `apps/`+`packages/`, no `worktree-env.sh`.
+- **`service` / `library` / `cli`** — the flat scaffold with the app-only files
+  omitted (e.g. a library has no `compose.yaml` / `worktree-env.sh`).
+
+Always-on **rules** do not read the marker — they self-gate on filesystem
+**traits** (`has-apps`, `has-compose`, `has-infra`, `has-iac` via the
+`inject-when` mechanism), so the injected rule context always matches what is on
+disk. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
+still gets the infra stack/deployment rules automatically because `/infra`
+exists. The profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
+(an informational `profile` fingerprint) for reporting and overlay decisions.
 
 ## Root housekeeping
 
