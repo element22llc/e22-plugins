@@ -20,10 +20,10 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 ## Skill tool restrictions
 
-- `audit`, `drift`, `next` carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`
+- `audit`, `next` carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`
   so the analysis cannot edit code/spec via native tools. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).
 - The restriction clears on the next user message, so confirmed follow-up writes (e.g.
-  drift's optional `/spec/DRIFT-REPORT.md`) and publication (`/steer:issues publish-*`)
+  `/steer:audit spec`'s optional `/spec/DRIFT-REPORT.md`) and publication (`/steer:issues publish-*`)
   run as their own steps after the skill returns.

@@ -31,9 +31,9 @@ vets, ranks, and routes what it returns.
 
 - **Explicit invocation, not auto-delegation.** An earlier auto-delegating
   analyzer was trialed and removed because it never fired reliably in practice.
-  `steer-reviewer` is named directly in the `audit`/`drift`/`work` (`--reviewed`) skill
-  bodies, so the fan-out is deterministic rather than dependent on description
-  matching.
+  `steer-reviewer` is named directly in the `audit` (code + spec modes) and
+  `work` (`--reviewed`) skill bodies, so the fan-out is deterministic rather than
+  dependent on description matching.
 - **Read-only is enforced, not requested.** The `Read`/`Grep`/`Glob` allowlist
   omits `Bash`, so there is no shell mutation path. This holds the fan-out to the
   same read-only contract the calling skills declare via `disallowed-tools`. See
