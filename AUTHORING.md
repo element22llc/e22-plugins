@@ -63,8 +63,8 @@ when_to_use: >-
 **Invocation tier → which tool fields to set** (see `INVOCATION.md` for the full
 matrix):
 
-- **Tier 1 — read-only / reference** (`conventions`, `traceability`, `audit`,
-  `drift`, `standards`, `next`, `design-sources`): never edit code/spec/tracker.
+- **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`,
+  `next`): never edit code/spec/tracker.
   Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`.
 - **Tier 2 — side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
   `adr`, `issues`, `questions`, …): may create/edit/commit. Use `allowed-tools`
@@ -76,9 +76,9 @@ matrix):
   model-callable, just not advertised as a front door. Two reasons to hide:
   *gateways* called by other skills (`tracker-sync`, `spec-scaffold`), and
   *front-door-subsumed* skills reached through a parent (`init`/`adopt`/`sync`/
-  `doctor` via `/steer:setup`; `drift`/`tidy` via `/steer:audit`; `roadmap` via
-  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; the reference
-  skills `conventions`/`traceability`/`design-sources`). Visibility is orthogonal
+  `doctor` via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via
+  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; the merged
+  `reference` loader). Visibility is orthogonal
   to read-only/side-effecting tier — a hidden skill can still be Tier 1 or Tier 2.
 
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the

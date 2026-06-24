@@ -7,7 +7,13 @@ never edits code).
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish] [--reviewed] [#issue ...]`
+
+!!! tip "`--reviewed` — the review-gated path"
+    Add `--reviewed` to wrap execution in the review loop formerly carried by the
+    standalone `deliver` skill: an independent plan-gate review → implement →
+    `/code-review` gate → bounded fix. The shared protocol lives in
+    `templates/reference/REVIEW-LOOP.md`.
 
 ## End-to-end flow
 

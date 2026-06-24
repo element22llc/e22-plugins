@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.0.0
+
 - **Changed (breaking):** Merged the three reference-prose loader skills
   (`conventions`, `traceability`, `design-sources`) into one topic-driven
   `/steer:reference [conventions | traceability | design-sources]` skill (hidden,
@@ -80,13 +82,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   routes to the right path instead of making the user choose: greenfield
   `/steer:init`, existing-code `/steer:adopt`, or steady-state `/steer:sync`
   (running `/steer:doctor` first if the toolchain is missing).
-- **Changed:** Decluttered the slash menu so the front doors are obvious. Eleven
+- **Changed:** Decluttered the slash menu so the front doors are obvious. Eight
   skills are now `user-invocable: false` (hidden from the menu, still
   model-callable, reached through a front door): `init`/`adopt`/`sync`/`doctor`
-  via `/steer:setup`; `drift`/`tidy` via `/steer:audit`; `roadmap` via
-  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; and the
-  reference skills `conventions`/`traceability`/`design-sources`. No skills were
-  removed and no `/steer:<name>` reference broke — this is reversible declutter.
+  via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via
+  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; and the merged
+  `/steer:reference` loader. The declutter itself removed no skills and broke no
+  `/steer:<name>` reference — it is reversible.
 - **Changed:** `rules/00-router.md` reorganized around the ~11 front doors with a
   compact "reached through a front door" note, and bootstrap precedence now routes
   through `/steer:setup`. `/steer:audit` now hands off to `/steer:tidy`, and

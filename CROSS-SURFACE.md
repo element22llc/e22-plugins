@@ -43,7 +43,7 @@ behave the same. The headline, validated against current docs and changelog:
 | **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (28 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
 | **SessionStart hooks** | `inject-standards.sh`, `orient-session.sh`, `check-template-drift.sh`, `check-open-questions.sh`, `check-unmanaged-repo.sh`, `surface-faults.sh` | `SessionStart` event; source `${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh` | Claude-Code-runtime |
 | **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-code-before-spec.sh`, `check-issue-before-mutation.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Claude-Code-runtime |
-| **Skills** (24) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
+| **Skills** (21) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
 | **MCP** | `tracker-sync` (GitHub MCP → `gh` → manual) | MCP connector | **Already surface-agnostic** |
 | **Bundled assets** | `templates/spec/*`, `templates/scaffold/*` | `${CLAUDE_PLUGIN_ROOT}` path resolution | Files portable; path var is runtime-specific |
 
@@ -141,10 +141,9 @@ non-technical POs are the **PO-facing skills**, which are self-contained regardl
 of hooks:
 
 - **PO-appropriate:** `build`, `spec`, `questions`, `next`, `issues`,
-  `design-sources`, `standards`.
+  `reference`, `standards`.
 - **Engineer-oriented (likely noise for POs):** `adopt`, `init`, `adr`, `audit`,
-  `conventions`, `drift`, `spec-scaffold`, `sync`, `tidy`, `traceability`,
-  `tracker-sync`, `protect`, `work`.
+  `spec-scaffold`, `sync`, `tidy`, `tracker-sync`, `protect`, `work`.
 
 Rollout caveat: org-wide plugin **sharing is per-user today** ("coming"), so the
 first wave is manual install.
