@@ -120,6 +120,23 @@ else
 	emit "plugin-enabled-local" "mis-wired" "$F"
 fi
 
+# --- delivery-mode-declared — explicit delivery mode in CLAUDE.md ---
+# The commit-autonomy + issue-first hooks read a `steer:delivery-mode=` marker on
+# the product CLAUDE.md and FAIL OPEN to pr-flow when it is absent — so a repo
+# bootstrapped before the marker existed runs implicit pr-flow and the solo-trunk
+# choice is never surfaced. Wired only when the marker is explicitly present; an
+# absent CLAUDE.md is a deeper problem and reported as such. Always applies (every
+# managed repo has a CLAUDE.md and runs in some delivery mode). The repair is a
+# human decision (which mode) — the skill proposes, never picks one.
+F="CLAUDE.md"
+if ! exists "$F"; then
+	emit "delivery-mode-declared" "absent" "$F"
+elif has "$F" "steer:delivery-mode="; then
+	emit "delivery-mode-declared" "present-wired" "$F"
+else
+	emit "delivery-mode-declared" "mis-wired" "$F"
+fi
+
 # --- in-ci-plugin-loading — @claude CI runs under steer standards ---
 # Wired only via the action's plugin_marketplaces input; an enabledPlugins block
 # does NOT count (trust-dialog gated, no-ops in headless CI).

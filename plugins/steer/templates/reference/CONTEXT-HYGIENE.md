@@ -1,0 +1,119 @@
+# Context hygiene
+
+Full reference for rule `26-context-hygiene`. The goal: long, multi-phase work
+should not bloat or exhaust the main session, and task-specific constraints should
+never be lost when the context compacts — **without** the user having to notice and
+intervene.
+
+## The honest boundary — what a plugin and the model cannot do
+
+A Claude Code plugin (hooks, rules, skills) and the model itself operate under hard
+limits here. Designing around them keeps the guidance truthful:
+
+- **No context-window visibility.** No hook event and no environment variable
+  exposes token count or percentage of the budget consumed. Only the user can see
+  it, by running `/context`. steer therefore cannot *detect* that the window is
+  getting heavy.
+- **No trigger.** Hooks communicate only through stdout/stderr/exit codes — they
+  cannot invoke `/` commands. Neither a hook **nor the model** can start a
+  `/compact` or open a new session. Both are strictly user-initiated.
+- **`PreCompact` cannot preserve content.** It can block compaction or react to it,
+  but it cannot inject "keep this" into the summary.
+
+So "steer notices the window is full and switches sessions for you" is impossible.
+The mechanisms below make that switch *unnecessary* instead.
+
+## 1. Delegate heavy runs to a subagent (the primary lever)
+
+A subagent runs with its **own fresh context window by construction** and returns
+only its result to the caller. That is the "fresh session" — automatic, invisible,
+and requiring no decision from the user.
+
+**When to fork.** Delegate when a run is:
+
+- **long or multi-phase** — many steps, each producing intermediate output the final
+  answer doesn't need (a broad audit, a migration sweep, a regeneration pass); or
+- **search-heavy** — would otherwise fill this context with grep/read transcript; or
+- **fan-out-shaped** — N independent units (per-dimension, per-feature, per-file)
+  that can each be reviewed in isolation.
+
+Below that bar, run inline — the coordination overhead of a subagent isn't worth it
+for a short, interactive task.
+
+**What to bring back.** Return only the **structured result** (findings with
+evidence fingerprints, a verdict, a path to a written artifact) — never the full
+transcript of the sweep. The point of forking is that the heavy intermediate context
+stays in the subagent and dies with it.
+
+**The canonical steer examples to follow:**
+
+- `/steer:audit` fans out one read-only `steer-reviewer` subagent per dimension on
+  large repos, then vets the gathered summaries.
+- `/steer:audit spec` fans out one reviewer per feature for large drift comparisons.
+- `/steer:work --reviewed` spawns a **fresh reviewer subagent** for its plan gate —
+  a separate context given the plan, the restated requirements, and the steer rules
+  as the rubric.
+
+## 2. Keep durable state in files, not the chat
+
+What survives compaction (and a brand-new session) is what lives on disk:
+`CLAUDE.md`, the `rules/*` (re-injected by the SessionStart hook, whose matcher
+includes `compact`), auto-memory, and the `/spec/**` artifacts. Conversation prose
+does **not** survive.
+
+So **run-state and task-specific constraints belong in a file the work re-reads**,
+never only in the chat:
+
+- **Run-state / flow position** → a status artifact. `/steer:build` keeps flow state
+  in `/spec/BUILD-STATUS.md`; `/steer:work` keeps the issue, branch, and session
+  breadcrumbs in its `spec/.work/<branch>.md` marker. Resuming reads the file first.
+- **Decisions and constraints** → the durable spine (`/spec/features/*/intent.md`,
+  `/spec/decisions/` ADRs, `/spec/HISTORY.md`) or a purpose-built sidecar the run
+  reads on entry.
+
+A sidecar is just a small structured file that travels with the data instead of the
+conversation. Example shape for a regeneration run:
+
+```json
+{
+  "regeneration_policy": {
+    "holes": "flag_or_skip",
+    "contours_with_holes": "do_not_synthesize",
+    "expect_validate": ["simple_plates"]
+  }
+}
+```
+
+Now any session — fresh or compacted — picks the constraint up; nothing depends on
+the assistant "remembering" it.
+
+## 3. Fallback nudge — only when genuinely overloaded
+
+When the thread is loaded with unrelated context and delegation won't help (e.g. the
+heavy work *is* the current conversation), the only remaining lever is to
+**recommend** the user act — because you cannot:
+
+1. Say plainly that `/compact` or a fresh session is the user's call, not something
+   you can perform.
+2. **Pre-compose the hand-off** so acting is one step: the artifact path to reopen
+   and the exact constraints to carry across. A fresh session starts blind — the
+   hand-off is what stops the constraints from being lost.
+
+Keep this rare. The default is silent: fork the heavy run and write state to a file,
+so the nudge is seldom needed.
+
+## Worked example — the part-regeneration scenario
+
+A run analyzes an `extraction.json`, produces a verdict ("positioned holes are
+unreliable → flag/skip; simple plates will validate"), then regenerates parts.
+
+- **Without context hygiene:** the verdict and its constraints live only in the chat;
+  the heavy regeneration run inflates the same context; if it compacts or the user
+  opens a fresh session, the "holes unreliable" constraint is lost and the run may
+  fabricate geometry.
+- **With context hygiene:** the verdict step writes `regeneration_policy` into the
+  artifact (§2). The regeneration is delegated to a subagent (§1) seeded from that
+  policy, returning only the validated/flagged/skipped report. The main context stays
+  lean, the constraint travels with the data, and the user just approves — no fresh
+  session, no re-typing. Only if the whole thread were already overloaded would you
+  fall back to recommending `/compact` with the policy path as the hand-off (§3).

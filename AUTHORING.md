@@ -84,6 +84,13 @@ matrix):
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the
 skill — not inlined into the SKILL.md.
 
+When a skill runs a **long, multi-phase, or search-heavy** flow, delegate it to a
+subagent (fresh context by construction) and persist run-state and task constraints
+in `/spec/**` rather than running everything inline — keeping the main session lean
+and the state durable across compaction. See rule `26-context-hygiene` and the
+exemplars it cites (`/steer:audit` → the `steer-reviewer` agent;
+`/steer:work --reviewed`'s plan gate).
+
 ### Skill vs. mode — hold the line on surface area
 
 The user-facing menu is the handful of **front doors** in `rules/00-router.md`

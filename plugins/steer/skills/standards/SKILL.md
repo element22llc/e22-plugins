@@ -23,7 +23,7 @@ Do this now:
 
    The files concatenate to form the full operating manual:
    `00-router`, `05-roles`, `10-stack`, `12-stack-infra`, `15-commands`, `20-layout`,
-   `22-housekeeping`, `24-worktrees`, `30-spec-workflow`, `31-decision-capture`,
+   `22-housekeeping`, `24-worktrees`, `26-context-hygiene`, `30-spec-workflow`, `31-decision-capture`,
    `32-living-docs`, `35-issue-tracker`,
    `36-issue-first`, `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
    `52-deployment`, `55-drift-gates`, `60-high-risk`, `70-secrets`, `75-compliance`,

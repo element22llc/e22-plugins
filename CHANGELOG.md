@@ -36,6 +36,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   infra/IaC, libraries, and CLIs, and that `/steer:init` picks the matching
   profile. Stack/layout/commands rules (`10`/`15`/`20`/`24`) note their defaults
   are the app/service profile's biases.
+- **Added:** `/steer:sync` now detects an **undeclared delivery mode** via a new
+  `delivery-mode-declared` capability in the capability map
+  (`scan-capabilities.sh` + `CAPABILITIES.md`). A repo bootstrapped before
+  solo-trunk existed (≤ 2.11.0) carries no `steer:delivery-mode=` marker on its
+  `CLAUDE.md`, so the commit-autonomy and issue-first hooks silently fail open to
+  `pr-flow` and a solo, pre-MVP dev never discovers solo-trunk — the solo-trunk
+  offer lived only in `init`'s run-once interview, and `sync` carried the spine
+  forward without re-asking. The scan reports `present-wired` when the marker is
+  explicit, `mis-wired` when `CLAUDE.md` exists without it, `absent` when there is
+  no `CLAUDE.md`. Repair is a **human decision** (like `backing-services-compose`):
+  `sync` proposes splicing the scaffold's `## Delivery mode` section defaulting to
+  `pr-flow` (matching the hooks' fail-open, so behaviour is unchanged) and
+  surfaces the solo-trunk option, recommending it for a solo PO+dev with no
+  MVP/deploy yet — it never picks the mode itself, and never edits an existing
+  `## Delivery mode` section. Closes #193.
+- **Added:** New always-on rule `26-context-hygiene` and a matching
+  `/steer:reference context-hygiene` topic — guidance to delegate heavy, multi-phase,
+  or search-heavy runs to subagents (a fresh context window by construction) and to
+  persist durable run-state and task constraints in `/spec/**` files so they survive
+  compaction, with a fallback recommendation to `/compact` or start a fresh session
+  (with a pre-composed hand-off) only when the thread is genuinely overloaded. Honest
+  about the boundary: a plugin/model cannot see context usage, trigger `/compact`, or
+  start a session — only the user can. AUTHORING gains a matching skill-authoring note.
 
 ### 3.0.1
 
