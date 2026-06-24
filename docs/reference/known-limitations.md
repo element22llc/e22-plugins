@@ -70,6 +70,27 @@ an (org-level) board or roadmap on top without the plugin owning it. Only Projec
 written into the issue; `steer:state` stays canonical in the body and is mirrored
 at most one-directionally by a Project Status field.
 
+## Context window, compaction, and sessions
+
+`steer` cannot manage your context window for you, and that is a hard Claude Code
+boundary, not a plugin gap: no hook or environment variable exposes the token count
+or how full the window is, and **neither a hook nor the model can trigger `/compact`
+or start a new session** — only you can. So `steer` will never silently compact or
+"switch you to a fresh session" when a long run fills the window.
+
+What it does instead (rule `26-context-hygiene`; full prose via
+`/steer:reference context-hygiene`):
+
+- **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
+  fresh context window by construction and return only the result — so the heavy
+  intermediate context never lands in your main session.
+- **Keeps durable run-state and task constraints in files** (`/spec/**`, sidecars),
+  which survive compaction and a fresh session where chat history does not. The
+  `SessionStart` hook also re-injects the rules after a `compact`.
+- **Only when the thread is genuinely overloaded** does it *recommend* you `/compact`
+  or start a fresh session — with a pre-composed hand-off — saying plainly that
+  acting is your call, not something it can do.
+
 ## What the hooks do (and don't) enforce
 
 Even when hooks fire, only one of them actually blocks an action. Be honest about

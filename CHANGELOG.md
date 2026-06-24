@@ -22,6 +22,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   surfaces the solo-trunk option, recommending it for a solo PO+dev with no
   MVP/deploy yet — it never picks the mode itself, and never edits an existing
   `## Delivery mode` section. Closes #193.
+- **Added:** New always-on rule `26-context-hygiene` and a matching
+  `/steer:reference context-hygiene` topic — guidance to delegate heavy, multi-phase,
+  or search-heavy runs to subagents (a fresh context window by construction) and to
+  persist durable run-state and task constraints in `/spec/**` files so they survive
+  compaction, with a fallback recommendation to `/compact` or start a fresh session
+  (with a pre-composed hand-off) only when the thread is genuinely overloaded. Honest
+  about the boundary: a plugin/model cannot see context usage, trigger `/compact`, or
+  start a session — only the user can. AUTHORING gains a matching skill-authoring note.
 
 ### 3.0.1
 
