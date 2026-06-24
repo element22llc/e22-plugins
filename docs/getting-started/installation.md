@@ -41,18 +41,20 @@ set up with the plugin, and the `/steer:<skill>` commands become available.
 
 ## Bootstrapping a repo
 
-- **New repo:** [`/steer:init`](../workflows/index.md) installs the bundled
-  scaffold and `/spec` spine.
-- **Existing app:** [`/steer:adopt`](../workflows/adopt.md) reverse-engineers a
-  `/spec` spine from the code and adds the scaffold.
+Run **[`/steer:setup`](../workflows/index.md)** — it detects the repo state and
+routes to the right path, so you don't have to choose:
+
+- **New repo:** installs the bundled scaffold and `/spec` spine (`/steer:init`).
+- **Existing app:** reverse-engineers a `/spec` spine from the code and adds the
+  scaffold ([`/steer:adopt`](../workflows/adopt.md)).
 
 Both replace the old static `repository-template` as the bootstrap source.
 
 ## Keeping a repo in sync
 
-After a new plugin release, run [`/steer:sync`](../workflows/index.md) in a
-managed repo to apply pending migrations and reconcile the scaffold and spec
-spine against the current templates.
+After a new plugin release, run **[`/steer:setup`](../workflows/index.md)** in a
+managed repo — it detects the drift and applies pending migrations, reconciling
+the scaffold and spec spine against the current templates (via `/steer:sync`).
 
 ## Next step
 

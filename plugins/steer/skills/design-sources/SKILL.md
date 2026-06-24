@@ -1,5 +1,6 @@
 ---
 name: design-sources
+user-invocable: false
 description: Guide to design exports — URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md.
 when_to_use: Use when a feature originates from a Claude Design export or URL, Figma, or screenshots.
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree

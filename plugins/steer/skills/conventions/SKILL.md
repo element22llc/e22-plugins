@@ -1,5 +1,6 @@
 ---
 name: conventions
+user-invocable: false
 description: Full engineering conventions reference — versioning, mise toolchain & lockfiles, backend placement, local services, monorepo layout, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns.
 when_to_use: Use for any tooling or convention question, or the rationale behind a stack default.
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree

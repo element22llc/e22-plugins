@@ -10,7 +10,7 @@ flowchart LR
     Q -->|Describe ideas,<br/>review outcomes| PO[Product owner]
     Q -->|Review & merge code,<br/>own the repo| DEV[Developer]
     PO --> BUILD["/steer:build"]
-    DEV --> SETUP["/steer:init · /steer:adopt"]
+    DEV --> SETUP["/steer:setup"]
 ```
 
 ## Am I a PO or a dev?
@@ -64,10 +64,11 @@ directly — Claude routes everything. Walk the full path in
 
 ### If you're a dev
 
-Set the repo up first:
+Set the repo up first with [`/steer:setup`](../workflows/index.md) — it detects
+the repo state and routes:
 
-- **New repo:** [`/steer:init`](../workflows/index.md)
-- **Existing app:** [`/steer:adopt`](../workflows/adopt.md)
+- **New repo:** → `/steer:init`
+- **Existing app:** → [`/steer:adopt`](../workflows/adopt.md)
 
 Then walk the [first workflow](first-workflow.md) end to end
 (capture → spec → decompose → work → PR). On a hookless surface, run

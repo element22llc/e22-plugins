@@ -20,9 +20,9 @@ flowchart LR
     end
     DEV["Developer / PO<br/>in Claude Code"] -->|installs| MP
     STEER -->|SessionStart hook injects<br/>always-on rules| SESSION["Product session"]
-    STEER -->|/steer:init · /steer:adopt<br/>install scaffold + spec spine| REPO["Product repo"]
+    STEER -->|/steer:setup<br/>install scaffold + spec spine| REPO["Product repo"]
     SESSION -->|/steer:&lt;skill&gt; on demand| REPO
-    REPO -->|/steer:sync after a release| STEER
+    REPO -->|/steer:setup after a release| STEER
 ```
 
 ## What `steer` ships

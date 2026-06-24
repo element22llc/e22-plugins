@@ -1,5 +1,6 @@
 ---
 name: doctor
+user-invocable: false
 description: Detect and install the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs.
 when_to_use: >-
   Use on a fresh machine, or whenever a tool is missing ("command not found",
