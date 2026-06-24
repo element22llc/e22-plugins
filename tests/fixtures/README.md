@@ -12,7 +12,7 @@ review.
 | `greenfield-empty-repo/` | `/steer:init` output: required spec headings + a `## Recommended next actions` handoff block. |
 | `adopted-existing-app/` | `/steer:adopt` must record inferred decisions as **Proposed** ADRs, never `Accepted`. |
 | `production-app-with-open-issues/` | A production handoff block does not misuse "Required before production" for optional work; lifecycle state + hidden markers stay valid. |
-| `spec-drift-repo/` | `/steer:drift` output ends in a valid handoff block with a valid category. |
+| `spec-drift-repo/` | `/steer:audit spec` output ends in a valid handoff block with a valid category. |
 
 The authoritative contract definitions live in
 [`../../plugins/steer/templates/reference/NEXT-ACTIONS.md`](../../plugins/steer/templates/reference/NEXT-ACTIONS.md)

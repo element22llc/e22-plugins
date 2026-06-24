@@ -81,7 +81,7 @@ are not in this install map.
 All GitHub templates live in one home, `templates/github/`. The installable
 ones are listed here; the agent-authored issue **bodies**
 (`../github/issue-bodies/*.md`) are **not** installed — they are read by the
-plugin at runtime (`/steer:issues`, `/steer:drift`, `/steer:audit`) to author
+plugin at runtime (`/steer:issues`, `/steer:audit spec`, `/steer:audit`) to author
 issue bodies that satisfy the contract in `reference/ISSUE-SCHEMA.md`. The
 YAML Issue **Forms** below are the human capture UI; the two are different
 artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).

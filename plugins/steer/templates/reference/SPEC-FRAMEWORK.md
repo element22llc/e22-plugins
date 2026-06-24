@@ -106,7 +106,7 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
   it nudges you to promote or defer, it does not block the gate).
 
 `validate` runs at `/steer:spec approve` and is called by `/steer:issues`
-(`materialize`, `status`, `reconcile`) and `/steer:drift`; a spec-changing PR
+(`materialize`, `status`, `reconcile`) and `/steer:audit spec`; a spec-changing PR
 should run it too. A failing check blocks the relevant gate — e.g. an approval
 cannot proceed while a blocking question is open.
 

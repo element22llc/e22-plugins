@@ -83,8 +83,9 @@ them directly when an intent maps cleanly to one:
 - **`/steer:setup`** detects and hands off to `/steer:init` (greenfield), `/steer:adopt`
   (existing code), `/steer:sync` (steady-state update/repair), and `/steer:doctor`
   (prerequisites).
-- **`/steer:audit`** hands off to `/steer:drift` (as-built `/spec` vs tracker intent)
-  and `/steer:tidy` (sort repo-root strays into `/spec`).
+- **`/steer:audit`** runs in two modes — `code` (whole-repo health, the default) and
+  `spec` (as-built `/spec` vs tracker intent) — and hands off to `/steer:tidy`
+  (sort repo-root strays into `/spec`).
 - **`/steer:issues`** and `/steer:spec` hand off to `/steer:questions` (clear open
   spec questions); `/steer:issues` hands off to `/steer:roadmap` (release timeline).
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
@@ -604,7 +605,7 @@ compliance-impacting · operational (deploy/CI/infra) · local setup or
 deployment changed · app docs invalidated · architecture/stack drift
 (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer explicitly resolves it — you may not waive your own flag.
-Periodic sweeps: `/steer:drift`, `/steer:audit`.
+Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
 
 
 ## High-risk areas

@@ -11,4 +11,4 @@ compliance-impacting · operational (deploy/CI/infra) · local setup or
 deployment changed · app docs invalidated · architecture/stack drift
 (`ARCHITECTURE.md`)**. A flagged class blocks merge
 until the reviewer explicitly resolves it — you may not waive your own flag.
-Periodic sweeps: `/steer:drift`, `/steer:audit`.
+Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).

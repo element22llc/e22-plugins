@@ -104,7 +104,7 @@ def existing_app_repo(tmp_path: Path) -> ExistingApp:
     )
 
 
-# --- drift fixture (for /steer:drift) -------------------------------------
+# --- drift fixture (for /steer:audit spec) --------------------------------
 #
 # drift compares an as-built /spec spine (with a feature) against a tracker-spec
 # export and reports divergences. init never produces a feature (greenfield), and

@@ -24,7 +24,7 @@ This is the steady-state counterpart to the one-time bootstraps. Use it when:
 - someone asks to "sync to the latest standards / plugin version".
 
 It is **not** a bootstrap (no `/spec` → `/steer:init` or `/steer:adopt`), **not** a
-spec-vs-tracker drift check (`/steer:drift`), and **not** a code-health audit
+spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health audit
 (`/steer:audit`). Those operate on different axes; this one is
 **repo-structure-vs-plugin-conventions**.
 
@@ -253,7 +253,7 @@ PR'd. Use it to see what a full sync would do.
 - **Structure only, never behavior.** Sync moves/renames artifacts and splices
   in template additions; it does not refactor app code, resolve open questions,
   or re-triage productionization. Code health is `/steer:audit`; drift is
-  `/steer:drift`.
+  `/steer:audit spec`.
 - **The ledger is the source of truth for non-additive changes.** Apply
   renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
   improvise a transform from memory of "what changed."
@@ -263,7 +263,7 @@ PR'd. Use it to see what a full sync would do.
   and it isn't `disabled`; re-copy a `verbatim` script only because it's
   contractually identical (after showing the diff); otherwise splice the named
   marker / propose, never clobber. Don't broaden into app code (`/steer:audit`)
-  or spec↔tracker drift (`/steer:drift`).
+  or spec↔tracker drift (`/steer:audit spec`).
 - **Read-then-propose, never clobber.** Diff and ask before touching any file
   that exists; reconcile scaffold into it rather than replacing it; preserve
   every filled-in value. Never touch working app code.

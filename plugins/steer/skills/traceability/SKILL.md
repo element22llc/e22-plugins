@@ -31,7 +31,7 @@ It covers, in detail:
   and how untracked questions get promoted.
 - **Drift gates** — the eight review-sensitive classes, flag-when-noticed
   mechanics, who may resolve a flag, and the periodic sweeps
-  (`/steer:drift`, `/steer:audit`, `/steer:questions`).
+  (`/steer:audit spec`, `/steer:audit`, `/steer:questions`).
 - **SOC 2 / ISO 27001-aligned delivery** — "aligned, never compliant" wording,
   and the expectation→artifact evidence map.
 - **Worked examples** — a PO's day and a dev's day through the same workflow.

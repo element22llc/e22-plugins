@@ -74,7 +74,7 @@ owners:
 - **Milestones (release grouping):** when a release/version is tracked as a
   GitHub Milestone, attach issues to it with `/steer:tracker-sync set-milestone`
   so a GitHub Projects v2 release or roadmap view can group by it. To generate the
-  timeline — turn target features or a `/steer:drift` spec-gap into milestone-grouped
+  timeline — turn target features or a spec-gap from `/steer:audit spec` into milestone-grouped
   issues — run `/steer:roadmap` (it proposes a dependency-ordered milestone plan and
   attaches issues on confirmation). Milestones are assigned **on demand**, not
   auto-managed; the issue and `/spec` stay the source of truth. Project planning
@@ -84,4 +84,4 @@ owners:
 ## Notes
 
 [Anything product-specific: components/labels in use, who triages, sync
-cadence with `/steer:drift`, …]
+cadence with `/steer:audit spec`, …]

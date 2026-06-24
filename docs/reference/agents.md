@@ -5,7 +5,7 @@ worker**, not a new capability — it grants no authority the calling skill didn
 already have, and its tool allowlist is strictly narrower.
 
 !!! note "Why a shipped subagent at all"
-    The read-heavy review skills (`/steer:audit`, `/steer:drift`) sweep a whole
+    The read-heavy review skills (`/steer:audit`, `/steer:audit spec`) sweep a whole
     repo across many independent slices. On a large repo that work both crowds
     the main context and benefits from running in parallel. A shipped subagent
     lets those skills **fan out explicitly** — one isolated worker per slice —
@@ -15,7 +15,7 @@ already have, and its tool allowlist is strictly narrower.
 ## `steer-reviewer`
 
 A read-only reviewer invoked **explicitly** by `/steer:audit` (one per audit
-dimension), `/steer:drift` (one per feature diff), and `/steer:work --reviewed` (the
+dimension), `/steer:audit spec` (one per feature diff), and `/steer:work --reviewed` (the
 optional code-gate standards check) when the comparison is large enough that
 inline review would crowd the main context. It analyzes one bounded slice in its own context window
 and returns a compact, `path:line`-evidenced findings summary; the calling skill

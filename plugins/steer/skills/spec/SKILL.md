@@ -1,7 +1,7 @@
 ---
 name: spec
 description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution, WITHOUT writing any code. The no-build counterpart to /steer:build. Also runs `/steer:spec validate [feature-id|--all]`: a local, GitHub-independent structural check over the open-question contract that blocks approval while a blocking question is open. Never touches /apps or /packages; ends at an approved intent, not a build."
-when_to_use: Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /steer:drift.
+when_to_use: Use to think a feature through before committing to implementation, shape acceptance criteria, validate a spec's question state, or refine a spec you intend to compare against the code later via /steer:audit spec.
 argument-hint: "[feature-id | approve <feature-id> | validate [feature-id | --all]]"
 ---
 <!-- steer:modes default,approve,validate -->
@@ -33,7 +33,7 @@ implementation.
 
 - Before committing to implementation, to think a feature through and pin its
   acceptance criteria.
-- To refine an intent you plan to compare against the code later (`/steer:drift`).
+- To refine an intent you plan to compare against the code later (`/steer:audit spec`).
 - Whenever a feature needs design discussion but **not** code yet.
 
 ## Steps
@@ -120,7 +120,7 @@ The closed-issue check needs the tracker; when GitHub is unavailable, run the
 GitHub-independent checks and **say** the tracker-coupled ones were skipped —
 silence must never read as "passed." A failing check **blocks the relevant gate**
 (approval, `/steer:issues materialize`, a spec-changing PR). `/steer:issues`
-(`materialize`, `status`, `reconcile`) and `/steer:drift` call this before acting.
+(`materialize`, `status`, `reconcile`) and `/steer:audit spec` call this before acting.
 
 ## Approve mode — `/steer:spec approve <feature-id>`
 
@@ -184,7 +184,7 @@ and HISTORY); it stays as code-free as the rest of this skill.
 | `/steer:questions` | open-question sweep (behavior reused here) |
 | `/steer:build` | spec **and** build, PO-driven, ends in a code PR |
 | `/steer:tracker-sync` | file the intent as a tracker item (optional exit) |
-| `/steer:drift` | *later*: compare this intent against the as-built code |
+| `/steer:audit spec` | *later*: compare this intent against the as-built code |
 
 ## Coupling rules
 

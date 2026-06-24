@@ -38,7 +38,7 @@ plugins/steer/
 │                                   #            setup, doctor, init, adopt, build, conventions,
 │                                   #            traceability, design-sources, spec-scaffold,
 │                                   #            spec, issues, tracker-sync, work, adr,
-│                                   #            drift, audit, sync, questions, next, tidy, standards,
+│                                   #            audit, sync, questions, next, tidy, standards,
 │                                   #            protect, report, roadmap
 │                                   # (front doors are user-invocable; the rest are
 │                                   #  user-invocable:false — reached via a front door)

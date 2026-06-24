@@ -78,7 +78,7 @@ lives in the linked spec/ADR/PR.
 It serves: **auditability** (when/why/who for any change), **onboarding**
 (read the last quarter in five minutes), **review evidence** (entry rides in
 the reviewed PR), **decision archaeology** (why is it like this?), and
-**drift detection over time** (`/steer:drift` and `/steer:audit` use it as a
+**drift detection over time** (`/steer:audit spec` and `/steer:audit` use it as a
 timeline). Never rewrite or delete entries; correct with a new entry that
 references the old one.
 
@@ -138,7 +138,7 @@ connect the two.** Only one file knows which tracker is in use:
 acceptance criteria and constraints into the feature's `intent.md` (don't
 leave them tracker-only — the repo must stand alone for review and audit);
 keep the ref as the pointer back. When tracker state and spec diverge, that's
-exactly what `/steer:drift` audits.
+exactly what `/steer:audit spec` audits.
 
 **Questions not yet tracked externally** live in `## Open questions`. Promote
 one to a tracker item when it needs scheduling, an external owner, or client
@@ -165,7 +165,7 @@ Mechanics:
   "Resolved" is visible: a code change, an artifact update in the same PR, or
   a written accepted-divergence note (open question or `spec-drift` issue).
 - Claude **may not waive its own flag** — only the human reviewer resolves it.
-- Sweeps for drift that slipped past per-PR gates: `/steer:drift` (as-built spec
+- Sweeps for drift that slipped past per-PR gates: `/steer:audit spec` (as-built spec
   vs tracker spec), `/steer:audit` (code vs standards), `/steer:questions` (open
   questions rotting).
 
