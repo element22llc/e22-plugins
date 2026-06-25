@@ -38,16 +38,12 @@ name one. Plain language is the only entry point a user needs.
   closing offer after a long scoping pass; that scoping folds into `init`'s own
   interview, and durable design decisions wait for the spine to hold them
   (`31-decision-capture`), never a memory- or chat-only record.
-  **"Prototype" / "quick" / "just try it" / "throwaway" never waives
-  this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
-  (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview, and — by
-  declaring solo-trunk mode — no per-feature branch or PR, though a GitHub-adopted
-  repo still keeps the issue per change, see Issue-first), never *whether* the
-  scaffold and spine exist. Hand-writing
-  `package.json`, build config (`vite.config`, `tsconfig`), or CI **from scratch**
-  when `/steer:init` installs them from the bundled scaffold is the bug, not a
-  shortcut — run the bootstrap, then build on top of it.
+  **"Prototype" / "quick" / "just try it" / "throwaway" never waives this** — a
+  prototype is greenfield, so it still gets the bundled scaffold and a `/spec` spine.
+  Those words change spec *depth* and *ceremony* (lighter interview; by declaring
+  solo-trunk mode, no per-feature branch or PR — a GitHub-adopted repo still keeps
+  the issue per change, see Issue-first), never *whether* scaffold and spine exist;
+  the full greenfield-vs-prototype mechanics are canonical in Spec workflow.
 - **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
   switch or capture it (`/steer:issues capture`), rather than silently dropping the
   current thread.
@@ -420,12 +416,10 @@ auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide
 (`/spec/app/`) as features land. `/steer:adopt` is for *un-bootstrapped*
 pre-existing code, not an excuse to skip bootstrap now and reverse-engineer later.
 
-**Solo greenfield can run on trunk.** When one person is both PO and dev pre-MVP,
-`/steer:init` offers **solo trunk mode**: commit straight to `main` — no `feat/*`
-branch, no per-feature PR — until the MVP works, declared in the product `CLAUDE.md`
-(`Delivery mode: solo trunk (pre-MVP)`) and unwound at graduation (MVP works / first
-deploy / second contributor → `/steer:protect`). This relaxes only the branch/PR
-ceremony; the scaffold, spine, tests, and Definition of Done all hold. See Commit autonomy.
+**Solo greenfield can run on trunk** — when one person is both PO and dev pre-MVP,
+`/steer:init` offers **solo trunk mode**. It relaxes only the branch/PR ceremony;
+the scaffold, spine, tests, and Definition of Done all hold. The mechanics, the
+`CLAUDE.md` declaration, and graduation are canonical in Commit autonomy.
 
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →
@@ -540,12 +534,10 @@ request does **not** need confirmation to create the issue.
   open the PR, transition the issue. The CLI request authorizes local edits +
   tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
   implied**.
-- **Solo trunk keeps the issue, drops the branch/PR.** When the product `CLAUDE.md`
-  declares solo-trunk delivery mode (Commit autonomy), issue-first still holds —
-  every implementation-affecting mutation has a GitHub issue — but you commit
-  straight to `main` and **close the issue from the trunk commit** (`Closes #N`):
-  no `issue/<N>` branch, no per-feature PR. Only the branch/PR ceremony relaxes;
-  the issue stays the audit-evidence anchor (Audit-aligned delivery).
+- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy): issue-first
+  still holds — every implementation-affecting mutation has a GitHub issue — but you
+  close it **from the trunk commit** (`Closes #N`), with no `issue/<N>` branch or
+  per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
 - **The host may gate autonomous issue creation.** The scaffold pre-authorizes
@@ -634,7 +626,7 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 - [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where `main` is intentionally unprotected and there is no PR gate until graduation (see Commit autonomy).
+- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
 
 
 ## Deployment & environments

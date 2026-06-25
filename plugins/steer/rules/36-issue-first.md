@@ -21,12 +21,10 @@ request does **not** need confirmation to create the issue.
   open the PR, transition the issue. The CLI request authorizes local edits +
   tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
   implied**.
-- **Solo trunk keeps the issue, drops the branch/PR.** When the product `CLAUDE.md`
-  declares solo-trunk delivery mode (Commit autonomy), issue-first still holds —
-  every implementation-affecting mutation has a GitHub issue — but you commit
-  straight to `main` and **close the issue from the trunk commit** (`Closes #N`):
-  no `issue/<N>` branch, no per-feature PR. Only the branch/PR ceremony relaxes;
-  the issue stays the audit-evidence anchor (Audit-aligned delivery).
+- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy): issue-first
+  still holds — every implementation-affecting mutation has a GitHub issue — but you
+  close it **from the trunk commit** (`Closes #N`), with no `issue/<N>` branch or
+  per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
 - **The host may gate autonomous issue creation.** The scaffold pre-authorizes

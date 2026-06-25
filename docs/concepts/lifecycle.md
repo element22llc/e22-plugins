@@ -43,11 +43,12 @@ active issue (the *issue-first* rule). `/steer:work` will find-or-create the iss
 before the first change. Commit autonomy is unchanged once that issue exists — see
 the [Authorization model](authorization-model.md).
 
-**Solo-trunk mode keeps the issue, drops the PR.** A pre-MVP greenfield repo whose
+**Solo-trunk mode keeps the issue, drops the PR.** In
+[solo-trunk mode](authorization-model.md) — a pre-MVP greenfield repo whose
 `CLAUDE.md` `## Delivery mode` section carries the machine-readable marker
-`<!-- steer:delivery-mode=solo-trunk -->` commits straight to `main` with no
-per-feature branch or PR. Issue-first **still holds** there — the issue remains the
-audit-evidence anchor — so the change keeps an issue and closes it from the trunk
+`<!-- steer:delivery-mode=solo-trunk -->`, committing straight to `main` with no
+per-feature branch or PR — issue-first **still holds**: the issue remains the
+audit-evidence anchor, so the change keeps an issue and closes it from the trunk
 commit (a `Closes #N` trailer). Only the branch/PR ceremony relaxes: the
 issue-first hooks read the marker and reword their advice (reference the issue in
 the commit, *not* "open a PR" or "create an `issue/<N>` branch"). `/steer:protect`
