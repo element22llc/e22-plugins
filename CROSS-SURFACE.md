@@ -133,12 +133,18 @@ The **Code tab** ("Claude Code Desktop") is full Claude Code — it shares CLI
 settings, so install/enable once and the whole engine applies; we keep it at Tier 2
 only because it sits outside the per-release test matrix.
 
-For **Cowork**, add the `steer` GitHub marketplace via **Customize → Plugins**. Per
-docs, hooks run here, so the always-on rules *should* inject — but **reconfirm
-plugin-scoped `SessionStart`** ([§6](#6-verification-checklist)); if it doesn't fire
-on your build, fall back to `/steer:standards`. Highest-value pieces for
-non-technical POs are the **PO-facing skills**, which are self-contained regardless
-of hooks:
+For **Cowork**, add the `steer` GitHub marketplace via **Customize → Plugins**.
+The official Plugins Reference confirms the full hook lifecycle (`SessionStart`,
+`PreToolUse`, `Stop`) runs in the Cowork tab — the "hooks and sub-agents run only
+in Cowork" line means they fire here and are grayed out only in the plain **Chat**
+tab — so the always-on rules inject. A PO typically opens a **non-code connected
+folder** (specs/docs, no git repo); steer detects this as **knowledge-work mode**
+and injects a **lean, PO-relevant ruleset** (skipping the code/infra/tracker rules)
+plus a plain-language confirmation that standards are active (see
+[Known limitations → Knowledge-work mode](docs/reference/known-limitations.md)). If
+a build ever fails to fire the hook, fall back to `/steer:standards`. Highest-value
+pieces for non-technical POs are the **PO-facing skills**, which are self-contained
+regardless of hooks:
 
 - **PO-appropriate:** `build`, `spec`, `questions`, `next`, `issues`,
   `reference`, `standards`.

@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Definition of Done
 
 A change is done when **all** of these hold. Reviewers check them; CI cannot.

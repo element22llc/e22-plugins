@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Useful commands
 
 - **First-time setup:** `mise trust && mise install` (full mise setup in the

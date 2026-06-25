@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Keep the repo tidy
 
 The repo **root** holds scaffolding and config only — the known dirs (`apps/`,

@@ -52,8 +52,75 @@ steer_inject_when_one() {
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	# code-project — true in 'code' work mode. The knowledge-vs-code decision is
+	# made ONCE in inject-standards.sh (steer_work_mode) and a knowledge folder
+	# skips EVERY marked rule in the inject loop before this predicate is reached,
+	# so by the time this arm runs we are in code mode → always inject. (The `*)`
+	# default below would also inject; the explicit arm documents the token.)
+	code-project) return 0 ;;
 	*) return 0 ;;
 	esac
+}
+
+# steer_work_mode <cwd> — prints 'code' or 'knowledge'.
+#
+# 'knowledge' is emitted ONLY when we are confident this is a non-code
+# knowledge-work folder — the typical Claude Cowork case where a product owner
+# opens a connected folder of specs/docs that is NOT a git repo. In that mode
+# inject-standards.sh injects only the lean, PO-relevant ruleset (it skips every
+# rule that carries an inject-when marker) and orient-session.sh confirms, in
+# plain language, that standards are active.
+#
+# 'code' is the fail-safe default: a git work tree (here or any ancestor) OR any
+# code/config marker — a manifest/build/IaC file OR a loose SOURCE file (*.py,
+# *.js, …) — within cwd (maxdepth 2) OR any error/doubt → 'code', i.e. the full
+# ruleset. Per this file's contract we never silently DROP a rule on an
+# unreadable signal, so every uncertain path resolves to 'code'. The source-file
+# extensions matter because a non-git code folder may carry no manifest at all
+# (loose scripts) — manifest-only detection would mis-classify it as knowledge.
+# Residual limitation: a non-git code project whose ONLY markers sit deeper than
+# maxdepth 2 still reads as knowledge — open it as a git repo (or add a manifest)
+# to get the full ruleset.
+#
+# POSIX sh, no jq. Computed once per session (SessionStart), not on a hot path.
+# `find` (never a shell glob — a bare `*.tf` aborts the caller under zsh nomatch);
+# no `-L`, so symlinks are not followed. Note: `spec/` is deliberately NOT a code
+# marker — a knowledge folder is exactly where a /spec spine may live.
+steer_work_mode() {
+	_cwd="${1:-.}"
+	# A git work tree at cwd or above → treat as a code project.
+	steer_repo_root "${_cwd}" >/dev/null 2>&1 && {
+		printf 'code'
+		return 0
+	}
+	# No git. Scan shallowly for code/config markers — manifests, build/IaC files,
+	# AND loose source files. Capture find's own exit status (command substitution
+	# propagates it) so a find ERROR fails safe to 'code' rather than being
+	# mistaken for "no markers found".
+	_markers="$(find "${_cwd}" -maxdepth 2 \( \
+		-type f \( \
+		-name 'package.json' -o -name 'pnpm-workspace.yaml' -o -name 'mise.toml' \
+		-o -name 'pyproject.toml' -o -name 'go.mod' -o -name 'Cargo.toml' \
+		-o -name 'pom.xml' -o -name 'build.gradle' -o -name 'build.gradle.kts' \
+		-o -name 'Gemfile' -o -name 'requirements.txt' -o -name '*.csproj' \
+		-o -name '*.tf' -o -name '*.hcl' -o -name 'ansible.cfg' -o -name 'Pulumi.yaml' \
+		-o -name 'compose.yaml' -o -name 'compose.yml' -o -name 'Dockerfile' \
+		-o -name 'Makefile' \
+		-o -name '*.py' -o -name '*.js' -o -name '*.ts' -o -name '*.tsx' \
+		-o -name '*.jsx' -o -name '*.go' -o -name '*.rs' -o -name '*.java' \
+		-o -name '*.rb' -o -name '*.php' -o -name '*.c' -o -name '*.h' \
+		-o -name '*.cpp' -o -name '*.cs' -o -name '*.swift' -o -name '*.kt' \
+		-o -name '*.sh' -o -name '*.sql' -o -name '*.vue' -o -name '*.svelte' \) \
+		-o -type d \( -name 'src' -o -name 'infra' -o -name '.claude-plugin' \) \
+		\) 2>/dev/null)" || {
+		printf 'code'
+		return 0
+	}
+	[ -n "${_markers}" ] && {
+		printf 'code'
+		return 0
+	}
+	printf 'knowledge'
 }
 
 # steer_inject_when_ok <token-expr> <repo-root> — true (inject the rule) / false

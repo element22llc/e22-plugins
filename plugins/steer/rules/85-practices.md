@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Patterns we follow (baseline)
 
 Org baseline stated as principles; each names the **default-stack** instance in

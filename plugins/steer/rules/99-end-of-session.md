@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## End-of-session checklist
 
 Before wrapping up a working session, present this checklist and confirm each

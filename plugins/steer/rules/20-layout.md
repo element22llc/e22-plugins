@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Where things live
 
 The layout below is the **app** profile: an internal monorepo with multiple apps
