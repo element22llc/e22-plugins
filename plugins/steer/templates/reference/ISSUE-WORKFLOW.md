@@ -132,6 +132,13 @@ path; smaller work skips the spec gates:
   does not change product intent.
 - **Question / drift:** `inbox → exploring → ready-for-spec → [human decision] → ready-for-dev → …`
   — cannot become implementation-ready until a human resolves the intended behavior.
+- **Epic:** `inbox → exploring → in-progress → validate → done` — a parent
+  tracking issue, **never spec'd or dev'd directly**, so it **skips
+  `ready-for-spec`/`ready-for-dev`**. `exploring` is identifying and linking child
+  features; `in-progress` once any child has left `inbox`/`exploring`; `validate`
+  once all children are `validate`/`done`. Completion is **derived from child
+  rollup** (see Completion rules) and is PO-owned product acceptance, like a
+  feature.
 
 | Transition | Preconditions | Authority | AI may |
 |---|---|---|---|
@@ -157,6 +164,11 @@ Completion rules: **opening a PR moves the issue to `validate`, never `done`.**
   where one applies (a `duplicate`/`superseded` issue points at its replacement).
   `cancelled` work was **not** delivered, so it must never count toward
   done/throughput or read as a satisfied acceptance.
+- An **epic** has no PR of its own; its terminal state is **derived from child
+  rollup**. It is *eligible* for `done` only when **every** linked child feature is
+  terminal with **at least one `done`** — the agent then *proposes* `done` and the
+  **PO confirms** the epic outcome (it never auto-closes from rollup alone). An epic
+  whose children are **all `cancelled`** → `cancelled`, never `done`.
 
 A PR closed without merge returns the issue to `in-progress` or `blocked` (the
 issue itself is not closed). A reopened issue moves `done|cancelled →
@@ -191,6 +203,14 @@ public preview. So:
 - **Type unavailable/unknown** → continue on `steer:kind` alone, emit a
   non-blocking capability warning, and **do not** reintroduce duplicate
   `bug`/`feature` labels to compensate.
+
+**`Epic` is org-defined and may be absent even when `Feature`/`Bug`/`Task`
+exist** — it is not one of the standard three. So detect the **specific configured
+Type name** before setting it, not just whether Issue Types are enabled:
+**`Epic` present** → set it on `kind=epic` issues; **`Epic` absent** → keep
+`steer:kind=epic`, **leave the Type unset** (never substitute `Feature` — an epic
+is not a feature), warn, and do **not** invent an `epic` label. The epic's meaning
+still reaches a board through its native sub-issue links, which are Type-independent.
 
 **Issue fields — capability-degrading.** Native issue fields (Priority, Effort,
 Start/Target date) are an **org-level** GitHub feature, currently public preview,

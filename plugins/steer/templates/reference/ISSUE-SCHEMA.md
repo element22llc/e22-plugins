@@ -23,7 +23,7 @@ source of truth.
 | Marker | Meaning | On |
 |---|---|---|
 | `<!-- steer:schema=2 -->` | **Schema-version marker** — the contract version this body was written against. Required on every agent issue. | all |
-| `<!-- steer:kind=… -->` | Closed enum (work shape): `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
+| `<!-- steer:kind=… -->` | Closed enum (work shape): `epic` · `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
 | `<!-- steer:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical — see *GitHub Projects v2 — compatibility boundary* below. | all |
 | `<!-- steer:source=… -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
 | `<!-- steer:feature-id=… -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
@@ -34,7 +34,7 @@ source of truth.
 | `<!-- steer:dedupe-key=… -->` | Generic conceptual identity for issues with no stronger identity (no `finding-key`/`feature-id`/`question-id`). Stable and conceptual — e.g. `export:csv:duplicate-header`. **Never** line numbers, timestamps, or generated wording. | any without a stronger identity |
 | `<!-- steer:audit-id=… -->` | One audit run, `<iso-timestamp>-<short-sha>`. Immutable per run. | audit-run, finding (source:audit) |
 | `<!-- steer:audit-commit=… -->` | The commit SHA the audit observed. | audit-run, finding (source:audit) |
-| `<!-- steer:parent-issue=N -->` | Parent issue, when native sub-issue links are unavailable (fallback). | task, finding |
+| `<!-- steer:parent-issue=N -->` | Parent issue, when native sub-issue links are unavailable (fallback). The marker is **single-valued** — an issue's one direct parent. An Epic→Feature→Task chain is two separate single-parent edges (the *feature* carries `parent-issue=<epic#>`; each *task* carries `parent-issue=<feature#>`), so a feature is simultaneously a child (of its epic) and a parent (of its tasks) via different markers on different issues — nothing is multi-valued. | task, finding, feature (under an epic) |
 | `<!-- steer:claimed-by=… -->` | Active execution context that claimed the issue (e.g. `claude-code`). Optional; the *branch* marker represents the active execution context, GitHub *assignment* the accountable human. | optional |
 | `<!-- steer:branch=… -->` | The working branch for this issue. Optional — may be discovered dynamically. | optional |
 | `<!-- steer:pull-request=N -->` | The delivering PR. Optional — may be discovered dynamically. | optional |
@@ -103,6 +103,11 @@ blocks fail closed.
 Inside the managed block, use these headings exactly (skip ones that don't
 apply; never rename them). Per kind:
 
+- **epic** — `Outcome` · `Goal / theme` · `Child features` · `Out of scope` ·
+  `Spec references` · `Related issues` · `Validation`. `Child features` is a
+  checklist of `- [ ] #N — <feature title>`, maintained as features are linked;
+  an epic has **no `Acceptance criteria` of its own** — acceptance rolls up from its
+  child features, and `Validation` describes the epic-level product acceptance.
 - **feature / task** — `Outcome` · `User value` · `Scope` · `Out of scope` ·
   `Acceptance criteria` · `Open questions` · `Spec references` · `Related issues` ·
   `Validation`.
@@ -149,15 +154,18 @@ as resolved.
 
 Three orthogonal axes; do not collapse them into one another:
 
-- **GitHub Issue Type** (`Feature` · `Bug` · `Task`) — the org-level
-  classification, set when the repo supports Issue Types (see capability
-  degradation in `ISSUE-WORKFLOW.md`).
+- **GitHub Issue Type** (`Feature` · `Bug` · `Task`, plus `Epic` where the org
+  defines it) — the org-level classification, set when the repo supports Issue
+  Types (see capability degradation in `ISSUE-WORKFLOW.md`). `Epic` is org-defined
+  and may be absent even when the standard three exist; when absent the epic keeps
+  `steer:kind=epic` with its Type left unset.
 - **`steer:kind`** — the *work shape* the contract reconciles against (closed enum
   above). Canonical even when Issue Types are unavailable.
 - **`source:*`** — the *origin*, derived from the `steer:source` marker.
 
 | Origin | `steer:kind` | `steer:source` / label | GitHub Type |
 |---|---|---|---|
+| Product epic / initiative | `epic` | `human` (or `spec`) | Epic *(unset if absent)* |
 | PO feature request | `feature` | `human` | Feature |
 | PO/observed defect | `bug` | `human` (or `ci`, `implementation`) | Bug |
 | Internal/refactor task | `task` | `human` (or `dependency`) | Task |

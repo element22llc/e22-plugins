@@ -85,7 +85,12 @@ What steer *does* guarantee is that issues are **Projects v2-compatible by
 construction**: it sets the native attributes a board or roadmap reads — Issue
 **Type**, labels, assignees, milestone (`/steer:tracker-sync set-milestone`),
 native parent/sub-issue links, and the native issue fields above — so you can build
-an (org-level) board or roadmap on top without the plugin owning it. Only Project
+an (org-level) board or roadmap on top without the plugin owning it. An `epic`
+(a parent tracking issue grouping features as sub-issues) makes the full
+`Epic → Feature → Task` tree board-visible by construction, so a Projects v2
+Hierarchy view renders it with no extra machinery; `Type=Epic` is used only when
+the org enables that type, otherwise the epic carries the `steer:kind=epic` marker
+with its Type left unset. Only Project
 *item* custom fields (Status, iteration, size) live Project-side and are never
 written into the issue; `steer:state` stays canonical in the body and is mirrored
 at most one-directionally by a Project Status field.

@@ -54,10 +54,21 @@ absent the hook falls back to the line's `git blame` date. A malformed
 
 ## `issue_kind` — the work shape (the `steer:kind` marker, not a label)
 
-`feature · bug · task · finding · spec-question · spec-drift · audit-run`
+`epic · feature · bug · task · finding · spec-question · spec-drift · audit-run`
 
 Kind is the `steer:kind` marker + GitHub Issue Type, never a label. (See
 `ISSUE-SCHEMA.md`.)
+
+**`epic`** is the tier above `feature`: a parent tracking issue that groups child
+features (and, transitively, their tasks/bugs) via native sub-issue links, so a
+goal spanning several features is visible as one hierarchy. It is a *grouping*
+construct owned by the tracker — it has **no `intent.md`** and is **not
+materializable**; its "why" is the rollup of its child features (each of which has
+its own intent), optionally pointing at a `vision.md` theme. Type=`Epic` is set
+only when the org enables that issue type; otherwise the epic stays a normal issue
+carrying `steer:kind=epic` with Type left unset (capability degradation in
+`ISSUE-WORKFLOW.md`). Milestones remain release grouping — an orthogonal axis, not
+the epic aggregator.
 
 ## `issue_state` — lifecycle state (the `steer:state` marker)
 
