@@ -22,6 +22,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   itself) and reframes `init`/`adopt` as the developer/existing-code paths. Added
   hook-test coverage for both hooks (the suite previously never exercised
   `check-unmanaged-repo.sh`).
+
+### 3.2.0
+
 - **Fixed:** rule `52-deployment.md` was gated `inject-when=has-iac`, so an
   app/service repo that deploys via GitHub Actions but has no `/infra` dir never
   received it — a dangling cross-reference from always-on `10-stack.md`, which
