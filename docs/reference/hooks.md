@@ -41,7 +41,7 @@ flowchart TD
 
 | Hook | Matcher | Role |
 | --- | --- | --- |
-| `inject-standards.sh` | `startup\|resume\|clear\|compact` | Concatenates `rules/*.md` (lexical order) into session context. A rule carrying a first-line `<!-- steer:inject-when=… -->` marker is injected only when its scope applies — issue-first on GitHub-tracked repos, deployment when an `/infra` directory exists — and the marker line is stripped. Records a self-fault (for `/steer:report`) if its rules directory is missing. |
+| `inject-standards.sh` | `startup\|resume\|clear\|compact` | Concatenates `rules/*.md` (lexical order) into session context. A rule carrying a first-line `<!-- steer:inject-when=… -->` marker is injected only when its scope applies — issue-first on GitHub-tracked repos, deployment when the repo deploys (an `/infra` dir **or** an app/service repo) — and the marker line is stripped. Records a self-fault (for `/steer:report`) if its rules directory is missing. |
 | `check-template-drift.sh` | `startup\|resume\|clear` | Warns when the materialized spine/scaffold lags the plugin templates. |
 | `check-open-questions.sh` | `startup\|resume\|clear` | Surfaces unresolved spec open questions, and **escalates stale ones** — a blocking, un-promoted question open more than 14 days (from its `created:` date, or `git blame` when absent) gets a loud line naming the feature, question, owner, and age. |
 | `check-unmanaged-repo.sh` | `startup\|resume\|clear` | Flags a repo that has no `/spec` spine yet. |

@@ -77,8 +77,8 @@ hidden from the slash menu so the front doors stay obvious — you may still inv
 them directly when an intent maps cleanly to one:
 
 - **`/steer:setup`** detects and hands off to `/steer:init` (greenfield), `/steer:adopt`
-  (existing code), `/steer:sync` (steady-state update/repair), and `/steer:doctor`
-  (prerequisites).
+  (existing code), or `/steer:sync` (steady-state update/repair) — which invoke
+  `/steer:doctor` themselves when prerequisites are missing.
 - **`/steer:audit`** runs in two modes — `code` (whole-repo health, the default) and
   `spec` (as-built `/spec` vs tracker intent) — and hands off to `/steer:tidy`
   (sort repo-root strays into `/spec`).

@@ -42,20 +42,37 @@ steer_repo_does_iac() {
 	return 1
 }
 
-# steer_inject_when_ok <token> <repo-root> — true (inject the rule) / false (skip
-# it) for a rule's inject-when marker token. Empty root or an unknown token →
-# fail-open (inject), so a missing cwd or a typo'd marker never silently removes
-# a rule from the always-on context.
+# steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
+# inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
+# never silently removes a rule from the always-on context.
+steer_inject_when_one() {
+	case "$1" in
+	tracker-github) steer_tracker_is_github "$2" ;;
+	has-infra) [ -d "$2/infra" ] ;;
+	has-iac) steer_repo_does_iac "$2" ;;
+	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
+	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	*) return 0 ;;
+	esac
+}
+
+# steer_inject_when_ok <token-expr> <repo-root> — true (inject the rule) / false
+# (skip it) for a rule's inject-when marker. <token-expr> is one predicate, or
+# several joined by `|` for OR: the rule injects when ANY listed predicate holds
+# (e.g. has-iac|has-apps for the deployment rule, which applies to infra and
+# app/service repos alike). Empty root → fail-open (inject), so a missing cwd
+# never silently removes a rule.
 steer_inject_when_ok() {
 	_token="$1"
 	_root="${2:-}"
 	[ -n "${_root}" ] || return 0
-	case "${_token}" in
-	tracker-github) steer_tracker_is_github "${_root}" ;;
-	has-infra) [ -d "${_root}/infra" ] ;;
-	has-iac) steer_repo_does_iac "${_root}" ;;
-	has-apps) [ -d "${_root}/apps" ] || [ -f "${_root}/package.json" ] || [ -f "${_root}/pnpm-workspace.yaml" ] ;;
-	has-compose) [ -f "${_root}/compose.yaml" ] || [ -f "${_root}/compose.yml" ] ;;
-	*) return 0 ;;
-	esac
+	_save_ifs="${IFS}"
+	IFS='|'
+	for _t in ${_token}; do
+		IFS="${_save_ifs}"
+		steer_inject_when_one "${_t}" "${_root}" && return 0
+		IFS='|'
+	done
+	IFS="${_save_ifs}"
+	return 1
 }

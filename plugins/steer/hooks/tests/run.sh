@@ -987,7 +987,7 @@ out="$(run_hook surface-faults.sh "$(session_json "${RF4}" rf4)")"
 assert_empty "surface: silent inside the plugin's own repo" "${out}"
 
 # ----- inject-standards.sh: conditional (inject-when) rule scoping -----
-# 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-infra.
+# 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-iac|has-apps.
 # A scoped rule is injected only when its predicate holds; always-on rules
 # (e.g. 00-router) appear regardless; the marker line never leaks into output.
 
@@ -1026,6 +1026,15 @@ oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack â
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
 
+# App repo (package.json, no /infra, no IaC) -> deployment rule injected via the
+# has-apps arm of has-iac|has-apps, but NOT the infra-stack fragment (has-iac only).
+CRI_APP="$(new_repo cri_app)"
+printf '{}\n' >"${CRI_APP}/package.json"
+out="$(run_hook inject-standards.sh "$(session_json "${CRI_APP}" cri_app)")"
+oq_grep "inject: app repo (no /infra) includes deployment rule" 'auto-deploys non-prod' "${out}"
+printf '%s' "${out}" | grep -q 'Stack â€” infrastructure / IaC' &&
+	bad "inject: app repo without IaC must omit infra-stack fragment" || ok
+
 # No /infra, no IaC, no GitHub tracker -> all scoped rules skipped.
 CRI_BARE="$(new_repo cri_bare)"
 out="$(run_hook inject-standards.sh "$(session_json "${CRI_BARE}" cri_bare)")"
@@ -1062,6 +1071,12 @@ printf 'services:\n' >"${TRAITS_APP}/compose.yaml"
 steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true with package.json"
 steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
+
+# OR markers (token|token): inject when ANY arm holds.
+steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR marker true via has-apps arm"
+steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_INFRA}" && ok || bad "scope: OR marker true via has-iac arm"
+TRAITS_OR_NONE="$(new_repo traits_or_none)"
+steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_OR_NONE}" && bad "scope: OR marker false when no arm holds" || ok
 
 # profile reader: marker -> value; absent -> app (back-compat).
 PROF_INFRA="$(new_repo prof_infra)"

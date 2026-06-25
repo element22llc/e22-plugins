@@ -17,7 +17,8 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    templates, and active fixtures is a member of ``enums.registry``; ENUMS.md
    agrees with the registry; the deprecated "Required before production" category
    appears nowhere.
-6. MANIFEST.md install-map sources exist; migration-ledger targets exist.
+6. MANIFEST.md install-map sources exist; migration-ledger targets exist; and
+   every file under scaffold/ is declared in the map (reverse coverage).
 7. README skill inventory matches the skills on disk.
 8. Cross-field invariants (registry internal consistency; approval-evidence
    fields present in the intent template).
@@ -37,6 +38,7 @@ Exit status is 0 when clean, 1 when any check fails.
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import re
 import sys
@@ -406,6 +408,55 @@ def check_manifest(errors: list[str]) -> None:
                     errors.append(f"{manifest}:{i}: source '{one}' not found under scaffold/")
 
 
+def check_manifest_reverse(errors: list[str]) -> None:
+    """Reverse of check_manifest: every file physically under scaffold/ must be
+    declared in the MANIFEST first column. Without this, a new bundled file
+    omitted from the install-map passes CI silently and never gets installed."""
+    manifest = PLUGIN_ROOT / "templates/scaffold/MANIFEST.md"
+    scaffold = PLUGIN_ROOT / "templates/scaffold"
+    if not manifest.is_file() or not scaffold.is_dir():
+        return
+    # Collect declared sources that resolve under scaffold/. Rows whose source
+    # starts with `../` point at sibling template dirs (templates/spec,
+    # templates/github), not files here, so they're irrelevant to this walk.
+    # Keep globs and `…` dir markers — here they're matched against files, not
+    # skipped as in the forward check.
+    declared: list[str] = []
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        if not line.strip().startswith("|"):
+            continue
+        parts = [p.strip() for p in line.strip().strip("|").split("|")]
+        if len(parts) < 2 or set(parts[0]) <= {"-", ":", " "}:
+            continue
+        for src in re.findall(r"`([^`]+)`", parts[0]):
+            for one in re.split(r",\s*", src):
+                one = one.strip()
+                if one and not one.startswith("../"):
+                    declared.append(one)
+
+    def covered(rel: str) -> bool:
+        for pat in declared:
+            if rel == pat or fnmatch.fnmatch(rel, pat):
+                return True
+            if pat.endswith("…"):  # described dir, e.g. `infra/…`
+                prefix = pat.rstrip("…").rstrip("/")
+                if prefix and rel.startswith(prefix + "/"):
+                    return True
+        return False
+
+    for path in sorted(scaffold.rglob("*")):
+        if not path.is_file():
+            continue
+        rel = path.relative_to(scaffold).as_posix()
+        if rel == "MANIFEST.md":  # the map itself is not a payload file
+            continue
+        if not covered(rel):
+            errors.append(
+                f"{manifest}: scaffold file '{rel}' is not listed in the MANIFEST "
+                "install-map — add a row so it gets installed"
+            )
+
+
 # --- check 7: README skill inventory matches skills on disk ---
 
 
@@ -681,6 +732,7 @@ def run_checks(errors: list[str]) -> None:
         check_token_membership(errors, reg)
         check_cross_field(errors, reg)
     check_manifest(errors)
+    check_manifest_reverse(errors)
     check_readme_inventory(errors, skills)
     check_enumeration_drift(errors, skills)
     check_authorization(errors)
