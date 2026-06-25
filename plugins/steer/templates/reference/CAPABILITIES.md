@@ -33,9 +33,12 @@ repair semantics + conditionality the script can't decide.
 **Profile and capability conditionality.** Capabilities are conditioned on the
 `stack` fingerprint, not on `profile` — and `stack=none` already does the right
 thing for an `infra` repo (no `package.json`/`pyproject.toml`), dropping
-`node-tooling` and `worktree-port-isolation` to `n/a`. The `profile` emit is for
-reporting only (`/steer:sync`, `/steer:report`); do **not** add a second,
-profile-keyed conditioning axis for a decision `stack` already makes. `toolchain-pin`
+`node-tooling` to `n/a`. `worktree-port-isolation` stays applicable on an `infra`
+repo because `compose.yaml` ships in the **core** scaffold (every profile) — it
+falls to `n/a` only if that `compose.yaml` is also deleted *and* the stack is
+`none`. The `profile` emit is for reporting only (`/steer:sync`, `/steer:report`);
+do **not** add a second, profile-keyed conditioning axis for a decision `stack`
+(plus the compose trait) already makes. `toolchain-pin`
 is profile-agnostic — it checks the repo-root `mise.toml`, which every profile
 installs (the `infra` profile's is the tofu/terragrunt/ansible flavor).
 

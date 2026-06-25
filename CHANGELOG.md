@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** **Lean two-layer scaffold (Core + Profile overlay).** The bundled
+  scaffold is now organized **additively** instead of "install the flat app
+  monorepo, then omit app-only files." `templates/scaffold/` root holds only the
+  profile-agnostic **Core** (docs, dotfiles, `.claude`/`.vscode`, `policy/`, the
+  version-pin scripts, the `/spec` spine, `mise.toml`, and — deliberately for
+  every profile — `compose.yaml` + `scripts/worktree-env.sh`, the
+  containerize-by-default surface). The Node project files (`package.json`,
+  `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`) move to a shared
+  **Layer 1** `profiles/_node/` baseline; per-type structure (`apps/`, `DESIGN.md`)
+  moves to **Layer 2** `profiles/<type>/`. `node`/`python`/`uv` are now mandatory
+  in the core `mise.toml` for **every** profile (the `infra` mise pins `node` too
+  and sources `worktree-env.sh` — agent tooling needs the runtimes). Every Node
+  profile is a pnpm workspace (monorepo-by-default), so `library`/`cli` get the
+  workspace too. `/steer:init` and `/steer:adopt` now compose Core → `_node`
+  (Node stacks) → profile overlay. The **installed** repo layout is unchanged, so
+  no migration is required.
 - **Added:** **Repo profiles** — steer no longer assumes every managed repo is a
   Node/TS app monorepo. A repo now carries a `<!-- steer:profile=app -->` marker
   (or `infra`/`service`/`library`/`cli`) on the `CLAUDE.md` `## Profile` section,

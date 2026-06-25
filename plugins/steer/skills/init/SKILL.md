@@ -204,27 +204,37 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    survive the first commit (an empty dir does not — `/steer:spec-scaffold`
    and `/steer:adr` populate them later). **Adapt to the chosen stack
    and never clobber existing files** (the MANIFEST's per-file notes say what
-   to adapt — e.g. drop `package.json`/`pnpm-workspace.yaml`/`biome.json` for
-   a Python-only product, swap task commands to `uv run …`). Greenfield repos
+   to adapt — e.g. for a Python-only product skip the Layer-1 Node baseline and
+   use `pyproject.toml`/Ruff, swap task commands to `uv run …`). Greenfield repos
    rarely have these already, but if a target `.gitignore` or JSON config
    (`.claude/settings.json`, `biome.json`) **does** exist, reconcile
    it additively with
    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`
    instead of overwriting it.
-   - **Apply the profile overlay** (MANIFEST "Profile overlays"). For
-     **`infra`**, install `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/infra/mise.toml`
-     as the **repo-root `mise.toml`** (instead of the app one) and **omit**
-     `package.json`, `pnpm-workspace.yaml`, `biome.json`, `compose.yaml`,
-     `configs/`, `apps/`, `packages/`, and `scripts/worktree-env.sh` (with its
-     `[env]._.source` line); enable the matching IaC engine in that `mise.toml`
-     and adapt `ARCHITECTURE.md`/README to the IaC layout. For `service` /
-     `library` / `cli`, lay the flat scaffold and omit the app-only rows the
-     MANIFEST lists for that profile (e.g. no `compose.yaml`/`worktree-env.sh`
-     for a library). **Set the profile marker:** write the chosen profile into the
-     `CLAUDE.md` `## Profile` marker (`<!-- steer:profile=<profile> -->`) and its
-     prose — the scaffold ships `=app`; rewrite the token for any other profile.
-     A **root `mise.toml` must always land** (app or infra flavor) — it is what
-     clears the scaffold nudge.
+   - **Apply the layered profile overlays** (MANIFEST "Profile overlays"). The
+     Core install map (Layer 0) lands for **every** profile; then compose
+     **additively** — later layers only *add*:
+     - **Node-stack profiles** (`app` / `service` / `library` / `cli` on a Node
+       stack): also install **Layer 1**, the Node baseline
+       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/_node/` (`package.json`,
+       `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`), then the
+       profile's **Layer 2** dir — `profiles/app/` → `apps/README.md` + `DESIGN.md`;
+       `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing.
+       Adapt `package.json`: `library` → publishable (drop `private`); `cli` → add
+       the `bin` entrypoint. (A **Python-only** `service`/`library`/`cli` skips
+       Layer 1 — use `pyproject.toml`/Ruff instead.)
+     - **`infra`**: install
+       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/infra/mise.toml` as the
+       **repo-root `mise.toml`** (replaces the core one) and **skip Layer 1
+       entirely** (no Node project files). Core's `compose.yaml` +
+       `scripts/worktree-env.sh` still land from Layer 0 — delete them only if the
+       repo runs no local services. Enable the matching IaC engine in that
+       `mise.toml` and adapt `ARCHITECTURE.md`/README to the IaC layout.
+     **Set the profile marker:** write the chosen profile into the `CLAUDE.md`
+     `## Profile` marker (`<!-- steer:profile=<profile> -->`) and its prose — the
+     scaffold ships `=app`; rewrite the token for any other profile. A **root
+     `mise.toml` must always land** (core or infra flavor) — it is what clears the
+     scaffold nudge.
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
    `/spec/tracker.md`** (which issue tracker does this product use — Jira,

@@ -9,9 +9,11 @@ defaults. Deviations are ADRs, same as any stack choice.
   configuration/provisioning; Pulumi only with an ADR. **Orchestration/DRY:**
   Terragrunt for OpenTofu/Terraform.
 - **Toolchain:** pinned in the **root** `mise.toml` for a root-level infra repo
-  (`opentofu`/`terragrunt`/`ansible`/`uv`), or in `infra/mise.toml` for a nested
-  `/infra` dir of an app monorepo. Commit `mise.lock`. No Node/web layer, no
-  `compose.yaml`, no `package.json`.
+  (`opentofu`/`terragrunt`/`ansible`/`node`/`uv`), or in `infra/mise.toml` for a
+  nested `/infra` dir of an app monorepo. Commit `mise.lock`. The `node` runtime
+  is still pinned (agent tooling needs it), but there is **no Node project layer**
+  — no `package.json`/`biome.json`. `compose.yaml` ships from the core scaffold;
+  keep it only if the repo runs local backing services.
 - **Layout:** `live/` (deployable units, per-env `terragrunt.hcl`) + `modules/`
   for OpenTofu/Terraform; `roles/` + `playbooks/` (or `site.yml`) + `inventory/`
   for Ansible. Detail in `/infra/README.md` (monorepo) or the repo README.

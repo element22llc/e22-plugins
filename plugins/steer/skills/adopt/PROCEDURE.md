@@ -18,8 +18,8 @@ repo profile** from the same survey and **confirm it with the dev**: `infra`
 deployable, not a monorepo), `library` (a publishable package, no app entry), or
 `cli` (a declared `bin`/entrypoint). The profile decides which scaffold Phase 10
 syncs (an `infra` repo gets a tofu/terragrunt/ansible **root** `mise.toml` and
-infra CI, not `package.json`/`compose.yaml`); the universal core is the same for
-all. Adoption only *observes* — record the profile in the `CLAUDE.md` `## Profile`
+infra CI, and skips the Node project files — but `node`/`compose.yaml` are still
+core); the universal core is the same for all. Adoption only *observes* — record the profile in the `CLAUDE.md` `## Profile`
 marker (`<!-- steer:profile=<profile> -->`) at handoff, default `app`. Work on a
 `feat/adopt` branch — never commit to `main` (commit-autonomy rule). Commit
 the spine + scaffold as coherent units without asking; **push and the PR wait for
@@ -213,13 +213,21 @@ which tracker the team uses — if GitHub Issues, run
 Phases 3–5 learned about the app — as-built, dev confirms), and `/spec/HISTORY.md`
 seeded with the adoption itself as the first entry. **Adapt to the existing
 stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match
-what the app needs). **Apply the profile overlay** (MANIFEST "Profile overlays")
-for the profile confirmed in Phase 1: an `infra` repo gets
-`templates/scaffold/profiles/infra/mise.toml` as the **root `mise.toml`** and
-omits `package.json`/`pnpm-workspace.yaml`/`biome.json`/`compose.yaml`/
-`scripts/worktree-env.sh`/`apps`/`packages` (its CI auto-detects `*.tf`/Ansible);
-`service`/`library`/`cli` omit the app-only rows the MANIFEST lists. A **root
-`mise.toml` must always land** (it clears the scaffold nudge). **Reconcile, don't
+what the app needs). **Apply the layered profile overlays** (MANIFEST "Profile
+overlays") for the profile confirmed in Phase 1 — Core (Layer 0) for every
+profile, then compose **additively**:
+- **Node-stack profiles** (`app`/`service`/`library`/`cli`): also bring in
+  **Layer 1** `templates/scaffold/profiles/_node/` (`package.json`,
+  `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`) and the profile's
+  **Layer 2** dir (`profiles/app/` → `apps/README.md` + `DESIGN.md`;
+  `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing, adapt
+  `package.json`). A Python-only product skips Layer 1 (use `pyproject.toml`/Ruff).
+- **`infra`**: install `templates/scaffold/profiles/infra/mise.toml` as the
+  **root `mise.toml`** and **skip Layer 1** (no Node project files); its CI
+  auto-detects `*.tf`/Ansible. Core's `compose.yaml`/`worktree-env.sh` still land —
+  drop them only if the repo runs no local services.
+
+A **root `mise.toml` must always land** (it clears the scaffold nudge). **Reconcile, don't
 replace** — if the repo already has its
 own CI, compose, or config, merge into it rather than overwriting, and **never
 clobber working app code**: diff and ask before touching anything that exists. For
