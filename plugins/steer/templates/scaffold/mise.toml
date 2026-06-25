@@ -4,20 +4,23 @@
 #
 # Version strategy (no hand-maintained numbers in this template):
 #   - Tools below resolve to `latest`, so the template never carries stale pins.
-#   - `lockfile = true` + the committed placeholder `mise.lock` make `mise install`
-#     write the exact resolved versions into the lock. CAUTION: mise only writes
-#     `mise.lock` if the file already exists — that is why the placeholder is
-#     committed; never delete it. The populated lockfile is the real pin; CI and
-#     every machine install from it, so they always agree.
-#   - First-run setup pins on adoption: run `mise install` (and `cd infra && mise
-#     install`), THEN `mise lock --platform linux-x64,macos-arm64` in each
-#     directory with a lock — `mise install` only records asset URLs for the host
-#     platform, so a lock pinned on macOS has no `linux-x64` entries and CI's
-#     `mise install --locked` fails ("No lockfile URL found … on platform
-#     linux-x64"). Add `macos-x64`/`linux-arm64`/`windows-x64` for any other
-#     platform the team uses; `linux-x64` is mandatory because CI runs there.
-#     Verify each `mise.lock` now holds `[tools.<tool>."platforms.linux-x64"]`
-#     url + checksum blocks (not just versions), then commit them.
+#   - `lockfile = true` + the committed `mise.lock` make `mise install` write the
+#     exact resolved versions into the lock. The populated lockfile is the REAL
+#     pin; CI and every machine install from it, so they always agree.
+#   - The scaffold ships NO `mise.lock` — never commit an empty placeholder (an
+#     empty/placeholder lock breaks `mise install --locked` in consumer CI). mise
+#     only writes the lock if the file already exists, so `/steer:init` /
+#     `/steer:adopt` CREATE and commit it on first run:
+#     `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`
+#     (and `cd infra && …` for each directory with a lock). `mise install` only
+#     records asset URLs for the host platform, so a lock pinned on macOS has no
+#     `linux-x64` entries and CI's `mise install --locked` fails ("No lockfile URL
+#     found … on platform linux-x64"); the `mise lock --platform` step backfills
+#     them. Add `macos-x64`/`linux-arm64`/`windows-x64` for any other platform the
+#     team uses; `linux-x64` is mandatory because CI runs there. Verify each
+#     `mise.lock` holds `[tools.<tool>."platforms.linux-x64"]` url + checksum
+#     blocks (not just versions), then commit them. Until the lock exists CI
+#     installs unlocked.
 #   - Bump intentionally later with `mise upgrade` (updates the lock); review the
 #     bump like any other change. Run /steer:reference conventions for the full rationale.
 
