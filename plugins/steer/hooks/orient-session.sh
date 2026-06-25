@@ -14,7 +14,9 @@
 #   spine — the unmanaged / foreign / damaged cases are owned by
 #   check-unmanaged-repo.sh, which speaks instead, so the two never stack. An
 #   already-set-up repo is exactly where "describe a goal, I'll drive the workflow"
-#   is the useful nudge.
+#   is the useful nudge. One exception is steered deterministically: if a PO build
+#   is mid-flight (spec/BUILD-STATUS.md with an open handoff gate), this hook routes
+#   straight back into /steer:build instead of the generic orientation.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd comes from the SessionStart
@@ -62,6 +64,24 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # spines are handled (and spoken to) by check-unmanaged-repo.sh — stay silent here
 # so the session never gets two competing session-start banners.
 [ "$(steer_spine_state "${ROOT}")" = "managed" ] || exit 0
+
+# An in-progress PO build is the one case we steer DETERMINISTICALLY instead of
+# waiting for the user to describe a goal: a returning owner must be put straight
+# back into the guided flow, not greeted with a blank "what do you want to do?".
+# Signal = spec/BUILD-STATUS.md whose Handoff gate still has an unchecked box
+# (`- [ ]`). A handed-off build (every box `- [x]`) carries no `- [ ]` line, so it
+# falls through to the generic orientation below — the flow stops nagging once
+# the dev has taken over. Fail-soft: an unreadable status file → generic nudge.
+BUILD_STATUS="${ROOT}/spec/BUILD-STATUS.md"
+if [ -f "${BUILD_STATUS}" ] && grep -q '^- \[ \]' "${BUILD_STATUS}" 2>/dev/null; then
+	printf '<!-- steer: in-progress PO build -->\n'
+	printf 'An **in-progress PO build** lives here (`spec/BUILD-STATUS.md` has an open '
+	printf 'handoff gate). **Resume the guided build now via `/steer:build`**: read '
+	printf 'that file first and pick up from its **Current step** — do not restart the '
+	printf 'interview or re-ask settled questions, and do not wait for the user to name '
+	printf 'a command.\n'
+	exit 0
+fi
 
 printf '<!-- steer: session orientation -->\n'
 printf 'This repo is standards-managed. The user does **not** need to know skill '

@@ -41,8 +41,18 @@ five plain-language steps — you never type an issue, spec, or work command:
 5. **PR.** Once the developer approves, the change merges. You've shipped without
    touching the tracker or the code.
 
-If a session is interrupted, just run `/steer:build` again — it resumes from
-`/spec/BUILD-STATUS.md`.
+If a session is interrupted, you don't have to remember anything: as long as a
+`/spec/BUILD-STATUS.md` is present with work still in flight, the SessionStart
+hook steers the next session straight back into `/steer:build`, resuming from
+where you left off. (Running `/steer:build` yourself works too.) The flow stops
+resuming once the build is handed off — every box in its handoff gate checked.
+
+!!! tip "Work on the spec before building"
+    At any point you can ask to *"work on what this should do first"* — Claude
+    runs `/steer:spec` to think a feature through, sharpen acceptance criteria,
+    and drive open questions down, all **without writing code**. The build flow
+    uses the same spec loop internally at the intent stage. See
+    [Spec](spec.md).
 
 !!! warning "\"Prototype\" is not an escape hatch"
     Saying *"just a prototype"*, *"quick"*, or *"throwaway"* relaxes only the

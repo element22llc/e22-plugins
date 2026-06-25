@@ -680,6 +680,25 @@ managed_spine "${OR1}"
 out="$(run_hook orient-session.sh "$(session_json "${OR1}" or1)")"
 oq_grep "orient: managed spine emits orientation" 'need to know skill names' "${out}"
 
+# Managed spine + in-progress PO build (BUILD-STATUS.md with an open handoff box)
+# -> steer DETERMINISTICALLY back into /steer:build, not the generic orientation.
+OR1B="$(new_repo orient1b)"
+managed_spine "${OR1B}"
+printf '# Build status\n\n## Handoff gate\n\n- [ ] PR proposed/opened:\n' >"${OR1B}/spec/BUILD-STATUS.md"
+out="$(run_hook orient-session.sh "$(session_json "${OR1B}" or1b)")"
+oq_grep "orient: in-progress build resumes /steer:build" 'Resume the guided build' "${out}"
+oq_ngrep "orient: in-progress build skips generic orientation" 'need to know skill names' "${out}"
+
+# Managed spine + handed-off build (every handoff box checked, no '- [ ]' line)
+# -> back to the generic orientation; the resume nudge must NOT keep firing once
+# the dev has taken over.
+OR1C="$(new_repo orient1c)"
+managed_spine "${OR1C}"
+printf '# Build status\n\n## Handoff gate\n\n- [x] PR proposed/opened: #1\n' >"${OR1C}/spec/BUILD-STATUS.md"
+out="$(run_hook orient-session.sh "$(session_json "${OR1C}" or1c)")"
+oq_grep "orient: handed-off build falls back to orientation" 'need to know skill names' "${out}"
+oq_ngrep "orient: handed-off build does not nag resume" 'Resume the guided build' "${out}"
+
 # Bare/foreign spec/ (no .version) -> check-unmanaged-repo.sh owns it -> silent.
 OR2="$(new_repo orient2)"
 mkdir -p "${OR2}/spec"
@@ -698,6 +717,24 @@ printf '1.0.0\n' >"${OR4}/spec/.version"
 printf 'x\n' >"${OR4}/spec/vision.md"
 out="$(run_hook orient-session.sh "$(session_json "${OR4}" or4)")"
 assert_empty "orient: damaged spine silent" "${out}"
+
+# ---------------------------------------------------------------------------
+# check-unmanaged-repo.sh — greenfield bootstrap nudge (SessionStart).
+# Resolves the repo root from cwd (steer_repo_root .), so each case runs from
+# INSIDE the fixture; new_repo drops a .git file the upward walk anchors on.
+# ---------------------------------------------------------------------------
+# No /spec spine -> nudge leads with the PO build path, still offers init/adopt.
+UM1="$(new_repo unmanaged1)"
+out="$(cd "${UM1}" && run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
+oq_grep "unmanaged: nudge offers /steer:build for a non-technical owner" '/steer:build' "${out}"
+oq_grep "unmanaged: nudge still offers /steer:init for a developer" '/steer:init' "${out}"
+oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:adopt' "${out}"
+
+# Managed spine -> silent (the notice clears itself once /spec exists).
+UM2="$(new_repo unmanaged2)"
+managed_spine "${UM2}"
+out="$(cd "${UM2}" && run_hook check-unmanaged-repo.sh "$(session_json "${UM2}" um2)")"
+assert_empty "unmanaged: managed spine silent" "${out}"
 
 # ---------------------------------------------------------------------------
 # scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
