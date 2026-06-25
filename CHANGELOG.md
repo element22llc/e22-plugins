@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the core bundled scaffold `mise.toml` carried a stale comment block
+  instructing consumers to commit a placeholder `mise.lock` and "never delete
+  it" — left over from before the placeholder lock was dropped, and a direct path
+  into the mise-action@v4 placeholder-lock trap that breaks `mise install
+  --locked` in a consumer's CI. The version-strategy comment now mirrors
+  `profiles/infra/mise.toml` and `MANIFEST.md`: the scaffold ships **no**
+  `mise.lock`, and `/steer:init` / `/steer:adopt` create and commit it on first
+  run (`touch mise.lock && mise install && mise lock --platform …`) — never an
+  empty placeholder.
+
 ### 3.1.0
 
 - **Fixed:** the `/steer:reference` topic menu omitted `context-hygiene` (the
