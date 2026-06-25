@@ -95,6 +95,22 @@ with its Type left unset. Only Project
 written into the issue; `steer:state` stays canonical in the body and is mirrored
 at most one-directionally by a Project Status field.
 
+!!! warning "The native-field vs Projects-column trap"
+    When a Project v2 board surfaces the native issue fields (Priority, Effort,
+    dates), they appear as single-select **columns that look identical to genuine
+    Project custom fields (`Size`, `Iteration`) but are API-locked**. Every Projects
+    write path rejects them — `updateProjectV2Field` and `gh project item-edit`
+    return `Only custom fields can be updated. Fields derived from issues or pull
+    requests must be updated through their respective APIs` — and every Projects
+    *read* path reports `options: []`, so there is no option id to set through the
+    Project at all, even though the UI shows Urgent/High/Medium/Low. **Set these on
+    the native issue field via `/steer:tracker-sync field-set`, never the Projects
+    API.** The reverse holds for a genuine Project custom field (`Size`,
+    `Iteration`): it is *not* a native issue field, so it is edited with
+    `gh project item-edit` and `field-set` will not find it. To populate a chosen
+    Priority/Effort value (PO seeding, not the escalate-only floor), `/steer:issues`
+    triage and board route the request straight to `field-set`.
+
 ## Context window, compaction, and sessions
 
 `steer` cannot manage your context window for you, and that is a hard Claude Code
