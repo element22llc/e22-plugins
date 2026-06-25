@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
+  in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
+  read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and
+  local-process `markitdown` MCP servers don't work there — the "GitHub connector
+  isn't working" symptom. `/steer:tracker-sync` now documents that on Cowork its
+  MCP path only succeeds through the surface's **built-in GitHub connector**
+  (Customize → Connectors, repo-scoped: triage/label/comment/state work, org-level
+  Issue Types and Priority/Effort fields degrade), with no `gh` fallback. New
+  `docs/reference/known-limitations.md` → "Claude Cowork's sandbox" section,
+  cross-linked from `mcp-servers.md`; `CROSS-SURFACE.md` matrix/recommendations
+  corrected (§4a) and its MCP verification item resolved.
+
 - **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the **full
   autonomous issue path**, not just the `gh` write verbs. `tracker-sync` is
   MCP-first, so the *preferred* create/manage path is the `mcp__github__*` issue

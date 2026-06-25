@@ -42,6 +42,16 @@ shell escaping. Detect capability **in this order, every run**:
 4. **Else** → manual paste/path export, same as `/steer:audit spec`. Say which path you
    took so the user knows whether issues were actually touched.
 
+**Sandboxed chat surfaces (Claude Cowork).** Cowork does **not** read the
+plugin's `.mcp.json`, and its no-install sandbox has no `${GITHUB_PAT}` shell and
+no `gh` CLI — so steps 2–3 only succeed when the user has enabled Cowork's
+**built-in GitHub connector** (Customize → Connectors), which exposes the
+repo-scoped issue tools the MCP path probes for. With it on, triage works; without
+it, you land on the manual floor (step 4) — the `gh` fallback is unavailable.
+The connector is **repo-scoped**, so org-level ops (`set-type` Issue Types,
+`field-get`/`field-set` native fields) degrade per their own capability checks.
+See [Known limitations → Claude Cowork's sandbox](https://github.com/element22llc/e22-plugins/blob/main/docs/reference/known-limitations.md).
+
 ## Issue operations (the gateway)
 
 This is the **only** layer that touches the GitHub API. `/steer:issues` and
