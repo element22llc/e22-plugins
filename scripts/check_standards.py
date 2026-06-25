@@ -624,17 +624,49 @@ def check_authorization(errors: list[str]) -> None:
         # find-or-create path unreachable — so the scaffold pre-authorizes the
         # tracker-metadata write verbs under `allow` (see issue #180). Delivery
         # (push/PR/merge) stays human-gated under `ask`/`deny`; these are metadata only.
-        gh_issue_ops = (
+        #
+        # `tracker-sync` is MCP-first (the plugin ships the github MCP server), so the
+        # *preferred* create/manage path is the `mcp__github__*` issue tools, not `gh` —
+        # those must be pre-authorized too or the autonomous path prompts on every call
+        # regardless of the `gh` allowances. The dedup `search`/`get` reads run before
+        # every create; pre-authorizing them keeps find-before-create silent. This is
+        # the metadata surface only — `gh api`/`gh api graphql` (a mutation vector for
+        # fields/milestones/relationships) and delivery stay prompted by omission.
+        autonomous_issue_ops = (
+            # gh path — write verbs (#180) + dedup/capability reads
             "Bash(gh issue create:*)",
             "Bash(gh issue edit:*)",
             "Bash(gh issue comment:*)",
+            "Bash(gh issue list:*)",
+            "Bash(gh issue view:*)",
+            "Bash(gh auth status:*)",
+            # MCP-first path — the preferred create/manage/dedup tools
+            "mcp__github__create_issue",
+            "mcp__github__update_issue",
+            "mcp__github__add_issue_comment",
+            "mcp__github__get_issue",
+            "mcp__github__list_issues",
+            "mcp__github__search_issues",
         )
-        for gh_op in gh_issue_ops:
-            if gh_op not in allow:
+        for issue_op in autonomous_issue_ops:
+            if issue_op not in allow:
                 errors.append(
-                    f"{settings}: '{gh_op}' should stay under permissions.allow "
-                    f"(issue-first tracker-metadata write; host classifiers otherwise "
-                    f"block the autonomous find-or-create path — see issue #180)"
+                    f"{settings}: '{issue_op}' should stay under permissions.allow "
+                    f"(issue-first autonomous tracker-metadata path; host classifiers "
+                    f"otherwise prompt on every find-or-create — see issue #180 and the "
+                    f"MCP-first create path in /steer:tracker-sync)"
+                )
+        # `gh api`/`gh api graphql` must NOT be blanket-allowed: it is the mutation
+        # vector for repo delete, PR merge, branch protection, and arbitrary writes
+        # that the human-gated delivery boundary depends on (see the tooling-permission
+        # constraints). Field/milestone/relationship writes that go through it stay
+        # prompted by design.
+        for forbidden in ("Bash(gh api:*)", "Bash(gh api)", "Bash(gh:*)"):
+            if forbidden in allow:
+                errors.append(
+                    f"{settings}: '{forbidden}' must not be under permissions.allow — "
+                    f"it grants the human-gated delivery surface (repo delete, PR merge, "
+                    f"branch protection); keep `gh api` prompted"
                 )
 
     # 4. build documents both modes and delegates governed implementation to
