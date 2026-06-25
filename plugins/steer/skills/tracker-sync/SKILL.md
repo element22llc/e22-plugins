@@ -121,6 +121,19 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   **ledger** provenance (`/steer:issues`), not this op. `field-set` is a separate
   mutation with **no managed-block concurrency guard** — report the prior value
   when you change it so a concurrent human edit is visible.
+  **Never reach for the Projects API for these fields.** A same-named Projects board
+  column (Priority/Effort/dates) is a **read-only projection** of the native field:
+  `updateProjectV2Field` / `gh project item-edit` fail with `Only custom fields can be
+  updated …`, and the column exposes no option ids. The native issue field is the
+  only writable home (see the Projects-v2 boundary in `ISSUE-SCHEMA.md`).
+  **Working write recipe** (when the GitHub MCP server exposes no issue-field tool):
+  read the option **names/ids** from `gh api /orgs/{org}/issue-fields` (each field's
+  choices live under `.options`), then write the value via **either** the GraphQL
+  `setIssueFieldValue` mutation (above) **or** the one-line REST equivalent —
+  `gh api --method POST /repositories/{repo_id}/issues/{n}/issue-field-values
+  -H "X-GitHub-Api-Version: 2026-03-10" -f issue_field_values='[{"field_id":<id>,"value":"High"}]'`
+  (the `value` is the option **name**, e.g. `High`, not its id). Resolve `{repo_id}`
+  from `gh api /repos/{owner}/{repo} --jq .id`.
 - **`bootstrap-fields`** — verify/reconcile the **org-level** issue-field
   definitions `steer` relies on (Priority + the default Effort / Start date /
   Target date set), so `field-set` can attach values. Issue fields are an **org
