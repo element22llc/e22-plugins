@@ -20,37 +20,32 @@ already-adopted repos (whole-file presence + wiring — the gap additive
 reconciliation can't reach). When a migration moves a capability file, update its
 path in both this map and that file in the same change.
 
-## Install map
+## Install map — Layer 0 (Core)
 
-Dotfiles are stored here **without their leading dot** (so they don't act on
-this plugin repo itself); rename on copy as mapped below.
+**Core is profile-agnostic: every profile installs all of it.** Dotfiles are
+stored here **without their leading dot** (so they don't act on this plugin repo
+itself); rename on copy as mapped below. The Node project files and per-type
+structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 
 | Bundled path | Install as | Notes |
 |---|---|---|
 | `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/steer:init`. |
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
-| `DESIGN.md` | `DESIGN.md` | Visual-identity stub. **Never overwrite** a `DESIGN.md` that `/steer:adopt` reverse-engineered or a team populated. |
 | `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:init`, reverse-engineered by `/steer:adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:adopt` reverse-engineered or a team populated. |
-| `mise.toml` | `mise.toml` | Toolchain + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack. No `mise.lock` ships — `/steer:init`/`/steer:adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. |
-| `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). |
-| `package.json` | `package.json` | Root workspace scripts (Node products). Skip for Python-only products. |
-| `pnpm-workspace.yaml` | `pnpm-workspace.yaml` | pnpm monorepo + catalog. Skip for Python-only products. |
-| `biome.json` | `biome.json` | Lint + format (Node/TS). Python products use Ruff via `pyproject.toml` instead. |
+| `mise.toml` | `mise.toml` | Toolchain (`node`/`python`/`uv` pinned — **mandatory for agent tooling**) + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack (`library`/`cli` prune `docker:*`/`db:*`). No `mise.lock` ships — `/steer:init`/`/steer:adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. **`infra` substitutes `profiles/infra/mise.toml`** (Layer 2). |
+| `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). **Core for every profile** — the containerize-by-default nudge (run services in Docker, not on the host). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). An `infra` repo with no local services may delete it. |
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
 | `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold_reconcile.py` (never removes a repo's own lines). |
 | `worktreeinclude` | `.worktreeinclude` | Git-ignored local config (`.env*`, `.mise.local.toml`, `.claude/settings.local.json`) Claude Code copies into each `claude --worktree` — worktrees start from git refs only, so without this the app can't boot there. Merge additively if one exists; never add regenerable caches/virtualenvs. |
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
-| `configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
-| `apps/README.md` | `apps/README.md` | What belongs in `/apps`. |
-| `packages/README.md` | `packages/README.md` | What belongs in `/packages` (if bundled). |
-| `infra/README.md`, `infra/mise.toml` | `infra/…` | OpenTofu + Terragrunt conventions; infra toolchain pinned separately (create `infra/mise.lock` at pin time, same as the root). |
+| `infra/README.md`, `infra/mise.toml` | `infra/…` | Conditional: a nested `/infra` dir inside a monorepo (OpenTofu + Terragrunt conventions; infra toolchain pinned separately — create `infra/mise.lock` at pin time, same as the root). Distinct from the `infra` *profile* (whose root mise is `profiles/infra/mise.toml`). |
 | `policy/versions.yml` | `policy/versions.yml` | **Version-pin policy** (approved major-version floors). Enforced deterministically by the version-pin hook and the CI scanner. Seeded from the plugin default; the product may tighten it. |
 | `policy/branch-protection.yml` | `policy/branch-protection.yml` | **Branch-protection policy** (the GitHub-side PR gate `main` must enforce). Read by `/steer:protect`, which diffs it against the repo's live settings and applies the gap on confirmation. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |
 | `scripts/version-policy.sh` | `scripts/version-policy.sh` | Shared policy parser/decider the scanner sources. Verbatim copy of the plugin's `hooks/lib/version-policy.sh`. |
-| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. |
+| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | **Core for every profile** (pairs with `compose.yaml`). Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. |
 
 ## Spec spine (instantiate from `../spec/`)
 
@@ -111,20 +106,44 @@ when missing. Rules do **not** read this marker — always-on rules self-gate on
 filesystem *traits* (`has-apps` / `has-compose` / `has-infra` / `has-iac`), so a
 repo's rule context always matches what is actually on disk.
 
-| Profile | Install | Omit (vs the flat app scaffold) |
-|---|---|---|
-| app (default) | The flat scaffold above, as-is. | — |
-| service | Flat scaffold; keep `compose.yaml` only if it has backing services. | `apps/`+`packages/` split if it's a single deployable; `pnpm-workspace.yaml` if not a monorepo. |
-| library | Flat scaffold for the package's language. | `compose.yaml`, `apps/`, `scripts/worktree-env.sh`, db tasks (no local services / no app). |
-| cli | Flat scaffold for the package's language. | `compose.yaml`, `apps/`, `scripts/worktree-env.sh`, db tasks. |
-| infra | **`profiles/infra/mise.toml` as the repo-root `mise.toml`** (tofu/terragrunt/ansible/uv), plus an infra-flavored `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `compose.yaml`, `scripts/worktree-env.sh`, `configs/`, `apps/`, `packages/`, db/docker tasks. |
+The bootstrap applies up to **three additive layers** — each later layer only
+*adds* files, never removes (the inverse of the old "install everything, then
+omit" model):
 
-Only `infra` carries a distinct overlay file (`profiles/infra/mise.toml`); the
-other profiles are the flat scaffold with the app-only rows above omitted — the
-same copy-and-adapt the install map already applies for Python-only products. A
-monorepo that *also* has a nested `/infra` dir stays profile `app` and gets the
-infra rule fragment + infra CI automatically because `/infra` exists (trait, not
-marker) — it does not become profile `infra`.
+- **Layer 0 — Core** (the Install map above): installed for **every** profile.
+- **Layer 1 — Node baseline** (`profiles/_node/`): installed for Node-stack
+  profiles (`app` / `service` / `library` / `cli`); **skipped for `infra`**, and
+  skipped for a Python-only product (use `pyproject.toml`/Ruff instead).
+- **Layer 2 — Profile extras** (`profiles/<profile>/`): the recommended
+  structure for that project type.
+
+Every Node profile is a **pnpm workspace** (monorepo-by-default) — `library` and
+`cli` get `pnpm-workspace.yaml` + `packages/` too, not only `app`/`service`.
+
+### Layer 1 — Node baseline (`profiles/_node/`)
+
+| Bundled path | Install as | Notes |
+|---|---|---|
+| `profiles/_node/package.json` | `package.json` | Root workspace scripts. The skill adapts per profile (`library`: publishable, drop `private`; `cli`: add `bin`). |
+| `profiles/_node/pnpm-workspace.yaml` | `pnpm-workspace.yaml` | Workspace globs + **catalog** (centralized dependency versions). |
+| `profiles/_node/biome.json` | `biome.json` | Lint + format — org house style (width 100, double quotes, semicolons as-needed). Python-only products use Ruff via `pyproject.toml` instead. |
+| `profiles/_node/configs/*` | `configs/*` | Shared tooling config (base tsconfig). |
+| `profiles/_node/packages/README.md` | `packages/README.md` | What belongs in `/packages`. |
+
+### Layer 2 — Profile extras (`profiles/<profile>/`)
+
+| Bundled path | Install as | Profile — notes |
+|---|---|---|
+| `profiles/app/apps/README.md` | `apps/README.md` | **app** — what belongs in `/apps`. |
+| `profiles/app/DESIGN.md` | `DESIGN.md` | **app** — visual-identity stub. **Never overwrite** a populated or `/steer:adopt`-reverse-engineered `DESIGN.md`. |
+| `profiles/service/apps/README.md` | `apps/README.md` | **service**. |
+| `profiles/infra/mise.toml` | `mise.toml` (repo root) | **infra** — **replaces** core mise (tofu/terragrunt/ansible/uv + the `node` runtime + `compose`/worktree wiring). Skip Layer 1; adapt `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. |
+
+`library` and `cli` add **no** Layer-2 files — they are Core + Node baseline,
+with the skill adapting `package.json` only. A monorepo that *also* has a nested
+`/infra` dir stays profile `app` and gets the infra rule fragment + infra CI
+automatically because `/infra` exists (trait, not marker) — it does not become
+profile `infra`.
 
 ## Deliberately not bundled
 

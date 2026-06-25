@@ -55,7 +55,8 @@ stack-specific scaffold the bootstrap lays down on top of the universal core
 above to the detected profile (`app` / `infra` / `service` / `library` / `cli`).
 Keep the marker and this line in sync — `/steer:sync` reads the marker. An
 **infra** repo (Terraform/OpenTofu/Ansible/Pulumi) gets a tofu/terragrunt/ansible
-root `mise.toml` and infra CI instead of `package.json` / `compose.yaml`.
+root `mise.toml` and infra CI instead of the Node project files
+(`package.json` / `biome.json`); `node` + `compose.yaml` stay from the core scaffold.
 
 ## Stack overrides
 

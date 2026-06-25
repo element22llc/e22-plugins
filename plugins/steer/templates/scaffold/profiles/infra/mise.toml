@@ -1,11 +1,14 @@
 # mise — ROOT toolchain for an INFRASTRUCTURE / IaC repo (the `infra` profile).
 #
-# This is the infra-profile replacement for the app scaffold's root mise.toml:
+# This is the infra-profile replacement for the core root `mise.toml`:
 # /steer:init installs THIS as the repo-root `mise.toml` when the profile is
-# `infra`, and does NOT install package.json / pnpm-workspace.yaml / biome.json /
-# compose.yaml / scripts/worktree-env.sh (an infra repo has no Node/web layer and
-# no local backing services). The universal core is unchanged — mise pinning, the
-# /spec spine, and CI hygiene apply here exactly as they do to an app repo.
+# `infra`, and does NOT install the Node project files (package.json /
+# pnpm-workspace.yaml / biome.json / configs / packages — an infra repo has no
+# Node/web layer). It DOES still pin the `node` runtime (agent tooling needs it)
+# and ships the core `compose.yaml` + `scripts/worktree-env.sh` — delete those if
+# this repo genuinely runs no local backing services. The universal core is
+# unchanged — mise pinning, the /spec spine, and CI hygiene apply here exactly as
+# they do to an app repo.
 #
 # Distinct from templates/scaffold/infra/mise.toml: THAT one pins tools for a
 # NESTED /infra dir inside an app monorepo (so non-infra contributors skip them).
@@ -22,9 +25,18 @@
 [settings]
 lockfile = true
 
+[env]
+# Per-worktree COMPOSE_PROJECT_NAME + host-port offset, so parallel Claude Code
+# worktrees don't collide on Docker/ports when running the core `compose.yaml`.
+# Sourced here because worktree-env.sh ships in the universal core for every
+# profile. Remove this and the script if the repo runs no local services.
+_.source = "scripts/worktree-env.sh"
+
 [tools]
-# --- Baseline: always installed. uv/python back ansible-lint, yamllint, and any
-# uvx-based agent tooling; gh drives PRs/releases; shellcheck + actionlint are CI gates.
+# --- Baseline: always installed. node/uv/python back agent tooling (npx/uvx),
+# ansible-lint, and yamllint; gh drives PRs/releases; shellcheck + actionlint are
+# CI gates. `node` is the runtime for agent tooling, NOT a Node project layer.
+node = "latest"
 python = "latest"
 uv = "latest"
 github-cli = "latest"

@@ -35,20 +35,29 @@ Not every managed repo is an app monorepo. A repo carries a **profile** —
 `<!-- steer:profile=… -->` marker on the `CLAUDE.md` `## Profile` section (a
 sibling of the delivery-mode marker; **absent ⇒ `app`**, for back-compat).
 
-The profile is a **bootstrap-time** choice: it decides which stack-specific
-extras `/steer:init` / `/steer:adopt` lay down. The **universal core is the same
-for every profile** — `mise.toml` toolchain pinning, the `/spec` spine, and
-stack-agnostic CI hygiene — so a non-app repo is never skipped at bootstrap. Only
-the extras vary:
+The profile is a **bootstrap-time** choice that selects an **additive** set of
+scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*):
 
-- **`app`** (default) — the full scaffold above (monorepo `apps/`+`packages/`,
-  `package.json`, `compose.yaml`, …).
-- **`infra`** (Terraform / OpenTofu / Ansible / Pulumi) — a
-  tofu/terragrunt/ansible-flavored **root** `mise.toml` instead of
-  `package.json`/`compose.yaml`, and CI that auto-detects `*.tf`/Ansible and runs
-  `tofu fmt` / `ansible-lint`. No `apps/`+`packages/`, no `worktree-env.sh`.
-- **`service` / `library` / `cli`** — the flat scaffold with the app-only files
-  omitted (e.g. a library has no `compose.yaml` / `worktree-env.sh`).
+- **Layer 0 — Core** (every profile): `mise.toml` toolchain pinning
+  (`node`/`python`/`uv` mandatory — agent tooling needs them), the `/spec` spine,
+  stack-agnostic CI hygiene, dotfiles, `policy/`, the version-pin scripts, and —
+  deliberately for every profile — `compose.yaml` + `scripts/worktree-env.sh` (the
+  containerize-by-default surface, so devs run backing services in Docker rather
+  than on the host).
+- **Layer 1 — Node baseline** (`profiles/_node/`, Node-stack profiles only):
+  `package.json`, `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`.
+  Every Node profile is a pnpm workspace (monorepo-by-default). Skipped for
+  `infra`, and replaced by `pyproject.toml`/Ruff for a Python-only product.
+- **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/` +
+  `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill
+  adapts `package.json`); `infra` substitutes a tofu/terragrunt/ansible-flavored
+  **root** `mise.toml` (which still pins `node` and sources `worktree-env.sh`) and
+  gets CI that auto-detects `*.tf`/Ansible and runs `tofu fmt` / `ansible-lint`.
+
+So a non-app repo is never skipped at bootstrap — it shares all of Core, and an
+`infra` repo that genuinely runs no local services simply deletes the core
+`compose.yaml`. The **installed** repo layout is unchanged by this organization;
+only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
 **traits** (`has-apps`, `has-compose`, `has-infra`, `has-iac` via the
