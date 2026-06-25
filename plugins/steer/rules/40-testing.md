@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Testing rules
 
 - Every feature change **includes or updates automated tests** in the same PR — never "later."

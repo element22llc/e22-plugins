@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Coverage rules
 
 - Coverage is a **signal to find untested behavior, not a target to hit** — never

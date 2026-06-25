@@ -40,6 +40,17 @@ VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${
 
 printf '<!-- Engineering standards — steer plugin v%s. Run `/plugin update steer@e22-plugins` to refresh. -->\n\n' "${VERSION}"
 
+# Work mode decides how much of the ruleset applies. 'knowledge' = a confidently
+# non-code folder (the typical Claude Cowork product-owner case: a connected
+# folder of specs/docs, no git repo) → inject only the lean, always-on
+# PO-relevant set and skip every code/infra/tracker-scoped rule. Anything else,
+# or any doubt, → 'code' = the full ruleset (fail-safe; never silently drops a
+# rule). See steer_work_mode in lib/scope.sh.
+WORK_MODE="$(steer_work_mode "${CWD}")"
+if [ "${WORK_MODE}" = "knowledge" ]; then
+  printf '<!-- steer: knowledge-work mode — this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The spec-workflow, decision-capture, living-docs, roles and output rules below still apply. -->\n\n'
+fi
+
 if [ -d "${RULES_DIR}" ]; then
   for f in "${RULES_DIR}"/*.md; do
     [ -e "${f}" ] || continue
@@ -49,6 +60,10 @@ if [ -d "${RULES_DIR}" ]; then
     IFS= read -r _first <"${f}" || _first=""
     case "${_first}" in
     '<!-- steer:inject-when='*' -->')
+      # A knowledge-work folder skips EVERY conditional rule — none of the
+      # code/infra/tracker-scoped rules apply there — leaving only the unmarked,
+      # always-on PO-relevant core. (Marker line is dropped with the rule.)
+      [ "${WORK_MODE}" = "knowledge" ] && continue
       _token="${_first#<!-- steer:inject-when=}"
       _token="${_token% -->}"
       steer_inject_when_ok "${_token}" "${CONSUMER_ROOT}" || continue

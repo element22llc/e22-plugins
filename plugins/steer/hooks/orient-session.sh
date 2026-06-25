@@ -25,6 +25,7 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # SessionStart payload carries cwd (may be a subdir); anchor the spine lookup at
 # the work-tree root. Not a git repo → fall back to cwd.
@@ -32,6 +33,27 @@
 STEER_INPUT="$(cat 2>/dev/null)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
+
+# Knowledge-work folder (non-code; the typical Claude Cowork product-owner case).
+# There is no git repo here, so the spine-based orientation below never fires and
+# the user — often non-technical — has no signal that anything loaded. Confirm,
+# in plain language, that standards are active and that they can just describe a
+# goal. This hook runs on `startup` only (see hooks.json), so the confirmation
+# does NOT re-fire on resume/clear/compact. inject-standards.sh handles the lean
+# rule injection for this same mode.
+if [ "$(steer_work_mode "${CWD}")" = "knowledge" ]; then
+	printf '<!-- steer: knowledge-work orientation -->\n'
+	printf 'This is a non-code knowledge-work folder and the org engineering '
+	printf 'standards (steer) are active here in their lean, knowledge-work form. '
+	printf 'On your first reply, briefly confirm to the user — in plain language, no '
+	printf 'jargon — that the standards are loaded, and that they do **not** need to '
+	printf 'know any `/steer:*` command names: they can just describe what they want '
+	printf '(draft or refine a spec, capture a decision, ask what to do next) and you '
+	printf 'will route it to the right workflow yourself. Keep it to one or two '
+	printf 'sentences (output-discipline still applies).\n'
+	exit 0
+fi
+
 ROOT="$(steer_repo_root "${CWD}")" || exit 0
 
 # This IS the steer source / marketplace repo itself, not a product repo —

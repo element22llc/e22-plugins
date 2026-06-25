@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Commit autonomy
 
 Commits are cheap and local — the PR review is the gate (see "You are not the

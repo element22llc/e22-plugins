@@ -7,6 +7,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** knowledge-work mode for the always-on ruleset, hardening steer for
+  Claude Cowork product-owner use. A new `steer_work_mode` classifier (in
+  `hooks/lib/scope.sh`) detects a confidently non-code folder — no git work tree
+  and no code/config markers within `maxdepth 2` (the typical Cowork case: a
+  connected folder of specs/docs) — and classifies it `knowledge`; anything else,
+  or any doubt, stays `code` (fail-safe — never silently drops a rule). In
+  `knowledge` mode `inject-standards.sh` injects only the lean, always-on
+  PO-relevant core and **skips every `inject-when`-marked rule** (none of the
+  code/infra/tracker-scoped rules apply there), reclaiming context budget and
+  cutting noise. The code-only rules `10-stack`, `15-commands`, `20-layout`,
+  `22-housekeeping`, `24-worktrees`, `40-testing`, `41-coverage`,
+  `45-commit-autonomy`, `50-definition-of-done`, `55-drift-gates`,
+  `80-change-size`, `85-practices`, `99-end-of-session` gained an
+  `inject-when=code-project` marker; the spec-workflow, decision-capture,
+  living-docs, roles, issue-tracker, secrets, compliance and output rules stay
+  always-on. Classification keys on a git work tree or any code/config/source
+  marker within `maxdepth 2`, so `code`-mode behavior in a git repo is unchanged.
+- **Added:** plain-language "standards are active" confirmation for non-technical
+  Cowork users. In `knowledge` mode `orient-session.sh` (which fires on `startup`
+  only, so it never re-fires on resume/clear/compact) tells the model to confirm,
+  in one or two jargon-free sentences, that the org standards are loaded and that
+  the user can just describe a goal rather than memorize `/steer:*` commands —
+  closing the silent-injection trust gap where the rules load but a PO has no
+  signal anything happened.
 - **Changed:** make the guided PO build flow the reliable default for a
   non-technical owner who never types a skill name. `orient-session.sh` now
   steers deterministically back into `/steer:build` when an in-progress build is

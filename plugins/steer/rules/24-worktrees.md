@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Parallel worktrees — isolate runtime, clean up after
 
 You may be one of several agents working the same repo at once, each in its own

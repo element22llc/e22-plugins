@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Stack
 
 **Default biases**, not mandates — when a project's intent clearly warrants

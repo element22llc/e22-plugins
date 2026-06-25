@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Drift gates — surface before merge
 
 Drift — any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔ app

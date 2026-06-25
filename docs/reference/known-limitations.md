@@ -30,6 +30,26 @@ rules are the one that matters: they're what make Claude follow the standards; t
 [Installation](../getting-started/installation.md) and the
 [Hooks reference](hooks.md).
 
+## Knowledge-work mode (non-code folders, e.g. Claude Cowork)
+
+When a session opens a folder that is **confidently not a code project** — no git
+work tree and no code/config markers nearby — steer injects a **lean,
+PO-relevant** ruleset instead of the full engineering manual. This is the typical
+**Claude Cowork** case: a product owner opens a connected folder of specs/docs.
+In that mode the spec-workflow, decision-capture, living-docs, roles, secrets and
+output rules still apply, but the code/infra/tracker-specific rules (stack,
+testing, coverage, worktrees, deployment, drift-gates, …) are **intentionally
+omitted** to reclaim context budget and cut noise, and `orient-session` confirms
+in plain language that the standards are active.
+
+The classification is **fail-safe**: a git repo, *any* code/config marker, or any
+uncertainty resolves to full `code` mode — steer never silently drops a rule from
+a real code project. `/spec` is deliberately not treated as a code marker, since a
+knowledge folder is exactly where a spec spine may live. The limitation to know:
+in a non-git folder steer cannot detect a code project that carries no on-disk
+markers, so a marker-less code checkout opened without git would get the lean set
+— add a `mise.toml`/`package.json` (or open it as a git repo) to get full rules.
+
 ## Headless vs. interactive runs
 
 The plugin's gates assume an **interactive human** is present to approve specs,

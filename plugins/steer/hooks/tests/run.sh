@@ -1083,6 +1083,45 @@ printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: repo without github tracker must omit issue-first rule" || ok
 oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${out}"
 
+# ----- inject-standards.sh + orient-session.sh: knowledge-work mode -----
+# A non-git folder with no code/config markers (the typical Claude Cowork
+# product-owner case) is classified 'knowledge': only the unmarked, always-on
+# PO-relevant rules inject, every code/infra/tracker-scoped rule is skipped, and
+# orient-session emits a plain-language confirmation.
+KW="${WORK}/kw_plain"
+mkdir -p "${KW}"
+printf '# my notes\n' >"${KW}/notes.md"
+out="$(run_hook inject-standards.sh "$(session_json "${KW}" kw_plain)")"
+oq_grep "inject(kw): knowledge-mode banner present" 'knowledge-work mode' "${out}"
+oq_grep "inject(kw): always-on router present" 'You are the router' "${out}"
+oq_grep "inject(kw): spec-workflow rule present" 'Spec workflow' "${out}"
+oq_grep "inject(kw): secrets rule present" 'Secrets handling' "${out}"
+printf '%s' "${out}" | grep -q '## Stack' &&
+	bad "inject(kw): code-only stack rule must be omitted in knowledge mode" || ok
+printf '%s' "${out}" | grep -q 'isolate runtime, clean up after' &&
+	bad "inject(kw): worktrees rule must be omitted in knowledge mode" || ok
+printf '%s' "${out}" | grep -q 'A change is done when' &&
+	bad "inject(kw): code-flavored Definition of Done must be omitted in knowledge mode" || ok
+printf '%s' "${out}" | grep -q 'End-of-session checklist' &&
+	bad "inject(kw): code-flavored end-of-session checklist must be omitted in knowledge mode" || ok
+printf '%s' "${out}" | grep -q 'steer:inject-when' &&
+	bad "inject(kw): no inject-when marker may leak in knowledge mode" || ok
+out="$(run_hook orient-session.sh "$(session_json "${KW}" kw_plain)")"
+oq_grep "orient(kw): knowledge-work confirmation emitted" 'knowledge-work folder' "${out}"
+
+# Fail-safe guard: a non-git folder that DOES carry a code marker (package.json)
+# is 'code' mode — full ruleset, no knowledge banner, no knowledge confirmation.
+KWC="${WORK}/kw_pkg"
+mkdir -p "${KWC}"
+printf '{}\n' >"${KWC}/package.json"
+out="$(run_hook inject-standards.sh "$(session_json "${KWC}" kw_pkg)")"
+oq_grep "inject(kw-pkg): code-mode includes stack rule" '## Stack' "${out}"
+printf '%s' "${out}" | grep -q 'knowledge-work mode' &&
+	bad "inject(kw-pkg): non-git folder with package.json must be code mode" || ok
+out="$(run_hook orient-session.sh "$(session_json "${KWC}" kw_pkg)")"
+printf '%s' "${out}" | grep -q 'knowledge-work folder' &&
+	bad "orient(kw-pkg): code-mode folder must not emit knowledge confirmation" || ok
+
 # ----- scope.sh: trait predicates + repo-root.sh: profile reader -----
 . "${HOOKS}/lib/scope.sh"
 . "${HOOKS}/lib/repo-root.sh"
@@ -1114,6 +1153,39 @@ steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR 
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_INFRA}" && ok || bad "scope: OR marker true via has-iac arm"
 TRAITS_OR_NONE="$(new_repo traits_or_none)"
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_OR_NONE}" && bad "scope: OR marker false when no arm holds" || ok
+
+# work-mode classifier: non-git + no markers -> knowledge; git or any code marker
+# -> code; fail-safe defaults to code. /spec is deliberately NOT a code marker.
+WM_KW="${WORK}/wm_kw"
+mkdir -p "${WM_KW}"
+printf 'x\n' >"${WM_KW}/doc.md"
+assert_eq "work_mode: bare non-git folder -> knowledge" "$(steer_work_mode "${WM_KW}")" "knowledge"
+WM_SPEC="${WORK}/wm_spec"
+mkdir -p "${WM_SPEC}/spec"
+printf 'x\n' >"${WM_SPEC}/spec/intent.md"
+assert_eq "work_mode: /spec is not a code marker -> knowledge" "$(steer_work_mode "${WM_SPEC}")" "knowledge"
+WM_PKG="${WORK}/wm_pkg"
+mkdir -p "${WM_PKG}"
+printf '{}\n' >"${WM_PKG}/package.json"
+assert_eq "work_mode: package.json -> code" "$(steer_work_mode "${WM_PKG}")" "code"
+WM_TF="${WORK}/wm_tf"
+mkdir -p "${WM_TF}"
+printf 'terraform {}\n' >"${WM_TF}/main.tf"
+assert_eq "work_mode: *.tf -> code" "$(steer_work_mode "${WM_TF}")" "code"
+# Loose source file with NO manifest must still read as code (fail-safe — a
+# manifest-only scan would mis-classify a non-git script folder as knowledge).
+WM_SRC="${WORK}/wm_src"
+mkdir -p "${WM_SRC}"
+printf 'print(1)\n' >"${WM_SRC}/run.py"
+assert_eq "work_mode: loose source, no manifest -> code" "$(steer_work_mode "${WM_SRC}")" "code"
+WM_GIT="$(new_repo wm_git)"
+assert_eq "work_mode: git repo -> code" "$(steer_work_mode "${WM_GIT}")" "code"
+WM_SUB="${WM_GIT}/apps/web"
+mkdir -p "${WM_SUB}"
+assert_eq "work_mode: subdir of git repo -> code" "$(steer_work_mode "${WM_SUB}")" "code"
+# code-project predicate is always true at the predicate layer (knowledge folders
+# skip marked rules in the inject loop before this runs, so it only fires in code).
+steer_inject_when_ok code-project "${WM_GIT}" && ok || bad "scope: code-project predicate true"
 
 # profile reader: marker -> value; absent -> app (back-compat).
 PROF_INFRA="$(new_repo prof_infra)"
