@@ -26,6 +26,22 @@
 
 [settings]
 lockfile = true
+# `experimental` unlocks the `[deps]` auto-install providers below (mise gates
+# them as experimental). It is a deliberate org default: the payoff is
+# lockfile-aware auto-install of workspace deps, and the blast radius is bounded
+# because the toolchain — including mise itself — is pinned via mise.lock.
+experimental = true
+
+# --- Auto-install workspace dependencies before any `mise run` / `mise x`.
+# Each provider is content-hashed against its lockfile and runs ONLY when stale,
+# and is active ONLY when both configured here AND its lockfile exists — so a
+# Node-only repo's [deps.uv] simply no-ops until a uv.lock appears, and vice
+# versa. This replaces a hand-rolled `install` task: you never run `pnpm install`
+# / `uv sync` by hand. Escape hatch for a single command: `mise run --no-deps …`.
+[deps.pnpm]
+auto = true # runs `pnpm install` when pnpm-lock.yaml changes (no-op without it)
+[deps.uv]
+auto = true # runs `uv sync` when uv.lock changes (no-op without it)
 
 [tools]
 # `latest` + the lockfile means you never edit versions here by hand.
@@ -86,11 +102,13 @@ description = "One-command local env: services up, schema migrated, data seeded 
 # Baseline wired to the default stack (Postgres via compose.yaml + Drizzle).
 # Adapt on fork (/steer:init): Python products swap the pnpm calls below for
 # `uv run …`; products without a database delete the db:* tasks and compose.yaml.
-run = [
-  "mise run docker:up",
-  "mise run db:migrate",
-  "mise run db:seed",
-]
+#
+# Ordering is DECLARED, not a manual command list: `dev:setup` depends on
+# `db:seed`, which depends on `db:migrate`, which depends on `docker:up` — so the
+# whole chain runs in order (and fails fast). Never reintroduce a
+# `run = ["mise run a", "mise run b"]` chain; declare `depends` instead.
+# No-database products repoint this at `docker:up` (or drop dev:setup).
+depends = ["db:seed"]
 
 [tasks."docker:up"]
 description = "Start local backing services (compose.yaml) and wait until healthy"
@@ -112,10 +130,12 @@ run = "docker compose down --volumes --remove-orphans"
 
 [tasks."db:migrate"]
 description = "Apply DB migrations in every workspace package that defines db:migrate"
+depends = ["docker:up"] # the database must be up before migrating
 # --if-present → no-ops until an app/package defines a db:migrate script
 # (e.g. drizzle-kit migrate). The starter app has none, so a fresh clone passes.
 run = "pnpm --recursive --if-present run db:migrate"
 
 [tasks."db:seed"]
 description = "Seed local dev data in every workspace package that defines db:seed"
+depends = ["db:migrate"] # seed only after the schema is migrated
 run = "pnpm --recursive --if-present run db:seed"

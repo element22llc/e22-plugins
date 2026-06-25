@@ -20,7 +20,7 @@ flowchart TD
 | Element | Source | Notes |
 | --- | --- | --- |
 | `/spec` spine | `templates/spec/` | Product truth. See [Product spine](../concepts/product-spine.md). |
-| `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. |
+| `mise.toml` | scaffold | Toolchain pins + dev-loop tasks. mise is the single task entry surface: tasks declare ordering with `depends` (never `run = ["mise run …"]` chains), and `[deps.pnpm]`/`[deps.uv]` (`auto = true`, gated by `[settings] experimental`) auto-install workspace deps on lockfile change — no hand-rolled install task. App-level scripts stay in `package.json`; mise tasks may delegate to them. Run `/steer:reference conventions` for the full task model. |
 | `mise.lock` | created at pin time | The real version pin. The scaffold ships **no** lock — `/steer:init`/`/steer:adopt` create it when they pin the toolchain (`touch mise.lock`, `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the lock carries per-platform URLs + checksums — CI runs `mise install --locked` on `linux-x64`, which fails on a host-only lock). Until a populated lock is committed, CI runs a plain unlocked install; never commit an empty / comment-only lock. Run `/steer:reference conventions` for the full toolchain rationale. |
 | CI workflows + PR template | scaffold | Quality gates and review template. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |

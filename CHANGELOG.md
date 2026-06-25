@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the bundled scaffold `mise.toml` now declares task ordering with
+  `depends` instead of a `run = ["mise run …"]` chain — `dev:setup` → `db:seed`
+  → `db:migrate` → `docker:up`, so the chain runs in order and fails fast. The
+  `15-commands` and `10-stack` rules gained a lean "mise is the single task entry
+  point; declare ordering with `depends`/`depends_post`, never `mise run` chains"
+  bullet, and the infra-profile `mise.toml` replaces its placeholder `echo`
+  `dev:setup` with a real `terragrunt run-all init` plus a commented
+  `[deps.ansible-galaxy]` provider example.
+- **Added:** lockfile-aware auto-install of workspace dependencies in the
+  scaffold — `[settings] experimental = true` plus `[deps.pnpm]`/`[deps.uv]`
+  (`auto = true`), which run `pnpm install` / `uv sync` before any `mise run` /
+  `mise x` but only when the lockfile changed, and only when the lockfile exists
+  (so a single-language repo's other provider no-ops). Replaces hand-rolled
+  install tasks. `CONVENTIONS.md` → "Standard mise tasks" gains sections on
+  declaring task ordering (`depends`/`depends_post`/`wait_for`), `[deps.*]`
+  auto-install (incl. the `experimental` trade-off and `--no-deps` escape hatch),
+  `sources`/`outputs` for file-producing tasks, and file tasks vs `scripts/`;
+  the "why mise not package.json" prose is reframed as mise being the single
+  entry *surface* (app scripts stay in `package.json`; mise tasks delegate).
 - **Added:** knowledge-work mode for the always-on ruleset, hardening steer for
   Claude Cowork product-owner use. A new `steer_work_mode` classifier (in
   `hooks/lib/scope.sh`) detects a confidently non-code folder — no git work tree

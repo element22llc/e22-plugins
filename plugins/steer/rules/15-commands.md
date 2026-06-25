@@ -5,6 +5,8 @@
   product README), then `mise run dev:setup` — idempotent local env: services
   up → migrate → seed.
 - **Develop:** `pnpm install && pnpm dev` (Node) / `uv sync && uv run <cmd>` (Python).
+  The scaffold's `[deps]` auto-install means any `mise run …` already syncs
+  workspace deps on lockfile change, so an explicit `install`/`sync` is usually unneeded.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
 - **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
 
