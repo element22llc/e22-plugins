@@ -17,6 +17,8 @@ the surface** (validated June 2026). The Claude Desktop app has three tabs —
   sub-agents run — Anthropic's docs state *"hooks and sub-agents run only in
   Cowork."* Plugin-scoped `SessionStart` hooks had bugs earlier in 2026 (since
   closed); **reconfirm on your build** before relying on auto-injected rules there.
+  Cowork is **best-effort and PO/knowledge-work only** — it's a no-install sandbox
+  (see below), so engineering work belongs in Claude Code, not here.
 - **The Claude Desktop *Chat* tab and claude.ai web chat do NOT run hooks** — they
   show as grayed out. Plugins install and **skills work**, but the always-on rules
   are **not** auto-injected and the `PreToolUse` gates don't run.
