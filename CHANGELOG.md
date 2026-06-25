@@ -23,6 +23,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   workspace too. `/steer:init` and `/steer:adopt` now compose Core → `_node`
   (Node stacks) → profile overlay. The **installed** repo layout is unchanged, so
   no migration is required.
+- **Added:** **Typed-by-default** is now a first-class always-on practice
+  (`rules/85-practices.md`): static typing wherever the language supports it
+  (`TS strict` / Python type hints + a checker), not just a default-stack detail
+  buried in the conventions reference.
+- **Changed:** The boundary-validation practice is now stated **language-
+  agnostically** and the JS-only `Zod` name is removed from all rules and
+  templates — validation is "every external input through a **defined schema**,"
+  explicitly covering **config and data files (JSON/YAML)** alongside requests,
+  API responses, and env vars. Default-stack tools (Drizzle, Next.js, Pydantic
+  for the Python path) are still named where they belong; only the implication
+  that Zod is the universal answer is gone. Touches `85-practices.md`,
+  `templates/github/copilot-instructions.md`, `templates/reference/CONVENTIONS.md`,
+  `templates/scaffold/CLAUDE.md`, `templates/spec/productionization.md`,
+  `skills/adopt/PROCEDURE.md`, and `skills/reference/SKILL.md`.
 - **Added:** **Repo profiles** — steer no longer assumes every managed repo is a
   Node/TS app monorepo. A repo now carries a `<!-- steer:profile=app -->` marker
   (or `infra`/`service`/`library`/`cli`) on the `CLAUDE.md` `## Profile` section,

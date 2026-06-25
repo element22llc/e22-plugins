@@ -112,7 +112,7 @@
 | Secrets handling             | secrets (70)           |               |             |                    |
 | High-risk areas              | high-risk (60)         |               |             |                    |
 | CI                           | Definition of Done (50)|               |             |                    |
-| Zod boundaries / error model | practices (85)         |               |             |                    |
+| Boundary validation / error model | practices (85)    |               |             |                    |
 | Data layer (ORM, schema, migrations) | practices (85) |             |             |                    |
 | Dependency freshness         | stack (10), practices (85)|            |             |                    |
 | Layout (`/apps`, `/packages`)| layout (20)            |               |             |                    |

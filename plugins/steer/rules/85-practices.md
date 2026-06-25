@@ -5,14 +5,18 @@ parens so it stays actionable on the default stack and still applies on any
 other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
 patterns + anti-patterns prose: run `/steer:reference conventions`.
 
+- **Typed by default** — static typing on wherever the language supports it;
+  model the type rather than reaching for an untyped escape hatch. *(Default: TS
+  `strict`; Python: type hints checked with a type checker.)*
 - **All data access goes through a parameterized query layer — never raw or
   string-interpolated SQL.** Schema is defined in code and changed via
   committed, reviewed migrations; no ad-hoc schema edits. *(Default: Drizzle +
   Drizzle Kit; Python: SQLAlchemy 2.x + Alembic.)*
-- **Validate every external input at the boundary before use** — request inputs,
-  external API responses, env vars — and derive types from the schema. One
-  validated config module instead of scattered raw env reads. *(Default: Zod;
-  Python: Pydantic v2.)*
+- **Validate every external input through a defined schema at the boundary
+  before use** — request inputs, external API responses, config and data files
+  (JSON/YAML), env vars — and derive types from that schema rather than
+  hand-writing them. One validated config module instead of scattered raw env
+  reads.
 - **Server-first** — secrets and DB access stay server-side; client code is
   explicit and lean; only genuinely public values are exposed to the client.
   *(Default: Next.js Server Components / `NEXT_PUBLIC_*`.)*
