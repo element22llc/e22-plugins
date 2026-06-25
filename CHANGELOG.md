@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.4.0
+
 - **Added:** an Epic tier above features. A new `steer:kind=epic` parent tracking
   issue groups child features (and, transitively, their tasks/bugs) via native
   sub-issue links, so a goal spanning several features is one visible
