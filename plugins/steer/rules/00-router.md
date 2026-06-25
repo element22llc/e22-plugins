@@ -36,16 +36,12 @@ name one. Plain language is the only entry point a user needs.
   closing offer after a long scoping pass; that scoping folds into `init`'s own
   interview, and durable design decisions wait for the spine to hold them
   (`31-decision-capture`), never a memory- or chat-only record.
-  **"Prototype" / "quick" / "just try it" / "throwaway" never waives
-  this.** A prototype is greenfield: it still gets the plugin's **bundled scaffold**
-  (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview, and — by
-  declaring solo-trunk mode — no per-feature branch or PR, though a GitHub-adopted
-  repo still keeps the issue per change, see Issue-first), never *whether* the
-  scaffold and spine exist. Hand-writing
-  `package.json`, build config (`vite.config`, `tsconfig`), or CI **from scratch**
-  when `/steer:init` installs them from the bundled scaffold is the bug, not a
-  shortcut — run the bootstrap, then build on top of it.
+  **"Prototype" / "quick" / "just try it" / "throwaway" never waives this** — a
+  prototype is greenfield, so it still gets the bundled scaffold and a `/spec` spine.
+  Those words change spec *depth* and *ceremony* (lighter interview; by declaring
+  solo-trunk mode, no per-feature branch or PR — a GitHub-adopted repo still keeps
+  the issue per change, see Issue-first), never *whether* scaffold and spine exist;
+  the full greenfield-vs-prototype mechanics are canonical in Spec workflow.
 - **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
   switch or capture it (`/steer:issues capture`), rather than silently dropping the
   current thread.
