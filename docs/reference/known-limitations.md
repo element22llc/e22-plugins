@@ -50,6 +50,58 @@ in a non-git folder steer cannot detect a code project that carries no on-disk
 markers, so a marker-less code checkout opened without git would get the lean set
 — add a `mise.toml`/`package.json` (or open it as a git repo) to get full rules.
 
+## Claude Cowork's sandbox: no installs, connector-only GitHub
+
+Claude Cowork runs in an **Anthropic-managed, sandboxed Linux VM** (OS-level
+isolation via bubblewrap/seatbelt), not a normal dev machine. Claude can read,
+write, and run scripts inside the connected folder, but the sandbox's filesystem
+and network are locked down: in practice you **cannot install system tooling** —
+**docker, mise, language toolchains, or the `gh` CLI** — the way you can in a
+Claude Code CLI session (validated June 2026). Treat Cowork as a **no-install**
+surface. This is an environment boundary, not a steer bug.
+
+Two consequences follow, and together they explain why "the GitHub connector
+isn't working" in Cowork even though it works in the CLI.
+
+**1. The plugin's `.mcp.json` is a Claude Code mechanism — Cowork doesn't use it.**
+[MCP config is not shared across surfaces](mcp-servers.md): Cowork wires MCP
+through its own **Connectors**, not the plugin-shipped
+`plugins/steer/.mcp.json` that the CLI reads. So of the three servers steer
+ships, two do **not** survive Cowork:
+
+- **`github`** authenticates with `Authorization: Bearer ${GITHUB_PAT}` resolved
+  from your **local shell**. The sandbox has no shell you exported that PAT into,
+  and Cowork doesn't read the CLI `.mcp.json` for credentials anyway — so the
+  plugin's GitHub server appears to "try to connect like Claude Code" and fails
+  to authenticate. **Do not rely on it in Cowork.**
+- **`markitdown`** runs as a **local process** (`uvx markitdown-mcp`), which needs
+  `uv`/Python that can't be installed, and local MCP tools can be **silently
+  disabled** in Cowork (they appear in the list but return *"This tool has been
+  disabled in your connector settings"*). Don't rely on it either.
+- **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
+  that can work if the surface routes it — nothing to install, no shell secret.
+
+**2. GitHub on Cowork = the built-in connector, not the plugin server.** To do
+issue work in Cowork, enable the **built-in GitHub connector** (Cowork →
+**Customize → Connectors**), which Anthropic manages via OAuth and runs **outside**
+the bash sandbox. Once it's on, `/steer:tracker-sync`'s **MCP-first** probe finds
+the repo-scoped issue tools (list / get / create / comment / label / transition)
+and `/steer:issues triage` works — Cowork **can** triage GitHub issues. Caveats:
+
+- It is **repo-scoped only.** Org/team-level reads come back empty by design, so
+  anything needing org config — Issue **Types**, and the org-level native issue
+  **fields** (Priority/Effort/dates) `field-set` writes — may be unavailable and
+  will degrade to the `steer:kind` marker / a human follow-up rather than fail
+  loudly. Plain triage (read, classify, label, comment, set the `steer:state`
+  marker, link issues) does not need org scope and works.
+- The **`gh`-CLI fallback is unavailable** (can't install `gh`), so when the
+  built-in connector is off there is no automated path — only the manual floor.
+
+Net: in Cowork, do **issue triage** through the built-in connector; for the
+install-dependent parts of steer (docker/mise builds, the local `markitdown`
+server, `gh`-CLI flows) use the **Claude Code CLI or the Desktop *Code* tab**,
+which share the full engine.
+
 ## Headless vs. interactive runs
 
 The plugin's gates assume an **interactive human** is present to approve specs,

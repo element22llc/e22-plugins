@@ -21,6 +21,15 @@ server-by-server content is reconciled by hand against the source of truth.
     authenticated MCP servers may also be absent in headless/cron runs (see
     [Known limitations](known-limitations.md)).
 
+!!! warning "Claude Cowork doesn't use this file — MCP config isn't shared across surfaces"
+    This `.mcp.json` is read by the Claude Code **CLI / Code tab**, not by the
+    **Cowork** or **Chat** tabs, which wire MCP through their own **Connectors**.
+    On Cowork the `${GITHUB_PAT}` `github` server can't authenticate (no shell to
+    export the PAT into) and the local-process `markitdown` server can't run (no
+    installs in the sandbox) — so for GitHub work in Cowork, enable the **built-in
+    GitHub connector** instead. See
+    [Known limitations → Claude Cowork's sandbox](known-limitations.md#claude-coworks-sandbox-no-installs-connector-only-github).
+
 ## Servers
 
 | Server | Transport | Auth | Purpose |

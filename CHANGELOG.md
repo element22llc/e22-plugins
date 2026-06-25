@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
+  in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
+  read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and
+  local-process `markitdown` MCP servers don't work there — the "GitHub connector
+  isn't working" symptom. `/steer:tracker-sync` now documents that on Cowork its
+  MCP path only succeeds through the surface's **built-in GitHub connector**
+  (Customize → Connectors, repo-scoped: triage/label/comment/state work, org-level
+  Issue Types and Priority/Effort fields degrade), with no `gh` fallback. New
+  `docs/reference/known-limitations.md` → "Claude Cowork's sandbox" section,
+  cross-linked from `mcp-servers.md`; `CROSS-SURFACE.md` matrix/recommendations
+  corrected (§4a) and its MCP verification item resolved.
+
 - **Fixed:** `/steer:tracker-sync` `field-get` no longer claims native issue fields
   have "no REST path" — a stale absolute that contradicted the REST write recipe the
   sibling `field-set` op now documents. `field-get` keeps `gh api graphql` as its
