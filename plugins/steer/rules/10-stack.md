@@ -43,6 +43,12 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
   overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
   with the override var in `.env.example`, so a dev running several managed products
   at once isn't blocked by `port is already allocated`.
+- **Task running:** mise is the single task entry point. Declare ordering with
+  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
+  scripts (`dev` / `build` / `test` / `typecheck`) stay in `package.json`; a mise
+  task may delegate to them so `mise tasks` lists everything in one place. Let
+  `[deps.pnpm]` / `[deps.uv]` (`auto = true`) install workspace deps on lockfile
+  change — no hand-rolled install task. Detail: run `/steer:reference conventions`.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules are in Secrets handling.

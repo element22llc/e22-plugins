@@ -181,6 +181,12 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
   overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
   with the override var in `.env.example`, so a dev running several managed products
   at once isn't blocked by `port is already allocated`.
+- **Task running:** mise is the single task entry point. Declare ordering with
+  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
+  scripts (`dev` / `build` / `test` / `typecheck`) stay in `package.json`; a mise
+  task may delegate to them so `mise tasks` lists everything in one place. Let
+  `[deps.pnpm]` / `[deps.uv]` (`auto = true`) install workspace deps on lockfile
+  change — no hand-rolled install task. Detail: run `/steer:reference conventions`.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules are in Secrets handling.
@@ -221,6 +227,8 @@ defaults. Deviations are ADRs, same as any stack choice.
   product README), then `mise run dev:setup` — idempotent local env: services
   up → migrate → seed.
 - **Develop:** `pnpm install && pnpm dev` (Node) / `uv sync && uv run <cmd>` (Python).
+  The scaffold's `[deps]` auto-install means any `mise run …` already syncs
+  workspace deps on lockfile change, so an explicit `install`/`sync` is usually unneeded.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
 - **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
 

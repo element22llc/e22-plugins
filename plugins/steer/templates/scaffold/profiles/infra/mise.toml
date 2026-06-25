@@ -24,6 +24,9 @@
 
 [settings]
 lockfile = true
+# Unlocks the `[deps]` auto-install providers (e.g. ansible-galaxy below). A
+# deliberate org default; blast radius is bounded by the committed mise.lock.
+experimental = true
 
 [env]
 # Per-worktree COMPOSE_PROJECT_NAME + host-port offset, so parallel Claude Code
@@ -61,11 +64,23 @@ terragrunt = "latest"                                            # OpenTofu/Terr
 
 [tasks."dev:setup"]
 description = "One-command local setup: install IaC deps (provider/module init or Ansible roles)"
-# Terraform/OpenTofu: `terragrunt run-all init` (or `tofu init`).
-# Ansible: `uvx ansible-galaxy install -r requirements.yml` if present.
-run = [
-  "echo 'Adapt dev:setup to this repo: tofu/terragrunt init, or ansible-galaxy install -r requirements.yml'",
-]
+# Terraform/OpenTofu path (live default — matches the opentofu/terragrunt tools
+# pinned above). `terragrunt run-all init` is idempotent: safe to rerun.
+run = "terragrunt run-all init"
+
+# Ansible path: delete the run above and let the [deps.ansible-galaxy] provider
+# below own role install instead — it auto-runs on `mise run`, only when stale.
+
+# --- Ansible role install as an auto-install provider (uncomment for Ansible) ---
+# Demonstrates the declared-dependency + freshness model: `depends` orders it
+# after uv, `sources`/`outputs` skip it when requirements.yml is unchanged, and
+# `auto` runs it before any `mise run` / `mise x`.
+# [deps.ansible-galaxy]
+# auto = true
+# depends = ["uv"]
+# run = "uvx ansible-galaxy install -r requirements.yml && touch .galaxy-installed"
+# sources = ["requirements.yml"]
+# outputs = [".galaxy-installed"]
 
 # --- Terraform / OpenTofu tasks (delete for an Ansible-only repo) ---
 [tasks."infra:fmt"]

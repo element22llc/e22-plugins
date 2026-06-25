@@ -136,22 +136,27 @@ Every product repo exposes the same task vocabulary via `[tasks]` in the root
 
 - **`mise run dev:setup`** — the one-command local environment. **Idempotent**:
   safe to rerun anytime. It starts the Compose services (`docker compose up -d
-  --wait`), applies database migrations, and seeds local dev data.
+  --wait`), applies database migrations, and seeds local dev data. The ordering
+  is **declared** (`dev:setup` → `db:seed` → `db:migrate` → `docker:up` via
+  `depends`), not a hand-written command list — see *Declaring task ordering*.
 - **`mise run docker:up` / `docker:down`** — just the backing services.
 - **`mise run db:migrate` / `db:seed`** — just the database steps. In Node repos
   these fan out with `pnpm --recursive --if-present run …`, so each app/package
   owns its own `db:migrate`/`db:seed` script and packages without one are
   skipped; Python repos call `uv run …` instead.
 
-Why `mise.toml` and not `package.json`:
+mise is the single task **entry surface**, not the single home. The split:
 
-- These tasks orchestrate tooling **outside** the workspace (Docker, the DB) —
-  environment concerns, which mise already owns. `package.json` scripts stay
-  app-level (`dev`, `build`, `test`, `typecheck` fanning out to workspace
-  packages).
-- mise tasks are **polyglot**: `mise run dev:setup` works identically in a
-  Python (uv) product that has no root `package.json` workflow.
-- `mise tasks` lists them, making the repo self-documenting.
+- **Environment/orchestration tasks live in `mise.toml`** — they orchestrate
+  tooling **outside** the workspace (Docker, the DB), which mise already owns,
+  and are **polyglot**: `mise run dev:setup` works identically in a Python (uv)
+  product with no root `package.json` workflow.
+- **App-level scripts stay in `package.json`** (`dev`, `build`, `test`,
+  `typecheck` fanning out across workspace packages) — pnpm owns that fan-out.
+  Don't relocate them into mise. When you want them discoverable from one place,
+  add a thin mise task that **delegates** (`run = "pnpm build"`), rather than
+  moving the logic — so `mise tasks` lists the whole repo's vocabulary while pnpm
+  still owns the workspace graph.
 
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
@@ -159,6 +164,87 @@ The template ships these tasks wired to the default stack (Postgres in
 or delete the docker/db tasks if the product has no backing services — and keep
 `dev:setup` green as the stack evolves: a fresh clone plus `mise install &&
 mise run dev:setup` must always produce a working local environment.
+
+### Declaring task ordering
+
+Order tasks with **declared dependencies**, never a manual
+`run = ["mise run a", "mise run b"]` chain (a chain hides the graph, re-runs
+steps already satisfied, and doesn't fail fast):
+
+```toml
+[tasks."docker:up"]
+run = "docker compose up -d --wait"
+
+[tasks."db:migrate"]
+depends = ["docker:up"]   # runs first; if it fails, db:migrate does not run
+run = "pnpm --recursive --if-present run db:migrate"
+
+[tasks."db:seed"]
+depends = ["db:migrate"]
+
+[tasks."dev:setup"]
+depends = ["db:seed"]     # transitively pulls docker:up → db:migrate → db:seed
+```
+
+- **`depends`** — dependencies run **before** the task, in dependency order;
+  a failed dependency aborts the task. Put the ordering on each task so it is
+  intrinsic, and have the umbrella task (`dev:setup`) depend on the terminal step.
+- **`depends_post`** — runs **after** the task; use for teardown/cleanup
+  (e.g. a `docker:clean` that should follow an integration-test task).
+- **`wait_for`** — soft ordering: "run after X *if* X is also scheduled this
+  run, but don't trigger X." Niche; reach for `depends` first.
+
+### Auto-installing workspace dependencies
+
+Don't hand-roll an `install` task. The scaffold declares mise **`[deps]`
+providers** that install workspace deps automatically before any `mise run` /
+`mise x`:
+
+```toml
+[settings]
+experimental = true        # [deps] auto-install is gated experimental in mise
+
+[deps.pnpm]
+auto = true                # `pnpm install` — runs only when pnpm-lock.yaml changed
+[deps.uv]
+auto = true                # `uv sync`     — runs only when uv.lock changed
+```
+
+- Each provider is **content-hashed against its lockfile** and runs **only when
+  stale**, and is active **only when both configured and its lockfile exists** —
+  so a Node-only repo's `[deps.uv]` simply no-ops until a `uv.lock` appears (and
+  vice versa). This is the "install no-op on unchanged" property for free.
+- It rides on `experimental = true`. mise may change experimental behavior
+  between releases; steer accepts that trade because the toolchain (mise
+  included) is **pinned via `mise.lock`**, so the surface only moves on a
+  deliberate `mise upgrade`.
+- Escape hatch: `mise run --no-deps <task>` skips auto-install for one command.
+- The same provider shape (`auto` / `depends` / `run` / `sources` / `outputs`)
+  covers non-package-manager bootstrap too — e.g. the infra profile's commented
+  `[deps.ansible-galaxy]` provider installs roles from `requirements.yml`.
+
+### Skipping unchanged tasks (`sources` / `outputs`)
+
+For tasks that **produce files** (codegen, asset/build steps) and aren't covered
+by a `[deps]` provider, declare `sources` and `outputs` so mise skips the task
+when nothing changed:
+
+```toml
+[tasks.codegen]
+run = "pnpm gen"
+sources = ["schema/**/*.graphql"]
+outputs = ["src/generated/**/*.ts"]
+```
+
+### File tasks vs `scripts/`
+
+mise can auto-discover **file tasks** — standalone executable scripts in a
+task directory (default `mise-tasks/`), each a task named after the file with a
+`#MISE description=…` header. This is an option when a task outgrows an inline
+`run` string. steer keeps loose project helpers in **`scripts/`** (invoked from a
+task's `run`, or via `${CLAUDE_PLUGIN_ROOT}` for plugin scripts); adopt
+`mise-tasks/` deliberately if a repo prefers file tasks — don't move `scripts/`
+wholesale.
 
 ## Backend placement
 
