@@ -205,6 +205,24 @@ than assuming names. `Urgent/High/Medium/Low` is GitHub's Priority default; wher
 an org renamed them, `/steer:tracker-sync bootstrap-fields` reports the mismatch
 rather than fabricating options.
 
+> **The native issue field is the only writable home — a same-named Projects
+> board column is a read-only projection. This is a trap; name it.** When a repo's
+> Project v2 board surfaces Priority / Effort / dates, they appear as single-select
+> **columns that look identical to genuine Project custom fields (e.g. `Size`,
+> `Iteration`) but are API-locked**. Every Projects write path fails on them —
+> `updateProjectV2Field` and `gh project item-edit` return
+> `Only custom fields can be updated. Fields derived from issues or pull requests
+> must be updated through their respective APIs` — and every Projects *read* path
+> (`field-list`, the `fields` connection, `node()`) reports `options: []`, so there
+> is **no option id** to set a value through the Project at all, even though the UI
+> shows Urgent/High/Medium/Low. The destination is the **native issue field**: set
+> it via **`/steer:tracker-sync field-set`** (which uses the issue-field API), never
+> the Projects API. The reverse also holds — a genuine Project custom single-select
+> (`Size`, `Iteration`, `Status`) is **not** a native issue field and *is* edited
+> through `gh project item-edit`; `field-set` will not find it. When you need to set
+> both on the same issue (e.g. seed `Priority` *and* `Size`), they go through two
+> different APIs.
+
 **Provenance — the field value is the single source of truth.** A field lives
 *outside* the body, so it cannot carry an HTML marker. The agent therefore records
 its own last escalation as one **ledger** line inside the `steer:managed` block —

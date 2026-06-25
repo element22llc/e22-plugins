@@ -7,6 +7,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the native-issue-field vs Projects-board-column trap is now named, and
+  PO-directed field seeding has a documented route. When a Project v2 board surfaces
+  Priority/Effort/dates, they appear as single-select **columns that look like
+  editable Project custom fields but are API-locked** — `updateProjectV2Field` /
+  `gh project item-edit` fail with `Only custom fields can be updated …` and expose no
+  option ids. `ISSUE-SCHEMA.md` (Projects-v2 boundary) and `/steer:tracker-sync
+  field-set` now call this out explicitly and point all Priority/Effort writes at the
+  **native issue field**, never the Projects API (the reverse — a genuine `Size`/
+  `Iteration` custom field — stays on `gh project item-edit`). `field-set` gains a
+  copy-paste **write recipe**: read options from `gh api /orgs/{org}/issue-fields`,
+  then write via GraphQL `setIssueFieldValue` **or** the REST equivalent
+  (`POST /repositories/{repo_id}/issues/{n}/issue-field-values`, value = option name,
+  `X-GitHub-Api-Version: 2026-03-10`). `/steer:issues` triage and board now route an
+  explicit PO "set/seed Priority/Effort" request straight to `field-set` (a human
+  value, no floor ledger line, no escalate-only guard) — separate from the mechanical
+  escalate-only floor. Closes a discoverability gap in PR #186, not a missing
+  capability.
+
 ### 3.4.0
 
 - **Added:** an Epic tier above features. A new `steer:kind=epic` parent tracking

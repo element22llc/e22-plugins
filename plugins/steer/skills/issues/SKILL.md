@@ -166,6 +166,19 @@ never overridden.
     **Effort/dates are human-set only** — surface a *missing* Effort
     or a missing **Priority on a `ready-for-dev`** issue as a field gap; propose,
     never auto-fill them.
+    **PO-directed seeding is a separate, documented entry — not the floor.** When the
+    PO explicitly asks to set/seed Priority or Effort to a chosen value ("set these to
+    High", "bonify the backlog", a bulk roadmap seed), that is a **human value**, not a
+    mechanical floor: write it straight through `/steer:tracker-sync field-set #N
+    <field> <value>` for each issue, **without** a `steer:priority-floor` ledger line
+    (the ledger records only the *agent's* escalations, not the PO's own values), and
+    without the escalate-only `max()` guard (the PO may set any value, up or down).
+    The native issue field is the **only** writable home — **do not** reach for the
+    Projects API: a same-named Projects board column is a read-only projection that
+    rejects writes with `Only custom fields can be updated …` and exposes no option
+    ids (the Projects-v2 trap in `ISSUE-SCHEMA.md`). A genuine Project custom field
+    (`Size`, `Iteration`) is the opposite case — set those with `gh project
+    item-edit`, not `field-set`.
   - **Routing** — suggest the next transition; propose Inbox → Exploring and
     **perform it only where the authority table in `ISSUE-WORKFLOW.md` allows**.
   Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
@@ -257,7 +270,11 @@ never overridden.
   - **Hygiene** — stale `needs:triage`, orphaned sub-issues (no parent), **orphaned
     epics** (an epic that claims `in-progress` or later with zero linked features),
     missing **Priority** on `ready-for-dev`, missing kind/Type, and mislabelled items
-    — each with the `triage`/owning action that fixes it. Surfaces work; performs none.
+    — each with the `triage`/owning action that fixes it. The fix for a Priority/Effort
+    gap is a **native issue-field** write via `/steer:tracker-sync field-set` (PO value)
+    or the `triage` escalate-only floor (mechanical) — **never** the Projects API,
+    whose same-named board column is a read-only projection (`ISSUE-SCHEMA.md`).
+    Surfaces work; performs none.
   `#N`/`feature-id` scopes to one item's neighborhood; `--all` (default) sweeps open
   issues. It ends with the `## Recommended next actions` block (below).
 - **`bootstrap-labels`** — idempotently create/reconcile the supported label
