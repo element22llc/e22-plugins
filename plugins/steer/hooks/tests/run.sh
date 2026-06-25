@@ -386,6 +386,78 @@ if command -v git >/dev/null 2>&1; then
 	assert_ctx "issue-first: feat/sync app source still nudges" "${out}"
 fi
 
+# --- check-issue-create-contract.sh (raw issue-create guard, GitHub tracker) ---
+# Builds Bash / MCP PreToolUse inputs. The command body is a JSON string, so any
+# double quotes inside the gh command are escaped to \" by the helper.
+bash_json() { # <cwd> <session> <command>
+	_cmd="$(printf '%s' "$3" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+	printf '{"session_id":"%s","cwd":"%s","tool_name":"Bash","tool_input":{"command":"%s"}}' \
+		"$2" "$1" "${_cmd}"
+}
+mcp_json() { # <cwd> <session> <tool_name> <body>
+	printf '{"session_id":"%s","cwd":"%s","tool_name":"%s","tool_input":{"title":"x","body":"%s"}}' \
+		"$2" "$1" "$3" "$4"
+}
+
+RC8="$(new_repo repoCreateGH)"
+mkdir -p "${RC8}/spec"
+printf 'system: github\n' >"${RC8}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC1 'gh issue create --title x --body y')")"
+assert_ctx "issue-create: gh issue create nudges" "${out}"
+printf '%s' "${out}" | grep -q '/steer:tracker-sync create' && ok || bad "issue-create: nudge points at tracker-sync (got: ${out})"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC1 'gh issue create --title z')")"
+assert_empty "issue-create: one nudge per session+repo" "${out}"
+
+# gh api REST POST to .../issues (creation) nudges; a POST to .../issues/<n>/...
+# (comment / sub-resource) does not.
+RC8b="$(new_repo repoCreateApi)"
+mkdir -p "${RC8b}/spec"
+printf 'system: github\n' >"${RC8b}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8b}" sC2 'gh api repos/o/r/issues -f title=x -f body=y')")"
+assert_ctx "issue-create: gh api POST /issues nudges" "${out}"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8b}" sC2b 'gh api repos/o/r/issues/123/comments -f body=hi')")"
+assert_empty "issue-create: gh api comment on /issues/<n> silent" "${out}"
+
+# GraphQL createIssue mutation nudges.
+RC8c="$(new_repo repoCreateGql)"
+mkdir -p "${RC8c}/spec"
+printf 'system: github\n' >"${RC8c}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8c}" sC3 'gh api graphql -f query=mutation{createIssue(input:{}){issue{number}}}')")"
+assert_ctx "issue-create: graphql createIssue nudges" "${out}"
+
+# A create whose payload ALREADY carries steer markers is the /steer:tracker-sync
+# render path — stay silent (contract is being applied, not bypassed).
+RC8d="$(new_repo repoCreateContractful)"
+mkdir -p "${RC8d}/spec"
+printf 'system: github\n' >"${RC8d}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8d}" sC4 'gh issue create --body <!-- steer:kind=task -->')")"
+assert_empty "issue-create: payload with steer markers silent" "${out}"
+
+# MCP create-issue tool nudges; an MCP comment/list tool whose name merely
+# contains "issue" does not.
+RC8e="$(new_repo repoCreateMcp)"
+mkdir -p "${RC8e}/spec"
+printf 'system: github\n' >"${RC8e}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5 mcp__github__create_issue y)")"
+assert_ctx "issue-create: MCP create_issue nudges" "${out}"
+out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5b mcp__github__add_issue_comment y)")"
+assert_empty "issue-create: MCP add_issue_comment silent" "${out}"
+
+# Non-create Bash, non-GitHub tracker, and no-tracker repos are all silent.
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC6 'gh issue list --json number')")"
+assert_empty "issue-create: gh issue list silent" "${out}"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC7 'ls -la')")"
+assert_empty "issue-create: plain bash silent" "${out}"
+RC9="$(new_repo repoCreateJira)"
+mkdir -p "${RC9}/spec"
+printf 'system: jira\n' >"${RC9}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC9}" sC8 'gh issue create --title x')")"
+assert_empty "issue-create: non-github tracker silent" "${out}"
+RC10="$(new_repo repoCreateNoTracker)"
+mkdir -p "${RC10}/spec"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC10}" sC9 'gh issue create --title x')")"
+assert_empty "issue-create: no tracker silent" "${out}"
+
 # --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
 if command -v git >/dev/null 2>&1; then
 	# D: Bash-mediated source change on a number-free branch (main) -> reported.
