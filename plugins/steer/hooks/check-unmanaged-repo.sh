@@ -20,9 +20,10 @@
 #   Everything written to stdout becomes session `additionalContext` (same path
 #   as inject-standards.sh / check-open-questions.sh). SILENT once /spec exists,
 #   so an initialized or adopted repo gets zero noise and the notice clears
-#   itself. Presents BOTH bootstrap routes rather than guessing greenfield-vs-
-#   adopt from code volume (a brittle heuristic) — the session picks based on
-#   whether the code is being written fresh or already existed.
+#   itself. Presents the bootstrap routes (PO-guided build, developer init, or
+#   adopt) rather than guessing greenfield-vs-adopt from code volume (a brittle
+#   heuristic) — the session picks based on who is driving (a non-technical owner
+#   vs a developer) and whether the code is being written fresh or already existed.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd is the CONSUMER repo. Fail-soft:
@@ -72,8 +73,14 @@ printf 'silently degrading to toolchain conventions only, with feature code '
 printf 'written ahead of any vision/intent/contract.\n\n'
 printf 'Before writing (or continuing to write) feature code, bootstrap the repo '
 printf -- '— pick the path that matches:\n\n'
-printf -- '- **Starting a new product from scratch here** (greenfield — you are '
-printf 'writing the code; little or no app exists yet) → run **`/steer:init`**. It '
+printf -- '- **Building an app idea as a non-technical owner** (you describe what you '
+printf 'want in plain language and are not writing the code yourself) → run '
+printf '**`/steer:build`**. It is the guided idea→working-app flow: it runs '
+printf '`/steer:init` for you at step 1, then drives the interview, spec, scaffold, '
+printf 'and build — you never have to remember another command. Default to this when '
+printf 'the request sounds non-technical (per the roles rule).\n'
+printf -- '- **Starting a new product from scratch as a developer** (greenfield — you '
+printf 'are writing the code; little or no app exists yet) → run **`/steer:init`**. It '
 printf 'sets up the `/spec` spine (`vision.md`, `users.md`, `glossary.md`, '
 printf 'action history, tracker, app guide), `CLAUDE.md`, and the repo '
 printf 'scaffolding from the plugin'"'"'s bundled scaffold, then drives spec-first: each '

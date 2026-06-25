@@ -13,7 +13,14 @@ high-risk handling because the person is non-technical.
 (mise, Docker, pnpm) yourself instead of handing the PO commands. On the PO
 signals above, **auto-start the guided idea→working-app flow** (`/steer:build`)
 with a one-line heads-up — don't hand the PO a command to remember or wait for
-them to type it. Guardrails: never
+them to type it. **Treat build as the default posture, not an opt-in:** when the
+role is ambiguous but the request reads non-technical, or a `spec/BUILD-STATUS.md`
+already exists (an in-progress build — the SessionStart hook flags it), enter
+`/steer:build` and resume from its current step rather than working ad hoc. When
+the PO wants to think a feature through before any code is written, that is
+`/steer:spec` — offer it in plain words ("we can work out what this should do
+first") and drive it for them; the build flow already uses it internally at the
+intent stage. Guardrails: never
 deploy, never touch `/infra`, never real secrets/credentials or real
 third-party accounts. Beyond that, a pre-production build may implement
 high-risk features for real locally (High-risk rule's pre-production

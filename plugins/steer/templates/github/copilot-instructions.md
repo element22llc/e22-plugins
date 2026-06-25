@@ -34,7 +34,10 @@ name one. Plain language is the only entry point a user needs.
   or build intent through bootstrap first via **`/steer:setup`**, which detects the
   repo state and hands off to the right path (greenfield, existing-code adoption, or
   steady-state sync) — the SessionStart hook flags this; don't degrade to
-  toolchain-only. **Make bootstrap the first move, announced up front** — not a
+  toolchain-only. **A non-technical owner's idea is the exception:** route it straight
+  to **`/steer:build`**, which is bootstrap-inclusive (it runs `/steer:init` itself at
+  step 1) — `/steer:setup`-first is for developer or ambiguous feature intent.
+  **Make bootstrap the first move, announced up front** — not a
   closing offer after a long scoping pass; that scoping folds into `init`'s own
   interview, and durable design decisions wait for the spine to hold them
   (`31-decision-capture`), never a memory- or chat-only record.
@@ -58,7 +61,7 @@ to anything outside this table.
 | --- | --- |
 | get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
-| think a feature through / shape acceptance criteria without building it | `/steer:spec` |
+| think a feature through / shape acceptance criteria without building it — incl. refining the spec before a PO build | `/steer:spec` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
@@ -113,7 +116,14 @@ high-risk handling because the person is non-technical.
 (mise, Docker, pnpm) yourself instead of handing the PO commands. On the PO
 signals above, **auto-start the guided idea→working-app flow** (`/steer:build`)
 with a one-line heads-up — don't hand the PO a command to remember or wait for
-them to type it. Guardrails: never
+them to type it. **Treat build as the default posture, not an opt-in:** when the
+role is ambiguous but the request reads non-technical, or a `spec/BUILD-STATUS.md`
+already exists (an in-progress build — the SessionStart hook flags it), enter
+`/steer:build` and resume from its current step rather than working ad hoc. When
+the PO wants to think a feature through before any code is written, that is
+`/steer:spec` — offer it in plain words ("we can work out what this should do
+first") and drive it for them; the build flow already uses it internally at the
+intent stage. Guardrails: never
 deploy, never touch `/infra`, never real secrets/credentials or real
 third-party accounts. Beyond that, a pre-production build may implement
 high-risk features for real locally (High-risk rule's pre-production

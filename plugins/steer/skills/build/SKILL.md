@@ -83,6 +83,11 @@ on the next `/steer:build` run.
    should mean (*gone forever or recoverable? for how long? what happens to
    related items?*). The PO defines these **semantics**; the schema and
    deletion mechanics derived from them are the dev's to confirm at review.
+   If the PO wants to **work on a feature's spec more before building it** —
+   explore edge cases, sharpen acceptance criteria, drive open questions down —
+   run `/steer:spec <id>` to iterate `intent.md`/`contract.md` with them (the
+   same spec-only loop, no code written). Tell them plainly they can just say
+   "let's work this out more first"; you drive it, they never type the command.
 4. **PO validation gate.** Walk the PO through each `intent.md` in plain
    language ("here's what I understood — is this right?"). On the PO's explicit
    approval, **delegate the transition to `/steer:spec approve
