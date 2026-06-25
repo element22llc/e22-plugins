@@ -67,7 +67,7 @@ It covers, in detail:
   promotion with the `prod`-branch approval gate, observability baseline, rollback
   & expand/contract migrations.
 - **Baseline patterns & anti-patterns** — the full prose behind the always-on
-  practices baseline (Drizzle/Zod/server-first, what to avoid, Python mapping).
+  practices baseline (Drizzle/schema validation/server-first, typing, what to avoid, Python mapping).
 - **Windows** — develop inside WSL2.
 
 ## `traceability`

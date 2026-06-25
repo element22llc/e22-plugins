@@ -352,24 +352,25 @@ scaffold's [`infra/README.md`](../scaffold/infra/README.md).
 
 The always-on rules carry the condensed baseline; this is the full version for
 the default stack (Next.js + TS + Tailwind; Node/TS + PostgreSQL + Drizzle
-inside the Next.js app; Biome; Vitest/pytest; Better Auth; Sentry; Zod).
+inside the Next.js app; Biome; Vitest/pytest; Better Auth; Sentry).
 
 Patterns:
 
 - **Data access through Drizzle, always parameterized.** Use the query builder /
   prepared statements; let Drizzle generate SQL. Manage schema changes with
   Drizzle Kit migrations, checked into git and reviewed.
-- **Validate at every boundary with Zod.** Route Handler / Server Action inputs,
-  external API responses, and environment variables are parsed through a schema
-  before use; derive TS types from the schema rather than hand-writing them.
+- **Validate at every boundary through a defined schema.** Route Handler /
+  Server Action inputs, external API responses, config and data files
+  (JSON/YAML), and environment variables are parsed through a schema before use;
+  derive TS types from the schema rather than hand-writing them.
 - **Server-first.** Prefer Server Components and server-side data fetching;
   secrets and DB access stay server-side. Mark Client Components explicitly and
   keep them lean. Only expose `NEXT_PUBLIC_*` for genuinely public values.
 - **Keep route/action handlers thin.** Put reusable domain logic in `packages/`
   so it is testable in isolation and shared across apps.
 - **Strict typing.** TS `strict` on; prefer `unknown` + narrowing over `any`;
-  infer types from Drizzle schema and Zod. A `@ts-expect-error` carries a
-  comment explaining why.
+  infer types from the Drizzle schema and your validation schemas. A
+  `@ts-expect-error` carries a comment explaining why.
 - **Explicit error handling + Sentry.** Catch where you can act; otherwise let
   it propagate. Report unexpected errors to Sentry with context; never swallow.
 - **One validated config module** for environment access instead of scattered
@@ -411,8 +412,8 @@ Anti-patterns to avoid:
   stale and drown the why-comments that earn their place; delete on sight.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
-(parameterized, migration-tracked), Pydantic v2 for boundary validation, Ruff
-for lint/format.
+(parameterized, migration-tracked), Pydantic v2 for boundary validation, type
+hints checked with a type checker (mypy or pyright), Ruff for lint/format.
 
 ## Windows: use WSL
 
