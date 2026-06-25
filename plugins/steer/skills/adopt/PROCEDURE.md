@@ -141,7 +141,7 @@ Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` to
 already there and was reconciled against the current template in Phase 2) and fill
 the gap analysis against the standards — tests present? lockfiles committed and
 pinned? secrets handling? high-risk areas (auth, authorization, migrations,
-deletion, billing, deploy)? CI present? Zod-at-boundaries and no-silenced-errors?
+deletion, billing, deploy)? CI present? Schema validation at boundaries and no-silenced-errors?
 **data layer — is access through Drizzle/SQLAlchemy (not raw SQL), and is the
 schema defined in code and migration-tracked?** layout? **Committed secrets are
 stop-and-rotate** (secrets rule): call them out at the top, tell the dev, and have
@@ -185,7 +185,7 @@ rule):
   only in a live DB). A missing schema is a *flagged gap*, not an absence of
   findings.
 - Swallowed errors (empty `catch`), `any` / blanket `@ts-ignore`, unvalidated
-  boundaries (no Zod/Pydantic), secrets read straight from `process.env`.
+  boundaries (no schema validation), secrets read straight from `process.env`.
 
 Don't write a "verified clean" verdict on any data-layer practice without
 confirming both that access goes through the ORM *and* that the schema is defined
