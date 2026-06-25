@@ -19,6 +19,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   cross-linked from `mcp-servers.md`; `CROSS-SURFACE.md` matrix/recommendations
   corrected (§4a) and its MCP verification item resolved.
 
+- **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the **full
+  autonomous issue path**, not just the `gh` write verbs. `tracker-sync` is
+  MCP-first, so the *preferred* create/manage path is the `mcp__github__*` issue
+  tools — previously unlisted, so every autonomous create/update/comment prompted
+  even though the `gh` equivalents were allowed (issue #180). The `allow` list gains
+  the MCP issue tools (`create_issue` / `update_issue` / `add_issue_comment` /
+  `get_issue` / `list_issues` / `search_issues` / `add_sub_issue`) plus the `gh`
+  dedup/capability **reads** that run before every find-or-create
+  (`gh issue list` / `gh issue view` / `gh search issues` / `gh auth status`). Net
+  effect: an explicit "create an issue for…" / "add to the backlog" no longer
+  prompts on each call, on whichever path the host takes. Delivery stays human-gated
+  — `git push`, `gh pr create`/`merge` remain under `ask`, and `gh api`/`gh api
+  graphql` (the mutation vector for fields/milestones/relationships, repo-delete, PR
+  merge, branch protection) stays **prompted by omission**; `check_standards.py` now
+  enforces both halves of this contract (the autonomous metadata surface present in
+  `allow`, `gh api`/`gh:*` absent from it). Existing repos pick the new entries up
+  additively via `/steer:adopt` reconcile (`scaffold_reconcile.py` unions permission
+  lists).
 - **Fixed:** `/steer:tracker-sync` `field-get` no longer claims native issue fields
   have "no REST path" — a stale absolute that contradicted the REST write recipe the
   sibling `field-set` op now documents. `field-get` keeps `gh api graphql` as its
