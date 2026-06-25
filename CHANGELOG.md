@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** issue-creation contract guard — a new `check-issue-create-contract.sh`
+  PreToolUse hook that, in a `system: github` repo, nudges when an agent opens an
+  issue with a raw create (`gh issue create`, `gh api … POST …/issues`, a
+  `gh api graphql` `createIssue` mutation, or an MCP create-issue tool) instead of
+  routing through `/steer:tracker-sync create`. Non-blocking, fires once per
+  session+repo, and stays silent when the payload already carries `steer:` markers
+  (the contract-render path) or in the plugin's own source repo. Closes the gap
+  where the issue-first nudge was blind to Bash and to issue creation.
+- **Added:** `/steer:issues reconcile --all` now detects **contract-less issues** —
+  open issues missing the machine-readable contract (no `steer:` markers and no
+  `steer:managed` block, hence no `source:*` label and the default Type) — and
+  reports them with a retrofit action, so a raw create that bypassed the
+  point-of-action guard is still recoverable after the fact.
+
 ### 3.3.0
 
 - **Changed:** the bundled scaffold `mise.toml` now declares task ordering with
