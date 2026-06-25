@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.1.0
+
+- **Fixed:** the `/steer:reference` topic menu omitted `context-hygiene` (the
+  topic added this release) from four hand-maintained surfaces — the always-on
+  `00-router.md` pointer, the `standards` skill's manual-load fallback,
+  `README.md`, and `docs/reference/skills.md`. All four now advertise the full
+  `conventions | traceability | design-sources | context-hygiene` set.
 - **Changed:** **Lean two-layer scaffold (Core + Profile overlay).** The bundled
   scaffold is now organized **additively** instead of "install the flat app
   monorepo, then omit app-only files." `templates/scaffold/` root holds only the
