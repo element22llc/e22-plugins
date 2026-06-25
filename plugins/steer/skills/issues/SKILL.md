@@ -281,9 +281,22 @@ never overridden.
     closed epic with open child features or vice versa, or a `validate`/`done` epic
     with no linked features); merged PRs that left a stale
     `Status`; promoted questions whose issue is closed but whose `Q-NNN` is still
-    `open`. Output is a reconciliation report + proposed actions, confirmed once
-    before any write. `--all` is read-heavy — route all fetches through
-    `/steer:tracker-sync` and say so.
+    `open`; and **contract-less issues — the after-the-fact recovery path for a
+    raw create that bypassed `/steer:tracker-sync`** (the point-of-action
+    `check-issue-create-contract.sh` nudge is best-effort, not a gate). Flag any
+    open issue missing the machine-readable contract: **no `steer:` markers AND no
+    `steer:managed` block** (so neither `steer:kind` nor `steer:source` is set,
+    the issue carries no `source:*` label, and its Type is the unset default).
+    Such an issue is invisible to marker-based dedup (`triage`/`board`) and to
+    every lifecycle check above, so surface it here with the retrofit action —
+    infer kind + labels + Type via `/steer:issues triage` and apply the contract
+    through `/steer:tracker-sync` (markers + derived `source:*` label + Issue
+    Type). **Never invent intent:** retrofit only the machine-readable contract
+    onto the existing human body; do not rewrite or guess the issue's content, and
+    leave a genuinely human-authored issue (one a human typed directly) for
+    `triage` to label rather than treating it as drift. Output is a reconciliation
+    report + proposed actions, confirmed once before any write. `--all` is
+    read-heavy — route all fetches through `/steer:tracker-sync` and say so.
 
 ## Question-reconciliation floor (safe from the first release)
 
