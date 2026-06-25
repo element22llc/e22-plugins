@@ -1,4 +1,4 @@
-<!-- steer:inject-when=has-iac -->
+<!-- steer:inject-when=has-iac|has-apps -->
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk

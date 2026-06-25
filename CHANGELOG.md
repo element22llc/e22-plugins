@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** rule `52-deployment.md` was gated `inject-when=has-iac`, so an
+  app/service repo that deploys via GitHub Actions but has no `/infra` dir never
+  received it — a dangling cross-reference from always-on `10-stack.md`, which
+  tells the agent the promotion / prod-branch-gate rules "live there." The gate
+  is now `has-iac|has-apps`: `inject-when` markers gained `|`-separated **OR**
+  semantics (a rule injects when **any** listed predicate holds), so deployment
+  rules now reach infra **and** app/service repos.
+- **Fixed:** the `tracker-sync` skill `description` advertised a bare `link`
+  operation its body never defines; replaced with the real ops it does
+  (`link-parent`, `link-pr`, `link-related`, `link-blocked-by`).
+- **Fixed:** scaffold `MANIFEST.md` pointed at nonexistent README "migration
+  notes"; dropped the dangling phrase.
+- **Fixed:** scaffold `CLAUDE.md` "New repo?" block omitted `context-hygiene`
+  from the `/steer:reference` topic list — the fifth hand-maintained surface
+  missed by the 3.1.0 menu sweep; now lists all four topics.
+- **Fixed:** always-on `00-router.md` said `/steer:setup` hands off to
+  `/steer:doctor` directly; `setup` actually reaches doctor via `init`/`build`
+  when prerequisites are missing. Reworded the router line to match.
+- **Added:** `check_standards.py` now walks `scaffold/` in reverse — every
+  bundled file must appear in `MANIFEST.md`'s install-map, so a new scaffold file
+  omitted from the map fails CI instead of silently never being installed.
 - **Fixed:** the core bundled scaffold `mise.toml` carried a stale comment block
   instructing consumers to commit a placeholder `mise.lock` and "never delete
   it" — left over from before the placeholder lock was dropped, and a direct path
