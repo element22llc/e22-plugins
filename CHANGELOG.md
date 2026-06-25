@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** make the guided PO build flow the reliable default for a
+  non-technical owner who never types a skill name. `orient-session.sh` now
+  steers deterministically back into `/steer:build` when an in-progress build is
+  detected (a `spec/BUILD-STATUS.md` with an open handoff gate), so a returning PO
+  resumes the flow instead of getting a blank "what do you want to do?"; it falls
+  silent once the build is handed off (every gate box checked). `05-roles.md` now
+  treats build as the PO **default posture** (not an opt-in) and names
+  `/steer:spec` as the plain-language "work on the spec before building" step;
+  `00-router.md` routes a non-technical owner's idea straight to `/steer:build`
+  (bootstrap-inclusive) rather than raw `/steer:setup`.
+- **Fixed:** `check-unmanaged-repo.sh`'s greenfield nudge led a non-technical
+  owner to raw `/steer:init`; it now leads with `/steer:build` (which runs `init`
+  itself) and reframes `init`/`adopt` as the developer/existing-code paths. Added
+  hook-test coverage for both hooks (the suite previously never exercised
+  `check-unmanaged-repo.sh`).
+
 ### 3.2.0
 
 - **Fixed:** rule `52-deployment.md` was gated `inject-when=has-iac`, so an
