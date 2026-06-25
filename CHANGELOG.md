@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:tracker-sync` `field-get` no longer claims native issue fields
+  have "no REST path" — a stale absolute that contradicted the REST write recipe the
+  sibling `field-set` op now documents. `field-get` keeps `gh api graphql` as its
+  read path and points to `field-set` for the REST write.
 - **Fixed:** the native-issue-field vs Projects-board-column trap is now named, and
   PO-directed field seeding has a documented route. When a Project v2 board surfaces
   Priority/Effort/dates, they appear as single-select **columns that look like
