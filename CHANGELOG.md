@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** an Epic tier above features. A new `steer:kind=epic` parent tracking
+  issue groups child features (and, transitively, their tasks/bugs) via native
+  sub-issue links, so a goal spanning several features is one visible
+  `Epic → Feature → Task` hierarchy in a Projects v2 view. `Type=Epic` is set only
+  when the org enables that issue type; otherwise the epic stays a normal issue with
+  the `steer:kind=epic` marker and its Type left unset (capability degradation,
+  reusing the existing `set-type` pattern). Milestones remain release grouping — an
+  orthogonal axis, not the epic aggregator. Adds the `epic` value to the
+  `issue_kind` enum, a new `/steer:issues epic` mode (`--new` / `#E --add`),
+  epic-aware `status`/`board`/`reconcile`, an `epic.md` issue-body template, and the
+  epic lifecycle (`inbox → exploring → in-progress → validate → done`, completion
+  derived from child rollup under PO confirmation). Epics are excluded from
+  `/steer:next` arbitration (you act on their child features). `/steer:roadmap`
+  notes epics are orthogonal to release milestones; `set-type` accepts `Epic` with
+  per-Type-name detection.
 - **Added:** issue-creation contract guard — a new `check-issue-create-contract.sh`
   PreToolUse hook that, in a `system: github` repo, nudges when an agent opens an
   issue with a raw create (`gh issue create`, `gh api … POST …/issues`, a

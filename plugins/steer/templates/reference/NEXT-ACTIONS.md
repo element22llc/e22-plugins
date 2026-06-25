@@ -85,6 +85,11 @@ candidates sit at the **same** level, order them by this lexicographic key
  createdAt, issueNumber)  # oldest first, then #N — a deterministic total order
 ```
 
+**Epics are not candidates.** A `kind=epic` issue is a rollup container, not
+directly actionable work — like `audit-run`, it is excluded from the candidate set
+this key ranks. `/steer:next` acts on an epic's child features/tasks, never on the
+epic itself; the epic surfaces only as the grouping those candidates roll up to.
+
 The native **Priority** issue field (`issue_priority`, `ENUMS.md`) is the primary
 tie-break *within* a level — it **cannot** lift an item across the safety levels
 above (a `Priority: Urgent` backlog item never outranks a level-2 gate or a level-3

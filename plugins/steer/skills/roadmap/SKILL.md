@@ -124,6 +124,11 @@ After resolving the work-set in any writing mode:
 - **Native attributes only.** Writes are Milestone, links, labels, Type, and the
   native Start/Target **date** issue fields — never a Project-*item* planning field
   (Status/Iteration/Size), never mirrored into an issue body.
+- **Milestone = release, not epic.** An epic (a `kind=epic` parent grouping features
+  by goal) is an **orthogonal axis** to the release Milestone (when work ships). This
+  skill groups by Milestone exactly as above; it may *display* epic membership but
+  **never repurposes the Milestone as the epic aggregator** — epic grouping is owned
+  by `/steer:issues epic`.
 - **No fabricated planning data.** Never invent a date, priority, or effort. Dates
   are human-supplied; ordering follows declared dependencies only.
 - **Authorization & confirmation.** Reads (preview) never confirm. The full plan

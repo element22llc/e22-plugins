@@ -1,10 +1,10 @@
 ---
 name: issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
+description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epic grouping, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes ALL GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor). Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
 when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
-argument-hint: "[capture | triage | brainstorm | materialize | decompose | status | board | reconcile] [#issue | feature-id]"
+argument-hint: "[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile] [#issue | feature-id]"
 ---
-<!-- steer:modes capture,triage,brainstorm,materialize,decompose,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
+<!-- steer:modes capture,triage,brainstorm,materialize,decompose,epic,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
 # Drive the GitHub Issues lifecycle for the /spec spine
 
@@ -66,7 +66,8 @@ format (markers, headings, **managed blocks**, idempotency) in
   draft`** (never `approved` — that's a later explicit `/steer:spec approve`),
   link the issue in `> Tracker:`, run `/steer:spec validate` on the feature, and
   present the diff / open a PR. Comment back on the issue with the exact spec
-  path + commit/PR.
+  path + commit/PR. **Features only** — an epic has no `intent.md` and is **not
+  materializable**; group features under an epic with the `epic` mode instead.
 - **`publish-audit [report]`** — take an `/steer:audit` finding set and create/update
   the audit-run parent + selected finding children (see `/steer:audit`); file via
   `/steer:tracker-sync`.
@@ -184,7 +185,33 @@ never overridden.
   links when available; else fall back to `Parent: #N` + `<!-- steer:parent-issue=N -->`
   and a generated checklist in the parent. Each child uses the `technical-task`
   body. `--prototype` is the **only** way to decompose before approval, and those
-  tasks are clearly marked non-production.
+  tasks are clearly marked non-production. **If `#N` is `kind=epic`**, this is the
+  wrong tier — redirect to `/steer:issues epic` (an epic groups *features*; it has
+  no `contract.md` to gate on).
+- **`epic [--new "<title>"] [#E --add #F1,#F2,…] [#F]`** — manage the tier **above**
+  features: a parent tracking issue that groups child features (and, transitively,
+  their tasks) via native sub-issue links, so a goal spanning several features is
+  one visible hierarchy. An epic is a **grouping construct owned by the tracker** —
+  it has **no `intent.md`** and is **not materializable**; its "why" is the rollup
+  of its child features, optionally pointing at a `vision.md` theme. Verbs:
+  - **`epic --new "<title>"`** — create-or-find the epic. **Find before create**
+    (search by `dedupe-key` + semantic title via `/steer:tracker-sync search`, open
+    + closed — never silently reuse a semantic match). Render the `epic` body
+    (`templates/github/issue-bodies/epic.md` — markers + managed block), set
+    `steer:state=inbox`, and set **Type=`Epic` only when the org has it**, else keep
+    `steer:kind=epic` with the Type unset and emit the capability warning (via
+    `/steer:tracker-sync set-type`).
+  - **`epic #E --add #F1,#F2,…`** (alias **`epic #F`** to attach a single feature to
+    a chosen epic) — link existing feature issues as sub-issues of `#E` via
+    `/steer:tracker-sync link-parent` (native sub-issue link, else
+    `steer:parent-issue` marker), and maintain the epic's `## Child features`
+    checklist in its managed block.
+  **Gate:** unlike `decompose`'s contract-readiness gate (a *feature* derivation),
+  an epic only needs **its scope agreed + ≥1 child feature identified** — a
+  deliberately different, product-level bar, so the two tiers never share a
+  derivation. State (`inbox → exploring → in-progress → validate → done`) follows the
+  epic path in `ISSUE-WORKFLOW.md`; completion is the **child rollup** (all children
+  terminal, ≥1 `done`, PO confirms) — the agent proposes `done`, never auto-closes.
 - **`status [#N|feature-id]`** — a unified read-only view: issue state + intent
   status + **contract readiness** (`ready | incomplete | missing`, the derivation
   in `SPEC-FRAMEWORK.md` — never `approved`) + sub-issue progress + blockers. Runs
@@ -196,6 +223,16 @@ never overridden.
   Implementation: 3/4 sub-issues closed
   Preview: available
   Blocking: #134 telemetry
+  ```
+  **When `#N` is `kind=epic`**, render a **child-feature rollup** instead of
+  contract readiness — the linked features, their states, and how many are
+  `done`/`validate` — so the epic's progress is the aggregate of its features. Branch
+  on `steer:kind`; the feature/task shape above is unchanged. Example shape:
+  ```
+  Epic billing-revamp
+  Issue: #98 — In-progress (Type: Epic)
+  Child features: 4 linked — 1 done · 1 validate · 2 in-progress
+  Eligible to close: no (2 features not yet terminal)
   ```
 - **`board [--all]`** — a **read-only** backlog overview: the open issue set as one
   ranked, relationship-aware, hygiene-flagged view. **Never writes.** Reads through
@@ -211,12 +248,16 @@ never overridden.
   - **Relationships** — dependency clusters from native blocked-by edges (and the
     `Related issues` markers where native is unavailable): what blocks what, and any
     `conflicts-with`/`supersedes` pair surfaced for a human. Never auto-resolve.
+    Also show **Epic → Feature → Task** parent/child clusters — these are native
+    sub-issue links, so they render as a real hierarchy in a Projects v2 view by
+    construction (markers only where native sub-issues are unavailable).
   - **Dedup candidates** — likely duplicates by marker (`feature-id`+kind,
     `question-id`, `finding-key`, `dedupe-key`) and semantic title overlap; propose,
     don't merge (close-as-duplicate is a `triage` action).
-  - **Hygiene** — stale `needs:triage`, orphaned sub-issues (no parent), missing
-    **Priority** on `ready-for-dev`, missing kind/Type, and mislabelled items —
-    each with the `triage`/owning action that fixes it. Surfaces work; performs none.
+  - **Hygiene** — stale `needs:triage`, orphaned sub-issues (no parent), **orphaned
+    epics** (an epic that claims `in-progress` or later with zero linked features),
+    missing **Priority** on `ready-for-dev`, missing kind/Type, and mislabelled items
+    — each with the `triage`/owning action that fixes it. Surfaces work; performs none.
   `#N`/`feature-id` scopes to one item's neighborhood; `--all` (default) sweeps open
   issues. It ends with the `## Recommended next actions` block (below).
 - **`bootstrap-labels`** — idempotently create/reconcile the supported label
@@ -236,7 +277,9 @@ never overridden.
     disagreement: referenced issues that no longer exist; closed features whose
     issues are still open (or vice versa); approved specs missing a tracker ref
     (`require_tracker_ref_for_features`); open `spec-drift` issues that no longer
-    reproduce; sub-issues with no parent link; merged PRs that left a stale
+    reproduce; sub-issues with no parent link; **epic↔feature inconsistency** (a
+    closed epic with open child features or vice versa, or a `validate`/`done` epic
+    with no linked features); merged PRs that left a stale
     `Status`; promoted questions whose issue is closed but whose `Q-NNN` is still
     `open`; and **contract-less issues — the after-the-fact recovery path for a
     raw create that bypassed `/steer:tracker-sync`** (the point-of-action
@@ -289,6 +332,8 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 | `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
 | Unresolved `blocking` question on the item | Blocking now | `/steer:questions` |
 | Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline — `/steer:roadmap` |
+| `epic` in `exploring`, child features identified | Recommended | Link them — `/steer:issues epic #E --add …` |
+| `epic` whose child features are all terminal (≥1 `done`) | Human decision required | PO confirms the epic outcome (no command) |
 | Nothing queued | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. Read-only and idempotent —

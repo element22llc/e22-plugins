@@ -68,11 +68,15 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before write, stop on
   a second concurrent change, fail closed on duplicate/malformed blocks).
 - **`comment #N`** — add a comment (e.g. progress, AI synthesis on a human issue).
-- **`set-type #N <Feature|Bug|Task>`** — set the Issue Type via
+- **`set-type #N <Feature|Bug|Task|Epic>`** — set the Issue Type via
   `gh issue edit --type` / MCP. **Capability-degrading:** detect support + the
   configured Type names first; if Issue Types are unavailable or unknown, keep
   the `steer:kind` marker, emit a non-blocking warning, and do **not** add a
-  duplicate `bug`/`feature` label to compensate.
+  duplicate `bug`/`feature` label to compensate. **`Epic` is org-defined and may be
+  absent even when `Feature`/`Bug`/`Task` exist** — detect that *specific* Type
+  name, not just whether Issue Types are on; if `Epic` is missing, keep
+  `steer:kind=epic`, **leave the Type unset** (never substitute `Feature`), warn,
+  and do not invent an `epic` label.
 - **`label #N`** — add/remove labels. The `source:*` label is *derived* from the
   `steer:source` marker; never treat the label as the source of truth.
 - **`set-milestone #N <title>`** — set or clear the issue's native GitHub
@@ -138,6 +142,10 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   than clobbering them. A conflicting existing claim/assignment is reported,
   **never** auto-overridden.
 - **`link-parent #N <parent>`** — native sub-issue link, else `steer:parent-issue`.
+**Tier-agnostic:** the same op links a Feature under an Epic and a Task under a
+Feature — each is one single-parent edge, so an `Epic → Feature → Task` hierarchy
+is built by linking each hop. The marker fallback is single-valued (one direct
+parent per issue), which holds for every hop of the chain.
 - **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR.
 - **`link-related #N <other> <relationship>`** — record a non-hierarchical
   connection between two issues. `<relationship>` is an `issue_relationship` value
