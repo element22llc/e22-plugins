@@ -102,10 +102,11 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   title and due date as they are — never overwrite a value a human edited.
 - **`field-get #N [<field>]`** — read native **issue field** values (Priority,
   Effort, Start/Target date, and any org custom field) for one issue. **Native
-  issue fields are GraphQL-only** — there is no `gh issue` subcommand and no REST
-  path; query via `gh api graphql` (the issue's field-values connection), else the
+  issue fields have no `gh issue` subcommand** — query via `gh api graphql` (the
+  issue's field-values connection), else the
   MCP github tool if it exposes issue fields, else report the capability is
-  unavailable. Read-only; never confirms.
+  unavailable. (Writes also have a REST path — see the `field-set` recipe below.)
+  Read-only; never confirms.
 - **`field-set #N <field> <value>`** — set one native issue field. Resolve the
   field's node id, its **type**, and (for single-selects like **Priority**) the
   option id from the **org field definition** via `gh api graphql`, then call the

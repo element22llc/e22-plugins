@@ -109,7 +109,10 @@ at most one-directionally by a Project Status field.
     `Iteration`): it is *not* a native issue field, so it is edited with
     `gh project item-edit` and `field-set` will not find it. To populate a chosen
     Priority/Effort value (PO seeding, not the escalate-only floor), `/steer:issues`
-    triage and board route the request straight to `field-set`.
+    triage and board route the request straight to `field-set`. `field-set` writes
+    the native field through GraphQL `setIssueFieldValue` (or the equivalent REST
+    `issue-field-values` endpoint) — *not* a GraphQL-only path, despite the Projects
+    columns being read-locked.
 
 ## Context window, compaction, and sessions
 
