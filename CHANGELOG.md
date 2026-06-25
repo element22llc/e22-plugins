@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.3.0
+
 - **Changed:** the bundled scaffold `mise.toml` now declares task ordering with
   `depends` instead of a `run = ["mise run …"]` chain — `dev:setup` → `db:seed`
   → `db:migrate` → `docker:up`, so the chain runs in order and fails fast. The
@@ -60,6 +62,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:spec` as the plain-language "work on the spec before building" step;
   `00-router.md` routes a non-technical owner's idea straight to `/steer:build`
   (bootstrap-inclusive) rather than raw `/steer:setup`.
+- **Added:** the `/steer:build` flow gained an in-flow spec-iteration step — when
+  the PO wants to sharpen a feature's spec before building it (explore edge cases,
+  drive open questions down), the build skill runs `/steer:spec <id>` to iterate
+  `intent.md`/`contract.md` in the same spec-only loop (no code written) and tells
+  the PO plainly they can just say "let's work this out more first" without typing
+  the command (`skills/build/SKILL.md`).
 - **Fixed:** `check-unmanaged-repo.sh`'s greenfield nudge led a non-technical
   owner to raw `/steer:init`; it now leads with `/steer:build` (which runs `init`
   itself) and reframes `init`/`adopt` as the developer/existing-code paths. Added
