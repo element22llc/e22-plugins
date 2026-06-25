@@ -16,7 +16,7 @@ specialized skills below as needed, so you rarely reach past this set.
 
 | Skill | Purpose |
 | --- | --- |
-| `/steer:setup` | One front door for getting a repo onto the standards — detects the `/spec` spine state and routes to greenfield bootstrap, existing-code adoption, or steady-state sync, installing prerequisites first if the toolchain is missing. Thin dispatcher over `/steer:init`, `/steer:adopt`, `/steer:sync`, `/steer:doctor`. |
+| `/steer:setup` | One front door for getting a repo onto the standards — detects the `/spec` spine state and routes to greenfield bootstrap, existing-code adoption, or steady-state sync, installing prerequisites first if the toolchain is missing. Thin dispatcher over `/steer:init`, `/steer:adopt`, `/steer:sync` — which invoke `/steer:doctor` themselves when prerequisites are missing. |
 | `/steer:build` | Guided flow for a non-technical PO: idea → spec → working app → PR. See [Build](../workflows/build.md). |
 | `/steer:spec` | Spec-only brainstorm for a feature — author/iterate `intent.md` (+ `contract.md`), drive open questions, approve. See [Spec](../workflows/spec.md). |
 | `/steer:work` | Execute a GitHub issue end-to-end — validate, claim, branch, implement, test, PR. Add `--reviewed` to wrap execution in independent plan- and code-review gates plus a bounded fix loop (the review-gated path formerly the `deliver` skill) — vetted, not first-draft. See [Work](../workflows/work.md). |

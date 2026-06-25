@@ -63,8 +63,10 @@ Always-on **rules** do not read the marker — they self-gate on filesystem
 **traits** (`has-apps`, `has-compose`, `has-infra`, `has-iac` via the
 `inject-when` mechanism), so the injected rule context always matches what is on
 disk. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
-still gets the infra stack/deployment rules automatically because `/infra`
-exists. The profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
+still gets the infra-stack rule automatically because `/infra` exists. The
+deployment rule reaches it either way: it gates on `has-iac` **or** `has-apps`,
+since any app/service repo deploys — with or without an `/infra` dir. The
+profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
 (an informational `profile` fingerprint) for reporting and overlay decisions.
 
 ## Root housekeeping
