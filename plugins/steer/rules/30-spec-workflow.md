@@ -55,12 +55,10 @@ auto-documented as it goes — seed `/spec/HISTORY.md` and the app guide
 (`/spec/app/`) as features land. `/steer:adopt` is for *un-bootstrapped*
 pre-existing code, not an excuse to skip bootstrap now and reverse-engineer later.
 
-**Solo greenfield can run on trunk.** When one person is both PO and dev pre-MVP,
-`/steer:init` offers **solo trunk mode**: commit straight to `main` — no `feat/*`
-branch, no per-feature PR — until the MVP works, declared in the product `CLAUDE.md`
-(`Delivery mode: solo trunk (pre-MVP)`) and unwound at graduation (MVP works / first
-deploy / second contributor → `/steer:protect`). This relaxes only the branch/PR
-ceremony; the scaffold, spine, tests, and Definition of Done all hold. See Commit autonomy.
+**Solo greenfield can run on trunk** — when one person is both PO and dev pre-MVP,
+`/steer:init` offers **solo trunk mode**. It relaxes only the branch/PR ceremony;
+the scaffold, spine, tests, and Definition of Done all hold. The mechanics, the
+`CLAUDE.md` declaration, and graduation are canonical in Commit autonomy.
 
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →

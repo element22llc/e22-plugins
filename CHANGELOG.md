@@ -16,6 +16,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `mise.lock`, and `/steer:init` / `/steer:adopt` create and commit it on first
   run (`touch mise.lock && mise install && mise lock --platform …`) — never an
   empty placeholder.
+- **Changed:** single-sourced two cross-cutting rule concepts to cut the
+  always-on token and per-change maintenance tax (#164). **solo-trunk** mechanics
+  stay canonical in `45-commit-autonomy`; the full re-explanations in
+  `30-spec-workflow` and `36-issue-first` collapse to a one-line pointer plus the
+  single fact each adds, and `50-definition-of-done` trims its PR-gate exception to
+  a pointer. **prototype-never-waives-scaffold/spine** stays canonical in
+  `30-spec-workflow`; `00-router` keeps the routing imperative but drops the
+  scaffold enumeration and hand-writing argument, pointing to Spec workflow. The
+  `99-end-of-session` checklist cue and `36`'s prototype sentence are kept
+  self-contained by design (acted on in isolation). No behavior change.
 
 ### 3.1.0
 

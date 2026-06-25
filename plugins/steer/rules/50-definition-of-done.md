@@ -12,4 +12,4 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 - [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where `main` is intentionally unprotected and there is no PR gate until graduation (see Commit autonomy).
+- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
