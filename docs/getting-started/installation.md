@@ -23,9 +23,11 @@ set up with the plugin, and the `/steer:<skill>` commands become available.
 !!! warning "Hooks don't fire everywhere — rules may not load automatically"
     `steer` relies on Claude Code's hook lifecycle: the `SessionStart` hook is
     what injects the always-on rules. **Claude Code** (the CLI, the IDE
-    extensions, and the Desktop **Code** tab) runs hooks fully, and **Cowork**
-    runs them too (reconfirm on your build — `SessionStart` hooks had bugs earlier
-    in 2026, since closed). But on the **Desktop *Chat* tab and claude.ai web
+    extensions, and the Desktop **Code** tab) runs hooks fully. **Cowork** runs
+    them too, but it's a no-install sandbox and **best-effort, for PO/knowledge-work
+    only** — do engineering work in Claude Code (reconfirm hooks on your build;
+    `SessionStart` had bugs earlier in 2026, since closed). But on the **Desktop
+    *Chat* tab and claude.ai web
     chat** hooks do **not** run, so the rules are **not** auto-injected and the
     `PreToolUse` hooks (the spec-first/issue-first nudges and the version-pin
     block) do not run. On those surfaces — and as a fallback anywhere the rules

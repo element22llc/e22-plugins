@@ -82,9 +82,13 @@ don't behave the same:
   Desktop **Code** tab — **runs hooks fully**: the always-on rules inject, the
   `PreToolUse` gates run, skills and templates work. This is the supported path.
 - **Cowork** (the *Cowork* tab) is the one chat-family surface where hooks and
-  sub-agents run. Plugin-scoped `SessionStart` hooks had bugs earlier in 2026
-  (since closed) — **reconfirm on your build** before relying on auto-injected
-  rules there.
+  sub-agents run, but it's a **no-install sandbox** and **best-effort, for
+  PO/knowledge-work only** — specs, open-question sweeps, and repo-scoped GitHub
+  triage via the built-in connector. Anything that installs or builds
+  (`init`/`adopt`, docker/mise, the `gh` CLI, the local MCP servers) **doesn't work
+  there**, so **do engineering work in Claude Code instead.** Plugin-scoped
+  `SessionStart` hooks had bugs earlier in 2026 (since closed) — **reconfirm on your
+  build** before relying on auto-injected rules.
 - **The Desktop *Chat* tab and claude.ai web chat do NOT run hooks.** Plugins
   install and **skills work**, but the always-on rules are not auto-injected and
   the `PreToolUse` gates don't run.
