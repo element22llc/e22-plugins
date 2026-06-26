@@ -296,3 +296,39 @@ jobs:
             echo "Linting $f"
             npx --yes @google/design.md lint "$f"
           done <<< "$CHANGED_FILES"
+
+  # `ai-slop` is ADVISORY — scans for low-quality patterns agents leave behind
+  # (undeclared/hallucinated imports, decorative/restating comments, …) and
+  # publishes them to the Security tab as code-scanning annotations. NOT a
+  # required check: `continue-on-error` + the SARIF path mean it never blocks a
+  # PR. Its differentiated value is the `ai-slop/*` rules; the security and
+  # complexity rules overlap with checks the `ci` job already runs (ruff/bandit,
+  # Biome), so `.aislop/config.yml` turns those duplicates down (see that file).
+  # Pinned to an exact version for reproducibility (pre-1.0 tool — bump
+  # deliberately). Promote to a blocking gate only once it has earned trust:
+  # swap `scan` for `aislop ci` (exits non-zero below `ci.failBelow`) and drop
+  # `continue-on-error`. PR-only to keep cost and noise down.
+  ai-slop:
+    name: ai-slop (advisory)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Scan for AI slop (SARIF)
+        run: npx --yes aislop@0.12.1 scan . --sarif > aislop.sarif
+
+      - name: Upload results to code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: aislop.sarif
+          category: ai-slop

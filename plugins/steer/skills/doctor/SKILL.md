@@ -41,6 +41,7 @@ It prints an `os` fingerprint line, then one TAB line per tool —
 | `down` | docker present, daemon not running | start the daemon (§3) |
 | `via-mise` | runtime absent but mise present | one `mise install` provides it (§3) |
 | `unmanaged` | runtime absent and mise absent | install mise first, then `mise install` |
+| `shadowed` | runtime present but a non-mise copy (nvm/asdf/volta/fnm/system) is masking mise's pinned one | advisory — surface it and fix activation (§3) |
 | `n/a` | not used by this repo's stack | nothing |
 
 The `detail` column carries requiredness for `docker` (`required (compose.yaml)`
@@ -73,6 +74,14 @@ commands).
   (and `cd infra && mise install` if they'll touch infra); it provisions every
   pinned runtime. Then verify each `mise.lock` gained real `[[tools.*]]` entries
   (see `/steer:init` step 4) and commit it.
+- **`node` / `pnpm` / `uv` `shadowed`** — mise's pinned runtime exists but a
+  global version manager (the `detail` names it: nvm/asdf/volta/fnm) or a
+  system/Homebrew copy is ahead of it on `PATH`, so bare `pnpm`/`node` run the
+  wrong version (this is what silently produces a `node_modules` built by the
+  wrong pnpm). Advisory, not a blocker. Fix: ensure `eval "$(mise activate …)"`
+  is sourced **after** the other manager in the rc file (mise must load last to
+  win `PATH`), open a fresh shell, and confirm `which <tool>` now resolves under
+  `…/mise/…`. Until then, run package-manager commands via `mise exec -- <tool>`.
 - **`git` missing** — macOS: `xcode-select --install`; Debian/Ubuntu:
   `sudo apt-get install git` (a sudo command: present it, let the user run it).
 - **`docker` missing** — **manual** (GUI app, can't be scripted): point them to
@@ -116,6 +125,7 @@ final scan.
 | A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (§3), then re-scan |
 | `os` = `windows` (Git Bash live) | Complete | Supported — hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan — or WSL2 for CLI/IDE dev |
+| A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (§3) — not a hard blocker, but the wrong, un-pinned version is in use |
 | All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up — `/steer:init` (dev) or `/steer:build` (PO) |
 | All green, repo already set up | Recommended | `mise run dev:setup`, then start work |
 | All green, nothing else pending | Complete | `No action is currently required.` |

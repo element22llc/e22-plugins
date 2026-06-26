@@ -1,0 +1,25 @@
+# aislop — AI-slop quality gate config (consumed by the advisory `ai-slop` CI job).
+#
+# steer already gates correctness/style through the `ci` job (ruff/bandit for
+# Python, Biome for Node) and dependency CVEs through Dependabot/`pnpm audit`.
+# aislop's differentiated value is its `ai-slop/*` rules — the patterns those
+# tools don't catch (hallucinated imports, decorative/restating comments). So we
+# keep `ai-slop/*` on and turn DOWN the rules that would only double-report
+# findings you already gate elsewhere. Re-enable any of these if you'd rather
+# aislop own that check; remove this file to run every rule at its default.
+
+rules:
+  # Overlaps with ruff/bandit (Python) and Biome (Node) — already enforced by `ci`.
+  security/python-exec: "off"
+  complexity/function-too-long: "off"
+  complexity/deep-nesting: "off"
+  code-quality/duplicate-block: "off"
+  # Overlaps with Dependabot / `pnpm audit`.
+  security/vulnerable-dependency: "off"
+
+# Promote the advisory job to a blocking gate by switching it to `aislop ci`
+# (see .github/workflows/ci.yml). `ci` exits non-zero when the score drops below
+# this threshold. Left commented while the gate is advisory; uncomment + tune
+# when you make it required.
+# ci:
+#   failBelow: 70
