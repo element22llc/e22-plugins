@@ -28,6 +28,10 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     ``standards`` skill's rule list, CROSS-SURFACE.md's rule count + SessionStart
     hook roster) stay in sync with what's actually on disk — so a new rule/skill
     can't silently desync the docs the way it did before this guard existed.
+11. A skill that is ``user-invocable: false`` is never presented to a human as a
+    bare imperative (``Run /steer:X``) in a user-facing surface (SessionStart hook
+    notices, installed scaffold/spec docs) — typing it is rejected by the harness,
+    so such surfaces must route to a callable front door or attribute it to Claude.
 
 Usage::
 
@@ -44,7 +48,7 @@ import re
 import sys
 from pathlib import Path
 
-from check_plugin import PLUGIN_ROOT
+from check_plugin import PLUGIN_ROOT, parse_frontmatter
 
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
@@ -752,6 +756,78 @@ def check_payload_debranded(errors: list[str]) -> None:
                     )
 
 
+# --- check 11: non-callable skills are never surfaced as a user imperative ---
+
+# A skill declared `user-invocable: false` is reachable only when the model
+# invokes it (a front door routes to it). A user who *types* `/steer:<that-skill>`
+# is rejected by the harness ("This skill can only be invoked by Claude"). So any
+# surface a human reads as a to-do — a SessionStart hook notice, or the
+# human-readable docs installed into a managed repo — must not present such a skill
+# as a bare imperative ("Run /steer:X"). Either route the user to a callable front
+# door, or attribute the action to Claude. Guards against the regression in #219;
+# generalizes to whatever set is `user-invocable: false` at any given time.
+
+_IMPERATIVE_CUE = re.compile(r"\b(?:run|type|use)\b", re.IGNORECASE)
+
+
+def _noncallable_skills() -> set[str]:
+    out: set[str] = set()
+    for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        fm, _ = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        if fm and fm.get("user-invocable") is False:
+            out.add(skill_dir.name)
+    return out
+
+
+def _user_facing_surfaces() -> list[Path]:
+    """Files whose text a human reads as instructions: SessionStart hook notices
+    (their stdout is shown to the user) and the docs installed into a repo."""
+    surfaces: list[Path] = []
+    for name in _sessionstart_hook_basenames():
+        surfaces.append(PLUGIN_ROOT / "hooks" / name)
+    surfaces.append(PLUGIN_ROOT / "templates/scaffold/README.md")
+    surfaces.append(PLUGIN_ROOT / "templates/scaffold/CLAUDE.md")
+    surfaces.extend(sorted((PLUGIN_ROOT / "templates/spec").glob("*.md")))
+    return [p for p in surfaces if p.is_file()]
+
+
+def _output_blob(path: Path) -> str:
+    """Collapse a file to one whitespace-normalized string for proximity scanning.
+    A hook splits a single notice across many `printf` calls, so a line-based scan
+    would miss a verb and its `/steer:X` token landing on different lines — join
+    first. For shell hooks, drop whole-line comments (`# …`): they are not emitted
+    to the user, so a `# /steer:sync runs on its own branch` note is not output."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if path.suffix == ".sh":
+        lines = [ln for ln in lines if not ln.lstrip().startswith("#")]
+    return re.sub(r"\s+", " ", " ".join(lines))
+
+
+def check_noncallable_imperatives(errors: list[str]) -> None:
+    noncallable = _noncallable_skills()
+    if not noncallable:
+        return
+    alt = "|".join(re.escape(s) for s in sorted(noncallable))
+    ref_re = re.compile(rf"/steer:({alt})(?![a-z-])")
+    for path in _user_facing_surfaces():
+        blob = _output_blob(path)
+        for m in ref_re.finditer(blob):
+            window = blob[max(0, m.start() - 80) : m.start()]
+            # A bare imperative ("Run /steer:X") traps the user; an action
+            # attributed to Claude ("ask Claude to run /steer:X") does not.
+            if _IMPERATIVE_CUE.search(window) and "laude" not in window:
+                snippet = blob[max(0, m.start() - 40) : m.start() + 30].strip()
+                errors.append(
+                    f"{path}: '/steer:{m.group(1)}' is presented as a user "
+                    f"imperative, but that skill is user-invocable: false — route "
+                    f"users to a callable front door, or attribute it to Claude. "
+                    f"Near: …{snippet}…"
+                )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -770,6 +846,7 @@ def run_checks(errors: list[str]) -> None:
     check_authorization(errors)
     check_scaffold_version_copies(errors)
     check_payload_debranded(errors)
+    check_noncallable_imperatives(errors)
 
 
 def main() -> int:

@@ -1,6 +1,5 @@
 ---
 name: roadmap
-user-invocable: false
 description: "Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work (target features, or a spec-gap surfaced by /steer:audit spec) into GitHub issues grouped under release Milestones with due dates. A thin orchestrator: it delegates issue creation to /steer:issues, gap detection to /steer:audit spec, and routes ALL GitHub I/O through /steer:tracker-sync. The issue + /spec stay canonical; the Project is a derived view. It proposes a dependency-ordered milestone plan and never fabricates dates."
 when_to_use: >-
   Use to lay out where the product is going on a timeline — when asked for a

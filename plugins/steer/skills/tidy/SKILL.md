@@ -1,6 +1,5 @@
 ---
 name: tidy
-user-invocable: false
 description: Sweep loose files out of the repo root into their correct home — source/research materials (incl. spec/requirements PDFs and docs) to /spec/reference, diagrams to /spec/design. Moves confidently-classified strays immediately; proposes renames and deletes and ambiguous cases for a yes.
 when_to_use: Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
 ---

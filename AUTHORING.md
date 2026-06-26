@@ -73,13 +73,16 @@ matrix):
   `Bash(git add *)`, `Bash(git commit *)`, etc. Keep `git push`/PR creation
   prompt-gated (Rule 45 — commits autonomous, push/PR gated).
 - **Tier 3 — hidden from the slash menu** (`user-invocable: false`): still
-  model-callable, just not advertised as a front door. Two reasons to hide:
-  *gateways* called by other skills (`tracker-sync`, `spec-scaffold`), and
-  *front-door-subsumed* skills reached through a parent (`init`/`adopt`/`sync`/
-  `doctor` via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via
-  `/steer:issues`; `questions` via `/steer:spec`/`/steer:issues`; the merged
-  `reference` loader). Visibility is orthogonal
-  to read-only/side-effecting tier — a hidden skill can still be Tier 1 or Tier 2.
+  model-callable, just not in the menu. Reserved for *internal gateways* a parent
+  skill always drives with context a user can't supply by hand — `tracker-sync`
+  (GitHub gateway, called with subcommands by `issues`/`work`) and `spec-scaffold`
+  (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`).
+  The specialized skills reached through a front door (`init`/`adopt`/`sync`/`doctor`
+  via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via `/steer:issues`;
+  `questions` via `/steer:spec`/`/steer:issues`; the `reference` loader) stay
+  **directly invocable** — a front door just auto-routes to them, so a user is never
+  told to type something the harness then rejects. Visibility is orthogonal to
+  read-only/side-effecting tier — a hidden skill can still be Tier 1 or Tier 2.
 
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the
 skill — not inlined into the SKILL.md.
@@ -102,13 +105,17 @@ why it is **not**:
 1. **a mode of an existing skill** — a new verb on a skill that already owns the
    area (e.g. `audit [code|spec]`, `work [--reviewed]`), declared via
    `argument-hint` + a `<!-- steer:modes … -->` marker; or
-2. **a hidden delegate** — `user-invocable: false`, reached through a front door
-   (add the hand-off prose to the parent and a routing line to `00-router.md`); or
+2. **a specialized skill reached through a front door** — directly invocable but
+   kept out of the router intent table, with a front door that auto-routes to it
+   (add the hand-off prose to the parent and a routing line to `00-router.md`).
+   Mark it `user-invocable: false` only if it is a true *internal gateway* a parent
+   always drives with context the user can't supply (`tracker-sync`,
+   `spec-scaffold`); or
 3. **detected and routed** — folded behind a dispatcher like `/steer:setup` that
    picks the path from repo state rather than asking the user to pick a skill.
 
-Default to a mode or a hidden delegate. Add a front door only when the intent is
-genuinely top-level and maps to no existing owner.
+Default to a mode or a front-door-routed specialized skill. Add a front door only
+when the intent is genuinely top-level and maps to no existing owner.
 
 ## Rule numbering
 

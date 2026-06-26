@@ -14,7 +14,7 @@ holds only product-specific context.
 > Non-technical PO? Type **`/steer:build`** to go from idea to a working local
 > app — it runs the first-run setup for you.
 >
-> On-demand helpers from the plugin: `/steer:spec-scaffold <id>` (new feature
+> On-demand helpers from the plugin: `/steer:spec` (new feature
 > spec), `/steer:adr <slug>` (architecture decision), and
 > `/steer:reference [conventions|traceability|design-sources|context-hygiene]`
 > (full reference prose). If the plugin isn't installed, your teammate will be prompted to install

@@ -40,7 +40,8 @@ plugins/steer/
 │                                   #            spec, issues, tracker-sync, work, adr,
 │                                   #            audit, sync, questions, next, tidy, standards,
 │                                   #            protect, report, roadmap
-│                                   # (front doors are user-invocable; the rest are
+│                                   # (all are user-invocable except the internal
+│                                   #  gateways spec-scaffold + tracker-sync, which are
 │                                   #  user-invocable:false — reached via a front door)
 │                                   # (no commands/ — see "invocation syntax" below)
 └── templates/

@@ -30,9 +30,8 @@ specialized skills below as needed, so you rarely reach past this set.
 
 ## Reached through a front door
 
-`user-invocable: false` — hidden from the slash menu so the front doors stay
-obvious, but still model-callable; you may invoke them directly when an intent maps
-cleanly to one. Each is reached through the front door noted.
+Directly invocable, but a front door auto-routes to each, so you rarely call one
+by name. Each is reached through the front door noted.
 
 | Skill | Reached via | Purpose |
 | --- | --- | --- |

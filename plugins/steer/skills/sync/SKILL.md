@@ -1,6 +1,5 @@
 ---
 name: sync
-user-invocable: false
 description: Bring an already-bootstrapped managed repo up to date with the current plugin — update the plugin, apply pending structural migrations from the ledger (renames/moves the additive reconciliation can't express), reconcile the materialized spec spine + scaffold against the current templates, repair missing or mis-wired capability-critical scaffold (plugin enablement, in-CI loading, version-pin enforcement, drift gate, branch-protection), re-stamp /spec/.version, and land a PR. Supports a read-only --check mode. Read-then-propose, never clobbers, never commits to main.
 when_to_use: 'Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, when a repo adopted before a capability existed is missing the scaffold/wiring that enables it, or when asked to "sync to the latest standards / plugin version". Pass --check for a read-only capability + drift report with no branch or PR.'
 ---
