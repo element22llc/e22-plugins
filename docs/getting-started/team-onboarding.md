@@ -37,9 +37,11 @@ Both roles install the plugin the same way, once, in Claude Code:
 Full details and the surface caveat live in [Installation](installation.md).
 
 If you're a **PO** planning to use [`/steer:build`](../workflows/build.md), you
-also need **Docker Desktop** installed and a supported machine (**macOS, Linux,
-or Windows via WSL2**). Claude drives every other tool for you — you don't install
-anything else.
+also need **Docker Desktop** installed and a supported machine — **macOS, Linux,
+or Windows**. On Windows, the **Claude Desktop Code tab** needs only
+[Git for Windows](windows-setup.md) (builds run there too — no WSL2); CLI/IDE
+users develop in WSL2. See [Windows setup](windows-setup.md). Claude drives every
+other tool for you — you don't install anything else.
 
 !!! warning "Rules may not load automatically"
     On **Claude Cowork and the desktop app** the `SessionStart` hook does not

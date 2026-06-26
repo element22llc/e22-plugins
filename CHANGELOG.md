@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** Windows support is now **surface-aware** — native Windows + Git for
+  Windows is a first-class path, **no WSL2 required**. `/steer:doctor` no longer
+  treats `os = windows` as an unsupported host: when Git Bash is live it confirms
+  the setup (the **Claude Desktop Code tab** runs steer's `sh`-invoked hooks and
+  builds locally there — add Docker Desktop for services), and when no POSIX shell
+  is found it points to **Git for Windows** for the Desktop path or **WSL2** for
+  CLI/IDE development. The `Stack` rule's blanket "Windows → develop in WSL2" is
+  reworded to that split. New `docs/getting-started/windows-setup.md` (in nav),
+  cross-linked from `installation.md` and `team-onboarding.md`.
+
 - **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
   in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
   read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and

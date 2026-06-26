@@ -41,6 +41,14 @@ set up with the plugin, and the `/steer:<skill>` commands become available.
     See [Known limitations](../reference/known-limitations.md) for the full list
     of where this matters.
 
+!!! note "Windows: give the hooks a shell"
+    steer's hooks are invoked via `sh`, which native Windows lacks. On the
+    **Claude Desktop Code tab**, install
+    [Git for Windows](https://gitforwindows.org/) and that's the whole setup —
+    hooks fire and `/steer:build` builds locally (add Docker Desktop if the repo
+    runs services); **no WSL2 needed**. If you work through the **CLI or an IDE**,
+    use **WSL2** instead. Full matrix: [Windows setup](windows-setup.md).
+
 ## Bootstrapping a repo
 
 Run **[`/steer:setup`](../workflows/index.md)** — it detects the repo state and
