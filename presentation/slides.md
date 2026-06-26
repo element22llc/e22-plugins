@@ -229,6 +229,100 @@ Code; if it's an Excel/PPT/doc, it's Cowork. Same underlying Claude, two surface
 
 ---
 
+# "But Cowork *can* write code…"
+
+<div class="text-sm opacity-60 mb-3">It can — and it'll even run. That's not the same as <i>optimal</i>. Here's the documented why.</div>
+
+<div class="grid grid-cols-3 gap-4">
+
+<div v-click class="p-4 rounded-xl border border-rose-400/30 bg-rose-400/5">
+
+### 🔒 No-install sandbox
+Cowork runs in an Anthropic-managed, locked-down Linux VM. You **can't install** `docker`, `mise`, language toolchains or `gh` — so the real **build / test / CI** flow can't run.
+
+</div>
+
+<div v-click class="p-4 rounded-xl border border-amber-400/30 bg-amber-400/5">
+
+### 🔌 GitHub is connector-only
+The plugin's MCP doesn't carry over. GitHub works **only** via the built-in connector — **repo-scoped**, no `gh` fallback. Org-level Issue Types & fields are out of reach.
+
+</div>
+
+<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
+
+### 🪧 Best-effort, PO-only
+`steer` classes Cowork as **knowledge-work** and injects a lean ruleset — the code/test/deploy rules are deliberately omitted. **Engineering belongs in Claude Code.**
+
+</div>
+
+</div>
+
+<div v-click class="mt-6 text-center text-lg">
+
+Cowork is a <b>great PO surface</b> — specs, docs, triage. But the engineering loop needs a toolchain its sandbox <b>can't host</b>.
+
+</div>
+
+<div class="abs-bl m-4 text-xs opacity-40">Source: steer docs → Known limitations (validated June 2026)</div>
+
+<!--
+The point of this slide: "it works" ≠ "it's the right tool." These three are
+ENVIRONMENT boundaries, documented in known-limitations.md, not opinions. The
+no-install sandbox is the big one — no mise/docker/gh means no real build, no
+test run, no CI gate. GitHub is connector-only and repo-scoped. And steer itself
+treats Cowork as PO/knowledge-work (Tier 3). Next slide: we actually measured it.
+-->
+
+---
+
+# We measured it — same app, same plugin
+
+<div class="text-sm opacity-60 mb-3">
+<code>build123d Studio</code> built twice: once in <b>Cowork</b>, once in <b>Claude Code</b>. <b><span class="accent">steer was enabled in both.</span></b> Fair fight.
+</div>
+
+<div class="cmp">
+
+| | 💼 **Cowork** | 🛠️ **Claude Code** |
+|---|---|---|
+| **Git history** | <span class="bad">1 dump commit</span> | <span class="good">13 commits: spec → ADR → build</span> |
+| **Structure** | <span class="bad">31 files, one flat folder</span> | <span class="good">128 files, proper monorepo</span> |
+| **Spec spine** | <span class="bad">✗ none</span> | <span class="good">✓ vision · contracts · tracker</span> |
+| **Decisions (ADR)** | <span class="bad">✗ none</span> | <span class="good">✓ stack decision recorded</span> |
+| **Tests** | <span class="bad">✗ 0</span> | <span class="good">✓ 8 test files</span> |
+| **Dependencies** | <span class="bad">vendored <code>three.min.js</code> dumps</span> | <span class="good">locked: <code>uv.lock</code> · <code>pnpm-lock</code></span> |
+| **CI / PR flow** | <span class="bad">✗ none</span> | <span class="good">✓ CI · PR template · gates</span> |
+
+</div>
+
+<div v-click class="mt-4 text-center text-lg">
+
+Both shipped a <b>running app</b>. Only Claude Code shipped one that's <span class="accent">specced, tested and reviewable</span> — because only Claude Code could run the toolchain that gets you there.
+
+</div>
+
+<style>
+.accent { color: #38bdf8; }
+.cmp table { font-size: 0.82rem; width: 100%; }
+.cmp th, .cmp td { padding: 5px 10px; }
+.cmp td:first-child { opacity: 0.7; }
+.good { color: #34d399; }
+.bad { color: #fb7185; }
+</style>
+
+<!--
+This is the empirical backstop for the previous slide. Same app, same steer
+plugin enabled on both branches (benchmark-cowork vs feat/bootstrap-build123d-studio
+in the steer-plugin-test repo) — so this is NOT "Cowork didn't have the standards."
+It did. The difference is the environment: Cowork's sandbox couldn't run the build/
+test/git workflow, so it produced one big dump of a flat app with zero tests and
+vendored min.js files. Claude Code walked the full spec→issues→work→PR loop. The
+honest takeaway: Cowork "works," but optimal engineering output needs Claude Code.
+-->
+
+---
+
 # You set how hands-on it is
 
 <div class="text-sm opacity-60 mb-4">An autonomy dial, not all-or-nothing — pick the oversight level per task</div>
