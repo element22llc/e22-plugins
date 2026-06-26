@@ -816,6 +816,11 @@ patterns + anti-patterns prose: run `/steer:reference conventions`.
   dodge an error. *(Default: `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
   `.terraform.lock.hcl` — and mise only writes `mise.lock` if the file already
   exists, so restore a missing one first.)*
+- **Every import resolves to a declared dependency** — anything you import is
+  added to the manifest (and lockfile) in the same change, before you finish; a
+  plausible-looking package name that isn't declared is a hallucinated
+  dependency, not a working import, and breaks the moment the code runs in a
+  clean environment. *(Default: `package.json`; Python: `pyproject.toml`.)*
 
 
 ## Output discipline — earn every line

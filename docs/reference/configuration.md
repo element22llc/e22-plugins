@@ -36,7 +36,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-size.md` | Change-size model. |
-| `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced. |
+| `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency. |
 | `87-output-discipline.md` | Earn every line — comments are the exception, responses stay tight. |
 | `90-design-sources.md` | Design sources & UI. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
