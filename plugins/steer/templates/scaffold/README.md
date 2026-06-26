@@ -65,7 +65,10 @@ A developer reviews everything before it becomes the official version.
 brew install mise                          # macOS
 # See https://mise.jdx.dev/getting-started.html for other platforms
 
-# Activate mise in your shell; add this to ~/.zshrc or ~/.bashrc
+# Activate mise in your shell; add this to ~/.zshrc or ~/.bashrc.
+# IMPORTANT: put this AFTER any nvm/asdf/volta/fnm setup in the rc file — whichever
+# loads last wins PATH, and mise must win or bare `pnpm`/`node` run a global version
+# instead of the pinned one (`which pnpm` should resolve under …/mise/…).
 eval "$(mise activate zsh)"
 
 # Per repo
@@ -78,12 +81,15 @@ mise run dev:setup                         # local env in one command: Docker se
                                            # migrations applied, dev data seeded (idempotent —
                                            # rerun anytime; needs Docker running)
 
-# Node apps/packages — pnpm is the default package manager
-pnpm install
-pnpm dev
+# Node apps/packages — pnpm is the default package manager. `mise run dev:setup`
+# already syncs deps via mise's [deps] auto-install, so a manual install is
+# usually unneeded; when you do install, route it through mise so it uses the
+# PINNED pnpm, never a global/nvm copy:
+mise exec -- pnpm install
+pnpm dev                        # bare is fine once mise is activated (see above)
 
 # Python apps/packages — uv is the default
-uv sync
+mise exec -- uv sync
 uv run <your-dev-command>
 ```
 
