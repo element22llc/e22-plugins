@@ -78,6 +78,15 @@ resuming once the build is handed off — every box in its handoff gate checked.
     PR. Either way the productionization brief still applies, and merge/deploy stay
     human-gated.
 
+!!! note "What the dev reviewer inherits"
+    A v0 hand-off is not just code. As it scaffolds the stack and builds the UI,
+    `/steer:build` keeps the root project docs current — `ARCHITECTURE.md` (the
+    as-built stack and apps/packages map), `DESIGN.md` (the real visual identity),
+    and `apps/README.md` — and a doc-reconciliation step before the hand-off
+    confirms none are left as template stubs. The
+    [Living docs](../reference/configuration.md) rule makes this the same in-flight
+    upkeep across `/steer:init` and [`/steer:work`](work.md).
+
 ## Relationship to other skills
 
 - `/steer:build` is the **build** path; [`/steer:spec`](spec.md) is its

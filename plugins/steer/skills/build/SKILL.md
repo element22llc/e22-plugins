@@ -101,7 +101,15 @@ on the next `/steer:build` run.
    stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
    `/steer:init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
    discipline). Draft the initial stack ADR yourself via `/steer:adr` — the PO
-   approves intent, not ADR prose.
+   approves intent, not ADR prose. **This is the change that establishes the
+   stack and layout, so fill the root living docs in it** (Living-docs rule):
+   populate `ARCHITECTURE.md` — the tech-stack table from `mise.toml` /
+   `package.json` / `compose.yaml`, and the apps/packages map from the real
+   layout (every `apps/*` and `packages/*` you just created) — and edit
+   `apps/README.md` so it no longer claims the folder "starts empty" once a real
+   app exists. These are doc upkeep applying a decision already made, not new
+   decisions — no PO sign-off, and the PO never sees them (they're for the dev
+   reviewer).
 6. **Build feature by feature.** Who *owns implementation* depends on whether this
    repo is GitHub-adopted (`/spec/tracker.md` declares `system: github`):
 
@@ -135,6 +143,12 @@ on the next `/steer:build` run.
      the handoff framing (step 10); `work` owns execution. Do **not** branch,
      implement, or open PRs yourself in this mode, and `work` must **not**
      re-enter `/steer:build` (no recursion) — drive one slice at a time.
+
+   In **either** mode, as you build UI seed and grow the root `DESIGN.md` from
+   the visual identity you actually implement — swap the placeholder product
+   name and `#000000` colors for the product's real name and tokens, and
+   promote a token or component once the same choice recurs in 3+ places
+   (`Design sources` rule). Don't leave the stub for the dev reviewer.
 7. **Respect the PO-mode guardrails.**
    - **Never deploy** (`pnpm deploy:*`), **never touch `/infra`**, and
      **never use real secrets or real third-party accounts** — generate
@@ -204,8 +218,15 @@ on the next `/steer:build` run.
     proposing it: seed the app guide (`/spec/app/README.md` — how to use the
     app, workflows, roles, in the PO's plain language, from the demo-validated
     intents) and append the build to `/spec/HISTORY.md` (what was built, why,
-    requested by the PO, refs to the intents and the PR). The dev PR review is
-    the unchanged gate: it merges to `main` as v0 only with a dev's approval.
+    requested by the PO, refs to the intents and the PR). **Then reconcile the
+    root living docs as a handoff backstop:** confirm `ARCHITECTURE.md`,
+    `DESIGN.md`, and `apps/README.md` reflect the built v0 and carry no leftover
+    template placeholders — the `[e.g. Node]` stack-table cells and `[web]` /
+    `[core]` map rows, the `#000000` colors and placeholder product name in
+    `DESIGN.md`, the "starts empty" `apps/README.md` line. Filling these in step 5/6 is
+    the rule; this is the catch-all so a stub never reaches the dev reviewer. The
+    dev PR review is the unchanged gate: it merges to `main` as v0 only with a
+    dev's approval.
 
 ## Recommend the next action
 
