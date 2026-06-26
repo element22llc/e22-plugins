@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** SessionStart hooks and other surfaces told users to "Run
+  `/steer:questions`" (and `/steer:roadmap`, `/steer:init`, …) even though those
+  skills were `user-invocable: false` — typing them was rejected by the harness
+  (#219). The eight skills a user legitimately starts directly — `init`, `adopt`,
+  `sync`, `questions`, `roadmap`, `doctor`, `tidy`, `reference` — are now
+  **user-invocable** (a front door still auto-routes to them, so the slash menu
+  stays intent-led). Only the two true internal gateways a parent always drives
+  with context the user can't supply — `tracker-sync` and `spec-scaffold` — stay
+  `user-invocable: false`; their stray user-facing mentions now route to a callable
+  front door (`/steer:spec`). A new `check_standards.py` gate fails CI if any
+  `user-invocable: false` skill is presented to a human as a bare imperative in a
+  user-facing surface (hook notices, installed scaffold/spec docs). Copilot prompt
+  files are generated for the eight newly-invocable skills; router/AUTHORING/README
+  docs updated to match.
+
 - **Changed:** Windows support is now **surface-aware** — native Windows + Git for
   Windows is a first-class path, **no WSL2 required**. `/steer:doctor` no longer
   treats `os = windows` as an unsupported host: when Git Bash is live it confirms

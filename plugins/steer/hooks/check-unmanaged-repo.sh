@@ -84,7 +84,7 @@ printf 'are writing the code; little or no app exists yet) → run **`/steer:ini
 printf 'sets up the `/spec` spine (`vision.md`, `users.md`, `glossary.md`, '
 printf 'action history, tracker, app guide), `CLAUDE.md`, and the repo '
 printf 'scaffolding from the plugin'"'"'s bundled scaffold, then drives spec-first: each '
-printf 'feature through **`/steer:spec-scaffold`** before its code, the initial '
+printf 'feature through **`/steer:spec`** before its code, the initial '
 printf 'stack recorded via **`/steer:adr`**.\n'
 printf -- '- **Reverse-engineering an existing app** (substantial code already '
 printf 'here, not written this session) → run **`/steer:adopt`**. It reconstructs '

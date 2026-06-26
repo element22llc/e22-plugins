@@ -75,9 +75,9 @@ number — routes to `/steer:work`, which find-or-creates the issue and then
 implements. Pure backlog management (capture / triage / brainstorm / decompose /
 status, with no implementation this turn) routes to `/steer:issues`.
 
-**Specialized skills, reached through a front door.** These do real work but are
-hidden from the slash menu so the front doors stay obvious — you may still invoke
-them directly when an intent maps cleanly to one:
+**Specialized skills, normally reached through a front door.** These do real work
+but sit outside the intent table above. Each is directly invocable, but a front
+door auto-routes to it, so you rarely call one by name:
 
 - **`/steer:setup`** detects and hands off to `/steer:init` (greenfield), `/steer:adopt`
   (existing code), or `/steer:sync` (steady-state update/repair) — which invoke
