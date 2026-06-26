@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Scaffold fix:** the bundled `pnpm-workspace.yaml` now sets
+  `confirmModulesPurge: false`. `mise deps` runs `pnpm install` non-interactively
+  (no TTY), so whenever pnpm needed to rebuild `node_modules` from scratch — e.g.
+  it was first created by a stray global pnpm of a different major than the
+  mise-pinned one, or the store version changed — it aborted with
+  `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` instead of prompting, breaking
+  `mise deps` on a fresh checkout. Auto-confirming lets the deps provider
+  self-heal and converge `node_modules` onto the mise-pinned pnpm. The same file
+  also gained a comment explaining pnpm 11's `minimumReleaseAge` supply-chain
+  default (`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`) and how to regenerate a
+  lockfile pinned under an older pnpm — both surface through `mise deps` because
+  it auto-runs `pnpm install` before every task.
 - **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
   in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
   read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and
