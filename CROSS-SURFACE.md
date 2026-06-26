@@ -17,8 +17,9 @@ behave the same. The headline, validated against current docs and changelog:
 
 - **Support is tiered ([§3](#3-support-policy--per-surface-matrix)).** Targeted:
   **Claude Code** — the CLI and IDE extensions (VS Code, JetBrains). Intended: the
-  Claude Desktop **Code tab** and **Cowork**. Best-effort: **the Chat tab +
-  claude.ai web chat.**
+  Claude Desktop **Code tab** (full Claude Code engine). Best-effort: **Cowork**
+  (PO/knowledge-work only — engineering work is **not** supported there; use Claude
+  Code) and **the Chat tab + claude.ai web chat** (skills only).
 - **The hook-driven core (always-on rules + gates) runs wherever Claude Code runs**
   — including the Claude Desktop **Code tab**, which shares the CLI engine.
 - **Cowork is the _one_ chat-family surface where hooks run** — Anthropic's docs
@@ -65,26 +66,33 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
   to the CLI). Full engine: hooks, always-on rules, gates, skills, and MCP all
   work. Regressions here are **bugs we fix**.
 - **Tier 2 — Intended (supported, not gated per release).** The Claude Desktop
-  **Code tab** ("Claude Code Desktop") and **Cowork**. The Code tab is full Claude
-  Code (shared engine), so hooks / rules / gates / skills / MCP all work — we just
-  don't run it in the per-release test matrix. **Cowork** is, per Anthropic's docs,
-  the one chat-family surface that runs hooks + sub-agents; the open caveats are
-  whether *plugin-scoped* `SessionStart` fires (see
-  [§4](#4-where-the-hook-layer-runs)) — reconfirm before relying on auto-injected
-  rules — and that **Cowork is a no-install sandbox** that doesn't read the plugin
-  `.mcp.json`, so the shipped MCP servers don't work there; GitHub access needs the
-  **built-in connector** (see [§4a](#4a-cowork-is-a-no-install-sandbox)).
-- **Tier 3 — Best-effort.** The Claude Desktop **Chat tab** and **claude.ai web
-  chat**. Plugins install and the portable nucleus (skills + MCP) works; **hooks
-  and sub-agents are grayed out** — no always-on rules, no gates. Use
-  `/steer:standards` to load rules by hand. No per-release testing commitment.
+  **Code tab** ("Claude Code Desktop"). It is full Claude Code (shared engine), so
+  hooks / rules / gates / skills / MCP all work — we just don't run it in the
+  per-release test matrix. Regressions here we fix; we just don't pre-verify each
+  release on it.
+- **Tier 3 — Best-effort.** Three surfaces, none in the per-release test matrix:
+  - **Cowork — PO/knowledge-work only.** Cowork *does* run hooks + sub-agents (the
+    one chat-family surface that does, per Anthropic's docs — reconfirm
+    *plugin-scoped* `SessionStart` on your build, [§4](#4-where-the-hook-layer-runs)),
+    so a PO opening a non-code folder gets the lean **knowledge-work** ruleset and
+    the PO-facing skills, and repo-scoped GitHub **triage** works through the
+    built-in connector. But Cowork is a **no-install sandbox** that doesn't read the
+    plugin `.mcp.json` ([§4a](#4a-cowork-is-a-no-install-sandbox)), so everything
+    install-dependent — scaffold install (`init`/`adopt`), docker/mise builds, the
+    local `markitdown` server, `gh`-CLI tracker flows, org-level issue fields —
+    **does not work**. **Engineering work is not supported on Cowork: do it in
+    Claude Code (CLI / IDE / Code tab).** Treat Cowork as a PO knowledge-work lane,
+    not an engineering surface.
+  - **Chat tab + claude.ai web chat.** Plugins install and the portable nucleus
+    (skills + MCP) works; **hooks and sub-agents are grayed out** — no always-on
+    rules, no gates. Use `/steer:standards` to load rules by hand.
 
 | Surface | Tier | Plugin install | Hooks (rules + gates) | Skills | MCP |
 |---|---|---|---|---|---|
 | Claude Code **CLI** | **1 — targeted** | ✅ | ✅ | ✅ | ✅ |
 | **IDE extensions** (VS Code, JetBrains) | **1 — targeted** | ✅ via CLI | ✅ via CLI | ✅ | ✅ |
 | Claude Desktop **Code tab** (Claude Code Desktop) | **2 — intended** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
-| Claude Desktop **Cowork tab** | **2 — intended** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) | ⚠️ **built-in connector only** — the plugin `.mcp.json` `${GITHUB_PAT}` `github` server and local-process `markitdown` server **don't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
+| Claude Desktop **Cowork tab** | **3 — best-effort (PO only)** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) — but **engineering work unsupported; use Claude Code** | ⚠️ **built-in connector only** — the plugin `.mcp.json` `${GITHUB_PAT}` `github` server and local-process `markitdown` server **don't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
 | Claude Desktop **Chat tab** + **claude.ai** web chat | **3 — best-effort** | ✅ (chat) / ✅ as org Skills (web) | ❌ grayed out — use `/steer:standards` | ✅ | ⚠️ via the surface's own connector, not the plugin `.mcp.json` |
 
 Legend: ✅ works · ⚠️ works with a caveat / reconfirm · ❌ not available / does not fire.
@@ -170,12 +178,18 @@ Full engine; `steer` works as-is. The IDE extensions delegate to the CLI, so hoo
 rules, gates, skills, and MCP all apply. No adaptation needed — this is the
 reference experience.
 
-### Claude Desktop Code tab + Cowork (Tier 2)
+### Claude Desktop Code tab (Tier 2)
 The **Code tab** ("Claude Code Desktop") is full Claude Code — it shares CLI
 settings, so install/enable once and the whole engine applies; we keep it at Tier 2
 only because it sits outside the per-release test matrix.
 
-For **Cowork**, add the `steer` GitHub marketplace via **Customize → Plugins**.
+### Cowork — PO/knowledge-work only (Tier 3)
+**Cowork is a best-effort, PO/knowledge-work surface, not an engineering one** —
+its sandbox can't install anything (see below), so do all build/tracker/infra work
+in Claude Code (CLI / IDE / Code tab). What Cowork is genuinely good for: a product
+owner working a connected folder of specs/docs and triaging issues.
+
+To set it up, add the `steer` GitHub marketplace via **Customize → Plugins**.
 The official Plugins Reference confirms the full hook lifecycle (`SessionStart`,
 `PreToolUse`, `Stop`) runs in the Cowork tab — the "hooks and sub-agents run only
 in Cowork" line means they fire here and are grayed out only in the plain **Chat**
