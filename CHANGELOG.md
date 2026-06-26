@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** AI-slop guardrails, split prevention/detection. **Prevention:** a new
+  baseline pattern in `rules/85-practices.md` — *every import resolves to a declared
+  dependency* (a plausible package name that isn't in the manifest is a hallucinated
+  import, not a working one); the comment-slop side (decorative banners, restating
+  comments) was already covered by `rules/87-output-discipline.md`. **Detection:** an
+  **advisory** `ai-slop` job added to the scaffold CI (`templates/github/workflows/ci.yml`)
+  that runs [`aislop`](https://github.com/scanaislop/aislop) (pinned `0.12.1`) and
+  publishes findings to the Security tab as SARIF — `continue-on-error`, PR-only, never
+  a required check. New scaffold config `aislop/config.yml` → `.aislop/config.yml`
+  (+ MANIFEST row) keeps the differentiated `ai-slop/*` rules on and turns down the
+  security/complexity rules that duplicate the `ci` job's ruff/bandit/Biome/audit gates.
+  Promote to a blocking gate (swap `scan` for `aislop ci`, set `ci.failBelow`) only once
+  the tool earns trust / hits 1.0.
+
 - **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
   in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
   read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and
