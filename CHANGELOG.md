@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:build` (the non-technical PO flow) silently defaulted a solo
+  PO with no developer into `pr-flow` on a `feat/*` branch, never offering
+  `solo trunk (pre-MVP)` — the exact case the standards reserve solo-trunk for
+  (#220). The PO flow had baked in the assumption that a separate developer would
+  review the v0 PR; when the PO *is* the sole contributor that reviewer never
+  exists and the v0 PR sits unmergeable. Step 1 now **asks the delivery mode**
+  instead of assuming one: if the PO is the sole contributor with no MVP or
+  deploy yet, it offers and recommends solo trunk (commit straight to `main`, set
+  the `<!-- steer:delivery-mode=solo-trunk -->` marker, graduate via
+  `/steer:protect`), mirroring the offer `/steer:init` Path B already makes. The
+  choice now threads through the rest of the flow: prototype-mode builds commit
+  to `main` with no `feat/*` branch in solo trunk (step 6), the step-10 handoff
+  has no v0 PR (graduation is the gate), and the next-actions table recommends
+  graduating rather than opening a PR. The standards floor (tests, contracts,
+  Definition of Done) is unchanged in both modes.
 - **Fixed:** SessionStart hooks and other surfaces told users to "Run
   `/steer:questions`" (and `/steer:roadmap`, `/steer:init`, …) even though those
   skills were `user-invocable: false` — typing them was rejected by the harness
