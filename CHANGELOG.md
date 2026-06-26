@@ -19,6 +19,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   default (`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`) and how to regenerate a
   lockfile pinned under an older pnpm — both surface through `mise deps` because
   it auto-runs `pnpm install` before every task.
+- **Guardrail:** stop a global version manager (nvm/asdf/volta/fnm) from silently
+  shadowing mise's pinned runtimes — the root cause of the wrong-pnpm
+  `node_modules` above. `/steer:doctor` (`scan-prereqs.sh`) now reports a
+  `shadowed` status when `node`/`pnpm`/`uv` resolves to a non-mise path while mise
+  is present, naming the conflicting manager and the fix. The always-on command
+  rules and the scaffold README/quickstart no longer teach a bare `pnpm install`
+  (which resolves to whatever is first on `PATH`): they route a manual install
+  through `mise exec -- pnpm install`, lean on `[deps]` auto-install, and require
+  `mise activate` to be sourced **after** any other version manager so mise wins
+  `PATH`. `/steer:init` and the Copilot instructions were updated to match.
 - **Docs:** named the **Claude Cowork no-install sandbox** limitation. Cowork runs
   in an Anthropic-managed Linux VM that can't install docker/mise/`gh` and doesn't
   read the plugin `.mcp.json`, so the shipped `${GITHUB_PAT}` `github` and
