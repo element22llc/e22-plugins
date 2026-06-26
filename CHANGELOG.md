@@ -21,6 +21,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   user-facing surface (hook notices, installed scaffold/spec docs). Copilot prompt
   files are generated for the eight newly-invocable skills; router/AUTHORING/README
   docs updated to match.
+- **Fixed:** `/steer:build` no longer leaves the root living docs as template
+  stubs after building a v0 (#221). Step 5 (scaffold the real app) now fills
+  `ARCHITECTURE.md` (stack table + apps/packages map) and retires the
+  `apps/README.md` "starts empty" line in the same change that establishes the
+  stack; step 6 seeds and grows `DESIGN.md` from the implemented visual identity;
+  and the step-10 handoff adds a doc-reconciliation backstop that confirms
+  `ARCHITECTURE.md` / `DESIGN.md` / `apps/README.md` carry no leftover
+  placeholders before the PR reaches the dev reviewer. The `Living docs` rule
+  gains `DESIGN.md` as a tracked artifact and an explicit "retire now-false
+  scaffold placeholder prose" clause, so the same upkeep holds across
+  `/steer:init` and `/steer:work` too.
 
 - **Changed:** Windows support is now **surface-aware** — native Windows + Git for
   Windows is a first-class path, **no WSL2 required**. `/steer:doctor` no longer
