@@ -20,12 +20,16 @@
 # OUTPUT (stdout)
 #   One leading fingerprint line:  os\t<darwin|linux|wsl2|windows|other>\t-
 #   Then one TAB-separated line per tool:  <tool>\t<status>\t<detail>
-#   status ∈ ok | missing | down | via-mise | unmanaged | n/a
+#   status ∈ ok | missing | down | via-mise | unmanaged | shadowed | n/a
 #     ok          installed (detail = version line where cheap to read)
 #     missing     not installed (a blocker for required tools)
 #     down        docker installed but the daemon is not running
 #     via-mise    runtime absent BUT mise is present -> `mise install` provides it
 #     unmanaged   runtime absent AND mise absent -> install mise first
+#     shadowed    runtime present but resolves to a NON-mise path while mise is
+#                 present -> a global version manager (nvm/asdf/volta/fnm) or a
+#                 system/Homebrew copy is masking mise's pinned runtime. Advisory,
+#                 not a blocker: the tool runs, but it's the wrong (un-pinned) one.
 #     n/a         not applicable in this repo (e.g. docker with no compose.yaml,
 #                 or pnpm in a Python-only repo)
 #   `detail` also carries requiredness for docker (required vs advisory) so the
@@ -70,6 +74,29 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 # First line of `<tool> --version`, sanitized of stray tabs (keeps TAB output clean).
 ver() { "$1" --version 2>/dev/null | head -n1 | tr '\t' ' '; }
+
+# Does a resolved binary path look mise-managed? mise installs and shims both live
+# under the mise data dir (default ~/.local/share/mise -> contains "/mise/"). A
+# custom MISE_DATA_DIR without "mise" in the path won't match — acceptable, since
+# the shadow verdict is advisory, not a blocker.
+is_mise_path() {
+	case "$1" in
+	*/mise/*) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
+# Best-effort name of the version manager / source owning a non-mise binary path.
+shadow_src() {
+	case "$1" in
+	*/.nvm/* | */nvm/*) printf 'nvm' ;;
+	*/.volta/* | */volta/*) printf 'volta' ;;
+	*/.asdf/* | */asdf/*) printf 'asdf' ;;
+	*/.fnm/* | */fnm/*) printf 'fnm' ;;
+	/opt/homebrew/* | /usr/local/* | /usr/bin/* | /bin/*) printf 'a system/Homebrew install' ;;
+	*) printf 'a non-mise install' ;;
+	esac
+}
 
 # --- os fingerprint (drives shell-install guidance + host support) ---
 os=other
@@ -141,7 +168,12 @@ runtime() {
 		return
 	fi
 	if have "$tool"; then
-		emit "$tool" "ok" "$(ver "$tool")"
+		resolved="$(command -v "$tool" 2>/dev/null)"
+		if $mise_present && [ -n "$resolved" ] && ! is_mise_path "$resolved"; then
+			emit "$tool" "shadowed" "$resolved ($(shadow_src "$resolved")) is masking mise's pinned $tool — run via 'mise exec -- $tool', and source 'mise activate' AFTER your version manager in the rc file"
+		else
+			emit "$tool" "ok" "$(ver "$tool")"
+		fi
 	elif $mise_present; then
 		emit "$tool" "via-mise" "provided by 'mise install'"
 	else
