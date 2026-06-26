@@ -1,0 +1,21 @@
+# pnpm 11 settings (build-script approval + overrides moved here from package.json).
+# playwright-chromium's postinstall downloads the headless browser used by the
+# optional `mise run export` (PDF/PNG); approve it so `slidev export` can run.
+allowBuilds:
+  playwright-chromium: true
+
+# Pin the whole Vue family to 3.5.38. 3.5.39 was published 2026-06-25 and trips the
+# global pnpm minimum-release-age supply-chain cooldown; 3.5.38 (2026-06-11) is safe
+# and keeps installs deterministic + policy-clean. `overrides` forces transitive
+# @vue/* deps (slidev pulls several) to the same version, not just our direct dep.
+overrides:
+  vue: 3.5.38
+  '@vue/compiler-core': 3.5.38
+  '@vue/compiler-dom': 3.5.38
+  '@vue/compiler-sfc': 3.5.38
+  '@vue/compiler-ssr': 3.5.38
+  '@vue/reactivity': 3.5.38
+  '@vue/runtime-core': 3.5.38
+  '@vue/runtime-dom': 3.5.38
+  '@vue/server-renderer': 3.5.38
+  '@vue/shared': 3.5.38

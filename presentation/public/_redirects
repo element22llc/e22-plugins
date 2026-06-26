@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA fallback — Slidev uses history-mode routes (/1, /2, …),
+# so deep links / refreshes on a slide must serve index.html.
+/*    /index.html   200
