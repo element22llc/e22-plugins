@@ -21,7 +21,8 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
   **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app. Promotion,
   environments, and the `prod`-branch gate are in Deployment & environments.
-- **Package managers:** pnpm (Node), uv (Python). Windows → develop in WSL2.
+- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE work;
+  on the Claude Desktop Code tab, Git for Windows is enough (builds included).
 - **Editor:** VS Code is the default; committed `.vscode/` config (recommended
   extensions + Biome format-on-save) ships in the scaffold. Prefer in-editor
   extensions for adjacent work (DB browsing/queries, etc.) over standalone apps.

@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** Windows support is now **surface-aware** — native Windows + Git for
+  Windows is a first-class path, **no WSL2 required**. `/steer:doctor` no longer
+  treats `os = windows` as an unsupported host: when Git Bash is live it confirms
+  the setup (the **Claude Desktop Code tab** runs steer's `sh`-invoked hooks and
+  builds locally there — add Docker Desktop for services), and when no POSIX shell
+  is found it points to **Git for Windows** for the Desktop path or **WSL2** for
+  CLI/IDE development. The `Stack` rule's blanket "Windows → develop in WSL2" is
+  reworded to that split. New `docs/getting-started/windows-setup.md` (in nav),
+  cross-linked from `installation.md` and `team-onboarding.md`.
+
 - **Added:** AI-slop guardrails, split prevention/detection. **Prevention:** a new
   baseline pattern in `rules/85-practices.md` — *every import resolves to a declared
   dependency* (a plausible package name that isn't in the manifest is a hallucinated

@@ -69,6 +69,7 @@ nav:
   - Home: index.md
   - Getting started:
       - Installation: getting-started/installation.md
+      - Windows setup: getting-started/windows-setup.md
       - First workflow: getting-started/first-workflow.md
       - Team onboarding: getting-started/team-onboarding.md
   - Concepts:

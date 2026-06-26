@@ -90,11 +90,23 @@ commands).
 - **`docker` down** — offer to start it: macOS `open -a Docker` (then wait and
   re-scan until the daemon answers); Linux `sudo systemctl start docker`
   (present the command).
-- **`os` = `windows`** — unsupported host (the toolchain assumes a POSIX shell).
-  Hand over the WSL2 setup, **manual**: in elevated PowerShell run
-  `wsl --install`, reboot, then clone and re-run everything *inside* WSL2 (see
-  the scaffold README "Windows: develop in WSL"). Don't attempt installs on
-  native Windows.
+- **Windows** — the answer depends on the **shell**, not the OS. The hooks (and
+  this detector) run via `sh`, so a POSIX shell must be present.
+  - **`os` = `windows`** (the scan ran — it printed `os = windows`, i.e. under
+    MINGW/MSYS via **Git for Windows**): this is a **supported** setup, not a
+    blocker. steer's `sh`-invoked hooks run here, and it's the right environment
+    for the **Claude Desktop Code tab** — `/steer:build` and `mise run dev:setup`
+    build locally too (install Docker Desktop if the repo declares services).
+    Proceed with the normal `mise`/runtime resolution above. WSL2 is *optional*
+    here — only worth it for heavy CLI/IDE development.
+  - **No POSIX shell at all** (this detector failed to run — native
+    `cmd`/PowerShell, no Git Bash): install **Git for Windows** (`winget install
+    Git.Git` or <https://gitforwindows.org/>), reopen the session, and re-scan —
+    that alone gets the **Desktop Code tab** working, builds included. For
+    **CLI / IDE** development, WSL2 is the recommended alternative: in elevated
+    PowerShell run `wsl --install`, reboot, then re-run everything *inside* WSL2.
+    Both are GUI/host steps — hand them over, don't automate. Full matrix: the
+    Windows setup page in the docs.
 
 ## 4. Re-scan and confirm
 
@@ -111,7 +123,8 @@ final scan.
 | Observed state | Category | Action / suggested command |
 |---|---|---|
 | A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (§3), then re-scan |
-| `os` = `windows` (native) | Blocking now | Set up WSL2 and re-run inside it |
+| `os` = `windows` (Git Bash live) | Complete | Supported — hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
+| Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan — or WSL2 for CLI/IDE dev |
 | A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (§3) — not a hard blocker, but the wrong, un-pinned version is in use |
 | All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up — `/steer:init` (dev) or `/steer:build` (PO) |
 | All green, repo already set up | Recommended | `mise run dev:setup`, then start work |
