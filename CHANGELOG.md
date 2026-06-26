@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.5.0
+
 - **Fixed:** `/steer:build` (the non-technical PO flow) silently defaulted a solo
   PO with no developer into `pr-flow` on a `feat/*` branch, never offering
   `solo trunk (pre-MVP)` — the exact case the standards reserve solo-trunk for
