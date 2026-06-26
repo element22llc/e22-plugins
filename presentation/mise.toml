@@ -1,0 +1,36 @@
+# mise — toolchain + tasks for the Slidev deck.
+# Mirrors the steer scaffold conventions: pnpm (not npm), lockfile-pinned tools,
+# and auto-installed workspace deps so `pnpm install` is never run by hand.
+
+[settings]
+# Pin every tool resolution into mise.lock for reproducible installs.
+lockfile = true
+# `experimental` unlocks the `[deps]` auto-install provider below (mise gates it
+# as experimental) — the same deliberate default the steer scaffold uses.
+experimental = true
+
+# Auto-install workspace deps before any `mise run` / `mise x`. Content-hashed
+# against pnpm-lock.yaml: runs `pnpm install` only when the lock changed, and is a
+# no-op once installed. This is how `pnpm install` becomes a prerequisite of
+# `dev` / `build` — no explicit install task needed.
+[deps.pnpm]
+auto = true
+
+[tools]
+# Exact-pinned for strict determinism (mise.lock also records platform checksums).
+# node backend; 24.16.0 matches .node-version (which Cloudflare Pages reads as "24").
+node = "24.16.0"
+# npm backend on purpose: aqua:pnpm/pnpm lacks a macOS asset (steer scaffold note).
+"npm:pnpm" = "11.5.2"
+
+[tasks.dev]
+description = "Serve the deck with live reload (deps auto-installed first)"
+run = "pnpm exec slidev --open"
+
+[tasks.build]
+description = "Build the static site to dist/ (what Cloudflare Pages runs)"
+run = "pnpm exec slidev build"
+
+[tasks.export]
+description = "Export the deck to PDF (needs: pnpm exec playwright install chromium)"
+run = "pnpm exec slidev export"
