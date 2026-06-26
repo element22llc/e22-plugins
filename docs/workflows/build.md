@@ -1,7 +1,8 @@
 # `/steer:build`
 
 A guided flow for a **non-technical product owner**: idea → interview → approved
-spec → working local app → PR for dev review, with Claude driving all tooling.
+spec → working local app → hand-off for dev review, with Claude driving all
+tooling.
 
 !!! info "When to use"
     Use when a non-developer wants to build or prototype an app idea, or to
@@ -16,7 +17,7 @@ flowchart LR
     IDEA[Idea] --> INTERVIEW[Interview the PO]
     INTERVIEW --> SPEC[Approved spec]
     SPEC --> APP[Working local app]
-    APP --> PR[PR for dev review]
+    APP --> HANDOFF[Hand-off for dev review]
 ```
 
 ## The PO happy path
@@ -35,11 +36,16 @@ five plain-language steps — you never type an issue, spec, or work command:
 3. **Preview it locally.** Claude builds a working local app and tells you how to
    run it. You click around and react in plain language — *"the date filter
    should default to this week"* — and it iterates.
-4. **A developer reviews.** When you're happy, the build ends at a **PR for dev
-   review**. This is the hand-off, by design — a developer is the human at the
-   merge gate.
-5. **PR.** Once the developer approves, the change merges. You've shipped without
-   touching the tracker or the code.
+4. **Hand off for review.** When you're happy, the build hands off for developer
+   review. If a developer will review it, that hand-off is a **PR** — a developer
+   is the human at the merge gate. Claude asks which applies at the very start:
+   if you're the **sole contributor with no developer yet**, it recommends **solo
+   trunk** instead — the work lives on the main line as you go, with no PR, and
+   developer review comes later, when one joins or you head for real users (Claude
+   graduates the repo then).
+5. **Ship.** In PR flow the change merges once the developer approves; in solo
+   trunk it's already on the main line and graduates when a developer takes over.
+   Either way you've shipped without touching the tracker or the code.
 
 If a session is interrupted, you don't have to remember anything: as long as a
 `/spec/BUILD-STATUS.md` is present with work still in flight, the SessionStart
@@ -65,15 +71,19 @@ resuming once the build is handed off — every box in its handoff gate checked.
     scaffold is skipped bootstrap, not prototype mode.
 
 !!! info "Where the gates are"
-    Claude commits on its own, but **approving the spec** and **opening/merging
-    the PR** are always human decisions. See the
+    Claude commits on its own, but **approving the spec** and the **dev hand-off**
+    are always human decisions — opening/merging the v0 PR in PR flow, or
+    graduating off the trunk via `/steer:protect` in solo trunk. See the
     [Authorization model](../concepts/authorization-model.md).
 
 !!! note "Prototype-mode vs. governed-mode delivery"
-    The single v0 PR above is the **prototype-mode** hand-off. In a repo that is
-    already GitHub-adopted (**governed mode**), each approved slice instead ships
-    through [`/steer:work`](work.md) as its own issue → delivery — a PR in
-    pr-flow, or a `Closes #N` trunk commit in
+    In **prototype mode** (greenfield, no tracker yet) the hand-off is a single v0
+    PR — **unless** the PO chose **solo trunk** at the start (sole contributor, no
+    developer): then the build commits straight to the main line with no v0 PR, and
+    the hand-off is graduation via [`/steer:protect`](../reference/skills.md) when a
+    developer joins. In a repo that is already GitHub-adopted (**governed mode**),
+    each approved slice instead ships through [`/steer:work`](work.md) as its own
+    issue → delivery — a PR in pr-flow, or a `Closes #N` trunk commit in
     [solo-trunk](../concepts/authorization-model.md) — so there is no separate v0
     PR. Either way the productionization brief still applies, and merge/deploy stay
     human-gated.
@@ -94,6 +104,7 @@ resuming once the build is handed off — every box in its handoff gate checked.
   writing code.
 - A build in progress tracks state in `/spec/BUILD-STATUS.md`, so `/steer:build`
   can resume an interrupted session.
-- Approval still records evidence and the PR is still **dev-gated** — Claude
-  drives the tooling but a human reviews before merge. See the
+- Approval still records evidence and the hand-off stays **dev-gated** — Claude
+  drives the tooling, but a human reviews before code reaches real users (the v0
+  PR in PR flow, or graduation off the trunk in solo trunk). See the
   [Authorization model](../concepts/authorization-model.md).

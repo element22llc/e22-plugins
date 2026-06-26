@@ -1,6 +1,6 @@
 ---
 name: build
-description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → PR for dev review, with Claude driving all tooling.
+description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → handoff for dev review, with Claude driving all tooling.
 when_to_use: Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
 argument-hint: "[idea or product description]"
 ---
@@ -8,7 +8,8 @@ argument-hint: "[idea or product description]"
 # Build a working app from a PO's idea
 
 This is the PO-facing path through the standard Greenfield flow
-(`Spec workflow` rules): interview → spec → PO approval → build → demo → PR.
+(`Spec workflow` rules): interview → spec → PO approval → build → demo → dev
+handoff (a v0 PR in PR flow, or graduation off the trunk in solo trunk).
 The PO personally installs only **Claude Code and Docker Desktop**, on a
 supported machine — **macOS, Linux, or Windows via WSL2** (the org toolchain
 assumes a POSIX shell; see the `Stack` rule). You verify and drive everything
@@ -20,11 +21,14 @@ PO commands. Speak plainly throughout — no git/stack jargon (see the
 Set expectations up front, in plain language: *"I'll ask you questions, write
 down what we agree, you approve it, then I build and run the app on your
 computer. You don't need to read code or run commands. A developer reviews
-everything before it becomes the official version."*
+everything before it's used for real."*
 
-**Standards are not softened in this flow.** The result merges to `main` as v0
-only after a dev approves the PR, so it must meet the org standards from the
-start: tests, `contract.md` per feature, Definition of Done, high-risk handling.
+**Standards are not softened in this flow.** Whatever the delivery mode, v0 must
+meet the org standards from the start — tests, `contract.md` per feature,
+Definition of Done, high-risk handling. In **PR flow** it reaches `main` only
+after a dev approves the v0 PR; in **solo trunk** it lands on `main` directly but
+stays pre-MVP until a dev reviews it at graduation (`/steer:protect`). The floor
+is identical either way.
 
 **Flow state lives in `/spec/BUILD-STATUS.md`, not in the conversation.** Copy
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md` there when you first
@@ -57,9 +61,27 @@ on the next `/steer:build` run.
    scaffold) or template placeholders remain (legacy fork), run the `init`
    flow but adapted to a PO:
    - Ask only for the **product name** and a **one-line description**. Set
-     Mode = Greenfield, PO = this user's GitHub handle, Devs = "to be assigned
-     at review". Keep the **default stack** — no override interview; the
-     defaults exist for exactly this case.
+     Mode = Greenfield, PO = this user's GitHub handle. Keep the **default
+     stack** — no override interview; the defaults exist for exactly this case.
+   - **Settle the delivery mode — ask, don't assume a reviewer.** This flow does
+     not presuppose a separate developer. Ask the PO plainly, in plain language,
+     whether a developer will review this build or they're the only person on it
+     for now:
+     - **A developer will review it (or one will be assigned later)** — keep the
+       `feat/*` + PR default. Set Devs = the dev's handle (or `"to be assigned at
+       review"`), and leave the scaffold's `## Delivery mode` section at
+       `PR flow` with its `<!-- steer:delivery-mode=pr-flow -->` marker.
+     - **The PO is the sole contributor, with no MVP or deploy yet** — this is
+       exactly what **solo trunk (pre-MVP)** is for (Commit autonomy). Offer and
+       recommend it; a one-line "yes" is enough. The build then commits straight
+       to `main` — no `feat/*` branch, no v0 PR — until graduation via
+       `/steer:protect` when a developer joins or you head for real users. Set
+       Devs = `"none yet (solo PO)"`, write the `## Delivery mode` section to
+       `solo trunk (pre-MVP)` with that graduation trigger, and set the section's
+       first-line marker to `<!-- steer:delivery-mode=solo-trunk -->` (the steer
+       hooks read it to relax the per-feature branch/PR; keep it in sync with the
+       prose). This is the same offer `/steer:init` Path B makes — surfaced here
+       because the PO never runs `init` directly.
    - Drive the toolchain yourself: run **`/steer:doctor`**, which detects and
      (with the PO's yes) installs mise, runs `mise install`, and checks Docker
      Desktop. Then run `mise lock --platform linux-x64,macos-arm64` so the lock
@@ -118,9 +140,12 @@ on the next `/steer:build` run.
      here. Build the v0 yourself: for each approved intent write `contract.md`,
      implement under `/apps` + `/packages`, and write tests in the same unit of
      work (Definition of Done). Commit coherent units without asking
-     (Commit-autonomy rule) on a single `feat/*` build branch. The work stays
-     local and provisional until the one v0 handoff PR (step 10). This keeps the
-     PO's inner loop fast — no per-feature issue/branch/PR ceremony.
+     (Commit-autonomy rule). **In PR flow** that's a single `feat/*` build
+     branch, and the work stays local and provisional until the one v0 handoff
+     PR (step 10); **in solo trunk** (chosen in step 1) commit directly to `main`
+     with no branch and no v0 PR — the work is provisional on the trunk until
+     graduation (step 10). Either way this keeps the PO's inner loop fast — no
+     per-feature issue/branch/PR ceremony.
      **"Prototype mode" relaxes only this ceremony** (issues, per-feature
      branches/PRs, approval-gate formality) — it does **not** skip the bundled
      scaffold (step 1) or the spec spine (steps 2–4) or the real-stack app
@@ -182,16 +207,22 @@ on the next `/steer:build` run.
    (with where the confirmation happened). If the PO says "it's done" or
    "ready for the developer" unprompted, that is the gate — record it the
    same way.
-10. **Hand off via the PR.** This is the **prototype-mode** handoff: a single v0
-    PR for the whole build. (In **governed mode** each slice already shipped via
-    `/steer:work` as its own issue → delivery — a PR in pr-flow, or a `Closes #N`
-    trunk commit in solo-trunk — so there is no separate v0 PR; the
-    productionization brief below still applies, written once for the build.)
-    When the demo-validation gate has passed and the
-    Definition of Done holds, propose opening the PR (it waits for
-    confirmation — Commit-autonomy rule). The PR
-    description is the dev's productionization brief. First write the durable
-    brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/steer:adopt`
+10. **Hand off.** The durable artifact is identical in every mode — the
+    productionization brief in `/spec/PRODUCTIONIZATION.md` (below); only *how it
+    reaches a dev* differs:
+    - **Prototype mode, PR flow** — a single v0 PR for the whole build, its
+      description carrying the brief.
+    - **Prototype mode, solo trunk** — the build is already on `main`; there is
+      no v0 PR. The brief is still written, and the handoff gate is
+      **graduation** via `/steer:protect` (which raises the PR wall for all
+      future work) when a developer joins or you head for real users.
+    - **Governed mode** — each slice already shipped via `/steer:work` as its own
+      issue → delivery (a PR in PR flow, or a `Closes #N` trunk commit in solo
+      trunk), so there is no separate v0 PR; the brief is written once for the
+      build.
+
+    When the demo-validation gate has passed and the Definition of Done holds,
+    first write the durable brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/steer:adopt`
     produces**, so a dev inheriting a PO-built v0 gets the same brief as one
     inheriting an adopted repo, instead of gaps that evaporate with the PR text.
     Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` if it doesn't
@@ -209,24 +240,33 @@ on the next `/steer:build` run.
     feature intents' `## Open questions` (and `vision.md` for product-level),
     not here.
 
-    Then propose opening the PR (it waits for confirmation — Commit-autonomy
-    rule); its description links to `/spec/PRODUCTIONIZATION.md`, the
-    demo-validated `intent.md` files, and any remaining `## Open questions`
-    across the feature intents / `vision.md` (run `/steer:questions` to work them
-    down).
-    Link the PR in `/spec/BUILD-STATUS.md`. Sync the living docs before
-    proposing it: seed the app guide (`/spec/app/README.md` — how to use the
-    app, workflows, roles, in the PO's plain language, from the demo-validated
-    intents) and append the build to `/spec/HISTORY.md` (what was built, why,
-    requested by the PO, refs to the intents and the PR). **Then reconcile the
-    root living docs as a handoff backstop:** confirm `ARCHITECTURE.md`,
-    `DESIGN.md`, and `apps/README.md` reflect the built v0 and carry no leftover
-    template placeholders — the `[e.g. Node]` stack-table cells and `[web]` /
-    `[core]` map rows, the `#000000` colors and placeholder product name in
-    `DESIGN.md`, the "starts empty" `apps/README.md` line. Filling these in step 5/6 is
-    the rule; this is the catch-all so a stub never reaches the dev reviewer. The
-    dev PR review is the unchanged gate: it merges to `main` as v0 only with a
-    dev's approval.
+    Sync the living docs first: seed the app guide (`/spec/app/README.md` — how
+    to use the app, workflows, roles, in the PO's plain language, from the
+    demo-validated intents) and append the build to `/spec/HISTORY.md` (what was
+    built, why, requested by the PO, refs to the intents and — in PR flow — the
+    PR). **Then reconcile the root living docs as a handoff backstop:** confirm
+    `ARCHITECTURE.md`, `DESIGN.md`, and `apps/README.md` reflect the built v0 and
+    carry no leftover template placeholders — the `[e.g. Node]` stack-table cells
+    and `[web]` / `[core]` map rows, the `#000000` colors and placeholder product
+    name in `DESIGN.md`, the "starts empty" `apps/README.md` line. Filling these
+    in step 5/6 is the rule; this is the catch-all so a stub never reaches the dev
+    reviewer.
+
+    Then hand off per the delivery mode:
+    - **PR flow** — propose opening the v0 PR (it waits for confirmation —
+      Commit-autonomy rule); its description links to
+      `/spec/PRODUCTIONIZATION.md`, the demo-validated `intent.md` files, and any
+      remaining `## Open questions` across the feature intents / `vision.md` (run
+      `/steer:questions` to work them down). Link the PR in
+      `/spec/BUILD-STATUS.md`. The dev PR review is the gate: it merges to `main`
+      as v0 only with a dev's approval.
+    - **Solo trunk** — there is no PR to open; the v0 is already on `main`. Tell
+      the PO plainly the build is ready for a developer, and recommend graduating
+      via `/steer:protect` (it raises the server-side PR wall and ends trunk
+      mode) when a developer joins or before real users arrive. Record that
+      readiness in `/spec/BUILD-STATUS.md`. The dev review at graduation is the
+      gate — the standards floor (tests, contracts, Definition of Done) already
+      held through the build.
 
 ## Recommend the next action
 
@@ -240,10 +280,11 @@ language.
 | Intent not yet PO-approved | Human decision required | PO reviews & approves the drafted intent (no command) |
 | Build incomplete / failing locally | Blocking now | Continue the build |
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
-| Demo-validated, PR not opened | Blocking now (next transition) | Open the PR for dev review |
+| Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Open the v0 PR for dev review |
+| Demo-validated, solo trunk (v0 on `main`) | Human decision required | Ready for a developer — graduate via `/steer:protect` when one joins / before real users |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
 | Remaining `## Open questions` | Required before initial production | Work them down — `/steer:questions` |
-| Merged | Complete | Optional: build the next feature |
+| Merged (PR flow) / graduated (solo trunk) | Complete | Optional: build the next feature |
 
 Pick one `Current recommended action` by precedence; offer a `Suggested command`
 only where one truly applies. Read-only — it recommends, the PO/dev decides.
