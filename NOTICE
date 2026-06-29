@@ -1,0 +1,9 @@
+e22-plugins — Element 22 engineering-standards plugin marketplace
+Copyright 2026 Element 22 LLC
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This repository hosts the "steer" plugin (under plugins/steer/). It also
+re-lists Anthropic's upstream "frontend-design" plugin via a pinned git-subdir
+source in .claude-plugin/marketplace.json; that plugin's content is referenced,
+not vendored here, and remains under its own upstream license.

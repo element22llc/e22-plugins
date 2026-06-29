@@ -183,3 +183,14 @@ The current version lives in
 `plugins/steer/.claude-plugin/plugin.json`; what changed in each release
 is in [`CHANGELOG.md`](./CHANGELOG.md). (No version table here — it would just
 drift from the source of truth.)
+
+## License
+
+Licensed under the [Apache License, Version 2.0](./LICENSE) — see also
+[`NOTICE`](./NOTICE). You are free to use and adopt these standards under those
+terms.
+
+This repository is **published read-only**: development happens internally and
+external pull requests are not merged. See [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+for how to use it and report problems, and [`SECURITY.md`](./SECURITY.md) for
+reporting vulnerabilities.

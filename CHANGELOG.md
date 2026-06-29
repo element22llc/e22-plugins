@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `license` field (`Apache-2.0`) to the steer plugin manifest, matching
+  the repository `LICENSE` now that the marketplace is published publicly.
 - **Changed:** the marketplace repo `element22llc/e22-plugins` is now **public**,
   so the shipped `claude.yml` no longer needs a credential to clone it. Removed
   the GitHub App token-minting steps (`actions/create-github-app-token` +

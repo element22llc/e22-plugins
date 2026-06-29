@@ -8,6 +8,7 @@
     "email": "alexis.valotaire@element-22.com"
   },
   "homepage": "https://github.com/element22llc/e22-plugins",
+  "license": "Apache-2.0",
   "keywords": [
     "org-standards",
     "conventions",
