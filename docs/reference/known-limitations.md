@@ -166,7 +166,10 @@ at most one-directionally by a Project Status field.
     triage and board route the request straight to `field-set`. `field-set` writes
     the native field through GraphQL `setIssueFieldValue` (or the equivalent REST
     `issue-field-values` endpoint) — *not* a GraphQL-only path, despite the Projects
-    columns being read-locked.
+    columns being read-locked. The REST fallback is a `POST` to
+    `/repos/{owner}/{repo}/issues/{n}/issue-field-values`; never `PUT` that endpoint
+    for a single field — `PUT` *replaces all* of the issue's field values, silently
+    clearing the Priority/Effort/dates you did not pass.
 
 ## Context window, compaction, and sessions
 

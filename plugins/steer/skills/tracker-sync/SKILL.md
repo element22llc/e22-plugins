@@ -112,18 +112,29 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   title and due date as they are — never overwrite a value a human edited.
 - **`field-get #N [<field>]`** — read native **issue field** values (Priority,
   Effort, Start/Target date, and any org custom field) for one issue. **Native
-  issue fields have no `gh issue` subcommand** — query via `gh api graphql` (the
-  issue's field-values connection), else the
-  MCP github tool if it exposes issue fields, else report the capability is
-  unavailable. (Writes also have a REST path — see the `field-set` recipe below.)
-  Read-only; never confirms.
+  issue fields have no `gh issue` subcommand** — query via `gh api graphql` on the
+  issue's **`issueFieldValues`** connection (not `fieldValues` — that does not
+  exist on `Issue`), else the MCP github tool if it exposes issue fields, else
+  report the capability is unavailable. Each value node is a typed variant —
+  `IssueFieldSingleSelectValue { name optionId }` for Priority, plus
+  `…TextValue` / `…DateValue` / `…NumberValue` / `…MultiSelectValue`; the value's
+  `field` is the definition union **`IssueFields`** (`IssueFieldSingleSelect`,
+  `IssueFieldText`, `IssueFieldDate`, `IssueFieldNumber`, `IssueFieldMultiSelect`).
+  Use `issue.viewerCanSetFields` as the capability probe. (Writes also have a REST
+  path — see the `field-set` recipe below.) Read-only; never confirms.
 - **`field-set #N <field> <value>`** — set one native issue field. Resolve the
   field's node id, its **type**, and (for single-selects like **Priority**) the
   option id from the **org field definition** via `gh api graphql`, then call the
-  `setIssueFieldValue` mutation (`issueId` + `fieldId` + the typed `value` variant
-  the definition declares — `singleSelectOptionId` for a single-select like
-  Priority, `date` for a date field, `number`/`text` as the field's type dictates;
-  never assume Effort's type — read it). **Capability-degrading:** if the
+  `setIssueFieldValue` mutation. **Its input is `issueId` + an `issueFields` list**
+  (`setIssueFieldValue(input:{ issueId:"…", issueFields:[ … ] })`) — `fieldId` and
+  the value do **not** sit at the top level; each list element is an
+  `IssueFieldCreateOrUpdateInput` of `{ fieldId, <one typed value> }`. The typed
+  value key is `singleSelectOptionId` (an option **id**, not its name) for a
+  single-select like Priority, `dateValue` for a date, `numberValue` / `textValue`
+  / `multiSelectOptionIds` as the field's type dictates (never assume Effort's
+  type — read it); set `delete: true` on the element to clear a value. One mutation
+  can carry several elements, but `field-set` writes exactly one.
+  **Capability-degrading:** if the
   org has not enabled issue fields, or the named field / option does not exist,
   emit a non-blocking warning and **stop** — **never** fabricate a field, fabricate
   an option, or fall back to a `priority:*`/`effort:*` label or a body marker (the
@@ -141,10 +152,12 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   read the option **names/ids** from `gh api /orgs/{org}/issue-fields` (each field's
   choices live under `.options`), then write the value via **either** the GraphQL
   `setIssueFieldValue` mutation (above) **or** the one-line REST equivalent —
-  `gh api --method POST /repositories/{repo_id}/issues/{n}/issue-field-values
+  `gh api --method POST /repos/{owner}/{repo}/issues/{n}/issue-field-values
   -H "X-GitHub-Api-Version: 2026-03-10" -f issue_field_values='[{"field_id":<id>,"value":"High"}]'`
-  (the `value` is the option **name**, e.g. `High`, not its id). Resolve `{repo_id}`
-  from `gh api /repos/{owner}/{repo} --jq .id`.
+  (the REST `value` is the option **name**, e.g. `High`, not its id — unlike the
+  GraphQL `singleSelectOptionId`, which is the id). Use **POST** to add/update this
+  one field; **never `PUT`** that endpoint for a single-field set — `PUT` *replaces
+  all* of the issue's field values, silently clearing Effort/dates you didn't pass.
 - **`bootstrap-fields`** — verify/reconcile the **org-level** issue-field
   definitions `steer` relies on (Priority + the default Effort / Start date /
   Target date set), so `field-set` can attach values. Issue fields are an **org
