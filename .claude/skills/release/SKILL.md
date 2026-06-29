@@ -97,7 +97,7 @@ before the version bump — not at the end where a red gate wastes the bump work
   per-gate pass/fail line.
 - **`mise run docs:build`** — the **strict** Zensical build (fails on broken
   links / nav). This is **not** part of `mise run ci`; it normally runs only in
-  the `docs-deploy.yml` build job. Run it here because the Cloudflare deploy
+  the `docs-deploy.yml` build job. Run it here because the GitHub Pages deploy
   happens **post-merge from `main`**: if the strict build is red, the merge will
   publish a broken or stale site. Catching it now is the difference between a
   clean release and a silently-broken live doc.
@@ -177,10 +177,10 @@ Cover both:
   `/plugin-docs` skill drives; running it here makes "docs are current" a release
   gate, not an afterthought.)
 - **Deployed-site freshness (deterministic).** The site is published to
-  Cloudflare Pages from `main` by `docs-deploy.yml`, only when `docs/**` or
-  `mkdocs.yml` change, and it sits **behind Cloudflare Access** — so it can't be
-  fetched and diffed directly (a fetch of `https://ai.element-22.com/` 302s to an
-  auth gate). Use the deploy **run status** as the source of truth instead:
+  GitHub Pages from `main` by `docs-deploy.yml`, only when `docs/**` or
+  `mkdocs.yml` change. Rather than fetching the public site (subject to CDN cache
+  lag, so a fetch can disagree with `main` for minutes after a deploy), use the
+  deploy **run status** as the source of truth:
   - `gh run list --workflow=docs-deploy.yml --branch main --limit 5` — confirm the
     most recent run **succeeded**. A failed/cancelled latest run means the live
     site is stale relative to `main` → **`[blocker] deployed docs stale: last

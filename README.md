@@ -17,9 +17,8 @@ explicitly if a repo wants it.
 bootstrap: the plugin bundles the full repo scaffold
 (`plugins/steer/templates/scaffold/`) and the spec-spine templates, so
 `/steer:init` and `/steer:adopt` stand a repo up without any external template.
-The old static
-[`repository-template`](https://github.com/element22llc/repository-template)
-is **replaced** by this plugin-driven bootstrap — see
+The old static `repository-template` (a private repo, intentionally not linked
+here) is **replaced** by this plugin-driven bootstrap — see
 [Migrating from `repository-template`](#migrating-from-repository-template).
 
 ## What `steer` ships

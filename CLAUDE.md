@@ -13,9 +13,9 @@ standards live in `plugins/steer/` (rules, skills, reference prose),
 consumed by every product repo via the marketplace. The plugin also carries the
 **bundled repo scaffold** (`plugins/steer/templates/scaffold/` +
 spec-spine templates in `templates/spec/`), which `/steer:init` / `/steer:adopt`
-install — this **replaces** the old static
-[`repository-template`](https://github.com/element22llc/repository-template)
-as the bootstrap source; do not point new work at that repo. When a standard
+install — this **replaces** the old static `repository-template`
+(a private repo, intentionally not linked here) as the bootstrap source; do not
+point new work at that repo. When a standard
 implies concrete scaffolding (CI workflows, `mise.toml` tasks, `compose.yaml`,
 README quickstart, PR template), update the scaffold bundle here in the same
 change as the rule. Standards prose is **not** duplicated into any product
