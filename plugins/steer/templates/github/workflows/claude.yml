@@ -53,7 +53,8 @@ jobs:
           # Load the org standards plugin so the in-CI agent runs under the SAME
           # steer ruleset as a local session (steer's SessionStart hook injects
           # rules/* once installed). plugin_marketplaces takes Git URLs; plugins
-          # takes name@marketplace. See the header note on the clone token.
+          # takes name@marketplace. The marketplace repo is public, so the clone
+          # is anonymous — no credential needed (see the header note).
           plugin_marketplaces: |
             https://github.com/element22llc/e22-plugins.git
           plugins: |

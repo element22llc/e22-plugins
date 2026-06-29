@@ -21,6 +21,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `20-layout.md` | Where things live. |
 | `22-housekeeping.md` | Keep the repo tidy. |
 | `24-worktrees.md` | Parallel worktrees — isolate runtime, clean up after. |
+| `26-context-hygiene.md` | Context hygiene — delegate heavy runs, keep state in files. |
 | `30-spec-workflow.md` | Spec workflow. |
 | `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
 | `32-living-docs.md` | Document in parallel, not after. |
@@ -53,8 +54,9 @@ manual. They are injected into every managed session by `inject-standards.sh`
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
-    use GitHub issues, or deploy. The spec-workflow, decision-capture, living-docs,
-    roles, issue-tracker, secrets, compliance, and output rules stay always-on.
+    use GitHub issues, or deploy. The context-hygiene, spec-workflow,
+    decision-capture, living-docs, roles, issue-tracker, secrets, compliance, and
+    output rules stay always-on.
 
 ## Tooling knobs
 

@@ -59,8 +59,8 @@ installs (the `infra` profile's is the tofu/terragrunt/ansible flavor).
   product adaptation, so a drifted copy is *replaced*. **Show the diff first** and
   warn that local edits will be lost (move product-specific pins to
   `policy/versions.yml` instead); never silently overwrite.
-- **Some repairs need a human/external step sync can't do** (an org GitHub App
-  secret; applying branch protection server-side). Create what can be created,
+- **Some repairs need a human/external step sync can't do** (adding the
+  `ANTHROPIC_API_KEY` secret; applying branch protection server-side). Create what can be created,
   report the rest as `wired-pending-secret` / a follow-up, and never claim the
   capability is fully repaired. Surface the follow-up in the
   `## Recommended next actions` block ([NEXT-ACTIONS.md](NEXT-ACTIONS.md)).
