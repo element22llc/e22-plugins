@@ -183,11 +183,16 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
   with the override var in `.env.example`, so a dev running several managed products
   at once isn't blocked by `port is already allocated`.
 - **Task running:** mise is the single task entry point. Declare ordering with
-  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
+  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level Node
   scripts (`dev` / `build` / `test` / `typecheck`) stay in `package.json`; a mise
-  task may delegate to them so `mise tasks` lists everything in one place. Let
-  `[deps.pnpm]` / `[deps.uv]` (`auto = true`) install workspace deps on lockfile
-  change — no hand-rolled install task. Detail: run `/steer:reference conventions`.
+  task may delegate to them so `mise tasks` lists everything in one place —
+  delegation is **one-way**: a `package.json` script never shells out to
+  `uv`/Python nor re-defines a mise task, and no task is defined in both places. A
+  Python backend (e.g. `apps/api`) is a mise/`uv run` task; compose a polyglot
+  `dev` in `mise.toml` (`depends = ["dev:*"]`), not a root-`package.json`
+  `concurrently` script. Let `[deps.pnpm]` / `[deps.uv]` (`auto = true`) install
+  workspace deps on lockfile change — no hand-rolled install task. Detail: run
+  `/steer:reference conventions`.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules are in Secrets handling.

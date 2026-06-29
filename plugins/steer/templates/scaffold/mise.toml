@@ -110,6 +110,24 @@ description = "One-command local env: services up, schema migrated, data seeded 
 # No-database products repoint this at `docker:up` (or drop dev:setup).
 depends = ["db:seed"]
 
+# Polyglot dev orchestration — UNCOMMENT only if this repo grows a non-Node app
+# (e.g. a Python `apps/api`, the sanctioned API split recorded as an ADR). A
+# Node-only app needs none of this: run the web app with `pnpm dev` (rule 15);
+# its `dev` script lives in apps/web/package.json, not here.
+#
+# When you DO have a second runtime, mise is the single, polyglot entry point:
+# each long-running server is its own task, and `dev` fans out over `dev:*` in
+# parallel (mise runs `depends` concurrently; add `--jobs N` for >4 servers).
+# The Python backend runs `uv run` HERE — never as a root package.json script,
+# and never duplicated across both files (rule 10-stack; see CONVENTIONS.md).
+# [tasks."dev:web"]
+# run = "pnpm --filter web dev"            # delegates to apps/web/package.json
+# [tasks."dev:api"]
+# run = "uv run uvicorn app.main:app --reload --port ${API_PORT:-8000}"
+# [tasks.dev]
+# description = "Run the full app locally (web + api)"
+# depends = ["dev:*"]                       # both servers in parallel
+
 [tasks."docker:up"]
 description = "Start local backing services (compose.yaml) and wait until healthy"
 run = "docker compose up -d --wait"
