@@ -86,6 +86,12 @@ venv/
 *.key
 
 # ---------------------------------------------------------------------------
+# Local-only mise config (per-machine dev tools, e.g. node + codegraph MCP).
+# The committed mise.toml/mise.lock pin only what CI needs — see AUTHORING.md.
+# ---------------------------------------------------------------------------
+mise.local.toml
+
+# ---------------------------------------------------------------------------
 # Build / packaging outputs
 # ---------------------------------------------------------------------------
 dist/

@@ -29,6 +29,24 @@ regardless — this matrix is for tight iteration on a single failure.
 | `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
 | `CLAUDE.md`, `.claude/` | nothing ships | — (no changelog entry) |
 
+### Local-only dev tools (codegraph)
+
+The committed `mise.toml` pins only what CI needs (python, uv, shellcheck, shfmt,
+actionlint), so `mise install --locked` is reproducible on CI. The **codegraph**
+MCP code-intelligence server and its `node` runtime are *not* committed there —
+they are unused by CI and `codegraph@latest` cannot be pinned to a lockfile URL,
+which would break the locked install. Install them per-machine via a gitignored
+`mise.local.toml` (mise auto-merges it):
+
+```toml
+# mise.local.toml — local only, gitignored
+[tools]
+node = "24"
+"npm:@colbymchenry/codegraph" = "latest"
+```
+
+Then `mise install`. Keep these out of the committed `mise.toml`/`mise.lock`.
+
 ## Skill frontmatter schema
 
 Skills live at `plugins/steer/skills/<name>/SKILL.md`. `check_plugin.py` requires

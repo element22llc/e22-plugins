@@ -4,8 +4,11 @@ uv = "0.11"
 shellcheck = "latest"
 shfmt = "latest"
 actionlint = "latest"
-node = "24"
-"npm:@colbymchenry/codegraph" = "latest"
+# Local-only dev tools (node + the codegraph MCP code-intelligence server) are
+# NOT listed here: they are not used by CI (Claude Code is installed via
+# install.sh and Python via `uv sync`), and `codegraph@latest` cannot be pinned
+# to a lockfile URL, which breaks `mise install --locked` on CI. Install them
+# per-machine via a gitignored `mise.local.toml` — see AUTHORING.md.
 
 [settings]
 # Pin every tool resolution into mise.lock for reproducible installs.
