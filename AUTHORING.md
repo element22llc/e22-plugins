@@ -102,6 +102,18 @@ matrix):
   told to type something the harness then rejects. Visibility is orthogonal to
   read-only/side-effecting tier — a hidden skill can still be Tier 1 or Tier 2.
 
+**Allowlists only match single commands — never chain inspection with `&&` or
+pipes.** Claude Code matches a permission rule against the *whole* command string.
+`git status && git diff` matches neither `Bash(git status *)` nor `Bash(git diff
+*)`, so it prompts even when both are allowlisted — silently defeating every
+`allowed-tools` entry and the scaffold `allow` list. When a skill runs inspection
+commands, instruct it to run them as **separate invocations**, one command per
+call. The same goes for the scaffold-shipped allowlist (`templates/scaffold/
+claude/settings.json`): the read-only entries (`git status/diff/log/show`, `gh
+pr/run/repo/label` reads, `mise run check/ci`) only stay silent when each runs on
+its own. This is the single most common reason a repo that *looks* allowlisted
+still prompts.
+
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the
 skill — not inlined into the SKILL.md.
 

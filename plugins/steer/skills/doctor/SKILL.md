@@ -6,6 +6,14 @@ when_to_use: >-
   "tool not found", mise/docker errors), before /steer:init, /steer:build, or
   `mise run dev:setup`. /steer:build and /steer:init invoke it when prerequisites
   are absent.
+allowed-tools:
+  - Bash(git rev-parse *)
+  - Bash(git --version)
+  - Bash(mise --version)
+  - Bash(mise doctor *)
+  - Bash(mise ls *)
+  - Bash(docker --version)
+  - Bash(docker info *)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 

@@ -2,6 +2,21 @@
 name: next
 description: "Read-only workspace navigator — reconstructs the whole workspace state cold (branch/PR, /spec feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action across all workflows using the shared categories + safety precedence. Never edits, commits, publishes, merges, or advances state; defers how to resolve each state to the owning skill."
 when_to_use: Use when picking a repo up cold or mid-stream and asking "what should I do next?", "where do I start?", or "I'm lost" across the whole workspace — when work spans more than one feature/issue/workflow and you need the one action that matters most right now, not a per-skill handoff.
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git branch *)
+  - Bash(git log *)
+  - Bash(git diff *)
+  - Bash(git rev-parse *)
+  - Bash(git remote *)
+  - Bash(gh pr view *)
+  - Bash(gh pr checks *)
+  - Bash(gh pr list *)
+  - Bash(gh run list *)
+  - Bash(gh run view *)
+  - Bash(gh issue list *)
+  - Bash(gh issue view *)
+  - Bash(gh search issues *)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
