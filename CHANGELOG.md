@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `template-reconcile.sh` (consumed by `/steer:adopt`, `/steer:build`,
+  `/steer:spec-scaffold`) no longer reports the `### Q-001 — [...]` open-question
+  seed as a "missing" anchor when a completed intent has filled it in or deleted
+  it. Lines carrying the `steer:placeholder` marker are now stripped from both
+  files before the structural diff, so finished `intent.md` / vision specs stop
+  re-firing a false-positive reconciliation notice (issue #231).
 - **Added:** `license` field (`Apache-2.0`) to the steer plugin manifest, matching
   the repository `LICENSE` now that the marketplace is published publicly.
 - **Changed:** the marketplace repo `element22llc/e22-plugins` is now **public**,
