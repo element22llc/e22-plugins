@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.6.0
+
 - **Fixed:** `/steer:tracker-sync`'s native-issue-field recipes described a stale
   GraphQL shape that no longer matches GitHub's now-public-preview issue fields, so
   an agent following them verbatim built an invalid request and Priority/Effort/date
