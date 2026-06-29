@@ -92,6 +92,13 @@ local preview at the root, run `mise run dev` (or `mise run build` with no
 > so deep links and
 > next-slide navigation would 404. Hash routing needs no SPA fallback at all and
 > is the recommended mode for subdirectory static hosts.
+>
+> **Build-time patch — [`vite.config.ts`](vite.config.ts).** Slidev 52.16.0 has
+> a bug where, in hash mode, slide-navigation links still double-prepend the
+> base (`getSlidePath()` → `…/#/presentation/onboarding/2`), landing on Slidev's
+> in-app NotFound page when you advance a slide. The deck's `vite.config.ts`
+> carries a small `transform` plugin that fixes that one line at build time.
+> Remove it if upstream makes `getSlidePath` hash-aware.
 
 > `public/_redirects` is a Cloudflare-Pages SPA-fallback file and is inert on
 > GitHub Pages; with hash routing it is no longer needed for any host and is
