@@ -158,6 +158,39 @@ mise is the single task **entry surface**, not the single home. The split:
   moving the logic — so `mise tasks` lists the whole repo's vocabulary while pnpm
   still owns the workspace graph.
 
+The delegation is **one-way**. A mise task may wrap a `package.json` script; a
+`package.json` script must **never** wrap a mise task or shell out to a non-Node
+toolchain (`uv`/Python), and **no task is defined in both files**. `package.json`
+owns the Node workspace graph and nothing else.
+
+**Polyglot app (Node web + Python `apps/api`).** When the sanctioned API split
+exists (a Python `apps/api` alongside the Node `apps/web` — see the `apps/`
+README, recorded as an ADR), the backend is **outside** the pnpm workspace, so by
+the rule above it is an **orchestration task in `mise.toml`**, run with `uv run`
+— never a root-`package.json` script. Compose the two long-running servers with a
+mise `dev` task that fans out over `dev:*` in parallel (mise runs `depends`
+concurrently; bump `--jobs` if you have more than four). The root `package.json`
+carries no `dev:api`, no `uv`, and no `concurrently` cross-stack runner:
+
+```toml
+# mise.toml — mise is the polyglot entry point; web stays in package.json
+[tasks."dev:web"]
+run = "pnpm --filter web dev"            # delegates to apps/web/package.json
+[tasks."dev:api"]
+run = "uv run uvicorn app.main:app --reload --port ${API_PORT:-8000}"
+[tasks.dev]
+description = "Run the full app locally (web + api)"
+depends = ["dev:*"]                       # both servers in parallel; mise is the single entry point
+```
+
+```jsonc
+// apps/web/package.json — Node app script lives with its package, no uv, no api task
+{ "scripts": { "dev": "next dev" } }
+```
+
+`mise run dev` is the one command; `dev:web` delegates into pnpm, `dev:api` runs
+uv directly. Nothing is duplicated and no `pnpm`⇄`mise` loop can form.
+
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
 `/steer:init`** — wire real migrate/seed commands, add services, swap pnpm for uv,

@@ -114,6 +114,14 @@ them:
    - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
      drizzle-kit + a seed script) so the fan-out picks them up;
    - Python products: swap the `pnpm …` task commands for `uv run …`.
+   - **Polyglot app (Node web + Python `apps/api`):** drive the Python backend
+     from **mise** (`[tasks."dev:api"] run = "uv run uvicorn …"`) and compose a
+     `[tasks.dev]` with `depends = ["dev:*"]` to run web + api together — mise is
+     the single, polyglot entry point. Do **not** add `dev:api`, `uv`, or a
+     `concurrently` cross-stack `dev` to the root `package.json`; a `package.json`
+     script never shells out to `uv` and no task is defined in both files (rule
+     `10-stack`). The scaffold `mise.toml` ships this as a commented block —
+     uncomment and adapt it.
    The contract (run `/steer:reference conventions` for the prose): `mise run dev:setup` is
    idempotent and, from a fresh clone after `mise install`, must produce a
    working local environment.
