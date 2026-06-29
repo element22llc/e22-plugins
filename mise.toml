@@ -4,10 +4,10 @@ uv = "0.11"
 shellcheck = "latest"
 shfmt = "latest"
 actionlint = "latest"
+node = "24"
+"npm:@colbymchenry/codegraph" = "latest"
 
 [settings]
-# Read the runtime from .python-version so mise and uv agree on the interpreter.
-idiomatic_version_file_enable_tools = ["python"]
 # Pin every tool resolution into mise.lock for reproducible installs.
 lockfile = true
 
@@ -20,10 +20,7 @@ STEER_CLAUDE_CODE_VERSION = "2.1.153"
 
 [tasks.lint]
 description = "Lint and format-check Python code"
-run = [
-  "uv run ruff check .",
-  "uv run ruff format --check .",
-]
+run = ["uv run ruff check .", "uv run ruff format --check ."]
 
 [tasks.plugin-check]
 description = "Run plugin hygiene + standards-consistency + release checks"
@@ -43,21 +40,15 @@ run = [
 
 [tasks.fixtures]
 description = "Run golden fixture contract checks"
-run = [
-  "uv run python scripts/check_fixtures.py",
-]
+run = ["uv run python scripts/check_fixtures.py"]
 
 [tasks.test]
 description = "Run Python tests"
-run = [
-  "uv run pytest",
-]
+run = ["uv run pytest"]
 
 [tasks.actions]
 description = "Lint GitHub Actions workflows"
-run = [
-  "actionlint",
-]
+run = ["actionlint"]
 
 [tasks.shell]
 description = "Lint and format-check shell scripts (plugin hooks + libs + scripts + tests)"
@@ -71,15 +62,11 @@ run = [
 
 [tasks.hooktests]
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
-run = [
-  "sh plugins/steer/hooks/tests/run.sh",
-]
+run = ["sh plugins/steer/hooks/tests/run.sh"]
 
 [tasks.version-scan]
 description = "Scan the repo for version pins that violate policy/versions.yml"
-run = [
-  "sh plugins/steer/scripts/scan-version-pins.sh .",
-]
+run = ["sh plugins/steer/scripts/scan-version-pins.sh ."]
 
 [tasks."gen:copilot"]
 description = "Regenerate the Copilot instructions (from rules/) + prompt-file artifacts (from skills/)"
@@ -93,35 +80,23 @@ run = [
 # the CI env uses — serve/build pull it in on demand via `uv run --group docs`.
 [tasks."docs:serve"]
 description = "Serve the documentation site locally with live reload"
-run = [
-  "uv run --group docs zensical serve",
-]
+run = ["uv run --group docs zensical serve"]
 
 [tasks."docs:build"]
 description = "Build the documentation site (strict: fail on broken links/nav)"
-run = [
-  "uv run --group docs zensical build --strict",
-]
+run = ["uv run --group docs zensical build --strict"]
 
 [tasks."docs:check"]
 description = "Validate docs structure + sync with source of truth (no docs deps)"
-run = [
-  "uv run python scripts/validate_docs.py",
-]
+run = ["uv run python scripts/validate_docs.py"]
 
 [tasks.check]
 description = "Run fast local checks (pre-commit equivalent)"
-depends = [
-  "lint",
-  "plugin-check",
-  "actions",
-]
+depends = ["lint", "plugin-check", "actions"]
 
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"
-run = [
-  "sh scripts/delivery-gates.sh",
-]
+run = ["sh scripts/delivery-gates.sh"]
 
 [tasks.ci]
 description = "Run full CI-equivalent validation"
@@ -146,9 +121,7 @@ description = "Run the headless end-to-end skill suite (slow, costs tokens; need
 # -rP surfaces each scenario's captured turns/cost line even when the test passes
 # (pytest otherwise swallows stdout on green). In CI the same figure is also
 # written to $GITHUB_STEP_SUMMARY.
-run = [
-  "uv run pytest -m e2e -rP",
-]
+run = ["uv run pytest -m e2e -rP"]
 
 # Local variant: run the suite on your interactive `claude` login (subscription
 # seat) instead of API tokens — run `claude /login` once first. `env -u
@@ -163,6 +136,4 @@ run = [
 #   mise run e2e:local -- -k test_sync_is_noop_when_current
 [tasks."e2e:local"]
 description = "Run the E2E suite on your local Claude seat, no API charge (run `claude /login` first)"
-run = [
-  "env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 uv run pytest -m e2e -rP",
-]
+run = ["env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 uv run pytest -m e2e -rP"]

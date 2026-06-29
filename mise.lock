@@ -34,22 +34,17 @@ url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_
 checksum = "sha256:6e7241b51e6817ea6a047693d8e6fed13b31819c9a0dd6c5a726e1592d22f6e9"
 url = "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_windows_amd64.zip"
 
+[[tools.node]]
+version = "24.16.0"
+backend = "core:node"
+
+[[tools."npm:@colbymchenry/codegraph"]]
+version = "0.9.8"
+backend = "npm:@colbymchenry/codegraph"
+
 [[tools.python]]
 version = "3.14.6"
 backend = "core:python"
-
-[tools.python.options]
-precompiled_flavor = "install_only_stripped"
-
-[tools.python."platforms.linux-x64"]
-checksum = "sha256:c172314f4a8ec137a8f605289010c3d19c8b56867d968f0095074cc68efa1d29"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260623/cpython-3.14.6+20260623-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
-provenance = "github-attestations"
-
-[tools.python."platforms.macos-arm64"]
-checksum = "sha256:35d774f61d63c1fd4f1bc9495a7ada92e500dc4382a0df8a9910eb87ea48e8cf"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260623/cpython-3.14.6+20260623-aarch64-apple-darwin-install_only_stripped.tar.gz"
-provenance = "github-attestations"
 
 [[tools.shellcheck]]
 version = "0.11.0"
