@@ -18,6 +18,7 @@ on:
     paths:
       - docs/**
       - mkdocs.yml
+      - presentation/**
       - .github/workflows/docs-deploy.yml
   push:
     branches:
@@ -25,6 +26,7 @@ on:
     paths:
       - docs/**
       - mkdocs.yml
+      - presentation/**
       - .github/workflows/docs-deploy.yml
   workflow_dispatch:
 
@@ -71,17 +73,19 @@ jobs:
         # source of truth; copy it in case the builder did not carry it over.
         run: cp docs/CNAME site/CNAME
 
-      - name: Build presentation deck (served at /presentation/)
-        # The Slidev deck under presentation/ is published into the docs site at
-        # /presentation/, so one GitHub Pages artifact serves both the docs and
-        # the deck (linked from the docs nav). The deck uses its own toolchain
-        # (presentation/mise.toml: node + pnpm) — the root mise.toml has no node.
-        working-directory: presentation
+      - name: Build onboarding presentation deck (served at /presentation/onboarding/)
+        # Slidev decks live under presentation/<slug>/ (one self-contained deck
+        # per subfolder, so the site can host more than one) and are published
+        # into the docs site at /presentation/<slug>/, so one GitHub Pages
+        # artifact serves the docs and every deck (linked from the docs nav).
+        # Each deck carries its own toolchain (presentation/onboarding/mise.toml:
+        # node + pnpm) — the root mise.toml has no node.
+        working-directory: presentation/onboarding
         run: |
           mise trust
           mise install
           mise exec -- pnpm install --frozen-lockfile
-          mise exec -- pnpm exec slidev build --base /presentation/ --out ../site/presentation
+          mise exec -- pnpm exec slidev build --base /presentation/onboarding/ --out ../../site/presentation/onboarding
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

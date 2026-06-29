@@ -891,6 +891,24 @@ rc=$?
 assert_rc "reconcile: checkbox-normalization exits 0" "${rc}" 0
 assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
 
+# placeholder-marked seed anchors are never reported as missing (issue #231):
+# a completed intent that filled in / deleted the `### Q-001 — [...]` stub must
+# not be flagged for the deleted placeholder.
+printf '## Open questions\n_No open questions._\n' >"${RDIR}/done.md"
+printf '## Open questions\n### Q-001 — [decide] <!-- steer:placeholder -->\n' >"${RDIR}/seed.md"
+out="$(sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed.md" 2>/dev/null)"
+rc=$?
+assert_rc "reconcile: placeholder-skip exits 0" "${rc}" 0
+assert_empty "reconcile: deleted placeholder seed not reported" "${out}"
+# a renamed real question (marker deleted) is also not chased back to the stub
+printf '## Open questions\n### Q-001 — should we ship X?\n' >"${RDIR}/real.md"
+out="$(sh "${RECON}" "${RDIR}/real.md" "${RDIR}/seed.md" 2>/dev/null)"
+assert_empty "reconcile: filled-in placeholder not reported" "${out}"
+# a genuinely-missing (non-placeholder) heading is still reported
+printf '## Open questions\n### Q-002 — real and unmarked\n' >"${RDIR}/seed2.md"
+out="$(sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed2.md" 2>/dev/null)"
+printf '%s' "${out}" | grep -q 'Q-002' && ok || bad "reconcile: real missing heading still reported (got: ${out})"
+
 # usage + unreadable inputs
 out="$(sh "${RECON}" "${RDIR}/existing.md" 2>/dev/null)"
 rc=$?
