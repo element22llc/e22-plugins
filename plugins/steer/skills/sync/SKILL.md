@@ -193,10 +193,10 @@ PR'd. Use it to see what a full sync would do.
      `steer@e22-plugins` entry, a CI step, a PR-template section), preserving every
      existing key/step — never clobber.
 
-   Some repairs need a human/external step sync can't do: `claude.yml` is inert
-   without the org `STEER_APP_ID`/`STEER_APP_PRIVATE_KEY` — create it but report it
-   **`wired-pending-secret`**, don't claim it's enabled; `branch-protection.yml`
-   is written here but applied server-side by `/steer:protect`.
+   Some repairs need a human/external step sync can't do: `branch-protection.yml`
+   is written here but applied server-side by `/steer:protect`. (`claude.yml`
+   needs only the `ANTHROPIC_API_KEY` secret to run — the marketplace repo is
+   public, so the plugin clone is anonymous and needs no credential.)
 
    Emit a **capability status table** (this is the whole output under `--check`):
 
@@ -205,7 +205,7 @@ PR'd. Use it to see what a full sync would do.
    |---|---|---|---|
    | plugin-enabled-local | .claude/settings.json | mis-wired | splice enabledPlugins.steer (proposed) |
    | delivery-mode-declared | CLAUDE.md | mis-wired | splice ## Delivery mode, default pr-flow (proposed); ask if solo-trunk fits |
-   | in-ci-plugin-loading | .github/workflows/claude.yml | absent | create from scaffold (proposed); needs STEER_APP_ID |
+   | in-ci-plugin-loading | .github/workflows/claude.yml | absent | create from scaffold (proposed); needs ANTHROPIC_API_KEY secret |
    | version-pin-enforcement | policy/versions.yml, scripts/… | mis-wired | re-copy verbatim scripts (proposed, diff shown) |
    | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |
    | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:protect |
@@ -248,7 +248,7 @@ PR'd. Use it to see what a full sync would do.
    | Failed migration or merge conflict | Blocking now | Resolve it before continuing |
    | Pending migrations in the ledger | Blocking now (next transition) | Apply them |
    | Reconcile or capability-repair batch proposed, not approved | Human decision required | Dev reviews the proposed batch (no command) |
-   | Capability needs an external secret/config (`claude.yml` org App; branch protection) | Human decision required | Dev adds `STEER_APP_ID`/secret, or applies the gate via `/steer:protect` |
+   | Capability needs an external secret/config (`claude.yml` API key; branch protection) | Human decision required | Dev adds `ANTHROPIC_API_KEY`, or applies the gate via `/steer:protect` |
    | Capability follow-up after a created file (Issue Forms added) | Recommended | `/steer:issues bootstrap-labels` |
    | Sync PR open, awaiting review | Human decision required | A dev reviews/merges the PR (no command) — execution is done, integration is not |
    | Nothing pending; `/spec/.version` current; all capabilities present-and-wired | Complete | `No action is currently required.` |

@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the marketplace repo `element22llc/e22-plugins` is now **public**,
+  so the shipped `claude.yml` no longer needs a credential to clone it. Removed
+  the GitHub App token-minting steps (`actions/create-github-app-token` +
+  the `insteadOf` clone-auth rewrite) from `templates/github/workflows/claude.yml`;
+  the `plugin_marketplaces` fetch now clones anonymously and `ANTHROPIC_API_KEY`
+  is the workflow's only required secret. Updated the scaffold `README.md`,
+  `MANIFEST.md`, `CAPABILITIES.md`, the `sync` skill's capability model
+  (`in-ci-plugin-loading` no longer reports `wired-pending-secret` for a missing
+  marketplace App), the docs `github-integration.md` and `launch-checklist.md` to
+  match. Existing product repos keep working unchanged (the marketplace path is
+  identical; their App credential, if set, still clones a now-public repo); the
+  org `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` variable+secret and the shared
+  GitHub App can be retired at the org's convenience.
+
 ### 3.5.0
 
 - **Fixed:** `/steer:build` (the non-technical PO flow) silently defaulted a solo

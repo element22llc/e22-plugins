@@ -44,14 +44,14 @@ rules, with no duplicated system prompt.
 | Credential | Kind | Required | Purpose |
 |---|---|---|---|
 | `ANTHROPIC_API_KEY` | secret | always | Anthropic API auth for the action. A 401 in the log means it is missing, wrong, or mis-scoped. |
-| `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` | variable / secret | while the marketplace repo is private | Credentials for a shared **GitHub App** with read-only access to `element22llc/e22-plugins`. A product repo's default `GITHUB_TOKEN` is scoped to that repo only and **cannot** clone another org repo, so the `plugin_marketplaces` fetch needs this. The workflow mints a short-lived (1 h, auto-revoked), repo-scoped token via [`actions/create-github-app-token`](https://github.com/actions/create-github-app-token) and rewrites `github.com` clones to use it. If `STEER_APP_ID` is unset the steps no-op and the clone goes anonymous (correct once the marketplace is public). |
 
-A **GitHub App** is used in preference to per-repo personal access tokens: it is one
-org-controlled credential, distributed once as an organization variable + secret (so
-no per-repo setup), mints short-lived auto-expiring tokens scoped to just the
-marketplace repo, and is not tied to a person who might leave. Rotation and
-revocation are a single org-level action. The scaffold `README.md` →
-"steer marketplace GitHub App" carries the one-time setup steps for org owners.
+No marketplace credential is required: `element22llc/e22-plugins` is a **public**
+repo, so the `plugin_marketplaces` fetch clones it anonymously over HTTPS —
+`ANTHROPIC_API_KEY` is the only secret `claude.yml` needs. (While the marketplace
+was private, a shared read-only **GitHub App** — `STEER_APP_ID` /
+`STEER_APP_PRIVATE_KEY` — minted a short-lived clone token. That App and those
+org variables/secrets are no longer needed and the workflow no longer references
+them; org owners can retire them at their convenience.)
 
 Verify by mentioning `@claude` and confirming the reply reflects steer standards
 (e.g. it cites the Definition of Done) — that proves the plugin loaded, not just

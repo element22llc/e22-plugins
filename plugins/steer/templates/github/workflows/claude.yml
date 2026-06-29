@@ -3,16 +3,10 @@
 # as a local Claude Code session (steer's SessionStart hook injects rules/* once
 # the plugin is installed) — CI Claude and local Claude stay consistent.
 #
-# Two repo-level prerequisites (see README.md#github-actions-secrets):
-#   1. ANTHROPIC_API_KEY — Anthropic API auth (below).
-#   2. marketplace read access — the org marketplace repo is PRIVATE, and a
-#      product repo's default GITHUB_TOKEN cannot clone another org repo, so the
-#      `plugin_marketplaces` fetch needs a credential. A shared GitHub App (one
-#      org-controlled credential, not per-repo PATs) supplies it: set the
-#      org-level variable STEER_APP_ID and secret STEER_APP_PRIVATE_KEY once, and
-#      the step below mints a short-lived (1 h, auto-revoked) token scoped to
-#      read-only on just the marketplace repo. If STEER_APP_ID is unset the steps
-#      no-op and the clone goes anonymous (fine once the marketplace is public).
+# One repo-level prerequisite (see README.md#github-actions-secrets):
+#   ANTHROPIC_API_KEY — Anthropic API auth (below). The org marketplace repo
+#   (element22llc/e22-plugins) is PUBLIC, so the `plugin_marketplaces` fetch
+#   below clones it anonymously — no marketplace credential or GitHub App needed.
 #
 # NOTE: do NOT try to load steer via a settings.json `enabledPlugins` /
 # `extraKnownMarketplaces` block — those are gated behind an interactive trust
@@ -49,34 +43,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
-
-      # Mint a short-lived, read-only token for the PRIVATE org marketplace repo
-      # so the `plugin_marketplaces` fetch below succeeds. Uses a shared GitHub
-      # App (one org-controlled credential) rather than per-repo PATs. The token
-      # is scoped to just the marketplace repo and auto-revoked after the run.
-      # Skipped when STEER_APP_ID is unset — then the clone goes anonymous, which
-      # is correct once the marketplace is public.
-      - name: Mint marketplace read token (GitHub App)
-        id: marketplace_token
-        if: ${{ vars.STEER_APP_ID != '' }}
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id: ${{ vars.STEER_APP_ID }}
-          private-key: ${{ secrets.STEER_APP_PRIVATE_KEY }}
-          owner: element22llc
-          repositories: e22-plugins
-
-      - name: Authenticate marketplace clone
-        env:
-          MARKETPLACE_TOKEN: ${{ steps.marketplace_token.outputs.token }}
-        run: |
-          if [ -n "$MARKETPLACE_TOKEN" ]; then
-            git config --global \
-              url."https://x-access-token:${MARKETPLACE_TOKEN}@github.com/".insteadOf \
-              "https://github.com/"
-          else
-            echo "No marketplace token (STEER_APP_ID unset) — assuming a public marketplace; cloning anonymously."
-          fi
 
       - name: Run Claude Code
         id: claude
