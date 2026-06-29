@@ -120,9 +120,10 @@ and **Repair**.
 - **Wired-when:** file contains `plugin_marketplaces`. An `enabledPlugins` block
   does **not** count — it is trust-dialog gated and no-ops in headless CI.
 - **Repair:** create from `templates/github/workflows/claude.yml` (copy-and-adapt);
-  propose. Needs org variable `STEER_APP_ID` + secret `STEER_APP_PRIVATE_KEY` to
-  clone the private marketplace — if those are absent the file is inert; report
-  `wired-pending-secret` and name the org-App setup as a human follow-up.
+  propose. The marketplace repo is public, so the plugin clone is anonymous — no
+  marketplace credential needed. The workflow does need the `ANTHROPIC_API_KEY`
+  secret to run at all; if it is absent, report `wired-pending-secret` and name
+  adding the key as a human follow-up.
 - **Verbatim:** no
 - **Why it matters:** without it the in-CI `@claude` agent runs standards-less —
   no Definition of Done, no spec/drift discipline.

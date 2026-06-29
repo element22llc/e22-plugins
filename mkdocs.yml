@@ -15,8 +15,8 @@
 # `docs-templates/` and the authoring guide is the repo-root `AUTHORING.md`.
 site_name: e22-plugins — steer
 site_description: Engineering-standards plugin marketplace — the steer plugin.
-# Served from the branded root domain (Route 53 CNAME → Cloudflare Pages, behind
-# Cloudflare Access); sets the canonical/asset base for root-path serving.
+# Served from the branded root domain (Route 53 CNAME → GitHub Pages, public);
+# sets the canonical/asset base for root-path serving.
 site_url: https://ai.element-22.com/
 docs_dir: docs
 # `mise run docs:build` writes the build here (gitignored). Published to GitHub
@@ -100,3 +100,7 @@ nav:
   - Contributing:
       - Documentation: contributing/documentation.md
       - Release process: contributing/release-process.md
+  # External link: the Slidev deck is published into this same site at
+  # /presentation/ by .github/workflows/docs-deploy.yml. An absolute URL keeps
+  # the strict build and validate_docs from treating it as a missing page.
+  - Presentation: https://ai.element-22.com/presentation/

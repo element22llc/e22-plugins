@@ -86,6 +86,12 @@ venv/
 *.key
 
 # ---------------------------------------------------------------------------
+# Local-only mise config (per-machine dev tools, e.g. node + codegraph MCP).
+# The committed mise.toml/mise.lock pin only what CI needs — see AUTHORING.md.
+# ---------------------------------------------------------------------------
+mise.local.toml
+
+# ---------------------------------------------------------------------------
 # Build / packaging outputs
 # ---------------------------------------------------------------------------
 dist/
@@ -108,9 +114,3 @@ site/
 .terragrunt-cache/
 *.tfstate
 *.tfstate.*
-
-# ---------------------------------------------------------------------------
-# Cloudflare Wrangler local cache — `mise run cf:deploy:preview` runs from the
-# repo root and wrangler writes its cache here. Generated; never commit.
-# ---------------------------------------------------------------------------
-.wrangler/

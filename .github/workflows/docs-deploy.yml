@@ -1,16 +1,17 @@
 name: Docs site
 
-# Builds the Zensical docs site and publishes it to Cloudflare Pages.
+# Builds the Zensical docs site and publishes it to GitHub Pages.
 #
 # The `build` job runs the strict build on every PR and push, so broken docs
 # (dead links/nav) fail before reaching `main` — a gap the `mise run ci` gate
-# (structure-only `validate_docs.py`) does not cover. The `deploy` job uploads
-# the built site to Cloudflare Pages, and only ever runs from `main`.
+# (structure-only `validate_docs.py`) does not cover. The `deploy` job publishes
+# the built site to GitHub Pages, and only ever runs from `main`.
 #
-# Setup: the Cloudflare Pages project (Direct Upload, name `e22-ai-docs`) and the
-# CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID repo secrets must exist. The site
-# is served from https://ai.element-22.com (Route 53 CNAME → <project>.pages.dev)
-# behind Cloudflare Access. See infra/README.md.
+# Setup: repo Settings → Pages → Source = "GitHub Actions" (one-time). The site
+# is served at https://ai.element-22.com via the custom domain pinned by the
+# tracked `docs/CNAME` file; DNS (Route 53 CNAME → element22llc.github.io) lives
+# in the private element22llc/e22-plugins-infra repo. No secrets required — the
+# marketplace repo is public and the deploy uses the built-in GITHUB_TOKEN OIDC.
 
 on:
   pull_request:
@@ -27,15 +28,16 @@ on:
       - .github/workflows/docs-deploy.yml
   workflow_dispatch:
 
-# Least privilege: only read the repo. The deploy job authenticates to Cloudflare
-# with an API token secret, so no extra GITHUB_TOKEN scopes are needed.
+# Least privilege at the top level: only read the repo (the build job checks out
+# and builds). The deploy job widens to the Pages-specific scopes it needs.
 permissions:
   contents: read
 
-# Never run two Cloudflare Pages deploys at once; let a newer push supersede an
-# in-flight one rather than cancelling (avoids a half-published site).
+# Never run two Pages deploys at once; let a newer push supersede an in-flight
+# one rather than cancelling (avoids a half-published site). `github-pages` is
+# the conventional group name for the Pages deployment concurrency lock.
 concurrency:
-  group: cloudflare-pages
+  group: github-pages
   cancel-in-progress: false
 
 # Force mise to install the standard (GIL-enabled) precompiled CPython, not the
@@ -63,28 +65,43 @@ jobs:
         # zensical build --strict → site/. --strict fails on broken links/nav.
         run: mise run docs:build
 
-      - name: Upload built site
-        uses: actions/upload-artifact@v7
+      - name: Pin custom domain (CNAME)
+        # GitHub Pages drops the custom domain on each Actions deploy unless a
+        # CNAME file is present at the site root. docs/CNAME is the tracked
+        # source of truth; copy it in case the builder did not carry it over.
+        run: cp docs/CNAME site/CNAME
+
+      - name: Build presentation deck (served at /presentation/)
+        # The Slidev deck under presentation/ is published into the docs site at
+        # /presentation/, so one GitHub Pages artifact serves both the docs and
+        # the deck (linked from the docs nav). The deck uses its own toolchain
+        # (presentation/mise.toml: node + pnpm) — the root mise.toml has no node.
+        working-directory: presentation
+        run: |
+          mise trust
+          mise install
+          mise exec -- pnpm install --frozen-lockfile
+          mise exec -- pnpm exec slidev build --base /presentation/ --out ../site/presentation
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: site
           path: site
-          retention-days: 1
 
   deploy:
     # Validate on PRs (build job only); publish only from main.
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    # Pages deployment needs these scopes; id-token is used by deploy-pages to
+    # mint the short-lived OIDC token GitHub Pages authenticates with.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download built site
-        uses: actions/download-artifact@v8
-        with:
-          name: site
-          path: site
-
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=e22-ai-docs --branch=main
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

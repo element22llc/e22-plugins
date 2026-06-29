@@ -107,7 +107,7 @@ uv run <your-dev-command>
 
 > On **Windows**, run all of the above inside WSL2 — see [Windows: develop in WSL](#windows-develop-in-wsl).
 
-Before the `@claude` GitHub workflow will run, add the `ANTHROPIC_API_KEY` secret and the steer marketplace App credentials (`STEER_APP_ID` / `STEER_APP_PRIVATE_KEY`) — see [GitHub Actions secrets](#github-actions-secrets) below. To use the GitHub MCP server from local Claude Code sessions, export a `GITHUB_PAT` — see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
+Before the `@claude` GitHub workflow will run, add the `ANTHROPIC_API_KEY` secret — see [GitHub Actions secrets](#github-actions-secrets) below. To use the GitHub MCP server from local Claude Code sessions, export a `GITHUB_PAT` — see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
 
 ## Windows: develop in WSL
 
@@ -124,20 +124,9 @@ On Windows, do all development inside **WSL2** (Ubuntu recommended), not native 
 `.github/workflows/claude.yml` (the `@claude` mention workflow — and any Claude Code Review workflow you add) authenticates to the Anthropic API and **loads the `steer` plugin from the org marketplace**, so the in-CI agent runs under the same engineering standards as a local Claude Code session (not a stock, standards-less Claude). Set these up **before** opening the first PR, or those jobs fail.
 
 - **`ANTHROPIC_API_KEY`** (secret, required) — create at <https://console.anthropic.com/settings/keys>, scoped to this project's billing workspace (not a personal key). Add under **Settings → Secrets and variables → Actions → Secrets**. Without it the job fails with a silent 401.
-- **`STEER_APP_ID`** (variable) + **`STEER_APP_PRIVATE_KEY`** (secret) — credentials for the shared **steer marketplace GitHub App** (read-only on the private `element22llc/e22-plugins` marketplace repo). The default `GITHUB_TOKEN` is scoped to this repo only and **cannot** reach another org repo, so without them the `plugins` load fails and CI Claude silently runs with no steer rules. These are **org-managed, not per-repo** — see [the App below](#steer-marketplace-github-app). Add the App ID under **Settings → Secrets and variables → Actions → Variables** and the private key under **Secrets**. The workflow mints a short-lived (1 h, auto-revoked), repo-scoped token from them; if `STEER_APP_ID` is unset the steps no-op and the clone goes anonymous (correct once the marketplace is public).
+No marketplace credential is needed: `element22llc/e22-plugins` is a **public** repo, so `claude.yml`'s `plugin_marketplaces` step clones it anonymously. (Older scaffolds set a shared `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` GitHub App for read access while the marketplace was private — that App is no longer required and the workflow no longer references it.)
 
-Verify: comment `@claude` on any PR or issue and confirm the reply reflects steer standards (e.g. it cites the Definition of Done or spec discipline) — that proves the plugin loaded, not just that the action ran. The workflow log's `system/init` event also lists loaded plugins. A 401 means `ANTHROPIC_API_KEY` is missing/wrong/mis-scoped; a marketplace-clone or plugin-not-found error means the App credentials are missing or the App lacks access. This workflow uses `anthropics/claude-code-action@v1` and does **not** consume the steer plugin's MCP servers or `GITHUB_PAT`.
-
-### steer marketplace GitHub App
-
-One App is created **once for the org** and reused by every product repo — no per-repo personal access tokens to mint, rotate, or leak. Org owners set it up:
-
-1. **Create the App** (org **Settings → Developer settings → GitHub Apps → New GitHub App**): any name (e.g. *steer-marketplace-reader*), no callback URL, **Repository permissions → Contents: Read-only** (nothing else), and *Where can this app be installed?* → Only this account.
-2. **Generate a private key** (App settings → *Private keys → Generate*) and note the **App ID**.
-3. **Install the App** on the marketplace repo only: App settings → *Install App* → select `element22llc/e22-plugins`.
-4. **Publish the credentials to product repos** as an **organization** variable + secret (org **Settings → Secrets and variables → Actions**) so every repo inherits them: variable `STEER_APP_ID` = the App ID, secret `STEER_APP_PRIVATE_KEY` = the generated `.pem` contents. Scope them to the repos that use `claude.yml`.
-
-Rotating the key or revoking access is then a single org-level action, not a sweep across every repo.
+Verify: comment `@claude` on any PR or issue and confirm the reply reflects steer standards (e.g. it cites the Definition of Done or spec discipline) — that proves the plugin loaded, not just that the action ran. The workflow log's `system/init` event also lists loaded plugins. A 401 means `ANTHROPIC_API_KEY` is missing/wrong/mis-scoped; a plugin-not-found error means the marketplace clone failed (check the repo path). This workflow uses `anthropics/claude-code-action@v1` and does **not** consume the steer plugin's MCP servers or `GITHUB_PAT`.
 
 ## GitHub MCP server (local Claude Code only)
 

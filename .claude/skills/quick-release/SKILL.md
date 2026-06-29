@@ -109,7 +109,7 @@ Identical to `/release` A1:
   per-gate pass/fail line.
 - **`mise run docs:build`** — the **strict** Zensical build (fails on broken
   links / nav), which is *not* part of `mise run ci`. Run it because the
-  Cloudflare deploy happens post-merge from `main`; a red strict build would
+  GitHub Pages deploy happens post-merge from `main`; a red strict build would
   publish a broken site. If the toolchain genuinely can't be provisioned here, do
   not skip silently — report **`[blocker] strict docs build not verified`** so the
   user runs it before merging.

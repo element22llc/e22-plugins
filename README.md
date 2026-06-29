@@ -17,9 +17,8 @@ explicitly if a repo wants it.
 bootstrap: the plugin bundles the full repo scaffold
 (`plugins/steer/templates/scaffold/`) and the spec-spine templates, so
 `/steer:init` and `/steer:adopt` stand a repo up without any external template.
-The old static
-[`repository-template`](https://github.com/element22llc/repository-template)
-is **replaced** by this plugin-driven bootstrap — see
+The old static `repository-template` (a private repo, intentionally not linked
+here) is **replaced** by this plugin-driven bootstrap — see
 [Migrating from `repository-template`](#migrating-from-repository-template).
 
 ## What `steer` ships
@@ -183,3 +182,14 @@ The current version lives in
 `plugins/steer/.claude-plugin/plugin.json`; what changed in each release
 is in [`CHANGELOG.md`](./CHANGELOG.md). (No version table here — it would just
 drift from the source of truth.)
+
+## License
+
+Licensed under the [Apache License, Version 2.0](./LICENSE) — see also
+[`NOTICE`](./NOTICE). You are free to use and adopt these standards under those
+terms.
+
+This repository is **published read-only**: development happens internally and
+external pull requests are not merged. See [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+for how to use it and report problems, and [`SECURITY.md`](./SECURITY.md) for
+reporting vulnerabilities.
