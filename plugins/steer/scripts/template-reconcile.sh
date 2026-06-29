@@ -10,11 +10,15 @@
 # WHAT IT COMPARES
 #   Structural anchors only: `##`/`###` headings and `- [ ]` checklist items.
 #   Checkbox state is flattened ([x]/[X] -> [ ]) and lines are sorted-unique, so
-#   checked-vs-unchecked and ordering never produce a false diff. It prints the
-#   anchors the bundled template has that the existing file lacks — a *candidate*
-#   list that OVER-REPORTS (a placeholder the dev replaced, or a reworded item,
-#   shows as "missing" when it isn't). Open the bundled template and splice with
-#   judgment; never re-add a placeholder the dev already filled in.
+#   checked-vs-unchecked and ordering never produce a false diff. Lines carrying
+#   the `steer:placeholder` marker are dropped from BOTH files before the diff:
+#   those are seed stubs (e.g. the `### Q-001 — [...]` open-question block in a
+#   fresh intent) that the dev is meant to fill in and delete the marker from —
+#   so a completed file legitimately lacks them and must never be flagged as
+#   "missing". It prints the remaining anchors the bundled template has that the
+#   existing file lacks — a *candidate* list that may still OVER-REPORT (a
+#   reworded item shows as "missing" when it isn't). Open the bundled template
+#   and splice with judgment.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. It only reads the two files and writes the candidate list to stdout.
@@ -52,9 +56,13 @@ bundled=$2
 }
 
 # Extract + normalize structural anchors. `|| true` so a file with zero anchors
-# (grep exit 1) doesn't abort the pipeline.
+# (grep exit 1) doesn't abort the pipeline. Placeholder-marked seed lines
+# (`steer:placeholder`) are stripped first so filled-in/deleted stubs never
+# surface as a "missing" anchor.
 norm() {
-	{ grep -hE '^(#{2,3} |- \[)' "$1" || true; } | sed -E 's/\[[xX]\]/[ ]/' | sort -u
+	{ grep -hE '^(#{2,3} |- \[)' "$1" || true; } |
+		{ grep -v 'steer:placeholder' || true; } |
+		sed -E 's/\[[xX]\]/[ ]/' | sort -u
 }
 
 tmp_existing=$(mktemp) || {
