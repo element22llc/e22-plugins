@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:tracker-sync`'s native-issue-field recipes described a stale
+  GraphQL shape that no longer matches GitHub's now-public-preview issue fields, so
+  an agent following them verbatim built an invalid request and Priority/Effort/date
+  values silently failed to write. `field-set` documented `setIssueFieldValue` as
+  flat `issueId` + `fieldId` + value; the live mutation nests them in an
+  `issueFields: [IssueFieldCreateOrUpdateInput!]!` list (`{ fieldId,
+  singleSelectOptionId | dateValue | numberValue | textValue | multiSelectOptionIds
+  | delete }`), with the single-select value passed as an option **id**. `field-get`
+  now names the correct read connection **`issueFieldValues`** (the previously-vague
+  "field-values connection" invited the non-existent `fieldValues` on `Issue`), its
+  typed value variants, the `IssueFields` definition union, and `viewerCanSetFields`
+  as the capability probe. The REST fallback path is corrected to
+  `/repos/{owner}/{repo}/issues/{n}/issue-field-values` (was the legacy
+  `/repositories/{repo_id}/…`, dropping the repo-id lookup) and now warns that the
+  single-field write must use **POST**, never `PUT` (which replaces *all* of an
+  issue's field values).
+
 - **Added:** `license` field (`Apache-2.0`) to the steer plugin manifest, matching
   the repository `LICENSE` now that the marketplace is published publicly.
 - **Changed:** the marketplace repo `element22llc/e22-plugins` is now **public**,
