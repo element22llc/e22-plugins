@@ -45,6 +45,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   identical; their App credential, if set, still clones a now-public repo); the
   org `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` variable+secret and the shared
   GitHub App can be retired at the org's convenience.
+- **Fixed:** bootstrapping an `app`-profile repo with a Python `apps/api` backend
+  produced a circular, duplicated task graph — the root `package.json` carried a
+  `dev:api` that shelled out to `uv run uvicorn`, the same `dev`/`dev:api`/`build`/
+  `test` tasks were defined again in `mise.toml`, and `mise run dev` → `pnpm dev`
+  → `pnpm dev:api` → `uv run` looped between the two entrypoints (#222). The
+  task-running convention is now explicit that delegation is **one-way** (a mise
+  task may wrap a `package.json` script, never the reverse), that a `package.json`
+  script never shells out to `uv`/Python, and that no task is defined in both
+  files. A polyglot app's Python backend is a mise/`uv run` task, composed with a
+  `[tasks.dev]` `depends = ["dev:*"]` fan-out — mise is the single, polyglot entry
+  point. Tightened `rules/10-stack` (and the regenerated
+  `copilot-instructions.md`), documented the pattern with a worked example in
+  `CONVENTIONS.md`, extended `/steer:init` step 6, and shipped a commented
+  `[tasks.dev]` orchestration block in the scaffold `mise.toml` so the bootstrap
+  copies the correct shape instead of inventing a root-`package.json`
+  `concurrently` script.
 
 ### 3.5.0
 
