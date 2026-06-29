@@ -53,6 +53,31 @@ flowchart TD
     raises the server-side PR wall — once the MVP works, you first deploy, or a second
     contributor joins.
 
+## What is silent — read-only inspection
+
+The skills reconstruct workspace state constantly: `git status/diff/log/show/
+branch/remote`, `gh pr view/checks/list/diff`, `gh run view/list/watch`, `gh repo
+view`, `gh label list`, `mise tasks`, and the named verify tasks `mise run check`/
+`mise run ci`. None of these mutate anything, so the scaffold `.claude/
+settings.json` pre-authorizes them all under `permissions.allow` — prompting on
+inspection was the bulk of the "asks for approval constantly" friction without
+protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
+`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`) also carry the same
+read-only `allowed-tools` grants in their frontmatter, so inspection stays silent
+even in a repo that predates the scaffold allowlist.
+
+The boundary is deliberate: `mise run` is allowlisted **only** for the named verify
+tasks (`check`/`ci`), never the wildcard — an open `mise run:*` would silently
+green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission (the
+mutation vector for repo delete, PR merge, and branch protection). `check_standards.py`
+asserts both halves so the split can't regress.
+
+!!! warning "Chained commands defeat the allowlist"
+    A permission rule matches a *single* command string. `git status && git diff`
+    matches no rule even when both are allowlisted, so it prompts anyway. Skills run
+    inspection commands as separate invocations — chaining with `&&`/pipes is the
+    most common reason a repo that looks allowlisted still asks for approval.
+
 ## What is gated
 
 - **Pushing and opening the PR.** This is the one step that waits for the dev.

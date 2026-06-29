@@ -3,6 +3,15 @@ name: audit
 description: "Repeatable, read-only audits of a managed repo behind one skill. `code` mode (default) is a whole-repo code-vs-standards health sweep across the standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), proposes routing into /spec, and files findings in the tracker. `spec` mode compares the as-built /spec (reverse-engineered by /steer:adopt) against the intended spec exported from the issue tracker and surfaces every divergence (the former drift skill). `all` runs both. Repository-read-only: it proposes spec changes and files tracker issues, but never edits code or spec and never commits. Defers correctness to /code-review and security to /security-review."
 when_to_use: Use to audit overall code health and find the highest-leverage improvements (code), to confirm the build matches what the tracker asked for (spec), or both (all) — a periodic standards-conformance pass on a steady-state repo.
 argument-hint: "[code | spec | all]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(gh issue list *)
+  - Bash(gh issue view *)
+  - Bash(gh search issues *)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 

@@ -7,6 +7,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the
+  **read-only inspection** commands the skills run on every step — `git
+  status/diff/log/show/branch/remote`, `gh pr view/checks/list/diff`, `gh run
+  view/list/watch`, `gh repo view`, `gh label list`, `mise tasks`, and the named
+  verify tasks `mise run check`/`mise run ci` — under `permissions.allow`.
+  Previously only the write-side issue/commit verbs were allowlisted, so the
+  read-heavy navigators (`/steer:next`, `/steer:audit`, `/steer:issues`,
+  `/steer:sync`, `/steer:work`, `/steer:setup`) prompted on nearly every
+  inspection step even though nothing risky was happening — the main source of the
+  "asks for approval constantly" friction. The human-gated delivery surface is
+  untouched: `git push`/`gh pr create`/`merge` stay under `ask`, force-push/
+  `--no-verify`/`.env` adds stay under `deny`, and `mise run:*`/`gh api`/`gh:*`
+  remain prompted by omission (an explicit `mise run:*` would have green-lit `mise
+  run deploy`). `check_standards.py` now asserts the read-only set stays under
+  `allow` and that `mise run:*`/`mise:*` never appear there, so the invariant can't
+  silently regress. Existing repos pick the entries up additively on the next
+  `/steer:sync` (the reconcile unions permission lists, never overwrites).
+- **Changed:** the read-heavy navigator skills (`/steer:next`, `/steer:audit`,
+  `/steer:issues`, `/steer:setup`, `/steer:sync`, `/steer:doctor`) now carry their
+  own read-only `allowed-tools` grants, mirroring the model `/steer:work` already
+  used — so inspection runs silently even in a repo that predates the scaffold
+  allowlist above or was never bootstrapped. Side-effecting verbs stay prompted.
+- **Added:** an `AUTHORING.md` note that permission rules match a *single* command
+  string — chaining inspection with `&&`/pipes (`git status && git diff`) defeats
+  every `allowed-tools` and scaffold-`allow` entry and still prompts. Skills must
+  run inspection commands as separate invocations; this is the most common reason a
+  repo that looks allowlisted still asks for approval.
+
 ### 3.6.0
 
 - **Fixed:** `/steer:tracker-sync`'s native-issue-field recipes described a stale

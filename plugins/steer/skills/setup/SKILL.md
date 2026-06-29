@@ -7,6 +7,10 @@ when_to_use: >-
   time you'd otherwise have to guess between /steer:init, /steer:adopt, and
   /steer:sync. This is the single entry point; it auto-detects which applies.
 argument-hint: "[init | adopt | sync]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git rev-parse *)
+  - Bash(gh auth status *)
 ---
 <!-- steer:modes init,adopt,sync -->
 

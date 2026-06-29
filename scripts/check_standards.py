@@ -660,6 +660,50 @@ def check_authorization(errors: list[str]) -> None:
                     f"otherwise prompt on every find-or-create — see issue #180 and the "
                     f"MCP-first create path in /steer:tracker-sync)"
                 )
+        # Read-only inspection the skills run constantly (git status/diff/log/show,
+        # gh pr/run/repo/label reads, the named verify tasks). These are non-mutating
+        # and the read-heavy skills (/steer:next, /audit, /issues, /sync, /work, …)
+        # invoke them on every step — leaving them prompted made the whole experience
+        # feel gated even though nothing risky was happening. They stay under `allow`
+        # so inspection is silent; the human-gated delivery surface (push/PR/merge/
+        # deploy) stays prompted by `ask`/`deny` and the `gh api`/`gh:*` ban below.
+        # `mise run` is allowed ONLY for the named verify tasks `check`/`ci` — never
+        # the wildcard, which would silently green-light `mise run deploy`.
+        read_only_ops = (
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "Bash(git show:*)",
+            "Bash(git branch:*)",
+            "Bash(git remote:*)",
+            "Bash(gh pr view:*)",
+            "Bash(gh pr checks:*)",
+            "Bash(gh pr list:*)",
+            "Bash(gh pr diff:*)",
+            "Bash(gh run view:*)",
+            "Bash(gh run list:*)",
+            "Bash(gh run watch:*)",
+            "Bash(gh repo view:*)",
+            "Bash(gh label list:*)",
+            "Bash(mise tasks:*)",
+            "Bash(mise run check:*)",
+            "Bash(mise run ci:*)",
+        )
+        for ro_op in read_only_ops:
+            if ro_op not in allow:
+                errors.append(
+                    f"{settings}: '{ro_op}' should stay under permissions.allow "
+                    f"(read-only inspection the skills run constantly; prompting on it "
+                    f"is the friction this allowlist removes — keep it silent)"
+                )
+        # A broad `mise run:*` would let `mise run deploy` through the human gate.
+        for forbidden_mise in ("Bash(mise run:*)", "Bash(mise:*)"):
+            if forbidden_mise in allow:
+                errors.append(
+                    f"{settings}: '{forbidden_mise}' must not be under permissions.allow — "
+                    f"it green-lights `mise run deploy`/arbitrary tasks; allow only the "
+                    f"named verify tasks (`mise run check`/`ci`)"
+                )
         # `gh api`/`gh api graphql` must NOT be blanket-allowed: it is the mutation
         # vector for repo delete, PR merge, branch protection, and arbitrary writes
         # that the human-gated delivery boundary depends on (see the tooling-permission
