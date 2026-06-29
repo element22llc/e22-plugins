@@ -80,9 +80,18 @@ The `--base` must match the serving sub-path and begin and end with `/`. For a
 local preview at the root, run `mise run dev` (or `mise run build` with no
 `--base`, output in `dist/`).
 
+> **Routing — why hash mode.** The deck sets `routerMode: hash` in
+> [`slides.md`](slides.md) headmatter, so slides are addressed as
+> `/presentation/#/2` and every navigation stays inside `index.html`. The
+> default history mode would request `/presentation/2`, a path with no static
+> file — and GitHub Pages serves the **site-root** `404.html` (the docs 404) for
+> any missing path, never `/presentation/404.html`, so deep links and
+> next-slide navigation would 404. Hash routing needs no SPA fallback at all and
+> is the recommended mode for subdirectory static hosts.
+
 > `public/_redirects` is a Cloudflare-Pages SPA-fallback file and is inert on
-> GitHub Pages (Slidev also emits a `404.html`); it is kept only for local/other
-> hosts and can be removed if Cloudflare is never used again.
+> GitHub Pages; with hash routing it is no longer needed for any host and is
+> kept only as a harmless artifact — it can be removed.
 
 ## Pinned versions
 
