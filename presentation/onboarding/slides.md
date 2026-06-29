@@ -8,9 +8,10 @@ info: |
 class: text-center
 transition: slide-left
 mdc: true
-# Hash routing (/presentation/#/2) keeps every slide inside index.html, so the
-# deck works on static subdirectory hosts (GitHub Pages) with no SPA fallback —
-# history mode would request /presentation/2 and 404 on GitHub Pages.
+# Hash routing (/presentation/onboarding/#/2) keeps every slide inside
+# index.html, so the deck works on static subdirectory hosts (GitHub Pages) with
+# no SPA fallback — history mode would request /presentation/onboarding/2 and
+# 404 on GitHub Pages.
 routerMode: hash
 fonts:
   sans: Inter

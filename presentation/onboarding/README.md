@@ -1,6 +1,6 @@
-# Presentation — Claude Code & `steer`
+# Onboarding deck — Claude Code & `steer`
 
-A [Slidev](https://sli.dev) deck for a live working session, in two parts:
+The team-onboarding [Slidev](https://sli.dev) deck, in two parts:
 
 1. **For everyone (PO-friendly):** what Claude Code is (in Anthropic's own framing),
    when to reach for it vs Claude Cowork, and how you set how hands-on it is
@@ -11,7 +11,10 @@ A [Slidev](https://sli.dev) deck for a live working session, in two parts:
 
 > This deck **ships nothing**. It is not part of the `steer` plugin, touches no
 > `plugins/steer/` file, and needs **no CHANGELOG entry**. It builds to a static
-> site for Cloudflare Pages.
+> site published with the docs on GitHub Pages.
+
+Decks live under `presentation/<slug>/` (one self-contained deck per subfolder)
+so the site can host more than one — this is the `onboarding` deck.
 
 ## Toolchain — mise + pnpm
 
@@ -23,7 +26,7 @@ reproducible installs. Workspace deps auto-install via **`[deps.pnpm] auto`**
 task and is a no-op once the lockfile is satisfied. Needs mise **≥ 2026.6.14**.
 
 ```bash
-cd presentation
+cd presentation/onboarding
 mise install        # node 24 + pnpm (first time only)
 mise run dev        # installs deps, then serves http://localhost:3030 with live reload
 ```
@@ -68,12 +71,12 @@ repo-root `.github/workflows/docs-deploy.yml` build job runs (after the Zensical
 docs build):
 
 ```bash
-pnpm exec slidev build --base /presentation/ --out ../site/presentation
+pnpm exec slidev build --base /presentation/onboarding/ --out ../../site/presentation/onboarding
 ```
 
-so the deck lands at `site/presentation/` and is served at
-**<https://ai.element-22.com/presentation/>** alongside the docs (one GitHub
-Pages artifact). The docs nav links to it ("Presentation"). No separate
+so the deck lands at `site/presentation/onboarding/` and is served at
+**<https://ai.element-22.com/presentation/onboarding/>** alongside the docs (one
+GitHub Pages artifact). The docs nav links to it ("Onboarding"). No separate
 Cloudflare Pages project or manual deploy is needed.
 
 The `--base` must match the serving sub-path and begin and end with `/`. For a
@@ -82,10 +85,11 @@ local preview at the root, run `mise run dev` (or `mise run build` with no
 
 > **Routing — why hash mode.** The deck sets `routerMode: hash` in
 > [`slides.md`](slides.md) headmatter, so slides are addressed as
-> `/presentation/#/2` and every navigation stays inside `index.html`. The
-> default history mode would request `/presentation/2`, a path with no static
-> file — and GitHub Pages serves the **site-root** `404.html` (the docs 404) for
-> any missing path, never `/presentation/404.html`, so deep links and
+> `/presentation/onboarding/#/2` and every navigation stays inside `index.html`.
+> The default history mode would request `/presentation/onboarding/2`, a path
+> with no static file — and GitHub Pages serves the **site-root** `404.html`
+> (the docs 404) for any missing path, never `/presentation/onboarding/404.html`,
+> so deep links and
 > next-slide navigation would 404. Hash routing needs no SPA fallback at all and
 > is the recommended mode for subdirectory static hosts.
 
