@@ -71,6 +71,18 @@ jobs:
         # source of truth; copy it in case the builder did not carry it over.
         run: cp docs/CNAME site/CNAME
 
+      - name: Build presentation deck (served at /presentation/)
+        # The Slidev deck under presentation/ is published into the docs site at
+        # /presentation/, so one GitHub Pages artifact serves both the docs and
+        # the deck (linked from the docs nav). The deck uses its own toolchain
+        # (presentation/mise.toml: node + pnpm) — the root mise.toml has no node.
+        working-directory: presentation
+        run: |
+          mise trust
+          mise install
+          mise exec -- pnpm install --frozen-lockfile
+          mise exec -- pnpm exec slidev build --base /presentation/ --out ../site/presentation
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

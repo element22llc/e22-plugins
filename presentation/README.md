@@ -61,31 +61,28 @@ pnpm exec playwright install chromium   # one-time
 mise run export                          # → slides-export.pdf
 ```
 
-## Deploy to Cloudflare Pages
+## Deploy (GitHub Pages, via the docs site)
 
-Connect this repo as a Cloudflare Pages project and set:
-
-| Setting | Value |
-|---|---|
-| **Production branch** | your release branch (e.g. `main`) |
-| **Build command** | `pnpm run build` |
-| **Build output directory** | `dist` |
-| **Root directory (advanced)** | `presentation` |
-| **Environment variable** | `NODE_VERSION = 24` |
-
-Cloudflare detects `pnpm-lock.yaml` and installs with pnpm before the build
-command. SPA routing is handled by [`public/_redirects`](public/_redirects)
-(`/* → /index.html 200`), so deep links to a specific slide (e.g. `/12`) and
-refreshes resolve correctly. (`NODE_VERSION` is also read from
-[`.node-version`](.node-version).)
-
-**Deploying under a sub-path** (e.g. `example.com/talks/steer/`)? Build with a base:
+The deck is published automatically as part of the documentation site. The
+repo-root `.github/workflows/docs-deploy.yml` build job runs (after the Zensical
+docs build):
 
 ```bash
-pnpm exec slidev build --base /talks/steer/
+pnpm exec slidev build --base /presentation/ --out ../site/presentation
 ```
 
-(The base must begin and end with `/`.) For a root `*.pages.dev` deploy, leave it off.
+so the deck lands at `site/presentation/` and is served at
+**<https://ai.element-22.com/presentation/>** alongside the docs (one GitHub
+Pages artifact). The docs nav links to it ("Presentation"). No separate
+Cloudflare Pages project or manual deploy is needed.
+
+The `--base` must match the serving sub-path and begin and end with `/`. For a
+local preview at the root, run `mise run dev` (or `mise run build` with no
+`--base`, output in `dist/`).
+
+> `public/_redirects` is a Cloudflare-Pages SPA-fallback file and is inert on
+> GitHub Pages (Slidev also emits a `404.html`); it is kept only for local/other
+> hosts and can be removed if Cloudflare is never used again.
 
 ## Pinned versions
 

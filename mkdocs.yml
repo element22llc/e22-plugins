@@ -100,3 +100,7 @@ nav:
   - Contributing:
       - Documentation: contributing/documentation.md
       - Release process: contributing/release-process.md
+  # External link: the Slidev deck is published into this same site at
+  # /presentation/ by .github/workflows/docs-deploy.yml. An absolute URL keeps
+  # the strict build and validate_docs from treating it as a missing page.
+  - Presentation: https://ai.element-22.com/presentation/
