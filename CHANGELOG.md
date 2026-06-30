@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the SessionStart template-drift detector (`check-template-drift.sh`)
+  no longer falsely flags every correctly-completed feature on every session. It
+  did a verbatim heading match that included the seed `### Q-001 — [...]
+  <!-- steer:placeholder -->` open-question block — but that block is by design
+  rewritten or deleted once a feature has a real question or is fully specced, so
+  the match never succeeded and each completed `intent.md`/`vision.md` was reported
+  as "missing" a section it had legitimately filled in. The detector now skips
+  headings carrying `<!-- steer:placeholder -->`, mirroring `check-open-questions.sh`,
+  which already ignores the same marker. Resolves #231.
+
 ### 3.7.0
 
 - **Added:** a **solo-trunk enforcement floor + graduation nudge** (#242). A new
