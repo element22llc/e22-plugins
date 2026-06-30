@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** a published **Spec `Status:` ↔ issue `steer:state` crosswalk** in
+  `ISSUE-WORKFLOW.md` (the single authority for how the two state machines align,
+  making `reconcile` deterministic), cross-referenced from both enum sections in
+  `ENUMS.md` and from the `/steer:tracker-sync`, `/steer:spec`, `/steer:audit`, and
+  `/steer:work` reconcile/transition steps. A new `check_standards.py` guard
+  (`check_crosswalk`) fails the build if a `feature_status` or `issue_state` token
+  is added to the registry without a matching crosswalk row. Resolves #244.
 - **Added:** a hotfix / incident fast-path (`62-hotfix` rule + `/steer:work --hotfix`).
   A production incident is high-risk *and* time-critical at once — the lane is the one
   sanctioned speed lever, opened only on an objective entry condition (deployed

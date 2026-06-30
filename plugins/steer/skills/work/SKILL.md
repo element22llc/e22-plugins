@@ -216,7 +216,10 @@ necessary for `done`, not sufficient on its own).
   where one applies. Cancelled work was not delivered.
 - PR closed **without** merge → back to `in-progress` or `blocked`.
 - `status` / `resume` / `finish` reconcile stale markers on the next interaction,
-  reading the closure reason rather than assuming "closed == done."
+  reading the closure reason rather than assuming "closed == done." When a feature
+  issue's state and its spec `Status:` disagree, derive the expected `Status:` from
+  the issue state via the Status↔state crosswalk (`ISSUE-WORKFLOW.md`) and surface
+  the mismatch — never silently rewrite the spec.
 
 ## Branch naming
 

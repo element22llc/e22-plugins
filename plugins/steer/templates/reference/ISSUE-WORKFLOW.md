@@ -181,6 +181,40 @@ reason before transitioning a closed issue**, keeping merge state as independent
 evidence. An AI may *perform* a transition only where the table says so;
 everywhere else it proposes and waits for the named human.
 
+### Spec `Status:` ↔ issue `steer:state` crosswalk
+
+Progress is tracked by **two state machines**: the issue `steer:state` marker
+(above) and a feature spec's `> Status:` line (`feature_status` enum —
+`draft · approved · implemented · validated · live`). The issue state is the
+**base source of truth**; a feature's spec `Status:` is **derived** from it via
+this crosswalk, so `reconcile` (`/steer:work`, `/steer:audit spec`,
+`/steer:tracker-sync`) is deterministic rather than ad-hoc. This table is the
+single authority for that mapping.
+
+It applies to the **feature path only** — `bug`, `task`, `finding`, and
+`spec-question`/`spec-drift` issues carry no `intent.md`, hence no spec
+`Status:`; an `epic` aggregates child features and has no `Status:` of its own.
+
+| issue `steer:state` | feature `Status:` | how they line up |
+|---|---|---|
+| `inbox` | _(none yet)_ | captured; not materialized into an `intent.md` |
+| `exploring` | _(none)_ → `draft` | brainstorming; `intent.md` may not exist yet |
+| `ready-for-spec` | `draft` | `intent.md` authored, awaiting PO approval |
+| `ready-for-dev` | `approved` | intent PO-approved; contract authored/ready |
+| `in-progress` | `approved` | building; behavior not yet merged |
+| `validate` | `implemented` | PR merged; awaiting **product** validation |
+| `done` | `validated` → `live` | `validated` on accepted close; `live` once released to users |
+| `blocked` | _(retains prior)_ | orthogonal hold; spec `Status:` is unchanged |
+| `cancelled` | _(none)_ | not delivered; no satisfied `Status:` |
+
+The two "split" rows reflect a spec transition the issue state can't see on its
+own: `done` first reaches `validated` at accepted close and only becomes `live`
+when the feature is actually released; `exploring` holds no `Status:` until an
+`intent.md` is materialized as `draft`. Resolve those with the spec gate
+(`/steer:spec approve`) and the release event — never silently. When a feature's
+spec `Status:` and this crosswalk disagree, that is drift: surface it for human
+review, do not auto-rewrite (see Audit & drift).
+
 ## Labels (small, deliberate set)
 
 - **source:** mirrors the canonical `steer:source` marker (label is *derived*) —

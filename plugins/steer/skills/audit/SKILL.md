@@ -380,7 +380,8 @@ single unit — when that one story's acceptance criteria are themselves split.
 
 **Status gates whether Missing is a defect or just roadmap.** A `🔴 Missing`
 verdict means different things depending on the unit's tracker status (captured
-in Phase 1):
+in Phase 1). Map the issue `steer:state` to the spec `Status:` it should have via
+the Status↔state crosswalk in `ISSUE-WORKFLOW.md`, then read the gate below:
 
 - **Done (or no longer open) but Missing → true drift / defect.** The tracker
   says this shipped, yet the as-built spec has no such behavior. This is a real
