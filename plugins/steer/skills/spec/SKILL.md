@@ -136,7 +136,10 @@ they invoke this operation but **must not reproduce its field-editing logic**
 `Status:` flip, or the HISTORY entry). An explicit PO statement authorizes Claude
 to run this operation; the PO never has to know or type the slash command.
 
-**Allowed transition — `draft → approved` only.**
+**Allowed transition — `draft → approved` only.** This is the spec side of the
+`ready-for-dev` row of the Status↔state crosswalk (`ISSUE-WORKFLOW.md`): the
+issue is the base source of truth and a feature's spec `Status:` is derived from
+it. Approving here is the gate that lets the issue advance to `ready-for-dev`.
 
 - Refuse on `implemented`, `validated`, or `live`: approval never downgrades or
   rewrites a feature past implementation — report the current state and stop,

@@ -171,6 +171,9 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   `bootstrap-labels`); it is safe to re-run.
 - **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
   Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
+  For a feature, the derived spec `Status:` follows the Status↔state crosswalk in
+  `ISSUE-WORKFLOW.md`; this op never writes the spec — `/steer:spec` /
+  `/steer:work` reconcile it from the new state.
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
   `steer:claimed-by` marker (active execution context). **Default subject is the
   invoking user** (self-assign): resolve it as `@me` on the `gh` path

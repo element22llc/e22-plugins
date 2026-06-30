@@ -52,6 +52,7 @@ from check_plugin import PLUGIN_ROOT, parse_frontmatter
 
 REGISTRY_PATH = PLUGIN_ROOT / "templates/reference/enums.registry"
 ENUMS_MD_PATH = PLUGIN_ROOT / "templates/reference/ENUMS.md"
+ISSUE_WORKFLOW_PATH = PLUGIN_ROOT / "templates/reference/ISSUE-WORKFLOW.md"
 SKILLS_DIR = PLUGIN_ROOT / "skills"
 RULES_DIR = PLUGIN_ROOT / "rules"
 HOOKS_JSON = PLUGIN_ROOT / "hooks/hooks.json"
@@ -286,6 +287,31 @@ def check_enums_md_agrees(errors: list[str], reg: dict[str, list[str]]) -> None:
             # each value must appear verbatim somewhere in the human docs
             if v not in md:
                 errors.append(f"ENUMS.md: missing documentation for {key} value '{v}'")
+
+
+def check_crosswalk(errors: list[str], reg: dict[str, list[str]]) -> None:
+    """The published Status↔state crosswalk in ISSUE-WORKFLOW.md must cover every
+    issue_state and every feature_status token, so it can't silently drift from the
+    registry when a new state/status is added."""
+    if not ISSUE_WORKFLOW_PATH.is_file():
+        errors.append(f"{ISSUE_WORKFLOW_PATH}: missing")
+        return
+    text = ISSUE_WORKFLOW_PATH.read_text(encoding="utf-8")
+    heading = "### Spec `Status:` ↔ issue `steer:state` crosswalk"
+    start = text.find(heading)
+    if start == -1:
+        errors.append(f"ISSUE-WORKFLOW.md: missing the '{heading}' crosswalk section")
+        return
+    # The crosswalk block runs from its heading to the next level-2 heading.
+    rest = text[start + len(heading) :]
+    end = rest.find("\n## ")
+    block = rest if end == -1 else rest[:end]
+    for token in reg.get("issue_state", []):
+        if f"`{token}`" not in block:
+            errors.append(f"ISSUE-WORKFLOW.md crosswalk: missing issue_state '{token}'")
+    for token in reg.get("feature_status", []):
+        if f"`{token}`" not in block:
+            errors.append(f"ISSUE-WORKFLOW.md crosswalk: missing feature_status '{token}'")
 
 
 def _strip_category(cell: str) -> str:
@@ -883,6 +909,7 @@ def run_checks(errors: list[str]) -> None:
         check_enums_md_agrees(errors, reg)
         check_token_membership(errors, reg)
         check_cross_field(errors, reg)
+        check_crosswalk(errors, reg)
     check_manifest(errors)
     check_manifest_reverse(errors)
     check_readme_inventory(errors, skills)

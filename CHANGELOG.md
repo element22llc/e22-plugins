@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** a published **Spec `Status:` ↔ issue `steer:state` crosswalk** in
+  `ISSUE-WORKFLOW.md` (the single authority for how the two state machines align,
+  making `reconcile` deterministic), cross-referenced from both enum sections in
+  `ENUMS.md` and from the `/steer:tracker-sync`, `/steer:spec`, `/steer:audit`, and
+  `/steer:work` reconcile/transition steps. A new `check_standards.py` guard
+  (`check_crosswalk`) fails the build if a `feature_status` or `issue_state` token
+  is added to the registry without a matching crosswalk row. Resolves #244.
 - **Added:** `/steer:intake` — a front-door skill that absorbs a PO-supplied spec
   or roadmap **document** (docx/pptx/xlsx/pdf) into the spine. It version-stamps and
   commits both the original binary and a normalized Markdown extraction under
