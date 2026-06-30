@@ -30,23 +30,14 @@ name one. Plain language is the only entry point a user needs.
   ratifying an ADR (High-risk), and push / PR / merge / deploy / real secrets (Commit
   autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
   runs; it never relaxes what that skill is allowed to do.
-- **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
-  or build intent through bootstrap first via **`/steer:setup`**, which detects the
-  repo state and hands off to the right path (greenfield, existing-code adoption, or
-  steady-state sync) — the SessionStart hook flags this; don't degrade to
-  toolchain-only. **A non-technical owner's idea is the exception:** route it straight
-  to **`/steer:build`**, which is bootstrap-inclusive (it runs `/steer:init` itself at
-  step 1) — `/steer:setup`-first is for developer or ambiguous feature intent.
-  **Make bootstrap the first move, announced up front** — not a
-  closing offer after a long scoping pass; that scoping folds into `init`'s own
-  interview, and durable design decisions wait for the spine to hold them
-  (`31-decision-capture`), never a memory- or chat-only record.
-  **"Prototype" / "quick" / "just try it" / "throwaway" never waives this** — a
-  prototype is greenfield, so it still gets the bundled scaffold and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview; by declaring
-  solo-trunk mode, no per-feature branch or PR — a GitHub-adopted repo still keeps
-  the issue per change, see Issue-first), never *whether* scaffold and spine exist;
-  the full greenfield-vs-prototype mechanics are canonical in Spec workflow.
+- **Respect bootstrap precedence.** On a repo with no `/spec` spine, make bootstrap the
+  **first move, announced up front** (not a closing offer after a long scoping pass): route
+  a developer or ambiguous feature/build intent through **`/steer:setup`**, and a non-technical
+  owner's idea straight to **`/steer:build`** (bootstrap-inclusive). The SessionStart hook flags
+  this; don't degrade to toolchain-only. "Prototype" / "quick" / "throwaway" changes ceremony,
+  **never whether scaffold and spine exist**. How and why: `/steer:setup` owns the dispatch nuance,
+  Spec workflow owns the greenfield-vs-prototype ceremony mechanics, and Issue-first keeps the
+  per-change issue even for a prototype.
 - **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
   switch or capture it (`/steer:issues capture`), rather than silently dropping the
   current thread.
@@ -64,6 +55,7 @@ to anything outside this table.
 | think a feature through / shape acceptance criteria without building it — incl. refining the spec before a PO build | `/steer:spec` |
 | absorb a new or updated spec/roadmap document a PO sent (docx/pptx/xlsx/pdf) — detect what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
+| respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
@@ -577,13 +569,10 @@ request does **not** need confirmation to create the issue.
   per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
-- **The host may gate autonomous issue creation.** The scaffold pre-authorizes
-  the tracker-metadata write verbs (`.claude/settings.json` → `allow`), but some
-  permission modes still classify an unprompted `gh issue create` as an external
-  write and block it. A blocked create is a *host-permission gate, not a missing
-  issue* — don't loop retrying it. Route gracefully: ask the user to confirm the
-  create, or suggest they run `!gh issue create …` under their own identity, then
-  continue the bounded action set.
+- **A blocked `gh issue create` is a host-permission gate, not a missing issue.**
+  Don't loop retrying — confirm with the user, or have them run `!gh issue create …`
+  under their own identity, then continue the bounded action set. (Full rationale:
+  ISSUE-WORKFLOW.md → "Host gating".)
 
 Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
 repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does
@@ -665,6 +654,11 @@ A change is done when **all** of these hold. Reviewers check them; CI cannot.
 - [ ] High-risk areas were scoped first (see High-risk areas).
 - [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
 
+**Hotfix exception (see Hotfix / incident fast-path):** under a declared production
+hotfix, items above may be **deferred** to the mandatory post-incident follow-up —
+**never waived**. The follow-up backfills the issue, the spec/ADR, and the
+`/spec/HISTORY.md` entry so this list is satisfied once the fire is out.
+
 
 ## Deployment & environments
 
@@ -743,6 +737,39 @@ locally in a deployed product still produces migrations/deletions that reach
 real data on merge — no relaxation there. **Never relaxed**, even
 pre-production: real secrets/credentials, `/infra`, deploys, real third-party
 calls.
+
+
+## Hotfix / incident fast-path
+
+A production incident is **high-risk and time-critical at once** — the one case
+where full ceremony and speed genuinely conflict. The hotfix lane is the **only
+sanctioned speed lever**; without it, teams under pressure route around the
+standards entirely. Run it via `/steer:work --hotfix`.
+
+**Objective entry condition (not self-asserted).** The lane opens only when the
+change targets an already-**deployed production** system with real users or data
+(the rule 60 predicate) **and** there is an active incident, outage, or
+regression. "Urgent" feature work, a looming demo, or a pre-MVP repo with nothing
+deployed are **not** hotfixes — they take the normal lane.
+
+**What the lane relaxes — ceremony and ordering, never authority:**
+
+- **Issue after-the-fact.** File or backfill the GitHub issue as soon as
+  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
+  so issue-first reconciliation recognises the sanctioned lane. This relaxes
+  issue-first *timing* (rule 36), not its existence.
+- **Expedited single-reviewer.** One reviewer approval suffices, in place of the
+  change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
+  gate still stands** — no self-merge.
+- **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 —
+  validate in non-prod where feasible). As everywhere, deploy is **never
+  auto-executed**: push, merge, and deploy stay human-gated.
+
+**Mandatory follow-up once the fire is out (not optional).** Restore traceability:
+backfill/finish the issue, write the spec or ADR if a durable decision was made,
+and append a `/spec/HISTORY.md` entry. Definition of Done is **deferred under this
+lane, never waived** (rule 50). A hotfix without its follow-up is unfinished work,
+not a shortcut earned.
 
 
 ## Secrets handling

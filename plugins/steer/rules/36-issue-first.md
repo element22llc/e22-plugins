@@ -27,13 +27,10 @@ request does **not** need confirmation to create the issue.
   per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
-- **The host may gate autonomous issue creation.** The scaffold pre-authorizes
-  the tracker-metadata write verbs (`.claude/settings.json` → `allow`), but some
-  permission modes still classify an unprompted `gh issue create` as an external
-  write and block it. A blocked create is a *host-permission gate, not a missing
-  issue* — don't loop retrying it. Route gracefully: ask the user to confirm the
-  create, or suggest they run `!gh issue create …` under their own identity, then
-  continue the bounded action set.
+- **A blocked `gh issue create` is a host-permission gate, not a missing issue.**
+  Don't loop retrying — confirm with the user, or have them run `!gh issue create …`
+  under their own identity, then continue the bounded action set. (Full rationale:
+  ISSUE-WORKFLOW.md → "Host gating".)
 
 Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
 repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does

@@ -58,14 +58,17 @@ Two invariants underpin everything:
 ### Authorization & confirmation
 
 The **single authority** for *when an agent acts without asking* vs *when it
-confirms first*. Skills and hooks **reference this block; none restates it.**
+confirms first*. Skills reference this block rather than restating it; the
+always-on issue-first rule and the issue-mutation hooks carry only a terse,
+point-of-use reminder of the host-gate fallback (principle 3) — never a second
+normative copy.
 
 - **Explicit implement / capture request → no extra confirmation.** "fix #123",
   "implement this", "create an issue for…" authorize find-or-create plus the
   bounded action set (principle 4) with no second ask. *No extra confirmation*
   is steer's stance; the **host** can still gate the underlying `gh issue create`
-  (principle 3). When it does, fall back gracefully (confirm with the user or
-  `!gh issue create`) — never read the host block as "no issue was wanted".
+  — see the host-gate fallback in principle 3. Never read a host block as "no
+  issue was wanted".
 - **Bulk publish of audit / drift / adoption findings → one batch confirmation.**
   Filing many issues from one report (`publish-audit` / `publish-drift` /
   `publish-adoption`) takes a single confirmation for the whole batch, then

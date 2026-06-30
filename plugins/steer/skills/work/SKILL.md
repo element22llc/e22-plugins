@@ -1,8 +1,8 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules and delivery mode — in solo-trunk mode it commits straight to main and closes the issue from the trunk commit instead of branching and opening a PR. One issue per branch/PR (or trunk commit) by default. Pass --reviewed to wrap execution in independent plan- and code-review gates plus a bounded fix loop (the review-gated path formerly the deliver skill) — vetted, not first-draft."
-when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed ("deliver X carefully", "do this with review", any change costly to unwind) to gate the work through independent plan and code review.
-argument-hint: "[start | resume | status | finish] [--reviewed] [#issue ...]"
+description: "Execute a GitHub issue end-to-end from local Claude Code — read and validate the issue, claim it, create or reuse a branch, load linked specs, implement, test, update progress on the issue, open the PR, and transition lifecycle state. The execution counterpart to /steer:issues (which owns backlog management and never edits code). Routes all tracker-metadata I/O through /steer:tracker-sync; git and PR delivery follow the repo's commit/PR-autonomy rules and delivery mode — in solo-trunk mode it commits straight to main and closes the issue from the trunk commit instead of branching and opening a PR. One issue per branch/PR (or trunk commit) by default. Pass --reviewed to wrap execution in independent plan- and code-review gates plus a bounded fix loop (the review-gated path formerly the deliver skill) — vetted, not first-draft. Pass --hotfix for a genuine production incident (deployed system, active outage/regression): the fast-path relaxes ceremony and ordering (issue filed after-the-fact on a hotfix/ branch, single-reviewer) but keeps every human authority gate, and requires a mandatory post-incident follow-up to restore traceability (rule 62)."
+when_to_use: Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123", "implement #123 and #124"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed ("deliver X carefully", "do this with review", any change costly to unwind) to gate the work through independent plan and code review. Add --hotfix only for a real production incident on a deployed system ("prod is down", "emergency fix", "hotfix the outage") — not for ordinary urgent work.
+argument-hint: "[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -168,6 +168,37 @@ In **prototype/local mode** there is no tracker and therefore no `/steer:work` t
 run — apply the same `REVIEW-LOOP.md` protocol directly around `/steer:build`'s
 implementation, which is the path that population uses.
 
+## Hotfix mode (`--hotfix`)
+
+`--hotfix` is the **production-incident fast-path** (rule `62-hotfix`). It relaxes
+*ceremony and ordering*, never the human authority gates. Use it **only** when the
+objective entry condition holds: the change targets an already-**deployed
+production** system with real users or data **and** there is an active incident,
+outage, or regression. "Urgent" feature work and pre-MVP repos are **not** hotfixes —
+drop the flag and use the normal flow. A hotfix presupposes a deployed product, so it
+implies **pr-flow** (a solo-trunk pre-MVP repo has nothing to hot-fix).
+
+What changes versus the normal flow:
+
+- **Branch.** Work on a `hotfix/<n>-slug` branch (not `issue/<n>`) so the
+  issue-first Stop hook recognises the sanctioned after-the-fact lane. `<n>` is the
+  issue number once it exists; until then use a short slug and record it when the
+  issue is filed.
+- **Issue after-the-fact.** Don't block the fix on find-or-create. File or backfill
+  the issue as soon as practical and reference it from the PR/commit — the hook
+  won't nag a `hotfix/` branch, but the issue is still required by the follow-up.
+- **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
+  the change-size / high-risk scoping ceremony of rules 60 and 80) — it does **not**
+  remove the PR/merge human gate. No self-merge.
+- **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
+  Deployment (validate in non-prod where feasible) — but, exactly as everywhere
+  else, deploy is **never auto-executed**: `git push`, `gh pr merge`, and any deploy
+  stay human-gated (this skill does not pre-approve them).
+- **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
+  backfill/finish the issue, write the spec/ADR if a durable decision was made, and
+  append a `/spec/HISTORY.md` entry. Definition of Done is **deferred, not waived**
+  (rule 50) — track the follow-up to closure rather than declaring the hotfix done.
+
 ## Completion semantics
 
 **Closure reason — not the mere fact of closure — decides the terminal state.**
@@ -197,6 +228,10 @@ in the local marker `spec/.work/<branch>.md` (slashes → underscores; local-onl
 checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
 unconventional but claimed branch is still recognized. Optional housekeeping:
 remove the marker when the issue is closed.
+
+In **`--hotfix` mode**, use `hotfix/<n>-slug` instead — the reconciliation hook
+recognises the `hotfix/` prefix directly as the after-the-fact lane (rule 62), so a
+marker is not required up front; record it when the issue is filed in the follow-up.
 
 ### Marker format
 
