@@ -32,11 +32,18 @@ TPL="${ROOT}/templates/spec"
 # deliberately do NOT diff checklist items here — filled-in placeholders and reworded
 # items over-report and would put false positives in the notice. Once the model is
 # pointed at the gap it opens the template and reconciles items too.
+#
+# We also skip headings carrying `<!-- steer:placeholder -->` (e.g. the seed
+# `### Q-001 — [...]` open-question block). Those are BY DESIGN rewritten or deleted
+# once a feature has a real question or is fully specced, so a verbatim match against
+# the template heading never succeeds and every correctly-completed file would be
+# flagged on every session. This mirrors check-open-questions.sh, which already
+# ignores the same marker.
 missing_sections() {
   _existing="$1"
   _template="$2"
   [ -f "$_existing" ] && [ -f "$_template" ] || return 0
-  grep -E '^#{2,3} ' "$_template" 2>/dev/null | while IFS= read -r _h; do
+  grep -E '^#{2,3} ' "$_template" 2>/dev/null | grep -v 'steer:placeholder' | while IFS= read -r _h; do
     grep -qxF "$_h" "$_existing" 2>/dev/null || printf '%s\n' "$_h"
   done
 }
