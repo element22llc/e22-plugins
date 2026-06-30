@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.7.0
+
 - **Added:** a **solo-trunk enforcement floor + graduation nudge** (#242). A new
   SessionStart hook `check-graduation.sh` fires only in solo-trunk and only when a
   local signal is present (a `prod`/`production` branch, a deploy workflow, or an
