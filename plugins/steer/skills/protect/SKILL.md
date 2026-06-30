@@ -111,7 +111,13 @@ idempotent path: re-running on a protected repo writes nothing.
 When the repo's `CLAUDE.md` declares **solo trunk mode**, an absent protection is
 **intentional (pre-MVP)**, not drift — report it that way and frame `apply` as
 *graduation* (offer it once the MVP works / a deploy or second contributor is near),
-not as a compliance gap to fix immediately.
+not as a compliance gap to fix immediately. In that case also report the
+**graduation signals** alongside the protection diff: a second collaborator
+(`gh api repos/{owner}/{repo}/collaborators --jq 'length'` > 1), a `prod`/`production`
+branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
+so plainly and recommend graduating now; when none holds, note that staying on
+solo-trunk is fine for now. (The SessionStart `check-graduation.sh` hook surfaces
+the local signals each session; this is the networked, on-demand check.)
 
 ## Apply (only on confirmation)
 

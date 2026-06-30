@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** a **solo-trunk enforcement floor + graduation nudge** (#242). A new
+  SessionStart hook `check-graduation.sh` fires only in solo-trunk and only when a
+  local signal is present (a `prod`/`production` branch, a deploy workflow, or an
+  `infra/` tree), nudging the owner to graduate to PR flow via `/steer:protect`;
+  `/steer:audit` and `/steer:protect` add the networked confirmation (a second
+  collaborator) and escalate when graduation conditions are met. The shipped
+  `ci.yml` changed-line coverage gate now also runs on push to `main`, self-gating
+  on the delivery-mode marker so it enforces the Definition-of-Done coverage floor
+  in solo-trunk (which has no PR) while never re-gating a post-merge push in
+  pr-flow. Rule 50 notes the floor.
 - **Added:** an **advisory `spec-drift` CI job** in the shipped scaffold
   `ci.yml` — pure shell + git (no stack, no Python), it *warns* (never blocks)
   when a change touches application behavior (`apps/`, `packages/`, `src/`, …)

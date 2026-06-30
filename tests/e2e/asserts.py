@@ -89,6 +89,9 @@ def assert_drift_gate(repo: Path) -> None:
     assert_contains(repo, ".github/workflows/ci.yml", "scan-version-pins.sh")
     # Advisory spec-drift gate shipped to product repos (#243).
     assert_contains(repo, ".github/workflows/ci.yml", "spec-drift")
+    # Solo-trunk Definition-of-Done floor: the coverage gate self-gates on the
+    # delivery-mode marker on push to main (#242).
+    assert_contains(repo, ".github/workflows/ci.yml", "steer:delivery-mode=solo-trunk")
     assert_file(repo, ".github/pull_request_template.md")
 
 

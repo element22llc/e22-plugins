@@ -128,8 +128,14 @@ service) and say so.
    verify/apply against `policy/branch-protection.yml`; do not query or change
    settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
    declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
-   intentional — report it as expected and recommend graduating via `/steer:protect`
-   when the MVP is ready, not as drift.
+   intentional — *not* drift. But check whether the repo has **outgrown**
+   solo-trunk: a second collaborator (`gh api repos/{owner}/{repo}/collaborators
+   --jq 'length'` > 1), a `prod`/`production` branch, or a deploy target (a deploy
+   workflow / `infra/` tree). If any holds, **escalate** from "recommend later" to
+   "graduation conditions met — run `/steer:protect apply` now to raise the PR
+   wall"; if none, report solo-trunk as expected and note graduation is optional
+   until the MVP works. (The SessionStart `check-graduation.sh` hook nudges on the
+   local signals; this is the networked, on-demand confirmation.)
 8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).

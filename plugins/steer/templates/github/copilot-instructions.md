@@ -649,7 +649,11 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
 
 ## Definition of Done
 
-A change is done when **all** of these hold. Reviewers check them; CI cannot.
+A change is done when **all** of these hold. Reviewers check most of them; CI
+enforces only a thin floor. In **solo-trunk** there is no reviewer, so the
+scaffold's CI runs that floor on push to `main` — the changed-line coverage gate
+(rule 41) and the advisory spec-drift warning (rule 55) — as the only automated
+backstop. It is a floor, not the whole list: the rest is still on you.
 
 - [ ] Code follows existing patterns in the touched app/package.
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
