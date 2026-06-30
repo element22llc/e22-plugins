@@ -297,6 +297,72 @@ jobs:
             npx --yes @google/design.md lint "$f"
           done <<< "$CHANGED_FILES"
 
+  # ──────────────────────────────────────────────────────────────────────────
+  # ADVISORY — spec-drift gate. Warns (never blocks) when a change touches
+  # application behavior without updating a feature `contract.md` / `intent.md`
+  # or `spec/HISTORY.md`. Pure shell + git: no stack, no Python — runs for every
+  # repo. Resolve a warning by updating the spec in the same change, or confirm
+  # via the PR template's "Spec sync" checkbox that there is no behavior change.
+  # This is the machine surface of rule 55 (drift gates). Runs on PR and on push
+  # to main (the latter is the only enforcer in solo-trunk, which has no PR).
+  # Remove `continue-on-error` and switch `::warning::` → `::error::` + a final
+  # `exit 1` to make it block.
+  # ──────────────────────────────────────────────────────────────────────────
+  spec-drift:
+    name: spec-drift (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect undocumented behavior change
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          ZERO=0000000000000000000000000000000000000000
+          if [ "$EVENT" = "pull_request" ]; then
+            range="${BASE_SHA}...HEAD"
+          elif [ "${BEFORE:-$ZERO}" = "$ZERO" ]; then
+            echo "::notice::No prior commit to diff against (first push) — skipping spec-drift (fail-open)."
+            exit 0
+          else
+            range="${BEFORE}..${HEAD_SHA}"
+          fi
+          changed=$(git diff --name-only "$range" || true)
+          [ -n "$changed" ] || exit 0
+          # Behavior surfaces (coarse, stack-agnostic); exempt tests.
+          behavior=$(printf '%s\n' "$changed" \
+            | grep -E '^(apps|packages|src|services|lib|app)/' \
+            | grep -Ev '(^|/)(tests?|__tests__|e2e|fixtures)/|\.(test|spec)\.[A-Za-z0-9]+$' \
+            || true)
+          # Any feature contract/intent or HISTORY touch clears the gate.
+          spec=$(printf '%s\n' "$changed" \
+            | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/HISTORY\.md$' \
+            || true)
+          if [ -n "$behavior" ] && [ -z "$spec" ]; then
+            {
+              echo "## Spec drift (advisory)"
+              echo
+              echo "Behavior changed but no \`spec/features/<id>/contract.md\`, \`intent.md\`,"
+              echo "or \`spec/HISTORY.md\` was updated in this change. Update the spec in the"
+              echo "same change, or confirm via the PR template's **Spec sync** checkbox that"
+              echo "there is no behavior change."
+              echo
+              echo "Behavior paths flagged:"
+              printf '%s\n' "$behavior" | sed 's/^/- /'
+            } >> "$GITHUB_STEP_SUMMARY"
+            printf '%s\n' "$behavior" | while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              echo "::warning file=${f}::Behavior changed without a spec/contract/HISTORY update (spec-drift, advisory)"
+            done
+          fi
+
   # `ai-slop` is ADVISORY — scans for low-quality patterns agents leave behind
   # (undeclared/hallucinated imports, decorative/restating comments, …) and
   # publishes them to the Security tab as code-scanning annotations. NOT a
