@@ -51,6 +51,17 @@ steer_tracker_is_github "${ROOT}" || exit 0
 CLASS="$(steer_classify_path "${FILE}")"
 [ "$(steer_class_nudges "${CLASS}")" = "nudge" ] || exit 0
 
+# Hotfix fast-path exemption (rule 62): a production hotfix runs on a hotfix/<n>
+# branch and files its issue after-the-fact by design, so the "issue BEFORE the
+# first mutation" nudge would be a false positive here. Stay silent at the point
+# of action — the end-of-turn reconciliation (reconcile-issue-first.sh) and rule 62
+# carry the mandatory post-incident follow-up.
+if command -v git >/dev/null 2>&1; then
+	case "$(git -C "${ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null)" in
+		hotfix/*) exit 0 ;;
+	esac
+fi
+
 # Plugin-maintenance flow exemption (rule 36 carve-out): /steer:sync runs on its
 # own feat/sync branch and writes operations-class scaffold (CI, mise.toml,
 # compose.yaml, …) — structural reconciliation against plugin templates, not

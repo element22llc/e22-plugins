@@ -50,6 +50,28 @@ not found", mise/docker errors), the bootstrap paths can't run. `/steer:init` an
 `/steer:build` already invoke `/steer:doctor` when prerequisites are absent; surface
 that here too rather than failing partway.
 
+## Bootstrap precedence
+
+This skill is the developer/ambiguous entry point for a repo with no `/spec` spine — the
+always-on router sends feature or build intent here as the **first move**, not as a closing
+offer after a long scoping pass. Honor that:
+
+- **Bootstrap first, announced up front.** Lead with the path you detected and start it; the
+  scoping the user expects folds into `init`'s own interview. Don't run a long free-form
+  scoping conversation and *then* offer to set up.
+- **Durable decisions wait for the spine.** Design decisions surfaced during onboarding are
+  captured into `/spec` once it exists (`31-decision-capture`), never a memory- or chat-only
+  record.
+- **"Prototype" / "quick" / "throwaway" never waives bootstrap.** A prototype is greenfield: it
+  still gets the bundled scaffold and a `/spec` spine. Those words change spec *depth* and
+  *ceremony* (lighter interview; declaring solo-trunk mode drops per-feature branch/PR — a
+  GitHub-adopted repo still keeps the issue per change, see Issue-first), never *whether* scaffold
+  and spine exist. The greenfield-vs-prototype ceremony mechanics are canonical in Spec workflow
+  (`30-spec-workflow`) — don't restate them; route and let that skill own depth.
+
+(A non-technical owner's idea routes to `/steer:build` instead — bootstrap-inclusive, with its own
+prototype-ceremony handling. This section governs the developer path that lands here.)
+
 ## Explicit override
 
 Power users can skip detection by naming the path: `setup init`, `setup adopt`, or

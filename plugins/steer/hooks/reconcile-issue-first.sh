@@ -202,11 +202,21 @@ MARK="${TMPDIR:-/tmp}/steer-issuefirst-stop.${SID:-nosid}.${CWD_KEY:-0}"
 SAFE_BRANCH="$(printf '%s' "${BRANCH}" | tr -d '"\\')"
 SAFE_LIST="$(printf '%s' "${GOVERNED}" | tr -d '"\\' | cut -c1-400)"
 
-if [ "${MODE}" = "solo-trunk" ]; then
-	REASON="Issue-first reconciliation (solo-trunk mode): this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree: ${SAFE_LIST}Solo-trunk commits straight to main, but issue-first (rule 36) still ties every implementation-affecting mutation to a GitHub issue. Before committing, make sure this work carries an issue reference in the trunk commit — close the issue from the commit (a 'Closes #N' trailer, or '(#N)' in the subject). If you have no issue yet, capture or reuse one via /steer:tracker-sync. If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. Do NOT create an issue/<N> branch or a PR — that ceremony is relaxed pre-MVP. If this work is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
-else
-	REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker). If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. If it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
-fi
+case "${BRANCH}" in
+hotfix/*)
+	# Hotfix fast-path (rule 62): a production hotfix files its issue after-the-fact
+	# by design, so the standard "branch does not reference an issue" nag is a false
+	# positive here. Reframe as the mandatory post-incident follow-up reminder instead.
+	REASON="Issue-first reconciliation (hotfix lane, rule 62): this turn made implementation-affecting changes on hotfix branch '${SAFE_BRANCH}': ${SAFE_LIST}A production hotfix may file its issue after-the-fact, so this is not a skipped step. Once the incident is resolved, complete the MANDATORY follow-up to restore traceability: backfill or finish the GitHub issue and reference it from the PR/commit, write the spec/ADR if a durable decision was made, and append a /spec/HISTORY.md entry. Definition of Done is deferred under the hotfix lane, not waived (rule 50). One-time advisory for this session — it will not repeat."
+	;;
+*)
+	if [ "${MODE}" = "solo-trunk" ]; then
+		REASON="Issue-first reconciliation (solo-trunk mode): this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree: ${SAFE_LIST}Solo-trunk commits straight to main, but issue-first (rule 36) still ties every implementation-affecting mutation to a GitHub issue. Before committing, make sure this work carries an issue reference in the trunk commit — close the issue from the commit (a 'Closes #N' trailer, or '(#N)' in the subject). If you have no issue yet, capture or reuse one via /steer:tracker-sync. If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. Do NOT create an issue/<N> branch or a PR — that ceremony is relaxed pre-MVP. If this work is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+	else
+		REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker). If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. If it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+	fi
+	;;
+esac
 
 # Stop hooks have exactly one channel for surfacing text to the model:
 # {"decision":"block","reason":...}, which hands `reason` back and lets Claude

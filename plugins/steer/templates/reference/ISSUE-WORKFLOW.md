@@ -58,14 +58,17 @@ Two invariants underpin everything:
 ### Authorization & confirmation
 
 The **single authority** for *when an agent acts without asking* vs *when it
-confirms first*. Skills and hooks **reference this block; none restates it.**
+confirms first*. Skills reference this block rather than restating it; the
+always-on issue-first rule and the issue-mutation hooks carry only a terse,
+point-of-use reminder of the host-gate fallback (principle 3) — never a second
+normative copy.
 
 - **Explicit implement / capture request → no extra confirmation.** "fix #123",
   "implement this", "create an issue for…" authorize find-or-create plus the
   bounded action set (principle 4) with no second ask. *No extra confirmation*
   is steer's stance; the **host** can still gate the underlying `gh issue create`
-  (principle 3). When it does, fall back gracefully (confirm with the user or
-  `!gh issue create`) — never read the host block as "no issue was wanted".
+  — see the host-gate fallback in principle 3. Never read a host block as "no
+  issue was wanted".
 - **Bulk publish of audit / drift / adoption findings → one batch confirmation.**
   Filing many issues from one report (`publish-audit` / `publish-drift` /
   `publish-adoption`) takes a single confirmation for the whole batch, then
@@ -177,6 +180,40 @@ reconciles stale markers on the next interaction — and **inspects the closure
 reason before transitioning a closed issue**, keeping merge state as independent
 evidence. An AI may *perform* a transition only where the table says so;
 everywhere else it proposes and waits for the named human.
+
+### Spec `Status:` ↔ issue `steer:state` crosswalk
+
+Progress is tracked by **two state machines**: the issue `steer:state` marker
+(above) and a feature spec's `> Status:` line (`feature_status` enum —
+`draft · approved · implemented · validated · live`). The issue state is the
+**base source of truth**; a feature's spec `Status:` is **derived** from it via
+this crosswalk, so `reconcile` (`/steer:work`, `/steer:audit spec`,
+`/steer:tracker-sync`) is deterministic rather than ad-hoc. This table is the
+single authority for that mapping.
+
+It applies to the **feature path only** — `bug`, `task`, `finding`, and
+`spec-question`/`spec-drift` issues carry no `intent.md`, hence no spec
+`Status:`; an `epic` aggregates child features and has no `Status:` of its own.
+
+| issue `steer:state` | feature `Status:` | how they line up |
+|---|---|---|
+| `inbox` | _(none yet)_ | captured; not materialized into an `intent.md` |
+| `exploring` | _(none)_ → `draft` | brainstorming; `intent.md` may not exist yet |
+| `ready-for-spec` | `draft` | `intent.md` authored, awaiting PO approval |
+| `ready-for-dev` | `approved` | intent PO-approved; contract authored/ready |
+| `in-progress` | `approved` | building; behavior not yet merged |
+| `validate` | `implemented` | PR merged; awaiting **product** validation |
+| `done` | `validated` → `live` | `validated` on accepted close; `live` once released to users |
+| `blocked` | _(retains prior)_ | orthogonal hold; spec `Status:` is unchanged |
+| `cancelled` | _(none)_ | not delivered; no satisfied `Status:` |
+
+The two "split" rows reflect a spec transition the issue state can't see on its
+own: `done` first reaches `validated` at accepted close and only becomes `live`
+when the feature is actually released; `exploring` holds no `Status:` until an
+`intent.md` is materialized as `draft`. Resolve those with the spec gate
+(`/steer:spec approve`) and the release event — never silently. When a feature's
+spec `Status:` and this crosswalk disagree, that is drift: surface it for human
+review, do not auto-rewrite (see Audit & drift).
 
 ## Labels (small, deliberate set)
 

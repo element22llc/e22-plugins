@@ -17,8 +17,10 @@ matching enum below (CI enforces this too).
 A materialized intent starts at **`draft`** (`/steer:issues
 materialize` never approves). Only **`/steer:spec approve`** flips it
 to **`approved`**. `implemented` / `validated` / `live` track its progress
-through delivery and into production. (See `SPEC-FRAMEWORK.md`,
-`ISSUE-WORKFLOW.md`.)
+through delivery and into production. This status is **derived from a feature's
+issue `steer:state`** via the Status↔state crosswalk in `ISSUE-WORKFLOW.md` —
+that table is the single authority for how the two align. (See
+`SPEC-FRAMEWORK.md`, `ISSUE-WORKFLOW.md`.)
 
 ## `question_status` — an open question's state
 
@@ -78,7 +80,9 @@ The base source of truth; a Project `Status` field mirrors it when Projects are
 enabled. `done` and `cancelled` are the two terminal states: **`done`** = closed
 as completed; **`cancelled`** = closed for a non-completion reason
 (`rejected`/`duplicate`/`obsolete`/`not-planned`/`superseded`). Closure *reason*,
-not mere closure, decides which. (See `ISSUE-WORKFLOW.md` Completion rules.)
+not mere closure, decides which. For a feature, this state **drives** the spec
+`feature_status` via the Status↔state crosswalk in `ISSUE-WORKFLOW.md`. (See
+`ISSUE-WORKFLOW.md` Completion rules and crosswalk.)
 
 ## `issue_source` — origin (the `steer:source` marker; the `source:*` label mirrors it)
 
