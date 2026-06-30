@@ -24,6 +24,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `sources-readme.md` spec templates (the latter installed as `spec/sources/README.md`),
   a *Versioned source documents* section in the design-sources reference, and the
   router front-door row.
+- **Changed:** context-hygiene (`rules/26-context-hygiene.md`, reference
+  `CONTEXT-HYGIENE.md`) now tells Claude **not to offer saving findings to session
+  memory**. Private auto-memory survives compaction but is invisible to the repo,
+  the PR, and teammates — working notes, never the team's record. A session finding
+  is routed to its canonical on-disk home **by type** (bug fix → regression test;
+  operational/behavioral fact → app guide / `HISTORY.md`; unresolved bug/follow-up →
+  linked tracker issue; durable design decision → the spine) and that capture is
+  surfaced, rather than prompting "want me to remember this?". Closes the
+  session-memory fallback that bypassed the existing testing/living-docs/issue-first
+  routing.
 - **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the
   **read-only inspection** commands the skills run on every step — `git
   status/diff/log/show/branch/remote`, `gh pr view/checks/list/diff`, `gh run

@@ -60,6 +60,17 @@ to memory or prose *instead of* a spine that doesn't exist yet is the
 single-source-of-truth break the always-on `31-decision-capture` rule exists to
 prevent.
 
+The same logic applies to **everything a working session surfaces**, not just
+formal decisions. Claude Code's private session memory survives compaction, but
+it is invisible to the repo, the PR, and every teammate — so steer does not offer
+to "remember" a finding there. The always-on `26-context-hygiene` rule routes
+each fact to its canonical on-disk home **by type** instead: a **bug fix** → a
+regression test; an **operational or behavioral fact** → the app guide or
+`/spec/HISTORY.md`; an **unresolved bug or follow-up** → a
+[linked tracker issue](../workflows/issues.md); a **durable design decision** →
+the spine. Each fact lands in exactly one home, and that capture is surfaced as
+part of the work rather than offered as an optional "want me to remember this?".
+
 ## How the spine stays current
 
 - [`/steer:audit spec`](../workflows/index.md) compares the as-built spine against the
