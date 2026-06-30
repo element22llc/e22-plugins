@@ -50,8 +50,14 @@ description = "Run Python tests"
 run = ["uv run pytest"]
 
 [tasks.actions]
-description = "Lint GitHub Actions workflows"
-run = ["actionlint"]
+description = "Lint GitHub Actions workflows (this repo's own + the shipped scaffold template)"
+run = [
+  # Bare invocation scans this repo's .github/workflows/.
+  "actionlint",
+  # The shipped scaffold workflow lives outside .github/, so actionlint never
+  # sees it by default — lint it explicitly (also shellchecks its run: blocks).
+  "actionlint plugins/steer/templates/github/workflows/ci.yml",
+]
 
 [tasks.shell]
 description = "Lint and format-check shell scripts (plugin hooks + libs + scripts + tests)"

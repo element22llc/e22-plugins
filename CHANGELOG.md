@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** an **advisory `spec-drift` CI job** in the shipped scaffold
+  `ci.yml` — pure shell + git (no stack, no Python), it *warns* (never blocks)
+  when a change touches application behavior (`apps/`, `packages/`, `src/`, …)
+  without updating a feature `contract.md` / `intent.md` or `spec/HISTORY.md`.
+  Runs on PRs and on push to `main` (the only enforcer in solo-trunk). This is
+  the machine surface of rule 55, now noted there. The repo's `actions` mise task
+  also lints the scaffold template explicitly (previously unlinted). Resolves #243.
 - **Added:** a published **Spec `Status:` ↔ issue `steer:state` crosswalk** in
   `ISSUE-WORKFLOW.md` (the single authority for how the two state machines align,
   making `reconcile` deterministic), cross-referenced from both enum sections in
