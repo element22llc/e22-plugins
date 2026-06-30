@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** a hotfix / incident fast-path (`62-hotfix` rule + `/steer:work --hotfix`).
+  A production incident is high-risk *and* time-critical at once — the lane is the one
+  sanctioned speed lever, opened only on an objective entry condition (deployed
+  production with real users/data **and** an active incident, not merely "urgent" work).
+  It relaxes ceremony and ordering (issue filed after-the-fact on a `hotfix/<n>` branch,
+  expedited single-reviewer) while keeping every human authority gate (push/PR/merge/
+  deploy stay human-gated — the flag does **not** broaden `allowed-tools`), and requires
+  a mandatory post-incident follow-up (backfill the issue, spec/ADR, `HISTORY.md`) so
+  Definition of Done is deferred, never waived (#245). The issue-first hooks now exempt
+  `hotfix/*` branches and reframe the Stop advisory as the follow-up reminder.
+- **Changed:** slimmed the always-on router (`00-router.md`) — the ~17-line "bootstrap
+  precedence" bullet collapses to a compact entry-routing decision that points at its
+  canonical homes, with the developer dispatch nuance (announced-up-front, durable-
+  decisions-wait-for-spine, prototype-changes-ceremony-not-scaffold) relocated into the
+  `/steer:setup` skill. Removes a duplicate of the prototype mechanics already owned by
+  Spec workflow, shrinking the injected context budget (#247).
+- **Fixed:** the issue-first host-gate fallback is now stated once, in `ISSUE-WORKFLOW.md`
+  → "Host gating" (principle 3). The Authorization & confirmation block no longer restates
+  the mechanic and its claim is corrected to match reality — the always-on `36-issue-first`
+  rule and the issue-mutation hooks carry only a terse point-of-use reminder, not a second
+  normative copy (#246).
 - **Added:** `/steer:intake` — a front-door skill that absorbs a PO-supplied spec
   or roadmap **document** (docx/pptx/xlsx/pdf) into the spine. It version-stamps and
   commits both the original binary and a normalized Markdown extraction under

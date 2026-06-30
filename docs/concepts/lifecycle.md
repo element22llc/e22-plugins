@@ -33,6 +33,7 @@ stateDiagram-v2
 | Shape & approve the spec | [`/steer:spec`](../workflows/spec.md) |
 | Implement & finish | [`/steer:work`](../workflows/work.md) |
 | Implement, review-gated | [`/steer:work --reviewed`](../workflows/work.md) (plan → independent plan-gate review → implement → independent `/code-review` → bounded fix loop) |
+| Respond to a production incident | [`/steer:work --hotfix`](../workflows/work.md) (fast-path: issue after-the-fact on a `hotfix/<n>` branch, single-reviewer, human gates intact; mandatory post-incident follow-up) |
 | Read/write the tracker | `/steer:tracker-sync` (gateway, called by the above) |
 | "What should I do next?" | `/steer:next` |
 
