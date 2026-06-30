@@ -73,6 +73,7 @@ nav:
       - First workflow: getting-started/first-workflow.md
       - Team onboarding: getting-started/team-onboarding.md
   - Concepts:
+      - SDLC overview: concepts/sdlc.md
       - Product spine: concepts/product-spine.md
       - Lifecycle: concepts/lifecycle.md
       - Authorization model: concepts/authorization-model.md
