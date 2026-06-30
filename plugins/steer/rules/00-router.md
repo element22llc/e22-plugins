@@ -28,23 +28,14 @@ name one. Plain language is the only entry point a user needs.
   ratifying an ADR (High-risk), and push / PR / merge / deploy / real secrets (Commit
   autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
   runs; it never relaxes what that skill is allowed to do.
-- **Respect bootstrap precedence.** On a repo with no `/spec` spine, route any feature
-  or build intent through bootstrap first via **`/steer:setup`**, which detects the
-  repo state and hands off to the right path (greenfield, existing-code adoption, or
-  steady-state sync) — the SessionStart hook flags this; don't degrade to
-  toolchain-only. **A non-technical owner's idea is the exception:** route it straight
-  to **`/steer:build`**, which is bootstrap-inclusive (it runs `/steer:init` itself at
-  step 1) — `/steer:setup`-first is for developer or ambiguous feature intent.
-  **Make bootstrap the first move, announced up front** — not a
-  closing offer after a long scoping pass; that scoping folds into `init`'s own
-  interview, and durable design decisions wait for the spine to hold them
-  (`31-decision-capture`), never a memory- or chat-only record.
-  **"Prototype" / "quick" / "just try it" / "throwaway" never waives this** — a
-  prototype is greenfield, so it still gets the bundled scaffold and a `/spec` spine.
-  Those words change spec *depth* and *ceremony* (lighter interview; by declaring
-  solo-trunk mode, no per-feature branch or PR — a GitHub-adopted repo still keeps
-  the issue per change, see Issue-first), never *whether* scaffold and spine exist;
-  the full greenfield-vs-prototype mechanics are canonical in Spec workflow.
+- **Respect bootstrap precedence.** On a repo with no `/spec` spine, make bootstrap the
+  **first move, announced up front** (not a closing offer after a long scoping pass): route
+  a developer or ambiguous feature/build intent through **`/steer:setup`**, and a non-technical
+  owner's idea straight to **`/steer:build`** (bootstrap-inclusive). The SessionStart hook flags
+  this; don't degrade to toolchain-only. "Prototype" / "quick" / "throwaway" changes ceremony,
+  **never whether scaffold and spine exist**. How and why: `/steer:setup` owns the dispatch nuance,
+  Spec workflow owns the greenfield-vs-prototype ceremony mechanics, and Issue-first keeps the
+  per-change issue even for a prototype.
 - **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
   switch or capture it (`/steer:issues capture`), rather than silently dropping the
   current thread.
@@ -62,6 +53,7 @@ to anything outside this table.
 | think a feature through / shape acceptance criteria without building it — incl. refining the spec before a PO build | `/steer:spec` |
 | absorb a new or updated spec/roadmap document a PO sent (docx/pptx/xlsx/pdf) — detect what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
+| respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |

@@ -14,6 +14,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:work` reconcile/transition steps. A new `check_standards.py` guard
   (`check_crosswalk`) fails the build if a `feature_status` or `issue_state` token
   is added to the registry without a matching crosswalk row. Resolves #244.
+- **Added:** a hotfix / incident fast-path (`62-hotfix` rule + `/steer:work --hotfix`).
+  A production incident is high-risk *and* time-critical at once — the lane is the one
+  sanctioned speed lever, opened only on an objective entry condition (deployed
+  production with real users/data **and** an active incident, not merely "urgent" work).
+  It relaxes ceremony and ordering (issue filed after-the-fact on a `hotfix/<n>` branch,
+  expedited single-reviewer) while keeping every human authority gate (push/PR/merge/
+  deploy stay human-gated — the flag does **not** broaden `allowed-tools`), and requires
+  a mandatory post-incident follow-up (backfill the issue, spec/ADR, `HISTORY.md`) so
+  Definition of Done is deferred, never waived (#245). The issue-first hooks now exempt
+  `hotfix/*` branches and reframe the Stop advisory as the follow-up reminder.
+- **Changed:** slimmed the always-on router (`00-router.md`) — the ~17-line "bootstrap
+  precedence" bullet collapses to a compact entry-routing decision that points at its
+  canonical homes, with the developer dispatch nuance (announced-up-front, durable-
+  decisions-wait-for-spine, prototype-changes-ceremony-not-scaffold) relocated into the
+  `/steer:setup` skill. Removes a duplicate of the prototype mechanics already owned by
+  Spec workflow, shrinking the injected context budget (#247).
+- **Fixed:** the issue-first host-gate fallback is now stated once, in `ISSUE-WORKFLOW.md`
+  → "Host gating" (principle 3). The Authorization & confirmation block no longer restates
+  the mechanic and its claim is corrected to match reality — the always-on `36-issue-first`
+  rule and the issue-mutation hooks carry only a terse point-of-use reminder, not a second
+  normative copy (#246).
 - **Added:** `/steer:intake` — a front-door skill that absorbs a PO-supplied spec
   or roadmap **document** (docx/pptx/xlsx/pdf) into the spine. It version-stamps and
   commits both the original binary and a normalized Markdown extraction under
@@ -31,6 +52,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `sources-readme.md` spec templates (the latter installed as `spec/sources/README.md`),
   a *Versioned source documents* section in the design-sources reference, and the
   router front-door row.
+- **Changed:** context-hygiene (`rules/26-context-hygiene.md`, reference
+  `CONTEXT-HYGIENE.md`) now tells Claude **not to offer saving findings to session
+  memory**. Private auto-memory survives compaction but is invisible to the repo,
+  the PR, and teammates — working notes, never the team's record. A session finding
+  is routed to its canonical on-disk home **by type** (bug fix → regression test;
+  operational/behavioral fact → app guide / `HISTORY.md`; unresolved bug/follow-up →
+  linked tracker issue; durable design decision → the spine) and that capture is
+  surfaced, rather than prompting "want me to remember this?". Closes the
+  session-memory fallback that bypassed the existing testing/living-docs/issue-first
+  routing.
 - **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the
   **read-only inspection** commands the skills run on every step — `git
   status/diff/log/show/branch/remote`, `gh pr view/checks/list/diff`, `gh run

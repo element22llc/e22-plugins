@@ -61,6 +61,17 @@ What survives compaction (and a brand-new session) is what lives on disk:
 includes `compact`), auto-memory, and the `/spec/**` artifacts. Conversation prose
 does **not** survive.
 
+Surviving is not the same as belonging. Private auto-memory persists, but it is
+local to one developer's machine — invisible to the repo, the PR, and every
+teammate — so it is working notes, **never the team's record**. Don't offer to save
+a finding to session memory as a substitute for capturing it on disk. Route each
+durable fact to its canonical home **by type** instead: a **bug fix** → a regression
+test (Testing / Definition of done); an **operational or behavioral fact** → the app
+guide or `/spec/HISTORY.md` (Living docs); an **unresolved bug or follow-up** → a
+linked tracker issue (Issue-first); a **durable design decision** → the spine
+(Decision capture). Each fact lands in exactly one home, and that capture is
+surfaced rather than offered as an optional "want me to remember this?".
+
 So **run-state and task-specific constraints belong in a file the work re-reads**,
 never only in the chat:
 

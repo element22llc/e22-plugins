@@ -40,6 +40,17 @@ Non-technical owners enter through [`/steer:build`](../workflows/build.md), whic
 folds Bootstrap + Shape into one guided interview and hands a working local app to
 a dev for review.
 
+### The incident fast-path
+
+A production incident is high-risk *and* time-critical at once — the one case where
+the phases above genuinely conflict with the clock. [`/steer:work --hotfix`](../workflows/work.md)
+is the **only sanctioned speed lever** (rule `62-hotfix`): it opens only for a real
+incident on a deployed system, relaxes *ceremony and ordering* (issue filed
+after-the-fact on a `hotfix/<n>` branch, single-reviewer) while keeping every human
+authority gate, and requires a **mandatory post-incident follow-up** — backfill the
+issue, write the spec/ADR, add a `HISTORY.md` entry — so the phases skipped under
+fire are restored, not waived.
+
 ## Two state machines
 
 The lifecycle tracks progress in **two** places that describe overlapping reality.
@@ -49,6 +60,12 @@ The **spec** records where a feature's *intent* stands:
 ```text
 draft → approved → implemented → validated → live
 ```
+
+`approved` is the owner's sign-off on **intent**, not a technical guarantee —
+the build is vetted by a human dev at PR review (the Verify gate), which is what
+moves the spec to `implemented`. See
+[Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
+spec is a vetted *target*, not a vetted build.
 
 The **issue** records where a *unit of work* stands (the canonical set; see
 [Lifecycle](lifecycle.md) for the full state diagram and per-kind paths):
