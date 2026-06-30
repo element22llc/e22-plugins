@@ -50,6 +50,12 @@ The **spec** records where a feature's *intent* stands:
 draft → approved → implemented → validated → live
 ```
 
+`approved` is the owner's sign-off on **intent**, not a technical guarantee —
+the build is vetted by a human dev at PR review (the Verify gate), which is what
+moves the spec to `implemented`. See
+[Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
+spec is a vetted *target*, not a vetted build.
+
 The **issue** records where a *unit of work* stands (the canonical set; see
 [Lifecycle](lifecycle.md) for the full state diagram and per-kind paths):
 

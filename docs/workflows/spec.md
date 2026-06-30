@@ -32,6 +32,19 @@ This makes approval an auditable event, not an implicit state — the
 [Authorization model](../concepts/authorization-model.md) draft → approved
 transition has a named owner.
 
+!!! warning "Approval is sign-off on *intent*, not technical validation"
+    `Status: approved` means the owner has signed off on **what** the feature
+    should do — the acceptance criteria are agreed and the blocking questions are
+    resolved. It does **not** assert that any implementation is correct, safe, or
+    production-ready. A non-technical owner's approval can't carry that assurance,
+    and steer deliberately doesn't pretend it does: the technical gate is a human
+    dev reviewing the PR ("review *is* productionization"), which is what moves
+    the spec to `implemented` and later `validated`. Treat an `approved` spec as a
+    vetted target, not a vetted build. In
+    [solo-trunk mode](../concepts/authorization-model.md) there is no separate dev
+    PR gate, so that assurance rests on whoever commits to trunk — read `approved`
+    accordingly.
+
 ## Where it fits
 
 ```mermaid

@@ -74,7 +74,9 @@ the repo state and routes:
 
 Then walk the [first workflow](first-workflow.md) end to end
 (capture → spec → decompose → work → PR). On a hookless surface, run
-`/steer:standards` first.
+`/steer:standards` first. Keep the
+["I want to … → run …" cheat sheet](../workflows/index.md#i-want-to-run) handy —
+it maps everyday intents to the skill that handles them.
 
 ## What should I never do?
 
