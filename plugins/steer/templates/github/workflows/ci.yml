@@ -217,18 +217,27 @@ jobs:
           uvx ansible-lint
 
       # Coverage is a SIGNAL, not a target: we report it and gate only the lines
-      # this PR changes ("cover what you touch") — never a global percentage.
-      # Fail-open when no coverage report was produced or the base branch can't be
-      # resolved, so this never blocks a repo that hasn't wired coverage yet.
-      # Tune the changed-line floor with the COVERAGE_DIFF_MIN env var.
-      # See rules 41-coverage and CONVENTIONS.md -> Coverage.
+      # a change touches ("cover what you touch") — never a global percentage.
+      # On a PR, the floor runs against the PR base branch. On push to `main` it
+      # is the **solo-trunk Definition-of-Done floor**: solo-trunk has no PR, so
+      # this push-time run is its only changed-line gate — it enforces ONLY in
+      # solo-trunk (in pr-flow the PR already gated these lines; re-gating a
+      # post-merge push would wedge `main`) and diffs against the previous commit.
+      # Fail-open when no coverage report was produced, the base can't be
+      # resolved, or it is the first push, so this never blocks a repo that hasn't
+      # wired coverage yet. Tune the floor with the COVERAGE_DIFF_MIN env var.
+      # See rules 41-coverage / 50 (Definition of Done) and CONVENTIONS.md -> Coverage.
       - name: Coverage (changed-line gate)
         if: >-
-          github.event_name == 'pull_request' &&
+          (github.event_name == 'pull_request' || github.event_name == 'push') &&
           (steps.detect.outputs.node == 'true' || steps.detect.outputs.python == 'true')
         env:
           COVERAGE_DIFF_MIN: "80"
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
         run: |
+          ZERO=0000000000000000000000000000000000000000
           report=""
           if [ -f coverage/lcov.info ]; then report="coverage/lcov.info"; fi
           if [ -f coverage.xml ]; then report="coverage.xml"; fi
@@ -236,14 +245,27 @@ jobs:
             echo "::notice::No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (see CONVENTIONS.md -> Coverage). Skipping changed-line gate."
             exit 0
           fi
-          base="${{ github.base_ref }}"
-          if ! git fetch --no-tags --quiet origin "$base" 2>/dev/null; then
-            echo "::notice::Could not fetch base branch '$base' — skipping changed-line coverage (fail-open)."
-            exit 0
+          if [ "$EVENT" = "pull_request" ]; then
+            base="origin/${BASE_REF}"
+            if ! git fetch --no-tags --quiet origin "$BASE_REF" 2>/dev/null; then
+              echo "::notice::Could not fetch base branch '$BASE_REF' — skipping changed-line coverage (fail-open)."
+              exit 0
+            fi
+          else
+            # push to main: the solo-trunk DoD floor (pr-flow already gated via PR).
+            if ! grep -Eiq '^[[:space:]]*<!--[[:space:]]*steer:delivery-mode=solo-trunk[[:space:]]*-->' CLAUDE.md 2>/dev/null; then
+              echo "::notice::push to main in pr-flow — the PR already gated coverage; skipping push-time floor."
+              exit 0
+            fi
+            if [ -z "${BEFORE:-}" ] || [ "$BEFORE" = "$ZERO" ]; then
+              echo "::notice::No prior commit to diff against (first push) — skipping changed-line coverage (fail-open)."
+              exit 0
+            fi
+            base="$BEFORE"
           fi
-          echo "## Coverage (changed lines vs origin/$base)" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Coverage (changed lines vs $base)" >> "$GITHUB_STEP_SUMMARY"
           uvx diff-cover "$report" \
-            --compare-branch "origin/$base" \
+            --compare-branch "$base" \
             --fail-under "$COVERAGE_DIFF_MIN" \
             --markdown-report coverage-diff.md \
           || { cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"; \

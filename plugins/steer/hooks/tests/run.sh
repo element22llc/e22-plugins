@@ -57,6 +57,9 @@ assert_copilot_ask() {
 		bad "$1 (expected flat copilot ask, got: $2)"
 }
 assert_ctx() { printf '%s' "$2" | grep -q '"additionalContext"' && ok || bad "$1 (expected additionalContext, got: $2)"; }
+# SessionStart raw-text hooks print directly to stdout (the runtime wraps it as
+# additionalContext); assert the emitted text contains a marker substring.
+assert_has() { printf '%s' "$2" | grep -q -- "$3" && ok || bad "$1 (expected to contain '$3', got: $2)"; }
 assert_block() { printf '%s' "$2" | grep -q '"decision":"block"' && ok || bad "$1 (expected block, got: $2)"; }
 assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (unexpected block: $2)" || ok; }
 assert_eq() { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
@@ -1286,6 +1289,50 @@ assert_eq "profile: no CLAUDE.md -> app" "$(steer_repo_profile "${PROF_NONE}")" 
 PROF_BARE="$(new_repo prof_bare)"
 printf '# title\n' >"${PROF_BARE}/CLAUDE.md"
 assert_eq "profile: CLAUDE.md without marker -> app" "$(steer_repo_profile "${PROF_BARE}")" "app"
+
+# --- check-graduation.sh: solo-trunk graduation detector (SessionStart) ---
+# Fires only in solo-trunk AND when a local signal is present; silent otherwise.
+
+# solo-trunk + a prod branch -> nudge (real git repo so show-ref resolves the ref).
+GRAD_PROD="$(git_repo grad_prod main)"
+git -C "${GRAD_PROD}" branch prod >/dev/null 2>&1
+claude_md_mode "${GRAD_PROD}" solo-trunk
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_PROD}" sg1)")"
+assert_has "graduation: solo-trunk + prod branch nudges" "${out}" "graduating"
+
+# solo-trunk + infra/ tree -> nudge.
+GRAD_INFRA="$(new_repo grad_infra)"
+mkdir -p "${GRAD_INFRA}/infra"
+claude_md_mode "${GRAD_INFRA}" solo-trunk
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_INFRA}" sg2)")"
+assert_has "graduation: solo-trunk + infra/ nudges" "${out}" "graduating"
+
+# solo-trunk + a deploy workflow -> nudge.
+GRAD_DEPLOY="$(new_repo grad_deploy)"
+mkdir -p "${GRAD_DEPLOY}/.github/workflows"
+printf 'name: deploy\n' >"${GRAD_DEPLOY}/.github/workflows/deploy.yml"
+claude_md_mode "${GRAD_DEPLOY}" solo-trunk
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_DEPLOY}" sg3)")"
+assert_has "graduation: solo-trunk + deploy workflow nudges" "${out}" "graduating"
+
+# solo-trunk with no signal -> silent (a fresh pre-MVP repo gets zero noise).
+GRAD_NONE="$(new_repo grad_none)"
+claude_md_mode "${GRAD_NONE}" solo-trunk
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NONE}" sg4)")"
+assert_empty "graduation: solo-trunk + no signal silent" "${out}"
+
+# pr-flow with a signal -> silent (already graduated; mode gate wins).
+GRAD_PRFLOW="$(new_repo grad_prflow)"
+mkdir -p "${GRAD_PRFLOW}/infra"
+claude_md_mode "${GRAD_PRFLOW}" pr-flow
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_PRFLOW}" sg5)")"
+assert_empty "graduation: pr-flow silent despite signal" "${out}"
+
+# cwd not inside a repo -> silent (no root to anchor on).
+GRAD_NOREPO="${WORK}/grad_norepo"
+mkdir -p "${GRAD_NOREPO}"
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NOREPO}" sg6)")"
+assert_empty "graduation: no repo silent" "${out}"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

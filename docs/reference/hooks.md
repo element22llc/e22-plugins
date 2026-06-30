@@ -27,6 +27,7 @@ flowchart TD
       unmanaged[check-unmanaged-repo.sh]
       orient[orient-session.sh]
       faults[surface-faults.sh]
+      grad[check-graduation.sh]
     end
     subgraph PreToolUse
       pins[check-version-pins.sh]
@@ -49,6 +50,7 @@ flowchart TD
 | `check-unmanaged-repo.sh` | `startup\|resume\|clear` | Flags a repo that has no `/spec` spine yet and offers the bootstrap routes — leading with `/steer:build` for a non-technical owner (it runs `/steer:init` itself), with `/steer:init`/`/steer:adopt` framed as the developer / existing-code paths. |
 | `orient-session.sh` | `startup` | On a fully managed spine only. If an in-progress PO build exists (a `spec/BUILD-STATUS.md` with an open handoff gate), steers deterministically back into `/steer:build` to resume from its current step; once the build is handed off (every gate box checked) it falls back to reminding the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
 | `surface-faults.sh` | `startup\|resume\|clear` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
+| `check-graduation.sh` | `startup\|resume\|clear` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree), nudges the owner to graduate to PR flow via `/steer:protect`. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
 
 ## PreToolUse
 
