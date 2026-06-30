@@ -65,3 +65,20 @@ contract forbids).
 `done` and `cancelled` are terminal. Both must always be present in the state set;
 the fixture suite asserts this so the lifecycle can't silently lose a terminal
 state.
+
+## Two state machines, one crosswalk
+
+Progress is tracked in two places: the issue `steer:state` marker (`inbox →
+exploring → ready-for-spec → ready-for-dev → in-progress → validate → done`) and,
+for features, a spec intent's `> Status:` line (`draft → approved → implemented →
+validated → live`). The **issue state is the base source of truth**; a feature's
+spec `Status:` is **derived** from it. To keep `reconcile` deterministic rather
+than ad-hoc, the plugin publishes a single authoritative **Status↔state
+crosswalk** — the table lives in the bundled `ISSUE-WORKFLOW.md` reference and is
+the one place that defines how the two align (e.g. `ready-for-dev ⇒ approved`,
+`validate ⇒ implemented`, a closed-and-released `done ⇒ live`). The
+`/steer:tracker-sync`, `/steer:spec`, `/steer:audit spec`, and `/steer:work`
+reconcile steps all defer to it, and a `check_standards.py` guard fails the build
+if a new state or status token is ever added without a matching crosswalk row.
+When a feature's recorded `Status:` disagrees with the crosswalk, that is drift:
+it is surfaced for human review, never silently rewritten.
