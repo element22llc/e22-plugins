@@ -7,13 +7,23 @@ never edits code).
 !!! info "When to use"
     Use to start, resume, check, or finish a specific issue.
 
-**Argument hint:** `[start | resume | status | finish] [--reviewed] [#issue ...]`
+**Argument hint:** `[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]`
 
 !!! tip "`--reviewed` — the review-gated path"
     Add `--reviewed` to wrap execution in the review loop formerly carried by the
     standalone `deliver` skill: an independent plan-gate review → implement →
     `/code-review` gate → bounded fix. The shared protocol lives in
     `templates/reference/REVIEW-LOOP.md`.
+
+!!! warning "`--hotfix` — the production-incident fast-path"
+    Add `--hotfix` **only** for a genuine production incident — a change to an
+    already-deployed system with real users/data **and** an active outage or
+    regression (rule `62-hotfix`). "Urgent" feature work is not a hotfix. The lane
+    relaxes *ceremony and ordering* — the issue may be filed after-the-fact on a
+    `hotfix/<n>` branch, one reviewer approval suffices — but keeps **every human
+    authority gate** (push / PR / merge / deploy stay human-gated). Once the fire is
+    out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a
+    `HISTORY.md` entry: Definition of Done is *deferred, never waived*.
 
 ## End-to-end flow
 

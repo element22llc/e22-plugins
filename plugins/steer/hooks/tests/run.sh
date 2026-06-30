@@ -387,6 +387,13 @@ if command -v git >/dev/null 2>&1; then
 	assert_empty "issue-first: feat/sync operations write exempt" "${out}"
 	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RSY}" sSY2 src/app.ts 'x')")"
 	assert_ctx "issue-first: feat/sync app source still nudges" "${out}"
+
+	# Hotfix fast-path exemption (rule 62): app source on a hotfix/<n> branch is the
+	# sanctioned after-the-fact lane -> silent at the point of action (the issue is
+	# filed in the post-incident follow-up).
+	RHF="$(git_repo repoHotfixPre hotfix/42-outage)"
+	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RHF}" sHF1 src/app.ts 'x')")"
+	assert_empty "issue-first: hotfix branch app source exempt" "${out}"
 fi
 
 # --- check-issue-create-contract.sh (raw issue-create guard, GitHub tracker) ---
@@ -620,6 +627,18 @@ if command -v git >/dev/null 2>&1; then
 	printf 'export const x = 1\n' >"${S16}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S16}" stS16)")"
 	assert_block "stop-reconcile: feat/sync app source still reported (sync must not touch app code)" "${out}"
+
+	# Q: hotfix fast-path (rule 62). A governed change on a hotfix/<n> branch files
+	# its issue after-the-fact by design, so it still surfaces a one-time advisory
+	# but REFRAMED as the mandatory post-incident follow-up — never the standard
+	# "branch does not reference an issue" nag.
+	SHF="$(git_repo stopHotfix hotfix/42-outage)"
+	mkdir -p "${SHF}/src"
+	printf 'export const x = 1\n' >"${SHF}/src/app.ts"
+	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${SHF}" stSHF)")"
+	assert_block "stop-reconcile: hotfix branch governed change surfaces follow-up advisory" "${out}"
+	printf '%s' "${out}" | grep -q 'hotfix lane' && ok || bad "stop-reconcile: hotfix advisory wording present (got: ${out})"
+	printf '%s' "${out}" | grep -q 'does not reference a GitHub issue' && bad "stop-reconcile: hotfix must not use the standard issue nag (got: ${out})" || ok
 else
 	printf 'SKIP: git unavailable, reconcile-issue-first.sh Stop tests skipped\n' >&2
 fi

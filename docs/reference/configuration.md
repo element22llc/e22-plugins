@@ -34,6 +34,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
+| `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-size.md` | Change-size model. |
