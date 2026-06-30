@@ -49,7 +49,7 @@ behave the same. The headline, validated against current docs and changelog:
 | **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (31 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
 | **SessionStart hooks** | `inject-standards.sh`, `orient-session.sh`, `check-template-drift.sh`, `check-open-questions.sh`, `check-unmanaged-repo.sh`, `surface-faults.sh`, `check-graduation.sh` | `SessionStart` event; source `${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh` | Claude-Code-runtime |
 | **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-code-before-spec.sh`, `check-issue-before-mutation.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Claude-Code-runtime |
-| **Skills** (21) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
+| **Skills** (22) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
 | **MCP** | `tracker-sync` (GitHub MCP → `gh` → manual) | MCP connector | **Already surface-agnostic** |
 | **Bundled assets** | `templates/spec/*`, `templates/scaffold/*` | `${CLAUDE_PLUGIN_ROOT}` path resolution | Files portable; path var is runtime-specific |
 
@@ -202,7 +202,7 @@ a build ever fails to fire the hook, fall back to `/steer:standards`. Highest-va
 pieces for non-technical POs are the **PO-facing skills**, which are self-contained
 regardless of hooks:
 
-- **PO-appropriate:** `build`, `spec`, `questions`, `next`, `issues`,
+- **PO-appropriate:** `build`, `spec`, `intake`, `questions`, `next`, `issues`,
   `reference`, `standards`.
 - **Engineer-oriented (likely noise for POs):** `adopt`, `init`, `adr`, `audit`,
   `spec-scaffold`, `sync`, `tidy`, `tracker-sync`, `protect`, `work`.
