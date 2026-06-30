@@ -67,6 +67,11 @@ cheaply instead of choking on raw zip+XML.
     Claude's native `Read` tool already handles PDFs (it renders pages visually)
     and images. Use `markitdown` for the Office binaries specifically.
 
+[`/steer:intake`](../workflows/intake.md) is the main consumer: it converts each
+version of a PO-supplied document to the normalized `extracted.md` it commits and
+diffs. The same converter is available off-MCP as the `mise run convert:doc`
+scaffold task, the deterministic on-disk path.
+
 It runs via `uvx markitdown-mcp`, so it needs `uv` (and a Python for `uv` to
 manage) on `PATH` — **no token**. The scaffold `mise.toml` pins `node`, `python`,
 and `uv` as an always-installed agent-runtime baseline (AI tooling and MCP

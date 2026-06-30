@@ -62,6 +62,7 @@ to anything outside this table.
 | get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it — incl. refining the spec before a PO build | `/steer:spec` |
+| absorb a new or updated spec/roadmap document a PO sent (docx/pptx/xlsx/pdf) — detect what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |

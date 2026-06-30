@@ -155,3 +155,34 @@ the validation command.
 Other design tools (Figma, screenshots, walkthrough docs) follow the same shape
 — a traceability link plus a locally-readable artifact. Claude Design is the
 most common source, not the only one.
+
+## Versioned source documents (specs, roadmaps)
+
+The same principle — a traceability link plus a committed, Claude-readable
+extraction — covers the **non-UI** documents a PO supplies: a spec in Word, a
+roadmap deck, a requirements spreadsheet. What differs is the *cadence*: these
+arrive in **successive versions**, each re-sent with edits and no pointer to what
+changed. So they get a **versioned** home rather than a flat one.
+
+`/steer:intake` owns this flow. For each version it commits **both** the original
+binary (provenance, never edited) **and** a normalized Markdown extraction (the
+thing Claude reads and diffs) under:
+
+```text
+spec/sources/<source-id>/versions/<vNNNN-YYYY-MM-DD>/{original.<ext>, extracted.md}
+```
+
+A plain `git diff` of the new `extracted.md` against the prior one *is* the
+"what changed" the PO never spells out. The committed extraction — not the binary,
+and not the authenticated URL — is the artifact of record, exactly as for a Claude
+Design export: the binary doesn't diff and the link can't be fetched, so the
+extraction is what the workflow reads. Conversion uses the markitdown MCP server
+that ships with this plugin (or the `mise run convert:doc` CLI task).
+
+Identity is the kebab-case `source-id`, decoupled from the filename, so a renamed
+re-send still maps to the same source. Absorbed changes route into the spine and
+tracker through the usual gateways (never clobbering human prose; conflicts become
+Open questions) and append a `spec/HISTORY.md` entry. A document sent **once** can
+stay loose under `spec/reference/`; the moment it starts arriving in versions, it
+belongs under `spec/sources/`. See `spec/sources/README.md` in a bootstrapped repo
+for the layout.

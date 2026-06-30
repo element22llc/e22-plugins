@@ -63,6 +63,7 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |
+| `../spec/sources-readme.md` | `spec/sources/README.md` | What belongs in `spec/sources/` — the versioned home for recurring PO documents, maintained by `/steer:intake`. |
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
 

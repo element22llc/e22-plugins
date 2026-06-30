@@ -157,3 +157,17 @@ run = "pnpm --recursive --if-present run db:migrate"
 description = "Seed local dev data in every workspace package that defines db:seed"
 depends = ["db:migrate"] # seed only after the schema is migrated
 run = "pnpm --recursive --if-present run db:seed"
+
+[tasks."convert:doc"]
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake. Usage: mise run convert:doc <file>"
+# Deterministic, committable conversion path for /steer:intake. Runs Microsoft
+# markitdown through the pinned `uv` (no extra tool to install — `uvx` resolves it
+# on demand). `[all]` pulls the per-format extras (mammoth/python-pptx/openpyxl/
+# pdfminer); the bare package ships none of them, so without it conversion raises
+# MissingDependency on every format above. The same converter ships as an MCP
+# server (markitdown-mcp) in the plugin's .mcp.json; this task is the on-disk path
+# whose output gets committed as the diffable `extracted.md`. Redirect stdout to
+# capture: `mise run convert:doc spec/sources/<id>/versions/<v>/original.docx >
+# .../extracted.md`.
+run = "uvx --from 'markitdown[all]' markitdown"
+

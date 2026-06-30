@@ -83,6 +83,7 @@ nav:
       - Overview: workflows/index.md
       - Adopt: workflows/adopt.md
       - Spec: workflows/spec.md
+      - Intake: workflows/intake.md
       - Issues: workflows/issues.md
       - Work: workflows/work.md
       - Build: workflows/build.md

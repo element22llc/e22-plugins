@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:intake` — a front-door skill that absorbs a PO-supplied spec
+  or roadmap **document** (docx/pptx/xlsx/pdf) into the spine. It version-stamps and
+  commits both the original binary and a normalized Markdown extraction under
+  `spec/sources/<source-id>/versions/<vNNNN-DATE>/`, `git diff`s the new extraction
+  against the prior one to surface a structured *what-changed* report, then routes
+  the real changes into intent/contract/vision/roadmap and the tracker by delegating
+  to `/steer:spec-scaffold`, `/steer:tracker-sync`, `/steer:audit`, `/steer:roadmap`
+  and `/steer:questions` — never clobbering human prose (conflicts become Open
+  questions), appending a `spec/HISTORY.md` entry per absorbed change, and surfacing
+  drift for a human rather than resolving it silently. Idempotent: re-running on an
+  unchanged document (binary-hash guard) is a no-op, and a new version diffs only
+  against the current latest. Conversion reuses the markitdown MCP server already
+  shipped in `plugins/steer/.mcp.json`, with a new `mise run convert:doc` scaffold
+  task as the deterministic on-disk path. Adds the `source-manifest.md` and
+  `sources-readme.md` spec templates (the latter installed as `spec/sources/README.md`),
+  a *Versioned source documents* section in the design-sources reference, and the
+  router front-door row.
 - **Changed:** the scaffold `.claude/settings.json` now pre-authorizes the
   **read-only inspection** commands the skills run on every step — `git
   status/diff/log/show/branch/remote`, `gh pr view/checks/list/diff`, `gh run
