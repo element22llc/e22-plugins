@@ -37,6 +37,31 @@ flowchart LR
     work --> sync
 ```
 
+## I want to … → run …
+
+A one-screen cheat sheet, keyed by intent rather than phase. You don't have to
+memorize it — describe the goal in plain language and Claude routes for you — but
+when you'd rather invoke the skill yourself, this is the index. The phase tables
+below give the detail.
+
+| I want to … | Run |
+| --- | --- |
+| Get set up — I'm not sure what state the repo is in | `/steer:setup` (detects & routes) |
+| Start a brand-new repo from scratch | `/steer:init` |
+| Bring an existing app under steer | [`/steer:adopt`](adopt.md) |
+| Absorb a product owner's spec / roadmap document | [`/steer:intake`](intake.md) |
+| Capture, triage, or decompose ideas into issues | [`/steer:issues`](issues.md) |
+| Shape or approve a feature spec | [`/steer:spec`](spec.md) |
+| Start, resume, or finish an issue | [`/steer:work`](work.md) |
+| Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
+| Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
+| Find out what to do next | `/steer:next` |
+| Check standards conformance, or that the app matches its spec | `/steer:audit code` · `/steer:audit spec` |
+| Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
+| Generate a release-milestone timeline | `/steer:roadmap` |
+| Lock branch protection or flip the delivery mode | `/steer:protect` |
+| Load the rules manually (Cowork / desktop, where the hook can't fire) | `/steer:standards` |
+
 ## Setup (one-time)
 
 | Skill | Use when |
