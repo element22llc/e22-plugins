@@ -46,7 +46,8 @@ graduate to the PR flow with `/steer:protect`.
 /steer:issues capture
 ```
 
-Captures a product idea as an issue without losing open questions. See
+Captures a product idea as an issue without losing open questions. *Expected:* a
+new GitHub issue with the idea and any open questions recorded. See
 [Workflows → Issues](../workflows/issues.md).
 
 ## 3. Shape and approve a spec
@@ -57,7 +58,8 @@ Captures a product idea as an issue without losing open questions. See
 ```
 
 Think the feature through, shape acceptance criteria, and record the approval
-evidence. See [Workflows → Spec](../workflows/spec.md).
+evidence. *Expected:* an `intent.md` you review, with its `Status:` flipped to
+`approved` once you sign off. See [Workflows → Spec](../workflows/spec.md).
 
 ## 4. Decompose into work
 
@@ -65,7 +67,9 @@ evidence. See [Workflows → Spec](../workflows/spec.md).
 /steer:issues decompose
 ```
 
-Breaks the approved spec into tracked work items.
+Breaks the approved spec into tracked work items. *Expected:* one issue per work
+item, each printed with its issue number (e.g. `#123`) — that number is what you
+pass to `/steer:work` in the next step.
 
 ## 5. Implement and finish
 
@@ -74,8 +78,9 @@ Breaks the approved spec into tracked work items.
 /steer:work finish #123
 ```
 
-Implements the issue and lands a PR. Commits happen autonomously, but **pushing
-is gated** — see the [Authorization model](../concepts/authorization-model.md).
+Use the issue number from step 4's decompose output in place of `#123`. Implements
+the issue and lands a PR. Commits happen autonomously, but **pushing is gated** —
+see the [Authorization model](../concepts/authorization-model.md).
 
 ## What's next
 
