@@ -60,7 +60,10 @@ below give the detail.
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
 | Lock branch protection or flip the delivery mode | `/steer:protect` |
-| Load the rules manually (Cowork / desktop, where the hook can't fire) | `/steer:standards` |
+| A tool is missing, or set up the local toolchain | `/steer:doctor` |
+| steer itself is misbehaving — file a plugin bug upstream | `/steer:report` |
+| Answer accumulated open questions | `/steer:questions` |
+| Load the rules manually (Desktop *Chat* tab / web chat, where the hook can't fire) | `/steer:standards` |
 
 ## Setup (one-time)
 

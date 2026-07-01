@@ -10,7 +10,8 @@
   change, so you almost never install deps by hand; if you must, route it through
   mise — `mise exec -- pnpm install` — so it can't pick up a global/nvm copy.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
-- **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
+- **Deploy:** promotion via merge (`main` → non-prod, `prod` PR → prod) — see
+  Deployment & environments; there is no `pnpm deploy` task.
 
 The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
 uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /

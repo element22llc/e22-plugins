@@ -36,6 +36,7 @@ STEER_INPUT="$(cat)"
 [ -z "${STEER_INPUT}" ] && exit 0
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/classify.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/version-policy.sh"
 
 # Docs legitimately mention old versions -> exempt.
@@ -51,10 +52,12 @@ PINS="$(printf '%s' "${CONTENT}" | grep -Eo '(postgres|node|python|redis|valkey|
 
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
-# Resolve policy from the repo-local file (when cwd is the repo root) else the
-# plugin-bundled default. (Subdir-aware root resolution is a separate concern; the
-# bundled fallback keeps enforcement working regardless.)
-POLICY="$(steer_policy_resolve "${CWD}")"
+# Resolve the work-tree root so a repo-local policy/versions.yml is honored even
+# when editing from a subdir (e.g. apps/web); fall back to CWD when not inside a
+# work tree. steer_policy_resolve then prefers that repo-local file, else the
+# plugin-bundled default — so enforcement works regardless.
+ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
+POLICY="$(steer_policy_resolve "${ROOT}")"
 [ -n "${POLICY}" ] || exit 0 # no policy available → cannot enforce, stay silent
 
 DENY=""
@@ -66,8 +69,10 @@ for PIN in ${PINS}; do
 	# class excludes only digits (not the dot) so a three-segment pin (matched
 	# here at its major.minor) still honors the marker, while a non-digit or
 	# end-of-line after the pin still blocks a partial-major match (a "1" pin
-	# must not match a "189" version).
-	printf '%s' "${CONTENT}" | grep -E "${PIN}([^0-9]|\$).*(steer:allow-pin|pin-ok)" >/dev/null 2>&1 && continue
+	# must not match a "189" version). Escape the pin's dots so a dotted pin (e.g. a
+	# 3.9 tag) is matched literally, not as an ERE `.` that matches any char.
+	PIN_RE="$(printf '%s' "${PIN}" | sed 's/[.]/\\./g')"
+	printf '%s' "${CONTENT}" | grep -E "${PIN_RE}([^0-9]|\$).*(steer:allow-pin|pin-ok)" >/dev/null 2>&1 && continue
 
 	VERDICT="$(steer_policy_verdict "${POLICY}" "${PRODUCT}" "${VERSION}")"
 	case "${VERDICT}" in
@@ -83,7 +88,7 @@ if [ -n "${DENY}" ]; then
 	# check-issue-before-mutation.sh:62, reconcile-issue-first.sh:181-182). The
 	# verdict text is policy-derived + a numeric pin today, so this is hardening
 	# against malformed JSON if that prose ever gains a quote, not a live bug.
-	SAFE_DENY="$(printf '%s' "${DENY}" | tr -d '"\\')"
+	SAFE_DENY="$(printf '%s' "${DENY}" | tr -d '"\\' | tr '\n\t\r' '   ')"
 	REASON="Version-pin policy violation — ${SAFE_DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:reference conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
 	# Output envelope is harness-specific. Claude PreToolUse takes a hard "deny"
 	# wrapped in hookSpecificOutput. GitHub Copilot CLI (registered under the

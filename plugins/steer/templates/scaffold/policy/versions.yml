@@ -51,7 +51,7 @@ products:
     denied: []
   node:
     minimum_supported: "22"
-    denied: ["16", "18"]
+    denied: ["16", "18", "20"]
   python:
     minimum_supported: "3.10"
     denied: ["3.7", "3.8", "3.9"]

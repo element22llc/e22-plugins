@@ -25,4 +25,4 @@ defaults. Deviations are ADRs, same as any stack choice.
   Ansible Vault for Ansible — never committed (see Secrets handling). Commit
   provider lockfiles (`.terraform.lock.hcl`).
 - **Pin image/provider/role majors** the same way app stacks pin them; a
-  deliberately older pin needs an ADR plus `# pin-ok: <reason>`.
+  deliberately older pin needs an ADR plus `# steer:allow-pin <reason>`.
