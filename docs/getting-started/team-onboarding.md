@@ -13,6 +13,20 @@ flowchart LR
     DEV --> SETUP["/steer:setup"]
 ```
 
+## Before you start
+
+Everything below happens **inside Claude Code**, so get that far first:
+
+1. **Install Claude** — the desktop app (macOS/Windows) or the CLI. See
+   [Anthropic's install docs](https://docs.claude.com/en/docs/claude-code/overview).
+2. **Open the Code surface** — the Claude Code CLI, a VS Code / JetBrains
+   extension, or the Claude Desktop **Code** tab. (The Desktop *Chat* tab and
+   claude.ai web chat don't run the plugin's hooks — see the caveat below.)
+3. **Open a folder** — for `/steer:build` or `/steer:init`, open or create an
+   **empty folder**; the bootstrap turns it into the repo. Adopting an existing
+   app? Open that repo's folder instead.
+4. **Windows?** Do the [Windows setup](windows-setup.md) first.
+
 ## Am I a PO or a dev?
 
 - **You're a product owner (PO)** if you bring *ideas* and judge *outcomes*: you
@@ -44,10 +58,13 @@ users develop in WSL2. See [Windows setup](windows-setup.md). Claude drives ever
 other tool for you — you don't install anything else.
 
 !!! warning "Rules may not load automatically"
-    On **Claude Cowork and the desktop app** the `SessionStart` hook does not
-    fire, so the always-on rules are **not** auto-injected. On those surfaces,
-    run `/steer:standards` at the start of every session before doing anything
-    else. See [Known limitations](../reference/known-limitations.md).
+    On the **Claude Desktop *Chat* tab and claude.ai web chat** the `SessionStart`
+    hook does not fire, so the always-on rules are **not** auto-injected. (Cowork
+    runs hooks best-effort — reconfirm on your build.) On those surfaces, run
+    `/steer:standards` at the start of every session before doing anything else.
+    Engineering work belongs in Claude Code — the CLI, the IDE extensions, or the
+    Desktop **Code** tab — where hooks run fully. See
+    [Known limitations](../reference/known-limitations.md).
 
 ## What do I run first?
 
@@ -83,11 +100,10 @@ it maps everyday intents to the skill that handles them.
 - **Never push or merge without a developer's review.** Claude commits
   autonomously but pushes and PRs are **gated on a human** — that boundary is
   deliberate. See the [Authorization model](../concepts/authorization-model.md).
-- **Never assume the rules loaded on Cowork/Desktop.** If you didn't run
-  `/steer:standards` there, the standards aren't in context and Claude is running
-  without them.
-- **Never hand-edit the generated reference docs** (`docs/reference/skills.md`,
-  `docs/reference/hooks.md`) — they're reconciled from source by `/plugin-docs`.
+- **Never assume the rules loaded on the Desktop *Chat* tab or web chat.** If you
+  didn't run `/steer:standards` there, the standards aren't in context and Claude
+  is running without them. (Claude Code — the CLI, IDE extensions, and the Desktop
+  **Code** tab — loads them automatically.)
 - **(PO) Never edit code or the tracker directly** — let Claude drive the tooling
   so the spec spine and issue-first bookkeeping stay coherent.
 
@@ -108,6 +124,15 @@ it maps everyday intents to the skill that handles them.
 
 See the [Hooks reference](../reference/hooks.md) and
 [Authorization model](../concepts/authorization-model.md) for the full picture.
+
+## When something breaks
+
+- **A tool is missing** (`command not found`, mise/Docker errors) — run
+  **`/steer:doctor`**; it detects what's absent and, with your yes, installs the
+  toolchain.
+- **steer itself misbehaves** (a skill does the wrong thing, a hook misfires) —
+  run **`/steer:report`**, which files a bug about the plugin upstream so it gets
+  fixed for everyone.
 
 ## When do I ask a dev to review?
 
