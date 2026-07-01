@@ -37,6 +37,13 @@ flowchart LR
 - `/spec` stays product truth; the issue is the work/decision layer.
 - Agent-authored issues follow a machine-readable contract (stable headings +
   hidden markers + managed blocks) so they round-trip safely.
+- **Clickable references.** Rendered issues surface their references for a human
+  reader without disturbing the markers: every spec/code file path becomes a
+  Markdown link to the file on the default branch (`REPO_BLOB_BASE/<path>`, with a
+  `#L<n>` anchor when a line is cited), and implementable kinds carry a visible
+  `Delivery` line mirroring the `steer:pull-request` / `steer:branch` markers so
+  the delivering PR/branch is clickable. Markers stay canonical; the links and
+  line are the derived view.
 - **Related-issue links.** When `brainstorm`/`capture` find a connection to
   another issue, it's recorded under a `Related issues` heading as
   `#N — <relationship> (why)` — `relates-to`, `depends-on`, `blocks`,

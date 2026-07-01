@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** agent-authored GitHub issues now render **clickable references**
+  for POs. Every spec/code file path in an issue body (`Spec references`,
+  `Affected specifications`, `Evidence`) is emitted as a Markdown link to the
+  file on the repo's default branch (`REPO_BLOB_BASE/<path>`, with a `#L<n>`
+  anchor when a line is cited) instead of grey, non-clickable inline code — the
+  `steer:spec-path` marker stays the bare path, so marker-based dedup/reconcile
+  are unaffected. Implementable kinds (feature · task · bug) also gain a visible
+  **`Delivery`** managed-block heading that mirrors the otherwise-invisible
+  `steer:pull-request` / `steer:branch` markers as a clickable `PR: #NN` /
+  `Branch: …` line, maintained by `/steer:tracker-sync link-pr` and `/steer:work`.
+  Touches the `issue-bodies/*` templates, `ISSUE-SCHEMA.md` (new *Clickable
+  references* convention + heading lists), `tracker-sync` (`create` renders
+  links; `link-pr` updates the `Delivery` line), and `issues` (`materialize`).
 - **Added:** `/steer:sync` now repairs **invocation hygiene** in a managed repo's
   live prose. A new read-only detector (`scripts/scan-invocations.sh`) derives the
   valid invocation surface live from the plugin (skill names, the

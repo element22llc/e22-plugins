@@ -15,8 +15,8 @@
 
 ## Evidence
 
-- Spec: `spec/features/FEATURE_ID/contract.md:NN`
-- Code: `src/.../file.ts:NN`
+- Spec: [`spec/features/FEATURE_ID/contract.md:NN`](REPO_BLOB_BASE/spec/features/FEATURE_ID/contract.md#LNN)
+- Code: [`src/.../file.ts:NN`](REPO_BLOB_BASE/src/.../file.ts#LNN)
 
 ## Human decision required
 

@@ -72,7 +72,7 @@ format (markers, headings, **managed blocks**, idempotency) in
   draft`** (never `approved` — that's a later explicit `/steer:spec approve`),
   link the issue in `> Tracker:`, run `/steer:spec validate` on the feature, and
   present the diff / open a PR. Comment back on the issue with the exact spec
-  path + commit/PR. **Features only** — an epic has no `intent.md` and is **not
+  path (as a clickable link — `ISSUE-SCHEMA.md` → Clickable references) + commit/PR. **Features only** — an epic has no `intent.md` and is **not
   materializable**; group features under an epic with the `epic` mode instead.
 - **`publish-audit [report]`** — take an `/steer:audit` finding set and create/update
   the audit-run parent + selected finding children (see `/steer:audit`); file via

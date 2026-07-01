@@ -17,7 +17,7 @@ entry in the spec's `## Open questions`.]
 
 ## Affected specifications
 
-- `spec/features/FEATURE_ID/intent.md` — `Q-NNN`
+- [`spec/features/FEATURE_ID/intent.md`](REPO_BLOB_BASE/spec/features/FEATURE_ID/intent.md) — `Q-NNN`
 - [Other features this blocks, if any.]
 
 ## Decision needed from

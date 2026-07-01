@@ -35,14 +35,23 @@ internal tasks.]
 ## Spec references
 
 - Parent feature: #PARENT_ISSUE
-- Intent: `spec/features/FEATURE_ID/intent.md`
-- Contract: `spec/features/FEATURE_ID/contract.md`
+- Intent: [`spec/features/FEATURE_ID/intent.md`](REPO_BLOB_BASE/spec/features/FEATURE_ID/intent.md)
+- Contract: [`spec/features/FEATURE_ID/contract.md`](REPO_BLOB_BASE/spec/features/FEATURE_ID/contract.md)
 
 ## Related issues
 
 - #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
   are no related issues — never leave an empty stub.]
+
+## Delivery
+
+[Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
+markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+`/steer:work`.]
+
+- PR: #NN
+- Branch: `BRANCH_NAME`
 
 ## Validation
 

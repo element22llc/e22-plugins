@@ -110,10 +110,10 @@ apply; never rename them). Per kind:
   child features, and `Validation` describes the epic-level product acceptance.
 - **feature / task** — `Outcome` · `User value` · `Scope` · `Out of scope` ·
   `Acceptance criteria` · `Open questions` · `Spec references` · `Related issues` ·
-  `Validation`.
+  `Delivery` · `Validation`.
 - **bug** — `Problem` · `Observed behavior` · `Expected behavior` ·
   `Reproduction` · `Evidence` · `Acceptance criteria` · `Technical findings` ·
-  `Spec references` · `Related issues` · `Validation`.
+  `Spec references` · `Related issues` · `Delivery` · `Validation`.
 - **finding** — `Finding` · `Evidence` · `Standard missed` · `Impact` ·
   `Suggested remediation` · `Origin`.
 - **spec-question** — `Question` · `Why this matters` · `Affected specifications`
@@ -149,6 +149,34 @@ issues** — never emit an empty `Related issues` stub. Parent/sub-issue
 relationships do **not** go here (they use native links / `Spec references` ·
 `Parent: #N`); a `conflicts-with` line is **surfaced for a human**, never treated
 as resolved.
+
+### Clickable references — spec/file links and the `Delivery` line
+
+Two conventions keep an issue useful to a PO reading it in the GitHub UI, where a
+bare path renders as grey inline code (not a link) and the delivering PR otherwise
+lives only in an invisible marker:
+
+- **Repo-file references are Markdown links.** Every spec- or code-file path the
+  body cites — under `Spec references`, `Affected specifications`, `Evidence`, or
+  inline — is rendered as a link to the file on the repo's default branch:
+  `[`<path>`](https://github.com/<owner>/<repo>/blob/<default-branch>/<path>)`.
+  The shorthand for that prefix is **`REPO_BLOB_BASE` =
+  `https://github.com/<owner>/<repo>/blob/<default-branch>`** — `<owner>/<repo>`
+  and `<default-branch>` (usually `main`) come from the repo `/steer:tracker-sync`
+  operates on. When a specific line or range is cited, append the GitHub line
+  anchor: `…/file.ts#L42` or `…/file.ts#L42-L186`. The **`steer:spec-path` marker
+  stays the bare path** (machine-readable identity); only the visible body text is
+  linked, so marker-based dedup/reconcile are unaffected. On a non-GitHub tracker,
+  or when the blob base can't be resolved, fall back to the bare code-fenced path.
+- **The delivering PR/branch is visible, not just a marker.** The
+  `steer:pull-request` / `steer:branch` markers are invisible HTML comments, so an
+  implementable issue (feature · task · bug) also carries a **`Delivery`** heading
+  inside the managed block that mirrors them as a human-visible, clickable line —
+  `PR: #NN` (GitHub auto-links `#NN`) and `Branch: \`<branch>\``. It is **omitted
+  until a branch/PR exists** and is maintained from the markers by
+  `/steer:tracker-sync link-pr` and `/steer:work`. The markers stay **canonical**;
+  the line is a derived, one-directional view (like `steer:state` ↔ a Project
+  Status mirror) — never re-read as the source of truth.
 
 ## Taxonomy — Type × kind × source
 
