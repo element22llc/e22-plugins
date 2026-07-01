@@ -1,6 +1,6 @@
 ---
 name: report
-description: "File a bug report about the steer plugin ITSELF upstream in element22llc/e22-plugins. Gathers the defect (a recorded hook fault, a contradictory skill/rule instruction, or a missing/broken template or script), scrubs it of secrets/absolute-paths/product-code, deduplicates against existing upstream issues by a stable fingerprint, shows you the rendered body, and only on your confirmation files it via gh (MCP/gh write, with a paste-ready fallback when upstream access is missing). Detect-and-offer, never auto-file: the upstream write is a permission-prompted human gate. This is for steer's OWN defects, not product-code bugs (those go to the product tracker via /steer:issues)."
+description: "File a bug report about the steer plugin ITSELF upstream in element22llc/e22-plugins — gather the defect, scrub secrets/absolute-paths/product-code, dedupe against existing upstream issues, and file via gh only on your confirmation (detect-and-offer, never auto-file). For steer's own defects, not product-code bugs (those go to the product tracker via /steer:issues)."
 when_to_use: 'Use when steer itself misbehaves — a SessionStart self-fault notice appears, a skill/rule gives contradictory or impossible instructions, or a referenced template/script/helper is missing or crashes — and you want it fixed upstream. Also when the user says "report this steer bug" / "file this against the plugin".'
 argument-hint: "[describe the defect | run with no args to use recorded faults]"
 allowed-tools:

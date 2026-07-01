@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** trimmed the paragraph-length `description` frontmatter on eight
+  skills (`work`, `tracker-sync`, `roadmap`, `report`, `protect`, `audit`,
+  `intake`, `sync`) to purpose + primary trigger, moving protocol detail into the
+  body. Claude Code concatenates `description` + `when_to_use` into the routing
+  listing and truncates the combined text at 1,536 chars — `work`'s combined length
+  was 1,708, so its trailing `when_to_use` trigger phrases were being silently
+  dropped. All skills are now well under the cap (max 1,156). Copilot prompt
+  artifacts regenerated. Added a `check_plugin.py` guard (+ tests) that fails any
+  skill whose `description` + `when_to_use` exceeds the cap, and documented the
+  mechanic in `AUTHORING.md`. **Note:** the originating issue proposed *removing*
+  `when_to_use` on the premise it was unparsed; verification against the current
+  Claude Code skills docs showed it **is** a recognized field appended to
+  `description` for routing, so it was kept — removing it would have deleted
+  routing signal, not saved context.
 - **Changed:** hook hardening pass (all hooks stay POSIX sh, no jq, fail-open).
   Added `timeout` to every `hooks.json` entry (10s for SessionStart/PreToolUse,
   30s for the Stop hook) so a wedged `git` spawn can't stall session start / turn
