@@ -55,19 +55,15 @@ sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
 
 It prints the `##` sections and checklist items the bundled template has that the
 existing file lacks (e.g. a later-added `## Outdated dependencies & bad practices`
-section). The list **over-reports** — a placeholder the dev replaced with real
-content, or a checklist item they reworded, shows as "missing" when it isn't. So
-it's a *candidate* list: open the bundled template, and **splice in** the
-genuinely-new `##` sections, `## Adoption progress` checkboxes, and `## Gap
-analysis` table rows, leaving the spliced-in items **unchecked / empty**. Match on
-the section heading, checkbox label, and gap-analysis **Area** cell; never
-duplicate an item already present (filled-in or reworded), never re-add a
-placeholder the dev filled in, never reorder or overwrite filled-in content, and
-never delete a row the dev added. **Preserve every value already there.** Empty
-output means the file is already current. Only then continue from the unchecked
-items — the freshly spliced ones included. This is the plugin-wide **Template
-reconciliation** convention — full rules in
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
+section) — a *candidate* list (it over-reports). **Splice in** only the
+genuinely-new sections, `## Adoption progress` checkboxes, and `## Gap analysis`
+table rows, leaving them **unchecked / empty**; **preserve every value already
+there** — never re-add a placeholder the dev filled in, reorder, or delete a row.
+Empty output means the file is already current. Only then continue from the
+unchecked items. Full rules (anchor matching, over-reports handling) — the
+plugin-wide **Template reconciliation** convention:
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+reconciliation".
 
 ## Phase 3 — Survey the codebase
 
@@ -245,19 +241,17 @@ ratified decisions; the ADRs stay `Proposed`) plus the actual `package.json` /
 `mise.toml` / `compose.yaml`. **Do not overwrite an `ARCHITECTURE.md` a team
 already populated**; only seed the stub when none exists. Then pin the toolchain.
 The scaffold ships no `mise.lock`, so for each config dir (the repo's existing
-`mise.toml` dirs plus any the scaffold added, e.g. `infra/`) create the lock if
-it is missing (`touch mise.lock`, or `mise lock` — mise only writes the lock if
-the file already exists), run `mise install`, then `mise lock --platform
-linux-x64,macos-arm64` (add `macos-x64` / `linux-arm64` / `windows-x64` for any
-other platform the team develops on — `linux-x64` is mandatory because CI runs
-there). Plain `mise install` only writes the host platform's asset URLs, so a lock
-pinned on macOS has no `linux-x64` entries and CI's `mise install --locked` fails;
-verify each lock has a `[tools.<tool>."platforms.linux-x64"]` `url` + `checksum`
-block (`grep -q 'platforms.linux-x64' mise.lock`), not just version entries. Commit
-the populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the
-workspace resolves). **If the toolchain can't be installed now, commit no
-`mise.lock`** — CI installs unlocked until a populated lock lands; never commit an
-empty / comment-only one.
+`mise.toml` dirs plus any the scaffold added, e.g. `infra/`) run `touch mise.lock
+&& mise install && mise lock --platform linux-x64,macos-arm64` (add other
+platforms the team develops on — **`linux-x64` is mandatory because CI runs
+there**), then verify each lock has a `platforms.linux-x64` block (`grep -q
+'platforms.linux-x64' mise.lock`) before committing. Commit the populated locks
+(`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the workspace resolves). **If
+the toolchain can't be installed now, commit no `mise.lock`** — CI installs
+unlocked until a populated lock lands; never an empty / comment-only one. Full
+procedure + rationale (cross-platform backends, why `--locked` fails without
+`linux-x64`): `/steer:reference conventions` → "Toolchain: `latest` in config,
+pinned in the lockfile".
 
 ## Phase 11 — Reconcile layout
 

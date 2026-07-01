@@ -90,7 +90,7 @@ def test_token_present_respects_word_boundary():
     assert f("spec", "the spec is ready")
 
 
-def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, standards, cross):
+def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, cross):
     """Point the guard's file/dir globals at temp fixtures."""
     rules_dir = tmp_path / "rules"
     rules_dir.mkdir()
@@ -98,13 +98,10 @@ def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, standards
         (rules_dir / f"{stem}.md").write_text("x", encoding="utf-8")
     claude_md = tmp_path / "CLAUDE.md"
     claude_md.write_text(claude, encoding="utf-8")
-    standards_md = tmp_path / "SKILL.md"
-    standards_md.write_text(standards, encoding="utf-8")
     cross_md = tmp_path / "CROSS-SURFACE.md"
     cross_md.write_text(cross, encoding="utf-8")
     monkeypatch.setattr(check_standards, "RULES_DIR", rules_dir)
     monkeypatch.setattr(check_standards, "CLAUDE_MD", claude_md)
-    monkeypatch.setattr(check_standards, "STANDARDS_SKILL", standards_md)
     monkeypatch.setattr(check_standards, "CROSS_SURFACE", cross_md)
 
 
@@ -114,7 +111,6 @@ def test_enumeration_drift_clean(monkeypatch, tmp_path: Path):
         tmp_path,
         rules=["00-a", "10-b"],
         claude="skills/ alpha, beta (no commands/",
-        standards="operating manual:\n`00-a`, `10-b`.\n\nnext",
         cross="(2 files)\ninject-standards.sh",
     )
     monkeypatch.setattr(
@@ -126,12 +122,14 @@ def test_enumeration_drift_clean(monkeypatch, tmp_path: Path):
 
 
 def test_enumeration_drift_catches_each_surface(monkeypatch, tmp_path: Path):
+    # The /steer:standards rule enumeration was removed (#276); the guard still
+    # covers the CLAUDE.md skills/ list and the CROSS-SURFACE.md rule count + hook
+    # roster.
     _patch_enum_sources(
         monkeypatch,
         tmp_path,
         rules=["00-a", "10-b"],
         claude="skills/ alpha (no commands/",  # missing beta
-        standards="operating manual:\n`00-a`.\n\nnext",  # missing 10-b
         cross="(1 files)\n",  # wrong count + missing hook
     )
     monkeypatch.setattr(
@@ -141,6 +139,5 @@ def test_enumeration_drift_catches_each_surface(monkeypatch, tmp_path: Path):
     check_standards.check_enumeration_drift(errors, {"alpha", "beta"})
     joined = "\n".join(errors)
     assert "CLAUDE.md" in joined and "beta" in joined
-    assert "rule enumeration missing" in joined and "10-b" in joined
     assert "(1 files)" in joined  # count mismatch reported
     assert "inject-standards.sh" in joined  # missing hook reported

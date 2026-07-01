@@ -256,9 +256,11 @@ of dimension.
 
 ### Reconciliation across runs — audits are reconciling, not additive
 
-Re-running the audit must **update the existing issue set**, never pile up
-duplicates. Each run is filed via `/steer:issues publish-audit`, which keys off the
-markers (see `ISSUE-SCHEMA.md`). Two distinct identities:
+This is the canonical full lifecycle (`ISSUE-WORKFLOW.md` §"Audit & drift" carries
+the one-paragraph summary and defers here for the detail). Re-running the audit
+must **update the existing issue set**, never pile up duplicates. Each run is filed
+via `/steer:issues publish-audit`, which keys off the markers (see
+`ISSUE-SCHEMA.md`). Two distinct identities:
 
 - **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
   stable across runs and **never line-based** — so moving the offending code

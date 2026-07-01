@@ -117,15 +117,15 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
-   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`) across the
-   copied-in files this repo has — `PRODUCTIONIZATION.md`, each feature's
-   `intent.md` / `contract.md`, `tracker.md`, `app/README.md`, and the scaffold
-   files (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …). For
-   each, run the diff command from that convention and **splice in only what's
-   missing** — new `##` sections, checklist items, table rows — leaving them
-   unchecked/empty. **Purely additive: never overwrite a filled-in value, reorder,
-   or delete a dev/PO-added row.** Reference prose (`templates/reference/*`) and
-   ADRs are exempt — do not reconcile them (they're read in place / immutable).
+   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   reconciliation") across the copied-in files this repo has —
+   `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
+   `tracker.md`, `app/README.md`, and the scaffold files
+   (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …): for each, run
+   that convention's diff command and splice in only what's missing, additive-only
+   (never overwrite, reorder, or delete a dev/PO-added row). Reference prose
+   (`templates/reference/*`) and ADRs are exempt — do not reconcile them (they're
+   read in place / immutable).
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
