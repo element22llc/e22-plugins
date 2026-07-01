@@ -76,9 +76,10 @@ resuming once the build is handed off — every box in its handoff gate checked.
     graduating off the trunk via `/steer:protect` in solo trunk. See the
     [Authorization model](../concepts/authorization-model.md).
 
-!!! note "Prototype-mode vs. governed-mode delivery"
+!!! note "For the reviewing developer: prototype-mode vs. governed-mode delivery"
     In **prototype mode** (greenfield, no tracker yet) the hand-off is a single v0
-    PR — **unless** the PO chose **solo trunk** at the start (sole contributor, no
+    PR (a pull request — the package a developer reviews) — **unless** the PO chose
+    **solo trunk** at the start (sole contributor, no
     developer): then the build commits straight to the main line with no v0 PR, and
     the hand-off is graduation via [`/steer:protect`](../reference/skills.md) when a
     developer joins. In a repo that is already GitHub-adopted (**governed mode**),
@@ -88,7 +89,7 @@ resuming once the build is handed off — every box in its handoff gate checked.
     PR. Either way the productionization brief still applies, and merge/deploy stay
     human-gated.
 
-!!! note "What the dev reviewer inherits"
+!!! note "For developers: what the dev reviewer inherits"
     A v0 hand-off is not just code. As it scaffolds the stack and builds the UI,
     `/steer:build` keeps the root project docs current — `ARCHITECTURE.md` (the
     as-built stack and apps/packages map), `DESIGN.md` (the real visual identity),

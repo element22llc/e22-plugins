@@ -19,15 +19,23 @@
 # Unescape a JSON string body (the bytes between the surrounding quotes).
 # Handles \\ \" \/ \n \t \r correctly, including escaped backslashes, by parking
 # \\ on a sentinel control char first so \\n is NOT turned into a newline.
+#
+# awk, not sed: POSIX leaves \n/\t/\r in a sed *replacement* undefined, and BSD
+# sed (the macOS default — the exact jq-less environment this fallback exists for)
+# emits literal n/t/r instead of the control chars, collapsing multi-line content
+# to one line. awk's gsub replacements are portable across BSD and GNU.
 steer_json_unescape() {
-	_S="$(printf '\001')"
-	sed -e "s/\\\\\\\\/${_S}/g" \
-		-e 's/\\"/"/g' \
-		-e 's/\\\//\//g' \
-		-e 's/\\n/\n/g' \
-		-e 's/\\t/\t/g' \
-		-e 's/\\r/\r/g' \
-		-e "s/${_S}/\\\\/g"
+	awk '{
+		gsub(/\\\\/, "\001")   # park escaped backslashes on a sentinel first
+		gsub(/\\"/, "\"")
+		gsub(/\\\//, "/")
+		gsub(/\\n/, "\n")
+		gsub(/\\t/, "\t")
+		gsub(/\\r/, "\r")
+		gsub(/\001/, "\\")     # restore parked backslashes as a single backslash
+		printf "%s%s", sep, $0
+		sep = "\n"
+	}'
 }
 
 # steer_have_jq — true if a usable jq is on PATH.
@@ -87,17 +95,19 @@ steer_tool() {
 
 # steer_mutation_content — the *added/new* text a tool would write, unescaped, so a
 # content check inspects only what is being introduced (F13: tool-aware):
-#   Write     -> content
-#   Edit      -> new_string   (NEVER old_string, so version upgrades aren't blocked)
-#   MultiEdit -> every edits[].new_string, newline-joined
-#   Bash      -> nothing (command text is intentionally skipped; the CI repo-scan
-#                is the stronger backstop) — documented bypass.
+#   Write        -> content
+#   Edit         -> new_string   (NEVER old_string, so version upgrades aren't blocked)
+#   MultiEdit    -> every edits[].new_string, newline-joined
+#   NotebookEdit -> new_source   (the cell body being written)
+#   Bash         -> nothing (command text is intentionally skipped; the CI repo-scan
+#                   is the stronger backstop) — documented bypass.
 # Empty for any other tool.
 steer_mutation_content() {
 	_tool="$(steer_tool)"
 	case "${_tool}" in
 	Write) steer_field content ;;
 	Edit) steer_field new_string ;;
+	NotebookEdit) steer_field new_source ;;
 	MultiEdit)
 		if steer_have_jq; then
 			printf '%s' "${STEER_INPUT}" |

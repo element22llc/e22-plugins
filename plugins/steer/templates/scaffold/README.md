@@ -72,6 +72,7 @@ brew install mise                          # macOS
 eval "$(mise activate zsh)"
 
 # Per repo
+mise trust                                 # trust this repo's mise.toml (once per clone)
 touch mise.lock                            # FIRST PIN ONLY: no lock ships; mise writes one only if it exists
 mise install                               # installs tools; writes/refreshes mise.lock (commit it)
 mise lock --platform linux-x64,macos-arm64 # FIRST ADOPTION ONLY: add per-platform url+checksum so
@@ -111,7 +112,7 @@ Before the `@claude` GitHub workflow will run, add the `ANTHROPIC_API_KEY` secre
 
 ## Windows: develop in WSL
 
-On Windows, do all development inside **WSL2** (Ubuntu recommended), not native Windows or PowerShell. The toolchain (mise, uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints assume a POSIX environment; WSL avoids path, line-ending, and shell-incompatibility issues.
+On Windows, do **CLI and IDE work** — local Claude Code, the terminal, your editor — inside **WSL2** (Ubuntu recommended), not native Windows or PowerShell. The toolchain (mise, uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints assume a POSIX environment; WSL avoids path, line-ending, and shell-incompatibility issues. The **Claude Desktop Code tab** runs its own environment where **Git for Windows** is enough (builds included) — WSL is only needed for the local CLI/IDE surface.
 
 1. **Install WSL2** — in an elevated PowerShell, run `wsl --install` (installs WSL2 + Ubuntu), then reboot. Verify with `wsl -l -v` (the distro should show `VERSION 2`). Full guide: <https://learn.microsoft.com/windows/wsl/install>.
 2. **Clone the repo *inside* the Linux filesystem** (e.g. `~/code/…`, not `/mnt/c/…`) — working under `/mnt/c` is markedly slower and breaks file-watching.

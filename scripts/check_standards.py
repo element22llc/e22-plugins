@@ -661,11 +661,14 @@ def check_authorization(errors: list[str]) -> None:
             "Bash(gh issue list:*)",
             "Bash(gh issue view:*)",
             "Bash(gh auth status:*)",
-            # MCP-first path — the preferred create/manage/dedup tools
-            "mcp__github__create_issue",
-            "mcp__github__update_issue",
+            # MCP-first path — the preferred create/manage/dedup tools. The hosted
+            # GitHub MCP server consolidated the issue verbs: create_issue/update_issue
+            # -> issue_write, get_issue -> issue_read, add_sub_issue -> sub_issue_write
+            # (#264). The old names no longer resolve, so pre-authorizing them was a
+            # silent no-op that still prompted on every mutation.
+            "mcp__github__issue_write",
+            "mcp__github__issue_read",
             "mcp__github__add_issue_comment",
-            "mcp__github__get_issue",
             "mcp__github__list_issues",
             "mcp__github__search_issues",
         )

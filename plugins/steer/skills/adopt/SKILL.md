@@ -2,6 +2,20 @@
 name: adopt
 description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the plugin's bundled scaffolding without clobbering working code.
 when_to_use: Use when a repo has working code but no /spec spine and no mise.toml, or when asked to adopt or onboard an existing app onto the standards.
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git mv *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(mise install *)
+  - Bash(mise lock *)
+  - Bash(npm view *)
 ---
 
 # Adopt an existing repo into the standards
