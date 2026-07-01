@@ -400,7 +400,7 @@ keeps you in the loop for sensitive work.
 
 <div v-click class="flex gap-3 items-start">
 <div class="text-2xl">🚀</div>
-<div><b>Fast mode.</b> <code>/fast</code> runs Claude Opus with quicker turns — same model.</div>
+<div><b>Fast mode.</b> <code>/fast</code> — faster output from the <b>same</b> Opus model (it doesn't drop to a smaller/cheaper one).</div>
 </div>
 
 <div v-click class="flex gap-3 items-start">
@@ -640,7 +640,7 @@ Idea → **shape it** → **break it down** → **build it** → **review it**.
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">⚙️</div>
-<div><b><code>/steer:work</code></b> — implement against an issue on a <code>feat/*</code> branch. Claude commits autonomously.</div>
+<div><b><code>/steer:work</code></b> — implement against an issue on an <code>issue/&lt;n&gt;-&lt;slug&gt;</code> branch. Claude commits autonomously.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
@@ -691,7 +691,7 @@ The guarantee comes from **Claude following the rules + you reviewing** — not 
 <div v-click class="p-6 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### ✅ Claude does on its own
-- Works on a `feat/*` / `fix/*` branch
+- Works on an `issue/<n>-<slug>` branch (issue work)
 - **Commits autonomously** as it goes
 - Keeps the spec spine & issues in sync
 
@@ -724,16 +724,19 @@ That pause isn't a bug — it's the **design**. The PR is the hand-off, not a fa
 <div v-click><b class="accent">init</b> / <b class="accent">adopt</b> — scaffold / absorb</div>
 <div v-click><b class="accent">build</b> — PO idea → app</div>
 <div v-click><b class="accent">spec</b> — shape behavior first</div>
-<div v-click><b class="accent">issues</b> — decompose & triage</div>
+<div v-click><b class="accent">issues</b> — decompose, triage & status</div>
 <div v-click><b class="accent">work</b> — implement an issue</div>
-<div v-click><b class="accent">tracker-sync</b> — GitHub I/O</div>
+<div v-click><b class="accent">intake</b> — absorb a PO doc</div>
+<div v-click><b class="accent">questions</b> — answer open questions</div>
 <div v-click><b class="accent">adr</b> — capture a decision</div>
 <div v-click><b class="accent">audit</b> — standards check</div>
 <div v-click><b class="accent">sync</b> — reconcile state</div>
+<div v-click><b class="accent">protect</b> — branch protection</div>
 <div v-click><b class="accent">next</b> — what to do now</div>
 <div v-click><b class="accent">standards</b> — load rules by hand</div>
 <div v-click><b class="accent">doctor</b> — diagnose setup</div>
-<div v-click><b class="accent">report</b> / <b class="accent">roadmap</b> — status</div>
+<div v-click><b class="accent">roadmap</b> — release timeline</div>
+<div v-click><b class="accent">report</b> — file a steer bug upstream</div>
 <div v-click><b class="accent">tidy</b> — clean up</div>
 
 </div>
