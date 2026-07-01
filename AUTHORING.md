@@ -56,8 +56,8 @@ be unique. The full field set actually used in this repo:
 | Field | Required | Notes |
 | --- | --- | --- |
 | `name` | yes | kebab-case, **no `/steer:` prefix**, must match the directory name. |
-| `description` | yes | One prose sentence on purpose and scope. |
-| `when_to_use` | yes | When to invoke. Restricted-grammar scalar (see gotcha below). |
+| `description` | yes | Purpose + primary trigger, 1–2 sentences. Appended to `when_to_use` in the skill listing Claude Code uses for routing — keep it lean and put the key use case first (see the listing-cap note below). |
+| `when_to_use` | yes | Additional trigger phrases / example requests, **appended to `description`** in the routing listing (a recognized field, not documentation-only). Restricted-grammar scalar (see gotcha below). |
 | `argument-hint` | no | CLI arg syntax for multi-mode skills, e.g. `"[start \| resume \| status \| finish] [#issue ...]"`. |
 | `allowed-tools` | no | Pre-approve idempotent ops so the skill doesn't prompt — see below. |
 | `disallowed-tools` | no | Block mutation classes — used by read-only (Tier 1) skills. |
@@ -66,6 +66,14 @@ be unique. The full field set actually used in this repo:
 > `displayName` is **not** a skill field — it belongs in
 > `plugins/steer/.claude-plugin/plugin.json` (the `/plugin` menu label). There is
 > no `model:` field on any skill; do not add one.
+
+> **Listing cap.** Claude Code concatenates `description` + `when_to_use` into the
+> skill listing it uses for routing and truncates the combined text at **1,536
+> characters** (the documented `skillListingMaxDescChars` default); past the cap the
+> trailing trigger text is silently dropped. `check_plugin.py` fails any skill whose
+> combined length exceeds the cap. Keep the description to purpose + primary trigger
+> and let `when_to_use` carry the extra trigger phrases — a paragraph-length
+> description otherwise crowds out its own routing signal.
 
 **`when_to_use` quoting gotcha.** `check_standards.py` does a restricted-grammar
 balance check (not a full YAML parse). A single-quoted scalar must contain exactly

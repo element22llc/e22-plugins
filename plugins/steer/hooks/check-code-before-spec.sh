@@ -105,7 +105,7 @@ esac
 [ -n "${SPINE_DUE}" ] || [ -n "${SCAFFOLD_DUE}" ] || exit 0
 
 # Sanitize the path before embedding it in JSON.
-SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
+SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\' | tr '\n\t\r' '   ')"
 
 # State-specific framing for the spine route: an absent spine vs a foreign spec/
 # vs a damaged spine call for different first moves.

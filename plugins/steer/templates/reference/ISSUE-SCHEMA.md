@@ -305,6 +305,46 @@ above) — they are neither markers nor labels. The planning fields with **no ho
 on the issue** — iteration, size, and any other custom Project-*item* single-select
 — live **only** on the Project item and are never mirrored back into the issue.
 
+### Reading & writing issue fields — API recipes
+
+Native issue fields have **no `gh issue` subcommand** — `/steer:tracker-sync`
+`field-get` / `field-set` reach them via GraphQL, with a REST alternative for
+writes. The concrete shapes (the operative rules — single-source-of-truth,
+capability degradation, ledger provenance — live with those ops in the gateway):
+
+**Read (`field-get`).** Query the issue's **`issueFieldValues`** connection via
+`gh api graphql` (not `fieldValues` — that does not exist on `Issue`). Each value
+node is a typed variant — `IssueFieldSingleSelectValue { name optionId }` for
+Priority, plus `…TextValue` / `…DateValue` / `…NumberValue` / `…MultiSelectValue`;
+each value's `field` is the definition union **`IssueFields`**
+(`IssueFieldSingleSelect`, `IssueFieldText`, `IssueFieldDate`, `IssueFieldNumber`,
+`IssueFieldMultiSelect`). Use `issue.viewerCanSetFields` as the capability probe.
+
+**Write (`field-set`).** Resolve the field's node id, its **type**, and (for
+single-selects like Priority) the option id from the **org field definition** —
+`gh api graphql`, or read names/ids from `gh api /orgs/{org}/issue-fields` (each
+field's choices live under `.options`). Then write via **either**:
+
+- **GraphQL** — `setIssueFieldValue(input:{ issueId:"…", issueFields:[ … ] })`.
+  `fieldId` and the value do **not** sit at the top level; each list element is an
+  `IssueFieldCreateOrUpdateInput` of `{ fieldId, <one typed value> }`. The typed
+  value key is `singleSelectOptionId` (an option **id**, not its name) for a
+  single-select, `dateValue` for a date, `numberValue` / `textValue` /
+  `multiSelectOptionIds` as the field's type dictates (never assume Effort's
+  type — read it). Set `delete: true` on an element to clear it. One mutation can
+  carry several elements.
+- **REST** — `gh api --method POST /repos/{owner}/{repo}/issues/{n}/issue-field-values
+  -H "X-GitHub-Api-Version: 2026-03-10" -f issue_field_values='[{"field_id":<id>,"value":"High"}]'`.
+  Here `value` is the option **name** (e.g. `High`), **not** its id — unlike the
+  GraphQL `singleSelectOptionId`. **Use POST** to add/update one field; **never
+  `PUT`** — `PUT` *replaces all* of the issue's field values, silently clearing
+  Effort/dates you didn't pass.
+
+**Never reach for the Projects API for these fields** — a same-named Projects board
+column is a read-only projection (`updateProjectV2Field` / `gh project item-edit`
+fail with `Only custom fields can be updated …` and expose no option ids). See the
+Projects-v2 boundary above.
+
 ## Idempotency & deduplication
 
 **Find before create.** Resolve identity in this order; only an **exact**

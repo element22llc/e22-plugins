@@ -56,7 +56,6 @@ ISSUE_WORKFLOW_PATH = PLUGIN_ROOT / "templates/reference/ISSUE-WORKFLOW.md"
 SKILLS_DIR = PLUGIN_ROOT / "skills"
 RULES_DIR = PLUGIN_ROOT / "rules"
 HOOKS_JSON = PLUGIN_ROOT / "hooks/hooks.json"
-STANDARDS_SKILL = SKILLS_DIR / "standards/SKILL.md"
 README = Path("README.md")
 CLAUDE_MD = Path("CLAUDE.md")
 CROSS_SURFACE = Path("CROSS-SURFACE.md")
@@ -539,18 +538,10 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
                 f"(list every skill under plugins/steer/skills/)"
             )
 
-    # standards skill: the rule list must name every rules/*.md stem. Scope to
-    # the "operating manual" list paragraph.
-    if STANDARDS_SKILL.is_file():
-        text = STANDARDS_SKILL.read_text(encoding="utf-8")
-        m = re.search(r"operating manual:(.*?)\n\n", text, re.DOTALL)
-        block = m.group(1) if m else ""
-        missing = {r for r in rules if f"`{r}`" not in block}
-        if missing:
-            errors.append(
-                f"skills/standards/SKILL.md: rule enumeration missing "
-                f"{sorted(missing)} (list every rules/*.md file)"
-            )
+    # NOTE: the /steer:standards skill no longer enumerates the rule filenames —
+    # it instructs "read every *.md under rules/ in lexical order", which fully
+    # specifies the behavior without a hand-maintained list to keep in sync (the
+    # maintenance trap this check used to guard). See #276.
 
     # CROSS-SURFACE.md: rule count + SessionStart hook roster match disk.
     if CROSS_SURFACE.is_file():
@@ -670,11 +661,14 @@ def check_authorization(errors: list[str]) -> None:
             "Bash(gh issue list:*)",
             "Bash(gh issue view:*)",
             "Bash(gh auth status:*)",
-            # MCP-first path — the preferred create/manage/dedup tools
-            "mcp__github__create_issue",
-            "mcp__github__update_issue",
+            # MCP-first path — the preferred create/manage/dedup tools. The hosted
+            # GitHub MCP server consolidated the issue verbs: create_issue/update_issue
+            # -> issue_write, get_issue -> issue_read, add_sub_issue -> sub_issue_write
+            # (#264). The old names no longer resolve, so pre-authorizing them was a
+            # silent no-op that still prompted on every mutation.
+            "mcp__github__issue_write",
+            "mcp__github__issue_read",
             "mcp__github__add_issue_comment",
-            "mcp__github__get_issue",
             "mcp__github__list_issues",
             "mcp__github__search_issues",
         )

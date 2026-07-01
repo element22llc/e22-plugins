@@ -51,6 +51,14 @@ steer_tracker_is_github "${ROOT}" || exit 0
 CLASS="$(steer_classify_path "${FILE}")"
 [ "$(steer_class_nudges "${CLASS}")" = "nudge" ] || exit 0
 
+# Fire at most once per session+repo (keyed by resolved root so subdir writes
+# dedupe to one nudge). Check the marker BEFORE the git-spawning exemptions below,
+# so a repeat write in an already-nudged session short-circuits without spawning
+# git. Marker CREATION stays past the exemptions (mark only when we actually nudge).
+CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
+MARK="${TMPDIR:-/tmp}/steer-issuefirst-nudge.${SID:-nosid}.${CWD_KEY:-0}"
+[ -f "${MARK}" ] && exit 0
+
 # Hotfix fast-path exemption (rule 62): a production hotfix runs on a hotfix/<n>
 # branch and files its issue after-the-fact by design, so the "issue BEFORE the
 # first mutation" nudge would be a false positive here. Stay silent at the point
@@ -72,14 +80,11 @@ if [ "${CLASS}" != "implementation" ] && command -v git >/dev/null 2>&1; then
 	case "${BRANCH}" in feat/sync|feat/sync-*|feat/sync/*) exit 0 ;; esac
 fi
 
-# Fire at most once per session+repo (keyed by resolved root so subdir writes
-# dedupe to one nudge).
-CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
-MARK="${TMPDIR:-/tmp}/steer-issuefirst-nudge.${SID:-nosid}.${CWD_KEY:-0}"
-[ -f "${MARK}" ] && exit 0
+# Mark this session+repo as nudged. The marker CHECK ran above (before the git
+# exemptions); create it only now that we are actually going to nudge.
 : >"${MARK}" 2>/dev/null || true
 
-SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\')"
+SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\' | tr '\n\t\r' '   ')"
 
 # Issue-first holds in BOTH delivery modes (the issue is the audit-evidence anchor);
 # solo-trunk relaxes only the branch/PR ceremony, so its nudge keeps the issue

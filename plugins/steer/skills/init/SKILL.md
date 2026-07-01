@@ -2,6 +2,19 @@
 name: init
 description: One-time setup for a new managed repo — bootstrap the /spec spine + repo scaffolding from the plugin's bundled scaffold (the plugin replaces the old static repository-template as the bootstrap source), or resolve placeholders in a legacy template fork. In both cases pin the toolchain and leave the repo working spec-first.
 when_to_use: 'Use when the dev says "set up this new repo", when a repo has no /spec spine, or when template placeholders ([Replace …], [Product Name], @github-handle) remain.'
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(mise install *)
+  - Bash(mise lock *)
+  - Bash(npm view *)
 ---
 
 # First-run setup for a new repo
@@ -73,30 +86,18 @@ them:
    values (product name, handles, …) before they're applied. Once applied,
    commit them (Commit autonomy) — **push and the PR wait for the dev**.
 4. **Pin the toolchain — for every CI/dev platform.** The template's `mise.toml`
-   files use `latest` so they carry no stale versions; the matching `mise.lock`
-   files hold the resolved pins. The template ships **no** `mise.lock` — you
-   create it here as part of pinning (mise only writes the lock if the file
-   already exists, so create it first). If `mise` itself (or Docker) isn't
-   installed yet, run **`/steer:doctor`** first — it detects and, with the dev's
-   yes, installs the toolchain. Then, in each config dir (root, and `infra/` if
-   they'll touch infra), have the dev: create the empty lock
-   (`touch mise.lock`, or `mise lock`), run `mise install` to resolve versions
-   into it, **then run `mise lock --platform linux-x64,macos-arm64`** (add
-   `macos-x64` / `linux-arm64` / `windows-x64` for any other platform the team
-   develops on; `linux-x64` is mandatory — CI runs there). Plain `mise install`
-   only writes asset URLs + checksums for the host platform, so a lock pinned on
-   macOS has **no `linux-x64` entries** and CI's `mise install --locked` fails
-   with *"No lockfile URL found … on platform linux-x64"*. **Verify** each
-   `mise.lock` now contains a `[tools.<tool>."platforms.linux-x64"]` block with
-   `url` + `checksum` for every tool (`grep -q 'platforms.linux-x64' mise.lock`)
-   — a lock with only `[[tools.*]]` version entries still fails `--locked` — then
-   commit them. They are the real version pins. **If you can't pin yet** (the
-   toolchain isn't installed and the dev defers it), leave the repo with **no**
-   `mise.lock`: CI runs a plain unlocked `mise install` until a populated lock is
-   committed. **Never commit an empty / comment-only `mise.lock`** — that pins
-   nothing while making CI's `--locked` fail. Run `/steer:reference conventions` for the
-   rationale, including the cross-platform backend rule and lockfile-maintenance
-   discipline.
+   files use `latest` and ship **no** `mise.lock`; create the lock here as part
+   of pinning. If `mise` (or Docker) isn't installed yet, run **`/steer:doctor`**
+   first. Then, in each config dir (root, and `infra/` if they'll touch infra),
+   have the dev run `touch mise.lock && mise install && mise lock --platform
+   linux-x64,macos-arm64` (add other platforms the team develops on; **`linux-x64`
+   is mandatory — CI runs there**), verify each lock has a
+   `[tools.<tool>."platforms.linux-x64"]` block (`grep -q 'platforms.linux-x64'
+   mise.lock`) before committing. **If the dev defers pinning, commit no
+   `mise.lock`** (CI runs unlocked until one exists) — **never an empty /
+   comment-only lock**. Full procedure, the cross-platform backend rule, and
+   rationale: `/steer:reference conventions` → "Toolchain: `latest` in config,
+   pinned in the lockfile".
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
    `packages/core` workspace so `mise exec -- pnpm install && pnpm dev` boots a
    page on a fresh clone. It is a placeholder, not the real stack — replace it with the
@@ -277,23 +278,18 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
    suffers when it's left unfilled.
 5. **Pin the toolchain and lock the workspace — for every CI/dev platform.** If
-   `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first to detect
-   and install the toolchain (with the dev's confirmation). The template ships no
-   `mise.lock`, so create it first (`touch mise.lock`, or `mise lock`), run
-   `mise install`, then `mise lock --platform linux-x64,macos-arm64` (add
-   `macos-x64` / `linux-arm64` / `windows-x64` for any other platform the team
-   uses; `linux-x64` is mandatory — CI runs there). Plain `mise install` only
-   locks the host platform, so the committed lock would have no `linux-x64`
-   entries and CI's `mise install --locked` would fail. Verify each `mise.lock`
-   now has a `[tools.<tool>."platforms.linux-x64"]` block with `url` + `checksum`
-   (`grep -q 'platforms.linux-x64' mise.lock`), not just `[[tools.*]]` version
-   entries, and commit it. **If the dev defers pinning, commit no `mise.lock`**
-   (CI installs unlocked until one exists) rather than an empty placeholder. Once
-   the first real app/workspace exists, generate and commit the workspace lock
-   (`pnpm-lock.yaml` or `uv.lock`); maintain it with every dependency change.
-   Make `mise run dev:setup` real and idempotent for this product (Python:
-   `uv run …` task commands; drop `compose.yaml` + docker/db tasks if there are
-   no backing services).
+   `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first. The
+   template ships no `mise.lock`; in each config dir run `touch mise.lock &&
+   mise install && mise lock --platform linux-x64,macos-arm64` (add other
+   platforms the team uses; **`linux-x64` is mandatory — CI runs there**), verify
+   each lock has a `platforms.linux-x64` block before committing. **If the dev
+   defers pinning, commit no `mise.lock`** rather than an empty placeholder. Full
+   procedure + rationale: `/steer:reference conventions` → "Toolchain: `latest` in
+   config, pinned in the lockfile". Once the first real app/workspace exists,
+   generate and commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`);
+   maintain it with every dependency change. Make `mise run dev:setup` real and
+   idempotent for this product (Python: `uv run …` task commands; drop
+   `compose.yaml` + docker/db tasks if there are no backing services).
 6. **Proceed spec-first.** From here, every user-facing feature gets its
    `/spec/features/[id]/intent.md` + `contract.md` via **`/steer:spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before

@@ -19,7 +19,7 @@
         "source": "git-subdir",
         "url": "https://github.com/anthropics/claude-code.git",
         "path": "plugins/frontend-design",
-        "sha": "c91a6b660de1b1a607f8d7ec3eea53ec567d710a"
+        "sha": "423563cfe38c90fdf3b428cff0ee7f51cfec3ca7"
       },
       "description": "Anthropic's official frontend-design skill, re-listed (not forked) so product repos install distinctive, non-generic UI craft from one marketplace. Pinned by SHA — bump it to update. Scoped to the stack and DESIGN.md uniformity discipline by steer's /steer:reference design-sources; defer to a committed design export when one exists.",
       "category": "development",

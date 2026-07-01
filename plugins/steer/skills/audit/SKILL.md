@@ -1,6 +1,6 @@
 ---
 name: audit
-description: "Repeatable, read-only audits of a managed repo behind one skill. `code` mode (default) is a whole-repo code-vs-standards health sweep across the standards dimensions (architecture, data layer, validation, errors, tests, deps, design, spec coverage), vets each finding against the cited code, ranks by leverage (impact ÷ effort × confidence), proposes routing into /spec, and files findings in the tracker. `spec` mode compares the as-built /spec (reverse-engineered by /steer:adopt) against the intended spec exported from the issue tracker and surfaces every divergence (the former drift skill). `all` runs both. Repository-read-only: it proposes spec changes and files tracker issues, but never edits code or spec and never commits. Defers correctness to /code-review and security to /security-review."
+description: "Repeatable, read-only audits of a managed repo: `code` mode (default) sweeps the whole repo against the standards dimensions, ranks findings by leverage, and files them in the tracker; `spec` mode compares the as-built /spec against the intended spec from the tracker and surfaces drift; `all` runs both. Repository-read-only — proposes spec changes and files issues but never edits code/spec or commits; defers correctness to /code-review and security to /security-review."
 when_to_use: Use to audit overall code health and find the highest-leverage improvements (code), to confirm the build matches what the tracker asked for (spec), or both (all) — a periodic standards-conformance pass on a steady-state repo.
 argument-hint: "[code | spec | all]"
 allowed-tools:
@@ -257,9 +257,11 @@ of dimension.
 
 ### Reconciliation across runs — audits are reconciling, not additive
 
-Re-running the audit must **update the existing issue set**, never pile up
-duplicates. Each run is filed via `/steer:issues publish-audit`, which keys off the
-markers (see `ISSUE-SCHEMA.md`). Two distinct identities:
+This is the canonical full lifecycle (`ISSUE-WORKFLOW.md` §"Audit & drift" carries
+the one-paragraph summary and defers here for the detail). Re-running the audit
+must **update the existing issue set**, never pile up duplicates. Each run is filed
+via `/steer:issues publish-audit`, which keys off the markers (see
+`ISSUE-SCHEMA.md`). Two distinct identities:
 
 - **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
   stable across runs and **never line-based** — so moving the offending code
