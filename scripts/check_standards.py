@@ -841,7 +841,8 @@ def check_payload_debranded(errors: list[str]) -> None:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except (UnicodeDecodeError, OSError):
+            # ruff's formatter drops the parens here (→ invalid `except A, B:`); skip it.
+            except (UnicodeDecodeError, OSError):  # fmt: skip
                 continue
             for lineno, line in enumerate(text.splitlines(), 1):
                 if _BRAND_RE.search(line):
