@@ -214,7 +214,8 @@ of dimension.
      run/skipped, summary, report path) plus selected **finding** children, each
      carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
      — never line-based) so re-runs *reconcile* (update/close) rather than pile
-     up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-{run,finding}.md`.
+     up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`
+     (parent run issue) and `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/finding.md` (child findings).
      Scope children to genuine, high-leverage findings — don't file one per nit.
    - **Architectural / cross-cutting calls** → propose an ADR via `/steer:adr`.
    - **Spec coverage & conformance gaps** → a proposed `## Open questions` entry

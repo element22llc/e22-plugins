@@ -22,7 +22,10 @@ reference hold throughout:
 
 - **`/spec` is durable product truth; GitHub Issues is the work/decision layer.**
 - **All reads/writes go through `/steer:tracker-sync`** (MCP-first → `gh` → manual
-  floor); this skill never calls the GitHub API directly.
+  floor); this skill never calls the GitHub API directly — with one sanctioned
+  exception, `bootstrap-labels`, which runs `gh label create --force` inline
+  because label-taxonomy setup is a repo-level operation the issue-scoped
+  `/steer:tracker-sync` gateway exposes no op for.
 
 Read the references before acting: the lifecycle, state model, and authority
 table in `${CLAUDE_PLUGIN_ROOT}/templates/reference/ISSUE-WORKFLOW.md`; the issue

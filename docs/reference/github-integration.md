@@ -129,6 +129,11 @@ runs when an issue is opened/reopened and classifies it against the steer label
 taxonomy and Issue Types). It is **not** installed by `/steer:init` or
 `/steer:adopt` and is **not** in `MANIFEST.md` — you opt in deliberately.
 
+That label taxonomy is bootstrapped by the local `/steer:issues` lifecycle, which
+runs `gh label create --force` inline for repo-level label setup — the one
+sanctioned exception to routing all tracker I/O through the issue-scoped
+`/steer:tracker-sync` gateway, which has no op for repo-level label creation.
+
 ### Why it is not in the default scaffold
 
 - gh-aw is a self-described **research demonstrator** — *"not a product, not even

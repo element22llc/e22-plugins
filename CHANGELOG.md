@@ -7,6 +7,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:audit` cited a nonexistent issue-body template
+  (`audit-{run,finding}.md` brace shorthand → `audit-finding.md`); now points at
+  the real `audit-run.md` and `finding.md`. (#269)
+- **Fixed:** skills and reference prose no longer present the `user-invocable: false`
+  gateways as user commands. `/steer:spec` suggests filing via `/steer:issues`
+  (not `/steer:tracker-sync push`) and delegates feature scaffolding to
+  `/steer:spec-scaffold` instead of re-implementing the copy; `setup` no longer
+  falsely claims init/adopt/sync are "hidden from the slash menu"; the reference
+  matrix (`INVOCATION.md`), `SPEC-FRAMEWORK.md`, `TRACEABILITY.md`, and
+  `feature-intent.md` route users to callable front doors; `spec-scaffold`'s
+  `when_to_use` states it is gateway-only. `INVOCATION.md` also gains the six
+  previously-omitted skills (`setup`/`intake`/`roadmap`/`protect`,
+  `doctor`/`report`). (#265)
+- **Fixed:** cross-skill contract inconsistencies — `sync` and `init` now key the
+  foreign-vs-damaged spine decision off `steer_spine_state` (foreign → adopt/init,
+  only damaged/managed are sync cases); `roadmap` files expected-unbuilt backlog via
+  find-or-create (`materialize`/`tracker-sync find-or-create`), not the drift path,
+  and never labels it `spec-drift`; `issues` documents `bootstrap-labels` as the one
+  sanctioned direct-`gh` exception to its gateway invariant; `sync`'s duplicate
+  "`--check` stops here" now correctly runs through the step 6.5 hygiene scan;
+  `intake` routes acceptance-criteria changes to `/steer:spec` (not `tracker-sync`,
+  whose import takes an issue ref); `build` gains the brownfield guard (substantial
+  code → `/steer:adopt`, don't greenfield over a working app). (#272)
 - **Changed:** context-cost pass on skill bodies — moved reference-grade prose out
   of SKILL.md bodies into its declared canonical home, leaving each skill an
   operative summary + a section-anchored pointer (behavior-preserving). The

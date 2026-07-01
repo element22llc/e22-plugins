@@ -75,7 +75,7 @@ nothing is ever deleted or archived.]
 ## Open questions
 
 Structured so a tool can tell what blocks a gate and who owns it — see the
-open-question format in the spec-framework reference (`/steer:spec-scaffold`). Use
+open-question format in the spec-framework reference. Use
 stable IDs (`Q-001`, `Q-002`, …). A promoted question keeps its ID and gains a
 `tracker:` ref. The seed block below is marked `<!-- steer:placeholder -->` so the
 SessionStart open-questions hook ignores it on a fresh scaffold — **delete the

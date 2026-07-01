@@ -42,9 +42,9 @@ validation, and operation. Treat it as infrastructure.
     └── 000N-[slug].md        # Architecture decisions worth remembering
 ```
 
-The canonical templates are shipped by this plugin. Use `/steer:spec-scaffold <id>`
+The canonical templates are shipped by this plugin. Use `/steer:spec <id>`
 to create a feature's `intent.md` + `contract.md`, and `/steer:adr <slug>` for an
-ADR — both copy from the bundled templates so structure never drifts per feature.
+ADR — both instantiate from the bundled templates so structure never drifts per feature.
 
 **Open questions live next to their context, not in a separate file.** A question
 about one feature goes in that feature's `intent.md` → `## Open questions`; a
@@ -231,7 +231,7 @@ Brownfield repo with no Greenfield phase can delete the folder. See
 Some skills **copy** a bundled template into the product repo, where it then
 lives on and is revisited across sessions — `PRODUCTIONIZATION.md`
 (`/steer:adopt`, and `/steer:build` at handoff), `BUILD-STATUS.md` (`/steer:build`), and per-feature `intent.md` /
-`contract.md` (`/steer:spec-scaffold`). The bundled templates evolve (a `/plugin
+`contract.md` (`/steer:spec`). The bundled templates evolve (a `/plugin
 update` may add a new section, checklist item, or table row), but a file copied
 under an older plugin version is frozen at that older shape. Skills that resume
 from such a file by "continuing from the unchecked/empty items" would silently
