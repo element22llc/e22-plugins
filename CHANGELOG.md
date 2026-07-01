@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** skill hygiene sweep (prose/frontmatter, no behavior change). Added
+  `argument-hint` to `next` (free-text constraints) and `sync` (`[--check]`), which
+  consume arguments but declared none. Extended `issues`' `argument-hint` to include
+  the `publish-audit`/`publish-drift`/`publish-adoption`/`publish-findings`/
+  `bootstrap-labels` modes it already declares (listed explicitly to keep the skill
+  subcommand-leading for cross-reference validation). Renamed the retired `drift`
+  skill name to `/steer:audit spec` / `/steer:audit code` in `sync`'s axis table.
+  Fixed `report` to pass `--label bug --label steer:self-report` (the prose already
+  promised both labels; fallback for a missing label preserved). Updated
+  `tracker-sync`'s caller list to name all drivers (`spec`, `roadmap`, `intake`,
+  `next`'s read flows, plus `audit spec`) instead of just `issues`/`work`. Made the
+  `doctor` and `build` pointers to init's lock step name Path A step 4 / Path B step
+  5 (the numbering differs). Added a PO-register sentence to `next` and `roadmap` so
+  their L1–L7 / milestone readouts render in plain product language for a PO (rule
+  05), matching the pattern `doctor`/`build` already model. Copilot prompt artifacts
+  regenerated.
 - **Fixed:** `/steer:audit` cited a nonexistent issue-body template
   (`audit-{run,finding}.md` brace shorthand → `audit-finding.md`); now points at
   the real `audit-run.md` and `finding.md`. (#269)

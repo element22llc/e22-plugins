@@ -11,4 +11,6 @@ This mirrors steer's `/steer:sync` workflow for GitHub Copilot in VS Code.
 
 **When to use.** Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, when a repo adopted before a capability existed is missing the scaffold/wiring that enables it, or when asked to "sync to the latest standards / plugin version". Pass --check for a read-only capability + drift report with no branch or PR.
 
+**Arguments.** [--check]
+
 Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. The authoritative procedure lives in the steer plugin (in Claude Code, `/steer:sync`); this capsule carries the intent so Copilot can drive the same workflow here.

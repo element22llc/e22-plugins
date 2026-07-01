@@ -147,6 +147,10 @@ After any mode, emit a `## Recommended next actions` block per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`, scoped to this run
 (locality rule), recommending the next valid step and delegating it to its owner.
 
+When the user is the PO — see rule 05 (Who you are working with) — render this
+readout in plain product language (no safety-level codes, no milestone/ADR/CI
+jargon); keep the technical detail for devs.
+
 | Observed state | Category | Action / suggested command |
 |---|---|---|
 | Dependency cycle / `conflicts-with` among work-set items | Human decision required | Resolve the ordering (no command) |

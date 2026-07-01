@@ -99,7 +99,7 @@ permission prompt — that's the gate):
 ```sh
 gh issue create --repo element22llc/e22-plugins \
   --title "[steer] <one-line summary>" \
-  --label bug --body-file <tmpfile>
+  --label bug --label steer:self-report --body-file <tmpfile>
 ```
 
 - If the `steer:self-report` label doesn't exist upstream and you can't create

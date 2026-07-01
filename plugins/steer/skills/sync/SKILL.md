@@ -2,6 +2,7 @@
 name: sync
 description: "Bring an already-bootstrapped managed repo up to date with the current plugin — apply pending structural migrations from the ledger, reconcile the spec spine + scaffold against current templates, repair missing or mis-wired capability-critical wiring, re-stamp /spec/.version, and land a PR. Supports a read-only --check mode; read-then-propose, never clobbers, never commits to main."
 when_to_use: 'Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, when a repo adopted before a capability existed is missing the scaffold/wiring that enables it, or when asked to "sync to the latest standards / plugin version". Pass --check for a read-only capability + drift report with no branch or PR.'
+argument-hint: "[--check]"
 allowed-tools:
   - Bash(git status *)
   - Bash(git branch *)
@@ -46,8 +47,8 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
 | Skill | Compares | Edits |
 |---|---|---|
 | **sync** | materialized spine + scaffold ↔ current plugin conventions, capability prerequisites, **and live-prose invocation hygiene** | yes (structural; read-then-propose) |
-| drift | as-built `/spec` ↔ tracker spec export | no |
-| audit | code ↔ standards (leverage-ranked) | no |
+| `/steer:audit spec` | as-built `/spec` ↔ tracker spec export | no |
+| `/steer:audit code` | code ↔ standards (leverage-ranked) | no |
 
 Pass **`--check`** to run read-only: steps 1–6.5 detect and report (the migration
 preview, the capability status table, and the invocation-hygiene findings) but
