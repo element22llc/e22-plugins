@@ -37,7 +37,10 @@ STEER_INPUT="$(cat)"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
-TOOL="$(steer_field tool_name)"
+# Use steer_tool (top-level .tool_name), NOT steer_field: steer_field prefers the
+# tool_input slice, so a Bash command whose text contains `"tool_name":"…create_issue"`
+# (e.g. writing a hook-test fixture) would be misread as an MCP create.
+TOOL="$(steer_tool)"
 CMD="$(steer_field command)"
 
 # --- Is this an issue-CREATE action? Cheap checks first; this hook is matched on

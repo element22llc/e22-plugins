@@ -3,7 +3,9 @@
 `steer`'s hooks are POSIX-`sh` scripts under `plugins/steer/hooks/`, wired in
 `hooks.json`. They inject the always-on rules and gate risky actions. All hook
 commands are invoked with an explicit `sh` prefix, so the executable bit is
-irrelevant (marketplace install does not `chmod`). No `jq` dependency.
+irrelevant (marketplace install does not `chmod`). No `jq` dependency. Every hook
+declares an explicit `timeout` in `hooks.json` (10s for the `SessionStart`/`PreToolUse`
+hooks, 30s for the `Stop` reconcile) so a slow hook can never stall a session.
 
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
