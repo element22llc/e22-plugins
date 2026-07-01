@@ -7,6 +7,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the always-on ruleset no longer teaches deprecated forms. Rules 10 and
+  12 cite the canonical `# steer:allow-pin <reason>` version-pin bypass instead of
+  the legacy `# pin-ok:`; rule 15 drops the phantom `pnpm deploy:nonprod`/`:prod`
+  commands (no scaffold task defines them) in favour of merge-triggered promotion;
+  the scaffold README quickstart adds the `mise trust` step the rule assumes; and
+  rule 20 notes `/spec/reference` also holds materialized `/steer:reference` prose.
+  Regenerated `copilot-instructions.md` accordingly. (#273)
+
 ### 3.8.0
 
 - **Changed:** agent-authored GitHub issues now render **clickable references**

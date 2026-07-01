@@ -72,6 +72,7 @@ brew install mise                          # macOS
 eval "$(mise activate zsh)"
 
 # Per repo
+mise trust                                 # trust this repo's mise.toml (once per clone)
 touch mise.lock                            # FIRST PIN ONLY: no lock ships; mise writes one only if it exists
 mise install                               # installs tools; writes/refreshes mise.lock (commit it)
 mise lock --platform linux-x64,macos-arm64 # FIRST ADOPTION ONLY: add per-platform url+checksum so
