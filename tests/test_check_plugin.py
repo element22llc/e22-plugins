@@ -95,6 +95,31 @@ def test_skill_name_mismatch_fails(tmp_path: Path):
     assert any("does not match" in e for e in errors)
 
 
+def test_description_over_listing_cap_fails(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    skill = root / "skills" / "demo-skill" / "SKILL.md"
+    # description + when_to_use combined exceeds the skill-listing cap.
+    over = "x" * (check_plugin.SKILL_LISTING_CHAR_CAP + 1)
+    skill.write_text(
+        f"---\nname: demo-skill\ndescription: {over}\nwhen_to_use: w\n---\n",
+        encoding="utf-8",
+    )
+    errors = check_plugin.run_checks(root)
+    assert any("skill-listing cap" in e for e in errors)
+
+
+def test_description_at_listing_cap_passes(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    skill = root / "skills" / "demo-skill" / "SKILL.md"
+    # Exactly at the cap (description + when_to_use) is allowed.
+    desc = "x" * (check_plugin.SKILL_LISTING_CHAR_CAP - 1)
+    skill.write_text(
+        f"---\nname: demo-skill\ndescription: {desc}\nwhen_to_use: w\n---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    assert check_plugin.run_checks(root) == []
+
+
 def test_placeholder_detected(tmp_path: Path):
     root = _make_plugin(tmp_path)
     (root / "rules" / "00-x.md").write_text("# Rule\n\nTODO: finish this.\n", encoding="utf-8")
