@@ -230,4 +230,4 @@ the flag, the contract diff, and the regression test together.
 
 Both flows work in Claude Code and Cowork; the PO typically enters through
 **`/steer:build`**, the dev through the normal spec workflow
-(`/steer:spec-scaffold`, `/steer:adr`) — the artifacts and gates are identical.
+(`/steer:spec`, `/steer:adr`) — the artifacts and gates are identical.

@@ -42,10 +42,13 @@ that is adoption, not init — stop and use **`/steer:adopt`**.
 **complete** spine — `spec/.version` present **and** the spine files exist
 (`vision.md`, `users.md`, `glossary.md`, `tracker.md`, `HISTORY.md`) — with no
 placeholders remaining means setup has already run; say so and stop, don't
-re-propose it. A bare or partial `spec/` (no `spec/.version`, or `.version` but
-missing spine files) is **not** "initialized": it's a foreign or half-migrated
-spine — run **`/steer:sync`** to repair rather than re-bootstrapping
-over it.
+re-propose it. Distinguish the two incomplete states (matching `/steer:setup`'s
+routing table): a **damaged** spine — `spec/.version` present but spine files
+missing — is a repair job: run **`/steer:sync`**, don't re-bootstrap over it. A
+**foreign** `spec/` — a `spec/` directory with **no** `spec/.version` (e.g. an
+OpenAPI `spec/` this plugin never wrote) — is not a steer spine at all: it's
+**`/steer:adopt`** when there's substantial code to reverse-engineer, or this skill
+greenfield — **never** `/steer:sync`.
 
 ---
 

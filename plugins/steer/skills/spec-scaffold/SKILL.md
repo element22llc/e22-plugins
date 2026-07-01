@@ -1,7 +1,7 @@
 ---
 name: spec-scaffold
 description: Create a feature's spec (intent.md + contract.md) from the bundled templates.
-when_to_use: Use when starting a user-facing feature or asked to spec out or scaffold a feature.
+when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, or /steer:adopt with a resolved feature id to instantiate intent.md + contract.md — not a direct entry point."
 argument-hint: "[feature-id]"
 # Internal one-shot helper: invoked by /steer:spec, build, init,
 # and adopt to instantiate the templates. Model-callable, hidden from the slash

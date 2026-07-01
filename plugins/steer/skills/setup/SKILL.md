@@ -82,6 +82,5 @@ and confirm before proceeding.
 ## Why this exists
 
 `init`, `adopt`, and `sync` remain the skills that do the work — they're just no
-longer something a user has to choose between. They stay model-callable (the router
-can still reach them directly) but are hidden from the slash menu so this one front
-door is the obvious starting point.
+longer something a user has to choose between. They stay directly invocable — this
+front door just auto-routes to them, so users never have to choose which one fits.

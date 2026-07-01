@@ -72,9 +72,12 @@ spec, then take **only the expected-unbuilt units** — `🔴 Missing` / `🟠 P
 whose tracker status is Backlog/To-Do, the "unbuilt roadmap" bucket `/steer:audit spec`
 already separates from **Done-but-Missing defects**. Do **not** put Done-but-Missing
 or Diverged findings on the roadmap — those are drift to resolve via
-`/steer:issues publish-drift`, not planned work. Materialize the expected-unbuilt
-units into issues via `/steer:issues publish-drift` / `publish-adoption` semantics
-(stable `finding-key`/`feature-id` — **reconcile, never duplicate**).
+`/steer:issues publish-drift`, not planned work. File the expected-unbuilt units the
+same way `from-features` does — **find-or-create** via `/steer:issues materialize` /
+`/steer:tracker-sync find-or-create` (idempotent on `feature-id`+`kind`; a match
+updates, never a duplicate). These are planned **backlog**, so they are **not**
+`spec-drift`-labelled — that label is reserved for actual drift (Diverged /
+Done-but-Missing), per `/steer:audit` and `/steer:tracker-sync push`.
 
 ### `sync` — reconcile the plan with reality (idempotent re-run)
 

@@ -28,9 +28,10 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 ## What this skill does NOT do
 
-- It does **not** edit feature prose directly. New/changed behaviour goes through
-  `/steer:spec-scaffold` (instantiate) and the append/merge import on
-  `/steer:tracker-sync` (never overwrite human prose).
+- It does **not** edit feature prose directly. New behaviour is instantiated via
+  `/steer:spec-scaffold`, and both new and changed behaviour is folded into the
+  owning `intent.md` through `/steer:spec` (additive edit — never overwrite human
+  prose; a conflict becomes an Open question).
 - It does **not** resolve drift. A change that contradicts the spine is surfaced
   as a `/steer:audit`-style finding for a human, per rule `55-drift-gates`.
 - It does **not** invent content. Anything not present in the extraction becomes
@@ -147,7 +148,7 @@ writes feature prose itself:
 | Change unit (from the diff) | Routes to | Reused mechanism |
 |---|---|---|
 | A new feature / capability is described | `/steer:spec-scaffold` then `/steer:spec` | instantiate `intent.md` + `contract.md`; an existing feature is reconciled additively via `template-reconcile.sh`, never clobbered |
-| A change to an existing feature's acceptance criteria | `/steer:tracker-sync` (import criteria into an intent) | copy / append / merge — never overwrite human prose; a conflict becomes an Open question |
+| A change to an existing feature's acceptance criteria | `/steer:spec` on the owning `intent.md` | additive edit — copy / append / merge, never overwrite human prose; a conflict becomes an Open question |
 | A vision / scope / cross-cutting change | `/steer:spec` on `vision.md` | additive edit; conflicts → Open questions |
 | A roadmap / milestone / date change | `/steer:roadmap` | human-confirmed milestones and dates — never fabricated |
 | A change that contradicts what the spine/code already says | `/steer:audit` (spec conformance) → `/steer:issues publish-drift` | one issue per real divergence, stable `finding-key`, reconciled across re-runs — never auto-resolved |
