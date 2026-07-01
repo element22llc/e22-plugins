@@ -1084,6 +1084,74 @@ sh "${CAPSCAN}" "${WORK}/cap-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
 
 # ---------------------------------------------------------------------------
+# scripts/scan-invocations.sh — read-only invalid-invocation detector (not a hook)
+# ---------------------------------------------------------------------------
+INVSCAN="${PLUGIN}/scripts/scan-invocations.sh"
+INV_MD="${PLUGIN}/templates/reference/INVOCATION.md"
+invscan() { out="$(sh "${INVSCAN}" "$1" "${PLUGIN}" 2>/dev/null)"; }
+invclass() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$3==t {print $4; exit}'; }
+invfix() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$3==t {print $5; exit}'; }
+
+# A fixture managed repo carrying one occurrence of each class plus tokens that
+# MUST NOT be flagged (a valid skill, a correct /steer:reference <mode>, the
+# marketplace id) and a provenance file that must not be scanned at all.
+IR0="${WORK}/inv0"
+mkdir -p "${IR0}/.github" "${IR0}/spec"
+{
+	printf '# Manual\n'
+	printf 'Adopted via /e22-adopt in the past.\n'          # legacy-e22 -> /steer:adopt
+	printf 'Full prose: /steer:conventions here.\n'          # reference-mode
+	printf 'New spec: /steer:spec-scaffold <id>.\n'          # noncallable-gateway
+	printf 'Try /steer:bogus for nothing.\n'                 # unknown
+	printf 'Run /steer:sync to update.\n'                    # valid -> no emit
+	printf 'Correct: /steer:reference conventions.\n'        # valid -> no emit
+	printf 'Marketplace element22llc/e22-plugins stays.\n'   # not flagged
+} >"${IR0}/CLAUDE.md"
+printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md"       # reference-mode
+printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
+printf '2026-06-08: reverse-engineered by /e22-adopt.\n' >"${IR0}/spec/HISTORY.md"  # provenance, NOT scanned
+
+invscan "${IR0}"
+assert_eq "inv: /e22-adopt -> legacy-e22" "$(invclass "${out}" /e22-adopt)" "legacy-e22"
+assert_eq "inv: /e22-adopt fix -> /steer:adopt" "$(invfix "${out}" /e22-adopt)" "/steer:adopt"
+assert_eq "inv: /steer:conventions -> reference-mode" "$(invclass "${out}" /steer:conventions)" "reference-mode"
+assert_eq "inv: /steer:conventions fix -> reference form" "$(invfix "${out}" /steer:conventions)" "/steer:reference conventions"
+assert_eq "inv: /steer:design-sources -> reference-mode (README)" "$(invclass "${out}" /steer:design-sources)" "reference-mode"
+assert_eq "inv: /steer:spec-scaffold -> noncallable-gateway" "$(invclass "${out}" /steer:spec-scaffold)" "noncallable-gateway"
+assert_eq "inv: /steer:bogus -> unknown" "$(invclass "${out}" /steer:bogus)" "unknown"
+# Valid invocations and the marketplace id emit nothing.
+printf '%s' "${out}" | grep -q '/steer:sync' && bad "inv: valid /steer:sync must not be flagged" || ok
+printf '%s' "${out}" | grep -q 'e22-plugins' && bad "inv: marketplace id must not be flagged" || ok
+# The /steer:reference <mode> correct form resolves via the `reference` skill, so
+# no line carries the token `/steer:reference`.
+assert_eq "inv: correct /steer:reference not flagged" "$(invclass "${out}" /steer:reference)" ""
+# Provenance file is out of scope entirely — no finding cites HISTORY.md.
+printf '%s' "${out}" | grep -q 'spec/HISTORY.md' && bad "inv: provenance HISTORY.md must not be scanned" || ok
+
+# Clean repo (the current scaffold CLAUDE.md) -> silent.
+IR1="${WORK}/inv1"
+mkdir -p "${IR1}"
+cp "${PLUGIN}/templates/scaffold/CLAUDE.md" "${IR1}/CLAUDE.md"
+invscan "${IR1}"
+assert_empty "inv: clean scaffold CLAUDE.md -> silent" "${out}"
+
+# Every class the detector emits is documented in INVOCATION.md.
+invscan "${IR0}"
+printf '%s\n' "${out}" | awk -F '\t' '{print $4}' | sort -u | while IFS= read -r _cls; do
+	[ -n "${_cls}" ] || continue
+	grep -q "\`${_cls}\`" "${INV_MD}" || printf 'UNDOC %s\n' "${_cls}"
+done >"${WORK}/inv-undoc"
+assert_empty "inv: all emitted classes documented in INVOCATION.md" "$(cat "${WORK}/inv-undoc")"
+
+# Exit-code contract: findings on stdout (exit 0); usage -> 2; unreadable root -> 3.
+sh "${INVSCAN}" "${IR0}" "${PLUGIN}" >/dev/null 2>&1
+assert_rc "inv: findings run exits 0" "$?" 0
+sh "${INVSCAN}" a b c >/dev/null 2>&1
+assert_rc "inv: too many args -> exit 2" "$?" 2
+sh "${INVSCAN}" "${WORK}/inv-nope" "${PLUGIN}" >/dev/null 2>&1
+assert_rc "inv: unreadable repo-root -> exit 3" "$?" 3
+
+# ---------------------------------------------------------------------------
 # Self-fault recording (lib/report-fault.sh) + surfacing (surface-faults.sh).
 # ---------------------------------------------------------------------------
 
