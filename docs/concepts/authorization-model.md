@@ -32,6 +32,20 @@ flowchart TD
   request, in a GitHub-adopted repo (issue-first, rule `36-issue-first.md`). The
   issue and the bounded action set behind it do not need a second confirmation.
 
+!!! note "These autonomous moves are pre-authorized too — not just declared"
+    Declaring branching autonomous is worthless if switching onto the branch then
+    prompts. So the scaffold `.claude/settings.json` `permissions.allow` also
+    pre-authorizes the **branch/fetch/move** verbs the skills run on every unit of
+    work — `git switch`, `git checkout -b`, `git fetch`, `git mv`, `git rm`,
+    `git stash` — and the **PO-flow toolchain** the `build` skill drives itself:
+    `mise install`, `mise lock`, and the named `mise run dev` (run the app locally).
+    The `build` skill carries the same grants in its frontmatter, so the
+    non-technical PO flow is quiet even in a repo that predates the scaffold
+    allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
+    wildcard — `mise run deploy` still prompts. Bare `git checkout -- <file>`
+    (discards work) and every delivery verb stay gated. `check_standards.py`
+    asserts this set stays under `allow` so it can't silently regress.
+
 !!! note "Issue creation is autonomous — but a host can still gate it"
     Some Claude Code permission modes classify an unprompted `gh issue create` as
     an external write and block it, even though steer authorizes it. The bundled

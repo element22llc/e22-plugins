@@ -21,6 +21,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   carries the `reference`-mode renames forward for already-adopted repos. Documented
   in `INVOCATION.md` → "Drift detection & auto-repair". Closes the consumer-repo gap
   that the plugin's own `check_standards.py` only covered for the plugin itself.
+- **Changed:** widened the scaffold `.claude/settings.json` `permissions.allow` so
+  the dev/PO flow stops prompting on moves the rules already declare **autonomous**.
+  The friction was never in `ask`/`deny` (that gate — `git push`, `gh pr create`,
+  `gh pr merge` — is the deliberate one-human-checkpoint and is unchanged); it was
+  in `allow` *gaps*. Now pre-authorized: the Rule-45 branch moves `git switch`,
+  `git checkout -b`, plus `git fetch`, `git mv`, `git rm`, `git stash`; and the
+  toolchain the PO/`build` flow drives itself — `mise install`, `mise lock`, and the
+  **named** `mise run dev` (the `mise run:*` wildcard stays banned, so `mise run
+  deploy` still prompts). `/steer:build` — which previously had **no** `allowed-tools`
+  and so prompted a non-technical PO on every toolchain/branch command — gains the
+  matching frontmatter grants, mirroring `/steer:work`. Bare `git checkout -- <file>`
+  and every delivery verb remain gated. A new `check_standards.py` guard asserts the
+  set stays under `allow` so it can't silently regress.
+- **Fixed:** the scaffold `permissions.deny` rule `Bash(git add*.env*)` false-positived
+  on `.env.example` — the one env file the scaffold deliberately ships and commits —
+  blocking a legitimate `git add`. Narrowed to `Bash(git add*.env)` so it still denies
+  the canonical secrets file while real secrets stay covered by `.gitignore` and the
+  separate `git add --force` deny.
 - **Fixed:** the SessionStart template-drift detector (`check-template-drift.sh`)
   no longer falsely flags every correctly-completed feature on every session. It
   did a verbatim heading match that included the seed `### Q-001 — [...]

@@ -3,6 +3,26 @@ name: build
 description: Guided flow for a non-technical product owner — idea → interview → approved spec → working local app → handoff for dev review, with Claude driving all tooling.
 when_to_use: Use when a non-developer wants to build or prototype an app idea, or to resume a PO build whose repo already has /spec/BUILD-STATUS.md.
 argument-hint: "[idea or product description]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git branch *)
+  - Bash(git remote *)
+  - Bash(git rev-parse *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git fetch *)
+  - Bash(git add *)
+  - Bash(git mv *)
+  - Bash(git commit *)
+  - Bash(mise tasks *)
+  - Bash(mise install *)
+  - Bash(mise lock *)
+  - Bash(mise run dev *)
+  - Bash(mise run check *)
+  - Bash(mise run ci *)
 ---
 
 # Build a working app from a PO's idea
