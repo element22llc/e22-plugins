@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** context-cost pass on skill bodies — moved reference-grade prose out
+  of SKILL.md bodies into its declared canonical home, leaving each skill an
+  operative summary + a section-anchored pointer (behavior-preserving). The
+  GitHub issue-field API recipes (GraphQL `setIssueFieldValue` input shape, the
+  REST `X-GitHub-Api-Version: 2026-03-10` endpoint, option-id-vs-name, POST-not-PUT)
+  moved from `tracker-sync` into `ISSUE-SCHEMA.md` §"Reading & writing issue
+  fields"; the operative rules (single-source-of-truth, capability-degradation,
+  ledger provenance, never-Projects) stay in `tracker-sync`. The `mise` lockfile
+  runbook (duplicated in `init` ×2, `adopt`, `build`) now reduces to the one-line
+  command + the `linux-x64`-mandatory caveat + a pointer to `CONVENTIONS.md`
+  §Toolchain. The template-reconciliation semantics (`spec-scaffold`, `build`,
+  `adopt`, `sync`) reduce to the diff command + additive-only rule + a pointer to
+  `SPEC-FRAMEWORK.md` §"Template reconciliation". Removed the hand-maintained rule
+  filename enumeration from `/steer:standards` (and its `check_standards` guard +
+  tests) — "read every `*.md` under `rules/` in lexical order" already fully
+  specifies the behavior. `audit`'s reconciliation section is left as the canonical
+  full lifecycle (`ISSUE-WORKFLOW.md` §"Audit & drift" is the summary and defers to
+  it) with a reciprocal cross-link, since its `resolution_mode` auto-close gating is
+  operative safety detail.
 - **Fixed:** the scaffold `.claude/settings.json` allowlist now pre-approves the
   hosted GitHub MCP server's current issue tools (`issue_write`, `issue_read`,
   `sub_issue_write`) instead of the retired `create_issue`/`update_issue`/
