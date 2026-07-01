@@ -163,6 +163,20 @@ printf '%s' "$(steer_mutation_content)" | grep -q "${_p11}" && bad "extract: Edi
 STEER_INPUT="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo ${_p11}\"}}"
 assert_eq "extract: Bash content skipped" "$(steer_mutation_content)" ""
 
+# NotebookEdit new_source IS mutation content (was a dead matcher on the version-pin
+# gate before #271 added the arm).
+STEER_INPUT='{"tool_name":"NotebookEdit","tool_input":{"notebook_path":"nb.ipynb","new_source":"cell body"}}'
+assert_eq "extract: NotebookEdit new_source is mutation content" "$(steer_mutation_content)" "cell body"
+
+# no-jq unescape must decode \n to a REAL newline (issue #271): BSD sed emitted a
+# literal 'n' in the replacement, collapsing multi-line content to one line and
+# breaking check-version-pins.sh's same-line allow-pin discipline. Assert 2 lines.
+assert_eq "unescape: no-jq \\n decodes to a real newline" "$(printf 'a\\nb' | steer_json_unescape | grep -c '')" "2"
+# An escaped backslash before n stays literal (a\nb), never a newline.
+assert_eq "unescape: no-jq escaped-backslash preserved (a\\nb -> 1 line)" "$(printf 'a\\\\nb' | steer_json_unescape | grep -c '')" "1"
+STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"x","content":"a\nb"}}'
+assert_eq "extract: no-jq Write content \\n decodes to real newline (2 lines)" "$(steer_mutation_content | grep -c '')" "2"
+
 . "${HOOKS}/lib/json.sh" # restore real steer_have_jq (undo the forced no-jq above)
 
 # --- classifier ---
@@ -222,6 +236,17 @@ assert_empty "version-pins: steer:allow-pin bypass honors 3-segment pin" "${out}
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"docker run $(pin postgres 11)\"}}")"
 assert_empty "version-pins: Bash skipped (CI scanner is the backstop)" "${out}"
+
+# NotebookEdit new_source is inspected like any write — a denied pin in a notebook
+# cell is caught, not silently passed (issue #271: NotebookEdit was a dead matcher).
+out="$(run_hook check-version-pins.sh "{\"tool_name\":\"NotebookEdit\",\"tool_input\":{\"notebook_path\":\"a.ipynb\",\"new_source\":\"image: $(pin postgres 11)\"}}")"
+assert_deny "version-pins: NotebookEdit new_source denied pin caught" "${out}"
+
+# A steer:allow-pin justification on a DIFFERENT line must NOT suppress a deny for a
+# pin elsewhere — the same-line discipline only holds if multi-line content survives
+# unescaping (issue #271). '\n' in the JSON value is a real newline in the content.
+out="$(run_hook check-version-pins.sh "$(json_write /tmp sML compose.yaml "image: $(pin postgres 11)\nother: fine # steer:allow-pin unrelated")")"
+assert_deny "version-pins: allow-pin on a different line does not suppress deny" "${out}"
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 NOTES.md "we used $(pin postgres 11) once")")"
 assert_empty "version-pins: docs exempt" "${out}"
@@ -452,6 +477,14 @@ out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5 mcp__gi
 assert_ctx "issue-create: MCP create_issue nudges" "${out}"
 out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5b mcp__github__add_issue_comment y)")"
 assert_empty "issue-create: MCP add_issue_comment silent" "${out}"
+# The hosted GitHub MCP server renamed create_issue -> issue_write; the guard must
+# fire on the current write path (#264). Distinct session ids so the once-per-repo
+# marker set by earlier cases does not suppress these.
+out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5c mcp__github__issue_write y)")"
+assert_ctx "issue-create: MCP issue_write nudges (renamed create tool)" "${out}"
+# sub_issue_write links a relationship to an EXISTING issue (no body) — not a create.
+out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5d mcp__github__sub_issue_write y)")"
+assert_empty "issue-create: MCP sub_issue_write silent (relationship, not create)" "${out}"
 
 # Non-create Bash, non-GitHub tracker, and no-tracker repos are all silent.
 out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC6 'gh issue list --json number')")"
@@ -1420,6 +1453,43 @@ GRAD_NOREPO="${WORK}/grad_norepo"
 mkdir -p "${GRAD_NOREPO}"
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NOREPO}" sg6)")"
 assert_empty "graduation: no repo silent" "${out}"
+
+# ---------------------------------------------------------------------------
+# check-template-drift.sh — root-anchored spec/template drift detector
+# (SessionStart; emits plain markdown wrapped as additionalContext by the harness.
+#  Reads cwd from the payload and resolves the work-tree root — issue #270.)
+# ---------------------------------------------------------------------------
+INTENT_TPL="${PLUGIN}/templates/spec/feature-intent.md"
+
+# (a) an instantiated intent.md missing template headings -> notice fires, names the
+#     drifted file and lists a missing section.
+TD1="$(new_repo td1)"
+mkdir -p "${TD1}/spec/features/f"
+printf '# Some feature\n\njust a title, no template sections\n' >"${TD1}/spec/features/f/intent.md"
+out="$(run_hook check-template-drift.sh "$(session_json "${TD1}" td1)")"
+assert_has "template-drift: drifted intent.md flagged" "${out}" "template drift detected"
+assert_has "template-drift: names the drifted file" "${out}" "spec/features/f"
+assert_has "template-drift: lists a missing template heading" "${out}" "## Open questions"
+
+# (b) a fully reconciled file (verbatim current template) -> silent.
+TD2="$(new_repo td2)"
+mkdir -p "${TD2}/spec/features/f"
+cp "${INTENT_TPL}" "${TD2}/spec/features/f/intent.md"
+out="$(run_hook check-template-drift.sh "$(session_json "${TD2}" td2)")"
+assert_empty "template-drift: reconciled intent.md silent" "${out}"
+
+# (c) the placeholder-marked heading (### Q-001 … steer:placeholder) is never
+#     reported, even when the file is otherwise empty of headings (TD1 reused).
+out="$(run_hook check-template-drift.sh "$(session_json "${TD1}" td1c)")"
+printf '%s' "${out}" | grep -q 'Q-001' && bad "template-drift: placeholder heading must not be reported (got: ${out})" || ok
+
+# (d) invocation from a SUBDIRECTORY resolves the repo root -> same drift report as
+#     from root (regression: the hook used cwd-relative paths and silently no-op'd).
+TD3="$(new_repo td3)"
+mkdir -p "${TD3}/spec/features/f" "${TD3}/apps/web"
+printf '# Some feature\n\njust a title\n' >"${TD3}/spec/features/f/intent.md"
+out="$(run_hook check-template-drift.sh "$(session_json "${TD3}/apps/web" td3)")"
+assert_has "template-drift: subdir cwd resolves root and reports drift" "${out}" "## Open questions"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

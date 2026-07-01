@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the issue-create contract guard (`check-issue-create-contract.sh`)
+  now recognises the hosted GitHub MCP server's renamed write tool — `issue_write`
+  (the successor to `create_issue`) matches the create pattern, while
+  `sub_issue_write`/`add_sub_issue` (a relationship link, not a create) and
+  comment tools are excluded — closing a silent enforcement gap on the current
+  MCP path. Fixtures added. (#264)
+- **Fixed:** `check-template-drift.sh` now resolves the work-tree root from the
+  SessionStart payload cwd (like `check-open-questions.sh`), so drift detection
+  works when Claude starts in a subdirectory instead of silently finding nothing.
+  It also collapses the per-heading `grep` storm (O(features × headings) spawns at
+  every session start) into a single `awk` per file pair, and gains fixture
+  coverage (drift / reconciled / placeholder-skip / subdir cwd). (#270)
+- **Fixed:** the hooks' no-jq JSON fallback (`lib/json.sh`) now unescapes
+  `\n`/`\t`/`\r` with `awk` instead of `sed` — BSD sed (the macOS default, the
+  exact environment the fallback exists for) emitted literal `n`/`t`/`r`,
+  collapsing multi-line content to one line and letting a `# steer:allow-pin` on
+  any line suppress version-pin denials on every other line. `NotebookEdit` is now
+  a live matcher on the version-pin gate (`new_source` is inspected) instead of a
+  dead entry. Fixtures added. (#271)
 - **Fixed:** the always-on ruleset no longer teaches deprecated forms. Rules 10 and
   12 cite the canonical `# steer:allow-pin <reason>` version-pin bypass instead of
   the legacy `# pin-ok:`; rule 15 drops the phantom `pnpm deploy:nonprod`/`:prod`
