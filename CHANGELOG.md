@@ -20,6 +20,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   Touches the `issue-bodies/*` templates, `ISSUE-SCHEMA.md` (new *Clickable
   references* convention + heading lists), `tracker-sync` (`create` renders
   links; `link-pr` updates the `Delivery` line), and `issues` (`materialize`).
+- **Added:** `/steer:sync` now repairs **invocation hygiene** in a managed repo's
+  live prose. A new read-only detector (`scripts/scan-invocations.sh`) derives the
+  valid invocation surface live from the plugin (skill names, the
+  `user-invocable: false` gateways, and the `reference` modes) and flags slash
+  invocations in `CLAUDE.md` / `README.md` / the PR template that no longer resolve —
+  legacy `/e22-*` prefixes, bare `reference`-mode invocations (rewritten to the
+  `/steer:reference <mode>` form), calls to `user-invocable: false` gateways
+  (routed to a front door), and unknown tokens. Sync auto-applies the deterministic
+  rewrites read-then-propose on its PR branch and surfaces the rest for the dev; it
+  never scans append-only/provenance prose (`spec/HISTORY.md`, reports, ADRs) or the
+  marketplace id. A version-keyed one-shot ledger entry (`MIGRATIONS.md` v3.8.0)
+  carries the `reference`-mode renames forward for already-adopted repos. Documented
+  in `INVOCATION.md` → "Drift detection & auto-repair". Closes the consumer-repo gap
+  that the plugin's own `check_standards.py` only covered for the plugin itself.
+- **Changed:** widened the scaffold `.claude/settings.json` `permissions.allow` so
+  the dev/PO flow stops prompting on moves the rules already declare **autonomous**.
+  The friction was never in `ask`/`deny` (that gate — `git push`, `gh pr create`,
+  `gh pr merge` — is the deliberate one-human-checkpoint and is unchanged); it was
+  in `allow` *gaps*. Now pre-authorized: the Rule-45 branch moves `git switch`,
+  `git checkout -b`, plus `git fetch`, `git mv`, `git rm`, `git stash`; and the
+  toolchain the PO/`build` flow drives itself — `mise install`, `mise lock`, and the
+  **named** `mise run dev` (the `mise run:*` wildcard stays banned, so `mise run
+  deploy` still prompts). `/steer:build` — which previously had **no** `allowed-tools`
+  and so prompted a non-technical PO on every toolchain/branch command — gains the
+  matching frontmatter grants, mirroring `/steer:work`. Bare `git checkout -- <file>`
+  and every delivery verb remain gated. A new `check_standards.py` guard asserts the
+  set stays under `allow` so it can't silently regress.
+- **Fixed:** the scaffold `permissions.deny` rule `Bash(git add*.env*)` false-positived
+  on `.env.example` — the one env file the scaffold deliberately ships and commits —
+  blocking a legitimate `git add`. Narrowed to `Bash(git add*.env)` so it still denies
+  the canonical secrets file while real secrets stay covered by `.gitignore` and the
+  separate `git add --force` deny.
 - **Fixed:** the SessionStart template-drift detector (`check-template-drift.sh`)
   no longer falsely flags every correctly-completed feature on every session. It
   did a verbatim heading match that included the seed `### Q-001 — [...]

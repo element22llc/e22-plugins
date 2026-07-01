@@ -39,13 +39,13 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
 
 | Skill | Compares | Edits |
 |---|---|---|
-| **sync** | materialized spine + scaffold ↔ current plugin conventions **and capability prerequisites** | yes (structural; read-then-propose) |
+| **sync** | materialized spine + scaffold ↔ current plugin conventions, capability prerequisites, **and live-prose invocation hygiene** | yes (structural; read-then-propose) |
 | drift | as-built `/spec` ↔ tracker spec export | no |
 | audit | code ↔ standards (leverage-ranked) | no |
 
-Pass **`--check`** to run read-only: steps 1–6 detect and report (the migration
-preview + the capability status table) but nothing is branched, written, or
-PR'd. Use it to see what a full sync would do.
+Pass **`--check`** to run read-only: steps 1–6.5 detect and report (the migration
+preview, the capability status table, and the invocation-hygiene findings) but
+nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 ## Steps
 
@@ -64,8 +64,8 @@ PR'd. Use it to see what a full sync would do.
    (step 8), so the sync lands back onto the work it continues, not `main`.
 
    **If invoked as `/steer:sync --check`**, do **not** branch or write anything:
-   run steps 2–6 read-only (the migration preview + the capability status table)
-   and stop. The rest of this section is the full (writing) flow. Then
+   run steps 2–6.5 read-only (the migration preview, the capability status table,
+   and the invocation-hygiene findings) and stop. The rest of this section is the full (writing) flow. Then
    branch a `feat/sync` off `BASE` and work there — never commit to `main` or
    to `BASE` directly (commit-autonomy rule). If `BASE` *is* `main` (the dev ran
    sync from a clean trunk), that's the one case the PR targets `main`. Nothing is
@@ -224,6 +224,43 @@ PR'd. Use it to see what a full sync would do.
    no branch, no writes, no PR. Otherwise apply the proposed repairs on
    `feat/sync` under the read-then-propose discipline and carry on.
 
+6.5. **Repair invocation hygiene (stale / invalid slash invocations in live prose).**
+   A repo's live instruction prose (`CLAUDE.md`, `README.md`,
+   `.github/pull_request_template.md`) is frozen at the version that wrote it, so a
+   skill rename, a skill folded into a `reference` mode, or a skill turned
+   `user-invocable: false` leaves invocations that no longer resolve — and Claude
+   Code has no built-in check that a referenced skill exists. The v2.0.0 ledger
+   migration (step 4) rewrites the pre-rebrand `/e22-*` tokens once; this step is the
+   **standing** every-sync backstop that also catches the post-rebrand classes and
+   any later drift. Run the read-only detector:
+
+   ```sh
+   sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-invocations.sh" .
+   ```
+
+   It derives the *valid* invocation surface live from the plugin (skill names, the
+   `user-invocable: false` set, and the `reference` modes) — so it never goes stale —
+   and prints one TAB line per problem occurrence,
+   `<file>\t<lineno>\t<found>\t<class>\t<suggested-fix>` (clean repo = silent; findings
+   are on stdout, never a nonzero exit). See
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/INVOCATION.md` → "Drift detection &
+   auto-repair" for the class semantics. Then, read-then-propose on `feat/sync`:
+
+   - **`legacy-e22`** and **`reference-mode`** → **deterministic**: apply the exact
+     `suggested-fix` token rewrite (a bare `reference`-mode invocation becomes
+     `/steer:reference <mode>`), showing the diff. Replace only the flagged tokens —
+     never a broader match, never the marketplace id.
+   - **`noncallable-gateway`** → the fix is a **front-door swap that changes meaning**
+     (e.g. `/steer:spec-scaffold <id>` → `/steer:spec`; `/steer:tracker-sync` →
+     `/steer:issues`), so **propose it and let the dev confirm** — do not auto-rewrite.
+   - **`unknown`** → a token that resolves to no skill/mode (e.g. a removed skill) →
+     **surface only**, no rewrite; the dev decides.
+
+   The detector scans only live instruction surfaces and deliberately skips
+   append-only/provenance prose (`spec/HISTORY.md`, `spec/reports/*`, ADRs, feature
+   `intent.md` provenance) — a past `e22-adopt` mention there is a legitimate record, not
+   live guidance. **`--check` stops here**: print the findings and exit — no writes.
+
 7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
 
    ```
@@ -256,6 +293,7 @@ PR'd. Use it to see what a full sync would do.
    | Failed migration or merge conflict | Blocking now | Resolve it before continuing |
    | Pending migrations in the ledger | Blocking now (next transition) | Apply them |
    | Reconcile or capability-repair batch proposed, not approved | Human decision required | Dev reviews the proposed batch (no command) |
+   | Invalid invocation flagged `noncallable-gateway`/`unknown` (needs a front-door/semantic decision) | Human decision required | Dev picks the correct invocation (no command) |
    | Capability needs an external secret/config (`claude.yml` API key; branch protection) | Human decision required | Dev adds `ANTHROPIC_API_KEY`, or applies the gate via `/steer:protect` |
    | Capability follow-up after a created file (Issue Forms added) | Recommended | `/steer:issues bootstrap-labels` |
    | Sync PR open, awaiting review | Human decision required | A dev reviews/merges the PR (no command) — execution is done, integration is not |
@@ -284,6 +322,12 @@ PR'd. Use it to see what a full sync would do.
 - **Read-then-propose, never clobber.** Diff and ask before touching any file
   that exists; reconcile scaffold into it rather than replacing it; preserve
   every filled-in value. Never touch working app code.
+- **Invocation hygiene is a token rewrite on live prose only.** Apply only the
+  detector's deterministic classes (`legacy-e22`, `reference-mode`) as exact-token
+  rewrites; propose (never auto-apply) `noncallable-gateway` front-door swaps and
+  surface `unknown` tokens for the dev. Scan only the live instruction surfaces the
+  detector targets — never rewrite append-only/provenance prose (`spec/HISTORY.md`,
+  reports, ADRs), and never the marketplace id `e22-plugins`.
 - **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
   `/spec/.version` — never from training-data memory.
 - **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR

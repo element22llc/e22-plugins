@@ -54,6 +54,52 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.8.0 — `reference`-mode invocations: in-file token rewrite
+
+- **What & why:** several reference topics were only ever *modes* of the `reference`
+  skill (`conventions`, `traceability`, `design-sources`, `context-hygiene`), reached
+  as `/steer:reference <mode>` — there has never been a top-level skill named
+  `conventions` / `design-sources` / etc. A repo bootstrapped or adopted by an older
+  skill that authored the bare `steer:<mode>` form (as a slash invocation) in its live
+  prose therefore carries invocations that **do not resolve** (Claude Code namespaces
+  every skill and has no such skill to match). These are neither new files (capability
+  repair) nor new sections (additive reconciliation) — they are **rewrites of strings
+  that already exist**, which only a migration may do. This is the one-shot,
+  version-keyed carry-forward; `/steer:sync`'s invocation-hygiene step
+  (`scripts/scan-invocations.sh`) is the standing backstop that also catches later
+  drift and the `user-invocable: false` gateway class. (The pre-rebrand `/e22-*`
+  tokens are covered by the v2.0.0 entry below — do **not** duplicate them here.)
+- **Precondition:** a bare `reference`-mode slash invocation is still present in the
+  live prose — this grep fires (it starts with `/steer:(` so it cannot match the
+  correct `/steer:reference <mode>` form, whose mode never directly follows the colon):
+
+  ```sh
+  grep -rIE '/steer:(conventions|traceability|design-sources|context-hygiene)\b' \
+    CLAUDE.md README.md .github/pull_request_template.md 2>/dev/null
+  ```
+
+  Empty output ⇒ already migrated (or authored correctly) ⇒ no-op.
+- **Action:** read-then-propose an **in-file token substitution** over the live
+  instruction surfaces only (`CLAUDE.md`, `README.md`,
+  `.github/pull_request_template.md`) — never append-only/provenance prose
+  (`spec/HISTORY.md`, `spec/reports/*`, ADRs, feature `intent.md` provenance), where a
+  historical mention is a legitimate record. Show the diff, then replace **only** these
+  exact pairs. Old-token cells are shown **without** the leading `/` so this ledger file
+  itself passes the phantom-skill lint guard; in a managed repo they carry the leading
+  `/`, and the pair applies to that slash-prefixed form.
+
+  | # | Old token | New | Lands in |
+  |---|---|---|---|
+  | 1 | `steer:conventions` (slash-prefixed) | `/steer:reference conventions` | CLAUDE.md, README.md, PR template |
+  | 2 | `steer:traceability` (slash-prefixed) | `/steer:reference traceability` | same |
+  | 3 | `steer:design-sources` (slash-prefixed) | `/steer:reference design-sources` | same |
+  | 4 | `steer:context-hygiene` (slash-prefixed) | `/steer:reference context-hygiene` | same |
+
+  **False-positive guard:** the mode name must directly follow `/steer:` — never rewrite
+  an already-correct `/steer:reference <mode>` (there the mode follows `reference `, not
+  the colon), and never a prose word like "conventions" that is not slash-prefixed.
+  Idempotent: once applied the precondition is empty, so re-running is a no-op.
+
 ### v3.1.0 — repo profile marker back-fill
 
 - **What & why:** repos now carry a **profile** marker (`<!-- steer:profile=app -->`,
