@@ -107,8 +107,9 @@ on the next `/steer:build` run.
      Desktop. Then run `mise lock --platform linux-x64,macos-arm64` so the lock
      carries CI's `linux-x64` URLs (plain `mise install` locks only the host
      platform, breaking CI's `mise install --locked`), and verify each `mise.lock`
-     gained a `platforms.linux-x64` `url` + `checksum` block (see `/steer:init`
-     step 4). The PO still installs Claude Code and Docker Desktop by hand (the
+     gained a `platforms.linux-x64` `url` + `checksum` block (see /steer:init's
+     lock-verification step — Path A step 4 / Path B step 5). The PO still installs
+     Claude Code and Docker Desktop by hand (the
      manual floor doctor can only link, not script).
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):

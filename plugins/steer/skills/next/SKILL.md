@@ -2,6 +2,7 @@
 name: next
 description: "Read-only workspace navigator — reconstructs the whole workspace state cold (branch/PR, /spec feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action across all workflows using the shared categories + safety precedence. Never edits, commits, publishes, merges, or advances state; defers how to resolve each state to the owning skill."
 when_to_use: Use when picking a repo up cold or mid-stream and asking "what should I do next?", "where do I start?", or "I'm lost" across the whole workspace — when work spans more than one feature/issue/workflow and you need the one action that matters most right now, not a per-skill handoff.
+argument-hint: "[optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
   - Bash(git status *)
   - Bash(git branch *)
@@ -176,7 +177,9 @@ required.`
 
 ## Phase 4 — Output
 
-Emit, in order:
+When the user is the PO — see rule 05 (Who you are working with) — render this
+readout in plain product language (no L1–L7 level codes, no git/ADR/CI jargon);
+keep the technical detail for devs. Emit, in order:
 
 1. **State reconstruction summary** — a short, dimension-by-dimension readout of
    what you found (this is the navigator's value: it shows the basis for the

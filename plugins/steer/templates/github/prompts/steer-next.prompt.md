@@ -11,4 +11,6 @@ This mirrors steer's `/steer:next` workflow for GitHub Copilot in VS Code.
 
 **When to use.** Use when picking a repo up cold or mid-stream and asking "what should I do next?", "where do I start?", or "I'm lost" across the whole workspace — when work spans more than one feature/issue/workflow and you need the one action that matters most right now, not a per-skill handoff.
 
+**Arguments.** [optional constraints, e.g. 'only feature-x', 'no tracker writes']
+
 Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. The authoritative procedure lives in the steer plugin (in Claude Code, `/steer:next`); this capsule carries the intent so Copilot can drive the same workflow here.

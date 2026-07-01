@@ -80,7 +80,8 @@ commands).
   these separately. Once mise is present, run `mise install` from the repo
   (and `cd infra && mise install` if they'll touch infra); it provisions every
   pinned runtime. Then verify each `mise.lock` gained real `[[tools.*]]` entries
-  (see `/steer:init` step 4) and commit it.
+  (see /steer:init's lock-verification step — Path A step 4 / Path B step 5) and
+  commit it.
 - **`node` / `pnpm` / `uv` `shadowed`** — mise's pinned runtime exists but a
   global version manager (the `detail` names it: nvm/asdf/volta/fnm) or a
   system/Homebrew copy is ahead of it on `PATH`, so bare `pnpm`/`node` run the

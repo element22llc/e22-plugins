@@ -3,9 +3,11 @@ name: tracker-sync
 description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call. Generic issue operations (search, get, find-or-create, create, update, comment, set-type, label, set-milestone, milestone-ensure, field-get, field-set, bootstrap-fields, transition, assign/claim, link-parent, link-pr, link-related, link-blocked-by, close/reopen) plus the higher-level PULL (materialize issues for /steer:audit spec, import acceptance criteria) and PUSH (spec-drift issues, promoted questions, feature requests) flows. MCP-first, gh CLI fallback, manual export floor. Moves tracker metadata, never the spec — and never git/PR delivery, which is an execution concern. Reads /spec/tracker.md and refuses to invent tracker state."
 when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:audit spec export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
-# Internal gateway: invoked by /steer:issues and /steer:work
-# (and the read flows of drift), never a direct user entry point. Model-callable,
-# hidden from the slash menu, so it never competes with the orchestrators above it.
+# Internal gateway: driven by /steer:issues and /steer:work, and also by
+# /steer:spec (materialize step), /steer:roadmap, /steer:intake (reconcile), and
+# /steer:next's read-only state reconstruction — plus the read flows of
+# /steer:audit spec. Never a direct user entry point. Model-callable, hidden from
+# the slash menu, so it never competes with the orchestrators above it.
 user-invocable: false
 ---
 <!-- steer:modes issue,pull,push -->
