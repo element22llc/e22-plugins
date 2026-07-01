@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the scaffold `.claude/settings.json` allowlist now pre-approves the
+  hosted GitHub MCP server's current issue tools (`issue_write`, `issue_read`,
+  `sub_issue_write`) instead of the retired `create_issue`/`update_issue`/
+  `get_issue`/`add_sub_issue` names — so `/steer:issues` and `/steer:work` stop
+  prompting on every issue mutation. (#264)
+- **Fixed:** `allowed-tools` now match what each skill actually runs, closing the
+  prompt-spam 3.8.0 set out to eliminate: `build` grants `mise run dev:*` and
+  `pnpm dev*` (step 8), `sync` grants `git switch`/`checkout -b`/`mv` and its
+  `scan-capabilities`/`scan-invocations`/`scaffold_reconcile` detectors, and
+  `adopt`/`init`/`intake` — which shipped no `allowed-tools` — gain the routine
+  read-only git inspection + `git switch`/`add`/`commit` set plus per-skill extras
+  (`mise install`/`lock`/`npm view` for init/adopt; `mise run convert:doc`/`shasum`
+  for intake). `protect`'s read-only `gh api` verification examples are unquoted so
+  the `gh api repos/*` grant matches them; the PUT/PATCH writes stay un-granted and
+  still prompt (rule 45 one-human checkpoint preserved — no push/PR/merge grants
+  anywhere). (#266)
+
 ### 3.8.0
 
 - **Changed:** agent-authored GitHub issues now render **clickable references**

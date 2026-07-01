@@ -5,11 +5,17 @@ when_to_use: 'Use on a steady-state repo after a plugin release, when a spec fil
 allowed-tools:
   - Bash(git status *)
   - Bash(git branch *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
   - Bash(git diff *)
   - Bash(git log *)
   - Bash(git rev-parse *)
   - Bash(git add *)
+  - Bash(git mv *)
   - Bash(git commit *)
+  - Bash(sh *scripts/scan-capabilities.sh*)
+  - Bash(sh *scripts/scan-invocations.sh*)
+  - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
 # Sync a repo to the current plugin

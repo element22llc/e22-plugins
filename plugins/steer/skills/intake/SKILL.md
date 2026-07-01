@@ -8,6 +8,19 @@ when_to_use: >-
   the tracker without losing human-authored content. Reach for it whenever a
   re-sent document arrives with no pointer to what was edited.
 argument-hint: "[<path-to-doc> | <source-id> | status]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(mise run convert:doc *)
+  - Bash(shasum *)
+  - Bash(sha256sum *)
 ---
 
 <!-- steer:modes default,status -->

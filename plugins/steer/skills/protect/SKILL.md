@@ -81,24 +81,24 @@ Read live state **for each branch in scope** (the default branch, plus every
 declared `protected_branches` entry), tolerating `404` = no protection at all:
 
 ```sh
-gh api "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection"
+gh api repos/${OWNER}/${REPO}/branches/${BRANCH}/protection
 ```
 
 For a **declared additional branch** (e.g. `prod`), first confirm the branch
-exists — `gh api "repos/${OWNER}/${REPO}/branches/${BRANCH}"` (`404` = not
+exists — `gh api repos/${OWNER}/${REPO}/branches/${BRANCH}` (`404` = not
 created). You cannot protect a branch that doesn't exist, so report a missing
 `prod` as **"not created yet"** (informational — create it when adopting the
 branch-based prod gate: `git branch prod main && git push -u origin prod`), not as
 drift, and move on without failing.
 
 Plus the repo-level settings the policy declares, read from
-`gh api "repos/${OWNER}/${REPO}"`:
+`gh api repos/${OWNER}/${REPO}`:
 
 - secret scanning + push protection (the `security_and_analysis` block);
 - Dependabot security updates (`security_and_analysis.dependabot_security_updates`).
 
 Dependabot **alerts** have no field on the repo object — read their state from
-`gh api "repos/${OWNER}/${REPO}/vulnerability-alerts"` (`204` = enabled, `404` =
+`gh api repos/${OWNER}/${REPO}/vulnerability-alerts` (`204` = enabled, `404` =
 disabled). These back the documented Dependabot auto-merge exception (see Notes).
 
 Produce a **per-rule diff table** — for each policy field: `compliant` /

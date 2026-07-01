@@ -21,8 +21,10 @@ allowed-tools:
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(mise run dev *)
+  - Bash(mise run dev:*)
   - Bash(mise run check *)
   - Bash(mise run ci *)
+  - Bash(pnpm dev*)
 ---
 
 # Build a working app from a PO's idea
