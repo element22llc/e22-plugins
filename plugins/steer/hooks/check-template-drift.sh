@@ -19,12 +19,22 @@
 #   brought up to date.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
-#   POSIX sh, no jq, no process substitution. cwd is the CONSUMER repo, so the
-#   instantiated files are addressed by relative path and templates via
-#   ${CLAUDE_PLUGIN_ROOT}.
+#   POSIX sh, no jq, no process substitution. The instantiated files live in the
+#   CONSUMER repo; the SessionStart cwd may be a SUBDIRECTORY of it, so we resolve
+#   the work-tree root from the payload cwd (mirroring check-open-questions.sh)
+#   rather than trusting relative paths — otherwise starting Claude in apps/web
+#   would silently find no drift. Bundled templates come via ${CLAUDE_PLUGIN_ROOT}.
 
-ROOT="${CLAUDE_PLUGIN_ROOT}"
-TPL="${ROOT}/templates/spec"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
+
+TPL="${CLAUDE_PLUGIN_ROOT}/templates/spec"
+
+# shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
+STEER_INPUT="$(cat 2>/dev/null)"
+CWD="$(steer_field cwd)"
+[ -n "${CWD}" ] || CWD="."
+REPO="$(steer_repo_root "${CWD}")" || REPO="${CWD}"
 
 # Print the `##`/`###` headings present in the template but absent from the existing
 # file. Headings are the reliable drift signal: whole new sections (e.g. a later
@@ -43,19 +53,33 @@ missing_sections() {
   _existing="$1"
   _template="$2"
   [ -f "$_existing" ] && [ -f "$_template" ] || return 0
-  grep -E '^#{2,3} ' "$_template" 2>/dev/null | grep -v 'steer:placeholder' | while IFS= read -r _h; do
-    grep -qxF "$_h" "$_existing" 2>/dev/null || printf '%s\n' "$_h"
-  done
+  # One awk over the two files instead of a grep spawn per template heading: on a
+  # 50-feature repo the old inner loop spawned 800+ greps at every SessionStart,
+  # setting the startup latency floor. awk records the template's `##`/`###`
+  # headings (skipping `steer:placeholder` seeds), deletes any the existing file
+  # also has, and prints the remainder — an exact full-line match, as `grep -qxF`
+  # did. Order-insensitive; `sort` gives a stable, deterministic report.
+  awk '
+    FNR == NR {
+      if (($0 ~ /^## / || $0 ~ /^### /) && $0 !~ /steer:placeholder/) t[$0] = 1
+      next
+    }
+    ($0 in t) { delete t[$0] }
+    END { for (h in t) print h }
+  ' "$_template" "$_existing" 2>/dev/null | sort
 }
 
 REPORT=""
 
-# args: label, existing-file, bundled-template
+# args: label, repo-relative existing-file, bundled-template
+# The file is read from ${REPO}/<rel> (root-anchored), but the printed label keeps
+# the relative path so the notice reads the same from any cwd.
 check_pair() {
-  _out="$(missing_sections "$2" "$3")"
+  _rel="$2"
+  _out="$(missing_sections "${REPO}/${_rel}" "$3")"
   [ -n "$_out" ] || return 0
   REPORT="${REPORT}
-- **${1}** (\`${2}\`) is missing:
+- **${1}** (\`${_rel}\`) is missing:
 $(printf '%s\n' "$_out" | sed 's/^/    - /')"
 }
 
@@ -63,13 +87,15 @@ check_pair "PRODUCTIONIZATION.md" "spec/PRODUCTIONIZATION.md" "${TPL}/production
 check_pair "BUILD-STATUS.md"         "spec/BUILD-STATUS.md"         "${TPL}/build-status.md"
 
 # Feature specs — there may be many; glob guards against the no-match literal.
-for _intent in spec/features/*/intent.md; do
+for _intent in "${REPO}"/spec/features/*/intent.md; do
   [ -e "$_intent" ] || continue
-  check_pair "intent.md ($(dirname "$_intent"))" "$_intent" "${TPL}/feature-intent.md"
+  _rel="${_intent#"${REPO}/"}"
+  check_pair "intent.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-intent.md"
 done
-for _contract in spec/features/*/contract.md; do
+for _contract in "${REPO}"/spec/features/*/contract.md; do
   [ -e "$_contract" ] || continue
-  check_pair "contract.md ($(dirname "$_contract"))" "$_contract" "${TPL}/feature-contract.md"
+  _rel="${_contract#"${REPO}/"}"
+  check_pair "contract.md ($(dirname "$_rel"))" "$_rel" "${TPL}/feature-contract.md"
 done
 
 [ -n "$REPORT" ] || exit 0
