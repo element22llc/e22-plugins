@@ -6,9 +6,15 @@
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git fetch:*)",
       "Bash(git remote:*)",
       "Bash(git rev-parse:*)",
       "Bash(git add:*)",
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(git stash:*)",
       "Bash(git commit:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue edit:*)",
@@ -27,8 +33,11 @@
       "Bash(gh repo view:*)",
       "Bash(gh label list:*)",
       "Bash(mise tasks:*)",
+      "Bash(mise install:*)",
+      "Bash(mise lock:*)",
       "Bash(mise run check:*)",
       "Bash(mise run ci:*)",
+      "Bash(mise run dev:*)",
       "mcp__github__create_issue",
       "mcp__github__update_issue",
       "mcp__github__add_issue_comment",
@@ -53,7 +62,7 @@
       "Bash(git commit*--no-gpg-sign*)",
       "Bash(git add -f*)",
       "Bash(git add --force*)",
-      "Bash(git add*.env*)"
+      "Bash(git add*.env)"
     ]
   },
   "enabledPlugins": {
