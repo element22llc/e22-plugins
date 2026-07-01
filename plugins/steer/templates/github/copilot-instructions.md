@@ -171,7 +171,7 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
   `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
   green; environment tasks live in `mise.toml`, not `package.json`. A plugin
   hook denies stale image-major pins; a deliberately older pin needs an ADR
-  plus `# pin-ok: <reason>` on the same line. **Make every published host port
+  plus `# steer:allow-pin <reason>` on the same line. **Make every published host port
   overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
   with the override var in `.env.example`, so a dev running several managed products
   at once isn't blocked by `port is already allocated`.
@@ -217,7 +217,7 @@ defaults. Deviations are ADRs, same as any stack choice.
   Ansible Vault for Ansible — never committed (see Secrets handling). Commit
   provider lockfiles (`.terraform.lock.hcl`).
 - **Pin image/provider/role majors** the same way app stacks pin them; a
-  deliberately older pin needs an ADR plus `# pin-ok: <reason>`.
+  deliberately older pin needs an ADR plus `# steer:allow-pin <reason>`.
 
 
 ## Useful commands
@@ -231,7 +231,8 @@ defaults. Deviations are ADRs, same as any stack choice.
   change, so you almost never install deps by hand; if you must, route it through
   mise — `mise exec -- pnpm install` — so it can't pick up a global/nvm copy.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
-- **Deploy (devs only):** `pnpm deploy:nonprod` / `pnpm deploy:prod`.
+- **Deploy:** promotion via merge (`main` → non-prod, `prod` PR → prod) — see
+  Deployment & environments; there is no `pnpm deploy` task.
 
 The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
 uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
@@ -269,7 +270,8 @@ is identical across all profiles.
   facing).
 - **`/spec/decisions`** — ADRs.
 - **`/spec/reference`** — source/research materials feeding the spec
-  (inventories, vendor metadata, schema/DDL dumps, discovery docs).
+  (inventories, vendor metadata, schema/DDL dumps, discovery docs); also where
+  `/steer:reference` prose is materialized.
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
   engineer's system model: stack, the apps/packages map, how a request flows.

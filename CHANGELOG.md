@@ -26,6 +26,52 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   requires rc 0 (a hook that crashes before printing no longer passes as "silent");
   added fixtures for the tool-name, subdir-policy, dotted-pin, and control-char
   fixes (284 cases, was 279).
+- **Fixed:** the issue-create contract guard (`check-issue-create-contract.sh`)
+  now recognises the hosted GitHub MCP server's renamed write tool — `issue_write`
+  (the successor to `create_issue`) matches the create pattern, while
+  `sub_issue_write`/`add_sub_issue` (a relationship link, not a create) and
+  comment tools are excluded — closing a silent enforcement gap on the current
+  MCP path. Fixtures added. (#264)
+- **Fixed:** `check-template-drift.sh` now resolves the work-tree root from the
+  SessionStart payload cwd (like `check-open-questions.sh`), so drift detection
+  works when Claude starts in a subdirectory instead of silently finding nothing.
+  It also collapses the per-heading `grep` storm (O(features × headings) spawns at
+  every session start) into a single `awk` per file pair, and gains fixture
+  coverage (drift / reconciled / placeholder-skip / subdir cwd). (#270)
+- **Fixed:** the hooks' no-jq JSON fallback (`lib/json.sh`) now unescapes
+  `\n`/`\t`/`\r` with `awk` instead of `sed` — BSD sed (the macOS default, the
+  exact environment the fallback exists for) emitted literal `n`/`t`/`r`,
+  collapsing multi-line content to one line and letting a `# steer:allow-pin` on
+  any line suppress version-pin denials on every other line. `NotebookEdit` is now
+  a live matcher on the version-pin gate (`new_source` is inspected) instead of a
+  dead entry. Fixtures added. (#271)
+- **Fixed:** the always-on ruleset no longer teaches deprecated forms. Rules 10 and
+  12 cite the canonical `# steer:allow-pin <reason>` version-pin bypass instead of
+  the legacy `# pin-ok:`; rule 15 drops the phantom `pnpm deploy:nonprod`/`:prod`
+  commands (no scaffold task defines them) in favour of merge-triggered promotion;
+  the scaffold README quickstart adds the `mise trust` step the rule assumes; and
+  rule 20 notes `/spec/reference` also holds materialized `/steer:reference` prose.
+  Regenerated `copilot-instructions.md` accordingly. (#273)
+- **Changed:** scaffold currency & coherence pass (all mechanical). Bumped stale
+  action majors in the scaffold CI workflow (`actions/setup-node@v4→v6`,
+  `github/codeql-action/upload-sarif@v3→v4`). Reworded the `infra/mise.toml`
+  header, which contradicted the no-placeholder-lockfile policy — it now describes
+  creating `infra/mise.lock` on first pin (`touch` → `mise install` → `mise lock`)
+  instead of a "committed placeholder" that never ships. Aligned the Windows/WSL
+  prose in the scaffold `README.md` and `reference/CONVENTIONS.md` with rule
+  `10-stack` (WSL2 for CLI/IDE work; Git for Windows suffices on the Claude Desktop
+  Code tab) instead of mandating WSL2 for everything. Added Node `20` to
+  `policy/versions.yml` `node.denied` (EOL 2026-04; defense-in-depth below the ≥22
+  floor). `MANIFEST.md`: noted the optional, not-installed `../github/agentic/`
+  workflow; named all six on-demand `templates/spec/` templates
+  (`build-status`/`productionization`/`source-manifest` were omitted); and
+  documented why the `Bash(git add*.env)` deny stays narrow (variants are covered by
+  `.gitignore` + the `git add --force` denies; widening to `.env.*` would re-block
+  `.env.example`).
+- **Changed:** bumped the re-listed `frontend-design` plugin pin in
+  `.claude-plugin/marketplace.json` from `c91a6b6` to `423563c` (Anthropic's
+  official v1.0.0 → v1.1.0 refinement of the design-guidance skill). Referenced,
+  not vendored — content is never copied here.
 
 ### 3.8.0
 

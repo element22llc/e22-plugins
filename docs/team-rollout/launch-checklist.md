@@ -11,8 +11,9 @@ a real (or throwaway) repo, not against production work.
 - [ ] **`/steer:init` tested.** Runs in a fresh repo and installs the scaffold +
       `/spec` spine. (See [Adopt](../workflows/adopt.md) for the existing-repo path.)
 - [ ] **`/steer:standards` tested.** Loads the always-on rules on demand —
-      confirm it works on a hookless surface (Cowork/desktop) where `SessionStart`
-      doesn't fire. See [Known limitations](../reference/known-limitations.md).
+      confirm it works on a hookless surface (the Desktop *Chat* tab / claude.ai
+      web chat) where `SessionStart` doesn't fire. See
+      [Known limitations](../reference/known-limitations.md).
 - [ ] **Issue creation tested.** Capturing an idea creates a tracked issue through
       `/steer:tracker-sync` (MCP-first → `gh` fallback). Confirm `gh auth status`
       is green so the path doesn't drop to the manual floor.
