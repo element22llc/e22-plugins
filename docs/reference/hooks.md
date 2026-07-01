@@ -93,3 +93,7 @@ the Desktop **Chat** tab and claude.ai web chat do **not**. On those chat-only
 surfaces, load the rules manually with `/steer:standards`. See
 [Installation](../getting-started/installation.md) and
 [Known limitations](known-limitations.md).
+
+GitHub Copilot CLI has its own hook harness; the plugin ships a parallel
+`hooks/copilot-hooks.json` for it — see
+[Copilot support](../concepts/copilot-support.md).
