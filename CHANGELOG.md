@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** hook hardening pass (all hooks stay POSIX sh, no jq, fail-open).
+  Added `timeout` to every `hooks.json` entry (10s for SessionStart/PreToolUse,
+  30s for the Stop hook) so a wedged `git` spawn can't stall session start / turn
+  end for the 600s default. In `check-issue-before-mutation.sh`, hoisted the
+  once-per-session marker **check** above the git-spawning hotfix/sync exemptions
+  (creation stays past them, so it still marks only when it nudges).
+  `check-issue-create-contract.sh` now reads the tool name via `steer_tool`
+  (top-level `.tool_name`) instead of `steer_field`, so a Bash command whose text
+  embeds `"tool_name":"…create_issue"` is no longer misread as an MCP create.
+  `check-version-pins.sh` resolves `policy/versions.yml` from the work-tree root
+  (honoring a repo-local stricter policy when editing from a subdir) and escapes
+  the pin's dots before the allow-pin ERE match. Appended `| tr '\n\t\r' '   '` to
+  the JSON sanitizers in four hooks so control chars can't break the hook JSON
+  envelope. Removed the shadowed `mise.lock` entry from `lib/classify.sh`'s
+  operations case (`*.lock` already classifies it as an exempt lockfile). Hook
+  test harness: `run_hook` now records the hook's exit code and `assert_empty` also
+  requires rc 0 (a hook that crashes before printing no longer passes as "silent");
+  added fixtures for the tool-name, subdir-policy, dotted-pin, and control-char
+  fixes (284 cases, was 279).
+
 ### 3.8.0
 
 - **Changed:** agent-authored GitHub issues now render **clickable references**

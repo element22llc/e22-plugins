@@ -6,7 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\"",
+            "timeout": 10
           }
         ]
       },
@@ -15,23 +16,28 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-template-drift.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-template-drift.sh\"",
+            "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-open-questions.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-open-questions.sh\"",
+            "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-unmanaged-repo.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-unmanaged-repo.sh\"",
+            "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/surface-faults.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/surface-faults.sh\"",
+            "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-graduation.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-graduation.sh\"",
+            "timeout": 10
           }
         ]
       },
@@ -40,7 +46,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/orient-session.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/orient-session.sh\"",
+            "timeout": 10
           }
         ]
       }
@@ -51,7 +58,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\"",
+            "timeout": 10
           }
         ]
       },
@@ -60,11 +68,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-code-before-spec.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-code-before-spec.sh\"",
+            "timeout": 10
           },
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-issue-before-mutation.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-issue-before-mutation.sh\"",
+            "timeout": 10
           }
         ]
       },
@@ -73,7 +83,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-issue-create-contract.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-issue-create-contract.sh\"",
+            "timeout": 10
           }
         ]
       }
@@ -83,7 +94,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/reconcile-issue-first.sh\""
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/reconcile-issue-first.sh\"",
+            "timeout": 30
           }
         ]
       }

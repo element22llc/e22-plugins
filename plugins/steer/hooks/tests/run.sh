@@ -29,6 +29,11 @@ export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/steer-hooktests.XXXXXX")"
 trap 'rm -rf "${WORK}"' EXIT
+# run_hook records the invoked hook's exit code here so assert_empty can require a
+# clean (rc 0) silent-allow — a hook that crashes before printing must NOT pass as
+# "silent". Written inside run_hook's command-substitution subshell (a file, so it
+# survives the subshell); read via last_rc.
+RC_FILE="${WORK}/.last_hook_rc"
 PASS=0
 FAIL=0
 
@@ -39,7 +44,12 @@ run_hook() { # <hook-file> <stdin>   (env via $ENV)
 	# separate env assignments; quoting it would pass one bogus assignment.
 	# shellcheck disable=SC2086
 	printf '%s' "$2" | env ${ENV:-} sh "${HOOKS}/$1" 2>/dev/null
+	# Record the hook's exit code (pipeline rc = the sourced hook's rc) so callers
+	# can assert a clean silent-allow, not just empty stdout.
+	printf '%s' "$?" >"${RC_FILE}"
 }
+
+last_rc() { cat "${RC_FILE}" 2>/dev/null || printf '0'; }
 
 ok() { PASS=$((PASS + 1)); }
 bad() {
@@ -47,7 +57,11 @@ bad() {
 	printf 'FAIL: %s\n' "$1" >&2
 }
 
-assert_empty() { [ -z "$2" ] && ok || bad "$1 (expected silent, got: $2)"; }
+assert_empty() {
+	_ae_rc="$(last_rc)"
+	{ [ -z "$2" ] && [ "${_ae_rc}" -eq 0 ]; } && ok ||
+		bad "$1 (expected silent + rc 0, got: '$2' rc=${_ae_rc})"
+}
 assert_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
 assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
 # Copilot preToolUse envelope: a flat decision object (no hookSpecificOutput wrapper).
@@ -241,6 +255,16 @@ mkdir -p "${RP}/policy"
 printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
 out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "image: $(pin postgres 17)")")"
 assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
+# The same repo-local policy is honored when editing from a SUBDIR — the hook
+# resolves the work-tree root before reading policy/versions.yml (#277 item 4). A
+# subdir with no policy/ would otherwise fall through to the laxer bundled default.
+mkdir -p "${RP}/apps/web"
+out="$(run_hook check-version-pins.sh "$(json_write "${RP}/apps/web" sPsub compose.yaml "image: $(pin postgres 17)")")"
+assert_deny "version-pins: repo-local policy enforced from a subdir" "${out}"
+# Escaping the pin's dot (#277 item 5) must not break allow-pin marker matching on
+# a legitimately-marked dotted pin.
+out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9) # steer:allow-pin vendor LTS")")"
+assert_empty "version-pins: dotted pin still honors its own allow-pin marker" "${out}"
 
 # --- check-code-before-spec.sh (no /spec spine) ---
 # Two dimensions (issue #171): the /spec SPINE nudge fires once per session+repo;
@@ -344,6 +368,14 @@ out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/app
 assert_ctx "issue-first: github repo code write nudges" "${out}"
 out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/two.ts 'x')")"
 assert_empty "issue-first: one nudge per session+repo" "${out}"
+# Control chars in a path must not break the JSON envelope (#277 item 6): a newline
+# in file_path is flattened to a space in the emitted nudge (fresh session so the
+# once-per-session marker doesn't suppress it). The flattened "src/a b.ts" only
+# appears if the sanitizer stripped the newline.
+out="$(run_hook check-issue-before-mutation.sh '{"session_id":"sNL","cwd":"'"${R8}"'","tool_name":"Write","tool_input":{"file_path":"src/a\nb.ts","content":"x"}}')"
+assert_ctx "issue-first: control-char path still nudges" "${out}"
+printf '%s' "${out}" | grep -q 'src/a b.ts' && ok ||
+	bad "issue-first: newline in path flattened to a space (got: ${out})"
 
 R9="$(new_repo repoJira)"
 mkdir -p "${R9}/spec"
@@ -467,6 +499,13 @@ RC10="$(new_repo repoCreateNoTracker)"
 mkdir -p "${RC10}/spec"
 out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC10}" sC9 'gh issue create --title x')")"
 assert_empty "issue-create: no tracker silent" "${out}"
+# A Bash call whose command TEXT embeds a create_issue tool_name must NOT be misread
+# as an MCP create: steer_tool reads the top-level .tool_name ("Bash"), not the
+# tool_input slice steer_field would search (#277 item 3). Without the fix this
+# writes-a-fixture command spuriously nudges.
+embed_cmd='printf "%s" "{\"tool_name\":\"mcp__github__create_issue\"}" > fx.json'
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC10 "${embed_cmd}")")"
+assert_empty "issue-create: Bash cmd embedding a create_issue tool_name stays silent" "${out}"
 
 # --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
 if command -v git >/dev/null 2>&1; then
