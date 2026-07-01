@@ -11,12 +11,26 @@ Claude Code, then bootstrap or adopt repos with its skills.
 ```
 
 Once installed, the `SessionStart` hook injects the always-on
-[rules](../reference/configuration.md) into every session in repos that have been
-set up with the plugin, and the `/steer:<skill>` commands become available.
+[rules](../reference/configuration.md) into every session where the plugin is
+enabled — a lean subset in non-code folders, since the scoped rules self-gate (see
+[Known limitations](../reference/known-limitations.md)) — and the
+`/steer:<skill>` commands become available.
 
 !!! note "Invocation is always namespaced"
     Skills are invoked as `/steer:<skill>` (e.g. `/steer:spec`), never bare
     `/<skill>` — Claude Code namespaces plugin skills to avoid collisions.
+
+### Verify it worked
+
+Run `/plugin` and confirm **Steer — Engineering Standards** is listed and enabled.
+Opening a new session in a managed repo then shows the injected version banner at
+the top of the standards block — that banner is your confirmation the rules loaded.
+
+!!! note "Prerequisites for the full workflow"
+    `/steer:setup` invokes **`/steer:doctor`** to install the local toolchain
+    (git, mise, Docker) when it's missing. The issue and PR steps additionally need
+    an authenticated GitHub path: check `gh auth status` (run `gh auth login` if
+    it fails), or export a `GITHUB_PAT` for the GitHub MCP server.
 
 ## Where hooks fire (surfaces)
 
