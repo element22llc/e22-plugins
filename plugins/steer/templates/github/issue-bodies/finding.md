@@ -18,8 +18,8 @@ across runs; it is never line-based. Set `steer:source` to the origin —
 
 ## Evidence
 
-- `path/to/file.ts:42-186` — [current observed evidence; may change run to run
-  without forging a new finding]
+- [`path/to/file.ts:42-186`](REPO_BLOB_BASE/path/to/file.ts#L42-L186) — [current
+  observed evidence; may change run to run without forging a new finding]
 
 > Security findings (`source:security-review`): redact secrets and
 > exploit-enabling detail here — link to private handling rather than publishing

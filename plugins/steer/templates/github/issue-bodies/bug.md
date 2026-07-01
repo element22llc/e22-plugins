@@ -22,7 +22,7 @@
 
 ## Evidence
 
-- `path/to/file.ts:42` — [logs, screenshots, failing assertion; observed detail.]
+- [`path/to/file.ts:42`](REPO_BLOB_BASE/path/to/file.ts#L42) — [logs, screenshots, failing assertion; observed detail.]
 
 ## Acceptance criteria
 
@@ -35,13 +35,23 @@
 
 ## Spec references
 
-[Affected `spec/features/<id>/contract.md` sections, if any.]
+[Affected contract sections, if any, each as a link:
+`[`spec/features/<id>/contract.md`](REPO_BLOB_BASE/spec/features/<id>/contract.md)`.]
 
 ## Related issues
 
 - #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
   are no related issues — never leave an empty stub.]
+
+## Delivery
+
+[Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
+markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+`/steer:work`.]
+
+- PR: #NN
+- Branch: `BRANCH_NAME`
 
 ## Validation
 

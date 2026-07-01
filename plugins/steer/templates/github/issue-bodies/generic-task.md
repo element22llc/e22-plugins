@@ -32,13 +32,23 @@ feature sub-task, use `technical-task.md` instead (carries `feature-id` +
 
 ## Spec references
 
-[Relevant spec paths, if any.]
+[Relevant spec paths, if any — each as a link:
+`[`spec/…`](REPO_BLOB_BASE/spec/…)`.]
 
 ## Related issues
 
 - #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
   are no related issues — never leave an empty stub.]
+
+## Delivery
+
+[Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
+markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+`/steer:work`.]
+
+- PR: #NN
+- Branch: `BRANCH_NAME`
 
 ## Validation
 

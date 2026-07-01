@@ -27,8 +27,9 @@ the rollup of its child features.]
 
 ## Spec references
 
-- [Optional `spec/vision.md` theme pointer. Per-feature intents live on the child
-  feature issues, not here.]
+- [Optional theme pointer as a link —
+  `[`spec/vision.md`](REPO_BLOB_BASE/spec/vision.md)`. Per-feature intents live on
+  the child feature issues, not here.]
 
 ## Related issues
 

@@ -74,6 +74,11 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   and report; semantic candidate → never silently reuse. No match → create.
 - **`create`** — open an issue from a rendered contract body (markers + headings
   + managed block). Set the GitHub Issue **Type** when available (see below).
+  **Render every spec/code file path in the body as a Markdown link** to
+  `REPO_BLOB_BASE/<path>` — resolve `<owner>/<repo>` and the `<default-branch>`
+  (usually `main`) from the active repo, append a `#L<n>` anchor when a line is
+  cited, and fall back to the bare code-fenced path only when the blob base can't
+  be resolved (`ISSUE-SCHEMA.md` → Clickable references).
 - **`update #N`** — rewrite **only** the `steer:managed` block, following the
   concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before write, stop on
   a second concurrent change, fail closed on duplicate/malformed blocks).
@@ -186,7 +191,11 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
 Feature — each is one single-parent edge, so an `Epic → Feature → Task` hierarchy
 is built by linking each hop. The marker fallback is single-valued (one direct
 parent per issue), which holds for every hop of the chain.
-- **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR.
+- **`link-pr #N <pr>`** — record `steer:pull-request` / cross-link the PR, **and
+  update the visible `Delivery` line** in the managed block (`PR: #<pr>` +
+  `Branch: \`<branch>\``) so the delivering PR is clickable, not just a hidden
+  marker (`ISSUE-SCHEMA.md` → Clickable references). The marker stays canonical;
+  the line is the derived view.
 - **`link-related #N <other> <relationship>`** — record a non-hierarchical
   connection between two issues. `<relationship>` is an `issue_relationship` value
   (`relates-to` · `depends-on` · `blocks` · `conflicts-with` · `supersedes` ·
