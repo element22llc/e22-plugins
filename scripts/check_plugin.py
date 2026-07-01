@@ -45,6 +45,13 @@ PLUGIN_ROOT = Path("plugins/steer")
 FORBIDDEN_PLACEHOLDERS = ["[Replace", "TODO", "FIXME"]
 REQUIRED_SKILL_FRONTMATTER = ["name", "description", "when_to_use"]
 REQUIRED_AGENT_FRONTMATTER = ["name", "description"]
+
+# Claude Code concatenates `description` + `when_to_use` into the skill listing
+# used for routing and truncates the combined text at this many characters (the
+# documented default `skillListingMaxDescChars`). Past the cap the trailing text
+# is silently dropped — so a paragraph-length description crowds out its own
+# `when_to_use` trigger phrases. Keep descriptions to purpose + primary trigger.
+SKILL_LISTING_CHAR_CAP = 1536
 # Frontmatter fields a plugin-scoped subagent silently ignores (Claude Code drops
 # them for security). Authoring one is a bug — fail loudly instead.
 FORBIDDEN_AGENT_FRONTMATTER = ["hooks", "mcpServers", "permissionMode"]
@@ -186,6 +193,18 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
             value = fm.get(key)
             if not (isinstance(value, str) and value.strip()):
                 errors.append(f"{skill_md}: missing or empty frontmatter '{key}'")
+        desc = fm.get("description")
+        wtu = fm.get("when_to_use")
+        combined = (len(desc) if isinstance(desc, str) else 0) + (
+            len(wtu) if isinstance(wtu, str) else 0
+        )
+        if combined > SKILL_LISTING_CHAR_CAP:
+            errors.append(
+                f"{skill_md}: description + when_to_use is {combined} chars, over the "
+                f"{SKILL_LISTING_CHAR_CAP}-char skill-listing cap — Claude Code "
+                f"truncates the excess and drops trigger text. Trim the description to "
+                f"purpose + primary trigger; keep protocol detail in the body."
+            )
         name = fm.get("name")
         if isinstance(name, str) and name.strip():
             if name != skill_dir.name:

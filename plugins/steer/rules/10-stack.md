@@ -40,7 +40,7 @@ app/web/compose bullets. `/steer:init` records the profile; the universal core
   `mise run dev:setup` (idempotent: services up → migrate → seed) — keep it
   green; environment tasks live in `mise.toml`, not `package.json`. A plugin
   hook denies stale image-major pins; a deliberately older pin needs an ADR
-  plus `# pin-ok: <reason>` on the same line. **Make every published host port
+  plus `# steer:allow-pin <reason>` on the same line. **Make every published host port
   overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
   with the override var in `.env.example`, so a dev running several managed products
   at once isn't blocked by `port is already allocated`.

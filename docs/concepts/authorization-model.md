@@ -76,9 +76,17 @@ view`, `gh label list`, `mise tasks`, and the named verify tasks `mise run check
 settings.json` pre-authorizes them all under `permissions.allow` — prompting on
 inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
-`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`) also carry the same
+`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`) carry
 read-only `allowed-tools` grants in their frontmatter, so inspection stays silent
-even in a repo that predates the scaffold allowlist.
+even in a repo that predates the scaffold allowlist. The setup and build flows
+(`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
+scoped grants for the operations they routinely run — git inspection and
+branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`) and named dev
+tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run` wildcard, so
+delivery and unknown commands still prompt. The scaffold's MCP allowlist tracks
+the hosted GitHub MCP's consolidated issue verbs (`issue_write`, `issue_read`,
+`sub_issue_write`); the pre-rename names no longer resolve, so authorizing them
+was a silent no-op that still prompted on every mutation.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for the named verify
 tasks (`check`/`ci`), never the wildcard — an open `mise run:*` would silently

@@ -536,7 +536,9 @@ hints checked with a type checker (mypy or pyright), Ruff for lint/format.
 
 ## Windows: use WSL
 
-Develop inside **WSL2** (Windows Subsystem for Linux), not native Windows. The
-toolchain (mise, uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints
-all assume a POSIX environment, so WSL avoids a class of path, line-ending, and
-shell-incompatibility issues. Setup steps are in the product README.
+Do **CLI and IDE work** — local Claude Code, the terminal, your editor — inside
+**WSL2** (Windows Subsystem for Linux), not native Windows. The toolchain (mise,
+uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints all assume a POSIX
+environment, so WSL avoids a class of path, line-ending, and shell-incompatibility
+issues. The **Claude Desktop Code tab** runs its own environment where **Git for
+Windows** is enough (builds included). Setup steps are in the product README.

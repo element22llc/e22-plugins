@@ -1,16 +1,22 @@
 ---
 name: sync
-description: Bring an already-bootstrapped managed repo up to date with the current plugin — update the plugin, apply pending structural migrations from the ledger (renames/moves the additive reconciliation can't express), reconcile the materialized spec spine + scaffold against the current templates, repair missing or mis-wired capability-critical scaffold (plugin enablement, in-CI loading, version-pin enforcement, drift gate, branch-protection), re-stamp /spec/.version, and land a PR. Supports a read-only --check mode. Read-then-propose, never clobbers, never commits to main.
+description: "Bring an already-bootstrapped managed repo up to date with the current plugin — apply pending structural migrations from the ledger, reconcile the spec spine + scaffold against current templates, repair missing or mis-wired capability-critical wiring, re-stamp /spec/.version, and land a PR. Supports a read-only --check mode; read-then-propose, never clobbers, never commits to main."
 when_to_use: 'Use on a steady-state repo after a plugin release, when a spec file/section was renamed upstream, when a repo adopted before a capability existed is missing the scaffold/wiring that enables it, or when asked to "sync to the latest standards / plugin version". Pass --check for a read-only capability + drift report with no branch or PR.'
 argument-hint: "[--check]"
 allowed-tools:
   - Bash(git status *)
   - Bash(git branch *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
   - Bash(git diff *)
   - Bash(git log *)
   - Bash(git rev-parse *)
   - Bash(git add *)
+  - Bash(git mv *)
   - Bash(git commit *)
+  - Bash(sh *scripts/scan-capabilities.sh*)
+  - Bash(sh *scripts/scan-invocations.sh*)
+  - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
 # Sync a repo to the current plugin
@@ -50,12 +56,22 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 ## Steps
 
-1. **Confirm it's a sync case, and capture the base branch.** There must be an
-   existing `/spec` spine — this repo already went through `/steer:init`
-   or `/steer:adopt`. If there's **no `/spec`**, stop and redirect:
-   `/steer:init` (greenfield / template fork) or `/steer:adopt`
-   (existing app to reverse-engineer). **Before creating any branch, record the
-   currently checked-out branch — call it `BASE`:**
+1. **Confirm it's a sync case, and capture the base branch.** Sync only operates on
+   a spine steer itself wrote — check the *state*, don't merely test that `spec/`
+   exists:
+
+   ```sh
+   . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+   root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
+   ```
+
+   Only **`damaged`** (`spec/.version` present, spine files missing) and
+   **`managed`** are sync cases. **`unmanaged`** (no `spec/`) or **`foreign`** (a
+   `spec/` with **no** `spec/.version` — e.g. an OpenAPI `spec/` this plugin never
+   created) is **not** a sync case: stop and redirect — `/steer:init` (greenfield /
+   template fork) or `/steer:adopt` (existing app to reverse-engineer). Never
+   "reconcile" a directory steer never wrote. **Before creating any branch, record
+   the currently checked-out branch — call it `BASE`:**
 
    ```sh
    BASE=$(git rev-parse --abbrev-ref HEAD)
@@ -118,15 +134,15 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention
-   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`) across the
-   copied-in files this repo has — `PRODUCTIONIZATION.md`, each feature's
-   `intent.md` / `contract.md`, `tracker.md`, `app/README.md`, and the scaffold
-   files (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …). For
-   each, run the diff command from that convention and **splice in only what's
-   missing** — new `##` sections, checklist items, table rows — leaving them
-   unchecked/empty. **Purely additive: never overwrite a filled-in value, reorder,
-   or delete a dev/PO-added row.** Reference prose (`templates/reference/*`) and
-   ADRs are exempt — do not reconcile them (they're read in place / immutable).
+   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   reconciliation") across the copied-in files this repo has —
+   `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
+   `tracker.md`, `app/README.md`, and the scaffold files
+   (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …): for each, run
+   that convention's diff command and splice in only what's missing, additive-only
+   (never overwrite, reorder, or delete a dev/PO-added row). Reference prose
+   (`templates/reference/*`) and ADRs are exempt — do not reconcile them (they're
+   read in place / immutable).
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
@@ -221,9 +237,10 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |
    ```
 
-   **`--check` stops here**: print the migration preview + this table and exit —
-   no branch, no writes, no PR. Otherwise apply the proposed repairs on
-   `feat/sync` under the read-then-propose discipline and carry on.
+   **Under `--check`**, don't branch or write — continue to step 6.5 (invocation
+   hygiene) and stop *there*; that is where `--check` ends, not here. Otherwise
+   apply the proposed repairs on `feat/sync` under the read-then-propose discipline
+   and carry on.
 
 6.5. **Repair invocation hygiene (stale / invalid slash invocations in live prose).**
    A repo's live instruction prose (`CLAUDE.md`, `README.md`,

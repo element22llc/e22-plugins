@@ -3,7 +3,10 @@
 # (sourced, not executed — no shebang. SC2221/SC2222: several broad globs (*.lock,
 # *.yaml, *.toml, *.env) shadow the explicit names listed beside them; the explicit
 # names are kept deliberately as documentation of intent and are harmless because
-# each maps to the SAME class as the glob that shadows it.)
+# each maps to the SAME class as the glob that shadows it. Note: mise.lock is NOT
+# listed under operations — `*.lock` (lockfile case, tested first) classifies it as
+# a lockfile (exempt), which is the intended behavior; do not re-add mise.lock to
+# the operations case, where it would contradict its class.)
 #
 # steer hook helper — one file classifier, sourced by the point-of-action
 # nudges so they share a single notion of what a path *is*. Each hook maps the
@@ -55,7 +58,7 @@ steer_classify_path() {
     compose.yaml|compose.yml|docker-compose.yml|docker-compose.yaml|\
     */compose.yaml|*/compose.yml|Makefile|makefile|GNUmakefile|*/Makefile|*.mk|\
     Chart.yaml|values.yaml|*/k8s/*|*/helm/*|*/.github/workflows/*|.github/workflows/*|\
-    mise.toml|*/mise.toml|.mise.toml|mise.lock|*/mise.lock)
+    mise.toml|*/mise.toml|.mise.toml)
       printf 'operations' ; return ;;
   esac
   printf 'unknown'

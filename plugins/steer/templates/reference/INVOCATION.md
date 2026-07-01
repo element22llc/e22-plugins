@@ -21,6 +21,8 @@ Read-only or purely advisory; inferring them from a question is fine.
 | `/steer:next` | Read-only workspace navigator — never edits or publishes. |
 | `/steer:audit` | Read-only health audit — reports, never edits. |
 | `/steer:audit spec` | Read-only spec-vs-tracker comparison — reports, never edits. |
+| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs what's missing. |
+| `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
 ## Tier 2 — requires explicit user intent (side-effecting)
 
@@ -30,6 +32,7 @@ an unrelated question.
 
 | Skill | Side effect |
 |---|---|
+| `/steer:setup` | Auto-routing bootstrap front door — detects repo state and runs `init`/`adopt`/`sync`. |
 | `/steer:init` | Bootstraps the repo (scaffold + spine). |
 | `/steer:adopt` | Reverse-engineers spec + scaffolds an existing repo. |
 | `/steer:sync` | Updates the plugin + reconciles spine/scaffold, lands a PR. |
@@ -37,10 +40,12 @@ an unrelated question.
 | `/steer:build` | PO build: spec → working app → PR. |
 | `/steer:work` | Executes an issue end-to-end (branch → PR → transition); add `--reviewed` to run it through a review-gated loop (plan-gate + `/code-review` + bounded fix). |
 | `/steer:spec` | Authors/iterates a feature spec. |
-| `/steer:spec-scaffold` | Creates a feature's spec files. |
+| `/steer:intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
 | `/steer:adr` | Creates a numbered ADR. |
 | `/steer:issues` | Captures/triages/materializes GitHub issues. |
 | `/steer:questions` | Resolves open questions, folding decisions into the spec. |
+| `/steer:roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
+| `/steer:protect` | Sets/verifies GitHub branch protection (the PR gate). |
 
 ## Tier 3 — internal orchestration only
 

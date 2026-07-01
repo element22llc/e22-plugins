@@ -37,7 +37,10 @@ STEER_INPUT="$(cat)"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
-TOOL="$(steer_field tool_name)"
+# Use steer_tool (top-level .tool_name), NOT steer_field: steer_field prefers the
+# tool_input slice, so a Bash command whose text contains `"tool_name":"…create_issue"`
+# (e.g. writing a hook-test fixture) would be misread as an MCP create.
+TOOL="$(steer_tool)"
 CMD="$(steer_field command)"
 
 # --- Is this an issue-CREATE action? Cheap checks first; this hook is matched on
@@ -52,9 +55,14 @@ mcp__*)
 	# check below uses the issue body the tool was handed.
 	_tn="$(printf '%s' "${TOOL}" | tr '[:upper:]' '[:lower:]')"
 	case "${_tn}" in
-	*create*issue* | *issue*create* | *add*issue) is_create=1 ;;
+	*create*issue* | *issue*create* | *add*issue* | *issue*write*) is_create=1 ;;
 	esac
-	case "${_tn}" in *comment*) is_create=0 ;; esac
+	# The hosted GitHub MCP server renamed create_issue -> issue_write (method
+	# create/update) — hence *issue*write* above. Exclude comment tools and the
+	# sub-issue linker (add_sub_issue / sub_issue_write): those attach a
+	# relationship to an EXISTING issue and carry no `body`, so they are not a
+	# create and would otherwise fire a bodyless false nudge.
+	case "${_tn}" in *comment* | *sub*issue*) is_create=0 ;; esac
 	[ "${is_create}" -eq 1 ] && PAYLOAD="$(steer_field body)"
 	;;
 *)

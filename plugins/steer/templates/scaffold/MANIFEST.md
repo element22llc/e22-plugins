@@ -37,7 +37,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
 | `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold_reconcile.py` (never removes a repo's own lines). |
 | `worktreeinclude` | `.worktreeinclude` | Git-ignored local config (`.env*`, `.mise.local.toml`, `.claude/settings.local.json`) Claude Code copies into each `claude --worktree` — worktrees start from git refs only, so without this the app can't boot there. Merge additively if one exists; never add regenerable caches/virtualenvs. |
-| `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). |
+| `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). The `Bash(git add*.env)` deny is deliberately narrow: `.env.local` / `.env.*.local` variants are already covered by the scaffold `.gitignore` plus the `git add -f` / `--force` denies, so the glob is **not** widened to `.env.*` (which would re-block the committed `.env.example`). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
 | `aislop/config.yml` | `.aislop/config.yml` | Scopes the **advisory `ai-slop` CI job** (`.github/workflows/ci.yml`): keeps the differentiated `ai-slop/*` rules on, turns down the security/complexity rules that duplicate the `ci` job's ruff/bandit/Biome/audit gates. Tune or delete to taste; promote the gate to blocking via the commented `ci.failBelow`. |
@@ -67,11 +67,11 @@ The product-level spec artifacts live with the other spec templates in
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
 
-The per-feature (`feature-intent.md`, `feature-contract.md` via
-`/steer:spec-scaffold`) and per-decision (`adr.md` via
-`/steer:adr`) templates also live in `templates/spec/`, but are
-instantiated **on demand** by those skills — not copied at bootstrap — so they
-are not in this install map.
+Six more `templates/spec/` templates also live there but are instantiated **on
+demand** by their skills — not copied at bootstrap — so they are not in this
+install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
+`adr.md` (`/steer:adr`), `build-status.md` + `productionization.md`
+(`/steer:build`), and `source-manifest.md` (`/steer:intake`).
 
 ## GitHub templates (instantiate from `../github/`)
 
@@ -81,7 +81,10 @@ ones are listed here; the agent-authored issue **bodies**
 plugin at runtime (`/steer:issues`, `/steer:audit spec`, `/steer:audit`) to author
 issue bodies that satisfy the contract in `reference/ISSUE-SCHEMA.md`. The
 YAML Issue **Forms** below are the human capture UI; the two are different
-artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`).
+artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`). The optional
+gh-aw agentic workflow under `../github/agentic/` (e.g. `triage.md`) is **not
+installed** by `/steer:init` or `/steer:adopt` — opt in deliberately per the docs
+(GitHub → "Agentic workflows (gh aw)").
 
 | Template | Install as | Notes |
 |---|---|---|

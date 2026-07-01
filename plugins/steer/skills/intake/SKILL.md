@@ -1,6 +1,6 @@
 ---
 name: intake
-description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine. Version-stamps and commits the binary plus a normalized Markdown extraction under spec/sources/<source-id>/, git-diffs the new version against the prior extraction, and surfaces a structured what-changed report. Then routes the real changes into intent/contract/vision/roadmap and the tracker by delegating to /steer:spec-scaffold, /steer:tracker-sync, /steer:audit and /steer:questions — never clobbering human-authored prose: conflicts become Open questions, every absorbed change appends a HISTORY.md entry, drift is surfaced for a human and never resolved silently. Idempotent: re-running on an unchanged document is a no-op."
+description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine — version-stamp and commit the binary plus a normalized Markdown extraction under spec/sources/, git-diff it against the prior version, and surface a structured what-changed report. Then route the real changes into intent/contract/vision/roadmap and the tracker via the relevant skills, never clobbering human-authored prose (conflicts become Open questions). Idempotent on an unchanged document."
 when_to_use: >-
   Use when a Product Owner hands over a new or updated office document (a spec, a
   roadmap, a requirements deck, a spreadsheet) and the team needs to detect what
@@ -8,6 +8,19 @@ when_to_use: >-
   the tracker without losing human-authored content. Reach for it whenever a
   re-sent document arrives with no pointer to what was edited.
 argument-hint: "[<path-to-doc> | <source-id> | status]"
+allowed-tools:
+  - Bash(git status *)
+  - Bash(git switch *)
+  - Bash(git checkout -b *)
+  - Bash(git diff *)
+  - Bash(git log *)
+  - Bash(git show *)
+  - Bash(git rev-parse *)
+  - Bash(git add *)
+  - Bash(git commit *)
+  - Bash(mise run convert:doc *)
+  - Bash(shasum *)
+  - Bash(sha256sum *)
 ---
 
 <!-- steer:modes default,status -->
@@ -28,9 +41,10 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 ## What this skill does NOT do
 
-- It does **not** edit feature prose directly. New/changed behaviour goes through
-  `/steer:spec-scaffold` (instantiate) and the append/merge import on
-  `/steer:tracker-sync` (never overwrite human prose).
+- It does **not** edit feature prose directly. New behaviour is instantiated via
+  `/steer:spec-scaffold`, and both new and changed behaviour is folded into the
+  owning `intent.md` through `/steer:spec` (additive edit — never overwrite human
+  prose; a conflict becomes an Open question).
 - It does **not** resolve drift. A change that contradicts the spine is surfaced
   as a `/steer:audit`-style finding for a human, per rule `55-drift-gates`.
 - It does **not** invent content. Anything not present in the extraction becomes
@@ -147,7 +161,7 @@ writes feature prose itself:
 | Change unit (from the diff) | Routes to | Reused mechanism |
 |---|---|---|
 | A new feature / capability is described | `/steer:spec-scaffold` then `/steer:spec` | instantiate `intent.md` + `contract.md`; an existing feature is reconciled additively via `template-reconcile.sh`, never clobbered |
-| A change to an existing feature's acceptance criteria | `/steer:tracker-sync` (import criteria into an intent) | copy / append / merge — never overwrite human prose; a conflict becomes an Open question |
+| A change to an existing feature's acceptance criteria | `/steer:spec` on the owning `intent.md` | additive edit — copy / append / merge, never overwrite human prose; a conflict becomes an Open question |
 | A vision / scope / cross-cutting change | `/steer:spec` on `vision.md` | additive edit; conflicts → Open questions |
 | A roadmap / milestone / date change | `/steer:roadmap` | human-confirmed milestones and dates — never fabricated |
 | A change that contradicts what the spine/code already says | `/steer:audit` (spec conformance) → `/steer:issues publish-drift` | one issue per real divergence, stable `finding-key`, reconciled across re-runs — never auto-resolved |

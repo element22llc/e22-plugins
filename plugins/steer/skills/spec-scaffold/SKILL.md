@@ -1,7 +1,7 @@
 ---
 name: spec-scaffold
 description: Create a feature's spec (intent.md + contract.md) from the bundled templates.
-when_to_use: Use when starting a user-facing feature or asked to spec out or scaffold a feature.
+when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, or /steer:adopt with a resolved feature id to instantiate intent.md + contract.md — not a direct entry point."
 argument-hint: "[feature-id]"
 # Internal one-shot helper: invoked by /steer:spec, build, init,
 # and adopt to instantiate the templates. Model-callable, hidden from the slash
@@ -36,12 +36,13 @@ feature, using the canonical templates bundled with this plugin.
    # repeat with contract.md vs feature-contract.md
    ```
 
-   It surfaces the sections the current templates add that the files lack (it
-   over-reports filled/reworded lines — treat it as a candidate list). Splice the
-   genuinely-new ones in empty, preserving everything already written; never
-   overwrite filled-in intent/contract content and never re-add a placeholder the
-   dev replaced. This is the plugin-wide **Template reconciliation** convention:
-   `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`.
+   Splice in only the genuinely-new sections/items it reports (empty/unchecked),
+   preserving everything already written; never overwrite filled-in
+   intent/contract content or re-add a placeholder the dev replaced. Full rules —
+   the plugin-wide **Template reconciliation** convention (over-reports handling,
+   anchor matching, additive-only):
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+   reconciliation".
 4. Fill in what you know from the conversation/issue (feature name, what it does,
    why, in/out of scope). Leave PO-acceptance checkboxes unchecked and flag any
    ambiguity in this feature's own `## Open questions` section rather than

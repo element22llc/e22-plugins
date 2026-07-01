@@ -21,8 +21,10 @@ allowed-tools:
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(mise run dev *)
+  - Bash(mise run dev:*)
   - Bash(mise run check *)
   - Bash(mise run ci *)
+  - Bash(pnpm dev*)
 ---
 
 # Build a working app from a PO's idea
@@ -65,20 +67,23 @@ sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" \
   spec/BUILD-STATUS.md "${CLAUDE_PLUGIN_ROOT}/templates/spec/build-status.md"
 ```
 
-It surfaces the `##` sections and checklist items the bundled template has that the
-file lacks (it over-reports filled/reworded lines — treat it as a candidate list).
-Splice in the genuinely-new ones unchecked, preserving everything already filled in;
-never re-add a placeholder the dev replaced (the plugin-wide *Template reconciliation*
-convention: `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`). Then read
-the `intent.md` statuses and continue from the recorded step — don't restart the
-interview or re-ask settled questions. This makes new flow-state gates self-healing
-on the next `/steer:build` run.
+Splice in only the genuinely-new `##` sections and checklist items it reports
+(unchecked), preserving everything already filled in; never re-add a placeholder the
+dev replaced. Full rules — the plugin-wide *Template reconciliation* convention:
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
+reconciliation". Then read the `intent.md` statuses and continue from the recorded
+step — don't restart the interview or re-ask settled questions. This makes new
+flow-state gates self-healing on the next `/steer:build` run.
 
 ## Steps
 
-1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/steer:init`).** If
+1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/steer:init`).**
+   **Brownfield guard first:** if the repo already has substantial working code but
+   no `/spec` spine, this is *adoption*, not a fresh build — say so in plain
+   language and run **`/steer:adopt`** (you still drive it; the PO just answers the
+   product questions). Don't greenfield-bootstrap over a working app. Otherwise — if
    there is no `/spec` spine (run the plugin-driven bootstrap from the bundled
-   scaffold) or template placeholders remain (legacy fork), run the `init`
+   scaffold) or template placeholders remain (legacy fork) — run the `init`
    flow but adapted to a PO:
    - Ask only for the **product name** and a **one-line description**. Set
      Mode = Greenfield, PO = this user's GitHub handle. Keep the **default
@@ -108,8 +113,9 @@ on the next `/steer:build` run.
      carries CI's `linux-x64` URLs (plain `mise install` locks only the host
      platform, breaking CI's `mise install --locked`), and verify each `mise.lock`
      gained a `platforms.linux-x64` `url` + `checksum` block (see /steer:init's
-     lock-verification step — Path A step 4 / Path B step 5). The PO still installs
-     Claude Code and Docker Desktop by hand (the
+     lock-verification step — Path A step 4 / Path B step 5; full rationale in
+     `/steer:reference conventions` → "Toolchain: `latest` in config, pinned in the
+     lockfile"). The PO still installs Claude Code and Docker Desktop by hand (the
      manual floor doctor can only link, not script).
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):

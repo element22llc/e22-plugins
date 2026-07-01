@@ -23,6 +23,143 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   their L1–L7 / milestone readouts render in plain product language for a PO (rule
   05), matching the pattern `doctor`/`build` already model. Copilot prompt artifacts
   regenerated.
+- **Fixed:** `/steer:audit` cited a nonexistent issue-body template
+  (`audit-{run,finding}.md` brace shorthand → `audit-finding.md`); now points at
+  the real `audit-run.md` and `finding.md`. (#269)
+- **Fixed:** skills and reference prose no longer present the `user-invocable: false`
+  gateways as user commands. `/steer:spec` suggests filing via `/steer:issues`
+  (not `/steer:tracker-sync push`) and delegates feature scaffolding to
+  `/steer:spec-scaffold` instead of re-implementing the copy; `setup` no longer
+  falsely claims init/adopt/sync are "hidden from the slash menu"; the reference
+  matrix (`INVOCATION.md`), `SPEC-FRAMEWORK.md`, `TRACEABILITY.md`, and
+  `feature-intent.md` route users to callable front doors; `spec-scaffold`'s
+  `when_to_use` states it is gateway-only. `INVOCATION.md` also gains the six
+  previously-omitted skills (`setup`/`intake`/`roadmap`/`protect`,
+  `doctor`/`report`). (#265)
+- **Fixed:** cross-skill contract inconsistencies — `sync` and `init` now key the
+  foreign-vs-damaged spine decision off `steer_spine_state` (foreign → adopt/init,
+  only damaged/managed are sync cases); `roadmap` files expected-unbuilt backlog via
+  find-or-create (`materialize`/`tracker-sync find-or-create`), not the drift path,
+  and never labels it `spec-drift`; `issues` documents `bootstrap-labels` as the one
+  sanctioned direct-`gh` exception to its gateway invariant; `sync`'s duplicate
+  "`--check` stops here" now correctly runs through the step 6.5 hygiene scan;
+  `intake` routes acceptance-criteria changes to `/steer:spec` (not `tracker-sync`,
+  whose import takes an issue ref); `build` gains the brownfield guard (substantial
+  code → `/steer:adopt`, don't greenfield over a working app). (#272)
+- **Changed:** context-cost pass on skill bodies — moved reference-grade prose out
+  of SKILL.md bodies into its declared canonical home, leaving each skill an
+  operative summary + a section-anchored pointer (behavior-preserving). The
+  GitHub issue-field API recipes (GraphQL `setIssueFieldValue` input shape, the
+  REST `X-GitHub-Api-Version: 2026-03-10` endpoint, option-id-vs-name, POST-not-PUT)
+  moved from `tracker-sync` into `ISSUE-SCHEMA.md` §"Reading & writing issue
+  fields"; the operative rules (single-source-of-truth, capability-degradation,
+  ledger provenance, never-Projects) stay in `tracker-sync`. The `mise` lockfile
+  runbook (duplicated in `init` ×2, `adopt`, `build`) now reduces to the one-line
+  command + the `linux-x64`-mandatory caveat + a pointer to `CONVENTIONS.md`
+  §Toolchain. The template-reconciliation semantics (`spec-scaffold`, `build`,
+  `adopt`, `sync`) reduce to the diff command + additive-only rule + a pointer to
+  `SPEC-FRAMEWORK.md` §"Template reconciliation". Removed the hand-maintained rule
+  filename enumeration from `/steer:standards` (and its `check_standards` guard +
+  tests) — "read every `*.md` under `rules/` in lexical order" already fully
+  specifies the behavior. `audit`'s reconciliation section is left as the canonical
+  full lifecycle (`ISSUE-WORKFLOW.md` §"Audit & drift" is the summary and defers to
+  it) with a reciprocal cross-link, since its `resolution_mode` auto-close gating is
+  operative safety detail.
+- **Fixed:** the scaffold `.claude/settings.json` allowlist now pre-approves the
+  hosted GitHub MCP server's current issue tools (`issue_write`, `issue_read`,
+  `sub_issue_write`) instead of the retired `create_issue`/`update_issue`/
+  `get_issue`/`add_sub_issue` names — so `/steer:issues` and `/steer:work` stop
+  prompting on every issue mutation. (#264)
+- **Fixed:** `allowed-tools` now match what each skill actually runs, closing the
+  prompt-spam 3.8.0 set out to eliminate: `build` grants `mise run dev:*` and
+  `pnpm dev*` (step 8), `sync` grants `git switch`/`checkout -b`/`mv` and its
+  `scan-capabilities`/`scan-invocations`/`scaffold_reconcile` detectors, and
+  `adopt`/`init`/`intake` — which shipped no `allowed-tools` — gain the routine
+  read-only git inspection + `git switch`/`add`/`commit` set plus per-skill extras
+  (`mise install`/`lock`/`npm view` for init/adopt; `mise run convert:doc`/`shasum`
+  for intake). `protect`'s read-only `gh api` verification examples are unquoted so
+  the `gh api repos/*` grant matches them; the PUT/PATCH writes stay un-granted and
+  still prompt (rule 45 one-human checkpoint preserved — no push/PR/merge grants
+  anywhere). (#266)
+- **Changed:** trimmed the paragraph-length `description` frontmatter on eight
+  skills (`work`, `tracker-sync`, `roadmap`, `report`, `protect`, `audit`,
+  `intake`, `sync`) to purpose + primary trigger, moving protocol detail into the
+  body. Claude Code concatenates `description` + `when_to_use` into the routing
+  listing and truncates the combined text at 1,536 chars — `work`'s combined length
+  was 1,708, so its trailing `when_to_use` trigger phrases were being silently
+  dropped. All skills are now well under the cap (max 1,156). Copilot prompt
+  artifacts regenerated. Added a `check_plugin.py` guard (+ tests) that fails any
+  skill whose `description` + `when_to_use` exceeds the cap, and documented the
+  mechanic in `AUTHORING.md`. **Note:** the originating issue proposed *removing*
+  `when_to_use` on the premise it was unparsed; verification against the current
+  Claude Code skills docs showed it **is** a recognized field appended to
+  `description` for routing, so it was kept — removing it would have deleted
+  routing signal, not saved context.
+- **Changed:** hook hardening pass (all hooks stay POSIX sh, no jq, fail-open).
+  Added `timeout` to every `hooks.json` entry (10s for SessionStart/PreToolUse,
+  30s for the Stop hook) so a wedged `git` spawn can't stall session start / turn
+  end for the 600s default. In `check-issue-before-mutation.sh`, hoisted the
+  once-per-session marker **check** above the git-spawning hotfix/sync exemptions
+  (creation stays past them, so it still marks only when it nudges).
+  `check-issue-create-contract.sh` now reads the tool name via `steer_tool`
+  (top-level `.tool_name`) instead of `steer_field`, so a Bash command whose text
+  embeds `"tool_name":"…create_issue"` is no longer misread as an MCP create.
+  `check-version-pins.sh` resolves `policy/versions.yml` from the work-tree root
+  (honoring a repo-local stricter policy when editing from a subdir) and escapes
+  the pin's dots before the allow-pin ERE match. Appended `| tr '\n\t\r' '   '` to
+  the JSON sanitizers in four hooks so control chars can't break the hook JSON
+  envelope. Removed the shadowed `mise.lock` entry from `lib/classify.sh`'s
+  operations case (`*.lock` already classifies it as an exempt lockfile). Hook
+  test harness: `run_hook` now records the hook's exit code and `assert_empty` also
+  requires rc 0 (a hook that crashes before printing no longer passes as "silent");
+  added fixtures for the tool-name, subdir-policy, dotted-pin, and control-char
+  fixes (284 cases, was 279).
+- **Fixed:** the issue-create contract guard (`check-issue-create-contract.sh`)
+  now recognises the hosted GitHub MCP server's renamed write tool — `issue_write`
+  (the successor to `create_issue`) matches the create pattern, while
+  `sub_issue_write`/`add_sub_issue` (a relationship link, not a create) and
+  comment tools are excluded — closing a silent enforcement gap on the current
+  MCP path. Fixtures added. (#264)
+- **Fixed:** `check-template-drift.sh` now resolves the work-tree root from the
+  SessionStart payload cwd (like `check-open-questions.sh`), so drift detection
+  works when Claude starts in a subdirectory instead of silently finding nothing.
+  It also collapses the per-heading `grep` storm (O(features × headings) spawns at
+  every session start) into a single `awk` per file pair, and gains fixture
+  coverage (drift / reconciled / placeholder-skip / subdir cwd). (#270)
+- **Fixed:** the hooks' no-jq JSON fallback (`lib/json.sh`) now unescapes
+  `\n`/`\t`/`\r` with `awk` instead of `sed` — BSD sed (the macOS default, the
+  exact environment the fallback exists for) emitted literal `n`/`t`/`r`,
+  collapsing multi-line content to one line and letting a `# steer:allow-pin` on
+  any line suppress version-pin denials on every other line. `NotebookEdit` is now
+  a live matcher on the version-pin gate (`new_source` is inspected) instead of a
+  dead entry. Fixtures added. (#271)
+- **Fixed:** the always-on ruleset no longer teaches deprecated forms. Rules 10 and
+  12 cite the canonical `# steer:allow-pin <reason>` version-pin bypass instead of
+  the legacy `# pin-ok:`; rule 15 drops the phantom `pnpm deploy:nonprod`/`:prod`
+  commands (no scaffold task defines them) in favour of merge-triggered promotion;
+  the scaffold README quickstart adds the `mise trust` step the rule assumes; and
+  rule 20 notes `/spec/reference` also holds materialized `/steer:reference` prose.
+  Regenerated `copilot-instructions.md` accordingly. (#273)
+- **Changed:** scaffold currency & coherence pass (all mechanical). Bumped stale
+  action majors in the scaffold CI workflow (`actions/setup-node@v4→v6`,
+  `github/codeql-action/upload-sarif@v3→v4`). Reworded the `infra/mise.toml`
+  header, which contradicted the no-placeholder-lockfile policy — it now describes
+  creating `infra/mise.lock` on first pin (`touch` → `mise install` → `mise lock`)
+  instead of a "committed placeholder" that never ships. Aligned the Windows/WSL
+  prose in the scaffold `README.md` and `reference/CONVENTIONS.md` with rule
+  `10-stack` (WSL2 for CLI/IDE work; Git for Windows suffices on the Claude Desktop
+  Code tab) instead of mandating WSL2 for everything. Added Node `20` to
+  `policy/versions.yml` `node.denied` (EOL 2026-04; defense-in-depth below the ≥22
+  floor). `MANIFEST.md`: noted the optional, not-installed `../github/agentic/`
+  workflow; named all six on-demand `templates/spec/` templates
+  (`build-status`/`productionization`/`source-manifest` were omitted); and
+  documented why the `Bash(git add*.env)` deny stays narrow (variants are covered by
+  `.gitignore` + the `git add --force` denies; widening to `.env.*` would re-block
+  `.env.example`).
+- **Changed:** bumped the re-listed `frontend-design` plugin pin in
+  `.claude-plugin/marketplace.json` from `c91a6b6` to `423563c` (Anthropic's
+  official v1.0.0 → v1.1.0 refinement of the design-guidance skill). Referenced,
+  not vendored — content is never copied here.
 
 ### 3.8.0
 

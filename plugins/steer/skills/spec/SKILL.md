@@ -41,10 +41,12 @@ implementation.
 1. **Identify the feature.** Ask for a short kebab-case `[id]` (e.g.
    `export-csv`, `user-login`). If `spec/features/[id]/` already exists,
    **resume** it — never clobber filled-in content; merge into it.
-2. **Scaffold if new.** Copy the bundled templates for a new feature:
-   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` → `spec/features/[id]/intent.md`
-   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-contract.md` → `spec/features/[id]/contract.md` (only when behavior/data/API surface is in play — see step 5).
-   For a design-originated feature, populate the `Design source` section per
+2. **Scaffold the feature.** Run `/steer:spec-scaffold [id]` — it instantiates
+   `intent.md` (+ `contract.md`) from the bundled templates, copying them in for a
+   new feature and reconciling additively against the current template for an
+   existing one (its `template-reconcile.sh` branch), so nothing is hand-copied or
+   clobbered. Whether `contract.md` earns its place is decided in step 5. For a
+   design-originated feature, populate the `Design source` section per
    `/steer:reference design-sources`.
 3. **Brainstorm the intent interactively.** Walk the PO/dev through, in plain
    user-facing language: the problem, who it's for, the user-visible outcome,
@@ -55,7 +57,7 @@ implementation.
    this feature: surface each question, propose options, fold the *confirmed*
    decision back into the spec, strike the question. Explicit deferral with a
    reason is a valid outcome. A question needing an external owner or scheduling
-   → leave it open, tagged for `/steer:tracker-sync push` (step 6).
+   → leave it open, to be filed as an issue via `/steer:issues` at step 6.
 5. **Write `contract.md` only where it earns its place.** Add testable behavior
    rules / data / API surface **only** when they matter for behavior,
    integration, security, or future maintenance — not as ceremony. `intent.md`
@@ -66,8 +68,9 @@ implementation.
    `open`**; resolve or explicitly reclassify it first. Then present the intent
    for PO approval. On PO approval, run **`approve <id>`** (below) to record the
    approval and flip `Status:` to `approved` in one change, then offer:
-   - `/steer:tracker-sync push` → file or refresh the tracker item from this
-     intent, writing the ref back into the `> Tracker:` line.
+   - file it via `/steer:issues` (which routes through the tracker gateway) →
+     create or refresh the tracker item from this intent, writing the ref back
+     into the `> Tracker:` line.
    - hand off for implementation **in a separate session** — this skill stops
      here. In a GitHub-adopted repo (`tracker.md` → `system: github`),
      implementation runs through `/steer:work` (decompose via
@@ -84,7 +87,7 @@ implementation.
    | Open `impact: blocking` question on this feature | Blocking now | Resolve it — `/steer:questions` |
    | Intent drafted, not yet PO-approved | Human decision required | PO reviews & approves the intent (no command) |
    | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |
-   | Approved, tracker configured, not yet filed | Recommended | `/steer:tracker-sync push` |
+   | Approved, tracker configured, not yet filed | Recommended | file it via `/steer:issues` |
    | Approved | Complete | Optional: implement in a separate session — `/steer:work` (after `/steer:issues decompose`) or `/steer:build` |
 
    Pick one `Current recommended action` by precedence; the block stays code-free,

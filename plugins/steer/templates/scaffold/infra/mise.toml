@@ -5,20 +5,21 @@
 # install OpenTofu / Terragrunt on their machines.
 #
 # With mise activated in your shell, cd-ing into /infra (or any subfolder) picks
-# up these tools automatically. Run `mise install` from this directory the first
-# time — that resolves the exact versions into the committed placeholder
-# `infra/mise.lock` — then `mise lock --platform linux-x64,macos-arm64` (add the
-# platforms your infra contributors use; linux-x64 is required if CI loads this
-# infra config) so the lock carries per-platform url + checksum entries and not
-# just versions. CAUTION: mise only writes the lock if the file already exists;
-# never delete the placeholder.
+# up these tools automatically. No `infra/mise.lock` ships (never commit an empty
+# placeholder — it breaks `mise install --locked` in consumer CI). CREATE the lock
+# the first time you pin, from this directory:
+#     touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64
+# (add the platforms your infra contributors use; linux-x64 is required if CI
+# loads this infra config) so the lock carries per-platform url + checksum entries
+# and not just versions. mise only writes the lock once the file exists, which is
+# why `touch` comes first.
 #
 # Version strategy (same as the root mise.toml):
 #   - Tools resolve to `latest`, so the template carries no stale pins.
-#   - The committed `infra/mise.lock` is the REAL pin — CI and every machine
-#     install from it, so OpenTofu/Terragrunt/AWS CLI versions always agree. This
-#     is what protects against the compatibility breakage that an unpinned
-#     `latest` would cause; do NOT skip committing the lockfile for infra.
+#   - Once created, the committed `infra/mise.lock` is the REAL pin — CI and every
+#     machine install from it, so OpenTofu/Terragrunt/AWS CLI versions always
+#     agree. This is what protects against the compatibility breakage that an
+#     unpinned `latest` would cause; do NOT skip committing the lockfile for infra.
 #   - Bump intentionally with `mise upgrade`, then VALIDATE IN NON-PROD before
 #     prod — infra is a high-risk area. Check compatibility before bumping:
 #       OpenTofu:   https://github.com/opentofu/opentofu/releases
