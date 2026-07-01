@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.8.0
+
 - **Changed:** agent-authored GitHub issues now render **clickable references**
   for POs. Every spec/code file path in an issue body (`Spec references`,
   `Affected specifications`, `Evidence`) is emitted as a Markdown link to the
