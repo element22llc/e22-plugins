@@ -722,6 +722,32 @@ def check_authorization(errors: list[str]) -> None:
                     f"(read-only inspection the skills run constantly; prompting on it "
                     f"is the friction this allowlist removes — keep it silent)"
                 )
+        # Rule-45-autonomous workflow moves the skills make on every unit of work:
+        # branching (switch/checkout -b — never committing to `main`), fetching to
+        # branch off latest, local file moves, and the toolchain setup + run-the-app
+        # tasks the PO/build flow drives itself. None reach the human-gated delivery
+        # surface (push/PR/merge/deploy), so leaving them prompted was pure friction —
+        # sharpest in `/steer:build`, where a non-technical PO cannot answer the
+        # prompt. `mise run dev` is a NAMED task, not the banned `mise run:*` wildcard,
+        # so `mise run deploy` stays prompted. `git switch`/`checkout -b` are the safe
+        # branch moves (bare `git checkout -- <file>` stays prompted — it discards work).
+        autonomous_workflow_ops = (
+            "Bash(git switch:*)",
+            "Bash(git checkout -b:*)",
+            "Bash(git fetch:*)",
+            "Bash(git mv:*)",
+            "Bash(mise install:*)",
+            "Bash(mise lock:*)",
+            "Bash(mise run dev:*)",
+        )
+        for wf_op in autonomous_workflow_ops:
+            if wf_op not in allow:
+                errors.append(
+                    f"{settings}: '{wf_op}' should stay under permissions.allow "
+                    f"(Rule-45-autonomous branch/fetch/move + PO-flow toolchain; "
+                    f"prompting on it is the friction this allowlist removes — it never "
+                    f"reaches the human-gated delivery surface)"
+                )
         # A broad `mise run:*` would let `mise run deploy` through the human gate.
         for forbidden_mise in ("Bash(mise run:*)", "Bash(mise:*)"):
             if forbidden_mise in allow:
