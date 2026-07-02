@@ -157,8 +157,10 @@ It covers, in detail:
   makes switching *unnecessary* rather than automatic.
 - **Delegate heavy runs to a subagent** — when a run is long, multi-phase, or
   search-heavy, fork it (fresh context by construction) and return only the
-  structured result; the steer exemplars (`/steer:audit` → `steer-reviewer`,
-  `/steer:work --reviewed`) and when *not* to fork.
+  structured result; which model tier each shape wants (read/search fan-out →
+  Sonnet-tier at low effort; reviewer/verify delegations → session model); the
+  steer exemplars (`/steer:audit` → `steer-reviewer`, `/steer:work --reviewed`)
+  and when *not* to fork.
 - **Keep durable state in files** — what survives compaction (`/spec/**`, rules,
   CLAUDE.md) vs the chat (which does not); the run-state and constraint sidecar
   contract, with an example shape.

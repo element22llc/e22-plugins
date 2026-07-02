@@ -45,7 +45,25 @@ evidence fingerprints, a verdict, a path to a written artifact) — never the fu
 transcript of the sweep. The point of forking is that the heavy intermediate context
 stays in the subagent and dies with it.
 
-**The canonical steer examples to follow:**
+**Which model.** The delegated subagent's model is a cost lever, and the two
+delegation shapes above want different tiers:
+
+- **Read/search/summarize fan-out** (the *search-heavy* and *fan-out-shaped* runs —
+  locate code, grep-and-summarize, gather per-file facts, then return a conclusion) →
+  run on a **Sonnet-tier model at low effort**. This is the profile where Sonnet lands
+  closest to Opus, and its failure mode — occasionally missing a file — is cheap for
+  the vetting caller to catch. Sonnet is cheaper per token and the read volume is the
+  same either way, so this cuts *cost*, not token count.
+- **Reviewer / verify / judge delegations** (the examples below) → keep on the
+  **session model** (`inherit`, i.e. Opus-tier). A missed or mis-ranked finding here
+  is expensive and hard to catch downstream, so don't trade capability for cost at the
+  step whose whole job is to be trustworthy.
+
+One caveat: a cheaper model inside a **budget-capped agentic loop** can take more
+iterations and burn both the wall-clock and the saving — keep those on the session
+model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
+
+**The canonical steer examples to follow (all reviewer delegations — session-model):**
 
 - `/steer:audit` fans out one read-only `steer-reviewer` subagent per dimension on
   large repos, then vets the gathered summaries.

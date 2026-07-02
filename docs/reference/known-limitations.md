@@ -184,7 +184,9 @@ What it does instead (rule `26-context-hygiene`; full prose via
 
 - **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
   fresh context window by construction and return only the result — so the heavy
-  intermediate context never lands in your main session.
+  intermediate context never lands in your main session. Read/search/summarize
+  fan-out delegations can run on a cheaper Sonnet-tier model at low effort;
+  reviewer/verify/judge delegations stay on the session model.
 - **Keeps durable run-state and task constraints in files** (`/spec/**`, sidecars),
   which survive compaction and a fresh session where chat history does not. The
   `SessionStart` hook also re-injects the rules after a `compact`.
