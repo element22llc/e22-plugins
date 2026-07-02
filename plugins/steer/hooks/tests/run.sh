@@ -500,6 +500,25 @@ printf 'system: github\n' >"${RC8d}/spec/tracker.md"
 out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8d}" sC4 'gh issue create --body <!-- steer:kind=task -->')")"
 assert_empty "issue-create: payload with steer markers silent" "${out}"
 
+# A /steer:report self-report files UPSTREAM to element22llc/e22-plugins, never the
+# product tracker. The guard must stay silent even on the label-less fallback
+# create, which carries no `steer:` marker — routing it through tracker-sync would
+# target the wrong repo.
+RC8f="$(new_repo repoSelfReport)"
+mkdir -p "${RC8f}/spec"
+printf 'system: github\n' >"${RC8f}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8f}" sC4b 'gh issue create --repo element22llc/e22-plugins --title "[steer] x" --label bug --body-file /tmp/b')")"
+assert_empty "issue-create: steer self-report upstream create stays silent" "${out}"
+
+# The self-report guard matches the --repo FLAG, not a bare mention: a legitimate
+# PRODUCT create whose body merely references the plugin repo must STILL be nudged
+# (routed through /steer:tracker-sync), not silently suppressed.
+RC8g="$(new_repo repoProdMention)"
+mkdir -p "${RC8g}/spec"
+printf 'system: github\n' >"${RC8g}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8g}" sC4d 'gh issue create --title bump --body "see element22llc/e22-plugins#123"')")"
+assert_ctx "issue-create: product create only mentioning plugin repo still nudges" "${out}"
+
 # MCP create-issue tool nudges; an MCP comment/list tool whose name merely
 # contains "issue" does not.
 RC8e="$(new_repo repoCreateMcp)"
