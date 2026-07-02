@@ -215,7 +215,9 @@ profile, then compose **additively**:
 - **Node-stack profiles** (`app`/`service`/`library`/`cli`): also bring in
   **Layer 1** `templates/scaffold/profiles/_node/` (`package.json`,
   `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`) and the profile's
-  **Layer 2** dir (`profiles/app/` → `apps/README.md` + `DESIGN.md`;
+  **Layer 2** dir (`profiles/app/` → `apps/README.md` + `DESIGN.md` +
+  `claude/launch.json` — the Desktop Code-tab preview-server config, copy only if
+  the repo has no `.claude/launch.json`, never overwrite;
   `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing, adapt
   `package.json`). A Python-only product skips Layer 1 (use `pyproject.toml`/Ruff).
 - **`infra`**: install `templates/scaffold/profiles/infra/mise.toml` as the

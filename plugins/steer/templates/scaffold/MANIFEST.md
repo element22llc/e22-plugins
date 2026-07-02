@@ -142,6 +142,7 @@ Every Node profile is a **pnpm workspace** (monorepo-by-default) — `library` a
 |---|---|---|
 | `profiles/app/apps/README.md` | `apps/README.md` | **app** — what belongs in `/apps`. |
 | `profiles/app/DESIGN.md` | `DESIGN.md` | **app** — visual-identity stub. **Never overwrite** a populated or `/steer:adopt`-reverse-engineered `DESIGN.md`. |
+| `profiles/app/claude/launch.json` | `.claude/launch.json` | **app** — Claude Desktop **Code tab** preview-server config (preview pane + auto-verify screenshots). Ships one `web` config running `pnpm dev` on port 3000 (`autoPort` on for parallel worktree sessions). `pnpm dev` is the sanctioned Node-only run command (rule 15) — it delegates to the app's own `dev` script (e.g. `apps/web`), so the preview is a no-op until `/steer:init` has scaffolded the first app. Assumes `mise run dev:setup` has brought services/DB up first. Repoint at `mise run dev` (and add a second `configuration`) once the repo goes polyglot and uncomments the mise `[tasks.dev]` fan-out. Convenience only — the Code tab auto-detects a config when this is absent; schema is pre-stable (`version 0.0.1`), so no gate enforces it. **Never overwrite** a repo's existing `launch.json`. |
 | `profiles/service/apps/README.md` | `apps/README.md` | **service**. |
 | `profiles/infra/mise.toml` | `mise.toml` (repo root) | **infra** — **replaces** core mise (tofu/terragrunt/ansible/uv + the `node` runtime + `compose`/worktree wiring). Skip Layer 1; adapt `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. |
 
