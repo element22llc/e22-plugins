@@ -2,8 +2,7 @@
 
 A production incident is **high-risk and time-critical at once** — the one case
 where full ceremony and speed genuinely conflict. The hotfix lane is the **only
-sanctioned speed lever**; without it, teams under pressure route around the
-standards entirely. Run it via `/steer:work --hotfix`.
+sanctioned speed lever**. Run it via `/steer:work --hotfix`.
 
 **Objective entry condition (not self-asserted).** The lane opens only when the
 change targets an already-**deployed production** system with real users or data

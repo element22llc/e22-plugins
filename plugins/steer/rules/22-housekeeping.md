@@ -11,14 +11,14 @@ metadata, schema/DDL dumps, discovery docs, PII/CMDB documents, and
 **specification / requirements documents** (a `.pdf`, `.docx`, or deck spec,
 brief, RFP/SOW) — do **not** belong at the root. Their home is
 `/spec/reference/`; architecture and flow diagrams go to `/spec/design/`. A spec
-*document* is **source material** feeding the spec spine — not the structured
-spec itself — so it belongs under `/spec/reference/`, never loose at the root.
+*document* is **source material** feeding the spine, not the structured spec
+itself — hence `/spec/reference/`, never loose at the root.
 
 When you notice a stray non-code file at the root that you can **confidently
 classify** into one of those homes, **move it there immediately** (preserving
 its filename) — don't wait for a yes. Use `git mv` for tracked files so history
-follows. This is the default for the obvious cases; the mess never lingers and
-you never block on a confirmation for a move that was never in doubt.
+follows, so the mess never lingers and you never block on a move that was never
+in doubt.
 
 Hold for confirmation only where judgment or loss is at stake:
 
