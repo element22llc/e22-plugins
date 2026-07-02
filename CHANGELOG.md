@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `/steer:help` — a human-facing capabilities menu (#168). Until now
+  capability discovery was entirely model-mediated: a user who wanted to *browse*
+  what steer can do had no surface, since the `00-router` intent→skill table is
+  always-on model context, not something a human reads, and neither `/steer:setup`
+  (a bootstrap dispatcher) nor `/steer:next` (a workspace navigator) answers "what
+  can steer do *at all*." The new read-only skill renders the router's front-door
+  table in plain language, grouped by workflow, and needs no repo state so it works
+  before bootstrap. It **sources the live `00-router` table at invocation** rather
+  than transcribing it, so the menu can't drift from actual routing — a new front
+  door appears automatically. An optional argument zooms into a single skill or
+  area. Discovery stays distinct from navigation (`/steer:next`) and dispatch
+  (`/steer:setup`).
+
 ### 3.10.0
 
 - **Fixed:** the bundled scaffold `.claude/settings.json` shipped over-broad

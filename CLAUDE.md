@@ -39,7 +39,7 @@ plugins/steer/
 │                                   #            spec-scaffold,
 │                                   #            spec, intake, issues, tracker-sync, work, adr,
 │                                   #            audit, sync, questions, next, tidy, standards,
-│                                   #            protect, report, roadmap
+│                                   #            protect, report, roadmap, help
 │                                   # (all are user-invocable except the internal
 │                                   #  gateways spec-scaffold + tracker-sync, which are
 │                                   #  user-invocable:false — reached via a front door)
