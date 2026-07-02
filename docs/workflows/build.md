@@ -86,8 +86,9 @@ resuming once the build is handed off — every box in its handoff gate checked.
     each approved slice instead ships through [`/steer:work`](work.md) as its own
     issue → delivery — a PR in pr-flow, or a `Closes #N` trunk commit in
     [solo-trunk](../concepts/authorization-model.md) — so there is no separate v0
-    PR. Either way the productionization brief still applies, and merge/deploy stay
-    human-gated.
+    PR. Either way the productionization brief still applies, and merge plus any
+    deploy or promotion to a real environment stay human-gated — the build itself
+    never deploys or promotes.
 
 !!! note "For developers: what the dev reviewer inherits"
     A v0 hand-off is not just code. As it scaffolds the stack and builds the UI,

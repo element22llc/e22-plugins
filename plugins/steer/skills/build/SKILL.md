@@ -202,7 +202,7 @@ flow-state gates self-healing on the next `/steer:build` run.
    promote a token or component once the same choice recurs in 3+ places
    (`Design sources` rule). Don't leave the stub for the dev reviewer.
 7. **Respect the PO-mode guardrails.**
-   - **Never deploy** (`pnpm deploy:*`), **never touch `/infra`**, and
+   - **Never deploy or promote to any environment**, **never touch `/infra`**, and
      **never use real secrets or real third-party accounts** — generate
      local-only `.env` values.
    - Everything else may be **built for real**: a Greenfield build is

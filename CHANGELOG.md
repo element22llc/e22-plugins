@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `build`'s PO guardrail no longer names a `pnpm deploy:*` task that
+  rule 15 retired (promotion is merge-triggered) — the "never deploy" instruction
+  now reads "never deploy or promote to any environment", keeping the guardrail
+  without pointing at a task that no longer exists.
 - **Changed:** skill hygiene sweep (prose/frontmatter, no behavior change). Added
   `argument-hint` to `next` (free-text constraints) and `sync` (`[--check]`), which
   consume arguments but declared none. Extended `issues`' `argument-hint` to include
