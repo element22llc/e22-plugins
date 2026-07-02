@@ -16,6 +16,8 @@ allowed-tools:
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(npm view *)
+  - Bash(sh *scripts/template-reconcile.sh*)
+  - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
 # Adopt an existing repo into the standards

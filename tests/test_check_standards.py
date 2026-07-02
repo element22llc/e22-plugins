@@ -141,3 +141,90 @@ def test_enumeration_drift_catches_each_surface(monkeypatch, tmp_path: Path):
     assert "CLAUDE.md" in joined and "beta" in joined
     assert "(1 files)" in joined  # count mismatch reported
     assert "inject-standards.sh" in joined  # missing hook reported
+
+
+def _write_skill(
+    skills_dir: Path, name: str, frontmatter: str, body: str, *, extra: dict[str, str] | None = None
+) -> None:
+    d = skills_dir / name
+    d.mkdir(parents=True)
+    (d / "SKILL.md").write_text(f"---\nname: {name}\n{frontmatter}---\n{body}\n", encoding="utf-8")
+    for fname, content in (extra or {}).items():
+        (d / fname).write_text(content, encoding="utf-8")
+
+
+def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: Path):
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    # (a) invokes a script, grant present and matching → clean
+    _write_skill(
+        skills,
+        "granted",
+        "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n",
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`',
+    )
+    # (b) invokes a script but no grant covers it → error
+    _write_skill(
+        skills,
+        "ungranted",
+        "allowed-tools:\n  - Bash(git status *)\n",
+        'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto x y --apply`',
+    )
+    # (c) invokes a script but declares no allowed-tools at all → error
+    _write_skill(
+        skills,
+        "toolless",
+        "",
+        'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" a b`',
+    )
+    # (d) runs no plugin script → never flagged (even with no allowed-tools)
+    _write_skill(skills, "prose", "", "This skill just talks about `mise run dev:setup`.")
+    # (e) run step lives in a secondary body file (PROCEDURE.md), grants only in
+    #     SKILL.md — must still be scanned (the adopt #266 regression).
+    _write_skill(
+        skills,
+        "factored",
+        "allowed-tools:\n  - Bash(git status *)\n",
+        "See PROCEDURE.md.",
+        extra={"PROCEDURE.md": 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" x`'},
+    )
+    # (f) grant names the script but under the WRONG interpreter → not covered.
+    _write_skill(
+        skills,
+        "wronginterp",
+        "allowed-tools:\n  - Bash(sh *scripts/scaffold_reconcile.py*)\n",
+        'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
+    )
+    # (g) target-repo script (no ${CLAUDE_PLUGIN_ROOT}) → never a plugin grant.
+    _write_skill(skills, "targetrepo", "", "Run `sh scripts/setup.sh` in the product repo.")
+
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)
+    joined = "\n".join(errors)
+
+    assert "skills/granted/SKILL.md" not in joined
+    assert "skills/prose/SKILL.md" not in joined
+    assert "skills/targetrepo/SKILL.md" not in joined
+    assert "skills/ungranted/SKILL.md" in joined and "scaffold_reconcile.py" in joined
+    assert "skills/toolless/SKILL.md" in joined and "template-reconcile.sh" in joined
+    assert "skills/factored/SKILL.md" in joined and "template-reconcile.sh" in joined
+    assert "skills/wronginterp/SKILL.md" in joined
+    assert len(errors) == 4
+
+
+def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_path: Path):
+    """A script-running skill with unparseable frontmatter must not crash the check."""
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    d = skills / "broken"
+    d.mkdir()
+    # No closing frontmatter fence → parse_frontmatter returns (None, error).
+    (d / "SKILL.md").write_text(
+        'name: broken\nRun `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" x`\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
+    errors: list[str] = []
+    check_standards.check_skill_script_grants(errors)  # must not raise
+    assert any("broken" in e for e in errors)
