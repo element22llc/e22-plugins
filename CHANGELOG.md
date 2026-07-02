@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** opt-in architecture-diagram support. A new bootstrap file
+  `spec/design/architecture.md` gives every repo a canonical home for a **living,
+  global architecture diagram** that `ARCHITECTURE.md` links to (preserving the
+  "narrative + tables, link don't inline" contract). **Tier 1 (default):** hand-authored
+  Mermaid (`flowchart` + `sequenceDiagram`) that renders in GitHub and the docs site
+  with no toolchain. **Tier 2 (opt-in):** a LikeC4 C4 model, activated by adding a
+  `*.likec4` source and uncommenting the inert `diagrams:render` task in the scaffold
+  `mise.toml` (exports Mermaid back into `architecture.md`, so the tiers compose). New
+  `/steer:reference architecture-diagrams` topic documents both tiers, tool trade-offs,
+  and drift discipline; rule `32-living-docs` now requires the linked diagram to be
+  updated in the same PR as the change it reflects.
 - **Fixed:** a repo bootstrapped before `init` reliably instantiated the app guide
   (`spec/app/README.md`), or by an `init` run that skipped the step, was left with
   `/spec/app/` references (rules `20`/`32`/`50`, the PR template, scaffold

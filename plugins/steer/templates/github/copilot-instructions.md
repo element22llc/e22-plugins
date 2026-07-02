@@ -83,7 +83,7 @@ door auto-routes to it, so you rarely call one by name:
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
   specs are instantiated by the internal `/steer:spec-scaffold` — never call these
   directly.
-- The full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene]`)
+- The full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams]`)
   is materialized into `/spec/reference/` once a repo is set up; run that skill
   directly only on web chat or when asked for the deep dive.
 
@@ -502,7 +502,8 @@ the code**:
   release notes → the app guide (`/spec/app/`).
 - Tech stack, the apps/packages map, how the pieces fit together → root
   `ARCHITECTURE.md`. Any PR that changes the stack, adds/removes/renames an app
-  or package, or reshapes cross-component data flow updates it in the same PR.
+  or package, or reshapes cross-component data flow updates it — and the linked
+  architecture diagram (`/spec/design/architecture.md`) — in the same PR.
 - Visual identity, reusable design tokens → root `DESIGN.md`, seeded from the
   chosen identity when the first UI lands and grown on the 3+ rule (`Design
   sources`). The same PR that establishes the stack or first app also retires

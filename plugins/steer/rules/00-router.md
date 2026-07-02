@@ -81,7 +81,7 @@ door auto-routes to it, so you rarely call one by name:
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
   specs are instantiated by the internal `/steer:spec-scaffold` — never call these
   directly.
-- The full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene]`)
+- The full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams]`)
   is materialized into `/spec/reference/` once a repo is set up; run that skill
   directly only on web chat or when asked for the deep dive.
 

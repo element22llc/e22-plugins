@@ -1,12 +1,12 @@
 ---
 name: reference
-description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md), or `context-hygiene` (delegating heavy runs to subagents, keeping durable state in files so it survives compaction). A read-only loader: it points at the bundled reference file and answers from it."
-when_to_use: Use for any tooling/convention question or the rationale behind a stack default (conventions); any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing split (traceability); a feature originating from a Claude Design export/URL, Figma, or screenshots (design-sources); or how to keep a long/multi-phase run from bloating the session or losing constraints across compaction (context-hygiene).
-argument-hint: "[conventions | traceability | design-sources | context-hygiene]"
+description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md), `context-hygiene` (delegating heavy runs to subagents, keeping durable state in files so it survives compaction), or `architecture-diagrams` (the global system diagram: Mermaid by default vs an opt-in LikeC4 C4 model, which diagram types, and keeping it current). A read-only loader: it points at the bundled reference file and answers from it."
+when_to_use: Use for any tooling/convention question or the rationale behind a stack default (conventions); any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing split (traceability); a feature originating from a Claude Design export/URL, Figma, or screenshots (design-sources); how to keep a long/multi-phase run from bloating the session or losing constraints across compaction (context-hygiene); or how to author/maintain the system architecture diagram — Mermaid vs LikeC4 (architecture-diagrams).
+argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams]"
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources,context-hygiene -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams -->
 
 # Reference prose loader
 
@@ -22,6 +22,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `traceability` | `TRACEABILITY.md` | Living docs, tracker refs, drift flags, audit evidence, PO vs dev split. |
 | `design-sources` | `DESIGN-SOURCES.md` | Features from a Claude Design export/URL, Figma, or screenshots. |
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
+| `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
 
 ## `conventions`
 
@@ -168,3 +169,28 @@ It covers, in detail:
 
 The lean always-on version of this is rule `26-context-hygiene` — this reference is
 its full rationale and how-to.
+
+## architecture-diagrams
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/ARCHITECTURE-DIAGRAMS.md`
+
+It covers, in detail:
+
+- **Why the diagram lives in `spec/design/architecture.md`, not `ARCHITECTURE.md`** —
+  the "link, don't inline" contract keeps `ARCHITECTURE.md` narrative + tables and
+  gives the diagram one canonical, renderable home.
+- **Tier 1 — Mermaid (default, zero toolchain)** — which diagram types to use
+  (`flowchart`/C4-style context + `sequenceDiagram` for the request flow), and that
+  it renders natively in GitHub and the docs site with nothing to install.
+- **Tier 2 — LikeC4 (opt-in)** — when a hand-drawn Mermaid diagram stops scaling:
+  define a C4 model in `*.likec4`, get navigable views, and export Mermaid back into
+  `architecture.md` so the two tiers compose. Includes the inert `diagrams:render`
+  mise task and how to activate it.
+- **Drift discipline** — the diagram is updated in the same PR that reshapes the
+  system (living-docs rule `32`); on Tier 2 `architecture.md` is *generated* — edit
+  the `.likec4` source, not the Mermaid.
+- **Tool choices considered** — why Mermaid + LikeC4 (diagram-as-code, git-diffable,
+  Claude-authorable) over GUI/JSON tools (Excalidraw, draw.io) or diagram-editor
+  libraries (ReactFlow).
+
+This backs the always-on living-docs rule `32` and the `spec/design/` layout.
