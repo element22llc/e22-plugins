@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.10.0
+
 - **Fixed:** the bundled scaffold `.claude/settings.json` shipped over-broad
   `allow` entries that a consumer repo's automated security review flagged as
   allowlist escapes on every `/steer:sync` (#294). Hardened to a least-privilege
