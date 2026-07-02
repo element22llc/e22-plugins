@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Advisor tool pointer in `REVIEW-LOOP.md`.** Added an optional, per-developer
+  note relating Claude Code's Advisor tool to the review-gated loop — when to
+  reach for each, and why `advisorModel` deliberately stays out of the scaffold's
+  checked-in `settings.json` (per-developer, experimental, Anthropic-API-only).
+  Prose-only; no behavior or config change.
+
 - **Output-discipline tightening pass on the always-on rules (#165).** Cut hedging,
   redundant restatements, and unneeded justification prose across `rules/*.md` (chiefly
   `00-router`, `05-roles`, `30-spec-workflow`, plus small trims to `10-stack`,
