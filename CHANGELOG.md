@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** bundled Claude Desktop **Code-tab preview-server** config for the
+  `app` profile — `profiles/app/claude/launch.json`, installed to `.claude/launch.json`
+  by `/steer:init` / `/steer:adopt`. Pins one `web` config that runs the app's
+  `pnpm dev` (rule 15) on port 3000, so the preview pane and auto-verify screenshots
+  drive the repo's real dev command instead of relying on the Code tab's
+  auto-detection. Convenience only: app-profile-scoped, never overwrites an existing
+  `launch.json`, and (pre-stable `version 0.0.1`) enforced by no gate — see the
+  scaffold `MANIFEST.md` row for the full behavior and the polyglot repoint to
+  `mise run dev`. Bring services/DB up first with `mise run dev:setup`.
 - **Output-discipline tightening pass on the always-on rules (#165).** Cut hedging,
   redundant restatements, and unneeded justification prose across `rules/*.md` (chiefly
   `00-router`, `05-roles`, `30-spec-workflow`, plus small trims to `10-stack`,
