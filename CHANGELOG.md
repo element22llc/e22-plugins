@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.9.0
+
 - **Fixed:** `build`'s PO guardrail no longer names a `pnpm deploy:*` task that
   rule 15 retired (promotion is merge-triggered) — the "never deploy" instruction
   now reads "never deploy or promote to any environment", keeping the guardrail
