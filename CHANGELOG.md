@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the bundled scaffold `.claude/settings.json` shipped over-broad
+  `allow` entries that a consumer repo's automated security review flagged as
+  allowlist escapes on every `/steer:sync` (#294). Hardened to a least-privilege
+  split: `allow` now carries only the read-only `git remote` forms (`-v`, `show`,
+  `get-url`) — the mutating subcommands (`set-url`/`add`/`remove`/`rename`, the
+  origin-repoint exfil vector) are `deny`-listed so they stay blocked even when a
+  stale broad `git remote:*` survives a consumer's additive reconcile. Destructive
+  `git rm` and the MCP write tools (`mcp__github__issue_write`/`sub_issue_write`)
+  moved from `allow` to `ask`. The autonomous issue-first path (#180) stays silent:
+  the `gh issue create`/`edit` verbs remain in `allow`, and `/steer:tracker-sync` /
+  `/steer:report` re-grant the MCP write tools via their own `allowed-tools`. Only
+  bare/ad-hoc MCP issue writes now prompt. `check_standards.py` enforces the new
+  split so the template can't regress.
 - **Added:** opt-in architecture-diagram support. A new bootstrap file
   `spec/design/architecture.md` gives every repo a canonical home for a **living,
   global architecture diagram** that `ARCHITECTURE.md` links to (preserving the
