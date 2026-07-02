@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Subagent model-selection guidance in `CONTEXT-HYGIENE.md`.** Added a "Which
+  model" split to the delegation section: read/search/summarize fan-out runs on a
+  Sonnet-tier model at low effort (cheaper per token, same read volume — cuts cost,
+  not token count), while reviewer/verify/judge delegations stay on the session
+  model (Opus-tier), with a caveat against cheap models in budget-capped agentic
+  loops. Keeps `steer-reviewer` on `inherit`. Prose-only; no behavior change.
 - **Advisor tool pointer in `REVIEW-LOOP.md`.** Added an optional, per-developer
   note relating Claude Code's Advisor tool to the review-gated loop — when to
   reach for each, and why `advisorModel` deliberately stays out of the scaffold's
