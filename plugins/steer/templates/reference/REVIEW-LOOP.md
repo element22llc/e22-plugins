@@ -99,3 +99,22 @@ Each gate spends tokens on top of the implementation. That is the price of a
 vetted result, and the reason for the triage step (trivial tasks skip the loop)
 and the 2-round cap. If a run stops at the cap with findings still open, say so
 and name what was left — silent truncation reads as "all clear" when it was not.
+
+## 7. Related: the Advisor tool (per-developer, optional)
+
+Claude Code's [Advisor tool](https://code.claude.com/docs/en/advisor) is a
+lighter-weight cousin of this loop. It pairs your main model with a stronger
+**advisor model** that Claude consults *in-session* at decision points — before
+committing to an approach, when stuck, or before declaring a task done: the same
+escalate-hard-decisions instinct this loop encodes, minus the
+independent-subagent gates and the diff review. They are not substitutes — reach
+for the advisor for a fast in-context second opinion, and for `--reviewed` when a
+wrong approach is costly to unwind and you want an adversarial, rubric-scored
+check.
+
+**steer does not configure it for you, by design.** `advisorModel` is a
+per-developer, cost- and account-dependent preference, it is experimental, and it
+runs on the Anthropic API only — not portable across Bedrock/Vertex — so it stays
+out of the scaffold's checked-in `settings.json`, which would silently override
+each teammate's choice. Enable it yourself with `/advisor <model>` (e.g.
+`/advisor opus`) or `claude --advisor opus` for one session.
