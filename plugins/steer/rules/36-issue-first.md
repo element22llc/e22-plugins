@@ -27,9 +27,13 @@ request does **not** need confirmation to create the issue.
   per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
-- **The scaffold pre-authorizes the issue-create verbs** (`gh issue create` /
-  `mcp__github__issue_write`) under `allow`, so find-or-create normally runs
-  without a prompt. A create that is *still* blocked (a stricter host permission
+- **The scaffold pre-authorizes the `gh` issue-create verbs** (`gh issue create` /
+  `gh issue edit`) under `allow`, so find-or-create normally runs
+  without a prompt. The MCP write tools (`mcp__github__issue_write` /
+  `sub_issue_write`) sit under `ask` for a least-privilege posture, but the
+  `/steer:tracker-sync` and `/steer:report` skills re-grant them via their own
+  `allowed-tools`, so the governed find-or-create path stays silent within those
+  skills. A create that is *still* blocked (a stricter host permission
   mode, or a background-job gate) is a **host-permission gate, not a missing
   issue** — don't loop retrying; confirm with the user, or have them run
   `!gh issue create …` under their own identity, then continue the bounded action

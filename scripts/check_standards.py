@@ -651,16 +651,20 @@ def check_authorization(errors: list[str]) -> None:
         # Issue-first (rule 36) authorizes autonomous tracker-metadata writes on an
         # explicit implement/capture request. Some hosts' auto-mode classifiers block
         # an unprompted `gh issue create` as an external write, making the documented
-        # find-or-create path unreachable — so the scaffold pre-authorizes the
+        # find-or-create path unreachable — so the scaffold pre-authorizes the `gh`
         # tracker-metadata write verbs under `allow` (see issue #180). Delivery
         # (push/PR/merge) stays human-gated under `ask`/`deny`; these are metadata only.
         #
-        # `tracker-sync` is MCP-first (the plugin ships the github MCP server), so the
-        # *preferred* create/manage path is the `mcp__github__*` issue tools, not `gh` —
-        # those must be pre-authorized too or the autonomous path prompts on every call
-        # regardless of the `gh` allowances. The dedup `search`/`get` reads run before
-        # every create; pre-authorizing them keeps find-before-create silent. This is
-        # the metadata surface only — `gh api`/`gh api graphql` (a mutation vector for
+        # The MCP write tools (`issue_write`/`sub_issue_write`) are NOT session-allowed:
+        # a bare/ad-hoc MCP issue write is a prompt-injection-reachable escape a
+        # consumer's security review flags, so the scaffold keeps them under `ask`
+        # (#294). The governed autonomous path stays silent regardless — the
+        # `/steer:tracker-sync` and `/steer:report` skills pre-authorize those tools in
+        # their own `allowed-tools`, which grants them for the skill's turns even when
+        # the session default prompts. The `gh issue` verbs above cover the CLI-first
+        # find-or-create silently too. Read/dedup MCP tools (`issue_read`, `list`,
+        # `search`, `add_issue_comment`) stay under `allow` so find-before-create is
+        # silent. `gh api`/`gh api graphql` (a mutation vector for
         # fields/milestones/relationships) and delivery stay prompted by omission.
         autonomous_issue_ops = (
             # gh path — write verbs (#180) + dedup/capability reads
@@ -670,12 +674,12 @@ def check_authorization(errors: list[str]) -> None:
             "Bash(gh issue list:*)",
             "Bash(gh issue view:*)",
             "Bash(gh auth status:*)",
-            # MCP-first path — the preferred create/manage/dedup tools. The hosted
-            # GitHub MCP server consolidated the issue verbs: create_issue/update_issue
-            # -> issue_write, get_issue -> issue_read, add_sub_issue -> sub_issue_write
-            # (#264). The old names no longer resolve, so pre-authorizing them was a
-            # silent no-op that still prompted on every mutation.
-            "mcp__github__issue_write",
+            # MCP-first path — read/dedup tools stay session-allowed. The hosted GitHub
+            # MCP server consolidated the issue verbs: create_issue/update_issue ->
+            # issue_write, get_issue -> issue_read, add_sub_issue -> sub_issue_write
+            # (#264). The write tools (issue_write/sub_issue_write) sit under `ask`
+            # (#294) and are re-granted per-skill via allowed-tools — see the forbidden
+            # check below.
             "mcp__github__issue_read",
             "mcp__github__add_issue_comment",
             "mcp__github__list_issues",
@@ -704,7 +708,9 @@ def check_authorization(errors: list[str]) -> None:
             "Bash(git log:*)",
             "Bash(git show:*)",
             "Bash(git branch:*)",
-            "Bash(git remote:*)",
+            "Bash(git remote -v)",
+            "Bash(git remote show:*)",
+            "Bash(git remote get-url:*)",
             "Bash(gh pr view:*)",
             "Bash(gh pr checks:*)",
             "Bash(gh pr list:*)",
@@ -770,6 +776,40 @@ def check_authorization(errors: list[str]) -> None:
                     f"{settings}: '{forbidden}' must not be under permissions.allow — "
                     f"it grants the human-gated delivery surface (repo delete, PR merge, "
                     f"branch protection); keep `gh api` prompted"
+                )
+        # Least-privilege scaffold posture (#294): these over-broad/write forms must
+        # NOT sit in `allow` — a consumer's security review flags them as allowlist
+        # escapes / prompt-injection-reachable writes on every `/steer:sync`. The broad
+        # `git remote:*` permits silent `set-url`/`add` (origin repoint -> exfil); `git
+        # rm` is an unattended destructive delete; the MCP write tools are re-granted
+        # per-skill via allowed-tools instead. Keep them under `ask`/`deny`.
+        for forbidden in (
+            "Bash(git remote:*)",
+            "Bash(git rm:*)",
+            "mcp__github__issue_write",
+            "mcp__github__sub_issue_write",
+        ):
+            if forbidden in allow:
+                errors.append(
+                    f"{settings}: '{forbidden}' must not be under permissions.allow — "
+                    f"it is a security-review allowlist escape (#294); keep read-only "
+                    f"forms in `allow` and move the write/destructive form to `ask`/`deny`"
+                )
+        # The mutating `git remote` subcommands must be explicitly denied so a stale
+        # consumer `allow: git remote:*` (additive reconcile never removes it) still
+        # can't repoint origin — deny outranks allow at eval time.
+        deny = perms.get("deny", [])
+        for required_deny in (
+            "Bash(git remote set-url:*)",
+            "Bash(git remote add:*)",
+            "Bash(git remote remove:*)",
+            "Bash(git remote rename:*)",
+        ):
+            if required_deny not in deny:
+                errors.append(
+                    f"{settings}: '{required_deny}' should stay under permissions.deny "
+                    f"(#294 — blocks origin-repoint exfil even if a stale `git remote:*` "
+                    f"allow survives a consumer reconcile)"
                 )
 
     # 4. build documents both modes and delegates governed implementation to
