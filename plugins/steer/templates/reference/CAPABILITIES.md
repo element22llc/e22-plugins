@@ -114,6 +114,33 @@ and **Repair**.
   run-once interview, and `sync` carries the spine forward without re-asking. This
   is the one place a later sync can surface the choice.
 
+### app-knowledge-docs — the app guide (how to use/operate the product)
+- **Files:** `spec/app/README.md`
+- **Conditional:** always (every managed product has usage to document — at
+  whatever fidelity; a stub is valid, like an empty `decisions/`).
+- **Wired-when:** `spec/app/README.md` exists. It is the index for the app
+  knowledge docs — usage, workflows, roles & permissions, configuration, known
+  limitations, troubleshooting, release notes. `rules/20-layout.md`,
+  `32-living-docs.md`, `50-definition-of-done.md`, the PR template, and the
+  scaffold `ARCHITECTURE.md` all reference `/spec/app/` **unconditionally**, so a
+  repo missing it carries dangling links. Absent → the file is missing.
+- **Repair:** **create** `spec/app/README.md` from
+  `${CLAUDE_PLUGIN_ROOT}/templates/spec/app-docs.md`, resolving placeholders and
+  seeding the usage / roles / limitations sections from what the spine already
+  knows (`vision.md`, `users.md`, `glossary.md`). A **stub is fine** where the
+  product isn't operable yet — keep it honest: omit the operational runbook while
+  local-only, per the template's own guidance. Additive: never overwrite an
+  existing guide.
+- **Verbatim:** no
+- **Why it matters:** the guide is instantiated from a spec template, not copied
+  as a static scaffold file, so additive reconciliation — which only splices into
+  files that already exist — can never create it. A repo bootstrapped before init
+  reliably instantiated it, or by an init run that skipped the step, is left with
+  references to a `/spec/app/` that does not exist, and no earlier sync mechanism
+  repaired it (`STEER_SPINE_REQUIRED` deliberately stays the minimal narrative
+  singletons, so a missing guide never trips the `damaged` nudge). This capability
+  is that missing backfill path.
+
 ### in-ci-plugin-loading — @claude CI runs under steer standards
 - **Files:** `.github/workflows/claude.yml`
 - **Conditional:** always (GitHub-hosted repos)

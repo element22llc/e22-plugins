@@ -137,6 +137,23 @@ else
 	emit "delivery-mode-declared" "mis-wired" "$F"
 fi
 
+# --- app-knowledge-docs — the app guide (how to use/operate the product) ---
+# `rules/20-layout.md`, `32-living-docs.md`, `50-definition-of-done.md`, the PR
+# template, and the scaffold `ARCHITECTURE.md` all reference `/spec/app/`
+# UNCONDITIONALLY, but the guide is instantiated from a spec template
+# (`templates/spec/app-docs.md`), not copied as a static scaffold file — so a
+# repo bootstrapped before init reliably created it, or by an init run that
+# skipped the step, is left with dangling references that additive reconciliation
+# can never repair (it only splices into files that already exist). Presence of
+# the index IS the capability; the sync repair creates it from the app-docs
+# template. Always applies — a stub is valid, like an empty `decisions/`.
+F="spec/app/README.md"
+if exists "$F"; then
+	emit "app-knowledge-docs" "present-wired" "$F"
+else
+	emit "app-knowledge-docs" "absent" "$F"
+fi
+
 # --- in-ci-plugin-loading — @claude CI runs under steer standards ---
 # Wired only via the action's plugin_marketplaces input; an enabledPlugins block
 # does NOT count (trust-dialog gated, no-ops in headless CI).

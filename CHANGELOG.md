@@ -18,10 +18,45 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:reference architecture-diagrams` topic documents both tiers, tool trade-offs,
   and drift discipline; rule `32-living-docs` now requires the linked diagram to be
   updated in the same PR as the change it reflects.
+- **Fixed:** a repo bootstrapped before `init` reliably instantiated the app guide
+  (`spec/app/README.md`), or by an `init` run that skipped the step, was left with
+  `/spec/app/` references (rules `20`/`32`/`50`, the PR template, scaffold
+  `ARCHITECTURE.md`) pointing at a directory that never existed — and no `sync`
+  could repair it: the guide is materialized from a spec template, not a static
+  scaffold file, so additive reconciliation (which only splices into files that
+  already exist) never created it, and `STEER_SPINE_REQUIRED` deliberately omits
+  it so the gap never tripped the `damaged` nudge. Added an `app-knowledge-docs`
+  capability (`CAPABILITIES.md` + `scan-capabilities.sh`) that `sync` walks every
+  run: `absent → create spec/app/README.md from templates/spec/app-docs.md` as a
+  proposal (a stub is valid pre-POC). Backfills affected repos on their next sync
+  without the org-wide false-`damaged` noise a required-spine change would cause.
 - **Added:** rule `51-verify-loop` (code projects) — turn a task into a verifiable
   end state, iterate against the harness until green with a bounded loop,
   stop-and-report when blocked, and never loop on uncheckable/long-compute work;
   also directs stating an assumption before building on an ambiguous request.
+- **Changed:** `/steer:report` now **auto-files** steer self-reports upstream — the
+  confirmation step is gone and the scoped `Bash(gh issue create --repo
+  element22llc/e22-plugins *)` verb (plus a same-repo-scoped `gh issue comment`
+  and the MCP issue tools) is pre-approved in its `allowed-tools`. Secret /
+  absolute-path / product-code scrubbing and fingerprint dedupe are retained; the
+  scrub now **redacts or omits** unredactable content instead of asking. The
+  offline / no-auth paste-URL fallback is unchanged.
+- **Changed:** `/steer:tracker-sync` gained an `allowed-tools` block pre-approving
+  the issue create + find-before-create dedup surface (`mcp__github__issue_write`
+  / scoped `gh issue *` verbs + issue reads/search), so product-issue creation is
+  auto-approved in non-scaffolded repos too (scaffolded repos already granted it
+  via `.claude/settings.json`). The delivery surface (`gh api`/graphql, PR merge,
+  branch protection) is deliberately not listed and stays host-gated. Its `push`
+  step now follows Intent-aware confirmation — explicit captures file without a
+  prompt, inferred batches (e.g. audit-surfaced drift) still take one
+  confirmation, and security disclosures take human review.
+- **Fixed:** `check-issue-create-contract.sh` no longer misfires on `/steer:report`'s
+  upstream self-report create (`--repo element22llc/e22-plugins`) — including the
+  label-less fallback that carries no `steer:` marker — which must never be routed
+  through `/steer:tracker-sync`.
+- **Changed:** rule 36 (and its generated Copilot mirror) note that the scaffold
+  ships the issue-create grant, so find-or-create runs unprompted by default; a
+  still-blocked create is a host gate, not a skipped step.
 - **Fixed:** five skills ran a bundled plugin helper script their `allowed-tools`
   didn't grant, so `/steer:<skill>` prompted the user on every run (the issue #266
   prompt-spam class the pre-release audit fix missed): `build` and `spec-scaffold`

@@ -1,6 +1,6 @@
 ---
 name: report
-description: "File a bug report about the steer plugin ITSELF upstream in element22llc/e22-plugins — gather the defect, scrub secrets/absolute-paths/product-code, dedupe against existing upstream issues, and file via gh only on your confirmation (detect-and-offer, never auto-file). For steer's own defects, not product-code bugs (those go to the product tracker via /steer:issues)."
+description: "File a bug report about the steer plugin ITSELF upstream in element22llc/e22-plugins — gather the defect, scrub secrets/absolute-paths/product-code, dedupe against existing upstream issues, and auto-file it via gh (no confirmation — the scrub redacts or omits anything unredactable rather than asking). For steer's own defects, not product-code bugs (those go to the product tracker via /steer:issues)."
 when_to_use: 'Use when steer itself misbehaves — a SessionStart self-fault notice appears, a skill/rule gives contradictory or impossible instructions, or a referenced template/script/helper is missing or crashes — and you want it fixed upstream. Also when the user says "report this steer bug" / "file this against the plugin".'
 argument-hint: "[describe the defect | run with no args to use recorded faults]"
 allowed-tools:
@@ -10,6 +10,12 @@ allowed-tools:
   - Bash(gh issue view *)
   - Bash(gh search issues *)
   - Bash(gh label list *)
+  - Bash(gh issue create --repo element22llc/e22-plugins *)
+  - Bash(gh issue comment --repo element22llc/e22-plugins *)
+  - mcp__github__issue_write
+  - mcp__github__search_issues
+  - mcp__github__list_issues
+  - mcp__github__add_issue_comment
   - Bash(git remote *)
   - Bash(git rev-parse *)
 ---
@@ -27,10 +33,11 @@ Two invariants, always:
   bugs, failing tests, or user mistakes are **not** plugin faults; those go to the
   product tracker via `/steer:issues`. If the problem isn't steer's fault, say so
   and stop.
-- **Detect-and-offer, never auto-file.** You render the scrubbed body and the
-  user confirms before anything is written. The upstream `gh` write is
-  intentionally **not** pre-approved (allowed-tools above are read-only) — the
-  permission prompt on the create call is the final human gate. Honour it.
+- **Scrub and dedupe, then auto-file.** You render the scrubbed body and file it
+  without a confirmation step — the upstream `gh`/MCP create is **pre-approved**
+  in allowed-tools above. The safety floor is the scrub (§3) and the fingerprint
+  dedupe (§4), not a human prompt: if the scrub finds something it cannot safely
+  redact, it **omits** it (or drops the whole field) rather than asking.
 
 ## 1. Establish the report source
 
@@ -74,6 +81,10 @@ The report goes to a **shared** repo. Before rendering or filing:
   output, the contradictory instruction) is fine; a product file is not.
 - Keep the consumer identity to the `owner/repo` slug at most. If even that is
   sensitive, omit it.
+- **Fail closed by omission, never by asking.** The report is auto-filed, so when
+  something can't be confidently redacted (an unclassifiable secret-shaped value,
+  an unavoidable absolute path, product code), **drop it** — omit the line or
+  field entirely. Never pause to ask the user how to redact.
 
 ## 4. Deduplicate upstream
 
@@ -84,17 +95,20 @@ Detect capability, then search before creating:
 2. Search open + closed issues for the fingerprint:
    `gh issue list --repo element22llc/e22-plugins --state all --search "<signature>" --json number,title,url,state`
    and/or `gh search issues "<signature>" --repo element22llc/e22-plugins`.
-3. **Match found** → don't open a duplicate. Show the user the existing issue and
-   offer to add a short "also seen in `<slug>` on v`<version>`" comment (with the
-   fingerprint) instead. One issue per fingerprint.
+3. **Match found** → don't open a duplicate. Add a short "also seen in `<slug>` on
+   v`<version>`" comment (with the fingerprint) to the existing issue instead of
+   filing a new one — no need to ask first. Prefer the GitHub MCP comment tool;
+   the `gh issue comment --repo element22llc/e22-plugins <n>` fallback is
+   pre-approved only with `--repo element22llc/e22-plugins` as its first flag.
+   One issue per fingerprint.
 
-## 5. Confirm, then file
+## 5. File it
 
-Render the **full body** to the user and the target (`element22llc/e22-plugins`,
-labels `bug` + `steer:self-report`). Ask for explicit confirmation.
-
-On confirmation, write the body to a temp file and create the issue (you'll see a
-permission prompt — that's the gate):
+Write the scrubbed body to a temp file and create the issue against
+`element22llc/e22-plugins` with labels `bug` + `steer:self-report`. This is
+pre-approved in allowed-tools — no confirmation, no permission prompt. Keep
+`--repo element22llc/e22-plugins` as the **first** flag: the pre-approval is
+scoped to that exact prefix, so a reordered create would fall back to a prompt.
 
 ```sh
 gh issue create --repo element22llc/e22-plugins \
