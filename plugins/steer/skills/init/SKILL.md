@@ -15,6 +15,7 @@ allowed-tools:
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(npm view *)
+  - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
 
 # First-run setup for a new repo

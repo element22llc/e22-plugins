@@ -14,6 +14,7 @@ allowed-tools:
   - Bash(mise ls *)
   - Bash(docker --version)
   - Bash(docker info *)
+  - Bash(sh *scripts/scan-prereqs.sh*)
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 

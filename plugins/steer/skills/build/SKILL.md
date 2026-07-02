@@ -25,6 +25,7 @@ allowed-tools:
   - Bash(mise run check *)
   - Bash(mise run ci *)
   - Bash(pnpm dev*)
+  - Bash(sh *scripts/template-reconcile.sh*)
 ---
 
 # Build a working app from a PO's idea

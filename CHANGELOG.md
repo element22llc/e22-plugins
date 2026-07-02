@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** five skills ran a bundled plugin helper script their `allowed-tools`
+  didn't grant, so `/steer:<skill>` prompted the user on every run (the issue #266
+  prompt-spam class the pre-release audit fix missed): `build` and `spec-scaffold`
+  run `template-reconcile.sh`, `doctor` runs `scan-prereqs.sh`, `init` runs
+  `scaffold_reconcile.py` (which `sync` already granted), and `adopt` runs both
+  `template-reconcile.sh` and `scaffold_reconcile.py` from its `PROCEDURE.md`.
+  Added the matching `Bash(<interp> *scripts/<name>*)` grants (`spec-scaffold`
+  gained its first `allowed-tools` block).
+- **Added:** `check_standards.py` regression guard (`check_skill_script_grants`) —
+  a skill that invokes a bundled `${CLAUDE_PLUGIN_ROOT}/scripts/*.sh|*.py` helper
+  (in SKILL.md or a factored-out body like `PROCEDURE.md`) must pre-approve it in
+  `allowed-tools` under a matching interpreter, so this prompt-spam class can't
+  return silently. Scoped to the plugin-script family (the one command family
+  whose mention is unambiguously an execution); runs in `mise run check`.
+
 ### 3.9.0
 
 - **Fixed:** `build`'s PO guardrail no longer names a `pnpm deploy:*` task that

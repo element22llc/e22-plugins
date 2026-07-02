@@ -32,6 +32,15 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     bare imperative (``Run /steer:X``) in a user-facing surface (SessionStart hook
     notices, installed scaffold/spec docs) — typing it is rejected by the harness,
     so such surfaces must route to a callable front door or attribute it to Claude.
+12. A skill that invokes a bundled plugin helper script (``scripts/*.sh|*.py`` via
+    ``sh``/``bash``/``python[3]``/``uv run``, in SKILL.md *or* a factored-out body
+    like PROCEDURE.md) pre-authorizes that script in its ``allowed-tools`` —
+    otherwise ``/steer:<skill>`` prompts the user on every run (the prompt-spam
+    class from issue #266). Scoped to the plugin-script family, the one command
+    family whose mere mention is unambiguously an execution (the mise/git/gh/pnpm
+    families are prose-heavy — a read-only skill *names* ``mise run dev:setup`` as
+    the contract it verifies without ever running it — so they can't be classified
+    mechanically without false positives).
 
 Usage::
 
@@ -918,6 +927,80 @@ def check_noncallable_imperatives(errors: list[str]) -> None:
                 )
 
 
+# A skill body that invokes a *bundled* plugin helper script
+# (``${CLAUDE_PLUGIN_ROOT}/scripts/*.sh|*.py`` via sh/bash/python[3]/uv run)
+# *executes* it — unlike a product task (`mise run dev:*`) it only authors into the
+# target repo, or a command it merely names in prose. So a mention here is an
+# execution, and the skill's allowed-tools must cover it or /steer:<skill> prompts
+# the user on every run (issue #266). Anchored on ${CLAUDE_PLUGIN_ROOT} so a skill
+# documenting a *target-repo* script (`sh scripts/setup.sh`) is not mis-flagged.
+# The interpreter is captured so the grant is matched interpreter-aware, not by a
+# bare filename substring (a `Bash(sh ...x.py)` grant must not satisfy a
+# `python3 ...x.py` run).
+_SCRIPT_INVOCATION = re.compile(
+    r"(?P<interp>sh|bash|python3?|uv run(?:\s+python3?)?)\s+"
+    r"[\"']?\$\{CLAUDE_PLUGIN_ROOT\}/scripts/(?P<script>[A-Za-z0-9_.-]+\.(?:sh|py))"
+)
+
+
+def _grant_covers(interp: str, script: str, grants: list[str]) -> bool:
+    """A grant covers an invocation when it names the same script under a
+    compatible interpreter — mirroring how the harness matches ``Bash(<glob>)``.
+    """
+    head = interp.split()[0]  # sh | bash | python3 | python | uv
+    for grant in grants:
+        m = re.match(r"Bash\((.*)\)\s*$", grant.strip())
+        if not m:
+            continue
+        inner = m.group(1).strip()
+        toks = inner.split()
+        if script in inner and toks and toks[0] == head:
+            return True
+    return False
+
+
+def check_skill_script_grants(errors: list[str]) -> None:
+    """Assert every skill grants the bundled plugin scripts its body runs.
+
+    Regression guard for the issue #266 class: an ``allowed-tools`` list that
+    doesn't cover a command the skill actually executes, so the pre-approval
+    silently never matches and the user is prompted mid-run. Scans **every**
+    ``*.md`` in the skill directory (SKILL.md *and* factored-out bodies like
+    ``PROCEDURE.md``), since a run step can live in a secondary file while the
+    grants live only in SKILL.md frontmatter.
+    """
+    for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        # Collect (interpreter, script) invocations across all body files.
+        invocations: dict[str, str] = {}
+        for md in sorted(skill_dir.rglob("*.md")):
+            for m in _SCRIPT_INVOCATION.finditer(md.read_text(encoding="utf-8")):
+                invocations.setdefault(m.group("script"), m.group("interp"))
+        if not invocations:
+            continue
+        rel = f"skills/{skill_dir.name}/SKILL.md"
+        fm, _ = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        grants = (fm or {}).get("allowed-tools")
+        grants = grants if isinstance(grants, list) else ([grants] if grants else [])
+        if not grants:
+            errors.append(
+                f"{rel}: runs bundled plugin script(s) {sorted(invocations)} but "
+                f"declares no allowed-tools — add a Bash(<interp> *scripts/<name>*) "
+                f"grant so /steer:{skill_dir.name} does not prompt on every run (#266)"
+            )
+            continue
+        for script, interp in sorted(invocations.items()):
+            if not _grant_covers(interp, script, grants):
+                errors.append(
+                    f"{rel}: runs scripts/{script} (via {interp.split()[0]}) but no "
+                    f"allowed-tools grant covers it — add "
+                    f"Bash({interp.split()[0]} *scripts/{script}*) so "
+                    f"/steer:{skill_dir.name} does not prompt mid-run (#266)"
+                )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -938,6 +1021,7 @@ def run_checks(errors: list[str]) -> None:
     check_scaffold_version_copies(errors)
     check_payload_debranded(errors)
     check_noncallable_imperatives(errors)
+    check_skill_script_grants(errors)
 
 
 def main() -> int:
