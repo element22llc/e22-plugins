@@ -36,23 +36,29 @@ flowchart TD
     Declaring branching autonomous is worthless if switching onto the branch then
     prompts. So the scaffold `.claude/settings.json` `permissions.allow` also
     pre-authorizes the **branch/fetch/move** verbs the skills run on every unit of
-    work — `git switch`, `git checkout -b`, `git fetch`, `git mv`, `git rm`,
+    work — `git switch`, `git checkout -b`, `git fetch`, `git mv`,
     `git stash` — and the **PO-flow toolchain** the `build` skill drives itself:
     `mise install`, `mise lock`, and the named `mise run dev` (run the app locally).
     The `build` skill carries the same grants in its frontmatter, so the
     non-technical PO flow is quiet even in a repo that predates the scaffold
     allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
     wildcard — `mise run deploy` still prompts. Bare `git checkout -- <file>`
-    (discards work) and every delivery verb stay gated. `check_standards.py`
+    (discards work), destructive `git rm` (an unattended recursive/forced delete —
+    moved to `ask`), and every delivery verb stay gated. `check_standards.py`
     asserts this set stays under `allow` so it can't silently regress.
 
 !!! note "Issue creation is autonomous — but a host can still gate it"
     Some Claude Code permission modes classify an unprompted `gh issue create` as
     an external write and block it, even though steer authorizes it. The bundled
-    scaffold therefore pre-authorizes the tracker-metadata write verbs
+    scaffold therefore pre-authorizes the `gh` tracker-metadata write verbs
     (`gh issue create` / `edit` / `comment`) under `.claude/settings.json` →
     `permissions.allow`, so the find-or-create path is reachable in a
-    default-permission session. Delivery (`git push`, `gh pr create`/`merge`)
+    default-permission session. The MCP write tools (`mcp__github__issue_write` /
+    `sub_issue_write`) instead sit under `ask` — a bare/ad-hoc MCP issue write is
+    an allowlist escape a consumer's security review flags — but the
+    `/steer:tracker-sync` and `/steer:report` skills re-grant them in their own
+    `allowed-tools`, so the governed find-or-create path stays silent within those
+    skills. Delivery (`git push`, `gh pr create`/`merge`)
     stays under `ask`/`deny`. Where a host still blocks the create, it is a
     *host-permission gate, not a missing issue* — confirm with the user or run
     `!gh issue create` under their identity, rather than looping.
@@ -70,7 +76,9 @@ flowchart TD
 ## What is silent — read-only inspection
 
 The skills reconstruct workspace state constantly: `git status/diff/log/show/
-branch/remote`, `gh pr view/checks/list/diff`, `gh run view/list/watch`, `gh repo
+branch`, the read-only `git remote` forms (`-v`/`show`/`get-url` — the mutating
+`set-url`/`add`/`remove`/`rename` subcommands are `deny`-listed),
+`gh pr view/checks/list/diff`, `gh run view/list/watch`, `gh repo
 view`, `gh label list`, `mise tasks`, and the named verify tasks `mise run check`/
 `mise run ci`. None of these mutate anything, so the scaffold `.claude/
 settings.json` pre-authorizes them all under `permissions.allow` — prompting on
@@ -88,9 +96,13 @@ bundled plugin helper scripts they execute on every run — `template-reconcile.
 `scaffold_reconcile.py`, `scan-prereqs.sh` — under a matching interpreter
 (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper prompts the
 user mid-flow every time. The scaffold's MCP allowlist tracks
-the hosted GitHub MCP's consolidated issue verbs (`issue_write`, `issue_read`,
-`sub_issue_write`); the pre-rename names no longer resolve, so authorizing them
-was a silent no-op that still prompted on every mutation.
+the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
+(`issue_read`, `list_issues`, `search_issues`, `add_issue_comment`) sit under
+`allow` so find-before-create is silent, while the **write** tools (`issue_write`,
+`sub_issue_write`) sit under `ask` and are re-granted per-skill (see the note
+above). These names are the post-rename verbs (`create_issue`/`update_issue` →
+`issue_write`, `get_issue` → `issue_read`, `add_sub_issue` → `sub_issue_write`);
+the pre-rename names no longer resolve.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for the named verify
 tasks (`check`/`ci`), never the wildcard — an open `mise run:*` would silently
