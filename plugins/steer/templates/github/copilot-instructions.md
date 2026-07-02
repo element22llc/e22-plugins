@@ -60,6 +60,7 @@ to anything outside this table.
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
+| browse the whole capability set — "what can steer do?", "show me the commands", not sure what to ask for (a plain-language menu, no repo state needed) | `/steer:help` |
 | "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 
