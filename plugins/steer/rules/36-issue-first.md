@@ -39,8 +39,8 @@ request does **not** need confirmation to create the issue.
   `!gh issue create …` under their own identity, then continue the bounded action
   set. (Full rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
-Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
-repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does
+Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
+**Calling work a "prototype" does
 not waive it** — the only durable opt-out from the per-feature branch/PR is
 declaring solo-trunk delivery mode; a prototype that stays in PR flow still gets a
 GitHub issue per change.

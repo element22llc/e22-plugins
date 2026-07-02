@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Output-discipline tightening pass on the always-on rules (#165).** Cut hedging,
+  redundant restatements, and unneeded justification prose across `rules/*.md` (chiefly
+  `00-router`, `05-roles`, `30-spec-workflow`, plus small trims to `10-stack`,
+  `22-housekeeping`, `26-context-hygiene`, `36-issue-first`, `62-hotfix`) so the ruleset
+  obeys its own `87-output-discipline`. No semantic change: every instruction,
+  cross-reference, mode token, and scope marker is preserved. On inspection the corpus
+  was already largely lean, so the honest reclaim is ~2–3% of the always-on payload, not
+  the 15–25% the issue estimated — reaching higher would require dropping the
+  cross-references and examples the rules deliberately carry.
 - **Added:** `/steer:help` — a human-facing capabilities menu (#168). Until now
   capability discovery was entirely model-mediated: a user who wanted to *browse*
   what steer can do had no surface, since the `00-router` intent→skill table is

@@ -23,8 +23,9 @@ truth and how to install and refresh the Copilot side.
 | Gate hooks | `hooks/hooks.json` (hard `deny`) | `hooks/copilot-hooks.json` (soft `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` | the **same** `rules/` + `skills/` | the **same** `rules/` + `skills/` |
 
-All three surfaces are generated from one set of `rules/` and `skills/`, so they
-can never silently diverge.
+All three surfaces are generated from one set of `rules/` and `skills/`, and a
+build-time drift gate (see [below](#why-the-surfaces-differ)) fails the build if
+the generated artifact ever falls out of sync — so they can never silently diverge.
 
 ## Why the surfaces differ
 

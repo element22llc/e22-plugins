@@ -2,8 +2,7 @@
 
 Long, multi-phase work bloats the session and risks losing task constraints when
 context compacts. You **cannot** see context usage, trigger `/compact`, or start a
-new session — only the user can. So don't wait to be rescued by a fresh session;
-keep the working context lean instead.
+new session — only the user can, so keep the working context lean instead.
 
 - **Delegate heavy runs to a subagent.** When a run is long, multi-phase, or would
   crowd this context with search output or intermediate transcript, do it in a
