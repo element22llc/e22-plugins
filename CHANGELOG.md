@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** a repo bootstrapped before `init` reliably instantiated the app guide
+  (`spec/app/README.md`), or by an `init` run that skipped the step, was left with
+  `/spec/app/` references (rules `20`/`32`/`50`, the PR template, scaffold
+  `ARCHITECTURE.md`) pointing at a directory that never existed — and no `sync`
+  could repair it: the guide is materialized from a spec template, not a static
+  scaffold file, so additive reconciliation (which only splices into files that
+  already exist) never created it, and `STEER_SPINE_REQUIRED` deliberately omits
+  it so the gap never tripped the `damaged` nudge. Added an `app-knowledge-docs`
+  capability (`CAPABILITIES.md` + `scan-capabilities.sh`) that `sync` walks every
+  run: `absent → create spec/app/README.md from templates/spec/app-docs.md` as a
+  proposal (a stub is valid pre-POC). Backfills affected repos on their next sync
+  without the org-wide false-`damaged` noise a required-spine change would cause.
 - **Added:** rule `51-verify-loop` (code projects) — turn a task into a verifiable
   end state, iterate against the harness until green with a bounded loop,
   stop-and-report when blocked, and never loop on uncheckable/long-compute work;

@@ -1134,6 +1134,18 @@ printf '<!-- steer:delivery-mode=solo-trunk -->\n' >>"${CR8}/CLAUDE.md"
 capscan "${CR8}"
 assert_eq "cap: CLAUDE.md with marker -> present-wired" "$(capstatus "${out}" delivery-mode-declared)" "present-wired"
 
+# app-knowledge-docs: the app guide is instantiated from a spec template, so
+# additive reconciliation can never create it — the capability is its backfill
+# path. Absent when spec/app/README.md is missing; present-wired once it exists.
+CR9="${WORK}/cap9"
+mkdir -p "${CR9}"
+capscan "${CR9}"
+assert_eq "cap: no app guide -> app-knowledge-docs absent" "$(capstatus "${out}" app-knowledge-docs)" "absent"
+mkdir -p "${CR9}/spec/app"
+printf '# App guide\n' >"${CR9}/spec/app/README.md"
+capscan "${CR9}"
+assert_eq "cap: app guide present -> present-wired" "$(capstatus "${out}" app-knowledge-docs)" "present-wired"
+
 # Idempotency: repairing a mis-wired settings.json makes the re-scan present-wired.
 printf '{"enabledPlugins":{"steer@e22-plugins":true}}\n' >"${CR1}/.claude/settings.json"
 capscan "${CR1}"
