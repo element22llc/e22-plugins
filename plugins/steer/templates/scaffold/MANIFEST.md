@@ -60,6 +60,7 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/glossary.md` | `spec/glossary.md` | Shared vocabulary. |
 | `../spec/design-readme.md` | `spec/design/README.md` | What belongs in `spec/design/` — the design-export home, lifecycle, and brownfield notes. |
 | `../spec/design-source.md` | `spec/design/source.md` | Product-level design-source provenance (Greenfield only). |
+| `../spec/design-architecture.md` | `spec/design/architecture.md` | The living, global architecture diagram (Mermaid by default; opt-in LikeC4) that `ARCHITECTURE.md` links to. |
 | `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |

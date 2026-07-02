@@ -56,7 +56,8 @@ against the current latest, so the report is always the incremental delta.
 ## Where it fits
 
 `spec/sources/` is the **versioned** home for recurring PO documents, alongside
-`spec/design/` (UI exports) and `spec/reference/` (one-off prose). A document sent
+`spec/design/` (UI exports plus the living architecture diagram) and
+`spec/reference/` (one-off prose). A document sent
 once can stay loose under `spec/reference/`; the moment it starts arriving in
 versions, it belongs under `spec/sources/`. See
 [the markitdown server](../reference/mcp-servers.md) for the converter, and

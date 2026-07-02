@@ -6,8 +6,10 @@ request flows through them, and the cross-cutting concerns. This is the
 reads before touching code.
 
 **Scope — narrative and tables only.** *Why* a choice was made → an ADR in
-[`/spec/decisions/`](./spec/decisions); *diagrams* → [`/spec/design/`](./spec/design)
-(link them here, don't redraw them); *how to use/operate* the product →
+[`/spec/decisions/`](./spec/decisions); the *global architecture diagram* →
+[`/spec/design/architecture.md`](./spec/design/architecture.md) and other *diagrams*
+→ [`/spec/design/`](./spec/design) (link them here, don't redraw them); *how to
+use/operate* the product →
 [`/spec/app/`](./spec/app). Keep this file describing *what is*, not *why* or
 *how-to*. It's a valid stub today — **grow it as the system grows**, in the same
 PR that changes the stack, adds an app/package, or reshapes the data flow
@@ -50,8 +52,9 @@ See [`apps/README.md`](./apps/README.md) and
 ## How it fits together
 
 [The request → response path, and the layer boundaries (UI → server →
-services → data). Two or three sentences. Link any diagram in `/spec/design/`
-rather than inlining it.]
+services → data). Two or three sentences. The global architecture diagram lives
+in [`/spec/design/architecture.md`](./spec/design/architecture.md) — link it here,
+don't inline it.]
 
 ## Cross-cutting concerns
 
@@ -66,7 +69,7 @@ One line each, linking the owning ADR or contract:
 ## Where to look next
 
 - Decisions and their rationale → [`/spec/decisions/`](./spec/decisions) (ADRs)
-- Diagrams → [`/spec/design/`](./spec/design)
+- Architecture diagram → [`/spec/design/architecture.md`](./spec/design/architecture.md); other diagrams → [`/spec/design/`](./spec/design)
 - Per-feature behaviour → `/spec/features/[id]/contract.md`
 - How to use/operate the product → [`/spec/app/`](./spec/app)
 - Stack overrides & product-specific patterns → [`CLAUDE.md`](./CLAUDE.md)

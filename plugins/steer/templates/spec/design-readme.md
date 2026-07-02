@@ -5,6 +5,18 @@ Claude reads to extract the spec — plus a traceability link back to where the
 exploration happened. This is *not* a prototyping workspace: code exploration
 happens on a branch under `/apps`, never here.
 
+## Two kinds of content — both live here
+
+1. **`architecture.md` — the living architecture diagram.** A maintained,
+   system-level diagram (Mermaid by default; optionally generated from a LikeC4
+   model). [`ARCHITECTURE.md`](../../ARCHITECTURE.md) links to it instead of
+   inlining a diagram. It is kept **current** as the system changes (living-docs
+   rule), the opposite of the disposable exports below. Full how-to:
+   `/steer:reference architecture-diagrams`.
+2. **Design exports (the rest of this folder).** Disposable UI/UX exploration
+   artifacts (Claude Design / Figma / screenshots) that seed the spec once and are
+   then reference-only — see the sections below.
+
 Feature-specific design exports live with their feature, at
 `/spec/features/[id]/design-export/`. Use this folder for a **product-level**
 export that isn't tied to a single feature (typically the initial Greenfield

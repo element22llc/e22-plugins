@@ -93,7 +93,8 @@ resuming once the build is handed off — every box in its handoff gate checked.
 !!! note "For developers: what the dev reviewer inherits"
     A v0 hand-off is not just code. As it scaffolds the stack and builds the UI,
     `/steer:build` keeps the root project docs current — `ARCHITECTURE.md` (the
-    as-built stack and apps/packages map), `DESIGN.md` (the real visual identity),
+    as-built stack and apps/packages map) and the architecture diagram it links to
+    (`spec/design/architecture.md`), `DESIGN.md` (the real visual identity),
     and `apps/README.md` — and a doc-reconciliation step before the hand-off
     confirms none are left as template stubs. The
     [Living docs](../reference/configuration.md) rule makes this the same in-flight

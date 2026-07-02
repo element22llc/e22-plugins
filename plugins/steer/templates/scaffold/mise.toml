@@ -171,3 +171,18 @@ description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on st
 # .../extracted.md`.
 run = "uvx --from 'markitdown[all]' markitdown"
 
+# Opt-in (Tier 2): generate Mermaid + PNG from a LikeC4 architecture model.
+# Commented out on purpose — most repos hand-author Mermaid in
+# spec/design/architecture.md (Tier 1, no toolchain). Uncomment only once you add a
+# model under spec/design/architecture/ (*.likec4 / *.c4); LikeC4 runs on demand via
+# `pnpm dlx` (Node is already pinned), so there's no permanent dependency. `gen
+# mermaid` writes a Markdown file of Mermaid views into spec/design/ — fold it into
+# spec/design/architecture.md, the file ARCHITECTURE.md links to. See
+# `/steer:reference architecture-diagrams`.
+# [tasks."diagrams:render"]
+# description = "Generate Mermaid + PNG from the LikeC4 model (spec/design/architecture/)"
+# run = [
+#   "pnpm dlx likec4 gen mermaid spec/design/architecture --output spec/design",
+#   "pnpm dlx likec4 export png spec/design/architecture -o spec/design",
+# ]
+
