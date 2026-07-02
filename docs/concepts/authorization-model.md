@@ -83,7 +83,11 @@ even in a repo that predates the scaffold allowlist. The setup and build flows
 scoped grants for the operations they routinely run — git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`) and named dev
 tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run` wildcard, so
-delivery and unknown commands still prompt. The scaffold's MCP allowlist tracks
+delivery and unknown commands still prompt. Those flows also pre-approve the
+bundled plugin helper scripts they execute on every run — `template-reconcile.sh`,
+`scaffold_reconcile.py`, `scan-prereqs.sh` — under a matching interpreter
+(`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper prompts the
+user mid-flow every time. The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs (`issue_write`, `issue_read`,
 `sub_issue_write`); the pre-rename names no longer resolve, so authorizing them
 was a silent no-op that still prompted on every mutation.
@@ -92,7 +96,9 @@ The boundary is deliberate: `mise run` is allowlisted **only** for the named ver
 tasks (`check`/`ci`), never the wildcard — an open `mise run:*` would silently
 green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission (the
 mutation vector for repo delete, PR merge, and branch protection). `check_standards.py`
-asserts both halves so the split can't regress.
+asserts both halves so the split can't regress, and separately asserts every skill
+grants the bundled plugin helper scripts its body — including a factored-out
+`PROCEDURE.md` — invokes, so the prompt-on-every-run class can't creep back.
 
 !!! warning "Chained commands defeat the allowlist"
     A permission rule matches a *single* command string. `git status && git diff`
