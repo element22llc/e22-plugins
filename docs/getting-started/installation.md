@@ -74,6 +74,15 @@ routes to the right path, so you don't have to choose:
 
 Both replace the old static `repository-template` as the bootstrap source.
 
+!!! tip "Desktop Code-tab preview (app repos)"
+    For the **`app`** profile, bootstrap also drops a `.claude/launch.json`
+    preview-server config so the **Desktop Code tab**'s preview pane and
+    auto-verify screenshots run the repo's real dev command (`pnpm dev` on port
+    3000) instead of relying on auto-detection. Bring services/DB up first with
+    `mise run dev:setup`; repoint the config at `mise run dev` once the repo goes
+    polyglot. It never overwrites an existing `launch.json`, and other profiles
+    (`service` can copy it; `library`/`cli`/`infra` skip it) don't get one.
+
 ## Keeping a repo in sync
 
 After a new plugin release, run **[`/steer:setup`](../workflows/index.md)** in a

@@ -231,7 +231,10 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
        stack): also install **Layer 1**, the Node baseline
        `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/_node/` (`package.json`,
        `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`), then the
-       profile's **Layer 2** dir — `profiles/app/` → `apps/README.md` + `DESIGN.md`;
+       profile's **Layer 2** dir — `profiles/app/` → `apps/README.md` + `DESIGN.md`
+       + `claude/launch.json` (Desktop Code-tab preview server; copy only if the
+       repo has no `.claude/launch.json` — never overwrite; repoint at `mise run
+       dev` if the repo is polyglot);
        `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing.
        Adapt `package.json`: `library` → publishable (drop `private`); `cli` → add
        the `bin` entrypoint. (A **Python-only** `service`/`library`/`cli` skips
