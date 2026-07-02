@@ -31,6 +31,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `41-coverage.md` | Coverage as a signal — cover what you touch; no vanity threshold. |
 | `45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). |
 | `50-definition-of-done.md` | Definition of Done. |
+| `51-verify-loop.md` | Verify loop — turn a task into a verifiable end state, iterate against the harness until green with a bounded loop, stop-and-report when blocked, never loop on uncheckable/long-compute work. |
 | `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
@@ -50,8 +51,8 @@ manual. They are injected into every managed session by `inject-standards.sh`
     injected only when their scope applies (see
     [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
     `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `40-testing`,
-    `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`, `55-drift-gates`,
-    `80-change-size`, `85-practices`, `99-end-of-session` — are marked
+    `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`, `51-verify-loop`,
+    `55-drift-gates`, `80-change-size`, `85-practices`, `99-end-of-session` — are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,

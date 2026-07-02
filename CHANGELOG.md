@@ -7,6 +7,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** rule `51-verify-loop` (code projects) — turn a task into a verifiable
+  end state, iterate against the harness until green with a bounded loop,
+  stop-and-report when blocked, and never loop on uncheckable/long-compute work;
+  also directs stating an assumption before building on an ambiguous request.
 - **Fixed:** five skills ran a bundled plugin helper script their `allowed-tools`
   didn't grant, so `/steer:<skill>` prompted the user on every run (the issue #266
   prompt-spam class the pre-release audit fix missed): `build` and `spec-scaffold`
