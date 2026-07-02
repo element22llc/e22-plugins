@@ -23,6 +23,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   end state, iterate against the harness until green with a bounded loop,
   stop-and-report when blocked, and never loop on uncheckable/long-compute work;
   also directs stating an assumption before building on an ambiguous request.
+- **Changed:** `/steer:report` now **auto-files** steer self-reports upstream — the
+  confirmation step is gone and the scoped `Bash(gh issue create --repo
+  element22llc/e22-plugins *)` verb (plus a same-repo-scoped `gh issue comment`
+  and the MCP issue tools) is pre-approved in its `allowed-tools`. Secret /
+  absolute-path / product-code scrubbing and fingerprint dedupe are retained; the
+  scrub now **redacts or omits** unredactable content instead of asking. The
+  offline / no-auth paste-URL fallback is unchanged.
+- **Changed:** `/steer:tracker-sync` gained an `allowed-tools` block pre-approving
+  the issue create + find-before-create dedup surface (`mcp__github__issue_write`
+  / scoped `gh issue *` verbs + issue reads/search), so product-issue creation is
+  auto-approved in non-scaffolded repos too (scaffolded repos already granted it
+  via `.claude/settings.json`). The delivery surface (`gh api`/graphql, PR merge,
+  branch protection) is deliberately not listed and stays host-gated. Its `push`
+  step now follows Intent-aware confirmation — explicit captures file without a
+  prompt, inferred batches (e.g. audit-surfaced drift) still take one
+  confirmation, and security disclosures take human review.
+- **Fixed:** `check-issue-create-contract.sh` no longer misfires on `/steer:report`'s
+  upstream self-report create (`--repo element22llc/e22-plugins`) — including the
+  label-less fallback that carries no `steer:` marker — which must never be routed
+  through `/steer:tracker-sync`.
+- **Changed:** rule 36 (and its generated Copilot mirror) note that the scaffold
+  ships the issue-create grant, so find-or-create runs unprompted by default; a
+  still-blocked create is a host gate, not a skipped step.
 - **Fixed:** five skills ran a bundled plugin helper script their `allowed-tools`
   didn't grant, so `/steer:<skill>` prompted the user on every run (the issue #266
   prompt-spam class the pre-release audit fix missed): `build` and `spec-scaffold`

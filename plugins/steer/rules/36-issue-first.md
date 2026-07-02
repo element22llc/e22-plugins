@@ -27,10 +27,13 @@ request does **not** need confirmation to create the issue.
   per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** during implementation gets its own linked
   issue (related/blocking), not silent scope creep in the current one.
-- **A blocked `gh issue create` is a host-permission gate, not a missing issue.**
-  Don't loop retrying — confirm with the user, or have them run `!gh issue create …`
-  under their own identity, then continue the bounded action set. (Full rationale:
-  ISSUE-WORKFLOW.md → "Host gating".)
+- **The scaffold pre-authorizes the issue-create verbs** (`gh issue create` /
+  `mcp__github__issue_write`) under `allow`, so find-or-create normally runs
+  without a prompt. A create that is *still* blocked (a stricter host permission
+  mode, or a background-job gate) is a **host-permission gate, not a missing
+  issue** — don't loop retrying; confirm with the user, or have them run
+  `!gh issue create …` under their own identity, then continue the bounded action
+  set. (Full rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
 Scope: this rule applies only to GitHub-adopted repos. Non-GitHub trackers and
 repos without a `/spec` spine keep today's flow. **Calling work a "prototype" does

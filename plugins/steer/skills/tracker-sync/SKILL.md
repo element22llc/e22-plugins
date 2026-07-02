@@ -9,6 +9,26 @@ argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # /steer:audit spec. Never a direct user entry point. Model-callable, hidden from
 # the slash menu, so it never competes with the orchestrators above it.
 user-invocable: false
+# Pre-approve the issue create + find-before-create dedup surface so autonomous
+# capture/push runs without a permission prompt in non-scaffolded repos too
+# (scaffolded repos already grant these via .claude/settings.json). MCP-first;
+# the scoped `gh issue *` verbs are the fallback. Mutation of the delivery
+# surface (gh api / graphql, PR merge, branch protection) is deliberately NOT
+# listed — it stays host-gated.
+allowed-tools:
+  - mcp__github__issue_write
+  - mcp__github__issue_read
+  - mcp__github__search_issues
+  - mcp__github__list_issues
+  - mcp__github__add_issue_comment
+  - mcp__github__sub_issue_write
+  - Bash(gh issue create:*)
+  - Bash(gh issue edit:*)
+  - Bash(gh issue comment:*)
+  - Bash(gh issue list:*)
+  - Bash(gh issue view:*)
+  - Bash(gh search issues:*)
+  - Bash(gh auth status:*)
 ---
 <!-- steer:modes issue,pull,push -->
 
@@ -257,8 +277,12 @@ parent per issue), which holds for every hop of the chain.
 2. Take the drift findings (from a just-run `/steer:audit spec`, or a findings file the
    dev points to).
 3. Dedup against existing open `spec-drift` issues.
-4. Show the proposed issue list (title + which finding/feature each maps to); get
-   one confirmation.
+4. Create per **Intent-aware confirmation** in Guardrails: an explicit
+   capture/implement request creates without confirmation; an **inferred** batch
+   not directly requested (e.g. spec-drift or question findings surfaced by
+   `/steer:audit`) takes **one** confirmation of the proposed list before filing,
+   so false positives don't land unseen; **security-sensitive public disclosure**
+   takes human review regardless.
 5. Create via the MCP create-issue tool (preferred) or `gh issue create
    --body-file`.
 6. Report the opened `#`s; where a finding maps to a feature, write the ref into
