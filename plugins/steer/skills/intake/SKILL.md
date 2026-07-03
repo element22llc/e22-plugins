@@ -1,13 +1,16 @@
 ---
 name: intake
-description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine — version-stamp and commit the binary plus a normalized Markdown extraction under spec/sources/, git-diff it against the prior version, and surface a structured what-changed report. Then route the real changes into intent/contract/vision/roadmap and the tracker via the relevant skills, never clobbering human-authored prose (conflicts become Open questions). Idempotent on an unchanged document."
+description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine — version-stamp and commit the binary plus a normalized Markdown extraction under spec/sources/, git-diff it against the prior version, and surface a structured what-changed report. Then route the real changes into intent/contract/vision/roadmap and the tracker via the relevant skills, never clobbering human-authored prose (conflicts become Open questions). Idempotent on an unchanged document. In clarify mode, absorbs a client clarification document instead: it segments the extraction, maps each unit against open questions and the feature list, and sorts them into a three-bucket worklist — answers routed to /steer:questions, new scope to the reconcile rows, unmatched surfaced for the human."
 when_to_use: >-
   Use when a Product Owner hands over a new or updated office document (a spec, a
   roadmap, a requirements deck, a spreadsheet) and the team needs to detect what
   changed versus the last version and propagate the real changes into /spec and
   the tracker without losing human-authored content. Reach for it whenever a
-  re-sent document arrives with no pointer to what was edited.
-argument-hint: "[<path-to-doc> | <source-id> | status]"
+  re-sent document arrives with no pointer to what was edited. Use clarify mode
+  when a client hands over a clarification document that answers open questions
+  and/or introduces new scope, and the team needs each point mapped to the spine
+  without hand-supplying question IDs.
+argument-hint: "[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]"
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)
@@ -23,7 +26,7 @@ allowed-tools:
   - Bash(sha256sum *)
 ---
 
-<!-- steer:modes default,status -->
+<!-- steer:modes default,status,clarify -->
 
 # Absorb a PO source document into the spine
 
@@ -77,6 +80,13 @@ argument, list the sources under `spec/sources/` and ask which document to absor
 `status`: read-only. Print the source ledger — every `spec/sources/<id>/source.md`
 with its latest absorbed version, the features/issues it maps to, and any version
 whose extraction is still `none` (awaiting a text-bearing copy). No writes.
+
+`clarify` (`clarify <path-to-doc>`): absorb a **client clarification document** —
+one that answers open questions and/or introduces new scope. It runs intake's
+shared front-end unchanged (step 1 identity, step 2 version/convert/commit, step 6
+record) but **replaces the git-diff pipeline (steps 3–4)** with segment → map →
+three-bucket routing — see [The clarify pipeline](#the-clarify-pipeline-clarify).
+A clarification is its own `source-id`; it is not a version of a prior spec.
 
 ## The intake pipeline (`default`)
 
@@ -166,6 +176,7 @@ writes feature prose itself:
 | A roadmap / milestone / date change | `/steer:roadmap` | human-confirmed milestones and dates — never fabricated |
 | A change that contradicts what the spine/code already says | `/steer:audit` (spec conformance) → `/steer:issues publish-drift` | one issue per real divergence, stable `finding-key`, reconciled across re-runs — never auto-resolved |
 | An ambiguous / under-specified change | `/steer:questions` | a `Q-NNN` Open question with `status` / `impact` / `owner` / `required_before` |
+| A unit that **answers** an existing open question (clarify mode, bucket 1) | `/steer:questions` (fold-answer path) | folds the answer into the owning `Q-NNN` under `/steer:questions`' step-6 tier gate; records the source-ref + quoted span as provenance. Intake never writes the resolution itself — the resolve direction, symmetric to the raise-direction row above |
 
 The non-clobbering guarantee is **inherited** from these gateways. A genuine
 conflict — the document now says X, a human already authored not-X — is never
@@ -192,6 +203,106 @@ Then update `source.md`: **advance the `Latest absorbed version` field** to
 `<vNNNN-YYYY-MM-DD>` (the diff baseline is no longer needed), mark the version
 absorbed in the version log, and record the mapped features/issues. The intake run
 is the auditable event; the PR review is the evidence.
+
+## The clarify pipeline (`clarify`)
+
+A **client clarification document** is not a version of a prior spec — it is a set
+of *answers* to open questions, usually mixed with *new scope*, and it arrives in
+whatever shape the client wrote it (prose, a table, an inline email reply, no
+tidy `Q1/Q2` numbering). So clarify **reuses intake's shared front-end verbatim**
+— step 1 (source identity: the clarification is its own `source-id`), step 2
+(version, convert, commit the binary + normalized extraction under
+`spec/sources/`, including the step-2.2 binary-hash idempotency guard), and step 6
+(record) — but **replaces the git-diff (steps 3–4) with segment → map → route**,
+because there is no prior version of *this* document to diff against.
+
+### C1. Segment
+
+**First, the same extraction-validity floor the diff pipeline applies before
+diffing applies here before segmenting.** If the converter was unavailable, the
+format is non-convertible, or the extraction is empty/garbled (a scanned PDF with
+no text layer — `extraction: none`), **stop before segmenting**: commit the binary,
+record `extraction: none` in `source.md`, and raise an Open question asking the PO
+for a text-bearing copy — exactly as the [Edge cases](#edge-cases) rows do. Never
+segment absent or garbled text into spurious "clarification units."
+
+Segment the extraction into discrete **clarification units** *semantically*, not
+structurally — do not rely on numbering or headings the client may not have used.
+Each unit carries its **exact quoted source span** from `extracted.md`. When a
+paragraph fuses several answers, or an answer is split across a table cell, err
+toward a **larger** unit **flagged for the human to split** — never confidently
+over-split. Drop preamble, pleasantries, and anything that answers nothing; do
+**not** force-map a non-answer.
+
+### C2. Map — inline, against the spine
+
+Map each unit against two grounding sets, **inline**:
+
+- **(a) every open `Q-NNN` across the spine** — reuse the exact grep
+  `/steer:questions` step 2 uses (over `## Open questions` in `spec/vision.md`,
+  `spec/features/*/intent.md`, `spec/PRODUCTIONIZATION.md`); do not re-derive it.
+- **(b) the feature list** — each `spec/features/*/intent.md` (and `contract.md`)
+  summary, so a unit that answers no open question can still name its feature.
+
+For each unit propose: the best-match `Q-NNN` (or **"none — new info"**), the
+best-match feature, a **confidence**, and the **matched evidence** (the quoted
+span and the words that tie it to that question/feature).
+
+> **Cost guardrail.** Mapping is where clarify gets expensive. Apply
+> `/steer:questions` step 4's cost guardrail **verbatim** — it is the single
+> source for this policy, do not restate it here: one cheap inline pass, **no**
+> per-unit or per-feature agent fan-out, **at most one** bounded subagent for the
+> entire batch, and leave a unit in bucket 3 rather than paying to place it. If
+> that policy tightens, it tightens in one place.
+
+### C3. Three-bucket worklist — human-confirmed in one pass
+
+Print the mapping as a worklist the human confirms in a **single pass** — they
+correct the wrong rows; they never dictate question IDs. Sort every unit into one
+of three buckets:
+
+| Bucket | Unit | Routes to |
+|---|---|---|
+| **1 — answers an open question** | confident match to an open `Q-NNN` | routed via intake's own [step-5 reconcile row](#5-reconcile--non-clobbering-human-gated) for answers, which hands the fold to `/steer:questions` (its step 6). Still tier-gated there: a genuine product decision stays human-gated; a decides-nothing-new answer auto-applies with the PR as the gate |
+| **2 — new info** | maps to a feature, answers no open question | the **existing step-5 reconcile rows** (`/steer:spec` / `/steer:spec-scaffold` / `/steer:roadmap` / `/steer:audit`) — new scope is routed exactly as a spec-doc change is |
+| **3 — unmatched / low-confidence** | can't be placed confidently | **surfaced for the human** — "where does this go?" — **never guessed**; may become a new `Q-NNN` |
+
+**Routing is durable — the worklist is only its in-session presentation.** As
+intake works each bucket it writes a durable output, so nothing lives only in the
+transient worklist:
+- **Bucket 1** — intake annotates the matched `Q-NNN` with the **proposed answer**,
+  its **source-ref** (`spec/sources/<id>/versions/<v>/`) and **exact quoted span**,
+  marked **`pending /steer:questions fold`**. This is the *same durable Open-questions
+  write* intake already makes when it *raises* a `Q-NNN` in default mode — it is
+  **not** a resolution: intake does not strike the question, fold the answer into
+  `intent.md` / `vision.md`, or decide anything.
+- **Bucket 2** — routed through the existing step-5 gateways (which write durably).
+- **Bucket 3** — raised as a new `Q-NNN`, or left for the human to place; never guessed.
+
+**Record ownership is split, and the halves never cross.** Intake owns
+**ingestion + routing**: the `spec/sources/` commit, the pending proposed-answer
+annotations / raised `Q-NNN`s, the step-5 gateway routing, and — at step 6 — the
+`spec/HISTORY.md` row and advancing `source.md`'s `Latest absorbed version`.
+**"Absorbed" means the doc was ingested and every unit durably routed — not that
+every answer has been folded.** `/steer:questions` owns the **fold**: it applies
+its step-6 tier gate to the pending answer, writes it into the owning `intent.md` /
+`vision.md`, and strikes the question. Questions never touches the source pointer;
+intake never folds. Advancing the pointer at step 6 is therefore correct and
+strands nothing — the pending answers are already durable on the `Q-NNN`s.
+
+**Re-running is a plain no-op, not the recovery path.** Because routing outputs are
+durable, re-running `clarify` on the same binary hits the step-2.2 hash guard and
+reports `already absorbed` — the doc is already ingested and routed. An interrupted
+run loses nothing already written; you finish any un-folded answers with
+**`/steer:questions`**, whose sweep now finds the `pending /steer:questions fold`
+annotations on the `Q-NNN`s. Do **not** re-run `clarify` to resume — it cannot,
+and does not need to.
+
+**Honesty limit.** Perfect auto-mapping on an arbitrary messy document is not
+achievable, and clarify does not pretend otherwise. Its value is collapsing the
+common case to a glance-and-confirm and containing the ambiguous case to explicit
+human placement, with a hard floor of **no silent wrong write**: an unconfident
+unit lands in bucket 3, never force-bound to the nearest question.
 
 ## Idempotency / re-run behaviour
 
@@ -231,6 +342,8 @@ best step and delegating to its owner (see
 | New feature described in the document | Recommended | Spec it — `/steer:spec` |
 | Change contradicts the build (drift) | Required before next production release | File it — `/steer:issues publish-drift` |
 | Roadmap/milestone change absorbed | Recommended | Reconcile the timeline — `/steer:roadmap` |
+| Clarification units matched open questions (bucket 1) | Recommended | Fold the answers — `/steer:questions` |
+| Clarification units unmatched (bucket 3) | Human decision required | The human places them (may become new `Q-NNN`s) — no command |
 | Delta absorbed, nothing open | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action`. This skill does not perform unapproved
