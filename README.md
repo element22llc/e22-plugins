@@ -1,17 +1,31 @@
-# e22-plugins
+<div align="center">
 
-An [engineering-standards Claude Code plugin
-marketplace](https://code.claude.com/docs/en/plugin-marketplaces). Its primary
-plugin is **`steer`**, which carries org-wide engineering
-standards so they live in **one place** and update **centrally** — instead of
-being copied into every forked product repo and then frozen. The marketplace
-also **re-lists** Anthropic's upstream **`frontend-design`** plugin (referenced
-via a SHA-pinned `git-subdir` source, never vendored) so it can be installed from
-the same catalog; it is **not** auto-enabled in product repos — install it
-explicitly if a repo wants it.
+# 🧭 e22-plugins
 
-> Edit the rules once here; every product repo picks them up on the next
-> `/plugin update`.
+### Org-wide engineering standards for Claude Code — edited once, propagated everywhere
+
+An [engineering-standards Claude Code plugin marketplace](https://code.claude.com/docs/en/plugin-marketplaces).
+Its primary plugin, **`steer`**, injects an always-on engineering operating
+manual into every product session and ships the skills + scaffold that stand a
+repo up spec-first — so standards live in **one place** and update **centrally**
+instead of being frozen into every forked repo.
+
+<br>
+
+[![Docs site](https://github.com/element22llc/e22-plugins/actions/workflows/docs-deploy.yml/badge.svg)](https://github.com/element22llc/e22-plugins/actions/workflows/docs-deploy.yml)
+[![Plugin quality](https://github.com/element22llc/e22-plugins/actions/workflows/plugin-quality.yml/badge.svg)](https://github.com/element22llc/e22-plugins/actions/workflows/plugin-quality.yml)
+[![steer version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Felement22llc%2Fe22-plugins%2Fmain%2Fplugins%2Fsteer%2F.claude-plugin%2Fplugin.json&query=%24.version&label=steer&color=2f6df6)](./CHANGELOG.md)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+[![Docs](https://img.shields.io/badge/docs-ai.element--22.com-2f6df6)](https://ai.element-22.com/)
+
+</div>
+
+> **Edit the rules once here; every product repo picks them up on the next `/plugin update`.**
+
+The marketplace also **re-lists** Anthropic's upstream **`frontend-design`**
+plugin (referenced via a SHA-pinned `git-subdir` source, never vendored) so it
+can be installed from the same catalog; it is **not** auto-enabled in product
+repos — install it explicitly if a repo wants it.
 
 **This repo is the canonical source** of the standards *and* of repository
 bootstrap: the plugin bundles the full repo scaffold
@@ -21,12 +35,39 @@ The old static `repository-template` (a private repo, intentionally not linked
 here) is **replaced** by this plugin-driven bootstrap — see
 [Migrating from `repository-template`](#migrating-from-repository-template).
 
+## How it fits together
+
+One catalog, edited here, distributed to every product repo. Standards prose and
+the scaffold are **never copied** into product repos — the plugin injects the
+rules at session start and the skills pull the latest templates on demand.
+
+```mermaid
+flowchart LR
+    subgraph src["📦 e22-plugins · this repo · single source of truth"]
+        direction TB
+        rules["Always-on rules<br/>rules/*.md"]
+        skills["Skills<br/>/steer:*"]
+        scaffold["Repo scaffold<br/>+ spec templates"]
+    end
+    mp(["🛒 Marketplace<br/>steer@e22-plugins"])
+    subgraph repos["Product repos"]
+        direction TB
+        r1["repo A"]
+        r2["repo B"]
+        r3["repo C"]
+    end
+    src --> mp
+    mp -->|/plugin update| r1
+    mp -->|/plugin update| r2
+    mp -->|/plugin update| r3
+```
+
 ## What `steer` ships
 
 | Component | Contents |
 |---|---|
 | **Always-on rules** (`rules/*.md`) | Injected into every session by a SessionStart hook: PO/dev roles, stack defaults, monorepo layout, spec workflow, **living documentation** (natural-language → spec, action history, app docs), **issue-tracker integration** (client-agnostic), testing rules, Definition of Done, **pre-merge drift gates**, high-risk areas, secrets handling, **audit-aligned delivery** (SOC 2 / ISO 27001-*aligned*, not compliant), change-size model, baseline patterns/anti-patterns, design-sources summary, end-of-session checklist. |
-| **Skills** (on-demand, invoked as `/steer:<skill>`) | Grouped by area:<br>**Setup & maintenance** — `/steer:setup` (**the front door** — detects repo state and routes to the right path below), `/steer:doctor` (detect + confirmation-gated install of the local prerequisites — git, mise, Docker — before init/build/dev; *usually via setup*), `/steer:init` (repo bootstrap from the bundled scaffold; *usually via setup*), `/steer:adopt` (adopt an existing "vibe-coded" repo; *usually via setup*), `/steer:sync` (bring a bootstrapped repo up to the current plugin; *usually via setup*), `/steer:protect` (verify/apply GitHub branch protection on `main` from `policy/branch-protection.yml` — the real PR gate, steer being advisory locally), `/steer:tidy` (sweep loose files into `/spec`; *usually via audit*).<br>**Spec authoring** — `/steer:build` (PO-guided idea→working-app flow), `/steer:spec` (brainstorm + `approve` + `validate` a feature spec, no build), `/steer:intake` (absorb a PO's new/updated spec or roadmap document — docx/pptx/xlsx/pdf — by diffing it against the last version and folding the real changes into `/spec`), `/steer:spec-scaffold` (instantiate intent+contract — *internal helper invoked by spec/build/init/adopt, hidden from the slash menu*), `/steer:questions` (sweep open questions; *usually via spec/issues*), `/steer:adr` (ADR).<br>**Issues & execution** — `/steer:issues` (GitHub Issues lifecycle), `/steer:roadmap` (generate a release-milestone timeline — viewable as a GitHub Projects v2 roadmap — from target features or a spec-gap from `/steer:audit spec`; *usually via issues*), `/steer:work` (execute an issue end-to-end; add `--reviewed` to wrap it in a review-gated loop — plan-gate + `/code-review` gate + bounded fix, vetted not first-draft), `/steer:tracker-sync` (the GitHub gateway — *internal helper invoked by issues/work, hidden from the slash menu*).<br>**Navigate & audit** — `/steer:next` (cross-workflow "what next?"), `/steer:help` (browse the whole capability set as a plain-language menu — sourced from the router table, no repo state needed), `/steer:audit` (read-only repo audit — `code` whole-repo health, `spec` as-built-vs-intended conformance, `all` for both), `/steer:report` (file a defect in the steer plugin *itself* upstream — scrubbed, deduped, confirmation-gated; not for product bugs).<br>**Reference prose** (*materialized into `/spec/reference/`*) — `/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams]`; and `/steer:standards` (load the always-on rules on demand — for Cowork, see below). |
+| **Skills** (on-demand, invoked as `/steer:<skill>`) | Grouped by area:<br>**Setup & maintenance** — `/steer:setup` (**the front door** — detects repo state and routes to the right path below), `/steer:doctor` (detect + confirmation-gated install of the local prerequisites — git, mise, Docker — before init/build/dev; *usually via setup*), `/steer:init` (repo bootstrap from the bundled scaffold; *usually via setup*), `/steer:adopt` (adopt an existing "vibe-coded" repo; *usually via setup*), `/steer:sync` (bring a bootstrapped repo up to the current plugin; *usually via setup*), `/steer:protect` (verify/apply GitHub branch protection on `main` from `policy/branch-protection.yml` — the real PR gate, steer being advisory locally), `/steer:tidy` (sweep loose files into `/spec`; *usually via audit*).<br>**Spec authoring** — `/steer:build` (PO-guided idea→working-app flow), `/steer:spec` (brainstorm + `approve` + `validate` a feature spec, no build), `/steer:intake` (absorb a PO's new/updated spec or roadmap document — docx/pptx/xlsx/pdf — by diffing it against the last version and folding the real changes into `/spec`), `/steer:spec-scaffold` (instantiate intent+contract — *internal helper invoked by spec/build/init/adopt, hidden from the slash menu*), `/steer:questions` (sweep open questions; *usually via spec/issues*), `/steer:adr` (ADR).<br>**Issues & execution** — `/steer:issues` (GitHub Issues lifecycle), `/steer:roadmap` (generate a release-milestone timeline — viewable as a GitHub Projects v2 roadmap — from target features or a spec-gap from `/steer:audit spec`; *usually via issues*), `/steer:work` (execute an issue end-to-end; add `--reviewed` to wrap it in a review-gated loop — plan-gate + `/code-review` gate + bounded fix, vetted not first-draft), `/steer:tracker-sync` (the GitHub gateway — *internal helper invoked by issues/work, hidden from the slash menu*).<br>**Navigate & audit** — `/steer:next` (cross-workflow "what next?"), `/steer:help` (browse the whole capability set as a plain-language menu — sourced from the router table, no repo state needed), `/steer:audit` (read-only repo audit — `code` whole-repo health, `spec` as-built-vs-intended conformance, `all` for both), `/steer:report` (file a defect in the steer plugin *itself* upstream — scrubbed, deduped, confirmation-gated; not for product bugs).<br>**Reference prose** (*materialized into `/spec/reference/`*) — `/steer:reference [conventions\|traceability\|design-sources\|context-hygiene\|architecture-diagrams]`; and `/steer:standards` (load the always-on rules on demand — for Cowork, see below). |
 | **Templates** | Bundled spec templates (`feature-intent`, `feature-contract`, `adr`, `productionization`, `vision`/`users`/`glossary`, `history` (action log), `tracker`, `app-docs`) and the full reference prose, so scaffolding always uses the latest org templates. |
 | **Repo scaffold** (`templates/scaffold/`) | The complete bootstrap bundle — `mise.toml` + standard tasks, `compose.yaml`, CI, the drift-gate PR template, issue templates, `configs/`, `.env.example`, `.claude/settings.json`, editor config, infra conventions — installed by `/steer:init`/`/steer:adopt` per its `MANIFEST.md`. |
 
@@ -36,7 +77,20 @@ session context). It runs once per session when the plugin is enabled.
 
 ## Bootstrapping a repo with the plugin
 
-The plugin is the bootstrap mechanism — no template repo to fork:
+The plugin *is* the bootstrap mechanism — no template repo to fork. Start from
+**`/steer:setup`**, the single front door that detects repo state and routes:
+
+```mermaid
+flowchart TD
+    setup(["/steer:setup<br/>front door"]) --> detect{Repo state?}
+    detect -->|empty repo| init["/steer:init<br/>bootstrap from bundled scaffold"]
+    detect -->|existing app, no /spec| adopt["/steer:adopt<br/>adopt a vibe-coded repo"]
+    detect -->|bootstrapped, behind plugin| sync["/steer:sync<br/>reconcile scaffold drift"]
+    build(["/steer:build<br/>non-technical PO: describe the idea"]) --> init
+    init --> ready(["✅ Repo working spec-first"])
+    adopt --> ready
+    sync --> ready
+```
 
 1. Create an empty repo (or open an existing app), install the plugin (below).
 2. **New product** → run **`/steer:init`**: instantiates the bundled scaffold
@@ -53,6 +107,23 @@ The plugin is the bootstrap mechanism — no template repo to fork:
    the PR remains the production gate. The workflow is **SOC 2 / ISO
    27001-aligned** (traceability, review evidence, change history) — alignment
    is a workflow property, not a compliance claim.
+
+## The spec-first delivery loop
+
+Once a repo is bootstrapped, the day-to-day loop keeps intent, code, and docs in
+lockstep. The pre-merge drift gate is the checkpoint — a dev's approval remains
+the production gate.
+
+```mermaid
+flowchart LR
+    idea["💡 Idea / feature"] --> spec["/steer:spec<br/>intent + contract"]
+    spec --> issues["/steer:issues<br/>GitHub lifecycle"]
+    issues --> work["/steer:work<br/>execute end-to-end"]
+    work --> pr["🔀 Pull request"]
+    pr --> gate{"Drift gate<br/>intent · contract · docs · security · ops"}
+    gate -->|drift found| work
+    gate -->|clean| merge(["✅ Merge<br/>dev approval = prod gate"])
+```
 
 ## Migrating from `repository-template`
 
@@ -76,6 +147,12 @@ plugin carries everything it provided (latest versions, centrally updated).
 Where the plugin's hooks fire depends on the surface (validated June 2026). The
 Claude Desktop app has three tabs — **Chat**, **Cowork**, and **Code** — and they
 don't behave the same:
+
+| Surface | Rules auto-inject | `PreToolUse` gates | Skills | Use for |
+|---|:---:|:---:|:---:|---|
+| **Claude Code** (CLI, IDE extensions, Desktop **Code** tab) | ✅ | ✅ | ✅ | The supported path — all engineering work. |
+| **Cowork** tab | ⚠️ | ⚠️ | ✅ | PO/knowledge-work only — specs, question sweeps, repo-scoped GitHub triage. No install/build. |
+| **Desktop *Chat* tab & claude.ai web chat** | ❌ | ❌ | ✅ | Skills only — rules not injected, gates don't run. |
 
 - **Claude Code** — the CLI, the IDE extensions (VS Code / JetBrains), and the
   Desktop **Code** tab — **runs hooks fully**: the always-on rules inject, the
@@ -160,9 +237,11 @@ PR that bumps the pin.
 
 ## Documentation
 
-A full documentation site (concepts, workflows, and a generated skills/hooks
-reference, with mermaid diagrams) lives under [`docs/`](./docs/) and is built
-with [Zensical](https://zensical.org/) (the Material for MkDocs team's successor):
+📖 **Full documentation site: [ai.element-22.com](https://ai.element-22.com/)**
+
+Concepts, workflows, and a generated skills/hooks reference (with mermaid
+diagrams) live under [`docs/`](./docs/) and are built with
+[Zensical](https://zensical.org/) (the Material for MkDocs team's successor):
 
 ```bash
 mise run docs:serve     # live-reload preview at http://127.0.0.1:8000
