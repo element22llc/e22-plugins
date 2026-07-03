@@ -1,8 +1,7 @@
 """Tests for the CHANGELOG release-notes extractor.
 
-The extractor feeds two release paths: ``release-publish.yml`` (notes body for
-the just-merged version) and ``backfill_releases.py`` (version list + per-version
-notes). The invariants that matter: it agrees with the real changelog, the
+The extractor feeds ``release-publish.yml`` (notes body for the just-merged
+version). The invariants that matter: it agrees with the real changelog, the
 newest released heading tracks ``plugin.json``, and a missing/empty version is a
 loud error rather than an empty Release.
 """
