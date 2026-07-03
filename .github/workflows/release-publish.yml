@@ -1,7 +1,7 @@
 name: Publish release (tag + GitHub Release)
 
 # Turns a merged release into a first-class GitHub Release. Fires post-merge on
-# `main` — the same trigger shape as e2e.yml / docs-deploy.yml — and only acts
+# `main` — the same trigger shape as docs-deploy.yml — and only acts
 # when the release commit actually bumped the plugin version. The `/release`
 # (and `/quick-release`) skills open the release PR; this workflow finishes the
 # job automatically once that PR lands, so there is no manual `gh release create`

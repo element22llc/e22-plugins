@@ -337,8 +337,9 @@ re-gate result.
   merge (`docs-deploy.yml`) — watch that run go green so the live site at
   `https://ai.element-22.com` actually reflects the release; a red deploy leaves
   the published docs stale (and Phase A's next run will flag it).
-- The **e2e suite** (`e2e.yml`) auto-runs on the merge commit because it bumps
-  `plugin.json` — it is `continue-on-error` (non-blocking) today; glance at it.
+- The **e2e suite** no longer runs in CI (the workflow was removed to save cost);
+  it is a local-only tier now — run `mise run e2e` / `e2e:local` before a
+  substantive cut if you want the skill-level signal.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the same merge commit (gated on the
   `plugin.json` version bump) and cuts the Release with this version's CHANGELOG

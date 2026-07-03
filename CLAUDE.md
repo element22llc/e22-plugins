@@ -68,7 +68,7 @@ plugins/steer/
   versioning".
 - **Releases publish themselves.** When a release PR (the `plugin.json` version
   bump) merges to `main`, `.github/workflows/release-publish.yml` fires — gated
-  on the version bump, same as `e2e.yml` — and cuts the `vX.Y.Z` git tag + GitHub
+  on the version bump — and cuts the `vX.Y.Z` git tag + GitHub
   Release with that version's CHANGELOG bullets as the body (extracted by
   `scripts/changelog_release_notes.py`), followed by GitHub's auto-generated
   "What's Changed" (merged-PR list + contributors + compare link) via

@@ -19,6 +19,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and commits are not the changelog (the curated `CHANGELOG.md` stays the release
   source, not commit-derived notes). Documents the practice the repo already
   follows at ~100% — no new tooling, no enforcement.
+- **Added:** bundled `.gitattributes` (`gitattributes` → `.gitattributes`) to the
+  repo scaffold, shipping `CHANGELOG.md merge=union` so product repos inherit the
+  same protection this marketplace already uses — concurrent PRs appending bullets
+  under `### [Unreleased]` are auto-resolved by git's built-in `union` driver
+  (both sides' added lines kept, no conflict markers) on local merge/rebase and
+  GitHub's merge button. Installed by `/steer:init` / `/steer:adopt`; merged
+  additively (never clobbered) when a repo already has one — `scaffold_reconcile.py`
+  now treats `.gitattributes` as a line-based file alongside `.gitignore` /
+  `.worktreeinclude`.
 
 ### 3.11.0
 
