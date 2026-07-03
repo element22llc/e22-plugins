@@ -184,8 +184,9 @@ only:
   prompt, preserving the human gate on outbound actions). Commit the four files as
   `chore(release): steer X.Y.Z`; PR titled `Release steer X.Y.Z`.
 - **B8 — Report:** new version, branch, PR URL, gate result.
-- **B9 — Post-merge follow-ups the user owns** (consumer `/plugin update`, docs
-  deploy, e2e run, optional `vX.Y.Z` tag).
+- **B9 — Post-merge follow-ups** (consumer `/plugin update`, docs deploy, e2e
+  run). The `vX.Y.Z` tag + GitHub Release are cut automatically by
+  `release-publish.yml` on merge — just confirm that run went green.
 
 ### Q5. PR-body honesty — record what this fast path did *not* check.
 

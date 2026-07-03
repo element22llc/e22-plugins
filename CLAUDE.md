@@ -66,6 +66,14 @@ plugins/steer/
   release skill re-seeds an empty one after each cut); add each change as its own
   bullet and don't recreate the heading. See `AUTHORING.md` → "CHANGELOG &
   versioning".
+- **Releases publish themselves.** When a release PR (the `plugin.json` version
+  bump) merges to `main`, `.github/workflows/release-publish.yml` fires — gated
+  on the version bump, same as `e2e.yml` — and cuts the `vX.Y.Z` git tag + GitHub
+  Release with that version's CHANGELOG bullets as the body (extracted by
+  `scripts/changelog_release_notes.py`). It is idempotent and re-runnable via
+  `workflow_dispatch`. History predating the workflow is backfilled with
+  `scripts/backfill_releases.py` (dry-run by default; `--execute` to apply). These
+  live outside `plugins/steer/`, so they ship nothing and need no changelog entry.
 - `rules/*.md` is **always-on** context injected every session — keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.
