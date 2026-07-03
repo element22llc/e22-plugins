@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.11.0
+
 - **Subagent model-selection guidance in `CONTEXT-HYGIENE.md`.** Added a "Which
   model" split to the delegation section: read/search/summarize fan-out runs on a
   Sonnet-tier model at low effort (cheaper per token, same read volume — cuts cost,

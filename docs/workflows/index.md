@@ -56,6 +56,7 @@ below give the detail.
 | Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
+| Browse everything steer can do — not sure what to ask for | `/steer:help` |
 | Check standards conformance, or that the app matches its spec | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
