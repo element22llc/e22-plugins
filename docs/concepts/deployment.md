@@ -50,6 +50,24 @@ flowchart LR
     [`/steer:protect`](../reference/skills.md) has raised branch protection. Merge
     and deploy stay human-gated in **both** modes.
 
+## Container images
+
+Deployable apps ship as **container images** (default target: AWS ECS). Each
+`apps/<app>` that deploys as a container carries its own `Dockerfile`, instantiated
+from the plugin's `templates/docker/` reference when the app is first created — by
+[`/steer:build`](../workflows/build.md) or [`/steer:adopt`](../workflows/adopt.md),
+which copy-and-adapt it and never clobber an existing one. A Node/Next.js template
+and a Python/uv template are provided; the base-image major must satisfy
+`policy/versions.yml` (enforced by the version-pin scanner).
+
+The template is **not** installed at bootstrap — a Dockerfile with no app to build
+would ship broken — and `library`, `cli`, and `infra` repos do not deploy as
+containers, so they get none. The scaffold CI **builds every `apps/*/Dockerfile`
+(and a root `Dockerfile`) when present** — build-only, no registry push — so an
+image that stops building fails the PR; when none exists the step is skipped with a
+notice, so a green build never falsely implies an image was produced. Pushing and
+deploying the image is product-specific and lives in each product's `/infra`.
+
 ## Observable by default
 
 A deployed environment is not "done" until it is observable. The standard requires:

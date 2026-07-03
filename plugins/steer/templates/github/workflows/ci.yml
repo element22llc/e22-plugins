@@ -216,6 +216,37 @@ jobs:
           fi
           uvx ansible-lint
 
+      # ────────────────────────────────────────────────────────────────────
+      # Container image — build every apps/*/Dockerfile (and a root Dockerfile,
+      # if present) to prove it still builds (no rot). Build-only: no registry
+      # push, no cloud credentials. Skipped with a notice when there is no
+      # Dockerfile yet — so before a deployable app exists this is a no-op and a
+      # green `ci` never falsely implies an image built. Docker is preinstalled on
+      # the runner. Instantiate a Dockerfile from the plugin's templates/docker/
+      # when the app is created (see /steer:build, /steer:adopt). Pushing/deploying
+      # the image is a per-app concern and lives outside this stack-agnostic CI.
+      # ────────────────────────────────────────────────────────────────────
+      - name: Build container image(s)
+        run: |
+          # Build context is the repo root so pnpm workspace deps + the lockfile
+          # are in scope for an apps/<app>/Dockerfile.
+          mapfile -t dockerfiles < <(git ls-files 'apps/*/Dockerfile' 'Dockerfile')
+          if [ ${#dockerfiles[@]} -eq 0 ]; then
+            echo "::notice::No Dockerfile found (apps/*/Dockerfile or ./Dockerfile) — skipping image build. Add one when a deployable app exists (see the plugin's templates/docker/)."
+            exit 0
+          fi
+          for df in "${dockerfiles[@]}"; do
+            # For apps/<app>/Dockerfile, pass APP=<app> so CI is authoritative
+            # about which app is built regardless of the Dockerfile's ARG default.
+            build_args=()
+            case "$df" in
+              apps/*/Dockerfile) build_args+=(--build-arg "APP=$(basename "$(dirname "$df")")") ;;
+            esac
+            echo "::group::docker build -f $df ${build_args[*]} ."
+            docker build -f "$df" "${build_args[@]}" .
+            echo "::endgroup::"
+          done
+
       # Coverage is a SIGNAL, not a target: we report it and gate only the lines
       # a change touches ("cover what you touch") — never a global percentage.
       # On a PR, the floor runs against the PR base branch. On push to `main` it
