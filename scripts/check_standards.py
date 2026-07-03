@@ -552,7 +552,11 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
     # specifies the behavior without a hand-maintained list to keep in sync (the
     # maintenance trap this check used to guard). See #276.
 
-    # CROSS-SURFACE.md: rule count + SessionStart hook roster match disk.
+    # CROSS-SURFACE.md: rule count, skill count, skill buckets, and SessionStart
+    # hook roster all match disk. The counts/roster are hand-maintained numbers in
+    # an advisory strategy doc; only the mechanically-derivable facts are gated
+    # here (the prose analysis stays a judgement call). See the §5 bucket check
+    # below for why the count alone is not enough.
     if CROSS_SURFACE.is_file():
         text = CROSS_SURFACE.read_text(encoding="utf-8")
         m = re.search(r"\((\d+) files\)", text)
@@ -561,6 +565,43 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
                 f"CROSS-SURFACE.md: rule count says ({m.group(1)} files) "
                 f"but rules/ has {len(rules)}"
             )
+        skill_m = re.search(r"\*\*Skills\*\*\s*\((\d+)\)", text)
+        if skill_m and int(skill_m.group(1)) != len(skills):
+            errors.append(
+                f"CROSS-SURFACE.md: skill count says ({skill_m.group(1)}) "
+                f"but skills/ has {len(skills)}"
+            )
+        # §5 support matrix sorts every skill into exactly one of two buckets.
+        # A count check alone misses the case where the number is right but a
+        # skill is in the wrong bucket or none, so partition the buckets against
+        # disk: every skill named once, no bucket naming a non-skill, no overlap.
+        buckets: dict[str, set[str]] = {}
+        for label, pat in (
+            ("PO-appropriate", r"\*\*PO-appropriate:\*\*(.*?)(?:\n- |\n\n)"),
+            ("Engineer-oriented", r"\*\*Engineer-oriented[^:]*:\*\*(.*?)(?:\n- |\n\n)"),
+        ):
+            bm = re.search(pat, text, re.DOTALL)
+            buckets[label] = set(re.findall(r"`([a-z][a-z-]*)`", bm.group(1))) if bm else set()
+        listed = buckets["PO-appropriate"] | buckets["Engineer-oriented"]
+        if listed:  # only enforce when the §5 buckets are present
+            unlisted = skills - listed
+            unknown = listed - skills
+            overlap = buckets["PO-appropriate"] & buckets["Engineer-oriented"]
+            if unlisted:
+                errors.append(
+                    f"CROSS-SURFACE.md: §5 skill buckets omit {sorted(unlisted)} "
+                    f"(every skill must appear in exactly one bucket)"
+                )
+            if unknown:
+                errors.append(
+                    f"CROSS-SURFACE.md: §5 skill buckets name non-skills "
+                    f"{sorted(unknown)} (renamed or removed?)"
+                )
+            if overlap:
+                errors.append(
+                    f"CROSS-SURFACE.md: §5 skill buckets list {sorted(overlap)} in "
+                    f"both PO-appropriate and Engineer-oriented (pick one)"
+                )
         missing_hooks = {h for h in _sessionstart_hook_basenames() if h not in text}
         if missing_hooks:
             errors.append(

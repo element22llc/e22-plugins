@@ -143,6 +143,59 @@ def test_enumeration_drift_catches_each_surface(monkeypatch, tmp_path: Path):
     assert "inject-standards.sh" in joined  # missing hook reported
 
 
+def test_enumeration_drift_skill_count_and_buckets_clean(monkeypatch, tmp_path: Path):
+    # CROSS-SURFACE.md carries a **Skills** (N) count and a §5 PO/Engineer bucket
+    # partition; both must agree with the skills on disk.
+    _patch_enum_sources(
+        monkeypatch,
+        tmp_path,
+        rules=["00-a", "10-b"],
+        claude="skills/ alpha, beta (no commands/",
+        cross=(
+            "(2 files)\n"
+            "**Skills** (2)\n"
+            "- **PO-appropriate:** `alpha`.\n"
+            "- **Engineer-oriented (noise for POs):** `beta`.\n\n"
+            "inject-standards.sh\n"
+        ),
+    )
+    monkeypatch.setattr(
+        check_standards, "_sessionstart_hook_basenames", lambda: {"inject-standards.sh"}
+    )
+    errors: list[str] = []
+    check_standards.check_enumeration_drift(errors, {"alpha", "beta"})
+    assert errors == []
+
+
+def test_enumeration_drift_catches_skill_count_and_bucket_faults(monkeypatch, tmp_path: Path):
+    # Wrong count, an omitted skill, a bucket naming a non-skill, and a skill in
+    # both buckets are each reported. This is the drift that shipped as "22" when
+    # /steer:help (the 23rd skill) landed.
+    _patch_enum_sources(
+        monkeypatch,
+        tmp_path,
+        rules=["00-a", "10-b"],
+        claude="skills/ alpha, beta, gamma (no commands/",
+        cross=(
+            "(2 files)\n"  # rule count OK
+            "**Skills** (2)\n"  # WRONG: disk has 3
+            "- **PO-appropriate:** `alpha`, `beta`.\n"
+            "- **Engineer-oriented (noise):** `beta`, `delta`.\n\n"  # beta overlaps, delta unknown
+            "inject-standards.sh\n"  # hook OK
+        ),
+    )
+    monkeypatch.setattr(
+        check_standards, "_sessionstart_hook_basenames", lambda: {"inject-standards.sh"}
+    )
+    errors: list[str] = []
+    check_standards.check_enumeration_drift(errors, {"alpha", "beta", "gamma"})
+    joined = "\n".join(errors)
+    assert "skill count says (2)" in joined  # count mismatch
+    assert "gamma" in joined  # omitted skill
+    assert "delta" in joined  # non-skill named
+    assert "both PO-appropriate" in joined  # overlap
+
+
 def _write_skill(
     skills_dir: Path, name: str, frontmatter: str, body: str, *, extra: dict[str, str] | None = None
 ) -> None:
