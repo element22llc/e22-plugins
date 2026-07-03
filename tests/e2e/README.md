@@ -35,13 +35,12 @@ key so Claude Code bills the **seat** (it prefers the key when present), and
 `STEER_E2E_LOCAL=1` flips the skip-guard on (a seat login sets no env var, so the
 gate needs the opt-in).
 
-### In CI
+### Not in CI
 
-`.github/workflows/e2e.yml` runs the suite (via `mise run e2e`, using the
-`ANTHROPIC_API_KEY` secret) **only** when a release lands — a
-`plugins/steer/.claude-plugin/plugin.json` version bump on `main` — or on manual
-`workflow_dispatch`. It is non-blocking (`continue-on-error`) while the tier
-proves out. Each scenario's model/turns/cost is written to the GitHub step summary.
+This tier does **not** run in CI — it is local-only, run on demand via
+`mise run e2e` (API key) or `mise run e2e:local` (interactive seat). The
+workflow that used to run it on release was removed because it spent too much;
+run the suite locally before a substantive release instead.
 
 ## Scenarios
 
