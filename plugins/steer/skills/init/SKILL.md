@@ -202,7 +202,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
    install map **and its "Profile overlays" section**: copy each scaffold file to
    its target path (renaming the
-   dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
+   dotfiles as mapped — `gitignore` → `.gitignore`, `gitattributes` →
+   `.gitattributes`, `env.example` →
    `.env.example`, `claude/`, `vscode/`), instantiate the GitHub
    templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
    GitHub-templates section maps the Issue Forms, workflows, PR template, the
