@@ -1,0 +1,33 @@
+# Instantiated as the repo-root `.dockerignore` (stored here without the leading
+# dot, like the other scaffold dotfiles). The build context is the repo root, so
+# this keeps the image small and avoids leaking local secrets/caches into layers.
+# Adapt on fork to the app's stack (drop the Python or Node lines as appropriate).
+
+.git
+.github
+
+# Node
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/build
+**/.turbo
+
+# Python
+.venv
+**/.venv
+**/__pycache__
+**/*.pyc
+
+# Local dev / secrets — never bake into an image
+.env
+.env.*
+!.env.example
+.mise.local.toml
+.claude
+
+# Test + coverage output
+**/coverage
+**/.pytest_cache
+**/*.log

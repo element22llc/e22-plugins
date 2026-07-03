@@ -1,0 +1,42 @@
+# On-demand Dockerfile reference for a Python (FastAPI + uv) service — the
+# documented alternative to `Dockerfile.node`. Same lifecycle: instantiated into
+# `apps/<app>/Dockerfile` when the app is created (`/steer:build` step 5,
+# `/steer:adopt` Phase 10), then product-owned.
+#
+# Baseline: a uv-managed app built with the repo ROOT as the build context
+# (`docker build -f apps/<app>/Dockerfile .`). It copies only `apps/<app>/` so the
+# image stays scoped to this service rather than the whole monorepo.
+#
+# Adapt on fork:
+#   1. Set APP to the app's directory under apps/.
+#   2. Point the CMD at the app's ASGI entry point and adjust the port.
+#   3. If the service imports shared workspace packages, add COPY lines for them
+#      (and use a uv workspace) before the sync.
+#
+# The base-image major must satisfy `policy/versions.yml` (python >= 3.10) — the
+# version-pin scanner and hook enforce it. Keep it in sync with `mise.toml`'s
+# python pin; a deliberately older pin needs an ADR plus `# steer:allow-pin`.
+
+ARG APP=api
+
+# ---- build: resolve the locked environment for the target app ----
+FROM python:3.13-slim AS build
+ARG APP
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+WORKDIR /app
+RUN pip install --no-cache-dir uv
+# App manifests first so `uv sync` layers cache until deps change.
+COPY apps/${APP}/pyproject.toml apps/${APP}/uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+COPY apps/${APP}/ ./
+RUN uv sync --frozen --no-dev
+
+# ---- runtime: slim, non-root ----
+FROM python:3.13-slim AS runtime
+ENV PATH="/app/.venv/bin:$PATH"
+WORKDIR /app
+COPY --from=build /app /app
+RUN useradd --create-home app && chown -R app /app
+USER app
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

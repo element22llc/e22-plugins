@@ -150,7 +150,11 @@ flow-state gates self-healing on the next `/steer:build` run.
 5. **Scaffold the real app.** Replace the starter `apps/web` with the default
    stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
    `/steer:init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
-   discipline). Draft the initial stack ADR yourself via `/steer:adr` — the PO
+   discipline). Add the app's `apps/<app>/Dockerfile` from the plugin's
+   `templates/docker/` reference (`Dockerfile.node`, or `Dockerfile.python` for a
+   Python service) plus the repo-root `.dockerignore`, adapting the base image to
+   the pinned runtime — CI builds it once present. Draft the initial stack ADR
+   yourself via `/steer:adr` — the PO
    approves intent, not ADR prose. **This is the change that establishes the
    stack and layout, so fill the root living docs in it** (Living-docs rule):
    populate `ARCHITECTURE.md` — the tech-stack table from `mise.toml` /

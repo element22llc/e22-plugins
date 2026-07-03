@@ -220,6 +220,11 @@ profile, then compose **additively**:
   the repo has no `.claude/launch.json`, never overwrite;
   `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing, adapt
   `package.json`). A Python-only product skips Layer 1 (use `pyproject.toml`/Ruff).
+- **Deployable apps** (`app`/`service`): for each `apps/<app>` that deploys as a
+  container and has no `Dockerfile`, propose one from the plugin's
+  `templates/docker/` reference (copy-and-adapt to the app's stack — **never
+  clobber** an existing Dockerfile), plus a repo-root `.dockerignore`. CI builds
+  `apps/*/Dockerfile` when present; `library`/`cli`/`infra` get none.
 - **`infra`**: install `templates/scaffold/profiles/infra/mise.toml` as the
   **root `mise.toml`** and **skip Layer 1** (no Node project files); its CI
   auto-detects `*.tf`/Ansible. Core's `compose.yaml`/`worktree-env.sh` still land —

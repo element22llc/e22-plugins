@@ -19,8 +19,10 @@ for all.
   Python + FastAPI + PostgreSQL, only when intent clearly warrants it — either split is
   an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app. Promotion,
-  environments, and the `prod`-branch gate are in Deployment & environments.
+  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app; each
+  deployable `apps/<app>` carries a `Dockerfile` (built by CI when present).
+  Promotion, environments, and the `prod`-branch gate are in Deployment &
+  environments.
 - **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE work; on
   the Claude Desktop Code tab, Git for Windows is enough (builds included).
 - **Editor:** VS Code is the default; committed `.vscode/` config (recommended
