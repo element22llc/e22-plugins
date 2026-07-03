@@ -22,7 +22,7 @@ lockfile = true
 STEER_CLAUDE_CODE_VERSION = "2.1.153"
 
 # Pin the precompiled CPython flavor for every `mise install` in this env,
-# mirroring the CI workflows (.github/workflows/e2e.yml, plugin-quality.yml,
+# mirroring the CI workflows (.github/workflows/plugin-quality.yml,
 # docs-deploy.yml) which set it at job level. Without it, mise resolves
 # python="latest" to the *free-threaded* 3.14 build, whose source-build /
 # abi3-wheel path is slow and flaky (see PR #107). This matters most for the
@@ -133,9 +133,10 @@ depends = [
 
 # Headless end-to-end skill suite — drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends
-# tokens, so it is deliberately NOT in `ci`'s depends (stays off the PR path);
-# it runs at release time via .github/workflows/e2e.yml. Skips locally unless
-# ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN is set.
+# tokens, so it is deliberately NOT in `ci`'s depends (stays off the PR path)
+# and no longer runs in CI at all — it is a local-only tier now, run on demand
+# via `mise run e2e` / `e2e:local`. Skips unless ANTHROPIC_API_KEY /
+# CLAUDE_CODE_OAUTH_TOKEN is set (or STEER_E2E_LOCAL=1 for the seat variant).
 [tasks."e2e"]
 description = "Run the headless end-to-end skill suite (slow, costs tokens; needs ANTHROPIC_API_KEY)"
 # -rP surfaces each scenario's captured turns/cost line even when the test passes
