@@ -25,3 +25,8 @@ toolchain itself is pinned with mise; see [`mise.toml`](../mise.toml).
 This folder starts empty — the bootstrap (`/steer:init`) scaffolds the real
 first app here (default frontend: Next.js) instead of shipping a placeholder
 to delete.
+
+When you add a deployable app here, give it an `apps/<app>/Dockerfile` from the
+plugin's `templates/docker/` reference (plus a repo-root `.dockerignore`) — CI
+builds it when present. See that directory's README for which template fits your
+stack.

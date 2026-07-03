@@ -48,6 +48,8 @@ plugins/steer/
     ├── spec/                       # spec artifacts skills instantiate (intent, contract, adr,
     │                               #   vision/users/glossary, history, tracker, app-docs, …)
     ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, …)
+    ├── docker/                     # on-demand Dockerfile refs (Node/Python) — instantiated per
+    │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, …)
                                     #   — see its MANIFEST.md for the install map
 ```

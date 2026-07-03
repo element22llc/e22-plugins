@@ -19,6 +19,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and commits are not the changelog (the curated `CHANGELOG.md` stays the release
   source, not commit-derived notes). Documents the practice the repo already
   follows at ~100% — no new tooling, no enforcement.
+- **Added:** container-image support for deployable apps. New on-demand
+  `templates/docker/` reference templates (`Dockerfile.node` for the default
+  Next.js stack, `Dockerfile.python` for a FastAPI/uv service, and a shared
+  `dockerignore`) are instantiated into `apps/<app>/Dockerfile` + a repo-root
+  `.dockerignore` when the first deployable app is created — by `/steer:build`
+  (step 5) and `/steer:adopt` (Phase 10, copy-and-adapt, never clobber), with a
+  discoverability pointer in the `app`/`service` `apps/README.md`. Deliberately
+  **not** bootstrap-installed (a Dockerfile with no app to build would ship
+  broken) and **not** given to `library`/`cli`/`infra`. The scaffold `ci.yml`
+  gains a lifecycle-safe **image-build step** that builds every `apps/*/Dockerfile`
+  (and a root `Dockerfile`) when present — build-only, no registry push — and
+  skips with a notice when none exists, so a green `ci` never implies an image
+  built. Base-image majors follow `policy/versions.yml` (enforced by the existing
+  version-pin scanner). Rule `10-stack` now states each deployable `apps/<app>`
+  carries a `Dockerfile`. No hard "must have a Dockerfile" gate.
 - **Added:** bundled `.gitattributes` (`gitattributes` → `.gitattributes`) to the
   repo scaffold, shipping `CHANGELOG.md merge=union` so product repos inherit the
   same protection this marketplace already uses — concurrent PRs appending bullets
