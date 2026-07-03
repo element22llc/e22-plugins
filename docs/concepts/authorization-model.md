@@ -27,7 +27,11 @@ flowchart TD
 - **Branching** off `main` onto `feat/*` / `fix/*` — never committing to `main`
   directly.
 - **Committing** whenever a coherent unit of work is done (tests pass, lint is
-  clean, it builds). Do not pause to ask "should I commit?".
+  clean, it builds). Do not pause to ask "should I commit?". Commit subjects
+  follow [Conventional Commits](https://www.conventionalcommits.org/)
+  (`type(scope): summary`, with `feat!:` / a `BREAKING CHANGE:` footer for
+  breaking changes) — guidance only, not a lint gate; see `/steer:reference
+  conventions` for the full type list and rationale.
 - **Creating or reusing the tracking issue** on an explicit implement/capture
   request, in a GitHub-adopted repo (issue-first, rule `36-issue-first.md`). The
   issue and the bounded action set behind it do not need a second confirmation.
