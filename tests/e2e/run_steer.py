@@ -38,13 +38,18 @@ PLUGIN_DIR = REPO_ROOT / "plugins" / "steer"
 
 # Per-run dollar ceiling and per-scenario wall-clock cap. The timeout is the real
 # fail-fast guard: on a hang it kills the run in minutes instead of letting the
-# job burn to its 20-min ceiling. Opus completes a scenario in ~3 min, so 8 min
-# is comfortable headroom that still fails fast. Override via env in CI if needed.
+# job burn to its ceiling. It must clear the *heaviest* scenario, not the median:
+# `init` on a greenfield repo installs the full scaffold, instantiates the whole
+# spec spine, writes the first ADR, and runs a real `mise install` + cross-platform
+# `mise lock` — measured at 40+ turns / ~$5 on Opus, several minutes of wall-clock
+# that rides close to the old 8-min cap and intermittently blew past it. 12 min
+# gives that scenario genuine headroom while still failing a true hang fast.
+# Override via env in CI if needed.
 DEFAULT_BUDGET_USD = os.environ.get("STEER_E2E_BUDGET_USD", "2.00")
-DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "480"))
+DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "720"))
 
-# Default to the account model (Opus on this org) — it converges fast (~3 min) and
-# bounded. A cheaper model is NOT cheaper here: Sonnet/Haiku take many more turns
+# Default to the account model (Opus on this org) — it converges in the fewest turns
+# and stays bounded. A cheaper model is NOT cheaper here: Sonnet/Haiku take many more turns
 # on these long, instruction-dense skills, and because --max-budget-usd is a fixed
 # *dollar* cap, a ~5x-cheaper model buys ~5x more runtime before the cap bites — so
 # the run balloons to 15+ min and may not converge (measured: a Sonnet dispatch hung
