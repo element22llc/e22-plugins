@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Codified the Conventional Commits convention.** Expanded the always-on
+  Commit-autonomy rule (`45-commit-autonomy.md`) from a passing "conventional
+  messages" mention into a proper spec — the `type(scope): summary` format, the
+  canonical type list (`feat`/`fix`/`docs`/`refactor`/`perf`/`test`/`build`/`ci`/
+  `chore`/`style`/`revert`), and the breaking-change marker (`feat!:` / `BREAKING
+  CHANGE:` footer) — and added the full-detail companion section to
+  `CONVENTIONS.md` (surfaced via `/steer:reference conventions`), including the
+  rationale and the two deliberate non-adoptions: no commit-lint gate (the PR is
+  the gate, and it would drag a commit-lint dependency into every product repo)
+  and commits are not the changelog (the curated `CHANGELOG.md` stays the release
+  source, not commit-derived notes). Documents the practice the repo already
+  follows at ~100% — no new tooling, no enforcement.
+
 ### 3.11.0
 
 - **Subagent model-selection guidance in `CONTEXT-HYGIENE.md`.** Added a "Which

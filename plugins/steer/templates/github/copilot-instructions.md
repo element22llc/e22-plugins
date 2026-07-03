@@ -625,8 +625,13 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.
 - **Commit without asking** whenever a coherent unit of work is done — tests
-  pass, lint is clean, the code builds. Keep commits small with conventional
-  messages (`feat:`, `fix:`, `chore:`, ...).
+  pass, lint is clean, the code builds. Keep commits small, with a
+  **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
+  `type(scope): summary` in the imperative mood. Types: `feat`, `fix`, `docs`,
+  `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `style`, `revert`. Mark a
+  breaking change with `!` before the colon (`feat!:`) or a `BREAKING CHANGE:`
+  footer. Commit messages are **not** the release changelog — that stays the
+  curated `CHANGELOG.md`. Full detail: `/steer:reference conventions`.
 - When you judge the work **complete** (Definition of Done holds, end-of-session
   checklist is clean), don't just stop: tell the dev the branch is ready and
   **propose opening the PR** — push and create it once they confirm. The first

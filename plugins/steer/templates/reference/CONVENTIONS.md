@@ -279,6 +279,59 @@ task's `run`, or via `${CLAUDE_PLUGIN_ROOT}` for plugin scripts); adopt
 `mise-tasks/` deliberately if a repo prefers file tasks — don't move `scripts/`
 wholesale.
 
+## Commit messages
+
+Write commit subjects in the [Conventional Commits](https://www.conventionalcommits.org/)
+format. It is the org default because it makes history scannable, groups GitHub's
+auto-generated "What's Changed" release notes cleanly, and reads consistently
+across every managed repo — for the cost of a one-line convention with no tooling
+to install. The always-on Commit-autonomy rule carries the condensed version;
+this is the full shape.
+
+```text
+type(scope)!: short imperative summary
+
+Optional body explaining the *why*, wrapped at ~72 cols.
+
+BREAKING CHANGE: what broke and how to migrate.
+Refs: #123
+```
+
+- **Subject line** — `type(scope): summary`. Imperative mood ("add", not "added"
+  / "adds"), no trailing period, lower-case summary, keep it under ~72 chars. The
+  `scope` is optional but encouraged: the area touched, in the repo's own
+  vocabulary (`ci`, `docs`, `hooks`, a package or app name).
+- **Types** — use the one that fits the change:
+  - `feat` — a new user-facing capability (minor-level change).
+  - `fix` — a bug fix (patch-level change).
+  - `docs` — documentation only.
+  - `refactor` — behavior-preserving code change (no feature, no fix).
+  - `perf` — a change that improves performance.
+  - `test` — adding or correcting tests only.
+  - `build` — build system, dependencies, or packaging.
+  - `ci` — CI/CD configuration and scripts.
+  - `chore` — routine maintenance that doesn't fit above (e.g. a release commit).
+  - `style` — formatting/whitespace only, no code meaning change.
+  - `revert` — reverts a previous commit.
+- **Breaking changes** — mark with a `!` before the colon (`feat!:`, `refactor!:`)
+  **and/or** a `BREAKING CHANGE:` footer describing the break and the migration.
+  Either signals a major-level change.
+- **Body & footers** — optional. Use the body for the *why* when it isn't obvious
+  from the summary. Reference issues in a footer (`Refs: #123`, `Closes #123`);
+  `Closes #N` on the merged commit auto-closes the issue (see Issue-first).
+
+Deliberately **not** adopted:
+
+- **No commit-lint gate.** The PR review is the gate, not each commit (see the
+  Commit-autonomy rule), and commits are freely rewritable before a squash-merge —
+  so a per-commit linter would gate the wrong thing and drag a Node/commit-lint
+  dependency into every product repo. The convention is guidance, enforced by
+  habit and review.
+- **Commits are not the changelog.** The release changelog is the **curated**
+  `CHANGELOG.md`, written deliberately per change — not derived by parsing commit
+  types. Conventional Commits here buy readable history, not automated release
+  notes.
+
 ## Backend placement
 
 For the UI web app, keep the backend **inside** the Next.js app — Route
