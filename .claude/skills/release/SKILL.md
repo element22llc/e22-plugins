@@ -339,6 +339,13 @@ re-gate result.
   the published docs stale (and Phase A's next run will flag it).
 - The **e2e suite** (`e2e.yml`) auto-runs on the merge commit because it bumps
   `plugin.json` — it is `continue-on-error` (non-blocking) today; glance at it.
-- If the user tags releases, create the `vX.Y.Z` tag / GitHub release on the
-  merged commit (this also keeps Step A1's `$LAST_RELEASE` diff anchor accurate
-  for the next cut).
+- The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
+  `release-publish.yml`, which fires on the same merge commit (gated on the
+  `plugin.json` version bump) and cuts the Release with this version's CHANGELOG
+  bullets as the body. Confirm that run went green. This is what keeps Step A1's
+  `$LAST_RELEASE` diff anchor (`git describe --tags`) accurate for the next cut —
+  so it is no longer a manual step. If the workflow is unavailable, re-publish by
+  hand with `gh workflow run release-publish.yml -f version=X.Y.Z`, or, as a last
+  resort, `gh release create vX.Y.Z --target <merge-sha> --title "steer X.Y.Z"
+  --generate-notes --notes-file <(python3 scripts/changelog_release_notes.py notes
+  X.Y.Z)` (curated bullets + GitHub's auto "What's Changed").

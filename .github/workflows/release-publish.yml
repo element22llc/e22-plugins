@@ -1,0 +1,90 @@
+name: Publish release (tag + GitHub Release)
+
+# Turns a merged release into a first-class GitHub Release. Fires post-merge on
+# `main` — the same trigger shape as e2e.yml / docs-deploy.yml — and only acts
+# when the release commit actually bumped the plugin version. The `/release`
+# (and `/quick-release`) skills open the release PR; this workflow finishes the
+# job automatically once that PR lands, so there is no manual `gh release create`
+# step to remember. Idempotent: re-runs skip a version whose Release already
+# exists, so a re-pushed main or a manual dispatch never double-publishes.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to (re)publish, e.g. 3.11.0. Defaults to plugin.json's current version."
+        required: false
+        default: ""
+
+# Creating the tag + Release needs write access to repo contents. Nothing here
+# touches pull requests, packages, or pages.
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2 # need HEAD~1 for the release-gate version diff
+
+      - name: Release gate (only publish on a plugin.json version bump; manual always runs)
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          manifest="plugins/steer/.claude-plugin/plugin.json"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "manual dispatch -> publishing"
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          elif git diff HEAD~1 HEAD -- "$manifest" | grep -q '^+.*"version"'; then
+            echo "plugin.json version changed -> release -> publishing"
+            echo "run=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "no version bump -> nothing to publish"
+            echo "run=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      # Version source of truth is plugin.json; a manual dispatch may override it
+      # to re-publish an older release. Notes come from the matching CHANGELOG
+      # section — a bump with no `### X.Y.Z` heading is a release-integrity bug,
+      # so fail loudly rather than cut an empty Release. Pure-stdlib script runs
+      # on the runner's system python3 (no mise/uv provisioning needed).
+      - name: Resolve version and notes
+        if: steps.gate.outputs.run == 'true'
+        id: meta
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          version="${INPUT_VERSION:-$(python3 scripts/changelog_release_notes.py current-version)}"
+          echo "Publishing steer ${version}"
+          python3 scripts/changelog_release_notes.py notes "$version" >release-notes.md
+          echo "version=${version}" >>"$GITHUB_OUTPUT"
+          echo "tag=v${version}" >>"$GITHUB_OUTPUT"
+
+      - name: Create tag + GitHub Release
+        if: steps.gate.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          SHA: ${{ github.sha }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists -> skipping (idempotent)"
+            exit 0
+          fi
+          # Body = curated CHANGELOG bullets; --generate-notes appends GitHub's
+          # "What's Changed" (merged-PR list, new contributors, and the
+          # vPrev...vX.Y.Z compare link) beneath them — the API pre-pends the
+          # --notes-file body to the generated section. GitHub picks the previous
+          # release as the compare base automatically. --target creates the tag on
+          # this commit if it does not yet exist.
+          gh release create "$TAG" \
+            --title "steer ${VERSION}" \
+            --notes-file release-notes.md \
+            --generate-notes \
+            --target "$SHA"
+          echo "Published ${TAG}"
