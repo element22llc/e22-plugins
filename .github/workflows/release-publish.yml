@@ -76,9 +76,15 @@ jobs:
             echo "Release ${TAG} already exists -> skipping (idempotent)"
             exit 0
           fi
-          # --target creates the tag on this commit if it does not yet exist.
+          # Body = curated CHANGELOG bullets; --generate-notes appends GitHub's
+          # "What's Changed" (merged-PR list, new contributors, and the
+          # vPrev...vX.Y.Z compare link) beneath them — the API pre-pends the
+          # --notes-file body to the generated section. GitHub picks the previous
+          # release as the compare base automatically. --target creates the tag on
+          # this commit if it does not yet exist.
           gh release create "$TAG" \
             --title "steer ${VERSION}" \
             --notes-file release-notes.md \
+            --generate-notes \
             --target "$SHA"
           echo "Published ${TAG}"

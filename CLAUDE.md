@@ -70,7 +70,9 @@ plugins/steer/
   bump) merges to `main`, `.github/workflows/release-publish.yml` fires — gated
   on the version bump, same as `e2e.yml` — and cuts the `vX.Y.Z` git tag + GitHub
   Release with that version's CHANGELOG bullets as the body (extracted by
-  `scripts/changelog_release_notes.py`). It is idempotent and re-runnable via
+  `scripts/changelog_release_notes.py`), followed by GitHub's auto-generated
+  "What's Changed" (merged-PR list + contributors + compare link) via
+  `--generate-notes`. It is idempotent and re-runnable via
   `workflow_dispatch`. History predating the workflow was backfilled once (a
   one-shot script, since removed), so every prior `vX.Y.Z` already has a tag +
   Release. These live outside `plugins/steer/`, so they ship nothing and need no

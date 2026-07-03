@@ -347,4 +347,5 @@ re-gate result.
   so it is no longer a manual step. If the workflow is unavailable, re-publish by
   hand with `gh workflow run release-publish.yml -f version=X.Y.Z`, or, as a last
   resort, `gh release create vX.Y.Z --target <merge-sha> --title "steer X.Y.Z"
-  --notes-file <(python3 scripts/changelog_release_notes.py notes X.Y.Z)`.
+  --generate-notes --notes-file <(python3 scripts/changelog_release_notes.py notes
+  X.Y.Z)` (curated bullets + GitHub's auto "What's Changed").
