@@ -21,6 +21,17 @@ lockfile = true
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
 STEER_CLAUDE_CODE_VERSION = "2.1.153"
 
+# Pin the precompiled CPython flavor for every `mise install` in this env,
+# mirroring the CI workflows (.github/workflows/e2e.yml, plugin-quality.yml,
+# docs-deploy.yml) which set it at job level. Without it, mise resolves
+# python="latest" to the *free-threaded* 3.14 build, whose source-build /
+# abi3-wheel path is slow and flaky (see PR #107). This matters most for the
+# E2E suite: `/steer:init` runs `mise install` inside a throwaway scaffold repo
+# (python="latest"), and this var is inherited by that subprocess — so local
+# `mise run e2e` / `e2e:local` gets CI's fast, deterministic install instead of
+# an intermittent multi-minute build that pushed the init scenario past the cap.
+MISE_PYTHON_PRECOMPILED_FLAVOR = "install_only_stripped"
+
 [tasks.lint]
 description = "Lint and format-check Python code"
 run = ["uv run ruff check .", "uv run ruff format --check ."]
