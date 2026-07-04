@@ -20,6 +20,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   SVG/CSS/JS to satisfy the Artifact CSP (no CDN chart libraries); the skill now
   loads `dataviz` alongside `artifact-design`. The Markdown fallback keeps the same
   at-a-glance shape as static text.
+- **Tightened the seam between the app guide and the root README.** The app
+  guide template (`templates/spec/app-docs.md`) no longer re-states the
+  product pitch or developer-setup instructions — its opening now defers "what
+  this product is and who it serves" to the root `README.md` and directs the
+  author to jump straight into how a user *uses* the product, keeping the two
+  documents complementary instead of overlapping.
 
 ### 3.12.0
 
