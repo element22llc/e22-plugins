@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.12.0
+
 - **Added a clarification-document pipeline to `/steer:intake` (new `clarify`
   mode).** A client clarification doc that answers open questions and/or
   introduces new scope is now absorbed through intake's shared front-end (source
