@@ -42,12 +42,13 @@ stale the moment the spec changes — regenerate to refresh.
   feature or on a schedule — that would create a second, drifting copy of every
   spec and couple the spine to claude.ai infra.
 - **Read-only over canonical sources.** `Bash`, `Edit`, `NotebookEdit`, and
-  `EnterWorktree` are **disallowed in frontmatter** — so this skill cannot commit,
-  branch, run shell, or modify any existing file, tool-enforced. It never touches
-  the tracker. The **one** thing it writes is the artifact's HTML source, and that
-  write is bound by a hard invariant: **only to a system temp directory, never a
-  path under the repo working tree** (`/spec`, `/apps`, `/packages`, or any tracked
-  file). Discover features with `Glob`/`Read`, never a shell listing.
+  `EnterWorktree` are **disallowed in frontmatter** — so, tool-enforced, this skill
+  cannot commit, branch, run shell, or edit an existing file in place. It never
+  touches the tracker. The **one** thing it writes is the artifact's HTML source
+  (via `Write`, which is *not* disallowed) — so that write is bound not by the
+  frontmatter but by a hard prose invariant: **only to a system temp directory,
+  never a path under the repo working tree** (`/spec`, `/apps`, `/packages`, or any
+  tracked file). Discover features with `Glob`/`Read`, never a shell listing.
 - **Do not persist the artifact URL** anywhere in the repo. The page is a
   disposable view; keeping its URL in the spec would recreate the drift and
   claude.ai coupling this skill is designed to avoid.
