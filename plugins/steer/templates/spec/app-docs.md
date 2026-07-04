@@ -6,6 +6,12 @@
 > (or proposes updates to) these pages **in the same PR** as any behavior
 > change that invalidates them — a stale app guide is a drift-gate flag.
 >
+> For **what this product is and who it serves**, see the root
+> [`README.md`](../../README.md) — don't restate its pitch or status here.
+> This guide picks up where that leaves off: what a user actually *does* with
+> the product. For **developer setup** (toolchain, running the repo locally)
+> the root README is also the source of truth — link to it, don't duplicate it.
+>
 > This file is the index. Start with the sections below inline; split a
 > section into its own file in `spec/app/` when it outgrows a page (e.g.
 > `spec/app/troubleshooting.md`) and leave a link here. Omit sections that
@@ -13,9 +19,10 @@
 
 ## How to use the app
 
-[The 2–3 sentence orientation: what a user sees first, where the main things
-live. Then one subsection per **major workflow**, written as steps from the
-user's perspective.]
+[Jump straight into the app — don't re-pitch what the product is (that's the
+root README). 2–3 sentences of orientation: what a user sees first and where
+the main things live. Then one subsection per **major workflow**, written as
+steps from the user's perspective.]
 
 ### [Workflow name]
 
