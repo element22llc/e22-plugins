@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added a clarification-document pipeline to `/steer:intake` (new `clarify`
+  mode).** A client clarification doc that answers open questions and/or
+  introduces new scope is now absorbed through intake's shared front-end (source
+  identity, versioned commit under `spec/sources/`, `HISTORY` record), then
+  segmented semantically, mapped **inline** (no per-unit agent fan-out — mirrors
+  the `/steer:questions` step-4 cost guardrail) against open `Q-NNN`s and the
+  feature list, and sorted into a three-bucket, human-confirmed worklist:
+  answers-an-open-question → `/steer:questions`; new-info → the existing step-5
+  reconcile rows; low-confidence → surfaced for the human, never guessed. Every
+  folded answer records the source-ref + exact quoted span for auditability, and
+  intake still writes no feature/spec prose itself.
+- **`/steer:questions` gained a doc-sourced answer path.** An answer may now
+  arrive from an ingested clarification doc (via `/steer:intake clarify`) and is
+  folded under the same step-6 tier gate as an in-session answer — no lighter gate
+  for arriving as a document — recording the source-ref + quoted span as
+  provenance. Questions remains the single owner of folding an answer into an open
+  question.
 - **Added `/steer:explain` — a shareable, plain-language view of a feature.** A
   new read-only front-door skill that renders one feature's spec (`intent.md` +
   optional `contract.md`, tracker status, open questions) as a high-level

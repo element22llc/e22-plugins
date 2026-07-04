@@ -1,7 +1,7 @@
 ---
 name: questions
 description: Sweep every open question across the /spec spine — each feature's intent.md and vision.md — and walk the PO/dev through answering each one, folding the decision back into the spec.
-when_to_use: Use to work down accumulated open questions, before a release or PO→dev handoff, or when asked to resolve or review open questions.
+when_to_use: Use to work down accumulated open questions, before a release or PO→dev handoff, or when asked to resolve or review open questions — including when a client clarification document ingested via /steer:intake clarify supplies answers to fold in.
 ---
 
 # Resolve open questions (`/steer:questions`)
@@ -167,6 +167,16 @@ with a reason (step 7).
      made*, or anything under **High-risk areas** (rule `60-high-risk`): never
      blind-write it. Route it (step 5) and apply only once the human answers.
      Never invent a decision (step 8).
+   - **Answer sourced from an ingested clarification doc** — a `Q-NNN` may carry a
+     **`pending /steer:questions fold`** annotation recorded by `/steer:intake
+     clarify` (a client clarification whose unit was mapped to this question,
+     carrying its source-ref + quoted span) rather than an answer given in-session.
+     The sweep (step 2) surfaces it like any other open question. Treat the pending
+     answer as **the human's answer** and apply the **same tier gate above**:
+     auto-apply if it decides nothing new; **ask first** for a genuine unmade
+     product/policy/architecture decision or a **High-risk area**. It does not get
+     a lighter gate for arriving as a document. Fold it via this skill — intake
+     records the pending annotation but never writes the resolution itself.
 
    For each answered question:
    - Update the owning `intent.md` / `contract.md` (or `vision.md`) so the
@@ -179,6 +189,11 @@ with a reason (step 7).
      rather than deciding now. User-facing answers reflect **PO** decisions,
      other internal/technical answers reflect **dev** decisions (spec-framework
      Rule 5); that sign-off is the PR, not a per-edit yes.
+   - **Doc-sourced answers** (from `/steer:intake clarify`) carry the
+     **source-ref** (`spec/sources/<id>/versions/<v>/`) and the **exact quoted
+     span** they came from — the same way code-fact answers carry `file:line` — so
+     a mis-mapped clarification is auditable and reversible at PR review. They are
+     struck with the decision like any other answered question.
    - A hard-to-reverse or cross-cutting answer → record it via **`/steer:adr`**;
      propagating a decision *already made* into a new or superseding ADR is
      itself auto-apply, not a fresh ask.

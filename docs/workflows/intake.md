@@ -39,11 +39,20 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
    questions, drift is surfaced for a human, and every absorbed change appends a
    `spec/HISTORY.md` entry.
 
+**Clarify mode** takes a different middle: a *client clarification document* is not
+a version of a prior spec, so instead of the diff (steps 3–4) it **segments** the
+extraction semantically, **maps** each unit inline against open questions and the
+feature list, and sorts them into a three-bucket, human-confirmed worklist —
+answers → `/steer:questions`, new scope → the reconcile rows, unmatched → surfaced
+for the human (never guessed). The shared front-end (identity, versioned commit,
+`HISTORY` record) is unchanged.
+
 ## Modes
 
 | Mode | What it does |
 | --- | --- |
 | `/steer:intake <path-to-doc>` | Absorb the supplied document — the normal "the PO just sent a new version" path. |
+| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment → map to the spine → three-bucket worklist (answers to `/steer:questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. |
 | `/steer:intake` | List the sources under `spec/sources/` and ask which document to absorb. |
 | `/steer:intake status` | Read-only ledger: each source, its latest absorbed version, mapped features/issues, and any version still awaiting a text-bearing copy. |
 
