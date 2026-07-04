@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:explain` now renders a visual, interactive feature page instead of a
+  wall of text.** The stakeholder page is built around at-a-glance visuals derived
+  strictly from the spec — a `draft → approved → implemented → validated → live`
+  status pipeline (marker never advanced past the recorded `Status:`), a PO
+  acceptance completion meter, a clickable user-journey stepper, an in/out scope
+  board, a light key-concepts relationship diagram (edges only where the intent
+  states a relationship), and an open-questions status board flagging blockers —
+  with a one-screen summary first and the rest behind collapsible sections. Every
+  visual encodes a real spec value (no fabricated charts/numbers/relationships;
+  empty sections show *"not specified in the spec"*). Visuals are drawn as inline
+  SVG/CSS/JS to satisfy the Artifact CSP (no CDN chart libraries); the skill now
+  loads `dataviz` alongside `artifact-design`. The Markdown fallback keeps the same
+  at-a-glance shape as static text.
+
 ### 3.12.0
 
 - **Added a clarification-document pipeline to `/steer:intake` (new `clarify`
