@@ -24,6 +24,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   for arriving as a document — recording the source-ref + quoted span as
   provenance. Questions remains the single owner of folding an answer into an open
   question.
+- **Added `/steer:explain` — a shareable, plain-language view of a feature.** A
+  new read-only front-door skill that renders one feature's spec (`intent.md` +
+  optional `contract.md`, tracker status, open questions) as a high-level
+  Claude Code Artifact — a private, hosted page on claude.ai you can share with a
+  stakeholder — with a Markdown fallback where Artifacts are unavailable
+  (Bedrock/Vertex, zero-data-retention orgs, no claude.ai login). It is a
+  **derived view**: the `/spec` and tracker item stay canonical; it never
+  fabricates status, never auto-generates per feature, never persists the artifact
+  URL, and writes nothing into `/spec`, `/apps`, or `/packages`. This is steer's
+  first PO-facing presentation layer — the router, README, CROSS-SURFACE inventory,
+  docs, and Copilot prompt mirror are updated to register it.
 - **Codified the Conventional Commits convention.** Expanded the always-on
   Commit-autonomy rule (`45-commit-autonomy.md`) from a passing "conventional
   messages" mention into a proper spec — the `type(scope): summary` format, the
