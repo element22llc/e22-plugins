@@ -31,9 +31,12 @@ validation, and operation. Treat it as infrastructure.
 ├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
 ├── app/                      # App knowledge docs — usage, workflows, roles, configuration, troubleshooting, release notes
 │   └── README.md
-├── design/                   # Greenfield product-level design export + traceability link
+├── design/                   # Design-export home + the living architecture diagram
 │   ├── README.md
-│   └── source.md
+│   ├── source.md             # Product-level design-source provenance (Greenfield only)
+│   └── architecture.md       # Living global architecture diagram (Mermaid by default; opt-in LikeC4) — linked from ARCHITECTURE.md
+├── sources/                  # Versioned home for recurring PO source documents, maintained by /steer:intake
+│   └── README.md
 ├── features/
 │   └── [feature-id]/
 │       ├── intent.md         # The what and why — PO-facing

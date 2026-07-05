@@ -18,7 +18,9 @@
 steer_tracker_is_github() {
 	_tracker="${1:-.}/spec/tracker.md"
 	[ -f "${_tracker}" ] || return 1
-	grep -iq '^[[:space:]]*system:[[:space:]]*github' "${_tracker}" 2>/dev/null
+	# `github\b` (word boundary, as scripts/scan-capabilities.sh uses) so a value
+	# that merely STARTS with github (e.g. `system: githubbish`) never matches.
+	grep -iq '^[[:space:]]*system:[[:space:]]*github\b' "${_tracker}" 2>/dev/null
 }
 
 # steer_repo_does_iac <repo-root> — true when the repo does infrastructure-as-code,

@@ -166,14 +166,28 @@ CHANGED="$(
 # Any implementation-affecting (nudge-class) path among the changes? Exempt-only
 # turns (spec/docs/generated/lockfile) produce no governed list → stay silent.
 GOVERNED=""
+_scanned=0
 _oifs="${IFS}"
 IFS='
 '
 for _path in ${CHANGED}; do
 	[ -n "${_path}" ] || continue
+	# Fork cap: every classify is a command-substitution fork, and a first-turn
+	# dirty tree (e.g. untracked node_modules before .gitignore lands) can hold
+	# thousands of files — enough to approach the 30s Stop timeout. Stop scanning
+	# once the verdict is settled: an implementation-class hit decides every
+	# downstream predicate (non-empty GOVERNED + the feat/sync implementation
+	# check), and only the first ~400 chars of the list are ever shown, so a
+	# 400-char GOVERNED is equally final. The hard count cap bounds the all-exempt
+	# worst case; hitting it with nothing governed stays silent (fail-soft — this
+	# is a once-per-session advisory, not a gate).
+	_scanned=$((_scanned + 1))
+	[ "${_scanned}" -gt 500 ] && break
 	_cls="$(steer_classify_path "${_path}")"
 	if [ "$(steer_class_nudges "${_cls}")" = "nudge" ]; then
 		GOVERNED="${GOVERNED}${_path} (${_cls}); "
+		case "${GOVERNED}" in *"(implementation)"*) break ;; esac
+		[ "${#GOVERNED}" -ge 400 ] && break
 	fi
 done
 IFS="${_oifs}"

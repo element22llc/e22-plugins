@@ -79,6 +79,12 @@ else
   printf '# Engineering standards\n\nThe steer rules directory was not found at %s. Reinstall or update the plugin (`/plugin`).\n' "${RULES_DIR}"
   # A vanished rules dir is a steer install defect, not a user error — record it
   # (path-free, stable signature) so surface-faults.sh can offer `/steer:report`.
-  [ -n "${CONSUMER_ROOT}" ] && [ ! -d "${CONSUMER_ROOT}/.claude-plugin" ] &&
+  # Guarded with `if` (never a bare `&&` chain at branch end): SessionStart
+  # stdout becomes additionalContext only on exit 0, so a failed guard test
+  # here would silently drop the fallback banner this branch exists for (#319).
+  if [ -n "${CONSUMER_ROOT}" ] && [ ! -d "${CONSUMER_ROOT}/.claude-plugin" ]; then
     steer_record_fault "${CONSUMER_ROOT}" "inject-standards.sh" "rules directory missing — plugin install incomplete or corrupted"
+  fi
 fi
+
+exit 0

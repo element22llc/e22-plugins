@@ -205,9 +205,18 @@ leading dot — rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask
 which tracker the team uses — if GitHub Issues, run
 `/steer:issues bootstrap-labels` to create the
-`source:*`/`needs:*`/`risk:*` taxonomy), `/spec/app/README.md` (seed the usage/roles sections from what
-Phases 3–5 learned about the app — as-built, dev confirms), and `/spec/HISTORY.md`
-seeded with the adoption itself as the first entry. **Adapt to the existing
+`source:*`/`needs:*`/`risk:*` taxonomy, then `/steer:tracker-sync bootstrap-fields`
+to verify the native **Priority/Effort/date** issue fields are available — it
+reports a capability gap or option mismatch; it never fabricates org config),
+`/spec/app/README.md` (seed the usage/roles sections from what
+Phases 3–5 learned about the app — as-built, dev confirms), `/spec/HISTORY.md`
+seeded with the adoption itself as the first entry, and the design/sources homes
+the MANIFEST maps: `/spec/design/README.md` + `/spec/design/source.md` (the
+design-export home; on a brownfield repo `source.md` usually stays a stub —
+design provenance lives per feature), `/spec/design/architecture.md` (the living
+global architecture diagram — seed it from the as-built choices Phase 6
+inventoried and link it from `ARCHITECTURE.md`), and `/spec/sources/README.md`
+(the versioned home for recurring PO documents, maintained by `/steer:intake`). **Adapt to the existing
 stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match
 what the app needs). **Apply the layered profile overlays** (MANIFEST "Profile
 overlays") for the profile confirmed in Phase 1 — Core (Layer 0) for every
