@@ -22,16 +22,16 @@ step with those, don't hand-maintain a second copy.
 
 | Layer | Choice | Version | Notes |
 | --- | --- | --- | --- |
-| Runtime | [e.g. Node] | [from mise.toml] | |
-| Language | [e.g. TypeScript] | [from package.json] | |
-| Frontend | [e.g. Next.js + Tailwind] | | |
-| Backend | [e.g. in-Next route handlers] | | [standalone `apps/api`? note the ADR] |
-| Database | [e.g. PostgreSQL] | | |
-| ORM / data access | [e.g. Drizzle] | | |
-| Auth | [e.g. Better Auth] | | high-risk — ADR-NNNN |
-| Testing | [e.g. Vitest / Playwright] | | |
-| Tooling | [e.g. pnpm, Biome, mise] | | |
-| Error tracking | [e.g. Sentry] | | |
+| Runtime | [e.g., Node] | [from mise.toml] | |
+| Language | [e.g., TypeScript] | [from package.json] | |
+| Frontend | [e.g., Next.js + Tailwind] | | |
+| Backend | [e.g., in-Next route handlers] | | [standalone `apps/api`? note the ADR] |
+| Database | [e.g., PostgreSQL] | | |
+| ORM / data access | [e.g., Drizzle] | | |
+| Auth | [e.g., Better Auth] | | high-risk — ADR-NNNN |
+| Testing | [e.g., Vitest / Playwright] | | |
+| Tooling | [e.g., pnpm, Biome, mise] | | |
+| Error tracking | [e.g., Sentry] | | |
 
 Deviations from the org-wide stack defaults are recorded as ADRs and noted in
 [`CLAUDE.md`](./CLAUDE.md) → *Stack overrides*.

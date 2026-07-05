@@ -1,4 +1,4 @@
-# App guide — [Product name]
+# App guide — [Product Name]
 
 > **App knowledge documentation**: how to *use* and *operate* this product —
 > for product owners, developers, and anyone onboarding. Plain language first;

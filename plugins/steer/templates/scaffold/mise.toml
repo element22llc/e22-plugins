@@ -72,7 +72,8 @@ biome = "latest"                      # default Node linter + formatter (https:/
 # ruff = "latest"               # default Python linter + formatter (https://docs.astral.sh/ruff) — uncomment for Python products
 # Coverage tooling is a project dependency, not pinned here: add pytest-cov
 # (Python) / @vitest/coverage-v8 (Node) to the app. CI reports coverage and gates
-# changed lines via `uvx diff-cover` (uv is already pinned above). See CONVENTIONS.md.
+# changed lines via `uvx diff-cover` (uv is already pinned above). Run
+# /steer:reference conventions for the coverage conventions.
 # go = "latest"
 # rust = "latest"
 # awscli = "latest"
@@ -119,7 +120,8 @@ depends = ["db:seed"]
 # each long-running server is its own task, and `dev` fans out over `dev:*` in
 # parallel (mise runs `depends` concurrently; add `--jobs N` for >4 servers).
 # The Python backend runs `uv run` HERE — never as a root package.json script,
-# and never duplicated across both files (rule 10-stack; see CONVENTIONS.md).
+# and never duplicated across both files (rule 10-stack; run
+# /steer:reference conventions).
 # [tasks."dev:web"]
 # run = "pnpm --filter web dev"            # delegates to apps/web/package.json
 # [tasks."dev:api"]

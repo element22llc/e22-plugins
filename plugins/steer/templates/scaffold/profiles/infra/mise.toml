@@ -65,8 +65,8 @@ terragrunt = "latest"                                            # OpenTofu/Terr
 [tasks."dev:setup"]
 description = "One-command local setup: install IaC deps (provider/module init or Ansible roles)"
 # Terraform/OpenTofu path (live default — matches the opentofu/terragrunt tools
-# pinned above). `terragrunt run-all init` is idempotent: safe to rerun.
-run = "terragrunt run-all init"
+# pinned above). `terragrunt run --all init` is idempotent: safe to rerun.
+run = "terragrunt run --all init"
 
 # Ansible path: delete the run above and let the [deps.ansible-galaxy] provider
 # below own role install instead — it auto-runs on `mise run`, only when stale.
@@ -89,11 +89,11 @@ run = "tofu fmt -recursive -check -diff"
 
 [tasks."infra:validate"]
 description = "Validate IaC configuration across all units"
-run = "terragrunt run-all validate"
+run = "terragrunt run --all validate"
 
 [tasks."infra:plan"]
 description = "Plan changes across all units (read-only; never auto-applies)"
-run = "terragrunt run-all plan"
+run = "terragrunt run --all plan"
 
 # --- Ansible tasks (uncomment for an Ansible repo; delete the tofu tasks above) ---
 # [tasks."ansible:lint"]

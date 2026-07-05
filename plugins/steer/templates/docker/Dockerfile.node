@@ -11,12 +11,13 @@
 # the runtime COPY of `.next/standalone` below has nothing to copy.
 #
 # Adapt on fork, in this order:
-#   1. Set APP to the app's directory under apps/, AND update the CMD path to
-#      match (Next.js monorepo standalone is launched by an explicit path).
+#   1. Set APP to the app's directory under apps/ (the runtime CMD derives its
+#      path from APP via the ENV below — no CMD edit needed).
 #   2. Drop the `public/` COPY if the app has no `public/` dir.
-#   3. pnpm is provided by corepack; pin it with a `packageManager` field in the
-#      repo's package.json (or add `corepack prepare pnpm@X --activate` below) so
-#      the image uses the same pnpm major that wrote `pnpm-lock.yaml`.
+#   3. pnpm is provided by corepack, driven by the `packageManager` field the
+#      scaffold ships in the repo-root package.json — verify its placeholder was
+#      resolved to the mise-pinned pnpm (done by /steer:init) so the image uses
+#      the same pnpm major that wrote `pnpm-lock.yaml`.
 #
 # The base-image major must satisfy `policy/versions.yml` (node >= 22) — the
 # version-pin scanner and hook enforce it. Keep it in sync with `mise.toml`'s node
@@ -26,7 +27,9 @@
 ARG APP=web
 
 # ---- build: fetch deps (cached on the lockfile), install, compile the app ----
-FROM node:22-slim AS build
+# Major-only tag; confirm current stable major on adoption (must stay >= the
+# policy/versions.yml node floor).
+FROM node:24-slim AS build
 ARG APP
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
 RUN corepack enable
@@ -42,8 +45,13 @@ RUN pnpm install --frozen-lockfile --offline
 RUN pnpm --filter "./apps/${APP}" build
 
 # ---- runtime: slim, non-root, Next.js standalone server ----
-FROM node:22-slim AS runtime
+# Major-only tag; confirm current stable major on adoption (keep in sync with
+# the build stage above).
+FROM node:24-slim AS runtime
 ARG APP
+# Persist APP into the runtime env: ARG is build-time only, and the CMD below
+# resolves ${APP} when the container starts.
+ENV APP=${APP}
 ENV NODE_ENV=production
 WORKDIR /app
 # `output: "standalone"` bundles a minimal server + the traced node_modules.
@@ -53,6 +61,8 @@ COPY --from=build /repo/apps/${APP}/.next/static ./apps/${APP}/.next/static
 COPY --from=build /repo/apps/${APP}/public ./apps/${APP}/public
 USER node
 EXPOSE 3000
-# Exec form so SIGTERM reaches node directly (graceful shutdown on ECS). The
-# monorepo standalone server is launched by path — keep this in sync with APP.
-CMD ["node", "apps/web/server.js"]
+# The monorepo standalone server is launched by path, derived from APP so an
+# instantiated copy launches the right app without editing this line. `exec`
+# replaces the shell with node as PID 1, so SIGTERM still reaches node directly
+# (graceful shutdown on ECS).
+CMD ["sh", "-c", "exec node \"apps/${APP}/server.js\""]

@@ -1,4 +1,4 @@
-# Action history — [Product name]
+# Action history — [Product Name]
 
 > Append-only log of meaningful changes: what changed, why, who (or what)
 > asked for it, and which specs/issues/decisions/code areas were affected.

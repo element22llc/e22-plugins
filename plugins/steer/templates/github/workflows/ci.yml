@@ -17,11 +17,11 @@ on:
 # README.md#branch-protection.
 #
 # Note on testing: there is deliberately NO test-file-name gate (a filename check
-# can't tell a real test from an empty one). Test presence is enforced by the rule
-# in CLAUDE.md, the Definition of Done, human review, and the "stack detected but no
-# test script -> fail" guards below. Coverage is a SIGNAL, not a target: the Coverage
-# step reports it and gates only the lines a PR changes (no global %). See
-# CLAUDE.md#definition-of-done and CONVENTIONS.md -> Coverage.
+# can't tell a real test from an empty one). Test presence is enforced by the
+# plugin-injected steer rules (Definition of Done), human review, and the "stack
+# detected but no test script -> fail" guards below. Coverage is a SIGNAL, not a
+# target: the Coverage step reports it and gates only the lines a PR changes (no
+# global %). Full conventions: run /steer:reference conventions -> Coverage.
 
 jobs:
   ci:
@@ -143,9 +143,11 @@ jobs:
             echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
             exit 1
           fi
-          # Emit coverage (coverage/lcov.info) when a Vitest coverage provider is
-          # wired; otherwise run tests plain. The changed-line gate below stays
-          # fail-open when no report is produced. See CONVENTIONS.md -> Coverage.
+          # Emit coverage when a Vitest coverage provider is wired; otherwise run
+          # tests plain. The root fan-out forwards the flags into each package, so
+          # vitest writes a PER-PACKAGE <package>/coverage/lcov.info. The
+          # changed-line gate below stays fail-open when no report is produced.
+          # Run /steer:reference conventions -> Coverage.
           if git ls-files '*package.json' | xargs grep -lq '@vitest/coverage' 2>/dev/null; then
             pnpm run test -- --coverage --coverage.reporter=lcov
           else
@@ -169,7 +171,7 @@ jobs:
         run: |
           # Emit coverage (coverage.xml) when pytest-cov is available; otherwise
           # run tests plain. The changed-line gate below stays fail-open when no
-          # report is produced. See CONVENTIONS.md -> Coverage.
+          # report is produced. Run /steer:reference conventions -> Coverage.
           cov_args=""
           if uv run python -c "import pytest_cov" >/dev/null 2>&1; then
             cov_args="--cov --cov-report=xml --cov-report=term-missing"
@@ -257,7 +259,8 @@ jobs:
       # Fail-open when no coverage report was produced, the base can't be
       # resolved, or it is the first push, so this never blocks a repo that hasn't
       # wired coverage yet. Tune the floor with the COVERAGE_DIFF_MIN env var.
-      # See rules 41-coverage / 50 (Definition of Done) and CONVENTIONS.md -> Coverage.
+      # See rules 41-coverage / 50 (Definition of Done); run /steer:reference
+      # conventions -> Coverage for the full conventions.
       - name: Coverage (changed-line gate)
         if: >-
           (github.event_name == 'pull_request' || github.event_name == 'push') &&
@@ -269,11 +272,18 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           ZERO=0000000000000000000000000000000000000000
-          report=""
-          if [ -f coverage/lcov.info ]; then report="coverage/lcov.info"; fi
-          if [ -f coverage.xml ]; then report="coverage.xml"; fi
-          if [ -z "$report" ]; then
-            echo "::notice::No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (see CONVENTIONS.md -> Coverage). Skipping changed-line gate."
+          # Collect every report produced. The root-script fan-out
+          # (`pnpm --recursive run test -- --coverage`) writes a PER-PACKAGE
+          # <package>/coverage/lcov.info — not a root one — so glob apps/* and
+          # packages/* alongside the root paths (root pytest / single-package
+          # repos). diff-cover accepts multiple report arguments and merges them.
+          reports=()
+          for f in coverage/lcov.info apps/*/coverage/lcov.info packages/*/coverage/lcov.info \
+                   coverage.xml apps/*/coverage.xml packages/*/coverage.xml; do
+            if [ -f "$f" ]; then reports+=("$f"); fi
+          done
+          if [ ${#reports[@]} -eq 0 ]; then
+            echo "::notice::No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (run /steer:reference conventions -> Coverage). Skipping changed-line gate."
             exit 0
           fi
           if [ "$EVENT" = "pull_request" ]; then
@@ -295,7 +305,7 @@ jobs:
             base="$BEFORE"
           fi
           echo "## Coverage (changed lines vs $base)" >> "$GITHUB_STEP_SUMMARY"
-          uvx diff-cover "$report" \
+          uvx diff-cover "${reports[@]}" \
             --compare-branch "$base" \
             --fail-under "$COVERAGE_DIFF_MIN" \
             --markdown-report coverage-diff.md \

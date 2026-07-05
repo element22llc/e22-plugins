@@ -18,7 +18,7 @@ defaults. Deviations are ADRs, same as any stack choice.
   for OpenTofu/Terraform; `roles/` + `playbooks/` (or `site.yml`) + `inventory/`
   for Ansible. Detail in `/infra/README.md` (monorepo) or the repo README.
 - **Validate locally before CI:** `tofu fmt -check` + `tofu validate` /
-  `terragrunt run-all validate`; `ansible-lint` + `yamllint` for Ansible. These
+  `terragrunt run --all validate`; `ansible-lint` + `yamllint` for Ansible. These
   run in CI too.
 - **State & secrets:** remote state with locking (S3 `use_lockfile`); secrets in
   the cloud secret store (SSM Parameter Store `SecureString` / Secrets Manager),

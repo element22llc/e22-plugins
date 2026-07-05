@@ -13,6 +13,44 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   this product is and who it serves" to the root `README.md` and directs the
   author to jump straight into how a user *uses* the product, keeping the two
   documents complementary instead of overlapping.
+- **Fixed the scaffold CI changed-line coverage gate for monorepos** (#324).
+  The gate in `templates/github/workflows/ci.yml` only looked for a repo-root
+  `coverage/lcov.info` / `coverage.xml`, but the shipped root-script fan-out
+  (`pnpm --recursive run test -- --coverage`) writes a per-package
+  `<package>/coverage/lcov.info` — so the rule-41 gate silently fail-opened
+  forever. It now globs `apps/*` and `packages/*` (Node **and** Python reports)
+  alongside the root paths and passes every report found to `diff-cover`.
+- **Dropped `context7@claude-plugins-official` from the scaffold's
+  `enabledPlugins`** (#325): steer already ships a context7 MCP server in its
+  own `.mcp.json`, so bootstrapped repos were loading two context7 servers with
+  duplicate toolsets. The plugin-shipped server (the documented one) remains.
+- **Swept dangling references out of the shipped scaffold/templates** (#326):
+  the dead `CLAUDE.md#definition-of-done` anchor (PR template, CI workflow),
+  stale "see CLAUDE.md `Stack` / High-risk areas" pointers (`gitignore`,
+  `vscode/extensions.json`, app/service `apps/README.md`, `infra/README.md`),
+  and bare "see CONVENTIONS.md" file references (`mise.toml`, CI workflow —
+  including the user-visible `::notice::`) now point at the plugin-injected
+  rules / `/steer:reference conventions` instead of files and sections that
+  don't exist in a bootstrapped repo.
+- **Standardized Terragrunt fan-out on the current `terragrunt run --all …`
+  syntax** (#328): the infra-profile `mise.toml` tasks (and the injected
+  infra stack rule, which feeds the generated Copilot instructions) used the
+  deprecated `terragrunt run-all …` while `infra/README.md` used
+  `run --all` — the two shipped contradictory commands under
+  `terragrunt = "latest"`.
+- **Scaffold/template polish batch** (#342): differentiated the service
+  profile's `apps/README.md` from the app copy (no more dangling `DESIGN.md`
+  link or web-app prose); de-linked `packages/README.md`'s reference to
+  `apps/README.md` (absent in `library`/`cli` profiles); normalized placeholder
+  variants to `/steer:init`'s documented scan set (`[Product Name]`,
+  `[e.g., …]`, `[Replace …]` in the spec templates, `ARCHITECTURE.md`, and
+  `vision.md`); shipped a `packageManager` placeholder in the Node-baseline
+  `package.json` that init now stamps with the mise-pinned pnpm; derived the
+  Node Dockerfile's `CMD` from the `APP` build-arg (via a runtime `ENV`, with
+  `exec` keeping PID-1 signal handling) instead of hardcoding
+  `apps/web/server.js`; and aligned the scaffold's Node major on 24 across the
+  Dockerfile, CI `setup-node`, and the `@types/node` catalog entry, with
+  "confirm current stable major on adoption" comments.
 
 ### 3.12.0
 
