@@ -21,8 +21,9 @@ is identical across all profiles.
   facing).
 - **`/spec/decisions`** — ADRs.
 - **`/spec/reference`** — source/research materials feeding the spec
-  (inventories, vendor metadata, schema/DDL dumps, discovery docs); also where
-  `/steer:reference` prose is materialized.
+  (inventories, vendor metadata, schema/DDL dumps, discovery docs). The
+  `/steer:reference` prose is **not** stored here — it ships with the plugin and
+  is loaded on demand via `/steer:reference`.
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
   engineer's system model: stack, the apps/packages map, how a request flows.

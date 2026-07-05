@@ -61,6 +61,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    exists:
 
    ```sh
+   . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
    . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
    root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
    ```
