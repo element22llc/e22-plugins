@@ -212,7 +212,13 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
    `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
-   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`). Install the
+   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`) — and the
+   design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
+   `/spec/design/source.md` (from `design-source.md`),
+   `/spec/design/architecture.md` (from `design-architecture.md` — the living
+   global architecture diagram `ARCHITECTURE.md` links to), and
+   `/spec/sources/README.md` (from `sources-readme.md` — the versioned home for
+   recurring PO documents, maintained by `/steer:intake`). Install the
    bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs
    survive the first commit (an empty dir does not — `/steer:spec-scaffold`
    and `/steer:adr` populate them later). **Adapt to the chosen stack

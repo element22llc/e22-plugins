@@ -20,6 +20,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   SVG/CSS/JS to satisfy the Artifact CSP (no CDN chart libraries); the skill now
   loads `dataviz` alongside `artifact-design`. The Markdown fallback keeps the same
   at-a-glance shape as static text.
+- **`/steer:adopt` now runs `bootstrap-fields` next to `bootstrap-labels`
+  (#322).** Adopt's Phase 10 GitHub-Issues setup only created the label
+  taxonomy, so a brownfield repo never got the org-level **Priority/Effort/date**
+  issue-field verification that `/steer:init` performs — silently diverging from
+  greenfield repos while `/steer:tracker-sync` claimed both bootstrap skills call
+  it. Phase 10 now invokes `/steer:tracker-sync bootstrap-fields` right after
+  `bootstrap-labels`, mirroring init's wording, so tracker-sync's claim holds.
+- **Spec-spine enumerations now name the `design/` + `sources/` bootstrap rows
+  (#327).** The scaffold MANIFEST installs `spec/design/README.md`,
+  `spec/design/source.md`, `spec/design/architecture.md`, and
+  `spec/sources/README.md` at bootstrap, but the canonical `/spec` tree in
+  `SPEC-FRAMEWORK.md`, init's step-2 spine enumeration, and adopt's Phase 10
+  list never mentioned them — a literal follow of the skill text skipped them.
+  All three enumerations now name the four artifacts, so bootstrapped repos get
+  the full spine the MANIFEST (and template reconciliation) expects.
 - **Tightened the seam between the app guide and the root README.** The app
   guide template (`templates/spec/app-docs.md`) no longer re-states the
   product pitch or developer-setup instructions — its opening now defers "what
