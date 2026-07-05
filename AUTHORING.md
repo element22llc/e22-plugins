@@ -18,8 +18,9 @@ regardless — this matrix is for tight iteration on a single failure.
 
 | You edited… | Gate that covers it | Fast re-run |
 | --- | --- | --- |
-| `plugins/steer/skills/**` | `plugin-check` | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
-| `plugins/steer/rules/**` | `plugin-check` | `uv run python scripts/check_plugin.py` |
+| `plugins/steer/skills/**` | `plugin-check` (incl. `check_copilot_prompts.py`) | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
+| `plugins/steer/rules/**` | `plugin-check` (incl. `check_copilot_instructions.py`) | `uv run python scripts/check_plugin.py` |
+| `rules/**` or `skills/**` → stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_instructions.py` / `check_copilot_prompts.py`, both in `mise run check`) | `mise run gen:copilot` — regenerates `templates/github/copilot-instructions.md` + `templates/github/prompts/*.prompt.md`; commit them with the rule/skill change |
 | `plugins/steer/hooks/**` | `hooktests` + `shell` | `sh plugins/steer/hooks/tests/run.sh` |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
@@ -89,9 +90,12 @@ when_to_use: >-
 **Invocation tier → which tool fields to set** (see `INVOCATION.md` for the full
 matrix):
 
-- **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`,
-  `next`): never edit code/spec/tracker.
-  Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`.
+- **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
+  `doctor`, `explain`, `help`): never edit code/spec/tracker.
+  Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`. One variant:
+  `explain` sets `disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree` —
+  it needs `Write` for its rendered artifact/fallback file but must not run
+  shell commands.
 - **Tier 2 — side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
   `adr`, `issues`, `questions`, …): may create/edit/commit. Use `allowed-tools`
   to pre-approve the routine idempotent ops the skill always performs — e.g.
@@ -134,9 +138,10 @@ exemplars it cites (`/steer:audit` → the `steer-reviewer` agent;
 
 ### Skill vs. mode — hold the line on surface area
 
-The user-facing menu is the handful of **front doors** in `rules/00-router.md`
-(`setup`, `spec`, `build`, `work`, `issues`, `audit`, `next`, `adr`, `protect`,
-`report`, `standards`). Every new skill widens the set of things a user must choose
+The user-facing menu is the handful of **front doors** in `rules/00-router.md`'s
+intent table (`setup`, `build`, `spec`, `intake`, `work`, `issues`, `audit`,
+`adr`, `next`, `explain`, `help`, `protect`, `report` — re-derive from the table,
+which is the source of truth). Every new skill widens the set of things a user must choose
 between, so the bar for a *new, visible* skill is high. Before adding one, justify
 why it is **not**:
 
@@ -177,8 +182,8 @@ order** by their numeric prefix into the always-on session context.
 Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 - **POSIX `sh` only, no `jq`.** Reuse the helpers in `hooks/lib/*.sh`
-  (`json.sh`, `classify.sh`, `lifecycle.sh`, `repo-root.sh`, `spine.sh`,
-  `version-policy.sh`) rather than re-parsing.
+  (`classify.sh`, `json.sh`, `lifecycle.sh`, `repo-root.sh`, `report-fault.sh`,
+  `scope.sh`, `spine.sh`, `version-policy.sh`) rather than re-parsing.
 - `hooks.json` invokes each script with an explicit `sh` prefix, so the
   executable bit does not matter (marketplace install does not `chmod`). Keep the
   `sh` prefix when adding a hook.
