@@ -64,8 +64,10 @@ implementation.
    is the what/why (PO-facing); `contract.md` is the testable behavior + data/API
    surface (dev-owned).
 6. **Approval gate — both exits stay code-free.** First **run `validate` on this
-   feature** (below) — an approval **cannot proceed while a blocking question is
-   `open`**; resolve or explicitly reclassify it first. Then present the intent
+   feature** (below) — an approval **cannot proceed while a blocking question
+   gated at `required_before: intent-approval` is unresolved** (the exact
+   predicate lives in approve mode, below); resolve or explicitly reclassify it
+   first. Then present the intent
    for PO approval. On PO approval, run **`approve <id>`** (below) to record the
    approval and flip `Status:` to `approved` in one change, then offer:
    - file it via `/steer:issues` (which routes through the tracker gateway) →
@@ -104,7 +106,9 @@ feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
 Flag each of these, citing the `Q-NNN` and file:
 
 - ✗ an **approved** intent (`Status: approved`/`implemented`/`validated`/`live`)
-  that still contains an `open` `blocking` question;
+  that still contains an `open` `blocking` question with
+  `required_before: intent-approval` (later gates — `contract-approval`,
+  `implementation`, … — block their own gate, not the already-granted approval);
 - ✗ a `deferred` question missing `owner` or `required_before`;
 - ✗ a `resolved` question with no resolution folded into the spec's normative
   prose (only a `_Resolution:_` line, or nothing);

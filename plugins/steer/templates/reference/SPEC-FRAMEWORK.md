@@ -96,7 +96,10 @@ that should decide; on promotion it resolves to a GitHub assignee via the
 A local, GitHub-independent structural check over the question contract — the
 defense-in-depth floor that holds even when the tracker is unreachable. It flags:
 
-- an **approved** intent that still contains an `open` `blocking` question;
+- an **approved** intent that still contains an `open` `blocking` question with
+  `required_before: intent-approval` (questions gated at later gates —
+  `contract-approval`, `implementation`, … — block their own gate, not the
+  already-granted intent approval);
 - a `deferred` question missing `owner` or `required_before`;
 - a question with a `tracker:` ref whose issue is closed but `status:` is still
   `open` (the closed-issue / stale-spec trap);
@@ -111,7 +114,8 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
 `validate` runs at `/steer:spec approve` and is called by `/steer:issues`
 (`materialize`, `status`, `reconcile`) and `/steer:audit spec`; a spec-changing PR
 should run it too. A failing check blocks the relevant gate — e.g. an approval
-cannot proceed while a blocking question is open.
+cannot proceed while a blocking question gated at
+`required_before: intent-approval` is open.
 
 ### Contract readiness (mechanically determinable)
 

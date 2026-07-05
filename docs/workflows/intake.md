@@ -10,7 +10,7 @@ it — into the `/spec` spine, surfacing exactly what changed each time.
     tracker — without losing human-authored content. Reach for it whenever a
     re-sent document arrives with no pointer to what was edited.
 
-**Argument hint:** `[<path-to-doc> | <source-id> | status]`
+**Argument hint:** `[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]`
 
 ## The problem it solves
 

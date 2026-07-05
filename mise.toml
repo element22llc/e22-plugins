@@ -111,7 +111,7 @@ description = "Validate docs structure + sync with source of truth (no docs deps
 run = ["uv run python scripts/validate_docs.py"]
 
 [tasks.check]
-description = "Run fast local checks (pre-commit equivalent)"
+description = "Run fast local checks (a superset of the pre-commit hygiene tier)"
 depends = ["lint", "plugin-check", "actions"]
 
 [tasks.delivery-gates]
@@ -140,8 +140,7 @@ depends = [
 [tasks."e2e"]
 description = "Run the headless end-to-end skill suite (slow, costs tokens; needs ANTHROPIC_API_KEY)"
 # -rP surfaces each scenario's captured turns/cost line even when the test passes
-# (pytest otherwise swallows stdout on green). In CI the same figure is also
-# written to $GITHUB_STEP_SUMMARY.
+# (pytest otherwise swallows stdout on green).
 run = ["uv run pytest -m e2e -rP"]
 
 # Local variant: run the suite on your interactive `claude` login (subscription

@@ -39,7 +39,7 @@ spec/sources/
 |---|---|---|
 | `spec/sources/` | **Recurring, versioned** PO documents (this dir) | `/steer:intake` |
 | `spec/design/` | UI/design exports (Claude Design ZIP, Figma, screenshots) | `/steer:spec`, `/steer:adopt` |
-| `spec/reference/` | One-off reference prose materialized from the plugin | `/steer:reference` |
+| `spec/reference/` | One-off source/research materials feeding the spec | `/steer:tidy` (filing), humans |
 
 A document the PO sends **once** and never revises can stay loose under
 `spec/reference/`; the moment it starts arriving in successive versions, it belongs
