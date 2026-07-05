@@ -53,6 +53,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   frontmatter description now acknowledges the sanctioned `bootstrap-labels`
   inline-`gh` exception instead of claiming ALL GitHub I/O routes through
   `/steer:tracker-sync`.
+- **Fixed the `inject-standards.sh` missing-rules fallback banner being dropped
+  (#319).** The fail-soft branch's trailing self-fault guard chain leaked a
+  non-zero exit status whenever the consumer root was unresolvable or was the
+  plugin's own tree — and SessionStart stdout only becomes `additionalContext`
+  on exit 0, so the degraded-install banner never reached the session. The
+  branch now records the fault under an `if` guard and the hook always exits 0.
+- **Fixed `check-unmanaged-repo.sh` anchoring on the hook process cwd (#331).**
+  The greenfield-bootstrap nudge resolved the repo root from `steer_repo_root .`
+  instead of the SessionStart payload `cwd` like its sibling hooks (the same
+  bug class fixed for `check-template-drift.sh` in #270), so it mis-anchored
+  whenever the harness cwd diverged from the session cwd. It now reads the
+  payload `cwd` via `steer_field`.
+- **Hook polish batch (#339).** The `/steer:report` self-report exemption in
+  `check-issue-create-contract.sh` now also matches gh's `-R` alias for
+  `--repo`; `check-version-pins.sh` no longer matches on `Bash` in `hooks.json`
+  (its content extractor skips Bash by design, so every Bash call paid a
+  guaranteed no-op hook spawn — the CI repo scanner remains the backstop);
+  `reconcile-issue-first.sh` caps its per-file classify loop so a first-turn
+  dirty tree with thousands of untracked files can no longer approach the 30s
+  Stop timeout; and the `tracker-github` detector in `lib/scope.sh` matches the
+  word `github` (`github\b`, aligned with `scan-capabilities.sh`) instead of
+  any value merely starting with it.
 
 ### 3.12.0
 

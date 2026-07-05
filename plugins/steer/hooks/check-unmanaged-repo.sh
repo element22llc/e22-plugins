@@ -26,14 +26,22 @@
 #   vs a developer) and whether the code is being written fresh or already existed.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
-#   POSIX sh, no jq, no process substitution. cwd is the CONSUMER repo. Fail-soft:
-#   any ambiguity → stay silent, never block a session.
+#   POSIX sh, no jq, no process substitution. The CONSUMER repo comes from the
+#   SessionStart payload `cwd` — never the hook process's own cwd, which the
+#   harness does not guarantee to match (mirrors check-template-drift.sh, #331).
+#   Fail-soft: any ambiguity → stay silent, never block a session.
 
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
 
-# Resolve the work-tree root. Not a git work tree → not a project we manage.
-ROOT="$(steer_repo_root .)" || exit 0
+# Resolve the work-tree root from the payload cwd (which may be a SUBDIRECTORY
+# of the repo). Not a git work tree → not a project we manage.
+# shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
+STEER_INPUT="$(cat 2>/dev/null)"
+CWD="$(steer_field cwd)"
+[ -n "${CWD}" ] || CWD="."
+ROOT="$(steer_repo_root "${CWD}")" || exit 0
 
 # This IS the steer source / marketplace repo itself, not a product
 # repo — never nag the plugin's own tree. (A product repo has .claude/ for
