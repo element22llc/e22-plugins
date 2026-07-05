@@ -2,9 +2,12 @@
 name: explain
 description: >-
   Render a high-level, stakeholder-readable view of one feature spec as a
-  shareable Claude Code Artifact — a private, hosted page on claude.ai — with a
-  Markdown fallback where Artifacts are unavailable. A read-only, derived view:
-  the /spec and tracker item stay canonical; never fabricates status, dates, or
+  shareable Claude Code Artifact — a private, hosted page on claude.ai, built
+  around at-a-glance visuals (a status pipeline, an acceptance meter, a
+  clickable user-journey, scope and open-question boards) so it reads in seconds
+  instead of pages — with a Markdown fallback where Artifacts are unavailable. A
+  read-only, derived view: the /spec and tracker item stay canonical; every
+  visual encodes a real spec value, never fabricates status, dates, or
   acceptance criteria, never auto-generates per feature, and never writes into
   /spec, /apps, or /packages.
 when_to_use: >-
@@ -20,9 +23,12 @@ disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # Explain a feature — a shareable, plain-language view
 
 Turn one feature's approved intent into a **high-level page a stakeholder can
-read at a glance** — published as a **Claude Code Artifact** (a private, hosted
-page on claude.ai you can then share with a teammate), or rendered as **Markdown**
-where Artifacts are not available.
+read at a glance** — not a five-page wall of text but a **visual, interactive
+summary**: a status pipeline, an acceptance meter, a clickable user-journey, and
+scope/open-question boards, so the reader gets the gist in seconds and drills in
+only where they want to. Published as a **Claude Code Artifact** (a private,
+hosted page on claude.ai you can then share with a teammate), or rendered as
+**Markdown** where Artifacts are not available.
 
 This is the **PO-facing presentation layer** the rest of the roster lacks: every
 other skill is dev- or tracker-facing. `explain` renders the human-readable side
@@ -93,22 +99,72 @@ git/CI/ADR/stack jargon). Build the page around the intent's own sections:
 Pick up the product's design tokens if the product `CLAUDE.md` records them —
 the `artifact-design` skill already reads them.
 
+### 3a. Show, don't tell — visual encodings (derived, never decorative)
+
+A stakeholder should grasp the feature from the visuals before reading a
+paragraph. Encode each spec section as the shape that reads fastest — but **every
+visual must encode a real value the spec actually contains**. No fabricated
+numbers, no placeholder charts, no invented relationships or dates; a section the
+spec leaves empty is shown as *"not specified in the spec"*, never a mocked-up
+chart. Map the intent's own sections to these visuals:
+
+- **Status → a lifecycle pipeline.** Render the fixed spine
+  `draft → approved → implemented → validated → live` as a horizontal progress
+  tracker with the intent's `Status:` marked as the current stage and later stages
+  dimmed. **Never advance the marker past the recorded `Status:`** — the pipeline
+  reflects the spec, it does not predict. (Enum lives in `ENUMS.md`.)
+- **PO acceptance → a completion meter.** Show the four acceptance checkboxes as a
+  small progress meter / ring with the ratio (e.g. "2 of 4"), each item's ticked
+  state taken **verbatim** from the intent — never tick a box the spec leaves
+  unchecked.
+- **User experience → a clickable journey.** Turn the numbered steps into a
+  stepper the reader advances one step at a time, instead of a prose list — the
+  single biggest "don't make me read five pages" win. Steps are the intent's own,
+  in order.
+- **Scope → an in/out board.** In-scope and out-of-scope as two visually distinct
+  columns (✓ / ✗) so the boundary reads instantly.
+- **Key concepts & data → a light relationship diagram.** Each concept a node;
+  draw an edge **only where the intent explicitly states a "belongs to" / relates-to
+  link** — never infer one. Omit the diagram entirely if the intent lists no
+  relationships. Keep it plain-language (no field/type schema — that is contract
+  jargon).
+- **Open questions → a status board.** Cards grouped/counted by `status`
+  (`open` / `investigating` only), with **blocking** ones flagged, so "what's
+  unresolved and what stops progress" is a glance, not a read.
+
+### 3b. Interactivity — lead with the gist, disclose on demand
+
+- **One-screen summary first.** Open with what/why + the status pipeline + the
+  acceptance meter above the fold; put everything else behind collapsible sections
+  with a sticky jump-nav. Nobody should scroll five pages to learn the feature's
+  state.
+- **Keep it accessible and shareable.** Every interactive control is
+  keyboard-reachable and labelled, and the page must still make complete sense with
+  every section expanded — so a printed copy or a shared screenshot loses nothing.
+
 ### 4. Publish (or fall back)
 
 **If the `Artifact` tool is available in this session:**
 
 1. **Load the `artifact-design` skill first** (the Artifact tool requires it before
-   authoring a page).
-2. Write the page HTML to a **deterministic path in a system temp directory**,
+   authoring a page), and **load `dataviz`** before drawing any chart, meter, or
+   diagram so the visuals read as one system and work in both light and dark.
+2. **Build every visual self-contained — the Artifact CSP blocks all external
+   hosts.** No CDN chart/diagram libraries (Chart.js, Mermaid, D3-from-CDN), no
+   remote fonts or images: a page that depends on a remote script renders blank.
+   Draw the pipeline, meter, journey, boards, and relationship diagram as **inline
+   SVG + CSS** with small **inline JS** for the interactivity, and embed any asset
+   as a `data:` URI.
+3. Write the page HTML to a **deterministic path in a system temp directory**,
    named for the feature — `<tempdir>/steer-explain-<feature-id>.html` — **never**
    a path under the repo working tree. The stable, per-feature filename is what
    lets a same-session re-run redeploy to the *same* artifact URL rather than mint
    a new one; do not use a randomized temp name.
-3. **Give a one-line heads-up before publishing:** publishing sends the rendered
+4. **Give a one-line heads-up before publishing:** publishing sends the rendered
    spec content to claude.ai, where the page is **private to you** until you choose
    to share it. Let the `Artifact` tool's own permission prompt gate the publish —
    do not pre-authorize it.
-4. Publish, then give the user the URL and tell them it's private until shared, and
+5. Publish, then give the user the URL and tell them it's private until shared, and
    that re-running in this same session (which reuses the same filename) updates the
    same page.
 
@@ -120,6 +176,11 @@ zero-data-retention org, or no claude.ai login):
   copy anywhere under the repo would create exactly the drifting second copy of the
   spec this skill exists to avoid, and the user can copy the inline output wherever
   they want it.
+- Markdown is **static** — it carries no interactivity, but keep the at-a-glance
+  shape: render the status as a plain inline pipeline
+  (`draft → **approved** → implemented → validated → live`), the acceptance as a
+  checklist with its "N of 4" count, the journey as a numbered list, and scope as
+  two ✓ / ✗ lists. Same derived-only discipline — no fabricated values.
 - Say plainly that the hosted artifact isn't available in this environment and why,
   so the fallback isn't mistaken for a failure.
 
@@ -151,3 +212,6 @@ After rendering, surface the single most useful follow-up, and stop:
 - Audience & plain-language posture: rule `05`.
 - Derived-view discipline this mirrors: `/steer:roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
+- Status enum for the lifecycle pipeline: `ENUMS.md`.
+- Visual system: the `artifact-design` skill (page shell) and `dataviz` (chart
+  colour/encoding) — loaded at publish time; all visuals inline, per the CSP.
