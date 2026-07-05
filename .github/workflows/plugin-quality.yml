@@ -24,12 +24,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0 # full history so the changelog behaviour gate can diff the base
 
       - name: Install mise
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
 
       - name: Sync Python environment
         run: uv sync --locked
@@ -38,6 +38,12 @@ jobs:
         # Reproducible validation: install the version pinned in mise.toml (single
         # source of truth), not whatever "latest" happens to be at run time. The
         # installer takes the target as a positional arg.
+        #
+        # Supply-chain note — accepted risk: install.sh is fetched live from
+        # claude.ai and is NOT checksum-pinned. The CLI *version* it installs is
+        # pinned above, but the installer script itself can change between runs;
+        # checksum-pinning it would break on every installer release for a script
+        # that only bootstraps a pinned artifact. Deliberate accept (issue #341).
         run: |
           ver=$(grep -E '^STEER_CLAUDE_CODE_VERSION' mise.toml | sed -E 's/.*"([^"]+)".*/\1/')
           echo "Installing Claude Code ${ver}"
@@ -63,9 +69,12 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install Claude Code (latest)
+        # Live-fetched installer + floating "latest": deliberate — this job exists
+        # to surface upstream breakage early and is non-blocking. Same accepted
+        # install.sh live-fetch risk as the pinned job (issue #341).
         run: |
           curl -fsSL https://claude.ai/install.sh | bash -s -- latest
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"

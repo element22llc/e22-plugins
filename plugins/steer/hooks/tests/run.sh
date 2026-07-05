@@ -51,6 +51,16 @@ run_hook() { # <hook-file> <stdin>   (env via $ENV)
 
 last_rc() { cat "${RC_FILE}" 2>/dev/null || printf '0'; }
 
+# Direct-sh runner for the non-hook helper scripts (template-reconcile /
+# scan-capabilities / scan-invocations / …). Sets `out` + `rc` AND records rc to
+# RC_FILE — so assert_empty's rc half asserts THIS invocation, not a stale rc
+# left by an earlier run_hook (issue #338).
+run_sh() { # <script> [args...]
+	out="$(sh "$@" 2>/dev/null)"
+	rc=$?
+	printf '%s' "${rc}" >"${RC_FILE}"
+}
+
 ok() { PASS=$((PASS + 1)); }
 bad() {
 	FAIL=$((FAIL + 1))
@@ -1001,24 +1011,21 @@ mkdir -p "${RDIR}"
 printf '## A\n- [ ] one\n' >"${RDIR}/existing.md"
 printf '## A\n## B\n- [ ] one\n- [ ] two\n' >"${RDIR}/bundled.md"
 
-out="$(sh "${RECON}" "${RDIR}/existing.md" "${RDIR}/bundled.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/existing.md" "${RDIR}/bundled.md"
 assert_rc "reconcile: gaps run exits 0" "${rc}" 0
 printf '%s' "${out}" | grep -q '## B' && ok || bad "reconcile: missing heading reported (got: ${out})"
 printf '%s' "${out}" | grep -q -- '- \[ \] two' && ok || bad "reconcile: missing checklist item reported (got: ${out})"
 printf '%s' "${out}" | grep -q '## A' && bad "reconcile: shared anchor wrongly reported (got: ${out})" || ok
 
 # identical anchors -> file already current -> silent
-out="$(sh "${RECON}" "${RDIR}/bundled.md" "${RDIR}/bundled.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/bundled.md" "${RDIR}/bundled.md"
 assert_rc "reconcile: current run exits 0" "${rc}" 0
 assert_empty "reconcile: current file -> silent" "${out}"
 
 # checkbox state normalized: [x] in existing vs [ ] in bundled is NOT a diff
 printf '## A\n- [x] one\n' >"${RDIR}/checked.md"
 printf '## A\n- [ ] one\n' >"${RDIR}/unchecked.md"
-out="$(sh "${RECON}" "${RDIR}/checked.md" "${RDIR}/unchecked.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/checked.md" "${RDIR}/unchecked.md"
 assert_rc "reconcile: checkbox-normalization exits 0" "${rc}" 0
 assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
 
@@ -1027,25 +1034,23 @@ assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
 # not be flagged for the deleted placeholder.
 printf '## Open questions\n_No open questions._\n' >"${RDIR}/done.md"
 printf '## Open questions\n### Q-001 — [decide] <!-- steer:placeholder -->\n' >"${RDIR}/seed.md"
-out="$(sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed.md"
 assert_rc "reconcile: placeholder-skip exits 0" "${rc}" 0
 assert_empty "reconcile: deleted placeholder seed not reported" "${out}"
 # a renamed real question (marker deleted) is also not chased back to the stub
 printf '## Open questions\n### Q-001 — should we ship X?\n' >"${RDIR}/real.md"
-out="$(sh "${RECON}" "${RDIR}/real.md" "${RDIR}/seed.md" 2>/dev/null)"
+run_sh "${RECON}" "${RDIR}/real.md" "${RDIR}/seed.md"
+assert_rc "reconcile: filled-in placeholder run exits 0" "${rc}" 0
 assert_empty "reconcile: filled-in placeholder not reported" "${out}"
 # a genuinely-missing (non-placeholder) heading is still reported
 printf '## Open questions\n### Q-002 — real and unmarked\n' >"${RDIR}/seed2.md"
-out="$(sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed2.md" 2>/dev/null)"
+run_sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed2.md"
 printf '%s' "${out}" | grep -q 'Q-002' && ok || bad "reconcile: real missing heading still reported (got: ${out})"
 
 # usage + unreadable inputs
-out="$(sh "${RECON}" "${RDIR}/existing.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/existing.md"
 assert_rc "reconcile: wrong arg count -> exit 2" "${rc}" 2
-out="$(sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md" 2>/dev/null)"
-rc=$?
+run_sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md"
 assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
 
 # ---------------------------------------------------------------------------
@@ -1053,7 +1058,7 @@ assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
 # ---------------------------------------------------------------------------
 CAPSCAN="${PLUGIN}/scripts/scan-capabilities.sh"
 CAPS_MD="${PLUGIN}/templates/reference/CAPABILITIES.md"
-capscan() { out="$(sh "${CAPSCAN}" "$1" "${PLUGIN}" 2>/dev/null)"; }
+capscan() { run_sh "${CAPSCAN}" "$1" "${PLUGIN}"; }
 capstatus() { printf '%s\n' "$1" | awk -F '\t' -v id="$2" '$1==id {print $2}'; }
 
 # Empty repo: capability-critical files absent; stack fingerprint emitted.
@@ -1209,7 +1214,7 @@ assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
 # ---------------------------------------------------------------------------
 INVSCAN="${PLUGIN}/scripts/scan-invocations.sh"
 INV_MD="${PLUGIN}/templates/reference/INVOCATION.md"
-invscan() { out="$(sh "${INVSCAN}" "$1" "${PLUGIN}" 2>/dev/null)"; }
+invscan() { run_sh "${INVSCAN}" "$1" "${PLUGIN}"; }
 invclass() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$3==t {print $4; exit}'; }
 invfix() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$3==t {print $5; exit}'; }
 
@@ -1271,6 +1276,189 @@ sh "${INVSCAN}" a b c >/dev/null 2>&1
 assert_rc "inv: too many args -> exit 2" "$?" 2
 sh "${INVSCAN}" "${WORK}/inv-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "inv: unreadable repo-root -> exit 3" "$?" 3
+
+# ---------------------------------------------------------------------------
+# scripts/scan-prereqs.sh — offline cases for the pure parts (os/stack
+# fingerprint, shadowed classification). The detector probes the host PATH, so
+# each case runs it under a HERMETIC PATH: a dir of symlinked core utilities
+# plus only the tools the case plants — every verdict is deterministic on any
+# host or CI runner.
+# ---------------------------------------------------------------------------
+PREREQS="${PLUGIN}/scripts/scan-prereqs.sh"
+PQ_CORE="${WORK}/pq-core"
+mkdir -p "${PQ_CORE}"
+for _t in sh uname head tr ls grep; do
+	ln -s "$(command -v "${_t}")" "${PQ_CORE}/${_t}"
+done
+
+fake_tool() { # <dir> <name> <output-line>  — a stub that answers any args with $3
+	printf '#!/bin/sh\necho "%s"\n' "$3" >"$1/$2"
+	chmod +x "$1/$2"
+}
+pqscan() { # <PATH-value> <repo> [extra env assignments...]
+	_pq_path="$1"
+	_pq_repo="$2"
+	shift 2
+	out="$(env "$@" PATH="${_pq_path}" sh "${PREREQS}" "${_pq_repo}" 2>/dev/null)"
+	rc=$?
+	printf '%s' "${rc}" >"${RC_FILE}"
+}
+pqstatus() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$1==t {print $2; exit}'; }
+pqdetail() { printf '%s\n' "$1" | awk -F '\t' -v t="$2" '$1==t {print $3; exit}'; }
+
+# --- os fingerprint (fake uname pins the kernel name per case) ---
+PQ_OS="${WORK}/pq-os-bin"
+mkdir -p "${PQ_OS}"
+fake_tool "${PQ_OS}" uname "Darwin"
+# fake uname shadows the core one -> prepend
+PQR="${WORK}/pq-repo"
+mkdir -p "${PQR}"
+pqscan "${PQ_OS}:${PQ_CORE}" "${PQR}"
+assert_rc "prereqs: normal run exits 0" "${rc}" 0
+assert_eq "prereqs: os Darwin -> darwin" "$(pqstatus "${out}" os)" "darwin"
+fake_tool "${PQ_OS}" uname "Linux"
+pqscan "${PQ_OS}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: os Linux (no WSL) -> linux" "$(pqstatus "${out}" os)" "linux"
+pqscan "${PQ_OS}:${PQ_CORE}" "${PQR}" WSL_DISTRO_NAME=Ubuntu
+assert_eq "prereqs: os Linux + WSL_DISTRO_NAME -> wsl2" "$(pqstatus "${out}" os)" "wsl2"
+fake_tool "${PQ_OS}" uname "MINGW64_NT-10.0"
+pqscan "${PQ_OS}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: os MINGW -> windows" "$(pqstatus "${out}" os)" "windows"
+
+# --- stack fingerprint drives n/a verdicts ---
+PQ_PY="${WORK}/pq-py"
+mkdir -p "${PQ_PY}"
+printf '[project]\n' >"${PQ_PY}/pyproject.toml"
+pqscan "${PQ_CORE}" "${PQ_PY}"
+assert_eq "prereqs: python-only repo -> node n/a" "$(pqstatus "${out}" node)" "n/a"
+assert_eq "prereqs: python-only repo -> pnpm n/a" "$(pqstatus "${out}" pnpm)" "n/a"
+PQ_NODE="${WORK}/pq-node"
+mkdir -p "${PQ_NODE}"
+printf '{}\n' >"${PQ_NODE}/package.json"
+pqscan "${PQ_CORE}" "${PQ_NODE}"
+assert_eq "prereqs: node-only repo -> uv n/a" "$(pqstatus "${out}" uv)" "n/a"
+
+# --- required tools + runtime classification against a controlled PATH ---
+# Nothing planted: git/mise missing; runtimes unmanaged (no mise to provide them).
+pqscan "${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: bare PATH -> git missing" "$(pqstatus "${out}" git)" "missing"
+assert_eq "prereqs: bare PATH -> mise missing" "$(pqstatus "${out}" mise)" "missing"
+assert_eq "prereqs: no mise -> node unmanaged" "$(pqstatus "${out}" node)" "unmanaged"
+
+# mise present, runtime absent -> via-mise.
+PQ_MISEBIN="${WORK}/pq-misebin"
+mkdir -p "${PQ_MISEBIN}"
+fake_tool "${PQ_MISEBIN}" mise "mise 0.0-fake"
+pqscan "${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: mise present, node absent -> via-mise" "$(pqstatus "${out}" node)" "via-mise"
+
+# mise present + runtime resolving OUTSIDE the mise data dir -> shadowed (advisory).
+PQ_SHADOW="${WORK}/pq-shadowbin"
+mkdir -p "${PQ_SHADOW}"
+fake_tool "${PQ_SHADOW}" node "v0.0-fake"
+pqscan "${PQ_SHADOW}:${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: non-mise node while mise present -> shadowed" "$(pqstatus "${out}" node)" "shadowed"
+assert_has "prereqs: shadowed detail names the fix" "$(pqdetail "${out}" node)" "mise exec"
+
+# ... and the shadow source is classified (a ~/.nvm path reads as nvm).
+PQ_NVM="${WORK}/.nvm/versions/bin"
+mkdir -p "${PQ_NVM}"
+fake_tool "${PQ_NVM}" node "v0.0-fake"
+pqscan "${PQ_NVM}:${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_has "prereqs: nvm path classified as nvm shadow" "$(pqdetail "${out}" node)" "(nvm)"
+
+# A mise-managed resolution (path contains /mise/) is NOT shadowed -> ok.
+PQ_MISED="${WORK}/mise/installs/node/bin"
+mkdir -p "${PQ_MISED}"
+fake_tool "${PQ_MISED}" node "v0.0-fake"
+pqscan "${PQ_MISED}:${PQ_MISEBIN}:${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: mise-managed node -> ok" "$(pqstatus "${out}" node)" "ok"
+
+# --- docker requiredness rides on compose presence ---
+pqscan "${PQ_CORE}" "${PQR}"
+assert_has "prereqs: no compose -> docker advisory" "$(pqdetail "${out}" docker)" "advisory"
+printf 'services:\n' >"${PQR}/compose.yaml"
+pqscan "${PQ_CORE}" "${PQR}"
+assert_eq "prereqs: compose + no docker -> missing" "$(pqstatus "${out}" docker)" "missing"
+assert_has "prereqs: compose -> docker required" "$(pqdetail "${out}" docker)" "required"
+rm -f "${PQR}/compose.yaml"
+
+# --- exit-code contract ---
+sh "${PREREQS}" a b >/dev/null 2>&1
+assert_rc "prereqs: too many args -> exit 2" "$?" 2
+sh "${PREREQS}" "${WORK}/pq-nope" >/dev/null 2>&1
+assert_rc "prereqs: unreadable repo-root -> exit 3" "$?" 3
+
+# ---------------------------------------------------------------------------
+# scripts/check-policy-freshness.sh — offline cases for the pure parts
+# (norm_cycle granularity, bump-up-only, apply_floor in-place edit). The live
+# feed is stubbed: a fake `curl` emits canned per-product cycle lists and a
+# fake `jq` is a stdin passthrough, so only the script's own logic is under
+# test — no network, deterministic.
+# ---------------------------------------------------------------------------
+FRESH="${PLUGIN}/scripts/check-policy-freshness.sh"
+FR_BIN="${WORK}/fresh-bin"
+mkdir -p "${FR_BIN}"
+cat >"${FR_BIN}/curl" <<'EOF'
+#!/bin/sh
+for _a in "$@"; do _url="${_a}"; done
+case "${_url}" in
+*postgresql*) printf '14\n15\n16\n' ;; # floor 13 EOL'd -> lowest supported 14
+*mysql*) printf '8.4\n9.1.2\n' ;;      # major.minor floor; 9.1.2 must normalize to 9.1
+*mariadb*) printf '10.11\n11.4\n' ;;   # major-only floor; 10.11 must normalize to 10
+*) exit 22 ;;
+esac
+EOF
+printf '#!/bin/sh\ncat\n' >"${FR_BIN}/jq"
+chmod +x "${FR_BIN}/curl" "${FR_BIN}/jq"
+freshrun() { # [args...] — run with the stubbed feed; sets out + rc (+ RC_FILE)
+	out="$(env PATH="${FR_BIN}:${PATH}" sh "${FRESH}" "$@" 2>/dev/null)"
+	rc=$?
+	printf '%s' "${rc}" >"${RC_FILE}"
+}
+
+FR_POL="${WORK}/fresh-policy.yml"
+fresh_policy() {
+	cat >"${FR_POL}" <<'EOF'
+products:
+  postgres:
+    minimum_supported: "13"
+  mysql:
+    minimum_supported: "8.0"
+  mariadb:
+    minimum_supported: "10"
+  valkey:
+    minimum_supported: "7"
+EOF
+}
+fresh_policy
+
+# Read-only mode: behind floors reported, exit 1, file untouched.
+freshrun "${FR_POL}"
+assert_rc "freshness: bumps due -> exit 1" "${rc}" 1
+assert_has "freshness: postgres floor bump reported" "${out}" "postgres: minimum_supported 13 → 14"
+assert_has "freshness: major.minor floor normalized (9.1.2 -> 8.4 wins)" "${out}" "mysql: minimum_supported 8.0 → 8.4"
+# norm_cycle keeps the floor's granularity: upstream "10.11" reads as major "10",
+# equal to the current floor -> NO bump (a finer cycle must never over-deny).
+printf '%s' "${out}" | grep -q 'mariadb' && bad "freshness: major-only floor must not bump from 10.11 (got: ${out})" || ok
+grep -q 'minimum_supported: "13"' "${FR_POL}" && ok || bad "freshness: read-only run must not edit the policy file"
+
+# --write: floors bumped in place (product-scoped), exit 1.
+freshrun --write "${FR_POL}"
+assert_rc "freshness: --write applies -> exit 1" "${rc}" 1
+grep -q 'minimum_supported: "14"' "${FR_POL}" && ok || bad "freshness: postgres floor not bumped to 14"
+grep -q 'minimum_supported: "8.4"' "${FR_POL}" && ok || bad "freshness: mysql floor not bumped to 8.4"
+grep -q 'minimum_supported: "10"' "${FR_POL}" && ok || bad "freshness: mariadb floor must stay 10 (apply_floor scoped per product)"
+grep -q 'minimum_supported: "7"' "${FR_POL}" && ok || bad "freshness: no-feed product (valkey) must be skipped untouched"
+
+# Idempotent: floors now current -> exit 0, silent.
+freshrun "${FR_POL}"
+assert_rc "freshness: floors current -> exit 0" "${rc}" 0
+assert_empty "freshness: floors current -> silent" "${out}"
+
+# Missing policy file -> config error.
+freshrun "${WORK}/fresh-nope.yml"
+assert_rc "freshness: missing policy -> exit 2" "${rc}" 2
 
 # ---------------------------------------------------------------------------
 # Self-fault recording (lib/report-fault.sh) + surfacing (surface-faults.sh).

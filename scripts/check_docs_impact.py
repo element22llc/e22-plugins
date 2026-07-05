@@ -28,6 +28,7 @@ DOC_BEARING_PREFIXES = (
     "plugins/steer/skills/",
     "plugins/steer/rules/",
     "plugins/steer/hooks/",
+    "plugins/steer/agents/",
 )
 # Test-only changes don't change documented behaviour. Internal hook *libraries*
 # (``hooks/lib/*``) are sourced plumbing — they carry no event/matcher of their
@@ -38,7 +39,11 @@ EXEMPT_SUBSTRINGS = ("/tests/", "/hooks/lib/")
 DOCS_PREFIX = "docs/"
 
 
-def _changed_files(base: str, errors: list[str]) -> list[str]:
+def _changed_files(base: str) -> list[str] | None:
+    """Changed paths vs ``base``, mirroring ``check_changelog.py``'s semantics:
+    three-dot (merge-base) diff, then a two-dot fallback (e.g. shallow clone
+    without a merge base), then ``None`` so the caller can fail open with a note
+    instead of blocking on git plumbing."""
     try:
         out = subprocess.run(
             ["git", "diff", "--name-only", f"{base}...HEAD"],
@@ -46,9 +51,16 @@ def _changed_files(base: str, errors: list[str]) -> list[str]:
             text=True,
             check=True,
         ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-        errors.append(f"git diff against {base!r} failed ({exc})")
-        return []
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        try:
+            out = subprocess.run(
+                ["git", "diff", "--name-only", base, "HEAD"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return None
     return [line.strip() for line in out.splitlines() if line.strip()]
 
 
@@ -59,7 +71,10 @@ def _is_doc_bearing(path: str) -> bool:
 
 
 def check_impact(base: str, errors: list[str]) -> None:
-    changed = _changed_files(base, errors)
+    changed = _changed_files(base)
+    if changed is None:
+        print(f"check_docs_impact: could not diff against {base!r}; skipping docs-impact gate.")
+        return
     if not changed:
         return
     doc_bearing = [p for p in changed if _is_doc_bearing(p)]

@@ -145,7 +145,7 @@ def _changed_files(base: str) -> list[str] | None:
             text=True,
             check=True,
         ).stdout
-    except subprocess.CalledProcessError, FileNotFoundError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         # Fall back to a two-dot diff (e.g. shallow clone without merge base).
         try:
             out = subprocess.run(
@@ -154,7 +154,7 @@ def _changed_files(base: str) -> list[str] | None:
                 text=True,
                 check=True,
             ).stdout
-        except subprocess.CalledProcessError, FileNotFoundError:
+        except (subprocess.CalledProcessError, FileNotFoundError):
             return None
     return [p for p in out.splitlines() if p.strip()]
 

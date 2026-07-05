@@ -36,11 +36,13 @@ menu drifts the moment a skill is added or a front door changes. Every row you
 show must come from that table as it stands this session, so a new front door
 appears in the menu automatically.
 
-Include only the **front doors** (the `Intent → skill` table). Do not surface the
-internal gateways (`user-invocable: false` — `tracker-sync`, `spec-scaffold`);
-they are never a user's entry point. You may mention that each front door
-auto-routes to specialized skills, but don't enumerate those unless the user asks
-to zoom in.
+Include the **front doors** (the `Intent → skill` table) plus the two
+user-invocable skills the router surfaces only in its below-table prose —
+`/steer:standards` and `/steer:reference` (take their one-line purpose from that
+prose). Do not surface the internal gateways (`user-invocable: false` —
+`tracker-sync`, `spec-scaffold`); they are never a user's entry point. You may
+mention that each front door auto-routes to specialized skills, but don't
+enumerate those unless the user asks to zoom in.
 
 ## Phase 1 — Read the router
 
@@ -60,10 +62,11 @@ no rows this session (so the menu stays honest if the table changes).
 - **Do the work** — implement a change or fix an issue now, including hotfixes
   (`work`, `work --hotfix`).
 - **Find your bearings** — figure out where things stand and what matters most
-  (`next`, `audit`), and this menu itself (`help`).
+  (`next`, `audit`), get a shareable stakeholder-readable page of one feature
+  (`explain`), and this menu itself (`help`).
 - **Plumbing** — report a defect in the steer plugin upstream (`report`), and load
   the operating manual or reference prose on chat-only surfaces (`standards`,
-  `reference`).
+  `reference` — the two below-table entries).
 
 For each entry render one compact line: the **plain-language goal** first (from
 the router's "trying to…" column), then the invocation in backticks —

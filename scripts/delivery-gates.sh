@@ -20,6 +20,16 @@
 
 set -e
 
+# In CI the explicit sha-based steps in plugin-quality.yml run these same gates
+# against the PR's real base ref — running them here too would duplicate them
+# and, for a PR targeting a non-main base, diff the WRONG base (origin/main) and
+# false-fail. Skip in CI; this task is the local pre-push safety net.
+# DELIVERY_GATES_BASE still forces a run (with that base) for explicit local use.
+if [ "${CI:-}" = "true" ] && [ -z "${DELIVERY_GATES_BASE:-}" ]; then
+	echo "delivery-gates: CI=true — skipping (CI's sha-based PR steps are authoritative)."
+	exit 0
+fi
+
 BASE="${DELIVERY_GATES_BASE:-origin/main}"
 
 if ! git rev-parse --verify --quiet "${BASE}" >/dev/null 2>&1; then
