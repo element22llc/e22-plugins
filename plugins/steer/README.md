@@ -20,7 +20,10 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 ## Skill tool restrictions
 
-- `audit`, `next` carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`
+- Seven read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
+  `explain`, `help` — carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`
+  (`explain` varies: `Bash, Edit, NotebookEdit, EnterWorktree` — no `Write`, since it
+  writes its rendered artifact/fallback file, but it must not run shell commands)
   so the analysis cannot edit code/spec via native tools. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).

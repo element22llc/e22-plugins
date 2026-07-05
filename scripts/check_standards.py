@@ -145,9 +145,6 @@ _HINT_RE = re.compile(r'^argument-hint:\s*"(.*)"\s*$', re.MULTILINE)
 _REF_RE = re.compile(r"`/steer:([a-z][a-z-]*)((?:\s+[^`]*)?)`")
 
 
-_SUBCOMMAND_LEADING: set[str] = set()
-
-
 def _is_subcommand_leading(hint: str) -> bool:
     """True if the hint's first bracket group is entirely bare keyword
     subcommands (no positional placeholder like feature-id, no `<op>`)."""
@@ -194,6 +191,9 @@ def _hint_subcommands(hint: str) -> set[str]:
 
 def check_mode_markers(errors: list[str], skills: set[str]) -> None:
     declared: dict[str, set[str]] = {}
+    # Local, not module-level: repeat run_checks() calls in one process (the
+    # unit-test pattern) must not carry stale entries between runs.
+    subcommand_leading: set[str] = set()
     for skill_md in sorted(SKILLS_DIR.rglob("SKILL.md")):
         name = skill_md.parent.name
         text = skill_md.read_text(encoding="utf-8")
@@ -229,13 +229,13 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
         # indistinguishable from a feature-id argument. work / issues
         # qualify; spec (positional) and tracker-sync (`issue <op>`) don't.
         if hint_m and _is_subcommand_leading(hint_m.group(1)):
-            _SUBCOMMAND_LEADING.add(name)
+            subcommand_leading.add(name)
     # direction C: cross-skill mode references against subcommand-leading skills
     for md in _iter_md(SCAN_DIRS):
         text = md.read_text(encoding="utf-8")
         for ref in _REF_RE.finditer(text):
             target, rest = ref.group(1), ref.group(2).strip()
-            if target not in declared or target not in _SUBCOMMAND_LEADING or not rest:
+            if target not in declared or target not in subcommand_leading or not rest:
                 continue
             first = rest.split()[0]
             if not re.fullmatch(r"[a-z][a-z-]+", first):
@@ -925,7 +925,7 @@ def check_payload_debranded(errors: list[str]) -> None:
                 continue
             try:
                 text = path.read_text(encoding="utf-8")
-            except UnicodeDecodeError, OSError:
+            except (UnicodeDecodeError, OSError):
                 continue
             for lineno, line in enumerate(text.splitlines(), 1):
                 if _BRAND_RE.search(line):

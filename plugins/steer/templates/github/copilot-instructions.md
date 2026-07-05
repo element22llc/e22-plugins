@@ -79,11 +79,13 @@ invocable, but a front door auto-routes to it:
 - **`/steer:issues`** and `/steer:spec` hand off to `/steer:questions`; `/steer:issues`
   hands off to `/steer:roadmap`.
 - GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
-  specs are instantiated by the internal `/steer:spec-scaffold` — never call these
-  directly.
+  specs are instantiated by the internal `/steer:spec-scaffold`. These are not user
+  front doors — they are reached via the owning skills (which invoke them as
+  needed) and never offered to the user directly.
 - Full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams]`)
-  is materialized into `/spec/reference/` once a repo is set up; run it directly only
-  on web chat or when asked for the deep dive.
+  ships with the plugin and is loaded on demand via `/steer:reference` — it is
+  never copied into the repo. Run it for any deep dive, or at session start on
+  web chat.
 
 On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
 auto-injected), run `/steer:standards` at session start to load these rules.
@@ -262,8 +264,9 @@ is identical across all profiles.
   facing).
 - **`/spec/decisions`** — ADRs.
 - **`/spec/reference`** — source/research materials feeding the spec
-  (inventories, vendor metadata, schema/DDL dumps, discovery docs); also where
-  `/steer:reference` prose is materialized.
+  (inventories, vendor metadata, schema/DDL dumps, discovery docs). The
+  `/steer:reference` prose is **not** stored here — it ships with the plugin and
+  is loaded on demand via `/steer:reference`.
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
   engineer's system model: stack, the apps/packages map, how a request flows.

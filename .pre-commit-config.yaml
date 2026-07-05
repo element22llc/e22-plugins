@@ -38,7 +38,7 @@ repos:
         # check_docs_impact.py, which needs a base ref — that runs in
         # `mise run ci` via the `delivery-gates` task and in CI). On failure,
         # reconcile with /plugin-docs. Mirrors `mise run docs:check`.
-        files: ^(plugins/steer/(skills|rules|hooks)/|docs/|mkdocs\.yml$)
+        files: ^(plugins/steer/(skills|rules|hooks|agents)/|docs/|mkdocs\.yml$)
 
       - id: actionlint
         name: GitHub Actions lint

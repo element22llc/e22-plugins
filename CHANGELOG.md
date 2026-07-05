@@ -7,12 +7,52 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:explain` now renders a visual, interactive feature page instead of a
+  wall of text.** The stakeholder page is built around at-a-glance visuals derived
+  strictly from the spec — a `draft → approved → implemented → validated → live`
+  status pipeline (marker never advanced past the recorded `Status:`), a PO
+  acceptance completion meter, a clickable user-journey stepper, an in/out scope
+  board, a light key-concepts relationship diagram (edges only where the intent
+  states a relationship), and an open-questions status board flagging blockers —
+  with a one-screen summary first and the rest behind collapsible sections. Every
+  visual encodes a real spec value (no fabricated charts/numbers/relationships;
+  empty sections show *"not specified in the spec"*). Visuals are drawn as inline
+  SVG/CSS/JS to satisfy the Artifact CSP (no CDN chart libraries); the skill now
+  loads `dataviz` alongside `artifact-design`. The Markdown fallback keeps the same
+  at-a-glance shape as static text.
 - **Tightened the seam between the app guide and the root README.** The app
   guide template (`templates/spec/app-docs.md`) no longer re-states the
   product pitch or developer-setup instructions — its opening now defers "what
   this product is and who it serves" to the root `README.md` and directs the
   author to jump straight into how a user *uses* the product, keeping the two
   documents complementary instead of overlapping.
+- **Fixed the `/steer:sync` Step-1 detection snippet failing as written
+  (#320).** The snippet called `steer_repo_root` but only sourced `spine.sh`;
+  it now also sources `hooks/lib/repo-root.sh` first, matching the parallel
+  snippet in `/steer:setup`.
+- **Unified the `/steer:spec` intent-approval blocking predicate (#321).**
+  Step 6 and validate check #1 (in both `skills/spec/SKILL.md` and
+  `templates/reference/SPEC-FRAMEWORK.md`) now match approve mode's exact
+  predicate: only an unresolved `impact: blocking` question with
+  `required_before: intent-approval` blocks intent approval — questions gated
+  at later gates block their own gate, not an already-granted approval.
+- **Corrected two router-rule inaccuracies (#323).** Rules 00/20 (plus the
+  shipped `sources-readme.md` and the regenerated Copilot instructions) no
+  longer claim `/steer:reference` prose "is materialized into
+  `/spec/reference/`" — no mechanism does that; the prose ships with the plugin
+  and is loaded on demand via `/steer:reference`, while `/spec/reference/`
+  stays the home for source/research materials. Rule 00's internal-gateway
+  wording no longer says "never call these directly" (which collided with rule
+  36's instruction to invoke `/steer:tracker-sync`); it now says the gateways
+  are not user front doors — reached via the owning skills, never offered to
+  the user directly.
+- **Fixed help/issues skill metadata drift (#332).** `/steer:help`'s Phase-2
+  area grouping now maps the router's `/steer:explain` row (added to "Find your
+  bearings") and explicitly sources the below-table `standards`/`reference`
+  entries so every menu entry has a declared source; `/steer:issues`'
+  frontmatter description now acknowledges the sanctioned `bootstrap-labels`
+  inline-`gh` exception instead of claiming ALL GitHub I/O routes through
+  `/steer:tracker-sync`.
 - **Fixed the scaffold CI changed-line coverage gate for monorepos** (#324).
   The gate in `templates/github/workflows/ci.yml` only looked for a repo-root
   `coverage/lcov.info` / `coverage.xml`, but the shipped root-script fan-out
