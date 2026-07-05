@@ -18,7 +18,9 @@ auto = true
 
 [tools]
 # Exact-pinned for strict determinism (mise.lock also records platform checksums).
-# node backend; 24.16.0 matches .node-version (which Cloudflare Pages reads as "24").
+# node backend; 24.16.0 matches .node-version (an inert leftover from the old
+# Cloudflare Pages deploy — the GitHub Pages deploy via docs-deploy.yml uses this
+# mise pin, not that file).
 node = "24.16.0"
 # npm backend on purpose: aqua:pnpm/pnpm lacks a macOS asset (steer scaffold note).
 "npm:pnpm" = "11.5.2"
@@ -28,7 +30,7 @@ description = "Serve the deck with live reload (deps auto-installed first)"
 run = "pnpm exec slidev --open"
 
 [tasks.build]
-description = "Build the static site to dist/ (what Cloudflare Pages runs)"
+description = "Build the static site to dist/ (same slidev build docs-deploy.yml runs for GitHub Pages)"
 run = "pnpm exec slidev build"
 
 [tasks.export]

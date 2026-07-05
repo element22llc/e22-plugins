@@ -75,6 +75,10 @@ The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/steer/rules/*.md` to stdout (which Claude Code injects as
 session context). It runs once per session when the plugin is enabled.
 
+> **Using GitHub Copilot?** The same rules and skills also ship as a generated
+> Copilot target (CLI + VS Code, prototype scope) — see
+> [GitHub Copilot support](docs/concepts/copilot-support.md).
+
 ## Bootstrapping a repo with the plugin
 
 The plugin *is* the bootstrap mechanism — no template repo to fork. Start from

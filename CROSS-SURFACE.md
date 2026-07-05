@@ -19,7 +19,9 @@ behave the same. The headline, validated against current docs and changelog:
   **Claude Code** — the CLI and IDE extensions (VS Code, JetBrains). Intended: the
   Claude Desktop **Code tab** (full Claude Code engine). Best-effort: **Cowork**
   (PO/knowledge-work only — engineering work is **not** supported there; use Claude
-  Code) and **the Chat tab + claude.ai web chat** (skills only).
+  Code), **the Chat tab + claude.ai web chat** (skills only), and the shipped
+  generated **GitHub Copilot** target (CLI + VS Code, prototype scope —
+  [§3](#3-support-policy--per-surface-matrix)).
 - **The hook-driven core (always-on rules + gates) runs wherever Claude Code runs**
   — including the Claude Desktop **Code tab**, which shares the CLI engine.
 - **Cowork is the _one_ chat-family surface where hooks run** — Anthropic's docs
@@ -48,7 +50,7 @@ behave the same. The headline, validated against current docs and changelog:
 |---|---|---|---|
 | **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (32 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
 | **SessionStart hooks** | `inject-standards.sh`, `orient-session.sh`, `check-template-drift.sh`, `check-open-questions.sh`, `check-unmanaged-repo.sh`, `surface-faults.sh`, `check-graduation.sh` | `SessionStart` event; source `${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh` | Claude-Code-runtime |
-| **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-code-before-spec.sh`, `check-issue-before-mutation.sh`, `check-issue-create-contract.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Claude-Code-runtime |
+| **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-code-before-spec.sh`, `check-issue-before-mutation.sh`, `check-issue-create-contract.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Mostly Claude-Code-runtime — but `check-version-pins.sh` is dual-target: with `STEER_HOOK_TARGET=copilot` it emits a Copilot `ask` envelope, wired by `hooks/copilot-hooks.json` on the Copilot CLI |
 | **Skills** (24) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
 | **MCP** | `tracker-sync` (GitHub MCP → `gh` → manual) | MCP connector | **Already surface-agnostic** |
 | **Bundled assets** | `templates/spec/*`, `templates/scaffold/*` | `${CLAUDE_PLUGIN_ROOT}` path resolution | Files portable; path var is runtime-specific |
@@ -56,6 +58,14 @@ behave the same. The headline, validated against current docs and changelog:
 Read this as two layers: a *portable nucleus* (skills + MCP) that works anywhere
 plugins load, and a *hook layer* (always-on rules + gates) that runs only where the
 **Claude Code engine** runs (CLI / IDE / Code tab) plus **Cowork**.
+
+There is also one **non-Claude target already shipped**: **GitHub Copilot** (CLI +
+VS Code), served not by porting the hook layer but by **build-time generation** —
+`mise run gen:copilot` renders the same `rules/` into a committed
+`.github/copilot-instructions.md` and the skills into `.github/prompts/*.prompt.md`
+(VS Code) / a Copilot plugin manifest (`.github/plugin/plugin.json`, CLI), with the
+one dual-target gate above. See
+[`docs/concepts/copilot-support.md`](docs/concepts/copilot-support.md).
 
 ## 3. Support policy & per-surface matrix
 
@@ -70,7 +80,7 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
   hooks / rules / gates / skills / MCP all work — we just don't run it in the
   per-release test matrix. Regressions here we fix; we just don't pre-verify each
   release on it.
-- **Tier 3 — Best-effort.** Three surfaces, none in the per-release test matrix:
+- **Tier 3 — Best-effort.** None of these run in the per-release test matrix:
   - **Cowork — PO/knowledge-work only.** Cowork *does* run hooks + sub-agents (the
     one chat-family surface that does, per Anthropic's docs — reconfirm
     *plugin-scoped* `SessionStart` on your build, [§4](#4-where-the-hook-layer-runs)),
@@ -86,6 +96,14 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
   - **Chat tab + claude.ai web chat.** Plugins install and the portable nucleus
     (skills + MCP) works; **hooks and sub-agents are grayed out** — no always-on
     rules, no gates. Use `/steer:standards` to load rules by hand.
+  - **GitHub Copilot (CLI + VS Code) — shipped, prototype scope.** Not a Claude
+    surface at all: the standards and skills reach Copilot as **generated,
+    committed artifacts** (`.github/copilot-instructions.md`,
+    `.github/prompts/*.prompt.md`, the Copilot plugin manifest
+    `.github/plugin/plugin.json`) rendered from the same `rules/` + `skills/` by
+    `mise run gen:copilot`, plus one CLI-only gate (`hooks/copilot-hooks.json`,
+    version-pin `ask`). Subagents are not ported and VS Code has no hook
+    mechanism. See [`docs/concepts/copilot-support.md`](docs/concepts/copilot-support.md).
 
 | Surface | Tier | Plugin install | Hooks (rules + gates) | Skills | MCP |
 |---|---|---|---|---|---|
@@ -94,6 +112,7 @@ plugins load, and a *hook layer* (always-on rules + gates) that runs only where 
 | Claude Desktop **Code tab** (Claude Code Desktop) | **2 — intended** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
 | Claude Desktop **Cowork tab** | **3 — best-effort (PO only)** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) — but **engineering work unsupported; use Claude Code** | ⚠️ **built-in connector only** — the plugin `.mcp.json` `${GITHUB_PAT}` `github` server and local-process `markitdown` server **don't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
 | Claude Desktop **Chat tab** + **claude.ai** web chat | **3 — best-effort** | ✅ (chat) / ✅ as org Skills (web) | ❌ grayed out — use `/steer:standards` | ✅ | ⚠️ via the surface's own connector, not the plugin `.mcp.json` |
+| **GitHub Copilot** — **CLI** + **VS Code** | **3 — best-effort (prototype scope)** | ✅ CLI: `copilot plugin install steer@e22-plugins` (Copilot manifest) / VS Code: reads the committed `.github/` artifacts, no install | ⚠️ **generated, not hooked** — rules ship as committed `.github/copilot-instructions.md`; one gate only (`copilot-hooks.json` version-pin, soft `ask`, CLI-only; VS Code has no hooks) | ✅ CLI via the plugin manifest; VS Code as `/steer-<skill>` prompt files | ⚠️ Copilot's own MCP config — the plugin `.mcp.json` is Claude-Code-only |
 
 Legend: ✅ works · ⚠️ works with a caveat / reconfirm · ❌ not available / does not fire.
 
@@ -260,9 +279,13 @@ Run on each app and record results back into the
 
 ## 7. Out of scope (this pass)
 
-No hook hardening, no skills-only distribution build, no MCP packaging. Those are
-follow-ups this doc recommends and sizes — to be decided after the checklist
-results come back.
+No hook hardening and no MCP packaging. Those remain follow-ups this doc
+recommends and sizes — to be decided after the checklist results come back. The
+third follow-up the first draft listed here — a **skills-only distribution
+build** — has since **shipped** as the generated GitHub Copilot target
+(`mise run gen:copilot` → committed `.github/copilot-instructions.md` +
+`.github/prompts/*.prompt.md`; see
+[`docs/concepts/copilot-support.md`](docs/concepts/copilot-support.md)).
 
 ---
 

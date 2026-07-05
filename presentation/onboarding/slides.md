@@ -566,15 +566,17 @@ flowchart LR
     S["/steer:setup"] --> Q{repo state?}
     Q -->|brand new| INIT["/steer:init<br/>scaffold from bundle"]
     Q -->|existing app| ADOPT["/steer:adopt<br/>add standards in place"]
+    Q -->|already on the standards| SYNC["/steer:sync<br/>update to the latest plugin"]
     INIT --> W[ready to work]
     ADOPT --> W
+    SYNC --> W
     style S fill:#0ea5e9,stroke:#0284c7,color:#fff
     style W fill:#10b981,stroke:#059669,color:#fff
 ```
 
 </div>
 
-<div class="grid grid-cols-2 gap-6 mt-6">
+<div class="grid grid-cols-3 gap-6 mt-6">
 
 <div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
@@ -585,6 +587,12 @@ flowchart LR
 <div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 **`adopt`** brings an existing codebase under the standards without flattening what's already there.
+
+</div>
+
+<div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+
+**`sync`** keeps a bootstrapped repo current — reconciles scaffold + spec drift after a plugin update.
 
 </div>
 
@@ -733,6 +741,9 @@ That pause isn't a bug — it's the **design**. The PR is the hand-off, not a fa
 <div v-click><b class="accent">sync</b> — reconcile state</div>
 <div v-click><b class="accent">protect</b> — branch protection</div>
 <div v-click><b class="accent">next</b> — what to do now</div>
+<div v-click><b class="accent">explain</b> — shareable feature page</div>
+<div v-click><b class="accent">help</b> — browse what steer can do</div>
+<div v-click><b class="accent">reference</b> — load the deep-dive prose</div>
 <div v-click><b class="accent">standards</b> — load rules by hand</div>
 <div v-click><b class="accent">doctor</b> — diagnose setup</div>
 <div v-click><b class="accent">roadmap</b> — release timeline</div>
@@ -743,7 +754,7 @@ That pause isn't a bug — it's the **design**. The PR is the hand-off, not a fa
 
 <div v-click class="mt-8 text-center opacity-70">
 
-Don't memorize them. Run <code>/steer:next</code> and let it tell you the next move.
+Don't memorize them. Run <code>/steer:next</code> for the next move, or <code>/steer:help</code> to browse.
 
 </div>
 

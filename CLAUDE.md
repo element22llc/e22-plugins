@@ -30,9 +30,16 @@ install paths; keep it in sync when adding scaffold files.
 .claude-plugin/marketplace.json     # lists steer
 plugins/steer/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
-├── hooks/                          # SessionStart hook → injects rules/*.md
-├── scripts/                        # POSIX-sh helpers skills invoke via ${CLAUDE_PLUGIN_ROOT}
-│                                   #   (e.g. template-reconcile.sh — read-only template diff)
+├── .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
+├── .mcp.json                       # plugin MCP servers (github, markitdown, context7)
+├── agents/                         # subagents (steer-reviewer — driven by /steer:audit &
+│                                   #   /steer:work --reviewed)
+├── hooks/                          # SessionStart hook → injects rules/*.md; PreToolUse/Stop
+│                                   #   gates; copilot-hooks.json (Copilot-CLI hook variant)
+├── policy/                         # org policy data (branch-protection.yml, versions.yml)
+├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} —
+│                                   #   mostly POSIX sh (e.g. template-reconcile.sh — read-only
+│                                   #   template diff) plus Python (scaffold_reconcile.py)
 ├── rules/                          # always-on ruleset (numeric-prefixed, lexical order)
 ├── skills/                         # on-demand, invoked as /steer:<skill>:
 │                                   #            setup, doctor, init, adopt, build, reference,
@@ -50,6 +57,10 @@ plugins/steer/
     ├── reference/                  # full reference prose (CONVENTIONS, TRACEABILITY, …)
     ├── docker/                     # on-demand Dockerfile refs (Node/Python) — instantiated per
     │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
+    ├── github/                     # GitHub templates — single source of truth (issue forms,
+    │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml,
+    │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
+    │                               #   (copilot-instructions.md, prompts/ — via `mise run gen:copilot`)
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, …)
                                     #   — see its MANIFEST.md for the install map
 ```
