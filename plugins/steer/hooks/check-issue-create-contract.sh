@@ -98,9 +98,10 @@ printf '%s' "${PAYLOAD}" | grep -q 'steer:' && exit 0
 # --- A /steer:report self-report files UPSTREAM to the plugin's own repo, never
 # the product tracker — it must NOT be routed through /steer:tracker-sync. The MCP
 # and labelled `gh` paths carry a `steer:` marker caught above; this covers the
-# label-less `gh` fallback. Match the `--repo` FLAG (not a bare mention) so a
-# product create that only references the plugin repo in its body still nudges. ---
-printf '%s' "${PAYLOAD}" | grep -Eq -- '--repo[ =]element22llc/e22-plugins' && exit 0
+# label-less `gh` fallback. Match the `--repo` FLAG or its `-R` alias (not a bare
+# mention) so a product create that only references the plugin repo in its body
+# still nudges. ---
+printf '%s' "${PAYLOAD}" | grep -Eq -- '(-R|--repo)[ =]element22llc/e22-plugins' && exit 0
 
 # --- Scope: GitHub-adopted consumer repo, never the plugin's own source repo. ---
 SID="$(steer_field session_id)"

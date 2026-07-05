@@ -510,6 +510,14 @@ printf 'system: github\n' >"${RC8f}/spec/tracker.md"
 out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8f}" sC4b 'gh issue create --repo element22llc/e22-plugins --title "[steer] x" --label bug --body-file /tmp/b')")"
 assert_empty "issue-create: steer self-report upstream create stays silent" "${out}"
 
+# gh's documented `-R` alias for `--repo` is the same self-report create and must
+# be exempt too (#339) — pre-fix it got a false-positive nudge at the wrong repo.
+RC8h="$(new_repo repoSelfReportR)"
+mkdir -p "${RC8h}/spec"
+printf 'system: github\n' >"${RC8h}/spec/tracker.md"
+out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8h}" sC4c 'gh issue create -R element22llc/e22-plugins --title "[steer] x" --body-file /tmp/b')")"
+assert_empty "issue-create: steer self-report via -R alias stays silent" "${out}"
+
 # The self-report guard matches the --repo FLAG, not a bare mention: a legitimate
 # PRODUCT create whose body merely references the plugin repo must STILL be nudged
 # (routed through /steer:tracker-sync), not silently suppressed.
@@ -905,12 +913,15 @@ assert_empty "orient: damaged spine silent" "${out}"
 
 # ---------------------------------------------------------------------------
 # check-unmanaged-repo.sh — greenfield bootstrap nudge (SessionStart).
-# Resolves the repo root from cwd (steer_repo_root .), so each case runs from
-# INSIDE the fixture; new_repo drops a .git file the upward walk anchors on.
+# Resolves the repo root from the payload `cwd` like its sibling SessionStart
+# hooks (#331) — the suite deliberately does NOT cd into the fixture, so the
+# hook process cwd (this repo, which has .claude-plugin/) diverges from the
+# payload cwd; anchoring on the process cwd would self-silence every case
+# below. new_repo drops a .git file the upward walk anchors on.
 # ---------------------------------------------------------------------------
 # No /spec spine -> nudge leads with the PO build path, still offers init/adopt.
 UM1="$(new_repo unmanaged1)"
-out="$(cd "${UM1}" && run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
 oq_grep "unmanaged: nudge offers /steer:build for a non-technical owner" '/steer:build' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:init for a developer" '/steer:init' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:adopt' "${out}"
@@ -918,8 +929,15 @@ oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:a
 # Managed spine -> silent (the notice clears itself once /spec exists).
 UM2="$(new_repo unmanaged2)"
 managed_spine "${UM2}"
-out="$(cd "${UM2}" && run_hook check-unmanaged-repo.sh "$(session_json "${UM2}" um2)")"
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM2}" um2)")"
 assert_empty "unmanaged: managed spine silent" "${out}"
+
+# Payload cwd in a SUBDIRECTORY of an unmanaged repo -> the upward walk still
+# anchors on the repo root and the nudge fires.
+UM3="$(new_repo unmanaged3)"
+mkdir -p "${UM3}/apps/web"
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM3}/apps/web" um3)")"
+oq_grep "unmanaged: payload subdir cwd still resolves the repo root" '/steer:init' "${out}"
 
 # ---------------------------------------------------------------------------
 # scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
@@ -1306,6 +1324,30 @@ steer_record_fault "${RF4}" "inject-standards.sh" "rules directory missing"
 out="$(run_hook surface-faults.sh "$(session_json "${RF4}" rf4)")"
 assert_empty "surface: silent inside the plugin's own repo" "${out}"
 
+# ----- inject-standards.sh: missing-rules fail-soft (banner + rc 0, #319) -----
+# SessionStart stdout becomes additionalContext ONLY on exit 0, so the fallback
+# banner must always ship with a clean exit. A fake plugin root (hook libs, no
+# rules/) exercises the degraded path via the CLAUDE_PLUGIN_ROOT override.
+FAKEPLUGIN="${WORK}/fakeplugin"
+mkdir -p "${FAKEPLUGIN}/hooks"
+cp -R "${HOOKS}/lib" "${FAKEPLUGIN}/hooks/lib"
+# Consumer root that looks like the plugin's own tree (.claude-plugin present):
+# pre-fix the record-fault guard chain's failed test leaked rc 1 here, dropping
+# the banner exactly in the degraded scenario it exists for.
+NR1="$(new_repo norules_plugintree)"
+mkdir -p "${NR1}/.claude-plugin"
+out="$(ENV="CLAUDE_PLUGIN_ROOT=${FAKEPLUGIN}" run_hook inject-standards.sh "$(session_json "${NR1}" nr1)")"
+assert_has "inject: missing rules dir still emits fallback banner (plugin tree)" "${out}" 'rules directory was not found'
+assert_rc "inject: missing-rules fail-soft exits 0 (plugin tree)" "$(last_rc)" 0
+# Ordinary consumer repo: banner + rc 0, and the defect is recorded for
+# surface-faults.sh to offer /steer:report.
+NR2="$(new_repo norules_consumer)"
+out="$(ENV="CLAUDE_PLUGIN_ROOT=${FAKEPLUGIN}" run_hook inject-standards.sh "$(session_json "${NR2}" nr2)")"
+assert_has "inject: missing rules dir emits fallback banner (consumer repo)" "${out}" 'rules directory was not found'
+assert_rc "inject: missing-rules fail-soft exits 0 (consumer repo)" "$(last_rc)" 0
+grep -q 'rules directory missing' "${NR2}/.claude/steer-faults.log" 2>/dev/null &&
+	ok || bad "inject: missing rules dir records a self-fault in the consumer repo"
+
 # ----- inject-standards.sh: conditional (inject-when) rule scoping -----
 # 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-iac|has-apps.
 # A scoped rule is injected only when its predicate holds; always-on rules
@@ -1430,6 +1472,17 @@ printf 'services:\n' >"${TRAITS_APP}/compose.yaml"
 steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true with package.json"
 steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
+
+# tracker-github matches the WORD github (`github\b`, #339), never a value that
+# merely starts with it — `system: githubbish` is not a GitHub tracker.
+TRAITS_GHISH="$(new_repo traits_ghish)"
+mkdir -p "${TRAITS_GHISH}/spec"
+printf 'system: githubbish\n' >"${TRAITS_GHISH}/spec/tracker.md"
+steer_tracker_is_github "${TRAITS_GHISH}" && bad "scope: tracker-github must reject system: githubbish" || ok
+TRAITS_GH="$(new_repo traits_gh)"
+mkdir -p "${TRAITS_GH}/spec"
+printf 'system: github\n' >"${TRAITS_GH}/spec/tracker.md"
+steer_tracker_is_github "${TRAITS_GH}" && ok || bad "scope: tracker-github true for system: github"
 
 # OR markers (token|token): inject when ANY arm holds.
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR marker true via has-apps arm"
