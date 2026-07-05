@@ -1,4 +1,4 @@
-# Build status — [Product name]
+# Build status — [Product Name]
 
 > `/steer:build` flow state. Claude updates this at every step transition and
 > commits it with the work. A fresh session reads this **first** and resumes

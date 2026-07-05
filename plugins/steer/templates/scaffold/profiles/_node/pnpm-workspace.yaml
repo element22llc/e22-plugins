@@ -37,4 +37,6 @@ confirmModulesPurge: false
 catalog:
   typescript: ^6.0.3
   tsx: ^4.22.4
-  "@types/node": ^25.9.1
+  # Keep the @types/node major matched to the runtime major (Dockerfile /
+  # CI node) — confirm current stable major on adoption.
+  "@types/node": ^24.0.0

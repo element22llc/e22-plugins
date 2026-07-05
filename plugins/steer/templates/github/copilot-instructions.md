@@ -204,7 +204,7 @@ defaults. Deviations are ADRs, same as any stack choice.
   for OpenTofu/Terraform; `roles/` + `playbooks/` (or `site.yml`) + `inventory/`
   for Ansible. Detail in `/infra/README.md` (monorepo) or the repo README.
 - **Validate locally before CI:** `tofu fmt -check` + `tofu validate` /
-  `terragrunt run-all validate`; `ansible-lint` + `yamllint` for Ansible. These
+  `terragrunt run --all validate`; `ansible-lint` + `yamllint` for Ansible. These
   run in CI too.
 - **State & secrets:** remote state with locking (S3 `use_lockfile`); secrets in
   the cloud secret store (SSM Parameter Store `SecureString` / Secrets Manager),
@@ -496,7 +496,7 @@ the code**:
   chosen identity when the first UI lands and grown on the 3+ rule (`Design
   sources`). The same PR that establishes the stack or first app also retires
   the scaffold's now-false placeholder prose (e.g. the `apps/README.md` "starts
-  empty" line, `[e.g. …]` cells) — a stub left after the thing it describes
+  empty" line, `[e.g., …]` cells) — a stub left after the thing it describes
   exists is drift.
 - What changed, why, who asked, refs → append to `/spec/HISTORY.md` (action
   history), one short entry per merged change or ratified decision.

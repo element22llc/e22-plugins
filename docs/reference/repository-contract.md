@@ -47,7 +47,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   than on the host).
 - **Layer 1 — Node baseline** (`profiles/_node/`, Node-stack profiles only):
   `package.json`, `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`.
-  Every Node profile is a pnpm workspace (monorepo-by-default). Skipped for
+  Every Node profile is a pnpm workspace (monorepo-by-default). The root
+  `package.json` ships a `packageManager` placeholder that `/steer:init` stamps
+  with the mise-pinned pnpm version, so corepack (e.g. in a Docker build) uses
+  the same pnpm that wrote `pnpm-lock.yaml`. Skipped for
   `infra`, and replaced by `pyproject.toml`/Ruff for a Python-only product.
 - **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/` +
   `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill

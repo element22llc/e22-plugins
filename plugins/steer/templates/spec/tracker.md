@@ -38,7 +38,7 @@ owners:
   security:       # @login (optional)
 ---
 
-# Issue tracker — [Product name]
+# Issue tracker — [Product Name]
 
 > Declares which external tracker this product uses and how work items are
 > referenced everywhere else (specs, PRs, action history). The machine-readable

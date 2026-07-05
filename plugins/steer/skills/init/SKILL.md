@@ -295,7 +295,10 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    each lock has a `platforms.linux-x64` block before committing. **If the dev
    defers pinning, commit no `mise.lock`** rather than an empty placeholder. Full
    procedure + rationale: `/steer:reference conventions` → "Toolchain: `latest` in
-   config, pinned in the lockfile". Once the first real app/workspace exists,
+   config, pinned in the lockfile". On a Node stack, also resolve the root
+   `package.json` `packageManager` placeholder to the mise-pinned pnpm version
+   (`pnpm@<major.minor.patch>` — `mise current pnpm`), so corepack (e.g. in the
+   Docker build) uses the same pnpm that wrote `pnpm-lock.yaml`. Once the first real app/workspace exists,
    generate and commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`);
    maintain it with every dependency change. Make `mise run dev:setup` real and
    idempotent for this product (Python: `uv run …` task commands; drop

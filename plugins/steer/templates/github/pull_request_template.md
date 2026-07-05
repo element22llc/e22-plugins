@@ -69,8 +69,8 @@ Pointers are a hint, not a maintained index (the spec ↔ code coupling rules co
 
 ## Testing
 
-Per the [Definition of Done](../CLAUDE.md#definition-of-done). These are
-review aids, not CI gates.
+Per the Definition of Done (injected every session by the `steer` plugin).
+These are review aids, not CI gates.
 
 - [ ] Added or updated automated tests for this change (same PR, not "later")
 - [ ] **Bug fix:** added a regression test that fails before the fix and passes after

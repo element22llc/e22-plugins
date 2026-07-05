@@ -1,7 +1,8 @@
 {
   // Recommended extensions for this monorepo. VS Code prompts contributors to
   // install these on first open. Each maps to a tool already in the stack
-  // (see CLAUDE.md "Stack" and mise.toml). Keep this list aligned with the
+  // (see mise.toml and CLAUDE.md "Stack overrides" — the stack defaults are
+  // injected by the steer plugin). Keep this list aligned with the
   // toolchain — do not add ESLint/Prettier here, Biome is the lint+format tool.
   "recommendations": [
     // Lint + format (Node/TypeScript) — the canonical formatter for this repo

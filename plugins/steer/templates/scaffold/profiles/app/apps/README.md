@@ -8,8 +8,10 @@ By default the UI web app (`apps/web`, Next.js) **owns its own backend** via
 Route Handlers / Server Actions / server-side data fetching — don't add a
 separate `apps/api` for it. A standalone API app is the exception, warranted
 only by a non-web consumer, independent scaling/deploy, or a different runtime
-(e.g. Python + FastAPI); record that split as an ADR. See the `Stack` section in
-[`CLAUDE.md`](../CLAUDE.md).
+(e.g. Python + FastAPI); record that split as an ADR. The backend-placement
+default is part of the plugin-injected stack rules (run
+`/steer:reference conventions`); deviations live in [`CLAUDE.md`](../CLAUDE.md)
+→ `Stack overrides`.
 
 - Put a thing here if it ships on its own. Shared code it depends on lives in
   [`/packages`](../packages/README.md).

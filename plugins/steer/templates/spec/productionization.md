@@ -1,4 +1,4 @@
-# Productionization — [Product name]
+# Productionization — [Product Name]
 
 > The **dev's productionization brief** — every gap and as-built risk to harden
 > before this app is production-grade, with a **disposition** for each area. It

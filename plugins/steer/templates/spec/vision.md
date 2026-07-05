@@ -4,19 +4,22 @@
 
 ## What this product is
 
-[One paragraph. Plain language. What does this product do?]
+[Replace with one paragraph, plain language: what does this product do?]
 
 ## Who it serves
 
-[One paragraph. Who are the users? What job are they hiring this product to do?]
+[Replace with one paragraph: who are the users, and what job are they hiring
+this product to do?]
 
 ## Why it exists
 
-[One paragraph. What problem does it solve? Why is it worth building?]
+[Replace with one paragraph: what problem does it solve, and why is it worth
+building?]
 
 ## What success looks like
 
-[3–5 bullets. Concrete signals that this product is working. Behavioral or qualitative is fine.]
+[Replace with 3–5 bullets: concrete signals that this product is working.
+Behavioral or qualitative is fine.]
 
 -
 -
@@ -24,7 +27,8 @@
 
 ## What this product is NOT
 
-[Optional but valuable. What are we explicitly choosing not to do?]
+[Replace with what we are explicitly choosing not to do — optional but
+valuable.]
 
 -
 -
