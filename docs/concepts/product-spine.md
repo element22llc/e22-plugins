@@ -17,6 +17,8 @@ among others:
 | `vision.md`, `users.md`, `glossary.md` | Product-level framing shared across features. |
 | `HISTORY.md` | Append-only log of what shipped, with tracker `Refs:`. |
 | `tracker.md` | Declares the issue-tracking system and ref format. |
+| `design/` | Design-export home: `README.md`, product-level `source.md` provenance (greenfield), and the living global `architecture.md` diagram that the root `ARCHITECTURE.md` links to. |
+| `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:intake`](../workflows/intake.md). |
 | ADRs | Ratified, hard-to-reverse decisions (see [Decisions](../decisions/index.md)). |
 | `.version` | Stamps the plugin version the spine was reconciled against. |
 
