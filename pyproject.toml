@@ -31,7 +31,13 @@ package = false
 
 [tool.ruff]
 line-length = 100
-target-version = "py314"
+# Deliberately BELOW requires-python (>=3.14): the scripts carry python3
+# shebangs and get invoked directly on stock 3.9–3.13 interpreters, so keep the
+# source syntax-portable. In particular this stops the formatter rewriting
+# `except (A, B):` into the PEP 758 `except A, B:` form, which is a SyntaxError
+# before 3.14 (issue #329) — and makes `ruff format --check` enforce the
+# portable style.
+target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]

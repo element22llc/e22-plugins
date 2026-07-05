@@ -106,7 +106,11 @@ plugins/steer/
 The dev loop is driven by `mise` (run `mise tasks` to list everything):
 
 - **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
-  actionlint). This is the pre-commit equivalent.
+  actionlint). This is a superset of the installed pre-commit hooks: the
+  pre-commit tier runs only the lighter hygiene checks (ruff, `check_plugin.py`,
+  `claude plugin validate plugins/steer`, docs-sync, actionlint, shell), while
+  `check` adds `check_standards.py`, the copilot sync checks, the changelog
+  release validator, and the marketplace-manifest validation.
 - **Before push / PR — full gate:** `mise run ci` — exactly what CI runs (adds
   `fixtures`, `test`, `shell`, `hooktests`, `version-scan`, `docs:check`, and
   `delivery-gates` on top of `check`). `delivery-gates` runs the two PR-only

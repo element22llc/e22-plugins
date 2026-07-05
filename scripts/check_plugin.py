@@ -7,9 +7,7 @@ the conventions that `claude plugin validate` does not know about:
 
 - ``plugin.json`` exists and is well-formed;
 - every skill's YAML frontmatter parses and carries the required metadata;
-- every command's YAML frontmatter parses and carries a description;
 - skill names are unique and match their directory;
-- command names are unique and (optionally) wrap a real skill;
 - no unresolved placeholders (``TODO``, ``FIXME``, ``[Replace``) leak into
   authored content;
 - relative markdown links inside the plugin resolve to real files.
