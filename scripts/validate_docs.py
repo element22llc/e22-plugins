@@ -3,7 +3,9 @@
 
 Lightweight (stdlib + pyyaml only — no Zensical toolchain), so it runs as part of
 ``mise run ci`` without pulling in the ``docs`` dependency-group. The strict
-link/render build stays a separate, local-only gate (``mise run docs:build``).
+link/render build is a separate gate (``mise run docs:build``): CI runs it on
+docs-touching PRs and pushes via ``.github/workflows/docs-deploy.yml``, and it
+can also be run locally on demand.
 
 Checks:
 
