@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.13.0
+
 - **`/steer:adopt` now stamps the Node `packageManager` placeholder, and the
   additive JSON reconcile refuses to inject unresolved placeholders.** The
   scaffold's root `package.json` ships a `packageManager` placeholder that only
