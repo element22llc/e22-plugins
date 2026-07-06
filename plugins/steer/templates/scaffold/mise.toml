@@ -188,3 +188,16 @@ run = "uvx --from 'markitdown[all]' markitdown"
 #   "pnpm dlx likec4 export png spec/design/architecture -o spec/design",
 # ]
 
+# Opt-in (infra/service): render a D2 network/infra topology to SVG. This is a
+# SEPARATE artifact from the architecture picture above — reach for it only when you
+# need the literal deployed topology (VPCs, subnets, AZs, load balancers, gateways)
+# with cloud-vendor icons, e.g. a client-facing deployment diagram. Runs on demand via
+# `mise x` (exec, not `mise use`), so nothing is pinned in [tools] — the same
+# no-permanent-pin pattern as `diagrams:render`'s pnpm dlx and `convert:doc`'s uvx. SVG
+# is the default (PNG/PDF would pull in a headless browser). Full rationale, the .d2
+# authoring guide, and the `/infra/mise.toml` pin alternative are in
+# `/steer:reference architecture-diagrams`.
+# [tasks."diagrams:infra"]
+# description = "Render the D2 network/infra topology to SVG (spec/design/infrastructure.d2)"
+# run = "mise x d2@latest -- d2 --layout=elk spec/design/infrastructure.d2 spec/design/infrastructure.svg"
+
