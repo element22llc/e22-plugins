@@ -37,6 +37,7 @@ validation, and operation. Treat it as infrastructure.
 │   └── architecture.md       # Living global architecture diagram (Mermaid by default; opt-in LikeC4) — linked from ARCHITECTURE.md
 ├── sources/                  # Versioned home for recurring PO source documents, maintained by /steer:intake
 │   └── README.md
+├── reference/                # Durable one-off source/research material feeding the spec (inventories, vendor metadata, DDL dumps, discovery docs) — created on demand by /steer:tidy, no shipped README
 ├── features/
 │   └── [feature-id]/
 │       ├── intent.md         # The what and why — PO-facing
