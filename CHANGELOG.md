@@ -16,6 +16,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   to the layout rule, with a one-line note distinguishing the three (design =
   UI/design exports, reference = one-off source material, sources = recurring
   versioned PO documents).
+- **Architecture diagrams gain an opt-in D2 option for literal network/infra
+  topology.** `/steer:reference architecture-diagrams` now documents a second,
+  *complementary* diagram-as-code artifact alongside the architecture picture
+  (Mermaid, graduating to a LikeC4 model): a **D2** network topology
+  (`spec/design/infrastructure.d2` → committed `infrastructure.svg`) for the literal
+  deployed network — VPCs, subnets, AZs, load balancers, gateways — with cloud-vendor
+  icons, e.g. a client-facing deployment diagram. Mermaid/LikeC4 stay the
+  *architecture picture* (what the system is); D2 answers *how it's wired in the
+  cloud* — orthogonal siblings, not competing tiers. The scaffold `mise.toml` ships a
+  matching inert (commented)
+  `diagrams:infra` task that runs D2 on demand via `mise x d2@latest` (no permanent
+  `[tools]` pin — the same no-install pattern as `diagrams:render`'s `pnpm dlx` and
+  `convert:doc`'s `uvx`; a persistent pin, if wanted, belongs in `/infra/mise.toml`,
+  not the root). Same living-docs drift rule (`32`): edit the `.d2`, regenerate the
+  SVG, commit both.
 
 ### 3.13.0
 
