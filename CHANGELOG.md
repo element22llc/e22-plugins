@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.15.0
+
 - `/steer:questions` gains a **`bundle`** mode: the outbound counterpart to
   `/steer:intake clarify`. It renders the **PO-answerable** open questions across
   the whole spine (every feature at once; `bundle <feature-id>` narrows to one) as
