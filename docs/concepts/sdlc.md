@@ -29,7 +29,7 @@ flowchart LR
 | Phase | Skills | Produces | Gate that closes it |
 | --- | --- | --- | --- |
 | **0 · Bootstrap** | [`/steer:setup`](../workflows/index.md) → `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | — (enablement, not a gate) |
-| **1 · Shape** | [`/steer:spec`](../workflows/spec.md), `questions`, `adr`, `roadmap` | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` — blocked while any **blocking** open question is unresolved |
+| **1 · Shape** | [`/steer:spec`](../workflows/spec.md), `questions`, `adr`, `roadmap` | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` — blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
 | **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: every implementation-affecting mutation has an issue **before** the first change |
 | **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change-size + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** — "review *is* productionization" |

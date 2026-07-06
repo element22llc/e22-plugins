@@ -7,6 +7,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Finished propagating the #321 approval predicate and #332 tracker-sync
+  exception (pre-release audit sweep).** Three surfaces still carried the old
+  unqualified claims: `/steer:spec`'s frontmatter description (and the
+  regenerated `steer-spec.prompt.md`) now states that only a blocking question
+  gated at intent-approval blocks approval; `/steer:issues`' question-
+  reconciliation floor and `ISSUE-WORKFLOW.md`'s ready-for-dev precondition now
+  qualify their "no open blocking question" guarantees by gate, matching
+  validate's actual predicate.
 - **`/steer:explain` now renders a visual, interactive feature page instead of a
   wall of text.** The stakeholder page is built around at-a-glance visuals derived
   strictly from the spec — a `draft → approved → implemented → validated → live`

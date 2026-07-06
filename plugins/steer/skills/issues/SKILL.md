@@ -329,7 +329,9 @@ never overridden.
 Even before repo-wide reconcile, the per-feature lifecycle must guarantee — via
 `/steer:spec validate` at every gate and `reconcile`:
 
-- an **approved** intent contains **no `open` `blocking` question**;
+- an **approved** intent contains **no `open` `blocking` question gated at
+  `required_before: intent-approval`** (questions gated at later gates block
+  their own gate, not the already-granted approval);
 - a `deferred` question has `owner` + `required_before`;
 - a **promoted** question carries a `tracker:` ref (and the issue carries its
   `question-id`);
