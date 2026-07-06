@@ -9,12 +9,16 @@ argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # /steer:audit spec. Never a direct user entry point. Model-callable, hidden from
 # the slash menu, so it never competes with the orchestrators above it.
 user-invocable: false
-# Pre-approve the issue create + find-before-create dedup surface so autonomous
-# capture/push runs without a permission prompt in non-scaffolded repos too
-# (scaffolded repos already grant these via .claude/settings.json). MCP-first;
-# the scoped `gh issue *` verbs are the fallback. Mutation of the delivery
-# surface (gh api / graphql, PR merge, branch protection) is deliberately NOT
-# listed — it stays host-gated.
+# Pre-approve the issue create + find-before-create dedup surface for a DIRECT
+# /steer:tracker-sync invocation. Caveat: a skill's allowed-tools grant applies
+# only while that skill is the invoked one — reached transitively (an orchestrator
+# like /steer:issues or /steer:work delegates here in prose), these grants do NOT
+# take effect and the write falls through to .claude/settings.json. So the
+# scaffold's gh-issue allow-list is the real backstop for the orchestrated path;
+# the `github-issue-permissions` capability (CAPABILITIES.md) detects a repo
+# missing it. MCP-first; the scoped `gh issue *` verbs are the fallback. Mutation
+# of the delivery surface (gh api / graphql, PR merge, branch protection) is
+# deliberately NOT listed — it stays host-gated.
 allowed-tools:
   - mcp__github__issue_write
   - mcp__github__issue_read
