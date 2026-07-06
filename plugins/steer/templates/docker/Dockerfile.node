@@ -16,8 +16,8 @@
 #   2. Drop the `public/` COPY if the app has no `public/` dir.
 #   3. pnpm is provided by corepack, driven by the `packageManager` field the
 #      scaffold ships in the repo-root package.json — verify its placeholder was
-#      resolved to the mise-pinned pnpm (done by /steer:init) so the image uses
-#      the same pnpm major that wrote `pnpm-lock.yaml`.
+#      resolved to the mise-pinned pnpm (done by /steer:init or /steer:adopt) so
+#      the image uses the same pnpm major that wrote `pnpm-lock.yaml`.
 #
 # The base-image major must satisfy `policy/versions.yml` (node >= 22) — the
 # version-pin scanner and hook enforce it. Keep it in sync with `mise.toml`'s node

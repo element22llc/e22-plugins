@@ -229,6 +229,13 @@ profile, then compose **additively**:
   the repo has no `.claude/launch.json`, never overwrite;
   `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing, adapt
   `package.json`). A Python-only product skips Layer 1 (use `pyproject.toml`/Ruff).
+  After Layer 1 lands, **resolve the root `package.json` `packageManager`
+  placeholder** to the mise-pinned pnpm version (`pnpm@<major.minor.patch>` —
+  `mise current pnpm`), exactly as `/steer:init` does, so corepack (e.g. in the
+  Docker build) uses the same pnpm that wrote `pnpm-lock.yaml`. (The additive
+  reconcile never injects the placeholder into a pre-existing `package.json` —
+  it reports it as a `~` skip instead; stamp the real value if `packageManager`
+  is still absent there.)
 - **Deployable apps** (`app`/`service`): for each `apps/<app>` that deploys as a
   container and has no `Dockerfile`, propose one from the plugin's
   `templates/docker/` reference (copy-and-adapt to the app's stack — **never

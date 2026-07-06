@@ -43,8 +43,17 @@ CONTRACT (mirrors template-reconcile.sh)
   already governed), so it is not a clobber of any real decision. Reported with
   a `-` prefix in the delta.
 
+  PLACEHOLDERS — never auto-injected. A template-only value that still carries
+  an unresolved placeholder (`[Replace …]`, `[Product Name]`, `[e.g., …]`) is
+  NOT merged into an existing file: mechanically appending it would plant a
+  literal placeholder in a working config (e.g. the Node `packageManager`
+  placeholder, which corepack hard-fails on). Such values are reported with a
+  `~` prefix so the owning skill (init/adopt/sync) resolves and writes the real
+  value instead. A delta consisting only of `~` lines writes nothing.
+
   If the existing file is absent, --apply writes the template verbatim (a safe
-  install) and check reports the whole template as missing.
+  install — placeholders included, since bootstrap resolves them right after)
+  and check reports the whole template as missing.
 
 EXIT CODES (same convention as template-reconcile.sh — gaps are signaled via
 stdout, not a nonzero code, so a skill's Bash wrapper doesn't read a normal
@@ -92,23 +101,53 @@ def _fmt_path(path: list[str]) -> str:
     return ".".join(path) if path else "(root)"
 
 
-def merge_json(existing: object, template: object, path: list[str], added: list[str]) -> object:
+# Unresolved template placeholders (the /steer:init documented scan set). A
+# template value carrying one of these must be resolved by the owning skill —
+# a mechanical merge must never inject it verbatim into an existing file (e.g.
+# the Node package.json "packageManager" placeholder, which corepack hard-fails
+# on). Whole-template installs into an absent file still carry placeholders —
+# that is the bootstrap flow, where the skill resolves them right after.
+_PLACEHOLDER_MARKERS = ("[Replace", "[Product Name", "[e.g.,")
+
+
+def _contains_placeholder(value: object) -> bool:
+    blob = json.dumps(value, ensure_ascii=False)
+    return any(marker in blob for marker in _PLACEHOLDER_MARKERS)
+
+
+def merge_json(
+    existing: object, template: object, path: list[str], added: list[str], skipped: list[str]
+) -> object:
     """Deep additive merge. Returns the merged value; appends a human-readable
     line to `added` for every key/array element introduced. Existing scalars and
-    type mismatches keep the existing value — never clobbered."""
+    type mismatches keep the existing value — never clobbered. Template-only
+    values that still carry an unresolved placeholder are NOT merged; they are
+    recorded in `skipped` (`~` prefix) for the owning skill to resolve by hand."""
     if isinstance(existing, dict) and isinstance(template, dict):
         merged = dict(existing)  # preserve existing key order + values
         for key, tval in template.items():
             if key not in merged:
+                if _contains_placeholder(tval):
+                    skipped.append(
+                        f"~ {_fmt_path([*path, key])} not merged (template value is an "
+                        "unresolved placeholder — resolve it per the owning skill)"
+                    )
+                    continue
                 merged[key] = tval
                 added.append(f"+ {_fmt_path([*path, key])}")
             else:
-                merged[key] = merge_json(merged[key], tval, [*path, key], added)
+                merged[key] = merge_json(merged[key], tval, [*path, key], added, skipped)
         return merged
     if isinstance(existing, list) and isinstance(template, list):
         merged_list = list(existing)
         for item in template:
             if item not in merged_list:
+                if _contains_placeholder(item):
+                    skipped.append(
+                        f"~ {_fmt_path(path)}[] = {json.dumps(item, ensure_ascii=False)} "
+                        "not merged (unresolved placeholder — resolve it per the owning skill)"
+                    )
+                    continue
                 merged_list.append(item)
                 added.append(f"+ {_fmt_path(path)}[] = {json.dumps(item, ensure_ascii=False)}")
         return merged_list
@@ -166,26 +205,31 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
         existing = None
 
     added: list[str] = []
+    skipped: list[str] = []
     if existing is None:
-        # No existing file: the whole template is "missing".
+        # No existing file: the whole template is "missing". Placeholders ride
+        # along verbatim — this is the bootstrap install, where the owning skill
+        # resolves them immediately after.
         merged = template
         added.append(f"+ (new file) {existing_path.name}")
     else:
-        merged = merge_json(existing, template, [], added)
+        merged = merge_json(existing, template, [], added, skipped)
 
     # Resolve permission-tier contradictions the union may have created (or that
     # were already on disk): deny > ask > allow, most-restrictive copy wins.
     _dedupe_permission_tiers(merged, added)
 
-    if not added:
+    if not added and not skipped:
         return 0  # already current — no output, exit 0
 
-    if apply:
+    if apply and added:
+        # Write only when something actually merged — a placeholder-only delta
+        # must not rewrite (and thereby reformat) the existing file.
         existing_path.parent.mkdir(parents=True, exist_ok=True)
         existing_path.write_text(
             json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
-    print("\n".join(added))
+    print("\n".join(added + skipped))
     return 0
 
 

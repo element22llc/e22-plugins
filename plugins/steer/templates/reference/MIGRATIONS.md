@@ -54,6 +54,35 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.13.0 — scaffold `enabledPlugins`: drop the duplicate context7 entry
+
+- **What & why:** the scaffold's `.claude/settings.json` used to enable
+  `context7@claude-plugins-official` per repo. steer ships its own context7 MCP
+  server with the plugin (`plugins/steer/.mcp.json`), so a repo bootstrapped from
+  the old scaffold loads **two** context7 servers with duplicate toolsets. 3.13.0
+  removed the entry from the scaffold template, but the `/steer:sync` settings
+  merge is additive and never flips or removes an existing value — so an
+  already-bootstrapped repo keeps the duplicate forever without a migration.
+  This is a deletion inside an existing file: only a migration may do it.
+- **Precondition:** the repo's `.claude/settings.json` still carries the
+  marketplace copy — this grep fires:
+
+  ```sh
+  test -f .claude/settings.json && \
+    grep -q '"context7@claude-plugins-official"' .claude/settings.json && echo pending
+  ```
+
+  No file, or no such key ⇒ no-op.
+- **Action:** read-then-propose, show the diff first. Remove the
+  `"context7@claude-plugins-official"` key from `enabledPlugins`, preserving
+  every other entry and value. The plugin-shipped context7 server keeps
+  providing the same capability, so behavior is unchanged whether the key was
+  `true` (duplicate removed) or `false` (absent ≡ disabled; the plugin copy is
+  governed by enabling steer itself).
+
+  Idempotent: once the key is gone the precondition is empty, so re-running is
+  a no-op.
+
 ### v3.8.0 — `reference`-mode invocations: in-file token rewrite
 
 - **What & why:** several reference topics were only ever *modes* of the `reference`

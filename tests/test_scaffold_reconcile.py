@@ -100,6 +100,52 @@ def test_json_in_sync_is_silent(tmp_path: Path, capsys):
     assert capsys.readouterr().out == ""
 
 
+def test_json_placeholder_value_is_skipped_not_merged(tmp_path: Path, capsys):
+    existing = tmp_path / "package.json"
+    existing.write_text(json.dumps({"name": "@repo/root", "private": True}), encoding="utf-8")
+    template = tmp_path / "t.json"
+    template.write_text(
+        json.dumps(
+            {
+                "name": "@repo/root",
+                "private": True,
+                "packageManager": "pnpm@[Replace with the mise-pinned pnpm version, e.g. 10.12.1]",
+                "type": "module",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    before = existing.read_text(encoding="utf-8")
+    rc = sr.main(["json", str(existing), str(template), "--apply"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    merged = json.loads(existing.read_text(encoding="utf-8"))
+    # Resolvable template-only key merged; placeholder-bearing key skipped.
+    assert merged["type"] == "module"
+    assert "packageManager" not in merged
+    assert "~ packageManager" in out
+    assert before != existing.read_text(encoding="utf-8")  # 'type' write happened
+
+
+def test_json_placeholder_only_delta_writes_nothing(tmp_path: Path, capsys):
+    existing = tmp_path / "package.json"
+    # Non-default formatting: an accidental rewrite would change the bytes.
+    existing.write_text('{"name":"@repo/root"}', encoding="utf-8")
+    template = tmp_path / "t.json"
+    template.write_text(
+        json.dumps({"name": "[Product Name]", "packageManager": "pnpm@[Replace me]"}),
+        encoding="utf-8",
+    )
+
+    before = existing.read_text(encoding="utf-8")
+    rc = sr.main(["json", str(existing), str(template), "--apply"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert existing.read_text(encoding="utf-8") == before  # not rewritten
+    assert "~ packageManager" in out  # but the gap is reported
+
+
 def test_invalid_existing_json_exits_3_without_clobber(tmp_path: Path):
     existing = tmp_path / "a.json"
     existing.write_text("{ not json", encoding="utf-8")
