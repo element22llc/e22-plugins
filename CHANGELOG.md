@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.14.0
+
 - **Reconciled the two canonical `/spec` layout definitions so all three
   source-material homes are listed in both.** The `SPEC-FRAMEWORK.md` structure
   tree omitted `spec/reference/` (defined only in the always-on `20-layout`
