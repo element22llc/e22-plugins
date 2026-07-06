@@ -91,8 +91,9 @@ git/CI/ADR/stack jargon). Build the page around the intent's own sections:
 - **In scope / out of scope** — as two clear lists.
 - **Status** — the intent's `Status:` and PO-acceptance checkboxes, plainly stated
   (e.g. "Approved, not yet built"), plus the tracker ref if present.
-- **Open questions** — only those still `open`/`investigating`, in plain terms,
-  flagging which **block** progress.
+- **Open questions** — only those still unresolved (`open` / `investigating` /
+  `deferred` — the set that can still block a gate, per `ENUMS.md`), in plain
+  terms, flagging which **block** progress.
 - **Contract detail** (data model, API surface) is **dev jargon** — summarize it in
   a sentence or omit it. Do not paste tables of fields/types onto a stakeholder page.
 
@@ -129,8 +130,9 @@ chart. Map the intent's own sections to these visuals:
   relationships. Keep it plain-language (no field/type schema — that is contract
   jargon).
 - **Open questions → a status board.** Cards grouped/counted by `status`
-  (`open` / `investigating` only), with **blocking** ones flagged, so "what's
-  unresolved and what stops progress" is a glance, not a read.
+  (`open` / `investigating` / `deferred` — the unresolved set), with **blocking**
+  ones flagged, so "what's unresolved and what stops progress" is a glance, not
+  a read.
 
 ### 3b. Interactivity — lead with the gist, disclose on demand
 
@@ -147,8 +149,10 @@ chart. Map the intent's own sections to these visuals:
 **If the `Artifact` tool is available in this session:**
 
 1. **Load the `artifact-design` skill first** (the Artifact tool requires it before
-   authoring a page), and **load `dataviz`** before drawing any chart, meter, or
-   diagram so the visuals read as one system and work in both light and dark.
+   authoring a page), and — **if the session offers a `dataviz` skill** — load it
+   before drawing any chart, meter, or diagram so the visuals read as one system
+   and work in both light and dark. When no `dataviz` skill is available, proceed
+   with `artifact-design`'s guidance alone; do not stall looking for it.
 2. **Build every visual self-contained — the Artifact CSP blocks all external
    hosts.** No CDN chart/diagram libraries (Chart.js, Mermaid, D3-from-CDN), no
    remote fonts or images: a page that depends on a remote script renders blank.
@@ -213,5 +217,6 @@ After rendering, surface the single most useful follow-up, and stop:
 - Derived-view discipline this mirrors: `/steer:roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
-- Visual system: the `artifact-design` skill (page shell) and `dataviz` (chart
-  colour/encoding) — loaded at publish time; all visuals inline, per the CSP.
+- Visual system: the `artifact-design` skill (page shell) and, where the session
+  offers it, `dataviz` (chart colour/encoding) — loaded at publish time; all
+  visuals inline, per the CSP.

@@ -7,6 +7,33 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:adopt` now stamps the Node `packageManager` placeholder, and the
+  additive JSON reconcile refuses to inject unresolved placeholders.** The
+  scaffold's root `package.json` ships a `packageManager` placeholder that only
+  `/steer:init` resolved — adopt's Phase 10 installed the same file (and the
+  Dockerfile whose corepack build depends on the field) with no stamping step,
+  so an adopted Node repo without a pre-existing root `package.json` could land
+  a literal placeholder corepack hard-fails on. Adopt Phase 10 now resolves it
+  exactly as init does, and `scaffold_reconcile.py` skips template-only values
+  still carrying an unresolved placeholder (`[Replace …]`, `[Product Name]`,
+  `[e.g., …]`) instead of merging them into an existing file — reported as `~`
+  lines, with a placeholder-only delta writing nothing.
+- **Added the v3.13.0 context7 de-dup migration.** The scaffold's
+  `enabledPlugins` drop of `context7@claude-plugins-official` (#325) could
+  never reach already-bootstrapped repos: sync's settings merge never removes
+  an existing key, and the migration ledger had no entry. `MIGRATIONS.md` now
+  carries a v3.13.0 entry that removes the duplicate key (read-then-propose,
+  idempotent — the plugin-shipped context7 server keeps providing the
+  capability), and `/steer:sync`'s prose now names all three plugin-shipped MCP
+  servers (`github`, `markitdown`, `context7`).
+- **Polished `/steer:explain`'s edges.** The `dataviz` skill load is now
+  conditional on the session offering one (with an explicit proceed-without
+  fallback instead of a dead-end hard requirement); the open-questions board
+  now includes `deferred` questions — part of the `ENUMS.md` unresolved set
+  that can still block a gate — instead of silently dropping them; and the
+  plugin README's tool-restriction note now states explain's real `Write` usage
+  (the artifact HTML in a temp dir; the Markdown fallback prints inline, never
+  saved).
 - **Finished propagating the #321 approval predicate and #332 tracker-sync
   exception (pre-release audit sweep).** Three surfaces still carried the old
   unqualified claims: `/steer:spec`'s frontmatter description (and the

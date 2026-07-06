@@ -9,7 +9,7 @@ in `plugins/steer/templates/scaffold/` and mapped to install paths by its
 
 ```mermaid
 flowchart TD
-    ROOT[Repo root] --> SPEC["/spec spine<br/>intent · contract · vision · glossary · HISTORY · tracker · ADRs · .version"]
+    ROOT[Repo root] --> SPEC["/spec spine<br/>intent · contract · vision · glossary · HISTORY · tracker · ADRs · design · sources · .version"]
     ROOT --> MISE[mise.toml<br/>toolchain + tasks]
     ROOT --> CI[.github/ workflows + PR template]
     ROOT --> COMPOSE[compose.yaml]
