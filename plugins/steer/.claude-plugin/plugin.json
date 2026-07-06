@@ -1,7 +1,7 @@
 {
   "name": "steer",
   "displayName": "Steer — Engineering Standards",
-  "version": "3.12.0",
+  "version": "3.13.0",
   "description": "An always-on engineering operating manual plus spec-workflow skills and templates. Org standards centralized so every product repo picks up changes via /plugin update.",
   "author": {
     "name": "Element 22 Platform",
