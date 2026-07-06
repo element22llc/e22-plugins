@@ -254,6 +254,35 @@ and **Repair**.
 - **Why it matters:** the Issue Forms carry the Issue Type + `source:`/`needs:`
   label taxonomy the issue-first workflow depends on.
 
+### github-issue-permissions — tracker read/write path granted locally
+- **Files:** `.claude/settings.json`
+- **Conditional:** tracker is GitHub Issues — read `spec/tracker.md` frontmatter
+  `system: github`. Any other tracker reports `n/a` (the `gh issue` allow-list is
+  irrelevant to a Jira/Linear/other tracker, whose manual/MCP paths differ).
+- **Wired-when:** the `permissions.allow` list contains `Bash(gh issue create` —
+  the write verb whose absence breaks the tracker write path (its presence proves
+  the scaffold's full `gh issue *` allow block was spliced, reads included). An
+  older read-only-era `settings.json` (list/view but no `create`) is `mis-wired`;
+  an absent file is `absent`.
+- **Repair:** additive-splice the `gh issue *` allow entries from
+  `templates/scaffold/claude/settings.json` — in practice the `settings.json`
+  reconcile in `/steer:sync` step 5 (`scaffold_reconcile.py`, deny > ask > allow
+  de-conflicted) already restores them; this capability names the gap so a repo
+  that only ran a partial update, or was never onboarded, sees *why* every tracker
+  write is denied instead of discovering it mid-workflow. Never replace the file.
+- **Verbatim:** no
+- **Why it matters:** the write verbs live in `/steer:tracker-sync`'s
+  `allowed-tools`, but a skill's `allowed-tools` grant applies **only while that
+  skill is the invoked one**. The lifecycle reaches the gateway transitively — a
+  PO runs `/steer:issues capture` (or `/steer:work`, `/steer:spec materialize`),
+  which *delegates to* tracker-sync in prose — so tracker-sync's grants never take
+  effect and the `gh issue create/edit/comment` write falls through to
+  `.claude/settings.json`. Without these allow entries the write is prompted
+  (interactive) or **silently auto-denied** (headless/non-interactive), which is
+  the failure that looks like "the whole `gh` surface is walled off." The scaffold
+  allow-list — verified by this capability — is the real backstop for that
+  orchestrated path.
+
 ### backing-services-compose — local backing services
 - **Files:** `compose.yaml`
 - **Conditional:** only if the product runs backing services — **not
