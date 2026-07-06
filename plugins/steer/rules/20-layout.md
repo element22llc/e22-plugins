@@ -20,10 +20,13 @@ is identical across all profiles.
   configuration, limitations, troubleshooting, release notes (PO + dev
   facing).
 - **`/spec/decisions`** — ADRs.
-- **`/spec/reference`** — source/research materials feeding the spec
-  (inventories, vendor metadata, schema/DDL dumps, discovery docs). The
-  `/steer:reference` prose is **not** stored here — it ships with the plugin and
-  is loaded on demand via `/steer:reference`.
+- **`/spec/sources`** — versioned home for **recurring** PO source documents that
+  arrive in successive versions, maintained by `/steer:intake`.
+- **`/spec/reference`** — **one-off** (non-versioned) source/research materials
+  feeding the spec (inventories, vendor metadata, schema/DDL dumps, discovery
+  docs). The `/steer:reference` prose is **not** stored here — it ships with the
+  plugin and is loaded on demand via `/steer:reference`. Contrast `/spec/sources`
+  (recurring, versioned) and `/spec/design` (UI/design exports).
 - **`/infra`** — AWS infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
   engineer's system model: stack, the apps/packages map, how a request flows.

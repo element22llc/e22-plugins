@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Reconciled the two canonical `/spec` layout definitions so all three
+  source-material homes are listed in both.** The `SPEC-FRAMEWORK.md` structure
+  tree omitted `spec/reference/` (defined only in the always-on `20-layout`
+  rule), while `20-layout.md` omitted `spec/sources/` (the versioned `/steer:intake`
+  home) — so neither authoritative definition listed `design/` + `reference/` +
+  `sources/` together. Added `reference/` to the framework tree and `sources/`
+  to the layout rule, with a one-line note distinguishing the three (design =
+  UI/design exports, reference = one-off source material, sources = recurring
+  versioned PO documents).
+
 ### 3.13.0
 
 - **`/steer:adopt` now stamps the Node `packageManager` placeholder, and the
