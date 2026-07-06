@@ -52,7 +52,7 @@ for the human (never guessed). The shared front-end (identity, versioned commit,
 | Mode | What it does |
 | --- | --- |
 | `/steer:intake <path-to-doc>` | Absorb the supplied document — the normal "the PO just sent a new version" path. |
-| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment → map to the spine → three-bucket worklist (answers to `/steer:questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. |
+| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment → map to the spine → three-bucket worklist (answers to `/steer:questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. The document a PO fills in is usually the **outbound** questionnaire `/steer:questions bundle` produces — when it carries `[<feature-id>] Q-NNN` answer headings, `clarify` segments per heading and maps each answer to its question by that feature-scoped key deterministically. |
 | `/steer:intake` | List the sources under `spec/sources/` and ask which document to absorb. |
 | `/steer:intake status` | Read-only ledger: each source, its latest absorbed version, mapped features/issues, and any version still awaiting a text-bearing copy. |
 

@@ -234,6 +234,19 @@ toward a **larger** unit **flagged for the human to split** — never confidentl
 over-split. Drop preamble, pleasantries, and anything that answers nothing; do
 **not** force-map a non-answer.
 
+**Exception — a recognized `/steer:questions bundle` return is already
+structured, so segment structurally.** When the extraction is a questionnaire this
+org emitted (`## [<feature-id>] Q-NNN — …` headings, typically under a
+`<!-- steer:clarification-bundle -->` marker or a `# steer clarification
+questionnaire` title), it is *not* an arbitrary client document: each such heading
+is a deliberate unit boundary. Segment **one unit per heading** — carrying the
+heading's **feature-scoped key `[<feature-id>] Q-NNN`** (both parts; `[product]`
+scopes a question with no feature home) and its `**Answer:**` body as the quoted
+span — rather than re-fusing them semantically. Treat an `**Answer:**` block left
+at its `_(type …)_` placeholder — or otherwise empty — as unanswered: drop it,
+don't map it. Free-text the PO added outside the question headings is segmented
+semantically as usual.
+
 ### C2. Map — inline, against the spine
 
 Map each unit against two grounding sets, **inline**:
@@ -244,9 +257,24 @@ Map each unit against two grounding sets, **inline**:
 - **(b) the feature list** — each `spec/features/*/intent.md` (and `contract.md`)
   summary, so a unit that answers no open question can still name its feature.
 
-For each unit propose: the best-match `Q-NNN` (or **"none — new info"**), the
-best-match feature, a **confidence**, and the **matched evidence** (the quoted
-span and the words that tie it to that question/feature).
+**Fast-path — a unit carrying a feature-scoped `[<feature-id>] Q-NNN` maps by that
+key, deterministically.** A unit segmented from a `/steer:questions bundle` return
+heading carries the pair `[<feature-id>] Q-NNN` (see [C1](#c1-segment)). Match the
+**pair**, not the bare `Q-NNN`: locate the open question `Q-NNN` **in that
+feature** (`[product]` → `vision.md` / `PRODUCTIONIZATION.md` / a legacy
+`SPEC-QUESTIONS.md`). Matching on the pair is essential — `Q-NNN` ids restart per
+feature, so a bare `Q-017` is ambiguous across a whole-spine bundle. On a pair
+match, map **directly** — an exact key match, not a semantic guess, so it is
+high-confidence and bypasses the fuzzy matching below. A pair that matches **no**
+currently-open question — answered, renumbered, or a mistyped feature since the
+bundle was generated — is **not** force-applied: surface it in bucket 3 for the
+human. Only units *without* such a key (free-text new scope) fall through to the
+semantic map below.
+
+For each remaining (unanchored) unit propose: the best-match `Q-NNN` (or
+**"none — new info"**), the best-match feature, a **confidence**, and the
+**matched evidence** (the quoted span and the words that tie it to that
+question/feature).
 
 > **Cost guardrail.** Mapping is where clarify gets expensive. Apply
 > `/steer:questions` step 4's cost guardrail **verbatim** — it is the single
@@ -275,7 +303,13 @@ transient worklist:
   marked **`pending /steer:questions fold`**. This is the *same durable Open-questions
   write* intake already makes when it *raises* a `Q-NNN` in default mode — it is
   **not** a resolution: intake does not strike the question, fold the answer into
-  `intent.md` / `vision.md`, or decide anything.
+  `intent.md` / `vision.md`, or decide anything. The annotation is written
+  **update-in-place per `Q-NNN`** (find-the-existing-pending-line-and-replace, not
+  append): if that question already carries a `pending /steer:questions fold` from
+  an earlier absorb, overwrite it with the newer answer/source-ref rather than
+  stacking a second one. So re-absorbing the same bundle — e.g. when a browser
+  re-download changed the bytes enough to slip past the step-2.2 hash guard —
+  reconciles to one pending answer, never duplicates.
 - **Bucket 2** — routed through the existing step-5 gateways (which write durably).
 - **Bucket 3** — raised as a new `Q-NNN`, or left for the human to place; never guessed.
 

@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- `/steer:questions` gains a **`bundle`** mode: the outbound counterpart to
+  `/steer:intake clarify`. It renders the **PO-answerable** open questions across
+  the whole spine (every feature at once; `bundle <feature-id>` narrows to one) as
+  a shareable, fillable Claude Code Artifact — with a Markdown fallback — so a
+  Product Owner with no repo or Claude Code access can answer them in a browser and
+  send the result back. The mode is read-only (dispatched before the resolve
+  flow's `SPEC-QUESTIONS.md` heal; writes only the Artifact HTML to a temp dir),
+  filters to `owner: product` / human-decision `open`/`investigating` questions
+  (excluding code-fact, dev-owned, and `deferred`), and always offers a
+  permission-free copy-out box (clipboard/download are progressive enhancement over
+  it). Each answer is anchored by a visible feature-scoped `[<feature-id>] Q-NNN`
+  heading (the feature scope disambiguates the per-feature `Q-NNN` ids across a
+  whole-spine bundle).
+- `/steer:intake clarify` recognizes a `bundle` return: when the absorbed document
+  carries `[<feature-id>] Q-NNN` answer headings it segments per heading and maps
+  each answer to its question by that feature-scoped key **deterministically**
+  (bypassing semantic matching), and writes the `pending /steer:questions fold`
+  annotation update-in-place per question so a re-absorbed document reconciles
+  rather than duplicating.
 - **`/steer:sync` now detects a repo missing the `gh`-issue permission allow-list,
   the silent cause of "the whole `gh` surface is walled off" during the issue
   lifecycle.** The `gh issue create/edit/comment` write verbs live in
