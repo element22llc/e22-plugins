@@ -147,7 +147,7 @@ path; smaller work skips the spec gates:
 |---|---|---|---|
 | inbox → exploring | Triaged, not a duplicate (feature path) | PO | propose + perform |
 | exploring → ready-for-spec | Product questions sufficiently answered | PO | propose only |
-| ready-for-spec → ready-for-dev | Intent approved, **zero open blocking questions**, contract ready | PO + dev | propose only |
+| ready-for-spec → ready-for-dev | Intent approved, **zero open blocking questions gated at `implementation` or earlier**, contract ready | PO + dev | propose only |
 | inbox → ready-for-dev | Bug/task/deterministic finding meets its readiness rule above | dev | propose + perform |
 | ready-for-dev → in-progress | Work claimed and started | dev | propose + perform |
 | in-progress → validate | Acceptance criteria implemented; **PR opened** | dev | propose + perform |
