@@ -237,6 +237,24 @@ else
 	emit "github-issue-forms" "n/a" "$F"
 fi
 
+# --- github-issue-permissions — tracker read/write path granted locally ---
+# /steer:issues → /steer:tracker-sync performs `gh issue create/edit/comment`
+# writes, but a skill's allowed-tools grant applies only while that skill is the
+# invoked one. Reached through an orchestrator (issues/work/spec), tracker-sync's
+# grants never take effect and the write falls through to .claude/settings.json.
+# A repo scaffolded before these allow entries (or never onboarded) silently
+# denies every tracker write. GitHub-Issues tracker only; others n/a.
+F=".claude/settings.json"
+if ! grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$ROOT/spec/tracker.md" 2>/dev/null; then
+	emit "github-issue-permissions" "n/a" "$F"
+elif ! exists "$F"; then
+	emit "github-issue-permissions" "absent" "$F"
+elif has "$F" "Bash(gh issue create"; then
+	emit "github-issue-permissions" "present-wired" "$F"
+else
+	emit "github-issue-permissions" "mis-wired" "$F"
+fi
+
 # --- backing-services-compose — local services (judgment: skill asks) ---
 # Whether a product NEEDS backing services is not deterministically knowable, so
 # absence is reported raw and the skill proposes only after confirming.

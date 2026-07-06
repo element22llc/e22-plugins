@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:sync` now detects a repo missing the `gh`-issue permission allow-list,
+  the silent cause of "the whole `gh` surface is walled off" during the issue
+  lifecycle.** The `gh issue create/edit/comment` write verbs live in
+  `/steer:tracker-sync`'s `allowed-tools`, but a skill's `allowed-tools` grant
+  applies *only while that skill is the invoked one* — reached transitively (a PO
+  runs `/steer:issues capture`, `/steer:work`, or `/steer:spec materialize`, which
+  delegate to the gateway *in prose*), those grants never take effect and the write
+  falls through to `.claude/settings.json`. A repo scaffolded before those allow
+  entries existed (or never onboarded) then prompts (interactive) or **silently
+  auto-denies** (headless) every tracker write. New `github-issue-permissions`
+  capability (`scan-capabilities.sh` + `CAPABILITIES.md`) flags that gap — `absent`
+  / `mis-wired` (read-only-era `settings.json`) / `present-wired`, GitHub-Issues
+  tracker only — so `/steer:sync` (and `--check`) name *why* writes are denied and
+  the step-5 `settings.json` reconcile restores the allow-list. Corrected the
+  `tracker-sync` frontmatter comment that wrongly promised prompt-free writes in
+  non-scaffolded repos through an orchestrator.
+
 ### 3.14.0
 
 - **Reconciled the two canonical `/spec` layout definitions so all three

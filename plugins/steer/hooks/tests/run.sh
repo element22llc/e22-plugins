@@ -1136,6 +1136,24 @@ printf 'blank_issues_enabled: false\n' >"${CR5}/.github/ISSUE_TEMPLATE/config.ym
 capscan "${CR5}"
 assert_eq "cap: github tracker with forms -> present-wired" "$(capstatus "${out}" github-issue-forms)" "present-wired"
 
+# github-issue-permissions: gated on the tracker system; wired when the gh-issue
+# allow-list is present in .claude/settings.json (write verb is the marker).
+CR5b="${WORK}/cap5b"
+mkdir -p "${CR5b}/spec"
+printf 'system: jira\n' >"${CR5b}/spec/tracker.md"
+capscan "${CR5b}"
+assert_eq "cap: non-github tracker -> issue-perms n/a" "$(capstatus "${out}" github-issue-permissions)" "n/a"
+printf 'system: github\n' >"${CR5b}/spec/tracker.md"
+capscan "${CR5b}"
+assert_eq "cap: github tracker, no settings -> absent" "$(capstatus "${out}" github-issue-permissions)" "absent"
+mkdir -p "${CR5b}/.claude"
+printf '{"permissions":{"allow":["Bash(gh issue list:*)","Bash(gh issue view:*)"]}}\n' >"${CR5b}/.claude/settings.json"
+capscan "${CR5b}"
+assert_eq "cap: read-only-era settings -> mis-wired" "$(capstatus "${out}" github-issue-permissions)" "mis-wired"
+printf '{"permissions":{"allow":["Bash(gh issue create:*)","Bash(gh issue view:*)"]}}\n' >"${CR5b}/.claude/settings.json"
+capscan "${CR5b}"
+assert_eq "cap: settings with gh issue create -> present-wired" "$(capstatus "${out}" github-issue-permissions)" "present-wired"
+
 # toolchain-pin: mise.toml without lock is mis-wired; both -> wired.
 CR6="${WORK}/cap6"
 mkdir -p "${CR6}"
