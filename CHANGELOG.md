@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- `/steer:intake` now **tidies the drop location** so an absorbed document does not
+  stay stalled where the PO uploaded it. When it absorbs a new version it
+  **relocates** the dropped file into its canonical `spec/sources/<id>/versions/<v>/original.<ext>`
+  home (a history-preserving `git mv` for an in-repo drop, the same confident move
+  `/steer:tidy` performs) instead of leaving a second copy behind; a drop path
+  outside the repo (the PO's own file) is copied in and left in place, noted in the
+  report. On the already-absorbed no-op path, a byte-identical in-repo re-send is
+  surfaced as a redundant duplicate and routed to `/steer:tidy` rather than left
+  stalled or silently deleted. Adds `Bash(git mv *)` to the skill's allowed-tools
+  for the relocate.
+- `/steer:tidy` learns the counterpart rule: a spec/requirements doc whose bytes
+  match a committed `spec/sources/**/original.*` is an **already-absorbed** source,
+  so the stray is a redundant duplicate — it is **proposed for deletion** (content
+  is preserved in the committed source, so it waits for a yes like every delete)
+  rather than moved to `/spec/reference/`, which would just duplicate the source.
+
 ### 3.15.0
 
 - `/steer:questions` gains a **`bundle`** mode: the outbound counterpart to

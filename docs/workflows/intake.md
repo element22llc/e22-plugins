@@ -28,8 +28,11 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
 2. **Version, convert, commit** — lays down
    `spec/sources/<source-id>/versions/<vNNNN-DATE>/` holding `original.<ext>`
    (provenance) and `extracted.md` (the diff surface), and commits both together.
-   Conversion uses the **markitdown** MCP server shipped with the plugin, or the
-   `mise run convert:doc` CLI task.
+   The dropped file is **relocated** into that canonical home (a history-preserving
+   `git mv` for an in-repo drop — the same move `/steer:tidy` performs), not copied,
+   so it does not stay stalled where the PO uploaded it; a file outside the repo is
+   copied in and left in place. Conversion uses the **markitdown** MCP server
+   shipped with the plugin, or the `mise run convert:doc` CLI task.
 3. **Diff** — `git diff`s the new extraction against the prior version and groups
    the hunks into change units by heading anchor (topic, not line number).
 4. **Report** — prints a structured *what-changed* table.
@@ -60,7 +63,10 @@ for the human (never guessed). The shared front-end (identity, versioned commit,
 
 Re-running on an unchanged document is a no-op — a binary-hash guard detects an
 identical file (even re-sent under a new name). A genuinely new version diffs only
-against the current latest, so the report is always the incremental delta.
+against the current latest, so the report is always the incremental delta. If the
+byte-identical re-send is sitting at an in-repo drop location, intake surfaces it as
+a redundant duplicate of the already-absorbed source and routes it to `/steer:tidy`
+(which removes an absorbed duplicate on a yes) rather than leaving it stalled.
 
 ## Where it fits
 
