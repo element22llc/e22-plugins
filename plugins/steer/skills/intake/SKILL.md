@@ -1,6 +1,6 @@
 ---
 name: intake
-description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine — version-stamp and commit the binary plus a normalized Markdown extraction under spec/sources/, git-diff it against the prior version, and surface a structured what-changed report. Then route the real changes into intent/contract/vision/roadmap and the tracker via the relevant skills, never clobbering human-authored prose (conflicts become Open questions). Idempotent on an unchanged document. In clarify mode, absorbs a client clarification document instead: it segments the extraction, maps each unit against open questions and the feature list, and sorts them into a three-bucket worklist — answers routed to /steer:questions, new scope to the reconcile rows, unmatched surfaced for the human."
+description: "Absorb a PO-supplied spec/roadmap document (docx/pptx/xlsx/pdf) into the /spec spine — version-stamp and commit the binary plus a normalized Markdown extraction under spec/sources/ — relocating the dropped file into that canonical home so it does not linger where it was uploaded — git-diff it against the prior version, and surface a structured what-changed report. Then route the real changes into intent/contract/vision/roadmap and the tracker via the relevant skills, never clobbering human-authored prose (conflicts become Open questions). Idempotent on an unchanged document. In clarify mode, absorbs a client clarification document instead: it segments the extraction, maps each unit against open questions and the feature list, and sorts them into a three-bucket worklist — answers routed to /steer:questions, new scope to the reconcile rows, unmatched surfaced for the human."
 when_to_use: >-
   Use when a Product Owner hands over a new or updated office document (a spec, a
   roadmap, a requirements deck, a spreadsheet) and the team needs to detect what
@@ -20,6 +20,7 @@ allowed-tools:
   - Bash(git show *)
   - Bash(git rev-parse *)
   - Bash(git add *)
+  - Bash(git mv *)
   - Bash(git commit *)
   - Bash(mise run convert:doc *)
   - Bash(shasum *)
@@ -109,10 +110,19 @@ from the PO's filename (the PO renames files; identity must not follow the name)
    ordering key; the date (`date +%F`) is informational, so two documents received
    the same day still order deterministically.
 2. **Idempotency guard:** hash the incoming binary and compare it to the binary of
-   the current latest version. If they match, the PO re-sent an identical file
-   (often under a new name) — report `already absorbed as <vNNNN>`, record the new
-   filename in `source.md` if it differs, and **stop**: no new version, no diff, no
-   edits, no HISTORY entry.
+   **every** committed version under `spec/sources/<id>/versions/` (not only the
+   latest — a re-dropped *older* version is just as already-absorbed, and must not
+   be turned into a spurious new version duplicating old content; this is the same
+   any-version match `/steer:tidy` uses). If it matches any of them, the PO re-sent
+   an identical file (often under a new name) — report `already absorbed as
+   <vNNNN>`, record the new filename in `source.md` if it differs, and **stop**: no
+   new version, no diff, no edits, no HISTORY entry. If that re-sent file is sitting at an **in-repo drop
+   location** (repo root, `spec/reference/`, anywhere but its committed
+   `original.<ext>`) and is byte-identical to the version it matched, it is now a
+   redundant duplicate of an already-absorbed source: surface it and route it to
+   `/steer:tidy` (which removes an absorbed duplicate on a yes) so it does not stay
+   stalled where it was dropped — never delete it silently, and never move it to
+   `spec/reference/` (that would duplicate the committed source, not clean it up).
 3. Lay down the version directory and convert:
    ```
    spec/sources/<source-id>/
@@ -121,6 +131,18 @@ from the PO's filename (the PO renames files; identity must not follow the name)
        original.<ext>                   # the committed binary — provenance
        extracted.md                     # normalized Markdown — the diff surface
    ```
+   Write `extracted.md` into the version directory **first** (the `Write` tool
+   creates the `versions/<vNNNN-YYYY-MM-DD>/` parent), so the directory exists
+   before you move the binary into it. **Place `original.<ext>` by relocating the
+   dropped file into that directory, not copying it** — so no stray copy is left
+   stalled where the PO uploaded it and the canonical `original.<ext>` becomes the
+   single home for the source. For a drop file **inside the repo** working tree,
+   `git mv` it into place (`git add` it first if it is untracked, then `git mv`);
+   this is the same confident, history-preserving move `/steer:tidy` performs. **Only copy** when
+   the drop path lies **outside** the repo (e.g. `~/Downloads/…`) — that is the
+   PO's own file, not repo clutter: copy it in, leave the external original be, and
+   note in the report that it was left in place. Never remove a drop file whose
+   bytes do **not** match the committed `original.<ext>`; surface it instead.
    Normalize the extraction **deterministically** so successive versions diff on
    real content, not converter noise: stable heading levels, collapsed runs of
    blank lines, and strip volatile metadata (timestamps, author GUIDs, slide
@@ -130,8 +152,9 @@ from the PO's filename (the PO renames files; identity must not follow the name)
    prior version the diff (step 3) compares against. Leave the field unchanged
    until step 6, so advancing the pointer never destroys the baseline the diff
    needs. (It is a manifest field, not a symlink — portable across checkouts.)
-5. `git add` the binary **and** the extraction together so one commit is the
-   durable, diffable record. This extends the design-sources principle (commit a
+5. `git add` the binary (a `git mv`'d in-repo original is already staged; a copied
+   external original still needs `git add`) **and** the extraction together so one
+   commit is the durable, diffable record. This extends the design-sources principle (commit a
    Claude-readable extraction alongside the traceability source) to recurring
    versioned documents — see `/steer:reference design-sources`.
 

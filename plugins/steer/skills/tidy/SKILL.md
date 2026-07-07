@@ -21,6 +21,12 @@ Key points (read the file for the full detail):
   An existing `Technical Metadata/`-style folder → `/spec/reference/technical-metadata/`.
 - **Architecture/flow diagrams** (SVG, "Flows for Review" decks) → `/spec/design/`.
   A **Claude Design export** also → `/spec/design/` — defer to `/steer:reference design-sources`.
+- **Already-absorbed sources are the exception — delete, don't move.** A
+  spec/requirements doc whose bytes match a committed `spec/sources/**/original.*`
+  has already been absorbed by `/steer:intake`; the stray is a redundant duplicate,
+  so **propose deleting it** (content is preserved in the committed source) rather
+  than moving it to `/spec/reference/` — moving it would just duplicate the source.
+  Like every delete, it waits for a yes.
 - **Move confidently-classified strays immediately** — a file that maps cleanly
   to one home and isn't ambiguous gets `git mv`'d there now, under its existing
   name, no confirmation. The obvious cases just happen.

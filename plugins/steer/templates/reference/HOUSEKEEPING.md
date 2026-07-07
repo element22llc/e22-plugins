@@ -61,6 +61,17 @@ built from. Group related files into subfolders by source system or topic when
 that makes the pile easier to navigate (e.g. `technical-metadata/`,
 `architecture/`).
 
+**Already-absorbed sources are the exception — delete, don't move.** Before
+routing a spec/requirements doc to `/spec/reference/`, check whether its bytes
+match a committed `spec/sources/**/original.*` — a source `/steer:intake` has
+already absorbed. If so, the stray at the drop location is a redundant duplicate:
+its content is preserved in the committed source, so **propose deleting it** rather
+than moving it (moving would just create a second copy of an already-absorbed
+source). Like every delete, it waits for a yes. This is the counterpart to
+`/steer:intake` relocating the file into `spec/sources/` when it absorbs a *new*
+version — between the two, an absorbed document never stays stalled where it was
+dropped.
+
 ## Renaming as you move
 
 A clear filename is part of a tidy repo. When you move a file, propose a better
