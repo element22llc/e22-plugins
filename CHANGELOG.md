@@ -22,6 +22,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   so the stray is a redundant duplicate — it is **proposed for deletion** (content
   is preserved in the committed source, so it waits for a yes like every delete)
   rather than moved to `/spec/reference/`, which would just duplicate the source.
+### 3.15.0
+
 - `/steer:questions` gains a **`bundle`** mode: the outbound counterpart to
   `/steer:intake clarify`. It renders the **PO-answerable** open questions across
   the whole spine (every feature at once; `bundle <feature-id>` narrows to one) as
