@@ -86,7 +86,10 @@ YAML Issue **Forms** below are the human capture UI; the two are different
 artifacts for different runtimes (see `reference/ISSUE-SCHEMA.md`). The optional
 gh-aw agentic workflow under `../github/agentic/` (e.g. `triage.md`) is **not
 installed** by `/steer:init` or `/steer:adopt` — opt in deliberately per the docs
-(GitHub → "Agentic workflows (gh aw)").
+(GitHub → "Agentic workflows (gh aw)"). Likewise the autonomous-loop workflow
+`../github/workflows/steer-loop.yml` is **not** bootstrapped — it is instantiated
+on demand by `/steer:loop` (rule `53-autonomous-loops`), so a repo runs a loop
+only when someone asks for one.
 
 | Template | Install as | Notes |
 |---|---|---|

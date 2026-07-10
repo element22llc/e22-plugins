@@ -1,0 +1,99 @@
+# Autonomous loop — a scheduled steer sweep (the "loop engineering" pattern).
+#
+# This workflow is NOT part of the bootstrap scaffold. It is instantiated on
+# demand by `/steer:loop`, so a repo only runs a loop when someone asks for one.
+# It loads the SAME `steer` plugin an interactive session loads, so the loop runs
+# under the identical ruleset — including rule 53 (Autonomous loops), which bounds
+# what it may do.
+#
+# THE INVARIANT (rule 53): the loop closes only UP TO a human gate, never THROUGH
+# one. It discovers, triages, drafts in an isolated worktree, pushes its OWN work
+# branch, and opens a DRAFT PR — autonomous delivery up to the merge, exactly like
+# an interactive session (Commit autonomy: the merge review is the human gate).
+# It does NOT merge, deploy, push to main or any protected branch, ratify an ADR,
+# or touch real secrets. Do not add a merge/deploy step or widen the prompt to
+# cross the merge — that violates the rule this loop is meant to embody. The loop
+# presupposes pr-flow: main must be protected (/steer:protect) so the merge review
+# is enforced server-side, not honor-system.
+#
+# One repo-level prerequisite (see README.md#github-actions-secrets):
+#   ANTHROPIC_API_KEY — Anthropic API auth. The org marketplace repo
+#   (element22llc/e22-plugins) is PUBLIC, so the plugin_marketplaces fetch below
+#   clones it anonymously — no marketplace credential needed.
+name: steer loop
+
+on:
+  # Default cadence: weekday mornings, 13:00 UTC. `/steer:loop` confirms/adjusts
+  # this with you at scaffold time. Keep it modest — an hourly loop burns API
+  # budget and opens draft-PR noise; daily or a few times a week is the norm.
+  schedule:
+    - cron: "0 13 * * 1-5"
+  # Manual trigger so you can test the loop before its first scheduled run.
+  workflow_dispatch:
+
+# Serialize runs so two scheduled sweeps never race on the same repo state.
+concurrency:
+  group: steer-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    # Scoped to delivery-up-to-the-PR (rule 53). Enough to branch, draft in a
+    # worktree, push the loop's own work branch, open a draft PR, and update
+    # tickets — deliberately NOT enough to merge or deploy, and branch protection
+    # keeps main out of reach of the contents grant. Do not broaden this block.
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read # read CI results while triaging failures
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history so the loop can branch and diff
+
+      - name: Run steer loop
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # Load the org standards plugin so the loop runs under the SAME steer
+          # ruleset as a local session (rule 53 included). plugin_marketplaces
+          # takes Git URLs; plugins takes name@marketplace. The marketplace repo
+          # is public, so the clone is anonymous — no credential needed.
+          plugin_marketplaces: |
+            https://github.com/element22llc/e22-plugins.git
+          plugins: |
+            steer@e22-plugins
+
+          # The loop's task. Scaffolding narrows this to your chosen scope. Every
+          # line here stays INSIDE the merge gate — deliver up to the PR, never
+          # merge (rule 53).
+          prompt: |
+            Run an autonomous triage-and-draft loop under the steer standards
+            (rule 53, Autonomous loops). Do all of this, and STOP at every human
+            gate — deliver up to the draft PR, never merge/deploy/push-to-main:
+
+            1. Triage what needs attention: run /steer:audit and /steer:next to
+               find failing CI, open issues, and drift. Read durable state from
+               the tracker and /spec/** — not from any prior run's memory.
+            2. Pick the single highest-leverage item that is safe to draft
+               unattended (a clear bug fix, a small tracked task). Skip anything
+               that needs a human decision (design, ADR, ambiguous scope) —
+               surface it instead.
+            3. Draft the fix in an isolated worktree and run the verify loop
+               (tests, lint, typecheck) until green. If it doesn't converge,
+               stop and report what blocked you — do not thrash.
+            4. Have the change independently reviewed (steer-reviewer /
+               /steer:audit), not by the drafting agent's own say-so.
+            5. Push your own work branch and open a DRAFT pull request with the
+               diff, the verification output,
+               and any drift classes flagged. Update the tracked issue. (The
+               draft flag marks the PR as unattended output — the merge review
+               is the gate.)
+            6. Do NOT merge, deploy, push to main or any protected branch,
+               ratify an ADR, or
+               use real secrets. Those are the human's gates — leave them closed.

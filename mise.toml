@@ -68,6 +68,9 @@ run = [
   # The shipped scaffold workflow lives outside .github/, so actionlint never
   # sees it by default — lint it explicitly (also shellchecks its run: blocks).
   "actionlint plugins/steer/templates/github/workflows/ci.yml",
+  # The on-demand autonomous-loop workflow (instantiated by /steer:loop) also
+  # ships outside .github/ — lint it explicitly for the same reason.
+  "actionlint plugins/steer/templates/github/workflows/steer-loop.yml",
 ]
 
 [tasks.shell]
