@@ -52,6 +52,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   settings merge could never drop the stale `ask` entries, and `ask` outranks
   `allow`). Scaffold `CLAUDE.md` + `README.md` explain the new
   protection-defines-the-mode model.
+- New skill **`/steer:loop`** — scaffolds an **autonomous loop** (the "loop
+  engineering" pattern): a scheduled GitHub Actions workflow that wakes on its own,
+  triages work (CI failures, open issues, drift) via `/steer:audit` + `/steer:next`,
+  drafts fixes in isolated worktrees reviewed by `steer-reviewer`, pushes its own
+  work branches, and opens
+  **draft** PRs — the draft flag marks unattended output; the **merge review is
+  the gate** (Commit autonomy, two-state delivery). It requires pr-flow (a
+  protected `main` — a solo-trunk repo graduates via `/steer:protect` first),
+  instantiates the new on-demand template
+  `templates/github/workflows/steer-loop.yml` (not bootstrapped — only when asked),
+  lands it via the normal autonomous branch-push + PR, and offers
+  `verify`/`remove` modes. Added as a
+  front door in `rules/00-router.md`.
+- New rule **`53-autonomous-loops.md`** — the boundary for autonomous loops: a loop
+  may discover, triage, draft, push its own work branch, and open a **draft** PR
+  (autonomous delivery up to the merge, exactly like an interactive session), but
+  closes only *up to* a
+  human gate and never *through* one — merge, deploy, pushing to `main`/protected
+  branches, ADR ratification, and real secrets stay human (Issue-first, High-risk,
+  Commit autonomy). A loop presupposes pr-flow: never point one at a solo-trunk
+  repo. Also
+  codifies split ideation/verification, durable state in the tracker + `/spec/**`,
+  and the checkable-work bound shared with the Verify loop.
 - `/steer:intake` now **tidies the drop location** so an absorbed document does not
   stay stalled where the PO uploaded it. When it absorbs a new version it
   **relocates** the dropped file into its canonical `spec/sources/<id>/versions/<v>/original.<ext>`

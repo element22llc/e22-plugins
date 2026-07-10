@@ -57,6 +57,7 @@ and hands off to specialized skills as needed, so you rarely route outside this 
 | respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
+| automate the triage/fix sweep on a schedule — set up an autonomous loop that discovers work, triages, and drafts fixes without prompting each turn (drafts only, never merges — rule 53) | `/steer:loop` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
 | get a plain-language, shareable page of one feature — an at-a-glance view to show or hand to a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
