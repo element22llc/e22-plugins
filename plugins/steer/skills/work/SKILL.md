@@ -13,6 +13,11 @@ allowed-tools:
   - Bash(git rev-parse *)
   - Bash(git add *)
   - Bash(git commit *)
+  - Bash(git push)
+  - Bash(git push -u origin *)
+  - Bash(git push origin *)
+  - Bash(gh pr create *)
+  - Bash(gh pr edit *)
   - Bash(gh pr checks *)
   - Bash(gh run view *)
   - Bash(gh run watch *)
@@ -39,20 +44,23 @@ backlog and never edits code; `/steer:work` reads an issue and delivers it.
 
 A CLI "fix/implement #N" request authorizes, without extra confirmation:
 read/search the issue, create-or-reuse the issue, claim it, update its managed
-state, create/switch the local branch, modify the local repository, and run
-tests. **Commit, push, and open/update PR follow the existing commit- and
-PR-autonomy rules; merge and deploy are never implied.**
+state, create/switch the local branch, modify the local repository, run tests,
+commit, push, and open/update the PR — the full delivery loop up to the merge
+(Commit autonomy). **Merge and deploy are never implied.**
 
 > **Pre-approved shell scope (frontmatter `allowed-tools`).** To cut repetitive
-> prompts, this skill pre-approves only read-only git inspection (`status`, `diff`,
+> prompts, this skill pre-approves read-only git inspection (`status`, `diff`,
 > `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), the
-> Rule-45-autonomous local mutations `git add` / `git commit`, and **read-only CI
+> Rule-45-autonomous local mutations `git add` / `git commit`, the delivery moves
+> `git push` / `gh pr create` / `gh pr edit` (autonomous under Commit autonomy —
+> the merge review is the gate, not the push or the PR), and **read-only CI
 > status** (`gh pr checks`, `gh run view`, `gh run watch`) so the post-push CI watch
-> (see `finish`) runs without a prompt per poll. It deliberately does
-> **not** pre-approve `git push`, `gh pr create/edit/merge`, `gh api`, `gh workflow run`,
-> or destructive git (`reset --hard`, `clean -fdx`, `branch -D`) — those keep the human
-> gate. Only those read-only CI reads are pre-approved; every `gh` *write* stays gated,
-> and tracker I/O still routes through `/steer:tracker-sync`.
+> (see `finish`) runs without a prompt per poll. It deliberately does **not**
+> pre-approve `gh pr merge`, `gh api`, `gh workflow run`, or destructive git
+> (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) — merge stays with
+> the human, and tracker I/O still routes through `/steer:tracker-sync`. In an
+> ungraduated solo-trunk repo the trunk-push hook additionally surfaces each
+> `git push` for confirmation while graduation signals stand (rule 45).
 
 ## Delivery mode
 
@@ -64,14 +72,22 @@ Determine it once at `start` / `finish`. **Issue-first holds in both modes** —
 every implementation-affecting change is tied to a GitHub issue; the modes differ
 only in the branch/PR ceremony around that issue.
 
-- **pr-flow** (default) — the full flow this skill describes throughout: claim →
-  `issue/<n>` branch + `spec/.work` marker → implement → push → open PR → CI green
-  → transition. The PR is the human gate.
-- **solo-trunk** (pre-MVP greenfield, before `/steer:protect` graduates the repo)
+- **pr-flow** (default; the mode a protected `main` defines) — the full flow this
+  skill describes throughout: claim → `issue/<n>` branch + `spec/.work` marker →
+  implement → push → open PR → CI green → transition. The **merge review** is the
+  human gate — pushing the branch and opening the PR are autonomous; branch
+  protection (raised by `/steer:protect`) is what enforces that gate server-side.
+  If the repo declares pr-flow but `main` is not actually protected, run the same
+  flow unchanged, note the missing wall, and recommend `/steer:protect` (rule 45).
+- **solo-trunk** (unprotected `main` by declared intent — pre-MVP greenfield,
+  before `/steer:protect` graduates the repo)
   — commit **straight to `main`**: **no `issue/<n>` branch, no `spec/.work`
   marker, no PR**. Still claim the issue and implement, but close it **from the
   trunk commit** (`Closes #N`) under Commit autonomy (rule 45) rather than via a
-  PR. Committing to `main` is itself authorized in this mode; **deploy is still
+  PR. Committing to `main` **and pushing it** are authorized in this mode —
+  unless a graduation signal stands (deploy target, `prod` branch, second
+  contributor), in which case the trunk-push hook surfaces the push for a human
+  yes until the repo graduates; **deploy is still
   never implied**, and the spine, tests, and Definition of Done are unchanged.
   Wherever a step below says *branch*, *marker*, or *PR*, skip it and substitute
   the trunk commit — everything else (validation, managed-block progress, reading
@@ -103,15 +119,16 @@ only in the branch/PR ceremony around that issue.
 - **`status #N`** — **read-only**: report state, claimant, branch, PR, blockers,
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
-  comment); when authorized, commit/push and open-or-update the PR; **then watch CI
+  comment); commit, push, and open-or-update the PR (autonomous — Commit
+  autonomy; merge is not yours); **then watch CI
   to conclusion** (`gh pr checks --watch`) before transitioning. The first push of
   the new `issue/<n>` branch sets the upstream — `git push -u origin <branch>` —
   or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
   there is no PR: commit straight to `main` with a `Closes #N` trailer and watch
   CI on the trunk push** (`gh run watch`) the same way — the closed issue, not a
   merged PR, is the terminal evidence. On a red build,
-  diagnose and fix it as part of the same unit of work — re-push (still
-  human-gated) and re-watch — until checks are green or a remaining failure is
+  diagnose and fix it as part of the same unit of work — re-push and re-watch —
+  until checks are green or a remaining failure is
   legitimately non-blocking (and said so). Only transition to `validate` once CI is
   green; hand the reviewer a green PR, not a running or red one. A PR-scoped failure
   is fixed or commented on the PR, **not** filed as a tracker issue — defer to the
@@ -146,8 +163,9 @@ stopping rules: [`REVIEW-LOOP.md`](../../templates/reference/REVIEW-LOOP.md).
   "what's missing" pass. **Revise on every high-severity finding**; never review
   your own plan.
 - **Human plan sign-off.** Present the vetted plan for sign-off before a
-  significant change (Rules `45-commit-autonomy`, `95-not-the-gate`). This covers
-  the **plan**; the push/PR autonomy gates in `finish` still apply at delivery.
+  significant change (`--reviewed` is the caller opting into gates; rule
+  `95-not-the-gate`). This covers the **plan**; delivery then runs the normal
+  autonomous `finish` — merge still waits for the reviewer.
 - **Implement** via the normal `start`→`finish` flow — do not stand up a second
   path.
 - **Code gate — independent.** After implementing, run `/code-review` on the diff
@@ -192,7 +210,8 @@ What changes versus the normal flow:
   remove the PR/merge human gate. No self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
   Deployment (validate in non-prod where feasible) — but, exactly as everywhere
-  else, deploy is **never auto-executed**: `git push`, `gh pr merge`, and any deploy
+  else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
+  the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
   stay human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
   backfill/finish the issue, write the spec/ADR if a durable decision was made, and
@@ -327,11 +346,14 @@ still excluded).
   blocks). Human content is never overwritten.
 - **Never auto-resolve product decisions or drift** — those wait for the named
   human (see `ISSUE-WORKFLOW.md`).
-- **The PR is the human gate.** Propose the PR; don't merge or deploy. Watching CI
+- **The merge is the human gate.** Push the branch and open the PR yourself
+  (Commit autonomy); never merge or deploy. Watching CI
   to conclusion and fixing a red build is **finishing the work**, not crossing that
   gate — it is expected, not a gate breach. Merge and deploy stay human-gated.
-  **In solo-trunk there is no PR gate** — committing to `main` is authorized (rule
-  45), so the trunk commit *is* delivery; but **deploy stays human-gated** all the
+  **In solo-trunk there is no PR gate** — committing to `main` and pushing it are
+  authorized (rule 45; the trunk-push hook gates the push only once graduation
+  signals stand), so the trunk commit *is* delivery; but **deploy stays
+  human-gated** all the
   same, and graduating the repo to the PR flow is `/steer:protect`'s job, never
   this skill's.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit

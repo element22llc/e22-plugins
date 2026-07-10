@@ -74,6 +74,12 @@ assert_empty() {
 }
 assert_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && ok || bad "$1 (expected deny, got: $2)"; }
 assert_no_deny() { printf '%s' "$2" | grep -q '"permissionDecision":"deny"' && bad "$1 (unexpected deny: $2)" || ok; }
+# Claude PreToolUse "ask" envelope: the decision wrapped in hookSpecificOutput.
+assert_ask() {
+	printf '%s' "$2" | grep -q '"permissionDecision":"ask"' &&
+		printf '%s' "$2" | grep -q 'hookSpecificOutput' && ok ||
+		bad "$1 (expected wrapped ask, got: $2)"
+}
 # Copilot preToolUse envelope: a flat decision object (no hookSpecificOutput wrapper).
 assert_copilot_ask() {
 	printf '%s' "$2" | grep -q '"permissionDecision":"ask"' &&
@@ -1747,14 +1753,14 @@ GRAD_PROD="$(git_repo grad_prod main)"
 git -C "${GRAD_PROD}" branch prod >/dev/null 2>&1
 claude_md_mode "${GRAD_PROD}" solo-trunk
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_PROD}" sg1)")"
-assert_has "graduation: solo-trunk + prod branch nudges" "${out}" "graduating"
+assert_has "graduation: solo-trunk + prod branch nudges" "${out}" "graduate"
 
 # solo-trunk + infra/ tree -> nudge.
 GRAD_INFRA="$(new_repo grad_infra)"
 mkdir -p "${GRAD_INFRA}/infra"
 claude_md_mode "${GRAD_INFRA}" solo-trunk
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_INFRA}" sg2)")"
-assert_has "graduation: solo-trunk + infra/ nudges" "${out}" "graduating"
+assert_has "graduation: solo-trunk + infra/ nudges" "${out}" "graduate"
 
 # solo-trunk + a deploy workflow -> nudge.
 GRAD_DEPLOY="$(new_repo grad_deploy)"
@@ -1762,7 +1768,7 @@ mkdir -p "${GRAD_DEPLOY}/.github/workflows"
 printf 'name: deploy\n' >"${GRAD_DEPLOY}/.github/workflows/deploy.yml"
 claude_md_mode "${GRAD_DEPLOY}" solo-trunk
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_DEPLOY}" sg3)")"
-assert_has "graduation: solo-trunk + deploy workflow nudges" "${out}" "graduating"
+assert_has "graduation: solo-trunk + deploy workflow nudges" "${out}" "graduate"
 
 # solo-trunk with no signal -> silent (a fresh pre-MVP repo gets zero noise).
 GRAD_NONE="$(new_repo grad_none)"
@@ -1782,6 +1788,69 @@ GRAD_NOREPO="${WORK}/grad_norepo"
 mkdir -p "${GRAD_NOREPO}"
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NOREPO}" sg6)")"
 assert_empty "graduation: no repo silent" "${out}"
+
+# --- check-trunk-push.sh: trunk-push graduation gate (PreToolUse, Bash) ---
+# Signals shared with check-graduation.sh via lib/graduation.sh. "ask" — not
+# deny — only when ALL hold: Bash git push + solo-trunk + a graduation signal.
+
+# solo-trunk + infra/ signal + git push -> wrapped ask naming /steer:protect.
+TP_HOT="$(new_repo tp_hot)"
+mkdir -p "${TP_HOT}/infra"
+claude_md_mode "${TP_HOT}" solo-trunk
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp1 'git push origin main')")"
+assert_ask "trunk-push: solo-trunk + signal + push asks" "${out}"
+assert_has "trunk-push: ask names the graduation path" "${out}" "/steer:protect"
+
+# same repo, copilot target -> flat ask envelope (no hookSpecificOutput).
+ENV="STEER_HOOK_TARGET=copilot"
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp2 'git push')")"
+ENV=""
+assert_copilot_ask "trunk-push: copilot flat ask" "${out}"
+
+# compound command (`… && git push`) still matches.
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
+assert_ask "trunk-push: compound command push asks" "${out}"
+
+# `git -C <dir> push` form matches.
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp4 "git -C ${TP_HOT} push")")"
+assert_ask "trunk-push: git -C push asks" "${out}"
+
+# non-push git command -> silent (hot-path early exit).
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp5 'git status')")"
+assert_empty "trunk-push: non-push git silent" "${out}"
+
+# "push" only as an argument (not the git subcommand) -> silent.
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp6 'git commit -m "push the button"')")"
+assert_empty "trunk-push: push in message silent" "${out}"
+
+# non-Bash tool -> silent even in the hot repo.
+out="$(run_hook check-trunk-push.sh "$(json_write "${TP_HOT}" tp7 src/app.ts 'x')")"
+assert_empty "trunk-push: non-Bash tool silent" "${out}"
+
+# solo-trunk with NO signal -> silent (pre-MVP trunk autonomy holds).
+TP_FRESH="$(new_repo tp_fresh)"
+claude_md_mode "${TP_FRESH}" solo-trunk
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_FRESH}" tp8 'git push origin main')")"
+assert_empty "trunk-push: solo-trunk no signal silent" "${out}"
+
+# pr-flow + signal -> silent (branch pushes; the server wall owns the merge gate).
+TP_PR="$(new_repo tp_pr)"
+mkdir -p "${TP_PR}/infra"
+claude_md_mode "${TP_PR}" pr-flow
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_PR}" tp9 'git push -u origin issue/12-x')")"
+assert_empty "trunk-push: pr-flow silent despite signal" "${out}"
+
+# no CLAUDE.md marker at all -> pr-flow default -> silent.
+TP_BARE="$(new_repo tp_bare)"
+mkdir -p "${TP_BARE}/infra"
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_BARE}" tp10 'git push')")"
+assert_empty "trunk-push: unmarked repo (pr-flow default) silent" "${out}"
+
+# cwd not inside a repo -> silent.
+TP_NOREPO="${WORK}/tp_norepo"
+mkdir -p "${TP_NOREPO}"
+out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_NOREPO}" tp11 'git push')")"
+assert_empty "trunk-push: no repo silent" "${out}"
 
 # ---------------------------------------------------------------------------
 # check-template-drift.sh — root-anchored spec/template drift detector

@@ -1,9 +1,11 @@
 <!-- steer:inject-when=code-project -->
 ## End-of-session checklist
 
-Before wrapping up a working session, present this checklist and confirm each
-item with the dev — don't silently close out. Track open items with your todo
-tooling so nothing is dropped:
+Before wrapping up a working session, run this checklist and **report** its
+state to the dev — don't silently close out, and don't turn the report into a
+round of per-item confirmations (satisfied items need no ack; only genuinely
+open items need the dev). Track open items with your todo tooling so nothing is
+dropped:
 
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
@@ -14,7 +16,7 @@ tooling so nothing is dropped:
 - [ ] Working in a worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
-- [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
+- [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?
 - [ ] Solo trunk mode and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is

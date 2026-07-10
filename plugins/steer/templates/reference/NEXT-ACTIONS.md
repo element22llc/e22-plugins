@@ -212,6 +212,6 @@ system (it is either pre-launch or live), so at most one appears.
   the action (e.g. `/security-review` does not *rotate* a secret) misleads — name
   the human action, and offer the command only as the follow-up it genuinely is.
 - **Read-only.** The block is the last thing a skill emits and changes nothing. It
-  does not publish issues, accept ADRs, claim work, push branches, or create PRs
-  without the approval those workflows already require. It never auto-executes the
-  recommendation.
+  does not publish issues, accept ADRs, claim work, push branches, or create PRs —
+  the owning workflow performs those under its own autonomy and gating rules. It
+  never auto-executes the recommendation.

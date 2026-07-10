@@ -13,6 +13,10 @@ allowed-tools:
   - Bash(git mv *)
   - Bash(git add *)
   - Bash(git commit *)
+  - Bash(git push)
+  - Bash(git push -u origin *)
+  - Bash(git push origin *)
+  - Bash(gh pr create *)
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(npm view *)
@@ -73,8 +77,8 @@ runbook seems to conflict with one of these, the guardrail wins.
 
 Work on a `feat/adopt` branch — **never commit to `main`** (commit-autonomy
 rule). Commit the reverse-engineered spine + scaffold as coherent units without
-asking; **push and the PR wait for the dev** (the one publishing step Commit
-autonomy gates).
+asking, then push the branch and open the adoption PR without asking (announce
+it) — **the merge review is what waits for the dev** (Commit autonomy).
 
 ## Resuming? Reconcile before anything else
 
@@ -122,7 +126,7 @@ phase you are on there before executing it.
     scaffold + living-docs templates; reconcile, never clobber. → PROCEDURE Phase 10
 11. **Reconcile layout** — relate code to `/apps` + `/packages` only where
     low-risk; propose large restructures. → PROCEDURE Phase 11
-12. **Hand off** — stamp `/spec/.version`, commit on `feat/adopt`, propose the
-    PR after dev confirmation, optionally `publish-adoption`. → PROCEDURE Phase 12
+12. **Hand off** — stamp `/spec/.version`, commit on `feat/adopt`, push and
+    open the PR, optionally `publish-adoption`. → PROCEDURE Phase 12
 13. **Recommend the next action** — emit the `## Recommended next actions` block
     from the observed adoption state. → PROCEDURE Phase 13

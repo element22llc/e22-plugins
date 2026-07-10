@@ -17,6 +17,10 @@ allowed-tools:
   - Bash(git add *)
   - Bash(git mv *)
   - Bash(git commit *)
+  - Bash(git push)
+  - Bash(git push -u origin *)
+  - Bash(git push origin *)
+  - Bash(gh pr create *)
   - Bash(mise tasks *)
   - Bash(mise install *)
   - Bash(mise lock *)
@@ -285,8 +289,9 @@ flow-state gates self-healing on the next `/steer:build` run.
     reviewer.
 
     Then hand off per the delivery mode:
-    - **PR flow** — propose opening the v0 PR (it waits for confirmation —
-      Commit-autonomy rule); its description links to
+    - **PR flow** — push the branch and open the v0 PR without asking, telling
+      the PO plainly what was opened and that a developer's merge review is the
+      gate (Commit-autonomy rule); its description links to
       `/spec/PRODUCTIONIZATION.md`, the demo-validated `intent.md` files, and any
       remaining `## Open questions` across the feature intents / `vision.md` (run
       `/steer:questions` to work them down). Link the PR in
@@ -312,7 +317,7 @@ language.
 | Intent not yet PO-approved | Human decision required | PO reviews & approves the drafted intent (no command) |
 | Build incomplete / failing locally | Blocking now | Continue the build |
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
-| Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Open the v0 PR for dev review |
+| Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Push the branch and open the v0 PR for dev review |
 | Demo-validated, solo trunk (v0 on `main`) | Human decision required | Ready for a developer — graduate via `/steer:protect` when one joins / before real users |
 | PR open, awaiting dev review | Human decision required | A dev reviews/merges the PR (no command) |
 | Remaining `## Open questions` | Required before initial production | Work them down — `/steer:questions` |

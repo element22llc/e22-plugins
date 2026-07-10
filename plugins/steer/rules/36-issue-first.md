@@ -19,8 +19,8 @@ request does **not** need confirmation to create the issue.
   takes one confirmation; security-sensitive public disclosure takes human review.
 - **Implementation runs through `/steer:work`** — claim, branch, implement, test,
   open the PR, transition the issue. The CLI request authorizes local edits +
-  tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
-  implied**.
+  tests; commit, push, and the PR are autonomous under Commit autonomy; **merge
+  and deploy are never implied**.
 - **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy): issue-first
   still holds — every implementation-affecting mutation has a GitHub issue — but you
   close it **from the trunk commit** (`Closes #N`), with no `issue/<N>` branch or

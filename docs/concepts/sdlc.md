@@ -120,7 +120,8 @@ the hard gates are human. These are never auto-crossed by routing:
 
 - Creating an issue beyond an explicit capture/implement request
 - Ratifying an ADR (it stays *Proposed* until a human ratifies)
-- `git push`, opening/updating a PR, **merge**, and **deploy**
+- **Merge** and **deploy** (pushing a branch and opening the PR are autonomous
+  delivery steps — the merge review is the gate)
 - Writing real secrets or repo settings
 
 See the [Authorization model](authorization-model.md) for the full authority

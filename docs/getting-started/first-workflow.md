@@ -79,8 +79,9 @@ pass to `/steer:work` in the next step.
 ```
 
 Use the issue number from step 4's decompose output in place of `#123`. Implements
-the issue and lands a PR. Commits happen autonomously, but **pushing is gated** —
-see the [Authorization model](../concepts/authorization-model.md).
+the issue and lands a PR. Commits, the push, and opening the PR happen
+autonomously, but **merging is gated** — the reviewed merge is the human gate.
+See the [Authorization model](../concepts/authorization-model.md).
 
 ## What's next
 

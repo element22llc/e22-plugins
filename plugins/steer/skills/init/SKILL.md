@@ -12,6 +12,10 @@ allowed-tools:
   - Bash(git rev-parse *)
   - Bash(git add *)
   - Bash(git commit *)
+  - Bash(git push)
+  - Bash(git push -u origin *)
+  - Bash(git push origin *)
+  - Bash(gh pr create *)
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(npm view *)
@@ -23,9 +27,9 @@ allowed-tools:
 Run this once when a repo is first brought under the standards. Detect
 which of two entry conditions applies and follow that path — both end with the
 toolchain pinned and the repo working spec-first, on a `feat/*` branch. Per
-**Commit autonomy**, commit the bootstrap as coherent units without asking; the
-one step that waits for the dev is **publishing** — push and the PR (see the
-push/PR gate in Commit autonomy).
+**Commit autonomy**, commit the bootstrap as coherent units without asking, then
+push the branch and open the bootstrap PR without asking (announce it) — the
+one step that waits for the dev is the **merge review** of that PR.
 
 **Solo greenfield?** When one person is both PO and dev with no MVP or deploy yet,
 Path B offers **solo trunk mode** (Commit autonomy): the bootstrap and early features
@@ -85,7 +89,8 @@ them:
    overrides them, record the choice as an ADR (run `/steer:adr`).
 3. Propose all edits in a single batch so the dev can confirm the filled-in
    values (product name, handles, …) before they're applied. Once applied,
-   commit them (Commit autonomy) — **push and the PR wait for the dev**.
+   commit them, push, and open the PR (Commit autonomy — **the merge review is
+   what waits for the dev**).
 4. **Pin the toolchain — for every CI/dev platform.** The template's `mise.toml`
    files use `latest` and ship **no** `mise.lock`; create the lock here as part
    of pinning. If `mise` (or Docker) isn't installed yet, run **`/steer:doctor`**
@@ -159,8 +164,9 @@ re-propose it; just confirm the repo is set up and move on. (A bare or partial
 The repo has no `/spec` spine, and you are starting a new product here. The
 goal: stand up the full repo scaffolding + spec spine from the plugin's
 bundled scaffold, then proceed spec-first — so feature code is never written
-ahead of its intent/contract. Work on a `feat/*` branch and commit the bootstrap
-as coherent units (Commit autonomy) — **push and the PR wait for the dev**. (In
+ahead of its intent/contract. Work on a `feat/*` branch, commit the bootstrap
+as coherent units, and push + open the PR when it's coherent (Commit autonomy —
+**the merge review waits for the dev**). (In
 **solo trunk mode** — offered in step 1 when one person is both PO and dev —
 commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
@@ -320,10 +326,11 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    <plugin version>
    ```
 
-   **Solo trunk mode:** commit the bootstrap **directly to `main`** with no PR, and
+   **Solo trunk mode:** commit the bootstrap **directly to `main`** with no PR
+   and push it (Commit autonomy), and
    note in the `HISTORY.md` entry that the repo runs on trunk until graduation
    (`/steer:protect`) — there is no bootstrap PR. Otherwise (a repo with a reviewer):
-   commit on the `feat/*` branch and open a PR for dev review — the **bootstrap
+   commit on the `feat/*` branch, push, and open the PR for dev review — the **bootstrap
    gate** that brings the repo under the standards and lets spec-first work begin
    on `main`. This is **not** productionization: a greenfield bootstrap ships
    scaffold and an empty spec spine, with no app to harden. Productionization is

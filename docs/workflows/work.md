@@ -21,7 +21,8 @@ never edits code).
     regression (rule `62-hotfix`). "Urgent" feature work is not a hotfix. The lane
     relaxes *ceremony and ordering* — the issue may be filed after-the-fact on a
     `hotfix/<n>` branch, one reviewer approval suffices — but keeps **every human
-    authority gate** (push / PR / merge / deploy stay human-gated). Once the fire is
+    authority gate** (merge / deploy stay human-gated; pushing the branch and
+    opening the PR are autonomous, as everywhere). Once the fire is
     out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a
     `HISTORY.md` entry: Definition of Done is *deferred, never waived*.
 
@@ -55,7 +56,7 @@ to a GitHub issue; the modes differ only in the branch/PR ceremony around it.
 | --- | --- | --- |
 | Branch | `issue/<n>` branch + `spec/.work` marker | none — commit straight to `main` |
 | Marker | written for Stop-hook reconciliation | skipped (stay on `main`) |
-| Delivery | open a PR; the PR is the human gate | `Closes #N` trunk commit under [Commit autonomy](../concepts/authorization-model.md) (rule 45) |
+| Delivery | push + open the PR autonomously; the **merge review** is the human gate (server-enforced by branch protection) | `Closes #N` trunk commit + push under [Commit autonomy](../concepts/authorization-model.md) (rule 45) |
 | Terminal evidence | merged PR | closed issue from the trunk commit |
 
 Determine the mode once at `start` / `finish`. In solo-trunk, wherever a step below
@@ -93,13 +94,14 @@ stay in the git-ignored marker and never reach the tracker.
 
 - **One issue per branch/PR** by default (in solo-trunk, **one trunk commit per
   issue**, each closing its own `#N`).
-- Git and PR delivery follow the repo's commit/PR-autonomy rules — commits are
-  autonomous, **pushing/opening the PR is gated**. See the
+- Git and PR delivery follow the repo's commit-autonomy rules — commits,
+  pushes, and opening the PR are autonomous; **merging is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
 - **After pushing, `finish` watches CI to green and fixes a red build** before
-  treating the work as done — read-only CI status (`gh pr checks`, `gh run
-  view`, `gh run watch`) is pre-approved for this; `git push` and the PR/merge
-  steps stay gated. If you have stepped away, the in-turn watch blocks the turn;
+  treating the work as done — the skill pre-approves `git push` /
+  `gh pr create|edit` plus read-only CI status (`gh pr checks`, `gh run
+  view`, `gh run watch`) for this; the merge
+  step stays gated. If you have stepped away, the in-turn watch blocks the turn;
   re-enter monitoring with a `/loop` over `gh pr checks` (steer ships no
   background poller). Merge and deploy remain a human's call.
 - All tracker-metadata I/O routes through `/steer:tracker-sync`.

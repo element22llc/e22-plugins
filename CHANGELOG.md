@@ -7,6 +7,51 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Two-state delivery autonomy — the human gate moves to the PR merge.**
+  Delivery now runs in exactly two modes, keyed to GitHub branch protection:
+  **pr-flow** (protected `main`) where pushing the branch and opening the PR are
+  autonomous and the server-enforced **merge review is the one human gate**, and
+  **solo-trunk** (unprotected, pre-MVP by declared intent) where the trunk
+  commit + push are autonomous. The former one-human checkpoint *before* `git
+  push` / `gh pr create` is retired — an open PR is inert behind branch
+  protection, so gating its creation was pure friction; **merge and deploy stay
+  human-gated everywhere** (`gh pr merge` is never pre-approved). Rule
+  `45-commit-autonomy` carries the model (including the *declared-but-
+  unprotected* gap: same flow, flagged wall, ADR-recorded when protection is
+  genuinely unavailable — e.g. private repos on GitHub Free); rules 00/36/62/99
+  and `ISSUE-WORKFLOW.md`/`NEXT-ACTIONS.md` align. `/steer:work`, `/steer:init`,
+  `/steer:adopt`, `/steer:sync`, `/steer:build`, and `/steer:intake` now push
+  and open their PRs without asking (announced, per rule 00's heads-up
+  pattern), and their `allowed-tools` pre-approve `git push` /
+  `gh pr create|edit`; the end-of-session checklist (rule 99) becomes a status
+  report instead of per-item confirmations.
+- **New PreToolUse hook `check-trunk-push.sh` — graduation signals now gate
+  trunk pushes instead of only nagging.** In a solo-trunk repo that shows a
+  local graduation signal (deploy workflow, `infra/` tree, `prod`/`production`
+  branch), every Bash `git push` surfaces as a permission **ask** (never a hard
+  deny — the human can approve and keep working) that points at
+  `/steer:protect`; signal-free solo-trunk repos and all pr-flow repos are
+  untouched. Signal detection is factored into the shared `lib/graduation.sh`
+  so this gate and the SessionStart `check-graduation.sh` nudge can never
+  disagree; the nudge's wording now says pushes are gated until graduation.
+  Registered for Copilot CLI too (`copilot-hooks.json`, flat `ask` envelope).
+  Fixture coverage in `hooks/tests/run.sh` (12 new cases).
+- **`/steer:protect` now owns the delivery-mode marker as a cache of observed
+  protection.** Verify reconciles the marker in both directions: protected
+  `main` + `solo-trunk` marker → flip to pr-flow (out-of-band graduation, same
+  reconciliation as `apply`); `pr-flow` marker + no protection → report the
+  missing wall and recommend `apply`, never silently downgrade to solo-trunk.
+  Documents the plan-limit escape hatch (branch protection unavailable on the
+  repo's GitHub plan → honor-system pr-flow recorded as an ADR so the gap stays
+  a visible decision).
+- **Scaffold `.claude/settings.json`: `git push` (all forms) and
+  `gh pr create` move from `ask` to `allow`, `gh pr edit` added to `allow`;
+  `gh pr merge` stays in `ask` and the force-push/`--delete`/`--mirror` denies
+  are unchanged.** A `MIGRATIONS.md` v3.16.0 entry carries the non-additive
+  `ask`-list removal forward for already-bootstrapped repos (the additive
+  settings merge could never drop the stale `ask` entries, and `ask` outranks
+  `allow`). Scaffold `CLAUDE.md` + `README.md` explain the new
+  protection-defines-the-mode model.
 - `/steer:intake` now **tidies the drop location** so an absorbed document does not
   stay stalled where the PO uploaded it. When it absorbs a new version it
   **relocates** the dropped file into its canonical `spec/sources/<id>/versions/<v>/original.<ext>`

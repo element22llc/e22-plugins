@@ -24,9 +24,12 @@ yourself** — don't wait for a `/steer:` command or ask them to name one.
   step is announced, then waits for the human.
 - **Never auto-cross a human gate — routing moves navigation, never authority.**
   Creating issues beyond an explicit "fix / add / implement" ask (Issue-first),
-  ratifying an ADR (High-risk), and push / PR / merge / deploy / real secrets (Commit
-  autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
-  runs; it never relaxes what that skill may do.
+  ratifying an ADR (High-risk), and merge / deploy / real secrets (Commit
+  autonomy, High-risk) each still stop for the human. Pushing a branch
+  and opening the PR are **not** gates — they are autonomous delivery steps
+  under Commit autonomy; the human gate is the PR **merge** (and, in
+  an ungraduated solo-trunk repo, the trunk push once graduation signals stand).
+  Auto-routing picks *which* skill runs; it never relaxes what that skill may do.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, make bootstrap the
   **first move, announced up front** (not a closing offer): route a developer or
   ambiguous feature/build intent through **`/steer:setup`**, a non-technical owner's

@@ -54,6 +54,42 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.16.0 — scaffold `.claude/settings.json`: push + PR-create move from `ask` to `allow`
+
+- **What & why:** the two-state delivery model (rule `45-commit-autonomy`) made
+  pushing a branch and opening the PR **autonomous** delivery steps — the human
+  gate is the PR **merge** (server-enforced by branch protection in pr-flow) and,
+  in an ungraduated solo-trunk repo, the trunk-push hook's graduation gate. The
+  scaffold template therefore moved `Bash(git push)`, `Bash(git push origin:*)`,
+  `Bash(git push -u origin:*)`, `Bash(git push --set-upstream origin:*)`, and
+  `Bash(gh pr create:*)` from `permissions.ask` to `permissions.allow` (and added
+  `Bash(gh pr edit:*)` to `allow`); `Bash(gh pr merge:*)` deliberately stays in
+  `ask` and the force-push denies stay in `deny`. The `/steer:sync` settings
+  merge is additive (it unions `allow` but never removes an `ask` entry), and
+  `ask` outranks `allow` — so an already-bootstrapped repo keeps prompting on
+  every push forever without a migration. Removing entries from `ask` inside an
+  existing file is non-additive: only a migration may do it.
+- **Precondition:** the repo's `.claude/settings.json` still asks for pushes or
+  PR creation — this grep fires:
+
+  ```sh
+  test -f .claude/settings.json && \
+    python3 -c "import json,sys; p=json.load(open('.claude/settings.json')).get('permissions',{}).get('ask',[]); sys.exit(0 if any(x.startswith(('Bash(git push','Bash(gh pr create')) for x in p) else 1)" && echo pending
+  ```
+
+  No file, or none of those entries under `ask` ⇒ no-op.
+- **Action:** read-then-propose, show the diff first. Move every
+  `Bash(git push…)` and `Bash(gh pr create…)` entry from `permissions.ask` to
+  `permissions.allow` (skip any that `allow` already carries), add
+  `Bash(gh pr edit:*)` to `allow` if absent, and leave `Bash(gh pr merge:*)`,
+  `Bash(git rm:*)`, the MCP issue-write entries, and the whole `deny` list
+  untouched. Preserve every other key and value. If the repo has deliberately
+  tightened its posture (e.g. an ADR records keeping the push gate), surface the
+  conflict instead of applying — the consumer may tighten, never quietly loosen.
+
+  Idempotent: once no push/PR-create entry remains under `ask`, the
+  precondition is empty, so re-running is a no-op.
+
 ### v3.13.0 — scaffold `enabledPlugins`: drop the duplicate context7 entry
 
 - **What & why:** the scaffold's `.claude/settings.json` used to enable

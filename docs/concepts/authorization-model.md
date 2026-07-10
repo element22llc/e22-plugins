@@ -14,13 +14,20 @@ flowchart TD
     COMMIT --> DONE{Definition of Done holds?}
     DONE -->|No| MORE[Keep working]
     MORE --> COMMIT
-    DONE -->|Yes| PROPOSE[Tell dev branch is ready<br/>propose opening the PR]
-    PROPOSE --> GATE{{Human confirms}}
-    GATE -->|approved| PUSH[Push + open PR]
+    DONE -->|Yes| PUSH[Push + open PR autonomously<br/>announced, CI watched to green]
+    PUSH --> GATE{{Human reviews & merges the PR}}
 
     classDef gated fill:#fde,stroke:#c39
-    class GATE,PUSH gated
+    class GATE gated
 ```
+
+Delivery runs in exactly **two modes**, keyed to GitHub branch protection
+(rule `45-commit-autonomy`): a **protected** `main` is **pr-flow** — the diagram
+above, with the server-enforced **merge review as the one human gate** — and an
+**unprotected** `main` is **solo-trunk** (pre-MVP by declared intent), where the
+trunk commit + push are the autonomous delivery and there is no PR. There is no
+third mode; `/steer:protect` moves a repo between them and reconciles the
+`CLAUDE.md` delivery-mode marker (an offline cache of the observed protection).
 
 ## What is autonomous
 
@@ -35,6 +42,15 @@ flowchart TD
 - **Creating or reusing the tracking issue** on an explicit implement/capture
   request, in a GitHub-adopted repo (issue-first, rule `36-issue-first.md`). The
   issue and the bounded action set behind it do not need a second confirmation.
+- **Pushing the branch and opening the PR** once the Definition of Done holds —
+  announced, never asked (rule 00's heads-up pattern). Behind branch protection
+  an open PR is inert until a human merges it, so gating its creation protected
+  nothing; the delivery skills (`work`, `init`, `adopt`, `sync`, `build`)
+  pre-approve `git push` / `gh pr create` / `gh pr edit` in their
+  `allowed-tools`, and the scaffold allowlist carries the same grants. In
+  solo-trunk, the equivalent autonomous delivery is the trunk commit + push
+  (gated by the `check-trunk-push` hook only once graduation signals stand —
+  see [Hooks](../reference/hooks.md)).
 
 !!! note "These autonomous moves are pre-authorized too — not just declared"
     Declaring branching autonomous is worthless if switching onto the branch then
@@ -62,8 +78,9 @@ flowchart TD
     an allowlist escape a consumer's security review flags — but the
     `/steer:tracker-sync` and `/steer:report` skills re-grant them in their own
     `allowed-tools`, so the governed find-or-create path stays silent within those
-    skills. Delivery (`git push`, `gh pr create`/`merge`)
-    stays under `ask`/`deny`. Where a host still blocks the create, it is a
+    skills. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
+    delivery — the merge is the gate); `gh pr merge` stays under `ask` and
+    force-pushes under `deny`. Where a host still blocks the create, it is a
     *host-permission gate, not a missing issue* — confirm with the user or run
     `!gh issue create` under their identity, rather than looping.
 
@@ -88,12 +105,16 @@ flowchart TD
 !!! note "Exception — solo trunk mode (pre-MVP greenfield)"
     When one person is both PO and dev with no MVP yet, `/steer:init` can put the
     repo in **solo trunk mode** (declared in the product `CLAUDE.md` `## Delivery
-    mode` section): commits land **directly on `main`**, with no `feat/*` branch and
+    mode` section): commits land **directly on `main`** and are pushed
+    autonomously, with no `feat/*` branch and
     no per-feature PR — there is no second reviewer yet, so the PR gate has nothing
     behind it. CI still runs on every push, and the spine, tests, and Definition of
     Done are unchanged. The mode ends at **graduation** — run `/steer:protect`, which
     raises the server-side PR wall — once the MVP works, you first deploy, or a second
-    contributor joins.
+    contributor joins. Once any of those signals is *visible locally* (a deploy
+    workflow, an `infra/` tree, a `prod` branch), the `check-trunk-push` hook
+    stops silent trunk pushes — each `git push` surfaces for a human yes until
+    the repo graduates.
 
 ## What is silent — read-only inspection
 
@@ -142,16 +163,24 @@ grants the bundled plugin helper scripts its body — including a factored-out
 
 ## What is gated
 
-- **Pushing and opening the PR.** This is the one step that waits for the dev.
-  Everything before it does not. The **PR review is the gate** — not each commit.
+- **Merging the PR.** This is the one step that waits for the dev — everything
+  before it (branching, committing, pushing, opening the PR) does not. The
+  **merge review is the gate** — not each commit, not the push. `gh pr merge`
+  is never pre-approved (it sits under `ask` in the scaffold), and in a
+  protected repo the server wall enforces the review regardless.
+- **Deploying**, in every mode — including the hotfix lane, where a deploy is
+  policy-permitted but never auto-executed.
+- **Trunk pushes in a solo-trunk repo that has outgrown pre-MVP** — the
+  `check-trunk-push` hook surfaces each `git push` for a human yes once a local
+  graduation signal stands, until `/steer:protect` graduates the repo.
 
 !!! note "Watching CI is not crossing the gate"
     After a push, `/steer:work finish` watches CI to conclusion and fixes a red
     build before treating the work as done — that is *finishing* the work, not
     merging. To support this without a prompt per poll, the `work` skill
-    pre-approves **read-only** CI status only (`gh pr checks`, `gh run view`,
-    `gh run watch`). `git push`, `gh pr create/edit/merge`, `gh api`, and merge
-    or deploy stay gated exactly as before.
+    pre-approves **read-only** CI status (`gh pr checks`, `gh run view`,
+    `gh run watch`) alongside its delivery grants. `gh pr merge`, `gh api`, and
+    anything that deploys stay gated exactly as before.
 
 !!! note "The local boundary is advisory — the server enforces it"
     Rule `95-not-the-gate.md` is explicit that this in-session discipline cannot
@@ -167,8 +196,9 @@ The skill frontmatter encodes the same boundary:
 
 - **Tier 1 (read-only)** skills set `disallowed-tools: Edit, Write, NotebookEdit,
   EnterWorktree` — e.g. `audit`, `next`, `standards`.
-- **Tier 2 (side-effecting)** skills may edit and commit but never push to `main`
-  without confirmation — e.g. `sync`, `work`, `tidy`.
+- **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
+  and open the PR — but never merge it or commit to `main` outside solo-trunk —
+  e.g. `sync`, `work`, `tidy`.
 
 See the [Skills reference](../reference/skills.md) for each skill's tier, and
 [Configuration](../reference/configuration.md) for how tools are constrained.

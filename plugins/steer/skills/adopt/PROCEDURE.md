@@ -22,8 +22,9 @@ infra CI, and skips the Node project files — but `node`/`compose.yaml` are sti
 core); the universal core is the same for all. Adoption only *observes* — record the profile in the `CLAUDE.md` `## Profile`
 marker (`<!-- steer:profile=<profile> -->`) at handoff, default `app`. Work on a
 `feat/adopt` branch — never commit to `main` (commit-autonomy rule). Commit
-the spine + scaffold as coherent units without asking; **push and the PR wait for
-the dev**.
+the spine + scaffold as coherent units without asking, then push and open the
+adoption PR without asking — **the merge review waits for the dev** (Commit
+autonomy).
 
 ## Phase 2 — Reconcile the adoption checklist (resume safety) — do this FIRST on a resume
 
@@ -301,8 +302,9 @@ migrations this repo already carries:
 marker.
 
 Commit on `feat/adopt`. `PRODUCTIONIZATION.md` is the dev's productionization
-brief — every gap and as-built risk is listed there. Propose opening the PR and
-wait for the dev's confirmation before pushing/creating it. Run the end-of-session
+brief — every gap and as-built risk is listed there. Push the branch and open
+the adoption PR (announce it — Commit autonomy; the merge review is the dev's
+gate). Run the end-of-session
 checklist.
 
 - **To make selected gaps actionable** (GitHub tracker), run
@@ -330,7 +332,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
 | Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files (no command) |
 | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/steer:adr` |
-| Adoption PR not yet opened | Blocking now (next transition) | Open the adoption PR (after dev confirmation) |
+| Adoption PR not yet opened | Blocking now (next transition) | Push the branch and open the adoption PR |
 | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |
 | Unresolved production blocker, app not yet live | Required before initial production | Fix or explicitly accept it |
 | Unresolved blocker on an already-live app, actively harming users | Urgent live-system remediation | Fix or explicitly accept it now |

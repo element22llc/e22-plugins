@@ -44,8 +44,9 @@ Two invariants underpin everything:
    the create, or suggest they run `!gh issue create …` under their own identity,
    then continue.
 4. **A CLI implement request authorizes a bounded action set** — read/search,
-   create-or-reuse issue, claim, branch, local edits, run tests. Commit, push,
-   PR open/update follow existing commit/PR-autonomy rules; **merge and deploy
+   create-or-reuse issue, claim, branch, local edits, run tests, commit, push,
+   and PR open/update (autonomous under Commit autonomy — the merge review is
+   the human gate); **merge and deploy
    are never implied.**
 5. **Base lifecycle state is the `steer:state` marker** (see State model) — the
    single source of truth for where an issue sits in the lifecycle.

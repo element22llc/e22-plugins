@@ -403,9 +403,10 @@ best step and delegating to its owner (see
 | Clarification units unmatched (bucket 3) | Human decision required | The human places them (may become new `Q-NNN`s) — no command |
 | Delta absorbed, nothing open | Complete | `No action is currently required.` |
 
-Pick one `Current recommended action`. This skill does not perform unapproved
-pushes or PRs — committing the source + extraction is autonomous (rule
-`45-commit-autonomy`); publishing waits for the dev.
+Pick one `Current recommended action`. Committing the source + extraction —
+and, when the work is complete, pushing and opening the PR — is autonomous
+(rule `45-commit-autonomy`); the dev's merge review is the gate, and this
+skill never merges.
 
 ## Coupling rules
 
