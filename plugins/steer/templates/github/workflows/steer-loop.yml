@@ -7,10 +7,14 @@
 # what it may do.
 #
 # THE INVARIANT (rule 53): the loop closes only UP TO a human gate, never THROUGH
-# one. It discovers, triages, drafts in an isolated worktree, and opens a DRAFT
-# PR. It does NOT merge, deploy, push to a shared branch, ratify an ADR, or touch
-# real secrets. Do not add a merge/deploy step or widen the prompt to cross a
-# gate — that violates the rule this loop is meant to embody.
+# one. It discovers, triages, drafts in an isolated worktree, pushes its OWN work
+# branch, and opens a DRAFT PR — autonomous delivery up to the merge, exactly like
+# an interactive session (Commit autonomy: the merge review is the human gate).
+# It does NOT merge, deploy, push to main or any protected branch, ratify an ADR,
+# or touch real secrets. Do not add a merge/deploy step or widen the prompt to
+# cross the merge — that violates the rule this loop is meant to embody. The loop
+# presupposes pr-flow: main must be protected (/steer:protect) so the merge review
+# is enforced server-side, not honor-system.
 #
 # One repo-level prerequisite (see README.md#github-actions-secrets):
 #   ANTHROPIC_API_KEY — Anthropic API auth. The org marketplace repo
@@ -35,9 +39,10 @@ concurrency:
 jobs:
   loop:
     runs-on: ubuntu-latest
-    # Scoped to DRAFTING only (rule 53). Enough to branch, draft in a worktree,
-    # open a draft PR, and update tickets — deliberately NOT enough to merge or
-    # deploy. Do not broaden this block.
+    # Scoped to delivery-up-to-the-PR (rule 53). Enough to branch, draft in a
+    # worktree, push the loop's own work branch, open a draft PR, and update
+    # tickets — deliberately NOT enough to merge or deploy, and branch protection
+    # keeps main out of reach of the contents grant. Do not broaden this block.
     permissions:
       contents: write
       pull-requests: write
@@ -65,11 +70,12 @@ jobs:
             steer@e22-plugins
 
           # The loop's task. Scaffolding narrows this to your chosen scope. Every
-          # line here stays INSIDE a human gate — draft, never merge (rule 53).
+          # line here stays INSIDE the merge gate — deliver up to the PR, never
+          # merge (rule 53).
           prompt: |
             Run an autonomous triage-and-draft loop under the steer standards
             (rule 53, Autonomous loops). Do all of this, and STOP at every human
-            gate — draft only, never merge/deploy/push-to-shared:
+            gate — deliver up to the draft PR, never merge/deploy/push-to-main:
 
             1. Triage what needs attention: run /steer:audit and /steer:next to
                find failing CI, open issues, and drift. Read durable state from
@@ -83,7 +89,11 @@ jobs:
                stop and report what blocked you — do not thrash.
             4. Have the change independently reviewed (steer-reviewer /
                /steer:audit), not by the drafting agent's own say-so.
-            5. Open a DRAFT pull request with the diff, the verification output,
-               and any drift classes flagged. Update the tracked issue.
-            6. Do NOT merge, deploy, push to a shared branch, ratify an ADR, or
+            5. Push your own work branch and open a DRAFT pull request with the
+               diff, the verification output,
+               and any drift classes flagged. Update the tracked issue. (The
+               draft flag marks the PR as unattended output — the merge review
+               is the gate.)
+            6. Do NOT merge, deploy, push to main or any protected branch,
+               ratify an ADR, or
                use real secrets. Those are the human's gates — leave them closed.
