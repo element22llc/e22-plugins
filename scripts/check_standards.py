@@ -642,16 +642,28 @@ _NO_COMMIT_RE = re.compile(
 def check_authorization(errors: list[str]) -> None:
     import json
 
-    # 1. Rule 45 states the model: commit autonomous, push/PR gated.
+    # 1. Rule 45 states the model: commit + push + PR-open autonomous, merge gated.
     rule = PLUGIN_ROOT / "rules/45-commit-autonomy.md"
     if not rule.is_file():
         errors.append(f"{rule}: commit-autonomy rule is missing")
     else:
-        t = rule.read_text(encoding="utf-8")
+        # Collapse whitespace so the invariant phrases survive markdown reflow.
+        t = " ".join(rule.read_text(encoding="utf-8").split())
         if "Commit without asking" not in t:
             errors.append(f"{rule}: must state 'Commit without asking' (commit autonomy)")
-        if "waits for the dev" not in t and "once they confirm" not in t:
-            errors.append(f"{rule}: must gate publishing (push/PR) on dev confirmation")
+        if "Merging the PR is the one step that waits for the dev" not in t:
+            errors.append(
+                f"{rule}: must state the merge gate — 'Merging the PR is the one step "
+                f"that waits for the dev' (two-state delivery autonomy)"
+            )
+        if "Merge and deploy stay" not in t:
+            errors.append(f"{rule}: must keep merge and deploy human-gated in every mode")
+        if "propose opening the PR" in t:
+            errors.append(
+                f"{rule}: 'propose opening the PR' is the retired pre-push human "
+                f"checkpoint — pushing and opening the PR are autonomous; the merge "
+                f"review is the gate"
+            )
 
     # 2. init/adopt prose must NOT contradict Rule 45.
     for rel in (
@@ -663,10 +675,11 @@ def check_authorization(errors: list[str]) -> None:
         if p.is_file() and _NO_COMMIT_RE.search(p.read_text(encoding="utf-8")):
             errors.append(
                 f"{p}: contradicts Rule 45 — drop 'nothing committed until approval'; "
-                f"commit is autonomous, only push/PR wait for the dev"
+                f"commit, push, and the PR are autonomous, only the merge waits for the dev"
             )
 
-    # 3. Scaffold settings enforce the gate: git push under `ask`, not `allow`;
+    # 3. Scaffold settings enforce the gate: delivery (`git push`, `gh pr create`)
+    #    is autonomous under `allow`; the merge (`gh pr merge`) stays under `ask`;
     #    commit stays autonomous.
     settings = PLUGIN_ROOT / "templates/scaffold/claude/settings.json"
     if settings.is_file():
@@ -677,11 +690,26 @@ def check_authorization(errors: list[str]) -> None:
             perms = {}
         allow = set(perms.get("allow", []))
         ask = set(perms.get("ask", []))
-        push = "Bash(git push)"
-        if push in allow:
-            errors.append(f"{settings}: '{push}' must be under permissions.ask, not allow")
-        if push not in ask:
-            errors.append(f"{settings}: '{push}' must be listed under permissions.ask")
+        for delivery_op in ("Bash(git push)", "Bash(gh pr create:*)"):
+            if delivery_op not in allow:
+                errors.append(
+                    f"{settings}: '{delivery_op}' must be under permissions.allow — "
+                    f"push + PR-open are autonomous delivery (rule 45); the merge "
+                    f"review is the human gate"
+                )
+            if delivery_op in ask:
+                errors.append(
+                    f"{settings}: '{delivery_op}' must not also sit under "
+                    f"permissions.ask (ask outranks allow and would re-gate delivery)"
+                )
+        merge = "Bash(gh pr merge:*)"
+        if merge in allow:
+            errors.append(f"{settings}: '{merge}' must be under permissions.ask, not allow")
+        if merge not in ask:
+            errors.append(
+                f"{settings}: '{merge}' must be listed under permissions.ask — the "
+                f"merge is the one human delivery gate (rule 45)"
+            )
         if "Bash(git commit:*)" not in allow:
             errors.append(f"{settings}: 'Bash(git commit:*)' should stay under permissions.allow")
         if "Bash(git rev-parse:*)" not in allow:
@@ -693,8 +721,8 @@ def check_authorization(errors: list[str]) -> None:
         # explicit implement/capture request. Some hosts' auto-mode classifiers block
         # an unprompted `gh issue create` as an external write, making the documented
         # find-or-create path unreachable — so the scaffold pre-authorizes the `gh`
-        # tracker-metadata write verbs under `allow` (see issue #180). Delivery
-        # (push/PR/merge) stays human-gated under `ask`/`deny`; these are metadata only.
+        # tracker-metadata write verbs under `allow` (see issue #180). The merge
+        # (`gh pr merge`) stays human-gated under `ask`; these are metadata only.
         #
         # The MCP write tools (`issue_write`/`sub_issue_write`) are NOT session-allowed:
         # a bare/ad-hoc MCP issue write is a prompt-injection-reachable escape a
@@ -775,8 +803,8 @@ def check_authorization(errors: list[str]) -> None:
         # Rule-45-autonomous workflow moves the skills make on every unit of work:
         # branching (switch/checkout -b — never committing to `main`), fetching to
         # branch off latest, local file moves, and the toolchain setup + run-the-app
-        # tasks the PO/build flow drives itself. None reach the human-gated delivery
-        # surface (push/PR/merge/deploy), so leaving them prompted was pure friction —
+        # tasks the PO/build flow drives itself. None reach the human-gated
+        # merge/deploy surface, so leaving them prompted was pure friction —
         # sharpest in `/steer:build`, where a non-technical PO cannot answer the
         # prompt. `mise run dev` is a NAMED task, not the banned `mise run:*` wildcard,
         # so `mise run deploy` stays prompted. `git switch`/`checkout -b` are the safe

@@ -42,15 +42,16 @@
       "mcp__github__issue_read",
       "mcp__github__add_issue_comment",
       "mcp__github__list_issues",
-      "mcp__github__search_issues"
-    ],
-    "ask": [
-      "Bash(git rm:*)",
+      "mcp__github__search_issues",
       "Bash(git push)",
       "Bash(git push origin:*)",
       "Bash(git push -u origin:*)",
       "Bash(git push --set-upstream origin:*)",
       "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)"
+    ],
+    "ask": [
+      "Bash(git rm:*)",
       "Bash(gh pr merge:*)",
       "mcp__github__issue_write",
       "mcp__github__sub_issue_write"

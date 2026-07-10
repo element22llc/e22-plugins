@@ -21,6 +21,15 @@ is **GitHub branch protection** on the default branch: a required PR, a required
 review, a green `ci` check, no admin bypass. That wall is only real if it is
 actually configured on the repo — this skill verifies it is, and helps set it up.
 
+**Protection is what defines the delivery mode** (Commit autonomy): a protected
+`main` is **pr-flow** (autonomous branch pushes + PRs; the merge review is the
+human gate), an unprotected `main` is **solo-trunk** (autonomous trunk delivery,
+appropriate pre-MVP) — there is no third mode. The `CLAUDE.md`
+`<!-- steer:delivery-mode=… -->` marker is the offline **cache** of that
+observed state (hooks read it without network); this skill is the owner of that
+cache — whenever verify or apply observes live protection that contradicts the
+marker, say so and reconcile the marker as part of the run.
+
 **Be honest in every report:** this configures the GitHub-side gate. It does not
 change anything about the local session and cannot prevent a local commit or push.
 
@@ -108,6 +117,23 @@ labelled by branch name. If every rule on every present branch is compliant, say
 **"branch protection is compliant — nothing to do"** and stop. This is the
 idempotent path: re-running on a protected repo writes nothing.
 
+**Reconcile the delivery-mode cache against what you observed** (it may be stale
+in either direction):
+
+- Marker says **solo-trunk** but `main` **is protected** → the repo already
+  graduated (someone applied protection outside this skill). Flip the marker to
+  `<!-- steer:delivery-mode=pr-flow -->`, update the section prose, and append
+  the graduation entry to `/spec/HISTORY.md` — the same reconciliation `apply`
+  performs.
+- Marker says **pr-flow** (or is absent) but `main` has **no protection** → the
+  wall the mode assumes is missing. Do **not** silently flip to solo-trunk (that
+  would grant trunk autonomy nobody chose): report the gap and recommend `apply`.
+  If protection is genuinely unavailable — a private repo on a GitHub plan
+  without branch protection, or no admin rights — recommend recording the
+  exception as an ADR (run `/steer:adr`) so `verify` and `/steer:audit` keep the
+  gap visible instead of it looking like an oversight; the local flow is
+  unchanged either way (branch + PR, never merge — rule 45).
+
 When the repo's `CLAUDE.md` declares **solo trunk mode**, an absent protection is
 **intentional (pre-MVP)**, not drift — report it that way and frame `apply` as
 *graduation* (offer it once the MVP works / a deploy or second contributor is near),
@@ -115,8 +141,11 @@ not as a compliance gap to fix immediately. In that case also report the
 **graduation signals** alongside the protection diff: a second collaborator
 (`gh api repos/{owner}/{repo}/collaborators --jq 'length'` > 1), a `prod`/`production`
 branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
-so plainly and recommend graduating now; when none holds, note that staying on
-solo-trunk is fine for now. (The SessionStart `check-graduation.sh` hook surfaces
+so plainly and recommend graduating now — and note that while the local signals
+stand, the trunk-push hook already surfaces every `git push` for a human yes
+(rule 45), so graduating also restores silent delivery; when none holds, note
+that staying on solo-trunk is fine for now. (The SessionStart
+`check-graduation.sh` hook surfaces
 the local signals each session; this is the networked, on-demand check.)
 
 ## Apply (only on confirmation)
@@ -153,6 +182,14 @@ When rules are drifted or absent:
 without admin on the repo. Do not retry blindly — print the equivalent manual
 steps (**Settings → Branches → Add branch ruleset**, or **Settings → Rules**)
 mapped to each policy field, and let the dev (or an org admin) apply them.
+
+**Protection unavailable (plan limit):** on some GitHub plans branch protection
+cannot be enabled on private repos at all (the API returns `403` with an
+upgrade message). The two-state model still applies — the repo runs pr-flow on
+the honor system: same branch + PR + never-merge flow (rule 45), just without
+the server wall. Recommend recording that exception as an ADR (run
+`/steer:adr`) so the gap is a documented decision `verify` and `/steer:audit`
+keep visible, not an oversight.
 
 ## Notes
 

@@ -26,9 +26,12 @@ yourself** — don't wait for a `/steer:` command or ask them to name one.
   step is announced, then waits for the human.
 - **Never auto-cross a human gate — routing moves navigation, never authority.**
   Creating issues beyond an explicit "fix / add / implement" ask (Issue-first),
-  ratifying an ADR (High-risk), and push / PR / merge / deploy / real secrets (Commit
-  autonomy, High-risk) each still stop for the human. Auto-routing picks *which* skill
-  runs; it never relaxes what that skill may do.
+  ratifying an ADR (High-risk), and merge / deploy / real secrets (Commit
+  autonomy, High-risk) each still stop for the human. Pushing a branch
+  and opening the PR are **not** gates — they are autonomous delivery steps
+  under Commit autonomy; the human gate is the PR **merge** (and, in
+  an ungraduated solo-trunk repo, the trunk push once graduation signals stand).
+  Auto-routing picks *which* skill runs; it never relaxes what that skill may do.
 - **Respect bootstrap precedence.** On a repo with no `/spec` spine, make bootstrap the
   **first move, announced up front** (not a closing offer): route a developer or
   ambiguous feature/build intent through **`/steer:setup`**, a non-technical owner's
@@ -564,8 +567,8 @@ request does **not** need confirmation to create the issue.
   takes one confirmation; security-sensitive public disclosure takes human review.
 - **Implementation runs through `/steer:work`** — claim, branch, implement, test,
   open the PR, transition the issue. The CLI request authorizes local edits +
-  tests; commit/push/PR follow Commit autonomy; **merge and deploy are never
-  implied**.
+  tests; commit, push, and the PR are autonomous under Commit autonomy; **merge
+  and deploy are never implied**.
 - **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy): issue-first
   still holds — every implementation-affecting mutation has a GitHub issue — but you
   close it **from the trunk commit** (`Closes #N`), with no `issue/<N>` branch or
@@ -613,23 +616,51 @@ GitHub issue per change.
 
 ## Commit autonomy
 
-Commits are cheap and local — the PR review is the gate (see "You are not the
-gate"), not each commit. Do **not** pause work to ask "should I commit?".
+Commits are cheap and local — the reviewed **PR merge** is the gate (see "You
+are not the gate"), not each commit and not the push. Do **not** pause work to
+ask "should I commit?", "should I push?", or "should I open the PR?".
 
-- Work on a branch off `main` — never commit to `main` directly. Use the
-  repository's configured branch convention if it has one; otherwise `feat/*` /
-  `fix/*` (issue-first work via `/steer:work` defaults to `issue/<number>-<slug>`).
-  If you find yourself on `main` with changes, create the branch first, then commit.
-- **Exception — solo trunk mode (pre-MVP greenfield).** If the product `CLAUDE.md`
-  declares `Delivery mode: solo trunk (pre-MVP)`, commit **directly to `main`** until
-  graduation — no `feat/*` branch, no per-feature PR. There is no second reviewer yet,
-  so the PR gate has nothing behind it (see "You are not the gate"); CI still runs on
-  every push, and the spine, tests, and Definition of Done are **unchanged** — only the
-  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still required and
-  closed from the trunk commit (`Closes #N`), not via a PR (see Issue-first).
-  **Graduate** the moment the MVP works, you first deploy, or
-  a second contributor joins — whichever comes first — by running **`/steer:protect`**,
-  which raises the server-side PR wall and ends the mode.
+Delivery runs in exactly **two modes**, keyed to GitHub branch protection —
+protected repos deliver through PRs, unprotected repos deliver on trunk. The
+product `CLAUDE.md` `## Delivery mode` marker caches which one applies
+(`<!-- steer:delivery-mode=pr-flow -->` vs `=solo-trunk`; absent → pr-flow);
+`/steer:protect` is what moves a repo between them, and there is no third mode.
+
+- **PR flow (protected `main` — the default).** Work on a branch off `main` —
+  never commit or push to `main` directly. Use the repository's configured
+  branch convention if it has one; otherwise `feat/*` / `fix/*` (issue-first
+  work via `/steer:work` defaults to `issue/<number>-<slug>`). If you find
+  yourself on `main` with changes, create the branch first, then commit. When
+  the work is **complete** (Definition of Done holds, end-of-session checklist
+  is clean), **push the branch and open the PR without asking** — announce it,
+  don't request permission (the heads-up lets the dev redirect). The first push
+  of a fresh branch sets the upstream: `git push -u origin <branch>`
+  (subsequent pushes are a plain `git push`). Branch protection — required
+  review, green `ci`, no direct push — is what makes this safe: an open PR is
+  inert until a human merges it. **Merging the PR is the one step that waits
+  for the dev; everything before it (branching, committing, pushing, opening
+  the PR) does not.**
+- **Solo trunk mode (unprotected `main` — pre-MVP greenfield).** If the product
+  `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
+  asking** — no `feat/*` branch, no per-feature PR. There is no second reviewer
+  yet, so the PR gate has nothing behind it (see "You are not the gate"); CI
+  still runs on every push, and the spine, tests, and Definition of Done are
+  **unchanged** — only the branch/PR ceremony relaxes. On a GitHub-adopted repo
+  the issue is still required and closed from the trunk commit (`Closes #N`),
+  not via a PR (see Issue-first). **Graduate** the moment the MVP works, you
+  first deploy, or a second contributor joins — whichever comes first — by
+  running **`/steer:protect`**, which raises the server-side PR wall and flips
+  the mode. While any graduation signal stands unaddressed (a deploy target, a
+  `prod` branch, a second contributor), trunk pushes stop being autonomous —
+  the trunk-push hook surfaces each one for a human yes until the repo
+  graduates.
+- **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
+  pr-flow but `main` has no protection (nobody ran `/steer:protect apply`, or
+  the plan/permissions don't allow it — e.g. a private repo on GitHub Free),
+  the flow above still applies unchanged — you still never merge — but say the
+  wall is missing and recommend `/steer:protect`. Where protection is genuinely
+  unavailable, record the exception in an ADR; `/steer:protect verify` and
+  `/steer:audit` keep flagging it so the gap stays visible.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
   an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
   that issue exists.
@@ -641,16 +672,11 @@ gate"), not each commit. Do **not** pause work to ask "should I commit?".
   breaking change with `!` before the colon (`feat!:`) or a `BREAKING CHANGE:`
   footer. Commit messages are **not** the release changelog — that stays the
   curated `CHANGELOG.md`. Full detail: `/steer:reference conventions`.
-- When you judge the work **complete** (Definition of Done holds, end-of-session
-  checklist is clean), don't just stop: tell the dev the branch is ready and
-  **propose opening the PR** — push and create it once they confirm. The first
-  push of a freshly created branch has no upstream, so set it then:
-  `git push -u origin <branch>` (subsequent pushes are a plain `git push`).
-- Opening the PR is the one step that waits for the dev; everything before it
-  (branching, committing) does not.
 - **After pushing, watch CI to conclusion and fix a red build before treating the
   work as complete** — that is finishing the work, not crossing the merge gate.
-  Don't hand the dev a running or red PR and stop. (Merge and deploy stay gated.)
+  Don't hand the dev a running or red PR and stop. (**Merge and deploy stay
+  human-gated in every mode** — never `gh pr merge`, never deploy, and never
+  push to a protected `prod` branch.)
 
 
 ## Definition of Done
@@ -809,8 +835,9 @@ deployed are **not** hotfixes — they take the normal lane.
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
   gate still stands** — no self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 —
-  validate in non-prod where feasible). As everywhere, deploy is **never
-  auto-executed**: push, merge, and deploy stay human-gated.
+  validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
+  the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
+  is **never auto-executed** — merge and deploy stay human-gated.
 
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
@@ -982,9 +1009,11 @@ still report it so it gets fixed for everyone.
 
 ## End-of-session checklist
 
-Before wrapping up a working session, present this checklist and confirm each
-item with the dev — don't silently close out. Track open items with your todo
-tooling so nothing is dropped:
+Before wrapping up a working session, run this checklist and **report** its
+state to the dev — don't silently close out, and don't turn the report into a
+round of per-item confirmations (satisfied items need no ack; only genuinely
+open items need the dev). Track open items with your todo tooling so nothing is
+dropped:
 
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
@@ -995,7 +1024,7 @@ tooling so nothing is dropped:
 - [ ] Working in a worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
-- [ ] All finished work committed on the working branch; if the change is complete, PR proposed to the dev (see Commit autonomy)?
+- [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?
 - [ ] Solo trunk mode and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)?
 
 If any item can't be satisfied, say so plainly rather than implying the work is

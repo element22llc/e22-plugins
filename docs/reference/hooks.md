@@ -14,7 +14,8 @@ hooks, 30s for the `Stop` reconcile) so a slow hook can never stall a session.
     that let the write proceed (`check-code-before-spec`,
     `check-issue-before-mutation`, `check-issue-create-contract`); only
     `check-version-pins` issues a hard
-    `deny`. On surfaces where hooks don't fire — **the Desktop *Chat* tab and
+    `deny`, and `check-trunk-push` surfaces a permission **ask** (the human can
+    approve and continue). On surfaces where hooks don't fire — **the Desktop *Chat* tab and
     claude.ai web chat** — none of this runs, so load the rules manually with
     `/steer:standards` and lean on human review. See
     [Surfaces without hooks](#surfaces-without-hooks) below and
@@ -36,6 +37,7 @@ flowchart TD
       cbs[check-code-before-spec.sh]
       ibm[check-issue-before-mutation.sh]
       icc[check-issue-create-contract.sh]
+      tpush[check-trunk-push.sh]
     end
     subgraph Stop
       reconcile[reconcile-issue-first.sh]
@@ -52,7 +54,7 @@ flowchart TD
 | `check-unmanaged-repo.sh` | `startup\|resume\|clear` | Flags a repo that has no `/spec` spine yet and offers the bootstrap routes — leading with `/steer:build` for a non-technical owner (it runs `/steer:init` itself), with `/steer:init`/`/steer:adopt` framed as the developer / existing-code paths. Resolves the work-tree root from the session `cwd` in the hook payload (like `check-template-drift.sh`), so it anchors correctly even when the hook process runs elsewhere or the session starts in a subdirectory. |
 | `orient-session.sh` | `startup` | On a fully managed spine only. If an in-progress PO build exists (a `spec/BUILD-STATUS.md` with an open handoff gate), steers deterministically back into `/steer:build` to resume from its current step; once the build is handed off (every gate box checked) it falls back to reminding the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
 | `surface-faults.sh` | `startup\|resume\|clear` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
-| `check-graduation.sh` | `startup\|resume\|clear` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree), nudges the owner to graduate to PR flow via `/steer:protect`. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
+| `check-graduation.sh` | `startup\|resume\|clear` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree — detected by the shared `lib/graduation.sh`, the same detector `check-trunk-push.sh` gates on), nudges the owner to graduate to PR flow via `/steer:protect` and notes that trunk pushes are gated until then. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
 
 ## PreToolUse
 
@@ -62,6 +64,7 @@ flowchart TD
 | `check-code-before-spec.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate) with two dimensions. The **spine** reminder fires once per session+repo when code is about to be written before a `/spec` spine exists. The **scaffold** reminder is sticky — it re-fires on each new feature file while the repo has no root `mise.toml` (dedups per file, self-clears once a `mise.toml` lands or the spine is managed). Non-blocking — the write always proceeds. |
 | `check-issue-before-mutation.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Advisory nudge (not a gate): a one-per-session reminder to work issue-first, only in GitHub-tracked repos. Non-blocking — it cannot know whether an issue exists. In solo-trunk mode (the `steer:delivery-mode=solo-trunk` marker in `CLAUDE.md`) it still nudges — issue-first holds — but rewords to "close the issue from the trunk commit," not "open a PR / branch." Stays silent on the `/steer:sync` plugin-maintenance branch (`feat/sync`), whose scaffold reconciliation is structural, not feature work — unless the write is app source, which sync must not touch. |
 | `check-issue-create-contract.sh` | `Bash\|mcp__.*[Ii]ssue.*` | Advisory nudge (not a gate): a one-per-session reminder, only in GitHub-tracked repos, when an agent opens an issue with a **raw create** that bypasses the machine-readable contract — `gh issue create`, `gh api … POST …/issues`, a `gh api graphql` `createIssue` mutation, or an MCP create-issue tool (including the hosted GitHub MCP's renamed `issue_write` method; sub-issue linkers like `add_sub_issue`/`sub_issue_write` are excluded — they attach a relationship to an existing issue and carry no body). Points at `/steer:tracker-sync create`, which renders the steer markers, the derived `source:*` label, the GitHub Issue Type, and native relationship edges (with find-before-create dedup). Stays silent when the payload already carries `steer:` markers (the contract-render path) and in the plugin's own source repo. The complementary after-the-fact recovery path is `/steer:issues reconcile --all`, which flags contract-less issues. |
+| `check-trunk-push.sh` | `Bash` | The **trunk-push graduation gate**: in a **solo-trunk** repo that shows a local graduation signal (a deploy workflow, an `infra/` tree, or a `prod`/`production` branch — the shared `lib/graduation.sh` detector), every Bash `git push` surfaces as a permission **ask** naming `/steer:protect` — never a hard deny, so the human can approve the push and keep working. Silent everywhere else: pr-flow repos (branch pushes are autonomous; the server-side merge review is the gate), signal-free solo-trunk repos (trunk autonomy holds), non-push commands, and anything outside a work tree. Registered for Copilot CLI too (flat `ask` envelope). |
 
 ## Stop
 

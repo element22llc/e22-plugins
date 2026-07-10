@@ -20,8 +20,9 @@ deployed are **not** hotfixes — they take the normal lane.
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
   gate still stands** — no self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 —
-  validate in non-prod where feasible). As everywhere, deploy is **never
-  auto-executed**: push, merge, and deploy stay human-gated.
+  validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
+  the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
+  is **never auto-executed** — merge and deploy stay human-gated.
 
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,

@@ -87,6 +87,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-trunk-push.sh\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [

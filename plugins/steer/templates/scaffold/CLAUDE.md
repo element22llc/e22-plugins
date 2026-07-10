@@ -29,20 +29,26 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 
 <!-- steer:delivery-mode=pr-flow -->
 <!-- ^ machine-readable marker (steer hooks read this line; values: pr-flow | solo-trunk).
-     /steer:init sets it; /steer:protect flips it to pr-flow at graduation. Keep it in sync
-     with the prose below. -->
+     It caches the repo's delivery mode — which GitHub branch protection defines:
+     protected main = pr-flow, unprotected = solo-trunk. /steer:init sets it;
+     /steer:protect owns reconciling it with the observed protection and flips it
+     to pr-flow at graduation. Keep it in sync with the prose below. -->
 
-**`PR flow`** — work on `feat/*` branches, one PR per change, merged after a dev
-reviews it (Commit autonomy). This is the default.
+**`PR flow`** — work on `feat/*` branches, one PR per change; Claude pushes the
+branch and opens the PR autonomously, and it merges only after a dev reviews it
+(Commit autonomy — the merge review is the human gate, enforced server-side by
+branch protection; run `/steer:protect` to verify/apply it). This is the default.
 
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:init` when one person is both PO and dev with no MVP yet): commit directly
-to `main`, no per-feature branch or PR, until graduation. Issue-first still holds
+to `main` and push, no per-feature branch or PR, until graduation. Issue-first still holds
 (every change keeps a GitHub issue, closed from the trunk commit); only the branch
 and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
 Definition of Done are unchanged. **Graduate** to `PR flow` — run
 **`/steer:protect`**, which raises the server-side PR wall — the moment the MVP
-works, you first deploy, or a second contributor joins, whichever comes first; then
+works, you first deploy, or a second contributor joins, whichever comes first
+(once those signals appear, the steer trunk-push hook stops silent trunk pushes
+until you graduate); then
 set this marker and the prose to `PR flow`.
 
 ## Profile

@@ -14,6 +14,10 @@ allowed-tools:
   - Bash(git add *)
   - Bash(git mv *)
   - Bash(git commit *)
+  - Bash(git push)
+  - Bash(git push -u origin *)
+  - Bash(git push origin *)
+  - Bash(gh pr create *)
   - Bash(sh *scripts/scan-capabilities.sh*)
   - Bash(sh *scripts/scan-invocations.sh*)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
@@ -290,9 +294,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 8. **Record and hand off.** Append a `/spec/HISTORY.md` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled, which
    capability gaps repaired — why, who asked, refs). Commit on `feat/sync`, then
-   **propose** opening the PR
-   **against `BASE`** (the branch captured in step 1) and wait for the dev's
-   confirmation before pushing/creating it — that review is the gate. The PR base
+   push and open the PR
+   **against `BASE`** (the branch captured in step 1) without asking, announcing
+   it (Commit autonomy) — the dev's merge review of that PR is the gate. The PR base
    is **always `BASE`**, not `main` — the sync rejoins the work it continues. Do
    not ask the dev which base to use; state that the PR targets `BASE` and let
    them correct it if wrong. When you create it:
@@ -350,7 +354,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 - **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
   `/spec/.version` — never from training-data memory.
 - **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
-  review is the hard gate; propose the PR, don't push it unasked.
+  **merge review** is the hard gate; push the branch and open the PR yourself,
+  announced — never merge it.
 - **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
   dev invoked the sync from (captured in step 1), so the sync lands back onto the
   work it continues. Only when `BASE` is itself `main` does the PR target `main`.

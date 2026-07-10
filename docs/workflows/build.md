@@ -71,8 +71,9 @@ resuming once the build is handed off — every box in its handoff gate checked.
     scaffold is skipped bootstrap, not prototype mode.
 
 !!! info "Where the gates are"
-    Claude commits on its own, but **approving the spec** and the **dev hand-off**
-    are always human decisions — opening/merging the v0 PR in PR flow, or
+    Claude commits, pushes, and opens the v0 PR on its own, but **approving the
+    spec** and the **dev hand-off**
+    are always human decisions — reviewing/merging the v0 PR in PR flow, or
     graduating off the trunk via `/steer:protect` in solo trunk. See the
     [Authorization model](../concepts/authorization-model.md).
 

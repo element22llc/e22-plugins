@@ -7,6 +7,12 @@
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
         "bash": "STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" || true",
         "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "matcher": "Bash",
+        "bash": "STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-trunk-push.sh\" || true",
+        "timeoutSec": 10
       }
     ]
   }

@@ -29,6 +29,7 @@
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/graduation.sh"
 
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
@@ -40,47 +41,22 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # Only speak in solo-trunk mode; a pr-flow repo has already graduated.
 [ "$(steer_delivery_mode "${ROOT}")" = "solo-trunk" ] || exit 0
 
-SIGNALS=""
-
-# Signal 1 — a prod/production promotion branch exists (local or remote-tracking).
-# Its required-PR-review is the production approval gate, so its existence means
-# the repo has a promotion model that solo-trunk's direct-to-main flow undercuts.
-if command -v git >/dev/null 2>&1; then
-	for _ref in refs/heads/prod refs/heads/production \
-		refs/remotes/origin/prod refs/remotes/origin/production; do
-		if git -C "${ROOT}" show-ref --verify --quiet "${_ref}" 2>/dev/null; then
-			SIGNALS="${SIGNALS}
-- a \`prod\`/\`production\` promotion branch exists"
-			break
-		fi
-	done
-fi
-
-# Signal 2 — a deploy target is configured. A deploy workflow or an infra/ tree
-# means the project ships somewhere; compose.yaml is NOT a signal (the scaffold
-# ships it for local dev). Filesystem-only; the glob guards against no-match.
-for _wf in "${ROOT}"/.github/workflows/*deploy*.yml "${ROOT}"/.github/workflows/*deploy*.yaml; do
-	if [ -e "${_wf}" ]; then
-		SIGNALS="${SIGNALS}
-- a deploy workflow is present (\`.github/workflows/\`)"
-		break
-	fi
-done
-if [ -d "${ROOT}/infra" ]; then
-	SIGNALS="${SIGNALS}
-- an \`infra/\` tree is present"
-fi
+# Signal detection is shared with the check-trunk-push.sh PreToolUse gate
+# (lib/graduation.sh) so the nudge and the gate can never disagree.
+SIGNALS="$(steer_graduation_signals "${ROOT}")"
 
 [ -n "${SIGNALS}" ] || exit 0
 
 printf '<!-- steer: solo-trunk graduation signal -->\n'
-printf '# Consider graduating this repo out of solo-trunk\n\n'
+printf '# This repo has outgrown solo-trunk — graduate it\n\n'
 printf 'This repo is in **solo-trunk** mode (direct-to-`main`, no PR, branch '
-printf 'protection off) — appropriate pre-MVP, but these signals suggest it has '
+printf 'protection off) — appropriate pre-MVP, but these signals say it has '
 printf 'outgrown that:\n'
 printf '%s\n' "${SIGNALS}"
-printf '\nWhen the MVP works, the first deploy lands, or a second contributor '
-printf 'joins, graduate to PR flow: recommend the user run `/steer:protect` to '
-printf 'review branch protection and, on confirmation, raise the PR wall (it '
-printf 'flips the delivery-mode marker to pr-flow and logs the graduation to '
-printf '/spec/HISTORY.md). This notice clears itself once graduated.\n'
+printf '\nWhile these signals stand, autonomous trunk pushes are gated (the '
+printf 'check-trunk-push hook surfaces each `git push` for confirmation). '
+printf 'Recommend the user run `/steer:protect` to review branch protection '
+printf 'and, on confirmation, raise the PR wall — protection is what defines '
+printf 'PR mode, and applying it flips the delivery-mode marker to pr-flow and '
+printf 'logs the graduation to /spec/HISTORY.md. This notice (and the push '
+printf 'gate) clears once graduated.\n'
