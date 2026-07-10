@@ -62,8 +62,9 @@ no rows this session (so the menu stays honest if the table changes).
 - **Do the work** — implement a change or fix an issue now, including hotfixes
   (`work`, `work --hotfix`).
 - **Find your bearings** — figure out where things stand and what matters most
-  (`next`, `audit`), get a shareable stakeholder-readable page of one feature
-  (`explain`), and this menu itself (`help`).
+  (`next`, `audit`), automate that sweep on a schedule as an autonomous loop
+  (`loop`), get a shareable stakeholder-readable page of one feature (`explain`),
+  and this menu itself (`help`).
 - **Plumbing** — report a defect in the steer plugin upstream (`report`), and load
   the operating manual or reference prose on chat-only surfaces (`standards`,
   `reference` — the two below-table entries).

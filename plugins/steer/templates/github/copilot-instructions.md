@@ -56,6 +56,7 @@ and hands off to specialized skills as needed, so you rarely route outside this 
 | respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
+| automate the triage/fix sweep on a schedule — set up an autonomous loop that discovers work, triages, and drafts fixes without prompting each turn (drafts only, never merges — rule 53) | `/steer:loop` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
 | get a plain-language, shareable page of one feature — an at-a-glance view to show or hand to a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
@@ -729,6 +730,34 @@ its flow in an ADR.
   version keeps running through a deploy (see High-risk areas).
 - **Secrets & config at rest** — injected at deploy/runtime, never baked into images
   or CI logs (see Secrets handling).
+
+
+## Autonomous loops — automate the navigation, never the authority
+
+An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)
+that wakes on its own, discovers work — CI failures, open issues, drift — and
+drives it through steer's skills without a human in each turn. A loop removes the
+prompting, **not** the responsibility: your job is still to ship code you
+*confirmed* works (Definition of done, Verify loop).
+
+- **A loop closes only up to a human gate — never through one.** It may discover,
+  triage, draft in an isolated worktree, run the verify loop, and open a **draft**
+  PR. It **stops** at every authority gate this manual already sets: creating
+  issues beyond an explicit ask (Issue-first), ratifying an ADR (High-risk), and
+  push-to-shared / merge / deploy / real secrets (Commit autonomy, High-risk).
+  Automating navigation never relaxes what a step is allowed to do.
+- **Split ideation from verification.** The agent that drafts a change must not be
+  the one that clears it — route the check through an independent reviewer
+  (`steer-reviewer`, `/steer:audit`, the test harness), never the drafting agent's
+  own say-so.
+- **Keep durable state outside the model.** A loop forgets between runs; its memory
+  is the tracker + `/spec/**` (issues, `HISTORY.md`), not chat context. Record what
+  it did and what's left there, so the next run resumes instead of repeating.
+- **Only loop on checkable work.** Same bound as the Verify loop — judgment calls,
+  design decisions, and long-compute runs have no fast pass/fail and are never a
+  loop's to close: it surfaces them for a human, it does not decide them.
+- **Scaffold loops with `/steer:loop`**, which emits the scheduled workflow wired to
+  these limits. Don't hand-roll an automation that can cross a gate.
 
 
 ## Drift gates — surface before merge

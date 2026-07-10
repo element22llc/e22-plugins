@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- New skill **`/steer:loop`** — scaffolds an **autonomous loop** (the "loop
+  engineering" pattern): a scheduled GitHub Actions workflow that wakes on its own,
+  triages work (CI failures, open issues, drift) via `/steer:audit` + `/steer:next`,
+  drafts fixes in isolated worktrees reviewed by `steer-reviewer`, and opens
+  **draft** PRs. It instantiates the new on-demand template
+  `templates/github/workflows/steer-loop.yml` (not bootstrapped — only when asked),
+  commits but never pushes (rule 45), and offers `verify`/`remove` modes. Added as a
+  front door in `rules/00-router.md`.
+- New rule **`53-autonomous-loops.md`** — the boundary for autonomous loops: a loop
+  may discover, triage, draft, and open a **draft** PR, but closes only *up to* a
+  human gate and never *through* one (Issue-first, High-risk, Commit autonomy). Also
+  codifies split ideation/verification, durable state in the tracker + `/spec/**`,
+  and the checkable-work bound shared with the Verify loop.
 - `/steer:intake` now **tidies the drop location** so an absorbed document does not
   stay stalled where the PO uploaded it. When it absorbs a new version it
   **relocates** the dropped file into its canonical `spec/sources/<id>/versions/<v>/original.<ext>`
