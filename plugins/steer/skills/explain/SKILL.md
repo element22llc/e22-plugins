@@ -146,12 +146,9 @@ chart. Map the intent's own sections to these visuals:
 
 ### 4. Publish (or fall back)
 
-Render **by the shared Artifact discipline** — do not restate it here. Load
-`/steer:reference artifacts` for the full mechanics (load `artifact-design` first
-and `dataviz` for the charts; build everything inline because the CSP blocks all
-external hosts; theme- and width-aware; the private-until-shared publish gated by
-the Artifact tool's own prompt; the Markdown fallback where the tool is
-unavailable). Two things are **specific to this skill**:
+Render **by the shared Artifact discipline** — rule `88-artifacts`, full mechanics
+in `/steer:reference artifacts` — and do not restate it here. Two things are
+**specific to this skill**:
 
 - **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — the stable,
   per-feature name is what lets a same-session re-run redeploy to the *same* URL.
@@ -164,10 +161,10 @@ unavailable). Two things are **specific to this skill**:
 
 ## Updating a previously shared page
 
-Within the same session, re-running redeploys to the same artifact URL. To update
-one from a **different** session, the user must hand you its `claude.ai/code/artifact/…`
-URL — without it, a fresh session mints a new page. steer does not store that URL for
-you (see "derived view"): treat each run as a fresh render unless the user supplies a URL.
+Within the same session, re-running redeploys to the same artifact URL (the stable
+per-feature filename). Updating a page from a **different** session needs its URL
+from the user — steer does not store it. The full rule: `/steer:reference artifacts`
+→ "Updating a previously shared page".
 
 ## What this skill is *not*
 

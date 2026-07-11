@@ -215,15 +215,12 @@ of dimension.
    dimension-summary tile row (count + top severity per dimension) over the
    leverage-ordered findings, each a card with its `path:line` evidence, standard
    missed, severity tag, and impact/effort/confidence — so a lead can scan the
-   health picture and hand it on without a terminal. It is an **offer, on request**,
-   and a **derived snapshot** of the findings this run just vetted: every tile and
-   card encodes a real finding, never a fabricated or inflated count, and it asserts
-   no severity beyond the audit's evidence. Render by the shared discipline —
-   `/steer:reference artifacts` (rule `88-artifacts`); write the HTML to
-   `<tempdir>/steer-audit-code-<short-sha>.html` (a system temp dir, never under the
-   repo tree), don't persist its URL, and fall back to the printed report where the
-   tool is unavailable. This write is post-confirmation, per the read-only note at
-   the top.
+   health picture and hand it on without a terminal. Every tile and card encodes a
+   finding this run actually vetted — never an inflated count or a severity beyond
+   the audit's evidence. Render by the shared discipline — rule `88-artifacts`,
+   mechanics in `/steer:reference artifacts` — with the temp path
+   `<tempdir>/steer-audit-code-<short-sha>.html`; the write is post-confirmation,
+   per the read-only note at the top.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** → a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
@@ -450,15 +447,12 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    coverage table as a board of verdict-chipped cards (✅ Matches / ⚠️ Diverged /
    🟠 Partial / 🔴 Missing / 🟡 Unspecified / ❓ Ambiguous), Done-but-Missing and
    Diverged findings surfaced first, the tracker-status column preserved so
-   defect-vs-roadmap reads at a glance. It is an **offer, on request**, and a
-   **derived snapshot**: every chip is the verdict this run assigned, with its
-   as-built evidence — never a fabricated verdict, and the chip denotes *kind*, not
+   defect-vs-roadmap reads at a glance. Every chip is the verdict this run
+   assigned, with its as-built evidence — and the chip denotes *kind*, not
    severity (severity stays its own marker). Render by the shared discipline —
-   `/steer:reference artifacts` (rule `88-artifacts`); write the HTML to
-   `<tempdir>/steer-audit-drift-<short-sha>.html` (a system temp dir, never under
-   the repo tree), don't persist its URL, and fall back to the printed report where
-   the tool is unavailable. This write is post-confirmation, per the read-only note
-   at the top.
+   rule `88-artifacts`, mechanics in `/steer:reference artifacts` — with the temp
+   path `<tempdir>/steer-audit-drift-<short-sha>.html`; the write is
+   post-confirmation, per the read-only note at the top.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when

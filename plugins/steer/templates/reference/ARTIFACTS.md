@@ -55,8 +55,8 @@ changes; regenerate to refresh.
 - **Never advance past the source.** A status pipeline stops at the recorded
   status; an acceptance meter ticks only the boxes the spec ticks; a verdict chip
   states the verdict the audit assigned. The page reflects; it does not predict.
-- **Do not persist the URL.** The page is disposable — writing its
-  `claude.ai/code/artifact/…` URL into the repo (spec, docs, a tracked file) would
+- **Do not persist the URL.** The page is disposable — writing its claude.ai URL
+  into the repo (spec, docs, a tracked file) would
   recreate the drift and the claude.ai coupling this discipline avoids. Give the URL
   to the user in the session and let them keep it if they want it.
 
@@ -69,13 +69,13 @@ read-only over the canonical sources even in a skill that otherwise writes.
 
 - **Deterministic temp path, stable per subject.** Name the file for what it
   renders — `<tempdir>/steer-<skill>-<subject>.html` (e.g.
-  `steer-explain-<feature-id>.html`, `steer-audit-<run>.html`). The stable name is
+  `steer-explain-<feature-id>.html`, `steer-audit-code-<short-sha>.html`). The stable name is
   what lets a **same-session re-run redeploy to the same Artifact URL** instead of
   minting a new page; never use a randomized temp name.
-- **Read-only skills.** `/steer:explain` and `/steer:help` are frontmatter
-  read-only (`Bash`, `Edit`, `NotebookEdit`, `EnterWorktree` disallowed) — but
-  `Write` is deliberately **not** disallowed, because writing the HTML to temp is
-  their one permitted write. `/steer:questions bundle` lives in a write-capable
+- **Read-only skills.** `/steer:explain` and `/steer:help` keep the mutating
+  tools disallowed in frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`;
+  `explain` also disallows `Bash`) — but `Write` is deliberately **not**
+  disallowed, because writing the HTML to temp is their one permitted write. `/steer:questions bundle` lives in a write-capable
   skill and upholds the same limit as a **prose invariant**: bundle writes nothing
   under the repo tree.
 - **Skills whose frontmatter disallows `Write`** (`/steer:audit`) cannot publish
@@ -159,7 +159,7 @@ zero-data-retention org, or with no claude.ai login. When it is:
 
 Within the **same session**, re-running a skill redeploys to the same Artifact URL
 (the deterministic temp filename is what makes this work). To update a page from a
-**different** session, the user must hand you its `claude.ai/code/artifact/…` URL —
+**different** session, the user must hand you its claude.ai URL —
 without it, a fresh session mints a new page. steer does not store that URL (see
 [Derived view](#a-derived-view-never-a-source-of-truth)); treat each run as a fresh
 render unless the user supplies a URL to update.

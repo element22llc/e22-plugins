@@ -356,16 +356,11 @@ uphold it**:
      excluded / deferred counts, and **stop**. Don't render an empty form.
 
 4. **Render — Artifact when available.** Render by the **shared Artifact
-   discipline** — `/steer:reference artifacts` (rule `88-artifacts`), the same
-   standard `/steer:explain` uses; do not restate its mechanics. In brief: load the
-   `artifact-design` skill first; build **every visual inline** (the CSP blocks all
-   external hosts); write the HTML to the **deterministic system-temp path**
-   `<tempdir>/steer-questions-bundle[-<feature-id>].html` (stable name → a
-   same-session re-run redeploys the *same* URL), never under the repo tree; give a
-   one-line heads-up that publishing sends the content to claude.ai where it is
-   **private until you share it**, and let the Artifact tool's own permission prompt
-   gate the publish. This is a **fillable** page, so it upholds the reference's
-   **copy-out floor** — the one capability beyond `explain`'s read-only pages:
+   discipline** — rule `88-artifacts`, mechanics in `/steer:reference artifacts`,
+   the same standard `/steer:explain` uses; do not restate them here. The temp path
+   is `<tempdir>/steer-questions-bundle[-<feature-id>].html`. This is a
+   **fillable** page, so it upholds the reference's **copy-out floor** — the one
+   capability beyond `explain`'s read-only pages:
    - One labelled **`<textarea>` per question**, grouped **product-level first,
      then per feature**, blocking questions visibly flagged. Each carries its
      **feature-scoped key `[<feature-id>] Q-NNN`** (see the [return
