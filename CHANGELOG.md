@@ -28,9 +28,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and `ISSUE-WORKFLOW.md`/`NEXT-ACTIONS.md` align. `/steer:work`, `/steer:init`,
   `/steer:adopt`, `/steer:sync`, `/steer:build`, and `/steer:intake` now push
   and open their PRs without asking (announced, per rule 00's heads-up
-  pattern), and their `allowed-tools` pre-approve `git push` /
-  `gh pr create|edit`; the end-of-session checklist (rule 99) becomes a status
-  report instead of per-item confirmations.
+  pattern), and their `allowed-tools` pre-approve `git push` and `gh pr create`
+  (`/steer:work` also grants `gh pr edit` for its open-or-update path); the
+  end-of-session checklist (rule 99) becomes a status report instead of per-item
+  confirmations.
 - **New PreToolUse hook `check-trunk-push.sh` — graduation signals now gate
   trunk pushes instead of only nagging.** In a solo-trunk repo that shows a
   local graduation signal (deploy workflow, `infra/` tree, `prod`/`production`
