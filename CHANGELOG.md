@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.16.0
+
 - Corrected an over-broad claim about the `check-trunk-push` graduation gate:
   rule 45, the `work` skill, and the scaffold `CLAUDE.md` said the trunk-push
   hook surfaces a push when "a second contributor" (or, in the scaffold, "the
