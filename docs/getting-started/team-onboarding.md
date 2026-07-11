@@ -145,8 +145,11 @@ See the [Hooks reference](../reference/hooks.md) and
 At every decision gate — these are the points where Claude deliberately pauses:
 
 - **Spec approval** — before any code is written.
-- **Push / open PR** — Claude commits on its own but never pushes unprompted.
 - **Merge & deploy** — always a human call.
+
+Pushing the branch and opening the PR are **not** gates — Claude does both
+autonomously; the review happens on the open PR, which is inert behind branch
+protection until a human merges.
 
 If you're a PO, your build ends at a **PR for dev review** by design — that's the
 hand-off, not a failure. If you're a dev, you *are* that reviewer.
