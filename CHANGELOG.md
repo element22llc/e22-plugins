@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- Corrected an over-broad claim about the `check-trunk-push` graduation gate:
+  rule 45, the `work` skill, and the scaffold `CLAUDE.md` said the trunk-push
+  hook surfaces a push when "a second contributor" (or, in the scaffold, "the
+  MVP works") appears. The hook detects only **local** signals (a deploy target
+  or a `prod` branch) — a new collaborator is caught on demand by
+  `/steer:protect`/`/steer:audit`, not at push time — so those surfaces now
+  scope the hook to the local signals and attribute the collaborator trigger to
+  the on-demand checks (matching `protect`'s existing phrasing). Regenerated the
+  Copilot mirror.
 - `/steer:intake`'s `allowed-tools` now grant `git push` (all forms) and
   `gh pr create`, so it delivers its PR autonomously like its five sibling
   skills (`work`/`init`/`adopt`/`sync`/`build`) rather than falling through to

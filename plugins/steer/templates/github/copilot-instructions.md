@@ -651,10 +651,12 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   not via a PR (see Issue-first). **Graduate** the moment the MVP works, you
   first deploy, or a second contributor joins — whichever comes first — by
   running **`/steer:protect`**, which raises the server-side PR wall and flips
-  the mode. While any graduation signal stands unaddressed (a deploy target, a
-  `prod` branch, a second contributor), trunk pushes stop being autonomous —
-  the trunk-push hook surfaces each one for a human yes until the repo
-  graduates.
+  the mode. While a **local** graduation signal stands unaddressed (a deploy
+  target or a `prod` branch), trunk pushes stop being autonomous — the
+  trunk-push hook surfaces each one for a human yes until the repo graduates; a
+  second contributor is a graduation trigger too, but it is caught on demand by
+  `/steer:protect` and `/steer:audit` (which query the collaborator count), not
+  at push time.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
   pr-flow but `main` has no protection (nobody ran `/steer:protect apply`, or
   the plan/permissions don't allow it — e.g. a private repo on GitHub Free),
