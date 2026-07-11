@@ -117,6 +117,29 @@ After resolving the work-set in any writing mode:
    this skill produces the milestoned issues the view renders; it does not create
    or configure the Project (no per-repo board automation).
 
+### Shareable timeline (Artifact, optional)
+
+The GitHub Projects v2 roadmap is the canonical timeline view, but it needs a
+GitHub login and the one-time view setup. For a **quick, shareable snapshot** — the
+no-arg preview a PO can glance at, or a hand-off after a plan lands — **offer** to
+render the milestone plan as a **Claude Artifact**: milestones as columns/bands,
+each with its issues laid out as horizontal bars ordered by the same `depends-on`
+constraints, blocking/dependency edges flagged. It is an **offer, on request** — a
+derived preview of the Projects v2 view, never a replacement for it and never
+auto-published.
+
+Render by the shared discipline — `/steer:reference artifacts` (rule
+`88-artifacts`); do not restate its mechanics. Roadmap specifics:
+
+- **Derived, never fabricated** (mirror the Guardrails below): every bar encodes a
+  real milestoned issue and a **human-confirmed** date — no invented date, priority,
+  or ordering beyond declared dependencies. A milestone with no confirmed date shows
+  as *"date not set"*, never a guessed one.
+- Write the HTML to `<tempdir>/steer-roadmap-timeline.html` (a system temp dir,
+  never under the repo tree); do **not** persist the page URL in `/spec` or the
+  tracker. Where the Artifact tool is unavailable, print the timeline as an inline
+  Markdown table (milestone → issues → dates) and say why.
+
 ## Guardrails
 
 - **Orchestrate, don't duplicate.** Delegate to the owning skill; never restate its
@@ -132,7 +155,9 @@ After resolving the work-set in any writing mode:
   **never repurposes the Milestone as the epic aggregator** — epic grouping is owned
   by `/steer:issues epic`.
 - **No fabricated planning data.** Never invent a date, priority, or effort. Dates
-  are human-supplied; ordering follows declared dependencies only.
+  are human-supplied; ordering follows declared dependencies only. The optional
+  timeline Artifact is bound by the same rule — a derived, temp-only view (rule
+  `88-artifacts`); its URL is never persisted in `/spec` or the tracker.
 - **Authorization & confirmation.** Reads (preview) never confirm. The full plan
   takes **one** confirmation before any milestone/issue write; an explicit
   per-feature/per-finding request follows the intent rules in `ISSUE-WORKFLOW.md`.

@@ -355,17 +355,17 @@ uphold it**:
    - **Nothing to ask** (no PO-answerable open questions) → say so, name the
      excluded / deferred counts, and **stop**. Don't render an empty form.
 
-4. **Render — Artifact when available.** Reuse `/steer:explain`'s rendering
-   mechanism (do not restate it): **load the `artifact-design` skill first**;
-   build **every visual inline** — the Artifact CSP blocks all external hosts, so
-   no CDN scripts, remote fonts, or images (a page that depends on a remote script
-   renders blank); write the HTML to a **deterministic system-temp path**,
+4. **Render — Artifact when available.** Render by the **shared Artifact
+   discipline** — `/steer:reference artifacts` (rule `88-artifacts`), the same
+   standard `/steer:explain` uses; do not restate its mechanics. In brief: load the
+   `artifact-design` skill first; build **every visual inline** (the CSP blocks all
+   external hosts); write the HTML to the **deterministic system-temp path**
    `<tempdir>/steer-questions-bundle[-<feature-id>].html` (stable name → a
-   same-session re-run redeploys the *same* artifact URL); give a one-line
-   heads-up that publishing sends the content to claude.ai where it is **private
-   until you share it**, and let the Artifact tool's own permission prompt gate the
-   publish. The questionnaire adds one capability beyond `explain`'s read-only
-   pages — **input, with a copy-out floor**:
+   same-session re-run redeploys the *same* URL), never under the repo tree; give a
+   one-line heads-up that publishing sends the content to claude.ai where it is
+   **private until you share it**, and let the Artifact tool's own permission prompt
+   gate the publish. This is a **fillable** page, so it upholds the reference's
+   **copy-out floor** — the one capability beyond `explain`'s read-only pages:
    - One labelled **`<textarea>` per question**, grouped **product-level first,
      then per feature**, blocking questions visibly flagged. Each carries its
      **feature-scoped key `[<feature-id>] Q-NNN`** (see the [return

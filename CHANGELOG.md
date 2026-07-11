@@ -7,6 +7,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Claude Artifacts are now a first-class, codified deliverable format.** The
+  discipline for producing a shareable, hosted claude.ai page — previously
+  restated inline in `/steer:explain` and `/steer:questions bundle` — is now a
+  single source of truth: a new reference `templates/reference/ARTIFACTS.md`
+  (loaded via **`/steer:reference artifacts`**) and a lean always-on rule
+  **`88-artifacts`**. It covers when an Artifact is the right output vs. when it
+  is not, the derived-view discipline (render canonical state, never fabricate a
+  value or advance a marker past the source, never persist the page URL), the
+  temp-only write invariant, the CSP-driven inline rendering mechanics (load
+  `artifact-design` first and `dataviz` for charts; no external hosts), the
+  fillable-page copy-out floor, and the inline-Markdown fallback. `explain` and
+  `questions bundle` now defer their mechanics to this reference instead of each
+  restating them.
+- **Three more skills now render shareable Artifacts** (each an on-demand offer
+  with a Markdown fallback, derived and temp-only per rule `88`):
+  `/steer:audit` publishes its code-health report as a dimension-tiled findings
+  dashboard and its spec-drift report as a verdict-chipped drift board (both
+  post-confirmation, honoring the skill's read-only-during-run guarantee);
+  `/steer:roadmap` offers a shareable release-timeline preview of the milestoned
+  work-set; `/steer:help` offers a browsable visual capability menu alongside
+  its inline list. `help`'s frontmatter drops `Write` from `disallowed-tools`
+  (its one permitted write is the temp HTML, matching `explain`).
+- Wired the new `artifacts` reference topic through every enumeration of the
+  reference set (the `reference` skill, rule `00-router`, the `standards` skill,
+  and the scaffold `CLAUDE.md`), and regenerated the Copilot mirror.
+
 ### 3.16.0
 
 - Corrected an over-broad claim about the `check-trunk-push` graduation gate:

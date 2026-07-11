@@ -23,8 +23,10 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 > unavailable while this skill runs, so neither audit can edit code or spec. This
 > does not make the repo immutable — shell mutations stay governed by your
 > permission settings and hooks. The optional report writes below (`AUDIT-REPORT.md`
-> / `DRIFT-REPORT.md`) happen only after you confirm them (a fresh message), by
-> which point the restriction has cleared; findings reach the tracker via
+> / `DRIFT-REPORT.md`) and the optional **Artifact dashboard** happen only after you
+> confirm them (a fresh message), by which point the restriction has cleared — and
+> the Artifact's only write is its HTML to a system temp dir, never under the repo
+> tree (rule `88-artifacts`). Findings reach the tracker via
 > `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
 
 Two **repeatable, read-only** audits behind one skill — pick the mode for the
@@ -207,6 +209,21 @@ of dimension.
    `/spec`) so silence never reads as "clean." Offer to also write it to
    `/spec/AUDIT-REPORT.md` on a `feat/audit` branch **only if the dev wants
    it tracked** — it's a point-in-time artifact, not part of the durable spine.
+
+   **Optionally publish it as a shareable dashboard.** Where the `Artifact` tool is
+   available, also **offer** to render the report as a **Claude Artifact** — a
+   dimension-summary tile row (count + top severity per dimension) over the
+   leverage-ordered findings, each a card with its `path:line` evidence, standard
+   missed, severity tag, and impact/effort/confidence — so a lead can scan the
+   health picture and hand it on without a terminal. It is an **offer, on request**,
+   and a **derived snapshot** of the findings this run just vetted: every tile and
+   card encodes a real finding, never a fabricated or inflated count, and it asserts
+   no severity beyond the audit's evidence. Render by the shared discipline —
+   `/steer:reference artifacts` (rule `88-artifacts`); write the HTML to
+   `<tempdir>/steer-audit-code-<short-sha>.html` (a system temp dir, never under the
+   repo tree), don't persist its URL, and fall back to the printed report where the
+   tool is unavailable. This write is post-confirmation, per the read-only note at
+   the top.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** → a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
@@ -427,6 +444,21 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    Offer to also write it to `/spec/DRIFT-REPORT.md` on a `feat/drift` branch
    **only if the dev wants it tracked** — it's a point-in-time artifact, not part
    of the durable spine.
+
+   **Optionally publish it as a shareable drift board.** Where the `Artifact` tool
+   is available, also **offer** to render the report as a **Claude Artifact** — the
+   coverage table as a board of verdict-chipped cards (✅ Matches / ⚠️ Diverged /
+   🟠 Partial / 🔴 Missing / 🟡 Unspecified / ❓ Ambiguous), Done-but-Missing and
+   Diverged findings surfaced first, the tracker-status column preserved so
+   defect-vs-roadmap reads at a glance. It is an **offer, on request**, and a
+   **derived snapshot**: every chip is the verdict this run assigned, with its
+   as-built evidence — never a fabricated verdict, and the chip denotes *kind*, not
+   severity (severity stays its own marker). Render by the shared discipline —
+   `/steer:reference artifacts` (rule `88-artifacts`); write the HTML to
+   `<tempdir>/steer-audit-drift-<short-sha>.html` (a system temp dir, never under
+   the repo tree), don't persist its URL, and fall back to the printed report where
+   the tool is unavailable. This write is post-confirmation, per the read-only note
+   at the top.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when

@@ -84,7 +84,7 @@ invocable, but a front door auto-routes to it:
   specs are instantiated by the internal `/steer:spec-scaffold`. These are not user
   front doors — they are reached via the owning skills (which invoke them as
   needed) and never offered to the user directly.
-- Full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams]`)
+- Full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts]`)
   ships with the plugin and is loaded on demand via `/steer:reference` — it is
   never copied into the repo. Run it for any deep dive, or at session start on
   web chat.

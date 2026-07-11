@@ -146,47 +146,21 @@ chart. Map the intent's own sections to these visuals:
 
 ### 4. Publish (or fall back)
 
-**If the `Artifact` tool is available in this session:**
+Render **by the shared Artifact discipline** — do not restate it here. Load
+`/steer:reference artifacts` for the full mechanics (load `artifact-design` first
+and `dataviz` for the charts; build everything inline because the CSP blocks all
+external hosts; theme- and width-aware; the private-until-shared publish gated by
+the Artifact tool's own prompt; the Markdown fallback where the tool is
+unavailable). Two things are **specific to this skill**:
 
-1. **Load the `artifact-design` skill first** (the Artifact tool requires it before
-   authoring a page), and — **if the session offers a `dataviz` skill** — load it
-   before drawing any chart, meter, or diagram so the visuals read as one system
-   and work in both light and dark. When no `dataviz` skill is available, proceed
-   with `artifact-design`'s guidance alone; do not stall looking for it.
-2. **Build every visual self-contained — the Artifact CSP blocks all external
-   hosts.** No CDN chart/diagram libraries (Chart.js, Mermaid, D3-from-CDN), no
-   remote fonts or images: a page that depends on a remote script renders blank.
-   Draw the pipeline, meter, journey, boards, and relationship diagram as **inline
-   SVG + CSS** with small **inline JS** for the interactivity, and embed any asset
-   as a `data:` URI.
-3. Write the page HTML to a **deterministic path in a system temp directory**,
-   named for the feature — `<tempdir>/steer-explain-<feature-id>.html` — **never**
-   a path under the repo working tree. The stable, per-feature filename is what
-   lets a same-session re-run redeploy to the *same* artifact URL rather than mint
-   a new one; do not use a randomized temp name.
-4. **Give a one-line heads-up before publishing:** publishing sends the rendered
-   spec content to claude.ai, where the page is **private to you** until you choose
-   to share it. Let the `Artifact` tool's own permission prompt gate the publish —
-   do not pre-authorize it.
-5. Publish, then give the user the URL and tell them it's private until shared, and
-   that re-running in this same session (which reuses the same filename) updates the
-   same page.
-
-**If the `Artifact` tool is not available** (e.g. Bedrock/Vertex/Foundry, a
-zero-data-retention org, or no claude.ai login):
-
-- Render the **same content as Markdown, printed inline** in the session so the user
-  can read and copy it. Do **not** offer to save it to a file — writing a rendered
-  copy anywhere under the repo would create exactly the drifting second copy of the
-  spec this skill exists to avoid, and the user can copy the inline output wherever
-  they want it.
-- Markdown is **static** — it carries no interactivity, but keep the at-a-glance
-  shape: render the status as a plain inline pipeline
-  (`draft → **approved** → implemented → validated → live`), the acceptance as a
-  checklist with its "N of 4" count, the journey as a numbered list, and scope as
-  two ✓ / ✗ lists. Same derived-only discipline — no fabricated values.
-- Say plainly that the hosted artifact isn't available in this environment and why,
-  so the fallback isn't mistaken for a failure.
+- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — the stable,
+  per-feature name is what lets a same-session re-run redeploy to the *same* URL.
+  Write only there (a system temp dir), never under the repo tree.
+- **The Markdown fallback keeps this skill's at-a-glance shape** — status as an
+  inline pipeline (`draft → **approved** → implemented → validated → live`),
+  acceptance as a checklist with its "N of 4" count, the journey as a numbered list,
+  scope as two ✓ / ✗ lists. Print it inline; never write it to a file under the
+  repo (that would be the drifting second copy of the spec this skill avoids).
 
 ## Updating a previously shared page
 
@@ -217,6 +191,7 @@ After rendering, surface the single most useful follow-up, and stop:
 - Derived-view discipline this mirrors: `/steer:roadmap`.
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
-- Visual system: the `artifact-design` skill (page shell) and, where the session
-  offers it, `dataviz` (chart colour/encoding) — loaded at publish time; all
-  visuals inline, per the CSP.
+- Artifact rendering, the derived-view discipline, and the Markdown fallback:
+  `/steer:reference artifacts` (rule `88-artifacts`) — the shared standard this
+  skill renders by. Visual system: the `artifact-design` skill (page shell) and,
+  where offered, `dataviz` (chart colour/encoding), both loaded at publish time.

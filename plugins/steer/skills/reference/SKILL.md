@@ -1,12 +1,12 @@
 ---
 name: reference
-description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, commit messages, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md), `context-hygiene` (delegating heavy runs to subagents, keeping durable state in files so it survives compaction), or `architecture-diagrams` (the global system diagram: Mermaid by default vs an opt-in LikeC4 C4 model, which diagram types, and keeping it current). A read-only loader: it points at the bundled reference file and answers from it."
-when_to_use: Use for any tooling/convention question or the rationale behind a stack default (conventions); any question about living docs, tracker refs, drift flags, audit evidence, or the PO-facing vs dev-facing split (traceability); a feature originating from a Claude Design export/URL, Figma, or screenshots (design-sources); how to keep a long/multi-phase run from bloating the session or losing constraints across compaction (context-hygiene); or how to author/maintain the system architecture diagram — Mermaid vs LikeC4 (architecture-diagrams).
-argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams]"
+description: "Load one of steer's full reference prose documents by topic — `conventions` (versioning, mise toolchain & lockfiles, backend placement, local services, monorepo, pnpm/uv, Biome/Ruff, Vitest/pytest, commit messages, baseline patterns), `traceability` (natural-language-to-spec routing, action history, app knowledge docs, client-agnostic tracker integration, drift gates, SOC 2 / ISO 27001-aligned delivery), `design-sources` (Claude Design URL vs local export, where artifacts live, what to read vs not invent, DESIGN.md vs intent.md), `context-hygiene` (delegating heavy runs to subagents, keeping durable state in files so it survives compaction), `architecture-diagrams` (the global system diagram: Mermaid by default vs an opt-in LikeC4 C4 model, which diagram types, and keeping it current), or `artifacts` (producing shareable Claude Artifacts — discipline, CSP/inline mechanics, Markdown fallback). A read-only loader: it points at the bundled reference file and answers from it."
+when_to_use: Use for any tooling/convention question or stack-default rationale (conventions); living docs, tracker refs, drift flags, audit evidence, or the PO-vs-dev split (traceability); a feature from a Claude Design export/URL, Figma, or screenshots (design-sources); keeping a long/multi-phase run from bloating the session or losing constraints across compaction (context-hygiene); authoring the system architecture diagram — Mermaid vs LikeC4 (architecture-diagrams); or rendering a shareable page as a Claude Artifact (artifacts).
+argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts]"
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts -->
 
 # Reference prose loader
 
@@ -23,6 +23,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `design-sources` | `DESIGN-SOURCES.md` | Features from a Claude Design export/URL, Figma, or screenshots. |
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
+| `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the temp-path write invariant, and the Markdown fallback. |
 
 ## `conventions`
 
@@ -199,3 +200,33 @@ It covers, in detail:
   libraries (ReactFlow).
 
 This backs the always-on living-docs rule `32` and the `spec/design/` layout.
+
+## artifacts
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/ARTIFACTS.md`
+
+It covers, in detail:
+
+- **When an Artifact is the right output — and when it is not.** Shareable,
+  at-a-glance, derived views (a feature summary, a report/dashboard, a release
+  timeline, a fillable questionnaire) vs. durable truth, a next-action/decision, or
+  anything carrying secrets — where a page is the wrong shape.
+- **The derived-view discipline** — render canonical state, never own it; never
+  fabricate a value or advance a marker past the source; never persist the page URL
+  in the repo; on-demand only, never auto-generated per feature or on a schedule.
+- **The write-location invariant** — the page HTML is the only write, to a system
+  temp dir (never under the repo tree), on a deterministic per-subject filename so a
+  same-session re-run redeploys the same URL; and how read-only and `Write`-disallowed
+  skills each uphold it.
+- **Rendering mechanics** — load `artifact-design` first (and `dataviz` for charts);
+  build everything inline because the Artifact CSP blocks all external hosts (no CDN
+  scripts, remote fonts, or images); theme- and width-awareness; the
+  private-until-shared publish step gated by the Artifact tool's own prompt.
+- **Interactivity, fillable pages, and the Markdown fallback** — lead with the gist
+  and disclose on demand; the permission-free copy-out floor a questionnaire needs;
+  and the inline-Markdown fallback (never written under the repo tree) where the
+  Artifact tool is unavailable.
+
+This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
+(`/steer:explain`, `/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`,
+`/steer:help`).

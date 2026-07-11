@@ -12,7 +12,7 @@ when_to_use: >-
   for "what should I do next" in a real repo route to /steer:next, and for
   getting a repo onto the standards route to /steer:setup.
 argument-hint: "[optional: a skill or area to zoom into]"
-disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
+disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
 # Browse what steer can do (read-only menu)
@@ -78,6 +78,29 @@ intent, not that they memorize a command.
 Close with one line reminding them they can just **say what they want in plain
 language** — the router will pick the skill — and that `/steer:next` answers "what
 should I do *now*" in a specific repo, which this menu deliberately does not.
+
+## Phase 3 — offer a shareable visual menu (Artifact)
+
+The inline menu above is the fast, always-available render — it is also the
+**Markdown fallback** in the shared Artifact discipline. When the **`Artifact` tool
+is available**, additionally **offer** a shareable visual version: the same
+front-door areas as a browsable card grid a user can hand to a teammate who is new
+to steer. It is an **offer, on request** — never auto-published; a curious user
+often just wants the inline list.
+
+Render it by the shared discipline — `/steer:reference artifacts` (rule
+`88-artifacts`); do not restate its mechanics. This skill's specifics:
+
+- Still **derived from the live `00-router.md` table** (Phase 1) — the cards encode
+  the same rows as the inline menu, never a hardcoded or invented capability.
+- Write the HTML to `<tempdir>/steer-help-menu.html` (a system temp dir, never under
+  the repo tree); the stable name redeploys the same URL on a same-session re-run.
+- Load `artifact-design` first; build everything inline (the CSP blocks external
+  hosts); give the private-until-shared heads-up and let the Artifact tool's prompt
+  gate the publish.
+
+Where the tool is unavailable, the inline menu already *is* the fallback — say so
+rather than treating it as a missing feature.
 
 ## Zooming in (optional argument)
 
