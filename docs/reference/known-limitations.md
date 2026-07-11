@@ -106,11 +106,15 @@ which share the full engine.
 
 ## Headless vs. interactive runs
 
-The plugin's gates assume an **interactive human** is present to approve specs,
-pushes, and merges. In headless or scheduled (cron) runs there is no human at the
-gate, and **interactively-authenticated MCP servers may be absent**, so the
+The plugin's gates assume an **interactive human** is present to approve specs
+and merges (pushing the branch and opening the PR are autonomous; only a
+solo-trunk repo's graduation `check-trunk-push` gate pauses a push, and only when
+a local signal stands). In headless or scheduled (cron) runs there is no human at
+the gate, and **interactively-authenticated MCP servers may be absent**, so the
 MCP-first tracker path can silently fall back. Don't run the gated workflows
-unattended and expect the approvals to happen.
+unattended and expect the approvals to happen — `/steer:loop` is the sanctioned
+scheduled/headless path precisely because it stops at those gates (it never
+merges).
 
 ## GitHub auth / `gh`
 

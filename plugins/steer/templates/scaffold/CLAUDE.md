@@ -47,8 +47,9 @@ and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
 Definition of Done are unchanged. **Graduate** to `PR flow` — run
 **`/steer:protect`**, which raises the server-side PR wall — the moment the MVP
 works, you first deploy, or a second contributor joins, whichever comes first
-(once those signals appear, the steer trunk-push hook stops silent trunk pushes
-until you graduate); then
+(once you deploy or add a `prod` branch, the steer trunk-push hook stops silent
+trunk pushes until you graduate; a new contributor is caught on demand by
+`/steer:protect`/`/steer:audit`, not at push time); then
 set this marker and the prose to `PR flow`.
 
 ## Profile

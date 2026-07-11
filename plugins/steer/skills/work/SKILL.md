@@ -85,9 +85,11 @@ only in the branch/PR ceremony around that issue.
   marker, no PR**. Still claim the issue and implement, but close it **from the
   trunk commit** (`Closes #N`) under Commit autonomy (rule 45) rather than via a
   PR. Committing to `main` **and pushing it** are authorized in this mode —
-  unless a graduation signal stands (deploy target, `prod` branch, second
-  contributor), in which case the trunk-push hook surfaces the push for a human
-  yes until the repo graduates; **deploy is still
+  unless a **local** graduation signal stands (deploy target or `prod` branch),
+  in which case the trunk-push hook surfaces the push for a human yes until the
+  repo graduates (a second contributor is a graduation trigger too, but it is
+  caught on demand by `/steer:protect`/`/steer:audit`, not at push time);
+  **deploy is still
   never implied**, and the spine, tests, and Definition of Done are unchanged.
   Wherever a step below says *branch*, *marker*, or *PR*, skip it and substitute
   the trunk commit — everything else (validation, managed-block progress, reading
