@@ -33,6 +33,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `50-definition-of-done.md` | Definition of Done. |
 | `51-verify-loop.md` | Verify loop — turn a task into a verifiable end state, iterate against the harness until green with a bounded loop, stop-and-report when blocked, never loop on uncheckable/long-compute work. |
 | `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
+| `53-autonomous-loops.md` | Autonomous loops — automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
 | `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
@@ -52,7 +53,8 @@ manual. They are injected into every managed session by `inject-standards.sh`
     [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
     `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `40-testing`,
     `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`, `51-verify-loop`,
-    `55-drift-gates`, `80-change-size`, `85-practices`, `99-end-of-session` — are marked
+    `53-autonomous-loops`, `55-drift-gates`, `80-change-size`, `85-practices`,
+    `99-end-of-session` — are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
