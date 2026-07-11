@@ -7,6 +7,56 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Claude Artifacts are now a first-class, codified deliverable format.** The
+  discipline for producing a shareable, hosted claude.ai page — previously
+  restated inline in `/steer:explain` and `/steer:questions bundle` — is now a
+  single source of truth: a new reference `templates/reference/ARTIFACTS.md`
+  (loaded via **`/steer:reference artifacts`**) and a lean always-on rule
+  **`88-artifacts`**. It covers when an Artifact is the right output vs. when it
+  is not, the derived-view discipline (render canonical state, never fabricate a
+  value or advance a marker past the source, never persist the page URL), the
+  temp-only write invariant, the CSP-driven inline rendering mechanics (load
+  `artifact-design` first and `dataviz` for charts; no external hosts), the
+  fillable-page copy-out floor, and the inline-Markdown fallback. `explain` and
+  `questions bundle` now defer their mechanics to this reference instead of each
+  restating them.
+- **Three more skills now render shareable Artifacts** (each an on-demand offer
+  with a Markdown fallback, derived and temp-only per rule `88`):
+  `/steer:audit` publishes its code-health report as a dimension-tiled findings
+  dashboard and its spec-drift report as a verdict-chipped drift board (both
+  post-confirmation, honoring the skill's read-only-during-run guarantee);
+  `/steer:roadmap` offers a shareable release-timeline preview of the milestoned
+  work-set; `/steer:help` offers a browsable visual capability menu alongside
+  its inline list. `help`'s frontmatter drops `Write` from `disallowed-tools`
+  (its one permitted write is the temp HTML, matching `explain`).
+- Wired the new `artifacts` reference topic through every enumeration of the
+  reference set (the `reference` skill, rule `00-router`, the `standards` skill,
+  and the scaffold `CLAUDE.md`), and regenerated the Copilot mirror.
+- **The Artifact discipline now carries a styling contract**: a page derives its
+  look from the working repo's `DESIGN.md` design tokens when it declares them
+  (palette/type/spacing as inlined CSS custom properties — never an invented
+  brand, and fonts stay CSP-safe via system-stack fallbacks) and uses the
+  `artifact-design`/`dataviz` house default otherwise (`/steer:help` always does —
+  it renders steer's own capability set, not a product's state). Light/dark
+  support and semantic chart encodings (severity, verdict, status) stay
+  non-negotiable under either theme.
+- **Codified the fillable-page return leg** in rule `88-artifacts` and the
+  `artifacts` reference: a hosted Artifact stores nothing, so data comes back
+  **only** through the exported, machine-keyed return document ingested by the
+  page's owning skill — the loop `/steer:questions bundle` → PO fills the page →
+  `/steer:intake clarify <filled-doc>` already implements — and a new fillable
+  page requires its own declared key scheme and ingest route before it ships.
+- **The audit code-health dashboard can now render as a fillable triage form** —
+  on request, each finding card carries a checkbox (file / leave) and an optional
+  note, and the machine-keyed export (each finding under a visible heading with
+  its stable `finding-key`, beneath a `steer:audit-triage` marker carrying the
+  audited SHA) is ingested by **`/steer:issues publish-audit <triage-doc>`**,
+  which files exactly the checked findings, carries the notes into issue bodies,
+  and flags stale/unknown keys instead of silently filing or dropping them — the
+  second instance of the fillable-page return-leg contract. The drift board stays
+  read-only: each drift finding needs a per-finding human decision (its
+  decision-checklist issue), not a bulk selection.
+
 ### 3.16.0
 
 - Corrected an over-broad claim about the `check-trunk-push` graduation gate:

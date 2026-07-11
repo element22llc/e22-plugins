@@ -117,6 +117,22 @@ After resolving the work-set in any writing mode:
    this skill produces the milestoned issues the view renders; it does not create
    or configure the Project (no per-repo board automation).
 
+### Shareable timeline (Artifact, optional)
+
+The GitHub Projects v2 roadmap is the canonical timeline view, but it needs a
+GitHub login and the one-time view setup. For a **quick, shareable snapshot** — the
+no-arg preview a PO can glance at, or a hand-off after a plan lands — **offer** to
+render the milestone plan as a **Claude Artifact**: milestones as columns/bands,
+each with its issues laid out as horizontal bars ordered by the same `depends-on`
+constraints, blocking/dependency edges flagged — a derived preview of the Projects
+v2 view, never a replacement for it. Every bar encodes a real milestoned issue and
+a **human-confirmed** date; a milestone with no confirmed date shows as *"date not
+set"*, never a guessed one (the "No fabricated planning data" guardrail below).
+Render by the shared discipline — rule `88-artifacts`, mechanics in
+`/steer:reference artifacts` — with the temp path
+`<tempdir>/steer-roadmap-timeline.html`; the Markdown fallback keeps the timeline
+shape as an inline table (milestone → issues → dates).
+
 ## Guardrails
 
 - **Orchestrate, don't duplicate.** Delegate to the owning skill; never restate its
@@ -132,7 +148,8 @@ After resolving the work-set in any writing mode:
   **never repurposes the Milestone as the epic aggregator** — epic grouping is owned
   by `/steer:issues epic`.
 - **No fabricated planning data.** Never invent a date, priority, or effort. Dates
-  are human-supplied; ordering follows declared dependencies only.
+  are human-supplied; ordering follows declared dependencies only. The optional
+  timeline Artifact is bound by the same rule (rule `88-artifacts`).
 - **Authorization & confirmation.** Reads (preview) never confirm. The full plan
   takes **one** confirmation before any milestone/issue write; an explicit
   per-feature/per-finding request follows the intent rules in `ISSUE-WORKFLOW.md`.

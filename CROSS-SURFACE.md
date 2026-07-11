@@ -48,7 +48,7 @@ behave the same. The headline, validated against current docs and changelog:
 
 | Component | Files | Runtime dependency | Portable? |
 |---|---|---|---|
-| **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (33 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
+| **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (34 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
 | **SessionStart hooks** | `inject-standards.sh`, `orient-session.sh`, `check-template-drift.sh`, `check-open-questions.sh`, `check-unmanaged-repo.sh`, `surface-faults.sh`, `check-graduation.sh` | `SessionStart` event; source `${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh` | Claude-Code-runtime |
 | **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-code-before-spec.sh`, `check-issue-before-mutation.sh`, `check-issue-create-contract.sh`, `check-trunk-push.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Mostly Claude-Code-runtime — but `check-version-pins.sh` and `check-trunk-push.sh` are dual-target: with `STEER_HOOK_TARGET=copilot` they emit a Copilot `ask` envelope, wired by `hooks/copilot-hooks.json` on the Copilot CLI |
 | **Skills** (25) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |

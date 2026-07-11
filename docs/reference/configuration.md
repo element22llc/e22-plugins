@@ -42,6 +42,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `80-change-size.md` | Change-size model. |
 | `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency. |
 | `87-output-discipline.md` | Earn every line — comments are the exception, responses stay tight. |
+| `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, offer `/steer:report` to file it upstream. |
@@ -59,8 +60,8 @@ manual. They are injected into every managed session by `inject-standards.sh`
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
     use GitHub issues, or deploy. The context-hygiene, spec-workflow,
-    decision-capture, living-docs, roles, issue-tracker, secrets, compliance, and
-    output rules stay always-on.
+    decision-capture, living-docs, roles, issue-tracker, secrets, compliance,
+    output, and artifacts rules stay always-on.
 
 ## Tooling knobs
 

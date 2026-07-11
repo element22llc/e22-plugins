@@ -12,7 +12,7 @@ when_to_use: >-
   for "what should I do next" in a real repo route to /steer:next, and for
   getting a repo onto the standards route to /steer:setup.
 argument-hint: "[optional: a skill or area to zoom into]"
-disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
+disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
 # Browse what steer can do (read-only menu)
@@ -78,6 +78,19 @@ intent, not that they memorize a command.
 Close with one line reminding them they can just **say what they want in plain
 language** — the router will pick the skill — and that `/steer:next` answers "what
 should I do *now*" in a specific repo, which this menu deliberately does not.
+
+## Phase 3 — offer a shareable visual menu (Artifact)
+
+The inline menu above is the fast, always-available render — where the `Artifact`
+tool is unavailable it already *is* the **Markdown fallback**, so say that rather
+than treating it as a missing feature. When the tool **is** available, additionally
+**offer** a shareable visual version: the same front-door areas as a browsable card
+grid a user can hand to a teammate who is new to steer — an offer only, never
+auto-published; a curious user often just wants the inline list. The cards are
+still **derived from the live `00-router.md` table** (Phase 1), never a hardcoded
+or invented capability. Render by the shared discipline — rule `88-artifacts`,
+mechanics in `/steer:reference artifacts` — with the temp path
+`<tempdir>/steer-help-menu.html`.
 
 ## Zooming in (optional argument)
 

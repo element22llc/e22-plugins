@@ -23,8 +23,10 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 > unavailable while this skill runs, so neither audit can edit code or spec. This
 > does not make the repo immutable — shell mutations stay governed by your
 > permission settings and hooks. The optional report writes below (`AUDIT-REPORT.md`
-> / `DRIFT-REPORT.md`) happen only after you confirm them (a fresh message), by
-> which point the restriction has cleared; findings reach the tracker via
+> / `DRIFT-REPORT.md`) and the optional **Artifact dashboard** happen only after you
+> confirm them (a fresh message), by which point the restriction has cleared — and
+> the Artifact's only write is its HTML to a system temp dir, never under the repo
+> tree (rule `88-artifacts`). Findings reach the tracker via
 > `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
 
 Two **repeatable, read-only** audits behind one skill — pick the mode for the
@@ -207,11 +209,36 @@ of dimension.
    `/spec`) so silence never reads as "clean." Offer to also write it to
    `/spec/AUDIT-REPORT.md` on a `feat/audit` branch **only if the dev wants
    it tracked** — it's a point-in-time artifact, not part of the durable spine.
+
+   **Optionally publish it as a shareable dashboard.** Where the `Artifact` tool is
+   available, also **offer** to render the report as a **Claude Artifact** — a
+   dimension-summary tile row (count + top severity per dimension) over the
+   leverage-ordered findings, each a card with its `path:line` evidence, standard
+   missed, severity tag, and impact/effort/confidence — so a lead can scan the
+   health picture and hand it on without a terminal. Every tile and card encodes a
+   finding this run actually vetted — never an inflated count or a severity beyond
+   the audit's evidence. Render by the shared discipline — rule `88-artifacts`,
+   mechanics in `/steer:reference artifacts` — with the temp path
+   `<tempdir>/steer-audit-code-<short-sha>.html`; the write is post-confirmation,
+   per the read-only note at the top.
+
+   **Triage form (optional, on request).** The dashboard can render **fillable**:
+   a checkbox per finding card (file / leave) plus an optional note, upholding
+   the reference's copy-out floor. The export is machine-keyed — each finding
+   under a visible heading carrying its stable **`finding-key`**, beneath one
+   `<!-- steer:audit-triage sha=<audited-sha> -->` marker (the audited SHA is
+   fixed for the run, so two exports of the same selection stay byte-identical) —
+   and has exactly one ingest route: **`/steer:issues publish-audit
+   <triage-doc>`**, which files the checked findings and flags stale or unknown
+   keys. The **drift board stays read-only**: each drift finding needs a
+   per-finding human decision (its decision-checklist issue), not a bulk
+   selection.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** → a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
-     run/skipped, summary, report path) plus selected **finding** children, each
+     run/skipped, summary, report path) plus selected **finding** children —
+     selected in-session or via the dashboard's filled triage export — each
      carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
      — never line-based) so re-runs *reconcile* (update/close) rather than pile
      up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`
@@ -427,6 +454,18 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    Offer to also write it to `/spec/DRIFT-REPORT.md` on a `feat/drift` branch
    **only if the dev wants it tracked** — it's a point-in-time artifact, not part
    of the durable spine.
+
+   **Optionally publish it as a shareable drift board.** Where the `Artifact` tool
+   is available, also **offer** to render the report as a **Claude Artifact** — the
+   coverage table as a board of verdict-chipped cards (✅ Matches / ⚠️ Diverged /
+   🟠 Partial / 🔴 Missing / 🟡 Unspecified / ❓ Ambiguous), Done-but-Missing and
+   Diverged findings surfaced first, the tracker-status column preserved so
+   defect-vs-roadmap reads at a glance. Every chip is the verdict this run
+   assigned, with its as-built evidence — and the chip denotes *kind*, not
+   severity (severity stays its own marker). Render by the shared discipline —
+   rule `88-artifacts`, mechanics in `/steer:reference artifacts` — with the temp
+   path `<tempdir>/steer-audit-drift-<short-sha>.html`; the write is
+   post-confirmation, per the read-only note at the top.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when
