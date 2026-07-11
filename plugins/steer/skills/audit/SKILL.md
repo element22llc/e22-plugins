@@ -221,11 +221,24 @@ of dimension.
    mechanics in `/steer:reference artifacts` — with the temp path
    `<tempdir>/steer-audit-code-<short-sha>.html`; the write is post-confirmation,
    per the read-only note at the top.
+
+   **Triage form (optional, on request).** The dashboard can render **fillable**:
+   a checkbox per finding card (file / leave) plus an optional note, upholding
+   the reference's copy-out floor. The export is machine-keyed — each finding
+   under a visible heading carrying its stable **`finding-key`**, beneath one
+   `<!-- steer:audit-triage sha=<audited-sha> -->` marker (the audited SHA is
+   fixed for the run, so two exports of the same selection stay byte-identical) —
+   and has exactly one ingest route: **`/steer:issues publish-audit
+   <triage-doc>`**, which files the checked findings and flags stale or unknown
+   keys. The **drift board stays read-only**: each drift finding needs a
+   per-finding human decision (its decision-checklist issue), not a bulk
+   selection.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** → a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
-     run/skipped, summary, report path) plus selected **finding** children, each
+     run/skipped, summary, report path) plus selected **finding** children —
+     selected in-session or via the dashboard's filled triage export — each
      carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
      — never line-based) so re-runs *reconcile* (update/close) rather than pile
      up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`

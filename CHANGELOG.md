@@ -46,6 +46,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   page's owning skill — the loop `/steer:questions bundle` → PO fills the page →
   `/steer:intake clarify <filled-doc>` already implements — and a new fillable
   page requires its own declared key scheme and ingest route before it ships.
+- **The audit code-health dashboard can now render as a fillable triage form** —
+  on request, each finding card carries a checkbox (file / leave) and an optional
+  note, and the machine-keyed export (each finding under a visible heading with
+  its stable `finding-key`, beneath a `steer:audit-triage` marker carrying the
+  audited SHA) is ingested by **`/steer:issues publish-audit <triage-doc>`**,
+  which files exactly the checked findings, carries the notes into issue bodies,
+  and flags stale/unknown keys instead of silently filing or dropping them — the
+  second instance of the fillable-page return-leg contract. The drift board stays
+  read-only: each drift finding needs a per-finding human decision (its
+  decision-checklist issue), not a bulk selection.
 
 ### 3.16.0
 

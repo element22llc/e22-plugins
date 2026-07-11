@@ -77,9 +77,15 @@ format (markers, headings, **managed blocks**, idempotency) in
   present the diff / open a PR. Comment back on the issue with the exact spec
   path (as a clickable link — `ISSUE-SCHEMA.md` → Clickable references) + commit/PR. **Features only** — an epic has no `intent.md` and is **not
   materializable**; group features under an epic with the `epic` mode instead.
-- **`publish-audit [report]`** — take an `/steer:audit` finding set and create/update
-  the audit-run parent + selected finding children (see `/steer:audit`); file via
-  `/steer:tracker-sync`.
+- **`publish-audit [report|triage-doc]`** — take an `/steer:audit` finding set and
+  create/update the audit-run parent + selected finding children (see
+  `/steer:audit`); file via `/steer:tracker-sync`. Selection comes from the
+  session, **or from the audit dashboard's filled triage export** (the
+  `<!-- steer:audit-triage -->` document — rule `88-artifacts` return leg): file
+  exactly the findings whose `finding-key` is checked, carry each note into the
+  issue body, and **flag any key that doesn't match the current finding set**
+  (stale or unknown — e.g. the code moved since the audited SHA) instead of
+  silently filing or dropping it. Same single confirmation either way.
 - **`publish-drift [report]`** — take an `/steer:audit spec` finding set and file
   decision-checklist `spec-drift` issues (see `/steer:audit spec`); never auto-resolve.
 - **`publish-adoption`** — reconcile selected `spec/PRODUCTIONIZATION.md` gaps

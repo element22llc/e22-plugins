@@ -229,8 +229,9 @@ It covers, in detail:
 - **Interactivity, fillable pages, and the Markdown fallback** — lead with the gist
   and disclose on demand; the permission-free copy-out floor a questionnaire needs;
   the **return leg** (a hosted page stores nothing — data comes back only through
-  the exported, machine-keyed document ingested by the owning skill, e.g.
-  `/steer:questions bundle` → `/steer:intake clarify`);
+  the exported, machine-keyed document ingested by the owning skill:
+  `/steer:questions bundle` → `/steer:intake clarify`, the audit triage form →
+  `/steer:issues publish-audit`);
   and the inline-Markdown fallback (never written under the repo tree) where the
   Artifact tool is unavailable.
 
