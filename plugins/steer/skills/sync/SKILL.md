@@ -70,13 +70,11 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
    ```
 
-   Only **`damaged`** (`spec/.version` present, spine files missing) and
-   **`managed`** are sync cases. **`unmanaged`** (no `spec/`) or **`foreign`** (a
-   `spec/` with **no** `spec/.version` — e.g. an OpenAPI `spec/` this plugin never
-   created) is **not** a sync case: stop and redirect — `/steer:init` (greenfield /
-   template fork) or `/steer:adopt` (existing app to reverse-engineer). Never
-   "reconcile" a directory steer never wrote. **Before creating any branch, record
-   the currently checked-out branch — call it `BASE`:**
+   Only **`damaged`** and **`managed`** are sync cases. **`unmanaged`** or
+   **`foreign`** is not: stop and redirect per `/steer:setup`'s routing table
+   (the canonical state→skill map) — never "reconcile" a directory steer never
+   wrote. **Before creating any branch, record the currently checked-out
+   branch — call it `BASE`:**
 
    ```sh
    BASE=$(git rev-parse --abbrev-ref HEAD)
