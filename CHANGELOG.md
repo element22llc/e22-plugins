@@ -31,6 +31,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   with each skill citing it (init also keeps its Node `packageManager`
   resolution step). No behavior, gate, or invariant changed — every rule now
   has exactly one home.
+- **`/steer:audit` slimmed onto its reference files (simplification pass,
+  part 2).** The nine-dimension code-audit catalogue moved to a new reference
+  `AUDIT-DIMENSIONS.md` (the skill keeps an inline one-line-per-dimension index
+  + pointer); the audit/drift reconciliation lifecycle (finding-key vs evidence
+  identities, per-finding transition rules, `audit-id` immutability) now lives
+  canonically in `ISSUE-WORKFLOW.md` → *Audit & drift* with the skill carrying
+  the one-paragraph summary (inverting the previous arrangement); the two
+  "relationship" sections collapsed to terse Boundaries notes keeping only the
+  operative delegations; and the dashboard / drift-board rendering paragraphs
+  defer their mechanics to rule `88-artifacts` / `/steer:reference artifacts`.
+  No behavior, gate, or invariant changed — every rule kept exactly one home.
 - **Four more always-on rules now carry `inject-when=code-project` scopes**
   (`35-issue-tracker`, `62-hotfix`, `75-compliance`, `90-design-sources`), so a
   knowledge-work folder (the Cowork product-owner case) no longer receives

@@ -33,63 +33,32 @@ Two **repeatable, read-only** audits behind one skill — pick the mode for the
 question you're asking:
 
 - **`code`** *(default — bare `/steer:audit`)* — whole-repo **code-vs-standards**
-  health sweep. Reviews the codebase across the standards dimensions, **vets**
-  every candidate finding against the code it cites, ranks survivors by
-  **leverage**, and **proposes** routing into `/spec` while **filing** findings in
-  the tracker.
-- **`spec`** — **spec-vs-spec** conformance. Compares the **as-built `/spec`**
-  (what the code actually does, reverse-engineered by `/steer:adopt`) against the
-  **tracker spec** (what was asked for, exported from the issue tracker) and
-  surfaces every divergence. This is the former `drift` skill.
+  health sweep: review the codebase across the standards dimensions, **vet**
+  every candidate finding against the code it cites, rank survivors by
+  **leverage**, **propose** routing into `/spec`, **file** findings in the
+  tracker.
+- **`spec`** — **spec-vs-spec** conformance: diff the **as-built `/spec`** (what
+  the code actually does, reverse-engineered by `/steer:adopt`) against the
+  **tracker spec** (what was asked for) and surface every divergence. The former
+  `drift` skill.
 - **`all`** — run `code` then `spec` and report both.
 
-Both modes are **repository-read-only**: they never edit code or spec and never
-commit; their only writes are tracker issues. They answer different questions
-("is what we built healthy and standards-aligned?" vs. "did we build what was
-asked?"), so run `code` for tech-debt/health and `spec` for conformance.
-
-This is the steady-state counterpart to one-time adoption: where `/steer:adopt`
-builds the spec for a repo that has none, `/steer:audit` is run again and again on
-a repo that already has one, to keep it healthy and conformant.
+Both modes are **repository-read-only** — never an edit or a commit; their only
+writes are tracker issues. They answer different questions ("is what we built
+healthy and standards-aligned?" vs. "did we build what was asked?"), so run
+`code` for tech-debt/health and `spec` for conformance. This is the steady-state
+counterpart to one-time adoption: `/steer:adopt` builds the spec for a repo that
+has none; `/steer:audit` runs again and again on a repo that already has one.
 
 ## `code` mode — health against the standards (leverage-ranked)
 
-A **repeatable, read-only health audit** of a steady-state repo. It sweeps the
-whole codebase across the standards dimensions, **vets** every candidate finding
-against the code it cites (subagents over-report), ranks what survives by
-**leverage**, and **proposes** routing into the existing `/spec` spine while
-**filing** the findings in the issue tracker. The output is a ranked report and
-proposed spec changes — never an edit or a commit; its only writes are tracker
-issues.
-
-### Relationship to the review skills — complementary, not overlapping
-
-`code` mode is **whole-repo, multi-dimension, and leverage-ranked**. It does
-*not* re-implement the focused review skills — it names them and defers:
-
-- **`/code-review`** — diff-scoped correctness bugs + cleanups. The audit does
-  **not** hunt correctness bugs; it points findings that read as bugs to
-  `/code-review`.
-- **`/security-review`** — security vulnerabilities. The audit does **not** do a
-  security pass; it flags "needs a security review" and defers.
-- **`/simplify`** — mechanical reuse/simplification cleanups. The audit may *note*
-  systemic duplication but hands the edits to `/simplify`.
-
-And against the other spec skills:
-
-- **`/steer:adopt`** — one-time onboarding triage (Keep/Refactor/Rewrite/Reject)
-  that **creates** the `/spec` from code. The audit **assumes** the spec exists
-  and is repeatable.
-- **`spec` mode** (below) — read-only **spec-vs-spec** conformance (as-built vs
-  tracker intent), versus `code` mode's read-only **code-vs-standards** health.
-  Both route genuine findings to issues; they answer different questions.
-- **`/steer:tidy`** — repo-root hygiene (move stray source/design files into
-  `/spec`). If the audit trips over a cluttered root, hand off to `/steer:tidy`
-  rather than reporting each stray as a finding.
-
-**If there is no `/spec` spine yet,** the spec-coverage dimension can't run.
-Note that and redirect to `/steer:adopt` for the spec — the code-health dimensions
-(2–9 below) still run without it.
+**Boundaries.** `code` mode is whole-repo, multi-dimension, and leverage-ranked
+— it never re-runs the focused skills: correctness bugs defer to `/code-review`,
+security to `/security-review`, mechanical cleanup to `/simplify` (name the
+skill; don't run it here). A cluttered repo root is handed to `/steer:tidy`, not
+reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
+dimension can't run — note that, redirect to `/steer:adopt` for the spec, and
+run the code-health dimensions (2–9) without it.
 
 ### When to run
 
@@ -100,56 +69,16 @@ Note that and redirect to `/steer:adopt` for the spec — the code-health dimens
 
 ### Audit dimensions
 
-Anchored to the baseline (`rules/85-practices.md`, Definition of Done, the
-high-risk rule) and the productionization brief — **not** a generic checklist.
-Skip any dimension that doesn't apply to the repo (e.g. design on a backend-only
-service) and say so.
-
-1. **Spec conformance & coverage** *(needs `/spec`)* — user-facing features with
-   no `intent.md`/`contract.md`; `contract.md` sections stale vs the real code;
-   hard-to-reverse choices baked into the code with no ADR under
-   `/spec/decisions/`.
-2. **Architecture & boundaries** — fat route handlers; domain logic living in UI
-   components or handlers instead of shared testable modules; server-first
-   violations (secrets/DB access leaking client-side); broken package boundaries.
-3. **Data layer** — raw or string-interpolated SQL instead of a parameterized
-   query layer; schema changed outside committed, reviewed migrations.
-4. **Input validation & config** — external inputs (requests, external API
-   responses, env vars) used without boundary validation; scattered raw env reads
-   instead of one validated config module.
-5. **Error handling & escape hatches** — swallowed errors / empty `catch`;
-   unexpected errors not reported with context (Sentry gaps); escape hatches
-   without a why-comment (`any`, `@ts-ignore`/`@ts-expect-error`, wholesale
-   lint-rule disabling).
-6. **Testing** — untested domain logic; bug-fix commits with no regression test;
-   high-risk areas without coverage.
-7. **Toolchain & dependency health** — outdated dependencies; missing or drifted
-   lockfiles (`mise.lock`, `pnpm-lock.yaml`, `uv.lock`, `.terraform.lock.hcl`);
-   unpinned toolchain versions. On a GitHub-tracked repo, also note if `main`
-   lacks branch protection (the real PR gate) — route to `/steer:protect` to
-   verify/apply against `policy/branch-protection.yml`; do not query or change
-   settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
-   declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
-   intentional — *not* drift. But check whether the repo has **outgrown**
-   solo-trunk: a second collaborator (`gh api repos/{owner}/{repo}/collaborators
-   --jq 'length'` > 1), a `prod`/`production` branch, or a deploy target (a deploy
-   workflow / `infra/` tree). If any holds, **escalate** from "recommend later" to
-   "graduation conditions met — run `/steer:protect apply` now to raise the PR
-   wall"; if none, report solo-trunk as expected and note graduation is optional
-   until the MVP works. (The SessionStart `check-graduation.sh` hook nudges on the
-   local signals; this is the networked, on-demand confirmation.)
-8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
-   styling that recurs in **3+ places** but isn't promoted to a token/component
-   (the `DESIGN.md` 3+ rule).
-9. **DX & docs** — README quickstart that no longer matches reality;
-   `ARCHITECTURE.md` stale vs the code — stack table diverged from
-   `package.json` / `mise.toml`, or the apps/packages map missing/naming a
-   directory that doesn't match `apps/*`+`packages/*`; `mise.toml` missing the
-   tasks a contributor needs (`setup`, `dev`, `test`, `lint`).
-
-**Out of scope (delegated, never re-run here):** correctness bugs →
-`/code-review`; security vulnerabilities → `/security-review`; mechanical
-cleanup → `/simplify`.
+Nine standards dimensions, anchored to the baseline (`rules/85-practices.md`,
+Definition of Done, the high-risk rule) — **not** a generic checklist:
+**1** spec conformance & coverage *(needs `/spec`)* · **2** architecture &
+boundaries · **3** data layer · **4** input validation & config · **5** error
+handling & escape hatches · **6** testing · **7** toolchain & dependency health
+(incl. the branch-protection / solo-trunk graduation check) · **8** design
+consistency *(UI repos only)* · **9** DX & docs. Skip any dimension that doesn't
+apply to the repo and say so. The full catalogue — what each dimension looks for
+— is [`AUDIT-DIMENSIONS.md`](../../templates/reference/AUDIT-DIMENSIONS.md);
+load it before fanning out reviewers.
 
 ### Phase 0 — Recon
 
@@ -210,47 +139,35 @@ of dimension.
    `/spec/AUDIT-REPORT.md` on a `feat/audit` branch **only if the dev wants
    it tracked** — it's a point-in-time artifact, not part of the durable spine.
 
-   **Optionally publish it as a shareable dashboard.** Where the `Artifact` tool is
-   available, also **offer** to render the report as a **Claude Artifact** — a
-   dimension-summary tile row (count + top severity per dimension) over the
-   leverage-ordered findings, each a card with its `path:line` evidence, standard
-   missed, severity tag, and impact/effort/confidence — so a lead can scan the
-   health picture and hand it on without a terminal. Every tile and card encodes a
-   finding this run actually vetted — never an inflated count or a severity beyond
-   the audit's evidence. Render by the shared discipline — rule `88-artifacts`,
-   mechanics in `/steer:reference artifacts` — with the temp path
-   `<tempdir>/steer-audit-code-<short-sha>.html`; the write is post-confirmation,
-   per the read-only note at the top.
-
-   **Triage form (optional, on request).** The dashboard can render **fillable**:
-   a checkbox per finding card (file / leave) plus an optional note, upholding
-   the reference's copy-out floor. The export is machine-keyed — each finding
-   under a visible heading carrying its stable **`finding-key`**, beneath one
-   `<!-- steer:audit-triage sha=<audited-sha> -->` marker (the audited SHA is
-   fixed for the run, so two exports of the same selection stay byte-identical) —
-   and has exactly one ingest route: **`/steer:issues publish-audit
-   <triage-doc>`**, which files the checked findings and flags stale or unknown
-   keys. The **drift board stays read-only**: each drift finding needs a
-   per-finding human decision (its decision-checklist issue), not a bulk
-   selection.
+   **Optionally publish it as a shareable dashboard** — where the `Artifact` tool
+   is available, **offer** a dimension-tiled findings dashboard (a Claude
+   Artifact): every tile and card encodes a finding this run actually vetted,
+   never an inflated count or a severity beyond the audit's evidence. On request
+   it renders **fillable** as a triage form (file/leave checkbox + note per
+   finding); the export is machine-keyed — each finding under its stable
+   **`finding-key`**, beneath one `<!-- steer:audit-triage sha=<audited-sha> -->`
+   marker (the audited SHA is fixed for the run) — with exactly one ingest route:
+   **`/steer:issues publish-audit <triage-doc>`**. The write is post-confirmation,
+   per the read-only note at the top, to the temp path
+   `steer-audit-code-<short-sha>.html`; all rendering mechanics live in rule
+   `88-artifacts` / `/steer:reference artifacts`.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** → a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):
      one **audit-run** parent (scope, plugin version, audited SHA, dimensions
      run/skipped, summary, report path) plus selected **finding** children —
      selected in-session or via the dashboard's filled triage export — each
-     carrying a **stable `finding-key`** (`<dimension>:<rule>:<file-or-component>:<symbol>`
-     — never line-based) so re-runs *reconcile* (update/close) rather than pile
-     up duplicates. Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`
+     carrying a **stable `finding-key`** so re-runs *reconcile* (update/close)
+     rather than pile up duplicates (see Reconciliation below).
+     Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`
      (parent run issue) and `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/finding.md` (child findings).
      Scope children to genuine, high-leverage findings — don't file one per nit.
    - **Architectural / cross-cutting calls** → propose an ADR via `/steer:adr`.
    - **Spec coverage & conformance gaps** → a proposed `## Open questions` entry
      in the owning feature's `intent.md` (or `vision.md` if cross-cutting),
      drivable to answers by `/steer:questions`.
-   - **Correctness** → defer to `/code-review`; **security** → defer to
-     `/security-review`; **mechanical cleanup** → defer to `/simplify`. Name the
-     skill; don't re-run it here. To turn an unresolved `/code-review` or
+   - **Correctness / security / mechanical cleanup** → defer per the Boundaries
+     note. To turn an unresolved `/code-review` or
      `/security-review` finding into a tracked issue, route it through
      **`/steer:issues publish-findings --source code-review|security-review`**
      (`kind=finding` + the matching `source:*`; security findings redact secrets
@@ -284,64 +201,33 @@ of dimension.
 
 ### Reconciliation across runs — audits are reconciling, not additive
 
-This is the canonical full lifecycle (`ISSUE-WORKFLOW.md` §"Audit & drift" carries
-the one-paragraph summary and defers here for the detail). Re-running the audit
-must **update the existing issue set**, never pile up duplicates. Each run is filed
-via `/steer:issues publish-audit`, which keys off the markers (see
-`ISSUE-SCHEMA.md`). Two distinct identities:
-
-- **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
-  stable across runs and **never line-based** — so moving the offending code
-  without changing the defect still maps to the same finding.
-- **`evidence`** = a fingerprint of the *currently observed* lines/region. It
-  changes as code moves; that alone is an evidence update, not a new finding.
-
-Per finding, on the next run:
-
-- **Same `finding-key` still present** → update the existing issue's managed
-  block (refresh evidence/impact). Don't reopen if a human closed it as
-  `resolution:false-positive`.
-- **`finding-key` gone (no longer reproduces)** → **comment with the evidence and
-  close**, but gate the auto-close on confidence: only **`resolution_mode:
-  deterministic`** findings (a check that objectively no longer fires) may
-  auto-close; **`resolution_mode: reviewer-confirmed`** judgment calls (e.g.
-  "unclear module responsibility") are proposed-for-close and need a human yes.
-- **Evidence changed substantially, same key** → update evidence only.
-- **New `finding-key`** → create.
-- **False positive** → close with `resolution:false-positive`; it stays closed.
-
-**Audit-run records are immutable history.** Each run files one `audit-run`
-parent stamped with its own `audit-id` (`<iso-timestamp>-<short-sha>`); never
-re-edit a prior run's parent to represent a later run. Finding children reconcile
-across runs; the run parents accumulate as a timeline.
+Re-running the audit **updates the existing issue set**, never piles up
+duplicates: each finding carries a stable **`finding-key`** (the conceptual
+defect, never line-based) plus a separately-tracked **`evidence`** fingerprint,
+so same-key findings refresh in place, vanished findings close (auto-close only
+when deterministic; judgment calls need a human yes), false positives stay
+closed, and each run's `audit-run` parent is immutable history. The canonical
+full lifecycle — both identities, the per-finding transition rules, `audit-id`
+immutability — lives in
+[`ISSUE-WORKFLOW.md`](../../templates/reference/ISSUE-WORKFLOW.md) §"Audit &
+drift"; `/steer:issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).
 
 ## `spec` mode — as-built vs intended spec conformance
 
-A **manual, read-only conformance audit.** It compares two specs:
-
-- the **as-built spec** — the `/spec` spine `/steer:adopt` reverse-engineered from
-  the code, i.e. a faithful description of what the product *actually does*; and
-- the **tracker spec** — what the product was *supposed* to do, exported from
-  your issue tracker (Jira, Linear, GitHub Issues, …) as markdown, one file per
-  epic/issue or per user story / task.
-
-It surfaces every place the two diverge. **It is repository-read-only — it never
-edits code or spec and never commits.** Its outputs are a drift report, a proposed
+A **manual, read-only conformance audit.** It compares the **as-built spec**
+(the `/spec` spine `/steer:adopt` reverse-engineered from the code — a faithful
+description of what the product *actually does*) against the **tracker spec**
+(what it was *supposed* to do, exported from the issue tracker as markdown) and
+surfaces every place the two diverge. Its outputs are a drift report, a proposed
 Rule-5 resolution per finding, and `spec-drift` issues (its only writes) for
 anything needing a human decision. Resolving drift is a separate, approved step
 (see the spec-framework reference, Rule 5).
 
-### Relationship to `/steer:adopt` — sequential, not inverse
-
-The `spec` audit **consumes** what `/steer:adopt` produces. `/steer:adopt` reverse-
-engineers the as-built `/spec` from the code (reality). The `spec` audit then diffs
-that as-built spec against the tracker spec (intent). They are two stages of one
-flow — adopt builds the picture of reality, the spec audit checks it against what
-was asked for — **not** opposites. (This supersedes the 1.24.0 framing of the
-spec audit as "the inverse of `/steer:adopt`.")
-
-**If there is no `/spec` spine yet, stop and run `/steer:adopt` first** — there is
-no as-built spec to compare against until the code has been reverse-engineered.
+**Boundaries.** `/steer:adopt` is the one-time bootstrap for an un-specced repo
+— it reverse-engineers the as-built `/spec` from the code; the `spec` audit is
+steady-state conformance that **consumes** that spine and diffs it against the
+tracker intent. **If there is no `/spec` spine yet, stop and run `/steer:adopt`
+first** — there is no as-built spec to compare against.
 
 ### When to run
 
@@ -455,17 +341,16 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    **only if the dev wants it tracked** — it's a point-in-time artifact, not part
    of the durable spine.
 
-   **Optionally publish it as a shareable drift board.** Where the `Artifact` tool
-   is available, also **offer** to render the report as a **Claude Artifact** — the
-   coverage table as a board of verdict-chipped cards (✅ Matches / ⚠️ Diverged /
-   🟠 Partial / 🔴 Missing / 🟡 Unspecified / ❓ Ambiguous), Done-but-Missing and
-   Diverged findings surfaced first, the tracker-status column preserved so
-   defect-vs-roadmap reads at a glance. Every chip is the verdict this run
-   assigned, with its as-built evidence — and the chip denotes *kind*, not
-   severity (severity stays its own marker). Render by the shared discipline —
-   rule `88-artifacts`, mechanics in `/steer:reference artifacts` — with the temp
-   path `<tempdir>/steer-audit-drift-<short-sha>.html`; the write is
-   post-confirmation, per the read-only note at the top.
+   **Optionally publish it as a shareable drift board** — where the `Artifact`
+   tool is available, **offer** a board of verdict-chipped cards (Done-but-Missing
+   and Diverged first, tracker status preserved so defect-vs-roadmap reads at a
+   glance): every chip is the verdict this run assigned, with its as-built
+   evidence, and denotes *kind*, not severity. Unlike the code dashboard, the
+   drift board is **never fillable**: each drift finding needs a per-finding human
+   decision (its decision-checklist issue), not a bulk selection. The write is
+   post-confirmation, per the read-only note at the top, to the temp path
+   `steer-audit-drift-<short-sha>.html`; all rendering mechanics live in rule
+   `88-artifacts` / `/steer:reference artifacts`.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when

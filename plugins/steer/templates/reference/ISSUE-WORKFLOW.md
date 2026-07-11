@@ -309,15 +309,40 @@ find-by-`question-id` dedup are unchanged — re-promotion never double-creates.
 
 ## Audit & drift (reconciling, not additive)
 
-- **Audit** (`/steer:audit` → `/steer:issues publish-audit`) uses a two-level model:
-  one immutable **audit-run** record per run (`audit-id`) plus selected
-  **finding** children keyed by a stable `finding-key` (the conceptual defect),
-  with an `evidence` fingerprint tracking the *observed* lines separately. Re-runs
-  reconcile: same key → update; gone → comment + close (auto-close only for
-  `resolution_mode: deterministic`; judgment calls need a human yes); new →
-  create; false positive → stays closed. Reconciling, never additive. See
-  `ISSUE-SCHEMA.md` for the keys and `/steer:audit` for the full lifecycle.
-- **Drift** (`/steer:audit spec` → `/steer:issues publish-drift`) files decision-checklist
-  issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
-  required`. The agent may propose a direction but **never resolves behavioural
-  drift autonomously** — a PO or dev decides by ownership.
+**Audit** (`/steer:audit` → `/steer:issues publish-audit`) uses a two-level
+model: one immutable **audit-run** record per run plus selected **finding**
+children. This section is the canonical full lifecycle (`/steer:audit` carries
+the one-paragraph summary and defers here). Re-running the audit must **update
+the existing issue set**, never pile up duplicates; each run is filed via
+`/steer:issues publish-audit`, which keys off the markers (formats in
+[`ISSUE-SCHEMA.md`](ISSUE-SCHEMA.md)). Two distinct identities:
+
+- **`finding-key`** = the *conceptual* defect (`<dimension>:<rule>:<file-or-component>:<symbol>`),
+  stable across runs and **never line-based** — so moving the offending code
+  without changing the defect still maps to the same finding.
+- **`evidence`** = a fingerprint of the *currently observed* lines/region. It
+  changes as code moves; that alone is an evidence update, not a new finding.
+
+Per finding, on the next run:
+
+- **Same `finding-key` still present** → update the existing issue's managed
+  block (refresh evidence/impact). Don't reopen if a human closed it as
+  `resolution:false-positive`.
+- **`finding-key` gone (no longer reproduces)** → **comment with the evidence and
+  close**, but gate the auto-close on confidence: only **`resolution_mode:
+  deterministic`** findings (a check that objectively no longer fires) may
+  auto-close; **`resolution_mode: reviewer-confirmed`** judgment calls (e.g.
+  "unclear module responsibility") are proposed-for-close and need a human yes.
+- **Evidence changed substantially, same key** → update evidence only.
+- **New `finding-key`** → create.
+- **False positive** → close with `resolution:false-positive`; it stays closed.
+
+**Audit-run records are immutable history.** Each run files one `audit-run`
+parent stamped with its own `audit-id` (`<iso-timestamp>-<short-sha>`); never
+re-edit a prior run's parent to represent a later run. Finding children reconcile
+across runs; the run parents accumulate as a timeline.
+
+**Drift** (`/steer:audit spec` → `/steer:issues publish-drift`) files decision-checklist
+issues: `Spec says` / `Implementation does` / `Evidence` / `Human decision
+required`. The agent may propose a direction but **never resolves behavioural
+drift autonomously** — a PO or dev decides by ownership.
