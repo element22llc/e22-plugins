@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Audit-aligned delivery (SOC 2 / ISO 27001)
 
 The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations —

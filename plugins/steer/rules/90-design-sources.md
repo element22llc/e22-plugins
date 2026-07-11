@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Design sources & UI
 
 Most features have **no design export, or only a partial one** — that is the

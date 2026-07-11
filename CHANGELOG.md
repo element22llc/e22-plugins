@@ -16,6 +16,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
   the Copilot CLI (whose hook envelope carries decisions only) repeats are
   silent after the first flat ask.
+- **Four more always-on rules now carry `inject-when=code-project` scopes**
+  (`35-issue-tracker`, `62-hotfix`, `75-compliance`, `90-design-sources`), so a
+  knowledge-work folder (the Cowork product-owner case) no longer receives
+  tracker-integration, hotfix-lane, delivery-compliance, or design-source rules
+  it cannot act on — consistent with the existing scoping of `36-issue-first`
+  and the code-loop rules. Code repos are unchanged (the `code-project`
+  predicate always injects there); this trims the knowledge-mode ruleset only.
 - **The four per-call PreToolUse point-of-action hooks merged into two, halving
   hot-path hook overhead.** `check-trunk-push.sh` + `check-issue-create-contract.sh`
   became `check-bash-actions.sh` (one process per Bash call instead of two, one
