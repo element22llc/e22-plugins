@@ -4,7 +4,9 @@
 **Default biases**, not mandates — when a project's intent clearly warrants a
 different stack, propose the better fit and record an ADR under `/spec/decisions/`
 (run `/steer:adr`). Rationale and full setup detail for every bullet: run
-`/steer:reference conventions`.
+`/steer:reference conventions`. When you pick or change stack pieces, verify
+current stable versions in-session (same reference) — don't trust
+training-data memory.
 
 The bullets below are the **app / service** profile (the default). An **infra** repo
 (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its *primary* stack —

@@ -32,6 +32,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
   the Copilot CLI (whose hook envelope carries decisions only) repeats are
   silent after the first flat ask.
+- **`00-router` trimmed ~16%** — the largest always-on rule (injected every
+  session *and* re-injected on every compaction). The clarify bullet folds into
+  announce-then-act, the human-gate and bootstrap-precedence bullets compress
+  onto their owning rules (Commit autonomy, Spec workflow), the intent table
+  keeps all 15 rows with tighter wording, and the stack-version verification
+  note moves into the `code-project`-scoped `10-stack` rule where it applies.
+  Routing behavior is unchanged.
 - **Cross-skill prose consolidation (simplification pass, part 1).** The
   priority-floor table + PO-seeding rule moved from `/steer:issues` into
   `ISSUE-SCHEMA.md` → *Native issue fields* (which already owned the
