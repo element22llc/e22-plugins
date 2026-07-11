@@ -17,8 +17,11 @@ a real (or throwaway) repo, not against production work.
 - [ ] **Issue creation tested.** Capturing an idea creates a tracked issue through
       `/steer:tracker-sync` (MCP-first → `gh` fallback). Confirm `gh auth status`
       is green so the path doesn't drop to the manual floor.
-- [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens a
-      PR, and the **push/PR gate** correctly pauses for a human.
+- [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens
+      the PR **autonomously** — push and `gh pr create` no longer pause for a
+      human; the **merge** is the sole human gate. On a solo-trunk repo, the only
+      push-time pause is the `check-trunk-push` hook, and only once a graduation
+      signal stands.
 - [ ] **In-CI `@claude` provisioned.** The shipped `claude.yml` loads the `steer`
       plugin in CI, so it needs the `ANTHROPIC_API_KEY` secret. The marketplace
       repo is public, so the plugin clone is anonymous — no marketplace credential
