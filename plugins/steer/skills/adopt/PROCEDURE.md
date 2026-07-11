@@ -263,19 +263,16 @@ way: fill its stack table, apps/packages map, and cross-cutting concerns from th
 **as-built choices Phase 6 inventoried** (descriptive — *what is*, never inferring
 ratified decisions; the ADRs stay `Proposed`) plus the actual `package.json` /
 `mise.toml` / `compose.yaml`. **Do not overwrite an `ARCHITECTURE.md` a team
-already populated**; only seed the stub when none exists. Then pin the toolchain.
-The scaffold ships no `mise.lock`, so for each config dir (the repo's existing
-`mise.toml` dirs plus any the scaffold added, e.g. `infra/`) run `touch mise.lock
-&& mise install && mise lock --platform linux-x64,macos-arm64` (add other
-platforms the team develops on — **`linux-x64` is mandatory because CI runs
-there**), then verify each lock has a `platforms.linux-x64` block (`grep -q
-'platforms.linux-x64' mise.lock`) before committing. Commit the populated locks
-(`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the workspace resolves). **If
-the toolchain can't be installed now, commit no `mise.lock`** — CI installs
-unlocked until a populated lock lands; never an empty / comment-only one. Full
-procedure + rationale (cross-platform backends, why `--locked` fails without
-`linux-x64`): `/steer:reference conventions` → "Toolchain: `latest` in config,
-pinned in the lockfile".
+already populated**; only seed the stub when none exists. Then pin the
+toolchain: run the canonical pin procedure — `/steer:reference conventions` →
+"Toolchain: `latest` in config, pinned in the lockfile" — for each config dir
+(the repo's existing `mise.toml` dirs plus any the scaffold added, e.g.
+`infra/`): create the lock, `mise install`, `mise lock --platform
+linux-x64,macos-arm64` (+ the team's other platforms; `linux-x64` is mandatory —
+CI runs there), verify the `platforms.linux-x64` blocks, and commit the
+populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the
+workspace resolves). If the toolchain can't be installed now, commit **no**
+`mise.lock` — never an empty one.
 
 ## Phase 11 — Reconcile layout
 

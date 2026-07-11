@@ -16,6 +16,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
   the Copilot CLI (whose hook envelope carries decisions only) repeats are
   silent after the first flat ask.
+- **Cross-skill prose consolidation (simplification pass, part 1).** The
+  priority-floor table + PO-seeding rule moved from `/steer:issues` into
+  `ISSUE-SCHEMA.md` → *Native issue fields* (which already owned the
+  escalate-only guard, ledger provenance, and the Projects-v2 trap) — the skill
+  now applies the floor instead of restating it. `/steer:work` stops re-deriving
+  the two-state delivery model (rule 45 is the canonical statement; the skill
+  keeps only its own branch/marker/PR substitutions) and its merge-gate
+  guardrail is stated once. `/steer:init`'s legacy-template-fork procedure
+  (Path A) moved to a new reference `LEGACY-TEMPLATE-FORK.md`; the skill keeps
+  detection + a pointer. The `mise.lock` pin procedure — previously restated in
+  full in init (twice), adopt, build, and doctor — now lives only in
+  `CONVENTIONS.md` → "Toolchain: `latest` in config, pinned in the lockfile",
+  with each skill citing it (init also keeps its Node `packageManager`
+  resolution step). No behavior, gate, or invariant changed — every rule now
+  has exactly one home.
 - **Four more always-on rules now carry `inject-when=code-project` scopes**
   (`35-issue-tracker`, `62-hotfix`, `75-compliance`, `90-design-sources`), so a
   knowledge-work folder (the Cowork product-owner case) no longer receives

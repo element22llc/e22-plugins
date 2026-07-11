@@ -113,11 +113,9 @@ format (markers, headings, **managed blocks**, idempotency) in
   flag `risk:security`; default to human review before public disclosure).
 
 All `publish-*` modes **set the native Priority field to the derived floor on
-creation** (the floor table in `triage` below) via `/steer:tracker-sync field-set`
-— e.g. a `risk:security` finding is created at `Urgent`, a finding blocking a gate
-at `High`. Same floor, applied once at create time; on a reconcile rerun it is
-escalate-only (`max(current, floor)`), so a human who later adjusts Priority is
-never overridden.
+creation** (the floor table in `ISSUE-SCHEMA.md` → *Native issue fields*) via
+`/steer:tracker-sync field-set` — applied once at create time; a reconcile rerun
+is escalate-only, so a human who later adjusts Priority is never overridden.
 
 ### Net-new modes (logic lives here)
 
@@ -151,49 +149,15 @@ never overridden.
   - **Cleanup signals** — report stale `needs:triage` issues, orphaned
     sub-issues (no parent link), and mislabelled items; propose fixes.
   - **Priority (escalate-only auto-set) & field gaps** — set the native
-    **Priority** field to a **floor** derived from mechanical signals — this is the
-    canonical floor table (the only place it lives); `publish-*` reuses it:
-
-    | Mechanical signal on the issue | Priority floor |
-    |---|---|
-    | `risk:security` finding / committed-secret remediation | `Urgent` |
-    | Open `impact: blocking` question gating a `required_before` gate on this issue | `High` |
-    | `spec-drift` on a live/deployed feature | `High` |
-    | Native blocked-by: this issue blocks ≥1 `ready-for-dev` issue | `Medium` |
-    | none of the above | *no floor — leave unset for the PO* |
-
-    Every row is a **mechanical, observable** signal — a label, an open question
-    with a gate, drift on a live feature, or a native blocked-by edge count — never
-    a judgment of product value (that is the PO's, via the field directly). Keep the
-    table closed; adding a "this feature looks important" row would be deciding
-    product. **Escalate-only, never a product call:** set `Priority = max(current, floor)`
-    via `/steer:tracker-sync field-set` — it raises an unset/too-low value, **never
-    downgrades** a human's. Idempotent (`max` is a no-op at/above the floor). Record
-    each escalation as the managed-block **ledger** line
-    (`<!-- steer:priority-floor=… applied=… reason=… -->`, `ISSUE-SCHEMA.md`).
-    **Never fight a human (computable from the ledger + `field-get`, no actor read
-    required):** escalate only when `floor > value` **and** the current value is one
-    the agent itself last set — i.e. **(value unset and no prior
-    `steer:priority-floor` ledger line) or (a ledger line exists and value equals
-    that ledger value)**. Otherwise a human owns it — value is set but differs from
-    the agent's recorded escalation, or is set with no ledger at all (first sight of
-    a human value): record `human override of floor X — suppressed` and leave it.
-    **Effort/dates are human-set only** — surface a *missing* Effort
-    or a missing **Priority on a `ready-for-dev`** issue as a field gap; propose,
-    never auto-fill them.
-    **PO-directed seeding is a separate, documented entry — not the floor.** When the
-    PO explicitly asks to set/seed Priority or Effort to a chosen value ("set these to
-    High", "bonify the backlog", a bulk roadmap seed), that is a **human value**, not a
-    mechanical floor: write it straight through `/steer:tracker-sync field-set #N
-    <field> <value>` for each issue, **without** a `steer:priority-floor` ledger line
-    (the ledger records only the *agent's* escalations, not the PO's own values), and
-    without the escalate-only `max()` guard (the PO may set any value, up or down).
-    The native issue field is the **only** writable home — **do not** reach for the
-    Projects API: a same-named Projects board column is a read-only projection that
-    rejects writes with `Only custom fields can be updated …` and exposes no option
-    ids (the Projects-v2 trap in `ISSUE-SCHEMA.md`). A genuine Project custom field
-    (`Size`, `Iteration`) is the opposite case — set those with `gh project
-    item-edit`, not `field-set`.
+    **Priority** field to the **mechanical floor** via `/steer:tracker-sync
+    field-set`, escalate-only (`max(current, floor)`) under the ledger-based
+    never-fight-a-human guard. The floor table, the provenance/suppression
+    guard, the PO-directed-seeding distinction (a human value: no ledger, no
+    `max()` guard), and the Projects-v2 trap (the native issue field is the
+    only writable home) are all canonical in `ISSUE-SCHEMA.md` → *Native issue
+    fields & the Projects v2 boundary* — apply them, don't restate them.
+    Surface a *missing* Effort or a missing **Priority on a `ready-for-dev`**
+    issue as a field gap; propose, never auto-fill (human-set only).
   - **Routing** — suggest the next transition; propose Inbox → Exploring and
     **perform it only where the authority table in `ISSUE-WORKFLOW.md` allows**.
   Scope: `#N` triages one issue; `--all` sweeps open issues, emits a summary
