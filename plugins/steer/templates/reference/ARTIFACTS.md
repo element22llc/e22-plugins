@@ -151,13 +151,15 @@ A fillable page — the `/steer:questions bundle` questionnaire, the audit
 dashboard's triage form — adds input on top of a read-only page, and its export
 must survive a locked-down iframe:
 
-- **A permission-free copy floor is required.** The page **always** renders the
-  complete return document into a **read-only `<textarea>`/`<pre>` the user can
-  select-all and copy by hand**. Inline JS mirrors each input into this box on
-  change so it always reflects current answers.
+- **A permission-free copy floor is required — this is the primary export
+  path.** The page **always** renders the complete return document into a
+  **read-only `<textarea>`/`<pre>` the user can select-all and copy by hand**.
+  This needs neither the Clipboard API nor a download. Inline JS mirrors each
+  input into this box on change so it always reflects current answers.
 - **A "Copy to clipboard" button and a "Download .md" link are progressive
-  enhancement only.** Both need iframe-sandbox grants (`clipboard-write`,
-  `allow-downloads`) the Artifact frame may lack, so they can silently do nothing —
+  enhancement only**, layered *over* the copy-box. Both need iframe-sandbox
+  grants (`clipboard-write`, `allow-downloads`) the Artifact frame may lack, so
+  a "Copy" button or a `data:`-URI download can silently do nothing —
   the page must be fully usable (fill → copy → send) with neither working.
 - **Keys survive a round-trip.** Put the machine key in **visible heading text**,
   not only an HTML comment, so it survives a paste into Word and back. Embed nothing
@@ -177,7 +179,9 @@ only data channel back**, and it is a contract, not a convenience:
 - Every fillable page has exactly **one owning ingest path** that absorbs the
   export and folds it into canonical state under the usual gates. For the PO
   questionnaire that is **`/steer:intake clarify <filled-doc>`**, which maps each
-  answer to its key and routes it to `/steer:questions` to fold into the spec;
+  answer to its key and routes it to `/steer:questions` to fold into the spec —
+  the full key + routing contract is
+  [`CLARIFICATION-LOOP.md`](CLARIFICATION-LOOP.md);
   for the audit triage form it is **`/steer:issues publish-audit <triage-doc>`**,
   which files exactly the checked findings and flags stale or unknown keys.
 - **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
@@ -197,6 +201,11 @@ zero-data-retention org, or with no claude.ai login. When it is:
   arrow chain (`draft → **approved** → …`), an acceptance meter as a checklist with
   its "N of M" count, a journey as a numbered list, scope as two ✓ / ✗ lists, a
   report as a table.
+- For a **fillable** page, the inline fallback *is* the return document itself:
+  print the same machine-keyed fillable Markdown the page would export (each
+  input as a fillable block under its keyed heading) so the user can copy it,
+  send it to the stakeholder to fill, and route the filled copy back through the
+  page's owning ingest path.
 - **Do not write the Markdown to a file under the repo tree** — a rendered copy in
   the tree is the drifting second copy this discipline avoids. The user can copy the
   inline output anywhere they want it.

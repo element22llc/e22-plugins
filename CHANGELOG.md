@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **The PO clarification loop's shared contract now lives in one reference.**
+  The outbound→inbound contract `/steer:questions bundle` and `/steer:intake
+  clarify` each restated in full — the machine-keyed `[<feature-id>] Q-NNN`
+  return-document format, stale/unknown-key handling, the inbound segmentation
+  rule, and the three-bucket worklist with its durability rules and the
+  intake-routes / questions-folds ownership split — moved into a new
+  `templates/reference/CLARIFICATION-LOOP.md`; both skills now defer to it
+  (the cost guardrail stays canonical in `/steer:questions` step 4). The
+  pre-1.25.0 `SPEC-QUESTIONS.md` heal became a proper v1.25.0 entry in
+  `templates/reference/MIGRATIONS.md` — so `/steer:sync` now applies it too —
+  with `/steer:questions` keeping a one-paragraph pointer as its pre-sweep
+  hard gate, and the fillable-page mechanics `/steer:questions bundle`
+  restated (copy-out floor detail, sandbox-grant caveats, the fillable
+  Markdown-fallback shape) were folded into
+  `templates/reference/ARTIFACTS.md`. Contracts, gates, and read-only
+  invariants are unchanged; the prose has one home.
 - **The trunk-push graduation gate now asks once per session, not on every
   push.** In a solo-trunk repo with a standing graduation signal, the first
   `git push` of a session still surfaces the permission ask pointing at

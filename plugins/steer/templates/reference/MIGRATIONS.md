@@ -299,6 +299,52 @@ legitimate look-alike (e.g. an unchanged marketplace id).
   the structured `Q-NNN` format is **opportunistic** — let `/steer:questions` do it
   when it next touches a question, not as a bulk rewrite.
 
+### v1.25.0 — standalone `SPEC-QUESTIONS.md` retired; open questions move into the spine
+
+- **What & why:** open questions used to accumulate in a standalone
+  `spec/SPEC-QUESTIONS.md`. v1.25.0 retired it so questions live next to their
+  context — per feature in `spec/features/*/intent.md` → `## Open questions`,
+  product-level in `spec/vision.md` → `## Open questions` (and, when present,
+  `spec/PRODUCTIONIZATION.md`). A fork from an older template revision still
+  carries the file; additive reconciliation cannot delete it, so only a
+  migration may. The SessionStart hook (`check-open-questions.sh`) surfaces the
+  retired file every session, and **`/steer:questions` (default mode) applies
+  this entry as a hard gate before its sweep** — so the heal usually happens on
+  first touch rather than waiting for a sync. `/steer:questions bundle` is
+  read-only and never applies it: it includes the file's `## Open` items in its
+  gather untouched, with a notice to run the default `/steer:questions` first.
+- **Precondition:** the retired file exists — this check fires:
+
+  ```sh
+  test -f spec/SPEC-QUESTIONS.md && echo pending
+  ```
+
+  No file ⇒ no-op.
+- **Action:** migrate **and delete**, read-then-propose — a **move, not an
+  answer**: never invent or resolve anything while migrating, and the deletion
+  does **not** wait on the questions being answered. Do not skip it because the
+  spine's `## Open questions` sections look empty — empty/placeholder sections
+  are exactly the pre-state this migration fills.
+  - Route each `## Open` item to its context: a question tied to a specific
+    feature → that feature's `spec/features/*/intent.md` → `## Open questions`;
+    anything product-level → `spec/vision.md` → `## Open questions`. Preserve
+    each item's Context / Options / Owner notes; create the `## Open questions`
+    section in the destination if it's absent.
+  - For each `## Resolved` item: if the decision is already reflected in the
+    owning `intent.md` / `contract.md`, drop it; otherwise fold the decision
+    there first so it isn't lost.
+  - Propose the migration (which items land where) **and the deletion
+    together**; on a yes apply it and delete the file
+    (`git rm spec/SPEC-QUESTIONS.md`). **Never keep the file alive as a working
+    store** — do not "update it in place," move resolved items into its
+    `## Resolved` section, leave deferred items under its `## Open`, or defer
+    the retirement to "a later step." Its continued existence after the
+    migration runs is a failure, not a deferral; only the migrated copies in
+    the spine survive.
+
+  Idempotent: once the file is gone the precondition is empty, so re-running
+  is a no-op.
+
 ### v1.22.0 — `PRODUCTION-READINESS.md` → `PRODUCTIONIZATION.md`
 
 - **What & why:** the adoption/productionization brief was renamed from
