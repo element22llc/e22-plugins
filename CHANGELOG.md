@@ -32,6 +32,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - Wired the new `artifacts` reference topic through every enumeration of the
   reference set (the `reference` skill, rule `00-router`, the `standards` skill,
   and the scaffold `CLAUDE.md`), and regenerated the Copilot mirror.
+- **The Artifact discipline now carries a styling contract**: a page derives its
+  look from the working repo's `DESIGN.md` design tokens when it declares them
+  (palette/type/spacing as inlined CSS custom properties — never an invented
+  brand, and fonts stay CSP-safe via system-stack fallbacks) and uses the
+  `artifact-design`/`dataviz` house default otherwise (`/steer:help` always does —
+  it renders steer's own capability set, not a product's state). Light/dark
+  support and semantic chart encodings (severity, verdict, status) stay
+  non-negotiable under either theme.
+- **Codified the fillable-page return leg** in rule `88-artifacts` and the
+  `artifacts` reference: a hosted Artifact stores nothing, so data comes back
+  **only** through the exported, machine-keyed return document ingested by the
+  page's owning skill — the loop `/steer:questions bundle` → PO fills the page →
+  `/steer:intake clarify <filled-doc>` already implements — and a new fillable
+  page requires its own declared key scheme and ingest route before it ships.
 
 ### 3.16.0
 

@@ -16,6 +16,14 @@ feature or on a schedule, and never carries secrets or (on a stakeholder page)
 internal detail. Its only write is the page HTML, to a **system temp dir, never
 under the repo tree**; don't persist the page URL in the repo.
 
+Style the page to the product: derive its look from the repo's `DESIGN.md` tokens
+when present, else the `artifact-design`/`dataviz` house default — never an
+invented brand. A fillable page returns data **only through its exported,
+machine-keyed document** ingested by its owning skill (the PO questionnaire returns
+via `/steer:intake clarify`) — a hosted page stores nothing, so inputs can never be
+read back off it.
+
 Mechanics (load `artifact-design` first, `dataviz` for any chart; everything inline
-per the CSP; private-until-shared), the full derived-view discipline, the
-Markdown-fallback shape, and which skill renders what: `/steer:reference artifacts`.
+per the CSP; private-until-shared), the full derived-view discipline, the styling
+contract, the Markdown-fallback shape, and which skill renders what:
+`/steer:reference artifacts`.

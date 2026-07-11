@@ -113,6 +113,29 @@ read-only over the canonical sources even in a skill that otherwise writes.
 6. **Publish, then report** the URL, that it is private until shared, and that
    re-running in this same session redeploys the **same** page.
 
+### Styling — the product's theme, or the house default
+
+An Artifact should look like it belongs to the product it renders, and every steer
+page should read as one system:
+
+- **Product theme when the repo declares one.** If the working repo has a
+  `DESIGN.md` (repo root, or `apps/<app>/DESIGN.md` — see
+  `/steer:reference design-sources`), derive the page's look from the tokens it
+  actually records — palette, type scale, spacing/radius, component shapes —
+  inlined as CSS custom properties. The derived-view rule applies to styling too:
+  use only what `DESIGN.md` records, never invent a brand for the product. Fonts
+  stay inside the CSP — use the declared family name with a system-stack fallback,
+  never a remote font.
+- **House default otherwise.** With no `DESIGN.md` (or none that declares tokens),
+  the default *is* the `artifact-design` + `dataviz` guidance — a deliberate,
+  brand-neutral system, not an absence of style. `/steer:help` always uses the
+  default: it renders steer's own capability set, not a product's state.
+- **Non-negotiables either way:** light *and* dark must both work (adapt a
+  single-theme product palette rather than shipping a page that breaks in dark
+  mode), contrast stays accessible, and chart/status colors still follow the
+  `dataviz` encoding rules — the product palette recolors the page shell; it never
+  overrides a semantic encoding (severity, verdict, status) into ambiguity.
+
 ### Interactivity — lead with the gist, disclose on demand
 
 - **One-screen summary first.** Open with the headline state (what/why, the top
@@ -138,6 +161,25 @@ and its export must survive a locked-down iframe:
 - **Keys survive a round-trip.** Put the machine key in **visible heading text**,
   not only an HTML comment, so it survives a paste into Word and back. Embed nothing
   volatile (no git SHA), so two exports of the same answers stay byte-identical.
+
+### The return leg — how filled answers come back
+
+A hosted Artifact is a **static page with no backend**: nothing a user types into
+it is stored on claude.ai, so steer can never "read the answers off the page" —
+not by re-fetching the URL, not by any tool. The **exported return document is the
+only data channel back**, and it is a contract, not a convenience:
+
+- The export carries a **machine key per input** in visible heading text (e.g.
+  `[<feature-id>] Q-NNN`), so the owning skill maps each answer back
+  deterministically after any round-trip (paste into Word, email, and back).
+- Every fillable page has exactly **one owning ingest path** that absorbs the
+  export and folds it into canonical state under the usual gates. For the PO
+  questionnaire that is **`/steer:intake clarify <filled-doc>`**, which maps each
+  answer to its key and routes it to `/steer:questions` to fold into the spec.
+- **Do not bolt an ad-hoc input onto a read-only page.** A fillable Artifact
+  exists only where an ingest path exists to receive it — today that is
+  `/steer:questions bundle` → `/steer:intake clarify`. A new fillable page needs
+  its own declared key scheme and ingest route before it ships.
 
 ## Markdown fallback — not a failure
 

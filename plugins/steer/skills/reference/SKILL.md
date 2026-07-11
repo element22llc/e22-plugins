@@ -23,7 +23,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `design-sources` | `DESIGN-SOURCES.md` | Features from a Claude Design export/URL, Figma, or screenshots. |
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
-| `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the temp-path write invariant, and the Markdown fallback. |
+| `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the styling contract (`DESIGN.md` tokens or the house default), the temp-path write invariant, the fillable-page return leg, and the Markdown fallback. |
 
 ## `conventions`
 
@@ -222,8 +222,15 @@ It covers, in detail:
   build everything inline because the Artifact CSP blocks all external hosts (no CDN
   scripts, remote fonts, or images); theme- and width-awareness; the
   private-until-shared publish step gated by the Artifact tool's own prompt.
+- **The styling contract** — derive the page's look from the working repo's
+  `DESIGN.md` tokens when it declares them, else the `artifact-design`/`dataviz`
+  house default; light/dark support and semantic chart encodings stay
+  non-negotiable either way.
 - **Interactivity, fillable pages, and the Markdown fallback** — lead with the gist
   and disclose on demand; the permission-free copy-out floor a questionnaire needs;
+  the **return leg** (a hosted page stores nothing — data comes back only through
+  the exported, machine-keyed document ingested by the owning skill, e.g.
+  `/steer:questions bundle` → `/steer:intake clarify`);
   and the inline-Markdown fallback (never written under the repo tree) where the
   Artifact tool is unavailable.
 
