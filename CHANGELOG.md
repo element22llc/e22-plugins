@@ -7,6 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- `/steer:intake`'s `allowed-tools` now grant `git push` (all forms) and
+  `gh pr create`, so it delivers its PR autonomously like its five sibling
+  skills (`work`/`init`/`adopt`/`sync`/`build`) rather than falling through to
+  the session/scaffold settings. Closes a gap where the two-state-delivery sweep
+  updated intake's prose to call push/PR autonomous but never added the grants;
+  `gh pr merge` stays ungranted — the merge review is still the one human gate.
 - **Two-state delivery autonomy — the human gate moves to the PR merge.**
   Delivery now runs in exactly two modes, keyed to GitHub branch protection:
   **pr-flow** (protected `main`) where pushing the branch and opening the PR are

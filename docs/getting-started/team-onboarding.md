@@ -97,9 +97,11 @@ it maps everyday intents to the skill that handles them.
 
 ## What should I never do?
 
-- **Never push or merge without a developer's review.** Claude commits
-  autonomously but pushes and PRs are **gated on a human** — that boundary is
-  deliberate. See the [Authorization model](../concepts/authorization-model.md).
+- **Never merge without a developer's review.** Claude commits, pushes the
+  branch, and opens the PR autonomously; **the merge review is the one human
+  gate** — an open PR is inert behind branch protection, so the review happens
+  there, not before the push. (Merge and deploy are never pre-approved.) See the
+  [Authorization model](../concepts/authorization-model.md).
 - **Never assume the rules loaded on the Desktop *Chat* tab or web chat.** If you
   didn't run `/steer:standards` there, the standards aren't in context and Claude
   is running without them. (Claude Code — the CLI, IDE extensions, and the Desktop
@@ -118,9 +120,13 @@ it maps everyday intents to the skill that handles them.
   comes from Claude following the rules, not from the hook stopping it.
 - **Hard-blocks disallowed version pins** — the one deterministic `PreToolUse`
   gate denies image/runtime pins below the supported floor (`policy/versions.yml`).
-- **Commits autonomously** on a `feat/*` / `fix/*` branch, then **stops before
-  pushing or opening a PR** — that pause is a rule Claude follows, not a technical
-  lock, so a human is still the backstop.
+- **Asks before a trunk push once a repo shows graduation signals** — in a
+  solo-trunk repo that has grown a deploy workflow, an `infra/` tree, or a
+  `prod`/`production` branch, a `git push` surfaces as a `PreToolUse` **ask**
+  (never a hard deny) pointing at `/steer:protect`; pr-flow repos are untouched.
+- **Commits, pushes, and opens the PR autonomously** on a `feat/*` / `fix/*`
+  branch, then **stops before merging** — everything up to the merge is
+  autonomous; the merge review is the backstop, enforced by branch protection.
 
 See the [Hooks reference](../reference/hooks.md) and
 [Authorization model](../concepts/authorization-model.md) for the full picture.
