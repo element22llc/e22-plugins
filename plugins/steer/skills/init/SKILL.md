@@ -39,11 +39,12 @@ the per-step notes call out the trunk-mode variant.
 
 **A. Legacy fork of the old `repository-template`** — `[Replace …]`,
 `[Product Name]`, `[e.g., …]`, or `@github-handle` placeholders are still
-present. The fork already ships a `/spec` skeleton and scaffolding; this path
-resolves the placeholders, swaps the starter app, and back-fills the newer
-scaffold artifacts the old template lacked. → **Path A** below. (New repos no
-longer start from that template — the plugin's bundled scaffold is the
-bootstrap source; this path exists for forks that predate it.)
+present. The fork already ships a `/spec` skeleton and scaffolding; resolve the
+placeholders, swap the starter app, and back-fill the newer scaffold artifacts
+by following the full procedure in
+[`LEGACY-TEMPLATE-FORK.md`](../../templates/reference/LEGACY-TEMPLATE-FORK.md).
+(New repos no longer start from that template — the plugin's bundled scaffold
+is the bootstrap source; this path exists only for forks that predate it.)
 
 **B. Plugin-driven bootstrap (the default for new repos)** — there is **no
 `/spec` spine** and no template placeholders, and you are building the product
@@ -57,105 +58,26 @@ below.
 that is adoption, not init — stop and use **`/steer:adopt`**.
 
 **Already initialized?** Test the spine marker, not the bare directory: a
-**complete** spine — `spec/.version` present **and** the spine files exist
-(`vision.md`, `users.md`, `glossary.md`, `tracker.md`, `HISTORY.md`) — with no
-placeholders remaining means setup has already run; say so and stop, don't
-re-propose it. Distinguish the two incomplete states (matching `/steer:setup`'s
-routing table): a **damaged** spine — `spec/.version` present but spine files
-missing — is a repair job: run **`/steer:sync`**, don't re-bootstrap over it. A
-**foreign** `spec/` — a `spec/` directory with **no** `spec/.version` (e.g. an
-OpenAPI `spec/` this plugin never wrote) — is not a steer spine at all: it's
-**`/steer:adopt`** when there's substantial code to reverse-engineer, or this skill
-greenfield — **never** `/steer:sync`.
+**managed** spine (`spec/.version` + the spine files) with no placeholders
+remaining means setup has already run — say so and stop, don't re-propose it.
+For the incomplete states, `/steer:setup`'s routing table is canonical:
+**damaged** → repair via `/steer:sync` (never re-bootstrap over it);
+**foreign** (a `spec/` steer never wrote) → `/steer:adopt` with substantial
+code, or this skill greenfield — never `/steer:sync`.
 
 ---
 
 ## Path A — legacy template fork
 
-If any `[Replace …]`, `[Product Name]`, `[e.g., …]`, or `@github-handle`
-placeholders are still present anywhere in the repo, this is an unresolved
-fork of the old template. **Before doing any other work**, offer to resolve
-them:
-
-1. Scan for placeholders across at minimum:
-   - `README.md` (product name, status, PO/dev handles)
-   - `CLAUDE.md` (Product paragraph, Stack overrides)
-   - `spec/vision.md`, `spec/users.md`, `spec/glossary.md`
-   - `spec/design/source.md` (only if Greenfield)
-2. Ask the dev the minimum questions needed to fill them in one round: product
-   name, one-line description, PO handle, dev handles, Greenfield-vs-Brownfield,
-   production URL (if any). For the stack, confirm or override the defaults
-   (the always-on Stack rules) rather than asking from scratch — and if the dev
-   overrides them, record the choice as an ADR (run `/steer:adr`).
-3. Propose all edits in a single batch so the dev can confirm the filled-in
-   values (product name, handles, …) before they're applied. Once applied,
-   commit them, push, and open the PR (Commit autonomy — **the merge review is
-   what waits for the dev**).
-4. **Pin the toolchain — for every CI/dev platform.** The template's `mise.toml`
-   files use `latest` and ship **no** `mise.lock`; create the lock here as part
-   of pinning. If `mise` (or Docker) isn't installed yet, run **`/steer:doctor`**
-   first. Then, in each config dir (root, and `infra/` if they'll touch infra),
-   have the dev run `touch mise.lock && mise install && mise lock --platform
-   linux-x64,macos-arm64` (add other platforms the team develops on; **`linux-x64`
-   is mandatory — CI runs there**), verify each lock has a
-   `[tools.<tool>."platforms.linux-x64"]` block (`grep -q 'platforms.linux-x64'
-   mise.lock`) before committing. **If the dev defers pinning, commit no
-   `mise.lock`** (CI runs unlocked until one exists) — **never an empty /
-   comment-only lock**. Full procedure, the cross-platform backend rule, and
-   rationale: `/steer:reference conventions` → "Toolchain: `latest` in config,
-   pinned in the lockfile".
-5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
-   `packages/core` workspace so `mise exec -- pnpm install && pnpm dev` boots a
-   page on a fresh clone. It is a placeholder, not the real stack — replace it with the
-   actual first app (the default frontend is Next.js), or delete both folders if
-   `web` isn't your first app. See `apps/web/README.md`. The template
-   deliberately ships **no** workspace lockfile (the starter's would go stale);
-   once the real workspace exists, run `mise exec -- pnpm install` (or
-   `mise exec -- uv lock` for Python) — through mise so it uses the pinned runtime,
-   not a global/nvm one — and commit the generated `pnpm-lock.yaml` / `uv.lock`;
-   from then on it is maintained with every dependency change.
-6. **Adapt the standard tasks to this product.** The template's `mise.toml`
-   ships a baseline `dev:setup` task (plus `docker:up/down`, `db:migrate`,
-   `db:seed`) wired to the default stack: Postgres in `compose.yaml`,
-   migrate/seed fanned out via `pnpm --recursive --if-present`. Make it real for
-   this product:
-   - add the services the product actually needs to `compose.yaml` (or delete
-     it and the docker/db tasks if there are no backing services);
-   - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
-     drizzle-kit + a seed script) so the fan-out picks them up;
-   - Python products: swap the `pnpm …` task commands for `uv run …`.
-   - **Polyglot app (Node web + Python `apps/api`):** drive the Python backend
-     from **mise** (`[tasks."dev:api"] run = "uv run uvicorn …"`) and compose a
-     `[tasks.dev]` with `depends = ["dev:*"]` to run web + api together — mise is
-     the single, polyglot entry point. Do **not** add `dev:api`, `uv`, or a
-     `concurrently` cross-stack `dev` to the root `package.json`; a `package.json`
-     script never shells out to `uv` and no task is defined in both files (rule
-     `10-stack`). The scaffold `mise.toml` ships this as a commented block —
-     uncomment and adapt it.
-   The contract (run `/steer:reference conventions` for the prose): `mise run dev:setup` is
-   idempotent and, from a fresh clone after `mise install`, must produce a
-   working local environment.
-7. **Back-fill the newer scaffold artifacts.** A fork of the old template
-   predates the plugin-bundled scaffold, so it lacks the living-docs spine —
-   instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
-   `/spec/HISTORY.md` (from `history.md`, seeded with a bootstrap entry),
-   `/spec/tracker.md` (from `tracker.md` — ask which tracker the product
-   uses), and `/spec/app/README.md` (from `app-docs.md`). Also back-fill the
-   root `ARCHITECTURE.md` from
-   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/ARCHITECTURE.md` and fill its stack
-   table + apps/packages map from the repo's `package.json` / `mise.toml` and
-   actual `apps/*`+`packages/*`. Reconcile the PR
-   template against the bundled
-   `${CLAUDE_PLUGIN_ROOT}/templates/github/pull_request_template.md`
-   so the drift-gate and living-docs checklists come in (additive — never
-   drop sections the team added).
-
-### When the repo is already customized
-
-If a scan finds no placeholders **and** a **complete** spine exists
-(`spec/.version` plus the spine files), this setup has already run. Do not
-re-propose it; just confirm the repo is set up and move on. (A bare or partial
-`spec/` is not "already set up" — see "Already initialized?" above.)
+Detected by the placeholders above. Follow the full procedure in
+[`LEGACY-TEMPLATE-FORK.md`](../../templates/reference/LEGACY-TEMPLATE-FORK.md):
+scan + one-round interview → batch the edits for confirmation → pin the
+toolchain (the canonical procedure in `/steer:reference conventions`) → replace
+or remove the starter app → adapt the standard `mise` tasks → back-fill the
+newer scaffold artifacts (living-docs spine, `ARCHITECTURE.md`, PR template).
+Deliver per Commit autonomy — commit, push, open the PR; the merge review is
+what waits for the dev. If the scan finds no placeholders and a complete spine
+exists, setup already ran — confirm and move on, don't re-propose it.
 
 ---
 
@@ -294,21 +216,20 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
    suffers when it's left unfilled.
 5. **Pin the toolchain and lock the workspace — for every CI/dev platform.** If
-   `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first. The
-   template ships no `mise.lock`; in each config dir run `touch mise.lock &&
-   mise install && mise lock --platform linux-x64,macos-arm64` (add other
-   platforms the team uses; **`linux-x64` is mandatory — CI runs there**), verify
-   each lock has a `platforms.linux-x64` block before committing. **If the dev
-   defers pinning, commit no `mise.lock`** rather than an empty placeholder. Full
-   procedure + rationale: `/steer:reference conventions` → "Toolchain: `latest` in
-   config, pinned in the lockfile". On a Node stack, also resolve the root
-   `package.json` `packageManager` placeholder to the mise-pinned pnpm version
-   (`pnpm@<major.minor.patch>` — `mise current pnpm`), so corepack (e.g. in the
-   Docker build) uses the same pnpm that wrote `pnpm-lock.yaml`. Once the first real app/workspace exists,
-   generate and commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`);
-   maintain it with every dependency change. Make `mise run dev:setup` real and
-   idempotent for this product (Python: `uv run …` task commands; drop
-   `compose.yaml` + docker/db tasks if there are no backing services).
+   `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first. Run
+   the canonical pin procedure — `/steer:reference conventions` → "Toolchain:
+   `latest` in config, pinned in the lockfile" — in each config dir (create the
+   lock, `mise install`, `mise lock --platform linux-x64,macos-arm64` + the
+   team's other platforms, verify the `platforms.linux-x64` blocks, commit; a
+   deferred pin means **no** `mise.lock`, never an empty one). On a Node stack,
+   also resolve the root `package.json` `packageManager` placeholder to the
+   mise-pinned pnpm version (`pnpm@<major.minor.patch>` — `mise current pnpm`),
+   so corepack (e.g. in the Docker build) uses the same pnpm that wrote
+   `pnpm-lock.yaml`. Once the first real app/workspace exists, generate and
+   commit the workspace lock (`pnpm-lock.yaml` or `uv.lock`); maintain it with
+   every dependency change. Make `mise run dev:setup` real and idempotent for
+   this product (Python: `uv run …` task commands; drop `compose.yaml` +
+   docker/db tasks if there are no backing services).
 6. **Proceed spec-first.** From here, every user-facing feature gets its
    `/spec/features/[id]/intent.md` + `contract.md` via **`/steer:spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before

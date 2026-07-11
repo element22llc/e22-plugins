@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Issue tracker integration (client-agnostic)
 
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,

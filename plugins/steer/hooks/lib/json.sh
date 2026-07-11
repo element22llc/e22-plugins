@@ -122,3 +122,11 @@ steer_mutation_content() {
 	*) : ;;
 	esac
 }
+
+# steer_json_safe <value> — sanitize a value for embedding in a hand-built JSON
+# string: strip double quotes and backslashes, flatten newlines/tabs/CRs to
+# spaces. The shared idiom behind every hook's SAFE_* interpolation — one home
+# so a fix to the sanitization lands everywhere at once.
+steer_json_safe() {
+	printf '%s' "$1" | tr -d '"\\' | tr '\n\t\r' '   '
+}

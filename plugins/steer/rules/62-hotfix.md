@@ -1,3 +1,4 @@
+<!-- steer:inject-when=code-project -->
 ## Hotfix / incident fast-path
 
 A production incident is **high-risk and time-critical at once** — the one case

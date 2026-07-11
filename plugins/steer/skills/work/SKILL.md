@@ -59,41 +59,30 @@ commit, push, and open/update the PR — the full delivery loop up to the merge
 > pre-approve `gh pr merge`, `gh api`, `gh workflow run`, or destructive git
 > (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) — merge stays with
 > the human, and tracker I/O still routes through `/steer:tracker-sync`. In an
-> ungraduated solo-trunk repo the trunk-push hook additionally surfaces each
-> `git push` for confirmation while graduation signals stand (rule 45).
+> ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
+> session's first `git push` for confirmation while graduation signals stand
+> (rule 45; repeats carry a non-blocking reminder).
 
 ## Delivery mode
 
-How the work reaches `main` is governed by the repo's **delivery mode**, declared
-on the product `CLAUDE.md`'s `## Delivery mode` section — the same
-machine-readable marker the steer hooks read (`<!-- steer:delivery-mode=solo-trunk -->`
-vs `<!-- steer:delivery-mode=pr-flow -->`; absent or unreadable → **pr-flow**).
-Determine it once at `start` / `finish`. **Issue-first holds in both modes** —
-every implementation-affecting change is tied to a GitHub issue; the modes differ
-only in the branch/PR ceremony around that issue.
+The two-state delivery model — pr-flow vs solo-trunk, the `CLAUDE.md`
+delivery-mode marker (absent → pr-flow), what each mode authorizes, and every
+gate — is canonical in **rule 45 (Commit autonomy)**; determine the mode once at
+`start` / `finish` and apply it, don't re-derive it. **Issue-first holds in both
+modes**; they differ only in the branch/PR ceremony. What that means for THIS
+skill's steps:
 
-- **pr-flow** (default; the mode a protected `main` defines) — the full flow this
-  skill describes throughout: claim → `issue/<n>` branch + `spec/.work` marker →
-  implement → push → open PR → CI green → transition. The **merge review** is the
-  human gate — pushing the branch and opening the PR are autonomous; branch
-  protection (raised by `/steer:protect`) is what enforces that gate server-side.
-  If the repo declares pr-flow but `main` is not actually protected, run the same
-  flow unchanged, note the missing wall, and recommend `/steer:protect` (rule 45).
-- **solo-trunk** (unprotected `main` by declared intent — pre-MVP greenfield,
-  before `/steer:protect` graduates the repo)
-  — commit **straight to `main`**: **no `issue/<n>` branch, no `spec/.work`
-  marker, no PR**. Still claim the issue and implement, but close it **from the
-  trunk commit** (`Closes #N`) under Commit autonomy (rule 45) rather than via a
-  PR. Committing to `main` **and pushing it** are authorized in this mode —
-  unless a **local** graduation signal stands (deploy target or `prod` branch),
-  in which case the trunk-push hook surfaces the push for a human yes until the
-  repo graduates (a second contributor is a graduation trigger too, but it is
-  caught on demand by `/steer:protect`/`/steer:audit`, not at push time);
-  **deploy is still
-  never implied**, and the spine, tests, and Definition of Done are unchanged.
-  Wherever a step below says *branch*, *marker*, or *PR*, skip it and substitute
-  the trunk commit — everything else (validation, managed-block progress, reading
-  the closure reason for the terminal state) is identical.
+- **pr-flow** (default) — the full flow this skill describes throughout: claim →
+  `issue/<n>` branch + `spec/.work` marker → implement → push → open PR → CI
+  green → transition. Declared-but-unprotected `main`: same flow unchanged, note
+  the missing wall, recommend `/steer:protect` (rule 45).
+- **solo-trunk** — commit **straight to `main`**: no `issue/<n>` branch, no
+  `spec/.work` marker, no PR. Still claim the issue and implement, but close it
+  **from the trunk commit** (`Closes #N`). Wherever a step below says *branch*,
+  *marker*, or *PR*, skip it and substitute the trunk commit — everything else
+  (validation, managed-block progress, closure-reason semantics) is identical.
+  While a local graduation signal stands, the trunk-push hook surfaces the
+  session's first push for a human yes (rule 45).
 
 ## Subcommands (distinct, idempotent)
 
@@ -348,15 +337,10 @@ still excluded).
   blocks). Human content is never overwritten.
 - **Never auto-resolve product decisions or drift** — those wait for the named
   human (see `ISSUE-WORKFLOW.md`).
-- **The merge is the human gate.** Push the branch and open the PR yourself
-  (Commit autonomy); never merge or deploy. Watching CI
-  to conclusion and fixing a red build is **finishing the work**, not crossing that
-  gate — it is expected, not a gate breach. Merge and deploy stay human-gated.
-  **In solo-trunk there is no PR gate** — committing to `main` and pushing it are
-  authorized (rule 45; the trunk-push hook gates the push only once graduation
-  signals stand), so the trunk commit *is* delivery; but **deploy stays
-  human-gated** all the
-  same, and graduating the repo to the PR flow is `/steer:protect`'s job, never
-  this skill's.
+- **The merge is the human gate** (rule 45) — push and open the PR yourself;
+  never merge or deploy. Watching CI to conclusion and fixing a red build is
+  **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
+  *is* delivery (Delivery mode above); deploy stays human-gated all the same,
+  and graduating the repo is `/steer:protect`'s job, never this skill's.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.

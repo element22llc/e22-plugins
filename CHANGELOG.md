@@ -7,7 +7,90 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Claude Artifacts are now a first-class, codified deliverable format.** The
+- **The PO clarification loop's shared contract now lives in one reference.**
+  The outbound→inbound contract `/steer:questions bundle` and `/steer:intake
+  clarify` each restated in full — the machine-keyed `[<feature-id>] Q-NNN`
+  return-document format, stale/unknown-key handling, the inbound segmentation
+  rule, and the three-bucket worklist with its durability rules and the
+  intake-routes / questions-folds ownership split — moved into a new
+  `templates/reference/CLARIFICATION-LOOP.md`; both skills now defer to it
+  (the cost guardrail stays canonical in `/steer:questions` step 4). The
+  pre-1.25.0 `SPEC-QUESTIONS.md` heal became a proper v1.25.0 entry in
+  `templates/reference/MIGRATIONS.md` — so `/steer:sync` now applies it too —
+  with `/steer:questions` keeping a one-paragraph pointer as its pre-sweep
+  hard gate, and the fillable-page mechanics `/steer:questions bundle`
+  restated (copy-out floor detail, sandbox-grant caveats, the fillable
+  Markdown-fallback shape) were folded into
+  `templates/reference/ARTIFACTS.md`. Contracts, gates, and read-only
+  invariants are unchanged; the prose has one home.
+- **The trunk-push graduation gate now asks once per session, not on every
+  push.** In a solo-trunk repo with a standing graduation signal, the first
+  `git push` of a session still surfaces the permission ask pointing at
+  `/steer:protect`; repeat pushes in the same session downgrade to a
+  non-blocking reminder (never silent, and it tells the model not to retry a
+  declined push). Previously every push re-asked, which stalled autonomous
+  runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
+  the Copilot CLI (whose hook envelope carries decisions only) repeats are
+  silent after the first flat ask.
+- **Internal hook cleanups (no behavior change).** `check-open-questions.sh`'s
+  two near-duplicate awk block parsers collapse into one `parse_questions`
+  pass that emits per-question records the counting and staleness passes
+  classify — one parser to maintain instead of two that could drift — and the
+  `days_from_civil` date math (previously inlined twice) is hoisted to
+  `lib/lifecycle.sh` as a shared awk source. New `steer_json_safe` helper in
+  `lib/json.sh` replaces the five copy-pasted JSON-sanitization pipelines
+  across the point-of-action hooks. All 369 hook fixtures pass unchanged.
+- **`00-router` trimmed ~16%** — the largest always-on rule (injected every
+  session *and* re-injected on every compaction). The clarify bullet folds into
+  announce-then-act, the human-gate and bootstrap-precedence bullets compress
+  onto their owning rules (Commit autonomy, Spec workflow), the intent table
+  keeps all 15 rows with tighter wording, and the stack-version verification
+  note moves into the `code-project`-scoped `10-stack` rule where it applies.
+  Routing behavior is unchanged.
+- **Cross-skill prose consolidation (simplification pass, part 1).** The
+  priority-floor table + PO-seeding rule moved from `/steer:issues` into
+  `ISSUE-SCHEMA.md` → *Native issue fields* (which already owned the
+  escalate-only guard, ledger provenance, and the Projects-v2 trap) — the skill
+  now applies the floor instead of restating it. `/steer:work` stops re-deriving
+  the two-state delivery model (rule 45 is the canonical statement; the skill
+  keeps only its own branch/marker/PR substitutions) and its merge-gate
+  guardrail is stated once. `/steer:init`'s legacy-template-fork procedure
+  (Path A) moved to a new reference `LEGACY-TEMPLATE-FORK.md`; the skill keeps
+  detection + a pointer. The `mise.lock` pin procedure — previously restated in
+  full in init (twice), adopt, build, and doctor — now lives only in
+  `CONVENTIONS.md` → "Toolchain: `latest` in config, pinned in the lockfile",
+  with each skill citing it (init also keeps its Node `packageManager`
+  resolution step). No behavior, gate, or invariant changed — every rule now
+  has exactly one home.
+- **`/steer:audit` slimmed onto its reference files (simplification pass,
+  part 2).** The nine-dimension code-audit catalogue moved to a new reference
+  `AUDIT-DIMENSIONS.md` (the skill keeps an inline one-line-per-dimension index
+  + pointer); the audit/drift reconciliation lifecycle (finding-key vs evidence
+  identities, per-finding transition rules, `audit-id` immutability) now lives
+  canonically in `ISSUE-WORKFLOW.md` → *Audit & drift* with the skill carrying
+  the one-paragraph summary (inverting the previous arrangement); the two
+  "relationship" sections collapsed to terse Boundaries notes keeping only the
+  operative delegations; and the dashboard / drift-board rendering paragraphs
+  defer their mechanics to rule `88-artifacts` / `/steer:reference artifacts`.
+  No behavior, gate, or invariant changed — every rule kept exactly one home.
+- **Four more always-on rules now carry `inject-when=code-project` scopes**
+  (`35-issue-tracker`, `62-hotfix`, `75-compliance`, `90-design-sources`), so a
+  knowledge-work folder (the Cowork product-owner case) no longer receives
+  tracker-integration, hotfix-lane, delivery-compliance, or design-source rules
+  it cannot act on — consistent with the existing scoping of `36-issue-first`
+  and the code-loop rules. Code repos are unchanged (the `code-project`
+  predicate always injects there); this trims the knowledge-mode ruleset only.
+- **The four per-call PreToolUse point-of-action hooks merged into two, halving
+  hot-path hook overhead.** `check-trunk-push.sh` + `check-issue-create-contract.sh`
+  became `check-bash-actions.sh` (one process per Bash call instead of two, one
+  stdin read + JSON field extraction; the trunk-push gate takes precedence in
+  the rare compound command that both pushes and creates an issue), and
+  `check-code-before-spec.sh` + `check-issue-before-mutation.sh` became
+  `check-write-nudges.sh` (one process per editor write; shared root
+  resolution + path classification; both dimensions' messages emit together
+  when due on the same write). Behavior, cadence markers, exemptions, and the
+  Copilot dual-target wiring are unchanged; docs and the Copilot hook manifest
+  track the new names.
   discipline for producing a shareable, hosted claude.ai page — previously
   restated inline in `/steer:explain` and `/steer:questions bundle` — is now a
   single source of truth: a new reference `templates/reference/ARTIFACTS.md`

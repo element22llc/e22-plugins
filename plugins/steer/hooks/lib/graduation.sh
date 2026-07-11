@@ -4,7 +4,7 @@
 # steer hook helper — local solo-trunk graduation signals.
 #
 # One detector, two consumers: check-graduation.sh (SessionStart nudge) and
-# check-trunk-push.sh (PreToolUse gate on `git push`). Both must agree on what
+# the trunk-push gate in check-bash-actions.sh (PreToolUse, on `git push`). Both must agree on what
 # "this repo has outgrown solo-trunk" means, so the signal set lives here and
 # nowhere else. All signals are LOCAL and offline — filesystem plus (when git is
 # available) ref inspection; the networked signal (a second collaborator) stays

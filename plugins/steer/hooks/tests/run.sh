@@ -151,6 +151,15 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	done
 }
 
+# Fully bootstrapped state (managed spine + declared tracker + root mise.toml)
+# so the merged write hook's spec/scaffold dimension stays silent and a test
+# isolates the issue-first dimension. Tracker system defaults to github.
+bootstrapped_repo() { # <repo_root> [tracker-system]
+	managed_spine "$1"
+	printf 'system: %s\n' "${2:-github}" >"$1/spec/tracker.md"
+	: >"$1/mise.toml"
+}
+
 . "${HOOKS}/lib/json.sh"
 . "${HOOKS}/lib/classify.sh"
 . "${HOOKS}/lib/report-fault.sh"
@@ -307,55 +316,55 @@ assert_deny "version-pins: repo-local policy enforced from a subdir" "${out}"
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin python 3.9) # steer:allow-pin vendor LTS")")"
 assert_empty "version-pins: dotted pin still honors its own allow-pin marker" "${out}"
 
-# --- check-code-before-spec.sh (no /spec spine) ---
+# --- spec/scaffold dimension of check-write-nudges.sh (no /spec spine) ---
 # Two dimensions (issue #171): the /spec SPINE nudge fires once per session+repo;
 # the SCAFFOLD nudge is sticky — it re-fires on each NEW feature file while the
 # repo has no root mise.toml, and self-clears the moment a mise.toml exists.
 unset ENV
 R1="$(new_repo repoA)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/app.ts 'x')")"
 assert_ctx "spec-before-code: first code write nudges" "${out}"
 printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: first write carries scaffold clause (${out})"
 printf '%s' "${out}" | grep -q 'Spec-first check' && ok || bad "spec-before-code: first write carries spine clause (${out})"
 
 # Second DISTINCT file, same session+repo, still no mise.toml: spine fired once
 # already, but the SCAFFOLD nudge re-fires — and ONLY the scaffold clause.
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/other.ts 'y')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/other.ts 'y')")"
 assert_ctx "spec-before-code: new file re-fires scaffold nudge" "${out}"
 printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: re-fire carries scaffold clause (${out})"
 printf '%s' "${out}" | grep -q 'Spec-first check' && bad "spec-before-code: spine clause must NOT repeat (${out})" || ok
 
 # SAME file written again → no dimension due → silent (scaffold dedup, never nag).
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1}" sA src/other.ts 'y2')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/other.ts 'y2')")"
 assert_empty "spec-before-code: same file again is silent (scaffold dedup)" "${out}"
 
 # Root mise.toml present (scaffold landed) but no spine: the SPINE nudge fires
 # once, the SCAFFOLD dimension stays silent — proving the sticky nudge self-clears.
 R1b="$(new_repo repoAmise)"
 printf '[tools]\n' >"${R1b}/mise.toml"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1b}" sAm src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1b}" sAm src/app.ts 'x')")"
 assert_ctx "spec-before-code: scaffold present still nudges spine" "${out}"
 printf '%s' "${out}" | grep -q 'Scaffold check' && bad "spec-before-code: no scaffold clause once mise.toml present (${out})" || ok
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1b}" sAm src/other.ts 'y')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1b}" sAm src/other.ts 'y')")"
 assert_empty "spec-before-code: scaffold present + spine fired -> later files silent" "${out}"
 
 # Writing mise.toml IS the act of scaffolding — never scaffold-nudge that write.
 R1c="$(new_repo repoAmk)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1c}" sMk src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1c}" sMk src/app.ts 'x')")"
 assert_ctx "spec-before-code: prime spine nudge before mise.toml write" "${out}"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R1c}" sMk mise.toml '[tools]')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R1c}" sMk mise.toml '[tools]')")"
 assert_empty "spec-before-code: writing mise.toml is not scaffold-nudged" "${out}"
 
 R2="$(new_repo repoB)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R2}" sA src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R2}" sA src/app.ts 'x')")"
 assert_ctx "spec-before-code: second repo, same session, nudges" "${out}"
 
 R3="$(new_repo repoC)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R3}" sC compose.yaml 'services: {}')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R3}" sC compose.yaml 'services: {}')")"
 assert_ctx "spec-before-code: operations write nudges" "${out}"
 
 R4="$(new_repo repoD)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R4}" sD README.md '# hi')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R4}" sD README.md '# hi')")"
 assert_empty "spec-before-code: docs exempt" "${out}"
 
 # Bare spec/ (no .version) is NOT a managed spine — must still nudge (foreign),
@@ -363,13 +372,13 @@ assert_empty "spec-before-code: docs exempt" "${out}"
 # silences the spec-first nudge.
 R5="$(new_repo repoE)"
 mkdir -p "${R5}/spec"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R5}" sE src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R5}" sE src/app.ts 'x')")"
 assert_ctx "spec-before-code: bare spec/ without .version still nudges" "${out}"
 
 # Complete, version-stamped spine -> managed -> silent.
 R5b="$(new_repo repoEok)"
 managed_spine "${R5b}"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R5b}" sEok src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R5b}" sEok src/app.ts 'x')")"
 assert_empty "spec-before-code: complete .version spine -> silent" "${out}"
 
 # .version present but a spine file missing -> damaged -> nudge.
@@ -377,65 +386,67 @@ R5c="$(new_repo repoEdmg)"
 mkdir -p "${R5c}/spec"
 printf '1.0.0\n' >"${R5c}/spec/.version"
 printf 'x\n' >"${R5c}/spec/vision.md"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R5c}" sEdmg src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R5c}" sEdmg src/app.ts 'x')")"
 assert_ctx "spec-before-code: damaged spine (missing files) nudges" "${out}"
 
 # NotebookEdit (notebook_path) is governed like an ordinary code write.
 R5n="$(new_repo repoEnb)"
-out="$(run_hook check-code-before-spec.sh "$(json_notebook "${R5n}" sEnb analysis.ipynb)")"
+out="$(run_hook check-write-nudges.sh "$(json_notebook "${R5n}" sEnb analysis.ipynb)")"
 assert_ctx "spec-before-code: NotebookEdit write nudges" "${out}"
 
 # Invocation from a SUBDIRECTORY resolves the repo root (cwd may be apps/web).
 R5s="$(new_repo repoEsub)"
 mkdir -p "${R5s}/apps/web/src"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R5s}/apps/web" sEsub src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R5s}/apps/web" sEsub src/app.ts 'x')")"
 assert_ctx "spec-before-code: subdir cwd resolves root and nudges" "${out}"
 
 R6="${WORK}/repoWT"
 mkdir -p "${R6}"
 printf 'gitdir: /elsewhere\n' >"${R6}/.git"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R6}" sWT src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R6}" sWT src/app.ts 'x')")"
 assert_ctx "spec-before-code: .git-as-file worktree engages" "${out}"
 
 R7="$(new_repo repoSpace)"
-out="$(run_hook check-code-before-spec.sh "$(json_write "${R7}" sSp 'src/my file.ts' 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R7}" sSp 'src/my file.ts' 'x')")"
 assert_ctx "spec-before-code: path with spaces" "${out}"
 
-# --- check-issue-before-mutation.sh (GitHub tracker) ---
+# --- issue-first dimension of check-write-nudges.sh (GitHub tracker).
+#     Fixtures are bootstrapped (bootstrapped_repo) so the spec/scaffold dimension
+#     stays silent and these cases isolate issue-first. ---
 R8="$(new_repo repoGH)"
-mkdir -p "${R8}/spec"
-printf 'system: github\n' >"${R8}/spec/tracker.md"
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/app.ts 'x')")"
+bootstrapped_repo "${R8}"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R8}" sGH src/app.ts 'x')")"
 assert_ctx "issue-first: github repo code write nudges" "${out}"
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8}" sGH src/two.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R8}" sGH src/two.ts 'x')")"
 assert_empty "issue-first: one nudge per session+repo" "${out}"
 # Control chars in a path must not break the JSON envelope (#277 item 6): a newline
 # in file_path is flattened to a space in the emitted nudge (fresh session so the
 # once-per-session marker doesn't suppress it). The flattened "src/a b.ts" only
 # appears if the sanitizer stripped the newline.
-out="$(run_hook check-issue-before-mutation.sh '{"session_id":"sNL","cwd":"'"${R8}"'","tool_name":"Write","tool_input":{"file_path":"src/a\nb.ts","content":"x"}}')"
+out="$(run_hook check-write-nudges.sh '{"session_id":"sNL","cwd":"'"${R8}"'","tool_name":"Write","tool_input":{"file_path":"src/a\nb.ts","content":"x"}}')"
 assert_ctx "issue-first: control-char path still nudges" "${out}"
 printf '%s' "${out}" | grep -q 'src/a b.ts' && ok ||
 	bad "issue-first: newline in path flattened to a space (got: ${out})"
 
 R9="$(new_repo repoJira)"
-mkdir -p "${R9}/spec"
-printf 'system: jira\n' >"${R9}/spec/tracker.md"
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R9}" sJ src/app.ts 'x')")"
+bootstrapped_repo "${R9}" jira
+out="$(run_hook check-write-nudges.sh "$(json_write "${R9}" sJ src/app.ts 'x')")"
 assert_empty "issue-first: non-github tracker silent" "${out}"
 
+# No tracker.md at all: the issue-first dimension stays silent. (The spine
+# dimension legitimately reports the incomplete spec/ here — that is nudge 1's
+# job — so assert the absence of the issue nudge, not total silence.)
 R10="$(new_repo repoNoTracker)"
 mkdir -p "${R10}/spec"
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
-assert_empty "issue-first: no tracker silent" "${out}"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
+printf '%s' "${out}" | grep -q 'Issue-first' && bad "issue-first: no tracker must not issue-nudge (got: ${out})" || ok
 
 # Solo-trunk mode: issue-first still nudges, but with trunk wording (no /steer:work,
 # no issue branch — close the issue from the commit instead).
 R8st="$(new_repo repoGHsolo)"
-mkdir -p "${R8st}/spec"
-printf 'system: github\n' >"${R8st}/spec/tracker.md"
+bootstrapped_repo "${R8st}"
 claude_md_mode "${R8st}" solo-trunk
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8st}" sGHst src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R8st}" sGHst src/app.ts 'x')")"
 assert_ctx "issue-first: solo-trunk repo still nudges" "${out}"
 printf '%s' "${out}" | grep -q 'solo-trunk mode' && ok || bad "issue-first: solo-trunk wording present (got: ${out})"
 printf '%s' "${out}" | grep -q '/steer:work' && bad "issue-first: solo-trunk must NOT mention /steer:work (got: ${out})" || ok
@@ -443,10 +454,9 @@ printf '%s' "${out}" | grep -q '/steer:work' && bad "issue-first: solo-trunk mus
 # PR-flow repo whose CLAUDE.md prose names "solo trunk" still gets PR-flow wording
 # — proves the marker matcher is anchored, not a substring of the prose.
 R8pf="$(new_repo repoGHpr)"
-mkdir -p "${R8pf}/spec"
-printf 'system: github\n' >"${R8pf}/spec/tracker.md"
+bootstrapped_repo "${R8pf}"
 claude_md_mode "${R8pf}" pr-flow
-out="$(run_hook check-issue-before-mutation.sh "$(json_write "${R8pf}" sGHpf src/app.ts 'x')")"
+out="$(run_hook check-write-nudges.sh "$(json_write "${R8pf}" sGHpf src/app.ts 'x')")"
 assert_ctx "issue-first: pr-flow repo nudges (prose mentions solo trunk)" "${out}"
 printf '%s' "${out}" | grep -q '/steer:work' && ok || bad "issue-first: pr-flow keeps /steer:work (got: ${out})"
 printf '%s' "${out}" | grep -q 'solo-trunk mode' && bad "issue-first: pr-flow must NOT use solo wording (got: ${out})" || ok
@@ -456,20 +466,22 @@ printf '%s' "${out}" | grep -q 'solo-trunk mode' && bad "issue-first: pr-flow mu
 # silent (rule 36 carve-out); app source on feat/sync still nudges.
 if command -v git >/dev/null 2>&1; then
 	RSY="$(git_repo repoSyncPre feat/sync)"
-	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RSY}" sSY1 compose.yaml 'x')")"
+	bootstrapped_repo "${RSY}"
+	out="$(run_hook check-write-nudges.sh "$(json_write "${RSY}" sSY1 compose.yaml 'x')")"
 	assert_empty "issue-first: feat/sync operations write exempt" "${out}"
-	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RSY}" sSY2 src/app.ts 'x')")"
+	out="$(run_hook check-write-nudges.sh "$(json_write "${RSY}" sSY2 src/app.ts 'x')")"
 	assert_ctx "issue-first: feat/sync app source still nudges" "${out}"
 
 	# Hotfix fast-path exemption (rule 62): app source on a hotfix/<n> branch is the
 	# sanctioned after-the-fact lane -> silent at the point of action (the issue is
 	# filed in the post-incident follow-up).
 	RHF="$(git_repo repoHotfixPre hotfix/42-outage)"
-	out="$(run_hook check-issue-before-mutation.sh "$(json_write "${RHF}" sHF1 src/app.ts 'x')")"
+	bootstrapped_repo "${RHF}"
+	out="$(run_hook check-write-nudges.sh "$(json_write "${RHF}" sHF1 src/app.ts 'x')")"
 	assert_empty "issue-first: hotfix branch app source exempt" "${out}"
 fi
 
-# --- check-issue-create-contract.sh (raw issue-create guard, GitHub tracker) ---
+# --- issue-create contract guard of check-bash-actions.sh (GitHub tracker) ---
 # Builds Bash / MCP PreToolUse inputs. The command body is a JSON string, so any
 # double quotes inside the gh command are escaped to \" by the helper.
 bash_json() { # <cwd> <session> <command>
@@ -485,10 +497,10 @@ mcp_json() { # <cwd> <session> <tool_name> <body>
 RC8="$(new_repo repoCreateGH)"
 mkdir -p "${RC8}/spec"
 printf 'system: github\n' >"${RC8}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC1 'gh issue create --title x --body y')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8}" sC1 'gh issue create --title x --body y')")"
 assert_ctx "issue-create: gh issue create nudges" "${out}"
 printf '%s' "${out}" | grep -q '/steer:tracker-sync create' && ok || bad "issue-create: nudge points at tracker-sync (got: ${out})"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC1 'gh issue create --title z')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8}" sC1 'gh issue create --title z')")"
 assert_empty "issue-create: one nudge per session+repo" "${out}"
 
 # gh api REST POST to .../issues (creation) nudges; a POST to .../issues/<n>/...
@@ -496,16 +508,16 @@ assert_empty "issue-create: one nudge per session+repo" "${out}"
 RC8b="$(new_repo repoCreateApi)"
 mkdir -p "${RC8b}/spec"
 printf 'system: github\n' >"${RC8b}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8b}" sC2 'gh api repos/o/r/issues -f title=x -f body=y')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8b}" sC2 'gh api repos/o/r/issues -f title=x -f body=y')")"
 assert_ctx "issue-create: gh api POST /issues nudges" "${out}"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8b}" sC2b 'gh api repos/o/r/issues/123/comments -f body=hi')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8b}" sC2b 'gh api repos/o/r/issues/123/comments -f body=hi')")"
 assert_empty "issue-create: gh api comment on /issues/<n> silent" "${out}"
 
 # GraphQL createIssue mutation nudges.
 RC8c="$(new_repo repoCreateGql)"
 mkdir -p "${RC8c}/spec"
 printf 'system: github\n' >"${RC8c}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8c}" sC3 'gh api graphql -f query=mutation{createIssue(input:{}){issue{number}}}')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8c}" sC3 'gh api graphql -f query=mutation{createIssue(input:{}){issue{number}}}')")"
 assert_ctx "issue-create: graphql createIssue nudges" "${out}"
 
 # A create whose payload ALREADY carries steer markers is the /steer:tracker-sync
@@ -513,7 +525,7 @@ assert_ctx "issue-create: graphql createIssue nudges" "${out}"
 RC8d="$(new_repo repoCreateContractful)"
 mkdir -p "${RC8d}/spec"
 printf 'system: github\n' >"${RC8d}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8d}" sC4 'gh issue create --body <!-- steer:kind=task -->')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8d}" sC4 'gh issue create --body <!-- steer:kind=task -->')")"
 assert_empty "issue-create: payload with steer markers silent" "${out}"
 
 # A /steer:report self-report files UPSTREAM to element22llc/e22-plugins, never the
@@ -523,7 +535,7 @@ assert_empty "issue-create: payload with steer markers silent" "${out}"
 RC8f="$(new_repo repoSelfReport)"
 mkdir -p "${RC8f}/spec"
 printf 'system: github\n' >"${RC8f}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8f}" sC4b 'gh issue create --repo element22llc/e22-plugins --title "[steer] x" --label bug --body-file /tmp/b')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8f}" sC4b 'gh issue create --repo element22llc/e22-plugins --title "[steer] x" --label bug --body-file /tmp/b')")"
 assert_empty "issue-create: steer self-report upstream create stays silent" "${out}"
 
 # gh's documented `-R` alias for `--repo` is the same self-report create and must
@@ -531,7 +543,7 @@ assert_empty "issue-create: steer self-report upstream create stays silent" "${o
 RC8h="$(new_repo repoSelfReportR)"
 mkdir -p "${RC8h}/spec"
 printf 'system: github\n' >"${RC8h}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8h}" sC4c 'gh issue create -R element22llc/e22-plugins --title "[steer] x" --body-file /tmp/b')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8h}" sC4c 'gh issue create -R element22llc/e22-plugins --title "[steer] x" --body-file /tmp/b')")"
 assert_empty "issue-create: steer self-report via -R alias stays silent" "${out}"
 
 # The self-report guard matches the --repo FLAG, not a bare mention: a legitimate
@@ -540,7 +552,7 @@ assert_empty "issue-create: steer self-report via -R alias stays silent" "${out}
 RC8g="$(new_repo repoProdMention)"
 mkdir -p "${RC8g}/spec"
 printf 'system: github\n' >"${RC8g}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8g}" sC4d 'gh issue create --title bump --body "see element22llc/e22-plugins#123"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8g}" sC4d 'gh issue create --title bump --body "see element22llc/e22-plugins#123"')")"
 assert_ctx "issue-create: product create only mentioning plugin repo still nudges" "${out}"
 
 # MCP create-issue tool nudges; an MCP comment/list tool whose name merely
@@ -548,39 +560,39 @@ assert_ctx "issue-create: product create only mentioning plugin repo still nudge
 RC8e="$(new_repo repoCreateMcp)"
 mkdir -p "${RC8e}/spec"
 printf 'system: github\n' >"${RC8e}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5 mcp__github__create_issue y)")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5 mcp__github__create_issue y)")"
 assert_ctx "issue-create: MCP create_issue nudges" "${out}"
-out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5b mcp__github__add_issue_comment y)")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5b mcp__github__add_issue_comment y)")"
 assert_empty "issue-create: MCP add_issue_comment silent" "${out}"
 # The hosted GitHub MCP server renamed create_issue -> issue_write; the guard must
 # fire on the current write path (#264). Distinct session ids so the once-per-repo
 # marker set by earlier cases does not suppress these.
-out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5c mcp__github__issue_write y)")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5c mcp__github__issue_write y)")"
 assert_ctx "issue-create: MCP issue_write nudges (renamed create tool)" "${out}"
 # sub_issue_write links a relationship to an EXISTING issue (no body) — not a create.
-out="$(run_hook check-issue-create-contract.sh "$(mcp_json "${RC8e}" sC5d mcp__github__sub_issue_write y)")"
+out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5d mcp__github__sub_issue_write y)")"
 assert_empty "issue-create: MCP sub_issue_write silent (relationship, not create)" "${out}"
 
 # Non-create Bash, non-GitHub tracker, and no-tracker repos are all silent.
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC6 'gh issue list --json number')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8}" sC6 'gh issue list --json number')")"
 assert_empty "issue-create: gh issue list silent" "${out}"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC7 'ls -la')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8}" sC7 'ls -la')")"
 assert_empty "issue-create: plain bash silent" "${out}"
 RC9="$(new_repo repoCreateJira)"
 mkdir -p "${RC9}/spec"
 printf 'system: jira\n' >"${RC9}/spec/tracker.md"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC9}" sC8 'gh issue create --title x')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC9}" sC8 'gh issue create --title x')")"
 assert_empty "issue-create: non-github tracker silent" "${out}"
 RC10="$(new_repo repoCreateNoTracker)"
 mkdir -p "${RC10}/spec"
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC10}" sC9 'gh issue create --title x')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC10}" sC9 'gh issue create --title x')")"
 assert_empty "issue-create: no tracker silent" "${out}"
 # A Bash call whose command TEXT embeds a create_issue tool_name must NOT be misread
 # as an MCP create: steer_tool reads the top-level .tool_name ("Bash"), not the
 # tool_input slice steer_field would search (#277 item 3). Without the fix this
 # writes-a-fixture command spuriously nudges.
 embed_cmd='printf "%s" "{\"tool_name\":\"mcp__github__create_issue\"}" > fx.json'
-out="$(run_hook check-issue-create-contract.sh "$(bash_json "${RC8}" sC10 "${embed_cmd}")")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8}" sC10 "${embed_cmd}")")"
 assert_empty "issue-create: Bash cmd embedding a create_issue tool_name stays silent" "${out}"
 
 # --- reconcile-issue-first.sh (Stop hook, real git working tree) ---
@@ -1789,7 +1801,7 @@ mkdir -p "${GRAD_NOREPO}"
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NOREPO}" sg6)")"
 assert_empty "graduation: no repo silent" "${out}"
 
-# --- check-trunk-push.sh: trunk-push graduation gate (PreToolUse, Bash) ---
+# --- trunk-push graduation gate of check-bash-actions.sh (PreToolUse, Bash) ---
 # Signals shared with check-graduation.sh via lib/graduation.sh. "ask" — not
 # deny — only when ALL hold: Bash git push + solo-trunk + a graduation signal.
 
@@ -1797,59 +1809,81 @@ assert_empty "graduation: no repo silent" "${out}"
 TP_HOT="$(new_repo tp_hot)"
 mkdir -p "${TP_HOT}/infra"
 claude_md_mode "${TP_HOT}" solo-trunk
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp1 'git push origin main')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp1 'git push origin main')")"
 assert_ask "trunk-push: solo-trunk + signal + push asks" "${out}"
 assert_has "trunk-push: ask names the graduation path" "${out}" "/steer:protect"
 
 # same repo, copilot target -> flat ask envelope (no hookSpecificOutput).
 ENV="STEER_HOOK_TARGET=copilot"
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp2 'git push')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp2 'git push')")"
 ENV=""
 assert_copilot_ask "trunk-push: copilot flat ask" "${out}"
 
 # compound command (`… && git push`) still matches.
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
 assert_ask "trunk-push: compound command push asks" "${out}"
 
 # `git -C <dir> push` form matches.
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp4 "git -C ${TP_HOT} push")")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4 "git -C ${TP_HOT} push")")"
 assert_ask "trunk-push: git -C push asks" "${out}"
 
+# One ask per session+repo: a REPEAT push in the same session downgrades to a
+# non-blocking additionalContext reminder (never a second ask), so an
+# autonomous run is not stalled on every push.
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4b 'git push origin main')")"
+assert_ask "trunk-push: first push in fresh session asks" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4b 'git push origin main')")"
+assert_ctx "trunk-push: repeat push same session downgrades to context" "${out}"
+printf '%s' "${out}" | grep -q '"permissionDecision"' && bad "trunk-push: repeat push must not re-ask (got: ${out})" || ok
+assert_has "trunk-push: repeat reminder still names the graduation path" "${out}" "/steer:protect"
+
+# A NEW session re-asks (the marker is session-keyed, not repo-permanent).
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4c 'git push origin main')")"
+assert_ask "trunk-push: new session asks again" "${out}"
+
+# Copilot repeat: the copilot envelope carries decisions only -> silent allow.
+ENV="STEER_HOOK_TARGET=copilot"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4d 'git push')")"
+assert_copilot_ask "trunk-push: copilot first push flat ask" "${out}"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4d 'git push')")"
+ENV=""
+assert_empty "trunk-push: copilot repeat push silent" "${out}"
+
 # non-push git command -> silent (hot-path early exit).
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp5 'git status')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp5 'git status')")"
 assert_empty "trunk-push: non-push git silent" "${out}"
 
 # "push" only as an argument (not the git subcommand) -> silent.
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_HOT}" tp6 'git commit -m "push the button"')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp6 'git commit -m "push the button"')")"
 assert_empty "trunk-push: push in message silent" "${out}"
 
 # non-Bash tool -> silent even in the hot repo.
-out="$(run_hook check-trunk-push.sh "$(json_write "${TP_HOT}" tp7 src/app.ts 'x')")"
+out="$(run_hook check-bash-actions.sh "$(json_write "${TP_HOT}" tp7 src/app.ts 'x')")"
 assert_empty "trunk-push: non-Bash tool silent" "${out}"
 
 # solo-trunk with NO signal -> silent (pre-MVP trunk autonomy holds).
 TP_FRESH="$(new_repo tp_fresh)"
 claude_md_mode "${TP_FRESH}" solo-trunk
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_FRESH}" tp8 'git push origin main')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_FRESH}" tp8 'git push origin main')")"
 assert_empty "trunk-push: solo-trunk no signal silent" "${out}"
 
 # pr-flow + signal -> silent (branch pushes; the server wall owns the merge gate).
 TP_PR="$(new_repo tp_pr)"
 mkdir -p "${TP_PR}/infra"
 claude_md_mode "${TP_PR}" pr-flow
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_PR}" tp9 'git push -u origin issue/12-x')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_PR}" tp9 'git push -u origin issue/12-x')")"
 assert_empty "trunk-push: pr-flow silent despite signal" "${out}"
 
 # no CLAUDE.md marker at all -> pr-flow default -> silent.
 TP_BARE="$(new_repo tp_bare)"
 mkdir -p "${TP_BARE}/infra"
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_BARE}" tp10 'git push')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_BARE}" tp10 'git push')")"
 assert_empty "trunk-push: unmarked repo (pr-flow default) silent" "${out}"
 
 # cwd not inside a repo -> silent.
 TP_NOREPO="${WORK}/tp_norepo"
 mkdir -p "${TP_NOREPO}"
-out="$(run_hook check-trunk-push.sh "$(bash_json "${TP_NOREPO}" tp11 'git push')")"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" tp11 'git push')")"
 assert_empty "trunk-push: no repo silent" "${out}"
 
 # ---------------------------------------------------------------------------

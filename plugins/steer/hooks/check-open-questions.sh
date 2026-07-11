@@ -66,16 +66,10 @@ STEER_QUESTION_STALE_DAYS=14
 # Today as a day-number (days since 1970-01-01, UTC). STEER_TODAY (YYYY-MM-DD)
 # overrides for deterministic tests; otherwise `date -u` (POSIX — no -d/-j). If
 # the date is unavailable or malformed, TODAY_DAYS is empty and staleness
-# escalation is skipped entirely (fail-open: counts still work).
+# escalation is skipped entirely (fail-open: counts still work). Day math uses
+# the shared days-from-civil awk source (lib/lifecycle.sh).
 _today_ymd="${STEER_TODAY:-$(date -u +%Y-%m-%d 2>/dev/null)}"
-TODAY_DAYS="$(printf '%s\n' "${_today_ymd}" | awk -F- '
-  function days_from_civil(y, m, d,   era, yoe, doy, doe) {
-    if (m <= 2) y--
-    era = int((y >= 0 ? y : y - 399) / 400); yoe = y - era * 400
-    doy = int((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
-    doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy
-    return era * 146097 + doe - 719468
-  }
+TODAY_DAYS="$(printf '%s\n' "${_today_ymd}" | awk -F- "${STEER_AWK_DAYS_FROM_CIVIL}"'
   /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ { print days_from_civil($1 + 0, $2 + 0, $3 + 0); got = 1 }
   END { if (!got) print "" }')"
 
@@ -93,7 +87,58 @@ rank_of() {
 	printf '0'
 }
 
-# count_open <file> — prints "now trans backlog attn" for one spec file.
+# parse_questions <file> — THE block parser, one pass, one home. Emits one
+# tab-separated record per `### Q-NNN` block under "## Open questions"
+# (placeholder seeds skipped), empty fields as "-" (IFS-tab `read` and awk both
+# mishandle genuinely empty tab fields):
+#   Q \t id \t line \t status \t impact \t required_before \t owner \t created \t tracker
+# plus one final record counting legacy `- [ ]` checkboxes (pre-structured
+# format, still counted as backlog for one deprecation window; the old
+# bracketed [placeholder] seed is skipped):
+#   LEGACY \t <count>
+# The counting (count_open) and staleness (stale_lines) passes below classify
+# these records instead of each re-walking the file with its own parser.
+parse_questions() {
+	[ -f "$1" ] || return 0
+	awk '
+    function dash(v) { return v == "" ? "-" : v }
+    function val(line, key,   v) { v = line; sub("^" key ":[[:space:]]*", "", v); sub(/[[:space:]].*$/, "", v); return v }
+    function endblock() {
+      if (inblk && !skip)
+        printf "Q\t%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n", dash(q_id), q_line, dash(q_status), dash(q_impact), dash(q_rb), dash(q_owner), dash(q_created), dash(q_tracker)
+      inblk = 0; skip = 0; q_id = ""; q_line = 0; q_status = ""; q_impact = ""; q_rb = ""; q_owner = ""; q_created = ""; q_tracker = ""
+    }
+    /^## Open questions/ { endblock(); inq = 1; next }
+    /^## / { endblock(); inq = 0 }
+    /^# /  { endblock(); inq = 0 }
+    inq && /^### / {
+      endblock()
+      inblk = 1
+      skip = ($0 ~ /steer:placeholder/) ? 1 : 0
+      q_line = FNR
+      q_id = $0; sub(/^###[[:space:]]*/, "", q_id); sub(/[[:space:]].*$/, "", q_id)
+      next
+    }
+    inq && inblk {
+      line = $0
+      sub(/^[[:space:]]*-[[:space:]]*/, "", line)
+      if      (line ~ /^status:/)          q_status  = tolower(val(line, "status"))
+      else if (line ~ /^impact:/)          q_impact  = tolower(val(line, "impact"))
+      else if (line ~ /^required_before:/) q_rb      = val(line, "required_before")
+      else if (line ~ /^owner:/)           q_owner   = tolower(val(line, "owner"))
+      else if (line ~ /^created:/)         q_created = val(line, "created")
+      else if (line ~ /^tracker:/)         q_tracker = val(line, "tracker")
+    }
+    inq && !inblk && /^- \[ \] / {
+      rest = substr($0, 7)
+      if (rest !~ /^\[/) legacy++
+    }
+    END { endblock(); printf "LEGACY\t%d\n", legacy + 0 }
+  ' "$1"
+}
+
+# count_open <file> — prints "now trans backlog attn" for one spec file, by
+# classifying parse_questions records against the lifecycle gate ranking.
 count_open() {
 	_f="$1"
 	[ -f "${_f}" ] || {
@@ -113,100 +158,44 @@ count_open() {
     }' "${_f}")"
 	_cleared="$(rank_of "$(steer_status_cleared_gate "${_status}")")"
 
-	awk -v rborder="${RB_ORDER}" -v cleared="${_cleared}" '
-    function endblock() {
-      if (inblk && !skip) {
-        if (q_status == "") { attn++ }
-        else if (q_status == "open" || q_status == "investigating") {
-          if (q_impact == "") { attn++ }
-          else if (q_impact == "blocking") {
-            r = (q_rb in rank) ? rank[q_rb] : 0
-            if (r == 0 || r <= cleared + 1) { now++ } else { trans++ }
-          } else { backlog++ }
-        }
-      }
-      inblk = 0; skip = 0; q_status = ""; q_impact = ""; q_rb = ""
-    }
+	parse_questions "${_f}" | awk -F '\t' -v rborder="${RB_ORDER}" -v cleared="${_cleared}" '
     BEGIN { n = split(rborder, a, " "); for (i = 1; i <= n; i++) rank[a[i]] = i }
-    /^## Open questions/ { endblock(); inq = 1; next }
-    /^## / { endblock(); inq = 0 }
-    /^# /  { endblock(); inq = 0 }
-    inq && /^### / {
-      endblock()
-      inblk = 1
-      skip = ($0 ~ /steer:placeholder/) ? 1 : 0
-      next
+    $1 == "LEGACY" { backlog += $2; next }
+    $1 != "Q" { next }
+    {
+      status = ($4 == "-") ? "" : $4
+      impact = ($5 == "-") ? "" : $5
+      rb     = ($6 == "-") ? "" : $6
+      if (status == "") { attn++ }
+      else if (status == "open" || status == "investigating") {
+        if (impact == "") { attn++ }
+        else if (impact == "blocking") {
+          r = (rb in rank) ? rank[rb] : 0
+          if (r == 0 || r <= cleared + 1) { now++ } else { trans++ }
+        } else { backlog++ }
+      }
     }
-    inq && inblk {
-      line = $0
-      sub(/^[[:space:]]*-[[:space:]]*/, "", line)
-      if (line ~ /^status:/)              { v = line; sub(/^status:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_status = tolower(v) }
-      else if (line ~ /^impact:/)         { v = line; sub(/^impact:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_impact = tolower(v) }
-      else if (line ~ /^required_before:/) { v = line; sub(/^required_before:[[:space:]]*/, "", v); sub(/[[:space:]].*$/, "", v); q_rb = v }
-    }
-    # Legacy checkbox format (pre-structured) — counted as backlog, skipping the
-    # old bracketed [placeholder] seed.
-    inq && !inblk && /^- \[ \] / {
-      rest = substr($0, 7)
-      if (rest !~ /^\[/) backlog++
-    }
-    END { endblock(); printf "%d %d %d %d", now + 0, trans + 0, backlog + 0, attn + 0 }
-  ' "${_f}"
+    END { printf "%d %d %d %d", now + 0, trans + 0, backlog + 0, attn + 0 }'
 }
 
-# stale_lines <file> — for each blocking, still-open, un-promoted question, emit
-# one tab-separated record so the shell can decide staleness in one place:
+# stale_lines <file> — for each blocking, still-open, un-promoted question
+# (promoted = non-empty `tracker:` — already on someone's plate), emit one
+# tab-separated record so the shell decides staleness in one place:
 #   AGE\t<Q-id>\t<owner>\t<age-in-days>   when `created:` is a valid YYYY-MM-DD
 #   BLAME\t<Q-id>\t<owner>\t<heading-line-no>   when `created:` is absent/malformed
-# Promoted questions (non-empty `tracker:`) and placeholder seeds are skipped —
-# a promoted question is already on someone's plate. Mirrors count_open's block
-# parser; kept separate so count_open's four-int contract stays untouched.
 stale_lines() {
-	_f="$1"
-	[ -f "${_f}" ] || return 0
+	[ -f "$1" ] || return 0
 	[ -n "${TODAY_DAYS}" ] || return 0
-	awk -v today="${TODAY_DAYS}" '
-    function days_from_civil(y, m, d,   era, yoe, doy, doe) {
-      if (m <= 2) y--
-      era = int((y >= 0 ? y : y - 399) / 400); yoe = y - era * 400
-      doy = int((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
-      doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy
-      return era * 146097 + doe - 719468
-    }
-    function endblock(  parts) {
-      if (inblk && !skip && (q_status == "open" || q_status == "investigating") &&
-          q_impact == "blocking" && q_tracker == "") {
-        if (q_created ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) {
-          split(q_created, parts, "-")
-          printf "AGE\t%s\t%s\t%d\n", q_id, q_owner, today - days_from_civil(parts[1] + 0, parts[2] + 0, parts[3] + 0)
-        } else {
-          printf "BLAME\t%s\t%s\t%d\n", q_id, q_owner, q_line
-        }
+	parse_questions "$1" | awk -F '\t' -v today="${TODAY_DAYS}" "${STEER_AWK_DAYS_FROM_CIVIL}"'
+    $1 == "Q" && ($4 == "open" || $4 == "investigating") && $5 == "blocking" && $9 == "-" {
+      owner = ($7 == "-") ? "" : $7
+      if ($8 ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) {
+        split($8, parts, "-")
+        printf "AGE\t%s\t%s\t%d\n", $2, owner, today - days_from_civil(parts[1] + 0, parts[2] + 0, parts[3] + 0)
+      } else {
+        printf "BLAME\t%s\t%s\t%d\n", $2, owner, $3
       }
-      inblk = 0; skip = 0; q_status = ""; q_impact = ""; q_created = ""; q_owner = ""; q_tracker = ""; q_id = ""; q_line = 0
-    }
-    /^## Open questions/ { endblock(); inq = 1; next }
-    /^## / { endblock(); inq = 0 }
-    /^# /  { endblock(); inq = 0 }
-    inq && /^### / {
-      endblock()
-      inblk = 1
-      skip = ($0 ~ /steer:placeholder/) ? 1 : 0
-      q_line = FNR
-      q_id = $0; sub(/^###[[:space:]]*/, "", q_id); sub(/[[:space:]].*$/, "", q_id)
-      next
-    }
-    inq && inblk {
-      line = $0
-      sub(/^[[:space:]]*-[[:space:]]*/, "", line)
-      if (line ~ /^status:/)              { v = line; sub(/^status:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_status = tolower(v) }
-      else if (line ~ /^impact:/)         { v = line; sub(/^impact:[[:space:]]*/, "", v);          sub(/[[:space:]].*$/, "", v); q_impact = tolower(v) }
-      else if (line ~ /^owner:/)          { v = line; sub(/^owner:[[:space:]]*/, "", v);           sub(/[[:space:]].*$/, "", v); q_owner = tolower(v) }
-      else if (line ~ /^created:/)        { v = line; sub(/^created:[[:space:]]*/, "", v);         sub(/[[:space:]].*$/, "", v); q_created = v }
-      else if (line ~ /^tracker:/)        { v = line; sub(/^tracker:[[:space:]]*/, "", v);         sub(/[[:space:]].*$/, "", v); q_tracker = v }
-    }
-    END { endblock() }
-  ' "${_f}"
+    }'
 }
 
 # format_stale <file> <label> — turn stale_lines records into escalation markdown.

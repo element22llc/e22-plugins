@@ -13,7 +13,7 @@
 
 # steer_tracker_is_github <repo-root> — true when the repo's /spec/tracker.md
 # declares `system: github`. Single source of truth for GitHub-tracker
-# detection, shared with the issue-first hooks (check-issue-before-mutation.sh,
+# detection, shared with the issue-first hooks (check-write-nudges.sh,
 # reconcile-issue-first.sh) and the inject-when scope dispatch below.
 steer_tracker_is_github() {
 	_tracker="${1:-.}/spec/tracker.md"

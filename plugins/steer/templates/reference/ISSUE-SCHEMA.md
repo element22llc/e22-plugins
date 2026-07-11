@@ -271,6 +271,34 @@ story for fields: a concurrent human edit shows up as `value ≠ ledger` and
 suppresses. Where the org has not enabled issue fields, they are omitted and
 ranking treats Priority as unset (capability degradation in `ISSUE-WORKFLOW.md`).
 
+**The priority-floor table (canonical — the only place it lives).** The floor an
+agent may escalate Priority to is derived from **mechanical, observable** signals
+only — a label, an open question with a gate, drift on a live feature, or a
+native blocked-by edge count — never a judgment of product value (that is the
+PO's, via the field directly). `/steer:issues triage` applies it escalate-only
+(`max(current, floor)` under the provenance guard above); the `publish-*` modes
+apply the same floor once at create time:
+
+| Mechanical signal on the issue | Priority floor |
+|---|---|
+| `risk:security` finding / committed-secret remediation | `Urgent` |
+| Open `impact: blocking` question gating a `required_before` gate on this issue | `High` |
+| `spec-drift` on a live/deployed feature | `High` |
+| Native blocked-by: this issue blocks ≥1 `ready-for-dev` issue | `Medium` |
+| none of the above | *no floor — leave unset for the PO* |
+
+Keep the table **closed** — adding a "this feature looks important" row would be
+deciding product. **Effort/dates are human-set only** — a missing Effort, or a
+missing Priority on a `ready-for-dev` issue, is surfaced as a field gap to
+propose, never auto-filled. **PO-directed seeding is a separate, documented
+entry — not the floor:** when the PO explicitly asks to set/seed Priority or
+Effort to a chosen value ("set these to High", a bulk roadmap seed), that is a
+**human value**, not a mechanical floor — write it straight through
+`/steer:tracker-sync field-set` for each issue, **without** a
+`steer:priority-floor` ledger line (the ledger records only the *agent's*
+escalations) and without the escalate-only `max()` guard (the PO may set any
+value, up or down).
+
 A **Project** still builds boards/roadmaps from **Project-*item* fields** —
 Status, Iteration, and any custom single-select that is *not* a native issue
 field. The plugin **never writes those into an issue body**; a Project-side tool

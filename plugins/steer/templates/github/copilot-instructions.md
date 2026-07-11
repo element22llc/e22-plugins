@@ -15,87 +15,76 @@ name**. Map their plain-language goal to the owning skill and **invoke it
 yourself** — don't wait for a `/steer:` command or ask them to name one.
 
 - **Announce, then act.** Lead with one line naming what you heard and the skill
-  you're starting ("→ Sounds like a new feature — I'll shape the spec first with
-  `/steer:spec`."), then proceed. The heads-up lets the user redirect; it is not a
-  request for permission.
-- **Clarify only when genuinely unsure.** If intent is ambiguous between skills or
-  too underspecified for the target to run, ask **one** compact question offering
-  the 2–3 likely intents, then route.
+  you're starting, then proceed — the heads-up lets the user redirect; it is not
+  a request for permission. Only when intent is genuinely ambiguous, ask **one**
+  compact question offering the 2–3 likely intents, then route.
 - **Auto-continue, bounded.** When a skill finishes, surface its single best next
   action and continue automatically **only if that action is non-gated**; a gated
   step is announced, then waits for the human.
-- **Never auto-cross a human gate — routing moves navigation, never authority.**
-  Creating issues beyond an explicit "fix / add / implement" ask (Issue-first),
-  ratifying an ADR (High-risk), and merge / deploy / real secrets (Commit
-  autonomy, High-risk) each still stop for the human. Pushing a branch
-  and opening the PR are **not** gates — they are autonomous delivery steps
-  under Commit autonomy; the human gate is the PR **merge** (and, in
-  an ungraduated solo-trunk repo, the trunk push once graduation signals stand).
-  Auto-routing picks *which* skill runs; it never relaxes what that skill may do.
-- **Respect bootstrap precedence.** On a repo with no `/spec` spine, make bootstrap the
-  **first move, announced up front** (not a closing offer): route a developer or
-  ambiguous feature/build intent through **`/steer:setup`**, a non-technical owner's
-  idea straight to **`/steer:build`** (bootstrap-inclusive — don't degrade to
-  toolchain-only). The SessionStart hook flags this. "Prototype" / "quick" /
-  "throwaway" changes ceremony, **never whether scaffold and spine exist**. How and
-  why: `/steer:setup` owns dispatch, Spec workflow the greenfield-vs-prototype
-  ceremony, Issue-first the per-change issue even for a prototype.
-- **Handle intent-switches gracefully.** A new ask mid-flow → name it and offer to
-  switch or capture it (`/steer:issues capture`), never silently drop the current
-  thread.
+- **Routing moves navigation, never authority.** Auto-routing picks *which* skill
+  runs; it never relaxes what that skill may do. The human gates are unchanged:
+  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
+  ADR ratification (High-risk), and merge / deploy / real secrets (Commit
+  autonomy, High-risk) each still stop for the human. Pushing a branch and
+  opening the PR are **not** gates — they are autonomous delivery steps; the
+  human gate is the PR **merge** (and, in an ungraduated solo-trunk repo, the
+  gated trunk push) — see Commit autonomy.
+- **Bootstrap precedence.** On a repo with no `/spec` spine (the SessionStart
+  hook flags it), bootstrap is the **first move, announced up front** — not a
+  closing offer: a developer or ambiguous feature/build intent →
+  **`/steer:setup`**; a non-technical owner's idea → **`/steer:build`**
+  (bootstrap-inclusive — don't degrade to toolchain-only). "Prototype" /
+  "quick" / "throwaway" changes ceremony, **never whether scaffold and spine
+  exist** (Spec workflow).
+- **Intent-switches:** a new ask mid-flow → name it and offer to switch or
+  capture it (`/steer:issues capture`), never silently drop the current thread.
 
 ## Intent → skill
 
-The **front doors** — the handful of skills a user picks from. Each detects context
-and hands off to specialized skills as needed, so you rarely route outside this table.
+The **front doors** — each detects context and hands off to specialized skills
+as needed, so you rarely route outside this table.
 
 | When the user is trying to… | Route to |
 | --- | --- |
 | get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
-| think a feature through / shape acceptance criteria without building it — incl. refining the spec before a PO build | `/steer:spec` |
-| absorb a new or updated spec/roadmap document a PO sent (docx/pptx/xlsx/pdf) — detect what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
+| think a feature through / shape acceptance criteria without building it | `/steer:spec` |
+| absorb a new or updated PO document (docx/pptx/xlsx/pdf) — diff what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
 | respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
-| manage the backlog without implementing now — capture, triage, brainstorm, decompose, check status, or sequence into a release timeline (GitHub) | `/steer:issues` |
-| audit whole-repo health and highest-leverage cleanups, incl. spec drift and root tidy-up (read-only) | `/steer:audit` |
-| automate the triage/fix sweep on a schedule — set up an autonomous loop that discovers work, triages, and drafts fixes without prompting each turn (drafts only, never merges — rule 53) | `/steer:loop` |
+| manage the backlog without implementing now — capture, triage, brainstorm, decompose, status, or sequence into a release timeline (GitHub) | `/steer:issues` |
+| audit whole-repo health, spec drift, and highest-leverage cleanups (read-only) | `/steer:audit` |
+| automate the triage/fix sweep on a schedule — an autonomous loop that drafts fixes, never merges (rule 53) | `/steer:loop` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
-| get a plain-language, shareable page of one feature — an at-a-glance view to show or hand to a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
-| browse the whole capability set — "what can steer do?", "show me the commands", not sure what to ask for (a plain-language menu, no repo state needed) | `/steer:help` |
-| "protect main" / "graduate to the PR flow" (solo trunk → review) / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
+| get a plain-language, shareable page of one feature to hand a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
+| browse what steer can do — a plain-language menu, no repo state needed | `/steer:help` |
+| "protect main" / graduate solo trunk to the PR flow / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 
 **`work` vs `issues`:** implementing *now* — with or without an issue number —
-routes to `/steer:work`, which find-or-creates the issue and then implements. Pure
-backlog management (capture / triage / brainstorm / decompose / status, no
-implementation this turn) routes to `/steer:issues`.
+routes to `/steer:work` (it find-or-creates the issue, then implements); pure
+backlog management with no implementation this turn routes to `/steer:issues`.
 
-**Specialized skills, normally reached through a front door.** Each is directly
-invocable, but a front door auto-routes to it:
+**Specialized skills, normally reached through a front door** (each is directly
+invocable too): `/steer:setup` hands off to `/steer:init` (greenfield),
+`/steer:adopt` (existing code), or `/steer:sync` (steady-state) — which invoke
+`/steer:doctor` when prerequisites are missing; `/steer:audit` runs
+`code`/`spec` and hands off to `/steer:tidy`; `/steer:issues` and `/steer:spec`
+hand off to `/steer:questions`; `/steer:issues` hands off to `/steer:roadmap`.
+GitHub reads/writes route through the internal `/steer:tracker-sync` gateway,
+and feature specs are instantiated by the internal `/steer:spec-scaffold` —
+neither is a user front door; they are reached via the owning skills and never
+offered to the user directly.
 
-- **`/steer:setup`** hands off to `/steer:init` (greenfield), `/steer:adopt`
-  (existing code), or `/steer:sync` (steady-state) — which invoke `/steer:doctor`
-  when prerequisites are missing.
-- **`/steer:audit`** runs `code` (whole-repo health, the default) and `spec`
-  (as-built `/spec` vs tracker intent), and hands off to `/steer:tidy`.
-- **`/steer:issues`** and `/steer:spec` hand off to `/steer:questions`; `/steer:issues`
-  hands off to `/steer:roadmap`.
-- GitHub reads/writes route through the internal `/steer:tracker-sync` gateway; feature
-  specs are instantiated by the internal `/steer:spec-scaffold`. These are not user
-  front doors — they are reached via the owning skills (which invoke them as
-  needed) and never offered to the user directly.
-- Full reference prose (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts]`)
-  ships with the plugin and is loaded on demand via `/steer:reference` — it is
-  never copied into the repo. Run it for any deep dive, or at session start on
-  web chat.
+**Full reference prose** ships with the plugin and is never copied into the
+repo — load it on demand via `/steer:reference [conventions | traceability |
+design-sources | context-hygiene | architecture-diagrams | artifacts]` for any
+deep dive, or at session start on web chat.
 
-On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is *not*
-auto-injected), run `/steer:standards` at session start to load these rules.
-
-When you pick or change stack pieces, verify current stable versions in-session
-(run `/steer:reference conventions`) — don't trust training-data memory.
+On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is
+*not* auto-injected), run `/steer:standards` at session start to load these
+rules.
 
 
 ## Who you are working with
@@ -134,7 +123,9 @@ as v0 only after a dev approves the PR. That review *is* productionization.
 **Default biases**, not mandates — when a project's intent clearly warrants a
 different stack, propose the better fit and record an ADR under `/spec/decisions/`
 (run `/steer:adr`). Rationale and full setup detail for every bullet: run
-`/steer:reference conventions`.
+`/steer:reference conventions`. When you pick or change stack pieces, verify
+current stable versions in-session (same reference) — don't trust
+training-data memory.
 
 The bullets below are the **app / service** profile (the default). An **infra** repo
 (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its *primary* stack —

@@ -39,3 +39,18 @@ steer_status_cleared_gate() {
 	*) : ;; # draft / unknown / absent → none cleared
 	esac
 }
+
+# STEER_AWK_DAYS_FROM_CIVIL — awk source for a Gregorian-date → day-number
+# function (days since 1970-01-01, UTC; the days-from-civil algorithm), so
+# POSIX date math never depends on GNU `date -d`. Interpolate it ahead of an
+# awk program body: awk "${STEER_AWK_DAYS_FROM_CIVIL}"'{ … }'. Shared by
+# check-open-questions.sh's today-number and staleness passes.
+# shellcheck disable=SC2034  # consumed by sourcing hooks, not this file
+STEER_AWK_DAYS_FROM_CIVIL='
+  function days_from_civil(y, m, d,   era, yoe, doy, doe) {
+    if (m <= 2) y--
+    era = int((y >= 0 ? y : y - 399) / 400); yoe = y - era * 400
+    doy = int((153 * (m + (m > 2 ? -3 : 9)) + 2) / 5) + d - 1
+    doe = yoe * 365 + int(yoe / 4) - int(yoe / 100) + doy
+    return era * 146097 + doe - 719468
+  }'
