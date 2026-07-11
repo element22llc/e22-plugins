@@ -7,7 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Claude Artifacts are now a first-class, codified deliverable format.** The
+- **The trunk-push graduation gate now asks once per session, not on every
+  push.** In a solo-trunk repo with a standing graduation signal, the first
+  `git push` of a session still surfaces the permission ask pointing at
+  `/steer:protect`; repeat pushes in the same session downgrade to a
+  non-blocking reminder (never silent, and it tells the model not to retry a
+  declined push). Previously every push re-asked, which stalled autonomous
+  runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
+  the Copilot CLI (whose hook envelope carries decisions only) repeats are
+  silent after the first flat ask.
+- **The four per-call PreToolUse point-of-action hooks merged into two, halving
+  hot-path hook overhead.** `check-trunk-push.sh` + `check-issue-create-contract.sh`
+  became `check-bash-actions.sh` (one process per Bash call instead of two, one
+  stdin read + JSON field extraction; the trunk-push gate takes precedence in
+  the rare compound command that both pushes and creates an issue), and
+  `check-code-before-spec.sh` + `check-issue-before-mutation.sh` became
+  `check-write-nudges.sh` (one process per editor write; shared root
+  resolution + path classification; both dimensions' messages emit together
+  when due on the same write). Behavior, cadence markers, exemptions, and the
+  Copilot dual-target wiring are unchanged; docs and the Copilot hook manifest
+  track the new names.
   discipline for producing a shareable, hosted claude.ai page — previously
   restated inline in `/steer:explain` and `/steer:questions bundle` — is now a
   single source of truth: a new reference `templates/reference/ARTIFACTS.md`

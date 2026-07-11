@@ -315,7 +315,7 @@ never overridden.
     `Status`; promoted questions whose issue is closed but whose `Q-NNN` is still
     `open`; and **contract-less issues — the after-the-fact recovery path for a
     raw create that bypassed `/steer:tracker-sync`** (the point-of-action
-    `check-issue-create-contract.sh` nudge is best-effort, not a gate). Flag any
+    issue-create contract nudge in `check-bash-actions.sh` is best-effort, not a gate). Flag any
     open issue missing the machine-readable contract: **no `steer:` markers AND no
     `steer:managed` block** (so neither `steer:kind` nor `steer:source` is set,
     the issue carries no `source:*` label, and its Type is the unset default).

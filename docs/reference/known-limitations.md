@@ -108,7 +108,7 @@ which share the full engine.
 
 The plugin's gates assume an **interactive human** is present to approve specs
 and merges (pushing the branch and opening the PR are autonomous; only a
-solo-trunk repo's graduation `check-trunk-push` gate pauses a push, and only when
+solo-trunk repo's graduation gate (`check-bash-actions.sh`) pauses a push, and only when
 a local signal stands). In headless or scheduled (cron) runs there is no human at
 the gate, and **interactively-authenticated MCP servers may be absent**, so the
 MCP-first tracker path can silently fall back. Don't run the gated workflows
@@ -204,11 +204,12 @@ Even when hooks fire, only one of them actually blocks an action. Be honest abou
 the tiers:
 
 - **`SessionStart` → `inject-standards.sh`** injects the rules. Real and load-bearing.
-- **`PreToolUse` → `check-code-before-spec.sh` / `check-issue-before-mutation.sh`**
-  are **advisory nudges** that let the write proceed. They are explicitly *"a
-  nudge, not a gate,"* fail open on any ambiguity, and the issue-first one only
-  fires in GitHub-tracked repos. `check-code-before-spec.sh` reminds once per
-  session about the missing `/spec` spine, but its **scaffold** reminder is
+- **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
+  dimensions) is an **advisory nudge** that lets the write proceed. It is
+  explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the
+  issue-first dimension only
+  fires in GitHub-tracked repos. The spine reminder fires once per
+  session about the missing `/spec` spine, but the **scaffold** reminder is
   sticky — it re-fires on each new feature file while the repo has no root
   `mise.toml`, since the bundled scaffold is product-independent and shouldn't be
   silently skipped (it still never blocks).

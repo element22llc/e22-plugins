@@ -4,7 +4,8 @@
 # WHY THIS EXISTS
 #   rule 36-issue-first wants every implementation-affecting mutation tied to a
 #   GitHub issue in a GitHub-adopted repo. The PreToolUse nudge
-#   (check-issue-before-mutation.sh) catches *editor* writes (Write/Edit/
+#   (the issue-first dimension of check-write-nudges.sh) catches *editor*
+#   writes (Write/Edit/
 #   MultiEdit) at the point of action — but it is deliberately blind to Bash:
 #   a `cat > src/foo.ts`, `sed -i`, `mv`, or codegen run mutates the repo without
 #   ever passing a file_path through PreToolUse, so those changes are invisible to
@@ -212,7 +213,7 @@ MARK="${TMPDIR:-/tmp}/steer-issuefirst-stop.${SID:-nosid}.${CWD_KEY:-0}"
 : >"${MARK}" 2>/dev/null || true
 
 # Single-line, JSON-safe reason (strip quotes/backslashes from dynamic parts, as
-# check-issue-before-mutation.sh does). Cap the path list so the message stays short.
+# check-write-nudges.sh does). Cap the path list so the message stays short.
 SAFE_BRANCH="$(printf '%s' "${BRANCH}" | tr -d '"\\' | tr '\n\t\r' '   ')"
 SAFE_LIST="$(printf '%s' "${GOVERNED}" | tr -d '"\\' | tr '\n\t\r' '   ' | cut -c1-400)"
 

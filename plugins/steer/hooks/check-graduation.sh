@@ -41,7 +41,8 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # Only speak in solo-trunk mode; a pr-flow repo has already graduated.
 [ "$(steer_delivery_mode "${ROOT}")" = "solo-trunk" ] || exit 0
 
-# Signal detection is shared with the check-trunk-push.sh PreToolUse gate
+# Signal detection is shared with the trunk-push PreToolUse gate (in
+# check-bash-actions.sh)
 # (lib/graduation.sh) so the nudge and the gate can never disagree.
 SIGNALS="$(steer_graduation_signals "${ROOT}")"
 
@@ -54,7 +55,8 @@ printf 'protection off) — appropriate pre-MVP, but these signals say it has '
 printf 'outgrown that:\n'
 printf '%s\n' "${SIGNALS}"
 printf '\nWhile these signals stand, autonomous trunk pushes are gated (the '
-printf 'check-trunk-push hook surfaces each `git push` for confirmation). '
+printf 'trunk-push gate in check-bash-actions.sh surfaces the first `git push` '
+printf 'each session for confirmation). '
 printf 'Recommend the user run `/steer:protect` to review branch protection '
 printf 'and, on confirmation, raise the PR wall — protection is what defines '
 printf 'PR mode, and applying it flips the delivery-mode marker to pr-flow and '

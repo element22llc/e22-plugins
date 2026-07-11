@@ -50,7 +50,7 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
   the same grants — `gh pr edit` included. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
-  (gated by the `check-trunk-push` hook only once graduation signals stand —
+  (gated by the `check-bash-actions` trunk-push hook only once graduation signals stand —
   see [Hooks](../reference/hooks.md)).
 
 !!! note "These autonomous moves are pre-authorized too — not just declared"
@@ -113,9 +113,10 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     Done are unchanged. The mode ends at **graduation** — run `/steer:protect`, which
     raises the server-side PR wall — once the MVP works, you first deploy, or a second
     contributor joins. Once any of those signals is *visible locally* (a deploy
-    workflow, an `infra/` tree, a `prod` branch), the `check-trunk-push` hook
-    stops silent trunk pushes — each `git push` surfaces for a human yes until
-    the repo graduates.
+    workflow, an `infra/` tree, a `prod` branch), the trunk-push gate
+    (`check-bash-actions.sh`) stops silent trunk pushes — the first `git push`
+    each session surfaces for a human yes (repeats carry a non-blocking
+    reminder) until the repo graduates.
 
 ## What is silent — read-only inspection
 
@@ -173,8 +174,9 @@ grants the bundled plugin helper scripts its body — including a factored-out
 - **Deploying**, in every mode — including the hotfix lane, where a deploy is
   policy-permitted but never auto-executed.
 - **Trunk pushes in a solo-trunk repo that has outgrown pre-MVP** — the
-  `check-trunk-push` hook surfaces each `git push` for a human yes once a local
-  graduation signal stands, until `/steer:protect` graduates the repo.
+  trunk-push gate (`check-bash-actions.sh`) surfaces the first `git push` each
+  session for a human yes once a local graduation signal stands, until
+  `/steer:protect` graduates the repo.
 
 !!! note "Watching CI is not crossing the gate"
     After a push, `/steer:work finish` watches CI to conclusion and fixes a red

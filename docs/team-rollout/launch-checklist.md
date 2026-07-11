@@ -20,7 +20,7 @@ a real (or throwaway) repo, not against production work.
 - [ ] **PR workflow tested.** `/steer:work` produces a branch + commit and opens
       the PR **autonomously** — push and `gh pr create` no longer pause for a
       human; the **merge** is the sole human gate. On a solo-trunk repo, the only
-      push-time pause is the `check-trunk-push` hook, and only once a graduation
+      push-time pause is the `check-bash-actions.sh` trunk-push gate, and only once a graduation
       signal stands.
 - [ ] **In-CI `@claude` provisioned.** The shipped `claude.yml` loads the `steer`
       plugin in CI, so it needs the `ANTHROPIC_API_KEY` secret. The marketplace
