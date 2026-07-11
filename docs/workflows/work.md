@@ -102,6 +102,6 @@ stay in the git-ignored marker and never reach the tracker.
   `gh pr create|edit` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge
   step stays gated. If you have stepped away, the in-turn watch blocks the turn;
-  re-enter monitoring with a `/loop` over `gh pr checks` (steer ships no
+  re-enter monitoring by re-running `gh pr checks` on a loop (steer ships no
   background poller). Merge and deploy remain a human's call.
 - All tracker-metadata I/O routes through `/steer:tracker-sync`.

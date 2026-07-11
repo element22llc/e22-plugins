@@ -20,7 +20,7 @@ flowchart LR
     P --> W["3 · Build<br/>work (--reviewed)"]
     W --> V["4 · Verify<br/>Definition of Done · drift gates"]
     V --> D["5 · Deliver<br/>merge → deploy · protect"]
-    D --> M["6 · Maintain<br/>audit · next · sync · tidy"]
+    D --> M["6 · Maintain<br/>audit · next · sync · tidy · loop"]
     M -.re-enters.-> P
 ```
 
@@ -34,7 +34,7 @@ flowchart LR
 | **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change-size + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** — "review *is* productionization" |
 | **5 · Deliver** | merge → [deploy](deployment.md); [`/steer:protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
-| **6 · Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `tidy`, `report` | Findings routed back into the backlog; plugin kept current | — (re-enters Plan) |
+| **6 · Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | — (re-enters Plan) |
 
 Non-technical owners enter through [`/steer:build`](../workflows/build.md), which
 folds Bootstrap + Shape into one guided interview and hands a working local app to

@@ -45,9 +45,10 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
 - **Pushing the branch and opening the PR** once the Definition of Done holds —
   announced, never asked (rule 00's heads-up pattern). Behind branch protection
   an open PR is inert until a human merges it, so gating its creation protected
-  nothing; the delivery skills (`work`, `init`, `adopt`, `sync`, `build`)
-  pre-approve `git push` / `gh pr create` / `gh pr edit` in their
-  `allowed-tools`, and the scaffold allowlist carries the same grants. In
+  nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
+  `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
+  (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
+  the same grants — `gh pr edit` included. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
   (gated by the `check-trunk-push` hook only once graduation signals stand —
   see [Hooks](../reference/hooks.md)).
@@ -132,9 +133,10 @@ read-only `allowed-tools` grants in their frontmatter, so inspection stays silen
 even in a repo that predates the scaffold allowlist. The setup and build flows
 (`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run — git inspection and
-branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`) and named dev
-tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run` wildcard, so
-delivery and unknown commands still prompt. Those flows also pre-approve the
+branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
+`git push` / `gh pr create` delivery grants as the other delivery skills, and
+named dev tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run`
+wildcard, so `gh pr merge` and unknown commands still prompt. Those flows also pre-approve the
 bundled plugin helper scripts they execute on every run — `template-reconcile.sh`,
 `scaffold_reconcile.py`, `scan-prereqs.sh` — under a matching interpreter
 (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper prompts the

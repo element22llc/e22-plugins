@@ -61,6 +61,7 @@ below give the detail.
 | Check standards conformance, or that the app matches its spec | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
+| Run the maintain-phase sweep on a schedule (triage → draft fix → PR) | `/steer:loop` |
 | Lock branch protection or flip the delivery mode | `/steer:protect` |
 | A tool is missing, or set up the local toolchain | `/steer:doctor` |
 | steer itself is misbehaving — file a plugin bug upstream | `/steer:report` |
@@ -92,3 +93,4 @@ below give the detail.
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to audit the built app against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace (read-only). |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
+| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule — discovers, triages, drafts a fix, pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |
