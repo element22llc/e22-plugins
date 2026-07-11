@@ -88,7 +88,7 @@ if [ -n "${DENY}" ]; then
 	# reconcile-issue-first.sh). The
 	# verdict text is policy-derived + a numeric pin today, so this is hardening
 	# against malformed JSON if that prose ever gains a quote, not a live bug.
-	SAFE_DENY="$(printf '%s' "${DENY}" | tr -d '"\\' | tr '\n\t\r' '   ')"
+	SAFE_DENY="$(steer_json_safe "${DENY}")"
 	REASON="Version-pin policy violation — ${SAFE_DENY}source: policy/versions.yml (version policy). Bump to a supported version. Org standard (/steer:reference conventions): default to current stable, do not trust training-data memory. If the older pin is deliberate (deploy-target parity, vendor LTS), record an ADR and append ' # steer:allow-pin <reason>' on the same line, then retry."
 	# Output envelope is harness-specific. Claude PreToolUse takes a hard "deny"
 	# wrapped in hookSpecificOutput. GitHub Copilot CLI (registered under the

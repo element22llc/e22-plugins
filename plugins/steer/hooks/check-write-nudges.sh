@@ -89,7 +89,7 @@ CLASS="$(steer_classify_path "${FILE}")"
 # Per-repo marker key: a cheap hash of the resolved root (shared by both nudges;
 # each keeps its own marker namespace).
 CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
-SAFE_FILE="$(printf '%s' "${FILE}" | tr -d '"\\' | tr '\n\t\r' '   ')"
+SAFE_FILE="$(steer_json_safe "${FILE}")"
 
 # ---------------------------------------------------------------------------
 # Nudge 1 — spec-before-code + scaffold-before-code.

@@ -32,6 +32,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   runs (`/steer:loop`, headless sessions) on a prompt nobody was watching. On
   the Copilot CLI (whose hook envelope carries decisions only) repeats are
   silent after the first flat ask.
+- **Internal hook cleanups (no behavior change).** `check-open-questions.sh`'s
+  two near-duplicate awk block parsers collapse into one `parse_questions`
+  pass that emits per-question records the counting and staleness passes
+  classify — one parser to maintain instead of two that could drift — and the
+  `days_from_civil` date math (previously inlined twice) is hoisted to
+  `lib/lifecycle.sh` as a shared awk source. New `steer_json_safe` helper in
+  `lib/json.sh` replaces the five copy-pasted JSON-sanitization pipelines
+  across the point-of-action hooks. All 369 hook fixtures pass unchanged.
 - **`00-router` trimmed ~16%** — the largest always-on rule (injected every
   session *and* re-injected on every compaction). The clarify bullet folds into
   announce-then-act, the human-gate and bootstrap-precedence bullets compress

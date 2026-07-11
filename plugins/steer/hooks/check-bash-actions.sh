@@ -126,7 +126,7 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			# Sanitize + flatten the signal bullets before embedding them in the
 			# JSON reason (mirrors check-version-pins.sh). The bullets are
 			# hook-authored constants today, so this is hardening, not a live bug.
-			SAFE_SIGNALS="$(printf '%s' "${SIGNALS}" | tr -d '"\\' | tr '\n\t\r' '   ' | sed 's/  */ /g; s/^ //')"
+			SAFE_SIGNALS="$(steer_json_safe "${SIGNALS}" | sed 's/  */ /g; s/^ //')"
 			REASON="Trunk-push graduation gate — this repo declares solo-trunk delivery but has outgrown pre-MVP:${SAFE_SIGNALS}. While these signals stand, direct-to-main pushes need a human yes. Graduate now instead: run /steer:protect (verify, then apply on the dev's confirmation) to raise the branch-protection wall — that flips the repo to pr-flow, where branch pushes and PRs are autonomous and the merge review is the only gate. Approving this prompt pushes anyway; the gate clears once the repo graduates."
 
 			# Output envelope is harness-specific, mirroring check-version-pins.sh:

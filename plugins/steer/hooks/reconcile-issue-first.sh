@@ -214,8 +214,8 @@ MARK="${TMPDIR:-/tmp}/steer-issuefirst-stop.${SID:-nosid}.${CWD_KEY:-0}"
 
 # Single-line, JSON-safe reason (strip quotes/backslashes from dynamic parts, as
 # check-write-nudges.sh does). Cap the path list so the message stays short.
-SAFE_BRANCH="$(printf '%s' "${BRANCH}" | tr -d '"\\' | tr '\n\t\r' '   ')"
-SAFE_LIST="$(printf '%s' "${GOVERNED}" | tr -d '"\\' | tr '\n\t\r' '   ' | cut -c1-400)"
+SAFE_BRANCH="$(steer_json_safe "${BRANCH}")"
+SAFE_LIST="$(steer_json_safe "${GOVERNED}" | cut -c1-400)"
 
 case "${BRANCH}" in
 hotfix/*)
