@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.17.0
+
 - **The PO clarification loop's shared contract now lives in one reference.**
   The outbound→inbound contract `/steer:questions bundle` and `/steer:intake
   clarify` each restated in full — the machine-keyed `[<feature-id>] Q-NNN`
@@ -60,8 +62,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   full in init (twice), adopt, build, and doctor — now lives only in
   `CONVENTIONS.md` → "Toolchain: `latest` in config, pinned in the lockfile",
   with each skill citing it (init also keeps its Node `packageManager`
-  resolution step). No behavior, gate, or invariant changed — every rule now
-  has exactly one home.
+  resolution step). `/steer:init` and `/steer:sync` also stop restating the
+  spine-state routing table ("already initialized / damaged / foreign") and
+  defer to `/steer:setup`'s canonical version. No behavior, gate, or invariant
+  changed — every rule now has exactly one home.
 - **`/steer:audit` slimmed onto its reference files (simplification pass,
   part 2).** The nine-dimension code-audit catalogue moved to a new reference
   `AUDIT-DIMENSIONS.md` (the skill keeps an inline one-line-per-dimension index
@@ -91,6 +95,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   when due on the same write). Behavior, cadence markers, exemptions, and the
   Copilot dual-target wiring are unchanged; docs and the Copilot hook manifest
   track the new names.
+- **Claude Artifacts are now a first-class, codified deliverable.** The
   discipline for producing a shareable, hosted claude.ai page — previously
   restated inline in `/steer:explain` and `/steer:questions bundle` — is now a
   single source of truth: a new reference `templates/reference/ARTIFACTS.md`

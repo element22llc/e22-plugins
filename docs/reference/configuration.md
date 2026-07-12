@@ -52,16 +52,17 @@ manual. They are injected into every managed session by `inject-standards.sh`
     Some rules carry a first-line `<!-- steer:inject-when=… -->` marker and are
     injected only when their scope applies (see
     [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
-    `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `40-testing`,
-    `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`, `51-verify-loop`,
-    `53-autonomous-loops`, `55-drift-gates`, `80-change-size`, `85-practices`,
+    `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
+    `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
+    `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
+    `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
     `99-end-of-session` — are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
     use GitHub issues, or deploy. The context-hygiene, spec-workflow,
-    decision-capture, living-docs, roles, issue-tracker, secrets, compliance,
-    output, and artifacts rules stay always-on.
+    decision-capture, living-docs, roles, secrets, output, and artifacts rules
+    stay always-on.
 
 ## Tooling knobs
 
