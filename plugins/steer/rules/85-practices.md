@@ -36,3 +36,10 @@ patterns + anti-patterns prose: run `/steer:reference conventions`.
   plausible-looking package name that isn't declared is a hallucinated
   dependency, not a working import, and breaks the moment the code runs in a
   clean environment. *(Default: `package.json`; Python: `pyproject.toml`.)*
+- **ASCII in code and values** — non-ASCII "typographic" characters (em/en
+  dashes, arrows, smart quotes, ellipsis, non-breaking spaces) belong in prose and
+  docs, never in code, identifiers, config keys/values, or any string bound for an
+  external API or system — use the ASCII equivalent (`-`, `->`, `"`, `'`, `...`, a
+  plain space). Strict validators reject the rest (e.g. AWS IAM `description`
+  accepts only ASCII + Latin-1). ASCII-clean text when you paste it into code or a
+  value. *(Full rationale: `/steer:reference conventions`.)*

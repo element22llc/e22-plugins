@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Baseline rule: keep non-ASCII typographic characters out of code and values.**
+  Adds an always-on baseline pattern (rule `85-practices`, mirrored in the
+  `/steer:reference conventions` full prose as a matched pattern + anti-pattern):
+  em/en dashes, arrows, smart quotes, ellipsis, and non-breaking spaces belong in
+  prose and docs but must never land in code, identifiers, config keys/values, or
+  any string bound for an external API or system — use the ASCII equivalent, and
+  ASCII-clean text when copying it into code or a value. Closes the gap behind a
+  self-reported failure where a `→` mirrored into a Terraform `role_description`
+  broke `aws_iam_role` creation (AWS IAM's `description` permits only ASCII plus
+  Latin-1). Also ASCII-cleans the non-ASCII characters that remained inside the
+  conventions reference's own fenced code examples (arrows and em-dashes in TOML
+  comments) so those examples model the rule. (#373)
+
 ### 3.18.0
 
 - **New `/steer:status` front door renders a client-facing progress report.**
