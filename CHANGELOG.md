@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.18.0
+
 - **New `/steer:status` front door renders a client-facing progress report.**
   Answers "what's the status?" / "what did we ship this week?" with a
   time-boxed, cross-spine snapshot — what shipped this period, what's in
