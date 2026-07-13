@@ -20,11 +20,14 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 ## Skill tool restrictions
 
-- Seven read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
-  `explain`, `help` — carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`
-  (`explain` varies: `Bash, Edit, NotebookEdit, EnterWorktree` — it keeps `Write`
-  to save the artifact HTML it publishes (a temp-dir file; the Markdown fallback
-  is printed inline, never saved), but it must not run shell commands)
+- Eight read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
+  `explain`, `status`, `help` — carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`.
+  Two render variants keep `Write` to save the artifact HTML they publish (a
+  temp-dir file; the Markdown fallback is printed inline, never saved): `explain`
+  varies to `Bash, Edit, NotebookEdit, EnterWorktree` (it reads only local files,
+  so it runs no shell); `status` varies to `Edit, NotebookEdit, EnterWorktree` —
+  it keeps `Bash` too, because it reads the tracker through `tracker-sync` (the
+  `gh` read fallback needs shell), but holds no write grant and writes nothing back
   so the analysis cannot edit code/spec via native tools. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).

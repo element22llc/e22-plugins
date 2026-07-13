@@ -56,6 +56,7 @@ as needed, so you rarely route outside this table.
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
 | get a plain-language, shareable page of one feature to hand a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
+| get a client-facing progress report over a time window — what shipped, what's in progress, what needs the client's input, what's next (a weekly status report; renders `/spec` + tracker, builds nothing) | `/steer:status` |
 | browse what steer can do — a plain-language menu, no repo state needed | `/steer:help` |
 | "protect main" / graduate solo trunk to the PR flow / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
