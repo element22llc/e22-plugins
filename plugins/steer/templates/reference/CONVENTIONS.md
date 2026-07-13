@@ -173,7 +173,7 @@ concurrently; bump `--jobs` if you have more than four). The root `package.json`
 carries no `dev:api`, no `uv`, and no `concurrently` cross-stack runner:
 
 ```toml
-# mise.toml — mise is the polyglot entry point; web stays in package.json
+# mise.toml - mise is the polyglot entry point; web stays in package.json
 [tasks."dev:web"]
 run = "pnpm --filter web dev"            # delegates to apps/web/package.json
 [tasks."dev:api"]
@@ -184,7 +184,7 @@ depends = ["dev:*"]                       # both servers in parallel; mise is th
 ```
 
 ```jsonc
-// apps/web/package.json — Node app script lives with its package, no uv, no api task
+// apps/web/package.json - Node app script lives with its package, no uv, no api task
 { "scripts": { "dev": "next dev" } }
 ```
 
@@ -238,9 +238,9 @@ providers** that install workspace deps automatically before any `mise run` /
 experimental = true        # [deps] auto-install is gated experimental in mise
 
 [deps.pnpm]
-auto = true                # `pnpm install` — runs only when pnpm-lock.yaml changed
+auto = true                # `pnpm install` - runs only when pnpm-lock.yaml changed
 [deps.uv]
-auto = true                # `uv sync`     — runs only when uv.lock changed
+auto = true                # `uv sync`     - runs only when uv.lock changed
 ```
 
 - Each provider is **content-hashed against its lockfile** and runs **only when

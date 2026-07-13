@@ -37,11 +37,9 @@ patterns + anti-patterns prose: run `/steer:reference conventions`.
   dependency, not a working import, and breaks the moment the code runs in a
   clean environment. *(Default: `package.json`; Python: `pyproject.toml`.)*
 - **ASCII in code and values** — non-ASCII "typographic" characters (em/en
-  dashes `—`/`–`, arrows `→`/`←`, smart quotes `“ ” ‘ ’`, ellipsis `…`,
-  non-breaking spaces) are fine in prose and docs but must never land in code,
-  identifiers, config keys/values, or any string that reaches an external API or
-  system. Use the ASCII equivalent (`-`, `->`, `"`, `'`, `...`, a plain space).
-  Strict validators reject the rest: AWS IAM's `description`, for instance,
-  permits only ASCII plus Latin-1, so a `→` pasted into a Terraform
-  `role_description` fails `apply`. When you copy text into code or a value,
-  ASCII-clean it first — keep the nice typography in the prose it came from.
+  dashes, arrows, smart quotes, ellipsis, non-breaking spaces) belong in prose and
+  docs, never in code, identifiers, config keys/values, or any string bound for an
+  external API or system — use the ASCII equivalent (`-`, `->`, `"`, `'`, `...`, a
+  plain space). Strict validators reject the rest (e.g. AWS IAM `description`
+  accepts only ASCII + Latin-1). ASCII-clean text when you paste it into code or a
+  value. *(Full rationale: `/steer:reference conventions`.)*

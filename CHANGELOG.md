@@ -16,9 +16,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   ASCII-clean text when copying it into code or a value. Closes the gap behind a
   self-reported failure where a `→` mirrored into a Terraform `role_description`
   broke `aws_iam_role` creation (AWS IAM's `description` permits only ASCII plus
-  Latin-1). Also ASCII-cleans the one arrow that appeared inside a fenced code
-  example in the conventions reference so the plugin's own examples model the
-  rule. (#373)
+  Latin-1). Also ASCII-cleans the non-ASCII characters that remained inside the
+  conventions reference's own fenced code examples (arrows and em-dashes in TOML
+  comments) so those examples model the rule. (#373)
 
 ### 3.18.0
 
