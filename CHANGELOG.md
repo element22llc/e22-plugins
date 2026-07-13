@@ -7,6 +7,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **New `/steer:status` front door renders a client-facing progress report.**
+  Answers "what's the status?" / "what did we ship this week?" with a
+  time-boxed, cross-spine snapshot — what shipped this period, what's in
+  progress, what needs the client's input, and what's next — as a shareable
+  Claude Code Artifact with a Markdown fallback, in plain product language
+  (rule `05`). It is the periodic, whole-spine counterpart to `/steer:explain`
+  (one feature) and `/steer:roadmap` (the forward timeline). A thin
+  orchestrator + presentation layer: it reads closed issues and milestone
+  progress through `/steer:tracker-sync` (MCP → `gh` → manual floor, degrading
+  to spec-only sections on a non-GitHub tracker) and reads open blocking
+  questions and feature `Status:` from `/spec`, then renders by the shared
+  Artifact discipline (rule `88-artifacts`). Read-only and derived — it disallows
+  `Edit`, `NotebookEdit`, and `EnterWorktree` (so, tool-enforced, it cannot mutate
+  a repo file, branch, or worktree) and holds no tracker-write grant, keeping only
+  `Write` for a temp-dir artifact; unlike `/steer:explain` it keeps `Bash`, because
+  — like `/steer:roadmap` — it reads the tracker (the `gh` read fallback runs
+  through `Bash`), used for reads only. `/spec` and the tracker stay canonical; it
+  never fabricates counts, dates, or status, never writes back, and is never
+  auto-generated on a schedule. The period defaults to
+  the last week (`this-week`); `since <date>` and `milestone [<name>]` scope it
+  otherwise. "Shipped" is sourced from closed issues + milestone completion, not
+  `git log`, so a non-technical reader sees completed outcomes rather than
+  commit noise. The "needs your input" section counts open `owner: product`
+  blocking questions and routes the client to `/steer:questions bundle` to
+  answer them.
+
 ### 3.17.0
 
 - **The PO clarification loop's shared contract now lives in one reference.**

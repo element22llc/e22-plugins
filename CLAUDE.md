@@ -45,8 +45,8 @@ plugins/steer/
 │                                   #            setup, doctor, init, adopt, build, reference,
 │                                   #            spec-scaffold,
 │                                   #            spec, intake, issues, tracker-sync, work, adr,
-│                                   #            audit, loop, sync, questions, next, explain, tidy, standards,
-│                                   #            protect, report, roadmap, help
+│                                   #            audit, loop, sync, questions, next, explain, status, tidy,
+│                                   #            standards, protect, report, roadmap, help
 │                                   # (all are user-invocable except the internal
 │                                   #  gateways spec-scaffold + tracker-sync, which are
 │                                   #  user-invocable:false — reached via a front door)

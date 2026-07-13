@@ -58,6 +58,7 @@ below give the detail.
 | Find out what to do next | `/steer:next` |
 | Browse everything steer can do — not sure what to ask for | `/steer:help` |
 | Show or share a visual, plain-language page of one feature | `/steer:explain` |
+| Give a client a progress/status report ("what did we ship this week?") | `/steer:status` |
 | Check standards conformance, or that the app matches its spec | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |

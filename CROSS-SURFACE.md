@@ -51,7 +51,7 @@ behave the same. The headline, validated against current docs and changelog:
 | **Always-on rules** | `rules/00-router.md` … `99-end-of-session.md` (34 files) | Delivered via `SessionStart` hook → stdout `additionalContext`; rules with an `inject-when` marker are scoped to repos where they apply | Prose is portable; **delivery is hook-bound** |
 | **SessionStart hooks** | `inject-standards.sh`, `orient-session.sh`, `check-template-drift.sh`, `check-open-questions.sh`, `check-unmanaged-repo.sh`, `surface-faults.sh`, `check-graduation.sh` | `SessionStart` event; source `${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh` | Claude-Code-runtime |
 | **Gates** | `PreToolUse`: `check-version-pins.sh`, `check-write-nudges.sh`, `check-bash-actions.sh`; `Stop`: `reconcile-issue-first.sh` | `PreToolUse`/`Stop` events, `permissionDecision` output | Mostly Claude-Code-runtime — but `check-version-pins.sh` and `check-bash-actions.sh` are dual-target: with `STEER_HOOK_TARGET=copilot` they emit a Copilot `ask` envelope, wired by `hooks/copilot-hooks.json` on the Copilot CLI |
-| **Skills** (25) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
+| **Skills** (26) | `plugins/steer/skills/*` | YAML frontmatter + Markdown body; `/steer:` invocation; `allowed-tools` | **`SKILL.md` is the portable nucleus** |
 | **MCP** | `tracker-sync` (GitHub MCP → `gh` → manual) | MCP connector | **Already surface-agnostic** |
 | **Bundled assets** | `templates/spec/*`, `templates/scaffold/*` | `${CLAUDE_PLUGIN_ROOT}` path resolution | Files portable; path var is runtime-specific |
 
@@ -222,7 +222,7 @@ pieces for non-technical POs are the **PO-facing skills**, which are self-contai
 regardless of hooks:
 
 - **PO-appropriate:** `setup`, `build`, `spec`, `intake`, `questions`, `next`,
-  `explain`, `issues`, `roadmap`, `reference`, `standards`, `help`.
+  `explain`, `status`, `issues`, `roadmap`, `reference`, `standards`, `help`.
 - **Engineer-oriented (likely noise for POs):** `adopt`, `init`, `adr`, `audit`,
   `loop`, `spec-scaffold`, `sync`, `tidy`, `tracker-sync`, `protect`, `work`,
   `doctor`, `report`.

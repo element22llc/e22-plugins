@@ -91,11 +91,14 @@ when_to_use: >-
 matrix):
 
 - **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
-  `doctor`, `explain`, `help`): never edit code/spec/tracker.
-  Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`. One variant:
-  `explain` sets `disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree` —
-  it needs `Write` for its rendered artifact/fallback file but must not run
-  shell commands.
+  `doctor`, `explain`, `status`, `help`): never edit code/spec/tracker.
+  Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`. Two render
+  variants keep `Write` for a rendered artifact/fallback file: `explain` sets
+  `disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree` (it reads only local
+  files, so it needs no shell); `status` sets `disallowed-tools: Edit,
+  NotebookEdit, EnterWorktree` — it keeps `Bash` too, because it reads the tracker
+  through `/steer:tracker-sync` (the `gh` read fallback needs shell), but writes
+  nothing back (no tracker-write grant; reads only).
 - **Tier 2 — side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
   `adr`, `issues`, `questions`, …): may create/edit/commit. Use `allowed-tools`
   to pre-approve the routine idempotent ops the skill always performs — e.g.
