@@ -40,7 +40,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-size.md` | Change-size model. |
-| `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency. |
+| `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII in code and values. |
 | `87-output-discipline.md` | Earn every line — comments are the exception, responses stay tight. |
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |

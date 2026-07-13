@@ -216,7 +216,7 @@ run = "pnpm --recursive --if-present run db:migrate"
 depends = ["db:migrate"]
 
 [tasks."dev:setup"]
-depends = ["db:seed"]     # transitively pulls docker:up → db:migrate → db:seed
+depends = ["db:seed"]     # transitively pulls docker:up -> db:migrate -> db:seed
 ```
 
 - **`depends`** — dependencies run **before** the task, in dependency order;
@@ -552,6 +552,12 @@ Patterns:
   names and structure; reserve comments for the non-obvious *why* (plus the
   why-comment an escape hatch requires). Match the file's existing comment density
   rather than adding narration on top of it.
+- **ASCII in code, identifiers, and values.** Non-ASCII "typographic" characters
+  — em/en dashes, arrows, smart quotes, ellipsis, non-breaking spaces — belong in
+  prose and docs, not in code, identifiers, config keys/values, or any string
+  bound for an external API or system. Use the ASCII equivalent (`-`, `->`, `"`,
+  `'`, `...`, a plain space). When you copy text into code or a value,
+  ASCII-clean it first.
 
 Anti-patterns to avoid:
 
@@ -582,6 +588,12 @@ Anti-patterns to avoid:
 - **Noise comments** — comments that restate the code, narrate obvious steps,
   decorative section banners, or commented-out dead code left in the file. They go
   stale and drown the why-comments that earn their place; delete on sight.
+- **Non-ASCII typographic characters in code or values** — an em/en dash, arrow,
+  smart quote, or ellipsis copied into an identifier, config key/value, or a
+  string sent to an external system. Strict validators reject them: AWS IAM's
+  `description` allows only ASCII plus Latin-1, so a `→` in a Terraform
+  `role_description` fails `apply`. Typography is fine in prose; the moment text
+  lands in code or a value, use the ASCII equivalent.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
 (parameterized, migration-tracked), Pydantic v2 for boundary validation, type
