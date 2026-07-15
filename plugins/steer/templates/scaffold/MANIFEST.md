@@ -40,7 +40,8 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `worktreeinclude` | `.worktreeinclude` | Git-ignored local config (`.env*`, `.mise.local.toml`, `.claude/settings.local.json`) Claude Code copies into each `claude --worktree` — worktrees start from git refs only, so without this the app can't boot there. Merge additively if one exists; never add regenerable caches/virtualenvs. |
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). The `Bash(git add*.env)` deny is deliberately narrow: `.env.local` / `.env.*.local` variants are already covered by the scaffold `.gitignore` plus the `git add -f` / `--force` denies, so the glob is **not** widened to `.env.*` (which would re-block the committed `.env.example`). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
-| `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter). |
+| `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter) + the two Copilot toggles (`useInstructionFiles`, `chat.promptFiles`). |
+| `vscode/mcp.json` | `.vscode/mcp.json` | **MCP servers for GitHub Copilot in VS Code** (Chat + Agent mode). Mirrors the servers the plugin wires into Claude Code (`plugins/steer/.mcp.json`) — GitHub (the server `/steer:tracker-sync` uses), markitdown, context7 — using VS Code's `servers` schema and a prompted PAT input. Copilot/VS Code does **not** read the plugin's `.mcp.json` (Claude-only), so this per-repo file is how Copilot teammates get the same tooling. Merge additively if one exists; remove servers the repo doesn't use. |
 | `aislop/config.yml` | `.aislop/config.yml` | Scopes the **advisory `ai-slop` CI job** (`.github/workflows/ci.yml`): keeps the differentiated `ai-slop/*` rules on, turns down the security/complexity rules that duplicate the `ci` job's ruff/bandit/Biome/audit gates. Tune or delete to taste; promote the gate to blocking via the commented `ci.failBelow`. |
 | `infra/README.md`, `infra/mise.toml` | `infra/…` | Conditional: a nested `/infra` dir inside a monorepo (OpenTofu + Terragrunt conventions; infra toolchain pinned separately — create `infra/mise.lock` at pin time, same as the root). Distinct from the `infra` *profile* (whose root mise is `profiles/infra/mise.toml`). |
 | `policy/versions.yml` | `policy/versions.yml` | **Version-pin policy** (approved major-version floors). Enforced deterministically by the version-pin hook and the CI scanner. Seeded from the plugin default; the product may tighten it. |
@@ -89,7 +90,10 @@ installed** by `/steer:init` or `/steer:adopt` — opt in deliberately per the d
 (GitHub → "Agentic workflows (gh aw)"). Likewise the autonomous-loop workflow
 `../github/workflows/steer-loop.yml` is **not** bootstrapped — it is instantiated
 on demand by `/steer:loop` (rule `53-autonomous-loops`), so a repo runs a loop
-only when someone asks for one.
+only when someone asks for one. The Copilot coding-agent setup workflow
+`../github/workflows/copilot-setup-steps.yml` is **not** auto-installed either —
+it is opt-in per repo (install it only when the team uses the GitHub-side Copilot
+coding agent), even though its install path is listed below for when you do.
 
 | Template | Install as | Notes |
 |---|---|---|
@@ -99,6 +103,9 @@ only when someone asks for one.
 | `../github/workflows/claude.yml` | `.github/workflows/claude.yml` | `@claude` mention workflow; **loads the `steer` plugin in CI** (via the action's `plugins`/`plugin_marketplaces` inputs) so in-CI Claude runs under the same standards as local. Needs the `ANTHROPIC_API_KEY` secret; the marketplace repo is public, so the plugin clone is anonymous and needs no credential — see scaffold `README.md` → GitHub Actions secrets. |
 | `../github/copilot-instructions.md` | `.github/copilot-instructions.md` | **GitHub Copilot standards surface (CLI + VS Code).** The org standards as Copilot's always-on custom instructions — Copilot has no context-injecting SessionStart hook, so the rules ship as a static file instead. Read natively by both the Copilot CLI and Copilot in VS Code. **Generated** from `plugins/steer/rules/` (via `mise run gen:copilot`); **fully steer-managed — overwrite on refresh, never hand-edit** (put repo-specific Copilot guidance in a separate `*.instructions.md`). Harmless for Claude-only repos. Refresh after a plugin update by re-running `/steer:init`. |
 | `../github/prompts/*.prompt.md` | `.github/prompts/*.prompt.md` | **GitHub Copilot skill surface (esp. VS Code).** One prompt file per user-invocable steer skill, surfaced in Copilot Chat as `/steer-<skill>` slash-commands (the VS Code analog to the skills the Copilot **CLI** loads via its plugin manifest). **Generated** from `plugins/steer/skills/` (via `mise run gen:copilot`); **fully steer-managed — overwrite on refresh, never hand-edit**. Harmless for Claude-only repos. Refresh after a plugin update by re-running `/steer:init`. |
+| `../github/agents/*.agent.md` | `.github/agents/*.agent.md` | **GitHub Copilot custom-agent surface (VS Code).** One custom agent per steer subagent — currently `steer-reviewer`, the read-only reviewer `/steer-audit` and `/steer-work --reviewed` delegate to — selectable in the Copilot Chat agent picker. The VS Code analog of the Claude plugin's `agents/`. **Generated** from `plugins/steer/agents/` (via `mise run gen:copilot`); **fully steer-managed — overwrite on refresh, never hand-edit**. Harmless for Claude-only repos. |
+| `../github/instructions/*.instructions.md` | `.github/instructions/*.instructions.md` | **GitHub Copilot path-scoped instructions.** Standards for a specific area (currently the infra/IaC stack rule) carrying an `applyTo` glob so Copilot loads them only when working on matching files — the Copilot analog of the Claude SessionStart hook's `inject-when` trait gating. **Generated** from the correspondingly-scoped `plugins/steer/rules/` (via `mise run gen:copilot`), which are therefore **excluded from the flat `copilot-instructions.md`** to avoid double-loading; **fully steer-managed — overwrite on refresh, never hand-edit** (repo-specific Copilot guidance goes in a *separate* `*.instructions.md` you own). Harmless for repos with no matching files. |
+| `../github/workflows/copilot-setup-steps.yml` | `.github/workflows/copilot-setup-steps.yml` | **GitHub Copilot coding-agent environment setup.** Boots the mise toolchain + `dev:setup` so the cloud coding agent (assign an issue → it opens a PR) runs steer repos under the pinned versions. The job **must** stay named `copilot-setup-steps`. Opt-in: install only for repos that use the coding agent; MCP + firewall for the agent are configured in repo Settings → Copilot → Coding agent (not in-repo). Adapt/remove `dev:setup` for a `library`/`cli`. Fits steer's autonomous-loop rules — the agent opens draft PRs and never merges. |
 | `../github/pull_request_template.md` | `.github/pull_request_template.md` | Carries the spec-sync, **drift-gate**, and living-docs checklists. |
 | `../github/ISSUE_TEMPLATE/*` | `.github/ISSUE_TEMPLATE/*` | PO-friendly YAML Issue Forms — feature, bug, product-question, improvement (+ `config.yml`). Set the GitHub Issue **Type** (`Feature`/`Bug`/`Task`) and carry `source:*`/`needs:*` labels — run `/steer:issues bootstrap-labels` so those labels exist (GitHub silently drops a form label that doesn't), done automatically by `/steer:init` and `/steer:adopt`. Used when GitHub Issues is the tracker; harmless otherwise. `config.yml` ships its contact link **commented out** (no org-specific URL) — offer to enable it and point it at the team's discussions/chat during init/adopt. |
 
@@ -166,8 +173,10 @@ profile `infra`.
   committed once the real workspace exists (a bundled one would be stale).
 - **`/infra` `.hcl`/`.tf` files**: each product provisions when ready —
   `infra/README.md` carries the layout.
-- **An `.mcp.json`** (GitHub + markitdown MCP servers): these now ship with the
-  **plugin itself** (`plugins/steer/.mcp.json`), so every repo that enables steer
-  gets them centrally and they refresh on `/plugin update` — no per-repo copy to
-  scaffold, drift, or reconcile. A repo may still add its *own* project `.mcp.json`
-  for product-specific servers; it merges additively with the plugin's.
+- **A Claude Code `.mcp.json`** (GitHub + markitdown MCP servers): these ship with
+  the **plugin itself** (`plugins/steer/.mcp.json`), so every repo that enables
+  steer in **Claude Code** gets them centrally and they refresh on `/plugin update`
+  — no per-repo copy to scaffold, drift, or reconcile. A repo may still add its
+  *own* project `.mcp.json` for product-specific servers; it merges additively with
+  the plugin's. (Copilot/VS Code does **not** read that file — it gets the same
+  servers via the scaffolded `.vscode/mcp.json` in Layer 0 above.)

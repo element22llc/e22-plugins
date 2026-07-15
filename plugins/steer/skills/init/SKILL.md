@@ -133,9 +133,11 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
    `.env.example`, `claude/`, `vscode/`), instantiate the GitHub
    templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
-   GitHub-templates section maps the Issue Forms, workflows, PR template, the
-   generated `copilot-instructions.md`, and the generated `prompts/*.prompt.md`
-   — the Copilot/VS Code skill surface — into `.github/`), and instantiate the
+   GitHub-templates section maps the Issue Forms, workflows, PR template, and the
+   full generated Copilot/VS Code surface — `copilot-instructions.md`,
+   `prompts/*.prompt.md` (skills), `agents/*.agent.md` (custom agents), and
+   `instructions/*.instructions.md` (path-scoped standards) — into `.github/`;
+   the opt-in `copilot-setup-steps.yml` is **not** auto-installed), and instantiate the
    spec spine from
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —

@@ -21,7 +21,13 @@ from __future__ import annotations
 
 import sys
 
-from gen_copilot_instructions import ARTIFACT, RULES_DIR, render
+from gen_copilot_instructions import (
+    ARTIFACT,
+    INSTRUCTIONS_DIR,
+    RULES_DIR,
+    render,
+    render_scoped,
+)
 
 
 def main() -> int:
@@ -43,6 +49,29 @@ def main() -> int:
             f"{RULES_DIR}/ — run 'mise run gen:copilot' to regenerate",
             file=sys.stderr,
         )
+        return 1
+
+    # Path-scoped instruction files (.github/instructions/*.instructions.md).
+    expected_scoped = render_scoped(RULES_DIR)
+    committed_scoped = {
+        p.name: p.read_text(encoding="utf-8") for p in INSTRUCTIONS_DIR.glob("*.instructions.md")
+    }
+    problems: list[str] = []
+    for name in sorted(set(expected_scoped) - set(committed_scoped)):
+        problems.append(f"missing scoped instruction {name}")
+    for name in sorted(set(committed_scoped) - set(expected_scoped)):
+        problems.append(f"stale scoped instruction {name} (rule un-scoped or removed)")
+    for name in sorted(set(expected_scoped) & set(committed_scoped)):
+        if committed_scoped[name] != expected_scoped[name]:
+            problems.append(f"out-of-sync scoped instruction {name}")
+    if problems:
+        print(
+            f"check_copilot_instructions: {INSTRUCTIONS_DIR} is out of sync with "
+            f"{RULES_DIR}/ — run 'mise run gen:copilot' to regenerate:",
+            file=sys.stderr,
+        )
+        for problem in problems:
+            print(f"  - {problem}", file=sys.stderr)
         return 1
 
     print("check_copilot_instructions: OK")
