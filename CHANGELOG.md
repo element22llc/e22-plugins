@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.19.0
+
 - **GitHub Copilot parity: custom agents, path-scoped instructions, VS Code MCP,
   and cloud coding-agent setup.** Brings the Copilot/VS Code surface up to the
   current Copilot feature set so it is usable like Claude Code, all from the same

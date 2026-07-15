@@ -13,10 +13,10 @@ truth and how to install and refresh the Copilot side.
     (`.github/agents/*.agent.md` — the `steer-reviewer` port), **path-scoped
     instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
     (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
-    (`copilot-setup-steps.yml`), and a single **gate hook** (the version-pin
-    policy, CLI-only, as a soft `ask`). Skill *enforcement* still differs from
-    Claude Code and **hooks do not exist in VS Code** — see the sections below for
-    the caveats.
+    (`copilot-setup-steps.yml`), and the **gate hooks** (the version-pin
+    policy and the trunk-push graduation gate, CLI-only, as soft `ask`s).
+    Skill *enforcement* still differs from Claude Code and **hooks do not
+    exist in VS Code** — see the sections below for the caveats.
 
 ## Surfaces at a glance
 
@@ -208,25 +208,28 @@ The Copilot CLI manifest points hooks at a **Copilot-native** file
 **fail-closed** (a hook that errors *denies* the tool), so a mis-run Claude hook
 could block edits.
 
-Only the **version-pin policy** gate is ported so far, and as a soft **`ask`**
-(Copilot prompts you to confirm) rather than Claude's hard `deny`. The same
-`check-version-pins.sh` logic runs on both surfaces; it emits Copilot's flat
-`permissionDecision` envelope when invoked with `STEER_HOOK_TARGET=copilot`. The
-advisory spec-first / issue-first nudges are **not** ported as hooks (Copilot's
-`preToolUse` cannot inject non-blocking context); their intent is carried by the
-standards in `.github/copilot-instructions.md`.
+Two gates are ported so far, both surfacing as a soft **`ask`** (Copilot prompts
+you to confirm): the **version-pin policy** (`check-version-pins.sh`, a hard
+`deny` on Claude softened to `ask` here) and the **trunk-push graduation gate**
+(`check-bash-actions.sh`, an `ask` on both surfaces). The same hook logic runs on
+both surfaces; each emits Copilot's flat `permissionDecision` envelope when
+invoked with `STEER_HOOK_TARGET=copilot`. The advisory spec-first / issue-first
+nudges — and the issue-create contract guard that also lives in
+`check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`
+cannot inject non-blocking context); their intent is carried by the standards in
+`.github/copilot-instructions.md`.
 
-**VS Code has no hook mechanism at all** — the gate is Copilot-CLI-only. In VS
-Code the version-pin policy lives only as text in the standards.
+**VS Code has no hook mechanism at all** — the gates are Copilot-CLI-only. In VS
+Code the version-pin and trunk-push policies live only as text in the standards.
 
 ## Known limitations
 
 - **Skill enforcement/invocation differs.** See [Skills on Copilot](#skills-on-copilot)
   — tool-permission scoping is inert and skill bodies are intent capsules (though
   the `steer-reviewer` subagent now ports as a [custom agent](#custom-agents-on-copilot)).
-- **One gate only, soft, CLI-only.** Only the version-pin gate is ported, as
-  `ask`, and only on the Copilot CLI. VS Code gets no hooks. Other gates live in
-  the standards text, not as hooks.
+- **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
+  gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no
+  hooks. The advisory nudges live in the standards text, not as hooks.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled
