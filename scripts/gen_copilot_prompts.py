@@ -30,10 +30,22 @@ Run from the repo root::
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
 import yaml
+
+# In VS Code, steer's skills are surfaced as `/steer-<name>` prompt-file
+# slash-commands (Copilot namespaces prompt files with a hyphen, not the `:`
+# Claude Code uses). Rewrite any `/steer:<skill>` cross-reference carried over
+# from a skill's frontmatter so the links resolve on the Copilot surface.
+_STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
+
+
+def _to_copilot_refs(text: str) -> str:
+    return _STEER_REF.sub(r"/steer-\1", text)
+
 
 SKILLS_DIR = Path("plugins/steer/skills")
 PROMPTS_DIR = Path("plugins/steer/templates/github/prompts")
@@ -80,9 +92,9 @@ def iter_skills(skills_dir: Path) -> list[tuple[str, dict]]:
 
 def render_prompt(name: str, fm: dict) -> str:
     """Render one VS Code prompt-file artifact for a skill (intent capsule)."""
-    description = str(fm.get("description", "")).strip()
-    when_to_use = str(fm.get("when_to_use", "")).strip()
-    argument_hint = str(fm.get("argument-hint", "")).strip()
+    description = _to_copilot_refs(str(fm.get("description", "")).strip())
+    when_to_use = _to_copilot_refs(str(fm.get("when_to_use", "")).strip())
+    argument_hint = _to_copilot_refs(str(fm.get("argument-hint", "")).strip())
 
     # YAML frontmatter — safe-dumped so descriptions with colons/quotes/em-dashes
     # are escaped correctly; width is unbounded so long descriptions stay on one
@@ -114,10 +126,16 @@ def render_prompt(name: str, fm: dict) -> str:
         body += ["", f"**Arguments.** {argument_hint}"]
     body += [
         "",
-        "Apply the org engineering standards already loaded from "
-        "`.github/copilot-instructions.md`. The authoritative procedure lives in "
-        f"the steer plugin (in Claude Code, `/steer:{name}`); this capsule carries "
-        "the intent so Copilot can drive the same workflow here.",
+        "**How to run this here.** Drive the workflow in Copilot now — apply the "
+        "org engineering standards already loaded from "
+        "`.github/copilot-instructions.md` (plus any path-scoped "
+        "`.github/instructions/*.instructions.md`), and follow the intent above. "
+        "Where the workflow calls for an independent, read-only standards/drift "
+        "review, hand off to the `steer-reviewer` custom agent "
+        "(`.github/agents/steer-reviewer.agent.md`). The fully authored procedure "
+        f"lives in the steer plugin's `skills/{name}/SKILL.md` (invoked as "
+        f"`/steer:{name}` in Claude Code); this capsule carries the intent so "
+        "Copilot drives the same workflow on the same standards.",
     ]
     return f"---\n{front}\n---\n\n" + "\n".join(body).rstrip("\n") + "\n"
 

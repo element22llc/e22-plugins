@@ -1,16 +1,16 @@
 ---
 mode: agent
-description: Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer:issues, /steer:audit spec, and /steer:tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
+description: Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer-issues, /steer-audit spec, and /steer-tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
 ---
 
 <!-- Generated from the steer plugin's skills/roadmap/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:roadmap` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer:issues, /steer:audit spec, and /steer:tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
+**Purpose.** Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer-issues, /steer-audit spec, and /steer-tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
 
 **When to use.** Use to lay out where the product is going on a timeline — when asked for a roadmap, a release plan, or a Projects v2 timeline, or to turn target features or a spec-vs-implemented gap into milestone-grouped GitHub issues.
 
 **Arguments.** [from-features | from-gap | sync]
 
-Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. The authoritative procedure lives in the steer plugin (in Claude Code, `/steer:roadmap`); this capsule carries the intent so Copilot can drive the same workflow here.
+**How to run this here.** Drive the workflow in Copilot now — apply the org engineering standards already loaded from `.github/copilot-instructions.md` (plus any path-scoped `.github/instructions/*.instructions.md`), and follow the intent above. Where the workflow calls for an independent, read-only standards/drift review, hand off to the `steer-reviewer` custom agent (`.github/agents/steer-reviewer.agent.md`). The fully authored procedure lives in the steer plugin's `skills/roadmap/SKILL.md` (invoked as `/steer:roadmap` in Claude Code); this capsule carries the intent so Copilot drives the same workflow on the same standards.

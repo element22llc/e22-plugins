@@ -5,23 +5,31 @@ the **Copilot CLI** or **Copilot in VS Code** — can pick up the same org
 engineering standards. This page explains how all surfaces share one source of
 truth and how to install and refresh the Copilot side.
 
-!!! note "Prototype scope"
+!!! note "Scope"
     The Copilot target covers the **always-on standards**
     (`.github/copilot-instructions.md`, read by both the CLI and VS Code), the
     **skills** (as cross-tool `SKILL.md` on the CLI, and as
-    `.github/prompts/*.prompt.md` slash-commands in VS Code), and a single **gate
-    hook** (the version-pin policy, CLI-only, as a soft `ask`). Subagents are not
-    ported, skill *enforcement* differs from Claude Code, and **hooks do not exist
-    in VS Code** — see the sections below for the caveats.
+    `.github/prompts/*.prompt.md` slash-commands in VS Code), **custom agents**
+    (`.github/agents/*.agent.md` — the `steer-reviewer` port), **path-scoped
+    instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
+    (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
+    (`copilot-setup-steps.yml`), and a single **gate hook** (the version-pin
+    policy, CLI-only, as a soft `ask`). Skill *enforcement* still differs from
+    Claude Code and **hooks do not exist in VS Code** — see the sections below for
+    the caveats.
 
 ## Surfaces at a glance
 
 | Capability | Claude Code | Copilot CLI | Copilot in VS Code |
 |---|---|---|---|
 | Always-on standards | SessionStart hook → `additionalContext` | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (read natively) |
+| Path-scoped standards | rule `inject-when` traits | (folded into instructions file) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.github/prompts/*.prompt.md` (`/steer-<skill>`) |
+| Subagents | plugin `agents/` | plugin `agents/` via manifest | `.github/agents/*.agent.md` (agent picker) |
+| MCP servers | plugin `.mcp.json` | plugin `.mcp.json` | `.vscode/mcp.json` |
+| Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
 | Gate hooks | `hooks/hooks.json` (hard `deny`) | `hooks/copilot-hooks.json` (soft `ask`) | none (no hook mechanism) |
-| Source of truth | `rules/*.md` + `skills/` | the **same** `rules/` + `skills/` | the **same** `rules/` + `skills/` |
+| Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
 All three surfaces are generated from one set of `rules/` and `skills/`, and a
 build-time drift gate (see [below](#why-the-surfaces-differ)) fails the build if
@@ -131,7 +139,66 @@ Two differences from Claude Code matter on **both** Copilot surfaces:
   resolve in a repo-committed prompt file. The VS Code prompt files are therefore
   **intent capsules** — purpose, when-to-use, and arguments — that drive the same
   workflow on top of the always-on standards, not verbatim reproductions of the
-  skill procedure. The authoritative procedure still lives in the plugin.
+  skill procedure. `/steer:<skill>` cross-references are rewritten to the
+  `/steer-<skill>` prompt names, and the capsule points review-gated workflows at
+  the `steer-reviewer` custom agent (below). The authoritative procedure still
+  lives in the plugin.
+
+## Custom agents on Copilot
+
+steer's subagents in the plugin's `agents/` reach VS Code as **custom agents** —
+`.github/agents/<name>.agent.md`, selectable from the Copilot Chat agent picker
+(this is the format formerly called "custom chat modes"/`.chatmode.md`). Today
+that is `steer-reviewer`, the read-only reviewer that `/steer-audit` and
+`/steer-work --reviewed` delegate a single bounded slice to.
+
+The build renders one `.agent.md` per subagent (`gen_copilot_agents.py`, drift
+gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/
+`Glob`) are mapped to Copilot's read-only built-in tool sets (`codebase`,
+`search`), so the ported reviewer stays write-free on VS Code the same way it is
+in Claude Code.
+
+## Path-scoped instructions
+
+Most rules are repo-wide and live in the flat `copilot-instructions.md`. A rule
+that is genuinely area-specific — currently the infra/IaC stack rule — is emitted
+instead as a **path-scoped instruction file**,
+`.github/instructions/<name>.instructions.md`, carrying an `applyTo` glob so
+Copilot loads it only when working on matching files (e.g. `**/*.tf`, `infra/**`).
+This is the Copilot analog of the Claude SessionStart hook's `inject-when` trait
+gating; the same rule source drives both, and a scoped rule is **excluded** from
+the flat file so it never double-loads. The same generator + drift gate as the
+flat instructions (`gen_copilot_instructions.py` / `check_copilot_instructions.py`)
+keeps them in sync.
+
+Repo-specific Copilot guidance you author yourself also goes in a *separate*
+`*.instructions.md` you own — never edit the steer-generated ones.
+
+## MCP servers in VS Code
+
+Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
+Code only). So the scaffold ships **`.vscode/mcp.json`** — VS Code's `servers`
+schema — mirroring the same servers: the **GitHub** MCP server that
+`/steer-tracker-sync` is built around, **markitdown** for PO source docs, and
+**context7** for current library docs. The GitHub server prompts once for a PAT
+(stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
+back to `gh` only.
+
+## Cloud coding agent (opt-in)
+
+The **GitHub-side Copilot coding agent** (assign it an issue, it works in an
+ephemeral environment and opens a PR) reads the same
+`.github/copilot-instructions.md` + `.github/instructions/` for standards. To make
+it boot a steer repo correctly, the scaffold carries
+**`.github/workflows/copilot-setup-steps.yml`** — it installs the pinned mise
+toolchain and runs `dev:setup`. The job name `copilot-setup-steps` is required;
+MCP + firewall for the agent are set in repo **Settings → Copilot → Coding agent**,
+not in-repo.
+
+It is **opt-in** — `/steer:init` does not install it automatically; add it only
+for repos that use the coding agent. It fits steer's autonomous-loop rules: the
+coding agent opens draft PRs and never merges, so the human merge gate stands.
+Point it only at PR-flow repos (protected `main`), never solo-trunk.
 
 ## Gate hooks on Copilot
 
@@ -154,9 +221,9 @@ Code the version-pin policy lives only as text in the standards.
 
 ## Known limitations
 
-- **Subagents not ported.** The `steer-reviewer` agent is Claude-only.
 - **Skill enforcement/invocation differs.** See [Skills on Copilot](#skills-on-copilot)
-  — tool-permission scoping is inert and skill bodies are intent capsules.
+  — tool-permission scoping is inert and skill bodies are intent capsules (though
+  the `steer-reviewer` subagent now ports as a [custom agent](#custom-agents-on-copilot)).
 - **One gate only, soft, CLI-only.** Only the version-pin gate is ported, as
   `ask`, and only on the Copilot CLI. VS Code gets no hooks. Other gates live in
   the standards text, not as hooks.

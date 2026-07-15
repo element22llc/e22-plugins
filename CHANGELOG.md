@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **GitHub Copilot parity: custom agents, path-scoped instructions, VS Code MCP,
+  and cloud coding-agent setup.** Brings the Copilot/VS Code surface up to the
+  current Copilot feature set so it is usable like Claude Code, all from the same
+  single sources of truth with build-time drift gates:
+  - **Custom agents** — steer's `agents/` subagents now port to
+    `.github/agents/*.agent.md` (the format formerly called custom chat modes),
+    selectable in the Copilot Chat agent picker. Ships `steer-reviewer` (read-only;
+    Claude `Read`/`Grep`/`Glob` mapped to Copilot `codebase`/`search`).
+    New `gen_copilot_agents.py` + `check_copilot_agents.py`.
+  - **Path-scoped instructions** — genuinely area-specific rules (currently the
+    infra/IaC stack rule) are emitted as `.github/instructions/*.instructions.md`
+    with an `applyTo` glob and **excluded** from the flat `copilot-instructions.md`
+    (no double-load) — the Copilot analog of the SessionStart hook's `inject-when`
+    trait gating. `gen_copilot_instructions.py` / `check_copilot_instructions.py`
+    extended to emit + gate them.
+  - **MCP in VS Code** — the scaffold now ships `.vscode/mcp.json` (VS Code
+    `servers` schema) mirroring the plugin's Claude-Code MCP servers (GitHub for
+    `/steer:tracker-sync`, markitdown, context7), since Copilot/VS Code does not
+    read the plugin's `.mcp.json`.
+  - **Cloud coding agent** — opt-in `templates/github/workflows/copilot-setup-steps.yml`
+    boots the mise toolchain + `dev:setup` so GitHub's Copilot coding agent runs
+    steer repos under the pinned versions; it reads the same instructions and opens
+    draft PRs (human merge gate intact, fits the autonomous-loop rules).
+  - **Prompt-file capsules** improved — reframed to drive the workflow in Copilot
+    (not "Claude-only"), cross-references rewritten `/steer:x` → `/steer-x`, and
+    review-gated skills point at the `steer-reviewer` agent.
+  - Wires the new generators/gates into `mise run gen:copilot` and `plugin-check`,
+    maps the new install paths in the scaffold `MANIFEST.md`, updates `/steer:init`
+    and the Copilot-support docs.
+
 - **Baseline rule: keep non-ASCII typographic characters out of code and values.**
   Adds an always-on baseline pattern (rule `85-practices`, mirrored in the
   `/steer:reference conventions` full prose as a matched pattern + anti-pattern):

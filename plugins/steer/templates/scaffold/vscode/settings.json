@@ -14,9 +14,12 @@
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   // GitHub Copilot picks up the steer engineering standards from
-  // .github/copilot-instructions.md and the per-skill .github/prompts/*.prompt.md
-  // slash-commands. Both are default-on in recent VS Code; set them explicitly so
-  // the standards load regardless of a teammate's defaults. Remove if Copilot is unused.
+  // .github/copilot-instructions.md (+ path-scoped .github/instructions/*), the
+  // per-skill .github/prompts/*.prompt.md slash-commands, and the custom agents in
+  // .github/agents/ (e.g. steer-reviewer). It also reads MCP servers from
+  // .vscode/mcp.json. These are default-on in recent VS Code; the two toggles below
+  // set the instruction-file + prompt-file behaviours explicitly so the standards
+  // load regardless of a teammate's defaults. Remove if Copilot is unused.
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "chat.promptFiles": true
 }

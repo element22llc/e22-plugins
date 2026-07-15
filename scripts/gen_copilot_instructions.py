@@ -35,13 +35,37 @@ import re
 import sys
 from pathlib import Path
 
+import yaml
+
 RULES_DIR = Path("plugins/steer/rules")
 ARTIFACT = Path("plugins/steer/templates/github/copilot-instructions.md")
+INSTRUCTIONS_DIR = Path("plugins/steer/templates/github/instructions")
 
 # A rule may open with `<!-- steer:inject-when=<token> -->`, directing the Claude
 # SessionStart hook to inject it only where its scope applies (inject-standards.sh
-# strips the line before emitting). Copilot's static artifact carries every rule
-# unconditionally, so the marker is noise here — drop it, mirroring the hook.
+# strips the line before emitting). Most tokens are repo-level traits with no
+# per-file meaning, so the flat artifact carries those rules unconditionally and
+# just drops the marker (mirroring the hook). But a few rules ARE genuinely
+# path-scoped, and Copilot has a native mechanism for that: path-specific
+# instruction files (`.github/instructions/<name>.instructions.md` with an
+# `applyTo` glob) that surface only when Copilot works on matching files. We route
+# those rules there instead of the flat file — the Copilot analog of the Claude
+# hook's trait gating, and a tighter fit than dumping infra rules into every
+# repo's always-on context.
+SCOPED_RULES: dict[str, dict[str, str]] = {
+    "12-stack-infra.md": {
+        "name": "infra",
+        "applyTo": (
+            "**/*.tf,**/*.tofu,**/*.hcl,**/*.tfvars,**/*.tf.json,"
+            "infra/**,live/**,modules/**,roles/**,playbooks/**,inventory/**"
+        ),
+        "description": (
+            "Infrastructure-as-code stack standards — applied when editing "
+            "Terraform/OpenTofu/Terragrunt/Ansible/Pulumi files."
+        ),
+    },
+}
+
 _INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
@@ -57,19 +81,50 @@ HEADER = (
 
 def iter_rule_files(rules_dir: Path) -> list[Path]:
     """The rule files, in the lexical order the SessionStart hook concatenates
-    them (the numeric file prefixes encode that order)."""
-    return sorted(rules_dir.glob("*.md")) if rules_dir.is_dir() else []
+    them (the numeric file prefixes encode that order), EXCLUDING rules routed to
+    path-scoped instruction files (see ``SCOPED_RULES``)."""
+    if not rules_dir.is_dir():
+        return []
+    return [f for f in sorted(rules_dir.glob("*.md")) if f.name not in SCOPED_RULES]
 
 
 def render(rules_dir: Path = RULES_DIR) -> str:
-    """Return the full copilot-instructions text: header then each rule body,
-    blank-line separated, with a single trailing newline (mirrors
-    ``inject-standards.sh`` minus its Claude-specific banner)."""
+    """Return the full copilot-instructions text: header then each repo-wide rule
+    body, blank-line separated, with a single trailing newline (mirrors
+    ``inject-standards.sh`` minus its Claude-specific banner). Path-scoped rules
+    are emitted separately by ``render_scoped``."""
     parts: list[str] = [HEADER, "\n\n"]
     for f in iter_rule_files(rules_dir):
         parts.append(_INJECT_WHEN_MARKER.sub("", f.read_text(encoding="utf-8"), count=1))
         parts.append("\n\n")
     return "".join(parts).rstrip("\n") + "\n"
+
+
+def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
+    """Return {artifact_filename: text} for each path-scoped instruction file.
+
+    Each is a ``<name>.instructions.md`` carrying an ``applyTo`` glob in its
+    frontmatter so Copilot loads it only when working on matching files."""
+    out: dict[str, str] = {}
+    for rule_name, spec in SCOPED_RULES.items():
+        rule_path = rules_dir / rule_name
+        if not rule_path.is_file():
+            continue
+        body = _INJECT_WHEN_MARKER.sub("", rule_path.read_text(encoding="utf-8"), count=1).strip()
+        front = yaml.safe_dump(
+            {"applyTo": spec["applyTo"], "description": spec["description"]},
+            default_flow_style=False,
+            sort_keys=False,
+            allow_unicode=True,
+            width=10**9,
+        ).rstrip("\n")
+        header = (
+            f"<!-- Generated from the steer plugin's rules/{rule_name} — do not edit "
+            f"by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's "
+            f"Copilot step). -->"
+        )
+        out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -91,6 +146,12 @@ def main(argv: list[str] | None = None) -> int:
         default=ARTIFACT,
         help=f"Output path when --write is set (default: {ARTIFACT}).",
     )
+    parser.add_argument(
+        "--instructions-dir",
+        type=Path,
+        default=INSTRUCTIONS_DIR,
+        help=f"Path-scoped instructions dir when --write is set (default: {INSTRUCTIONS_DIR}).",
+    )
     args = parser.parse_args(argv)
 
     if not args.rules_dir.is_dir():
@@ -98,10 +159,23 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     text = render(args.rules_dir)
+    scoped = render_scoped(args.rules_dir)
     if args.write:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(text, encoding="utf-8")
         print(f"gen_copilot_instructions: wrote {args.out} ({len(text)} bytes)")
+        args.instructions_dir.mkdir(parents=True, exist_ok=True)
+        # Prune stale scoped files (a rule un-scoped) so the committed set matches.
+        keep = set(scoped)
+        for existing in args.instructions_dir.glob("*.instructions.md"):
+            if existing.name not in keep:
+                existing.unlink()
+        for filename, body in scoped.items():
+            (args.instructions_dir / filename).write_text(body, encoding="utf-8")
+        print(
+            f"gen_copilot_instructions: wrote {len(scoped)} scoped instruction "
+            f"file(s) to {args.instructions_dir}"
+        )
     else:
         sys.stdout.write(text)
     return 0

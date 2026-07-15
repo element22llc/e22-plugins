@@ -1,0 +1,59 @@
+# Copilot coding agent — environment setup
+#
+# Configures the ephemeral environment GitHub's Copilot coding agent (the
+# cloud/GitHub-side agent that picks up an assigned issue and opens a PR) boots
+# before it starts work. The job MUST be named `copilot-setup-steps` — Copilot
+# discovers it by that exact name and runs only this job, so keep it here.
+#
+# steer repos are mise-managed: this installs the pinned toolchain (Node, Python,
+# uv, and any infra tools in mise.toml) so the agent runs under the same versions
+# as local Claude Code and CI, then brings the local dev environment up via the
+# scaffold's idempotent entry point. Adapt the setup step to the product's stack
+# (a library/cli with no services can drop `dev:setup`).
+#
+# The coding agent already reads the org standards from
+# `.github/copilot-instructions.md` and the path-scoped `.github/instructions/`
+# files; this workflow only prepares the runtime. MCP servers and firewall access
+# for the agent are configured in the repo's Settings → Copilot → Coding agent,
+# not here.
+name: Copilot setup steps
+
+on:
+  workflow_dispatch:
+  # Validate this workflow (and warm the mise cache) when it or the toolchain
+  # pin changes, so a broken setup is caught before an issue is assigned.
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - mise.toml
+      - mise.lock
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+      - mise.toml
+      - mise.lock
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      # Copilot's own token grants what it needs at run time; this job only reads
+      # the repo to install tools and dependencies.
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # Install all tools pinned in mise.toml (Node/Python/uv, and infra tools for
+      # an infra repo). A committed mise.lock makes this reproducible; mise-action
+      # auto-adds `--locked` when the lock exists.
+      - name: Setup mise
+        uses: jdx/mise-action@v4
+        with:
+          install: true
+          cache: true
+
+      # Bring the local environment up the same way a developer does: services
+      # up → migrate → seed. Idempotent, and a no-op on a repo with no app/services
+      # yet. Remove or adapt for a library/cli profile with nothing to run.
+      - name: Set up local dev environment
+        run: mise run dev:setup

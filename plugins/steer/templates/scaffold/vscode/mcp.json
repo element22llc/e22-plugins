@@ -1,0 +1,36 @@
+{
+  // Model Context Protocol servers for GitHub Copilot in VS Code (Chat + Agent
+  // mode) and Visual Studio. Mirrors the servers the steer plugin wires into
+  // Claude Code (plugins/steer/.mcp.json) so a Copilot teammate gets the same
+  // tooling: the GitHub MCP server that /steer:tracker-sync is built around,
+  // markitdown for reading PO source docs (docx/pptx/xlsx/pdf), and context7 for
+  // up-to-date library docs. VS Code uses the "servers" key (not "mcpServers").
+  //
+  // The GitHub server authenticates with a fine-grained PAT prompted once and
+  // stored by VS Code's secret storage. Remove any server you do not use.
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "github_pat",
+      "description": "GitHub personal access token for the GitHub MCP server (repo + issues scope)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${input:github_pat}"
+      }
+    },
+    "markitdown": {
+      "command": "uvx",
+      "args": ["markitdown-mcp"]
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}
