@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.20.0
+
 - **Spec rigor (Phase 3).** Three additions adopted from the Spec Kit
   comparison:
   - **`/steer:spec clarify <id>`** — a structured de-ambiguation sweep run
@@ -44,7 +46,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Always-on context cut, pass 2.** The next tier of rules
   (`53-autonomous-loops`, `26-context-hygiene`, `88-artifacts`, `20-layout`,
   `24-worktrees`, `22-housekeeping`, `85-practices`, `32-living-docs`) is
-  trimmed to imperatives — rules injection drops to 61,786 bytes (69,335
+  trimmed to imperatives — rules injection drops to 62,058 bytes (69,335
   before Phase 1) with every gate, constraint, and cross-reference preserved;
   the context-budget ratchet re-arms at 62,500. Copilot instructions
   regenerated from the same sources.

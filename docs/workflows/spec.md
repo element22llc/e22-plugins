@@ -1,21 +1,32 @@
 # `/steer:spec`
 
 Think a feature through before committing to implementation: shape acceptance
-criteria, validate a spec's question state, and record approval evidence.
+criteria, clarify open questions, validate a spec's question state, and record
+approval evidence.
 
 !!! info "When to use"
     Use to think a feature through before implementation, shape acceptance
-    criteria, validate a spec's question state, or refine a spec you intend to
-    compare against the code later via `/steer:audit spec`.
+    criteria, sweep the draft for gaps, validate a spec's question state, or
+    refine a spec you intend to compare against the code later via
+    `/steer:audit spec`.
 
-**Argument hint:** `[feature-id | approve <feature-id> | validate [feature-id | --all]]`
+!!! tip "Lite mode — works on any repo, no bootstrap"
+    `/steer:spec` runs **spec-only on an unmanaged repo** (no `/spec` spine, no
+    toolchain): the feature intent drafts under `spec/features/<id>/` and nothing
+    is scaffolded. Thinking a feature through is the one activity sanctioned
+    without bootstrap. `/steer:setup` is surfaced as the *follow-up* when the team
+    is ready to build — not a precondition. (Feature **code** still requires the
+    bootstrap first.)
+
+**Argument hint:** `[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all]]`
 
 ## Modes
 
 | Mode | What it does |
 | --- | --- |
 | `/steer:spec <feature-id>` | Open or shape the feature's `intent.md` + `contract.md`. |
-| `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness. |
+| `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval — interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. Never invents an answer. |
+| `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness, plus the cross-artifact **analyze** pass — intent ↔ contract ↔ tracker consistency and acceptance-criteria quality (all warnings). |
 | `/steer:spec approve <feature-id>` | Record approval evidence on the intent. |
 
 ## Approval evidence
