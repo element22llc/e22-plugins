@@ -1,6 +1,6 @@
 ---
 name: help
-description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, grouped by workflow. Read-only; sources the live router table so it can never drift from actual routing."
+description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; sources the live router table so it can never drift from actual routing."
 when_to_use: >-
   Use to browse steer's capabilities — "what can steer do?", "what can you do?",
   "show me the commands", "list the skills". Discovery only: "what should I do
@@ -43,25 +43,37 @@ enumerate those unless the user asks to zoom in.
 Read `${CLAUDE_PLUGIN_ROOT}/rules/00-router.md`. Take the front-door rows from the
 `## Intent → skill` table: each row's "trying to…" phrase and its target skill.
 
-## Phase 2 — Group and render
+## Phase 2 — Render: the essentials first, everything else behind a fold
 
-Present the front doors grouped into these plain-language areas, in this order.
-Map each router row to the area its target skill belongs to; omit an area that has
-no rows this session (so the menu stays honest if the table changes).
+The menu is **tiered** so a new user sees six lines, not twenty (progressive
+disclosure). Still build every line from the live router table — the tiers
+change presentation order only, never the source.
 
-- **Get set up** — bootstrap or maintain a repo on the standards (`setup` and the
-  specialized `init` / `adopt` / `sync` / `doctor` it dispatches to; `protect`).
-- **Shape the work** — think a feature through, absorb a PO's document, capture
-  and sequence the backlog (`spec`, `build`, `intake`, `issues`, `adr`).
-- **Do the work** — implement a change or fix an issue now, including hotfixes
-  (`work`, `work --hotfix`).
-- **Find your bearings** — figure out where things stand and what matters most
-  (`next`, `audit`), automate that sweep on a schedule as an autonomous loop
-  (`loop`), get a shareable stakeholder-readable page of one feature (`explain`),
-  and this menu itself (`help`).
-- **Plumbing** — report a defect in the steer plugin upstream (`report`), and load
-  the operating manual or reference prose on chat-only surfaces (`standards`,
-  `reference` — the two below-table entries).
+**Tier 1 — The essentials.** Lead with these, one compact line each, in this
+order — the handful that covers a whole working life with steer:
+
+1. `setup` — get a repo onto the standards
+2. `spec` — think a feature through (works on any repo — no setup needed)
+3. `build` — build an app idea as a non-technical owner
+4. `work` — implement or fix something now
+5. `next` — "what should I do next?"
+6. `status` — a client-ready progress report
+
+**Tier 2 — "More, by journey."** After the essentials, add the remaining
+front-door rows under one explicit *"More (you can also just describe any of
+these):"* fold, grouped by journey in this order — map each remaining router
+row to its group; omit an empty group:
+
+- **Start** — the specialized bootstrap doors (`protect`; note that `setup`
+  dispatches to `init` / `adopt` / `sync` / `doctor`).
+- **Spec & backlog** — absorb a PO document, capture/sequence the backlog,
+  record decisions (`intake`, `issues`, `adr`).
+- **Track & automate** — repo health and drift, the scheduled loop (`audit`,
+  `loop`).
+- **Report** — a shareable page of one feature (`explain`).
+- **Govern & plumbing** — report a steer defect (`report`); load the manual or
+  reference prose on chat-only surfaces (`standards`, `reference` — the two
+  below-table entries).
 
 For each entry render one compact line: the **plain-language goal** first (from
 the router's "trying to…" column), then the invocation in backticks —

@@ -953,6 +953,11 @@ out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
 oq_grep "unmanaged: nudge offers /steer:build for a non-technical owner" '/steer:build' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:init for a developer" '/steer:init' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:adopt' "${out}"
+# Lite mode (PLAN.md Phase 2): spec-only work is sanctioned without bootstrap —
+# the notice must offer /steer:spec as working right now, and keep the code gate.
+oq_grep "unmanaged: nudge offers spec-only lite mode" 'lite mode' "${out}"
+oq_grep "unmanaged: lite mode names /steer:spec" '/steer:spec' "${out}"
+oq_grep "unmanaged: code still requires bootstrap" 'CODE' "${out}"
 
 # Managed spine -> silent (the notice clears itself once /spec exists).
 UM2="$(new_repo unmanaged2)"

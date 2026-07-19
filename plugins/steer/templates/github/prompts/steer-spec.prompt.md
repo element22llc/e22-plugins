@@ -9,7 +9,7 @@ This mirrors steer's `/steer:spec` workflow for GitHub Copilot in VS Code.
 
 **Purpose.** Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `validate` checks the open-question contract. Ends at an approved intent, not a build.
 
-**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state (/steer-spec validate).
+**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state (/steer-spec validate). Works spec-only on an unmanaged repo (lite mode) — no bootstrap required.
 
 **Arguments.** [feature-id | approve <feature-id> | validate [feature-id | --all]]
 

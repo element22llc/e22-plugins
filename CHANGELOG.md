@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Progressive disclosure (Phase 2).** Three usability changes for new users:
+  - **Lite mode** — `/steer:spec` now runs spec-only on an unmanaged repo (no
+    bootstrap required): the feature intent drafts under `spec/features/<id>/`
+    with no toolchain or scaffold, and `/steer:setup` is surfaced as the
+    follow-up instead of the precondition. The router's bootstrap-precedence
+    rule carries the exception; feature CODE still requires the bootstrap
+    first.
+  - **Onboarding card** — the unmanaged-repo SessionStart notice is rewritten
+    as a compact plain-language orientation ("you can just say what you
+    want"), leading with the three things a new user can say — think an idea
+    through (lite mode), build an app, set the repo up — instead of a wall of
+    bootstrap prose (~25% shorter).
+  - **Tiered `/steer:help`** — the menu leads with the six essentials (setup,
+    spec, build, work, next, status) and folds the remaining front doors under
+    journey groups, so a new user sees six lines, not twenty. Still rendered
+    from the live router table.
+
 - **Always-on context cut, pass 2.** The next tier of rules
   (`53-autonomous-loops`, `26-context-hygiene`, `88-artifacts`, `20-layout`,
   `24-worktrees`, `22-housekeeping`, `85-practices`, `32-living-docs`) is
