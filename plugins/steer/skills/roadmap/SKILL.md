@@ -1,15 +1,17 @@
 ---
 name: roadmap
-description: "Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer:issues, /steer:audit spec, and /steer:tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates."
+description: "Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — intended-but-unshipped work becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates."
 when_to_use: >-
-  Use to lay out where the product is going on a timeline — when asked for a
-  roadmap, a release plan, or a Projects v2 timeline, or to turn target features
-  or a spec-vs-implemented gap into milestone-grouped GitHub issues.
+  Use for a roadmap, release plan, or Projects v2 timeline — laying out where
+  the product is going or turning target features into milestone-grouped issues.
 argument-hint: "[from-features | from-gap | sync]"
 ---
 <!-- steer:modes from-features,from-gap,sync -->
 
 # Generate a release-milestone roadmap for the /spec spine
+
+**Scope boundary:** forward-looking planning only — a *report of progress so
+far* is `/steer:status`.
 
 `/steer:roadmap` turns **intended-but-unshipped work** into GitHub issues grouped
 under release **Milestones**, so an existing GitHub Projects v2 roadmap/timeline

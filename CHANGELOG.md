@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Always-on context cut (Phase 1, pass 1).** The skill-listing routing
+  surface (frontmatter `description` + `when_to_use`) drops 39% (17,950 →
+  10,867 chars) — 18 skills rewritten to purpose + primary trigger, with
+  dropped scope-boundary prose moved into the skill bodies (loaded only on
+  invocation). The heaviest always-on rules (`00-router`, `45-commit-autonomy`,
+  `30-spec-workflow`, `10-stack`, `36-issue-first`) are trimmed to their
+  imperatives (rules injection 69,335 → 65,508 bytes) with no behavioral
+  change — every gate, mode, and cross-reference is preserved; routing
+  vocabulary is pinned by the new routing-fixture net. Copilot artifacts
+  regenerated from the same sources.
+
 ### 3.19.0
 
 - **GitHub Copilot parity: custom agents, path-scoped instructions, VS Code MCP,

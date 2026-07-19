@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: 'Render a client-facing, time-boxed progress report across the whole /spec spine — what shipped this period, what''s in progress, what needs the client''s input, and what''s next — as a shareable Claude Code Artifact with a Markdown fallback. A thin orchestrator + presentation layer: reads closed issues and milestone progress through /steer-tracker-sync and reads open blocking questions and feature status from /spec, then renders them in plain product language. Read-only and derived — /spec and the tracker stay canonical; it never fabricates counts, dates, or status, never writes into /spec, /apps, /packages, or the tracker, and is never auto-generated on a schedule.'
+description: Client-facing, time-boxed progress report across the whole /spec spine — what shipped, what's in progress, what needs the client's input, and what's next — rendered as a shareable Claude Artifact with a Markdown fallback. Read-only and derived; never fabricates counts, dates, or status.
 ---
 
 <!-- Generated from the steer plugin's skills/status/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:status` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Render a client-facing, time-boxed progress report across the whole /spec spine — what shipped this period, what's in progress, what needs the client's input, and what's next — as a shareable Claude Code Artifact with a Markdown fallback. A thin orchestrator + presentation layer: reads closed issues and milestone progress through /steer-tracker-sync and reads open blocking questions and feature status from /spec, then renders them in plain product language. Read-only and derived — /spec and the tracker stay canonical; it never fabricates counts, dates, or status, never writes into /spec, /apps, /packages, or the tracker, and is never auto-generated on a schedule.
+**Purpose.** Client-facing, time-boxed progress report across the whole /spec spine — what shipped, what's in progress, what needs the client's input, and what's next — rendered as a shareable Claude Artifact with a Markdown fallback. Read-only and derived; never fabricates counts, dates, or status.
 
-**When to use.** Use when someone wants a progress/status update to hand a client or Product Owner — "give me a status report", "what did we ship this week", "weekly status for the client", "where are we on <milestone>". Not for choosing the next action (that is /steer-next), planning a forward timeline (that is /steer-roadmap), or presenting one feature in depth (that is /steer-explain); this summarizes progress across the whole spine over a time window.
+**When to use.** Use for a progress update to hand a client or Product Owner — "give me a status report", "what did we ship this week", "weekly status for the client", "where are we on <milestone>".
 
 **Arguments.** [this-week | since <date> | milestone [<name>]]
 

@@ -1,7 +1,10 @@
 ---
 name: protect
-description: "Make GitHub branch protection — the real gate against direct-push-to-main — reliable on a managed repo: read policy/branch-protection.yml, diff it against the repo's live protection, and on explicit confirmation apply the missing settings via gh api (branch protection, secret scanning, Dependabot alerts). Verify by default; configures the GitHub-side gate only — steer is advisory in the local session (rule 95) and cannot block local pushes."
-when_to_use: 'Use when asked to "protect main", protect a `prod` / promotion branch, set up or check branch protection / merge rules on a GitHub-adopted repo, or as the final step of init/adopt to establish the PR gate. Also when /steer:audit flags missing or drifted branch protection.'
+description: "Make GitHub branch protection reliable on a managed repo — diff policy/branch-protection.yml against the live settings and, on explicit confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Verify by default."
+when_to_use: >-
+  Use when asked to protect main or a prod branch, set up or check branch
+  protection / merge rules, graduate solo trunk to the PR flow, or as the final
+  step of init/adopt.
 argument-hint: "[verify | apply]"
 allowed-tools:
   - Bash(gh auth status *)

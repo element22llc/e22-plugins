@@ -51,7 +51,13 @@ The repo has fixtures + hooktests but no token or latency budget. Landed:
 Why first: Phases 1–2 aggressively cut always-on prose; without these gates we
 can't tell "leaner" from "broken".
 
-## Phase 1 — Faster & more efficient: cut the always-on weight (3–4 PRs)
+## Phase 1 — Faster & more efficient: cut the always-on weight (3–4 PRs) — 🟡 pass 1 done
+
+Pass 1 landed: skill listing 17,950 → 10,867 chars (−39%, item 3 essentially
+done — ceiling re-armed at 11,500); top-5 rules trimmed to imperatives
+(69,335 → 65,508 B, ceiling re-armed at 66,500). Remaining: the deep
+rule→reference restructure to approach 30 KB (items 1–2), hook consolidation
+(item 4), and the workspace-state cache (item 5).
 
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types

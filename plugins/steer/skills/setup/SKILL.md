@@ -1,11 +1,10 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards — detect the repo's /spec spine state and route to the right bootstrap path (greenfield init, brownfield adopt, or steady-state sync), installing prerequisites first if the toolchain is missing. A thin dispatcher that decides which path applies and hands off — it does not duplicate their logic."
+description: "One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, installing prerequisites first when the toolchain is missing."
 when_to_use: >-
-  Use whenever someone wants to "set up", "onboard", "bootstrap", "adopt", or
-  "bring this repo onto the standards", or to "sync to the latest plugin" — any
-  time you'd otherwise have to guess between /steer:init, /steer:adopt, and
-  /steer:sync. This is the single entry point; it auto-detects which applies.
+  Use when asked to set up, onboard, bootstrap, or adopt a repo, or to sync to
+  the latest plugin — the single entry point whenever you would otherwise guess
+  between /steer:init, /steer:adopt, and /steer:sync.
 argument-hint: "[init | adopt | sync]"
 allowed-tools:
   - Bash(git status *)

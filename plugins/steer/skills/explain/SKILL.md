@@ -1,26 +1,20 @@
 ---
 name: explain
-description: >-
-  Render a high-level, stakeholder-readable view of one feature spec as a
-  shareable Claude Code Artifact — a private, hosted page on claude.ai, built
-  around at-a-glance visuals (a status pipeline, an acceptance meter, a
-  clickable user-journey, scope and open-question boards) so it reads in seconds
-  instead of pages — with a Markdown fallback where Artifacts are unavailable. A
-  read-only, derived view: the /spec and tracker item stay canonical; every
-  visual encodes a real spec value, never fabricates status, dates, or
-  acceptance criteria, never auto-generates per feature, and never writes into
-  /spec, /apps, or /packages.
+description: "Render one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback) — status pipeline, acceptance meter, user journey, scope and open-question boards. A read-only derived view: every visual encodes a real spec value; never writes into /spec, /apps, or /packages."
 when_to_use: >-
-  Use on demand when someone wants a plain-language, at-a-glance page of a
-  feature to look at or hand to a non-technical stakeholder — "show me feature
-  X", "make a shareable summary of this feature for the PO". Not for choosing the
-  next action (that is /steer:next) or authoring/approving the spec (that is
-  /steer:spec); this only presents what the spec already says.
+  Use when someone wants a plain-language, at-a-glance page of one feature to
+  look at or hand to a non-technical stakeholder — "show me feature X", "make a
+  shareable summary for the PO".
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 ---
 
 # Explain a feature — a shareable, plain-language view
+
+**Scope boundary:** this skill only *presents* what the spec already says.
+Choosing the next action is `/steer:next`; authoring or approving the spec is
+`/steer:spec`; progress across the whole spine over time is `/steer:status`.
+Never auto-generate per feature.
 
 Turn one feature's approved intent into a **high-level page a stakeholder can
 read at a glance** — not a five-page wall of text but a **visual, interactive

@@ -40,12 +40,12 @@ import yaml
 PLUGIN_ROOT = Path("plugins/steer")
 
 # --- Ratchet ceilings (hard gate) -------------------------------------------
-# Baseline measured 2026-07-19 at steer v3.19.0: rules 69,335 bytes across 24
-# files; listing 17,950 chars across 26 skills. Headroom (~2-5%) absorbs small
-# legitimate edits; anything larger must trade prose out first. When Phase 1 of
-# PLAN.md lands a reduction, LOWER these to re-arm the ratchet at the new level.
-RULES_TOTAL_MAX_BYTES = 71_000
-LISTING_TOTAL_MAX_CHARS = 19_000
+# Re-armed after the Phase 1 pass-1 trim (PLAN.md): rules 65,508 bytes across
+# 34 files (was 69,335); listing 10,867 chars across 26 skills (was 17,950).
+# Headroom (~2-5%) absorbs small legitimate edits; anything larger must trade
+# prose out first. LOWER these again as further reductions land.
+RULES_TOTAL_MAX_BYTES = 66_500
+LISTING_TOTAL_MAX_CHARS = 11_500
 
 # --- Aspirational targets (reported, never enforced here) --------------------
 # PLAN.md Phase 1 end-state. Enforced only by ratcheting the ceilings down as
