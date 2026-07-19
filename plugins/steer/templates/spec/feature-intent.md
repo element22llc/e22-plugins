@@ -45,6 +45,24 @@ If this feature was explored in Claude Design or another design tool, link the s
 2. System shows Y
 3. User confirms, sees Z
 
+## Acceptance criteria
+
+[The PO-checkable statements that define "this feature works". Each criterion
+must pass the quality bar — `/steer:spec validate` warns on ones that don't:
+
+- **Testable** — someone can try it and get a yes/no ("a signed-out user is
+  redirected to sign-in"), not a vibe ("login feels smooth").
+- **Observable** — phrased as what the *user or system visibly does*, never as
+  implementation ("the table has an index").
+- **Bounded** — states its limits and edge behavior where they matter (empty
+  states, maximums, permissions), not just the happy path.
+
+When work starts from a tracker item, copy its criteria here — the spec is the
+in-repo source of truth.]
+
+- [ ] [criterion]
+- [ ] [criterion]
+
 ## Key concepts & data
 
 [Plain language — what things does this feature deal with, what must the
