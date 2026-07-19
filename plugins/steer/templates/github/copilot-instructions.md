@@ -30,8 +30,12 @@ it yourself**.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
-  non-technical owner's idea → **`/steer:build`**. "Prototype" / "quick" /
-  "throwaway" changes ceremony, **never whether scaffold and spine exist**.
+  non-technical owner's idea → **`/steer:build`**. One exception: a purely
+  spec-thinking intent ("think this through", "shape the acceptance criteria")
+  → **`/steer:spec`** directly — it runs **spec-only on an unmanaged repo
+  (lite mode)**, with setup surfaced as the follow-up, not the precondition.
+  "Prototype" / "quick" / "throwaway" changes ceremony, **never whether
+  scaffold and spine exist before code**.
 - **Intent-switches** — a new ask mid-flow: name it and offer to switch or
   capture it (`/steer:issues capture`), never silently drop the current
   thread.

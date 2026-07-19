@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, grouped by workflow. Read-only; sources the live router table so it can never drift from actual routing.
+description: Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; sources the live router table so it can never drift from actual routing.
 ---
 
 <!-- Generated from the steer plugin's skills/help/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:help` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, grouped by workflow. Read-only; sources the live router table so it can never drift from actual routing.
+**Purpose.** Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; sources the live router table so it can never drift from actual routing.
 
 **When to use.** Use to browse steer's capabilities — "what can steer do?", "what can you do?", "show me the commands", "list the skills". Discovery only: "what should I do next" routes to /steer-next.
 

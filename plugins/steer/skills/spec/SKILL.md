@@ -4,7 +4,8 @@ description: "Spec-only brainstorm for a feature — author and iterate intent.m
 when_to_use: >-
   Use to think a feature through before committing to implementation, shape
   acceptance criteria, or validate a spec's question state (/steer:spec
-  validate).
+  validate). Works spec-only on an unmanaged repo (lite mode) — no bootstrap
+  required.
 argument-hint: "[feature-id | approve <feature-id> | validate [feature-id | --all]]"
 ---
 <!-- steer:modes default,approve,validate -->
@@ -38,6 +39,20 @@ implementation.
   acceptance criteria.
 - To refine an intent you plan to compare against the code later (`/steer:audit spec`).
 - Whenever a feature needs design discussion but **not** code yet.
+
+## Lite mode — an unmanaged repo is not a blocker
+
+On a repo with **no `/spec` spine**, do **not** send the user through
+`/steer:setup` first — thinking a feature through is the one activity
+sanctioned without bootstrap. Proceed **spec-only**: run the steps below as
+normal (`/steer:spec-scaffold` creates `spec/features/[id]/` and instantiates
+the templates; no toolchain, scaffold, or full spine required), and say in one
+line that you're working in lite mode. Two boundaries: product-level prose
+that belongs in `vision.md` is parked in the feature's `## Open questions`
+rather than scaffolding the spine ad hoc, and the never-builds guardrail is
+unchanged. At close, surface **one** follow-up: `/steer:setup` graduates the
+repo (spine, scaffold, toolchain) when the team is ready to build — a next
+step, never a precondition for the spec work itself.
 
 ## Steps
 
