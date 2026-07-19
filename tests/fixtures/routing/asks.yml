@@ -57,6 +57,9 @@ fixtures:
   - ask: "help me shape the acceptance criteria for this feature"
     skill: spec
     signals: ["acceptance criteria"]
+  - ask: "sweep this draft spec for gaps and edge cases before I sign off"
+    skill: spec
+    signals: ["clarify", "edge cases"]
   - ask: "the client re-sent the requirements deck — what changed?"
     skill: intake
     signals: ["what changed", "docx"]

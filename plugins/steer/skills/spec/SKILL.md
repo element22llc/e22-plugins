@@ -1,14 +1,14 @@
 ---
 name: spec
-description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `validate` checks the open-question contract. Ends at an approved intent, not a build."
+description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope) before approval, `validate` checks the open-question contract plus intent/contract/tracker consistency. Ends at an approved intent, not a build."
 when_to_use: >-
   Use to think a feature through before committing to implementation, shape
   acceptance criteria, or validate a spec's question state (/steer:spec
   validate). Works spec-only on an unmanaged repo (lite mode) — no bootstrap
   required.
-argument-hint: "[feature-id | approve <feature-id> | validate [feature-id | --all]]"
+argument-hint: "[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all]]"
 ---
-<!-- steer:modes default,approve,validate -->
+<!-- steer:modes default,approve,clarify,validate -->
 
 # Brainstorm a feature spec — no build
 
@@ -63,7 +63,7 @@ step, never a precondition for the spec work itself.
    `intent.md` (+ `contract.md`) from the bundled templates, copying them in for a
    new feature and reconciling additively against the current template for an
    existing one (its `template-reconcile.sh` branch), so nothing is hand-copied or
-   clobbered. Whether `contract.md` earns its place is decided in step 5. For a
+   clobbered. Whether `contract.md` earns its place is decided in step 6. For a
    design-originated feature, populate the `Design source` section per
    `/steer:reference design-sources`.
 3. **Brainstorm the intent interactively.** Walk the PO/dev through, in plain
@@ -71,17 +71,22 @@ step, never a precondition for the spec work itself.
    and concrete **acceptance criteria**. Keep it stack-free — this is the *what
    and why*, not the *how*. Park anything unresolved under `## Open questions`;
    **never invent an answer**.
-4. **Resolve open questions.** Run the `/steer:questions` read-then-propose loop on
+4. **Clarify — sweep the draft for gaps** (clarify mode, below) before
+   presenting anything for approval: interrogate the draft against the gap
+   classes and convert every real gap into a `Q-NNN` open question. This is
+   where ambiguity becomes structured, answerable questions instead of
+   surprises at implementation.
+5. **Resolve open questions.** Run the `/steer:questions` read-then-propose loop on
    this feature: surface each question, propose options, fold the *confirmed*
    decision back into the spec, strike the question. Explicit deferral with a
    reason is a valid outcome. A question needing an external owner or scheduling
-   → leave it open, to be filed as an issue via `/steer:issues` at step 6.
-5. **Write `contract.md` only where it earns its place.** Add testable behavior
+   → leave it open, to be filed as an issue via `/steer:issues` at step 7.
+6. **Write `contract.md` only where it earns its place.** Add testable behavior
    rules / data / API surface **only** when they matter for behavior,
    integration, security, or future maintenance — not as ceremony. `intent.md`
    is the what/why (PO-facing); `contract.md` is the testable behavior + data/API
    surface (dev-owned).
-6. **Approval gate — both exits stay code-free.** First **run `validate` on this
+7. **Approval gate — both exits stay code-free.** First **run `validate` on this
    feature** (below) — an approval **cannot proceed while a blocking question
    gated at `required_before: intent-approval` is unresolved** (the exact
    predicate lives in approve mode, below); resolve or explicitly reclassify it
@@ -97,7 +102,7 @@ step, never a precondition for the spec work itself.
      `/steer:issues` first); PO-driven builds go through
      `/steer:build` (which itself delegates to `work` once
      governed). Don't hand off to a "just implement it" path that skips the issue.
-7. **Recommend the next action.** Close with a `## Recommended next actions` block
+8. **Recommend the next action.** Close with a `## Recommended next actions` block
    per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Per the
    **locality rule**, consider only *this* feature's intent, open questions,
    contract, tracker state, and directly relevant ADRs — not the wider workspace.
@@ -112,6 +117,40 @@ step, never a precondition for the spec work itself.
 
    Pick one `Current recommended action` by precedence; the block stays code-free,
    like the rest of this skill.
+
+## Clarify mode — `/steer:spec clarify <feature-id>`
+
+A structured de-ambiguation sweep over one feature's draft, run before the
+intent is presented for approval (step 4 of the default flow) or on demand.
+It interrogates the draft against the classic gap classes and converts every
+**real** gap into a structured `Q-NNN` open question — never loose prose, and
+never an invented answer. Read-only against decisions: it raises questions;
+answering them stays with the PO/dev (`/steer:questions`).
+
+Sweep these gap classes against `intent.md` (and `contract.md` where present):
+
+- **Edge cases** — empty states, zero/one/many, duplicates, concurrency,
+  maximums the UX or data model implies but never states.
+- **Error paths** — what the user sees when a step fails (network, validation,
+  permission denied); silent failure is a gap.
+- **Permissions & visibility** — who can do/see this; what a signed-out,
+  unauthorized, or other-tenant user experiences.
+- **Data lifecycle** — creation defaults, mutation rules, and what "delete"
+  means here (the `## Lifecycle expectations` section's questions, asked
+  concretely against this feature).
+- **Non-functional constraints** — latency, volume, offline, accessibility,
+  localization — only where the feature's nature makes one load-bearing.
+- **Out-of-scope boundary** — anything a reasonable reader might assume is
+  included that the PO hasn't ruled in or out; propose it for
+  `## What is out of scope` as a question, not a silent addition.
+
+For each gap: check it isn't already answered by the draft or an existing
+question (dedupe by meaning, not wording), then add a `Q-NNN` with `status:
+open`, a sensible `impact:` / `required_before:` (a gap that would change the
+UX or data model is `blocking` at `intent-approval`; polish-class gaps gate
+later), and `owner:`. Close by summarizing what was raised vs. already covered
+— a draft that survives the sweep with nothing raised is a *finding worth
+stating*, not a failed run.
 
 ## Validate mode — `/steer:spec validate [feature-id|--all]`
 
@@ -140,6 +179,24 @@ Flag each of these, citing the `Q-NNN` and file:
   `created:`) with no `tracker:` ref — not yet promoted. This **warns**, it does
   not block: it mirrors the SessionStart hook's escalation, nudging you to
   promote (assign its owner via the tracker.md map) or defer with a reason.
+
+**Cross-artifact analyze checks** — the pre-implementation consistency pass
+(intent ↔ contract ↔ tracker), run in the same sweep. All warnings (⚠): each
+is a judgment call the human resolves, never a mechanical block:
+
+- ⚠ an acceptance criterion with no corresponding `contract.md` behavior where
+  a contract exists — the criterion can't be reviewed against anything
+  testable;
+- ⚠ a `contract.md` behavior no acceptance criterion asks for — scope arrived
+  in the contract without the PO's intent naming it (drift at birth);
+- ⚠ the linked tracker item (`> Tracker:` ref, read via `/steer:tracker-sync`
+  when available) carries acceptance criteria or scope the intent doesn't —
+  the copy-into-intent rule (`tracker.md` template) was skipped;
+- ⚠ an acceptance criterion failing the quality bar in the intent template's
+  `## Acceptance criteria` guidance — not **testable** (no yes/no outcome),
+  not **observable** (phrased as implementation), or not **bounded** (silent
+  on the edge behavior the feature obviously has). Cite the criterion and say
+  which property fails.
 
 The closed-issue check needs the tracker; when GitHub is unavailable, run the
 GitHub-independent checks and **say** the tracker-coupled ones were skipped —

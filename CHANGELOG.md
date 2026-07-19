@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Spec rigor (Phase 3).** Three additions adopted from the Spec Kit
+  comparison:
+  - **`/steer:spec clarify <id>`** — a structured de-ambiguation sweep run
+    before intent approval (step 4 of the default flow, also on demand):
+    interrogates the draft against the classic gap classes (edge cases, error
+    paths, permissions, data lifecycle, non-functional constraints,
+    out-of-scope boundary) and converts every real gap into a structured
+    `Q-NNN` open question — never loose prose, never an invented answer.
+  - **Cross-artifact analyze checks in `validate`** — a pre-implementation
+    consistency pass (all warnings): acceptance criteria with no contract
+    behavior, contract behaviors no criterion asks for, tracker scope the
+    intent doesn't carry, and criteria failing the quality bar.
+  - **`## Acceptance criteria` section in the intent template** — a canonical
+    home (previously criteria had nowhere structured to land) with the
+    testable / observable / bounded quality bar that `validate` warns
+    against.
+
 - **Progressive disclosure (Phase 2).** Three usability changes for new users:
   - **Lite mode** — `/steer:spec` now runs spec-only on an unmanaged repo (no
     bootstrap required): the feature intent drafts under `spec/features/<id>/`
