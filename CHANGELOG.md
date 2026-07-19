@@ -7,6 +7,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Always-on context cut, pass 2.** The next tier of rules
+  (`53-autonomous-loops`, `26-context-hygiene`, `88-artifacts`, `20-layout`,
+  `24-worktrees`, `22-housekeeping`, `85-practices`, `32-living-docs`) is
+  trimmed to imperatives — rules injection drops to 61,786 bytes (69,335
+  before Phase 1) with every gate, constraint, and cross-reference preserved;
+  the context-budget ratchet re-arms at 62,500. Copilot instructions
+  regenerated from the same sources.
+
 - **Always-on context cut (Phase 1, pass 1).** The skill-listing routing
   surface (frontmatter `description` + `when_to_use`) drops 39% (17,950 →
   10,867 chars) — 18 skills rewritten to purpose + primary trigger, with

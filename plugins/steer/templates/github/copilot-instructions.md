@@ -199,11 +199,10 @@ manager), or see the product README.
 
 ## Where things live
 
-The layout below is the **app** profile: an internal monorepo with multiple apps
-and shared packages in one repo. A **library** / **cli** is a single package (no
-`/apps` split); an **infra** repo is organized as IaC (`live/` + `modules/`, or
-Ansible `roles/` + `playbooks/`) — see Stack — infrastructure. The `/spec` spine
-is identical across all profiles.
+This layout is the **app** profile: a monorepo of apps + shared packages. A
+**library** / **cli** is a single package (no `/apps` split); an **infra** repo
+is organized as IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
+— see Stack. The `/spec` spine is identical across all profiles.
 
 - **`/apps`** — deployable applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).
@@ -211,65 +210,52 @@ is identical across all profiles.
 - **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
 - **`/spec`** — product intent; source of truth for what the product does and
   why. Design exports: `/spec/design` (product) or
-  `/spec/features/[id]/design-export/` (feature). Also home to
-  `/spec/HISTORY.md` (action history) and `/spec/tracker.md` (issue-tracker
-  declaration).
+  `/spec/features/[id]/design-export/` (feature). Also `/spec/HISTORY.md`
+  (action history) and `/spec/tracker.md` (issue-tracker declaration).
 - **`/spec/app`** — app knowledge docs: usage, workflows, roles,
-  configuration, limitations, troubleshooting, release notes (PO + dev
-  facing).
+  configuration, limitations, troubleshooting, release notes.
 - **`/spec/decisions`** — ADRs.
-- **`/spec/sources`** — versioned home for **recurring** PO source documents that
-  arrive in successive versions, maintained by `/steer:intake`.
-- **`/spec/reference`** — **one-off** (non-versioned) source/research materials
-  feeding the spec (inventories, vendor metadata, schema/DDL dumps, discovery
-  docs). The `/steer:reference` prose is **not** stored here — it ships with the
-  plugin and is loaded on demand via `/steer:reference`. Contrast `/spec/sources`
-  (recurring, versioned) and `/spec/design` (UI/design exports).
-- **`/infra`** — AWS infrastructure-as-code and deploy scripts.
-- **`ARCHITECTURE.md`** (root) — system-architecture + tech-stack overview, the
-  engineer's system model: stack, the apps/packages map, how a request flows.
-  Distinct audiences — `ARCHITECTURE.md` is *how it's built*, `/spec/app` is *how
-  to use/operate it*, `/spec/design` holds the *diagrams* `ARCHITECTURE.md` links
-  to, and `/spec/decisions` holds the *why* (ADRs). `README.md` is the front door
-  and links to all of them.
+- **`/spec/sources`** — **recurring**, versioned PO source documents,
+  maintained by `/steer:intake`.
+- **`/spec/reference`** — **one-off** (non-versioned) source/research
+  materials feeding the spec. The `/steer:reference` prose is **not** stored
+  here — it ships with the plugin.
+- **`/infra`** — infrastructure-as-code and deploy scripts.
+- **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
+  map, how a request flows. `/spec/app` is *how to use/operate it*,
+  `/spec/design` holds the *diagrams* it links to, `/spec/decisions` the *why*;
+  `README.md` is the front door linking to all of them.
 
 Specs are organized by user-facing feature; code however the stack wants — a
-feature may span several apps/packages (coupling rules: the spec workflow,
-`/steer:spec`).
+feature may span several apps/packages (coupling rules: `/steer:spec`).
 
 
 ## Keep the repo tidy
 
 The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
 `packages/`, `configs/`, `infra/`, `spec/`) plus root config files
-(`package.json`, `compose.yaml`, `mise.toml`, `biome.json`, lockfiles, dotfiles,
+(`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
 `CLAUDE.md`, `README.md`, `DESIGN.md`).
 
 Loose **source/research materials** — spreadsheets, inventories, vendor
-metadata, schema/DDL dumps, discovery docs, PII/CMDB documents, and
-**specification / requirements documents** (a `.pdf`, `.docx`, or deck spec,
-brief, RFP/SOW) — do **not** belong at the root. Their home is
-`/spec/reference/`; architecture and flow diagrams go to `/spec/design/`. A spec
-*document* is **source material** feeding the spine, not the structured spec
-itself — hence `/spec/reference/`, never loose at the root.
+metadata, schema/DDL dumps, discovery docs, and **specification /
+requirements documents** (a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW) —
+never sit at the root: their home is `/spec/reference/`; architecture and
+flow diagrams go to `/spec/design/`. A spec *document* is source material
+feeding the spine, not the structured spec itself.
 
-When you notice a stray non-code file at the root that you can **confidently
-classify** into one of those homes, **move it there immediately** (preserving
-its filename) — don't wait for a yes. Use `git mv` for tracked files so history
-follows, so the mess never lingers and you never block on a move that was never
-in doubt.
+A stray root file you can **confidently classify** into one of those homes →
+**move it there immediately** (keep its filename; `git mv` for tracked files
+so history follows) — don't wait for a yes. Hold for confirmation only where
+judgment or loss is at stake:
 
-Hold for confirmation only where judgment or loss is at stake:
-
-- **Renaming** a cryptic or inconsistent name to a cleaner one — **propose** it,
-  never rename silently; move the file now under its existing name and offer the
-  rename separately.
-- **Ambiguous** files — a name or purpose you can't classify from a quick look,
-  or `Copy of …` / look-alike pairs where picking wrong loses real work —
-  **ask** what it's for before moving; never guess.
-- **Deleting** — never auto-delete. Only true junk (`desktop.ini`, `.DS_Store`)
-  is a candidate, only on confirmation, and add its pattern to `.gitignore` so
-  it can't return.
+- **Renaming** a cryptic name — **propose** it; move the file now under its
+  existing name and offer the rename separately.
+- **Ambiguous** files (unclassifiable at a glance, or `Copy of …` look-alike
+  pairs where picking wrong loses work) — **ask**, never guess.
+- **Deleting** — never automatic. Only true junk (`desktop.ini`,
+  `.DS_Store`), only on confirmation, plus a `.gitignore` pattern so it can't
+  return.
 
 Run **`/steer:tidy`** for a full sweep.
 
@@ -277,72 +263,63 @@ Run **`/steer:tidy`** for a full sweep.
 ## Parallel worktrees — isolate runtime, clean up after
 
 You may be one of several agents working the same repo at once, each in its own
-worktree. Your local services must not collide with — or outlive — a sibling's.
-(This matters for repos with local backing services — the **app / service**
-profile. A **library**, **cli**, or **infra** repo with no `compose.yaml`/ports
-has nothing to isolate; the cleanup discipline below still applies to anything
-you start.)
+worktree; your local services must not collide with — or outlive — a sibling's.
+(A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
+discipline still applies to anything you start.)
 
-**Isolate runtime resources.** Two worktrees that both bind host port 5432
-(Postgres) or 3000 (dev server), or share a Docker container/volume name, will
-break each other. The scaffold prevents this automatically: `mise` sources
-`scripts/worktree-env.sh`, which gives each worktree a unique
+**Isolate runtime resources.** The scaffold handles this automatically: `mise`
+sources `scripts/worktree-env.sh`, giving each worktree a unique
 `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset
-(`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL` — primary checkout keeps the
+(`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`; the primary checkout keeps the
 defaults). So:
 
 - Start services and the dev server through `mise run …` (`docker:up`,
-  `dev:setup`, the app's dev task) so the per-worktree env applies — never with a
-  bare `docker compose up` / hardcoded port that ignores it.
+  `dev:setup`, the app's dev task) so the per-worktree env applies — never a
+  bare `docker compose up` or a hardcoded port.
 - Don't pin a fixed `container_name` or a literal host port in `compose.yaml`,
-  and don't hardcode `localhost:5432`/`localhost:3000` in app config — read the
-  env vars. Hardcoding defeats the isolation and reintroduces the clash.
-- If two worktrees still draw the same offset (a host port is already in use),
-  set `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing the
-  shared files.
+  and don't hardcode `localhost:5432`/`localhost:3000` in app config — read
+  the env vars.
+- If two worktrees still draw the same offset, set
+  `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing shared
+  files.
 
 **Clean up before the worktree closes.** Containers, volumes, and background
-dev servers you start outlive the git worktree unless you tear them down — the
-worktree's removal does **not** stop them. Before closing or removing a
-worktree:
+dev servers outlive the git worktree unless torn down:
 
 - Run `mise run docker:clean` (down + volumes + orphans, scoped to this
-  worktree's `COMPOSE_PROJECT_NAME`) — it won't touch a sibling's stack.
+  worktree's `COMPOSE_PROJECT_NAME` — it won't touch a sibling's stack).
 - Stop any background dev server / watcher you launched, freeing its port.
 - Leave no orphaned containers, volumes, processes, or held ports behind.
 
 
 ## Context hygiene — delegate heavy runs, keep state in files
 
-Long, multi-phase work bloats the session and risks losing task constraints when
-context compacts. You **cannot** see context usage, trigger `/compact`, or start a
-new session — only the user can, so keep the working context lean instead.
+Long, multi-phase work bloats the session and risks losing task constraints at
+compaction. You cannot see context usage or trigger `/compact` — only the user
+can — so keep the working context lean instead.
 
-- **Delegate heavy runs to a subagent.** When a run is long, multi-phase, or would
-  crowd this context with search output or intermediate transcript, do it in a
-  **subagent** — it gets a fresh context window by construction — and bring back
-  only the structured result, not the whole sweep. This is how `/steer:audit` fans
-  out to the `steer-reviewer` agent and `/steer:work --reviewed` runs its plan gate.
+- **Delegate heavy runs to a subagent** (a fresh context window by
+  construction) and bring back only the structured result, not the whole
+  sweep — how `/steer:audit` fans out to `steer-reviewer` and
+  `/steer:work --reviewed` runs its plan gate.
 - **Keep durable state in files, not the chat.** Run-state and task-specific
-  constraints (decisions made, what to skip, what's unreliable) go in `/spec/**` or
-  a sidecar artifact the work re-reads — never only in conversation prose. Files
-  survive compaction and a fresh session; chat history does not. `/steer:build`
-  tracks flow in `BUILD-STATUS.md`, `/steer:work` in its work marker — follow that.
-- **Don't offer to save findings to session memory.** Private auto-memory survives
-  compaction, but it is invisible to the repo, the PR, and every teammate — it is
-  working notes, never the team's record. When a session surfaces something worth
-  keeping, route it to its canonical home **by type** instead of proposing a memory
-  write: a **bug fix** → a regression test (Testing, Definition of done); an
-  **operational or behavioral fact** → the app guide / `/spec/HISTORY.md` (Living
-  docs); an **unresolved bug or follow-up** → a linked tracker issue (Issue-first);
-  a **durable design decision** → the spine (Decision capture). Each fact lands in
-  **one** home — surface that capture, don't ask whether to remember it.
-- **Only when the thread is genuinely overloaded** with unrelated context and
-  delegation won't help, *recommend* the user `/compact` or start a fresh session —
-  and pre-compose the hand-off (the artifact path + the constraints to carry).
-  Say plainly it is a recommendation you cannot perform yourself.
+  constraints (decisions made, what to skip, what's unreliable) go in
+  `/spec/**` or a sidecar artifact the work re-reads — files survive compaction
+  and a fresh session; chat history does not (`/steer:build` →
+  `BUILD-STATUS.md`, `/steer:work` → its work marker).
+- **Don't offer to save findings to session memory** — private auto-memory is
+  invisible to the repo, the PR, and every teammate. Route each fact to its
+  canonical home by type: a **bug fix** → a regression test; an **operational
+  or behavioral fact** → the app guide / `/spec/HISTORY.md`; an **unresolved
+  follow-up** → a linked tracker issue; a **durable design decision** → the
+  spine. One home per fact — surface the capture, don't ask whether to
+  remember it.
+- **Only when the thread is genuinely overloaded** and delegation won't help,
+  *recommend* the user `/compact` or a fresh session, pre-composing the
+  hand-off (the artifact path + the constraints to carry) — and say plainly it
+  is a recommendation you cannot perform yourself.
 
-Full pattern and a worked example: run `/steer:reference context-hygiene`.
+Full pattern and a worked example: `/steer:reference context-hygiene`.
 
 
 ## Spec workflow
@@ -431,10 +408,9 @@ precedence in the router and Living documentation (`32-living-docs`).
 ## Living documentation — document in parallel, not after
 
 The PO/dev speaks plainly; **you** translate it into durable artifacts *as the
-work happens*, never in a wrap-up pass. Specs are living: when conversation or
-implementation reveals a requirement, constraint, assumption, risk, trade-off,
-or decision, update (or propose) the owning artifact **in the same change as
-the code**:
+work happens*, never in a wrap-up pass. When conversation or implementation
+reveals a requirement, constraint, assumption, risk, trade-off, or decision,
+update (or propose) the owning artifact **in the same change as the code**:
 
 - Intent, goals, acceptance criteria → the feature's `intent.md` (scope
   changes need PO approval); behavior/data/API decisions → `contract.md`;
@@ -442,33 +418,28 @@ the code**:
 - Ambiguity → `## Open questions` — **never guess an answer into the spec**.
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
   release notes → the app guide (`/spec/app/`).
-- Tech stack, the apps/packages map, how the pieces fit together → root
-  `ARCHITECTURE.md`. Any PR that changes the stack, adds/removes/renames an app
-  or package, or reshapes cross-component data flow updates it — and the linked
-  architecture diagram (`/spec/design/architecture.md`) — in the same PR.
-- Visual identity, reusable design tokens → root `DESIGN.md`, seeded from the
-  chosen identity when the first UI lands and grown on the 3+ rule (`Design
-  sources`). The same PR that establishes the stack or first app also retires
-  the scaffold's now-false placeholder prose (e.g. the `apps/README.md` "starts
-  empty" line, `[e.g., …]` cells) — a stub left after the thing it describes
-  exists is drift.
-- What changed, why, who asked, refs → append to `/spec/HISTORY.md` (action
-  history), one short entry per merged change or ratified decision.
+- Tech stack, the apps/packages map, cross-component data flow → root
+  `ARCHITECTURE.md` — updated, with the linked architecture diagram
+  (`/spec/design/architecture.md`), in the same PR that changes them.
+- Visual identity, reusable design tokens → root `DESIGN.md`, seeded when the
+  first UI lands and grown on the 3+ rule (Design sources). The PR that
+  establishes the stack or first app also retires the scaffold's now-false
+  placeholder prose — a stub left after the thing it describes exists is
+  drift.
+- What changed, why, who asked, refs → append to `/spec/HISTORY.md`, one
+  short entry per merged change or ratified decision.
 
 PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
-conventions + worked examples: run **`/steer:reference traceability`**.
+conventions + worked examples: **`/steer:reference traceability`**.
 
 **Applying a decision already made is not a new decision.** Propagating a
-settled choice into the artifacts that should reflect it — a one-liner into
-`CLAUDE.md`, a consistency edit, a superseding ADR, a fact grounded from the
-code — is living-docs upkeep: make the edit in the same change and let the
-**PR be the gate** (you are not it — see rule `95-not-the-gate`).
-Pause for a yes only when the *decision itself* is unmade — a genuine
-product / policy / architecture call, or anything under **High-risk areas** —
-or when an edit would clobber filled-in content. Don't stop to ask "shall I
-apply this?" once the decision exists.
+settled choice into the artifacts that should reflect it is living-docs
+upkeep: make the edit in the same change and let the **PR be the gate** (rule
+`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade
+— a genuine product / policy / architecture call, anything under High-risk
+areas — or when an edit would clobber filled-in content.
 
 
 ## Issue tracker integration (client-agnostic)
@@ -689,37 +660,31 @@ its flow in an ADR.
 
 An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)
 that wakes on its own, discovers work — CI failures, open issues, drift — and
-drives it through steer's skills without a human in each turn. A loop removes the
-prompting, **not** the responsibility: your job is still to ship code you
-*confirmed* works (Definition of done, Verify loop).
+drives it through steer's skills unattended. It removes the prompting, **not**
+the responsibility: still ship code you *confirmed* works (Definition of done).
 
-- **A loop closes only up to a human gate — never through one.** It may discover,
-  triage, draft in an isolated worktree, run the verify loop, push its **own work
-  branch**, and open a PR — the same autonomous delivery every session has
-  (Commit autonomy: the **merge review is the human gate**, not the push or the
-  PR). It **stops** at every authority gate this manual already sets: creating
-  issues beyond an explicit ask (Issue-first), ratifying an ADR (High-risk), and
-  merge / deploy / push to `main` or any protected branch / real secrets (Commit
-  autonomy, High-risk). Automating navigation never relaxes what a step is
-  allowed to do. Loop-opened PRs are **drafts by convention** — not an authority
-  gate but a deliberate signal that nobody attended the run; a reviewer flips
-  one to ready when they pick it up.
-- **A loop presupposes PR flow.** The whole design routes unattended work through
-  the merge review, so the repo's `main` should be protected (`/steer:protect`).
-  Never point a loop at a solo-trunk repo — unattended direct-to-`main` delivery
-  has no gate at all; graduate first.
-- **Split ideation from verification.** The agent that drafts a change must not be
-  the one that clears it — route the check through an independent reviewer
-  (`steer-reviewer`, `/steer:audit`, the test harness), never the drafting agent's
-  own say-so.
-- **Keep durable state outside the model.** A loop forgets between runs; its memory
-  is the tracker + `/spec/**` (issues, `HISTORY.md`), not chat context. Record what
-  it did and what's left there, so the next run resumes instead of repeating.
-- **Only loop on checkable work.** Same bound as the Verify loop — judgment calls,
-  design decisions, and long-compute runs have no fast pass/fail and are never a
-  loop's to close: it surfaces them for a human, it does not decide them.
-- **Scaffold loops with `/steer:loop`**, which emits the scheduled workflow wired to
-  these limits. Don't hand-roll an automation that can cross a gate.
+- **A loop closes only up to a human gate — never through one.** It may
+  discover, triage, draft in an isolated worktree, verify, push its **own work
+  branch**, and open a PR — the merge review is the human gate (Commit
+  autonomy). It **stops** at every authority gate: issue creation beyond an
+  explicit ask (Issue-first), ADR ratification (High-risk), and merge / deploy
+  / push to `main` or any protected branch / real secrets. Loop-opened PRs are
+  **drafts by convention** — the deliberate signal that nobody attended the
+  run; a reviewer flips one to ready.
+- **A loop presupposes PR flow.** Protect `main` first (`/steer:protect`);
+  never point a loop at a solo-trunk repo — unattended direct-to-`main`
+  delivery has no gate at all.
+- **Split ideation from verification.** The drafting agent never clears its own
+  change — route the check through an independent reviewer (`steer-reviewer`,
+  `/steer:audit`, the test harness).
+- **Keep durable state outside the model.** A loop's memory is the tracker +
+  `/spec/**` (issues, `HISTORY.md`), not chat context — record what it did and
+  what's left so the next run resumes instead of repeating.
+- **Only loop on checkable work.** Judgment calls, design decisions, and
+  long-compute runs have no fast pass/fail — the loop surfaces them for a
+  human, it never decides them.
+- **Scaffold loops with `/steer:loop`** — never hand-roll an automation that
+  can cross a gate.
 
 
 ## Drift gates — surface before merge
@@ -866,47 +831,44 @@ Match the workflow to the change. When uncertain, size **up**.
 ## Patterns we follow (baseline)
 
 Org baseline stated as principles; each names the **default-stack** instance in
-parens so it stays actionable on the default stack and still applies on any
-other. A product's own `CLAUDE.md` adds team-learned patterns on top. Full
-patterns + anti-patterns prose: run `/steer:reference conventions`.
+parens so it stays actionable there and still applies on any other stack. A
+product's own `CLAUDE.md` adds team-learned patterns on top. Full patterns +
+anti-patterns prose: `/steer:reference conventions`.
 
 - **Typed by default** — static typing on wherever the language supports it;
-  model the type rather than reaching for an untyped escape hatch. *(Default: TS
+  model the type rather than reaching for an untyped escape hatch. *(TS
   `strict`; Python: type hints checked with a type checker.)*
 - **All data access goes through a parameterized query layer — never raw or
   string-interpolated SQL.** Schema is defined in code and changed via
-  committed, reviewed migrations; no ad-hoc schema edits. *(Default: Drizzle +
-  Drizzle Kit; Python: SQLAlchemy 2.x + Alembic.)*
+  committed, reviewed migrations; no ad-hoc schema edits. *(Drizzle + Drizzle
+  Kit; Python: SQLAlchemy 2.x + Alembic.)*
 - **Validate every external input through a defined schema at the boundary
-  before use** — request inputs, external API responses, config and data files
-  (JSON/YAML), env vars — and derive types from that schema rather than
-  hand-writing them. One validated config module instead of scattered raw env
-  reads.
+  before use** — request inputs, external API responses, config and data
+  files, env vars — and derive types from that schema rather than hand-writing
+  them. One validated config module, not scattered raw env reads.
 - **Server-first** — secrets and DB access stay server-side; client code is
-  explicit and lean; only genuinely public values are exposed to the client.
-  *(Default: Next.js Server Components / `NEXT_PUBLIC_*`.)*
+  explicit and lean; only genuinely public values reach the client. *(Next.js
+  Server Components / `NEXT_PUBLIC_*`.)*
 - **Domain logic lives in shared, testable modules**, not in UI components or
-  route handlers — keep handlers thin. *(Default: monorepo `packages/`.)*
-- **Nothing silenced** — no empty `catch` / swallowed errors (unexpected errors
-  go to Sentry with context); no escape hatches without a why-comment (`any`
-  casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule disabling).
-- **Lockfiles are maintained, not optional** — they are committed and updated in
-  the same change that touches their config/deps; never deleted or ignored to
-  dodge an error. *(Default: `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
-  `.terraform.lock.hcl` — and mise only writes `mise.lock` if the file already
-  exists, so restore a missing one first.)*
-- **Every import resolves to a declared dependency** — anything you import is
-  added to the manifest (and lockfile) in the same change, before you finish; a
-  plausible-looking package name that isn't declared is a hallucinated
-  dependency, not a working import, and breaks the moment the code runs in a
-  clean environment. *(Default: `package.json`; Python: `pyproject.toml`.)*
-- **ASCII in code and values** — non-ASCII "typographic" characters (em/en
-  dashes, arrows, smart quotes, ellipsis, non-breaking spaces) belong in prose and
-  docs, never in code, identifiers, config keys/values, or any string bound for an
-  external API or system — use the ASCII equivalent (`-`, `->`, `"`, `'`, `...`, a
-  plain space). Strict validators reject the rest (e.g. AWS IAM `description`
-  accepts only ASCII + Latin-1). ASCII-clean text when you paste it into code or a
-  value. *(Full rationale: `/steer:reference conventions`.)*
+  route handlers — keep handlers thin. *(Monorepo `packages/`.)*
+- **Nothing silenced** — no empty `catch` / swallowed errors (unexpected
+  errors go to Sentry with context); no escape hatches without a why-comment
+  (`any` casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule
+  disabling).
+- **Lockfiles are maintained, not optional** — committed and updated in the
+  same change that touches their config/deps; never deleted or ignored to
+  dodge an error. *(`mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+  `.terraform.lock.hcl`; mise only writes `mise.lock` if it already exists —
+  restore a missing one first.)*
+- **Every import resolves to a declared dependency** — added to the manifest
+  (and lockfile) in the same change; a plausible-looking undeclared package
+  name is a hallucinated dependency that breaks in a clean environment.
+  *(`package.json`; Python: `pyproject.toml`.)*
+- **ASCII in code and values** — typographic characters (em/en dashes, arrows,
+  smart quotes, ellipsis, non-breaking spaces) belong in prose and docs, never
+  in code, identifiers, config keys/values, or strings bound for an external
+  API — use the ASCII equivalent. Strict validators reject the rest.
+  *(Rationale: `/steer:reference conventions`.)*
 
 
 ## Output discipline — earn every line
@@ -927,32 +889,29 @@ already see; volume is not rigor.
 
 ## Shareable views → Claude Artifacts
 
-When a skill's output is a **shareable, at-a-glance view** someone wants to look at
-or hand to a stakeholder — a feature summary, a report/dashboard, a release
-timeline, a capability menu, a fillable questionnaire — render it as a **Claude
-Artifact** (a default-private hosted page on claude.ai), not a wall of terminal
-text. Fall back to inline Markdown where the Artifact tool is unavailable
-(Bedrock/Vertex/Foundry, a zero-data-retention org, no claude.ai login) — the
-fallback is not a failure.
+When a skill's output is a **shareable, at-a-glance view** someone hands to a
+stakeholder — a feature summary, a report/dashboard, a release timeline, a
+capability menu, a fillable questionnaire — render it as a **Claude Artifact**
+(a default-private hosted page on claude.ai), not a wall of terminal text. Fall
+back to inline Markdown where the Artifact tool is unavailable — the fallback
+is not a failure.
 
-An Artifact is a **derived view, never a source of truth**: every visual encodes a
-real value the source (spec, tracker, audit) actually contains — never fabricate a
-status, date, count, or finding, and never advance a marker past what the source
-records. It is always an on-demand render or an offer — never auto-generated per
-feature or on a schedule, and never carries secrets or (on a stakeholder page)
-internal detail. Its only write is the page HTML, to a **system temp dir, never
-under the repo tree**; don't persist the page URL in the repo.
+An Artifact is a **derived view, never a source of truth**: every visual
+encodes a real value the source (spec, tracker, audit) actually contains —
+never fabricate a status, date, count, or finding, and never advance a marker
+past what the source records. Always an on-demand render or an offer — never
+auto-generated per feature or on a schedule — and never carrying secrets or
+(on a stakeholder page) internal detail. Its only write is the page HTML to a
+**system temp dir, never under the repo tree**; don't persist the URL in the
+repo.
 
-Style the page to the product: derive its look from the repo's `DESIGN.md` tokens
-when present, else the `artifact-design`/`dataviz` house default — never an
-invented brand. A fillable page returns data **only through its exported,
-machine-keyed document** ingested by its owning skill (the PO questionnaire returns
-via `/steer:intake clarify`) — a hosted page stores nothing, so inputs can never be
-read back off it.
+Style the page from the repo's `DESIGN.md` tokens when present, else the
+`artifact-design`/`dataviz` house default — never an invented brand. A fillable
+page returns data **only through its exported, machine-keyed document**
+ingested by its owning skill (the PO questionnaire → `/steer:intake clarify`).
 
-Mechanics (load `artifact-design` first, `dataviz` for any chart; everything inline
-per the CSP; private-until-shared), the full derived-view discipline, the styling
-contract, the Markdown-fallback shape, and which skill renders what:
+Mechanics, the full derived-view discipline, the styling contract, the
+Markdown-fallback shape, and which skill renders what:
 `/steer:reference artifacts`.
 
 
