@@ -40,11 +40,12 @@ import yaml
 PLUGIN_ROOT = Path("plugins/steer")
 
 # --- Ratchet ceilings (hard gate) -------------------------------------------
-# Re-armed after the Phase 1 pass-1 trim (PLAN.md): rules 65,508 bytes across
-# 34 files (was 69,335); listing 10,867 chars across 26 skills (was 17,950).
-# Headroom (~2-5%) absorbs small legitimate edits; anything larger must trade
-# prose out first. LOWER these again as further reductions land.
-RULES_TOTAL_MAX_BYTES = 66_500
+# Re-armed after the Phase 1 pass-2 rules trim (PLAN.md): rules 61,786 bytes
+# across 34 files (was 69,335 pre-Phase-1); listing 10,867 chars across 26
+# skills (was 17,950). Headroom (~1-5%) absorbs small legitimate edits;
+# anything larger must trade prose out first. LOWER these again as further
+# reductions land.
+RULES_TOTAL_MAX_BYTES = 62_500
 LISTING_TOTAL_MAX_CHARS = 11_500
 
 # --- Aspirational targets (reported, never enforced here) --------------------

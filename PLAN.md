@@ -66,8 +66,22 @@ write a `/spec/.state` cache — the real cost was the model re-deriving local
 state call-by-call. Shipped instead as a one-shot read-only
 `scripts/workspace-snapshot.sh` that gathers all local dimensions in a single
 call, with `/steer:next` fetching only live PR/tracker state separately
-(batched, minimal output). Remaining: the deep rule→reference restructure to
-approach 30 KB (items 1–2).
+(batched, minimal output). Pass 2 (items 1–2 continued) trimmed the next tier
+of rules (autonomous-loops, context-hygiene, artifacts, layout, worktrees,
+housekeeping, practices, living-docs) to 61,786 B total (ceiling re-armed at
+62,500).
+
+**Reframing the 30 KB target (decision needed).** Two trim passes over all
+compressible rules landed at ~62 KB — the remaining prose is imperative-dense,
+and further wording cuts would drop constraints, not fat. Reaching ~30 KB is
+not a trim; it means **demoting whole rules from always-on to on-demand**,
+which changes when Claude sees them. Candidates where the owning skill or
+reference doc already carries the content and an `inject-when`-style scope (or
+full demotion to `/steer:reference`) is plausible: `24-worktrees` (relevant
+only in parallel-worktree sessions), `88-artifacts` (restated by every
+rendering skill), `26-context-hygiene`, `90-design-sources`, `15-commands`.
+That is a behavior decision for the maintainer, not a mechanical edit — until
+taken, the rules budget holds at the ~62 KB ratchet.
 
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types

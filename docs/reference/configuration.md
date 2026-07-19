@@ -73,4 +73,11 @@ manual. They are injected into every managed session by `inject-standards.sh`
 
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
-added to `rules/`.
+added to `rules/`. That leanness is **enforced, not aspirational**: CI's
+`check_context_budget.py` gate holds hard ceilings over the two always-on
+surfaces — the total `rules/*.md` bytes (the SessionStart injection payload)
+and the total skill-listing `description` + `when_to_use` characters — as a
+ratchet re-armed at each reduction, so always-on context weight can only
+shrink or hold. A companion routing-fixture net
+(`tests/fixtures/routing/asks.yml`) pins the vocabulary plain-language routing
+depends on, so trimming can never silently break "just say what you want".
