@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: Human-facing capabilities menu — renders the router's intent→skill table in plain language, grouped by workflow, so a user can browse what steer can do without knowing any skill name. Read-only; sources the live router table so it can never drift from actual routing.
+description: Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, grouped by workflow. Read-only; sources the live router table so it can never drift from actual routing.
 ---
 
 <!-- Generated from the steer plugin's skills/help/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:help` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Human-facing capabilities menu — renders the router's intent→skill table in plain language, grouped by workflow, so a user can browse what steer can do without knowing any skill name. Read-only; sources the live router table so it can never drift from actual routing.
+**Purpose.** Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, grouped by workflow. Read-only; sources the live router table so it can never drift from actual routing.
 
-**When to use.** Use when the user wants to browse steer's capabilities rather than run one — "what can steer do?", "what can you do?", "show me the commands", "list the skills", "I'm new here, what's available?". This is discovery, not navigation: for "what should I do next" in a real repo route to /steer-next, and for getting a repo onto the standards route to /steer-setup.
+**When to use.** Use to browse steer's capabilities — "what can steer do?", "what can you do?", "show me the commands", "list the skills". Discovery only: "what should I do next" routes to /steer-next.
 
 **Arguments.** [optional: a skill or area to zoom into]
 

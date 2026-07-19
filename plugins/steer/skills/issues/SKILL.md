@@ -1,7 +1,10 @@
 ---
 name: issues
-description: "High-level GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epic grouping, status, a ranked relationship-aware board view, and bounded reconcile. A thin orchestrator: it delegates product/spec reasoning to /steer:spec, audit findings to /steer:audit, drift to /steer:audit spec, and question promotion to /steer:questions, and routes GitHub reads/writes through /steer:tracker-sync (MCP-first, gh fallback, manual floor) — with one sanctioned exception, the bootstrap-labels mode's inline label creation. Agent-authored issues follow the machine-readable contract (stable headings + hidden markers + managed blocks). /spec stays product truth; the issue is the work/decision layer."
-when_to_use: Use to drive a PO idea from capture to a draft spec to decomposed work without losing open questions or overwriting human content.
+description: "GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, and bounded reconcile. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer."
+when_to_use: >-
+  Use to manage the backlog without implementing now — drive a PO idea from
+  capture to a draft spec to decomposed work without losing open questions or
+  overwriting human content.
 argument-hint: "[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile | publish-audit | publish-drift | publish-adoption | publish-findings | bootstrap-labels] [#issue | feature-id]"
 allowed-tools:
   - Bash(git status *)

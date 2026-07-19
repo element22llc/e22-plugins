@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer-issues, /steer-audit spec, and /steer-tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
+description: Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — intended-but-unshipped work becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates.
 ---
 
 <!-- Generated from the steer plugin's skills/roadmap/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:roadmap` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Generate a release timeline for the /spec spine and make it viewable as a GitHub Projects v2 roadmap — turn intended-but-unshipped work into GitHub issues grouped under release milestones with due dates. A thin orchestrator over /steer-issues, /steer-audit spec, and /steer-tracker-sync; the issue + /spec stay canonical, the Project is a derived view, and it never fabricates dates.
+**Purpose.** Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — intended-but-unshipped work becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates.
 
-**When to use.** Use to lay out where the product is going on a timeline — when asked for a roadmap, a release plan, or a Projects v2 timeline, or to turn target features or a spec-vs-implemented gap into milestone-grouped GitHub issues.
+**When to use.** Use for a roadmap, release plan, or Projects v2 timeline — laying out where the product is going or turning target features into milestone-grouped issues.
 
 **Arguments.** [from-features | from-gap | sync]
 

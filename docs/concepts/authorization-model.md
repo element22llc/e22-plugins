@@ -139,7 +139,8 @@ branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 named dev tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run`
 wildcard, so `gh pr merge` and unknown commands still prompt. Those flows also pre-approve the
 bundled plugin helper scripts they execute on every run — `template-reconcile.sh`,
-`scaffold_reconcile.py`, `scan-prereqs.sh` — under a matching interpreter
+`scaffold_reconcile.py`, `scan-prereqs.sh`, and `/steer:next`'s
+`workspace-snapshot.sh` — under a matching interpreter
 (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper prompts the
 user mid-flow every time. The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools

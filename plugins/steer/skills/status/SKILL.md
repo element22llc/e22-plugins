@@ -1,13 +1,10 @@
 ---
 name: status
-description: "Render a client-facing, time-boxed progress report across the whole /spec spine — what shipped this period, what's in progress, what needs the client's input, and what's next — as a shareable Claude Code Artifact with a Markdown fallback. A thin orchestrator + presentation layer: reads closed issues and milestone progress through /steer:tracker-sync and reads open blocking questions and feature status from /spec, then renders them in plain product language. Read-only and derived — /spec and the tracker stay canonical; it never fabricates counts, dates, or status, never writes into /spec, /apps, /packages, or the tracker, and is never auto-generated on a schedule."
+description: "Client-facing, time-boxed progress report across the whole /spec spine — what shipped, what's in progress, what needs the client's input, and what's next — rendered as a shareable Claude Artifact with a Markdown fallback. Read-only and derived; never fabricates counts, dates, or status."
 when_to_use: >-
-  Use when someone wants a progress/status update to hand a client or Product
-  Owner — "give me a status report", "what did we ship this week", "weekly
-  status for the client", "where are we on <milestone>". Not for choosing the
-  next action (that is /steer:next), planning a forward timeline (that is
-  /steer:roadmap), or presenting one feature in depth (that is /steer:explain);
-  this summarizes progress across the whole spine over a time window.
+  Use for a progress update to hand a client or Product Owner — "give me a
+  status report", "what did we ship this week", "weekly status for the client",
+  "where are we on <milestone>".
 argument-hint: "[this-week | since <date> | milestone [<name>]]"
 # Read-only by construction. Pre-approve ONLY the tracker *read* verbs that
 # /steer:tracker-sync performs while this skill is the invoked one (a skill's
@@ -31,6 +28,11 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 <!-- steer:modes this-week,since,milestone -->
 
 # Status report — a shareable, plain-language progress update
+
+**Scope boundary:** this summarizes progress across the whole spine over a
+time window. Choosing the next action is `/steer:next`; a forward timeline is
+`/steer:roadmap`; one feature in depth is `/steer:explain`. Never write into
+/spec, /apps, /packages, or the tracker, and never auto-generate on a schedule.
 
 Turn the current state of the workspace into a **client-readable progress report
 for a time window**: what shipped this period, what's in flight, what's waiting on

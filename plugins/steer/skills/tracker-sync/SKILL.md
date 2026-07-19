@@ -1,7 +1,9 @@
 ---
 name: tracker-sync
-description: "The GitHub Issues tracker-metadata gateway for the /spec spine — the single low-level layer /steer:issues and /steer:work call for all issue read/write (search, find-or-create, update, label, set-type, milestone, transition, link, close) plus the PULL/PUSH spec flows. MCP-first with gh CLI fallback; moves tracker metadata, never the spec or git/PR delivery, and never invents tracker state."
-when_to_use: Use when /spec/tracker.md points at GitHub Issues and you need any issue read/write — find-or-create, update a managed block, transition state, set type/labels, set or ensure a milestone, link a PR, pull issues into the /steer:audit spec export, import acceptance criteria, or push spec-drift/question/feature-request issues out.
+description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, gh fallback, manual floor) — reads and writes issues on behalf of the owning skills."
+when_to_use: >-
+  Reached via /steer:issues, /steer:work, and the other owning skills — not a
+  direct entry point.
 argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
 # /steer:spec (materialize step), /steer:roadmap, /steer:intake (reconcile), and

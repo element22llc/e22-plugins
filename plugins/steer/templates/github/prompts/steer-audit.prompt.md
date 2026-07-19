@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: 'Repeatable, read-only audits of a managed repo: `code` mode (default) sweeps the whole repo against the standards dimensions, ranks findings by leverage, and files them in the tracker; `spec` mode compares the as-built /spec against the intended spec from the tracker and surfaces drift; `all` runs both. Repository-read-only — proposes spec changes and files issues but never edits code/spec or commits; defers correctness to /code-review and security to /security-review.'
+description: Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and files ranked findings in the tracker; spec mode surfaces as-built vs intended drift; all runs both. Proposes and files, never edits code or spec.
 ---
 
 <!-- Generated from the steer plugin's skills/audit/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:audit` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Repeatable, read-only audits of a managed repo: `code` mode (default) sweeps the whole repo against the standards dimensions, ranks findings by leverage, and files them in the tracker; `spec` mode compares the as-built /spec against the intended spec from the tracker and surfaces drift; `all` runs both. Repository-read-only — proposes spec changes and files issues but never edits code/spec or commits; defers correctness to /code-review and security to /security-review.
+**Purpose.** Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and files ranked findings in the tracker; spec mode surfaces as-built vs intended drift; all runs both. Proposes and files, never edits code or spec.
 
-**When to use.** Use to audit overall code health and find the highest-leverage improvements (code), to confirm the build matches what the tracker asked for (spec), or both (all) — a periodic standards-conformance pass on a steady-state repo.
+**When to use.** Use for a periodic standards-conformance pass — audit overall code health and the highest-leverage improvements (code), confirm the build matches what the tracker asked for (spec), or both (all).
 
 **Arguments.** [code | spec | all]
 

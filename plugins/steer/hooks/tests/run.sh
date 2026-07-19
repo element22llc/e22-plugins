@@ -1923,5 +1923,98 @@ printf '# Some feature\n\njust a title\n' >"${TD3}/spec/features/f/intent.md"
 out="$(run_hook check-template-drift.sh "$(session_json "${TD3}/apps/web" td3)")"
 assert_has "template-drift: subdir cwd resolves root and reports drift" "${out}" "## Open questions"
 
+# ---------------------------------------------------------------------------
+# session-checks.sh — consolidated SessionStart orchestrator. Sequencing only:
+# the five checks stay individually authoritative (tested above); these cases
+# pin the orchestration contract — aggregation, separation, silence, rc 0.
+# ---------------------------------------------------------------------------
+
+# (a) one fixture tripping TWO checks: spec/ without .version (unmanaged-repo
+#     notice) + a title-only feature intent (template-drift report). Both
+#     notices must appear in one combined output, in registration order
+#     (drift before unmanaged), separated cleanly.
+SC1="$(new_repo scBoth)"
+mkdir -p "${SC1}/spec/features/f"
+printf '# Some feature\n\njust a title\n' >"${SC1}/spec/features/f/intent.md"
+out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1)")"
+assert_has "session-checks: aggregates template-drift notice" "${out}" "## Open questions"
+assert_has "session-checks: aggregates unmanaged-repo notice" "${out}" "no spec-spine marker"
+_drift_pos="$(printf '%s' "${out}" | grep -n 'Open questions' | head -1 | cut -d: -f1)"
+_unmgd_pos="$(printf '%s' "${out}" | grep -n 'no spec-spine marker' | head -1 | cut -d: -f1)"
+[ "${_drift_pos:-0}" -lt "${_unmgd_pos:-0}" ] && ok ||
+	bad "session-checks: registration order preserved (drift at ${_drift_pos:-?}, unmanaged at ${_unmgd_pos:-?})"
+
+# (b) a healthy managed repo -> every check silent -> orchestrator silent, rc 0.
+SC2="$(new_repo scClean)"
+managed_spine "${SC2}"
+out="$(run_hook session-checks.sh "$(session_json "${SC2}" sc2)")"
+assert_empty "session-checks: healthy managed repo silent" "${out}"
+
+# (c) rc 0 even when checks emit notices — a notice is context, not a failure.
+out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1c)")"
+assert_eq "session-checks: rc 0 with notices" "$(last_rc)" "0"
+
+# (d) hooks.json registers the orchestrator (not the five checks individually)
+#     for startup|resume|clear — the consolidation this section exists to pin.
+_hj="${HOOKS}/hooks.json"
+grep -q 'session-checks\.sh' "${_hj}" && ok || bad "session-checks: registered in hooks.json"
+for _solo in check-template-drift check-open-questions check-unmanaged-repo surface-faults check-graduation; do
+	grep -q "${_solo}\.sh" "${_hj}" && bad "session-checks: ${_solo}.sh must not be registered directly" || ok
+done
+
+# ---------------------------------------------------------------------------
+# workspace-snapshot.sh — one-shot read-only local reconstruction for
+# /steer:next. Local dimensions only; explicit "none" per empty dimension.
+# ---------------------------------------------------------------------------
+SNAP="${PLUGIN}/scripts/workspace-snapshot.sh"
+
+# (a) populated managed repo: every local dimension surfaces in one output.
+WS1="$(new_repo wsFull)"
+managed_spine "${WS1}"
+printf 'system: github\n' >"${WS1}/spec/tracker.md"
+mkdir -p "${WS1}/spec/features/checkout" "${WS1}/spec/decisions" "${WS1}/spec/.work"
+{
+	printf '> Status: draft\n\n## Open questions\n\n'
+	printf '### Q-001 Which payment provider?\n- status: open\n- impact: blocking\n- required_before: intent-approval\n'
+	printf '### Q-999 Placeholder <!-- steer:placeholder -->\n- status: open\n'
+} >"${WS1}/spec/features/checkout/intent.md"
+printf '# ADR\n\n- **Status:** Proposed\n' >"${WS1}/spec/decisions/0001-stack.md"
+printf -- '- issue: 42\n- branch: issue/42-checkout\n' >"${WS1}/spec/.work/issue_42.md"
+run_sh "${SNAP}" "${WS1}"
+assert_rc "snapshot: managed repo exits 0" "${rc}" 0
+assert_has "snapshot: spine state reported" "${out}" "state: managed"
+assert_has "snapshot: feature status surfaced" "${out}" "checkout: status=draft contract=no"
+assert_has "snapshot: real open question surfaced" "${out}" "Q-001"
+assert_has "snapshot: question fields surfaced" "${out}" "impact: blocking"
+assert_has "snapshot: proposed ADR surfaced" "${out}" "0001-stack.md: Proposed"
+assert_has "snapshot: work claim surfaced" "${out}" "issue_42.md"
+assert_has "snapshot: claim detail surfaced" "${out}" "issue/42-checkout"
+assert_has "snapshot: tracker system declared, live state deferred" "${out}" "system: github"
+assert_has "snapshot: tracker defers to tracker-sync" "${out}" "/steer:tracker-sync"
+printf '%s' "${out}" | grep -q 'Q-999' && bad "snapshot: placeholder question must be excluded (got Q-999)" || ok
+
+# (b) empty unmanaged repo: dimensions print explicit "none", never silence.
+WS2="$(new_repo wsEmpty)"
+run_sh "${SNAP}" "${WS2}"
+assert_rc "snapshot: empty repo exits 0" "${rc}" 0
+assert_has "snapshot: empty features say none" "${out}" "none"
+printf '%s' "${out}" | grep -q 'state: managed' && bad "snapshot: empty repo must not read managed" || ok
+
+# (c) read-only: a snapshot run creates nothing in the target repo.
+_before="$(find "${WS1}" | LC_ALL=C sort)"
+run_sh "${SNAP}" "${WS1}"
+_after="$(find "${WS1}" | LC_ALL=C sort)"
+[ "${_before}" = "${_after}" ] && ok || bad "snapshot: must not create or remove files"
+
+# (d) real git repo: branch + working-tree counters populate.
+if command -v git >/dev/null 2>&1; then
+	WS3="$(git_repo wsGit feat/snapshot)"
+	printf 'x\n' >"${WS3}/loose.txt"
+	run_sh "${SNAP}" "${WS3}"
+	assert_has "snapshot: git branch reported" "${out}" "branch: feat/snapshot"
+	# git_repo leaves spec/tracker.md untracked too -> loose.txt makes 2.
+	assert_has "snapshot: untracked count reported" "${out}" "2 untracked"
+fi
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

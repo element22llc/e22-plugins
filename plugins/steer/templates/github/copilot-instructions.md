@@ -4,40 +4,37 @@
 
 Org-wide engineering standards, injected into every session by the **steer**
 plugin and maintained centrally in
-[`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins) — do not
-copy them into a product's `CLAUDE.md`, which holds only product-specific context
-(Product paragraph, stack overrides, team-learned patterns).
+[`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins) — never
+copy them into a product's `CLAUDE.md`, which holds only product-specific
+context.
 
 ## You are the router
 
-These standards ship as on-demand skills, but **the user never has to know a skill
-name**. Map their plain-language goal to the owning skill and **invoke it
-yourself** — don't wait for a `/steer:` command or ask them to name one.
+These standards ship as on-demand skills, but **the user never has to know a
+skill name**: map their plain-language goal to the owning skill and **invoke
+it yourself**.
 
-- **Announce, then act.** Lead with one line naming what you heard and the skill
-  you're starting, then proceed — the heads-up lets the user redirect; it is not
-  a request for permission. Only when intent is genuinely ambiguous, ask **one**
-  compact question offering the 2–3 likely intents, then route.
-- **Auto-continue, bounded.** When a skill finishes, surface its single best next
-  action and continue automatically **only if that action is non-gated**; a gated
-  step is announced, then waits for the human.
-- **Routing moves navigation, never authority.** Auto-routing picks *which* skill
-  runs; it never relaxes what that skill may do. The human gates are unchanged:
-  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
-  ADR ratification (High-risk), and merge / deploy / real secrets (Commit
-  autonomy, High-risk) each still stop for the human. Pushing a branch and
-  opening the PR are **not** gates — they are autonomous delivery steps; the
-  human gate is the PR **merge** (and, in an ungraduated solo-trunk repo, the
-  gated trunk push) — see Commit autonomy.
-- **Bootstrap precedence.** On a repo with no `/spec` spine (the SessionStart
-  hook flags it), bootstrap is the **first move, announced up front** — not a
-  closing offer: a developer or ambiguous feature/build intent →
-  **`/steer:setup`**; a non-technical owner's idea → **`/steer:build`**
-  (bootstrap-inclusive — don't degrade to toolchain-only). "Prototype" /
-  "quick" / "throwaway" changes ceremony, **never whether scaffold and spine
-  exist** (Spec workflow).
-- **Intent-switches:** a new ask mid-flow → name it and offer to switch or
-  capture it (`/steer:issues capture`), never silently drop the current thread.
+- **Announce, then act** — one line naming what you heard and the skill you're
+  starting, then proceed (a heads-up so the user can redirect, not a request
+  for permission). Only when intent is genuinely ambiguous, ask **one** compact
+  question offering the 2–3 likely intents.
+- **Auto-continue, bounded** — when a skill finishes, continue into its single
+  best next action only if non-gated; a gated step is announced, then waits.
+- **Routing moves navigation, never authority.** The human gates are
+  unchanged: issue creation beyond an explicit "fix / add / implement" ask
+  (Issue-first), ADR ratification (High-risk), and merge / deploy / real
+  secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
+  are **not** gates — they are autonomous delivery steps; the human gate is
+  the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
+  push).
+- **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
+  hook flags it), bootstrap is the **first move, announced up front**: a
+  developer or ambiguous feature/build intent → **`/steer:setup`**; a
+  non-technical owner's idea → **`/steer:build`**. "Prototype" / "quick" /
+  "throwaway" changes ceremony, **never whether scaffold and spine exist**.
+- **Intent-switches** — a new ask mid-flow: name it and offer to switch or
+  capture it (`/steer:issues capture`), never silently drop the current
+  thread.
 
 ## Intent → skill
 
@@ -64,28 +61,22 @@ as needed, so you rarely route outside this table.
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
 
 **`work` vs `issues`:** implementing *now* — with or without an issue number —
-routes to `/steer:work` (it find-or-creates the issue, then implements); pure
-backlog management with no implementation this turn routes to `/steer:issues`.
+routes to `/steer:work` (it find-or-creates the issue); pure backlog
+management with no implementation this turn routes to `/steer:issues`.
 
-**Specialized skills, normally reached through a front door** (each is directly
-invocable too): `/steer:setup` hands off to `/steer:init` (greenfield),
-`/steer:adopt` (existing code), or `/steer:sync` (steady-state) — which invoke
-`/steer:doctor` when prerequisites are missing; `/steer:audit` runs
-`code`/`spec` and hands off to `/steer:tidy`; `/steer:issues` and `/steer:spec`
-hand off to `/steer:questions`; `/steer:issues` hands off to `/steer:roadmap`.
-GitHub reads/writes route through the internal `/steer:tracker-sync` gateway,
-and feature specs are instantiated by the internal `/steer:spec-scaffold` —
-neither is a user front door; they are reached via the owning skills and never
-offered to the user directly.
+**Specialized skills reached through these front doors** (each is directly
+invocable too): `/steer:setup` → `/steer:init` (greenfield) / `/steer:adopt`
+(existing code) / `/steer:sync` (steady-state), which invoke `/steer:doctor`
+when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
+`/steer:issues` and `/steer:spec` → `/steer:questions`; `/steer:issues` →
+`/steer:roadmap`. GitHub reads/writes route through the internal
+`/steer:tracker-sync` gateway; feature specs are instantiated by the internal
+`/steer:spec-scaffold` — neither is a user front door.
 
-**Full reference prose** ships with the plugin and is never copied into the
-repo — load it on demand via `/steer:reference [conventions | traceability |
-design-sources | context-hygiene | architecture-diagrams | artifacts]` for any
-deep dive, or at session start on web chat.
-
-On the **Claude Desktop Chat tab or claude.ai web chat** (where this manual is
-*not* auto-injected), run `/steer:standards` at session start to load these
-rules.
+**Full reference prose** loads on demand via `/steer:reference [conventions |
+traceability | design-sources | context-hygiene | architecture-diagrams |
+artifacts]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
+auto-injection), run `/steer:standards` at session start to load these rules.
 
 
 ## Who you are working with
@@ -122,63 +113,60 @@ as v0 only after a dev approves the PR. That review *is* productionization.
 ## Stack
 
 **Default biases**, not mandates — when a project's intent clearly warrants a
-different stack, propose the better fit and record an ADR under `/spec/decisions/`
-(run `/steer:adr`). Rationale and full setup detail for every bullet: run
-`/steer:reference conventions`. When you pick or change stack pieces, verify
-current stable versions in-session (same reference) — don't trust
-training-data memory.
+different stack, propose the better fit and record an ADR (`/steer:adr`).
+Rationale and full setup detail for every bullet: `/steer:reference
+conventions`. When you pick or change stack pieces, verify current stable
+versions in-session — don't trust training-data memory.
 
-The bullets below are the **app / service** profile (the default). An **infra** repo
-(Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its *primary* stack —
-IaC toolchain at the repo root, no Node/web layer; a **library** or **cli** follows its
-own package language and skips the app/web/compose bullets. `/steer:init` records the
-profile; the universal core (mise pinning, the `/spec` spine, CI hygiene) is the same
-for all.
+These bullets are the **app / service** profile (the default). An **infra**
+repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
+*primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
+or **cli** follows its own package language and skips the app/web/compose
+bullets. `/steer:init` records the profile; the universal core (mise pinning,
+the `/spec` spine, CI hygiene) is the same for all.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
-- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the Next.js
-  app (Route Handlers, Server Actions, server components). A standalone `apps/api`, or
-  Python + FastAPI + PostgreSQL, only when intent clearly warrants it — either split is
-  an ADR.
+- **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
+  Next.js app (Route Handlers, Server Actions, server components). A
+  standalone `apps/api`, or Python + FastAPI + PostgreSQL, only when intent
+  clearly warrants it — either split is an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
   **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app; each
   deployable `apps/<app>` carries a `Dockerfile` (built by CI when present).
-  Promotion, environments, and the `prod`-branch gate are in Deployment &
+  Promotion, environments, and the `prod`-branch gate: Deployment &
   environments.
-- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE work; on
-  the Claude Desktop Code tab, Git for Windows is enough (builds included).
-- **Editor:** VS Code is the default; committed `.vscode/` config (recommended
-  extensions + Biome format-on-save) ships in the scaffold. Prefer in-editor
-  extensions for adjacent work (DB browsing/queries, etc.) over standalone apps.
-- **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and* format
-  tool; no ESLint/Prettier or Flake8/Black/isort alongside without an ADR.
+- **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE
+  work; on the Claude Desktop Code tab, Git for Windows is enough.
+- **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
+  Prefer in-editor extensions for adjacent work over standalone apps.
+- **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
+  format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an
+  ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
-- **Auth:** Better Auth — high-risk; scope with the dev and write an ADR first.
-  **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest (Parameter Store
-  `SecureString`, or Secrets Manager when warranted), never committed — see Secrets
-  handling.
-- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
-  plugin's bundled scaffold one (`templates/scaffold/compose.yaml`), don't author from
-  scratch. **Same engine locally as deployed** (no SQLite stand-in for PostgreSQL).
-  Standard entry point: `mise run dev:setup` (idempotent: services up → migrate →
-  seed) — keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins; a deliberately older pin needs an ADR plus
-  `# steer:allow-pin <reason>` on the same line. **Make every published host port
-  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the
-  override var in `.env.example`, so a dev running several managed products at once
-  isn't blocked by `port is already allocated`.
+- **Auth:** Better Auth — high-risk; scope with the dev and write an ADR
+  first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
+  never committed — see Secrets handling.
+- **Local services:** Docker Compose via a committed `compose.yaml` — adapt
+  the plugin's bundled scaffold one, don't author from scratch. **Same engine
+  locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
+  point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
+  keep it green; environment tasks live in `mise.toml`, not `package.json`. A
+  plugin hook denies stale image-major pins; a deliberately older pin needs an
+  ADR plus `# steer:allow-pin <reason>` on the same line. **Every published
+  host port overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare
+  `5432:5432` — with the override var in `.env.example`.
 - **Task running:** mise is the single task entry point. Declare ordering with
-  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level Node
-  scripts (`dev` / `build` / `test` / `typecheck`) stay in `package.json`; a mise task
-  may delegate to them so `mise tasks` lists everything in one place — delegation is
-  **one-way**: a `package.json` script never shells out to `uv`/Python nor re-defines a
-  mise task, and no task is defined in both places. A Python backend (e.g. `apps/api`)
-  is a mise/`uv run` task; compose a polyglot `dev` in `mise.toml`
-  (`depends = ["dev:*"]`), not a root-`package.json` `concurrently` script. Let
-  `[deps.pnpm]` / `[deps.uv]` (`auto = true`) install workspace deps on lockfile
-  change — no hand-rolled install task.
-- **Environment variables:** local config in a git-ignored `.env` / `.env.local`; names
-  documented in `.env.example` — bootstrap and storage rules are in Secrets handling.
+  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
+  Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
+  `package.json`; a mise task may delegate to them — delegation is
+  **one-way**: no `package.json` script shells out to `uv`/Python or
+  re-defines a mise task. A Python backend is a mise/`uv run` task; compose a
+  polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`), not a
+  root-`package.json` `concurrently` script. Let `[deps.pnpm]` / `[deps.uv]`
+  (`auto = true`) install workspace deps on lockfile change.
+- **Environment variables:** local config in a git-ignored `.env` /
+  `.env.local`; names documented in `.env.example` — bootstrap and storage
+  rules in Secrets handling.
 
 
 ## Useful commands
@@ -359,69 +347,65 @@ Full pattern and a worked example: run `/steer:reference context-hygiene`.
 
 ## Spec workflow
 
-`/spec/features/` and `/spec/decisions/` only earn their keep if they get populated.
-**Create the artifact when the trigger fires — don't defer it:**
+Create the artifact when the trigger fires — don't defer it:
 
-- **Starting a user-facing feature** → `/spec/features/[id]/intent.md` + `contract.md`,
-  before or alongside the code; author them via **`/steer:spec`** (or **`/steer:build`**
-  for a PO), which instantiates the templates. `[id]` is a short kebab-case slug
+- **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
+  `contract.md`, before or alongside the code — author via **`/steer:spec`**
+  (or **`/steer:build`** for a PO). `[id]` is a short kebab-case slug
   (`user-login`, `export-csv`).
-- **Architectural or hard-to-reverse choice** (stack, database, auth approach,
-  deployment model, a new cross-cutting pattern) → ADR at
-  `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial stack
-  choice is usually the first ADR.
-- **Behavior changes** → update the relevant `contract.md` in the same PR — plus the
-  app guide (`/spec/app/`) if it describes the old behavior, and a `/spec/HISTORY.md`
-  entry; see Living documentation.
-- **Open questions** → each feature's `intent.md` → `## Open questions` (product-level
-  ones in `vision.md`); run **`/steer:questions`** to sweep and answer them before they
-  rot.
-- **A feature that began as a tracker issue** (PO capture) → on a GitHub tracker,
-  **`/steer:issues brainstorm`** shapes it in the issue, then **`/steer:issues
-  materialize`** writes the approved product intent into `intent.md` as `Status: draft`;
-  an explicit `/steer:spec approve` flips it to `approved`. The issue is the work record;
-  the spec stays product truth.
+- **Architectural or hard-to-reverse choice** (stack, database, auth,
+  deployment, a new cross-cutting pattern) → ADR at
+  `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
+  stack choice is usually the first ADR.
+- **Behavior changes** → update the owning `contract.md` in the same PR — plus
+  the app guide (`/spec/app/`) if it describes the old behavior, and a
+  `/spec/HISTORY.md` entry; see Living documentation.
+- **Open questions** → the feature's `intent.md` → `## Open questions`
+  (product-level ones in `vision.md`); sweep and answer them with
+  **`/steer:questions`** before they rot.
+- **A feature that began as a tracker issue** → **`/steer:issues brainstorm`**
+  shapes it in the issue, **`materialize`** writes the approved intent to
+  `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
+  to `approved`. The issue is the work record; the spec stays product truth.
 
 The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
-acceptance) are canonical in the spec-framework reference that `/steer:spec` draws on.
-If unsure whether something needs a feature spec or an ADR, ask the dev rather than
-skipping it.
+acceptance) are canonical in the spec-framework reference `/steer:spec` draws
+on. Unsure whether something needs a feature spec or an ADR? Ask the dev
+rather than skipping it.
 
-**Greenfield** (new product): the input can be anything — an idea, a brief, screenshots,
-a Claude Design export; don't assume a design artifact exists. **Bootstrap first**
-(`/steer:init`, or `/steer:build` for a PO): install the plugin's bundled scaffold
-(`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) **and** the `/spec`
-spine before feature code — never hand-write `package.json` / build config / CI from
-scratch. Then interview to fill `/spec/vision.md`, `users.md`, `glossary.md` (ask, don't
-invent; product-level ambiguity → `vision.md` → `## Open questions`), draft feature
-intents, and get PO approval before broad implementation. The step-by-step flow lives in
-the spec-framework reference. Design exports: read the **local export** via
-`/steer:reference design-sources` — never fetch the URL (it 403s).
+**Greenfield** (new product; input can be an idea, brief, screenshots, or a
+design export): **bootstrap first** (`/steer:init`, or `/steer:build` for a
+PO) — the bundled scaffold **and** the `/spec` spine before feature code;
+never hand-write `package.json` / build config / CI from scratch. Then
+interview to fill `vision.md`, `users.md`, `glossary.md` (ask, don't invent;
+product-level ambiguity → `vision.md` → `## Open questions`), draft feature
+intents, and get PO approval before broad implementation. Design exports: read
+the **local export** via `/steer:reference design-sources` — never fetch the
+URL (it 403s).
 
-**A prototype is greenfield too** — "quick", "just a prototype", "throwaway" relax the
-*ceremony* (lighter interview, no per-feature PR — durably via solo-trunk mode, below; a
-GitHub-adopted repo still keeps the issue, closed from the commit, see Issue-first;
-high-risk choices stubbed and marked), **not** the scaffold or the spine. Even a
-throwaway gets the bundled scaffold (so it costs nothing to graduate later) and at least
-a minimal `/spec` (vision + the feature intents being built), auto-documented as it goes
-— seed `/spec/HISTORY.md` and the app guide (`/spec/app/`) as features land.
-`/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse to skip
-bootstrap now and reverse-engineer later.
+**A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
+relaxes the *ceremony* (lighter interview; branch/PR relaxes only via
+solo-trunk mode below; a GitHub-adopted repo still keeps the issue, closed
+from the commit — see Issue-first), **not** the scaffold or the spine. Even a
+throwaway gets the bundled scaffold and at least a minimal `/spec` (vision +
+the feature intents being built), auto-documented as it goes — seed
+`/spec/HISTORY.md` and `/spec/app/` as features land. `/steer:adopt` is for
+*un-bootstrapped* pre-existing code, not an excuse to skip bootstrap now.
 
-**Solo greenfield can run on trunk** — when one person is both PO and dev pre-MVP,
-`/steer:init` offers **solo trunk mode**. It relaxes only the branch/PR ceremony; the
-scaffold, spine, tests, and Definition of Done all hold. Mechanics, the `CLAUDE.md`
-declaration, and graduation are canonical in Commit autonomy.
+**Solo greenfield can run on trunk** — when one person is both PO and dev
+pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
+relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
+and graduation are canonical in Commit autonomy.
 
-**Brownfield** (change to an existing product): triage → size it (Change-size model) →
-medium+ work writes/updates the spec or ADR first → implement → update the owning
-`contract.md` if behavior changed.
+**Brownfield** (change to an existing product): triage → size it (Change-size
+model) → medium+ work writes/updates the spec or ADR first → implement →
+update the owning `contract.md` if behavior changed.
 
-**Adopting a whole repo** that never went through bootstrap (a "vibe-coded" app with no
-`/spec`): run **`/steer:adopt`** once to reverse-engineer the spec from the code, triage
-productionization (Keep/Refactor/Rewrite/Reject per area in `PRODUCTIONIZATION.md`), and
-sync in the plugin's bundled scaffolding — distinct from a per-feature Brownfield change
-above.
+**Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
+app with no `/spec`): run **`/steer:adopt`** once — reverse-engineer the spec
+from the code, triage productionization (Keep/Refactor/Rewrite/Reject in
+`PRODUCTIONIZATION.md`), sync in the bundled scaffolding — distinct from a
+per-feature Brownfield change.
 
 
 ## Durable decisions land in the spine, not in side-channels
@@ -513,49 +497,40 @@ use the manual export.
 
 ## Issue-first (GitHub-adopted repos)
 
-When `/spec/tracker.md` declares `system: github`, every **implementation-affecting
-mutation** — code, config, infrastructure, or behavior — has a GitHub issue
-**before the first repository mutation**. This is scoped to implementation:
-editing the `/spec` spine, documentation, generated output, and lockfiles is
-*not* an implementation-affecting mutation and needs no issue — nor is a
-plugin-maintenance sync (`/steer:sync`), which reconciles the materialized spine
-+ scaffold against the plugin's own templates on its own `feat/sync` branch
-(structural, not feature work; it never touches app source). Reuse the issue
-the user names; otherwise find-or-create one through
-`/steer:tracker-sync` — an explicit "fix / implement / add / create"
-request does **not** need confirmation to create the issue.
+When `/spec/tracker.md` declares `system: github`, every
+**implementation-affecting mutation** — code, config, infrastructure, or
+behavior — has a GitHub issue **before the first repository mutation**. Out of
+scope (no issue needed): `/spec` edits, documentation, generated output,
+lockfiles, and a plugin-maintenance `/steer:sync` on its own `feat/sync`
+branch (structural, never app source). Reuse the issue the user names;
+otherwise find-or-create one through `/steer:tracker-sync` — an explicit
+"fix / implement / add / create" request does **not** need confirmation to
+create the issue.
 
-- **Capture-only and ambiguous language do not auto-create.** "Note this", "we
-  should eventually…", or open-ended discussion is captured deliberately, never
-  inferred into a batch of issues. A large inferred batch of unrelated issues
-  takes one confirmation; security-sensitive public disclosure takes human review.
-- **Implementation runs through `/steer:work`** — claim, branch, implement, test,
-  open the PR, transition the issue. The CLI request authorizes local edits +
-  tests; commit, push, and the PR are autonomous under Commit autonomy; **merge
-  and deploy are never implied**.
-- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy): issue-first
-  still holds — every implementation-affecting mutation has a GitHub issue — but you
-  close it **from the trunk commit** (`Closes #N`), with no `issue/<N>` branch or
-  per-feature PR. The issue stays the audit-evidence anchor (Audit-aligned delivery).
-- **Discovered out-of-scope work** during implementation gets its own linked
-  issue (related/blocking), not silent scope creep in the current one.
-- **The scaffold pre-authorizes the `gh` issue-create verbs** (`gh issue create` /
-  `gh issue edit`) under `allow`, so find-or-create normally runs
-  without a prompt. The MCP write tools (`mcp__github__issue_write` /
-  `sub_issue_write`) sit under `ask` for a least-privilege posture, but the
-  `/steer:tracker-sync` and `/steer:report` skills re-grant them via their own
-  `allowed-tools`, so the governed find-or-create path stays silent within those
-  skills. A create that is *still* blocked (a stricter host permission
-  mode, or a background-job gate) is a **host-permission gate, not a missing
-  issue** — don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue the bounded action
-  set. (Full rationale: ISSUE-WORKFLOW.md → "Host gating".)
+- **Capture-only and ambiguous language do not auto-create.** "Note this" /
+  "we should eventually…" is captured deliberately, never inferred into a
+  batch of issues. A large inferred batch takes one confirmation;
+  security-sensitive public disclosure takes human review.
+- **Implementation runs through `/steer:work`** — claim, branch, implement,
+  test, open the PR, transition the issue. Commit, push, and the PR are
+  autonomous under Commit autonomy; **merge and deploy are never implied**.
+- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy) —
+  close it **from the trunk commit** (`Closes #N`). The issue stays the
+  audit-evidence anchor (Audit-aligned delivery).
+- **Discovered out-of-scope work** gets its own linked issue
+  (related/blocking), not silent scope creep in the current one.
+- The scaffold pre-authorizes `gh issue create` / `gh issue edit` under
+  `allow`; the MCP write tools (`mcp__github__issue_write` /
+  `sub_issue_write`) sit under `ask`, but `/steer:tracker-sync` and
+  `/steer:report` re-grant them via their own `allowed-tools`. A create that
+  is *still* blocked is a **host-permission gate, not a missing issue** —
+  don't loop retrying; confirm with the user, or have them run
+  `!gh issue create …` under their own identity, then continue. (Full
+  rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
-**Calling work a "prototype" does
-not waive it** — the only durable opt-out from the per-feature branch/PR is
-declaring solo-trunk delivery mode; a prototype that stays in PR flow still gets a
-GitHub issue per change.
+**Calling work a "prototype" does not waive it** — the only durable opt-out
+from the per-feature branch/PR is solo-trunk delivery mode.
 
 
 ## Testing rules
@@ -581,68 +556,55 @@ GitHub issue per change.
 ## Commit autonomy
 
 Commits are cheap and local — the reviewed **PR merge** is the gate (see "You
-are not the gate"), not each commit and not the push. Do **not** pause work to
-ask "should I commit?", "should I push?", or "should I open the PR?".
+are not the gate"), not each commit and not the push. Never pause work to ask
+"should I commit / push / open the PR?".
 
-Delivery runs in exactly **two modes**, keyed to GitHub branch protection —
-protected repos deliver through PRs, unprotected repos deliver on trunk. The
+Delivery runs in exactly **two modes**, keyed to GitHub branch protection. The
 product `CLAUDE.md` `## Delivery mode` marker caches which one applies
 (`<!-- steer:delivery-mode=pr-flow -->` vs `=solo-trunk`; absent → pr-flow);
-`/steer:protect` is what moves a repo between them, and there is no third mode.
+`/steer:protect` moves a repo between them, and there is no third mode.
 
 - **PR flow (protected `main` — the default).** Work on a branch off `main` —
-  never commit or push to `main` directly. Use the repository's configured
-  branch convention if it has one; otherwise `feat/*` / `fix/*` (issue-first
-  work via `/steer:work` defaults to `issue/<number>-<slug>`). If you find
-  yourself on `main` with changes, create the branch first, then commit. When
-  the work is **complete** (Definition of Done holds, end-of-session checklist
-  is clean), **push the branch and open the PR without asking** — announce it,
-  don't request permission (the heads-up lets the dev redirect). The first push
-  of a fresh branch sets the upstream: `git push -u origin <branch>`
-  (subsequent pushes are a plain `git push`). Branch protection — required
-  review, green `ci`, no direct push — is what makes this safe: an open PR is
-  inert until a human merges it. **Merging the PR is the one step that waits
-  for the dev; everything before it (branching, committing, pushing, opening
-  the PR) does not.**
+  never commit or push to `main` directly. Use the repo's branch convention,
+  else `feat/*` / `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`).
+  On `main` with changes? Create the branch first, then commit. When the work
+  is **complete** (Definition of Done holds, end-of-session checklist clean),
+  **push the branch and open the PR without asking** — announce it, don't
+  request permission. First push of a fresh branch:
+  `git push -u origin <branch>`. **Merging the PR is the one step that waits
+  for the dev; everything before it (branch, commit, push, open PR) does not.**
 - **Solo trunk mode (unprotected `main` — pre-MVP greenfield).** If the product
   `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
-  asking** — no `feat/*` branch, no per-feature PR. There is no second reviewer
-  yet, so the PR gate has nothing behind it (see "You are not the gate"); CI
-  still runs on every push, and the spine, tests, and Definition of Done are
-  **unchanged** — only the branch/PR ceremony relaxes. On a GitHub-adopted repo
-  the issue is still required and closed from the trunk commit (`Closes #N`),
-  not via a PR (see Issue-first). **Graduate** the moment the MVP works, you
-  first deploy, or a second contributor joins — whichever comes first — by
-  running **`/steer:protect`**, which raises the server-side PR wall and flips
-  the mode. While a **local** graduation signal stands unaddressed (a deploy
-  target or a `prod` branch), trunk pushes stop being autonomous — the
-  trunk-push hook surfaces each one for a human yes until the repo graduates; a
-  second contributor is a graduation trigger too, but it is caught on demand by
-  `/steer:protect` and `/steer:audit` (which query the collaborator count), not
-  at push time.
+  asking** — no `feat/*` branch, no per-feature PR. CI still runs on every
+  push; the spine, tests, and Definition of Done are **unchanged** — only the
+  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
+  required and closed from the trunk commit (`Closes #N`), not via a PR (see
+  Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
+  works, you first deploy, or a second contributor joins, whichever comes
+  first. While a **local** graduation signal (a deploy target or a `prod`
+  branch) stands unaddressed, trunk pushes stop being autonomous — each one
+  waits for a human yes until the repo graduates; a second contributor is
+  caught on demand by `/steer:protect` and `/steer:audit`, not at push time.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
-  pr-flow but `main` has no protection (nobody ran `/steer:protect apply`, or
-  the plan/permissions don't allow it — e.g. a private repo on GitHub Free),
-  the flow above still applies unchanged — you still never merge — but say the
-  wall is missing and recommend `/steer:protect`. Where protection is genuinely
-  unavailable, record the exception in an ADR; `/steer:protect verify` and
-  `/steer:audit` keep flagging it so the gap stays visible.
-- In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
-  an active GitHub issue (see Issue-first) — commit autonomy is unchanged once
-  that issue exists.
+  pr-flow but `main` has no protection, the flow above applies unchanged — you
+  still never merge — but say the wall is missing and recommend
+  `/steer:protect`. Where protection is genuinely unavailable, record the
+  exception in an ADR; `/steer:protect verify` and `/steer:audit` keep
+  flagging it.
+- In a GitHub-adopted repo, the **first mutation** of a unit of work
+  presupposes an active GitHub issue (see Issue-first) — autonomy is unchanged
+  once that issue exists.
 - **Commit without asking** whenever a coherent unit of work is done — tests
-  pass, lint is clean, the code builds. Keep commits small, with a
+  pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
-  `type(scope): summary` in the imperative mood. Types: `feat`, `fix`, `docs`,
-  `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `style`, `revert`. Mark a
-  breaking change with `!` before the colon (`feat!:`) or a `BREAKING CHANGE:`
-  footer. Commit messages are **not** the release changelog — that stays the
-  curated `CHANGELOG.md`. Full detail: `/steer:reference conventions`.
-- **After pushing, watch CI to conclusion and fix a red build before treating the
-  work as complete** — that is finishing the work, not crossing the merge gate.
-  Don't hand the dev a running or red PR and stop. (**Merge and deploy stay
-  human-gated in every mode** — never `gh pr merge`, never deploy, and never
-  push to a protected `prod` branch.)
+  `type(scope): summary`, imperative mood; mark breaking changes with `!` or a
+  `BREAKING CHANGE:` footer. Commit messages are **not** the release
+  changelog — that stays the curated `CHANGELOG.md`. Full detail:
+  `/steer:reference conventions`.
+- **After pushing, watch CI to conclusion and fix a red build before treating
+  the work as complete** — don't hand the dev a running or red PR and stop.
+  (**Merge and deploy stay human-gated in every mode** — never `gh pr merge`,
+  never deploy, never push to a protected `prod` branch.)
 
 
 ## Definition of Done
