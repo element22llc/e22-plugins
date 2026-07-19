@@ -1,0 +1,163 @@
+# Routing regression fixtures — validated by scripts/check_routing_fixtures.py.
+#
+# Each fixture records a representative plain-language user ask, the skill that
+# owns it, and the signal keywords the mapping routes on. Every signal must
+# appear (case-insensitively) in the always-on routing surface: the union of
+# rules/00-router.md and the owning skill's description + when_to_use
+# frontmatter. When trimming that surface (PLAN.md Phase 1), a failure here
+# means the trim removed vocabulary an ask depends on — restore the keyword or
+# consciously update the fixture with the replacement vocabulary.
+#
+# Keep asks realistic (what a user would actually type), one skill per fixture,
+# and signals minimal (1-2 distinctive keywords, not full sentences).
+
+fixtures:
+  # --- bootstrap / onboarding -------------------------------------------------
+  - ask: "set up this new repo on our standards"
+    skill: setup
+    signals: ["set up", "onboard"]
+  - ask: "bring this repo onto the standards"
+    skill: setup
+    signals: ["onto the standards"]
+  - ask: "get us synced to the latest plugin version"
+    skill: setup
+    signals: ["sync to the latest plugin"]
+  - ask: "bootstrap a brand-new empty repo spec-first"
+    skill: init
+    signals: ["bootstrap", "spec spine"]
+  - ask: "there are [Replace ...] placeholders left over from the template"
+    skill: init
+    signals: ["placeholders", "template"]
+  - ask: "this app was vibe-coded — no spec, no toolchain; adopt it"
+    skill: adopt
+    signals: ["vibe-coded", "adopt"]
+  - ask: "reverse-engineer a spec from this existing codebase"
+    skill: adopt
+    signals: ["reverse-engineer", "existing repo"]
+  - ask: "mise: command not found — get my machine ready"
+    skill: doctor
+    signals: ["command not found", "prerequisites"]
+  - ask: "apply the pending structural migrations from the last plugin release"
+    skill: sync
+    signals: ["migrations", "plugin release"]
+  - ask: "give me a read-only report of scaffold drift vs the current templates"
+    skill: sync
+    signals: ["--check", "drift"]
+
+  # --- spec authoring / product owner flows ------------------------------------
+  - ask: "I'm not a developer but I want to build an app from my idea"
+    skill: build
+    signals: ["non-technical", "product owner"]
+  - ask: "resume the PO build we started last week"
+    skill: build
+    signals: ["resume a PO build"]
+  - ask: "think this feature through before we write any code"
+    skill: spec
+    signals: ["brainstorm", "without writing any code"]
+  - ask: "help me shape the acceptance criteria for this feature"
+    skill: spec
+    signals: ["acceptance criteria"]
+  - ask: "the client re-sent the requirements deck — what changed?"
+    skill: intake
+    signals: ["what changed", "docx"]
+  - ask: "absorb this roadmap spreadsheet the PO handed over"
+    skill: intake
+    signals: ["spreadsheet", "roadmap"]
+  - ask: "walk me through the open questions and let's answer them"
+    skill: questions
+    signals: ["open question"]
+  - ask: "prepare a questionnaire the PO can fill in offline"
+    skill: questions
+    signals: ["questionnaire", "fillable"]
+
+  # --- backlog / delivery -------------------------------------------------------
+  - ask: "capture this idea in the backlog for later"
+    skill: issues
+    signals: ["capture", "backlog"]
+  - ask: "triage the backlog and decompose the big items"
+    skill: issues
+    signals: ["triage", "decompose"]
+  - ask: "show me a ranked board of what's in flight"
+    skill: issues
+    signals: ["board", "ranked"]
+  - ask: "fix issue #123"
+    skill: work
+    signals: ["fix #123"]
+  - ask: "implement this change now"
+    skill: work
+    signals: ["implement a change now"]
+  - ask: "resume the issue I was working on yesterday"
+    skill: work
+    signals: ["resume", "issue"]
+  - ask: "production is down — ship an emergency hotfix"
+    skill: work
+    signals: ["hotfix", "production incident"]
+  - ask: "audit the overall health of this repo"
+    skill: audit
+    signals: ["read-only", "highest-leverage"]
+  - ask: "does the build still match what the tracker asked for?"
+    skill: audit
+    signals: ["drift", "spec"]
+  - ask: "set up a nightly loop that triages CI failures on its own"
+    skill: loop
+    signals: ["autonomous loop", "schedule"]
+  - ask: "record the decision to move to Postgres"
+    skill: adr
+    signals: ["hard-to-reverse", "decision"]
+  - ask: "write an ADR for the new auth approach"
+    skill: adr
+    signals: ["ADR", "cross-cutting"]
+
+  # --- navigation / discovery ---------------------------------------------------
+  - ask: "what should I do next?"
+    skill: next
+    signals: ["next action"]
+  - ask: "I'm lost — where do I even start in this repo?"
+    skill: next
+    signals: ["I'm lost"]
+  - ask: "what can steer do?"
+    skill: help
+    signals: ["what can steer do"]
+  - ask: "show me the commands"
+    skill: help
+    signals: ["show me the commands"]
+  - ask: "why do we default to pnpm and mise? load the conventions"
+    skill: reference
+    signals: ["conventions"]
+  - ask: "how do I keep a long multi-phase run from bloating the session?"
+    skill: reference
+    signals: ["context-hygiene"]
+  - ask: "load the standards here in web chat"
+    skill: standards
+    signals: ["auto-inject", "chat"]
+
+  # --- reporting / stakeholder views ---------------------------------------------
+  - ask: "make a shareable page of the checkout feature for a stakeholder"
+    skill: explain
+    signals: ["stakeholder", "shareable"]
+  - ask: "what did we ship this week? I need a client status update"
+    skill: status
+    signals: ["what did we ship this week", "client"]
+  - ask: "weekly progress report for the product owner"
+    skill: status
+    signals: ["progress report"]
+  - ask: "lay out a release timeline for where the product is going"
+    skill: roadmap
+    signals: ["release timeline", "milestones"]
+
+  # --- governance / hygiene --------------------------------------------------------
+  - ask: "protect main so nobody can push to it directly"
+    skill: protect
+    signals: ["protect main", "branch protection"]
+  - ask: "check the merge rules on this GitHub repo"
+    skill: protect
+    signals: ["merge rules"]
+  - ask: "the repo root is full of loose spreadsheets and PDFs — clean it up"
+    skill: tidy
+    signals: ["repo root", "clean up"]
+  - ask: "organize these stray design exports into their right home"
+    skill: tidy
+    signals: ["organize", "diagrams"]
+  - ask: "steer itself just crashed — file that bug upstream"
+    skill: report
+    signals: ["steer plugin itself", "upstream"]

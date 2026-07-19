@@ -24,19 +24,29 @@ entries per repo policy; version bump happens once at release.
 
 ---
 
-## Phase 0 — Instrument before optimizing (1 PR)
+## Phase 0 — Instrument before optimizing (1 PR) — ✅ DONE
 
-The repo has fixtures + hooktests but no token or latency budget. Add:
+The repo has fixtures + hooktests but no token or latency budget. Landed:
 
-- **Token budget check**: a `check_context_budget.py` gate that measures the
-  concatenated `rules/*.md` size and per-skill description size, failing when
-  they exceed the targets above. Wire into `mise run check`.
-- **Routing eval fixtures**: a fixture set of ~40 plain-language user asks →
-  expected owning skill (sourced from each skill's "Use when" prose). This is
-  the regression net for every change in Phases 1–2: description trimming must
-  not degrade routing.
-- **Hook latency budget**: extend `hooks/tests/run.sh` to time the SessionStart
-  chain and fail above 1 s.
+- **Token budget check**: `scripts/check_context_budget.py` gates the
+  concatenated `rules/*.md` bytes and the total skill-listing
+  (description + when_to_use) chars. Ceilings are a **ratchet** set at the
+  measured baseline + small headroom (71,000 B rules / 19,000 ch listing) so
+  weight can't grow; Phase 1 lowers them as reductions land. The plan targets
+  are reported (`--report` prints the markdown budget table for release PRs)
+  but not enforced. Wired into `mise run check` via `plugin-check`.
+- **Routing eval fixtures**: 46 plain-language asks → owning skill with signal
+  keywords, in `tests/fixtures/routing/asks.yml`, validated by
+  `scripts/check_routing_fixtures.py`: every signal must survive in the
+  always-on routing surface (00-router.md + the skill's description/
+  when_to_use), with a 40-fixture floor so coverage can't be deleted to make a
+  trim pass. This is the regression net for Phases 1–2.
+- **Hook latency budget**: `tests/test_hook_latency.py` times the full
+  SessionStart startup chain (pinned to hooks.json so new hooks can't dodge
+  it) against a 2 s tripwire budget (baseline ~200 ms), overridable via
+  `STEER_HOOK_LATENCY_BUDGET_MS`. Lives in the pytest tier, not
+  `hooks/tests/run.sh` as originally sketched — POSIX sh has no portable
+  sub-second clock.
 
 Why first: Phases 1–2 aggressively cut always-on prose; without these gates we
 can't tell "leaner" from "broken".
