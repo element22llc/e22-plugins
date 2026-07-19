@@ -1,0 +1,154 @@
+# Steer improvement plan — easier, faster, more efficient, better results
+
+Derived from a usability comparison of steer against **OpenSpec** (Fission-AI)
+and **GitHub Spec Kit**, plus measurements of this repo. The comparison's
+verdict: steer wins on breadth (full SDLC, org standards, PO-facing flows,
+plain-language routing) but loses to the lean SDD toolkits on time-to-first-value,
+always-on weight, and per-spec rigor ceremony. This plan closes those gaps
+without giving up steer's breadth.
+
+## Baseline measurements (2026-07-19, steer v3.19.0)
+
+| Metric | Today | Target |
+|---|---|---|
+| SessionStart rules injection | ~60 KB (~15k tokens) every session | ≤ 25 KB |
+| `rules/*.md` total | 69 KB across 24 files | ≤ 30 KB |
+| Skill frontmatter descriptions (always-on for routing) | ~1–3.6 KB each, ~25–30 KB total | ≤ 400 B each, ≤ 10 KB total |
+| Largest SKILL.md bodies | issues 26 KB, audit 24 KB, sync 21 KB, work 21 KB, build 21 KB | ≤ 12 KB slim front + on-demand reference |
+| SessionStart hook scripts | 7 separate `sh` processes per startup | 1 orchestrator, < 1 s wall time |
+| Skills exposed to users | 24 user-invocable | 5–7 "front door", rest reached via router/front doors |
+| Time to first approved spec on a fresh repo | requires init/adopt first | ≤ 5 min, no scaffold required (lite mode) |
+
+Every phase lands as normal `feat/*` PRs with `CHANGELOG.md` `[Unreleased]`
+entries per repo policy; version bump happens once at release.
+
+---
+
+## Phase 0 — Instrument before optimizing (1 PR)
+
+The repo has fixtures + hooktests but no token or latency budget. Add:
+
+- **Token budget check**: a `check_context_budget.py` gate that measures the
+  concatenated `rules/*.md` size and per-skill description size, failing when
+  they exceed the targets above. Wire into `mise run check`.
+- **Routing eval fixtures**: a fixture set of ~40 plain-language user asks →
+  expected owning skill (sourced from each skill's "Use when" prose). This is
+  the regression net for every change in Phases 1–2: description trimming must
+  not degrade routing.
+- **Hook latency budget**: extend `hooks/tests/run.sh` to time the SessionStart
+  chain and fail above 1 s.
+
+Why first: Phases 1–2 aggressively cut always-on prose; without these gates we
+can't tell "leaner" from "broken".
+
+## Phase 1 — Faster & more efficient: cut the always-on weight (3–4 PRs)
+
+This is the largest single win. OpenSpec's whole footprint is two slash
+commands and plain Markdown; steer spends ~20k tokens before the user types
+anything.
+
+1. **Trim `rules/` to imperative one-liners** (biggest files first:
+   `00-router` 6 KB, `45-commit-autonomy` 4.6 KB, `30-spec-workflow` 4.2 KB,
+   `10-stack` 4.2 KB). Push explanatory prose into `templates/reference/*`
+   surfaced via `/steer:reference`; rules keep only the imperative + a pointer.
+   Dedupe rules text that skill bodies repeat (spec workflow, commit autonomy,
+   issue-first all restate their owning skill).
+2. **Compress the router table** in `00-router.md`: one line per intent
+   cluster, not per skill; `/steer:help` (on-demand) carries the full
+   human-readable table so nothing is lost, it just stops being always-on.
+3. **Cap skill descriptions at ~400 bytes**: description = what it does + one
+   "use when" sentence. Move disambiguation prose ("not for X, that is
+   /steer:Y") into the skill body's opening section, which loads only on
+   invocation. Enforce via the Phase 0 budget check. Validate against the
+   routing eval after each batch.
+4. **Consolidate SessionStart hooks**: merge the 6 startup/resume check scripts
+   into one `session-checks.sh` orchestrator (single process, shared repo-state
+   scan, sequential early-exit) behind the existing `sh` prefix convention.
+   Keep `inject-standards.sh` separate (different matcher includes `compact`).
+   PreToolUse checks (`check-version-pins.sh`, `check-write-nudges.sh`,
+   `check-bash-actions.sh`) get a cheap first-line guard so the common case
+   exits before any real work.
+5. **Persist workspace state for `/steer:next` and `orient-session.sh`**: both
+   reconstruct branch/spec/tracker state cold every time. Cache the derived
+   snapshot in `/spec/.state` (gitignored) with mtime-based invalidation so
+   repeat navigation is a file read, not a re-derivation, and tracker reads go
+   through `/steer:tracker-sync` with `minimal_output` + batched calls.
+
+## Phase 2 — Easier to use: progressive disclosure (2–3 PRs)
+
+Steer's 24-skill surface is its biggest learning-curve liability; the router
+offsets it but the surface still leaks (help output, docs, frontmatter).
+
+1. **Tier the skill surface.** Front door of 5–7 skills users should ever need
+   to know: `setup`, `spec`, `work`, `next`, `help`, `status` (+ `build` for
+   POs). Demote the rest to router-reached: keep them invocable but group
+   `/steer:help` output by journey (Start → Spec → Build → Track → Report →
+   Govern) with the front door first and an "advanced" fold for the rest.
+   Candidates for `user-invocable: false` alongside the existing gateways:
+   `spec-scaffold` (already), `tracker-sync` (already), and evaluate `adr`,
+   `standards`, `report` for front-door demotion (still invocable, just not
+   headlined).
+2. **Lite mode — compete with OpenSpec's time-to-first-value.** Let
+   `/steer:spec` run on an unmanaged repo without demanding init/adopt: create
+   only `spec/<feature>/intent.md` (+ `contract.md` when warranted) from the
+   bundled templates, skip mise/compose/CI scaffolding, and surface "graduate
+   to full setup via /steer:setup" as the follow-up instead of a prerequisite.
+   The unmanaged-repo hook nudge changes from "run setup first" to "spec-only
+   is fine; setup unlocks the rest".
+3. **First-session onboarding card.** `orient-session.sh` on a fresh repo
+   prints a 5-line "what steer is, the 3 things you can say" card instead of
+   the full standards preamble; detail stays in `/steer:help`.
+
+## Phase 3 — Better results: adopt Spec Kit's per-spec rigor (2 PRs)
+
+Spec Kit's differentiators are `/clarify` (structured de-ambiguation before
+planning) and `/analyze` (cross-artifact consistency check). Steer has partial
+analogues; make them first-class.
+
+1. **`/steer:spec clarify` pass**: before intent approval, a structured sweep
+   that interrogates the draft for the classic gap classes (edge cases, error
+   paths, non-functional constraints, out-of-scope) and converts each gap into
+   the existing open-question mechanism rather than free-form prose. This
+   strengthens what `/steer:questions` later consumes.
+2. **Cross-artifact analyze gate**: extend `/steer:spec validate` (or add
+   `/steer:audit spec --pre`) to check intent ↔ contract ↔ tracker-issue
+   consistency *before* implementation, not only as post-hoc drift detection:
+   acceptance criteria with no contract behavior, contract behaviors with no
+   acceptance criterion, tracker scope missing from intent.
+3. **Acceptance-criteria quality checklist** baked into
+   `templates/spec/intent.md` (testable, observable, bounded — the checklist
+   Spec Kit ships in its templates), enforced as warnings by the validate pass.
+
+## Phase 4 — Keep honest: evals and feedback loop (1 PR, then ongoing)
+
+- Run the Phase 0 routing eval + budgets in CI permanently (`mise run ci`).
+- Add a before/after token report to release PRs (the release skills already
+  gate; append the budget numbers to the release notes) so context weight
+  can't silently regress across releases.
+- `/steer:report` already files plugin defects upstream; add a one-line prompt
+  at the end of `next`/`help` runs inviting misrouting reports so routing-eval
+  fixtures grow from real failures.
+
+## Explicit non-goals
+
+- **Multi-agent portability parity** (OpenSpec 25+/Spec Kit 35+ integrations):
+  steer stays Claude-Code-first with the generated Copilot target. Broadening
+  is a separate strategic decision, not a usability fix.
+- **Dropping breadth**: no skill removals; the fix for surface size is tiering
+  and routing, not amputation.
+- **Renumbering rules** or restructuring the marketplace — out of scope.
+
+## Sequencing & effort
+
+| Phase | PRs | Depends on | Effort |
+|---|---|---|---|
+| 0 Instrument | 1 | — | S |
+| 1 Context/speed | 3–4 | 0 | M–L (mostly prose surgery, gated by evals) |
+| 2 Progressive disclosure | 2–3 | 1 (router table rewrite) | M |
+| 3 Spec rigor | 2 | — (parallel to 1–2) | M |
+| 4 Evals in CI | 1 | 0 | S |
+
+Phases 1 and 3 are independent and can run in parallel streams. The release
+that cuts Phase 1 should headline the context reduction ("steer now costs
+~60% fewer always-on tokens") since every managed repo benefits immediately on
+`/plugin update`.
