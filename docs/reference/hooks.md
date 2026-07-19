@@ -4,8 +4,9 @@
 `hooks.json`. They inject the always-on rules and gate risky actions. All hook
 commands are invoked with an explicit `sh` prefix, so the executable bit is
 irrelevant (marketplace install does not `chmod`). No `jq` dependency. Every hook
-declares an explicit `timeout` in `hooks.json` (10s for the `SessionStart`/`PreToolUse`
-hooks, 30s for the `Stop` reconcile) so a slow hook can never stall a session.
+declares an explicit `timeout` in `hooks.json` (10s for the rule injection,
+orientation, and `PreToolUse` hooks; 30s for the consolidated session checks and
+the `Stop` reconcile) so a slow hook can never stall a session.
 
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
@@ -25,12 +26,13 @@ hooks, 30s for the `Stop` reconcile) so a slow hook can never stall a session.
 flowchart TD
     subgraph SessionStart
       inject[inject-standards.sh<br/>injects rules/*.md]
-      drift[check-template-drift.sh]
-      oq[check-open-questions.sh]
-      unmanaged[check-unmanaged-repo.sh]
+      checks[session-checks.sh<br/>orchestrates the five session checks]
       orient[orient-session.sh]
-      faults[surface-faults.sh]
-      grad[check-graduation.sh]
+      checks --> drift[check-template-drift.sh]
+      checks --> oq[check-open-questions.sh]
+      checks --> unmanaged[check-unmanaged-repo.sh]
+      checks --> faults[surface-faults.sh]
+      checks --> grad[check-graduation.sh]
     end
     subgraph PreToolUse
       pins[check-version-pins.sh]
@@ -44,15 +46,24 @@ flowchart TD
 
 ## SessionStart
 
+Since the session-checks consolidation, `hooks.json` carries **three**
+`SessionStart` registrations: the rule injection, one `session-checks.sh`
+orchestrator, and the orientation hook. The five session checks are no longer
+registered individually — `session-checks.sh` runs them in the order below,
+failure-isolated (a crashing check never blocks the rest) and always exiting
+`0`; each check keeps its own contract (read the payload from stdin, print a
+notice or nothing) and stays individually testable.
+
 | Hook | Matcher | Role |
 | --- | --- | --- |
 | `inject-standards.sh` | `startup\|resume\|clear\|compact` | Concatenates `rules/*.md` (lexical order) into session context. A rule carrying a first-line `<!-- steer:inject-when=… -->` marker is injected only when its scope applies — `code-project` for the code-loop rules (a git work tree, or any code/config marker within `maxdepth 2`), issue-first on GitHub-tracked repos, deployment when the repo deploys (an `/infra` dir **or** an app/service repo) — and the marker line is stripped. In **knowledge-work mode** (a confidently non-code folder — the typical Cowork product-owner case), it injects only the lean always-on PO core and **skips every `inject-when`-marked rule** (see [Knowledge-work mode](known-limitations.md)). Fail-soft: if its rules directory is missing it still emits a fallback banner (the hook always exits `0`, so the notice reaches the session) and records a self-fault for `/steer:report`. |
-| `check-template-drift.sh` | `startup\|resume\|clear` | Warns when the materialized spine/scaffold lags the plugin templates — diffs the `##`/`###` headings of each instantiated spec file (`PRODUCTIONIZATION.md`, `BUILD-STATUS.md`, feature `intent.md`/`contract.md`) against the current bundled template and names any section the template adds that the file lacks. Headings carrying `<!-- steer:placeholder -->` (the seed `### Q-001 — …` open-question block) are skipped, since those are rewritten or deleted as a feature is specced — matching `check-open-questions.sh`, which ignores the same marker — so a correctly-completed file is never falsely flagged. Resolves the work-tree root from the session `cwd`, so it still finds drift when Claude Code starts in a subdirectory (e.g. `apps/web`). |
-| `check-open-questions.sh` | `startup\|resume\|clear` | Surfaces unresolved spec open questions, and **escalates stale ones** — a blocking, un-promoted question open more than 14 days (from its `created:` date, or `git blame` when absent) gets a loud line naming the feature, question, owner, and age. |
-| `check-unmanaged-repo.sh` | `startup\|resume\|clear` | Flags a repo that has no `/spec` spine yet and offers the bootstrap routes — leading with `/steer:build` for a non-technical owner (it runs `/steer:init` itself), with `/steer:init`/`/steer:adopt` framed as the developer / existing-code paths. Resolves the work-tree root from the session `cwd` in the hook payload (like `check-template-drift.sh`), so it anchors correctly even when the hook process runs elsewhere or the session starts in a subdirectory. |
+| `session-checks.sh` | `startup\|resume\|clear` | Consolidated orchestrator for the five session checks below (one `hooks.json` registration instead of five). Captures the SessionStart payload once and re-feeds it to each check unchanged, in registration order; failure-isolated; always exits `0`. Contains no check logic of its own. |
+| `check-template-drift.sh` | via `session-checks.sh` | Warns when the materialized spine/scaffold lags the plugin templates — diffs the `##`/`###` headings of each instantiated spec file (`PRODUCTIONIZATION.md`, `BUILD-STATUS.md`, feature `intent.md`/`contract.md`) against the current bundled template and names any section the template adds that the file lacks. Headings carrying `<!-- steer:placeholder -->` (the seed `### Q-001 — …` open-question block) are skipped, since those are rewritten or deleted as a feature is specced — matching `check-open-questions.sh`, which ignores the same marker — so a correctly-completed file is never falsely flagged. Resolves the work-tree root from the session `cwd`, so it still finds drift when Claude Code starts in a subdirectory (e.g. `apps/web`). |
+| `check-open-questions.sh` | via `session-checks.sh` | Surfaces unresolved spec open questions, and **escalates stale ones** — a blocking, un-promoted question open more than 14 days (from its `created:` date, or `git blame` when absent) gets a loud line naming the feature, question, owner, and age. |
+| `check-unmanaged-repo.sh` | via `session-checks.sh` | Flags a repo that has no `/spec` spine yet and offers the bootstrap routes — leading with `/steer:build` for a non-technical owner (it runs `/steer:init` itself), with `/steer:init`/`/steer:adopt` framed as the developer / existing-code paths. Resolves the work-tree root from the session `cwd` in the hook payload (like `check-template-drift.sh`), so it anchors correctly even when the hook process runs elsewhere or the session starts in a subdirectory. |
+| `surface-faults.sh` | via `session-checks.sh` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
+| `check-graduation.sh` | via `session-checks.sh` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree — detected by the shared `lib/graduation.sh`, the same detector the `check-bash-actions.sh` trunk-push gate uses), nudges the owner to graduate to PR flow via `/steer:protect` and notes that trunk pushes are gated until then. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
 | `orient-session.sh` | `startup` | On a fully managed spine only. If an in-progress PO build exists (a `spec/BUILD-STATUS.md` with an open handoff gate), steers deterministically back into `/steer:build` to resume from its current step; once the build is handed off (every gate box checked) it falls back to reminding the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
-| `surface-faults.sh` | `startup\|resume\|clear` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
-| `check-graduation.sh` | `startup\|resume\|clear` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree — detected by the shared `lib/graduation.sh`, the same detector the `check-bash-actions.sh` trunk-push gate uses), nudges the owner to graduate to PR flow via `/steer:protect` and notes that trunk pushes are gated until then. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
 
 ## PreToolUse
 
