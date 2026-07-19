@@ -49,9 +49,11 @@ RULES_TOTAL_MAX_BYTES = 62_500
 LISTING_TOTAL_MAX_CHARS = 11_500
 
 # --- Aspirational targets (reported, never enforced here) --------------------
-# PLAN.md Phase 1 end-state. Enforced only by ratcheting the ceilings down as
-# real reductions land.
-RULES_TOTAL_TARGET_BYTES = 30_000
+# PLAN.md Phase 1 closed with the original 30K rules target retired: after two
+# trim passes the surviving prose is imperative-dense, and rule demotion was
+# investigated and rejected (see PLAN.md Phase 1 close-out). The rules target
+# now equals the ratchet — hold the line; the listing target stands.
+RULES_TOTAL_TARGET_BYTES = 62_500
 LISTING_TOTAL_TARGET_CHARS = 10_000
 
 

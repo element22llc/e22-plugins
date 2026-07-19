@@ -11,8 +11,8 @@ without giving up steer's breadth.
 
 | Metric | Today | Target |
 |---|---|---|
-| SessionStart rules injection | ~60 KB (~15k tokens) every session | ≤ 25 KB |
-| `rules/*.md` total | 69 KB across 24 files | ≤ 30 KB |
+| SessionStart rules injection | ~60 KB (~15k tokens) every session | ~62 KB reached; deeper cuts rejected (see Phase 1 close-out) |
+| `rules/*.md` total | 69 KB across 24 files | 61,786 B end-state; ratchet 62,500 |
 | Skill frontmatter descriptions (always-on for routing) | ~1–3.6 KB each, ~25–30 KB total | ≤ 400 B each, ≤ 10 KB total |
 | Largest SKILL.md bodies | issues 26 KB, audit 24 KB, sync 21 KB, work 21 KB, build 21 KB | ≤ 12 KB slim front + on-demand reference |
 | SessionStart hook scripts | 7 separate `sh` processes per startup | 1 orchestrator, < 1 s wall time |
@@ -51,7 +51,7 @@ The repo has fixtures + hooktests but no token or latency budget. Landed:
 Why first: Phases 1–2 aggressively cut always-on prose; without these gates we
 can't tell "leaner" from "broken".
 
-## Phase 1 — Faster & more efficient: cut the always-on weight (3–4 PRs) — 🟡 pass 1 done
+## Phase 1 — Faster & more efficient: cut the always-on weight (3–4 PRs) — ✅ DONE
 
 Pass 1 landed: skill listing 17,950 → 10,867 chars (−39%, item 3 essentially
 done — ceiling re-armed at 11,500); top-5 rules trimmed to imperatives
@@ -71,17 +71,19 @@ of rules (autonomous-loops, context-hygiene, artifacts, layout, worktrees,
 housekeeping, practices, living-docs) to 61,786 B total (ceiling re-armed at
 62,500).
 
-**Reframing the 30 KB target (decision needed).** Two trim passes over all
-compressible rules landed at ~62 KB — the remaining prose is imperative-dense,
-and further wording cuts would drop constraints, not fat. Reaching ~30 KB is
-not a trim; it means **demoting whole rules from always-on to on-demand**,
-which changes when Claude sees them. Candidates where the owning skill or
-reference doc already carries the content and an `inject-when`-style scope (or
-full demotion to `/steer:reference`) is plausible: `24-worktrees` (relevant
-only in parallel-worktree sessions), `88-artifacts` (restated by every
-rendering skill), `26-context-hygiene`, `90-design-sources`, `15-commands`.
-That is a behavior decision for the maintainer, not a mechanical edit — until
-taken, the rules budget holds at the ~62 KB ratchet.
+**The 30 KB rules target is retired — Phase 1 closes at the measured
+end-state.** Two trim passes over every compressible rule landed at 61,786 B
+(−11% from 69,335, zero behavior change); the surviving prose is
+imperative-dense, so further wording cuts would drop constraints, not fat.
+Demoting whole rules from always-on to on-demand was then investigated for
+the candidates (`88-artifacts`, `24-worktrees`, `26-context-hygiene`,
+`90-design-sources`, `15-commands`) and **rejected**: rule 88 is the ambient
+authority ten-plus skill bodies defer to by name (ARTIFACTS.md calls it "the
+lean always-on version" of itself), and the others fire exactly when no skill
+is mediating (parallel-worktree cleanup, long-session hygiene, ad-hoc UI
+coding, wrong-toolchain commands) — each earns its ~1.5–2 KB ambient slot.
+The rules ratchet holds at 62,500 B; the listing surface finished at 10,867
+ch against its 10,000 target. Phase 1 is **done**.
 
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types
