@@ -59,9 +59,15 @@ done — ceiling re-armed at 11,500); top-5 rules trimmed to imperatives
 startup/resume session checks now run through one `session-checks.sh`
 orchestrator (hooks.json: 7 → 3 SessionStart registrations; the checks stay
 individually testable, and the orchestrator is sequencing-only —
-failure-isolated, registration order, always exit 0). Remaining: the deep
-rule→reference restructure to approach 30 KB (items 1–2) and the
-workspace-state cache (item 5).
+failure-isolated, registration order, always exit 0). Item 5 landed with a
+design correction: orient-session turned out to derive almost nothing (it is a
+banner printer), and `/steer:next` is contractually read-only so it cannot
+write a `/spec/.state` cache — the real cost was the model re-deriving local
+state call-by-call. Shipped instead as a one-shot read-only
+`scripts/workspace-snapshot.sh` that gathers all local dimensions in a single
+call, with `/steer:next` fetching only live PR/tracker state separately
+(batched, minimal output). Remaining: the deep rule→reference restructure to
+approach 30 KB (items 1–2).
 
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types

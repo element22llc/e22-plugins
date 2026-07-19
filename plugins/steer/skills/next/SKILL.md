@@ -7,6 +7,7 @@ when_to_use: >-
   need the one action that matters most.
 argument-hint: "[optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
+  - Bash(sh *scripts/workspace-snapshot.sh*)
   - Bash(git status *)
   - Bash(git branch *)
   - Bash(git log *)
@@ -80,6 +81,24 @@ recommended action is to **bootstrap** — `/steer:init` (greenfield) or `/steer
 
 Sweep each dimension and record what you find. Reuse the existing state
 vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only.
+
+**Start with the bundled snapshot helper** — one read-only call that gathers
+every *local* dimension below (git, spine + version drift, features, open
+questions, Proposed ADRs, work claims, build/adoption markers, the declared
+tracker system) in a single sectioned summary:
+
+```sh
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh"   # optional arg: repo root
+```
+
+Read its output once instead of re-deriving those dimensions call-by-call;
+open an individual file only where the snapshot flags something that needs
+its full text (e.g. a blocking question's wording). Then fetch the two *live*
+dimensions the snapshot deliberately excludes — open PRs/CI (`gh`, read-only)
+and tracker issue state (`/steer:tracker-sync`) — **batched**: one list query
+plus per-candidate field reads, minimal output, never one call per issue when
+a single filtered query answers it. If the helper is unavailable or errors,
+fall back to sweeping the dimensions manually as specified below.
 
 - **Git / branch / PR** — current branch (`feat/*`, `fix/*`, `main`), open PRs and
   their review state, CI status, and merge status (`git`, `gh pr`/`gh run` —

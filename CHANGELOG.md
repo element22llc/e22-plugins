@@ -24,6 +24,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   at every session start. The individual check scripts are unchanged and stay
   individually testable; the orchestrator only sequences them
   (failure-isolated, registration order, always exit 0).
+- **One-shot workspace snapshot for `/steer:next`.** New read-only
+  `scripts/workspace-snapshot.sh` gathers every local reconstruction dimension
+  (git state, spine + version drift, feature statuses, open questions with
+  placeholder seeds excluded, Proposed ADRs, work claims, build/adoption
+  markers, declared tracker system) in a single call, replacing the
+  call-by-call cold sweep; `/steer:next` starts from it and fetches only the
+  live dimensions (PR/CI via `gh`, issue state via `/steer:tracker-sync`)
+  separately, batched with minimal output. Falls back to the manual sweep if
+  the helper is unavailable.
 
 ### 3.19.0
 
