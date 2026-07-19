@@ -17,6 +17,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   change — every gate, mode, and cross-reference is preserved; routing
   vocabulary is pinned by the new routing-fixture net. Copilot artifacts
   regenerated from the same sources.
+- **SessionStart hook consolidation.** The five startup/resume session checks
+  (template drift, open questions, unmanaged repo, fault surfacing,
+  graduation) now run through one `session-checks.sh` orchestrator — a single
+  hooks.json registration instead of five, cutting per-hook harness overhead
+  at every session start. The individual check scripts are unchanged and stay
+  individually testable; the orchestrator only sequences them
+  (failure-isolated, registration order, always exit 0).
 
 ### 3.19.0
 

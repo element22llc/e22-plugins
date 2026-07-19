@@ -74,12 +74,15 @@ def test_deprecated_next_action_regex():
 
 
 def test_sessionstart_hook_basenames_matches_hooks_json():
-    """The parser pins the live SessionStart roster (7 hooks)."""
+    """The parser pins the live SessionStart roster (3 registrations since the
+    session-checks.sh consolidation — the five checks it orchestrates are no
+    longer registered individually)."""
     names = check_standards._sessionstart_hook_basenames()
-    assert "surface-faults.sh" in names
     assert "inject-standards.sh" in names
-    assert "check-graduation.sh" in names
-    assert len(names) == 7  # bump if a SessionStart hook is added/removed
+    assert "session-checks.sh" in names
+    assert "orient-session.sh" in names
+    assert "surface-faults.sh" not in names  # orchestrated, not registered
+    assert len(names) == 3  # bump if a SessionStart hook is added/removed
 
 
 def test_token_present_respects_word_boundary():

@@ -55,9 +55,13 @@ can't tell "leaner" from "broken".
 
 Pass 1 landed: skill listing 17,950 → 10,867 chars (−39%, item 3 essentially
 done — ceiling re-armed at 11,500); top-5 rules trimmed to imperatives
-(69,335 → 65,508 B, ceiling re-armed at 66,500). Remaining: the deep
-rule→reference restructure to approach 30 KB (items 1–2), hook consolidation
-(item 4), and the workspace-state cache (item 5).
+(69,335 → 65,508 B, ceiling re-armed at 66,500). Item 4 landed: the five
+startup/resume session checks now run through one `session-checks.sh`
+orchestrator (hooks.json: 7 → 3 SessionStart registrations; the checks stay
+individually testable, and the orchestrator is sequencing-only —
+failure-isolated, registration order, always exit 0). Remaining: the deep
+rule→reference restructure to approach 30 KB (items 1–2) and the
+workspace-state cache (item 5).
 
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types

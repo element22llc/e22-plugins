@@ -33,14 +33,11 @@ HOOKS = PLUGIN / "hooks"
 DEFAULT_BUDGET_MS = 2000
 # Every SessionStart hook registered in hooks.json for the `startup` source,
 # in registration order. test_chain_matches_hooks_json pins this list to the
-# manifest so a newly registered hook cannot dodge the budget.
+# manifest so a newly registered hook cannot dodge the budget. session-checks.sh
+# is the consolidated orchestrator — timing it times all five checks it runs.
 STARTUP_CHAIN = [
     "inject-standards.sh",
-    "check-template-drift.sh",
-    "check-open-questions.sh",
-    "check-unmanaged-repo.sh",
-    "surface-faults.sh",
-    "check-graduation.sh",
+    "session-checks.sh",
     "orient-session.sh",
 ]
 

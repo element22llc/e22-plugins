@@ -1923,5 +1923,44 @@ printf '# Some feature\n\njust a title\n' >"${TD3}/spec/features/f/intent.md"
 out="$(run_hook check-template-drift.sh "$(session_json "${TD3}/apps/web" td3)")"
 assert_has "template-drift: subdir cwd resolves root and reports drift" "${out}" "## Open questions"
 
+# ---------------------------------------------------------------------------
+# session-checks.sh — consolidated SessionStart orchestrator. Sequencing only:
+# the five checks stay individually authoritative (tested above); these cases
+# pin the orchestration contract — aggregation, separation, silence, rc 0.
+# ---------------------------------------------------------------------------
+
+# (a) one fixture tripping TWO checks: spec/ without .version (unmanaged-repo
+#     notice) + a title-only feature intent (template-drift report). Both
+#     notices must appear in one combined output, in registration order
+#     (drift before unmanaged), separated cleanly.
+SC1="$(new_repo scBoth)"
+mkdir -p "${SC1}/spec/features/f"
+printf '# Some feature\n\njust a title\n' >"${SC1}/spec/features/f/intent.md"
+out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1)")"
+assert_has "session-checks: aggregates template-drift notice" "${out}" "## Open questions"
+assert_has "session-checks: aggregates unmanaged-repo notice" "${out}" "no spec-spine marker"
+_drift_pos="$(printf '%s' "${out}" | grep -n 'Open questions' | head -1 | cut -d: -f1)"
+_unmgd_pos="$(printf '%s' "${out}" | grep -n 'no spec-spine marker' | head -1 | cut -d: -f1)"
+[ "${_drift_pos:-0}" -lt "${_unmgd_pos:-0}" ] && ok ||
+	bad "session-checks: registration order preserved (drift at ${_drift_pos:-?}, unmanaged at ${_unmgd_pos:-?})"
+
+# (b) a healthy managed repo -> every check silent -> orchestrator silent, rc 0.
+SC2="$(new_repo scClean)"
+managed_spine "${SC2}"
+out="$(run_hook session-checks.sh "$(session_json "${SC2}" sc2)")"
+assert_empty "session-checks: healthy managed repo silent" "${out}"
+
+# (c) rc 0 even when checks emit notices — a notice is context, not a failure.
+out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1c)")"
+assert_eq "session-checks: rc 0 with notices" "$(last_rc)" "0"
+
+# (d) hooks.json registers the orchestrator (not the five checks individually)
+#     for startup|resume|clear — the consolidation this section exists to pin.
+_hj="${HOOKS}/hooks.json"
+grep -q 'session-checks\.sh' "${_hj}" && ok || bad "session-checks: registered in hooks.json"
+for _solo in check-template-drift check-open-questions check-unmanaged-repo surface-faults check-graduation; do
+	grep -q "${_solo}\.sh" "${_hj}" && bad "session-checks: ${_solo}.sh must not be registered directly" || ok
+done
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
