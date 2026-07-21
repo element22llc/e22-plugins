@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Copilot parity: drift gates for the last two hand-maintained mirrors.** The
+  MCP and hook surfaces were the only Copilot dimensions without a build-time
+  sync gate (instructions, prompts, and agents already have one each). Added
+  `check_copilot_mcp.py` — the VS Code `vscode/mcp.json` scaffold must expose the
+  same server set and configs as the plugin's `.mcp.json` (only the auth
+  placeholder may differ) — and `check_copilot_hooks.py` — every script the
+  Copilot `copilot-hooks.json` invokes must exist and be wired into `hooks.json`,
+  with `STEER_HOOK_TARGET=copilot` and fail-open `|| true`. Both run in
+  `plugin-check`, so adding an MCP server or renaming a hook script on the Claude
+  side can no longer silently leave the Copilot side behind. Concept doc updated.
 - **Brevity pass on the always-on rules.** Strengthened `87-output-discipline`
   from two bullets to four — keep responses tight, comments the exception, write
   the least code that does the job, and keep durable prose (specs, ADRs, PR
