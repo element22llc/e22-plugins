@@ -98,6 +98,11 @@ or invented capability. Render by the shared discipline — rule `88-artifacts`,
 mechanics in `/steer:reference artifacts` — with the temp path
 `<tempdir>/steer-help-menu.html`.
 
+End the menu with one line inviting correction: if steer routed a recent ask to
+the wrong workflow, or the menu misses what they were looking for, saying so
+gets it reported upstream via `/steer:report` — real misroutes are how the
+routing fixtures grow.
+
 ## Zooming in (optional argument)
 
 If the user named a skill or area (`$ARGUMENTS`), skip the full menu and expand

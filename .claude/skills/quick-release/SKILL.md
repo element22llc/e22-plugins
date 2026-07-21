@@ -191,7 +191,9 @@ only:
 ### Q5. PR-body honesty — record what this fast path did *not* check.
 
 When you write the PR body in B7, **in addition** to the `/release` requirements
-(paste the released bullets; summarize the gate result), add an explicit note:
+(paste the released bullets; summarize the gate result; append the
+context-budget table from `check_context_budget.py --report`), add an explicit
+note:
 
 > Cut via `/quick-release`: deterministic gates (CI, strict docs build,
 > deployed-docs freshness) passed. The judgment-based coherence audit and

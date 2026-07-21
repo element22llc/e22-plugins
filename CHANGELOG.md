@@ -20,6 +20,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   Toolchain (the rule keeps the diagnostics + `/steer:doctor` pointer) and
   compressed `10-stack`'s allow-pin remedy detail (the hook's denial message
   carries it). Copilot instructions regenerated from the rules.
+- **Misrouting feedback invite in `/steer:next` and `/steer:help`.** Both now
+  end their readout/menu with one line inviting the user to flag a misrouted
+  ask, reported upstream via `/steer:report` so the routing-eval fixtures grow
+  from real failures (PLAN.md Phase 4 close-out).
 
 ### 3.20.0
 

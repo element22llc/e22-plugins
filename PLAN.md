@@ -6,10 +6,10 @@
 > onboarding card was redesigned during Phase 1: orient-session stays a banner
 > printer and its orientation notices carry the intent), Phase 3 (Spec Kit
 > rigor, shipped in v3.20.0), Phase 4 (routing eval + budget ratchets run
-> permanently in `mise run check`/`ci`). Two Phase 4 nice-to-haves were not
-> adopted at archive time: appending the `check_context_budget.py --report`
-> table to release PRs, and the misrouting-report invite at the end of
-> `next`/`help` — file tracker issues if wanted. Kept at this path because
+> permanently in `mise run check`/`ci`; the two remaining items — the
+> `check_context_budget.py --report` table in release-PR bodies and the
+> misrouting-report invite at the end of `next`/`help` — landed with this
+> archive change). Kept at this path because
 > shipped hooks/scripts/fixtures cite "PLAN.md Phase N" in comments; the file
 > is historical context only, not an active work queue.
 
@@ -174,7 +174,7 @@ analogues; make them first-class.
    `templates/spec/intent.md` (testable, observable, bounded — the checklist
    Spec Kit ships in its templates), enforced as warnings by the validate pass.
 
-## Phase 4 — Keep honest: evals and feedback loop (1 PR, then ongoing) — ✅ CLOSED (gates in CI; two follow-ups unadopted, see header)
+## Phase 4 — Keep honest: evals and feedback loop (1 PR, then ongoing) — ✅ DONE
 
 - Run the Phase 0 routing eval + budgets in CI permanently (`mise run ci`).
 - Add a before/after token report to release PRs (the release skills already
