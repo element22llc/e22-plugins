@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.21.0
+
 - **Copilot parity: generate the last two hand-maintained mirrors.** Closes the
   generate-vs-gate asymmetry from the previous change — the MCP and hook mirrors
   had drift gates but no generators, so a human still hand-edited two files per

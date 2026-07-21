@@ -31,9 +31,15 @@ truth and how to install and refresh the Copilot side.
 | Gate hooks | `hooks/hooks.json` (hard `deny`) | `hooks/copilot-hooks.json` (soft `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
-All three surfaces are generated from one set of `rules/` and `skills/`, and a
-build-time drift gate (see [below](#why-the-surfaces-differ)) fails the build if
-the generated artifact ever falls out of sync — so they can never silently diverge.
+Every Copilot artifact — instructions, per-skill prompts, custom agents, the
+VS Code `mcp.json`, the CLI hook manifest, and the plugin + marketplace manifest
+versions — is generated from that one source and guarded by a build-time **drift
+gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
+committed artifact drifts. A **symmetry meta-gate** (`check_copilot_symmetry.py`,
+part of `plugin-check`) further asserts every `gen_copilot_*.py` is wired into
+`gen:copilot` and every `check_copilot_*.py` into `plugin-check` — so no future
+mirror can ship with a generator but no gate, or vice versa. The surfaces can
+never silently diverge, and no Copilot artifact is hand-maintained.
 
 ## Why the surfaces differ
 
@@ -123,7 +129,10 @@ surfaces differently:
 - **Copilot CLI** reads `SKILL.md` natively (an open cross-tool standard). A
   Copilot-specific plugin manifest
   (`plugins/steer/.github/plugin/plugin.json`, which Copilot prefers over the
-  `.claude-plugin/` manifest Claude Code uses) points Copilot at `skills/`.
+  `.claude-plugin/` manifest Claude Code uses) points Copilot at `skills/`. Its
+  version — and the Copilot marketplace manifest's — is stamped from the source
+  `plugin.json` by `gen_copilot_manifests.py` (`mise run gen:copilot`), so no
+  Copilot manifest is hand-versioned either.
 - **Copilot in VS Code** uses prompt files instead. The build renders one
   `.github/prompts/steer-<skill>.prompt.md` per user-invocable skill from the
   skill's frontmatter.
