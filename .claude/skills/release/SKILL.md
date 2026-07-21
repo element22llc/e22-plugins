@@ -323,7 +323,10 @@ the human gate on outbound actions:
   pastes the now-released changelog bullets so reviewers see the scope, **and**
   summarizes the Phase-A audit result (gates green; coherence/doc dimensions
   clean or the non-blocking `[high]/[medium]/[low]` findings the user chose to
-  defer) so the reviewer inherits the audit, not just the diff.
+  defer) so the reviewer inherits the audit, not just the diff, **and** appends
+  the always-on context-budget table from
+  `uv run python scripts/check_context_budget.py --report` so context weight
+  can't silently regress across releases (PLAN.md Phase 4).
 
 ### B8. Report.
 

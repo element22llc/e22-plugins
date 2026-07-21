@@ -6,6 +6,9 @@ plugin and maintained centrally in
 copy them into a product's `CLAUDE.md`, which holds only product-specific
 context.
 
+**Be concise by default** — in chat, in code, and in every artifact you write.
+Brevity is a standard here, not a preference: see Output discipline.
+
 ## You are the router
 
 These standards ship as on-demand skills, but **the user never has to know a

@@ -216,6 +216,10 @@ keep the technical detail for devs. Emit, in order:
 Read-only coda: the block recommends; it does not act. `/steer:next` never edits,
 commits, publishes, merges, or advances any workflow's state.
 
+End the readout with one line inviting correction: if this recommendation (or a
+recent routing) missed the mark, saying so gets it reported upstream via
+`/steer:report` — real misroutes are how the routing fixtures grow.
+
 ## Golden fixtures
 
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/next-fixtures/` pins the intended

@@ -7,6 +7,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Brevity pass on the always-on rules.** Strengthened `87-output-discipline`
+  from two bullets to four — keep responses tight, comments the exception, write
+  the least code that does the job, and keep durable prose (specs, ADRs, PR
+  descriptions, docs, the standards themselves) lean — so the discipline now
+  covers all three surfaces steer writes into: chat, code, and committed prose.
+  Added an early **"Be concise by default"** line to the `00-router` preamble so
+  the register is set from the first-injected rule. Trimmed padding from
+  `00`, `05`, `10`, `26`, `30`, `52`, and `90` to stay within the always-on
+  context budget; no directive, gate, or cross-reference changed. Moved the
+  mise PATH-shadowing rationale from `15-commands` into `CONVENTIONS.md` →
+  Toolchain (the rule keeps the diagnostics + `/steer:doctor` pointer) and
+  compressed `10-stack`'s allow-pin remedy detail (the hook's denial message
+  carries it). Copilot instructions regenerated from the rules.
+- **Misrouting feedback invite in `/steer:next` and `/steer:help`.** Both now
+  end their readout/menu with one line inviting the user to flag a misrouted
+  ask, reported upstream via `/steer:report` so the routing-eval fixtures grow
+  from real failures (PLAN.md Phase 4 close-out).
+
 ### 3.20.0
 
 - **Spec rigor (Phase 3).** Three additions adopted from the Spec Kit

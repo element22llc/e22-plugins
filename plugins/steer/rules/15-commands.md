@@ -18,10 +18,8 @@ uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
 `infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
 infrastructure. The `mise trust && mise install` first step is universal.
 
-Commands assume mise is activated in the shell, and that `mise activate` is
-sourced **after** any other version manager (nvm/asdf/volta/fnm) in your rc file
-— whichever loads last wins PATH, and mise must win or bare `pnpm`/`node` silently
-run a global version instead of the pinned one. "tool not found" usually means
-mise isn't activated; a *wrong/old* version usually means it's shadowed. Either
-way run `/steer:doctor` (it flags a shadowed runtime and names the conflicting
-manager), or see the product README.
+Commands assume mise is activated and **wins PATH** over any other version
+manager (nvm/asdf/volta/fnm) — otherwise bare `pnpm`/`node` silently run a
+global version. "tool not found" → mise not activated; *wrong/old* version →
+shadowed. Either way run `/steer:doctor`; activation-order rationale:
+`/steer:reference conventions`.
