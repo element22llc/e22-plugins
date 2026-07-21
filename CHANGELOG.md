@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Copilot parity: generate the last two hand-maintained mirrors.** Closes the
+  generate-vs-gate asymmetry from the previous change — the MCP and hook mirrors
+  had drift gates but no generators, so a human still hand-edited two files per
+  change. Added `gen_copilot_mcp.py` (renders `vscode/mcp.json` from `.mcp.json`,
+  translating the auth placeholder via an `AUTH_INPUTS` map), `gen_copilot_hooks.py`
+  (renders `copilot-hooks.json` from `hooks.json` — the ported subset declared in a
+  `COPILOT_HOOKS` table, reshaped into Copilot's flat schema with
+  `STEER_HOOK_TARGET=copilot` + fail-open `|| true`; emitted as strict JSON since
+  the Copilot CLI hook parser isn't documented to accept JSONC), and
+  `gen_copilot_manifests.py` (stamps the Copilot plugin + marketplace manifest
+  versions from the source `plugin.json`). All three join `mise run gen:copilot`,
+  and `check_copilot_mcp.py` / `check_copilot_hooks.py` are now byte-equality drift
+  gates like the instructions/prompts/agents gates. No Copilot artifact is
+  hand-maintained anymore. The regenerated `vscode/mcp.json` carries a
+  generated-do-not-edit header and canonical formatting; consumers install it via
+  `/steer:init` unchanged.
+- **Copilot parity: symmetry meta-gate.** Added `check_copilot_symmetry.py`
+  (in `plugin-check`) asserting every `scripts/gen_copilot_*.py` is wired into the
+  `gen:copilot` task and every `scripts/check_copilot_*.py` into `plugin-check`, so
+  a future Copilot mirror can't reintroduce parallel hand-editing by shipping
+  without a generator or gate. Concept doc + AUTHORING matrix updated.
 - **Environments pointer in the app guide.** Added an **"Environments"**
   subsection to the `app-docs.md` operational runbook — a small
   `environment | URL | health check | notes` table for the deployed surfaces,

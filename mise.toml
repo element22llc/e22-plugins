@@ -56,6 +56,8 @@ run = [
   "uv run python scripts/check_copilot_mcp.py",
   # The Copilot hook manifest must stay wired to real, shared hooks.json scripts.
   "uv run python scripts/check_copilot_hooks.py",
+  # Every Copilot generator/gate must be wired into gen:copilot / plugin-check.
+  "uv run python scripts/check_copilot_symmetry.py",
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
@@ -105,11 +107,14 @@ description = "Scan the repo for version pins that violate policy/versions.yml"
 run = ["sh plugins/steer/scripts/scan-version-pins.sh ."]
 
 [tasks."gen:copilot"]
-description = "Regenerate the Copilot artifacts: instructions + path-scoped instructions (from rules/), prompt files (from skills/), custom agents (from agents/)"
+description = "Regenerate the Copilot artifacts: instructions + path-scoped instructions (from rules/), prompt files (from skills/), custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
 run = [
   "uv run python scripts/gen_copilot_instructions.py --write",
   "uv run python scripts/gen_copilot_prompts.py --write",
   "uv run python scripts/gen_copilot_agents.py --write",
+  "uv run python scripts/gen_copilot_mcp.py --write",
+  "uv run python scripts/gen_copilot_hooks.py --write",
+  "uv run python scripts/gen_copilot_manifests.py --write",
 ]
 
 # Documentation site (Zensical + mermaid). The Zensical toolchain lives in

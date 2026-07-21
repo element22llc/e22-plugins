@@ -1,109 +1,72 @@
 #!/usr/bin/env python3
-"""Parity gate: the Copilot hook manifest must stay wired to real, shared hooks.
+"""Sync gate: the committed Copilot hook manifest must match ``hooks.json``.
 
-steer's gate hooks run on Claude Code from ``plugins/steer/hooks/hooks.json``
-(hard ``deny``) and on the Copilot CLI from
-``plugins/steer/hooks/copilot-hooks.json`` (soft ``ask``). Copilot deliberately
-ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` →
-"Gate hooks on Copilot"), so this is *not* a full-equality check like the
-generated Copilot artifacts. What it guards is referential integrity plus the
-two contracts that keep the Copilot side correct:
+``gen_copilot_hooks.py`` renders ``plugins/steer/hooks/copilot-hooks.json`` from
+the plugin's ``plugins/steer/hooks/hooks.json`` (the single source of truth),
+porting the documented ``PreToolUse`` subset into Copilot's flat schema with
+``STEER_HOOK_TARGET=copilot`` and fail-open ``|| true``. This check regenerates
+in-memory and byte-compares against the committed manifest, failing the build on
+any drift — so renaming, dropping, or retiming a hook on the Claude side can no
+longer silently leave the Copilot manifest behind.
 
-* Every hook script the Copilot manifest invokes still **exists** on disk and is
-  also wired into ``hooks.json`` — so renaming or dropping a script on the Claude
-  side can't leave the Copilot manifest pointing at a dead path (a Copilot hook
-  that references a missing script would silently no-op).
-* Every Copilot hook invokes the shared script with ``STEER_HOOK_TARGET=copilot``
-  — the flag that makes the shared ``.sh`` emit Copilot's ``permissionDecision``
-  envelope instead of Claude's.
-* Every Copilot hook is **fail-open** (``|| true``) — Copilot's ``preToolUse``
-  hooks are fail-*closed*, so an un-guarded error would block the edit; steer
-  hardens them to never block on error.
+Because the manifest is *generated* from ``hooks.json``, the referential
+integrity the old parity gate asserted (every referenced script is wired on the
+Claude side, carries the target flag, and is fail-open) now holds by
+construction. We additionally verify each referenced script still exists on disk
+— the one property regeneration alone can't guarantee, since ``hooks.json`` could
+name a script that was deleted.
 
 Run from the repo root::
 
     uv run python scripts/check_copilot_hooks.py
 
-Exit status is 0 when in sync, 1 on drift.
+Exit status is 0 when in sync, 1 on drift (fix with ``mise run gen:copilot``).
 """
 
 from __future__ import annotations
 
-import json
-import re
 import sys
-from pathlib import Path
 
-HOOKS_JSON = Path("plugins/steer/hooks/hooks.json")
-COPILOT_HOOKS_JSON = Path("plugins/steer/hooks/copilot-hooks.json")
-HOOKS_DIR = Path("plugins/steer/hooks")
+from gen_copilot_hooks import COPILOT_HOOKS, COPILOT_HOOKS_JSON, HOOKS_JSON, render
 
-_SCRIPT_RE = re.compile(r"hooks/([a-z0-9-]+\.sh)")
-
-
-def _claude_script_names() -> set[str]:
-    """Every hook-script basename referenced anywhere in hooks.json."""
-    data = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
-    names: set[str] = set()
-    for entries in data.get("hooks", {}).values():
-        for entry in entries:
-            for hook in entry.get("hooks", []):
-                names.update(_SCRIPT_RE.findall(hook.get("command", "")))
-    return names
-
-
-def _copilot_hooks() -> list[dict]:
-    """Flatten every hook entry in copilot-hooks.json across all events."""
-    data = json.loads(COPILOT_HOOKS_JSON.read_text(encoding="utf-8"))
-    hooks: list[dict] = []
-    for entries in data.get("hooks", {}).values():
-        hooks.extend(entries)
-    return hooks
+HOOKS_DIR = HOOKS_JSON.parent
 
 
 def main() -> int:
-    for path in (HOOKS_JSON, COPILOT_HOOKS_JSON):
-        if not path.is_file():
-            print(f"check_copilot_hooks: file not found: {path}", file=sys.stderr)
-            return 1
-
-    try:
-        claude_scripts = _claude_script_names()
-        copilot_hooks = _copilot_hooks()
-    except json.JSONDecodeError as exc:
-        print(f"check_copilot_hooks: invalid JSON ({exc})", file=sys.stderr)
+    if not HOOKS_JSON.is_file():
+        print(f"check_copilot_hooks: source not found: {HOOKS_JSON}", file=sys.stderr)
+        return 1
+    if not COPILOT_HOOKS_JSON.is_file():
+        print(
+            f"check_copilot_hooks: missing {COPILOT_HOOKS_JSON} — run 'mise run gen:copilot'",
+            file=sys.stderr,
+        )
         return 1
 
     problems: list[str] = []
-    for hook in copilot_hooks:
-        cmd = hook.get("bash", "")
-        scripts = _SCRIPT_RE.findall(cmd)
-        if not scripts:
-            problems.append(f"hook entry references no hooks/*.sh script: {cmd!r}")
-            continue
-        for script in scripts:
-            if not (HOOKS_DIR / script).is_file():
-                problems.append(f"script '{script}' does not exist under {HOOKS_DIR}/")
-            elif script not in claude_scripts:
-                problems.append(
-                    f"script '{script}' is not wired into {HOOKS_JSON.name} "
-                    f"(Copilot hook points at a script the Claude side dropped/renamed)"
-                )
-            if "STEER_HOOK_TARGET=copilot" not in cmd:
-                problems.append(f"hook invoking '{script}' is missing STEER_HOOK_TARGET=copilot")
-            if "|| true" not in cmd:
-                problems.append(f"hook invoking '{script}' is not fail-open (missing '|| true')")
+    for _event, script, _matcher in COPILOT_HOOKS:
+        if not (HOOKS_DIR / script).is_file():
+            problems.append(f"referenced script '{script}' does not exist under {HOOKS_DIR}/")
+
+    try:
+        expected = render(HOOKS_JSON)
+    except KeyError as exc:
+        print(f"check_copilot_hooks: {exc}", file=sys.stderr)
+        return 1
+    committed = COPILOT_HOOKS_JSON.read_text(encoding="utf-8")
+    if committed != expected:
+        problems.append(
+            f"{COPILOT_HOOKS_JSON.name} is out of sync with {HOOKS_JSON.name} "
+            f"— run 'mise run gen:copilot' to regenerate"
+        )
 
     if problems:
-        print(
-            f"check_copilot_hooks: {COPILOT_HOOKS_JSON} has drifted from {HOOKS_JSON}:",
-            file=sys.stderr,
-        )
-        for problem in sorted(set(problems)):
+        print("check_copilot_hooks: drift detected:", file=sys.stderr)
+        for problem in problems:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
-    print(f"check_copilot_hooks: OK ({len(copilot_hooks)} Copilot hook(s))")
+    print("check_copilot_hooks: OK")
     return 0
 
 

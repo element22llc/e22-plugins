@@ -1,10 +1,10 @@
-"""Tests for the Copilot hook parity gate.
+"""Tests for the Copilot hook generator + sync gate.
 
-Copilot ports only a subset of steer's hooks, so this is a referential-integrity
-+ contract gate, not full equality: every script the Copilot manifest invokes
-must exist and be wired into hooks.json, and each Copilot hook must carry
-``STEER_HOOK_TARGET=copilot`` and be fail-open (``|| true``). The real plugin
-must satisfy all three.
+``gen_copilot_hooks.py`` renders ``plugins/steer/hooks/copilot-hooks.json`` from
+``plugins/steer/hooks/hooks.json`` — porting the ``COPILOT_HOOKS`` subset into
+Copilot's flat schema with ``STEER_HOOK_TARGET=copilot`` + fail-open ``|| true``.
+The gate byte-compares the committed manifest against a fresh render and verifies
+each referenced script exists on disk. The real plugin must be in sync.
 """
 
 from __future__ import annotations
@@ -13,103 +13,85 @@ import json
 from pathlib import Path
 
 import check_copilot_hooks
+import gen_copilot_hooks
 
 
 def _claude_hooks(*scripts: str) -> str:
-    entries = [
-        {
-            "matcher": "Bash",
-            "hooks": [{"type": "command", "command": f'sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{s}"'}],
-        }
-        for s in scripts
-    ]
+    """A hooks.json wiring each script under PreToolUse (bash-actions gets the
+    broader Claude matcher so the generator's override is exercised)."""
+    entries = []
+    for s in scripts:
+        matcher = "Bash|mcp__.*[Ii]ssue.*" if "bash-actions" in s else "Write|Edit"
+        entries.append(
+            {
+                "matcher": matcher,
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": f'sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{s}"',
+                        "timeout": 10,
+                    }
+                ],
+            }
+        )
     return json.dumps({"hooks": {"PreToolUse": entries}})
 
 
-def _copilot_hooks(*specs: dict) -> str:
-    entries = [
-        {
-            "type": "command",
-            "matcher": "Bash",
-            "bash": spec["bash"],
-            "timeoutSec": 10,
-        }
-        for spec in specs
-    ]
-    return json.dumps({"version": 1, "hooks": {"PreToolUse": entries}})
+PORTED = ["check-version-pins.sh", "check-bash-actions.sh"]
 
 
-def _bash(script: str, *, target: bool = True, fail_open: bool = True) -> dict:
-    prefix = "STEER_HOOK_TARGET=copilot " if target else ""
-    suffix = " || true" if fail_open else ""
-    return {"bash": f'{prefix}sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{script}"{suffix}'}
-
-
-def _point(monkeypatch, tmp_path: Path, claude: str, copilot: str, scripts: list[str]) -> None:
+def _point(monkeypatch, tmp_path: Path, claude: str, scripts: list[str]) -> Path:
     hooks_dir = tmp_path / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
     for s in scripts:
         (hooks_dir / s).write_text("#!/bin/sh\n", encoding="utf-8")
     (hooks_dir / "hooks.json").write_text(claude, encoding="utf-8")
-    (hooks_dir / "copilot-hooks.json").write_text(copilot, encoding="utf-8")
     monkeypatch.setattr(check_copilot_hooks, "HOOKS_JSON", hooks_dir / "hooks.json")
     monkeypatch.setattr(check_copilot_hooks, "COPILOT_HOOKS_JSON", hooks_dir / "copilot-hooks.json")
     monkeypatch.setattr(check_copilot_hooks, "HOOKS_DIR", hooks_dir)
+    return hooks_dir
 
 
-def test_in_sync(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude_hooks("check-version-pins.sh", "check-bash-actions.sh"),
-        _copilot_hooks(_bash("check-version-pins.sh"), _bash("check-bash-actions.sh")),
-        ["check-version-pins.sh", "check-bash-actions.sh"],
-    )
+def test_render_shapes_copilot_manifest(tmp_path: Path):
+    src = tmp_path / "hooks.json"
+    src.write_text(_claude_hooks(*PORTED))
+    doc = json.loads(gen_copilot_hooks.render(src))
+    assert doc["version"] == 1
+    hooks = doc["hooks"]["PreToolUse"]
+    assert len(hooks) == 2
+    pins, bash = hooks
+    assert pins["matcher"] == "Write|Edit"  # no override
+    assert bash["matcher"] == "Bash"  # override applied
+    for h in hooks:
+        assert h["bash"].startswith("STEER_HOOK_TARGET=copilot ")
+        assert h["bash"].endswith("|| true")
+        assert h["timeoutSec"] == 10
+
+
+def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
+    hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks(*PORTED), PORTED)
+    copilot = hooks_dir / "copilot-hooks.json"
+    copilot.write_text(gen_copilot_hooks.render(hooks_dir / "hooks.json"), encoding="utf-8")
     assert check_copilot_hooks.main() == 0
+    copilot.write_text(copilot.read_text().replace("Bash", "Bash|Tampered"), encoding="utf-8")
+    assert check_copilot_hooks.main() == 1
 
 
-def test_script_not_in_claude_side_fails(tmp_path, monkeypatch):
-    # Copilot points at a script the Claude hooks.json dropped/renamed.
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude_hooks("check-version-pins.sh"),
-        _copilot_hooks(_bash("check-bash-actions.sh")),
-        ["check-version-pins.sh", "check-bash-actions.sh"],
+def test_gate_missing_script_file_fails(tmp_path: Path, monkeypatch):
+    # hooks.json wires both scripts (so render succeeds), but the .sh files are
+    # absent on disk — the one property byte-equality alone can't catch.
+    hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks(*PORTED), [])
+    (hooks_dir / "copilot-hooks.json").write_text(
+        gen_copilot_hooks.render(hooks_dir / "hooks.json"), encoding="utf-8"
     )
     assert check_copilot_hooks.main() == 1
 
 
-def test_script_file_absent_fails(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude_hooks("check-bash-actions.sh"),
-        _copilot_hooks(_bash("check-bash-actions.sh")),
-        [],  # no script file on disk
-    )
-    assert check_copilot_hooks.main() == 1
-
-
-def test_missing_target_flag_fails(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude_hooks("check-bash-actions.sh"),
-        _copilot_hooks(_bash("check-bash-actions.sh", target=False)),
-        ["check-bash-actions.sh"],
-    )
-    assert check_copilot_hooks.main() == 1
-
-
-def test_not_fail_open_fails(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude_hooks("check-bash-actions.sh"),
-        _copilot_hooks(_bash("check-bash-actions.sh", fail_open=False)),
-        ["check-bash-actions.sh"],
-    )
+def test_gate_unwired_hook_fails(tmp_path: Path, monkeypatch):
+    # hooks.json drops a script the COPILOT_HOOKS selection ports → render raises,
+    # the gate reports it rather than crashing.
+    hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks("check-version-pins.sh"), PORTED)
+    (hooks_dir / "copilot-hooks.json").write_text("{}", encoding="utf-8")
     assert check_copilot_hooks.main() == 1
 
 
