@@ -56,6 +56,22 @@ product is NOT") and current known gaps users will hit.]
 alerts live, backup/restore. Keep it honest — delete this section while the
 product is local-only.]
 
+### Environments
+
+[The deployed surfaces and where to reach them — filled in once an environment
+exists. **Non-secret pointers only:** public app/platform URLs, health-check
+endpoints, dashboard/log links. **Never** connection strings, credentials, or
+anything secret — those live in SSM Parameter Store / Secrets Manager, with only
+the variable *name* documented in `.env.example` (secrets rule). Delete this
+subsection while the product is local-only; split it into `spec/app/environments.md`
+and link back here if it outgrows the page. For how environments deploy and
+promote, see `infra/README.md`.]
+
+| Environment | URL | Health check | Notes |
+|---|---|---|---|
+| non-prod | | | |
+| prod | | | |
+
 ## Release notes
 
 [Newest first. One short, user-facing entry per release or notable merge —
