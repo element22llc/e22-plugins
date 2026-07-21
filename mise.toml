@@ -52,6 +52,10 @@ run = [
   "uv run python scripts/check_copilot_prompts.py",
   # The committed Copilot custom-agent artifacts must stay in sync with agents/.
   "uv run python scripts/check_copilot_agents.py",
+  # The VS Code MCP scaffold must mirror the plugin's .mcp.json servers.
+  "uv run python scripts/check_copilot_mcp.py",
+  # The Copilot hook manifest must stay wired to real, shared hooks.json scripts.
+  "uv run python scripts/check_copilot_hooks.py",
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
