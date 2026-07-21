@@ -111,6 +111,15 @@ This keeps the "default to current stable" rule above (you resolve `latest` once
 at adoption) without leaving an unpinned `latest` in any active product.
 mise setup steps are in the product README.
 
+**Shell activation & PATH precedence.** Commands assume mise is activated in
+the shell, with `mise activate` sourced **after** any other version manager
+(nvm/asdf/volta/fnm) in the rc file — whichever loads last wins PATH, and mise
+must win or bare `pnpm`/`node` silently run a global version instead of the
+pinned one. Diagnostics: "tool not found" usually means mise isn't activated; a
+*wrong or old* version usually means it's shadowed. Either way run
+`/steer:doctor` — it flags a shadowed runtime and names the conflicting
+manager.
+
 ### Lockfiles are maintained, never bypassed
 
 This applies to **every** lockfile in the repo, not just mise's:

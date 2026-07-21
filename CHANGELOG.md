@@ -15,8 +15,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   Added an early **"Be concise by default"** line to the `00-router` preamble so
   the register is set from the first-injected rule. Trimmed padding from
   `00`, `05`, `10`, `26`, `30`, `52`, and `90` to stay within the always-on
-  context budget; no directive, gate, or cross-reference changed. Copilot
-  instructions regenerated from the rules.
+  context budget; no directive, gate, or cross-reference changed. Moved the
+  mise PATH-shadowing rationale from `15-commands` into `CONVENTIONS.md` →
+  Toolchain (the rule keeps the diagnostics + `/steer:doctor` pointer) and
+  compressed `10-stack`'s allow-pin remedy detail (the hook's denial message
+  carries it). Copilot instructions regenerated from the rules.
 
 ### 3.20.0
 

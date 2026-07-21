@@ -40,8 +40,8 @@ bullets. `/steer:init` records the profile; the universal core (mise pinning,
   locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
   point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
   keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins; a deliberately older pin needs an
-  ADR plus `# steer:allow-pin <reason>` on the same line. **Every published
+  plugin hook denies stale image-major pins (deliberate exceptions: ADR +
+  `# steer:allow-pin` — the denial names the full remedy). **Every published
   host port overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare
   `5432:5432` — with the override var in `.env.example`.
 - **Task running:** mise is the single task entry point. Declare ordering with

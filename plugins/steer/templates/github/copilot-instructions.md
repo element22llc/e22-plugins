@@ -156,8 +156,8 @@ bullets. `/steer:init` records the profile; the universal core (mise pinning,
   locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
   point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
   keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins; a deliberately older pin needs an
-  ADR plus `# steer:allow-pin <reason>` on the same line. **Every published
+  plugin hook denies stale image-major pins (deliberate exceptions: ADR +
+  `# steer:allow-pin` — the denial names the full remedy). **Every published
   host port overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare
   `5432:5432` — with the override var in `.env.example`.
 - **Task running:** mise is the single task entry point. Declare ordering with
@@ -193,13 +193,11 @@ uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
 `infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
 infrastructure. The `mise trust && mise install` first step is universal.
 
-Commands assume mise is activated in the shell, and that `mise activate` is
-sourced **after** any other version manager (nvm/asdf/volta/fnm) in your rc file
-— whichever loads last wins PATH, and mise must win or bare `pnpm`/`node` silently
-run a global version instead of the pinned one. "tool not found" usually means
-mise isn't activated; a *wrong/old* version usually means it's shadowed. Either
-way run `/steer:doctor` (it flags a shadowed runtime and names the conflicting
-manager), or see the product README.
+Commands assume mise is activated and **wins PATH** over any other version
+manager (nvm/asdf/volta/fnm) — otherwise bare `pnpm`/`node` silently run a
+global version. "tool not found" → mise not activated; *wrong/old* version →
+shadowed. Either way run `/steer:doctor`; activation-order rationale:
+`/steer:reference conventions`.
 
 
 ## Where things live
