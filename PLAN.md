@@ -1,5 +1,18 @@
 # Steer improvement plan — easier, faster, more efficient, better results
 
+> **ARCHIVED 2026-07-21 — plan complete.** All four phases closed: Phase 0
+> (instrumentation), Phase 1 (always-on weight, close-out below), Phase 2
+> (progressive disclosure — tiered `/steer:help`, lite mode; the item-3
+> onboarding card was redesigned during Phase 1: orient-session stays a banner
+> printer and its orientation notices carry the intent), Phase 3 (Spec Kit
+> rigor, shipped in v3.20.0), Phase 4 (routing eval + budget ratchets run
+> permanently in `mise run check`/`ci`). Two Phase 4 nice-to-haves were not
+> adopted at archive time: appending the `check_context_budget.py --report`
+> table to release PRs, and the misrouting-report invite at the end of
+> `next`/`help` — file tracker issues if wanted. Kept at this path because
+> shipped hooks/scripts/fixtures cite "PLAN.md Phase N" in comments; the file
+> is historical context only, not an active work queue.
+
 Derived from a usability comparison of steer against **OpenSpec** (Fission-AI)
 and **GitHub Spec Kit**, plus measurements of this repo. The comparison's
 verdict: steer wins on breadth (full SDLC, org standards, PO-facing flows,
@@ -116,7 +129,7 @@ anything.
    repeat navigation is a file read, not a re-derivation, and tracker reads go
    through `/steer:tracker-sync` with `minimal_output` + batched calls.
 
-## Phase 2 — Easier to use: progressive disclosure (2–3 PRs)
+## Phase 2 — Easier to use: progressive disclosure (2–3 PRs) — ✅ DONE
 
 Steer's 24-skill surface is its biggest learning-curve liability; the router
 offsets it but the surface still leaks (help output, docs, frontmatter).
@@ -141,7 +154,7 @@ offsets it but the surface still leaks (help output, docs, frontmatter).
    prints a 5-line "what steer is, the 3 things you can say" card instead of
    the full standards preamble; detail stays in `/steer:help`.
 
-## Phase 3 — Better results: adopt Spec Kit's per-spec rigor (2 PRs)
+## Phase 3 — Better results: adopt Spec Kit's per-spec rigor (2 PRs) — ✅ DONE (v3.20.0)
 
 Spec Kit's differentiators are `/clarify` (structured de-ambiguation before
 planning) and `/analyze` (cross-artifact consistency check). Steer has partial
@@ -161,7 +174,7 @@ analogues; make them first-class.
    `templates/spec/intent.md` (testable, observable, bounded — the checklist
    Spec Kit ships in its templates), enforced as warnings by the validate pass.
 
-## Phase 4 — Keep honest: evals and feedback loop (1 PR, then ongoing)
+## Phase 4 — Keep honest: evals and feedback loop (1 PR, then ongoing) — ✅ CLOSED (gates in CI; two follow-ups unadopted, see header)
 
 - Run the Phase 0 routing eval + budgets in CI permanently (`mise run ci`).
 - Add a before/after token report to release PRs (the release skills already

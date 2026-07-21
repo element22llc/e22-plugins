@@ -105,7 +105,7 @@ SessionStart hook) — auto-start `/steer:build` with a one-line heads-up and re
 from its current step. When the PO wants to think a feature through before any
 code, that is `/steer:spec` — offer it plainly ("we can work out what this should
 do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
-real secrets/credentials or third-party accounts. A pre-production build may
+real secrets/credentials or real third-party accounts. A pre-production build may
 implement high-risk features for real locally (High-risk pre-production
 relaxation) — record every choice in the spec and the PR's productionization
 brief. The PO owns data **semantics** (what exists, what "delete" means to a
