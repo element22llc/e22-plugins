@@ -1,18 +1,18 @@
 <!-- steer:inject-when=code-project -->
 ## Stack
 
-**Default biases**, not mandates — when a project's intent clearly warrants a
-different stack, propose the better fit and record an ADR (`/steer:adr`).
-Rationale and full setup detail for every bullet: `/steer:reference
-conventions`. When you pick or change stack pieces, verify current stable
-versions in-session — don't trust training-data memory.
+**Default biases**, not mandates — when intent clearly warrants a different
+stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
+full setup detail: `/steer:reference conventions`. Verify current stable
+versions in-session when you pick or change a piece — don't trust training-data
+memory.
 
 These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
 *primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
 or **cli** follows its own package language and skips the app/web/compose
 bullets. `/steer:init` records the profile; the universal core (mise pinning,
-the `/spec` spine, CI hygiene) is the same for all.
+`/spec` spine, CI hygiene) is the same for all.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the

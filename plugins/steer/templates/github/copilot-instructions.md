@@ -8,6 +8,9 @@ plugin and maintained centrally in
 copy them into a product's `CLAUDE.md`, which holds only product-specific
 context.
 
+**Be concise by default** — in chat, in code, and in every artifact you write.
+Brevity is a standard here, not a preference: see Output discipline.
+
 ## You are the router
 
 These standards ship as on-demand skills, but **the user never has to know a
@@ -94,21 +97,19 @@ handling because the person is non-technical.
   plain language, no git/stack vocabulary.
 - **Developer (dev)** — productionizes, reviews, deploys. Uses technical terms.
 
-**In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise, Docker,
-pnpm) yourself rather than handing over commands. Treat build as the **default
-posture**: on the PO signals above — or when the role is ambiguous but the request
-reads non-technical, or a `spec/BUILD-STATUS.md` exists (an in-progress build, flagged
-by the SessionStart hook) — auto-start `/steer:build` with a one-line heads-up and
-resume from its current step, rather than working ad hoc. When the PO wants to think a
-feature through before any code, that is `/steer:spec` — offer it in plain words ("we
-can work out what this should do first") and drive it for them (the build flow uses
-it at the intent stage). Guardrails: never deploy, touch `/infra`, or use real
-secrets/credentials or real third-party accounts.
-Beyond that, a pre-production build may implement high-risk features for real locally
-(High-risk pre-production relaxation) — record every choice in the spec and the PR's
-productionization brief. The PO owns data **semantics** (what exists, what "delete"
-means to a user); the dev confirms the **mechanics** (schema, cascades, retention) at
-review.
+**In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
+Docker, pnpm) yourself rather than handing over commands. Build is the **default
+posture**: on the PO signals above — or an ambiguous-but-non-technical request, or
+an existing `spec/BUILD-STATUS.md` (an in-progress build, flagged by the
+SessionStart hook) — auto-start `/steer:build` with a one-line heads-up and resume
+from its current step. When the PO wants to think a feature through before any
+code, that is `/steer:spec` — offer it plainly ("we can work out what this should
+do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
+real secrets/credentials or third-party accounts. A pre-production build may
+implement high-risk features for real locally (High-risk pre-production
+relaxation) — record every choice in the spec and the PR's productionization
+brief. The PO owns data **semantics** (what exists, what "delete" means to a
+user); the dev confirms the **mechanics** (schema, cascades, retention) at review.
 
 **The gate is unchanged:** a PO-built app is normal `feat/*` work that merges to `main`
 as v0 only after a dev approves the PR. That review *is* productionization.
@@ -116,18 +117,18 @@ as v0 only after a dev approves the PR. That review *is* productionization.
 
 ## Stack
 
-**Default biases**, not mandates — when a project's intent clearly warrants a
-different stack, propose the better fit and record an ADR (`/steer:adr`).
-Rationale and full setup detail for every bullet: `/steer:reference
-conventions`. When you pick or change stack pieces, verify current stable
-versions in-session — don't trust training-data memory.
+**Default biases**, not mandates — when intent clearly warrants a different
+stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
+full setup detail: `/steer:reference conventions`. Verify current stable
+versions in-session when you pick or change a piece — don't trust training-data
+memory.
 
 These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
 *primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
 or **cli** follows its own package language and skips the app/web/compose
 bullets. `/steer:init` records the profile; the universal core (mise pinning,
-the `/spec` spine, CI hygiene) is the same for all.
+`/spec` spine, CI hygiene) is the same for all.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
@@ -300,12 +301,11 @@ dev servers outlive the git worktree unless torn down:
 
 Long, multi-phase work bloats the session and risks losing task constraints at
 compaction. You cannot see context usage or trigger `/compact` — only the user
-can — so keep the working context lean instead.
+can — so keep the working context lean.
 
-- **Delegate heavy runs to a subagent** (a fresh context window by
-  construction) and bring back only the structured result, not the whole
-  sweep — how `/steer:audit` fans out to `steer-reviewer` and
-  `/steer:work --reviewed` runs its plan gate.
+- **Delegate heavy runs to a subagent** (a fresh context window) and bring back
+  only the structured result, not the whole sweep — how `/steer:audit` fans out
+  to `steer-reviewer` and `/steer:work --reviewed` runs its plan gate.
 - **Keep durable state in files, not the chat.** Run-state and task-specific
   constraints (decisions made, what to skip, what's unreliable) go in
   `/spec/**` or a sidecar artifact the work re-reads — files survive compaction
@@ -354,24 +354,23 @@ acceptance) are canonical in the spec-framework reference `/steer:spec` draws
 on. Unsure whether something needs a feature spec or an ADR? Ask the dev
 rather than skipping it.
 
-**Greenfield** (new product; input can be an idea, brief, screenshots, or a
-design export): **bootstrap first** (`/steer:init`, or `/steer:build` for a
-PO) — the bundled scaffold **and** the `/spec` spine before feature code;
-never hand-write `package.json` / build config / CI from scratch. Then
-interview to fill `vision.md`, `users.md`, `glossary.md` (ask, don't invent;
-product-level ambiguity → `vision.md` → `## Open questions`), draft feature
-intents, and get PO approval before broad implementation. Design exports: read
-the **local export** via `/steer:reference design-sources` — never fetch the
-URL (it 403s).
+**Greenfield** (new product — an idea, brief, screenshots, or a design export):
+**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) — the bundled
+scaffold **and** the `/spec` spine before feature code; never hand-write
+`package.json` / build config / CI from scratch. Then interview to fill
+`vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
+ambiguity → `vision.md` → `## Open questions`), draft feature intents, and get PO
+approval before broad implementation. Design exports: read the **local export**
+via `/steer:reference design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
-relaxes the *ceremony* (lighter interview; branch/PR relaxes only via
-solo-trunk mode below; a GitHub-adopted repo still keeps the issue, closed
-from the commit — see Issue-first), **not** the scaffold or the spine. Even a
-throwaway gets the bundled scaffold and at least a minimal `/spec` (vision +
-the feature intents being built), auto-documented as it goes — seed
-`/spec/HISTORY.md` and `/spec/app/` as features land. `/steer:adopt` is for
-*un-bootstrapped* pre-existing code, not an excuse to skip bootstrap now.
+relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
+below; a GitHub-adopted repo still keeps the issue, closed from the commit — see
+Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
+bundled scaffold and a minimal `/spec` (vision + the feature intents being
+built), auto-documented as features land (`/spec/HISTORY.md`, `/spec/app/`).
+`/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse to skip
+bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
@@ -632,12 +631,11 @@ then make them pass." A vague goal you can't check is a goal you can't finish.
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
-areas) — validate in non-prod before prod, and scope pipeline changes with the dev
-first. Detail and the AWS/Terragrunt specifics live in the repo's infra README
-(`/infra/README.md` for a nested infra dir, the root README for an infra-profile
-repo); run `/steer:reference conventions` for the rationale. The AWS app-promotion
-model below is the default — an infra-profile repo with a different target records
-its flow in an ADR.
+areas) — validate in non-prod before prod, and scope pipeline changes with the
+dev first. AWS/Terragrunt specifics live in the infra README (`/infra/README.md`
+for a nested infra dir, the root README for an infra-profile repo); rationale in
+`/steer:reference conventions`. The AWS app-promotion model below is the default —
+an infra-profile repo with a different target records its flow in an ADR.
 
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
@@ -877,18 +875,25 @@ anti-patterns prose: `/steer:reference conventions`.
 
 ## Output discipline — earn every line
 
-Default to less. Code and prose alike should carry only what the reader can't
-already see; volume is not rigor.
+Default to less. Every line — chat, code, or committed prose — must carry
+something the reader can't already see. Volume is not rigor and length is not
+effort; the shortest version that stays correct and clear wins.
 
-- **Comments are the exception, not the default.** Let names and structure do the
-  explaining; comment only the non-obvious *why* — plus the why-comment an escape
-  hatch requires. No comments that restate the code, narrate obvious steps, mark
-  sections with banners, or leave old code commented out. Match the file's
-  existing comment density instead of adding your own.
-- **Keep responses tight.** Lead with the result or the change; skip preamble,
-  self-narration, and re-explaining the request. Don't list options you won't take
-  or pad with caveats. Expand only when asked or when a real decision needs the
-  context.
+- **Keep responses tight.** Lead with the result or the change. Cut preamble,
+  self-narration, and restating the request back. Don't list options you won't
+  take, pad with caveats, or recap what you just did. Expand only when asked, or
+  when a real decision needs the context.
+- **Comments are the exception, not the default.** Let names and structure
+  explain; comment only the non-obvious *why* — plus the why-comment an escape
+  hatch requires. No comments that restate the code, narrate obvious steps,
+  banner sections, or leave old code commented out. Match the file's existing
+  comment density.
+- **Write the least code that does the job.** Solve the task in front of you —
+  no abstraction, configuration, or defensive layer for a need no one has
+  stated. Fewer lines to read is fewer lines to review and maintain.
+- **Durable prose stays lean too.** Specs, ADRs, PR descriptions, and docs
+  inform, not impress — short declarative sentences, no hedging or ceremony.
+  Same discipline applies to the standards themselves.
 
 
 ## Shareable views → Claude Artifacts
@@ -931,14 +936,14 @@ in the standard stack, not code to ship**: its delivery tech (UMD React,
 in-browser Babel, hand-rolled CSS) is disposable — serving the prototype runtime
 is an **ADR-gated, kill-dated exception**, never the default.
 
-When the design is absent or partial — the common case — **build the UI
-deliberately instead of defaulting to generic AI aesthetics**: the
-**`frontend-design`** plugin (installed from this marketplace) carries that
-craft; these standards scope it to a professional/enterprise default, the standard stack
-(Next + TS + Tailwind), and accessibility.
+When the design is absent or partial, **build the UI deliberately instead of
+defaulting to generic AI aesthetics**: the **`frontend-design`** plugin
+(installed from this marketplace) carries that craft; these standards scope it to
+a professional/enterprise default, the standard stack (Next + TS + Tailwind), and
+accessibility.
 
 Whichever way a feature's UI originates, **capture the reusable decisions in
-`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build and
+`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build,
 promoting anything that recurs — so every feature stays visually uniform. Full
 walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
 no-export build): run **`/steer:reference design-sources`**.

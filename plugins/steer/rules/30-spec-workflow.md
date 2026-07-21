@@ -26,24 +26,23 @@ acceptance) are canonical in the spec-framework reference `/steer:spec` draws
 on. Unsure whether something needs a feature spec or an ADR? Ask the dev
 rather than skipping it.
 
-**Greenfield** (new product; input can be an idea, brief, screenshots, or a
-design export): **bootstrap first** (`/steer:init`, or `/steer:build` for a
-PO) — the bundled scaffold **and** the `/spec` spine before feature code;
-never hand-write `package.json` / build config / CI from scratch. Then
-interview to fill `vision.md`, `users.md`, `glossary.md` (ask, don't invent;
-product-level ambiguity → `vision.md` → `## Open questions`), draft feature
-intents, and get PO approval before broad implementation. Design exports: read
-the **local export** via `/steer:reference design-sources` — never fetch the
-URL (it 403s).
+**Greenfield** (new product — an idea, brief, screenshots, or a design export):
+**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) — the bundled
+scaffold **and** the `/spec` spine before feature code; never hand-write
+`package.json` / build config / CI from scratch. Then interview to fill
+`vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
+ambiguity → `vision.md` → `## Open questions`), draft feature intents, and get PO
+approval before broad implementation. Design exports: read the **local export**
+via `/steer:reference design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
-relaxes the *ceremony* (lighter interview; branch/PR relaxes only via
-solo-trunk mode below; a GitHub-adopted repo still keeps the issue, closed
-from the commit — see Issue-first), **not** the scaffold or the spine. Even a
-throwaway gets the bundled scaffold and at least a minimal `/spec` (vision +
-the feature intents being built), auto-documented as it goes — seed
-`/spec/HISTORY.md` and `/spec/app/` as features land. `/steer:adopt` is for
-*un-bootstrapped* pre-existing code, not an excuse to skip bootstrap now.
+relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
+below; a GitHub-adopted repo still keeps the issue, closed from the commit — see
+Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
+bundled scaffold and a minimal `/spec` (vision + the feature intents being
+built), auto-documented as features land (`/spec/HISTORY.md`, `/spec/app/`).
+`/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse to skip
+bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony

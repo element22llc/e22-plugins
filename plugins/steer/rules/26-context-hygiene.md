@@ -2,12 +2,11 @@
 
 Long, multi-phase work bloats the session and risks losing task constraints at
 compaction. You cannot see context usage or trigger `/compact` — only the user
-can — so keep the working context lean instead.
+can — so keep the working context lean.
 
-- **Delegate heavy runs to a subagent** (a fresh context window by
-  construction) and bring back only the structured result, not the whole
-  sweep — how `/steer:audit` fans out to `steer-reviewer` and
-  `/steer:work --reviewed` runs its plan gate.
+- **Delegate heavy runs to a subagent** (a fresh context window) and bring back
+  only the structured result, not the whole sweep — how `/steer:audit` fans out
+  to `steer-reviewer` and `/steer:work --reviewed` runs its plan gate.
 - **Keep durable state in files, not the chat.** Run-state and task-specific
   constraints (decisions made, what to skip, what's unreliable) go in
   `/spec/**` or a sidecar artifact the work re-reads — files survive compaction
