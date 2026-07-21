@@ -28,6 +28,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `gen:copilot` task and every `scripts/check_copilot_*.py` into `plugin-check`, so
   a future Copilot mirror can't reintroduce parallel hand-editing by shipping
   without a generator or gate. Concept doc + AUTHORING matrix updated.
+- **Environments pointer in the app guide.** Added an **"Environments"**
+  subsection to the `app-docs.md` operational runbook — a small
+  `environment | URL | health check | notes` table for the deployed surfaces,
+  with an explicit non-secret guardrail (public URLs, health endpoints, and
+  dashboard links only; connection strings and credentials stay in SSM /
+  Secrets Manager per the secrets rule, with just the variable name in
+  `.env.example`). Follows the file's own index-splits-when-it-grows idiom
+  (graduates to `spec/app/environments.md`) and points to `infra/README.md`
+  for deploy/promotion mechanics — so there's now a sanctioned home for
+  dev/qa/prod URLs without inviting secrets into the repo.
 - **Copilot parity: drift gates for the last two hand-maintained mirrors.** The
   MCP and hook surfaces were the only Copilot dimensions without a build-time
   sync gate (instructions, prompts, and agents already have one each). Added
