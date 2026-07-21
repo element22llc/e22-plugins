@@ -1,9 +1,10 @@
-"""Tests for the Copilot/VS Code MCP parity gate.
+"""Tests for the Copilot/VS Code MCP generator + sync gate.
 
-The gate pins ``plugins/steer/templates/scaffold/vscode/mcp.json`` (VS Code's
-``servers`` schema) to ``plugins/steer/.mcp.json`` (Claude's ``mcpServers``): the
-two must expose the same server set with matching configs, tolerating only the
-auth-placeholder difference and JSONC comments. The real plugin must be in sync.
+``gen_copilot_mcp.py`` renders ``plugins/steer/templates/scaffold/vscode/mcp.json``
+(VS Code's ``servers`` schema) from ``plugins/steer/.mcp.json`` (Claude's
+``mcpServers``), translating the auth placeholder (env var → prompted input). The
+gate byte-compares the committed mirror against a fresh render. The real plugin's
+mirror must already be in sync.
 """
 
 from __future__ import annotations
@@ -12,72 +13,52 @@ import json
 from pathlib import Path
 
 import check_copilot_mcp
+import gen_copilot_mcp
 
 GITHUB = {"type": "http", "url": "https://api.githubcopilot.com/mcp/"}
 MARKITDOWN = {"command": "uvx", "args": ["markitdown-mcp"]}
-CONTEXT7 = {"type": "http", "url": "https://mcp.context7.com/mcp"}
 
 
 def _claude(servers: dict) -> str:
     return json.dumps({"mcpServers": servers})
 
 
-def _vscode(servers: dict, *, comment: bool = True) -> str:
-    body = json.dumps({"inputs": [{"id": "github_pat"}], "servers": servers}, indent=2)
-    return ("// VS Code MCP servers — mirrors .mcp.json.\n" + body) if comment else body
-
-
 def _gh(auth: str) -> dict:
     return {**GITHUB, "headers": {"Authorization": f"Bearer {auth}"}}
 
 
-def _point(monkeypatch, tmp_path: Path, claude: str, vscode: str) -> None:
-    cpath, vpath = tmp_path / ".mcp.json", tmp_path / "mcp.json"
-    cpath.write_text(claude, encoding="utf-8")
-    vpath.write_text(vscode, encoding="utf-8")
-    monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", cpath)
-    monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", vpath)
+def test_render_translates_github_pat(tmp_path: Path):
+    src = tmp_path / ".mcp.json"
+    src.write_text(_claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}))
+    out = gen_copilot_mcp.render(src)
+    assert "// Generated from the steer plugin's .mcp.json" in out
+    assert "do not edit by hand" in out
+    # The env-var placeholder becomes a prompted input, with a matching inputs block.
+    assert "${input:github_pat}" in out
+    assert "${GITHUB_PAT}" not in out
+    assert '"inputs"' in out
+    assert '"servers"' in out
 
 
-def test_in_sync_with_auth_placeholder_and_comments(tmp_path, monkeypatch):
-    # Distinct auth placeholders (env var vs prompted input) + JSONC comment are OK.
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}),
-        _vscode({"github": _gh("${input:github_pat}"), "markitdown": MARKITDOWN}),
-    )
+def test_render_passes_through_unmapped_placeholder(tmp_path: Path):
+    # A placeholder with no AUTH_INPUTS entry is carried through unchanged, and no
+    # inputs block is synthesized for it.
+    src = tmp_path / ".mcp.json"
+    src.write_text(_claude({"svc": {"command": "x", "args": ["${OTHER}"]}}))
+    out = gen_copilot_mcp.render(src)
+    assert "${OTHER}" in out
+    assert '"inputs"' not in out
+
+
+def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
+    src = tmp_path / ".mcp.json"
+    dst = tmp_path / "mcp.json"
+    src.write_text(_claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}))
+    dst.write_text(gen_copilot_mcp.render(src), encoding="utf-8")
+    monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", src)
+    monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", dst)
     assert check_copilot_mcp.main() == 0
-
-
-def test_missing_server_fails(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}),
-        _vscode({"github": _gh("${input:github_pat}")}),
-    )
-    assert check_copilot_mcp.main() == 1
-
-
-def test_extra_server_fails(tmp_path, monkeypatch):
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude({"github": _gh("${GITHUB_PAT}")}),
-        _vscode({"github": _gh("${input:github_pat}"), "context7": CONTEXT7}),
-    )
-    assert check_copilot_mcp.main() == 1
-
-
-def test_config_difference_fails(tmp_path, monkeypatch):
-    # A genuine (non-placeholder) difference — a changed URL — must be caught.
-    _point(
-        monkeypatch,
-        tmp_path,
-        _claude({"github": _gh("${GITHUB_PAT}")}),
-        _vscode({"github": {**_gh("${input:github_pat}"), "url": "https://example.com/mcp/"}}),
-    )
+    dst.write_text(dst.read_text() + "  // tampered\n", encoding="utf-8")
     assert check_copilot_mcp.main() == 1
 
 

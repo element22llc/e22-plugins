@@ -184,11 +184,13 @@ schema — mirroring the same servers: the **GitHub** MCP server that
 (stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
 back to `gh` only.
 
-Unlike the generated artifacts above, this file is hand-maintained — so a parity
-gate (`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the VS
-Code `servers` ever drift from the plugin's `.mcp.json` `mcpServers` (same server
-set, matching configs; only the auth placeholder — env var vs prompted input —
-may differ).
+Like the other Copilot artifacts, this file is **generated** — `gen_copilot_mcp.py`
+renders it from the plugin's `.mcp.json` (`mise run gen:copilot`), translating the
+one sanctioned difference: the auth placeholder (env var → prompted input, mapped
+in the generator's `AUTH_INPUTS`). A byte-equality drift gate
+(`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the committed
+mirror falls out of sync. Edit `.mcp.json` and regenerate — never hand-edit the
+mirror.
 
 ## Cloud coding agent (opt-in)
 
@@ -225,12 +227,18 @@ nudges — and the issue-create contract guard that also lives in
 cannot inject non-blocking context); their intent is carried by the standards in
 `.github/copilot-instructions.md`.
 
-`copilot-hooks.json` is hand-maintained (it ports only this subset), so a parity
-gate (`check_copilot_hooks.py`, part of `plugin-check`) keeps it honest: every
-script it invokes must still exist and be wired into `hooks.json`, and each hook
-must carry `STEER_HOOK_TARGET=copilot` and be fail-open (`|| true`). Renaming or
-dropping a hook script on the Claude side then fails the build instead of
-silently leaving the Copilot manifest pointing at a dead path.
+`copilot-hooks.json` is **generated** from `hooks.json` by `gen_copilot_hooks.py`
+(`mise run gen:copilot`): the ported subset is declared in the generator's
+`COPILOT_HOOKS` table, and it reshapes each selected hook into Copilot's flat
+schema — adding `STEER_HOOK_TARGET=copilot` and the fail-open `|| true`, and
+mapping `timeout` → `timeoutSec`. It is emitted as **strict JSON** (no header
+comment), because the Copilot CLI hook parser is not documented to accept JSONC —
+unlike the VS Code `mcp.json` mirror, which is JSONC. A byte-equality drift gate
+(`check_copilot_hooks.py`, part of `plugin-check`) fails the build if the
+committed manifest drifts, and additionally verifies each referenced script still
+exists on disk. Renaming, dropping, or retiming a hook script on the Claude side
+then fails the build until you regenerate, instead of silently leaving the Copilot
+manifest pointing at a dead path.
 
 **VS Code has no hook mechanism at all** — the gates are Copilot-CLI-only. In VS
 Code the version-pin and trunk-push policies live only as text in the standards.

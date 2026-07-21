@@ -20,9 +20,9 @@ regardless — this matrix is for tight iteration on a single failure.
 | --- | --- | --- |
 | `plugins/steer/skills/**` | `plugin-check` (incl. `check_copilot_prompts.py`) | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
 | `plugins/steer/rules/**` | `plugin-check` (incl. `check_copilot_instructions.py`) | `uv run python scripts/check_plugin.py` |
-| `rules/**` or `skills/**` → stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_instructions.py` / `check_copilot_prompts.py`, both in `mise run check`) | `mise run gen:copilot` — regenerates `templates/github/copilot-instructions.md` + `templates/github/prompts/*.prompt.md`; commit them with the rule/skill change |
-| `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `plugin-check`'s `check_copilot_hooks.py`: renaming/dropping a hook script must be mirrored in `copilot-hooks.json`) | `sh plugins/steer/hooks/tests/run.sh` |
-| `plugins/steer/.mcp.json` or `templates/scaffold/vscode/mcp.json` | `plugin-check` (`check_copilot_mcp.py`: the two MCP mirrors must stay in sync) | `uv run python scripts/check_copilot_mcp.py` |
+| `rules/**`, `skills/**`, `agents/**`, `.mcp.json`, or `hooks/**` → stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_*`, all in `mise run check`) | `mise run gen:copilot` — regenerates the whole Copilot surface (instructions, prompts, agents, `vscode/mcp.json`, `copilot-hooks.json`, manifest versions); commit the regenerated files with the source change |
+| `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `plugin-check`'s `check_copilot_hooks.py`) | `sh plugins/steer/hooks/tests/run.sh`; if you added/removed/retimed a *ported* hook, `mise run gen:copilot` regenerates `copilot-hooks.json` (ported subset declared in `gen_copilot_hooks.py`'s `COPILOT_HOOKS`) |
+| `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` — regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
 | `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
