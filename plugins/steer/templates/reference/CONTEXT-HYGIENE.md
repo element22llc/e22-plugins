@@ -131,6 +131,21 @@ heavy work *is* the current conversation), the only remaining lever is to
 Keep this rare. The default is silent: fork the heavy run and write state to a file,
 so the nudge is seldom needed.
 
+**Concrete heuristics to include in the recommendation** — community-validated
+rules of thumb the user acts on (you cannot):
+
+- **Quality drops well before the window is full.** Practitioners treat ~40%
+  context fill as the onset of degradation and act at or below it; `/context`
+  is where the user reads the number.
+- **Rewind beats correcting.** Rolling back (double-Esc / `/rewind`) to just
+  before a failed attempt and re-prompting outperforms leaving the failed
+  attempt plus its correction in the window.
+- **A guided `/compact` beats an automatic one.** Suggest the focus hint
+  verbatim — e.g. `/compact keep the auth-refactor decisions, drop the test
+  debugging` — so the summary keeps exactly what the next step needs.
+- **A genuinely new task deserves a fresh session**, seeded with the
+  pre-composed hand-off; a follow-up on the same task can stay in this one.
+
 ## Worked example — the part-regeneration scenario
 
 A run analyzes an `extraction.json`, produces a verdict ("positioned holes are

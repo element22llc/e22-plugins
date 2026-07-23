@@ -22,6 +22,8 @@ anti-patterns prose: `/steer:reference conventions`.
   Server Components / `NEXT_PUBLIC_*`.)*
 - **Domain logic lives in shared, testable modules**, not in UI components or
   route handlers — keep handlers thin. *(Monorepo `packages/`.)*
+- **Slice work vertically** — thin end-to-end slices (schema to UI), not
+  layer by layer; each merge leaves the product working.
 - **Nothing silenced** — no empty `catch` / swallowed errors (unexpected
   errors go to Sentry with context); no escape hatches without a why-comment
   (`any` casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule

@@ -7,6 +7,32 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Plan-mode gate for Medium+ changes.** `rules/80-change-size` now instructs
+  starting Medium and larger changes in plan mode (or presenting the plan for
+  approval on harnesses without one), so the approach is reviewed while it is
+  still cheap to change. Adopted from community Claude Code best practice.
+- **Vertical-slice delivery pattern.** `rules/85-practices` gains a baseline
+  bullet: deliver a thin end-to-end slice (schema → service → UI) per change
+  rather than one horizontal layer at a time, so every merge leaves the
+  product working and demoable.
+- **Concrete context-hygiene heuristics.** The fallback-nudge section of
+  `templates/reference/CONTEXT-HYGIENE.md` now includes the community rules of
+  thumb to pass along when recommending user action: ~40% context fill as the
+  degradation onset, rewind-over-correct, a guided `/compact` with a verbatim
+  focus hint, and fresh-session-per-new-task seeded with the pre-composed
+  hand-off.
+- **CLAUDE.md size budget in the scaffold.** The bundled product `CLAUDE.md`
+  template now states a leanness budget (stay under ~200 lines) and routes
+  outgrown sections to `/spec/**` / `ARCHITECTURE.md`, keeping the always-on
+  file from bloating over a product's life.
+- **`format-on-write` PostToolUse hook.** New hook formats the single file a
+  Write/Edit just touched with the repo's own formatter — biome when a root
+  `biome.json`/`biome.jsonc` exists, ruff when a root `pyproject.toml` does —
+  killing the formatting-only CI round-trip. Strictly opt-in (no config or no
+  binary on PATH → silent no-op), never a tree sweep, always fail-open, and
+  exempt in the plugin's own source repo. Claude-only: Copilot ports only
+  blocking PreToolUse gates, and this hook has no decision to influence.
+
 ### 3.21.0
 
 - **Copilot parity: generate the last two hand-maintained mirrors.** Closes the
