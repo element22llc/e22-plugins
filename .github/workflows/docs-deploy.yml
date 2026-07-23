@@ -84,7 +84,7 @@ jobs:
         # per subfolder, so the site can host more than one) and are published
         # into the docs site at /presentation/<slug>/, so one GitHub Pages
         # artifact serves the docs and every deck (linked from the docs nav).
-        # Each deck carries its own toolchain (presentation/onboarding/mise.toml:
+        # Each deck carries its own toolchain (presentation/<slug>/mise.toml:
         # node + pnpm) — the root mise.toml has no node.
         working-directory: presentation/onboarding
         run: |
@@ -92,6 +92,15 @@ jobs:
           mise install
           mise exec -- pnpm install --frozen-lockfile
           mise exec -- pnpm exec slidev build --base /presentation/onboarding/ --out ../../site/presentation/onboarding
+
+      - name: Build SDLC presentation deck (served at /presentation/sdlc/)
+        # The client-facing SDLC deck — same recipe as the onboarding deck above.
+        working-directory: presentation/sdlc
+        run: |
+          mise trust
+          mise install
+          mise exec -- pnpm install --frozen-lockfile
+          mise exec -- pnpm exec slidev build --base /presentation/sdlc/ --out ../../site/presentation/sdlc
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
