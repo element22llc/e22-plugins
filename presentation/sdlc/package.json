@@ -1,0 +1,21 @@
+{
+  "name": "e22-sdlc-presentation",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Client-facing SDLC deck — how software is built with the steer plugin and what you gain. A Slidev deck served at /presentation/sdlc/ (ships nothing; not part of the steer plugin).",
+  "packageManager": "pnpm@11.5.2",
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "52.16.0",
+    "@slidev/theme-seriph": "0.25.0",
+    "vue": "3.5.38"
+  },
+  "devDependencies": {
+    "playwright-chromium": "1.61.1"
+  }
+}
