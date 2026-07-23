@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.22.0
+
 - **Plan-mode gate for Medium+ changes.** `rules/80-change-size` now instructs
   starting Medium and larger changes in plan mode (or presenting the plan for
   approval on harnesses without one), so the approach is reviewed while it is
@@ -28,8 +30,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **`format-on-write` PostToolUse hook.** New hook formats the single file a
   Write/Edit just touched with the repo's own formatter — biome when a root
   `biome.json`/`biome.jsonc` exists, ruff when a root `pyproject.toml` does —
-  killing the formatting-only CI round-trip. Strictly opt-in (no config or no
-  binary on PATH → silent no-op), never a tree sweep, always fail-open, and
+  killing the formatting-only CI round-trip. Config-gated and fail-safe
+  (activates only when the repo already carries the formatter's config — a root
+  `biome.json`/`biome.jsonc`, or a root `pyproject.toml` — and the binary is on
+  PATH; otherwise a silent no-op), never a tree sweep, always fail-open, and
   exempt in the plugin's own source repo. Claude-only: Copilot ports only
   blocking PreToolUse gates, and this hook has no decision to influence.
 
