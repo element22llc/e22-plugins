@@ -8,3 +8,6 @@ Match the workflow to the change. When uncertain, size **up**.
 - **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
 - **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
 - **Risky** (any high-risk area, regardless of line count): follow high-risk handling above.
+
+**Medium** and larger start in plan mode (or a posted plan): review the
+approach while it's cheap to change.

@@ -827,6 +827,9 @@ Match the workflow to the change. When uncertain, size **up**.
 - **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
 - **Risky** (any high-risk area, regardless of line count): follow high-risk handling above.
 
+**Medium** and larger start in plan mode (or a posted plan): review the
+approach while it's cheap to change.
+
 
 ## Patterns we follow (baseline)
 
@@ -851,6 +854,8 @@ anti-patterns prose: `/steer:reference conventions`.
   Server Components / `NEXT_PUBLIC_*`.)*
 - **Domain logic lives in shared, testable modules**, not in UI components or
   route handlers — keep handlers thin. *(Monorepo `packages/`.)*
+- **Slice work vertically** — thin end-to-end slices (schema to UI), not
+  layer by layer; each merge leaves the product working.
 - **Nothing silenced** — no empty `catch` / swallowed errors (unexpected
   errors go to Sentry with context); no escape hatches without a why-comment
   (`any` casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule

@@ -140,6 +140,20 @@ and the state durable across compaction. See rule `26-context-hygiene` and the
 exemplars it cites (`/steer:audit` → the `steer-reviewer` agent;
 `/steer:work --reviewed`'s plan gate).
 
+### Write descriptions as triggers; capture gotchas
+
+- **`description` + `when_to_use` are routing signal, not documentation.**
+  Write them for the model deciding "should I fire?" — lead with the situation
+  that should trigger the skill (concrete user requests, repo states), not a
+  summary of what the skill does. Trigger-shaped phrasing routes better than a
+  feature list.
+- **Give substantive skills a `## Gotchas` section** — often the
+  highest-signal part of a skill body: the specific ways the model has
+  actually gone wrong in this flow (wrong default taken, step skipped, state
+  misread) and the correction, stated imperatively. Add an entry when a real
+  failure is observed — never pad it with restatements of the happy path.
+  `/new-skill` scaffolds the section.
+
 ### Skill vs. mode — hold the line on surface area
 
 The user-facing menu is the handful of **front doors** in `rules/00-router.md`'s

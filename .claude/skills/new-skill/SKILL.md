@@ -37,7 +37,9 @@ See `AUTHORING.md` → "Skill frontmatter schema" for the full rules.
 1. **Gather inputs** (ask the user, or take them from the invocation):
    - `name` — kebab-case, no `/steer:` prefix. Must not already exist under
      `plugins/steer/skills/`.
-   - `description` — one prose sentence.
+   - `description` — one prose sentence, written as a **trigger** (the
+     situation that should fire the skill), not a feature summary — see
+     `AUTHORING.md` → "Write descriptions as triggers".
    - `when_to_use` — when to invoke (use a folded `>-` block if it contains
      quotes or colons; see the quoting gotcha in `AUTHORING.md`).
    - **tier** — one of:
@@ -52,7 +54,9 @@ See `AUTHORING.md` → "Skill frontmatter schema" for the full rules.
 3. **Create `plugins/steer/skills/<name>/SKILL.md`** with frontmatter built from
    the inputs (always `name`, `description`, `when_to_use`; tier-specific tool
    fields as above) and a short imperative body skeleton (`# /steer:<name>` title,
-   a one-line purpose, a `## Steps` placeholder). Do **not** leave literal
+   a one-line purpose, a `## Steps` placeholder, and a `## Gotchas` section
+   seeded with `- None observed yet.` — filled in as real failures are seen,
+   per `AUTHORING.md` → "capture gotchas"). Do **not** leave literal
    `TODO`/`FIXME`/`[Replace` tokens — `check_plugin.py` rejects them in skills.
 
 4. **Add a CHANGELOG stub:** under `## steer` → `### [Unreleased]` in

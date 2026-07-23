@@ -5,18 +5,20 @@
 commands are invoked with an explicit `sh` prefix, so the executable bit is
 irrelevant (marketplace install does not `chmod`). No `jq` dependency. Every hook
 declares an explicit `timeout` in `hooks.json` (10s for the rule injection,
-orientation, and `PreToolUse` hooks; 30s for the consolidated session checks and
-the `Stop` reconcile) so a slow hook can never stall a session.
+orientation, and `PreToolUse` hooks; 30s for the consolidated session checks, the
+`PostToolUse` formatter, and the `Stop` reconcile) so a slow hook can never stall
+a session.
 
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
-    `PreToolUse`, `Stop`). Note what each tier actually does: the `SessionStart`
-    hook **injects** the rules; most `PreToolUse` checks are **advisory nudges**
-    that let the write proceed (the two dimensions of `check-write-nudges`, the
-    issue-create contract guard in `check-bash-actions`); only
-    `check-version-pins` issues a hard `deny`, and the trunk-push gate in
+    `PreToolUse`, `PostToolUse`, `Stop`). Note what each tier actually does: the
+    `SessionStart` hook **injects** the rules; most `PreToolUse` checks are
+    **advisory nudges** that let the write proceed (the two dimensions of
+    `check-write-nudges`, the issue-create contract guard in `check-bash-actions`);
+    only `check-version-pins` issues a hard `deny`, and the trunk-push gate in
     `check-bash-actions` surfaces a permission **ask** (the human can
-    approve and continue). On surfaces where hooks don't fire — **the Desktop *Chat* tab and
+    approve and continue); the `PostToolUse` formatter runs **after** a write and
+    only reformats it. On surfaces where hooks don't fire — **the Desktop *Chat* tab and
     claude.ai web chat** — none of this runs, so load the rules manually with
     `/steer:standards` and lean on human review. See
     [Surfaces without hooks](#surfaces-without-hooks) below and
@@ -38,6 +40,9 @@ flowchart TD
       pins[check-version-pins.sh]
       wn[check-write-nudges.sh<br/>spec/scaffold + issue-first]
       ba[check-bash-actions.sh<br/>trunk-push gate + issue-create guard]
+    end
+    subgraph PostToolUse
+      fmt[format-on-write.sh<br/>format the just-written file]
     end
     subgraph Stop
       reconcile[reconcile-issue-first.sh]
@@ -72,6 +77,12 @@ notice or nothing) and stays individually testable.
 | `check-version-pins.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Enforces the **EOL floor** in `policy/versions.yml` (deterministic, no network, no `jq`): a pin below `minimum_supported` or in the `denied` list is denied; anything at or above the floor is silent. It is a floor, not a chooser — there is no advisory "behind the target" tier; **what** to pin (current stable) is decided live per the versioning rule (`/steer:reference conventions`). A scheduled workflow (`version-policy-refresh.yml`) keeps the floor current by opening a human-reviewed PR when it falls behind upstream end-of-life — the only place endoflife.date is consulted. A deliberately older pin (deploy-target parity, vendor LTS) bypasses the deny by appending `# steer:allow-pin <reason>` on the same line plus an ADR (legacy alias: `# pin-ok:`). |
 | `check-write-nudges.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | The two write-path advisory nudges (not gates) in one process — they share the same matcher, root resolution, and path classification, so they run as one hook. **Spec/scaffold dimension:** the **spine** reminder fires once per session+repo when code is about to be written before a `/spec` spine exists; the **scaffold** reminder is sticky — it re-fires on each new feature file while the repo has no root `mise.toml` (dedups per file, self-clears once a `mise.toml` lands or the spine is managed). **Issue-first dimension:** a one-per-session reminder to work issue-first, only in GitHub-tracked repos — it cannot know whether an issue exists. In solo-trunk mode (the `steer:delivery-mode=solo-trunk` marker in `CLAUDE.md`) it still nudges — issue-first holds — but rewords to "close the issue from the trunk commit," not "open a PR / branch." Stays silent on the `/steer:sync` plugin-maintenance branch (`feat/sync`), whose scaffold reconciliation is structural, not feature work — unless the write is app source, which sync must not touch. Non-blocking — the write always proceeds; when both dimensions are due on one write their messages are emitted together. |
 | `check-bash-actions.sh` | `Bash\|mcp__.*[Ii]ssue.*` | The two Bash-path checks in one process (this is the hottest PreToolUse path — every Bash call matches). **Trunk-push graduation gate** (Bash only): in a **solo-trunk** repo that shows a local graduation signal (a deploy workflow, an `infra/` tree, or a `prod`/`production` branch — the shared `lib/graduation.sh` detector), a Bash `git push` surfaces as a permission **ask** naming `/steer:protect` — never a hard deny, so the human can approve the push and keep working. The ask fires **once per session+repo**; repeat pushes in the same session downgrade to a non-blocking reminder (still not silent), so an autonomous run is not stalled on every push. Silent everywhere else: pr-flow repos (branch pushes are autonomous; the server-side merge review is the gate), signal-free solo-trunk repos (trunk autonomy holds), non-push commands, and anything outside a work tree. Registered for Copilot CLI too (flat `ask` envelope; repeats are silent there — the Copilot envelope carries decisions only). **Issue-create contract guard** (Bash + MCP): a one-per-session advisory nudge, only in GitHub-tracked repos, when an agent opens an issue with a **raw create** that bypasses the machine-readable contract — `gh issue create`, `gh api … POST …/issues`, a `gh api graphql` `createIssue` mutation, or an MCP create-issue tool (including the hosted GitHub MCP's renamed `issue_write` method; sub-issue linkers like `add_sub_issue`/`sub_issue_write` are excluded — they attach a relationship to an existing issue and carry no body). Points at `/steer:tracker-sync create`, which renders the steer markers, the derived `source:*` label, the GitHub Issue Type, and native relationship edges (with find-before-create dedup). Stays silent when the payload already carries `steer:` markers (the contract-render path) and in the plugin's own source repo. The complementary after-the-fact recovery path is `/steer:issues reconcile --all`, which flags contract-less issues. |
+
+## PostToolUse
+
+| Hook | Matcher | Role |
+| --- | --- | --- |
+| `format-on-write.sh` | `Write\|Edit\|MultiEdit` | Formats the **single file** a write just touched with the repo's **own** formatter, removing the formatting-only CI round-trip. Strictly opt-in: it runs only when the repo has declared a formatter this hook knows — a root `biome.json`/`biome.jsonc` (biome, for `.ts`/`.tsx`/`.js`/`.jsx`/`.mjs`/`.cjs`/`.json`/`.jsonc`/`.css`) or a root `pyproject.toml` (ruff, for `.py`) — and the formatter binary is already on `PATH`. No config, an unknown extension, or a missing binary → silent no-op; it never installs a tool, introduces a formatter, or sweeps the tree. Best-effort and always exits `0` (a formatter error on mid-refactor, unparseable code never fails the hook), and the write has already happened, so there is no decision to influence. Exempt in the plugin's own source repo, whose pre-commit owns formatting. Not ported to Copilot — Copilot ports only the blocking `PreToolUse` gates. |
 
 ## Stop
 

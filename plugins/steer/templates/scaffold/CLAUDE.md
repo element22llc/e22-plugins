@@ -9,6 +9,11 @@ centrally in [`element22llc/e22-plugins`](https://github.com/element22llc/e22-pl
 and update via `/plugin update`, so they are **not** duplicated here. This file
 holds only product-specific context.
 
+Keep this file **lean** — it is loaded every session. Budget: stay under ~200
+lines (most products need far less). When a section outgrows a few bullets,
+move the substance to `/spec/**` (vision, feature intents, ADRs, `HISTORY.md`)
+or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
+
 > **New repo?** Run **`/steer:init`** once to fill the placeholders, pin the
 > toolchain, and finish the bootstrap. Remove this line when setup is done.
 > Non-technical PO? Type **`/steer:build`** to go from idea to a working local
