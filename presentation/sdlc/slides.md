@@ -223,27 +223,60 @@ layout: center
 
 # The lifecycle at a glance
 
-<div class="flex justify-center mt-4">
+<div class="flex items-stretch gap-1 mt-10 text-center phases">
 
-```mermaid {scale: 0.8}
-flowchart LR
-    B["0 · Bootstrap<br/><small>set the repo up</small>"] --> S["1 · Shape<br/><small>agree what to build</small>"]
-    S --> P["2 · Plan<br/><small>break it into issues</small>"]
-    P --> W["3 · Build<br/><small>implement & test</small>"]
-    W --> V["4 · Verify<br/><small>human review</small>"]
-    V --> D["5 · Deliver<br/><small>merge & deploy</small>"]
-    D --> M["6 · Maintain<br/><small>audit & improve</small>"]
-    M -.re-enters.-> P
-    style B fill:#64748b,color:#fff,stroke:#475569
-    style S fill:#8b5cf6,color:#fff,stroke:#7c3aed
-    style P fill:#f59e0b,color:#fff,stroke:#d97706
-    style W fill:#10b981,color:#fff,stroke:#059669
-    style V fill:#ec4899,color:#fff,stroke:#db2777
-    style D fill:#22c55e,color:#fff,stroke:#16a34a
-    style M fill:#0ea5e9,color:#fff,stroke:#0284c7
-```
+<div class="phase border-slate-400/50 bg-slate-400/10">
+<div class="font-bold">0 · Bootstrap</div>
+<div class="sub">set the repo up</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-violet-400/50 bg-violet-400/10">
+<div class="font-bold">1 · Shape</div>
+<div class="sub">agree what to build</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-amber-400/50 bg-amber-400/10">
+<div class="font-bold">2 · Plan</div>
+<div class="sub">break it into issues</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-emerald-400/50 bg-emerald-400/10">
+<div class="font-bold">3 · Build</div>
+<div class="sub">implement & test</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-rose-400/50 bg-rose-400/10">
+<div class="font-bold">4 · Verify</div>
+<div class="sub">human review</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-green-400/50 bg-green-400/10">
+<div class="font-bold">5 · Deliver</div>
+<div class="sub">merge & deploy</div>
+</div>
+<div class="arr">→</div>
+
+<div class="phase border-sky-400/50 bg-sky-400/10">
+<div class="font-bold">6 · Maintain</div>
+<div class="sub">audit & improve</div>
+</div>
 
 </div>
+
+<div class="mt-3 text-center text-sm opacity-60">
+↩ Maintain <b>re-enters Plan</b> — findings loop back into the backlog
+</div>
+
+<style>
+.phases .phase { flex: 1 1 0; border-width: 1px; border-style: solid; border-radius: 0.75rem; padding: 0.7rem 0.35rem; font-size: 0.82rem; }
+.phases .sub { opacity: 0.6; font-size: 0.72rem; margin-top: 0.3rem; line-height: 1.25; }
+.phases .arr { align-self: center; opacity: 0.45; font-size: 1rem; }
+</style>
 
 <div v-click class="mt-6 text-center text-xl">
 
@@ -261,32 +294,32 @@ Devs drive each phase with <code>/steer:</code> commands — <code>spec</code>, 
 
 # 1 · Shape — agree before building
 
-<div class="text-sm opacity-60 mb-3">Working out <i>what</i> and <i>why</i> before any code exists — the cheapest place to change your mind</div>
+<div class="text-sm opacity-60 mb-2">Working out <i>what</i> and <i>why</i> before any code exists — the cheapest place to change your mind</div>
 
-<div class="grid grid-cols-2 gap-5">
+<div class="grid grid-cols-2 gap-3 shape-cards">
 
-<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="p-3 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
-### 📄 Intent — <span class="opacity-60 text-base">for product owners</span>
+### 📄 Intent — <span class="opacity-60">for product owners</span>
 Each feature gets an **intent** document: what it does, why it matters, and how we'll know it's done — **in plain language you can read and approve**.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
+<div v-click class="p-3 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
-### 📑 Contract — <span class="opacity-60 text-base">for developers</span>
+### 📑 Contract — <span class="opacity-60">for developers</span>
 Behavior, data and error rules precise enough to build and test against. Hard-to-reverse choices get a numbered **decision record (ADR)**.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-amber-400/30 bg-amber-400/5">
+<div v-click class="p-3 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### ❓ Open questions
 Anything unresolved becomes a numbered question with an owner — **visible, not forgotten**. Your answers are captured back into the spec.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+<div v-click class="p-3 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### 🚦 The gate
 The spec can't be **approved** while a blocking question is unanswered. Approval is the owner's sign-off on intent — recorded, dated, in the repo.
@@ -295,11 +328,16 @@ The spec can't be **approved** while a blocking question is unanswered. Approval
 
 </div>
 
-<div v-click class="mt-4 text-center text-sm opacity-60">
+<div v-click class="mt-3 text-center text-sm opacity-60">
 
 Your Word / PowerPoint / Excel briefs are absorbed directly (<code>/steer:intake</code>) — versioned, diffed against the previous edition, and mapped to open questions.
 
 </div>
+
+<style>
+.shape-cards { font-size: 0.85rem; line-height: 1.45; }
+.shape-cards h3 { font-size: 1.02rem; margin-bottom: 0.25rem; }
+</style>
 
 <!--
 Non-technical takeaway: you can read and approve what will be built, and your
@@ -438,24 +476,50 @@ layout: center
 
 # The thread you can pull, months later
 
-<div class="flex justify-center mt-2">
+<div class="flex items-stretch gap-1 mt-6 text-center chain">
 
-```mermaid {scale: 0.75}
-flowchart LR
-    I["💡 idea"] --> IN["📄 intent<br/><small>what & why</small>"]
-    IN --> C["📑 contract<br/><small>exact behavior</small>"]
-    C --> T["🎫 issue<br/><small>the work</small>"]
-    T --> PR["🔀 pull request<br/><small>the change + review</small>"]
-    PR --> H["📜 HISTORY<br/><small>the permanent log</small>"]
-    style I fill:#0ea5e9,color:#fff,stroke:#0284c7
-    style IN fill:#8b5cf6,color:#fff,stroke:#7c3aed
-    style C fill:#a855f7,color:#fff,stroke:#9333ea
-    style T fill:#f59e0b,color:#fff,stroke:#d97706
-    style PR fill:#ec4899,color:#fff,stroke:#db2777
-    style H fill:#22c55e,color:#fff,stroke:#16a34a
-```
+<div class="link border-sky-400/50 bg-sky-400/10">
+<div class="font-bold">💡 idea</div>
+<div class="sub">the ask</div>
+</div>
+<div class="arr">→</div>
+
+<div class="link border-violet-400/50 bg-violet-400/10">
+<div class="font-bold">📄 intent</div>
+<div class="sub">what & why</div>
+</div>
+<div class="arr">→</div>
+
+<div class="link border-purple-400/50 bg-purple-400/10">
+<div class="font-bold">📑 contract</div>
+<div class="sub">exact behavior</div>
+</div>
+<div class="arr">→</div>
+
+<div class="link border-amber-400/50 bg-amber-400/10">
+<div class="font-bold">🎫 issue</div>
+<div class="sub">the work</div>
+</div>
+<div class="arr">→</div>
+
+<div class="link border-rose-400/50 bg-rose-400/10">
+<div class="font-bold">🔀 pull request</div>
+<div class="sub">change + review</div>
+</div>
+<div class="arr">→</div>
+
+<div class="link border-green-400/50 bg-green-400/10">
+<div class="font-bold">📜 HISTORY</div>
+<div class="sub">the permanent log</div>
+</div>
 
 </div>
+
+<style>
+.chain .link { flex: 1 1 0; border-width: 1px; border-style: solid; border-radius: 0.75rem; padding: 0.7rem 0.35rem; font-size: 0.85rem; }
+.chain .sub { opacity: 0.6; font-size: 0.72rem; margin-top: 0.3rem; line-height: 1.25; }
+.chain .arr { align-self: center; opacity: 0.45; font-size: 1rem; }
+</style>
 
 <div v-click class="mt-6 text-center text-xl max-w-4xl mx-auto leading-relaxed">
 
@@ -524,30 +588,30 @@ No — four hard human gates, by construction.
 
 # What you gain — as a client
 
-<div class="grid grid-cols-2 gap-5 mt-4">
+<div class="grid grid-cols-2 gap-3 mt-4 gain-cards">
 
-<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="p-3 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### 👀 Visibility, on demand
 Progress reports generated **from the record** — real issue states, real PR status. Specs you can read; open questions with your name on them.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
+<div v-click class="p-3 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🧾 Audit-ready by construction
-The everyday artifacts double as evidence: an append-only change log, decision records with status, reviewed PRs as the production gate. Practices **aligned with SOC 2 / ISO 27001 expectations** — produced as a side effect of working, not a scramble before an audit.
+An append-only change log, decision records, reviewed PRs as the production gate — practices **aligned with SOC 2 / ISO 27001 expectations**, produced as a side effect of working, not a scramble before an audit.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
+<div v-click class="p-3 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### 🔓 No lock-in to heads
 Any developer — yours or ours — can open the repo and reconstruct intent, decisions and history **without archaeology**. Reading the last quarter of the change log takes five minutes.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-amber-400/30 bg-amber-400/5">
+<div v-click class="p-3 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 📏 Predictability
 Every repo has the same shape, the same gates, the same definition of done — so quality doesn't depend on **who** built it or **which week** it was built in.
@@ -555,6 +619,11 @@ Every repo has the same shape, the same gates, the same definition of done — s
 </div>
 
 </div>
+
+<style>
+.gain-cards { font-size: 0.85rem; line-height: 1.45; }
+.gain-cards h3 { font-size: 1.02rem; margin-bottom: 0.25rem; }
+</style>
 
 <!--
 Careful wording on compliance (from TRACEABILITY.md): "aligned", never
@@ -567,51 +636,56 @@ change-management evidence requests, but no tool makes you compliant.
 
 # What you gain — as a developer
 
-<div class="grid grid-cols-3 gap-4 mt-4">
+<div class="grid grid-cols-3 gap-3 mt-4 dev-cards">
 
-<div v-click class="p-4 rounded-xl border border-sky-400/25 bg-sky-400/5">
+<div v-click class="p-3 rounded-xl border border-sky-400/25 bg-sky-400/5">
 
 ### 📦 A repo that arrives ready
-Bootstrap installs the full scaffold: pinned toolchain (mise), CI workflows, compose file, PR template — **identical across projects**.
+Bootstrap installs the full scaffold: pinned toolchain, CI workflows, compose file, PR template — **identical across projects**.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-violet-400/25 bg-violet-400/5">
+<div v-click class="p-3 rounded-xl border border-violet-400/25 bg-violet-400/5">
 
 ### 🧠 Context that survives
-Specs, decisions and work state live in **files, not chat memory** — a new session (or a new dev) picks up exactly where the last one left off.
+Specs, decisions and work state live in **files, not chat memory** — a new session (or a new dev) picks up where the last left off.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-emerald-400/25 bg-emerald-400/5">
+<div v-click class="p-3 rounded-xl border border-emerald-400/25 bg-emerald-400/5">
 
 ### 🛡️ Guardrails, not bureaucracy
-Ceremony scales with risk: small changes flow, high-risk changes get flagged. The gates that block are few, named, and there for a reason.
+Ceremony scales with risk: small changes flow, high-risk changes get flagged. The blocking gates are few and named.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-amber-400/25 bg-amber-400/5">
+<div v-click class="p-3 rounded-xl border border-amber-400/25 bg-amber-400/5">
 
 ### 🔍 An independent reviewer
-A read-only reviewer agent examines plans and diffs in an **isolated context** — findings must cite file-and-line evidence. No evidence, no finding.
+A read-only reviewer agent examines plans and diffs in an **isolated context** — no file-and-line evidence, no finding.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-rose-400/25 bg-rose-400/5">
+<div v-click class="p-3 rounded-xl border border-rose-400/25 bg-rose-400/5">
 
 ### 🧭 Never lost
-<code>/steer:next</code> reconstructs the workspace state cold and points at the single best next action. <code>/steer:help</code> browses everything.
+<code>/steer:next</code> reconstructs the workspace state cold and points at the single best next action.
 
 </div>
 
-<div v-click class="p-4 rounded-xl border border-cyan-400/25 bg-cyan-400/5">
+<div v-click class="p-3 rounded-xl border border-cyan-400/25 bg-cyan-400/5">
 
 ### ♻️ Standards that update
-One plugin version, all repos: <code>/steer:sync</code> reconciles a repo against the latest standards and opens the update as a normal, reviewable PR.
+One plugin version, all repos: <code>/steer:sync</code> applies the latest standards as a normal, reviewable PR.
 
 </div>
 
 </div>
+
+<style>
+.dev-cards { font-size: 0.8rem; line-height: 1.4; }
+.dev-cards h3 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+</style>
 
 ---
 
@@ -619,38 +693,45 @@ One plugin version, all repos: <code>/steer:sync</code> reconciles a repo agains
 
 <div class="text-sm opacity-60 mb-3">One source of truth, two assistants — the standards are <b>generated</b>, not maintained twice</div>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-4 surface-cards">
 
-<div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
+<div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### 🤖 Claude Code
 The full engine: always-on rules injected every session, live gates at the moment of action, the reviewer agent, tracker integration.
 
-<div class="text-sm opacity-60 mt-2">CLI, IDE extension, or the Desktop Code tab.</div>
+<div class="opacity-60 mt-2">CLI, IDE extension, or the Desktop Code tab.</div>
 
 </div>
 
-<div v-click class="p-5 rounded-xl border border-violet-400/30 bg-violet-400/5">
+<div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🐙 GitHub Copilot
-The same standards, **generated into Copilot's native formats** and committed to the repo:
+The same standards, **generated into Copilot's native formats** and committed under <code>.github/</code>:
 
-- <code>.github/copilot-instructions.md</code> — the full ruleset
-- <code>.github/prompts/steer-*.prompt.md</code> — the workflows
-- <code>.github/agents/</code> — the reviewer agent
+- <code>copilot-instructions.md</code> — the full ruleset
+- <code>prompts/steer-*.prompt.md</code> — the workflows
+- <code>agents/</code> — the reviewer agent
 
-<div class="text-sm opacity-60 mt-2">Regenerated from the same source on every release — parity by build, not by hand.</div>
-
-</div>
+<div class="opacity-60 mt-2">Regenerated from the same source on every release — parity by build, not by hand.</div>
 
 </div>
 
-<div v-click class="mt-5 text-center text-lg">
+</div>
+
+<div v-click class="mt-4 text-center">
 
 Your developers keep their tools. The **process and the record are identical** either way —
 because the spec, the tracker and the PR gate live in the repo, not in the assistant.
 
 </div>
+
+<style>
+.surface-cards { font-size: 0.85rem; line-height: 1.45; }
+.surface-cards h3 { font-size: 1.02rem; margin-bottom: 0.25rem; }
+.surface-cards ul { margin-top: 0.3rem; }
+.surface-cards li + li { margin-top: 0.15rem; }
+</style>
 
 <!--
 Grounded in CROSS-SURFACE.md: rules → generated copilot-instructions.md;
@@ -665,9 +746,9 @@ the real portability argument.
 
 # A change, end to end
 
-<div class="text-sm opacity-60 mb-3">What "add CSV export" actually looks like on the record</div>
+<div class="text-sm opacity-60 mb-2">What "add CSV export" actually looks like on the record</div>
 
-<div class="timeline text-base">
+<div class="timeline text-sm">
 
 <div v-click class="flex gap-3 items-start p-2.5 rounded-lg border border-white/10 bg-white/5">
 <div class="w-40 shrink-0 opacity-60">You ask</div>
