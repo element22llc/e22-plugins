@@ -212,11 +212,17 @@ jobs:
         # uvx (uv is pinned by the infra mise.toml). yamllint runs too, but only
         # when the repo opts in with a .yamllint config (avoids flagging unrelated
         # YAML like workflow files).
+        #
+        # Both are version-pinned (`uvx <tool>@<version>`): an unpinned uvx
+        # resolves to whatever is latest on PyPI at run time, so a lint release
+        # with a new rule turns a green CI red on an unrelated PR, and every run
+        # executes code nobody reviewed. Bump these deliberately — Dependabot does
+        # not see tool versions embedded in a `run:` block.
         run: |
           if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
-            uvx yamllint .
+            uvx yamllint@1.38.0 .
           fi
-          uvx ansible-lint
+          uvx ansible-lint@26.6.0
 
       # ────────────────────────────────────────────────────────────────────
       # Container image — build every apps/*/Dockerfile (and a root Dockerfile,
@@ -305,7 +311,13 @@ jobs:
             base="$BEFORE"
           fi
           echo "## Coverage (changed lines vs $base)" >> "$GITHUB_STEP_SUMMARY"
-          uvx diff-cover "${reports[@]}" \
+          # Version-pinned like the lint tools above — an unpinned uvx would take
+          # whatever is latest on PyPI, and this gate can FAIL a PR, so a silent
+          # upstream change must not be able to move the bar. Note
+          # `--markdown-report` still works on 10.4.1 but no longer appears in
+          # `--help`; if a future bump drops it, switch to
+          # `--format markdown:coverage-diff.md`.
+          uvx diff-cover@10.4.1 "${reports[@]}" \
             --compare-branch "$base" \
             --fail-under "$COVERAGE_DIFF_MIN" \
             --markdown-report coverage-diff.md \
