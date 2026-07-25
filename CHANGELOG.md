@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the bundled CI workflow template refreshes three pins —
+  `actions/setup-node` `v6` → `v7` (the action moved to ESM and dropped a dummy
+  `NODE_AUTH_TOKEN` export; neither affects the advisory `ai-slop` job's
+  `node-version` usage) and `aislop` `0.12.1` → `0.14.0` (same
+  `scan . --sarif` interface).
+- **Fixed:** the bundled CI workflow template pinned `@google/design.md` to
+  `0.3.0` in the DESIGN.md lint step. It was the one `npx --yes` invocation in
+  the template running a floating `latest`, sitting directly beside a pinned
+  one — an unreviewed-code-on-every-run gap in a repo whose own convention is
+  to pin.
+
 ### 3.22.0
 
 - **Plan-mode gate for Medium+ changes.** `rules/80-change-size` now instructs

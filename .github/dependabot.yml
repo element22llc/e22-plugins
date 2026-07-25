@@ -1,0 +1,74 @@
+# Dependabot for the marketplace repo itself.
+#
+# The steer plugin ships a Dependabot config to every managed repo
+# (`plugins/steer/templates/github/dependabot.yml`); this is the same policy
+# applied to this repo, so the standards repo is not the one repo in the org
+# with nothing chasing its dependencies.
+#
+# Policy mirrors the shipped template: weekly, grouped into one PR per
+# ecosystem, and **majors are left for a human** (they can carry breaking
+# changes and may need a `policy/versions.yml` floor decision). There is no
+# `dependabot-auto-merge.yml` here — unlike a product repo, every bump in the
+# standards repo is reviewed by a maintainer before merge.
+version: 2
+
+updates:
+  # GitHub Actions — this repo's own workflows, pinned by commit SHA with a
+  # `# vX.Y.Z` comment. Dependabot updates both the SHA and the comment.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+
+  # Python quality tooling (pyproject.toml + uv.lock) — ruff, pytest,
+  # pre-commit, and the `docs` group (zensical) that builds the docs site.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+
+  # The two Slidev decks published alongside the docs site. Each carries its own
+  # pnpm workspace and lockfile, so both directories are listed.
+  #
+  # `cooldown` mirrors the decks' own supply-chain posture: pnpm 11 enforces a
+  # `minimumReleaseAge` on install, and each `pnpm-workspace.yaml` says to pick a
+  # release already past the cooldown rather than adding a
+  # `minimumReleaseAgeExclude` bypass. Without this, Dependabot would propose
+  # day-old releases that pnpm then refuses to install without that bypass.
+  - package-ecosystem: npm
+    directories:
+      - /presentation/onboarding
+      - /presentation/sdlc
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major

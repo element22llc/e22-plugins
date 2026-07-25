@@ -93,26 +93,24 @@ local preview at the root, run `mise run dev` (or `mise run build` with no
 > next-slide navigation would 404. Hash routing needs no SPA fallback at all and
 > is the recommended mode for subdirectory static hosts.
 >
-> **Build-time patch — [`vite.config.ts`](vite.config.ts).** Slidev 52.16.0 has
-> a bug where, in hash mode, slide-navigation links still double-prepend the
-> base (`getSlidePath()` → `…/#/presentation/onboarding/2`), landing on Slidev's
-> in-app NotFound page when you advance a slide. The deck's `vite.config.ts`
-> carries a small `transform` plugin that fixes that one line at build time.
-> Remove it if upstream makes `getSlidePath` hash-aware.
-
-> `public/_redirects` is a Cloudflare-Pages SPA-fallback file and is inert on
-> GitHub Pages; with hash routing it is no longer needed for any host and is
-> kept only as a harmless artifact — it can be removed.
+> **No build-time patch needed.** Through Slidev 52.16.0 this deck carried a
+> `vite.config.ts` `transform` plugin working around a hash-mode bug where
+> slide-navigation links double-prepended the base. Slidev 52.17.0 moved that
+> logic into `@slidev/client/logic/slidePath.ts`, which now returns a
+> base-relative path and lets Vue Router's own base supply the prefix — the
+> upstream fix the patch was waiting for. The plugin (and both decks'
+> `vite.config.ts`) was removed in that bump.
 
 ## Pinned versions
 
 Deps are exact-pinned in [`package.json`](package.json) for reproducible builds:
-Slidev `52.16.0`, theme-seriph `0.25.0`, Vue `3.5.38`. Toolchain exact-pinned in
+Slidev `52.18.0`, theme-seriph `0.25.0`, Vue `3.5.40`. Toolchain exact-pinned in
 [`mise.toml`](mise.toml) / [`mise.lock`](mise.lock): node `24.16.0`, pnpm `11.5.2`.
 Deps auto-install via the scaffold-native `[deps.pnpm] auto` (mise ≥ 2026.6.14).
 
 [`pnpm-workspace.yaml`](pnpm-workspace.yaml) carries two pnpm-11 settings: it
 approves `playwright-chromium`'s browser-download build script (used by the optional
-`mise run export`), and it `overrides` the whole Vue family to `3.5.38` — `3.5.39`
-was published the same day this was built and trips a `minimumReleaseAge`
-supply-chain cooldown, so the older patch keeps installs clean and deterministic.
+`mise run export`), and it `overrides` the whole Vue family to one exact version
+so slidev's transitive `@vue/*` deps can't drift from the direct dep. When
+bumping either, pick a release already past pnpm's `minimumReleaseAge`
+supply-chain cooldown rather than adding a `minimumReleaseAgeExclude` bypass.

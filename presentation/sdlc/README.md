@@ -80,19 +80,18 @@ so the deck lands at `site/presentation/sdlc/` and is served at
 GitHub Pages artifact). The docs nav links to it ("SDLC deck"). The `--base`
 must match the serving sub-path and begin and end with `/`.
 
-> **Routing — hash mode + the `vite.config.ts` patch.** Identical to the
-> onboarding deck: `routerMode: hash` in the headmatter (GitHub Pages has no
-> nested SPA fallback, so history mode would 404 on deep links), plus the
-> build-time transform in [`vite.config.ts`](vite.config.ts) that fixes Slidev
-> 52.16.0's double-prepended base in hash-mode slide navigation. See the
+> **Routing — hash mode.** Identical to the onboarding deck: `routerMode: hash`
+> in the headmatter (GitHub Pages has no nested SPA fallback, so history mode
+> would 404 on deep links). Through Slidev 52.16.0 both decks also carried a
+> `vite.config.ts` transform working around a double-prepended base in hash-mode
+> navigation; Slidev 52.17.0 fixed that upstream, so the patch is gone. See the
 > onboarding [README](../onboarding/README.md#deploy-github-pages-via-the-docs-site)
-> for the full explanation; remove the patch if upstream makes `getSlidePath`
-> hash-aware.
+> for the full explanation.
 
 ## Pinned versions
 
 Deps are exact-pinned in [`package.json`](package.json) for reproducible builds:
-Slidev `52.16.0`, theme-seriph `0.25.0`, Vue `3.5.38`. Toolchain exact-pinned in
+Slidev `52.18.0`, theme-seriph `0.25.0`, Vue `3.5.40`. Toolchain exact-pinned in
 [`mise.toml`](mise.toml) / [`mise.lock`](mise.lock): node `24.16.0`, pnpm
 `11.5.2`. [`pnpm-workspace.yaml`](pnpm-workspace.yaml) approves
 `playwright-chromium`'s browser download (for the optional export) and pins the

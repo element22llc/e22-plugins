@@ -357,7 +357,7 @@ jobs:
           while IFS= read -r f; do
             [ -z "$f" ] && continue
             echo "Linting $f"
-            npx --yes @google/design.md lint "$f"
+            npx --yes @google/design.md@0.3.0 lint "$f"
           done <<< "$CHANGED_FILES"
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -448,12 +448,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
       - name: Scan for AI slop (SARIF)
-        run: npx --yes aislop@0.12.1 scan . --sarif > aislop.sarif
+        run: npx --yes aislop@0.14.0 scan . --sarif > aislop.sarif
 
       - name: Upload results to code scanning
         if: always()
