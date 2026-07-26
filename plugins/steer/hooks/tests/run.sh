@@ -1803,6 +1803,68 @@ mkdir -p "${SPINE_EMPTY}/spec"
 touch "${SPINE_EMPTY}/spec/.version"
 assert_eq "spine: stamped but empty -> damaged" "$(steer_spine_state "${SPINE_EMPTY}")" "damaged"
 
+# ----- steer_action_root / steer_git_c_target: act on the right repo (#396) -----
+# A nested work tree makes cwd the WRONG anchor: the upward walk stops at the
+# outer repo while the tool operates on the inner one.
+AR_OUT="$(new_repo ar_outer)"
+mkdir -p "${AR_OUT}/backend"
+printf '' >"${AR_OUT}/backend/.git"
+assert_eq "action_root: no path falls back to cwd's root" \
+	"$(steer_action_root "${AR_OUT}" "")" "${AR_OUT}"
+assert_eq "action_root: relative path resolves to the nested repo" \
+	"$(steer_action_root "${AR_OUT}" "backend/src/x.ts")" "${AR_OUT}/backend"
+assert_eq "action_root: absolute path resolves to the nested repo" \
+	"$(steer_action_root "${AR_OUT}" "${AR_OUT}/backend/src/x.ts")" "${AR_OUT}/backend"
+assert_eq "action_root: path in the outer repo stays outer" \
+	"$(steer_action_root "${AR_OUT}" "docs/readme.md")" "${AR_OUT}"
+# A not-yet-existing file (a Write creating one, possibly in a new dir) must be
+# attributed to the repo that WILL contain it, not fall back to cwd.
+assert_eq "action_root: unborn file in a new dir still resolves to its repo" \
+	"$(steer_action_root "${AR_OUT}" "backend/brand/new/dir/file.ts")" "${AR_OUT}/backend"
+# Fail-soft: an unresolvable path must not lose the cwd answer.
+assert_eq "action_root: unresolvable path falls back to cwd's root" \
+	"$(steer_action_root "${AR_OUT}" "/nonexistent/elsewhere/x.ts")" "${AR_OUT}"
+
+assert_eq "git_c_target: extracts -C target" \
+	"$(steer_git_c_target 'git -C backend push origin main')" "backend"
+assert_eq "git_c_target: extracts from a compound command" \
+	"$(steer_git_c_target 'cd /tmp && git -C backend push && echo ok')" "backend"
+steer_git_c_target 'git push origin main' >/dev/null &&
+	bad "git_c_target: plain push has no -C target" || ok
+steer_git_c_target 'echo "no git here"' >/dev/null &&
+	bad "git_c_target: non-git command has no target" || ok
+
+# End to end through the REAL trunk-push gate, both directions of #396.
+# (1) False negative — the dangerous one. Outer is pr-flow, inner is solo-trunk
+# WITH a graduation signal: the gate must ask about the inner repo's push.
+AR_FN_O="$(new_repo ar_fn_outer)"
+printf '## Delivery mode\n<!-- steer:delivery-mode=pr-flow -->\n' >"${AR_FN_O}/CLAUDE.md"
+mkdir -p "${AR_FN_O}/backend/.github/workflows"
+printf '' >"${AR_FN_O}/backend/.git"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_FN_O}/backend/CLAUDE.md"
+printf 'on: push\n' >"${AR_FN_O}/backend/.github/workflows/deploy.yml"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_FN_O}" arfn 'git -C backend push origin main')")"
+assert_ask "action_root: solo-trunk push into a nested repo is gated" "${out}"
+
+# (2) False positive. Outer is solo-trunk with a signal, inner is pr-flow:
+# a branch push into the inner repo is autonomous and must NOT be gated.
+AR_FP_O="$(new_repo ar_fp_outer)"
+mkdir -p "${AR_FP_O}/.github/workflows" "${AR_FP_O}/backend"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_FP_O}/CLAUDE.md"
+printf 'on: push\n' >"${AR_FP_O}/.github/workflows/deploy.yml"
+printf '' >"${AR_FP_O}/backend/.git"
+printf '## Delivery mode\n<!-- steer:delivery-mode=pr-flow -->\n' >"${AR_FP_O}/backend/CLAUDE.md"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_FP_O}" arfp 'git -C backend push origin main')")"
+assert_empty "action_root: pr-flow push into a nested repo is not gated" "${out}"
+
+# (3) The single-repo path must be untouched: solo-trunk + signal, plain push.
+AR_SOLO="$(new_repo ar_solo)"
+mkdir -p "${AR_SOLO}/.github/workflows"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_SOLO}/CLAUDE.md"
+printf 'on: push\n' >"${AR_SOLO}/.github/workflows/deploy.yml"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_SOLO}" arsolo 'git push origin main')")"
+assert_ask "action_root: single-repo trunk push still gated (unchanged)" "${out}"
+
 # ----- steer_tracker_repo: the declared tracker repository (#395) -----
 # Feeds the cross-repo closing-ref decision in /steer:work. Must read a real
 # value and must return NOTHING for anything unresolved, so the caller keeps the

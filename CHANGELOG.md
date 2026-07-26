@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** hooks now judge **the repo being acted on**, not the session `cwd`.
+  With a git repo nested inside another work tree — a vendored or gitignored
+  clone, a `tools/` checkout, a polyrepo member cloned inside its workspace — the
+  upward `.git` walk from `cwd` stopped at the *outer* repo while the tool wrote
+  to the *inner* one, so delivery mode, profile, graduation signals and tracker
+  were all read off the wrong repository. The trunk-push gate was the sharp edge,
+  wrong in both directions: it asked about a `pr-flow` push that is autonomous,
+  and — the dangerous one — stayed **silent** on a direct-to-`main` push into a
+  `solo-trunk` repo that had outgrown pre-MVP. `steer_action_root` resolves from
+  the acted-on path (`tool_input.file_path` for editor writes, the `-C <dir>`
+  target for git), and `steer_git_c_target` extracts the target the push matcher
+  already parsed and then discarded. Wired into `check-bash-actions`,
+  `check-write-nudges`, `check-version-pins` and `format-on-write`. A file that
+  does not exist yet resolves via its nearest existing ancestor; no path or an
+  unresolvable one falls back to `cwd`, so the single-repo case is unchanged.
+  `cd <dir> && git push` is still `cwd`-resolved — only `-C` names its target.
+
 - **Fixed:** a PR no longer emits a closing keyword that cannot close anything.
   GitHub honours `Closes #N` only within one repository, so when
   `/spec/tracker.md` declares a `repository:` other than the code repo — a team

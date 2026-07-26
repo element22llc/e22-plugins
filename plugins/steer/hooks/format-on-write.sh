@@ -38,9 +38,11 @@ FILE="$(steer_field file_path)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
+# Resolve from the FILE, not cwd: with a nested work tree the two differ, and
+# formatting must run under the config of the repo that owns the file (#396).
 # Not a git work tree → not a repo we manage. The plugin's own source repo →
 # its pre-commit hooks own formatting.
-ROOT="$(steer_repo_root "${CWD}")" || exit 0
+ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
 # Resolve a relative path against cwd so the existence check and the formatter

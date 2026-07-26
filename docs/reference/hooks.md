@@ -76,7 +76,7 @@ notice or nothing) and stays individually testable.
 | --- | --- | --- |
 | `check-version-pins.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | Enforces the **EOL floor** in `policy/versions.yml` (deterministic, no network, no `jq`): a pin below `minimum_supported` or in the `denied` list is denied; anything at or above the floor is silent. It is a floor, not a chooser — there is no advisory "behind the target" tier; **what** to pin (current stable) is decided live per the versioning rule (`/steer:reference conventions`). A scheduled workflow (`version-policy-refresh.yml`) keeps the floor current by opening a human-reviewed PR when it falls behind upstream end-of-life — the only place endoflife.date is consulted. A deliberately older pin (deploy-target parity, vendor LTS) bypasses the deny by appending `# steer:allow-pin <reason>` on the same line plus an ADR (legacy alias: `# pin-ok:`). |
 | `check-write-nudges.sh` | `Write\|Edit\|MultiEdit\|NotebookEdit` | The two write-path advisory nudges (not gates) in one process — they share the same matcher, root resolution, and path classification, so they run as one hook. **Spec/scaffold dimension:** the **spine** reminder fires once per session+repo when code is about to be written before a `/spec` spine exists; the **scaffold** reminder is sticky — it re-fires on each new feature file while the repo has no root `mise.toml` (dedups per file, self-clears once a `mise.toml` lands or the spine is managed). **Issue-first dimension:** a one-per-session reminder to work issue-first, only in GitHub-tracked repos — it cannot know whether an issue exists. In solo-trunk mode (the `steer:delivery-mode=solo-trunk` marker in `CLAUDE.md`) it still nudges — issue-first holds — but rewords to "close the issue from the trunk commit," not "open a PR / branch." Stays silent on the `/steer:sync` plugin-maintenance branch (`feat/sync`), whose scaffold reconciliation is structural, not feature work — unless the write is app source, which sync must not touch. Non-blocking — the write always proceeds; when both dimensions are due on one write their messages are emitted together. |
-| `check-bash-actions.sh` | `Bash\|mcp__.*[Ii]ssue.*` | The two Bash-path checks in one process (this is the hottest PreToolUse path — every Bash call matches). **Trunk-push graduation gate** (Bash only): in a **solo-trunk** repo that shows a local graduation signal (a deploy workflow, an `infra/` tree, or a `prod`/`production` branch — the shared `lib/graduation.sh` detector), a Bash `git push` surfaces as a permission **ask** naming `/steer:protect` — never a hard deny, so the human can approve the push and keep working. The ask fires **once per session+repo**; repeat pushes in the same session downgrade to a non-blocking reminder (still not silent), so an autonomous run is not stalled on every push. Silent everywhere else: pr-flow repos (branch pushes are autonomous; the server-side merge review is the gate), signal-free solo-trunk repos (trunk autonomy holds), non-push commands, and anything outside a work tree. Registered for Copilot CLI too (flat `ask` envelope; repeats are silent there — the Copilot envelope carries decisions only). **Issue-create contract guard** (Bash + MCP): a one-per-session advisory nudge, only in GitHub-tracked repos, when an agent opens an issue with a **raw create** that bypasses the machine-readable contract — `gh issue create`, `gh api … POST …/issues`, a `gh api graphql` `createIssue` mutation, or an MCP create-issue tool (including the hosted GitHub MCP's renamed `issue_write` method; sub-issue linkers like `add_sub_issue`/`sub_issue_write` are excluded — they attach a relationship to an existing issue and carry no body). Points at `/steer:tracker-sync create`, which renders the steer markers, the derived `source:*` label, the GitHub Issue Type, and native relationship edges (with find-before-create dedup). Stays silent when the payload already carries `steer:` markers (the contract-render path) and in the plugin's own source repo. The complementary after-the-fact recovery path is `/steer:issues reconcile --all`, which flags contract-less issues. |
+| `check-bash-actions.sh` | `Bash\|mcp__.*[Ii]ssue.*` | The two Bash-path checks in one process (this is the hottest PreToolUse path — every Bash call matches). **Trunk-push graduation gate** (Bash only): in a **solo-trunk** repo that shows a local graduation signal (a deploy workflow, an `infra/` tree, or a `prod`/`production` branch — the shared `lib/graduation.sh` detector), a Bash `git push` surfaces as a permission **ask** naming `/steer:protect` — never a hard deny, so the human can approve the push and keep working. The ask fires **once per session+repo**; repeat pushes in the same session downgrade to a non-blocking reminder (still not silent), so an autonomous run is not stalled on every push. Silent everywhere else: pr-flow repos (branch pushes are autonomous; the server-side merge review is the gate), signal-free solo-trunk repos (trunk autonomy holds), non-push commands, and anything outside a work tree. The gate judges **the repo being pushed**: a `git -C <dir> push` resolves its root from `<dir>` (`steer_action_root`), not from the session `cwd`, so a nested work tree is never judged by its parent's delivery mode. Registered for Copilot CLI too (flat `ask` envelope; repeats are silent there — the Copilot envelope carries decisions only). **Issue-create contract guard** (Bash + MCP): a one-per-session advisory nudge, only in GitHub-tracked repos, when an agent opens an issue with a **raw create** that bypasses the machine-readable contract — `gh issue create`, `gh api … POST …/issues`, a `gh api graphql` `createIssue` mutation, or an MCP create-issue tool (including the hosted GitHub MCP's renamed `issue_write` method; sub-issue linkers like `add_sub_issue`/`sub_issue_write` are excluded — they attach a relationship to an existing issue and carry no body). Points at `/steer:tracker-sync create`, which renders the steer markers, the derived `source:*` label, the GitHub Issue Type, and native relationship edges (with find-before-create dedup). Stays silent when the payload already carries `steer:` markers (the contract-render path) and in the plugin's own source repo. The complementary after-the-fact recovery path is `/steer:issues reconcile --all`, which flags contract-less issues. |
 
 ## PostToolUse
 
@@ -108,6 +108,33 @@ the same contract:
 This is best-effort extraction for the exact PreToolUse shapes — not a general
 JSON parser — and every consuming hook is fail-open, so an unparseable payload
 degrades to a missed nudge, never a wrongful block.
+
+## Which repo a hook is judging (`lib/repo-root.sh`)
+
+Hooks receive the session `cwd`, but the thing being acted on is not always in
+the same repository. When a git repo is **nested inside another work tree** — a
+vendored or gitignored clone, a `tools/` checkout, a polyrepo member cloned
+inside its workspace — an upward `.git` walk from `cwd` stops at the *outer*
+repo while the tool writes to, or pushes from, the *inner* one. Every marker read
+off that root (delivery mode, profile, graduation signals, tracker) then
+describes the wrong repository.
+
+`steer_action_root <cwd> [action_path]` resolves from the **acted-on path**
+instead, falling back to `cwd`'s root when there is none:
+
+- editor writes pass `tool_input.file_path` / `.notebook_path`
+  (`check-write-nudges`, `check-version-pins`, `format-on-write`);
+- the trunk-push gate passes the `-C <dir>` target of the git command
+  (`steer_git_c_target`, used by `check-bash-actions`).
+
+A path that does not exist yet resolves via its nearest existing ancestor, so a
+`Write` creating a new file — or a new directory — is attributed to the repo that
+will contain it. No path, an unresolvable path, or a path outside any work tree
+all fall back to `cwd`, leaving the single-repo case (the overwhelmingly common
+one) exactly as it was.
+
+There is no equivalent handling for `cd <dir> && git push`: only `-C` states its
+target in the command line. That case still resolves from `cwd`.
 
 ## Surfaces without hooks
 

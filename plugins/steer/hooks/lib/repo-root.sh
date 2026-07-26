@@ -31,6 +31,101 @@ steer_repo_root() {
 	return 1
 }
 
+# steer_action_root <cwd> [action_path] — the work-tree root of the thing the tool
+# is ACTING ON, falling back to the session cwd's root.
+#
+# WHY: hooks receive the session cwd, and resolving the root from cwd alone is
+# wrong whenever a git repo is nested inside another work tree — a vendored or
+# gitignored clone, a tools/ checkout, or a polyrepo member cloned inside its
+# workspace. The upward walk from cwd stops at the OUTER repo while the tool
+# operates on the INNER one, so every marker read off that root (delivery mode,
+# profile, graduation signals, tracker) describes the wrong repo.
+#
+# Both directions are real and one is silent (#396):
+#   - false positive — an outer solo-trunk repo makes the trunk-push gate ask
+#     about a push into an inner pr-flow repo, where a branch push is autonomous;
+#   - false negative — an outer pr-flow repo makes the gate stay SILENT on a
+#     direct-to-main push into an inner solo-trunk repo that has outgrown pre-MVP.
+#
+# <action_path> is whatever the payload says is being acted on: `tool_input
+# .file_path` / `.notebook_path` for an editor write (see steer_target_path in
+# lib/json.sh), or the `-C <dir>` target of a git command. Relative paths resolve
+# against <cwd>, matching how the tool itself would interpret them.
+#
+# A path that does not exist yet is the common case, not an edge case — a Write
+# creating a new file, possibly in a new directory. Walk up to the nearest
+# EXISTING ancestor before resolving, so the new file is attributed to the repo
+# that will contain it rather than falling back to cwd.
+#
+# Fail-soft, and deliberately in the direction of today's behaviour: no path, an
+# unresolvable path, or a path outside any work tree all fall back to the cwd
+# root, so a single-repo session — the overwhelmingly common case — is unchanged.
+# Subprocess-free (`dirname` is avoided in the loop): this runs on the PreToolUse
+# hot path.
+steer_action_root() {
+	_ar_cwd="${1:-.}"
+	_ar_path="${2:-}"
+	if [ -n "${_ar_path}" ]; then
+		case "${_ar_path}" in
+		/*) _ar_c="${_ar_path}" ;;
+		*) _ar_c="${_ar_cwd}/${_ar_path}" ;;
+		esac
+		# Walk up to the nearest existing directory. Bounded by construction: each
+		# iteration strips one trailing component and stops at "/" or a bare name.
+		while [ -n "${_ar_c}" ] && [ ! -d "${_ar_c}" ]; do
+			case "${_ar_c}" in
+			*/*) _ar_c="${_ar_c%/*}" ;;
+			*) _ar_c="" ;;
+			esac
+			[ -z "${_ar_c}" ] && break
+		done
+		if [ -n "${_ar_c}" ] && [ -d "${_ar_c}" ]; then
+			if _ar_r="$(steer_repo_root "${_ar_c}")"; then
+				printf '%s' "${_ar_r}"
+				return 0
+			fi
+		fi
+	fi
+	steer_repo_root "${_ar_cwd}"
+}
+
+# steer_git_c_target <command> — the `-C <dir>` target of a git invocation, or
+# nothing when the command carries none. Pairs with steer_action_root so a
+# `git -C backend push` is gated against `backend`, not the session cwd.
+#
+# The trunk-push matcher in check-bash-actions.sh already PARSES `-C <dir>` to
+# decide the command is a push; before #396 it then discarded the target and
+# resolved from cwd. This extracts what that matcher already recognises.
+#
+# Pure string scanning, no subprocess. Only the FIRST `git -C` in a compound
+# command is returned: a command chaining pushes into two different repos is not
+# something a single root can describe, and the caller falls back to cwd rather
+# than guessing which one governs.
+steer_git_c_target() {
+	_gc_rest="$1"
+	case "${_gc_rest}" in
+	*git*-C*) ;;
+	*) return 1 ;;
+	esac
+	# Advance to the first "-C" that is preceded by whitespace, then take the
+	# following whitespace-delimited word.
+	while [ -n "${_gc_rest}" ]; do
+		case "${_gc_rest}" in
+		*" -C "*)
+			_gc_rest="${_gc_rest#*" -C "}"
+			# Strip any further leading spaces, then cut at the next separator.
+			while [ "${_gc_rest#" "}" != "${_gc_rest}" ]; do _gc_rest="${_gc_rest#" "}"; done
+			_gc_tgt="${_gc_rest%%[[:space:];&|]*}"
+			[ -n "${_gc_tgt}" ] || return 1
+			printf '%s' "${_gc_tgt}"
+			return 0
+			;;
+		*) return 1 ;;
+		esac
+	done
+	return 1
+}
+
 # steer_delivery_mode <repo_root> — prints the repo's declared delivery mode,
 # 'solo-trunk' or 'pr-flow', read from the machine-readable marker on the
 # product CLAUDE.md's `## Delivery mode` section:
