@@ -78,7 +78,8 @@ skill's steps:
   the missing wall, recommend `/steer:protect` (rule 45).
 - **solo-trunk** — commit **straight to `main`**: no `issue/<n>` branch, no
   `spec/.work` marker, no PR. Still claim the issue and implement, but close it
-  **from the trunk commit** (`Closes #N`). Wherever a step below says *branch*,
+  **from the trunk commit** (`Closes #N`, or `Refs owner/repo#N` + an explicit
+  close when the tracker repo differs — see Closing ref). Wherever a step below says *branch*,
   *marker*, or *PR*, skip it and substitute the trunk commit — everything else
   (validation, managed-block progress, closure-reason semantics) is identical.
   While a local graduation signal stands, the trunk-push hook surfaces the
@@ -115,7 +116,8 @@ skill's steps:
   to conclusion** (`gh pr checks --watch`) before transitioning. The first push of
   the new `issue/<n>` branch sets the upstream — `git push -u origin <branch>` —
   or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
-  there is no PR: commit straight to `main` with a `Closes #N` trailer and watch
+  there is no PR: commit straight to `main` with a `Closes #N` trailer (see
+  Closing ref if the tracker lives elsewhere) and watch
   CI on the trunk push** (`gh run watch`) the same way — the closed issue, not a
   merged PR, is the terminal evidence. On a red build,
   diagnose and fix it as part of the same unit of work — re-push and re-watch —
@@ -209,11 +211,48 @@ What changes versus the normal flow:
   append a `/spec/HISTORY.md` entry. Definition of Done is **deferred, not waived**
   (rule 50) — track the follow-up to closure rather than declaring the hotfix done.
 
+## Closing ref — check the tracker repo first
+
+GitHub honours issue-closing keywords **only within one repository**. When
+`/spec/tracker.md` declares a `repository:` that is not the repo the code lives
+in, a `Closes #N` — or even a fully-qualified `Closes owner/repo#N` — renders as
+a plain cross-reference and **the issue silently stays open**. Nothing warns, and
+because this skill treats the merged PR as lifecycle-transition evidence, the
+issue never advances state either.
+
+Resolve both sides before writing any closing ref:
+
+```sh
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
+tracker_repo="$(steer_tracker_repo "$PWD")"          # from /spec/tracker.md
+code_repo="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+```
+
+Compare them **case-insensitively** (GitHub owner/repo names are), then:
+
+| | Closing ref | Closure |
+| --- | --- | --- |
+| Same repo (or either value unreadable) | `Closes #N` — unchanged | GitHub auto-closes on merge |
+| **Proven different** | `Refs owner/repo#N` | **You** close it: `/steer:tracker-sync close` after the merge |
+
+Divert **only on positive proof of a mismatch**. An absent tracker file, an
+unresolved `[owner/repository]` placeholder, an empty value, or a failed
+`gh repo view` all keep `Closes #N` — that is the overwhelmingly common path and
+it must stay exactly as it is. Do not derive the code repo by parsing
+`git remote get-url`: a `url.<base>.insteadOf` rewrite, GitHub Enterprise, or a
+remote not named `origin` each defeat that, and every such failure would silently
+restore the bug.
+
+In **solo-trunk** the same rule applies to the trunk commit trailer: `Closes #N`
+when the tracker is local, otherwise `Refs owner/repo#N` and an explicit close —
+and there the closed issue *is* the terminal evidence, so skipping the explicit
+close leaves the work with no completion record at all.
+
 ## Completion semantics
 
 **Closure reason — not the mere fact of closure — decides the terminal state.**
 Inspect it before transitioning a closed issue; keep delivery state as independent
-evidence (a merged PR — or, in solo-trunk, the `Closes #N` trunk commit — is
+evidence (a merged PR — or, in solo-trunk, the closing trunk commit — is
 necessary for `done`, not sufficient on its own).
 
 - Opening a PR → `validate` (never `done`). **(Solo-trunk has no PR — the

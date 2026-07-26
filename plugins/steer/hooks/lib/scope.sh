@@ -23,6 +23,39 @@ steer_tracker_is_github() {
 	grep -iq '^[[:space:]]*system:[[:space:]]*github\b' "${_tracker}" 2>/dev/null
 }
 
+# steer_tracker_repo <repo-root> — prints the tracker's declared `repository:`
+# value from spec/tracker.md ("owner/name" for GitHub), or nothing when absent,
+# empty, or still the unresolved "[owner/repository]" placeholder.
+steer_tracker_repo() {
+	_tr="${1:-.}/spec/tracker.md"
+	[ -f "${_tr}" ] || return 1
+	_v="$(sed -n 's/^[[:space:]]*repository:[[:space:]]*//p' "${_tr}" 2>/dev/null | head -n 1)"
+	# Strip a trailing inline comment and surrounding quotes/whitespace.
+	_v="${_v%%#*}"
+	_v="$(printf '%s' "${_v}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s/^"//; s/"$//')"
+	case "${_v}" in
+	'' | '['*) return 1 ;;
+	esac
+	printf '%s' "${_v}"
+}
+
+# NOTE — there is deliberately NO companion helper that derives this repo's own
+# "owner/name" from the git remote. Deriving it by parsing `git remote get-url`
+# is unreliable in exactly the setups that matter: a `url.<base>.insteadOf`
+# rewrite (corporate proxies, ssh-for-https) makes git report a URL with no
+# github.com host in it at all, and GitHub Enterprise, a remote not named
+# `origin`, and a bare clone each break a host-based parser differently. Every
+# one of those failures is a FALSE NEGATIVE — the parser cannot prove a mismatch,
+# so the caller keeps `Closes #N` and the silent-non-closure bug survives in the
+# environments hardest to debug.
+#
+# The comparison therefore lives in the skills (`/steer:work`,
+# `/steer:tracker-sync`), which resolve the current repo authoritatively via
+# `gh repo view --json nameWithOwner` — correct under rewrites, GHE, and any
+# remote name — and which are already talking to GitHub anyway. Keeping the `gh`
+# call out of this file also preserves its contract: sourced by every PreToolUse
+# hook, so no subprocess and no network.
+
 # steer_repo_does_iac <repo-root> — true when the repo does infrastructure-as-code,
 # whether as the whole repo (a root-level Terraform/OpenTofu/Ansible/Pulumi repo,
 # the infra profile) OR as a nested `/infra` dir inside an app monorepo. Broader

@@ -75,6 +75,31 @@ flow is [`/steer:protect`](../reference/skills.md)'s job, never this skill's.
 | `status` | Report progress on the issue(s). |
 | `finish` | Open the PR (pr-flow) — the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) — or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
 
+## Closing refs across repositories
+
+GitHub honours issue-closing keywords **only within one repository**. If
+`/spec/tracker.md` declares a `repository:` other than the repo the code lives in
+— a team centralizing issues in a dedicated tracker repo, or a polyrepo member
+whose spine lives in the workspace — then `Closes #N` renders as a plain
+cross-reference and **the issue silently stays open**. Nothing warns, and because
+`finish` reads the merged PR as its lifecycle-transition evidence, the issue never
+advances state either.
+
+`finish` therefore resolves both sides before writing any closing ref: the
+declared tracker (`steer_tracker_repo`, `lib/scope.sh`) against the actual repo
+(`gh repo view --json nameWithOwner`).
+
+| | Closing ref | Who closes the issue |
+| --- | --- | --- |
+| Same repo, **or** either value unreadable | `Closes #N` — unchanged | GitHub, on merge |
+| **Proven** mismatch | `Refs owner/repo#N` | `/steer:tracker-sync close`, after the merge |
+
+Only a demonstrated mismatch diverts. An absent tracker file, an unresolved
+`[owner/repository]` placeholder, an empty value, or a failed `gh` call all keep
+`Closes #N`, so the ordinary same-repo path is untouched. In solo-trunk the same
+rule governs the commit trailer — and matters more there, since the closed issue
+is the only terminal evidence.
+
 ## Local work marker
 
 `start` writes a local, git-ignored marker at `spec/.work/<branch>.md` (slashes →
