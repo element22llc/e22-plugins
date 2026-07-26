@@ -1,10 +1,8 @@
 # Decisions (ADRs)
 
 Hard-to-reverse or cross-cutting choices are recorded as **Architecture Decision
-Records (ADRs)**. In a managed product repo, ADRs live in the `/spec` spine. This
-repo has no `/spec` spine, so the plugin's *own* architectural decisions are
-recorded here instead — see [Plugin-level decisions](#plugin-level-decisions) for
-the line between an ADR and a plain `CHANGELOG.md` entry.
+Records (ADRs)**. In a managed product repo, ADRs live in the `/spec` spine; for
+the plugin itself, decisions are captured in `CHANGELOG.md` and PRs.
 
 ## When to write an ADR
 
@@ -33,18 +31,14 @@ New ADRs default to **Proposed** — the fixture suite asserts this. An ADR beco
 
 ## Plugin-level decisions
 
-Routine changes to the plugin's own behavior are recorded in `CHANGELOG.md` under
-`## steer` → `### [Unreleased]`, and the rationale lives in the PR. See
-[Release process](../contributing/release-process.md).
+ADRs are an artifact of the **`/spec` spine in a managed product repo**. The
+`e22-plugins` repo itself keeps **no ADR log**: changes to the plugin's own
+behavior are recorded in `CHANGELOG.md` under `## steer` → `### [Unreleased]`,
+with the rationale — alternatives, consequences, what was rejected — in the PR
+description. See [Release process](../contributing/release-process.md).
 
-An **architectural** decision about the plugin — one that is hard to reverse or
-cuts across many skills, rules and templates — gets its own numbered ADR on this
-page instead, because a CHANGELOG bullet cannot carry the alternatives and
-consequences such a choice needs. Same template and same status lifecycle as a
-product ADR.
-
-### Records
-
-| ADR | Status | Summary |
-|---|---|---|
-| [0001 — Polyrepo workspace repository](0001-polyrepo-workspace-repository.md) | Proposed | Support polyrepo products via a workspace repo that is also the spine repo, with members as manifest-driven clones rather than submodules. |
+A decision too large for a PR description is a signal to split the PR, not to
+introduce a record type. Adding a decision log for the plugin would be a change to
+how the repo works, so it goes through a convention-only PR first — see
+[`CONTRIBUTING.md`](https://github.com/element22llc/e22-plugins/blob/main/CONTRIBUTING.md)
+→ "Working in this repo".

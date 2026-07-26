@@ -67,7 +67,32 @@ plugins/steer/
 
 ## Working in this repo
 
-- Changes go through `feat/*` / `fix/*` branches off `main` + PR.
+**[`CONTRIBUTING.md`](CONTRIBUTING.md) → "Working in this repo" is the working
+agreement** — branch, commit convention, changelog, gates, PR scope, decision
+capture. Read it before your first PR here. The essentials, condensed:
+
+- Changes go through `feat/*` / `fix/*` branches off `main` + PR. A web session's
+  assigned `claude/<slug>` branch is used as-is — don't rename it.
+- **One PR, one concern — repo conventions are frozen unless changing them *is*
+  the PR.** `CLAUDE.md`, `AUTHORING.md`, `CONTRIBUTING.md`, `docs/contributing/`,
+  `docs/decisions/`, the gate scripts, and the release flow do not get amended in
+  passing by a PR that is really about something else: a convention landed as a
+  side effect never gets reviewed as a convention. Updating a doc *in service of*
+  your change is expected; redefining the rule while shipping something else is
+  not — that's a separate, convention-only PR. Same for a decision not yet made:
+  propose it in prose in the issue or PR description, don't commit the
+  scaffolding for it (`CONTRIBUTING.md` → "Scope").
+- **This repo keeps no ADR log.** Plugin decisions are recorded in `CHANGELOG.md`
+  + the PR; `docs/decisions/` describes ADRs as a `/spec`-spine artifact of
+  *managed product repos*. A decision too big for a PR description means split
+  the PR, not invent a record type.
+- Commit subjects follow Conventional Commits — `type(scope): imperative summary`.
+  Scopes in use: `steer`, `hooks`, `skills`, `rules`, `scaffold`, `docs`, `dx`,
+  `release`. No commit-lint gate; the PR review is the gate.
+- Two sets of GitHub templates, easy to confuse: `.github/` at the root is **this
+  repo's own** (ships nothing, no changelog entry);
+  `plugins/steer/templates/github/` is what **consumer repos** get (plugin
+  behavior — changelog entry required).
 - Any change to plugin behavior needs a `CHANGELOG.md` entry. Accumulate entries
   under `## steer` → `### [Unreleased]`; implementation PRs do **not**
   bump `plugins/steer/.claude-plugin/plugin.json`. The `version` bump
@@ -90,14 +115,6 @@ plugins/steer/
   one-shot script, since removed), so every prior `vX.Y.Z` already has a tag +
   Release. These live outside `plugins/steer/`, so they ship nothing and need no
   changelog entry.
-- **Architectural decisions about the plugin get an ADR** under
-  `docs/decisions/NNNN-slug.md` — a choice that is hard to reverse or cuts across
-  many skills, rules, and templates needs the alternatives and consequences a
-  CHANGELOG bullet cannot carry. Routine behavior changes stay CHANGELOG + PR.
-  Use the plugin's own `templates/spec/adr.md` structure, default the status to
-  **Proposed** (only a human ratifies), and add the page to the `mkdocs.yml` nav
-  plus the records table in `docs/decisions/index.md`. Docs-only, so no changelog
-  entry.
 - `rules/*.md` is **always-on** context injected every session — keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.
