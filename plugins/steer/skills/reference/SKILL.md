@@ -1,16 +1,17 @@
 ---
 name: reference
-description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), or artifacts (shareable Claude Artifacts). Read-only loader."
+description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts (shareable Claude Artifacts), or polyrepo (a product spanning several repos). Read-only loader."
 when_to_use: >-
   Use for any tooling/convention question or stack-default rationale, living-
   docs/tracker/drift questions, a feature built from a design export or
   screenshots, keeping a long multi-phase run lean across compaction, the system
-  architecture diagram, or rendering a shareable Artifact.
-argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts]"
+  architecture diagram, rendering a shareable Artifact, or a product whose spine
+  spans several repos.
+argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | polyrepo]"
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts,polyrepo -->
 
 # Reference prose loader
 
@@ -28,6 +29,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
 | `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the styling contract (`DESIGN.md` tokens or the house default), the temp-path write invariant, the fillable-page return leg, and the Markdown fallback. |
+| `polyrepo` | `POLYREPO.md` | A product spanning several repos: the workspace/member split, where each spec artifact lives, resolving the spine from a member, honest report scope, and what crosses the repo edge (sub-issues yes, closing keywords no, drift gates no). |
 
 ## `conventions`
 
@@ -242,3 +244,28 @@ It covers, in detail:
 This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
 (`/steer:explain`, `/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`,
 `/steer:help`).
+
+## polyrepo
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/POLYREPO.md`
+
+It covers, in detail:
+
+- **Recommend a monorepo first** — this topology is for an externally mandated
+  split only, and it never buys atomic cross-repo commits.
+- **The two roles** — a `workspace` repo (`workspace.yml`) hosting THE product
+  spine and owning no code, and `member` repos (`spec/PRODUCT.md`) holding the
+  code; the traits that detect each, and why a member's spine is partial *by
+  design* rather than damaged.
+- **Where each artifact lives** — product-level spec and **all** of
+  `spec/features/**` in the workspace; ADRs, `ARCHITECTURE.md` and code in the
+  member — and why a cross-repo feature must have exactly one `intent.md`.
+- **Resolving the spine from a member** — local checkout, else the GitHub
+  gateway, else stop; absent local intent is never "no intent".
+- **Honest report scope** — naming covered members and flagging uncovered ones
+  explicitly, so a fraction of the product is never presented as the whole.
+- **What crosses the repo edge** — sub-issues and Projects v2 do; milestones,
+  closing keywords, drift gates and CI do not.
+
+This backs the scoped rule `21-polyrepo` (zero always-on bytes in a single-repo
+product) and the workspace profile in the bundled scaffold.

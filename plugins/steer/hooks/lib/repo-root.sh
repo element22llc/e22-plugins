@@ -56,7 +56,12 @@ steer_delivery_mode() {
 
 # steer_repo_profile <repo_root> — prints the repo's declared profile, read from
 # the machine-readable marker on the product CLAUDE.md's `## Profile` section:
-#   <!-- steer:profile=infra -->   (or =app / =service / =library / =cli)
+#   <!-- steer:profile=infra -->   (or =app / =service / =library / =cli / =workspace)
+#
+# `workspace` is the polyrepo spine host: a repo that carries the product `/spec`
+# and a `workspace.yml` member manifest but no application code of its own. It is
+# a scaffold-time profile like the rest; the always-on gate for polyrepo rule text
+# is the `has-workspace-manifest` trait in lib/scope.sh, not this marker.
 #
 # The profile is a SCAFFOLD-TIME concept (it decides what /steer:init lays down);
 # always-on rules gate on filesystem traits (has-apps / has-compose / has-infra),
@@ -83,6 +88,7 @@ steer_repo_profile() {
 	*=service*) printf 'service' ;;
 	*=library*) printf 'library' ;;
 	*=cli*) printf 'cli' ;;
+	*=workspace*) printf 'workspace' ;;
 	*) printf 'app' ;;
 	esac
 }

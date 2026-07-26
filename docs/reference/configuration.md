@@ -60,7 +60,11 @@ manual. They are injected into every managed session by `inject-standards.sh`
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
-    use GitHub issues, or deploy. The context-hygiene, spec-workflow,
+    use GitHub issues, or deploy. Polyrepo topology is deliberately **not** an
+    always-on rule — the ruleset is capped on its on-disk total, which a scoped
+    rule pays in full for every consumer. It is delivered instead by
+    `orient-session.sh`, which speaks only in a repo carrying `workspace.yml` or
+    `spec/PRODUCT.md`. The context-hygiene, spec-workflow,
     decision-capture, living-docs, roles, secrets, output, and artifacts rules
     stay always-on.
 

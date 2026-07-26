@@ -7,6 +7,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** polyrepo spine unification — a product may now span several repos
+  without fragmenting its `/spec`. A **workspace** repo (`workspace.yml`, new
+  `workspace` profile) hosts the product spine and owns no code; **member** repos
+  carry `spec/PRODUCT.md` pointing at it, plus their own ADRs, `ARCHITECTURE.md`
+  and code. All of `spec/features/**` lives in the workspace, so a feature
+  spanning repos has exactly one `intent.md` instead of none or several.
+- **Added:** `lib/scope.sh` gains `steer_polyrepo_role` and three inject-when
+  predicates — `polyrepo` (either role), `has-workspace-manifest`, and
+  `has-product-pointer`. `orient-session.sh` uses the role to emit a short,
+  role-specific SessionStart note in a polyrepo repo. Deliberately **not** an
+  always-on rule: the ruleset is capped on its on-disk total, which every
+  consumer pays even for a rule scoped to a minority of repos — so a single-repo
+  product pays **zero** bytes for this feature, in the rules payload and at
+  SessionStart alike.
+- **Added:** `/steer:reference polyrepo` (`templates/reference/POLYREPO.md`) —
+  the topology in full: role split, artifact homes, resolving the spine from a
+  member, honest report scope, and what does and does not cross the repo edge
+  (sub-issues and Projects v2 do; milestones, closing keywords, drift gates and
+  CI do not). It leads by recommending a monorepo whenever the split is not
+  externally mandated.
+- **Fixed:** `steer_spine_state` no longer reports a polyrepo member as
+  `damaged`. A member's spine is partial by design, so requiring the
+  product-level files sent `/steer:setup` into a permanent repair loop and would
+  have had `/steer:sync` reinstall the very files the topology de-duplicates —
+  recreating the split-brain spine. Members are now validated against
+  `PRODUCT.md` alone; a genuinely incomplete single-repo spine still reports
+  `damaged`.
+- **Changed:** `/steer:setup`, `/steer:init`, `/steer:next`, `/steer:status` and
+  `/steer:audit` are topology-aware. Reports must now name the members they
+  covered and flag any they could reach neither locally nor over the GitHub
+  gateway as **uncovered**, so a fraction of a product is never presented as the
+  whole.
 - **Fixed:** `scripts/scan-invocations.sh` is reformatted to satisfy `shfmt`
   (one brace-placement nit). Formatting only, no behavior change — the script
   sat in a blind spot where the repo's pre-commit hook hard-gated `shfmt` but

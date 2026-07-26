@@ -77,6 +77,15 @@ If there is no `/spec` spine, there is nothing to reconstruct: the single
 recommended action is to **bootstrap** — `/steer:init` (greenfield) or `/steer:adopt`
 (existing "vibe-coded" code). Say which and stop. Don't run the rest.
 
+**Polyrepo.** Check `steer_polyrepo_role` (`lib/scope.sh`) alongside the spine
+state. In a **member**, the spine is partial by design — resolve the product spine
+from `spec/PRODUCT.md` (local `workspace.path`, else the GitHub gateway) before
+concluding anything is missing; a member with only a pointer is `managed`, not
+broken. From the **workspace**, the arbitration below covers the members you can
+actually read. Name them, and name any member you could reach neither way as
+**uncovered** — a next action chosen from a fraction of the product, presented as
+the whole, is worse than admitting the gap. Detail: `/steer:reference polyrepo`.
+
 ## Phase 1 — Reconstruct workspace state (read-only)
 
 Sweep each dimension and record what you find. Reuse the existing state

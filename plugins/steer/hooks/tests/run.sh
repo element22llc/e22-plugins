@@ -920,6 +920,32 @@ out="$(run_hook orient-session.sh "$(session_json "${OR1C}" or1c)")"
 oq_grep "orient: handed-off build falls back to orientation" 'need to know skill names' "${out}"
 oq_ngrep "orient: handed-off build does not nag resume" 'Resume the guided build' "${out}"
 
+# Polyrepo topology note — role-specific, ADDITIVE to the generic orientation,
+# and completely absent in a single-repo product (the zero-cost guarantee).
+OR1W="$(new_repo orient1w)"
+managed_spine "${OR1W}"
+printf 'schema: 1\n' >"${OR1W}/workspace.yml"
+out="$(run_hook orient-session.sh "$(session_json "${OR1W}" or1w)")"
+oq_grep "orient: workspace role announced" 'is the \*\*workspace\*\*' "${out}"
+oq_grep "orient: workspace warns on partial reports" 'uncovered' "${out}"
+oq_ngrep "orient: workspace note is not the member note" 'is a \*\*member\*\*' "${out}"
+oq_grep "orient: polyrepo note is additive" 'need to know skill names' "${out}"
+
+OR1M="$(new_repo orient1m)"
+managed_spine "${OR1M}"
+printf 'workspace:\n' >"${OR1M}/spec/PRODUCT.md"
+out="$(run_hook orient-session.sh "$(session_json "${OR1M}" or1m)")"
+oq_grep "orient: member role announced" 'is a \*\*member\*\*' "${out}"
+oq_grep "orient: member warned off cross-repo Closes" 'Refs owner/repo#N' "${out}"
+oq_ngrep "orient: member note is not the workspace note" 'is the \*\*workspace\*\*' "${out}"
+oq_grep "orient: member note is additive" 'need to know skill names' "${out}"
+
+# A single-repo product must see NO polyrepo text at all.
+OR1S="$(new_repo orient1s)"
+managed_spine "${OR1S}"
+out="$(run_hook orient-session.sh "$(session_json "${OR1S}" or1s)")"
+oq_ngrep "orient: single-repo product pays zero polyrepo bytes" 'polyrepo' "${out}"
+
 # Bare/foreign spec/ (no .version) -> check-unmanaged-repo.sh owns it -> silent.
 OR2="$(new_repo orient2)"
 mkdir -p "${OR2}/spec"
@@ -1712,6 +1738,68 @@ TRAITS_GH="$(new_repo traits_gh)"
 mkdir -p "${TRAITS_GH}/spec"
 printf 'system: github\n' >"${TRAITS_GH}/spec/tracker.md"
 steer_tracker_is_github "${TRAITS_GH}" && ok || bad "scope: tracker-github true for system: github"
+
+# ----- polyrepo topology: role detection, traits, and the spine-state split -----
+# A single-repo product must match NEITHER role and pay zero always-on bytes.
+TRAITS_MONO="$(new_repo traits_mono)"
+printf '{}\n' >"${TRAITS_MONO}/package.json"
+steer_polyrepo_role "${TRAITS_MONO}" >/dev/null && bad "polyrepo: single-repo product has no role" || ok
+steer_inject_when_ok polyrepo "${TRAITS_MONO}" && bad "polyrepo: rule skipped for single-repo product" || ok
+
+TRAITS_WS="$(new_repo traits_ws)"
+printf 'schema: 1\n' >"${TRAITS_WS}/workspace.yml"
+assert_eq "polyrepo: workspace.yml -> workspace role" "$(steer_polyrepo_role "${TRAITS_WS}")" "workspace"
+steer_inject_when_ok polyrepo "${TRAITS_WS}" && ok || bad "polyrepo: rule injects at the workspace"
+steer_inject_when_ok has-workspace-manifest "${TRAITS_WS}" && ok || bad "polyrepo: has-workspace-manifest true"
+steer_inject_when_ok has-product-pointer "${TRAITS_WS}" && bad "polyrepo: workspace is not a member" || ok
+
+TRAITS_MEM="$(new_repo traits_mem)"
+mkdir -p "${TRAITS_MEM}/spec"
+printf 'workspace:\n' >"${TRAITS_MEM}/spec/PRODUCT.md"
+assert_eq "polyrepo: spec/PRODUCT.md -> member role" "$(steer_polyrepo_role "${TRAITS_MEM}")" "member"
+steer_inject_when_ok polyrepo "${TRAITS_MEM}" && ok || bad "polyrepo: rule injects at a member"
+steer_inject_when_ok has-product-pointer "${TRAITS_MEM}" && ok || bad "polyrepo: has-product-pointer true"
+
+# Malformed repo carrying BOTH markers: workspace wins, deterministically.
+TRAITS_BOTH="$(new_repo traits_both)"
+mkdir -p "${TRAITS_BOTH}/spec"
+printf 'schema: 1\n' >"${TRAITS_BOTH}/workspace.yml"
+printf 'workspace:\n' >"${TRAITS_BOTH}/spec/PRODUCT.md"
+assert_eq "polyrepo: both markers -> workspace wins" "$(steer_polyrepo_role "${TRAITS_BOTH}")" "workspace"
+
+# The profile marker gains a `workspace` arm; an unknown/mis-cased token still
+# falls back to app (the pre-existing contract).
+PROF_WS="$(new_repo prof_ws)"
+printf '## Profile\n<!-- steer:profile=workspace -->\n' >"${PROF_WS}/CLAUDE.md"
+assert_eq "profile: workspace marker read" "$(steer_repo_profile "${PROF_WS}")" "workspace"
+PROF_WSBAD="$(new_repo prof_wsbad)"
+printf '## Profile\n<!-- steer:profile=Workspace -->\n' >"${PROF_WSBAD}/CLAUDE.md"
+assert_eq "profile: mis-cased workspace falls back to app" "$(steer_repo_profile "${PROF_WSBAD}")" "app"
+
+# A member's spine is partial BY DESIGN — product-level artifacts live in the
+# workspace. Without the member split it would report `damaged` forever and
+# /steer:sync would "repair" it by recreating the split-brain spine.
+. "${HOOKS}/lib/spine.sh"
+SPINE_MEM="$(new_repo spine_mem)"
+mkdir -p "${SPINE_MEM}/spec"
+touch "${SPINE_MEM}/spec/.version" "${SPINE_MEM}/spec/PRODUCT.md"
+assert_eq "spine: member with pointer only -> managed" "$(steer_spine_state "${SPINE_MEM}")" "managed"
+SPINE_WS="$(new_repo spine_ws)"
+mkdir -p "${SPINE_WS}/spec"
+touch "${SPINE_WS}/spec/.version" "${SPINE_WS}/workspace.yml"
+for _f in vision.md users.md glossary.md tracker.md HISTORY.md; do touch "${SPINE_WS}/spec/${_f}"; done
+assert_eq "spine: workspace holds the full product set -> managed" "$(steer_spine_state "${SPINE_WS}")" "managed"
+# The member split must NOT excuse a genuinely broken single-repo spine.
+SPINE_BROKEN="$(new_repo spine_broken)"
+mkdir -p "${SPINE_BROKEN}/spec"
+touch "${SPINE_BROKEN}/spec/.version"
+for _f in vision.md users.md tracker.md HISTORY.md; do touch "${SPINE_BROKEN}/spec/${_f}"; done
+assert_eq "spine: missing glossary still damaged" "$(steer_spine_state "${SPINE_BROKEN}")" "damaged"
+# A stamped spine with neither the product set nor a pointer is damaged, not member.
+SPINE_EMPTY="$(new_repo spine_empty)"
+mkdir -p "${SPINE_EMPTY}/spec"
+touch "${SPINE_EMPTY}/spec/.version"
+assert_eq "spine: stamped but empty -> damaged" "$(steer_spine_state "${SPINE_EMPTY}")" "damaged"
 
 # OR markers (token|token): inject when ANY arm holds.
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR marker true via has-apps arm"

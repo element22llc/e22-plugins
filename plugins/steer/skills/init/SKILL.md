@@ -119,7 +119,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
      there.
    - **Pick the repo profile.** Determine whether this repo is an `app` (internal
      monorepo — the default), `infra` (Terraform/OpenTofu/Ansible/Pulumi IaC),
-     `service` (a single deployable), `library`, or `cli`, and **confirm with the
+     `service` (a single deployable), `library`, `cli`, or `workspace` (the spine
+     host of a product that spans several repos — see step 2's polyrepo overlay),
+     and **confirm with the
      dev** (a one-line confirm; default `app`). For greenfield, the dev's intent
      decides; if any code already exists, the same signals `/steer:adopt` uses
      apply (`*.tf`/`*.hcl`, `ansible.cfg`/`site.yml`/`roles/`, `Pulumi.yaml` →
@@ -184,6 +186,23 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
        `scripts/worktree-env.sh` still land from Layer 0 — delete them only if the
        repo runs no local services. Enable the matching IaC engine in that
        `mise.toml` and adapt `ARCHITECTURE.md`/README to the IaC layout.
+     - **`workspace`** (polyrepo spine host): install
+       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/workspace/workspace.yml`
+       at the repo root and its `README.md` (replaces the core README), and **skip
+       Layer 1 entirely**. This repo owns no application code, so drop Layer 0's
+       `compose.yaml`, `scripts/worktree-env.sh`, `apps/`, and the Dockerfile
+       refs; keep mise, CI, the `/spec` spine, and `.claude/`. Interview for the
+       member list and resolve every `workspace.yml` placeholder — **never ship
+       fabricated repo names or branches**; leave the file with a single
+       placeholder member if the dev does not know them yet. If the dev plans to
+       clone members inside this repo, add those dirs to `.gitignore`. Then
+       bootstrap each member separately: run `/steer:init` in it with its own
+       profile, and instantiate `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`
+       as its `spec/PRODUCT.md` **instead of** the product-level spine files
+       (`vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`,
+       `spec/features/`, `spec/tracker.md`) — those live once, here.
+       **Recommend a monorepo first** unless the split is externally mandated, and
+       read `/steer:reference polyrepo` before advising.
      **Set the profile marker:** write the chosen profile into the `CLAUDE.md`
      `## Profile` marker (`<!-- steer:profile=<profile> -->`) and its prose — the
      scaffold ships `=app`; rewrite the token for any other profile. A **root

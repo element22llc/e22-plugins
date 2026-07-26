@@ -1,0 +1,33 @@
+# Polyrepo member manifest. Its PRESENCE at the repo root is what marks this repo
+# the workspace (lib/scope.sh -> has-workspace-manifest), so do not add this file
+# to a single-repo product.
+#
+# /steer:init resolves the placeholders - never ship fabricated values.
+# ASCII only: this is config, not prose (see the plugin's non-ASCII anti-pattern).
+
+schema: 1
+
+product:
+  name:                     # "[Product Name]" - the product these repos add up to
+  # The tracker for the whole product lives in spec/tracker.md beside this file.
+  # Members do not carry their own; they read this one.
+
+# Every repo that implements part of this product. Branches, not SHAs: peer repos
+# under active development want "current branch", and a SHA pin would make every
+# member commit dirty this repo. If you need "the whole product at v1.4.0" as
+# audit evidence, record the SHAs in a release note - do not pin them here.
+members:
+  - name:                   # short id, unique in this file, e.g. "frontend"
+    repository:             # "[owner/repository]"
+    branch: main
+    profile:                # app | service | infra | library | cli
+    # path:                 # OPTIONAL relative dir when this member is cloned
+                            # inside the workspace, e.g. "frontend". Omit it and
+                            # steer reads the member over the GitHub gateway.
+    # description:          # one line: what this member is responsible for
+
+# Which members a report is allowed to claim it covered without a local checkout.
+# Reads fall back to the GitHub gateway; when neither a checkout nor gateway access
+# is available for a member, reports must name it as UNCOVERED rather than omit it.
+reporting:
+  require_all_members: true

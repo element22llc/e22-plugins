@@ -64,11 +64,15 @@ set this marker and the prose to `PR flow`.
 **`app`** — this repo is an internal app monorepo. The profile decides which
 stack-specific scaffold the bootstrap lays down on top of the universal core
 (mise pinning, the `/spec` spine, CI hygiene); `/steer:init` sets the marker
-above to the detected profile (`app` / `infra` / `service` / `library` / `cli`).
+above to the detected profile (`app` / `infra` / `service` / `library` / `cli` /
+`workspace`).
 Keep the marker and this line in sync — `/steer:sync` reads the marker. An
 **infra** repo (Terraform/OpenTofu/Ansible/Pulumi) gets a tofu/terragrunt/ansible
 root `mise.toml` and infra CI instead of the Node project files
 (`package.json` / `biome.json`); `node` + `compose.yaml` stay from the core scaffold.
+A **workspace** repo is the spine host of a product spanning several repos — it
+carries `workspace.yml` and the `/spec` spine but no application code
+(`/steer:reference polyrepo`).
 
 ## Stack overrides
 

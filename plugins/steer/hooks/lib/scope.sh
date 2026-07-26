@@ -44,6 +44,34 @@ steer_repo_does_iac() {
 	return 1
 }
 
+# steer_polyrepo_role <repo-root> — prints the repo's role in a polyrepo product,
+# or nothing when the product lives in a single repo (the overwhelmingly common
+# case, and the one that must cost zero always-on bytes):
+#
+#   workspace  a `workspace.yml` member manifest at the root — this repo hosts
+#              THE product `/spec` spine and owns no application code.
+#   member     a `spec/PRODUCT.md` pointer — this repo implements part of a
+#              product whose spine lives in a sibling workspace repo.
+#   (empty)    neither marker → a single-repo product.
+#
+# Ground-truth filesystem check on two files, mirroring the has-* predicates: the
+# topology is derived from disk, never from the CLAUDE.md profile marker, so the
+# two can no more disagree here than they can for has-apps / has-infra. A repo
+# carrying BOTH files is malformed; workspace wins (the manifest is the stronger,
+# harder-to-create signal) and /steer:audit reports the contradiction.
+steer_polyrepo_role() {
+	_r="${1:-.}"
+	[ -f "${_r}/workspace.yml" ] && {
+		printf 'workspace'
+		return 0
+	}
+	[ -f "${_r}/spec/PRODUCT.md" ] && {
+		printf 'member'
+		return 0
+	}
+	return 1
+}
+
 # steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
 # inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
@@ -54,6 +82,13 @@ steer_inject_when_one() {
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	# polyrepo — true in EITHER role (workspace host or member). The topology
+	# rule is the same text for both sides; the roles differ in what they own,
+	# which the rule states inline. A single-repo product matches neither and
+	# pays nothing.
+	polyrepo) steer_polyrepo_role "$2" >/dev/null ;;
+	has-workspace-manifest) [ -f "$2/workspace.yml" ] ;;
+	has-product-pointer) [ -f "$2/spec/PRODUCT.md" ] ;;
 	# code-project — true in 'code' work mode. The knowledge-vs-code decision is
 	# made ONCE in inject-standards.sh (steer_work_mode) and a knowledge folder
 	# skips EVERY marked rule in the inject loop before this predicate is reached,

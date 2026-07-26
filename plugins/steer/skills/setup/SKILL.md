@@ -27,8 +27,13 @@ Compute the spine state with the existing helper rather than inventing detection
 ```sh
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
+steer_polyrepo_role "$root" || echo "(single-repo product)"
 ```
+
+`steer_polyrepo_role` prints `workspace`, `member`, or nothing. It changes what
+the state above *means* — see "Polyrepo" below — so read both before routing.
 
 | Detected state | Meaning | Route to |
 | --- | --- | --- |
@@ -43,6 +48,24 @@ The `unmanaged`-with-code vs `unmanaged`-greenfield call is the one judgment the
 state helper can't make alone: check for app code (a populated `apps/`/`src/`,
 `package.json` with real deps, etc.). If genuinely ambiguous, ask **one** question
 ("Is there existing code to reverse-engineer, or are we starting fresh?") then route.
+
+## Polyrepo
+
+A product may span several repos: a **workspace** repo (`workspace.yml`) holding
+THE `/spec` spine and no code, and **member** repos (`spec/PRODUCT.md`) holding the
+code. Detect the role before routing — the same spine state means different things:
+
+| Role | Routing change |
+| --- | --- |
+| `workspace` | Route as normal. The spine is complete here; there is simply no app code to look for, so never read "no `apps/`" as greenfield-with-no-code. |
+| `member` | Its spine is **partial by design** — product-level artifacts live in the workspace. `steer_spine_state` already accounts for this and reports `managed`. Never route a member to `/steer:sync` to "repair" missing `vision.md`/`tracker.md`/`spec/features/`; reinstalling them recreates the split-brain spine this topology exists to prevent. |
+| none | Single-repo product — the default; everything above is inert. |
+
+**Adopting a polyrepo is not this skill's call.** If the user describes a product
+already split across repos, recommend a monorepo first unless the split is
+externally mandated (deployment, ownership, or compliance boundaries), then route
+to `/steer:init` for the workspace repo. Load `/steer:reference polyrepo` before
+advising — do not improvise the topology.
 
 **Prerequisites first.** If the toolchain is missing (`git`, `mise`, Docker — "command
 not found", mise/docker errors), the bootstrap paths can't run. `/steer:init` and

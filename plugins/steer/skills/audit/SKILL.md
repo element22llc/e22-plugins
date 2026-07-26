@@ -46,6 +46,18 @@ question you're asking:
   `drift` skill.
 - **`all`** — run `code` then `spec` and report both.
 
+**Polyrepo scope.** Both modes sweep **one tree**. When `steer_polyrepo_role`
+(`lib/scope.sh`) reports a role, say up front which repos the audit covered and
+name any member you could read neither locally nor over the gateway as
+**uncovered** — an audit silently scoped to one member reads as a clean bill of
+health for the product. Two limits to state rather than paper over: drift that
+crosses the repo edge (a member's contract change invalidating a sibling's
+assumption) is **not** detected by `spec` mode, and the `55-drift-gates` CI
+backstop cannot see sibling repos at all. In a member, resolve the intended spec
+from the workspace via `spec/PRODUCT.md` before reporting any feature as
+undocumented — the intent is probably there, not missing. Detail:
+`/steer:reference polyrepo`.
+
 Both modes are **repository-read-only** — never an edit or a commit; their only
 writes are tracker issues. They answer different questions ("is what we built
 healthy and standards-aligned?" vs. "did we build what was asked?"), so run
