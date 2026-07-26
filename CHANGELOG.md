@@ -7,6 +7,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the bundled CI workflow template refreshes three pins —
+  `actions/setup-node` `v6` → `v7` (the action moved to ESM and dropped a dummy
+  `NODE_AUTH_TOKEN` export; neither affects the advisory `ai-slop` job's
+  `node-version` usage) and `aislop` `0.12.1` → `0.14.0` (same
+  `scan . --sarif` interface).
+- **Fixed:** every tool the bundled CI workflow template runs through `npx`/`uvx`
+  is now version-pinned — `@google/design.md@0.3.0` in the DESIGN.md lint step,
+  plus `yamllint@1.38.0`, `ansible-lint@26.6.0`, and `diff-cover@10.4.1`. Each
+  previously resolved to whatever was latest at run time, so an upstream release
+  could turn a green CI red on an unrelated PR, and every run executed
+  unreviewed code. The `diff-cover` case mattered most: that gate can **fail** a
+  PR on changed-line coverage, so a floating version could silently move the
+  bar. Dependabot cannot see versions embedded in a `run:` block, so these are
+  bumped deliberately.
+
 ### 3.22.0
 
 - **Plan-mode gate for Medium+ changes.** `rules/80-change-size` now instructs
