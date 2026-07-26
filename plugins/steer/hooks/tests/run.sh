@@ -1803,6 +1803,46 @@ mkdir -p "${SPINE_EMPTY}/spec"
 touch "${SPINE_EMPTY}/spec/.version"
 assert_eq "spine: stamped but empty -> damaged" "$(steer_spine_state "${SPINE_EMPTY}")" "damaged"
 
+# ----- steer_tracker_repo: the declared tracker repository (#395) -----
+# Feeds the cross-repo closing-ref decision in /steer:work. Must read a real
+# value and must return NOTHING for anything unresolved, so the caller keeps the
+# ordinary same-repo `Closes #N` path rather than diverting on a guess.
+TR_PLAIN="$(new_repo tr_plain)"
+mkdir -p "${TR_PLAIN}/spec"
+printf 'system: github\nrepository: acme/tracker\n' >"${TR_PLAIN}/spec/tracker.md"
+assert_eq "tracker_repo: plain value" "$(steer_tracker_repo "${TR_PLAIN}")" "acme/tracker"
+
+TR_QUOTED="$(new_repo tr_quoted)"
+mkdir -p "${TR_QUOTED}/spec"
+printf 'repository: "acme/tracker"\n' >"${TR_QUOTED}/spec/tracker.md"
+assert_eq "tracker_repo: quotes stripped" "$(steer_tracker_repo "${TR_QUOTED}")" "acme/tracker"
+
+TR_COMMENT="$(new_repo tr_comment)"
+mkdir -p "${TR_COMMENT}/spec"
+printf '  repository:   acme/tracker   # central tracker\n' >"${TR_COMMENT}/spec/tracker.md"
+assert_eq "tracker_repo: inline comment and padding stripped" \
+	"$(steer_tracker_repo "${TR_COMMENT}")" "acme/tracker"
+
+# The shipped template's unresolved placeholder must read as ABSENT, not as a
+# repository literally named "[owner/repository]" — otherwise every un-inited
+# repo would look foreign and divert away from `Closes #N`.
+TR_HOLDER="$(new_repo tr_holder)"
+mkdir -p "${TR_HOLDER}/spec"
+printf 'repository:                 # "[owner/repository]" for GitHub\n' \
+	>"${TR_HOLDER}/spec/tracker.md"
+steer_tracker_repo "${TR_HOLDER}" >/dev/null &&
+	bad "tracker_repo: unresolved placeholder must read as absent" || ok
+
+TR_EMPTY="$(new_repo tr_empty)"
+mkdir -p "${TR_EMPTY}/spec"
+printf 'system: github\nrepository:\n' >"${TR_EMPTY}/spec/tracker.md"
+steer_tracker_repo "${TR_EMPTY}" >/dev/null &&
+	bad "tracker_repo: empty value must read as absent" || ok
+
+TR_NONE="$(new_repo tr_none)"
+steer_tracker_repo "${TR_NONE}" >/dev/null &&
+	bad "tracker_repo: missing tracker.md must read as absent" || ok
+
 # OR markers (token|token): inject when ANY arm holds.
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR marker true via has-apps arm"
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_INFRA}" && ok || bad "scope: OR marker true via has-iac arm"

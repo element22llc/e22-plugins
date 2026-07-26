@@ -113,6 +113,15 @@ normative copy.
    (`Closes #131`, `Refs #123`, `Spec: …`). The parent closes only after
    **product** validation, not merely because the last code PR merged.
 
+   **Closing keywords do not cross repositories.** GitHub honours `Closes #N`
+   only within the repo the PR is in — a cross-repo form (`Closes owner/repo#N`)
+   renders as a plain cross-reference and the issue silently stays open. So when
+   `/spec/tracker.md` declares a `repository:` other than the code repo — a team
+   centralizing issues in a dedicated tracker repo, or a polyrepo member whose
+   spine lives in the workspace — write `Refs owner/repo#N` and close the issue
+   explicitly after merge via `/steer:tracker-sync close`. The same-repo case is
+   unchanged: `Closes #N`, auto-closed on merge.
+
 ## State model (base = `steer:state` marker)
 
 The **base source of truth is the `steer:state` issue-body marker**. The

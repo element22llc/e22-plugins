@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** a PR no longer emits a closing keyword that cannot close anything.
+  GitHub honours `Closes #N` only within one repository, so when
+  `/spec/tracker.md` declares a `repository:` other than the code repo — a team
+  centralizing issues in a tracker repo, or a polyrepo member — every merge left
+  its issue open, silently, and `/steer:work` never advanced the lifecycle state
+  because it reads the merged PR as the transition evidence. `/steer:work` now
+  compares the declared tracker against `gh repo view --json nameWithOwner` and,
+  **only on proven mismatch**, writes `Refs owner/repo#N` and closes explicitly
+  via `/steer:tracker-sync close`. Any unreadable value keeps the same-repo
+  `Closes #N` path byte-identical. The bundled PR template and `ISSUE-WORKFLOW.md`
+  carry the matching note.
+- **Added:** `steer_tracker_repo` in `lib/scope.sh` reads the declared tracker
+  repository, treating an unresolved `[owner/repository]` placeholder, an empty
+  value, and a missing file alike as absent. There is deliberately no companion
+  helper deriving the repo's own slug from the git remote: a
+  `url.<base>.insteadOf` rewrite, GitHub Enterprise, or a remote not named
+  `origin` each defeat a host-based parser, and every such failure would fail
+  *closed* — restoring the silent bug in the environments hardest to debug.
+
 - **Added:** polyrepo spine unification — a product may now span several repos
   without fragmenting its `/spec`. A **workspace** repo (`spec/workspace.yml`,
   new `workspace` profile) hosts the product spine and owns no code; **member**

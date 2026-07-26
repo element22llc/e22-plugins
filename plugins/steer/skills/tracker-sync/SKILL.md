@@ -228,6 +228,17 @@ parent per issue), which holds for every hop of the chain.
 - **`close/reopen #N`** — close (with resolution mode) or reopen. A reopened
   issue is re-assessed before returning to `inbox`/`exploring`/`ready-for-dev`.
 
+  **This is the only closure path when the tracker repo is not the code repo.**
+  GitHub honours closing keywords only within one repository, so a merged PR
+  carrying `Closes #N` cannot close an issue in a different repo — it renders as
+  a plain cross-reference and the issue silently stays open. Whenever
+  `steer_tracker_repo` (`lib/scope.sh`) and `gh repo view --json nameWithOwner`
+  **prove** a mismatch, the PR must carry `Refs owner/repo#N` instead and the
+  caller must invoke this operation explicitly after the merge. Every write here
+  is already cross-repo-safe — the gateway addresses issues by
+  `repository:` — so no other operation changes. Only positive proof diverts;
+  any unreadable value keeps the ordinary `Closes #N` path untouched.
+
 ## Modes
 
 ### `pull` — tracker → spec (introspect)
