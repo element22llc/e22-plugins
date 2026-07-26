@@ -28,6 +28,24 @@ Implement work from a GitHub issue by following the `work` skill. This is the
 **execution** layer of the issue-first workflow: `/steer:issues` manages the
 backlog and never edits code; `/steer:work` reads an issue and delivers it.
 
+## Guardrails
+
+These hold for the whole run, in every mode.
+
+- **Managed block only.** Progress updates rewrite only the `steer:managed` block,
+  following the concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before
+  write; stop and report on a concurrent edit; fail closed on duplicate/malformed
+  blocks). Human content is never overwritten.
+- **Never auto-resolve product decisions or drift** — those wait for the named
+  human (see `ISSUE-WORKFLOW.md`).
+- **The merge is the human gate** (rule 45) — push and open the PR yourself;
+  never merge or deploy. Watching CI to conclusion and fixing a red build is
+  **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
+  *is* delivery (Delivery mode below); deploy stays human-gated all the same,
+  and graduating the repo is `/steer:protect`'s job, never this skill's.
+- References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
+  autonomy, and Definition of Done rules.
+
 ## Preconditions
 
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
@@ -87,166 +105,50 @@ skill's steps:
 
 ## Subcommands (distinct, idempotent)
 
-- **`start #N`** — resolve + validate the issue (actionable? readiness met for
-  its kind per `ISSUE-WORKFLOW.md`?); detect a conflicting claim or branch;
-  **claim** it (`assign` the invoking GitHub user — self-assign — + set
-  `steer:claimed-by`, `transition` → `in-progress`);
-  **(pr-flow)** create or reuse the branch and **write the local work marker**
-  `spec/.work/<branch>.md` (slashes → underscores) in the marker format below, so
-  the end-of-turn Stop-hook reconciliation recognizes the branch as
-  issue-governed — **in solo-trunk, skip both: stay on `main`, no marker**;
-  load linked specs (`steer:spec-path`, acceptance criteria);
-  begin implementation.
-- **`resume #N`** — reconstruct context from the issue + recorded `steer:branch` /
-  `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
-  branch that no longer exists, a PR that merged/closed while away). **If the
-  marker's session list (below) has a head session different from the current
-  one, surface it as a context source** — offer `claude --resume <id>` to re-enter
-  that conversation, and (if present) the transcript located by globbing
-  `"$CLAUDE_CONFIG_DIR"/projects/*/<id>.jsonl`. Treat it as a best-effort
-  breadcrumb, never authority: the session may be gone or on another machine, so
-  fall back cleanly to reconstruction from the issue + tree. Then record the
-  current session at the head of the list. Continue from the actual lifecycle
-  state.
-- **`status #N`** — **read-only**: report state, claimant, branch, PR, blockers,
-  spec readiness, and outstanding validation. Mutates nothing.
-- **`finish #N`** — run the required validation; update progress (managed block +
-  comment); commit, push, and open-or-update the PR (autonomous — Commit
-  autonomy; merge is not yours); **then watch CI
-  to conclusion** (`gh pr checks --watch`) before transitioning. The first push of
-  the new `issue/<n>` branch sets the upstream — `git push -u origin <branch>` —
-  or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
-  there is no PR: commit straight to `main` with a `Closes #N` trailer (see
-  Closing ref if the tracker lives elsewhere) and watch
-  CI on the trunk push** (`gh run watch`) the same way — the closed issue, not a
-  merged PR, is the terminal evidence. On a red build,
-  diagnose and fix it as part of the same unit of work — re-push and re-watch —
-  until checks are green or a remaining failure is
-  legitimately non-blocking (and said so). Only transition to `validate` once CI is
-  green; hand the reviewer a green PR, not a running or red one. A PR-scoped failure
-  is fixed or commented on the PR, **not** filed as a tracker issue — defer to the
-  CI-failure triage in `ISSUE-WORKFLOW.md` (only a reproducible default-branch
-  failure becomes a `source:ci` bug). **Never mark `done` merely because a PR was
-  opened.** If you have stepped away, the in-turn watch blocks the turn; re-enter
-  monitoring via the harness `/loop` over `gh pr checks` or a background watch —
-  steer ships no background poller.
+| Subcommand | What it does |
+|---|---|
+| **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
+| **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
+| **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
+| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened. |
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent — re-running a
 phase reconciles rather than duplicates.
 
-## Reviewed mode (`--reviewed`)
+**Read the full procedure before executing one:**
+[`modes/subcommands.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/subcommands.md).
 
-`--reviewed` wraps the `start`→`finish` flow above in two **independent** review
-gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
-This is the review-gated path formerly carried by the standalone `deliver` skill; the execution
-itself is unchanged — the same claim, branch, implement, test, PR, and transition
-steps run, with gates added around them. Full protocol, rubric structure, and
-stopping rules: [`REVIEW-LOOP.md`](../../templates/reference/REVIEW-LOOP.md).
+## Optional flags — read the procedure only when the flag is passed
 
-- **Triage first.** If the task is trivial (typo, one-liner, rename), run it
-  without the gates and say they were skipped — honesty over ceremony. The gates
-  earn their cost only on non-trivial work.
-- **Plan gate — independent.** Before implementing, draft the approach (what
-  changes, where, why), then spawn a **fresh reviewer subagent** — a separate
-  context, **not** `steer-reviewer` (that agent reviews existing on-disk code and
-  needs `path:line` evidence a prospective plan can't supply). Give it the plan,
-  the **restated requirements** (what success means, in your words), and the
-  relevant **steer rules** as the rubric. Ask for severity-ranked findings plus a
-  "what's missing" pass. **Revise on every high-severity finding**; never review
-  your own plan.
-- **Human plan sign-off.** Present the vetted plan for sign-off before a
-  significant change (`--reviewed` is the caller opting into gates; rule
-  `95-not-the-gate`). This covers the **plan**; delivery then runs the normal
-  autonomous `finish` — merge still waits for the reviewer.
-- **Implement** via the normal `start`→`finish` flow — do not stand up a second
-  path.
-- **Code gate — independent.** After implementing, run `/code-review` on the diff
-  for correctness bugs and fidelity to the approved plan; in
-  spec/standards-sensitive repos additionally invoke `steer-reviewer` to check the
-  on-disk result against the standards (read-only, no git access — it reviews
-  state, not the diff). In **pr-flow** this gate runs **before** merge; in
-  **solo-trunk** it reviews the trunk commit after the fact and its findings
-  become immediate follow-up fixes — say so rather than implying it blocked a
-  merge.
-- **Bounded fix loop.** Apply fixes for confirmed findings, then re-review.
-  **Cap at 2 rounds**; exit as soon as a round surfaces no high-severity findings.
-  If you stop at the cap with findings still open, say what was left and why.
-- **Report.** Summarize what each gate checked, which findings were resolved, and
-  any residual risk, folded into the `## Recommended next actions` block below.
+- **`--reviewed`** — wrap `start`→`finish` in two independent review gates (plan
+  gate + code gate) plus a bounded fix loop, so the delivery is vetted rather
+  than first-draft. Triage trivial work out of the gates.
+  → procedure: [`modes/reviewed.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/reviewed.md)
+- **`--hotfix`** — the production-incident fast path (rule `62-hotfix`): a
+  `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
+  mandatory traceability follow-up. Relaxes ceremony, never the human gates.
+  Use it **only** for an active incident on a deployed production system.
+  → procedure: [`modes/hotfix.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/hotfix.md)
 
-In **prototype/local mode** there is no tracker and therefore no `/steer:work` to
-run — apply the same `REVIEW-LOOP.md` protocol directly around `/steer:build`'s
-implementation, which is the path that population uses.
-
-## Hotfix mode (`--hotfix`)
-
-`--hotfix` is the **production-incident fast-path** (rule `62-hotfix`). It relaxes
-*ceremony and ordering*, never the human authority gates. Use it **only** when the
-objective entry condition holds: the change targets an already-**deployed
-production** system with real users or data **and** there is an active incident,
-outage, or regression. "Urgent" feature work and pre-MVP repos are **not** hotfixes —
-drop the flag and use the normal flow. A hotfix presupposes a deployed product, so it
-implies **pr-flow** (a solo-trunk pre-MVP repo has nothing to hot-fix).
-
-What changes versus the normal flow:
-
-- **Branch.** Work on a `hotfix/<n>-slug` branch (not `issue/<n>`) so the
-  issue-first Stop hook recognises the sanctioned after-the-fact lane. `<n>` is the
-  issue number once it exists; until then use a short slug and record it when the
-  issue is filed.
-- **Issue after-the-fact.** Don't block the fix on find-or-create. File or backfill
-  the issue as soon as practical and reference it from the PR/commit — the hook
-  won't nag a `hotfix/` branch, but the issue is still required by the follow-up.
-- **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
-  the change-size / high-risk scoping ceremony of rules 60 and 80) — it does **not**
-  remove the PR/merge human gate. No self-merge.
-- **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
-  Deployment (validate in non-prod where feasible) — but, exactly as everywhere
-  else, deploy is **never auto-executed**: pushing the `hotfix/` branch and opening
-  the PR are autonomous (Commit autonomy), while `gh pr merge` and any deploy
-  stay human-gated (this skill does not pre-approve them).
-- **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
-  backfill/finish the issue, write the spec/ADR if a durable decision was made, and
-  append a `/spec/HISTORY.md` entry. Definition of Done is **deferred, not waived**
-  (rule 50) — track the follow-up to closure rather than declaring the hotfix done.
+Neither flag changes the subcommands above; both leave the merge and deploy
+gates exactly where they are.
 
 ## Closing ref — check the tracker repo first
 
-GitHub honours issue-closing keywords **only within one repository**. When
-`/spec/tracker.md` declares a `repository:` that is not the repo the code lives
-in, a `Closes #N` — or even a fully-qualified `Closes owner/repo#N` — renders as
-a plain cross-reference and **the issue silently stays open**. Nothing warns, and
-because this skill treats the merged PR as lifecycle-transition evidence, the
-issue never advances state either.
+GitHub honours issue-closing keywords **only within one repository**. If
+`/spec/tracker.md` declares a `repository:` different from the repo the code
+lives in, `Closes #N` renders as a plain cross-reference and **the issue
+silently stays open** — and because this skill treats the merged PR as
+lifecycle-transition evidence, the issue never advances state either.
 
-Resolve both sides before writing any closing ref:
+- **No `repository:` declared, or the value is absent / a placeholder /
+  unreadable** → write `Closes #N`. Nothing further to do.
+- **A `repository:` is declared** → resolve both sides and compare before
+  writing any closing ref:
+  [`CLOSING-REF.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/CLOSING-REF.md).
 
-```sh
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
-tracker_repo="$(steer_tracker_repo "$PWD")"          # from /spec/tracker.md
-code_repo="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
-```
-
-Compare them **case-insensitively** (GitHub owner/repo names are), then:
-
-| | Closing ref | Closure |
-| --- | --- | --- |
-| Same repo (or either value unreadable) | `Closes #N` — unchanged | GitHub auto-closes on merge |
-| **Proven different** | `Refs owner/repo#N` | **You** close it: `/steer:tracker-sync close` after the merge |
-
-Divert **only on positive proof of a mismatch**. An absent tracker file, an
-unresolved `[owner/repository]` placeholder, an empty value, or a failed
-`gh repo view` all keep `Closes #N` — that is the overwhelmingly common path and
-it must stay exactly as it is. Do not derive the code repo by parsing
-`git remote get-url`: a `url.<base>.insteadOf` rewrite, GitHub Enterprise, or a
-remote not named `origin` each defeat that, and every such failure would silently
-restore the bug.
-
-In **solo-trunk** the same rule applies to the trunk commit trailer: `Closes #N`
-when the tracker is local, otherwise `Refs owner/repo#N` and an explicit close —
-and there the closed issue *is* the terminal evidence, so skipping the explicit
-close leaves the work with no completion record at all.
+Divert **only on positive proof of a mismatch**.
 
 ## Completion semantics
 
@@ -281,35 +183,12 @@ checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
 unconventional but claimed branch is still recognized. Optional housekeeping:
 remove the marker when the issue is closed.
 
-In **`--hotfix` mode**, use `hotfix/<n>-slug` instead — the reconciliation hook
-recognises the `hotfix/` prefix directly as the after-the-fact lane (rule 62), so a
-marker is not required up front; record it when the issue is filed in the follow-up.
+In **`--hotfix` mode**, use `hotfix/<n>-slug` instead (see `modes/hotfix.md`).
 
-### Marker format
-
-The marker is a small Markdown file. The `issue:` / `branch:` lines are written
-once and never rewritten; the session list under the heading is the single source
-of truth for "which Claude Code session(s) worked this branch" — the head is the
-most recent. The Stop hook keeps that head current each turn, and `resume` reads
-it (see above). Session ids are local breadcrumbs and **never** go into tracker
-metadata.
-
-```markdown
-# Work marker — issue 123
-
-- issue: 123
-- branch: issue/123-export-fix
-
-## Claude Code sessions (newest first)
-
-- 64ae4a08-7069-4810-8cd0-d443c8511365
-```
-
-Seed the first session id from `$CLAUDE_CODE_SESSION_ID` (fail-open: if it is
-empty, write the marker without a session bullet — its existence still governs).
-The session heading + list must be the **last** block in the file. If a legacy
-extensionless `spec/.work/<branch>` marker exists, upgrade it: carry over any
-`issue`/`branch` it records, write the new `.md` file, then remove the old one.
+Its exact format — the write-once `issue:`/`branch:` lines, the newest-first
+session list the Stop hook keeps current, seeding from `$CLAUDE_CODE_SESSION_ID`,
+and the legacy extensionless-marker upgrade — is in
+[`WORK-MARKER.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/WORK-MARKER.md).
 
 ## Concurrency & claims
 
@@ -367,19 +246,3 @@ not yet committed to `main`"; "PR open, CI running/red" → the same, watched vi
 `gh run watch` on the trunk push; there is **no awaiting-review row** — a green
 trunk commit that closes the issue with acceptance accepted is `done` (deploy
 still excluded).
-
-## Guardrails
-
-- **Managed block only.** Progress updates rewrite only the `steer:managed` block,
-  following the concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before
-  write; stop and report on a concurrent edit; fail closed on duplicate/malformed
-  blocks). Human content is never overwritten.
-- **Never auto-resolve product decisions or drift** — those wait for the named
-  human (see `ISSUE-WORKFLOW.md`).
-- **The merge is the human gate** (rule 45) — push and open the PR yourself;
-  never merge or deploy. Watching CI to conclusion and fixing a red build is
-  **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
-  *is* delivery (Delivery mode above); deploy stays human-gated all the same,
-  and graduating the repo is `/steer:protect`'s job, never this skill's.
-- References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
-  autonomy, and Definition of Done rules.

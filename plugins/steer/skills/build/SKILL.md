@@ -80,6 +80,25 @@ reconciliation". Then read the `intent.md` statuses and continue from the record
 step — don't restart the interview or re-ask settled questions. This makes new
 flow-state gates self-healing on the next `/steer:build` run.
 
+## PO-mode guardrails
+
+These hold for the whole build, at every step.
+
+- **Never deploy or promote to any environment**, **never touch `/infra`**, and
+  **never use real secrets or real third-party accounts** — generate
+  local-only `.env` values.
+- Everything else may be **built for real**: a Greenfield build is
+  pre-production (High-risk rule's relaxation), so the data model,
+  soft-delete with a visible restore, and library-backed local sign-in are
+  fair game. Record every high-risk choice in the feature's `contract.md`
+  (marked `proposed — dev confirms at review`) and open questions in
+  the feature's `intent.md` → `## Open questions`.
+- Anything that only matters against real users or real data — hard
+  deletes, retention/cleanup jobs, real payment flows, production auth
+  config — gets the *minimum* needed to demo, clearly marked. Tell the PO
+  plainly, e.g. *"sign-in works on your computer; a developer hardens it
+  before real users touch it."*
+
 ## Steps
 
 1. **Repo not set up yet? Bootstrap it yourself (PO-adapted `/steer:init`).**
@@ -150,159 +169,23 @@ flow-state gates self-healing on the next `/steer:build` run.
    approval fields here; an explicit PO statement authorizes the delegated run,
    and the PO never types a command. **Do not start broad implementation before
    the intents are approved.**
-5. **Scaffold the real app.** Replace the starter `apps/web` with the default
-   stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
-   `/steer:init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
-   discipline). Add the app's `apps/<app>/Dockerfile` from the plugin's
-   `templates/docker/` reference (`Dockerfile.node`, or `Dockerfile.python` for a
-   Python service) plus the repo-root `.dockerignore`, adapting the base image to
-   the pinned runtime — CI builds it once present. Draft the initial stack ADR
-   yourself via `/steer:adr` — the PO
-   approves intent, not ADR prose. **This is the change that establishes the
-   stack and layout, so fill the root living docs in it** (Living-docs rule):
-   populate `ARCHITECTURE.md` — the tech-stack table from `mise.toml` /
-   `package.json` / `compose.yaml`, and the apps/packages map from the real
-   layout (every `apps/*` and `packages/*` you just created) — and edit
-   `apps/README.md` so it no longer claims the folder "starts empty" once a real
-   app exists. These are doc upkeep applying a decision already made, not new
-   decisions — no PO sign-off, and the PO never sees them (they're for the dev
-   reviewer).
-6. **Build feature by feature.** Who *owns implementation* depends on whether this
-   repo is GitHub-adopted (`/spec/tracker.md` declares `system: github`):
+5. **Scaffold the real app**, then **6. build feature by feature.** These two
+   steps carry the implementation procedure — the default stack and Dockerfile,
+   the living-docs fill, and the prototype-mode vs governed-mode split that
+   decides whether you implement directly or hand each slice to `/steer:work`.
+   Read them in
+   [`IMPLEMENTATION.md`](${CLAUDE_PLUGIN_ROOT}/skills/build/IMPLEMENTATION.md)
+   before executing. The PO-mode guardrails below apply to both.
 
-   - **Prototype/local mode — the default (greenfield, no GitHub tracker yet).**
-     Issue-first (rule 36) is scoped to `system: github`, so it does not apply
-     here. Build the v0 yourself: for each approved intent write `contract.md`,
-     implement under `/apps` + `/packages`, and write tests in the same unit of
-     work (Definition of Done). Commit coherent units without asking
-     (Commit-autonomy rule). **In PR flow** that's a single `feat/*` build
-     branch, and the work stays local and provisional until the one v0 handoff
-     PR (step 10); **in solo trunk** (chosen in step 1) commit directly to `main`
-     with no branch and no v0 PR — the work is provisional on the trunk until
-     graduation (step 10). Either way this keeps the PO's inner loop fast — no
-     per-feature issue/branch/PR ceremony.
-     **"Prototype mode" relaxes only this ceremony** (issues, per-feature
-     branches/PRs, approval-gate formality) — it does **not** skip the bundled
-     scaffold (step 1) or the spec spine (steps 2–4) or the real-stack app
-     scaffold (step 5). A prototype that hand-rolls `package.json` / build config
-     / CI instead of installing the scaffold, or that ships no `/spec`, has
-     skipped bootstrap, not run it in prototype mode.
-
-   - **Governed mode — repo already GitHub-adopted (`system: github`).**
-     Issue-first applies, so implementation runs through
-     **`/steer:work`**, the sole owner of
-     claim → branch → implement → test → PR → transition — and of adapting that
-     flow to the repo's delivery mode (in solo-trunk it commits straight to `main`
-     and closes the issue from the trunk commit, no branch/PR). For each approved intent
-     (or coherent delivery slice), materialize or reuse a GitHub issue via
-     **`/steer:issues`** (which routes tracker I/O through
-     `/steer:tracker-sync`), then hand that issue to
-     `/steer:work` — **invisibly**: the PO never types a technical
-     command and never needs to see an issue number. You keep the PO conversation,
-     intent approval (step 4), the app scaffold (step 5), the demo (step 8), and
-     the handoff framing (step 10); `work` owns execution. Do **not** branch,
-     implement, or open PRs yourself in this mode, and `work` must **not**
-     re-enter `/steer:build` (no recursion) — drive one slice at a time.
-
-   In **either** mode, as you build UI seed and grow the root `DESIGN.md` from
-   the visual identity you actually implement — swap the placeholder product
-   name and `#000000` colors for the product's real name and tokens, and
-   promote a token or component once the same choice recurs in 3+ places
-   (`Design sources` rule). Don't leave the stub for the dev reviewer.
-7. **Respect the PO-mode guardrails.**
-   - **Never deploy or promote to any environment**, **never touch `/infra`**, and
-     **never use real secrets or real third-party accounts** — generate
-     local-only `.env` values.
-   - Everything else may be **built for real**: a Greenfield build is
-     pre-production (High-risk rule's relaxation), so the data model,
-     soft-delete with a visible restore, and library-backed local sign-in are
-     fair game. Record every high-risk choice in the feature's `contract.md`
-     (marked `proposed — dev confirms at review`) and open questions in
-     the feature's `intent.md` → `## Open questions`.
-   - Anything that only matters against real users or real data — hard
-     deletes, retention/cleanup jobs, real payment flows, production auth
-     config — gets the *minimum* needed to demo, clearly marked. Tell the PO
-     plainly, e.g. *"sign-in works on your computer; a developer hardens it
-     before real users touch it."*
-8. **Run it and demo it.** `mise run dev:setup`, then `pnpm dev` — making sure
-   `.env` exists with the base variables (Stack rule). Give the PO the
-   localhost URL and a plain-language walkthrough of what to click. Iterate
-   with them; spec changes from feedback update the relevant `intent.md` /
-   `contract.md`. **Stay in this loop — do not propose handoff from here.**
-   Handoff has its own gate (step 9), and the PO may take days of real use to
-   get there, possibly across many sessions.
-9. **PO demo-validation gate.** Handoff is *pulled by the PO, not pushed by
-   you*. Your own judgment that the app is done — even the Definition of Done
-   holding — never opens this gate; it is a precondition, not the trigger.
-   Once the PO has actually used the running app and their step-8 feedback is
-   incorporated, you may ask plainly: *"Does this do everything you wanted?
-   Anything missing before a developer takes over?"* Only on their explicit
-   yes: check **PO validated the working demo** in each `intent.md`, set its
-   Status to `validated`, and mark the gate passed in `/spec/BUILD-STATUS.md`
-   (with where the confirmation happened). If the PO says "it's done" or
-   "ready for the developer" unprompted, that is the gate — record it the
-   same way.
-10. **Hand off.** The durable artifact is identical in every mode — the
-    productionization brief in `/spec/PRODUCTIONIZATION.md` (below); only *how it
-    reaches a dev* differs:
-    - **Prototype mode, PR flow** — a single v0 PR for the whole build, its
-      description carrying the brief.
-    - **Prototype mode, solo trunk** — the build is already on `main`; there is
-      no v0 PR. The brief is still written, and the handoff gate is
-      **graduation** via `/steer:protect` (which raises the PR wall for all
-      future work) when a developer joins or you head for real users.
-    - **Governed mode** — each slice already shipped via `/steer:work` as its own
-      issue → delivery (a PR in PR flow, or a `Closes #N` trunk commit in solo
-      trunk), so there is no separate v0 PR; the brief is written once for the
-      build.
-
-    When the demo-validation gate has passed and the Definition of Done holds,
-    first write the durable brief to `/spec/PRODUCTIONIZATION.md` — the **same artifact `/steer:adopt`
-    produces**, so a dev inheriting a PO-built v0 gets the same brief as one
-    inheriting an adopted repo, instead of gaps that evaporate with the PR text.
-    Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` if it doesn't
-    exist yet; if it already does (resumed handoff), reconcile it against the
-    bundled template first (the plugin-wide *Template reconciliation* convention).
-    Capture:
-    - that this is a **PO-built v0 via `/steer:build`**;
-    - the **built-for-real high-risk choices** (marked `proposed` in the
-      contracts) and **remaining stubs** — especially auth;
-    - the gap analysis vs the Definition of Done.
-
-    This code was written to spec under the standards, so dispositions trend
-    **Keep/Refactor** (finish the stubs) — there's no legacy to Rewrite/Reject;
-    leave the disposition column at that default. Product questions stay in the
-    feature intents' `## Open questions` (and `vision.md` for product-level),
-    not here.
-
-    Sync the living docs first: seed the app guide (`/spec/app/README.md` — how
-    to use the app, workflows, roles, in the PO's plain language, from the
-    demo-validated intents) and append the build to `/spec/HISTORY.md` (what was
-    built, why, requested by the PO, refs to the intents and — in PR flow — the
-    PR). **Then reconcile the root living docs as a handoff backstop:** confirm
-    `ARCHITECTURE.md`, `DESIGN.md`, and `apps/README.md` reflect the built v0 and
-    carry no leftover template placeholders — the `[e.g. Node]` stack-table cells
-    and `[web]` / `[core]` map rows, the `#000000` colors and placeholder product
-    name in `DESIGN.md`, the "starts empty" `apps/README.md` line. Filling these
-    in step 5/6 is the rule; this is the catch-all so a stub never reaches the dev
-    reviewer.
-
-    Then hand off per the delivery mode:
-    - **PR flow** — push the branch and open the v0 PR without asking, telling
-      the PO plainly what was opened and that a developer's merge review is the
-      gate (Commit-autonomy rule); its description links to
-      `/spec/PRODUCTIONIZATION.md`, the demo-validated `intent.md` files, and any
-      remaining `## Open questions` across the feature intents / `vision.md` (run
-      `/steer:questions` to work them down). Link the PR in
-      `/spec/BUILD-STATUS.md`. The dev PR review is the gate: it merges to `main`
-      as v0 only with a dev's approval.
-    - **Solo trunk** — there is no PR to open; the v0 is already on `main`. Tell
-      the PO plainly the build is ready for a developer, and recommend graduating
-      via `/steer:protect` (it raises the server-side PR wall and ends trunk
-      mode) when a developer joins or before real users arrive. Record that
-      readiness in `/spec/BUILD-STATUS.md`. The dev review at graduation is the
-      gate — the standards floor (tests, contracts, Definition of Done) already
-      held through the build.
+7. **Respect the PO-mode guardrails** stated at the top of this skill — they
+   are not a step you pass, they hold throughout.
+8-10. **Demo it, take the PO demo-validation gate, then hand off.** Handoff is
+   *pulled by the PO, not pushed by you* — stay in the build/iterate loop until
+   they ask. The demo procedure, the gate's exact wording, and the handoff
+   artifact (identical in every mode) are in
+   [`HANDOFF.md`](${CLAUDE_PLUGIN_ROOT}/skills/build/HANDOFF.md). **Do not
+   propose handoff from the build loop** — read this file only once the PO has
+   asked to wrap up.
 
 ## Recommend the next action
 

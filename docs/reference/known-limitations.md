@@ -198,6 +198,24 @@ What it does instead (rule `26-context-hygiene`; full prose via
   or start a fresh session — with a pre-composed hand-off — saying plainly that
   acting is your call, not something it can do.
 
+One compaction behaviour is worth knowing about, because it shapes how steer's
+skills are written. An invoked skill's content stays in the conversation for the
+rest of the session, and when auto-compaction fires Claude Code re-attaches the
+most recent invocation of each skill — but keeps only **the first ~5,000 tokens
+of each**, with re-attached skills sharing a combined budget. A skill whose body
+runs past that cap silently loses its tail mid-run, and the tail is typically
+where guardrails sit.
+
+steer works with that rather than against it: guardrails, coupling rules, and
+output contracts live near the **top** of every `SKILL.md`, and per-mode or
+per-phase procedure lives in sibling files the skill reads just-in-time for the
+path it is actually executing. So on a long `/steer:work` or `/steer:audit` run
+that compacts, the safety rules survive by construction, and the step-by-step
+detail is simply re-read when needed. A CI gate caps each `SKILL.md` body so
+this cannot regress (see [Configuration](configuration.md)). Invoking many
+skills in one session can still push older ones out of the shared re-attach
+budget entirely — a fresh session is the fix there.
+
 ## What the hooks do (and don't) enforce
 
 Even when hooks fire, only one of them actually blocks an action. Be honest about

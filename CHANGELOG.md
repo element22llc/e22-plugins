@@ -38,6 +38,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   compare them), and `ARCHITECTURE-DIAGRAMS.md` explains the naming. The
   design-export lifecycle no longer tells a shipped product to delete the folder
   holding its living architecture diagram.
+- **Fixed:** a long-running skill no longer loses its **guardrails at
+  compaction**. Claude Code re-attaches an invoked skill after auto-compaction
+  but keeps only the **first 5,000 tokens** of it, and seven skill bodies had
+  grown past that — `issues`, `audit`, `work`, `sync`, `tracker-sync`, `init`,
+  `build`. What fell past the cut was precisely the standing safety content:
+  `/steer:work` lost its **Guardrails** (including *the merge is the human
+  gate*), `/steer:issues` lost **Guardrails + Coupling rules**, `/steer:audit`
+  lost its **read-only output contract** and `all` mode. Because compaction only
+  fires on long runs, the protections disappeared exactly when a run had gone on
+  long enough to need them. Two fixes, applied together: every skill now
+  **front-loads** its guardrails, coupling rules, and output contracts near the
+  top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
+  the dispatcher reads **just-in-time** for the one path it is executing (a tool
+  result, so it never competes for the re-attach budget). No instruction was
+  dropped — the largest body fell from ~6,400 to ~2,400 tokens, and total
+  always-resident skill prose fell ~26%.
+- **Added:** `check_context_budget.py` now gates a third always-on surface — a
+  **per-skill `SKILL.md` body ceiling** of 17,500 bytes (the 5,000-token
+  compaction cap at a pessimistic 3.5 B/token). Unlike the rules and listing
+  ratchets this is a hard ceiling derived from harness behaviour, not a
+  baseline: it does not move down as bodies shrink, and it must not be raised to
+  fit new prose. `--report` gained a largest-body row and a per-skill
+  percentage-of-cap table for release PRs.
+- **Fixed:** `check_fixtures.py`'s workflow-authority check scanned only
+  `SKILL.md`, so factoring a skill body across sibling files could relocate the
+  `draft->approved` transition-owner marker out of view. Authority is a property
+  of the *skill*, so it now scans the whole skill directory — as
+  `check_standards.py`'s script-grant check already did.
 - **Fixed:** hooks now judge **the repo being acted on**, not the session `cwd`.
   With a git repo nested inside another work tree — a vendored or gitignored
   clone, a `tools/` checkout, a polyrepo member cloned inside its workspace — the
