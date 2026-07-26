@@ -22,28 +22,28 @@ validation, and operation. Treat it as infrastructure.
 
 ```text
 /spec
-├── vision.md                 # Why this product exists — plus an `## Open questions` section for product-level ambiguities
-├── users.md                  # Who uses it and what they need
-├── glossary.md               # Shared vocabulary — PO, devs, and Claude all read this
-├── HISTORY.md                # Action history — append-only what/why/who-asked/refs log (see /steer:reference traceability)
-├── tracker.md                # Which issue tracker this product uses + reference conventions (client-agnostic)
-├── BUILD-STATUS.md           # PO builds only — /steer:build flow state (step, per-feature progress, handoff gate)
-├── PRODUCTIONIZATION.md      # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
-├── app/                      # App knowledge docs — usage, workflows, roles, configuration, troubleshooting, release notes
+├── vision.md                   # Why this product exists — plus an `## Open questions` section for product-level ambiguities
+├── users.md                    # Who uses it and what they need
+├── glossary.md                 # Shared vocabulary — PO, devs, and Claude all read this
+├── HISTORY.md                  # Action history — append-only what/why/who-asked/refs log (see /steer:reference traceability)
+├── tracker.md                  # Which issue tracker this product uses + reference conventions (client-agnostic)
+├── BUILD-STATUS.md             # PO builds only — /steer:build flow state (step, per-feature progress, handoff gate)
+├── PRODUCTIONIZATION.md        # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)
+├── app/                        # App knowledge docs — usage, workflows, roles, configuration, troubleshooting, release notes
 │   └── README.md
-├── design/                   # Design-export home + the living architecture diagram
+├── design/                     # Design-export home + the living architecture diagram
 │   ├── README.md
-│   ├── source.md             # Product-level design-source provenance (Greenfield only)
-│   └── architecture.md       # Living global architecture diagram (Mermaid by default; opt-in LikeC4) — linked from ARCHITECTURE.md
-├── sources/                  # Versioned home for recurring PO source documents, maintained by /steer:intake
+│   ├── source.md               # Product-level design-source provenance (Greenfield only)
+│   └── architecture-diagram.md # Living global architecture diagram (Mermaid by default; opt-in LikeC4) — linked from the root ARCHITECTURE.md
+├── sources/                    # Versioned home for recurring PO source documents, maintained by /steer:intake
 │   └── README.md
-├── reference/                # Durable one-off source/research material feeding the spec (inventories, vendor metadata, DDL dumps, discovery docs) — created on demand by /steer:tidy, no shipped README
+├── reference/                  # Durable one-off source/research material feeding the spec (inventories, vendor metadata, DDL dumps, discovery docs) — created on demand by /steer:tidy, no shipped README
 ├── features/
 │   └── [feature-id]/
-│       ├── intent.md         # The what and why — PO-facing
-│       └── contract.md       # Behavior rules, API/data model, owning app(s)/package(s)
+│       ├── intent.md           # The what and why — PO-facing
+│       └── contract.md         # Behavior rules, API/data model, owning app(s)/package(s)
 └── decisions/
-    └── 000N-[slug].md        # Architecture decisions worth remembering
+    └── 000N-[slug].md          # Architecture decisions worth remembering
 ```
 
 The canonical templates are shipped by this plugin. Use `/steer:spec <id>`

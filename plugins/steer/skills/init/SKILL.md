@@ -149,8 +149,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`) — and the
    design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
    `/spec/design/source.md` (from `design-source.md`),
-   `/spec/design/architecture.md` (from `design-architecture.md` — the living
-   global architecture diagram `ARCHITECTURE.md` links to), and
+   `/spec/design/architecture-diagram.md` (from
+   `design-architecture-diagram.md` — the living global architecture diagram
+   `ARCHITECTURE.md` links to), and
    `/spec/sources/README.md` (from `sources-readme.md` — the versioned home for
    recurring PO documents, maintained by `/steer:intake`). Install the
    bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs

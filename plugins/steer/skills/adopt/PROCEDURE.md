@@ -214,7 +214,7 @@ Phases 3–5 learned about the app — as-built, dev confirms), `/spec/HISTORY.m
 seeded with the adoption itself as the first entry, and the design/sources homes
 the MANIFEST maps: `/spec/design/README.md` + `/spec/design/source.md` (the
 design-export home; on a brownfield repo `source.md` usually stays a stub —
-design provenance lives per feature), `/spec/design/architecture.md` (the living
+design provenance lives per feature), `/spec/design/architecture-diagram.md` (the living
 global architecture diagram — seed it from the as-built choices Phase 6
 inventoried and link it from `ARCHITECTURE.md`), and `/spec/sources/README.md`
 (the versioned home for recurring PO documents, maintained by `/steer:intake`). **Adapt to the existing

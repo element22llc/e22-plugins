@@ -188,19 +188,20 @@ its full rationale and how-to.
 
 It covers, in detail:
 
-- **Why the diagram lives in `spec/design/architecture.md`, not `ARCHITECTURE.md`** —
-  the "link, don't inline" contract keeps `ARCHITECTURE.md` narrative + tables and
-  gives the diagram one canonical, renderable home.
+- **Why the diagram lives in `spec/design/architecture-diagram.md`, not
+  `ARCHITECTURE.md`** — the "link, don't inline" contract keeps `ARCHITECTURE.md`
+  narrative + tables, gives the diagram one canonical, renderable home, and keeps
+  the two basenames distinct.
 - **Tier 1 — Mermaid (default, zero toolchain)** — which diagram types to use
   (`flowchart`/C4-style context + `sequenceDiagram` for the request flow), and that
   it renders natively in GitHub and the docs site with nothing to install.
 - **Tier 2 — LikeC4 (opt-in)** — when a hand-drawn Mermaid diagram stops scaling:
   define a C4 model in `*.likec4`, get navigable views, and export Mermaid back into
-  `architecture.md` so the two tiers compose. Includes the inert `diagrams:render`
-  mise task and how to activate it.
+  `architecture-diagram.md` so the two tiers compose. Includes the inert
+  `diagrams:render` mise task and how to activate it.
 - **Drift discipline** — the diagram is updated in the same PR that reshapes the
-  system (living-docs rule `32`); on Tier 2 `architecture.md` is *generated* — edit
-  the `.likec4` source, not the Mermaid.
+  system (living-docs rule `32`); on Tier 2 `architecture-diagram.md` is
+  *generated* — edit the `.likec4` source, not the Mermaid.
 - **Tool choices considered** — why Mermaid + LikeC4 (diagram-as-code, git-diffable,
   Claude-authorable) over GUI/JSON tools (Excalidraw, draw.io) or diagram-editor
   libraries (ReactFlow).
