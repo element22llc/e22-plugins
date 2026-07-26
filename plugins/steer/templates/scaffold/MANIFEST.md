@@ -70,11 +70,25 @@ The product-level spec artifacts live with the other spec templates in
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
 
-Six more `templates/spec/` templates also live there but are instantiated **on
+Eight more `templates/spec/` templates also live there but are instantiated **on
 demand** by their skills — not copied at bootstrap — so they are not in this
 install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
 `adr.md` (`/steer:adr`), `build-status.md` + `productionization.md`
-(`/steer:build`), and `source-manifest.md` (`/steer:intake`).
+(`/steer:build`), `source-manifest.md` (`/steer:intake`), and the two polyrepo
+markers (`/steer:init` / `/steer:adopt`) — `product.md` → `spec/PRODUCT.md` for a
+**member** and `workspace.yml` → `spec/workspace.yml` for the **workspace**. Their
+presence is the `has-product-pointer` / `has-workspace-manifest` trait, so a
+single-repo product must never get either. Both live under `spec/` because the
+manifest is product-level truth (which repos the product is made of), the same
+reason the rest of the spine does.
+
+**A polyrepo member's spine is deliberately partial.** A member installs the Core
+map *minus* the product-level artifacts — no `vision.md`, `users.md`,
+`glossary.md`, `HISTORY.md`, `spec/app/`, `spec/features/`, or `spec/tracker.md`;
+those live once, in the workspace. It keeps `spec/decisions/`, `spec/design/`, and
+gains `spec/PRODUCT.md`. `steer_spine_state` still reports `damaged` for such a
+repo, which is why `/steer:sync` and `/steer:doctor` must check
+`has-product-pointer` before treating a missing product-level file as damage.
 
 ## GitHub templates (instantiate from `../github/`)
 
@@ -115,8 +129,8 @@ A managed repo has a **profile** that decides which stack-specific extras the
 bootstrap lays down on top of the universal core (mise pinning, the `/spec`
 spine, CI hygiene — installed for *every* profile). The profile is recorded as a
 machine-readable marker on the product `CLAUDE.md`'s `## Profile` section —
-`<!-- steer:profile=app -->` (or `infra` / `service` / `library` / `cli`),
-sibling of the `## Delivery mode` marker. **Absent marker → `app`** (back-compat:
+`<!-- steer:profile=app -->` (or `infra` / `service` / `library` / `cli` /
+`workspace`), sibling of the `## Delivery mode` marker. **Absent marker → `app`** (back-compat:
 every repo predating profiles was an app monorepo). `/steer:init` and
 `/steer:adopt` detect, confirm, and stamp it; `/steer:sync` back-fills `=app`
 when missing. Rules do **not** read this marker — always-on rules self-gate on
@@ -156,6 +170,7 @@ Every Node profile is a **pnpm workspace** (monorepo-by-default) — `library` a
 | `profiles/app/claude/launch.json` | `.claude/launch.json` | **app** — Claude Desktop **Code tab** preview-server config (preview pane + auto-verify screenshots). Ships one `web` config running `pnpm dev` on port 3000 (`autoPort` on for parallel worktree sessions). `pnpm dev` is the sanctioned Node-only run command (rule 15) — it delegates to the app's own `dev` script (e.g. `apps/web`), so the preview is a no-op until `/steer:init` has scaffolded the first app. Assumes `mise run dev:setup` has brought services/DB up first. Repoint at `mise run dev` (and add a second `configuration`) once the repo goes polyglot and uncomments the mise `[tasks.dev]` fan-out. Convenience only — the Code tab auto-detects a config when this is absent; schema is pre-stable (`version 0.0.1`), so no gate enforces it. **Never overwrite** a repo's existing `launch.json`. |
 | `profiles/service/apps/README.md` | `apps/README.md` | **service**. |
 | `profiles/infra/mise.toml` | `mise.toml` (repo root) | **infra** — **replaces** core mise (tofu/terragrunt/ansible/uv + the `node` runtime + `compose`/worktree wiring). Skip Layer 1; adapt `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. |
+| `profiles/workspace/README.md` | `README.md` | **workspace** — **replaces** the core README: this repo hosts the spine and no application code. The member manifest itself is a spec artifact, installed from `../spec/workspace.yml` (see "Spec spine" above), not a Layer-2 file. |
 
 `library` and `cli` add **no** Layer-2 files — they are Core + Node baseline,
 with the skill adapting `package.json` only. A monorepo that *also* has a nested

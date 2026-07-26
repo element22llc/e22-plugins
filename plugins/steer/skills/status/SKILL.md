@@ -101,6 +101,15 @@ outside issues, say the report covers tracked issues only — don't guess at the
    stop.
 3. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took.
+4. **Determine report scope** via `steer_polyrepo_role` (`lib/scope.sh`). A
+   single-repo product covers itself — nothing to say. In a **polyrepo**, this
+   report goes to a client, so scope has to be explicit: state which members it
+   covers and how each was read (local checkout / gateway), and list any member
+   reachable neither way under an **Not covered** heading. Never let a partial
+   report read as the whole product — an omitted member is indistinguishable from
+   a member with nothing to report. From a **member** repo, say plainly that the
+   report covers one repo of several and point at the workspace. Detail:
+   `/steer:reference polyrepo`.
 
 ## Resolve the reporting period
 

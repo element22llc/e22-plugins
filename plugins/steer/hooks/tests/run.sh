@@ -920,6 +920,33 @@ out="$(run_hook orient-session.sh "$(session_json "${OR1C}" or1c)")"
 oq_grep "orient: handed-off build falls back to orientation" 'need to know skill names' "${out}"
 oq_ngrep "orient: handed-off build does not nag resume" 'Resume the guided build' "${out}"
 
+# Polyrepo topology note — role-specific, ADDITIVE to the generic orientation,
+# and completely absent in a single-repo product (the zero-cost guarantee).
+OR1W="$(new_repo orient1w)"
+managed_spine "${OR1W}"
+mkdir -p "${OR1W}/spec"
+printf 'schema: 1\n' >"${OR1W}/spec/workspace.yml"
+out="$(run_hook orient-session.sh "$(session_json "${OR1W}" or1w)")"
+oq_grep "orient: workspace role announced" 'is the \*\*workspace\*\*' "${out}"
+oq_grep "orient: workspace warns on partial reports" 'uncovered' "${out}"
+oq_ngrep "orient: workspace note is not the member note" 'is a \*\*member\*\*' "${out}"
+oq_grep "orient: polyrepo note is additive" 'need to know skill names' "${out}"
+
+OR1M="$(new_repo orient1m)"
+managed_spine "${OR1M}"
+printf 'workspace:\n' >"${OR1M}/spec/PRODUCT.md"
+out="$(run_hook orient-session.sh "$(session_json "${OR1M}" or1m)")"
+oq_grep "orient: member role announced" 'is a \*\*member\*\*' "${out}"
+oq_grep "orient: member warned off cross-repo Closes" 'Refs owner/repo#N' "${out}"
+oq_ngrep "orient: member note is not the workspace note" 'is the \*\*workspace\*\*' "${out}"
+oq_grep "orient: member note is additive" 'need to know skill names' "${out}"
+
+# A single-repo product must see NO polyrepo text at all.
+OR1S="$(new_repo orient1s)"
+managed_spine "${OR1S}"
+out="$(run_hook orient-session.sh "$(session_json "${OR1S}" or1s)")"
+oq_ngrep "orient: single-repo product pays zero polyrepo bytes" 'polyrepo' "${out}"
+
 # Bare/foreign spec/ (no .version) -> check-unmanaged-repo.sh owns it -> silent.
 OR2="$(new_repo orient2)"
 mkdir -p "${OR2}/spec"
@@ -1712,6 +1739,171 @@ TRAITS_GH="$(new_repo traits_gh)"
 mkdir -p "${TRAITS_GH}/spec"
 printf 'system: github\n' >"${TRAITS_GH}/spec/tracker.md"
 steer_tracker_is_github "${TRAITS_GH}" && ok || bad "scope: tracker-github true for system: github"
+
+# ----- polyrepo topology: role detection, traits, and the spine-state split -----
+# A single-repo product must match NEITHER role and pay zero always-on bytes.
+TRAITS_MONO="$(new_repo traits_mono)"
+printf '{}\n' >"${TRAITS_MONO}/package.json"
+steer_polyrepo_role "${TRAITS_MONO}" >/dev/null && bad "polyrepo: single-repo product has no role" || ok
+steer_inject_when_ok polyrepo "${TRAITS_MONO}" && bad "polyrepo: rule skipped for single-repo product" || ok
+
+TRAITS_WS="$(new_repo traits_ws)"
+mkdir -p "${TRAITS_WS}/spec"
+printf 'schema: 1\n' >"${TRAITS_WS}/spec/workspace.yml"
+assert_eq "polyrepo: spec/workspace.yml -> workspace role" "$(steer_polyrepo_role "${TRAITS_WS}")" "workspace"
+steer_inject_when_ok polyrepo "${TRAITS_WS}" && ok || bad "polyrepo: rule injects at the workspace"
+steer_inject_when_ok has-workspace-manifest "${TRAITS_WS}" && ok || bad "polyrepo: has-workspace-manifest true"
+steer_inject_when_ok has-product-pointer "${TRAITS_WS}" && bad "polyrepo: workspace is not a member" || ok
+
+TRAITS_MEM="$(new_repo traits_mem)"
+mkdir -p "${TRAITS_MEM}/spec"
+printf 'workspace:\n' >"${TRAITS_MEM}/spec/PRODUCT.md"
+assert_eq "polyrepo: spec/PRODUCT.md -> member role" "$(steer_polyrepo_role "${TRAITS_MEM}")" "member"
+steer_inject_when_ok polyrepo "${TRAITS_MEM}" && ok || bad "polyrepo: rule injects at a member"
+steer_inject_when_ok has-product-pointer "${TRAITS_MEM}" && ok || bad "polyrepo: has-product-pointer true"
+
+# Malformed repo carrying BOTH markers: workspace wins, deterministically.
+TRAITS_BOTH="$(new_repo traits_both)"
+mkdir -p "${TRAITS_BOTH}/spec"
+printf 'schema: 1\n' >"${TRAITS_BOTH}/spec/workspace.yml"
+printf 'workspace:\n' >"${TRAITS_BOTH}/spec/PRODUCT.md"
+assert_eq "polyrepo: both markers -> workspace wins" "$(steer_polyrepo_role "${TRAITS_BOTH}")" "workspace"
+
+# The profile marker gains a `workspace` arm; an unknown/mis-cased token still
+# falls back to app (the pre-existing contract).
+PROF_WS="$(new_repo prof_ws)"
+printf '## Profile\n<!-- steer:profile=workspace -->\n' >"${PROF_WS}/CLAUDE.md"
+assert_eq "profile: workspace marker read" "$(steer_repo_profile "${PROF_WS}")" "workspace"
+PROF_WSBAD="$(new_repo prof_wsbad)"
+printf '## Profile\n<!-- steer:profile=Workspace -->\n' >"${PROF_WSBAD}/CLAUDE.md"
+assert_eq "profile: mis-cased workspace falls back to app" "$(steer_repo_profile "${PROF_WSBAD}")" "app"
+
+# A member's spine is partial BY DESIGN — product-level artifacts live in the
+# workspace. Without the member split it would report `damaged` forever and
+# /steer:sync would "repair" it by recreating the split-brain spine.
+. "${HOOKS}/lib/spine.sh"
+SPINE_MEM="$(new_repo spine_mem)"
+mkdir -p "${SPINE_MEM}/spec"
+touch "${SPINE_MEM}/spec/.version" "${SPINE_MEM}/spec/PRODUCT.md"
+assert_eq "spine: member with pointer only -> managed" "$(steer_spine_state "${SPINE_MEM}")" "managed"
+SPINE_WS="$(new_repo spine_ws)"
+mkdir -p "${SPINE_WS}/spec"
+touch "${SPINE_WS}/spec/.version" "${SPINE_WS}/spec/workspace.yml"
+for _f in vision.md users.md glossary.md tracker.md HISTORY.md; do touch "${SPINE_WS}/spec/${_f}"; done
+assert_eq "spine: workspace holds the full product set -> managed" "$(steer_spine_state "${SPINE_WS}")" "managed"
+# The member split must NOT excuse a genuinely broken single-repo spine.
+SPINE_BROKEN="$(new_repo spine_broken)"
+mkdir -p "${SPINE_BROKEN}/spec"
+touch "${SPINE_BROKEN}/spec/.version"
+for _f in vision.md users.md tracker.md HISTORY.md; do touch "${SPINE_BROKEN}/spec/${_f}"; done
+assert_eq "spine: missing glossary still damaged" "$(steer_spine_state "${SPINE_BROKEN}")" "damaged"
+# A stamped spine with neither the product set nor a pointer is damaged, not member.
+SPINE_EMPTY="$(new_repo spine_empty)"
+mkdir -p "${SPINE_EMPTY}/spec"
+touch "${SPINE_EMPTY}/spec/.version"
+assert_eq "spine: stamped but empty -> damaged" "$(steer_spine_state "${SPINE_EMPTY}")" "damaged"
+
+# ----- steer_action_root / steer_git_c_target: act on the right repo (#396) -----
+# A nested work tree makes cwd the WRONG anchor: the upward walk stops at the
+# outer repo while the tool operates on the inner one.
+AR_OUT="$(new_repo ar_outer)"
+mkdir -p "${AR_OUT}/backend"
+printf '' >"${AR_OUT}/backend/.git"
+assert_eq "action_root: no path falls back to cwd's root" \
+	"$(steer_action_root "${AR_OUT}" "")" "${AR_OUT}"
+assert_eq "action_root: relative path resolves to the nested repo" \
+	"$(steer_action_root "${AR_OUT}" "backend/src/x.ts")" "${AR_OUT}/backend"
+assert_eq "action_root: absolute path resolves to the nested repo" \
+	"$(steer_action_root "${AR_OUT}" "${AR_OUT}/backend/src/x.ts")" "${AR_OUT}/backend"
+assert_eq "action_root: path in the outer repo stays outer" \
+	"$(steer_action_root "${AR_OUT}" "docs/readme.md")" "${AR_OUT}"
+# A not-yet-existing file (a Write creating one, possibly in a new dir) must be
+# attributed to the repo that WILL contain it, not fall back to cwd.
+assert_eq "action_root: unborn file in a new dir still resolves to its repo" \
+	"$(steer_action_root "${AR_OUT}" "backend/brand/new/dir/file.ts")" "${AR_OUT}/backend"
+# Fail-soft: an unresolvable path must not lose the cwd answer.
+assert_eq "action_root: unresolvable path falls back to cwd's root" \
+	"$(steer_action_root "${AR_OUT}" "/nonexistent/elsewhere/x.ts")" "${AR_OUT}"
+
+assert_eq "git_c_target: extracts -C target" \
+	"$(steer_git_c_target 'git -C backend push origin main')" "backend"
+assert_eq "git_c_target: extracts from a compound command" \
+	"$(steer_git_c_target 'cd /tmp && git -C backend push && echo ok')" "backend"
+steer_git_c_target 'git push origin main' >/dev/null &&
+	bad "git_c_target: plain push has no -C target" || ok
+steer_git_c_target 'echo "no git here"' >/dev/null &&
+	bad "git_c_target: non-git command has no target" || ok
+
+# End to end through the REAL trunk-push gate, both directions of #396.
+# (1) False negative — the dangerous one. Outer is pr-flow, inner is solo-trunk
+# WITH a graduation signal: the gate must ask about the inner repo's push.
+AR_FN_O="$(new_repo ar_fn_outer)"
+printf '## Delivery mode\n<!-- steer:delivery-mode=pr-flow -->\n' >"${AR_FN_O}/CLAUDE.md"
+mkdir -p "${AR_FN_O}/backend/.github/workflows"
+printf '' >"${AR_FN_O}/backend/.git"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_FN_O}/backend/CLAUDE.md"
+printf 'on: push\n' >"${AR_FN_O}/backend/.github/workflows/deploy.yml"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_FN_O}" arfn 'git -C backend push origin main')")"
+assert_ask "action_root: solo-trunk push into a nested repo is gated" "${out}"
+
+# (2) False positive. Outer is solo-trunk with a signal, inner is pr-flow:
+# a branch push into the inner repo is autonomous and must NOT be gated.
+AR_FP_O="$(new_repo ar_fp_outer)"
+mkdir -p "${AR_FP_O}/.github/workflows" "${AR_FP_O}/backend"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_FP_O}/CLAUDE.md"
+printf 'on: push\n' >"${AR_FP_O}/.github/workflows/deploy.yml"
+printf '' >"${AR_FP_O}/backend/.git"
+printf '## Delivery mode\n<!-- steer:delivery-mode=pr-flow -->\n' >"${AR_FP_O}/backend/CLAUDE.md"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_FP_O}" arfp 'git -C backend push origin main')")"
+assert_empty "action_root: pr-flow push into a nested repo is not gated" "${out}"
+
+# (3) The single-repo path must be untouched: solo-trunk + signal, plain push.
+AR_SOLO="$(new_repo ar_solo)"
+mkdir -p "${AR_SOLO}/.github/workflows"
+printf '## Delivery mode\n<!-- steer:delivery-mode=solo-trunk -->\n' >"${AR_SOLO}/CLAUDE.md"
+printf 'on: push\n' >"${AR_SOLO}/.github/workflows/deploy.yml"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${AR_SOLO}" arsolo 'git push origin main')")"
+assert_ask "action_root: single-repo trunk push still gated (unchanged)" "${out}"
+
+# ----- steer_tracker_repo: the declared tracker repository (#395) -----
+# Feeds the cross-repo closing-ref decision in /steer:work. Must read a real
+# value and must return NOTHING for anything unresolved, so the caller keeps the
+# ordinary same-repo `Closes #N` path rather than diverting on a guess.
+TR_PLAIN="$(new_repo tr_plain)"
+mkdir -p "${TR_PLAIN}/spec"
+printf 'system: github\nrepository: acme/tracker\n' >"${TR_PLAIN}/spec/tracker.md"
+assert_eq "tracker_repo: plain value" "$(steer_tracker_repo "${TR_PLAIN}")" "acme/tracker"
+
+TR_QUOTED="$(new_repo tr_quoted)"
+mkdir -p "${TR_QUOTED}/spec"
+printf 'repository: "acme/tracker"\n' >"${TR_QUOTED}/spec/tracker.md"
+assert_eq "tracker_repo: quotes stripped" "$(steer_tracker_repo "${TR_QUOTED}")" "acme/tracker"
+
+TR_COMMENT="$(new_repo tr_comment)"
+mkdir -p "${TR_COMMENT}/spec"
+printf '  repository:   acme/tracker   # central tracker\n' >"${TR_COMMENT}/spec/tracker.md"
+assert_eq "tracker_repo: inline comment and padding stripped" \
+	"$(steer_tracker_repo "${TR_COMMENT}")" "acme/tracker"
+
+# The shipped template's unresolved placeholder must read as ABSENT, not as a
+# repository literally named "[owner/repository]" — otherwise every un-inited
+# repo would look foreign and divert away from `Closes #N`.
+TR_HOLDER="$(new_repo tr_holder)"
+mkdir -p "${TR_HOLDER}/spec"
+printf 'repository:                 # "[owner/repository]" for GitHub\n' \
+	>"${TR_HOLDER}/spec/tracker.md"
+steer_tracker_repo "${TR_HOLDER}" >/dev/null &&
+	bad "tracker_repo: unresolved placeholder must read as absent" || ok
+
+TR_EMPTY="$(new_repo tr_empty)"
+mkdir -p "${TR_EMPTY}/spec"
+printf 'system: github\nrepository:\n' >"${TR_EMPTY}/spec/tracker.md"
+steer_tracker_repo "${TR_EMPTY}" >/dev/null &&
+	bad "tracker_repo: empty value must read as absent" || ok
+
+TR_NONE="$(new_repo tr_none)"
+steer_tracker_repo "${TR_NONE}" >/dev/null &&
+	bad "tracker_repo: missing tracker.md must read as absent" || ok
 
 # OR markers (token|token): inject when ANY arm holds.
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_APP}" && ok || bad "scope: OR marker true via has-apps arm"

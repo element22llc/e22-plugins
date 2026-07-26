@@ -123,6 +123,24 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    was changed since the last sync, **offer the newly-matching overlay
    additively** — never remove the prior profile's files (clobber-free).
 
+   **Establish the polyrepo role** via `steer_polyrepo_role` (`lib/scope.sh`)
+   before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
+   the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
+   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md` — are absent
+   **by design**; they live once in the workspace repo. **Never reinstall them
+   here.** Reconcile only the member's own surface (scaffold, CI, `mise.toml`,
+   `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp `/spec/.version` as usual.
+   Treating a member as a damaged spine and "repairing" it recreates exactly the
+   split-brain the topology removes. In a **workspace**, reconcile the spine
+   normally but skip the app-code surface (`package.json`, `compose.yaml`,
+   `apps/`) — it owns none. Detail: `/steer:reference polyrepo`.
+
+   **Members sync independently.** There is no workspace mode that syncs every
+   member in one pass; run `/steer:sync` in each repo. Because the plugin version
+   is stamped per repo, members can settle on different versions — when syncing a
+   member, say which version the workspace is on if you can read it, so the drift
+   is visible rather than silent.
+
 4. **Apply pending structural migrations.** Open the ledger at
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md`. Walk its entries
    oldest→newest. For each entry whose introducing version is **greater than

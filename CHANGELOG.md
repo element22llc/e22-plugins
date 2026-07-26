@@ -7,6 +7,76 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** hooks now judge **the repo being acted on**, not the session `cwd`.
+  With a git repo nested inside another work tree — a vendored or gitignored
+  clone, a `tools/` checkout, a polyrepo member cloned inside its workspace — the
+  upward `.git` walk from `cwd` stopped at the *outer* repo while the tool wrote
+  to the *inner* one, so delivery mode, profile, graduation signals and tracker
+  were all read off the wrong repository. The trunk-push gate was the sharp edge,
+  wrong in both directions: it asked about a `pr-flow` push that is autonomous,
+  and — the dangerous one — stayed **silent** on a direct-to-`main` push into a
+  `solo-trunk` repo that had outgrown pre-MVP. `steer_action_root` resolves from
+  the acted-on path (`tool_input.file_path` for editor writes, the `-C <dir>`
+  target for git), and `steer_git_c_target` extracts the target the push matcher
+  already parsed and then discarded. Wired into `check-bash-actions`,
+  `check-write-nudges`, `check-version-pins` and `format-on-write`. A file that
+  does not exist yet resolves via its nearest existing ancestor; no path or an
+  unresolvable one falls back to `cwd`, so the single-repo case is unchanged.
+  `cd <dir> && git push` is still `cwd`-resolved — only `-C` names its target.
+
+- **Fixed:** a PR no longer emits a closing keyword that cannot close anything.
+  GitHub honours `Closes #N` only within one repository, so when
+  `/spec/tracker.md` declares a `repository:` other than the code repo — a team
+  centralizing issues in a tracker repo, or a polyrepo member — every merge left
+  its issue open, silently, and `/steer:work` never advanced the lifecycle state
+  because it reads the merged PR as the transition evidence. `/steer:work` now
+  compares the declared tracker against `gh repo view --json nameWithOwner` and,
+  **only on proven mismatch**, writes `Refs owner/repo#N` and closes explicitly
+  via `/steer:tracker-sync close`. Any unreadable value keeps the same-repo
+  `Closes #N` path byte-identical. The bundled PR template and `ISSUE-WORKFLOW.md`
+  carry the matching note.
+- **Added:** `steer_tracker_repo` in `lib/scope.sh` reads the declared tracker
+  repository, treating an unresolved `[owner/repository]` placeholder, an empty
+  value, and a missing file alike as absent. There is deliberately no companion
+  helper deriving the repo's own slug from the git remote: a
+  `url.<base>.insteadOf` rewrite, GitHub Enterprise, or a remote not named
+  `origin` each defeat a host-based parser, and every such failure would fail
+  *closed* — restoring the silent bug in the environments hardest to debug.
+
+- **Added:** polyrepo spine unification — a product may now span several repos
+  without fragmenting its `/spec`. A **workspace** repo (`spec/workspace.yml`,
+  new `workspace` profile) hosts the product spine and owns no code; **member**
+  repos carry `spec/PRODUCT.md` pointing at it, plus their own ADRs,
+  `ARCHITECTURE.md` and code. Both markers live under `spec/` — the manifest is
+  product-level truth, so it belongs with the spine rather than as steer's only
+  unnamespaced root file (and one rename from moon's `.moon/workspace.yml`). All of `spec/features/**` lives in the workspace, so a feature
+  spanning repos has exactly one `intent.md` instead of none or several.
+- **Added:** `lib/scope.sh` gains `steer_polyrepo_role` and three inject-when
+  predicates — `polyrepo` (either role), `has-workspace-manifest`, and
+  `has-product-pointer`. `orient-session.sh` uses the role to emit a short,
+  role-specific SessionStart note in a polyrepo repo. Deliberately **not** an
+  always-on rule: the ruleset is capped on its on-disk total, which every
+  consumer pays even for a rule scoped to a minority of repos — so a single-repo
+  product pays **zero** bytes for this feature, in the rules payload and at
+  SessionStart alike.
+- **Added:** `/steer:reference polyrepo` (`templates/reference/POLYREPO.md`) —
+  the topology in full: role split, artifact homes, resolving the spine from a
+  member, honest report scope, and what does and does not cross the repo edge
+  (sub-issues and Projects v2 do; milestones, closing keywords, drift gates and
+  CI do not). It leads by recommending a monorepo whenever the split is not
+  externally mandated.
+- **Fixed:** `steer_spine_state` no longer reports a polyrepo member as
+  `damaged`. A member's spine is partial by design, so requiring the
+  product-level files sent `/steer:setup` into a permanent repair loop and would
+  have had `/steer:sync` reinstall the very files the topology de-duplicates —
+  recreating the split-brain spine. Members are now validated against
+  `PRODUCT.md` alone; a genuinely incomplete single-repo spine still reports
+  `damaged`.
+- **Changed:** `/steer:setup`, `/steer:init`, `/steer:next`, `/steer:status` and
+  `/steer:audit` are topology-aware. Reports must now name the members they
+  covered and flag any they could reach neither locally nor over the GitHub
+  gateway as **uncovered**, so a fraction of a product is never presented as the
+  whole.
 - **Fixed:** `scripts/scan-invocations.sh` is reformatted to satisfy `shfmt`
   (one brace-placement nit). Formatting only, no behavior change — the script
   sat in a blind spot where the repo's pre-commit hook hard-gated `shfmt` but

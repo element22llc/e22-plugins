@@ -23,6 +23,39 @@ steer_tracker_is_github() {
 	grep -iq '^[[:space:]]*system:[[:space:]]*github\b' "${_tracker}" 2>/dev/null
 }
 
+# steer_tracker_repo <repo-root> — prints the tracker's declared `repository:`
+# value from spec/tracker.md ("owner/name" for GitHub), or nothing when absent,
+# empty, or still the unresolved "[owner/repository]" placeholder.
+steer_tracker_repo() {
+	_tr="${1:-.}/spec/tracker.md"
+	[ -f "${_tr}" ] || return 1
+	_v="$(sed -n 's/^[[:space:]]*repository:[[:space:]]*//p' "${_tr}" 2>/dev/null | head -n 1)"
+	# Strip a trailing inline comment and surrounding quotes/whitespace.
+	_v="${_v%%#*}"
+	_v="$(printf '%s' "${_v}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s/^"//; s/"$//')"
+	case "${_v}" in
+	'' | '['*) return 1 ;;
+	esac
+	printf '%s' "${_v}"
+}
+
+# NOTE — there is deliberately NO companion helper that derives this repo's own
+# "owner/name" from the git remote. Deriving it by parsing `git remote get-url`
+# is unreliable in exactly the setups that matter: a `url.<base>.insteadOf`
+# rewrite (corporate proxies, ssh-for-https) makes git report a URL with no
+# github.com host in it at all, and GitHub Enterprise, a remote not named
+# `origin`, and a bare clone each break a host-based parser differently. Every
+# one of those failures is a FALSE NEGATIVE — the parser cannot prove a mismatch,
+# so the caller keeps `Closes #N` and the silent-non-closure bug survives in the
+# environments hardest to debug.
+#
+# The comparison therefore lives in the skills (`/steer:work`,
+# `/steer:tracker-sync`), which resolve the current repo authoritatively via
+# `gh repo view --json nameWithOwner` — correct under rewrites, GHE, and any
+# remote name — and which are already talking to GitHub anyway. Keeping the `gh`
+# call out of this file also preserves its contract: sourced by every PreToolUse
+# hook, so no subprocess and no network.
+
 # steer_repo_does_iac <repo-root> — true when the repo does infrastructure-as-code,
 # whether as the whole repo (a root-level Terraform/OpenTofu/Ansible/Pulumi repo,
 # the infra profile) OR as a nested `/infra` dir inside an app monorepo. Broader
@@ -44,6 +77,39 @@ steer_repo_does_iac() {
 	return 1
 }
 
+# steer_polyrepo_role <repo-root> — prints the repo's role in a polyrepo product,
+# or nothing when the product lives in a single repo (the overwhelmingly common
+# case, and the one that must cost zero always-on bytes):
+#
+#   workspace  a `spec/workspace.yml` member manifest — this repo hosts THE
+#              product `/spec` spine and owns no application code.
+#   member     a `spec/PRODUCT.md` pointer — this repo implements part of a
+#              product whose spine lives in a sibling workspace repo.
+#   (empty)    neither marker → a single-repo product.
+#
+# Both markers live under `spec/` on purpose. The manifest is product-level truth
+# — which repos this product is made of — so it belongs with the rest of the
+# spine, not loose at the root where it would be steer's only unnamespaced root
+# file and would sit a rename away from moon's `.moon/workspace.yml`.
+#
+# Ground-truth filesystem check on two files, mirroring the has-* predicates: the
+# topology is derived from disk, never from the CLAUDE.md profile marker, so the
+# two can no more disagree here than they can for has-apps / has-infra. A repo
+# carrying BOTH files is malformed; workspace wins (the manifest is the stronger,
+# harder-to-create signal) and /steer:audit reports the contradiction.
+steer_polyrepo_role() {
+	_r="${1:-.}"
+	[ -f "${_r}/spec/workspace.yml" ] && {
+		printf 'workspace'
+		return 0
+	}
+	[ -f "${_r}/spec/PRODUCT.md" ] && {
+		printf 'member'
+		return 0
+	}
+	return 1
+}
+
 # steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
 # inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
@@ -54,6 +120,13 @@ steer_inject_when_one() {
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	# polyrepo — true in EITHER role (workspace host or member). The topology
+	# rule is the same text for both sides; the roles differ in what they own,
+	# which the rule states inline. A single-repo product matches neither and
+	# pays nothing.
+	polyrepo) steer_polyrepo_role "$2" >/dev/null ;;
+	has-workspace-manifest) [ -f "$2/spec/workspace.yml" ] ;;
+	has-product-pointer) [ -f "$2/spec/PRODUCT.md" ] ;;
 	# code-project — true in 'code' work mode. The knowledge-vs-code decision is
 	# made ONCE in inject-standards.sh (steer_work_mode) and a knowledge folder
 	# skips EVERY marked rule in the inject loop before this predicate is reached,

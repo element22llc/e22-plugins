@@ -100,7 +100,13 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 
 	CWD="$(steer_field cwd)"
 	[ -n "${CWD}" ] || CWD="."
-	if ROOT="$(steer_repo_root "${CWD}")" &&
+	# Gate the repo being PUSHED, not the session cwd: the matcher above already
+	# recognises `git -C <dir> push`, so honour that target when resolving the
+	# root. Without this, a nested work tree is judged by its parent's delivery
+	# mode and graduation signals — silently letting a solo-trunk direct-to-main
+	# push through, or blocking an autonomous pr-flow one (#396).
+	PUSH_TARGET="$(steer_git_c_target "${CMD}")" || PUSH_TARGET=""
+	if ROOT="$(steer_action_root "${CWD}" "${PUSH_TARGET}")" &&
 		# Only solo-trunk pushes are in scope: in pr-flow the push lands on a
 		# work branch and the server-side protection wall owns the merge gate.
 		[ "$(steer_delivery_mode "${ROOT}")" = "solo-trunk" ]; then

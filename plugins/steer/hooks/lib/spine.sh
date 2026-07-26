@@ -16,6 +16,16 @@
 # count as complete. Keep in sync with the scaffold and init step 4.
 STEER_SPINE_REQUIRED="vision.md users.md glossary.md tracker.md HISTORY.md"
 
+# STEER_SPINE_REQUIRED_MEMBER — the required set for a POLYREPO MEMBER, whose spine
+# is partial BY DESIGN: the product-level artifacts live once in the workspace repo,
+# so a member carries only the pointer. Without this split a member would report
+# `damaged` on every check and /steer:sync would "repair" it by reinstalling the
+# very product-level files the topology exists to de-duplicate — recreating the
+# split-brain spine. Detected by the presence of spec/PRODUCT.md, inlined here as a
+# single file test rather than sourcing lib/scope.sh, so spine.sh keeps its current
+# dependency surface (repo-root.sh only) and stays usable on the hook hot path.
+STEER_SPINE_REQUIRED_MEMBER="PRODUCT.md"
+
 # steer_spine_state <repo_root> — prints exactly one of:
 #   unmanaged  no spec/ dir                                → bootstrap (init/adopt)
 #   foreign    spec/ exists but no spec/.version           → not an spec spine
@@ -38,7 +48,14 @@ steer_spine_state() {
 	# the whole string under zsh and misclassifies a managed repo as damaged.
 	# This helper is sourced by the /steer:setup skill snippet, which the model
 	# runs in the host shell (zsh on macOS), so it must be correct there too.
-	_rest="${STEER_SPINE_REQUIRED}"
+	# A polyrepo member's product-level artifacts live in the workspace repo, not
+	# here; requiring them would report `damaged` by design. See
+	# STEER_SPINE_REQUIRED_MEMBER above.
+	if [ -f "${_root}/spec/PRODUCT.md" ]; then
+		_rest="${STEER_SPINE_REQUIRED_MEMBER}"
+	else
+		_rest="${STEER_SPINE_REQUIRED}"
+	fi
 	while [ -n "${_rest}" ]; do
 		_f="${_rest%% *}"
 		case "${_rest}" in
