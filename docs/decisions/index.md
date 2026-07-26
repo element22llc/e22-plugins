@@ -31,6 +31,14 @@ New ADRs default to **Proposed** — the fixture suite asserts this. An ADR beco
 
 ## Plugin-level decisions
 
-Changes to the plugin's own behavior are recorded in `CHANGELOG.md` under
-`## steer` → `### [Unreleased]`, and the rationale lives in the PR. See
-[Release process](../contributing/release-process.md).
+ADRs are an artifact of the **`/spec` spine in a managed product repo**. The
+`e22-plugins` repo itself keeps **no ADR log**: changes to the plugin's own
+behavior are recorded in `CHANGELOG.md` under `## steer` → `### [Unreleased]`,
+with the rationale — alternatives, consequences, what was rejected — in the PR
+description. See [Release process](../contributing/release-process.md).
+
+A decision too large for a PR description is a signal to split the PR, not to
+introduce a record type. Adding a decision log for the plugin would be a change to
+how the repo works, so it goes through a convention-only PR first — see
+[`CONTRIBUTING.md`](https://github.com/element22llc/e22-plugins/blob/main/CONTRIBUTING.md)
+→ "Working in this repo".
