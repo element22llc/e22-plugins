@@ -31,6 +31,18 @@ New ADRs default to **Proposed** — the fixture suite asserts this. An ADR beco
 
 ## Plugin-level decisions
 
-Changes to the plugin's own behavior are recorded in `CHANGELOG.md` under
+Routine changes to the plugin's own behavior are recorded in `CHANGELOG.md` under
 `## steer` → `### [Unreleased]`, and the rationale lives in the PR. See
 [Release process](../contributing/release-process.md).
+
+An **architectural** decision about the plugin — one that is hard to reverse or
+cuts across many skills, rules and templates — gets its own numbered ADR on this
+page instead, because a CHANGELOG bullet cannot carry the alternatives and
+consequences such a choice needs. Same template and same status lifecycle as a
+product ADR.
+
+### Records
+
+| ADR | Status | Summary |
+|---|---|---|
+| [0001 — Polyrepo workspace repository](0001-polyrepo-workspace-repository.md) | Proposed | Support polyrepo products via a workspace repo that is also the spine repo, with members as manifest-driven clones rather than submodules. |

@@ -98,7 +98,9 @@ nav:
   - Team rollout:
       - Known limitations: reference/known-limitations.md
       - Launch checklist: team-rollout/launch-checklist.md
-  - Decisions: decisions/index.md
+  - Decisions:
+      - Overview: decisions/index.md
+      - 0001 — Polyrepo workspace repository: decisions/0001-polyrepo-workspace-repository.md
   - Contributing:
       - Documentation: contributing/documentation.md
       - Release process: contributing/release-process.md
