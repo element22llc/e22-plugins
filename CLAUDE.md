@@ -90,6 +90,14 @@ plugins/steer/
   one-shot script, since removed), so every prior `vX.Y.Z` already has a tag +
   Release. These live outside `plugins/steer/`, so they ship nothing and need no
   changelog entry.
+- **Architectural decisions about the plugin get an ADR** under
+  `docs/decisions/NNNN-slug.md` — a choice that is hard to reverse or cuts across
+  many skills, rules, and templates needs the alternatives and consequences a
+  CHANGELOG bullet cannot carry. Routine behavior changes stay CHANGELOG + PR.
+  Use the plugin's own `templates/spec/adr.md` structure, default the status to
+  **Proposed** (only a human ratifies), and add the page to the `mkdocs.yml` nav
+  plus the records table in `docs/decisions/index.md`. Docs-only, so no changelog
+  entry.
 - `rules/*.md` is **always-on** context injected every session — keep it lean and
   imperative. Push long prose into `templates/reference/*` and surface it via a
   skill, not into `rules/`.

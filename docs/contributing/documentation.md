@@ -50,6 +50,13 @@ New pages start from the repo-root `docs-templates/` directory:
 | `reference.md` | A reference/catalog page. |
 | `concept.md` | A conceptual explainer. |
 
+An **ADR** is the exception: it starts from the plugin's own bundled
+`plugins/steer/templates/spec/adr.md`, not from `docs-templates/`, so the
+plugin's decisions use the same template the plugin ships to product repos. It
+lands as `docs/decisions/NNNN-slug.md` and must be added to the `mkdocs.yml` nav
+and the records table on the Decisions page (`validate_docs.py` rejects orphan
+pages).
+
 The scaffolds live outside `docs/` because Zensical builds every file under
 `docs_dir` (it has no `exclude_docs` setting), so keeping them out of the tree is
 what stops them from becoming pages.

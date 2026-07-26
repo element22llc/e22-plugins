@@ -1,8 +1,10 @@
 # Decisions (ADRs)
 
 Hard-to-reverse or cross-cutting choices are recorded as **Architecture Decision
-Records (ADRs)**. In a managed product repo, ADRs live in the `/spec` spine; for
-the plugin itself, decisions are captured in `CHANGELOG.md` and PRs.
+Records (ADRs)**. In a managed product repo, ADRs live in the `/spec` spine. This
+repo has no `/spec` spine, so the plugin's *own* architectural decisions are
+recorded here instead — see [Plugin-level decisions](#plugin-level-decisions) for
+the line between an ADR and a plain `CHANGELOG.md` entry.
 
 ## When to write an ADR
 
