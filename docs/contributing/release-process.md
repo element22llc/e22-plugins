@@ -34,8 +34,8 @@ plugin and need no entry — this includes the documentation site itself.
 ## Before you push
 
 ```bash
-mise run check   # fast gate: lint, plugin-check, actions (pre-commit equivalent)
-mise run ci      # full gate: adds fixtures, test, shell, hooktests, version-scan, docs:check
+mise run check   # fast gate: lint, plugin-check, actions, shell, docs:check (pre-commit superset)
+mise run ci      # full gate: adds fixtures, test, hooktests, version-scan, delivery-gates
 ```
 
 `mise run ci` is exactly what CI runs. See [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md)

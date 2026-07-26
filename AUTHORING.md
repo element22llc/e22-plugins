@@ -25,6 +25,7 @@ regardless — this matrix is for tight iteration on a single failure.
 | `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` — regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
+| any other `*.sh` — `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
 | `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
 | `.github/workflows/**` | `actions` | `actionlint` |
 | `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |

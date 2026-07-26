@@ -7,6 +7,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `scripts/scan-invocations.sh` is reformatted to satisfy `shfmt`
+  (one brace-placement nit). Formatting only, no behavior change — the script
+  sat in a blind spot where the repo's pre-commit hook hard-gated `shfmt` but
+  `mise run shell` treated it as advisory, so the drift could only surface as a
+  rejected commit.
 - **Changed:** the bundled CI workflow template refreshes three pins —
   `actions/setup-node` `v6` → `v7` (the action moved to ESM and dropped a dummy
   `NODE_AUTH_TOKEN` export; neither affects the advisory `ai-slop` job's

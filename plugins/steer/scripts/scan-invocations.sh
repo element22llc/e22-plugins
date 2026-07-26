@@ -125,7 +125,7 @@ if [ -f "$_ref" ]; then
 	done
 fi
 
-in_set() { case "$2" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
+in_set() { case "$2" in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
 emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 
