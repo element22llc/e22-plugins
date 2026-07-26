@@ -111,7 +111,17 @@ _dfound=0
 for _adr in "${ROOT}"/spec/decisions/[0-9]*.md; do
 	[ -f "${_adr}" ] || continue
 	_dfound=1
-	_dstatus="$(sed -n 's/^- \*\*Status:\*\* *//p' "${_adr}" | head -1)"
+	# Accept BOTH header forms: the bundled adr.md template writes a blockquote
+	# (`> Status: …`) while hand-written ADRs often use a bold list item
+	# (`- **Status:** …`). Matching only one silently reported every
+	# template-created ADR as 'unknown', so a Proposed ADR never surfaced as
+	# awaiting ratification.
+	_dstatus="$(sed -n -e 's/^- \*\*Status:\*\* *//p' -e 's/^> *Status: *//p' "${_adr}" | head -1)"
+	# An unfilled template still carries the whole enum — say so rather than
+	# reporting the first alternative as if it were a real decision state.
+	case "${_dstatus}" in
+	*"|"*) _dstatus='unresolved-template' ;;
+	esac
 	printf -- '- %s: %s\n' "$(basename "${_adr}")" "${_dstatus:-unknown}"
 done
 [ "${_dfound}" -eq 1 ] || printf -- '- none\n'

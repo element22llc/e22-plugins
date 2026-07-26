@@ -2176,6 +2176,10 @@ mkdir -p "${WS1}/spec/features/checkout" "${WS1}/spec/decisions" "${WS1}/spec/.w
 	printf '### Q-999 Placeholder <!-- steer:placeholder -->\n- status: open\n'
 } >"${WS1}/spec/features/checkout/intent.md"
 printf '# ADR\n\n- **Status:** Proposed\n' >"${WS1}/spec/decisions/0001-stack.md"
+# Blockquote form — what the bundled adr.md template actually writes.
+printf '# ADR\n\n> Status: Accepted\n> Ratified via: in-session\n' >"${WS1}/spec/decisions/0002-event-bus.md"
+# Template never filled in: the whole enum must not read as a real state.
+printf '# ADR\n\n> Status: Proposed | Accepted | Superseded by [link] | Deprecated\n' >"${WS1}/spec/decisions/0003-unfilled.md"
 printf -- '- issue: 42\n- branch: issue/42-checkout\n' >"${WS1}/spec/.work/issue_42.md"
 run_sh "${SNAP}" "${WS1}"
 assert_rc "snapshot: managed repo exits 0" "${rc}" 0
@@ -2184,6 +2188,8 @@ assert_has "snapshot: feature status surfaced" "${out}" "checkout: status=draft 
 assert_has "snapshot: real open question surfaced" "${out}" "Q-001"
 assert_has "snapshot: question fields surfaced" "${out}" "impact: blocking"
 assert_has "snapshot: proposed ADR surfaced" "${out}" "0001-stack.md: Proposed"
+assert_has "snapshot: blockquote ADR status surfaced" "${out}" "0002-event-bus.md: Accepted"
+assert_has "snapshot: unfilled ADR template flagged" "${out}" "0003-unfilled.md: unresolved-template"
 assert_has "snapshot: work claim surfaced" "${out}" "issue_42.md"
 assert_has "snapshot: claim detail surfaced" "${out}" "issue/42-checkout"
 assert_has "snapshot: tracker system declared, live state deferred" "${out}" "system: github"

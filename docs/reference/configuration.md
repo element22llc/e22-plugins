@@ -36,6 +36,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `53-autonomous-loops.md` | Autonomous loops — automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
+| `61-gate-prompts.md` | Answering a human gate in-session — a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed → Accepted`, intent `draft → approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
 | `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |

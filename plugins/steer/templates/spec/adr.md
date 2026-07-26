@@ -3,6 +3,9 @@
 > Status: Proposed | Accepted | Superseded by [link] | Deprecated
 > Date: YYYY-MM-DD
 > Deciders: @handle, @handle
+> Ratified by: [handle — set when Status becomes Accepted]
+> Ratified at: [YYYY-MM-DD]
+> Ratified via: [in-session | offline-review]
 
 ## Context
 

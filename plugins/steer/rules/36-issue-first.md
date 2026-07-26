@@ -29,8 +29,8 @@ create the issue.
   `/steer:report` re-grant them via their own `allowed-tools`. A create that
   is *still* blocked is a **host-permission gate, not a missing issue** —
   don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue. (Full
-  rationale: ISSUE-WORKFLOW.md → "Host gating".)
+  `!gh issue create …` under their own identity, then continue.
+  (ISSUE-WORKFLOW.md → "Host gating".)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
 **Calling work a "prototype" does not waive it** — the only durable opt-out

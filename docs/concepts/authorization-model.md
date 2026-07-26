@@ -178,6 +178,28 @@ grants the bundled plugin helper scripts its body — including a factored-out
   trunk-push gate (`check-bash-actions.sh`) surfaces the first `git push` each
   session for a human yes once a local graduation signal stands, until
   `/steer:protect` graduates the repo.
+- **Product and architecture decisions** — ratifying a `Proposed` ADR, approving
+  a feature intent, signing off a `--reviewed` plan. Claude proposes; the named
+  human decides. Unlike the three above, these are **answerable in-session** (see
+  the note below).
+
+!!! note "Answerable in-session — the channel, not the authority"
+    A gate requires the deciding *human*, never a particular channel. Rule
+    `61-gate-prompts.md` therefore lets Claude collect the answer where that human
+    already is: an **Approve · Reject · Decide later** prompt carrying the actual
+    tradeoff (an ADR's rejected alternatives and negative consequences, an intent's
+    criteria and locked scope, a plan's residual risk). On `Approve` the owning
+    skill writes the transition and stamps *who*, *when*, and the **channel**
+    (`in-session` vs `offline-review`), plus one `HISTORY.md` entry — so
+    self-ratification, which is legitimate in a solo repo, stays auditable.
+    `Decide later` leaves every field untouched, so the artifact stays
+    `Proposed`/`draft` exactly as before.
+
+    **Merge, deploy, real secrets, `/infra`, and protected-branch pushes are never
+    promptable** — asking does not authorize them. A merge review in particular
+    cannot be an in-session "yes": the reviewer reads the diff on the PR, and that
+    diff is not what a prompt showed. These gates became *answerable*, not
+    *removable*. Full protocol: `/steer:reference gates`.
 
 !!! note "Watching CI is not crossing the gate"
     After a push, `/steer:work finish` watches CI to conclusion and fixes a red

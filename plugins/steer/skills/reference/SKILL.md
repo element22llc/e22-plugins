@@ -1,17 +1,17 @@
 ---
 name: reference
-description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts (shareable Claude Artifacts), or polyrepo (a product spanning several repos). Read-only loader."
+description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts (shareable Claude Artifacts), gates (answering a gate in-session), or polyrepo (a product spanning several repos). Read-only loader."
 when_to_use: >-
   Use for any tooling/convention question or stack-default rationale, living-
   docs/tracker/drift questions, a feature built from a design export or
   screenshots, keeping a long multi-phase run lean across compaction, the system
-  architecture diagram, rendering a shareable Artifact, or a product whose spine
-  spans several repos.
-argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | polyrepo]"
+  architecture diagram, rendering a shareable Artifact, ratifying an ADR or
+  approving an intent in-session, or a product whose spine spans several repos.
+argument-hint: "[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]"
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts,polyrepo -->
+<!-- steer:modes conventions,traceability,design-sources,context-hygiene,architecture-diagrams,artifacts,gates,polyrepo -->
 
 # Reference prose loader
 
@@ -29,6 +29,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |
 | `artifacts` | `ARTIFACTS.md` | How a skill renders a shareable page as a Claude Artifact: when to, the derived-view discipline, CSP/inline mechanics, the styling contract (`DESIGN.md` tokens or the house default), the temp-path write invariant, the fillable-page return leg, and the Markdown fallback. |
+| `gates` | `GATES.md` | Ratifying an ADR, approving an intent, or signing off a plan **in-session**: the three-option prompt, what it must show, how the decision is recorded, and the gates no prompt can satisfy. |
 | `polyrepo` | `POLYREPO.md` | A product spanning several repos: the workspace/member split, where each spec artifact lives, resolving the spine from a member, honest report scope, and what crosses the repo edge (sub-issues yes, closing keywords no, drift gates no). |
 
 ## `conventions`
@@ -244,6 +245,33 @@ It covers, in detail:
 This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
 (`/steer:explain`, `/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`,
 `/steer:help`).
+
+## gates
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/GATES.md`
+
+It covers, in detail:
+
+- **What the prompt changes — and what it does not.** A gate requires the deciding
+  *human*, never a particular channel; the in-session prompt removes a round trip,
+  not the decision. `Decide later` reproduces today's behaviour exactly, so the
+  change is strictly additive.
+- **The three promptable gates** — ADR `Proposed → Accepted`, intent
+  `draft → approved`, `--reviewed` plan sign-off — each keeping its existing owner,
+  single writer, and preconditions (a failed blocking-question gate means the
+  prompt is never offered).
+- **Prompt shape** — `Approve · Reject · Decide later`, and the per-gate minimum
+  the prompt must show (an ADR's rejected alternatives and negative consequences;
+  an intent's criteria and locked scope; a plan's residual risk). Never pre-select,
+  never infer approval from ambient agreement, never bundle two decisions.
+- **Recording it** — transition + who + when + **channel**, plus one
+  `HISTORY.md` entry. Legitimate self-ratification vs. the unrecorded kind that is
+  the actual audit hole; and the wrong-decider case.
+- **Never promptable** — PR merge, deploy, real secrets, `/infra`, protected-branch
+  pushes. Gates become answerable, never removable.
+
+This backs the always-on rule `61-gate-prompts` and the gate-owning skills
+(`/steer:adr`, `/steer:spec approve`, `/steer:work --reviewed`).
 
 ## polyrepo
 
