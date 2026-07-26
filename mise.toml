@@ -115,6 +115,14 @@ run = ["sh plugins/steer/hooks/tests/run.sh"]
 description = "Scan the repo for version pins that violate policy/versions.yml"
 run = ["sh plugins/steer/scripts/scan-version-pins.sh ."]
 
+[tasks."rules:preview"]
+description = "Show the always-on ruleset a real session receives (which rules inject, which are scoped out, and the byte cost)"
+# An authoring aid, not a gate — deliberately absent from `check` / `ci`.
+# Runs the real inject-standards.sh + lib/scope.sh, so it cannot drift from what
+# a session actually gets. `mise run rules:preview -- --knowledge` / `--repo
+# <path>` / `--full`.
+run = ["sh scripts/rules-preview.sh"]
+
 [tasks."gen:copilot"]
 description = "Regenerate the Copilot artifacts: instructions + path-scoped instructions (from rules/), prompt files (from skills/), custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
 run = [

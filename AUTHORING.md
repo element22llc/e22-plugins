@@ -196,6 +196,28 @@ order** by their numeric prefix into the always-on session context.
 - Never put first-run-only content (placeholder resolution) in a rule — it would
   re-fire each session; that lives in the `init` skill.
 
+### Previewing what a session actually gets
+
+A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
+marker, so the injected payload **differs per consumer repo** — and a
+knowledge-work folder drops every marked rule. Neither the file on disk nor
+`check_context_budget.py`'s total tells you what a given repo receives:
+
+```bash
+mise run rules:preview                        # what this repo gets
+mise run rules:preview -- --repo ../some-app  # what a consumer repo gets
+mise run rules:preview -- --knowledge         # a non-code (PO) folder
+mise run rules:preview -- --full              # also dump the injected text
+```
+
+It prints a per-rule inject/skip table with the scope token that decided each
+one, the bytes reclaimed by the skips, and the payload total. Use it after
+adding or re-scoping a rule to confirm the marker fires where you expect.
+
+The preview runs the **real** `hooks/inject-standards.sh` for the bundle and the
+**real** `lib/scope.sh` predicates for the table, so it cannot drift from live
+behaviour. It is an authoring aid, not a gate — deliberately not in `check`/`ci`.
+
 ## Hook authoring
 
 Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
