@@ -117,14 +117,19 @@ plugins/steer/
 The dev loop is driven by `mise` (run `mise tasks` to list everything):
 
 - **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
-  actionlint). This is a superset of the installed pre-commit hooks: the
-  pre-commit tier runs only the lighter hygiene checks (ruff, `check_plugin.py`,
-  `claude plugin validate plugins/steer`, docs-sync, actionlint, shell), while
-  `check` adds `check_standards.py`, the copilot sync checks, the changelog
-  release validator, and the marketplace-manifest validation.
+  actionlint + shell + docs:check). This is a strict superset of the installed
+  pre-commit hooks — a green `check` is never followed by a rejected `git
+  commit`. The pre-commit tier runs only the lighter hygiene checks (ruff,
+  `check_plugin.py`, `claude plugin validate plugins/steer`, docs-sync,
+  actionlint, shellcheck/shfmt), while `check` adds `check_standards.py`, the
+  copilot sync checks, the changelog release validator, and the
+  marketplace-manifest validation. **Keep the superset property:** when you add
+  a pre-commit hook, wire its `mise` task into `check`'s `depends`, and keep the
+  `shell` task's globs covering every `*.sh` that pre-commit's `types: [shell]`
+  matches.
 - **Before push / PR — full gate:** `mise run ci` — exactly what CI runs (adds
-  `fixtures`, `test`, `shell`, `hooktests`, `version-scan`, `docs:check`, and
-  `delivery-gates` on top of `check`). `delivery-gates` runs the two PR-only
+  `fixtures`, `test`, `hooktests`, `version-scan`, and `delivery-gates` on top
+  of `check`, which already carries `shell` and `docs:check`). `delivery-gates` runs the two PR-only
   branch-diff checks (`check_changelog.py --base` and `check_docs_impact.py
   --base`) against `origin/main`, so a missing CHANGELOG or docs update is caught
   here instead of failing CI after you push. It fail-opens when `origin/main`
@@ -142,6 +147,12 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
 - **Fast iteration:** when one gate fails, re-run just that script —
   `uv run python scripts/check_standards.py`, `… scripts/check_plugin.py`,
   `… scripts/check_fixtures.py`, or `sh plugins/steer/hooks/tests/run.sh`.
+- **Editing a rule?** `mise run rules:preview` shows the always-on payload a
+  real session receives — a per-rule inject/skip table with the `inject-when`
+  token that decided each one, plus the byte total. Add `-- --repo <path>` for a
+  consumer repo, `-- --knowledge` for a non-code folder, `-- --full` to dump the
+  text. It drives the real hook and the real scope predicates, so it can't drift
+  from live behaviour. An authoring aid, not a gate.
 - **Adding a skill / rule / hook / scaffold file?** See
   [`AUTHORING.md`](AUTHORING.md) for the frontmatter schema, rule
   numbering, hook rules, and a "what I touched → what to run" matrix. Repo-local

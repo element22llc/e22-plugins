@@ -25,6 +25,7 @@ regardless — this matrix is for tight iteration on a single failure.
 | `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` — regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
+| any other `*.sh` — `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
 | `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
 | `.github/workflows/**` | `actions` | `actionlint` |
 | `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
@@ -194,6 +195,28 @@ order** by their numeric prefix into the always-on session context.
   `plugins/steer/templates/reference/*` and point to them.
 - Never put first-run-only content (placeholder resolution) in a rule — it would
   re-fire each session; that lives in the `init` skill.
+
+### Previewing what a session actually gets
+
+A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
+marker, so the injected payload **differs per consumer repo** — and a
+knowledge-work folder drops every marked rule. Neither the file on disk nor
+`check_context_budget.py`'s total tells you what a given repo receives:
+
+```bash
+mise run rules:preview                        # what this repo gets
+mise run rules:preview -- --repo ../some-app  # what a consumer repo gets
+mise run rules:preview -- --knowledge         # a non-code (PO) folder
+mise run rules:preview -- --full              # also dump the injected text
+```
+
+It prints a per-rule inject/skip table with the scope token that decided each
+one, the bytes reclaimed by the skips, and the payload total. Use it after
+adding or re-scoping a rule to confirm the marker fires where you expect.
+
+The preview runs the **real** `hooks/inject-standards.sh` for the bundle and the
+**real** `lib/scope.sh` predicates for the table, so it cannot drift from live
+behaviour. It is an authoring aid, not a gate — deliberately not in `check`/`ci`.
 
 ## Hook authoring
 
