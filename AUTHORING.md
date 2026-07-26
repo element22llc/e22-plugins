@@ -70,6 +70,28 @@ be unique. The full field set actually used in this repo:
 > `plugins/steer/.claude-plugin/plugin.json` (the `/plugin` menu label). There is
 > no `model:` field on any skill; do not add one.
 
+> **No `model:` or `effort:` on a skill — the router makes them leak.** Claude
+> Code supports both as skill frontmatter, and the token math is tempting:
+> `effort: low` on a mechanical instantiator like `spec-scaffold` or `standards`
+> looks free. It is not, **for this plugin specifically**. Frontmatter effort
+> "applies when that skill is active", overriding the session level, and steer's
+> router is built to **auto-continue** — rule `00-router`: *"when a skill
+> finishes, continue into its single best next action"*. So the override does not
+> stay with the cheap skill:
+>
+> - `/steer:help` at `effort: low` → the router continues into `/steer:work`,
+>   which now executes the implementation at low effort.
+> - `spec-scaffold` is worse, because it is an **internal gateway invoked
+>   mid-flow** by `build`, `init`, `intake`, and `spec` — a low-effort override
+>   there downgrades the *calling* skill's remaining work in that turn.
+>
+> The user chose their model and effort; a navigation step must not silently
+> re-set them for the work it navigates into. Same reasoning as `model:`. If a
+> skill genuinely needs cheaper reasoning for a bounded piece of work, delegate
+> that piece to a **subagent** instead — `agents/*.md` supports `model` and
+> `effort`, and a subagent has its own context and cannot leak its override back
+> into the parent turn (`steer-reviewer` is the worked example).
+
 > **Listing cap.** Claude Code concatenates `description` + `when_to_use` into the
 > skill listing it uses for routing and truncates the combined text at **1,536
 > characters** (the documented `skillListingMaxDescChars` default); past the cap the
