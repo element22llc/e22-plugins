@@ -8,10 +8,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 - **Added:** polyrepo spine unification — a product may now span several repos
-  without fragmenting its `/spec`. A **workspace** repo (`workspace.yml`, new
-  `workspace` profile) hosts the product spine and owns no code; **member** repos
-  carry `spec/PRODUCT.md` pointing at it, plus their own ADRs, `ARCHITECTURE.md`
-  and code. All of `spec/features/**` lives in the workspace, so a feature
+  without fragmenting its `/spec`. A **workspace** repo (`spec/workspace.yml`,
+  new `workspace` profile) hosts the product spine and owns no code; **member**
+  repos carry `spec/PRODUCT.md` pointing at it, plus their own ADRs,
+  `ARCHITECTURE.md` and code. Both markers live under `spec/` — the manifest is
+  product-level truth, so it belongs with the spine rather than as steer's only
+  unnamespaced root file (and one rename from moon's `.moon/workspace.yml`). All of `spec/features/**` lives in the workspace, so a feature
   spanning repos has exactly one `intent.md` instead of none or several.
 - **Added:** `lib/scope.sh` gains `steer_polyrepo_role` and three inject-when
   predicates — `polyrepo` (either role), `has-workspace-manifest`, and

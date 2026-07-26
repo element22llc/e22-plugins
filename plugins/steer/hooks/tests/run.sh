@@ -924,7 +924,8 @@ oq_ngrep "orient: handed-off build does not nag resume" 'Resume the guided build
 # and completely absent in a single-repo product (the zero-cost guarantee).
 OR1W="$(new_repo orient1w)"
 managed_spine "${OR1W}"
-printf 'schema: 1\n' >"${OR1W}/workspace.yml"
+mkdir -p "${OR1W}/spec"
+printf 'schema: 1\n' >"${OR1W}/spec/workspace.yml"
 out="$(run_hook orient-session.sh "$(session_json "${OR1W}" or1w)")"
 oq_grep "orient: workspace role announced" 'is the \*\*workspace\*\*' "${out}"
 oq_grep "orient: workspace warns on partial reports" 'uncovered' "${out}"
@@ -1747,8 +1748,9 @@ steer_polyrepo_role "${TRAITS_MONO}" >/dev/null && bad "polyrepo: single-repo pr
 steer_inject_when_ok polyrepo "${TRAITS_MONO}" && bad "polyrepo: rule skipped for single-repo product" || ok
 
 TRAITS_WS="$(new_repo traits_ws)"
-printf 'schema: 1\n' >"${TRAITS_WS}/workspace.yml"
-assert_eq "polyrepo: workspace.yml -> workspace role" "$(steer_polyrepo_role "${TRAITS_WS}")" "workspace"
+mkdir -p "${TRAITS_WS}/spec"
+printf 'schema: 1\n' >"${TRAITS_WS}/spec/workspace.yml"
+assert_eq "polyrepo: spec/workspace.yml -> workspace role" "$(steer_polyrepo_role "${TRAITS_WS}")" "workspace"
 steer_inject_when_ok polyrepo "${TRAITS_WS}" && ok || bad "polyrepo: rule injects at the workspace"
 steer_inject_when_ok has-workspace-manifest "${TRAITS_WS}" && ok || bad "polyrepo: has-workspace-manifest true"
 steer_inject_when_ok has-product-pointer "${TRAITS_WS}" && bad "polyrepo: workspace is not a member" || ok
@@ -1763,7 +1765,7 @@ steer_inject_when_ok has-product-pointer "${TRAITS_MEM}" && ok || bad "polyrepo:
 # Malformed repo carrying BOTH markers: workspace wins, deterministically.
 TRAITS_BOTH="$(new_repo traits_both)"
 mkdir -p "${TRAITS_BOTH}/spec"
-printf 'schema: 1\n' >"${TRAITS_BOTH}/workspace.yml"
+printf 'schema: 1\n' >"${TRAITS_BOTH}/spec/workspace.yml"
 printf 'workspace:\n' >"${TRAITS_BOTH}/spec/PRODUCT.md"
 assert_eq "polyrepo: both markers -> workspace wins" "$(steer_polyrepo_role "${TRAITS_BOTH}")" "workspace"
 
@@ -1786,7 +1788,7 @@ touch "${SPINE_MEM}/spec/.version" "${SPINE_MEM}/spec/PRODUCT.md"
 assert_eq "spine: member with pointer only -> managed" "$(steer_spine_state "${SPINE_MEM}")" "managed"
 SPINE_WS="$(new_repo spine_ws)"
 mkdir -p "${SPINE_WS}/spec"
-touch "${SPINE_WS}/spec/.version" "${SPINE_WS}/workspace.yml"
+touch "${SPINE_WS}/spec/.version" "${SPINE_WS}/spec/workspace.yml"
 for _f in vision.md users.md glossary.md tracker.md HISTORY.md; do touch "${SPINE_WS}/spec/${_f}"; done
 assert_eq "spine: workspace holds the full product set -> managed" "$(steer_spine_state "${SPINE_WS}")" "managed"
 # The member split must NOT excuse a genuinely broken single-repo spine.

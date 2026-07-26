@@ -96,7 +96,7 @@ if [ -n "${POLY_ROLE}" ]; then
 		printf 'This repo is the **workspace** of a product that spans several repos: it '
 		printf 'hosts THE `/spec` spine (including every feature `intent.md`) and owns no '
 		printf 'application code, so an absent `apps/` is expected, not a gap. Members are '
-		printf 'listed in `workspace.yml`. Any report you produce here (`/steer:next`, '
+		printf 'listed in `spec/workspace.yml`. Any report you produce here (`/steer:next`, '
 		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`) must name the members it '
 		printf 'covered and flag any it could read neither locally nor over the GitHub '
 		printf 'gateway as **uncovered** — never present a fraction of the product as the '

@@ -1,7 +1,11 @@
 ---
-# Polyrepo member manifest. Its PRESENCE at the repo root is what marks this
-# repo the workspace (lib/scope.sh -> has-workspace-manifest), so do not add
-# this file to a single-repo product.
+# Polyrepo member manifest, installed as spec/workspace.yml. Its PRESENCE is
+# what marks this repo the workspace (lib/scope.sh -> has-workspace-manifest),
+# so do not add this file to a single-repo product.
+#
+# It lives under spec/ because it is product-level truth - which repos this
+# product is made of - so it belongs with the rest of the spine rather than
+# loose at the repo root.
 #
 # /steer:init resolves the placeholders - never ship fabricated values.
 # ASCII only: this is config, not prose (see the non-ASCII anti-pattern in the

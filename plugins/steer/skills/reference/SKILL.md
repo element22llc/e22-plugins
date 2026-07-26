@@ -253,7 +253,7 @@ It covers, in detail:
 
 - **Recommend a monorepo first** — this topology is for an externally mandated
   split only, and it never buys atomic cross-repo commits.
-- **The two roles** — a `workspace` repo (`workspace.yml`) hosting THE product
+- **The two roles** — a `workspace` repo (`spec/workspace.yml`) hosting THE product
   spine and owning no code, and `member` repos (`spec/PRODUCT.md`) holding the
   code; the traits that detect each, and why a member's spine is partial *by
   design* rather than damaged.

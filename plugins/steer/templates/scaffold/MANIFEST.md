@@ -70,14 +70,17 @@ The product-level spec artifacts live with the other spec templates in
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
 
-Seven more `templates/spec/` templates also live there but are instantiated **on
+Eight more `templates/spec/` templates also live there but are instantiated **on
 demand** by their skills — not copied at bootstrap — so they are not in this
 install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
 `adr.md` (`/steer:adr`), `build-status.md` + `productionization.md`
-(`/steer:build`), `source-manifest.md` (`/steer:intake`), and `product.md` →
-`spec/PRODUCT.md` (`/steer:init` / `/steer:adopt`, **polyrepo members only** — its
-presence is the `has-product-pointer` trait, so a single-repo product must never
-get it).
+(`/steer:build`), `source-manifest.md` (`/steer:intake`), and the two polyrepo
+markers (`/steer:init` / `/steer:adopt`) — `product.md` → `spec/PRODUCT.md` for a
+**member** and `workspace.yml` → `spec/workspace.yml` for the **workspace**. Their
+presence is the `has-product-pointer` / `has-workspace-manifest` trait, so a
+single-repo product must never get either. Both live under `spec/` because the
+manifest is product-level truth (which repos the product is made of), the same
+reason the rest of the spine does.
 
 **A polyrepo member's spine is deliberately partial.** A member installs the Core
 map *minus* the product-level artifacts — no `vision.md`, `users.md`,
@@ -167,8 +170,7 @@ Every Node profile is a **pnpm workspace** (monorepo-by-default) — `library` a
 | `profiles/app/claude/launch.json` | `.claude/launch.json` | **app** — Claude Desktop **Code tab** preview-server config (preview pane + auto-verify screenshots). Ships one `web` config running `pnpm dev` on port 3000 (`autoPort` on for parallel worktree sessions). `pnpm dev` is the sanctioned Node-only run command (rule 15) — it delegates to the app's own `dev` script (e.g. `apps/web`), so the preview is a no-op until `/steer:init` has scaffolded the first app. Assumes `mise run dev:setup` has brought services/DB up first. Repoint at `mise run dev` (and add a second `configuration`) once the repo goes polyglot and uncomments the mise `[tasks.dev]` fan-out. Convenience only — the Code tab auto-detects a config when this is absent; schema is pre-stable (`version 0.0.1`), so no gate enforces it. **Never overwrite** a repo's existing `launch.json`. |
 | `profiles/service/apps/README.md` | `apps/README.md` | **service**. |
 | `profiles/infra/mise.toml` | `mise.toml` (repo root) | **infra** — **replaces** core mise (tofu/terragrunt/ansible/uv + the `node` runtime + `compose`/worktree wiring). Skip Layer 1; adapt `ARCHITECTURE.md`/README. CI auto-detects `*.tf`/Ansible and runs `tofu fmt`/`ansible-lint`. |
-| `profiles/workspace/workspace.yml` | `workspace.yml` (repo root) | **workspace** — the polyrepo member manifest (repos, branches, profiles). Its presence is the `has-workspace-manifest` trait. |
-| `profiles/workspace/README.md` | `README.md` | **workspace** — **replaces** the core README: this repo hosts the spine and no application code. |
+| `profiles/workspace/README.md` | `README.md` | **workspace** — **replaces** the core README: this repo hosts the spine and no application code. The member manifest itself is a spec artifact, installed from `../spec/workspace.yml` (see "Spec spine" above), not a Layer-2 file. |
 
 `library` and `cli` add **no** Layer-2 files — they are Core + Node baseline,
 with the skill adapting `package.json` only. A monorepo that *also* has a nested

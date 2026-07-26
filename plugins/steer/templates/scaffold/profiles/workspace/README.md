@@ -1,8 +1,8 @@
 # [Product Name] — workspace
 
 This repo is the **spine host** for a product that spans several repos. It holds
-the product `/spec` and the `workspace.yml` member manifest. It holds no
-application code.
+the product `/spec`, including the `spec/workspace.yml` member manifest. It holds
+no application code.
 
 Prefer a monorepo whenever the split is not externally mandated. This topology
 buys a single product spine across repos; it does **not** buy atomic cross-repo
@@ -12,10 +12,10 @@ PRs that can merge out of order.
 ## Layout
 
 ```text
-spec/            THE product spine — vision, users, glossary, HISTORY,
-                 app docs, and every feature's intent.md + contract.md
-workspace.yml    the member manifest (repos, branches, profiles)
-spec/tracker.md  the tracker for the whole product
+spec/                THE product spine — vision, users, glossary, HISTORY,
+                     app docs, and every feature's intent.md + contract.md
+spec/workspace.yml   the member manifest (repos, branches, profiles)
+spec/tracker.md      the tracker for the whole product
 ```
 
 Member repos carry `spec/PRODUCT.md` pointing back here, their own

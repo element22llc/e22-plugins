@@ -48,11 +48,16 @@ steer_repo_does_iac() {
 # or nothing when the product lives in a single repo (the overwhelmingly common
 # case, and the one that must cost zero always-on bytes):
 #
-#   workspace  a `workspace.yml` member manifest at the root — this repo hosts
-#              THE product `/spec` spine and owns no application code.
+#   workspace  a `spec/workspace.yml` member manifest — this repo hosts THE
+#              product `/spec` spine and owns no application code.
 #   member     a `spec/PRODUCT.md` pointer — this repo implements part of a
 #              product whose spine lives in a sibling workspace repo.
 #   (empty)    neither marker → a single-repo product.
+#
+# Both markers live under `spec/` on purpose. The manifest is product-level truth
+# — which repos this product is made of — so it belongs with the rest of the
+# spine, not loose at the root where it would be steer's only unnamespaced root
+# file and would sit a rename away from moon's `.moon/workspace.yml`.
 #
 # Ground-truth filesystem check on two files, mirroring the has-* predicates: the
 # topology is derived from disk, never from the CLAUDE.md profile marker, so the
@@ -61,7 +66,7 @@ steer_repo_does_iac() {
 # harder-to-create signal) and /steer:audit reports the contradiction.
 steer_polyrepo_role() {
 	_r="${1:-.}"
-	[ -f "${_r}/workspace.yml" ] && {
+	[ -f "${_r}/spec/workspace.yml" ] && {
 		printf 'workspace'
 		return 0
 	}
@@ -87,7 +92,7 @@ steer_inject_when_one() {
 	# which the rule states inline. A single-repo product matches neither and
 	# pays nothing.
 	polyrepo) steer_polyrepo_role "$2" >/dev/null ;;
-	has-workspace-manifest) [ -f "$2/workspace.yml" ] ;;
+	has-workspace-manifest) [ -f "$2/spec/workspace.yml" ] ;;
 	has-product-pointer) [ -f "$2/spec/PRODUCT.md" ] ;;
 	# code-project — true in 'code' work mode. The knowledge-vs-code decision is
 	# made ONCE in inject-standards.sh (steer_work_mode) and a knowledge folder

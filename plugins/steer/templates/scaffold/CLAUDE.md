@@ -71,7 +71,7 @@ Keep the marker and this line in sync — `/steer:sync` reads the marker. An
 root `mise.toml` and infra CI instead of the Node project files
 (`package.json` / `biome.json`); `node` + `compose.yaml` stay from the core scaffold.
 A **workspace** repo is the spine host of a product spanning several repos — it
-carries `workspace.yml` and the `/spec` spine but no application code
+carries `spec/workspace.yml` and the `/spec` spine but no application code
 (`/steer:reference polyrepo`).
 
 ## Stack overrides

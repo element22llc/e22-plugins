@@ -6,8 +6,13 @@ product.
 There is deliberately **no always-on rule** for this topology. The always-on
 ruleset is capped on its on-disk total, which every consumer pays even for a rule
 scoped to a minority of repos. Instead `orient-session.sh` emits a short,
-role-specific note at SessionStart in a repo that actually carries `workspace.yml`
-or `spec/PRODUCT.md`, and points here.
+role-specific note at SessionStart in a repo that actually carries
+`spec/workspace.yml` or `spec/PRODUCT.md`, and points here.
+
+Both markers live under `spec/` deliberately. The manifest is product-level
+truth — which repos this product is made of — so it belongs with the rest of the
+spine rather than loose at the root, where it would be steer's only unnamespaced
+root file and would sit one rename away from moon's `.moon/workspace.yml`.
 
 ## Recommend a monorepo first
 
@@ -30,7 +35,7 @@ monorepo.
 
 | | **workspace** | **member** |
 | --- | --- | --- |
-| Marker | `workspace.yml` at the root | `spec/PRODUCT.md` |
+| Marker | `spec/workspace.yml` | `spec/PRODUCT.md` |
 | Trait | `has-workspace-manifest` | `has-product-pointer` |
 | Profile | `workspace` | `app` / `service` / `infra` / `library` / `cli` |
 | Holds | THE product `/spec` spine | code, tests, CI |
@@ -91,8 +96,8 @@ Every such report must:
 - name any member it could reach **neither** way as **uncovered** — explicitly,
   never by omission.
 
-`workspace.yml` → `reporting.require_all_members: true` makes the uncovered case
-loud rather than silent. Silence must never read as "nothing there".
+`spec/workspace.yml` → `reporting.require_all_members: true` makes the uncovered
+case loud rather than silent. Silence must never read as "nothing there".
 
 ## Tracker behaviour across repos
 

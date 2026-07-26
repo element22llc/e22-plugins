@@ -51,7 +51,7 @@ state helper can't make alone: check for app code (a populated `apps/`/`src/`,
 
 ## Polyrepo
 
-A product may span several repos: a **workspace** repo (`workspace.yml`) holding
+A product may span several repos: a **workspace** repo (`spec/workspace.yml`) holding
 THE `/spec` spine and no code, and **member** repos (`spec/PRODUCT.md`) holding the
 code. Detect the role before routing — the same spine state means different things:
 

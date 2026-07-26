@@ -187,12 +187,14 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
        repo runs no local services. Enable the matching IaC engine in that
        `mise.toml` and adapt `ARCHITECTURE.md`/README to the IaC layout.
      - **`workspace`** (polyrepo spine host): install
-       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/workspace/workspace.yml`
-       at the repo root and its `README.md` (replaces the core README), and **skip
+       `${CLAUDE_PLUGIN_ROOT}/templates/spec/workspace.yml` as **`spec/workspace.yml`**
+       (it is a spec artifact — product-level truth — not a root config file) plus
+       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/workspace/README.md`
+       (replaces the core README), and **skip
        Layer 1 entirely**. This repo owns no application code, so drop Layer 0's
        `compose.yaml`, `scripts/worktree-env.sh`, `apps/`, and the Dockerfile
        refs; keep mise, CI, the `/spec` spine, and `.claude/`. Interview for the
-       member list and resolve every `workspace.yml` placeholder — **never ship
+       member list and resolve every `spec/workspace.yml` placeholder — **never ship
        fabricated repo names or branches**; leave the file with a single
        placeholder member if the dev does not know them yet. If the dev plans to
        clone members inside this repo, add those dirs to `.gitignore`. Then

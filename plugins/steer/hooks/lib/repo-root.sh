@@ -59,7 +59,7 @@ steer_delivery_mode() {
 #   <!-- steer:profile=infra -->   (or =app / =service / =library / =cli / =workspace)
 #
 # `workspace` is the polyrepo spine host: a repo that carries the product `/spec`
-# and a `workspace.yml` member manifest but no application code of its own. It is
+# and a `spec/workspace.yml` member manifest but no application code of its own. It is
 # a scaffold-time profile like the rest; the always-on gate for polyrepo rule text
 # is the `has-workspace-manifest` trait in lib/scope.sh, not this marker.
 #
