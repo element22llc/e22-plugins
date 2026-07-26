@@ -12,8 +12,8 @@ update (or propose) the owning artifact **in the same change as the code**:
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
   release notes → the app guide (`/spec/app/`).
 - Tech stack, the apps/packages map, cross-component data flow → root
-  `ARCHITECTURE.md` — updated, with the linked architecture diagram
-  (`/spec/design/architecture.md`), in the same PR that changes them.
+  `ARCHITECTURE.md` — updated, with the linked diagram
+  (`/spec/design/architecture-diagram.md`), in the same PR that changes them.
 - Visual identity, reusable design tokens → root `DESIGN.md`, seeded when the
   first UI lands and grown on the 3+ rule (Design sources). The PR that
   establishes the stack or first app also retires the scaffold's now-false

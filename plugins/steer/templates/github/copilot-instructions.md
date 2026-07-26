@@ -226,8 +226,8 @@ is organized as IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
 - **`/infra`** — infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
   map, how a request flows. `/spec/app` is *how to use/operate it*,
-  `/spec/design` holds the *diagrams* it links to, `/spec/decisions` the *why*;
-  `README.md` is the front door linking to all of them.
+  `/spec/design` the *diagrams* it links to, `/spec/decisions` the *why*;
+  `README.md` is the front door to all of them.
 
 Specs are organized by user-facing feature; code however the stack wants — a
 feature may span several apps/packages (coupling rules: `/steer:spec`).
@@ -238,7 +238,7 @@ feature may span several apps/packages (coupling rules: `/steer:spec`).
 The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
 `packages/`, `configs/`, `infra/`, `spec/`) plus root config files
 (`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
-`CLAUDE.md`, `README.md`, `DESIGN.md`).
+`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md`).
 
 Loose **source/research materials** — spreadsheets, inventories, vendor
 metadata, schema/DDL dumps, discovery docs, and **specification /
@@ -420,8 +420,8 @@ update (or propose) the owning artifact **in the same change as the code**:
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
   release notes → the app guide (`/spec/app/`).
 - Tech stack, the apps/packages map, cross-component data flow → root
-  `ARCHITECTURE.md` — updated, with the linked architecture diagram
-  (`/spec/design/architecture.md`), in the same PR that changes them.
+  `ARCHITECTURE.md` — updated, with the linked diagram
+  (`/spec/design/architecture-diagram.md`), in the same PR that changes them.
 - Visual identity, reusable design tokens → root `DESIGN.md`, seeded when the
   first UI lands and grown on the 3+ rule (Design sources). The PR that
   establishes the stack or first app also retires the scaffold's now-false

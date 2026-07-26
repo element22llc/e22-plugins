@@ -17,7 +17,7 @@ among others:
 | `vision.md`, `users.md`, `glossary.md` | Product-level framing shared across features. |
 | `HISTORY.md` | Append-only log of what shipped, with tracker `Refs:`. |
 | `tracker.md` | Declares the issue-tracking system and ref format. |
-| `design/` | Design-export home: `README.md`, product-level `source.md` provenance (greenfield), and the living global `architecture.md` diagram that the root `ARCHITECTURE.md` links to. |
+| `design/` | Design-export home: `README.md`, product-level `source.md` provenance (greenfield), and the living global `architecture-diagram.md` that the root `ARCHITECTURE.md` links to. |
 | `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:intake`](../workflows/intake.md). |
 | `reference/` | Catch-all home for durable **one-off** (non-versioned) source/research material feeding the spec — inventories, vendor metadata, schema/DDL dumps, discovery docs. Created on demand by [`/steer:tidy`](../workflows/index.md); a document sent once can stay here, but the moment it starts arriving in versions it belongs under `sources/`. |
 | ADRs | Ratified, hard-to-reverse decisions (see [Decisions](../decisions/index.md)). |

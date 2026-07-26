@@ -25,8 +25,8 @@ is organized as IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
 - **`/infra`** — infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
   map, how a request flows. `/spec/app` is *how to use/operate it*,
-  `/spec/design` holds the *diagrams* it links to, `/spec/decisions` the *why*;
-  `README.md` is the front door linking to all of them.
+  `/spec/design` the *diagrams* it links to, `/spec/decisions` the *why*;
+  `README.md` is the front door to all of them.
 
 Specs are organized by user-facing feature; code however the stack wants — a
 feature may span several apps/packages (coupling rules: `/steer:spec`).

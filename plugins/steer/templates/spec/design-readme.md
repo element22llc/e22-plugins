@@ -7,7 +7,7 @@ happens on a branch under `/apps`, never here.
 
 ## Two kinds of content — both live here
 
-1. **`architecture.md` — the living architecture diagram.** A maintained,
+1. **`architecture-diagram.md` — the living architecture diagram.** A maintained,
    system-level diagram (Mermaid by default; optionally generated from a LikeC4
    model). [`ARCHITECTURE.md`](../../ARCHITECTURE.md) links to it instead of
    inlining a diagram. It is kept **current** as the system changes (living-docs
@@ -68,8 +68,9 @@ always end up here, not loose in the tree.
    specs in `/spec` and gets PO approval.
 3. **Productionization:** Dev builds production code in `/apps` and `/packages`
    to satisfy the spec. The export is reference only — do not import from it.
-4. **Archive:** Once the product ships, this folder can be removed from `main`
-   (preserve it on a `design-archive` branch if you want the history).
+4. **Archive:** Once the product ships, the *exports* can be removed from `main`
+   (preserve them on a `design-archive` branch if you want the history). Keep
+   `architecture-diagram.md` — it is living, not disposable.
 
 ## Brownfield
 

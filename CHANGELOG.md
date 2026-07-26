@@ -7,6 +7,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the living global architecture diagram moves from
+  `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
+  shared a basename with the root `ARCHITECTURE.md` that links to it, differing
+  only by case and path — two files called "architecture" at two altitudes read
+  as a duplicate or a half-finished move — and it collided with the Tier 2
+  LikeC4 *model folder* `spec/design/architecture/` sitting beside it. The three
+  artifacts are now legible by name: model folder `architecture/` → rendered
+  diagram `architecture-diagram.md` → narrative `ARCHITECTURE.md`. The
+  root/`spec` **split is unchanged** — `ARCHITECTURE.md` stays at the repo root
+  as the as-built system model, narrative and tables only, still linking rather
+  than inlining. Bundled template renamed to
+  `templates/spec/design-architecture-diagram.md`; the LikeC4 model folder and
+  the `diagrams:render` paths are untouched. A **`MIGRATIONS.md` v3.23.0 entry**
+  carries the `git mv` plus the enumerated in-file token rewrite, so
+  `/steer:sync` moves the file in already-bootstrapped repos with history
+  following it.
+- **Fixed:** the root-tidiness rule (`22-housekeeping`) omitted `ARCHITECTURE.md`
+  from the root allowlist, so the one rule that decides what may sit at the repo
+  root read it as a stray — while `20-layout`, `32-living-docs`,
+  `50-definition-of-done`, `52-deployment`, `55-drift-gates` and the scaffold all
+  mandate it there. It is now in the allowlist. The always-on payload was 3 bytes
+  under its ceiling, so the addition is paid for in place: `20-layout` and
+  `32-living-docs` lose a few redundant words in the same sentences, with no
+  change of meaning and no ceiling raise.
+- **Changed:** the *why* behind the root-vs-`/spec` split is now stated where a
+  reader hits it instead of only in the reference topic — the scaffold
+  `ARCHITECTURE.md` explains that it is the **as-built** model while `/spec`
+  holds **intent** (and that keeping them apart is what lets `/steer:audit spec`
+  compare them), and `ARCHITECTURE-DIAGRAMS.md` explains the naming. The
+  design-export lifecycle no longer tells a shipped product to delete the folder
+  holding its living architecture diagram.
 - **Fixed:** hooks now judge **the repo being acted on**, not the session `cwd`.
   With a git repo nested inside another work tree — a vendored or gitignored
   clone, a `tools/` checkout, a polyrepo member cloned inside its workspace — the
