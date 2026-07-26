@@ -73,9 +73,12 @@ SID="$(steer_field session_id)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
-# Resolve the work-tree root (cwd may be a subdir like apps/web). Not a git work
-# tree → not a project we manage. The plugin's own source repo → not our concern.
-ROOT="$(steer_repo_root "${CWD}")" || exit 0
+# Resolve the work-tree root of the FILE being written — cwd may be a subdir
+# (apps/web), and with a nested work tree the file may belong to a different repo
+# than cwd entirely (#396). Falls back to cwd's root when there is no usable
+# path. Not a git work tree → not a project we manage. The plugin's own source
+# repo → not our concern.
+ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
 # Need a target file (Bash calls have none → nothing to nudge on).

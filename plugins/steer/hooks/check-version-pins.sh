@@ -56,7 +56,7 @@ CWD="$(steer_field cwd)"
 # when editing from a subdir (e.g. apps/web); fall back to CWD when not inside a
 # work tree. steer_policy_resolve then prefers that repo-local file, else the
 # plugin-bundled default — so enforcement works regardless.
-ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
+ROOT="$(steer_action_root "${CWD}" "$(steer_target_path)")" || ROOT="${CWD}"
 POLICY="$(steer_policy_resolve "${ROOT}")"
 [ -n "${POLICY}" ] || exit 0 # no policy available → cannot enforce, stay silent
 
