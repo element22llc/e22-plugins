@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.23.0
+
 *This was a long cycle with a large internal sweep, so many **Fixed** entries
 below refer to defects introduced **and** resolved between releases — no
 released version ever carried them. Entries that correct behavior a consumer
