@@ -74,6 +74,56 @@ regression test; an **operational or behavioral fact** → the app guide or
 the spine. Each fact lands in exactly one home, and that capture is surfaced as
 part of the work rather than offered as an optional "want me to remember this?".
 
+## One product, several repos
+
+steer is repo-scoped by construction: one repo, one product, one spine. That is
+the better arrangement, and a monorepo is the recommended answer whenever the
+split is not **externally mandated** — separate deployment, ownership, or
+compliance boundaries. "We already have three repos" is not a mandate.
+
+When the split *is* mandated, the spine would otherwise fragment N ways: three
+`vision.md`s drifting apart, and a feature spanning repos whose `intent.md` can
+only live in one of them, leaving every sibling with nothing to load. So a
+polyrepo product splits into two roles:
+
+| | **workspace** | **member** |
+| --- | --- | --- |
+| Marker | `spec/workspace.yml` | `spec/PRODUCT.md` |
+| Holds | THE product spine, including **all** of `spec/features/**` and `tracker.md` | code, tests, CI, its own ADRs and `ARCHITECTURE.md` |
+| Code | none | all of it |
+
+A member's spine is therefore **partial by design** — never "repaired" by adding
+product-level files back, which would recreate the split. A missing local
+`intent.md` means the workspace has not been read yet, so the skills resolve it
+first: `workspace.path` when a checkout exists, else over the GitHub gateway,
+else stop rather than guess.
+
+Two consequences worth knowing before adopting the topology:
+
+- **Reports must state their scope.** `/steer:next`, `/steer:status`,
+  `/steer:audit` and `/steer:roadmap` name the members they covered and flag any
+  they could reach neither way as **uncovered** — a fraction of a product
+  presented as the whole is worse than a smaller, honest answer.
+- **Some things do not cross the repo edge.** Sub-issues and Projects v2 do;
+  Milestones, closing keywords (`Closes #N`), and the merge-time drift gates do
+  not. `/steer:roadmap` moves the release axis onto a Project field for that
+  reason, and a member PR closes its workspace issue explicitly instead of
+  relying on GitHub.
+
+Members are cloned **inside** the workspace and git-ignored there — ordinary
+clones, not submodules, so nothing pins a SHA and a member commit never dirties
+the workspace. From the workspace, `mise run ws:clone` / `ws:sync` / `ws:status`
+manage them as a set and `mise run dev` boots the whole product via Compose
+`include:`. What this never buys is **atomic cross-repo commits**: a contract
+change across two members is still two PRs that can merge out of order. The
+topology makes that visible; it cannot make it atomic.
+
+!!! info "Full topology reference"
+    `/steer:reference polyrepo` loads the complete treatment — artifact homes,
+    spine resolution, the local runtime, and the constraints (Compose service-name
+    collisions, host ports, org-ruleset licensing) — on demand. A single-repo
+    product pays zero always-on bytes for any of it.
+
 ## How the spine stays current
 
 - [`/steer:audit spec`](../workflows/index.md) compares the as-built spine against the

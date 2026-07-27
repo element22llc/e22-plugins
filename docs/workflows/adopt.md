@@ -37,6 +37,13 @@ flowchart TD
 - **No ADR from inference.** Adopt must never infer a *ratified* ADR from code.
   The as-built spine records what exists; a decision that was never explicitly
   made is not an ADR. See [Product spine](../concepts/product-spine.md).
+- **One product across several existing repos is a topology decision first.**
+  Adoption is per repo, so reverse-engineering a full spine into each of them
+  manufactures the very split-brain the
+  [polyrepo topology](../concepts/product-spine.md#one-product-several-repos)
+  exists to prevent. Adopt recommends a monorepo out loud, and only when the split
+  is externally mandated does it bootstrap the workspace repo first and give each
+  member a `spec/PRODUCT.md` pointer *instead of* product-level spine files.
 
 ## After adopting
 
