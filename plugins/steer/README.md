@@ -20,17 +20,26 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 ## Skill tool restrictions
 
-- Eight read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
-  `explain`, `status`, `help` — carry `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`.
-  Two render variants keep `Write` to save the artifact HTML they publish (a
-  temp-dir file; the Markdown fallback is printed inline, never saved): `explain`
-  varies to `Bash, Edit, NotebookEdit, EnterWorktree` (it reads only local files,
-  so it runs no shell); `status` varies to `Edit, NotebookEdit, EnterWorktree` —
-  it keeps `Bash` too, because it reads the tracker through `tracker-sync` (the
-  `gh` read fallback needs shell), but holds no write grant and writes nothing back
-  so the analysis cannot edit code/spec via native tools. This does **not** make the repo
+- Nine read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
+  `explain`, `status`, `help`, `report` — never edit code, spec or tracker. What
+  defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree`: the
+  skill cannot mutate an existing repo file, branch, or worktree. `Write` splits
+  the tier. `standards`, `next`, `doctor` and `reference` disallow it too. The
+  five temp-writing skills — `audit`, `explain`, `help`, `status`, `report` —
+  deliberately **keep** `Write`, because a single temp-dir path is their one
+  permitted write: the artifact HTML for the four render skills (the Markdown
+  fallback is printed inline, never saved), the scrubbed issue body for `report`.
+  That temp-only limit is held **in prose**, not by frontmatter. `explain` additionally disallows
+  `Bash` (it reads only local files, so it runs no shell); `status` keeps `Bash`,
+  because it reads the tracker through `tracker-sync` (the `gh` read fallback
+  needs shell), but writes nothing back. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).
-- The restriction clears on the next user message, so confirmed follow-up writes (e.g.
-  `/steer:audit spec`'s optional `/spec/DRIFT-REPORT.md`) and publication (`/steer:issues publish-*`)
-  run as their own steps after the skill returns.
+- **A skill's tool grants apply for the whole invocation.** There is no "post-run
+  step" in which a restriction has cleared, and a user confirmation mid-run does
+  not lift one — so never disallow `Write` on the theory that a confirmed write
+  happens afterwards; that makes the instructed write unreachable instead of
+  deferring it. Writes the modes instruct (e.g. `/steer:audit spec`'s optional
+  `/spec/DRIFT-REPORT.md`) happen **in-run, post-confirmation**. Publication to
+  the tracker is a genuinely separate step because it is a different skill:
+  `/steer:issues publish-*`. See `/steer:reference artifacts`.

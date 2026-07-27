@@ -157,20 +157,30 @@ when_to_use: >-
 matrix):
 
 - **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
-  `doctor`, `explain`, `status`, `help`): never edit code/spec/tracker.
-  Set `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree`. Two render
-  variants keep `Write` for a rendered artifact/fallback file: `explain` sets
-  `disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree` (it reads only local
-  files, so it needs no shell); `status` sets `disallowed-tools: Edit,
-  NotebookEdit, EnterWorktree` — it keeps `Bash` too, because it reads the tracker
-  through `/steer:tracker-sync` (the `gh` read fallback needs shell), but writes
-  nothing back (no tracker-write grant; reads only).
+  `doctor`, `explain`, `status`, `help`, `report`): never edit code/spec/tracker.
+  What defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree` —
+  the skill cannot mutate an existing repo file, branch, or worktree. `Write`
+  splits the tier: add it to `disallowed-tools` for a skill that writes nothing at
+  all (`reference`, `standards`, `next`, `doctor`), and **keep it granted** for the
+  five that write one temp-dir path (`audit`, `explain`, `help`, `status` for the
+  artifact HTML; `report` for the scrubbed issue body). That temp-only limit is a **prose
+  invariant**, not a frontmatter one. **Never** disallow `Write` on the theory that
+  a mid-run confirmation lifts the restriction: tool grants apply for the whole
+  invocation, so dropping it makes the instructed render unreachable rather than
+  deferred (`/steer:reference artifacts`). Shell varies independently: `explain`
+  also disallows `Bash` (it reads only local files); `status` keeps `Bash` because
+  it reads the tracker through `/steer:tracker-sync` (the `gh` read fallback needs
+  shell), but writes nothing back (no tracker-write grant; reads only).
 - **Tier 2 — side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
   `adr`, `issues`, `questions`, …): may create/edit/commit. Use `allowed-tools`
   to pre-approve the routine idempotent ops the skill always performs — e.g.
   `/steer:work` allowlists `Bash(git status *)`, `Bash(git switch *)`,
-  `Bash(git add *)`, `Bash(git commit *)`, etc. Keep `git push`/PR creation
-  prompt-gated (Rule 45 — commits autonomous, push/PR gated).
+  `Bash(git add *)`, `Bash(git commit *)`, etc. **Pre-approve `git push` and
+  `gh pr create` too** — rule `45-commit-autonomy` makes branch, commit, push and
+  PR-open autonomous ("announce it, don't request permission"), and
+  `check_standards.py` fails the build if the scaffold allowlist drops them. What
+  stays gated is the **merge and the deploy** (`gh pr merge` sits under `ask`),
+  never the push.
 - **Tier 3 — hidden from the slash menu** (`user-invocable: false`): still
   model-callable, just not in the menu. Reserved for *internal gateways* a parent
   skill always drives with context a user can't supply by hand — `tracker-sync`

@@ -38,8 +38,9 @@ This is the PO-facing path through the standard Greenfield flow
 (`Spec workflow` rules): interview → spec → PO approval → build → demo → dev
 handoff (a v0 PR in PR flow, or graduation off the trunk in solo trunk).
 The PO personally installs only **Claude Code and Docker Desktop**, on a
-supported machine — **macOS, Linux, or Windows via WSL2** (the org toolchain
-assumes a POSIX shell; see the `Stack` rule). You verify and drive everything
+supported machine — **macOS, Linux, or Windows** (WSL2 for CLI/IDE work; on the
+Claude Desktop Code tab, Git for Windows is enough — see the `Stack` rule and
+`/steer:doctor`). You verify and drive everything
 else yourself: install the supported local toolchain (mise, then pnpm/uv, git)
 where the OS permits, and handle GitHub auth for the eventual PR — never hand the
 PO commands. Speak plainly throughout — no git/stack jargon (see the

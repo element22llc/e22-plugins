@@ -17,9 +17,10 @@ missing, or present-but-not-enabled) is a separate, third axis owned by
 
 This ledger is the **single source of truth** for those transforms. `/steer:sync`
 consumes it to carry an already-bootstrapped repo forward when the plugin's
-conventions change; `/steer:adopt` and `/steer:build` consume the same entries on a
-resume so a repo first touched under an older plugin version picks up structural
-changes too — not just additive ones. **Add an entry here in the same change
+conventions change, and `/steer:adopt` consumes the same entries so a repo first
+touched under an older plugin version picks up structural changes too — not just
+additive ones. `/steer:build` has no ledger step of its own: it reaches these
+transforms by handing off to `/steer:adopt`. **Add an entry here in the same change
 that lands a rename/move/deletion** in `templates/spec/` or
 `templates/scaffold/`; do not hand-code the transform inline in a skill.
 

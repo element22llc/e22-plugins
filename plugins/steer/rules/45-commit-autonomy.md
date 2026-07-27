@@ -26,17 +26,14 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
   required and closed from the trunk commit (`Closes #N`), not via a PR (see
   Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
-  works, you first deploy, or a second contributor joins, whichever comes
-  first. While a **local** graduation signal (a deploy target or a `prod`
-  branch) stands unaddressed, trunk pushes stop being autonomous — each one
-  waits for a human yes until the repo graduates; a second contributor is
-  caught on demand by `/steer:protect` and `/steer:audit`, not at push time.
-- **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
-  pr-flow but `main` has no protection, the flow above applies unchanged — you
-  still never merge — but say the wall is missing and recommend
-  `/steer:protect`. Where protection is genuinely unavailable, record the
-  exception in an ADR; `/steer:protect verify` and `/steer:audit` keep
-  flagging it.
+  works, you first deploy, or a second contributor joins, whichever comes first.
+  While a **local** graduation signal (a deploy target or a `prod` branch)
+  stands unaddressed, trunk pushes stop being autonomous — each waits for a
+  human yes until the repo graduates.
+- **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
+  applies unchanged — you still never merge — but say the wall is missing and
+  recommend `/steer:protect`; where protection is genuinely unavailable, record
+  the exception in an ADR.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work
   presupposes an active GitHub issue (see Issue-first) — autonomy is unchanged
   once that issue exists.

@@ -31,7 +31,8 @@ appropriate pre-MVP) — there is no third mode. The `CLAUDE.md`
 `<!-- steer:delivery-mode=… -->` marker is the offline **cache** of that
 observed state (hooks read it without network); this skill is the owner of that
 cache — whenever verify or apply observes live protection that contradicts the
-marker, say so and reconcile the marker as part of the run.
+marker, **say so**. Reconciling it is `apply`'s job: `verify` reports the stale
+marker and names `apply` as the fix, and writes nothing itself.
 
 **Be honest in every report:** this configures the GitHub-side gate. It does not
 change anything about the local session and cannot prevent a local commit or push.
@@ -43,7 +44,12 @@ ends trunk mode. After applying in that case, also update the product `CLAUDE.md
 `## Delivery mode` section to `PR flow` — both the prose **and** the machine-readable
 marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so the
 steer hooks resume the per-feature branch/PR flow (the mode is over — the server wall
-now enforces it) — and append a graduation entry to `/spec/HISTORY.md`.
+now enforces it) — and append a graduation entry to `/spec/HISTORY.md`. **In a
+polyrepo member** (`spec/PRODUCT.md`), the `CLAUDE.md` marker is this repo's own and
+is flipped here, but `HISTORY.md` is the workspace's — append the entry there if
+`workspace.path` resolves, and otherwise record the graduation in the PR description
+and say the workspace ledger still needs it. Never create a local `HISTORY.md` in a
+member (`/steer:reference polyrepo`).
 
 ## Authorization (what invoking this grants)
 
@@ -130,7 +136,8 @@ the fix; the marker flip itself is `apply`'s job:
   graduated (someone applied protection outside this skill). Report that the
   marker is stale and recommend `/steer:protect apply`, which flips it to
   `<!-- steer:delivery-mode=pr-flow -->`, updates the section prose, and appends
-  the graduation entry to `/spec/HISTORY.md`. Do not edit those files from
+  the graduation entry to `/spec/HISTORY.md` (in a polyrepo member, to the
+  workspace's ledger — never a local copy). Do not edit those files from
   `verify`: a mode documented as read-only must stay read-only, and a stale
   marker is a finding to report, not a side effect to apply unasked.
 - Marker says **pr-flow** (or is absent) but `main` has **no protection** → the

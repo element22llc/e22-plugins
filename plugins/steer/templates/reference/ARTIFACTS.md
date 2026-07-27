@@ -77,7 +77,9 @@ read-only over the canonical sources even in a skill that otherwise writes.
   `/steer:status` and `/steer:audit` keep the mutating tools disallowed in
   frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`; `explain` also disallows
   `Bash`) — but `Write` is deliberately **not** disallowed, because writing the
-  HTML to temp is their one permitted write. `/steer:questions bundle` lives in a
+  HTML to temp is their one permitted write. `/steer:report` sits in the same tier
+  for the same reason, though it renders no Artifact: its temp write is the
+  scrubbed issue body. `/steer:questions bundle` lives in a
   write-capable skill and upholds the same limit as a **prose invariant**: bundle
   writes nothing under the repo tree.
 - **Never disallow `Write` to make a render "safe".** A skill's tool grants apply
@@ -166,7 +168,13 @@ must survive a locked-down iframe:
   the page must be fully usable (fill → copy → send) with neither working.
 - **Keys survive a round-trip.** Put the machine key in **visible heading text**,
   not only an HTML comment, so it survives a paste into Word and back. Embed nothing
-  volatile (no git SHA), so two exports of the same answers stay byte-identical.
+  volatile (no timestamp, no run id), so two exports of the same answers stay
+  byte-identical. **One deliberate exception:** `/steer:audit`'s triage export
+  carries the audited commit in its `<!-- steer:audit-triage sha=<audited-sha> -->`
+  marker. Findings are only meaningful relative to a commit, and the SHA is fixed
+  for the run (so it is stable, not volatile) — `/steer:issues publish-audit` reads
+  it to flag keys that went stale because the code moved. A `questions` bundle has
+  no such scope and embeds no SHA.
 
 ### The return leg — how filled answers come back
 

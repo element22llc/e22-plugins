@@ -22,10 +22,15 @@ update (or propose) the owning artifact **in the same change as the code**:
 - What changed, why, who asked, refs → append to `/spec/HISTORY.md`, one
   short entry per merged change or ratified decision.
 
+**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
+and `/spec/HISTORY.md` are the **workspace's** — write them there via
+`workspace.path`, else note it in the PR description; never a local copy.
+`ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
+
 PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
-conventions + worked examples: **`/steer:reference traceability`**.
+conventions: **`/steer:reference traceability`**.
 
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it is living-docs

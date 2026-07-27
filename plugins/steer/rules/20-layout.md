@@ -22,8 +22,8 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/spec/sources`** — **recurring**, versioned PO source documents,
   maintained by `/steer:intake`.
 - **`/spec/reference`** — **one-off** (non-versioned) source/research
-  materials feeding the spec. The `/steer:reference` prose is **not** stored
-  here — it ships with the plugin.
+  materials feeding the spec. The `/steer:reference` prose ships with the
+  plugin, not here.
 - **`/infra`** — infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
   map, how a request flows. `/spec/app` is *how to use/operate it*,

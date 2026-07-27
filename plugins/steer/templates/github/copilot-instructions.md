@@ -5,10 +5,8 @@
 # Engineering Standards — Operating Manual (org standards)
 
 Org-wide engineering standards, injected into every session by the **steer**
-plugin and maintained centrally in
-[`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins) — never
-copy them into a product's `CLAUDE.md`, which holds only product-specific
-context.
+plugin and maintained centrally in `element22llc/e22-plugins` — never copy them
+into a product's `CLAUDE.md`, which holds only product-specific context.
 
 **Be concise by default** — in chat, in code, and in every artifact you write.
 Brevity is a standard here, not a preference: see Output discipline.
@@ -25,14 +23,12 @@ it yourself**.
   question offering the 2–3 likely intents.
 - **Auto-continue, bounded** — when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
-- **Routing moves navigation, never authority.** The human gates are
-  unchanged: issue creation beyond an explicit "fix / add / implement" ask
-  (Issue-first), ADR ratification (High-risk), and merge / deploy / real
-  secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
-  are **not** gates — they are autonomous delivery steps; the human gate is
-  the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
-  push). A gate whose decider is present is **answered in-session** — see
-  Answering a human gate.
+- **Routing moves navigation, never authority.** The human gates are unchanged:
+  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
+  ADR ratification (High-risk), and merge / deploy / real secrets (Commit
+  autonomy, High-risk). Pushing a branch and opening the PR are **not** gates —
+  they are autonomous delivery steps; the gate is the PR **merge**. A gate whose
+  decider is present is **answered in-session** — see Answering a human gate.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
@@ -78,10 +74,9 @@ management with no implementation this turn routes to `/steer:issues`.
 invocable too): `/steer:setup` → `/steer:init` (greenfield) / `/steer:adopt`
 (existing code) / `/steer:sync` (steady-state); `/steer:doctor` when
 prerequisites are missing (from init/build, not setup); `/steer:audit` →
-`/steer:tidy`;
-`/steer:issues` and `/steer:spec` → `/steer:questions`; `/steer:issues` →
-`/steer:roadmap`. GitHub reads/writes route through the internal
-`/steer:tracker-sync` gateway; feature specs are instantiated by the internal
+`/steer:tidy`; `/steer:issues` and `/steer:spec` → `/steer:questions`;
+`/steer:issues` → `/steer:roadmap`. GitHub reads/writes route through the
+internal `/steer:tracker-sync` gateway; feature specs are instantiated by
 `/steer:spec-scaffold` — neither is a user front door.
 
 **Full reference prose** loads on demand via `/steer:reference [conventions |
@@ -159,10 +154,10 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
   locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
   point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
   keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins (deliberate exceptions: ADR +
-  `# steer:allow-pin` — the denial names the full remedy). **Every published
-  host port overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare
-  `5432:5432` — with the override var in `.env.example`.
+  plugin hook denies stale image-major pins (exceptions: ADR +
+  `# steer:allow-pin`). **Every published host port overridable** —
+  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the override
+  var in `.env.example`.
 - **Task running:** mise is the single task entry point. Declare ordering with
   `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
   Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
@@ -226,8 +221,8 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/spec/sources`** — **recurring**, versioned PO source documents,
   maintained by `/steer:intake`.
 - **`/spec/reference`** — **one-off** (non-versioned) source/research
-  materials feeding the spec. The `/steer:reference` prose is **not** stored
-  here — it ships with the plugin.
+  materials feeding the spec. The `/steer:reference` prose ships with the
+  plugin, not here.
 - **`/infra`** — infrastructure-as-code and deploy scripts.
 - **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
   map, how a request flows. `/spec/app` is *how to use/operate it*,
@@ -264,6 +259,10 @@ judgment or loss is at stake:
 - **Deleting** — never automatic. Only true junk (`desktop.ini`,
   `.DS_Store`), only on confirmation, plus a `.gitignore` pattern so it can't
   return.
+- **Polyrepo member** (`spec/PRODUCT.md` present): `spec/reference/`,
+  `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** —
+  never create one locally for a stray; report it and name the workspace as its
+  home. `spec/design/`, `spec/decisions/` are the member's own — handle normally.
 
 Run **`/steer:tidy`** for a full sweep.
 
@@ -375,9 +374,8 @@ relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
 below; a GitHub-adopted repo still keeps the issue, closed from the commit — see
 Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
-built), auto-documented as features land (`/spec/HISTORY.md`, `/spec/app/`).
-`/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse to skip
-bootstrap now.
+built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
+to skip bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
@@ -440,10 +438,15 @@ update (or propose) the owning artifact **in the same change as the code**:
 - What changed, why, who asked, refs → append to `/spec/HISTORY.md`, one
   short entry per merged change or ratified decision.
 
+**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
+and `/spec/HISTORY.md` are the **workspace's** — write them there via
+`workspace.path`, else note it in the PR description; never a local copy.
+`ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
+
 PO-facing artifacts (intent, vision, app guide) stay plain-language;
 dev-facing ones (contract, ADR) stay precise enough to implement and review
 against. A declined proposal becomes an open question, not silence. Full
-conventions + worked examples: **`/steer:reference traceability`**.
+conventions: **`/steer:reference traceability`**.
 
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it is living-docs
@@ -566,17 +569,14 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
   required and closed from the trunk commit (`Closes #N`), not via a PR (see
   Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
-  works, you first deploy, or a second contributor joins, whichever comes
-  first. While a **local** graduation signal (a deploy target or a `prod`
-  branch) stands unaddressed, trunk pushes stop being autonomous — each one
-  waits for a human yes until the repo graduates; a second contributor is
-  caught on demand by `/steer:protect` and `/steer:audit`, not at push time.
-- **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
-  pr-flow but `main` has no protection, the flow above applies unchanged — you
-  still never merge — but say the wall is missing and recommend
-  `/steer:protect`. Where protection is genuinely unavailable, record the
-  exception in an ADR; `/steer:protect verify` and `/steer:audit` keep
-  flagging it.
+  works, you first deploy, or a second contributor joins, whichever comes first.
+  While a **local** graduation signal (a deploy target or a `prod` branch)
+  stands unaddressed, trunk pushes stop being autonomous — each waits for a
+  human yes until the repo graduates.
+- **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
+  applies unchanged — you still never merge — but say the wall is missing and
+  recommend `/steer:protect`; where protection is genuinely unavailable, record
+  the exception in an ADR.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work
   presupposes an active GitHub issue (see Issue-first) — autonomy is unchanged
   once that issue exists.
@@ -922,7 +922,6 @@ anti-patterns prose: `/steer:reference conventions`.
   smart quotes, ellipsis, non-breaking spaces) belong in prose and docs, never
   in code, identifiers, config keys/values, or strings bound for an external
   API — use the ASCII equivalent. Strict validators reject the rest.
-  *(Rationale: `/steer:reference conventions`.)*
 
 
 ## Output discipline — earn every line
@@ -1044,7 +1043,7 @@ dropped:
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
 - [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Working in a worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
+- [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?

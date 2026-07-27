@@ -33,5 +33,7 @@ What changes versus the normal flow:
   stay human-gated (this skill does not pre-approve them).
 - **Mandatory follow-up (not optional).** Once the fire is out, restore traceability:
   backfill/finish the issue, write the spec/ADR if a durable decision was made, and
-  append a `/spec/HISTORY.md` entry. Definition of Done is **deferred, not waived**
+  append a `/spec/HISTORY.md` entry (in a polyrepo member, to the **workspace's**
+  ledger via `workspace.path`, else the PR description — never a local copy).
+  Definition of Done is **deferred, not waived**
   (rule 50) — track the follow-up to closure rather than declaring the hotfix done.
