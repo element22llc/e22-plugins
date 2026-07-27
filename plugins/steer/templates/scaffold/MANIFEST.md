@@ -86,9 +86,13 @@ reason the rest of the spine does.
 map *minus* the product-level artifacts — no `vision.md`, `users.md`,
 `glossary.md`, `HISTORY.md`, `spec/app/`, `spec/features/`, or `spec/tracker.md`;
 those live once, in the workspace. It keeps `spec/decisions/`, `spec/design/`, and
-gains `spec/PRODUCT.md`. `steer_spine_state` still reports `damaged` for such a
-repo, which is why `/steer:sync` and `/steer:doctor` must check
-`has-product-pointer` before treating a missing product-level file as damage.
+gains `spec/PRODUCT.md`. `steer_spine_state` detects that pointer and validates a
+member against the reduced `STEER_SPINE_REQUIRED_MEMBER` set (`hooks/lib/spine.sh`),
+so such a repo reports `managed`, **not** `damaged`. `/steer:sync` and
+`/steer:doctor` still establish the role via `steer_polyrepo_role`
+(`hooks/lib/scope.sh`) before touching `/spec`: a missing product-level file in a
+member is by design and must never be "repaired" — reinstalling it recreates the
+split-brain spine the topology removes.
 
 ## GitHub templates (instantiate from `../github/`)
 

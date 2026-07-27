@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `templates/reference/GATES.md` listed the ungraduated solo-trunk
+  trunk push under **"never promptable — asking is not authorization"**, which
+  contradicted the two surfaces that actually implement it: rule
+  `45-commit-autonomy` says such a push "waits for a human yes", and
+  `hooks/check-bash-actions.sh` emits `permissionDecision: "ask"` —
+  deliberately never a deny — whose own reason text ends "Approving this prompt
+  pushes anyway". Claude reading GATES.md would have refused a push the human had
+  just approved. §5 now lists only protected-branch pushes (where the
+  server-side wall *is* the authorization, matching rule `61-gate-prompts`), and
+  says explicitly that the solo-trunk gate is answerable but is **not** one of the
+  three §2 gates: it is a per-push harness permission decision with no `/spec`
+  field to record and no three-option prompt.
+- **Fixed:** `templates/scaffold/MANIFEST.md` still asserted that
+  `steer_spine_state` "still reports `damaged`" for a polyrepo member — stale as
+  of the same release that fixed it, since `hooks/lib/spine.sh` now detects
+  `spec/PRODUCT.md` and validates members against `STEER_SPINE_REQUIRED_MEMBER`,
+  reporting `managed`. The passage now states the real mechanism and keeps the
+  still-correct instruction: `/steer:sync` and `/steer:doctor` establish the role
+  via `steer_polyrepo_role` first, and never "repair" a member's deliberately
+  absent product-level files.
 - **Fixed:** three **shipped** scaffold comments still advertised the retired
   `markitdown` MCP server as live — `templates/scaffold/mise.toml` twice (once as
   the justification for the always-installed Node/Python baseline, once claiming
