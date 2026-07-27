@@ -7,6 +7,60 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+*This was a long cycle with a large internal sweep, so many **Fixed** entries
+below refer to defects introduced **and** resolved between releases — no
+released version ever carried them. Entries that correct behavior a consumer
+actually ran say so explicitly.*
+
+- **Fixed:** `/steer:adopt`'s member carve-out never reached the file that
+  **executes** it. `adopt/SKILL.md` says a member skips the seven product-level
+  artifacts, but `PROCEDURE.md` — the phase-by-phase runbook the session actually
+  follows — contained no mention of the exception and created them unconditionally
+  at Phase 4 (`vision.md`, `users.md`, `glossary.md`) and Phase 10
+  (`/spec/tracker.md` plus both tracker bootstraps, `/spec/app/README.md`,
+  `/spec/HISTORY.md`). The precedence clause did not cover it either: the runbook
+  defers to the `## Non-negotiable guardrails` block, and the carve-out sits
+  outside it. Adopting a polyrepo member therefore produced exactly the
+  split-brain spine the topology exists to prevent. Both phases now branch on the
+  role, matching the fix `init/SCAFFOLD.md` already carried.
+- **Fixed:** the deep-dive prose behind rules 30/32 contradicted the carve-out
+  those rules state. `TRACEABILITY.md`'s routing table sent `/spec/HISTORY.md`,
+  `/spec/app/` and `/spec/features/` destinations unconditionally, and
+  `SPEC-FRAMEWORK.md`'s greenfield flow told every repo to fill `vision.md`,
+  `users.md`, `glossary.md` and draft `/spec/features/`. Both now name the member
+  exception, as their sibling deep-dives `HOUSEKEEPING.md` and
+  `ISSUE-WORKFLOW.md` already did.
+- **Fixed:** `policy/` — a root directory the scaffold itself installs and
+  `/steer:protect` reads — was missing from the root allowlist in rule
+  `22-housekeeping` and `HOUSEKEEPING.md`, so a tidy pass saw a bootstrap-created
+  dir as a stray. Added there and to rule `20-layout`'s directory map, absorbed
+  inside the existing rules ratchet — **no ceiling raise** — by tightening
+  redundant wording in `20-layout`; no instruction was dropped.
+- **Fixed:** rule `36-issue-first` said `/steer:tracker-sync` **and**
+  `/steer:report` re-grant both MCP write tools; `/steer:report` grants only
+  `issue_write`. Narrowed to what each actually grants.
+- **Fixed:** three surfaces excluded a `spec/reports/*` directory from
+  provenance-safe token rewrites — a path the plugin never creates — while the two
+  reports it does emit (`spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`) fell
+  outside the carve-out. `MIGRATIONS.md`, `INVOCATION.md`, `sync/RECONCILE.md` and
+  `scan-invocations.sh`'s comment now name the real files.
+- **Fixed:** `/steer:roadmap` declared three modes but implements four — the
+  no-argument read-only preview its body defines was absent from both the
+  `argument-hint` and the `steer:modes` marker (`check_standards.py` validates
+  marker→body only, so an undeclared mode is invisible to CI). Also:
+  `/steer:spec`'s description enumerated `clarify` and `validate` but dropped
+  `approve`, the one mode that writes; `/steer:intake`'s omitted its declared
+  `status` mode; and `/steer:spec-scaffold`'s described creation only, though its
+  body has a non-clobbering reconcile branch that `/steer:spec` depends on. All
+  paid for inside the skill-listing ratchet by trimming redundancy in the same
+  descriptions — **no ceiling raise**.
+- **Fixed:** `plugins/steer/README.md` said the five temp-writing Tier 1 skills
+  each have "a single temp-dir path" as their one permitted write, then conceded
+  12 lines later that `/steer:audit` may also write `/spec/AUDIT-REPORT.md` and
+  `/spec/DRIFT-REPORT.md`. Now states the exception where the claim is made.
+- **Fixed:** `scaffold_reconcile.py`'s PERMISSION TIERS docstring illustrated the
+  duplicate-pattern hazard with `git push` "in `ask`" — the template carries it
+  under `allow`. Switched to `gh pr merge`, which is genuinely in `ask`.
 - **Fixed:** the polyrepo member write guard was missing from the **always-on
   rules layer** — the one surface that fires without any skill being invoked, and
   the last place this cycle's carve-out sweep had not reached. Rule
@@ -85,13 +139,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   member was undocumented. Added, with the inject-when predicate list.
   `docs/workflows/issues.md` also dropped `reconcile --all` and
   `publish-findings --source` from its argument hint.
-- **Fixed:** `[Unreleased]` stopped quoting absolute always-on byte totals. Every
-  one went stale again inside this cycle — the entry that *fixed* three stale
-  measurements was itself stale within one commit — because any correctness fix to
-  a rule or skill moves them and no gate compares prose to the live figure. The
-  entries now point at `check_context_budget.py --report` and `mise run
-  rules:preview`, which cannot drift. One bullet also promised "three pins" and
-  listed two.
 - **Fixed:** `/steer:init`'s member carve-out stopped short of the step that
   actually populates the spine, so init still contradicted **itself**. The earlier
   pass covered step 2 (`SCAFFOLD.md`, which skips *creating* the product-level
@@ -167,17 +214,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `gh label list`. Label bootstrap therefore prompted interactively and
   auto-denied headless, in the two skills (`/steer:init`, `/steer:adopt`) that
   call it during setup. Granted in both places.
-- **Fixed:** three `[Unreleased]` entries published measurements that later fixes
-  in the same cycle invalidated — the listing-ratchet note claimed `work` was
-  trimmed to 747 chars and "no longer the largest listing consumer" (it is 794
-  and still the largest), and the rules-payload and skill-prose totals were
-  stale. The listing figure is corrected and its headroom stated plainly; the
-  **absolute** rules-payload and skill-prose byte totals are no longer quoted in
-  prose at all. Every one of them went stale again within the same cycle, because
-  any correctness fix to a rule or skill moves them and no gate compares prose to
-  the live measurement. `mise run rules:preview` and
-  `uv run python scripts/check_context_budget.py --report` are the only figures
-  that cannot drift — cite those instead of copying a number into prose.
 - **Fixed:** three surfaces stated an authorization or routing fact the code
   contradicts — the class the pre-release audit exists to catch, and two of the
   three were introduced by the *previous* audit-fix pass. (1) The authorization
@@ -502,9 +538,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   paid what it could first: `work`'s entry is trimmed 932 → 747 chars by dropping
   a duplicate issue example, a third hotfix synonym, and a step enumeration the
   body carries in full — every distinct trigger phrase is kept. Later fixes in
-  this same cycle grew it back to **794 chars**, so `work` remains the largest
-  listing consumer and the payload sits at **11,884 of 11,900**; the next skill
-  description to grow needs its own paydown. Deliberately **not** funded by compressing
+  this same cycle grew it back, so `work` remains the largest listing consumer
+  and the payload sits just under the 11,900 ceiling (`check_context_budget.py
+  --report` for the live figure); the next skill description to grow needs its
+  own paydown. Deliberately **not** funded by compressing
   unrelated skills, which is the trade the rules-ceiling note records as the
   wrong one. `LISTING_TOTAL_TARGET_CHARS` stays at 10,000 so the report keeps
   showing the gap to reclaim.
@@ -671,11 +708,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — total always-resident skill prose fell roughly a quarter from the
-  331,971 B it stood at in 3.22.0.
-  The largest remaining body is `work` at 15,991 B (~4,570 tokens, **91% of the
-  17,500 B cap**), so the headroom this bought is real but thin: the next
-  substantial skill body still has to be factored, not appended.
+  dropped — total always-resident skill prose fell roughly a quarter against
+  3.22.0. The largest remaining body is `work`, still around 90% of the
+  17,500 B cap (`check_context_budget.py --report` for the live figure), so the
+  headroom this bought is real but thin: the next substantial skill body still
+  has to be factored, not appended.
 - **Added:** `check_context_budget.py` now gates a third always-on surface — a
   **per-skill `SKILL.md` body ceiling** of 17,500 bytes (the 5,000-token
   compaction cap at a pessimistic 3.5 B/token). Unlike the rules and listing

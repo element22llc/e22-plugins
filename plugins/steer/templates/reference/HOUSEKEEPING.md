@@ -32,9 +32,11 @@ names" below). Confidence is the gate on the automatic move; absent it, you ask.
 
 These belong at the root. Never propose moving them:
 
-- **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `scripts/`,
-  `spec/` (rule `22-housekeeping` is the source of this list — a `workspace`
-  profile ships a root `scripts/ws.sh`, so `scripts/` is never loose material).
+- **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `policy/`,
+  `scripts/`, `spec/` (rule `22-housekeeping` is the source of this list — a
+  `workspace` profile ships a root `scripts/ws.sh`, so `scripts/` is never loose
+  material; `policy/` holds the version pins and branch-protection data the
+  scaffold installs and `/steer:protect` reads).
 - **Root config:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `biome.json`, `compose.yaml`, `mise.toml`, `mise.lock`, `tsconfig*.json`.
 - **Root docs:** `CLAUDE.md`, `README.md`, `DESIGN.md`, `ARCHITECTURE.md`

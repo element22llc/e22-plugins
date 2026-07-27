@@ -23,12 +23,17 @@ flowchart TD
 2. Materializes the `/spec` spine from the bundled templates — including the
    `design/` home (`README.md`, `source.md`, the living
    `architecture-diagram.md`) and `sources/README.md`.
-3. Installs the repo scaffold (toolchain, CI, PR template).
-4. If the tracker is GitHub Issues, bootstraps the label taxonomy
+3. Reverse-engineers the root **`DESIGN.md`** from the app's real visual
+   identity (tokens, type scale, component patterns) — as-built, not aspirational.
+4. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** — a Keep / Refactor
+   / Rewrite / Reject verdict per area, with the reasoning, so the team inherits
+   a ranked remediation plan rather than a verdict-free inventory.
+5. Installs the repo scaffold (toolchain, CI, PR template).
+6. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:issues bootstrap-labels`) and verifies the org-level
    Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) —
    the same tracker setup `/steer:init` performs.
-5. Stamps `/spec/.version` with the plugin version.
+7. Stamps `/spec/.version` with the plugin version.
 
 ## Guardrails
 

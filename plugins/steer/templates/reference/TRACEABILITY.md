@@ -31,6 +31,13 @@ already approved.
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; `validated` status in `intent.md` |
 | Anything merged or ratified | `/spec/HISTORY.md` entry: what, why, who asked, refs |
 
+**In a polyrepo member** (`spec/PRODUCT.md` present), the product-level
+destinations in this table — `/spec/HISTORY.md`, `/spec/app/`,
+`/spec/features/` — are the **workspace's**. Do not create them locally: route
+the entry to the workspace checkout (`workspace.path` in `spec/PRODUCT.md`), else
+carry it in the PR description. `spec/decisions/` and `spec/design/` are the
+member's own, so ADRs are recorded normally.
+
 ### Extraction discipline
 
 - **Extract, don't embellish.** Capture what was said; route what was *not*

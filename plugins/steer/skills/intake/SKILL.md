@@ -1,11 +1,10 @@
 ---
 name: intake
-description: "Absorb a PO office document (docx/pptx/xlsx/pdf) into the /spec spine — commit the binary plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, report what changed, and route the real changes into the spine and tracker without clobbering human-authored prose. clarify mode maps a client clarification document to open questions and new scope."
+description: "Absorb a PO office document (docx/pptx/xlsx/pdf) into the /spec spine — commit the binary plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, report what changed, and route the real changes into the spine and tracker without clobbering human-authored prose. clarify maps a client clarification document to open questions and new scope; status reports a source's absorb state."
 when_to_use: >-
   Use when a Product Owner hands over a new or re-sent spec, roadmap,
   requirements deck, or spreadsheet and the team needs what changed propagated
-  into /spec and the tracker; use clarify mode when a client document answers
-  open questions or adds scope.
+  into /spec and the tracker.
 argument-hint: "[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]"
 allowed-tools:
   - Bash(git status *)

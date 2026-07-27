@@ -16,8 +16,9 @@ already have, and its tool allowlist is strictly narrower.
 
 A read-only reviewer invoked **explicitly** by `/steer:audit` (one per audit
 dimension), `/steer:audit spec` (one per feature diff), and `/steer:work --reviewed` (the
-optional code-gate standards check) when the comparison is large enough that
-inline review would crowd the main context. It analyzes one bounded slice in its own context window
+optional code-gate standards check) when inline review would crowd the main
+context — for the two audit modes that means a size threshold, for
+`--reviewed` a spec/standards-sensitive repo. It analyzes one bounded slice in its own context window
 and returns a compact, `path:line`-evidenced findings summary; the calling skill
 vets, ranks, and routes what it returns.
 
@@ -38,9 +39,11 @@ vets, ranks, and routes what it returns.
   omits `Bash`, so there is no shell mutation path. This holds the fan-out to the
   same read-only contract the calling skills declare via `disallowed-tools`. See
   the [Authorization model](../concepts/authorization-model.md).
-- **Cost-gated.** Below the size gate, the skills review inline and the subagent
-  is never spawned — the coordination and token overhead only pays off on large
-  sweeps.
+- **Cost-gated.** In `/steer:audit`'s `code` and `spec` modes the fan-out is
+  size-gated: below it, the skill reviews inline and the subagent is never
+  spawned — the coordination and token overhead only pays off on large sweeps.
+  `/steer:work --reviewed` gates on kind rather than size, spawning the reviewer
+  for spec/standards-sensitive repos.
 - **Plugin-scoped limits.** Plugin subagents ignore the `hooks`, `mcpServers`,
   and `permissionMode` frontmatter fields by design; `steer-reviewer` uses none
   of them.

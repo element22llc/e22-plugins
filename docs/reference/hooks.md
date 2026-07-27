@@ -145,7 +145,9 @@ so it stays POSIX `sh` with no `jq` and no network.
 
 `steer_inject_when_ok <token> <root>` is the entry point for rule scoping: a rule
 whose first line is `<!-- steer:inject-when=<token> -->` is injected only when the
-predicate holds. Tokens compose with `,` (all must hold). The predicates are
+predicate holds. Tokens compose with `|` for OR — the rule injects when **any**
+listed predicate holds (the one shipped composite is `52-deployment`'s
+`has-iac|has-apps`). The predicates are
 `tracker-github`, `has-infra`, `has-iac`, `has-apps`, `has-compose`,
 `code-project`, `polyrepo`, `has-workspace-manifest` and `has-product-pointer`.
 **An unknown token fails open (injects)**, so a typo'd marker can never silently
@@ -163,7 +165,7 @@ Three helpers resolve polyrepo topology:
   member this is deliberately **never that member's own repo**, which is why
   closing refs across repos need the cross-repo form.
 
-The behaviourally largest of these is `steer_tracker_is_github`, which decides
+A fourth helper, `steer_tracker_is_github`, is the behaviourally largest — it decides
 whether the issue-first rules and nudges apply. In a member there is no local
 `spec/tracker.md`, so it resolves the workspace's through `workspace.path` — and
 when no local checkout is declared it **fails open to inject**. That fail-open is
