@@ -220,8 +220,8 @@ budget entirely — a fresh session is the fix there.
 
 ## What the hooks do (and don't) enforce
 
-Even when hooks fire, only one of them actually blocks an action. Be honest about
-the tiers:
+Even when hooks fire, only one of them **hard-blocks** an action, and one more
+raises a prompt. Be honest about the tiers:
 
 - **`SessionStart` → `inject-standards.sh`** injects the rules. Real and load-bearing.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
@@ -235,9 +235,15 @@ the tiers:
   silently skipped (it still never blocks).
 - **`PreToolUse` → `check-version-pins.sh`** is the only hard **`deny`** — it
   blocks image/runtime pins below the supported floor.
-- The **push / PR gate is not a hook at all** — it's a rule Claude follows
-  (`45-commit-autonomy`, `95-not-the-gate`). Nothing technically prevents a push;
-  a human reviewer is the real backstop.
+- **`PreToolUse` → `check-bash-actions.sh`** is an **`ask`**, never a deny: in a
+  `solo-trunk` repo that has outgrown pre-MVP, the first `git push` to trunk of a
+  session raises a permission prompt (approving it pushes anyway; the gate clears
+  by graduating via `/steer:protect`). The same script also carries an advisory
+  issue-create guard. Once-per-session-and-repo — later pushes downgrade to a
+  note.
+- The **merge gate is not a hook at all** — it's a rule Claude follows
+  (`45-commit-autonomy`, `95-not-the-gate`). Nothing technically prevents a
+  branch push or a PR merge; a human reviewer is the real backstop.
 
 ## When hooks fail or don't run
 

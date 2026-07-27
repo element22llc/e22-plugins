@@ -210,7 +210,9 @@ Pick one `Current recommended action` by precedence.
 
 Renders every PO-answerable open question across the spine as one fillable
 questionnaire (a Claude Artifact, Markdown fallback) so a Product Owner can
-answer them offline in a single pass, then ingests the filled return leg.
+answer them offline in a single pass. Bundle itself **changes nothing in the
+spec** — the filled return leg comes back through
+`/steer:intake clarify <filled-doc>`, which maps each answer to its `Q-NNN`.
 Read the procedure only when running this mode:
 [`BUNDLE.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/BUNDLE.md).
 

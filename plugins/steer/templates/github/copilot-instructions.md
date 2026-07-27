@@ -474,7 +474,9 @@ use the manual export.
 
 ## Issue-first (GitHub-adopted repos)
 
-When `/spec/tracker.md` declares `system: github`, every
+When `/spec/tracker.md` declares `system: github` — in a polyrepo member
+(`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
+copy — every
 **implementation-affecting mutation** — code, config, infrastructure, or
 behavior — has a GitHub issue **before the first repository mutation**. Out of
 scope (no issue needed): `/spec` edits, documentation, generated output,
