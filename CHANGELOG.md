@@ -7,6 +7,33 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:work`'s routing text was **silently truncated by YAML** on
+  every surface. `when_to_use` was a plain scalar containing `("work on #123"`,
+  and in an unquoted scalar ` #` opens a comment — so the value ended at 75 of
+  546 characters with no parse error. Everything discarded was trigger
+  vocabulary: the whole `--reviewed` cluster ("deliver X carefully", "do this
+  with review", any change costly to unwind) and the whole `--hotfix` cluster
+  ("prod is down", "emergency fix"). Routing to the review and
+  production-incident paths was degraded for several releases, worst on Copilot
+  in VS Code where the generated capsule *is* the entire skill. Now a `>-` folded
+  block, as 19 of 26 skills already used; `work` was the only skill affected.
+- **Added:** `check_plugin.py` gates the failure class — a frontmatter scalar
+  that is neither quoted nor a block and contains ` #` is now an error naming the
+  truncated value. This bug is invisible by construction (the file reads
+  correctly, the YAML is valid, only the loaded value is wrong), and nothing
+  else caught it: `check_plugin`'s per-skill cap and `check_context_budget`'s
+  ratchet both measure the *parsed* value, so a truncation looks like brevity.
+- **Changed:** the skill-listing ratchet is re-baselined once, 11,500 → 11,900
+  chars, because the old number was never an honest measurement — it was
+  calibrated against the truncated value above, reading 22 chars of headroom
+  while the intended payload was ~450 over. Per the gate's own policy the fix
+  paid what it could first: `work`'s entry is trimmed 932 → 747 chars by dropping
+  a duplicate issue example, a third hotfix synonym, and a step enumeration the
+  body carries in full — every distinct trigger phrase is kept, and `work` is no
+  longer the largest listing consumer. Deliberately **not** funded by compressing
+  unrelated skills, which is the trade the rules-ceiling note records as the
+  wrong one. `LISTING_TOTAL_TARGET_CHARS` stays at 10,000 so the report keeps
+  showing the gap to reclaim.
 - **Fixed:** issue-first enforcement was silently **off in every polyrepo
   member** — the repos that hold all the code. `steer_tracker_is_github` resolved
   `spec/tracker.md` from the local root only, but a member's tracker is

@@ -120,6 +120,47 @@ def test_description_at_listing_cap_passes(tmp_path: Path):
     assert check_plugin.run_checks(root) == []
 
 
+def test_unquoted_scalar_with_comment_marker_fails(tmp_path: Path):
+    """A plain scalar containing ' #' is silently truncated by YAML — the real
+    `work` skill shipped this way, losing 471 of 546 chars of trigger text."""
+    root = _make_plugin(tmp_path)
+    skill = root / "skills" / "demo-skill" / "SKILL.md"
+    skill.write_text(
+        "---\nname: demo-skill\ndescription: A demo skill.\n"
+        'when_to_use: Use when asked ("work on #123") and for --hotfix too.\n'
+        "---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    errors = check_plugin.run_checks(root)
+    assert any("silently discards the rest" in e for e in errors)
+
+
+def test_block_scalar_with_comment_marker_passes(tmp_path: Path):
+    """A '>-' folded block treats '#' as literal content — the sanctioned fix."""
+    root = _make_plugin(tmp_path)
+    skill = root / "skills" / "demo-skill" / "SKILL.md"
+    skill.write_text(
+        "---\nname: demo-skill\ndescription: A demo skill.\n"
+        'when_to_use: >-\n  Use when asked ("work on #123") and for --hotfix too.\n'
+        "---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    assert check_plugin.run_checks(root) == []
+
+
+def test_quoted_scalar_with_comment_marker_passes(tmp_path: Path):
+    """Quoting is the other sanctioned fix; '#' inside quotes is content."""
+    root = _make_plugin(tmp_path)
+    skill = root / "skills" / "demo-skill" / "SKILL.md"
+    skill.write_text(
+        "---\nname: demo-skill\ndescription: A demo skill.\n"
+        "when_to_use: \"Use when asked ('work on #123') and for --hotfix too.\"\n"
+        "---\n\n# Demo\n",
+        encoding="utf-8",
+    )
+    assert check_plugin.run_checks(root) == []
+
+
 def test_placeholder_detected(tmp_path: Path):
     root = _make_plugin(tmp_path)
     (root / "rules" / "00-x.md").write_text("# Rule\n\nTODO: finish this.\n", encoding="utf-8")
