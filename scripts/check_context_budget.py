@@ -20,6 +20,38 @@ Budgets enforced:
 - ``LISTING_TOTAL_MAX_CHARS`` — total ``description`` + ``when_to_use``
   characters across all skills (the always-on routing surface). The *per-skill*
   1536-char cap lives in ``check_plugin.py``; this is the cross-skill sum.
+- ``SKILL_BODY_MAX_BYTES`` — per-skill ``SKILL.md`` body size, gating the
+  **compaction re-attach cap** (see below).
+
+The compaction cap
+------------------
+
+An invoked skill's rendered ``SKILL.md`` enters the conversation and stays there
+for the rest of the session. When auto-compaction fires, Claude Code re-attaches
+the most recent invocation of each skill after the summary but keeps only **the
+first 5,000 tokens of each** (re-attached skills also share a combined 25,000
+token budget). Everything past that point in the file is silently dropped.
+
+That makes an oversized ``SKILL.md`` a *correctness* problem, not just a cost
+one: whatever sits at the tail — historically the Guardrails and Coupling-rules
+sections — disappears exactly when a run has gone on long enough to compact,
+which is precisely when a long ``/steer:work`` or ``/steer:audit`` still needs
+them. Two rules follow, and this gate enforces the second:
+
+1. **Front-load the standing instructions.** Guardrails, coupling rules, and
+   output contracts go near the top of ``SKILL.md``, never at the bottom.
+2. **Keep the body under the cap.** Push per-mode or per-phase procedure into a
+   sibling file under the skill directory (``modes/<mode>.md``,
+   ``PROCEDURE.md``, ``OPERATIONS.md``, …) that the dispatcher reads
+   just-in-time for the one path it is executing. A file read that way is a tool
+   result, not skill content, so it never competes for the re-attach budget.
+
+``SKILL_BODY_MAX_BYTES`` converts the 5,000-token cap into bytes at a
+deliberately **pessimistic** 3.5 bytes/token. Measured against ``cl100k_base``
+these bodies run ~4.0 B/token, and Claude's tokenizer is denser than
+``cl100k_base`` on English prose, so 3.5 leaves margin for the gap between the
+two rather than betting the guardrails on a favourable tokenizer. Gating on
+bytes also keeps this script dependency-free (no tokenizer at check time).
 
 Run from the repo root::
 
@@ -47,6 +79,14 @@ PLUGIN_ROOT = Path("plugins/steer")
 # reductions land.
 RULES_TOTAL_MAX_BYTES = 62_500
 LISTING_TOTAL_MAX_CHARS = 11_500
+
+# --- Compaction re-attach cap (hard gate, per skill) -------------------------
+# 5,000 tokens at a pessimistic 3.5 bytes/token (see the module docstring). This
+# is a real ceiling, not a ratchet: it is derived from Claude Code's documented
+# re-attach behaviour, so it does NOT move down as bodies shrink and must not be
+# raised to fit new prose. A skill that outgrows it factors procedure into a
+# sibling file read just-in-time — that is the fix, every time.
+SKILL_BODY_MAX_BYTES = 17_500
 
 # --- Aspirational targets (reported, never enforced here) --------------------
 # PLAN.md Phase 1 closed with the original 30K rules target retired: after two
@@ -83,6 +123,7 @@ def measure(root: Path) -> dict:
 
     listing_chars = 0
     skills = []
+    bodies: list[tuple[str, int]] = []
     skills_dir = root / "skills"
     if skills_dir.is_dir():
         for skill_dir in sorted(p for p in skills_dir.glob("*") if p.is_dir()):
@@ -97,12 +138,14 @@ def measure(root: Path) -> dict:
             )
             listing_chars += chars
             skills.append((skill_dir.name, chars))
+            bodies.append((skill_dir.name, skill_md.stat().st_size))
 
     return {
         "rules_files": len(rules),
         "rules_bytes": rules_bytes,
         "skills": skills,
         "listing_chars": listing_chars,
+        "bodies": bodies,
     }
 
 
@@ -129,6 +172,18 @@ def run_checks(root: Path) -> list[str]:
             f"primary trigger; move disambiguation into the skill body, which "
             f"loads only on invocation."
         )
+    for name, size in sorted(stats["bodies"]):
+        if size > SKILL_BODY_MAX_BYTES:
+            errors.append(
+                f"{root / 'skills' / name / 'SKILL.md'}: body is {size:,} bytes, over the "
+                f"{SKILL_BODY_MAX_BYTES:,}-byte compaction cap (~5,000 tokens). After "
+                f"auto-compaction Claude Code re-attaches only the FIRST 5,000 tokens of "
+                f"an invoked skill, so everything past that point is silently dropped "
+                f"mid-run. Factor per-mode or per-phase procedure into a sibling file "
+                f"under skills/{name}/ that the dispatcher reads just-in-time, and keep "
+                f"guardrails / coupling rules near the TOP of SKILL.md. Do not raise this "
+                f"ceiling — it is derived from Claude Code behaviour, not from a budget."
+            )
     return errors
 
 
@@ -148,11 +203,19 @@ def report(root: Path) -> str:
             f"| {stats['listing_chars']:,} ch | {LISTING_TOTAL_MAX_CHARS:,} ch "
             f"| {LISTING_TOTAL_TARGET_CHARS:,} ch |"
         ),
-        "",
-        "Top skill-listing consumers:",
     ]
+    biggest = max((s for _, s in stats["bodies"]), default=0)
+    lines.append(
+        f"| largest SKILL.md body ({len(stats['bodies'])} skills) "
+        f"| {biggest:,} B | {SKILL_BODY_MAX_BYTES:,} B | — |"
+    )
+    lines += ["", "Top skill-listing consumers:"]
     for name, chars in sorted(stats["skills"], key=lambda s: -s[1])[:5]:
         lines.append(f"- {name}: {chars:,} chars")
+    lines += ["", "Largest skill bodies (compaction cap):"]
+    for name, size in sorted(stats["bodies"], key=lambda s: -s[1])[:5]:
+        pct = round(100 * size / SKILL_BODY_MAX_BYTES)
+        lines.append(f"- {name}: {size:,} B ({pct}% of cap)")
     return "\n".join(lines)
 
 

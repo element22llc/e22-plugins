@@ -41,7 +41,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `claude/settings.json` | `.claude/settings.json` | Enables `steer` + companion plugins; git permission guardrails. If one exists, merge additively with `scripts/scaffold_reconcile.py` (unions permission lists / plugins, never overwrites an existing value). The `Bash(git add*.env)` deny is deliberately narrow: `.env.local` / `.env.*.local` variants are already covered by the scaffold `.gitignore` plus the `git add -f` / `--force` denies, so the glob is **not** widened to `.env.*` (which would re-block the committed `.env.example`). |
 | `vscode/extensions.json` | `.vscode/extensions.json` | Recommended extensions. |
 | `vscode/settings.json` | `.vscode/settings.json` | Editor defaults (Biome as formatter) + the two Copilot toggles (`useInstructionFiles`, `chat.promptFiles`). |
-| `vscode/mcp.json` | `.vscode/mcp.json` | **MCP servers for GitHub Copilot in VS Code** (Chat + Agent mode). Mirrors the servers the plugin wires into Claude Code (`plugins/steer/.mcp.json`) — GitHub (the server `/steer:tracker-sync` uses), markitdown, context7 — using VS Code's `servers` schema and a prompted PAT input. Copilot/VS Code does **not** read the plugin's `.mcp.json` (Claude-only), so this per-repo file is how Copilot teammates get the same tooling. Merge additively if one exists; remove servers the repo doesn't use. |
+| `vscode/mcp.json` | `.vscode/mcp.json` | **MCP servers for GitHub Copilot in VS Code** (Chat + Agent mode). Mirrors the servers the plugin wires into Claude Code (`plugins/steer/.mcp.json`) — GitHub (the server `/steer:tracker-sync` uses) and context7 — using VS Code's `servers` schema and a prompted PAT input. Copilot/VS Code does **not** read the plugin's `.mcp.json` (Claude-only), so this per-repo file is how Copilot teammates get the same tooling. Merge additively if one exists; remove servers the repo doesn't use. |
 | `aislop/config.yml` | `.aislop/config.yml` | Scopes the **advisory `ai-slop` CI job** (`.github/workflows/ci.yml`): keeps the differentiated `ai-slop/*` rules on, turns down the security/complexity rules that duplicate the `ci` job's ruff/bandit/Biome/audit gates. Tune or delete to taste; promote the gate to blocking via the commented `ci.failBelow`. |
 | `infra/README.md`, `infra/mise.toml` | `infra/…` | Conditional: a nested `/infra` dir inside a monorepo (OpenTofu + Terragrunt conventions; infra toolchain pinned separately — create `infra/mise.lock` at pin time, same as the root). Distinct from the `infra` *profile* (whose root mise is `profiles/infra/mise.toml`). |
 | `policy/versions.yml` | `policy/versions.yml` | **Version-pin policy** (approved major-version floors). Enforced deterministically by the version-pin hook and the CI scanner. Seeded from the plugin default; the product may tighten it. |
@@ -188,7 +188,7 @@ profile `infra`.
   committed once the real workspace exists (a bundled one would be stale).
 - **`/infra` `.hcl`/`.tf` files**: each product provisions when ready —
   `infra/README.md` carries the layout.
-- **A Claude Code `.mcp.json`** (GitHub + markitdown MCP servers): these ship with
+- **A Claude Code `.mcp.json`** (GitHub + context7 MCP servers): these ship with
   the **plugin itself** (`plugins/steer/.mcp.json`), so every repo that enables
   steer in **Claude Code** gets them centrally and they refresh on `/plugin update`
   — no per-repo copy to scaffold, drift, or reconcile. A repo may still add its

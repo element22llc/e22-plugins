@@ -188,7 +188,7 @@ Repo-specific Copilot guidance you author yourself also goes in a *separate*
 Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
 Code only). So the scaffold ships **`.vscode/mcp.json`** — VS Code's `servers`
 schema — mirroring the same servers: the **GitHub** MCP server that
-`/steer-tracker-sync` is built around, **markitdown** for PO source docs, and
+`/steer-tracker-sync` is built around and
 **context7** for current library docs. The GitHub server prompts once for a PAT
 (stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
 back to `gh` only.

@@ -303,10 +303,18 @@ def check_workflow_authority(errors: list[str]) -> None:
       guard so it cannot loop indefinitely.
     """
     # 1. Exactly one skill owns draft -> approved, and it is spec.
+    # Scan each skill's whole directory, not just SKILL.md: a skill body may be
+    # factored across sibling files (modes/*.md, PROCEDURE.md, MODES.md, …) that
+    # the dispatcher reads just-in-time to stay under the compaction cap
+    # (check_context_budget.py). Authority is a property of the *skill*, so
+    # moving the marker into a factored-out body must neither pass silently nor
+    # fail spuriously.
     owners = sorted(
-        skill_md.parent.name
-        for skill_md in SKILLS.glob("*/SKILL.md")
-        if _TRANSITION_OWNER_RE.search(_read(skill_md))
+        skill_dir.name
+        for skill_dir in SKILLS.glob("*")
+        if skill_dir.is_dir()
+        and (skill_dir / "SKILL.md").is_file()
+        and any(_TRANSITION_OWNER_RE.search(_read(md)) for md in skill_dir.rglob("*.md"))
     )
     if owners != ["spec"]:
         errors.append(
@@ -319,7 +327,7 @@ def check_workflow_authority(errors: list[str]) -> None:
     if not build.is_file():
         errors.append(f"{build}: build skill is missing")
     else:
-        btext = _read(build)
+        btext = "\n".join(_read(md) for md in sorted(build.parent.rglob("*.md")))
         if "spec approve" not in btext or "delegate" not in btext.lower():
             errors.append(
                 f"{build}: build must delegate approval to "

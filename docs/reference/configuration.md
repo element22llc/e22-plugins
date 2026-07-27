@@ -78,10 +78,26 @@ manual. They are injected into every managed session by `inject-standards.sh`
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
 added to `rules/`. That leanness is **enforced, not aspirational**: CI's
-`check_context_budget.py` gate holds hard ceilings over the two always-on
-surfaces — the total `rules/*.md` bytes (the SessionStart injection payload)
-and the total skill-listing `description` + `when_to_use` characters — as a
-ratchet re-armed at each reduction, so always-on context weight can only
-shrink or hold. A companion routing-fixture net
+`check_context_budget.py` gate holds hard ceilings over three context surfaces.
+Two are always-on and ratcheted — the total `rules/*.md` bytes (the SessionStart
+injection payload) and the total skill-listing `description` + `when_to_use`
+characters — re-armed at each reduction, so always-on context weight can only
+shrink or hold.
+
+The third is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
+17,500 bytes. That number is the harness's **compaction re-attach cap** — after
+auto-compaction Claude Code re-attaches an invoked skill but keeps only the
+first ~5,000 tokens of it, so anything past that point is silently dropped
+mid-run. An oversized skill therefore loses its own guardrails exactly when a
+run has gone on long enough to compact. steer's skills keep guardrails,
+coupling rules, and output contracts near the **top** of `SKILL.md` and factor
+per-mode or per-phase procedure into sibling files (`modes/<mode>.md`,
+`OPERATIONS.md`, `PROCEDURE.md`, …) that the skill reads **just-in-time** for
+the one path it is executing — a file read that way is a tool result, not skill
+content, so it never competes for the re-attach budget. Because this ceiling is
+derived from harness behaviour rather than a budget target, it does not move
+down as bodies shrink and is not raised to fit new prose.
+
+A companion routing-fixture net
 (`tests/fixtures/routing/asks.yml`) pins the vocabulary plain-language routing
 depends on, so trimming can never silently break "just say what you want".

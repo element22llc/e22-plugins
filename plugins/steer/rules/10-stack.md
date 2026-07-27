@@ -3,9 +3,9 @@
 
 **Default biases**, not mandates — when intent clearly warrants a different
 stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
-full setup detail: `/steer:reference conventions`. Verify current stable
-versions in-session when you pick or change a piece — don't trust training-data
-memory.
+full setup detail: `/steer:reference conventions`. When you pick or change a
+piece, verify the current stable version in-session via the bundled `context7`
+MCP server — never from training-data memory.
 
 These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
@@ -27,7 +27,6 @@ bullets. `/steer:init` records the profile; the universal core (mise pinning,
 - **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE
   work; on the Claude Desktop Code tab, Git for Windows is enough.
 - **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
-  Prefer in-editor extensions for adjacent work over standalone apps.
 - **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
   format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an
   ADR.

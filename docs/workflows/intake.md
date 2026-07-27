@@ -31,7 +31,7 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
    The dropped file is **relocated** into that canonical home (a history-preserving
    `git mv` for an in-repo drop — the same move `/steer:tidy` performs), not copied,
    so it does not stay stalled where the PO uploaded it; a file outside the repo is
-   copied in and left in place. Conversion uses the **markitdown** MCP server
+   copied in and left in place. Conversion uses the **`mise run convert:doc`** task
    shipped with the plugin, or the `mise run convert:doc` CLI task.
 3. **Diff** — `git diff`s the new extraction against the prior version and groups
    the hunks into change units by heading anchor (topic, not line number).
@@ -75,5 +75,5 @@ a redundant duplicate of the already-absorbed source and routes it to `/steer:ti
 `spec/reference/` (one-off prose). A document sent
 once can stay loose under `spec/reference/`; the moment it starts arriving in
 versions, it belongs under `spec/sources/`. See
-[the markitdown server](../reference/mcp-servers.md) for the converter, and
+[the `convert:doc` task](../reference/mcp-servers.md) for the converter, and
 `/steer:reference design-sources` for the shared provenance model.

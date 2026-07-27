@@ -68,20 +68,22 @@ isn't working" in Cowork even though it works in the CLI.
 **1. The plugin's `.mcp.json` is a Claude Code mechanism — Cowork doesn't use it.**
 [MCP config is not shared across surfaces](mcp-servers.md): Cowork wires MCP
 through its own **Connectors**, not the plugin-shipped
-`plugins/steer/.mcp.json` that the CLI reads. So of the three servers steer
-ships, two do **not** survive Cowork:
+`plugins/steer/.mcp.json` that the CLI reads. So of the two servers steer
+ships, one does **not** survive Cowork — and the no-install rule separately
+takes out document conversion:
 
 - **`github`** authenticates with `Authorization: Bearer ${GITHUB_PAT}` resolved
   from your **local shell**. The sandbox has no shell you exported that PAT into,
   and Cowork doesn't read the CLI `.mcp.json` for credentials anyway — so the
   plugin's GitHub server appears to "try to connect like Claude Code" and fails
   to authenticate. **Do not rely on it in Cowork.**
-- **`markitdown`** runs as a **local process** (`uvx markitdown-mcp`), which needs
-  `uv`/Python that can't be installed, and local MCP tools can be **silently
-  disabled** in Cowork (they appear in the list but return *"This tool has been
-  disabled in your connector settings"*). Don't rely on it either.
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
-  that can work if the surface routes it — nothing to install, no shell secret.
+  that does work if the surface routes it — nothing to install, no shell secret.
+- **Office-document conversion is not a server at all** — it is the
+  `mise run convert:doc` task (`uvx markitdown`). It needs `uv`/Python, which
+  the sandbox cannot install, so `/steer:intake` drops to its manual floor in
+  Cowork: it commits the binary and stops before diffing rather than fabricating
+  an extraction. Convert the document elsewhere, or work in the CLI.
 
 **2. GitHub on Cowork = the built-in connector, not the plugin server.** To do
 issue work in Cowork, enable the **built-in GitHub connector** (Cowork →
@@ -100,8 +102,8 @@ and `/steer:issues triage` works — Cowork **can** triage GitHub issues. Caveat
   built-in connector is off there is no automated path — only the manual floor.
 
 Net: in Cowork, do **issue triage** through the built-in connector; for the
-install-dependent parts of steer (docker/mise builds, the local `markitdown`
-server, `gh`-CLI flows) use the **Claude Code CLI or the Desktop *Code* tab**,
+install-dependent parts of steer (docker/mise builds, the `convert:doc`
+task, `gh`-CLI flows) use the **Claude Code CLI or the Desktop *Code* tab**,
 which share the full engine.
 
 ## Headless vs. interactive runs
@@ -197,6 +199,24 @@ What it does instead (rule `26-context-hygiene`; full prose via
 - **Only when the thread is genuinely overloaded** does it *recommend* you `/compact`
   or start a fresh session — with a pre-composed hand-off — saying plainly that
   acting is your call, not something it can do.
+
+One compaction behaviour is worth knowing about, because it shapes how steer's
+skills are written. An invoked skill's content stays in the conversation for the
+rest of the session, and when auto-compaction fires Claude Code re-attaches the
+most recent invocation of each skill — but keeps only **the first ~5,000 tokens
+of each**, with re-attached skills sharing a combined budget. A skill whose body
+runs past that cap silently loses its tail mid-run, and the tail is typically
+where guardrails sit.
+
+steer works with that rather than against it: guardrails, coupling rules, and
+output contracts live near the **top** of every `SKILL.md`, and per-mode or
+per-phase procedure lives in sibling files the skill reads just-in-time for the
+path it is actually executing. So on a long `/steer:work` or `/steer:audit` run
+that compacts, the safety rules survive by construction, and the step-by-step
+detail is simply re-read when needed. A CI gate caps each `SKILL.md` body so
+this cannot regress (see [Configuration](configuration.md)). Invoking many
+skills in one session can still push older ones out of the shared re-attach
+budget entirely — a fresh session is the fix there.
 
 ## What the hooks do (and don't) enforce
 
