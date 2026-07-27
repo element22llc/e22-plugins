@@ -221,6 +221,33 @@ This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
 (`/steer:explain`, `/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`,
 `/steer:help`).
 
+## gates
+
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/GATES.md`
+
+It covers, in detail:
+
+- **What the prompt changes — and what it does not.** A gate requires the deciding
+  *human*, never a particular channel; the in-session prompt removes a round trip,
+  not the decision. `Decide later` reproduces today's behaviour exactly, so the
+  change is strictly additive.
+- **The three promptable gates** — ADR `Proposed → Accepted`, intent
+  `draft → approved`, `--reviewed` plan sign-off — each keeping its existing owner,
+  single writer, and preconditions (a failed blocking-question gate means the
+  prompt is never offered).
+- **Prompt shape** — `Approve · Reject · Decide later`, and the per-gate minimum
+  the prompt must show (an ADR's rejected alternatives and negative consequences;
+  an intent's criteria and locked scope; a plan's residual risk). Never pre-select,
+  never infer approval from ambient agreement, never bundle two decisions.
+- **Recording it** — transition + who + when + **channel**, plus one
+  `HISTORY.md` entry. Legitimate self-ratification vs. the unrecorded kind that is
+  the actual audit hole; and the wrong-decider case.
+- **Never promptable** — PR merge, deploy, real secrets, `/infra`, protected-branch
+  pushes. Gates become answerable, never removable.
+
+This backs the always-on rule `61-gate-prompts` and the gate-owning skills
+(`/steer:adr`, `/steer:spec approve`, `/steer:work --reviewed`).
+
 ## polyrepo
 
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/POLYREPO.md`

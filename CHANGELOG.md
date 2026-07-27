@@ -7,6 +7,65 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the always-on `rules/*.md` ratchet ceiling is raised once, 62,500 →
+  65,200 bytes (`check_context_budget.py`). The ratchet had drifted to **32 bytes**
+  of headroom, so rule `61-gate-prompts` could only be added by compressing
+  unrelated gate rules — and that trade deleted ~1 KB of rationale prose (rules 00,
+  30, 31, 36, 45, 50, 60, 62, 95, 99) that existed nowhere else in the repo. Those
+  compressions are **reverted in full**; the ceiling is re-armed at the measured
+  total plus ~1%. Unlike `SKILL_BODY_MAX_BYTES`, which is derived from Claude Code's
+  compaction re-attach behaviour and cannot move, this number is policy — so the
+  raise carries its reason in the gate script, and the default answer to "it doesn't
+  fit" remains *trade prose out first* (relocate rationale to
+  `templates/reference/*`, or deliver a scoped rule via a hook as polyrepo does).
+  `RULES_TOTAL_TARGET_BYTES` deliberately stays at 62,500, below the ceiling, so the
+  report keeps showing the gap as work to reclaim.
+
+- **Added:** human authority gates are now **answerable in-session** instead of
+  requiring an out-of-band field edit. A gate has always required the deciding
+  *human*, never a particular channel — but there was no way to answer one from
+  the session, so a `Proposed` ADR the author had already decided became the top
+  blocker `/steer:next` resurfaced every time the repo was opened, and the
+  workflow stalled on bookkeeping rather than judgement. New rule
+  `61-gate-prompts` defines a single three-option prompt — **Approve · Reject ·
+  Decide later** — offered at the three promptable gates: ADR
+  `Proposed → Accepted`, feature intent `draft → approved`, and the
+  `/steer:work --reviewed` plan sign-off. `Decide later` leaves every field
+  untouched, so the change is strictly additive: no repo can end up more stuck
+  than before.
+- **Added:** `/steer:adr accept <n>` — the single writer of
+  `Proposed → Accepted`. It stamps `> Ratified by:` / `> Ratified at:` /
+  `> Ratified via:` (in-session vs offline-review) and appends one
+  `/spec/HISTORY.md` entry. Self-ratification is legitimate — a solo repo's
+  author, decider and reviewer are the same person; the channel stamp is what
+  keeps it auditable, since *unrecorded* self-ratification was the actual gap.
+  Refuses on `Superseded`/`Deprecated`, idempotent on `Accepted`, and never runs
+  on Claude's own initiative.
+- **Added:** `/steer:reference gates` loads the full protocol
+  (`templates/reference/GATES.md`): what the prompt does and does not change, the
+  per-gate minimum the prompt must show, how the decision is recorded, the
+  wrong-decider case, and the never-promptable boundary.
+- **Changed:** the anti-rubber-stamp constraints are part of the contract, not
+  advice. A gate prompt must carry the tradeoff — an ADR's rejected alternatives
+  and negative consequences, an intent's acceptance criteria and locked scope, a
+  plan's residual risk — and must never pre-select an option, infer approval from
+  ambient agreement ("ok", "thanks", silence, sign-off on an earlier plan), or
+  bundle two decisions into one answer. Preconditions still fire first: a failed
+  blocking-question gate means the intent prompt is never shown.
+- **Changed:** `/steer:next` and `NEXT-ACTIONS.md` no longer dead-end the two
+  answerable gates on "no command" — they route to the skill that collects and
+  records the answer. `/steer:next` stays read-only and never runs a prompt
+  itself. **PR merge, deploy, real secrets, `/infra`, and protected-branch pushes
+  remain command-less and are explicitly never promptable** — these gates became
+  answerable, not removable.
+- **Fixed:** an ADR created from the bundled template never surfaced as awaiting
+  ratification. `templates/spec/adr.md` writes a blockquote `> Status: Proposed`,
+  but `workspace-snapshot.sh` parsed only the bold-list form
+  `- **Status:** Proposed`, so every template-created ADR reported `unknown` and
+  dropped out of the Proposed-ADR sweep — the detection half of the stall above.
+  Both header forms are now accepted, and an ADR still carrying the template's
+  whole `Proposed | Accepted | …` enum reports `unresolved-template` rather than
+  being read as a real decision state.
 - **Changed:** the **`markitdown` MCP server is retired** in favour of the
   on-demand `mise run convert:doc <file>` task. A plugin MCP server starts
   automatically whenever the plugin is enabled, so every session spawned a

@@ -37,7 +37,9 @@ These hold for the whole run, in every mode.
   write; stop and report on a concurrent edit; fail closed on duplicate/malformed
   blocks). Human content is never overwritten.
 - **Never auto-resolve product decisions or drift** — those wait for the named
-  human (see `ISSUE-WORKFLOW.md`).
+  human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
+  obtain their answer (rule `61-gate-prompts`), never a licence to supply one.
+  The PR **merge** is not promptable in any mode.
 - **The merge is the human gate** (rule 45) — push and open the PR yourself;
   never merge or deploy. Watching CI to conclusion and fixing a red build is
   **finishing the work**, not crossing that gate. In solo-trunk the trunk commit

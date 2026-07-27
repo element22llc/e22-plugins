@@ -8,7 +8,9 @@ territory). Same safety level; the tie-break must be deterministic.
 
 - No committed secrets, no open blocking questions, no stale tracker state.
 - ADR `0007-event-bus.md` is `Status: Proposed`, awaiting its Deciders. The
-  `payments` feature's contract depends on this decision.
+  `payments` feature's contract depends on this decision. The ADR's `Deciders`
+  names the person in the session, so the decision is **answerable in-session**
+  (rule `61-gate-prompts`).
 - Feature `search` intent is `draft`, drafted but not yet PO-approved — it does
   **not** depend on the ADR.
 - Neither candidate has a human-set **Priority** field (an ADR has no issue
@@ -29,8 +31,11 @@ Human decision required
 
 ## Expected suggested command
 
-none — ratifying an ADR and approving an intent are both human decisions; no
-command performs either.
+`/steer:adr` — the decision stays the Deciders', but it is answerable in-session,
+so the line names the skill that **collects and records** their answer (its
+three-option prompt, then `/steer:adr accept 0007` on Approve). Contrast a PR
+review, merge, or secret rotation, which remain command-less: no prompt
+substitutes for those.
 
 ## Must not recommend first
 

@@ -98,6 +98,14 @@ coding, wrong-toolchain commands) — each earns its ~1.5–2 KB ambient slot.
 The rules ratchet holds at 62,500 B; the listing surface finished at 10,867
 ch against its 10,000 target. Phase 1 is **done**.
 
+**Post-Phase-1 amendment.** The rules *ceiling* was later raised once, to
+65,200 B, to fund rule `61-gate-prompts` — by then the ratchet sat 32 bytes from
+the wall, so adding any rule meant compressing unrelated ones, and that trade
+deleted ~1 KB of rationale prose held nowhere else. The Phase 1 **target** stands
+at 62,500 B and is still the goal: reclaiming it means relocating rationale into
+`templates/reference/*` or demoting a rule to conditional hook delivery (as
+polyrepo was), not re-compressing the prose this amendment restored.
+
 This is the largest single win. OpenSpec's whole footprint is two slash
 commands and plain Markdown; steer spends ~20k tokens before the user types
 anything.

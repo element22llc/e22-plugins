@@ -29,7 +29,8 @@ it yourself**.
   secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
   are **not** gates — they are autonomous delivery steps; the human gate is
   the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
-  push).
+  push). A gate whose decider is present is **answered in-session** — see
+  Answering a human gate.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
@@ -82,7 +83,7 @@ when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
 
 **Full reference prose** loads on demand via `/steer:reference [conventions |
 traceability | design-sources | context-hygiene | architecture-diagrams |
-artifacts]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
+artifacts | gates]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
 auto-injection), run `/steer:standards` at session start to load these rules.
 
 
@@ -402,7 +403,8 @@ single-source-of-truth break this rule exists to prevent. Run `/steer:init`
 it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
 is fine and expected — `init`'s own interview is where it belongs; what waits
 for the spine is the **durable capture** of what was decided. See bootstrap
-precedence in the router and Living documentation (`32-living-docs`).
+precedence in the router and Living documentation (`32-living-docs`). Record
+each decision with its ratifier and date — see Answering a human gate.
 
 
 ## Living documentation — document in parallel, not after
@@ -740,6 +742,41 @@ locally in a deployed product still produces migrations/deletions that reach
 real data on merge — no relaxation there. **Never relaxed**, even
 pre-production: real secrets/credentials, `/infra`, deploys, real third-party
 calls.
+
+
+## Answering a human gate in-session
+
+A gate needs the deciding **human's** answer — not a particular channel. When that
+human is in the session, don't send them out-of-band to edit a status field:
+**ask, then act in the same pass.** Never ratify on your own initiative.
+
+| Gate | Decides | On Approve |
+|---|---|---|
+| ADR `Proposed → Accepted` | its `Deciders` | `/steer:adr accept <n>` |
+| Intent `draft → approved` | the PO | `/steer:spec approve <id>` |
+| `--reviewed` plan sign-off | who asked | implement |
+
+Ask once, three options — **Approve · Reject · Decide later**:
+
+- **Show the tradeoff** — rejected alternatives, negative consequences, locked
+  scope — never just a title; a human cannot decide what they cannot see.
+- **Never pre-select, never infer.** An unambiguous answer *to the decision
+  presented* ratifies it; ambient agreement ("ok", "thanks", silence, or sign-off
+  on an earlier plan) does not. Never bundle two decisions into one prompt.
+- **`Decide later` is always offered** and leaves every field untouched — the
+  artifact stays `Proposed` / `draft` exactly as before.
+- **Record who decided, when, and that it was in-session**, plus the
+  `/spec/HISTORY.md` entry. Self-ratification is legitimate; the *unrecorded*
+  kind is the audit hole this rule prevents.
+- **Preconditions fire first** — never show a gate the human cannot legitimately
+  pass (an unresolved blocking question → `/steer:questions`).
+- **Wrong decider?** Surface the mismatch and leave the state alone; you may not
+  record someone else's decision for them.
+- **Never promptable, in any mode:** merge, deploy, real secrets, `/infra`,
+  protected-branch pushes. These need a human acting in the real system — asking
+  does not authorize them, and this rule never relaxes them.
+
+Full protocol: `/steer:reference gates`.
 
 
 ## Hotfix / incident fast-path

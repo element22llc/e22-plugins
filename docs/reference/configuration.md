@@ -36,6 +36,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `53-autonomous-loops.md` | Autonomous loops — automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
+| `61-gate-prompts.md` | Answering a human gate in-session — a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed → Accepted`, intent `draft → approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
 | `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
@@ -81,8 +82,21 @@ added to `rules/`. That leanness is **enforced, not aspirational**: CI's
 `check_context_budget.py` gate holds hard ceilings over three context surfaces.
 Two are always-on and ratcheted — the total `rules/*.md` bytes (the SessionStart
 injection payload) and the total skill-listing `description` + `when_to_use`
-characters — re-armed at each reduction, so always-on context weight can only
-shrink or hold.
+characters — re-armed at each reduction, so always-on weight normally only
+shrinks or holds. The default answer to "this rule doesn't fit" is therefore
+**trade prose out first**: relocate rationale into
+`plugins/steer/templates/reference/`, or deliver a scoped rule through a hook
+instead of `rules/` (the polyrepo precedent above).
+
+These two are **policy numbers, not harness limits**, so they *can* be raised —
+which is why each raise carries a recorded reason in the gate script rather than
+happening quietly. The rules ceiling was raised once, from 62,500 to 65,200, to
+fund rule `61-gate-prompts`: the ratchet had drifted to 32 bytes of headroom, so
+the only way to add the rule was compressing unrelated gate rules, and that trade
+deleted ~1 KB of rationale prose that existed nowhere else in the repo. Paying
+the bytes was judged cheaper than losing the prose. The *target* deliberately
+stays at the old 62,500, below the ceiling, so the budget report keeps showing
+the gap as work to reclaim.
 
 The third is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
 17,500 bytes. That number is the harness's **compaction re-attach cap** — after

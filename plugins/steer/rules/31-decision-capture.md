@@ -15,4 +15,5 @@ single-source-of-truth break this rule exists to prevent. Run `/steer:init`
 it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
 is fine and expected — `init`'s own interview is where it belongs; what waits
 for the spine is the **durable capture** of what was decided. See bootstrap
-precedence in the router and Living documentation (`32-living-docs`).
+precedence in the router and Living documentation (`32-living-docs`). Record
+each decision with its ratifier and date — see Answering a human gate.

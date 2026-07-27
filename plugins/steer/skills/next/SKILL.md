@@ -120,8 +120,13 @@ fall back to sweeping the dimensions manually as specified below.
   `impact: blocking | non-blocking`, `required_before:`
   (`intent-approval | contract-approval | implementation | non-prod-validation |
   production-release`), and `owner:`.
-- **Proposed ADRs** — `spec/decisions/NNNN-*.md` with
-  `- **Status:** Proposed` (awaiting ratification by its Deciders).
+- **Proposed ADRs** — `spec/decisions/NNNN-*.md` whose status header reads
+  `Proposed` (awaiting ratification by its Deciders). Accept **both** header forms:
+  the bundled template's blockquote `> Status: Proposed` and a hand-written
+  `- **Status:** Proposed`. An `Accepted` ADR also carries `> Ratified by:` /
+  `> Ratified at:` / `> Ratified via:`; an ADR still showing the template's whole
+  `Proposed | Accepted | …` enum was never filled in — report that, don't read it
+  as `Proposed`.
 - **Tracker issues** — read `spec/tracker.md` `system:`. If `github`, query issue
   lifecycle state via `/steer:tracker-sync` (MCP-first, `gh` fallback): the
   `<!-- steer:state=... -->` marker
@@ -160,9 +165,9 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Committed secret / destructive-risk exposure observed | Blocking now (L1) | Rotate & invalidate; then `/security-review` (no command rotates it) |
 | Live, deployed feature actively exposing data / breaching users / losing integrity | Urgent live-system remediation (L1) | Remediate the live system now; then `/security-review` (no command remediates it) |
 | Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/steer:questions` |
-| Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject (no command) |
-| Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves (no command) |
-| PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command) |
+| Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject — answerable in-session via `/steer:adr` |
+| Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves — answerable in-session via `/steer:spec` |
+| PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command — **never** promptable) |
 | Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/steer:work resume #N` |
 | PR merged but issue still `validate` (stale tracker) | Blocking now — next transition (L4) | `/steer:work resume #N` |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now — next transition (L4) | owning skill |
@@ -218,12 +223,18 @@ keep the technical detail for devs. Emit, in order:
 2. **`## Recommended next actions`** — the standard block per NEXT-ACTIONS.md §5:
    the `###` category sections (omit empties), then `### Current recommended action`
    naming the single arbitrated action, with a `Suggested command:` line **only**
-   when a real command performs it (human gates — PR review, PO approval, secret
-   rotation, ADR ratification — get no command). Aggregate candidates across the
+   when a real command performs it. A human gate still gets **no command for the
+   decision itself** — but where the decision is answerable in-session (ADR
+   ratification, PO intent approval; rule `61-gate-prompts`) the line names the
+   skill that *collects and records* the answer — `/steer:adr`, `/steer:spec` —
+   which is a real command. PR review, secret rotation, merge, and deploy stay
+   command-less: no prompt substitutes for them. Aggregate candidates across the
    whole workspace; each entry names its feature/issue so the source is clear.
 
 Read-only coda: the block recommends; it does not act. `/steer:next` never edits,
-commits, publishes, merges, or advances any workflow's state.
+commits, publishes, merges, or advances any workflow's state — including a gate it
+reports as answerable: it **routes** to the owning skill, which runs the prompt and
+writes the transition. `/steer:next` never runs a ratification prompt itself.
 
 End the readout with one line inviting correction: if this recommendation (or a
 recent routing) missed the mark, saying so gets it reported upstream via

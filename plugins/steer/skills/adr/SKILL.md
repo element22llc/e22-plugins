@@ -1,8 +1,11 @@
 ---
 name: adr
-description: Create a numbered ADR from the bundled template.
-when_to_use: Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern) or when asked to record a decision.
+description: "Create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed → Accepted transition."
+when_to_use: Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern), when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") — including one drafted earlier.
+argument-hint: "[<slug> | accept <n>]"
 ---
+
+<!-- steer:modes default,accept -->
 
 # Write an ADR
 
@@ -18,7 +21,65 @@ the product repo, from the bundled template.
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` → `spec/decisions/000N-[slug].md`.
 4. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
-   until accepted; set Deciders.
+   until accepted; set Deciders. Leave the `> Ratified …` fields as-is —
+   `accept` writes them.
+5. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
+   author has to go and hand-edit.
+
+## Offer ratification — don't end on a dead `Proposed`
+
+A `Proposed` ADR blocks everything downstream, and the person who can unblock it
+is usually the one in the session. So having drafted it, **present the tradeoff
+and ask** — one question, three options: **Approve · Reject · Decide later**
+(rule `61-gate-prompts`; full protocol `/steer:reference gates`).
+
+The prompt must show the **Decision**, the **rejected alternatives with their
+reasons**, and the **negative** consequences. "Approve ADR 0007?" is theater — a
+human cannot decide what they cannot see, and prompting straight after you drafted
+your own proposal is exactly where rubber-stamping happens.
+
+- **Approve** → run `accept <n>` (below), then continue into whatever the ADR was
+  blocking, in the same pass.
+- **Reject** → keep `Status: Proposed`, record the reason and who declined in the
+  ADR's Context (or supersede it later). Never delete or renumber a rejected ADR;
+  don't immediately re-draft the same proposal and re-ask.
+- **Decide later** → leave every field untouched. `/steer:next` keeps surfacing it
+  as *Human decision required*, exactly as before.
+
+Never pre-select an option, never infer approval from ambient agreement ("ok",
+"thanks", silence, or sign-off on an earlier plan), and never bundle two ADRs into
+one prompt. If `Deciders` names someone who is not the person answering, surface
+the mismatch and leave the state alone — you may not record their decision for
+them.
+
+## `accept` mode — `/steer:adr accept <n>`
+
+<!-- steer:transition-owner adr-status:Proposed->Accepted -->
+
+The **single writer** of `Proposed → Accepted`. Requires an explicit decision from
+a named Decider — reached through the prompt above, or invoked directly when a
+Decider ratifies an ADR drafted in an earlier session. **Never run on your own
+initiative**; drafting an ADR does not authorize accepting it.
+
+Refuse (report the current state, write nothing) when the ADR is `Superseded` or
+`Deprecated` — ratification never revives a retired record. **Idempotent on
+`Accepted`**: report the existing `> Ratified by:` / `> Ratified at:` and append
+**no** duplicate HISTORY entry.
+
+On a clean acceptance, in one change:
+
+1. Flip `> Status:` to `Accepted`.
+2. Stamp `> Ratified by: @<handle>`, `> Ratified at: <YYYY-MM-DD>`, and
+   `> Ratified via: in-session` (or `offline-review` when the decision came from a
+   review outside the session).
+3. Append **one** `/spec/HISTORY.md` entry — what / why / who asked / refs (rule
+   `32-living-docs`: one entry per ratified decision).
+4. If this ADR supersedes an older one, mark that one
+   `Superseded by [link]` — never delete or renumber it.
+
+The channel stamp is what makes self-ratification auditable: a solo repo's author,
+decider, and reviewer are the same person, and that is legitimate — an
+**unrecorded** self-ratification is the audit hole, not self-ratification itself.
 
 ## When to write one (and when not)
 
@@ -42,12 +103,16 @@ existing ADR; supersede it with a new one instead.
 
 After drafting the ADR, emit a `## Recommended next actions` block per
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. A freshly written ADR
-is `Proposed`, so the next step is a human decision — not a command.
+is `Proposed`, so the next step is a human decision — but it is now an
+**answerable** one, so the row names how to answer it.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| ADR drafted, `Status: Proposed` | Human decision required | The Deciders ratify (`Accepted`) or reject it (no command) |
+| ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt — on Approve, `/steer:adr accept <n>` |
+| `Proposed`, Decider is someone else | Human decision required | The named Deciders ratify or reject (no command) |
 | ADR accepted, supersedes an older one | Recommended | Mark the old ADR `Superseded by [link]` |
+| Accepted, and it was blocking work | Blocking now — next transition | Continue the work it gated (`/steer:work`, `/steer:spec`) |
 | Accepted, no follow-up | Complete | `No action is currently required.` |
 
-The block recommends; ratifying the decision stays with the named Deciders.
+The block recommends; the **decision** stays with the named Deciders — `accept`
+records their answer, it never supplies one.

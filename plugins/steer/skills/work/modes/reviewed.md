@@ -22,10 +22,20 @@ stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
   relevant **steer rules** as the rubric. Ask for severity-ranked findings plus a
   "what's missing" pass. **Revise on every high-severity finding**; never review
   your own plan.
-- **Human plan sign-off.** Present the vetted plan for sign-off before a
+- **Human plan sign-off — answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule
-  `95-not-the-gate`). This covers the **plan**; delivery then runs the normal
-  autonomous `finish` — merge still waits for the reviewer.
+  `95-not-the-gate`) as a three-option prompt — **Approve · Reject · Decide later**
+  (rule `61-gate-prompts`; protocol `/steer:reference gates`). The prompt shows what
+  changes and where, the **high-severity reviewer findings and how they were
+  resolved**, and the residual risk — not just "approve the plan?". `Approve`
+  proceeds straight into implementation in the same pass; `Decide later` stops here
+  with the plan recorded. Never pre-select `Approve` or infer it from ambient
+  agreement. This covers the **plan**; delivery then runs the normal autonomous
+  `finish` — merge still waits for the reviewer.
+- **A blocking `Proposed` ADR is answerable too.** If the issue is gated on an ADR
+  awaiting its Deciders and a Decider is in the session, offer ratification via
+  `/steer:adr` rather than stalling the issue — on Approve it flips through
+  `/steer:adr accept <n>` and implementation continues in the same pass.
 - **Implement** via the normal `start`→`finish` flow — do not stand up a second
   path.
 - **Code gate — independent.** After implementing, run `/code-review` on the diff

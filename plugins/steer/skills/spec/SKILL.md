@@ -91,8 +91,11 @@ step, never a precondition for the spec work itself.
    gated at `required_before: intent-approval` is unresolved** (the exact
    predicate lives in approve mode, below); resolve or explicitly reclassify it
    first. Then present the intent
-   for PO approval. On PO approval, run **`approve <id>`** (below) to record the
-   approval and flip `Status:` to `approved` in one change, then offer:
+   for PO approval — as an **answerable prompt** (Approve · Reject · Decide later,
+   rule `61-gate-prompts`) when the PO is in the session, rather than leaving a
+   `draft` for them to come back and flip. On PO approval, run **`approve <id>`**
+   (below) to record the approval and flip `Status:` to `approved` in one change,
+   then offer:
    - file it via `/steer:issues` (which routes through the tracker gateway) →
      create or refresh the tracker item from this intent, writing the ref back
      into the `> Tracker:` line.
@@ -110,7 +113,8 @@ step, never a precondition for the spec work itself.
    | Observed state | Category | Action / suggested command |
    |---|---|---|
    | Open `impact: blocking` question on this feature | Blocking now | Resolve it — `/steer:questions` |
-   | Intent drafted, not yet PO-approved | Human decision required | PO reviews & approves the intent (no command) |
+   | Intent drafted, PO in the session | Human decision required | Answer the approval prompt — on Approve, `/steer:spec approve` |
+   | Intent drafted, PO is someone else | Human decision required | PO reviews & approves the intent (no command) |
    | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |
    | Approved, tracker configured, not yet filed | Recommended | file it via `/steer:issues` |
    | Approved | Complete | Optional: implement in a separate session — `/steer:work` (after `/steer:issues decompose`) or `/steer:build` |

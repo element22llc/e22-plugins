@@ -130,11 +130,29 @@ Questions gated only at `contract-approval`, `implementation`,
 (they block their own later gate). Run `validate` first so the closed-issue /
 stale-spec checks fire too.
 
+**Offer the approval in-session — don't end on a dead `draft`.** Once the
+preconditions above hold (no refusal, no unresolved blocking question), present the
+tradeoff to the PO and ask: **Approve · Reject · Decide later** (rule
+`61-gate-prompts`; full protocol `/steer:reference gates`). The prompt shows the
+**acceptance criteria**, the **locked scope — in and out**, and any non-blocking
+open questions that survive approval. `Decide later` leaves the intent `draft`
+exactly as today; `Reject` records the reason in `intent.md`. Never pre-select
+`Approve`, and never read ambient agreement as approval.
+
+**Order matters: preconditions first, prompt second.** If the blocking-question
+gate above fails, do **not** show the prompt at all — route to `/steer:questions`.
+Never present a gate the human cannot legitimately pass.
+
+If the PO is not the person in the session, surface that and leave the state alone
+— you may not record their approval for them.
+
 **On a clean approval, in one change:**
 
 1. Fill the intent header block — `> Approved by: @<po-handle>` and
    `> Approved at: <YYYY-MM-DD>` — and tick the `## PO acceptance` checkboxes (the
-   human-facing mirror) with the `Approval comment/link:`.
+   human-facing mirror) with the `Approval comment/link:`. When the approval was
+   given in-session rather than in an offline review, say so in the
+   `Approval comment/link:` so the channel is part of the record.
 2. Flip `> Status:` to `approved`.
 3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs).
 4. Recommend the local next action — decompose into work
