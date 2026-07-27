@@ -7,6 +7,55 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:init` was the one bootstrap door with **no polyrepo-member
+  path**, on the route the plugin itself prescribes. `init/SCAFFOLD.md` tells a
+  workspace session to run `/steer:init` in each member and install
+  `spec/PRODUCT.md` *instead of* the product-level spine — but init's own steps
+  never branched on it, instantiating `vision.md`, `users.md`, `glossary.md`,
+  `HISTORY.md`, `tracker.md` and `spec/app/` unconditionally, so following the
+  instruction manufactured the split-brain spine the topology exists to prevent.
+  `adopt`, `sync` and `setup` all carried this carve-out; init now does too,
+  including step 7's `HISTORY.md` seed, which routes to the PR description in a
+  member.
+- **Fixed:** `/steer:audit`'s non-mutating contract was still contradicted on the
+  two surfaces the previous pass missed — the always-on `description` ("files
+  ranked findings in the tracker … Proposes and **files**") and
+  `audit/modes/spec.md`'s summary ("`spec-drift` issues **(its only writes)**") —
+  while the body says both modes write nothing and the frontmatter grants no
+  issue-write verb. Both now name `/steer:issues publish-audit` / `publish-drift`
+  as the separate filing step. The reworded description is 9 chars shorter, paid
+  into the listing ratchet.
+- **Fixed:** the root known-dirs allowlist disagreed with itself across the two
+  surfaces that decide it. Rule `22-housekeeping` gained `scripts/` but
+  `HOUSEKEEPING.md` — which `/steer:tidy` loads as its authoritative sweep
+  procedure — did not, so tidy would have proposed relocating the root
+  `scripts/ws.sh` the new `workspace` profile ships. Both lists now match, and
+  the reference names the rule as their source.
+- **Fixed:** `POLYREPO.md` asserted that `/steer:tidy` must not create a
+  product-level spine dir locally in a member, but **no tidy surface implemented
+  it** — neither `tidy/SKILL.md` nor `HOUSEKEEPING.md` contained the word
+  `member`, and both routed loose source material to `/spec/reference/`
+  unconditionally. Both now carve out `spec/reference|sources|features|app` as
+  the workspace's and report the stray instead of creating the dir, leaving
+  `spec/design/` and `spec/decisions/` handled normally as the member's own.
+- **Fixed:** `/steer:questions`' read-only guarantee pointed at content that had
+  moved — "the **Read-only** invariant *below*" names a section that lives in
+  `BUNDLE.md`, not `SKILL.md`. Split collateral the earlier sweep missed, and the
+  one dangling `below` whose target is a safety guarantee, so a session reading
+  `SKILL.md` alone could not find the authoritative list of what bundle must not
+  write. It now names the file.
+- **Fixed:** `/steer:issues bootstrap-labels` declared `gh label create --force` a
+  sanctioned inline exception but the verb was granted **nowhere** — not in
+  `issues`' own `allowed-tools`, and the scaffold `settings.json` allowed only
+  `gh label list`. Label bootstrap therefore prompted interactively and
+  auto-denied headless, in the two skills (`/steer:init`, `/steer:adopt`) that
+  call it during setup. Granted in both places.
+- **Fixed:** three `[Unreleased]` entries published measurements that later fixes
+  in the same cycle invalidated — the listing-ratchet note claimed `work` was
+  trimmed to 747 chars and "no longer the largest listing consumer" (it is 794
+  and still the largest), and the rules-payload and skill-prose totals were
+  stale. Corrected to the measured 11,884 / 65,222 B / 251,922 B, with the
+  16-char listing headroom stated plainly.
 - **Fixed:** three surfaces stated an authorization or routing fact the code
   contradicts — the class the pre-release audit exists to catch, and two of the
   three were introduced by the *previous* audit-fix pass. (1) The authorization
@@ -330,8 +379,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   while the intended payload was ~450 over. Per the gate's own policy the fix
   paid what it could first: `work`'s entry is trimmed 932 → 747 chars by dropping
   a duplicate issue example, a third hotfix synonym, and a step enumeration the
-  body carries in full — every distinct trigger phrase is kept, and `work` is no
-  longer the largest listing consumer. Deliberately **not** funded by compressing
+  body carries in full — every distinct trigger phrase is kept. Later fixes in
+  this same cycle grew it back to **794 chars**, so `work` remains the largest
+  listing consumer and the payload sits at **11,884 of 11,900**; the next skill
+  description to grow needs its own paydown. Deliberately **not** funded by compressing
   unrelated skills, which is the trade the rules-ceiling note records as the
   wrong one. `LISTING_TOTAL_TARGET_CHARS` stays at 10,000 so the report keeps
   showing the gap to reclaim.
@@ -450,7 +501,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   always-on budget by dropping a duplicated editor-preference line that
   `CONVENTIONS.md` already carries in full, so the change paid for itself where
   it landed. (Across the whole release the rules payload still grows to
-  65,193 B — see the ratchet entry above.)
+  65,222 B — see the ratchet entry above.)
 
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
@@ -498,8 +549,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — total always-resident skill prose fell ~25% (331,971 → 248,165 B).
-  The largest remaining body is `work` at 15,932 B (~4,550 tokens, **91% of the
+  dropped — total always-resident skill prose fell ~24% (331,971 → 251,922 B).
+  The largest remaining body is `work` at 15,991 B (~4,570 tokens, **91% of the
   17,500 B cap**), so the headroom this bought is real but thin: the next
   substantial skill body still has to be factored, not appended.
 - **Added:** `check_context_budget.py` now gates a third always-on surface — a

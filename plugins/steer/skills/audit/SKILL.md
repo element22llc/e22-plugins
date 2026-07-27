@@ -1,6 +1,6 @@
 ---
 name: audit
-description: "Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and files ranked findings in the tracker; spec mode surfaces as-built vs intended drift; all runs both. Proposes and files, never edits code or spec."
+description: "Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and ranks findings; spec mode surfaces as-built vs intended drift; all runs both. Non-mutating: proposes only, files nothing, edits nothing."
 when_to_use: >-
   Use for a periodic standards-conformance pass — audit overall code health and
   the highest-leverage improvements (code), confirm the build matches what the

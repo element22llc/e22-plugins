@@ -4,6 +4,21 @@ Read this file when you reach step 2 of Path B. Step 1 (confirm the mode) and
 steps 3–7 (interview, first ADR, pin the toolchain, proceed spec-first, hand
 off) stay in `SKILL.md`, as do the guardrails.
 
+**Member repo? Resolve the topology before instantiating anything under
+`spec/`.** This repo is a **polyrepo member** if `spec/PRODUCT.md` is already
+present, or if the workspace session that sent you here said so. In a member,
+install `spec/PRODUCT.md` (from
+`${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and **skip every
+product-level artifact** below — `vision.md`, `users.md`, `glossary.md`,
+`/spec/HISTORY.md`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`. Those
+live once, in the workspace. The member still gets its own internals:
+`spec/decisions/`, `spec/design/`, `DESIGN.md`, `ARCHITECTURE.md`,
+`PRODUCTIONIZATION.md`, and the whole non-`spec/` scaffold. Writing the
+product-level files here manufactures the split-brain spine rule
+`30-spec-workflow` and `/steer:reference polyrepo` exist to prevent — if you
+cannot tell which role this repo plays, say so and stop rather than write them
+locally. Everything else in this step is unchanged.
+
 **Instantiate the bundled scaffold — core plus the profile's extras.** Everything
 lives in the plugin — no external template repo to fetch. Read
 `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its

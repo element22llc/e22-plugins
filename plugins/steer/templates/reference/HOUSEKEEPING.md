@@ -32,7 +32,9 @@ names" below). Confidence is the gate on the automatic move; absent it, you ask.
 
 These belong at the root. Never propose moving them:
 
-- **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `spec/`.
+- **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `scripts/`,
+  `spec/` (rule `22-housekeeping` is the source of this list — a `workspace`
+  profile ships a root `scripts/ws.sh`, so `scripts/` is never loose material).
 - **Root config:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `biome.json`, `compose.yaml`, `mise.toml`, `mise.lock`, `tsconfig*.json`.
 - **Root docs:** `CLAUDE.md`, `README.md`, `DESIGN.md`, `ARCHITECTURE.md`
@@ -144,7 +146,12 @@ not recurring junk.
 3. **Auto-move the confident strays now**, before asking anything:
    - Tracked files: `git mv <src> <dest>` under their **existing** filename
      (history follows). Untracked files: plain `mv`.
-   - Create destination folders (`/spec/reference/…`, `/spec/design/…`) as needed.
+   - Create destination folders (`/spec/reference/…`, `/spec/design/…`) as needed
+     — **except in a polyrepo member** (`spec/PRODUCT.md` present), where
+     `spec/reference/`, `spec/sources/`, `spec/features/` and `spec/app/` are the
+     workspace's: do not create one locally. Leave the stray in place, and report
+     it with the workspace as its destination. `spec/design/` and
+     `spec/decisions/` are the member's own — create those normally.
    - If a moved file is referenced by a spec (`source.md`, an `intent.md` `Design
      source` section), update the reference so the link still resolves.
 4. **Ask** the PO/dev about the questions list — what each unclear or

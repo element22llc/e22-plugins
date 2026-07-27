@@ -12,6 +12,7 @@ allowed-tools:
   - Bash(gh issue view *)
   - Bash(gh search issues *)
   - Bash(gh pr list *)
+  - Bash(gh label create *)
 ---
 <!-- steer:modes capture,triage,brainstorm,materialize,decompose,epic,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
