@@ -176,8 +176,9 @@ A plain `git diff` of the new `extracted.md` against the prior one *is* the
 "what changed" the PO never spells out. The committed extraction — not the binary,
 and not the authenticated URL — is the artifact of record, exactly as for a Claude
 Design export: the binary doesn't diff and the link can't be fetched, so the
-extraction is what the workflow reads. Conversion uses the markitdown MCP server
-that ships with this plugin (or the `mise run convert:doc` CLI task).
+extraction is what the workflow reads. Conversion uses the `mise run convert:doc
+<file>` task the scaffold declares (`uvx markitdown` under the pinned `uv`) — an
+on-demand CLI task, not a long-lived MCP server.
 
 Identity is the kebab-case `source-id`, decoupled from the filename, so a renamed
 re-send still maps to the same source. Absorbed changes route into the spine and

@@ -60,14 +60,23 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
    user to `/steer:setup`. Intake operates on a spine; it does not create one.
 2. **Detect the converter and report which path you take** — silence is not
    success; name how the extraction was produced:
-   - **markitdown MCP** — shipped with this plugin (`plugins/steer/.mcp.json`,
-     `uvx markitdown-mcp`). Preferred for docx / pptx / xlsx.
    - **`mise run convert:doc <file>`** — the scaffold-declared CLI task
-     (`uvx markitdown` under the pinned `uv`), the deterministic committable path.
+     (`uvx markitdown` under the pinned `uv`), the deterministic committable
+     path and the **preferred converter** for docx / pptx / xlsx. It is a
+     one-shot task, not a long-lived server: nothing runs until you convert a
+     document.
    - **native `Read`** — for a text-bearing PDF, Claude can read it directly.
-   - **manual floor** — none available: commit the binary, tell the user how to
-     enable conversion (install `uv`; the `convert:doc` task), and **stop
+   - **manual floor** — neither available: commit the binary, tell the user how
+     to enable conversion (install `uv`; the `convert:doc` task), and **stop
      before diffing** — never fabricate an extraction.
+
+   > There is **no markitdown MCP server**. It was removed from the plugin's
+   > `.mcp.json` because it spawned a `uvx markitdown-mcp` subprocess in *every*
+   > session — including the overwhelming majority that never convert a
+   > document — to serve this one skill. `convert:doc` runs the same
+   > `markitdown` tool on demand. If a repo predates the removal and still lists
+   > a `markitdown` server in its own `.mcp.json` or `.vscode/mcp.json`, that
+   > entry is stale but harmless; `/steer:sync` clears it.
 
 ## Modes
 

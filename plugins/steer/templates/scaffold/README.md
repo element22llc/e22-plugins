@@ -139,14 +139,20 @@ The **`steer` plugin** (enabled in this repo via `.claude/settings.json`) ships 
 
 Never put the token in a repo file (even gitignored) or paste it into a Claude message.
 
-## Document conversion MCP server (markitdown, local Claude Code only)
+## Document conversion (markitdown, on demand — no server)
 
-The same steer-plugin MCP config also wires **local Claude Code sessions** to Microsoft's [markitdown](https://github.com/microsoft/markitdown) MCP server (run via `uvx markitdown-mcp`), which converts binary Office documents (`.docx`, `.xlsx`, `.pptx`) — and other formats like HTML, EPUB, and CSV — into clean Markdown. Use it when a stakeholder hands over source material in those formats, so Claude can read it cheaply instead of choking on raw zip+XML. **PDFs and images don't need it — Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for markitdown for the Office binaries specifically.
+Binary Office documents (`.docx`, `.xlsx`, `.pptx`) — and other formats like HTML, EPUB, and CSV — convert to clean Markdown through Microsoft's [markitdown](https://github.com/microsoft/markitdown), run as a **one-shot mise task** rather than a background MCP server:
 
-1. **Prerequisite — `uv`** (provided by default): the server runs via `uvx markitdown-mcp`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box — no per-product opt-in. First use auto-fetches the `markitdown-mcp` package from PyPI — no token or env var required.
-2. **Verify**: restart Claude Code in this repo, run `/mcp`, and confirm `markitdown` is connected. (If you removed `uv`/`python` from `mise.toml` it shows disconnected instead — nothing breaks, but conversion is unavailable.)
+```sh
+mise run convert:doc path/to/document.docx        # Markdown on stdout
+```
 
-markitdown-mcp is meant for **local, trusted use only** — don't expose it over HTTP/SSE.
+`/steer:intake` uses this task to absorb a PO-supplied spec, roadmap, or requirements document into `/spec`. **PDFs and images don't need it — Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for `convert:doc` for the Office binaries specifically.
+
+1. **Prerequisite — `uv`** (provided by default): the task runs `uvx markitdown`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box — no per-product opt-in. First use auto-fetches the `markitdown` package from PyPI — no token or env var required.
+2. **Verify**: `mise run convert:doc --help`, or just convert a document.
+
+Earlier plugin versions wired markitdown as an MCP server instead. That spawned a `uvx markitdown-mcp` subprocess in **every** session — including the overwhelming majority that never convert a document — so it was replaced by this on-demand task. If your repo still lists a `markitdown` server in `.mcp.json` or `.vscode/mcp.json`, the entry is stale but harmless; `/steer:sync` clears it.
 
 ## Library docs MCP server (context7, local Claude Code only)
 

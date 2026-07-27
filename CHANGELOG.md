@@ -7,6 +7,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the **`markitdown` MCP server is retired** in favour of the
+  on-demand `mise run convert:doc <file>` task. A plugin MCP server starts
+  automatically whenever the plugin is enabled, so every session spawned a
+  `uvx markitdown-mcp` subprocess to serve the one skill that needs it
+  (`/steer:intake`) — including the overwhelming majority of sessions that never
+  convert a document. `convert:doc` runs the same `markitdown` tool, and
+  `/steer:intake` already treated it as its deterministic committable path, so
+  **capability is unchanged** and only the always-on cost goes away. The
+  converter ladder is now `convert:doc` → native `Read` (text-bearing PDFs) →
+  manual floor. The VS Code Copilot mirror regenerates from the plugin
+  `.mcp.json`, so it drops the server too. Migration `v3.23.0` clears a stale
+  `markitdown` entry from a repo's `.mcp.json` / `.vscode/mcp.json`; until it
+  runs the entry is harmless.
+- **Changed:** rule `10-stack` now names the bundled **`context7`** MCP server as
+  the way to satisfy its own "verify the current stable version in-session,
+  never from training-data memory" instruction. context7 shipped with no skill
+  or rule referencing it, so the one job it exists to do was never actually
+  wired to it — it read as unexplained tool-surface cost. Offset within the
+  always-on budget by dropping a duplicated editor-preference line that
+  `CONVENTIONS.md` already carries in full; the rules payload is **smaller**
+  than before (62,468 B, from 62,497 B).
+
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
   shared a basename with the root `ARCHITECTURE.md` that links to it, differing

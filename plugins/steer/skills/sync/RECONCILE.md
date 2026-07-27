@@ -47,7 +47,7 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    never flips an existing value, so a deliberate `"steer@e22-plugins": false`
    opt-off is preserved.
 
-   **No `.mcp.json` reconcile.** The `github`, `markitdown`, and `context7` MCP
+   **No `.mcp.json` reconcile.** The `github` and `context7` MCP
    servers ship with the **plugin** (`plugins/steer/.mcp.json`), not the scaffold — so they
    refresh with the `/plugin update` in step 2 and are **not** part of scaffold
    reconciliation; there is no scaffold template to diff a repo `.mcp.json`
