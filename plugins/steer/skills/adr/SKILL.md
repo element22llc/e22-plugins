@@ -78,7 +78,12 @@ On a clean acceptance, in one change:
    `> Ratified via: in-session` (or `offline-review` when the decision came from a
    review outside the session).
 3. Append **one** `/spec/HISTORY.md` entry — what / why / who asked / refs (rule
-   `32-living-docs`: one entry per ratified decision).
+   `32-living-docs`: one entry per ratified decision). **In a polyrepo member**
+   (`spec/PRODUCT.md`), ADRs live here but `HISTORY.md` is the workspace's — append
+   the entry there if `workspace.path` resolves, and otherwise record the
+   ratification in the PR description and say the workspace ledger still needs the
+   entry. Never create a local `HISTORY.md` in a member
+   (`/steer:reference polyrepo`).
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` — never delete or renumber it.
 

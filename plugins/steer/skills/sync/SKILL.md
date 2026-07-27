@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
+description: "Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
 when_to_use: >-
   Use on a steady-state repo after a plugin release, when an upstream rename or
   missing capability wiring needs repair, or with --check for a read-only
@@ -222,7 +222,10 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 8. **Record and hand off.** Append a `/spec/HISTORY.md` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled, which
-   capability gaps repaired — why, who asked, refs). Commit on `feat/sync`, then
+   capability gaps repaired — why, who asked, refs). **In a polyrepo member,
+   `HISTORY.md` is the workspace's (step 4) — do not create one here.** Record the
+   sync in the PR description instead; the member's `/spec/.version` stamp is the
+   durable local record. Commit on `feat/sync`, then
    push and open the PR
    **against `BASE`** (the branch captured in step 1) without asking, announcing
    it (Commit autonomy) — the dev's merge review of that PR is the gate. The PR base

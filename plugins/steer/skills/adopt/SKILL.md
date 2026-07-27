@@ -1,6 +1,6 @@
 ---
 name: adopt
-description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), and sync the plugin's bundled scaffolding without clobbering working code.
+description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
 when_to_use: Use when a repo has working code but no /spec spine and no mise.toml, or when asked to adopt or onboard an existing app onto the standards.
 allowed-tools:
   - Bash(git status *)
@@ -20,6 +20,9 @@ allowed-tools:
   - Bash(mise install *)
   - Bash(mise lock *)
   - Bash(npm view *)
+  # Phase 7 authors a root DESIGN.md against the @google/design.md schema and
+  # lints it; scoped to that one package rather than a blanket `npx *`.
+  - Bash(npx @google/design.md *)
   - Bash(sh *scripts/template-reconcile.sh*)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---

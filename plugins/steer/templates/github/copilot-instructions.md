@@ -76,8 +76,9 @@ management with no implementation this turn routes to `/steer:issues`.
 
 **Specialized skills reached through these front doors** (each is directly
 invocable too): `/steer:setup` → `/steer:init` (greenfield) / `/steer:adopt`
-(existing code) / `/steer:sync` (steady-state), which invoke `/steer:doctor`
-when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
+(existing code) / `/steer:sync` (steady-state); `/steer:doctor` when
+prerequisites are missing (from init/build, not setup); `/steer:audit` →
+`/steer:tidy`;
 `/steer:issues` and `/steer:spec` → `/steer:questions`; `/steer:issues` →
 `/steer:roadmap`. GitHub reads/writes route through the internal
 `/steer:tracker-sync` gateway; feature specs are instantiated by the internal
@@ -240,7 +241,7 @@ feature may span several apps/packages (coupling rules: `/steer:spec`).
 ## Keep the repo tidy
 
 The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
-`packages/`, `configs/`, `infra/`, `spec/`) plus root config files
+`packages/`, `configs/`, `infra/`, `scripts/`, `spec/`) plus root config files
 (`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
 `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md`).
 
@@ -651,7 +652,7 @@ an infra-profile repo with a different target records its flow in an ADR.
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
   merges or closes. The review-app mechanism is product-specific — record it in an
-  ADR (see Decision capture).
+  ADR (see Durable decisions).
 - **Promotion** — merge to `main` **auto-deploys non-prod**. Prod is gated by a
   **reviewed PR from `main` into a long-lived `prod` branch**; merging that PR
   **auto-deploys prod**. Never push directly to `prod`. The branch-protection

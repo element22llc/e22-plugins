@@ -1006,6 +1006,11 @@ def _user_facing_surfaces() -> list[Path]:
     surfaces.append(PLUGIN_ROOT / "templates/scaffold/README.md")
     surfaces.append(PLUGIN_ROOT / "templates/scaffold/CLAUDE.md")
     surfaces.extend(sorted((PLUGIN_ROOT / "templates/spec").glob("*.md")))
+    # The PR template is read by a human in the GitHub compose box, and
+    # scan-invocations.sh already scans its installed copy in consumer repos —
+    # keep the two detectors' surface lists in agreement so a non-callable
+    # gateway can't leak into it here and be flagged downstream instead.
+    surfaces.append(PLUGIN_ROOT / "templates/github/pull_request_template.md")
     return [p for p in surfaces if p.is_file()]
 
 

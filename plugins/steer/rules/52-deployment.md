@@ -11,7 +11,7 @@ an infra-profile repo with a different target records its flow in an ADR.
 - **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
   merges or closes. The review-app mechanism is product-specific — record it in an
-  ADR (see Decision capture).
+  ADR (see Durable decisions).
 - **Promotion** — merge to `main` **auto-deploys non-prod**. Prod is gated by a
   **reviewed PR from `main` into a long-lived `prod` branch**; merging that PR
   **auto-deploys prod**. Never push directly to `prod`. The branch-protection

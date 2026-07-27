@@ -1,11 +1,11 @@
 ---
 name: issues
-description: "GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, and bounded reconcile. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer."
+description: "GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, bounded reconcile, the publish-* family (audit/drift/adoption/findings), and bootstrap-labels. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer."
 when_to_use: >-
   Use to manage the backlog without implementing now — drive a PO idea from
   capture to a draft spec to decomposed work without losing open questions or
   overwriting human content.
-argument-hint: "[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile | publish-audit | publish-drift | publish-adoption | publish-findings | bootstrap-labels] [#issue | feature-id]"
+argument-hint: "[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile [--all] | publish-audit | publish-drift | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]"
 allowed-tools:
   - Bash(git status *)
   - Bash(gh issue list *)

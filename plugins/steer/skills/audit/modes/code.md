@@ -89,8 +89,11 @@ of dimension.
    evidence + standard missed + impact/effort/confidence + proposed routing).
    Note any dimension that was **skipped** (not applicable) or **not run** (no
    `/spec`) so silence never reads as "clean." Offer to also write it to
-   `/spec/AUDIT-REPORT.md` on a `feat/audit` branch **only if the dev wants
-   it tracked** — it's a point-in-time artifact, not part of the durable spine.
+   `/spec/AUDIT-REPORT.md` **only if the dev wants it tracked** — it's a
+   point-in-time artifact, not part of the durable spine. Write it to the working
+   tree only: this skill cannot branch or commit (no git write verb is granted and
+   `EnterWorktree` is disallowed), so say plainly that committing it is the dev's
+   next step.
 
    **Optionally publish it as a shareable dashboard** — where the `Artifact` tool
    is available, **offer** a dimension-tiled findings dashboard (a Claude

@@ -77,6 +77,9 @@ manual. They are injected into every managed session by `inject-standards.sh`
 
 - **`policy/versions.yml`** — version floors; `check-version-pins.sh` blocks pins
   that violate it.
+- **`policy/branch-protection.yml`** — the branch-protection ruleset
+  `/steer:protect` verifies the live GitHub settings against, and applies on
+  explicit confirmation.
 - **`STEER_CLAUDE_CODE_VERSION`** (in `mise.toml`) — the pinned Claude Code
   version CI installs, for reproducible `claude plugin validate`.
 
@@ -94,11 +97,16 @@ instead of `rules/` (the polyrepo precedent above).
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
-happening quietly. The rules ceiling was raised once, from 62,500 to 65,200, to
-fund rule `61-gate-prompts`: the ratchet had drifted to 32 bytes of headroom, so
-the only way to add the rule was compressing unrelated gate rules, and that trade
-deleted ~1 KB of rationale prose that existed nowhere else in the repo. Paying
-the bytes was judged cheaper than losing the prose. The *target* deliberately
+happening quietly. The rules ceiling has been raised twice. First from 62,500 to
+65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32 bytes of
+headroom, so the only way to add the rule was compressing unrelated gate rules,
+and that trade deleted ~1 KB of rationale prose that existed nowhere else in the
+repo. Paying the bytes was judged cheaper than losing the prose. Then from 65,200
+to 65,300, because the polyrepo work landed in the same cycle and consumed that
+new headroom down to 7 bytes — leaving three factual corrections to always-on
+rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
+root allowlist, a mis-cited rule heading) with nothing to spend. The *target*
+deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 

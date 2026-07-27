@@ -27,7 +27,9 @@ describes the whole product.
 | `vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/` | **workspace** |
 | `spec/features/**` — every feature's `intent.md` + `contract.md` | **workspace** |
 | `spec/tracker.md` | **workspace** |
+| `spec/sources/`, `spec/reference/` — PO source docs + research | **workspace** |
 | `spec/decisions/` — ADRs about *this repo's* internals | **here** |
+| `spec/design/`, `DESIGN.md` — *this repo's* design sources | **here** |
 | `ARCHITECTURE.md` — how *this repo* is built | **here** |
 | application code, tests, `mise.toml`, CI | **here** |
 

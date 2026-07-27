@@ -80,7 +80,7 @@ takes out document conversion:
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
   that does work if the surface routes it — nothing to install, no shell secret.
 - **Office-document conversion is not a server at all** — it is the
-  `mise run convert:doc` task (`uvx markitdown`). It needs `uv`/Python, which
+  `mise run convert:doc` task (`uvx --from 'markitdown[all]' markitdown`). It needs `uv`/Python, which
   the sandbox cannot install, so `/steer:intake` drops to its manual floor in
   Cowork: it commits the binary and stops before diffing rather than fabricating
   an extraction. Convert the document elsewhere, or work in the CLI.
@@ -241,9 +241,13 @@ raises a prompt. Be honest about the tiers:
   by graduating via `/steer:protect`). The same script also carries an advisory
   issue-create guard. Once-per-session-and-repo — later pushes downgrade to a
   note.
+- **`PostToolUse` → `format-on-write.sh`** formats a file after it is written.
+  Cosmetic and non-blocking; it never rejects or reverts the write.
+- **`Stop` → `reconcile-issue-first.sh`** reports, at end of turn, work that
+  never got an issue. A report, not a gate — it cannot undo anything.
 - The **merge gate is not a hook at all** — it's a rule Claude follows
   (`45-commit-autonomy`, `95-not-the-gate`). Nothing technically prevents a
-  branch push or a PR merge; a human reviewer is the real backstop.
+  PR merge; a human reviewer is the real backstop.
 
 ## When hooks fail or don't run
 

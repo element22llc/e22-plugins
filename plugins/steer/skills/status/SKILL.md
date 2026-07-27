@@ -63,7 +63,7 @@ the moment the spine or tracker changes; regenerate to refresh.
   tools and the scoped `gh issue list`/`view`/`search` reads `/steer:tracker-sync`
   uses), so no write is pre-approved — a tracker or repo write stays gated and is
   a hard prose violation besides. `Bash` is **not** blanket-disallowed — unlike
-  `/steer:explain` (which reads only local files), this skill reads the *tracker*
+  `/steer:explain` (which reads only spec files), this skill reads the *tracker*
   and the `gh` read fallback runs through `Bash` — but only the read verbs above
   are pre-approved; a mutating `git`/`gh` command is neither granted nor run. The
   **one** thing it writes is the report's HTML source (via `Write`, not disallowed)
@@ -86,7 +86,7 @@ The client cares about **what got done**, in their language. Source "shipped" fr
 **closed issues + milestone completion**, grouped by feature — the work/decision
 layer, per `${CLAUDE_PLUGIN_ROOT}/templates/reference/ISSUE-WORKFLOW.md`. Do **not**
 source it from `git log` or merged PRs: commit/PR detail is dev-facing noise for
-this audience, and shell/git is disallowed here anyway. If a repo tracks work
+this audience, and no mutating `git` verb is pre-approved here in any case. If a repo tracks work
 outside issues, say the report covers tracked issues only — don't guess at the rest.
 
 ## First, every run

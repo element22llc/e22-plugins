@@ -1,6 +1,6 @@
 ---
 name: help
-description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; sources the live router table so it can never drift from actual routing."
+description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; every line is built from the live router table, and a completeness check proves no front-door row was dropped."
 when_to_use: >-
   Use to browse steer's capabilities — "what can steer do?", "what can you do?",
   "show me the commands", "list the skills". Discovery only: "what should I do
@@ -65,15 +65,25 @@ these):"* fold, grouped by journey in this order — map each remaining router
 row to its group; omit an empty group:
 
 - **Start** — the specialized bootstrap doors (`protect`; note that `setup`
-  dispatches to `init` / `adopt` / `sync` / `doctor`).
+  dispatches to `init` / `adopt` / `sync`).
 - **Spec & backlog** — absorb a PO document, capture/sequence the backlog,
   record decisions (`intake`, `issues`, `adr`).
+- **Ship & respond** — the emergency door: `/steer:work --hotfix` for a
+  production incident on a deployed system.
 - **Track & automate** — repo health and drift, the scheduled loop (`audit`,
   `loop`).
 - **Report** — a shareable page of one feature (`explain`).
 - **Govern & plumbing** — report a steer defect (`report`); load the manual or
   reference prose on chat-only surfaces (`standards`, `reference` — the two
   below-table entries).
+
+**Completeness check before you render.** The groups above are placement
+guidance, not the source of truth: the router table is. After grouping, confirm
+every front-door row you read in Phase 1 appears exactly once in the output
+(`/steer:help` itself is the one fair omission — the user is already in it). If a
+row matches no group, put it under **Govern & plumbing** rather than dropping it;
+a row silently missing from this menu is the failure mode this check exists to
+prevent.
 
 For each entry render one compact line: the **plain-language goal** first (from
 the router's "trying to…" column), then the invocation in backticks —

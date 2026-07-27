@@ -59,8 +59,18 @@ stale the moment the spec changes — regenerate to refresh.
 
 - No `/spec` spine in the repo → redirect to `/steer:init` (greenfield) or
   `/steer:adopt` (existing code) and **stop**; there is nothing to render yet.
+- **In a polyrepo member** (`spec/PRODUCT.md` present), `spec/features/**` is
+  absent **by design** — it lives once in the workspace. Resolve the workspace
+  first: read `workspace.path` from `spec/PRODUCT.md` and, if it is set and the
+  directory exists, read the feature from **there**, saying which repo you
+  rendered. `Bash` is disallowed here, so the GitHub-gateway route is not
+  available to this skill: if `workspace.path` is unset or missing, say the
+  product spine is unreachable and **stop**. Never render an absent local
+  `intent.md` as *"not specified in the spec"* — absent local intent is not "no
+  intent" (`/steer:reference polyrepo`).
 - No feature id given, or it's ambiguous → list the features under
-  `spec/features/*/` with their `Status:` and ask which one. Don't guess.
+  `spec/features/*/` (the workspace's, in a member) with their `Status:` and ask
+  which one. Don't guess.
 
 ### 2. Read the sources (the only inputs)
 
@@ -71,6 +81,9 @@ Read, and render strictly from:
 - `spec/features/<id>/contract.md` **if it exists** — dev detail; used only to
   enrich, and mostly **summarized or omitted** for a stakeholder audience (see below).
 - The tracker ref and open-question `status`/`impact` already recorded in the intent.
+
+All three paths are relative to the spine you resolved in step 1 — the local
+repo, or the workspace in a polyrepo member.
 
 Do not read code, `.env`, or anything outside the feature's spec to fill the page —
 that both risks leaking detail into a shareable surface and invites fabrication.

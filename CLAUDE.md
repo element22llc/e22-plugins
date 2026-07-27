@@ -34,8 +34,9 @@ plugins/steer/
 ├── .mcp.json                       # plugin MCP servers (github, context7)
 ├── agents/                         # subagents (steer-reviewer — driven by /steer:audit &
 │                                   #   /steer:work --reviewed)
-├── hooks/                          # SessionStart hook → injects rules/*.md; PreToolUse/Stop
-│                                   #   gates; copilot-hooks.json (Copilot-CLI hook variant)
+├── hooks/                          # SessionStart hooks → inject rules/*.md + orientation;
+│                                   #   PreToolUse/PostToolUse/Stop gates;
+│                                   #   copilot-hooks.json (Copilot-CLI hook variant)
 ├── policy/                         # org policy data (branch-protection.yml, versions.yml)
 ├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} —
 │                                   #   mostly POSIX sh (e.g. template-reconcile.sh — read-only
