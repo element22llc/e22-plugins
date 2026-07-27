@@ -9,7 +9,8 @@ to a stakeholder who has no repo and no Claude Code.
 
 This reference is the **single source of truth** for *how* steer produces an
 Artifact and *what discipline governs it*. Skills that render one — `/steer:explain`,
-`/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:help` — describe
+`/steer:questions bundle`, `/steer:audit`, `/steer:roadmap`, `/steer:status`,
+`/steer:help` — describe
 *what* to put on the page and defer the mechanics and the guarantees here rather
 than restating them. When you add Artifact output to a skill, point at this file;
 do not re-derive the rules.
@@ -72,17 +73,19 @@ read-only over the canonical sources even in a skill that otherwise writes.
   `steer-explain-<feature-id>.html`, `steer-audit-code-<short-sha>.html`). The stable name is
   what lets a **same-session re-run redeploy to the same Artifact URL** instead of
   minting a new page; never use a randomized temp name.
-- **Read-only skills.** `/steer:explain` and `/steer:help` keep the mutating
-  tools disallowed in frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`;
-  `explain` also disallows `Bash`) — but `Write` is deliberately **not**
-  disallowed, because writing the HTML to temp is their one permitted write. `/steer:questions bundle` lives in a write-capable
-  skill and upholds the same limit as a **prose invariant**: bundle writes nothing
-  under the repo tree.
-- **Skills whose frontmatter disallows `Write`** (`/steer:audit`) cannot publish
-  during the tool-restricted run. Offer the Artifact as a **post-run step**, exactly
-  as those skills already offer their optional committed report: the render + publish
-  happen after the user confirms, once the run's tool restriction has cleared. The
-  temp-only write keeps it read-only over the repo either way.
+- **Read-only skills keep `Write`.** `/steer:explain`, `/steer:help`,
+  `/steer:status` and `/steer:audit` keep the mutating tools disallowed in
+  frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`; `explain` also disallows
+  `Bash`) — but `Write` is deliberately **not** disallowed, because writing the
+  HTML to temp is their one permitted write. `/steer:questions bundle` lives in a
+  write-capable skill and upholds the same limit as a **prose invariant**: bundle
+  writes nothing under the repo tree.
+- **Never disallow `Write` to make a render "safe".** A skill's tool grants apply
+  for the **whole invocation**, so a user confirmation mid-run does not lift a
+  frontmatter restriction — dropping `Write` makes the instructed render
+  unreachable instead of deferring it. There is no "post-run step" in which the
+  restriction has cleared. Render in-run, post-confirmation, to the temp path; the
+  temp-only write is what keeps it read-only over the repo.
 
 ## Rendering mechanics — the CSP shapes everything
 
@@ -229,6 +232,7 @@ render unless the user supplies a URL to update.
 | `/steer:questions bundle` | Fillable PO questionnaire (see [Fillable pages](#fillable-pages-the-copy-out-floor)) | open questions across the spine |
 | `/steer:audit` | Findings dashboard — dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
 | `/steer:roadmap` | Release timeline — milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
+| `/steer:status` | Client-facing period report — shipped / in-progress / needs-input / next | the whole spine over the reporting window |
 | `/steer:help` | Capability menu — front doors grouped by workflow area | the `00-router.md` intent→skill table |
 
 The lean always-on version of this is rule `88-artifacts`; this reference is its

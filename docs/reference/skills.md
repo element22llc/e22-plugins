@@ -15,14 +15,23 @@ The handful of skills a user picks from. Each detects context and hands off to t
 specialized skills below as needed, so you rarely reach past this set.
 
 !!! note "In a polyrepo member, spine-reading skills resolve the workspace first"
-    A member repo (`spec/PRODUCT.md`) holds only its own ADRs, design and code —
-    `spec/features/**`, `vision.md`, `HISTORY.md` and `spec/tracker.md` live once in
-    the workspace. Every skill that reads or writes those (`setup`, `spec`,
-    `spec-scaffold`, `intake`, `questions`, `work`, `issues`, `tracker-sync`,
-    `next`, `status`, `audit`, `roadmap`, `explain`, `adr`, `sync`, `protect`)
-    resolves the workspace before acting and says so, rather than reporting an
-    absent local file as empty. See [Product spine](../concepts/product-spine.md)
-    and `/steer:reference polyrepo`.
+    A member repo (`spec/PRODUCT.md`) holds only its own ADRs, design,
+    `ARCHITECTURE.md` and code — `spec/features/**`, `vision.md`, `HISTORY.md` and
+    `spec/tracker.md` live once in the workspace. Every skill that reads or writes
+    those (`setup`, `spec`, `spec-scaffold`, `intake`, `questions`, `work`,
+    `issues`, `tracker-sync`, `next`, `status`, `audit`, `roadmap`, `explain`,
+    `adr`, `sync`, `protect`) resolves the workspace before acting and says so,
+    rather than reporting an absent local file as empty.
+
+    The two **bootstrap** doors carry the same carve-out in the other direction:
+    `/steer:init` and `/steer:adopt` install `spec/PRODUCT.md` and **skip** the
+    product-level artifacts entirely — including the interview that would populate
+    them and the tracker-label bootstrap that keys off a local `tracker.md`.
+    `/steer:tidy` is a third flavour: it neither resolves nor creates, reporting a
+    stray product-level file instead of making the directory locally. Writing any
+    of them into a member manufactures the split-brain spine the topology exists to
+    prevent. See [Product spine](../concepts/product-spine.md) and
+    `/steer:reference polyrepo`.
 
 | Skill | Purpose |
 | --- | --- |

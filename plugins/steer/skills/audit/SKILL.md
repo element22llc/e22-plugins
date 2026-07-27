@@ -68,8 +68,8 @@ govern how each finding gets *resolved*.
 - **`code`** *(default — bare `/steer:audit`)* — whole-repo **code-vs-standards**
   health sweep: review the codebase across the standards dimensions, **vet**
   every candidate finding against the code it cites, rank survivors by
-  **leverage**, **propose** routing into `/spec`, **file** findings in the
-  tracker.
+  **leverage**, **propose** routing into `/spec`, and hand the survivors to
+  `/steer:issues publish-audit` — the separate filing step.
   → procedure: [`modes/code.md`](${CLAUDE_PLUGIN_ROOT}/skills/audit/modes/code.md)
 - **`spec`** — **spec-vs-spec** conformance: diff the **as-built `/spec`** (what
   the code actually does, reverse-engineered by `/steer:adopt`) against the

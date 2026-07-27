@@ -129,9 +129,9 @@ of dimension.
      (`kind=finding` + the matching `source:*`; security findings redact secrets
      / exploit detail and default to human review before public disclosure).
 3. **Make no code or spec edits, and don't commit.** This mode stops at the
-   report, the proposed routing, and (with a yes) opened issues + the optional
-   `AUDIT-REPORT.md`. Fixing anything is a separate, approved step on its own
-   branch + PR.
+   report, the proposed routing, and (with a yes) the optional `AUDIT-REPORT.md`.
+   It opens **no issues itself** — filing is `/steer:issues publish-audit`, its own
+   step. Fixing anything is a separate, approved step on its own branch + PR.
 4. **Recommend the next action.** End with a `## Recommended next actions` block
    per `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md` (categories,
    precedence, output format, read-only rule — auditing is repo-wide *by
