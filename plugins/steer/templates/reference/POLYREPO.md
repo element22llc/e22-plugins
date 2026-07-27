@@ -52,13 +52,22 @@ reports the contradiction.
 - `vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`
 - `spec/tracker.md` — the tracker for the whole product
 - **all** of `spec/features/**` — every `intent.md` and `contract.md`
+- `spec/sources/` and `spec/reference/` — PO source documents and research feed
+  the *product*, so `/steer:intake` lands them here, not in the member it ran from
 
 **In each member:**
 
 - `spec/PRODUCT.md` — the pointer, and the thing that makes the repo a member
 - `spec/decisions/` — ADRs about *this repo's* internals
+- `spec/design/` and `DESIGN.md` — this repo's own design sources and system design
 - `ARCHITECTURE.md` — how *this repo* is built
 - the code
+
+The split is not "product files vs. the rest" but **product truth vs. this
+repo's internals**: anything a sibling repo would need to read lives once in the
+workspace; anything that only describes *this* codebase stays here. A spine
+directory absent from both lists above follows that same test — and `/steer:tidy`
+must not create a product-level one locally in a member.
 
 Feature specs live in the workspace because that is the whole point. Rule
 `20-layout` already lets a feature span apps and packages; in a polyrepo it spans
@@ -86,9 +95,10 @@ read yet.
 
 ## Reporting across members
 
-`/steer:next`, `/steer:status`, `/steer:audit` and `/steer:roadmap` walk one tree
-by default. In a polyrepo that would hand a client a fraction of the product with
-no indication it was a fraction — worse than a smaller, honest answer.
+`/steer:next`, `/steer:status`, `/steer:audit`, `/steer:roadmap` and
+`/steer:protect` walk one tree by default. In a polyrepo that would hand a client
+a fraction of the product with no indication it was a fraction — worse than a
+smaller, honest answer.
 
 Every such report must:
 

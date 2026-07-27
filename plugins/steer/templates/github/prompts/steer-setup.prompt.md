@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, installing prerequisites first when the toolchain is missing.
+description: One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, flagging missing prerequisites before routing.
 ---
 
 <!-- Generated from the steer plugin's skills/setup/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:setup` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, installing prerequisites first when the toolchain is missing.
+**Purpose.** One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, flagging missing prerequisites before routing.
 
 **When to use.** Use when asked to set up, onboard, bootstrap, or adopt a repo, or to sync to the latest plugin — the single entry point whenever you would otherwise guess between /steer-init, /steer-adopt, and /steer-sync.
 

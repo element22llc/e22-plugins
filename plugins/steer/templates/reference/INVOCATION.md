@@ -12,7 +12,10 @@ be *careful* about that.
 
 ## Tier 1 — safe to infer (read-only / navigation / reference)
 
-Read-only or purely advisory; inferring them from a question is fine.
+Read-only or purely advisory; inferring them from a question is fine. Two carry a
+caveat worth knowing before you infer them: `/steer:report` **auto-files** an
+upstream issue with no confirmation step, and `/steer:audit` will offer to write a
+report file into `/spec`. Neither changes existing repo content.
 
 | Skill | What it does |
 |---|---|
@@ -22,7 +25,7 @@ Read-only or purely advisory; inferring them from a question is fine.
 | `/steer:audit` | Read-only health audit — reports, never edits. |
 | `/steer:audit spec` | Read-only spec-vs-tracker comparison — reports, never edits. |
 | `/steer:status` | Read-only delivery snapshot — reports, never edits. |
-| `/steer:explain` | Read-only walkthrough of a repo, file, or decision. |
+| `/steer:explain` | Renders **one feature's spec** as a stakeholder-readable Artifact — presentation only, never authoring. |
 | `/steer:help` | Read-only orientation on the skills and where to start. |
 | `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs what's missing. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
@@ -58,8 +61,8 @@ Not a user's first move.
 
 | Skill | Role |
 |---|---|
-| `/steer:tracker-sync` | The low-level GitHub tracker gateway `issues`/`work` call. |
-| `/steer:spec-scaffold` | The spec-file creator `spec`/`adopt` call. |
+| `/steer:tracker-sync` | The low-level GitHub tracker gateway. Driven by `issues` and `work`, and also by `spec`, `roadmap`, `questions`, `next`, `audit` and `status`. |
+| `/steer:spec-scaffold` | The spec-file creator. Called by `spec`, `build`, `init` and `adopt`. |
 
 ## Drift detection & auto-repair (managed repos)
 

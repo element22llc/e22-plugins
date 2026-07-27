@@ -13,7 +13,7 @@ only for work with no tracked item, and say why.
 closing keyword will **not** close the issue — GitHub honours them only within
 one repo, so `Closes #123` renders as a plain cross-reference and the issue stays
 open with nothing warning you. Write `Refs owner/repo#123` instead and close the
-issue explicitly after merge (`/steer:tracker-sync close`).
+issue explicitly after merge — on GitHub, or by asking Claude to close it.
 
 Closes #
 

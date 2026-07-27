@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end from local Claude Code — claim through opened PR and lifecycle transition; the execution counterpart to /steer:issues, routing all tracker-metadata I/O through /steer:tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path."
+description: "Execute a GitHub issue end-to-end from local Claude Code — claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer:issues, routing all tracker-metadata I/O through /steer:tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
   #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted
@@ -258,7 +258,7 @@ without redefining the subcommands above:
 | Acceptance criteria not yet met | Blocking now (next transition) | Continue — `/steer:work resume #N` |
 | Required validation failing | Blocking now | Fix failures, then `/steer:work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer:work finish #N` |
-| PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: `/loop` over `gh pr checks`) |
+| PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | PR open, CI red | Blocking now | Fix the failure, re-push, re-watch |
 | PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
 | PR merged but issue still `validate` (stale) | Blocking now | Reconcile to `done` — `/steer:work resume #N` |

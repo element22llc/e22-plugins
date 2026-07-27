@@ -39,7 +39,8 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
      /steer:protect owns reconciling it with the observed protection and flips it
      to pr-flow at graduation. Keep it in sync with the prose below. -->
 
-**`PR flow`** — work on `feat/*` branches, one PR per change; Claude pushes the
+**`PR flow`** — work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
+`issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the
 branch and opens the PR autonomously, and it merges only after a dev reviews it
 (Commit autonomy — the merge review is the human gate, enforced server-side by
 branch protection; run `/steer:protect` to verify/apply it). This is the default.

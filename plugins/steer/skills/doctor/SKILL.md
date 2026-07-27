@@ -76,7 +76,9 @@ commands).
   - Linux / WSL2: `curl https://mise.run | sh`
   - Then activate it in the shell and persist it to the rc file:
     `eval "$(mise activate zsh)"` (or `bash`), and add that line to
-    `~/.zshrc` / `~/.bashrc` so new shells have it.
+    `~/.zshrc` / `~/.bashrc` so new shells have it. **Print this for the dev to
+    run — never edit their shell rc yourself:** this skill disallows `Edit`/`Write`
+    precisely because a dotfile outside the repo is the dev's to change.
 - **`node` / `pnpm` / `uv` (`via-mise` or `unmanaged`)** — do **not** install
   these separately. Once mise is present, run `mise install` from the repo
   (and `cd infra && mise install` if they'll touch infra); it provisions every

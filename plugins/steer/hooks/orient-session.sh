@@ -38,10 +38,20 @@ CWD="$(steer_field cwd)"
 # There is no git repo here, so the spine-based orientation below never fires and
 # the user — often non-technical — has no signal that anything loaded. Confirm,
 # in plain language, that standards are active and that they can just describe a
-# goal. This hook runs on `startup` only (see hooks.json), so the confirmation
-# does NOT re-fire on resume/clear/compact. inject-standards.sh handles the lean
-# rule injection for this same mode.
-if [ "$(steer_work_mode "${CWD}")" = "knowledge" ]; then
+# goal.
+#
+# This is a ONE-TIME greeting, so it is gated to `source: startup`. The hook as a
+# whole is registered on `startup|resume|clear|compact` (hooks.json) because the
+# polyrepo topology note below MUST survive a /clear or compaction — but re-greeting
+# the same user after every compaction is noise. Unknown/absent source → fail open
+# and greet, so a payload without the field behaves as it did before.
+# inject-standards.sh handles the lean rule injection for this same mode.
+case "$(steer_field source)" in
+	resume | clear | compact) _steer_greet=0 ;;
+	*) _steer_greet=1 ;;
+esac
+
+if [ "${_steer_greet}" = "1" ] && [ "$(steer_work_mode "${CWD}")" = "knowledge" ]; then
 	printf '<!-- steer: knowledge-work orientation -->\n'
 	printf 'This is a non-code knowledge-work folder and the org engineering '
 	printf 'standards (steer) are active here in their lean, knowledge-work form. '

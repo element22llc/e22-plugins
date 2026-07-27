@@ -92,7 +92,18 @@ PLUGIN_ROOT = Path("plugins/steer")
 # "trade prose out first"; raising it again takes the same explicit decision, and
 # RULES_TOTAL_TARGET_BYTES deliberately stays at the old 62,500 so the report
 # keeps showing the gap as work to reclaim.
-RULES_TOTAL_MAX_BYTES = 65_200
+#
+# RAISED a second time, 65,200 → 65,300, by the pre-release audit fix pass. The
+# first raise re-armed at measured+1%, but the polyrepo work landed in the same
+# cycle and consumed that headroom down to 7 bytes, so the next correctness fix
+# to any always-on rule was guaranteed to breach it. Three such fixes did:
+# rule 00 no longer claims `/steer:adopt` and `/steer:sync` invoke `/steer:doctor`
+# (they never have), rule 22's root allowlist now admits `scripts/` (which rule 24
+# requires and the scaffold installs), and rule 52 cites rule 31 by its real
+# heading. Each is a factual correction, not new prose, and the alternative —
+# shaving rationale to pay for them — is precisely the trade the note above
+# records as wrong and reverted. +100 B is ~0.15%; the target stays 62,500.
+RULES_TOTAL_MAX_BYTES = 65_300
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently

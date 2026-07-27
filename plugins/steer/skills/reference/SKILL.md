@@ -1,6 +1,6 @@
 ---
 name: reference
-description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts (shareable Claude Artifacts), gates (answering a gate in-session), or polyrepo (a product spanning several repos). Read-only loader."
+description: "Load one of steer's full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts, gates, or polyrepo. Read-only loader."
 when_to_use: >-
   Use for any tooling/convention question or stack-default rationale, living-
   docs/tracker/drift questions, a feature built from a design export or

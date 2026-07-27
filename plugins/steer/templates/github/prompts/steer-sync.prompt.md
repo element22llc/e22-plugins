@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
+description: Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
 ---
 
 <!-- Generated from the steer plugin's skills/sync/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:sync` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
+**Purpose.** Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
 
 **When to use.** Use on a steady-state repo after a plugin release, when an upstream rename or missing capability wiring needs repair, or with --check for a read-only capability + drift report with no branch or PR.
 

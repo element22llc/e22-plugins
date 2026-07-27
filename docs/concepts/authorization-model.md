@@ -221,15 +221,23 @@ grants the bundled plugin helper scripts its body — including a factored-out
 
 The skill frontmatter encodes the same boundary:
 
-- **Tier 1 (read-only)** skills set `disallowed-tools: Edit, Write, NotebookEdit,
-  EnterWorktree` — e.g. `audit`, `next`, `standards`.
+- **Tier 1 (read-only)** skills never modify a file that already exists in the
+  repo: they all set `disallowed-tools: Edit, NotebookEdit, EnterWorktree` — e.g.
+  `audit`, `next`, `standards`.
 - **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
   and open the PR — but never merge it or commit to `main` outside solo-trunk —
   e.g. `sync`, `work`, `tidy`.
 
 A skill's tier is not a separate label — it is readable straight from its
-frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, Write, …`
-(`audit`, `next`, `standards`, `doctor`, `explain`, `help`, `reference`,
-`status`), a Tier 2 skill grants the write and git verbs it needs. See the
+frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,
+EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
+`reference`, `status`), a Tier 2 skill grants the write and git verbs it needs.
+
+`Write` splits that tier rather than defining it. Most Tier 1 skills disallow it
+outright (`next`, `standards`, `doctor`, `reference`). The four that render a
+**derived artifact** — `audit`, `status`, `help`, `explain` — keep `Write`
+granted and bound *in prose* instead, to a temp-dir Artifact page or an
+explicitly confirmed report file; none of them may touch existing repo content,
+because `Edit` is still disallowed. `explain` additionally disallows `Bash`. See the
 [Skills reference](../reference/skills.md) for the skill inventory and
 [Configuration](../reference/configuration.md) for how tools are constrained.

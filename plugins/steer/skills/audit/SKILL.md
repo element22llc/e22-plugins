@@ -46,9 +46,12 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 > `Write` to create or replace any other file. Findings reach the tracker via
 > `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
 
-Both modes are **repository-read-only** — never an edit or a commit; their only
-writes are tracker issues. **Make no code or spec edits, and don't commit.**
-Fixing anything is a separate, approved step on its own branch + PR.
+Both modes are **non-mutating** — they never change an existing file and never
+commit. The only things either mode may create are the two confirmed outputs
+named above. **Make no code or spec edits, and don't commit.** Publishing
+findings to the tracker is a separate step (`/steer:issues publish-audit` /
+`publish-drift`) — this skill writes no issue itself. Fixing anything is a
+separate, approved step on its own branch + PR.
 
 ## Coupling rules
 

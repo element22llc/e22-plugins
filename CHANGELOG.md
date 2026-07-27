@@ -7,6 +7,85 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** three surfaces stated an authorization or routing fact the code
+  contradicts — the class the pre-release audit exists to catch, and two of the
+  three were introduced by the *previous* audit-fix pass. (1) The authorization
+  model page claimed Tier 1 skills set `disallowed-tools: Edit, Write, …` and named
+  eight; `audit`, `status`, `help` and `explain` all retain `Write` (bound in prose
+  to a temp-dir Artifact or a confirmed report), and `explain` also disallows
+  `Bash`. The tier is now defined by `Edit`/`NotebookEdit`/`EnterWorktree`, with
+  `Write` described as splitting it. (2) `README.md` advertised `/steer:report` as
+  "confirmation-gated" while the skill and rule `97-self-report` both specify
+  **auto-file, no confirmation** — for the one skill that posts to a shared
+  upstream repo unprompted. (3) Rule `00-router` and the skills reference both had
+  `/steer:adopt` and `/steer:sync` invoking `/steer:doctor`; only `/steer:init` and
+  `/steer:build` ever have. `/steer:setup`'s own description also promised
+  "installing prerequisites" when it only surfaces them.
+- **Fixed:** `orient-session.sh`'s knowledge-work greeting re-fired after every
+  `/clear`, resume and compaction. Widening the hook's matcher to
+  `startup|resume|clear|compact` (so the polyrepo topology note survives a
+  `/clear`) also un-gated the one-time greeting, and the in-file comment still
+  claimed "runs on `startup` only … does NOT re-fire". The greeting is now gated on
+  `source: startup` — failing open when the field is absent — while the topology
+  note keeps firing on all four. Both behaviours are now covered by hook tests.
+- **Fixed:** `/steer:protect`'s default `verify` mode declared itself read-only
+  ("re-running on a protected repo writes nothing") and then, in that same mode,
+  instructed flipping the `CLAUDE.md` delivery-mode marker and appending a
+  graduation entry to `/spec/HISTORY.md`. `verify` now reports the stale marker and
+  names `apply` as the fix; `apply` still performs the reconciliation.
+- **Fixed:** `/steer:sync` step 8 told every polyrepo member to append a
+  `/spec/HISTORY.md` entry that step 4 forbids creating there. It now records the
+  sync in the PR description instead, leaving `/spec/.version` as the local record.
+  `/steer:adr` had the same gap for its ratification entry and now routes it to the
+  workspace ledger.
+- **Fixed:** `/steer:explain` was the one spine-reading skill with no polyrepo
+  carve-out, so in a member it rendered a fully-specified feature as *"not specified
+  in the spec"*. It now resolves `workspace.path` first and stops with "spine
+  unreachable" when it cannot — `Bash` is disallowed there, so the gateway route is
+  deliberately not offered.
+- **Fixed:** `/steer:help` promised a menu that "can never drift" from the router
+  while hard-coding its groups, and had silently dropped `/steer:work --hotfix` —
+  leaving the incident door out of the capability menu. Added the hotfix row plus a
+  completeness check that every front-door row appears exactly once.
+- **Fixed:** `/steer:audit` asserted both modes were "repository-read-only … their
+  only writes are tracker issues" while instructing a `/spec/AUDIT-REPORT.md` write
+  **on a `feat/audit` branch** — with no git-write verb granted and `EnterWorktree`
+  disallowed, and no issue-write verb either. The contract now says non-mutating,
+  the branch instruction is gone, and publishing is named as the separate
+  `/steer:issues publish-*` step.
+- **Fixed:** the polyrepo artifact map in `POLYREPO.md` and `spec/product.md`
+  omitted `spec/sources`, `spec/reference`, `spec/design` and `DESIGN.md` — one of
+  which `/steer:intake` already lands in the workspace — so `/steer:tidy` would
+  create product-level dirs locally in a member. Both now place all four and state
+  the underlying test (product truth vs. this repo's internals). `POLYREPO.md` also
+  now lists `/steer:protect` among the reports owing a member-scope declaration.
+- **Fixed:** `/steer:tracker-sync`'s caller comment named a `/steer:spec
+  materialize` step and an `/steer:intake (reconcile)` route that do not exist
+  (`materialize` is an `/steer:issues` mode; intake's reconcile table has no
+  tracker-sync row). Corrected here and in the intake workflow docs — the previous
+  pass fixed only the `CAPABILITIES.md` copy.
+- **Fixed:** the shipped PR template and `spec/tracker.md` told a **human** to run
+  `/steer:tracker-sync`, which is `user-invocable: false` — and the plugin's own
+  `scan-invocations.sh` then flagged it in every consumer repo. Both now describe
+  the action instead. `check_standards.py` scans the PR template too, so the two
+  detectors no longer disagree on their surface list.
+- **Fixed:** a batch of smaller cross-surface inaccuracies — bare `/loop` in two
+  places colliding with the real `/steer:loop`; `INVOCATION.md`'s `explain` row
+  describing a different skill, its Tier 1 header omitting that `report` auto-files
+  and `audit` may write, and its gateway caller sets understating both; `status`
+  contradicting itself on whether `Bash` is disallowed; `doctor` reading as though
+  it edits the dev's shell rc; the scaffold `CLAUDE.md` naming only `feat/*` when
+  `/steer:work` defaults to `issue/<n>-<slug>`; `convert:doc` documented without its
+  load-bearing `--from 'markitdown[all]'`; the hook-tier list covering 4 of 6
+  registered hooks; and `issues`, `adopt`, `work`, `sync` and `tracker-sync`
+  descriptions omitting modes or writes they perform. `adopt` also gained the
+  narrowly-scoped `Bash(npx @google/design.md *)` grant its Phase 7 needs.
+- **Changed:** the always-on rules ceiling moves 65,200 → 65,300 B. The first raise
+  re-armed at measured+1%, but the polyrepo work landed in the same cycle and
+  consumed it to **7 bytes**, so the next correctness fix to any rule was
+  guaranteed to breach it — and three landed here. Paid down partly by dropping
+  three `/steer:reference` description parentheticals that `when_to_use` already
+  restates. `RULES_TOTAL_TARGET_BYTES` stays 62,500.
 - **Fixed:** issue-first's sibling defect — **the polyrepo member write guard was
   missing from the three surfaces that actually author the spine.** The 3.23.0
   sweep gave rules `35-issue-tracker` and `36-issue-first` a member carve-out but
@@ -84,7 +163,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `build/HANDOFF.md` and `build/IMPLEMENTATION.md` each misstated where the
   other's steps live (both claimed steps that had moved were still in
   `SKILL.md`); six "below" references pointed at procedure relocated into a
-  sibling file; three intra-document anchors resolved to headings that stayed
+  sibling file; four intra-document anchors resolved to headings that stayed
   behind (`intake/SKILL.md`, `intake/PIPELINES.md`, `questions/BUNDLE.md` ×2); and
   `/steer:sync`'s step **6.5** was scoped by `SKILL.md` but appeared in neither its
   step list nor `RECONCILE.md`'s title. The `--check` read-only boundary is also
@@ -159,16 +238,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   still-correct instruction: `/steer:sync` and `/steer:doctor` establish the role
   via `steer_polyrepo_role` first, and never "repair" a member's deliberately
   absent product-level files.
-- **Fixed:** three **shipped** scaffold comments still advertised the retired
-  `markitdown` MCP server as live — `templates/scaffold/mise.toml` twice (once as
-  the justification for the always-installed Node/Python baseline, once claiming
-  "the same converter ships as an MCP server … in the plugin's `.mcp.json`",
-  directly above the `convert:doc` task that replaced it) and
-  `profiles/workspace/mise.toml` once, in a file this release *adds*. Consumer
-  repos received a bundle that contradicted itself, since `scaffold/README.md` and
-  `/steer:intake` both describe the retirement correctly. Each now cites the real
-  on-demand task. No gate covers this: `check_copilot_mcp.py` compares server
-  sets, not prose.
+- **Fixed:** three scaffold comments still advertised the `markitdown` MCP server
+  as live after this same release retired it — `templates/scaffold/mise.toml`
+  twice (once as the justification for the always-installed Node/Python baseline,
+  once claiming "the same converter ships as an MCP server … in the plugin's
+  `.mcp.json`", directly above the `convert:doc` task that replaced it) and
+  `profiles/workspace/mise.toml` once, in a file this release *adds*. Both
+  comments were accurate at 3.22.0 and were left stale by the retirement, so no
+  released bundle ever contradicted itself — but shipping the retirement without
+  them would have. Each now cites the real on-demand task. No gate covers this:
+  `check_copilot_mcp.py` compares server sets, not prose.
 - **Fixed:** `/steer:reference`'s two newest topics were missing from the
   hand-maintained topic enumerations, so `polyrepo` was undiscoverable from the
   only always-on surface. `rules/00-router.md` gains `polyrepo` (it already had
@@ -278,10 +357,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   that recreates the split-brain spine the topology exists to prevent. The rule
   now carries the member exception inline: resolve the tracker at the workspace,
   never create a local copy.
-- **Fixed:** shipped content cited a **rule `21-polyrepo` that does not exist**.
-  `skills/reference/COVERAGE.md` told a consumer session the polyrepo topic
-  "backs the scoped rule `21-polyrepo`", and `lib/scope.sh`'s `polyrepo`
-  predicate comment described that rule's text as if it shipped — while the
+- **Fixed:** new content in this release cited a **rule `21-polyrepo` that does
+  not exist** (nothing released ever carried the citation — both surfaces are new
+  this cycle). `skills/reference/COVERAGE.md` would have told a consumer session
+  the polyrepo topic "backs the scoped rule `21-polyrepo`", and `lib/scope.sh`'s
+  `polyrepo` predicate comment described that rule's text as if it shipped — while the
   actual decision, recorded in this release, is that the topology is deliberately
   **not** an always-on rule (it is delivered by `orient-session.sh` plus
   `/steer:reference polyrepo`, so a single-repo product pays zero bytes). Both now
@@ -294,7 +374,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   of headroom, so rule `61-gate-prompts` could only be added by compressing
   unrelated gate rules — and that trade deleted ~1 KB of rationale prose (rules 00,
   30, 31, 36, 45, 50, 60, 62, 95, 99) that existed nowhere else in the repo. Those
-  compressions are **reverted in full**; the ceiling is re-armed at the measured
+  compressions are **reverted**, except one line of rule 30 later retrimmed to help
+  pay for the polyrepo block; the ceiling is re-armed at the measured
   total plus ~1%. Unlike `SKILL_BODY_MAX_BYTES`, which is derived from Claude Code's
   compaction re-attach behaviour and cannot move, this number is policy — so the
   raise carries its reason in the gate script, and the default answer to "it doesn't

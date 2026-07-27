@@ -135,6 +135,12 @@ session_json() { # <cwd> <session>
 	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart"}' "$2" "$1"
 }
 
+# Same, but carrying the SessionStart `source` (startup|resume|clear|compact).
+# orient-session.sh gates its one-time knowledge-work greeting on this.
+session_json_src() { # <cwd> <session> <source>
+	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","source":"%s"}' "$2" "$1" "$3"
+}
+
 # Write a product CLAUDE.md carrying the machine-readable delivery-mode marker,
 # plus prose that names BOTH modes — so the tests prove the matcher is anchored to
 # the marker line and never matches the explanatory prose word "solo trunk".
@@ -945,6 +951,14 @@ oq_grep "orient: member warned off cross-repo Closes" 'Refs owner/repo#N' "${out
 oq_ngrep "orient: member note is not the workspace note" 'is the \*\*workspace\*\*' "${out}"
 oq_grep "orient: member note is additive" 'need to know skill names' "${out}"
 
+# The topology note is precisely why the hook is registered on
+# startup|resume|clear|compact: it must survive a /clear or compaction, unlike the
+# one-time knowledge-work greeting, which is gated to `startup`.
+for src in startup resume clear compact; do
+	out="$(run_hook orient-session.sh "$(session_json_src "${OR1M}" or1m "${src}")")"
+	oq_grep "orient: member topology note survives source=${src}" 'is a \*\*member\*\*' "${out}"
+done
+
 # A single-repo product must see NO polyrepo text at all.
 OR1S="$(new_repo orient1s)"
 managed_spine "${OR1S}"
@@ -1693,6 +1707,21 @@ printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject(kw): no inject-when marker may leak in knowledge mode" || ok
 out="$(run_hook orient-session.sh "$(session_json "${KW}" kw_plain)")"
 oq_grep "orient(kw): knowledge-work confirmation emitted" 'knowledge-work folder' "${out}"
+
+# The greeting is a ONE-TIME orientation, so it is gated to `source: startup`.
+# The hook is registered on startup|resume|clear|compact (the polyrepo topology
+# note must survive a /clear), which would otherwise re-greet the same user after
+# every compaction.
+out="$(run_hook orient-session.sh "$(session_json_src "${KW}" kw_plain startup)")"
+oq_grep "orient(kw): source=startup greets" 'knowledge-work folder' "${out}"
+for src in resume clear compact; do
+	out="$(run_hook orient-session.sh "$(session_json_src "${KW}" kw_plain "${src}")")"
+	printf '%s' "${out}" | grep -q 'knowledge-work folder' &&
+		bad "orient(kw): source=${src} must not re-greet" || ok
+done
+# Absent source → fail open and greet (payload without the field behaves as before).
+out="$(run_hook orient-session.sh "$(session_json "${KW}" kw_plain)")"
+oq_grep "orient(kw): absent source fails open and greets" 'knowledge-work folder' "${out}"
 
 # Fail-safe guard: a non-git folder that DOES carry a code marker (package.json)
 # is 'code' mode — full ruleset, no knowledge banner, no knowledge confirmation.

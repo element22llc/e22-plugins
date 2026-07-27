@@ -72,8 +72,9 @@ management with no implementation this turn routes to `/steer:issues`.
 
 **Specialized skills reached through these front doors** (each is directly
 invocable too): `/steer:setup` → `/steer:init` (greenfield) / `/steer:adopt`
-(existing code) / `/steer:sync` (steady-state), which invoke `/steer:doctor`
-when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
+(existing code) / `/steer:sync` (steady-state); `/steer:doctor` when
+prerequisites are missing (from init/build, not setup); `/steer:audit` →
+`/steer:tidy`;
 `/steer:issues` and `/steer:spec` → `/steer:questions`; `/steer:issues` →
 `/steer:roadmap`. GitHub reads/writes route through the internal
 `/steer:tracker-sync` gateway; feature specs are instantiated by the internal

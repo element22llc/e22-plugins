@@ -122,14 +122,17 @@ labelled by branch name. If every rule on every present branch is compliant, say
 **"branch protection is compliant — nothing to do"** and stop. This is the
 idempotent path: re-running on a protected repo writes nothing.
 
-**Reconcile the delivery-mode cache against what you observed** (it may be stale
-in either direction):
+**Check the delivery-mode cache against what you observed** (it may be stale in
+either direction). `verify` **writes nothing** — it reports the drift and names
+the fix; the marker flip itself is `apply`'s job:
 
 - Marker says **solo-trunk** but `main` **is protected** → the repo already
-  graduated (someone applied protection outside this skill). Flip the marker to
-  `<!-- steer:delivery-mode=pr-flow -->`, update the section prose, and append
-  the graduation entry to `/spec/HISTORY.md` — the same reconciliation `apply`
-  performs.
+  graduated (someone applied protection outside this skill). Report that the
+  marker is stale and recommend `/steer:protect apply`, which flips it to
+  `<!-- steer:delivery-mode=pr-flow -->`, updates the section prose, and appends
+  the graduation entry to `/spec/HISTORY.md`. Do not edit those files from
+  `verify`: a mode documented as read-only must stay read-only, and a stale
+  marker is a finding to report, not a side effect to apply unasked.
 - Marker says **pr-flow** (or is absent) but `main` has **no protection** → the
   wall the mode assumes is missing. Do **not** silently flip to solo-trunk (that
   would grant trunk autonomy nobody chose): report the gap and recommend `apply`.

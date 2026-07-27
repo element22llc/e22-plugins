@@ -1,14 +1,14 @@
 ---
 name: tracker-sync
-description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, gh fallback, manual floor) — reads and writes issues on behalf of the owning skills."
+description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, gh fallback, manual floor) — reads and writes issues, and folds pulled criteria into intent.md, for the owning skills."
 when_to_use: >-
   Reached via /steer:issues, /steer:work, and the other owning skills — not a
   direct entry point.
 argument-hint: "[<op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
-# /steer:spec (materialize step), /steer:roadmap, /steer:intake (reconcile), and
-# /steer:next's read-only state reconstruction — plus the read flows of
-# /steer:audit spec. Never a direct user entry point. Model-callable, hidden from
+# /steer:spec (its optional file-the-intent exit), /steer:roadmap, /steer:questions,
+# /steer:next's read-only state reconstruction, and the read flows of
+# /steer:audit and /steer:status. Never a direct user entry point. Model-callable, hidden from
 # the slash menu, so it never competes with the orchestrators above it.
 user-invocable: false
 # Pre-approve the issue create + find-before-create dedup surface for a DIRECT

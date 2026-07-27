@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, installing prerequisites first when the toolchain is missing."
+description: "One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, flagging missing prerequisites before routing."
 when_to_use: >-
   Use when asked to set up, onboard, bootstrap, or adopt a repo, or to sync to
   the latest plugin — the single entry point whenever you would otherwise guess

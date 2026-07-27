@@ -72,8 +72,9 @@ owners:
   only in the tracker — the spec is the in-repo source of truth; the tracker
   ref is the pointer back.
 - **Milestones (release grouping):** when a release/version is tracked as a
-  GitHub Milestone, attach issues to it with `/steer:tracker-sync set-milestone`
-  so a GitHub Projects v2 release or roadmap view can group by it. To generate the
+  GitHub Milestone, issues are attached to it through the tracker gateway (ask
+  Claude, or run `/steer:roadmap`) so a GitHub Projects v2 release or roadmap view
+  can group by it. To generate the
   timeline — turn target features or a spec-gap from `/steer:audit spec` into milestone-grouped
   issues — run `/steer:roadmap` (it proposes a dependency-ordered milestone plan and
   attaches issues on confirmation). Milestones are assigned **on demand**, not
