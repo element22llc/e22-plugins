@@ -14,6 +14,7 @@ flowchart TD
     ROOT --> CI[.github/ workflows + PR template]
     ROOT --> COMPOSE[compose.yaml]
     ROOT --> CLAUDE[CLAUDE.md<br/>product-specific context only]
+    ROOT --> ARCH[ARCHITECTURE.md<br/>as-built system model]
     ROOT --> CODE[/apps · /packages — implementation/]
 ```
 
@@ -28,6 +29,7 @@ flowchart TD
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. |
 | `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged). `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree. See the always-on **Parallel worktrees** rule. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. Carries the `<!-- steer:profile=… -->` marker (see Repo profiles). |
+| `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root — narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Keeping it apart from `/spec` (which holds **intent**) is what lets `/steer:audit spec` compare the two. Required at the root by rules `20-layout` and `32-living-docs`, and allowlisted there by `22-housekeeping` so `/steer:tidy` never proposes relocating it. |
 
 ## Repo profiles
 
@@ -77,9 +79,13 @@ So a non-app repo is never skipped at bootstrap — it shares all of Core, and a
 only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
-**traits** (`has-apps`, `has-compose`, `has-infra`, `has-iac` via the
-`inject-when` mechanism), so the injected rule context always matches what is on
-disk. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
+**traits** via the `inject-when` mechanism, so the injected rule context always
+matches what is on disk. The predicates are `has-apps`, `has-compose`,
+`has-infra`, `has-iac`, `code-project` and `tracker-github`; `lib/scope.sh` also
+defines `polyrepo`, `has-workspace-manifest` and `has-product-pointer`, which are
+**available but carry no rule today** — the polyrepo topology is deliberately
+delivered by a SessionStart note rather than an always-on rule, so the existence
+of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
 still gets the infra-stack rule automatically because `/infra` exists. The
 deployment rule reaches it either way: it gates on `has-iac` **or** `has-apps`,
 since any app/service repo deploys — with or without an `/infra` dir. The
@@ -88,7 +94,9 @@ profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
 
 ## Root housekeeping
 
-The root holds scaffolding and config only — not the spreadsheets, decks,
+The root holds scaffolding, config, and the four standing documents the rules
+require there — `README.md`, `CLAUDE.md`, `ARCHITECTURE.md` and `DESIGN.md` — not
+the spreadsheets, decks,
 diagrams, and **specification / requirements documents** (`.pdf`, `.docx`, decks
 — specs, briefs, RFP/SOW) that feed the spec. Those are **source material**:
 their home is `/spec/reference/`; architecture and flow diagrams go to
@@ -145,3 +153,12 @@ Ledger migrations cover the non-additive changes reconciliation cannot express
 rewrites** (replacing a string that already exists in a materialized file, e.g.
 the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
 never clobbering filled-in content.
+
+Two ledger entries land in **3.23.0**, so a repo syncing up to it should expect
+both: the living global architecture diagram is renamed
+`spec/design/architecture.md` → **`spec/design/architecture-diagram.md`** (a
+`git mv` plus an enumerated in-file token rewrite, so history follows the file
+and the links to it are updated), and the retired `markitdown` MCP server is
+cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
+runs — the converter is now the on-demand `mise run convert:doc` task). Neither
+requires manual work; `/steer:sync` proposes both.

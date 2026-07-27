@@ -58,6 +58,13 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 1. **Require a `/spec` spine.** If `spec/` does not exist, stop and route the
    user to `/steer:setup`. Intake operates on a spine; it does not create one.
+   **A polyrepo member is not a spine** — `spec/` exists there only to hold
+   `spec/PRODUCT.md`, so the presence check alone would pass and then route
+   product-level content into the member. If `spec/PRODUCT.md` is present,
+   resolve the workspace (`workspace.path`, else the GitHub gateway) and land
+   `spec/sources/` and every product-level change **there**; if it is
+   unreachable, say so and stop rather than writing locally
+   (`/steer:reference polyrepo`).
 2. **Detect the converter and report which path you take** — silence is not
    success; name how the extraction was produced:
    - **`mise run convert:doc <file>`** — the scaffold-declared CLI task
@@ -80,7 +87,8 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 ## Modes
 
-`default` (a document path, or no argument): run the intake pipeline below on the
+`default` (a document path, or no argument): run the intake pipeline in
+`PIPELINES.md` on the
 supplied document — the normal "the PO just sent a new version" path. With no
 argument, list the sources under `spec/sources/` and ask which document to absorb.
 
@@ -90,7 +98,7 @@ whose extraction is still `none` (awaiting a text-bearing copy). No writes.
 
 `clarify` (`clarify <path-to-doc>`): absorb a **client clarification document**
 — one that answers open questions and/or introduces new scope — see
-[The clarify pipeline](#the-clarify-pipeline-clarify).
+"The clarify pipeline" in `PIPELINES.md`.
 
 ## Pipelines — read the one for your mode
 

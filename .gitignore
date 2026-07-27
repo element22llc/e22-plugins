@@ -30,10 +30,19 @@ Desktop.ini
 # committed. The project-level .claude/settings.json (if you add one to
 # auto-prompt teammates with extraKnownMarketplaces) IS meant to be committed.
 # ---------------------------------------------------------------------------
+#
+# These patterns contain a slash, so git anchors them to the repo root. Nested
+# .claude/ directories exist too (notably plugins/steer/.claude/), so each is
+# also matched with a leading **/ — otherwise a contributor without a matching
+# global ignore could commit a per-user settings file into the shipped plugin.
 .claude/settings.local.json
+**/.claude/settings.local.json
 .claude/local/
+**/.claude/local/
 .claude/.cache/
+**/.claude/.cache/
 .claude/worktrees/
+**/.claude/worktrees/
 
 # Cowork mount artifacts — Cowork sometimes leaves an empty folder named
 # after the connected workspace inside the workspace itself. Ignore any

@@ -154,7 +154,7 @@ step 6 (record) — replacing the git-diff (steps 3–4) with:
    segmentation rule — semantic by default; structural (one unit per
    `## [<feature-id>] Q-NNN` heading) for a recognized bundle return. An
    empty/garbled/absent extraction stops here — handle it exactly as the
-   [Edge cases](#edge-cases) rows direct.
+   "Edge cases" rows in `SKILL.md` direct.
 2. **Map** each unit inline against **(a)** every open `Q-NNN` across the
    spine — reuse the exact grep `/steer:questions` step 2 uses; do not
    re-derive it — and **(b)** the feature list (each

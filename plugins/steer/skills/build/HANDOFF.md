@@ -1,8 +1,10 @@
 # `/steer:build` — steps 8-10: demo, the PO demo-validation gate, and handoff
 
 Read this file when the feature work is built and you are ready to show the PO
-something running. Steps 1-7 stay in `SKILL.md`, as do the PO-mode guardrails —
-which still apply to everything below (no deploy, no `/infra`, no real secrets).
+something running. Steps 1–4 and 7 stay in `SKILL.md`, as do the PO-mode
+guardrails — which still apply to everything below (no deploy, no `/infra`, no
+real secrets). Steps 5–6 (scaffold, build feature by feature) are in
+`IMPLEMENTATION.md`.
 
 8. **Run it and demo it.** `mise run dev:setup`, then `pnpm dev` — making sure
    `.env` exists with the base variables (Stack rule). Give the PO the

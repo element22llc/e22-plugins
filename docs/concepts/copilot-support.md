@@ -28,7 +28,7 @@ truth and how to install and refresh the Copilot side.
 | Subagents | plugin `agents/` | plugin `agents/` via manifest | `.github/agents/*.agent.md` (agent picker) |
 | MCP servers | plugin `.mcp.json` | plugin `.mcp.json` | `.vscode/mcp.json` |
 | Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
-| Gate hooks | `hooks/hooks.json` (hard `deny`) | `hooks/copilot-hooks.json` (soft `ask`) | none (no hook mechanism) |
+| Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
 Every Copilot artifact — instructions, per-skill prompts, custom agents, the
@@ -187,8 +187,9 @@ Repo-specific Copilot guidance you author yourself also goes in a *separate*
 
 Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
 Code only). So the scaffold ships **`.vscode/mcp.json`** — VS Code's `servers`
-schema — mirroring the same servers: the **GitHub** MCP server that
-`/steer-tracker-sync` is built around and
+schema — mirroring the same servers: the **GitHub** MCP server that the tracker
+gateway (`tracker-sync`, reached through `/steer-issues` and `/steer-work` — it is
+`user-invocable: false`, so it has no prompt file of its own) is built around, and
 **context7** for current library docs. The GitHub server prompts once for a PAT
 (stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
 back to `gh` only.

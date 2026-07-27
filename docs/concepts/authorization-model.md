@@ -91,7 +91,7 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     *delegates* to it in prose. The tracker write verbs live in
     `/steer:tracker-sync`'s `allowed-tools`, but the lifecycle reaches that gateway
     **transitively**: a PO runs `/steer:issues capture` (or `/steer:work`,
-    `/steer:spec materialize`), which routes through tracker-sync *by description*,
+    `/steer:issues materialize`), which routes through tracker-sync *by description*,
     not by invoking it. So tracker-sync's grants never take effect on that path and
     the `gh issue create/edit/comment` write falls through to
     `.claude/settings.json` — where it is prompted (interactive) or **silently
@@ -151,9 +151,9 @@ above). These names are the post-rename verbs (`create_issue`/`update_issue` →
 `issue_write`, `get_issue` → `issue_read`, `add_sub_issue` → `sub_issue_write`);
 the pre-rename names no longer resolve.
 
-The boundary is deliberate: `mise run` is allowlisted **only** for the named verify
-tasks (`check`/`ci`), never the wildcard — an open `mise run:*` would silently
-green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission (the
+The boundary is deliberate: `mise run` is allowlisted **only** for named tasks —
+the verify pair (`check`/`ci`) plus `dev` for running the app locally — never the
+wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission (the
 mutation vector for repo delete, PR merge, and branch protection). `check_standards.py`
 asserts both halves so the split can't regress, and separately asserts every skill
 grants the bundled plugin helper scripts its body — including a factored-out
@@ -227,5 +227,9 @@ The skill frontmatter encodes the same boundary:
   and open the PR — but never merge it or commit to `main` outside solo-trunk —
   e.g. `sync`, `work`, `tidy`.
 
-See the [Skills reference](../reference/skills.md) for each skill's tier, and
+A skill's tier is not a separate label — it is readable straight from its
+frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, Write, …`
+(`audit`, `next`, `standards`, `doctor`, `explain`, `help`, `reference`,
+`status`), a Tier 2 skill grants the write and git verbs it needs. See the
+[Skills reference](../reference/skills.md) for the skill inventory and
 [Configuration](../reference/configuration.md) for how tools are constrained.

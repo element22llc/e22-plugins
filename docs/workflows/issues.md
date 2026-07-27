@@ -41,6 +41,15 @@ flowchart LR
 
 - `/steer:issues` **never edits code** — that's `/steer:work`'s job.
 - `/spec` stays product truth; the issue is the work/decision layer.
+- **In a polyrepo, the tracker and the specs live in the workspace.** A member
+  repo (`spec/PRODUCT.md`) carries neither `spec/tracker.md` nor
+  `spec/features/**` by design, so both are resolved at the workspace first —
+  never filed locally to work around the absence. Two facts shape decomposition:
+  **sub-issues do cross repositories** within an org (100 children per parent, 8
+  levels), so a workspace epic can parent member issues unmodified; **closing
+  keywords do not**, so a workspace issue never auto-closes from a member PR and
+  is closed explicitly after merge. See
+  [Product spine](../concepts/product-spine.md).
 - Agent-authored issues follow a machine-readable contract (stable headings +
   hidden markers + managed blocks) so they round-trip safely.
 - **Clickable references.** Rendered issues surface their references for a human

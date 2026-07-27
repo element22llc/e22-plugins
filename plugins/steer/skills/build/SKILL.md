@@ -175,7 +175,8 @@ These hold for the whole build, at every step.
    decides whether you implement directly or hand each slice to `/steer:work`.
    Read them in
    [`IMPLEMENTATION.md`](${CLAUDE_PLUGIN_ROOT}/skills/build/IMPLEMENTATION.md)
-   before executing. The PO-mode guardrails below apply to both.
+   before executing. The PO-mode guardrails stated at the top of this skill apply
+   to both.
 
 7. **Respect the PO-mode guardrails** stated at the top of this skill — they
    are not a step you pass, they hold throughout.

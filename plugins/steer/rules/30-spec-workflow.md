@@ -4,8 +4,7 @@ Create the artifact when the trigger fires — don't defer it:
 
 - **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code — author via **`/steer:spec`**
-  (or **`/steer:build`** for a PO). `[id]` is a short kebab-case slug
-  (`user-login`, `export-csv`).
+  (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Architectural or hard-to-reverse choice** (stack, database, auth,
   deployment, a new cross-cutting pattern) → ADR at
   `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
@@ -20,6 +19,11 @@ Create the artifact when the trigger fires — don't defer it:
   shapes it in the issue, **`materialize`** writes the approved intent to
   `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
   to `approved`. The issue is the work record; the spec stays product truth.
+
+**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**` and the
+product-level files above are the **workspace's** — resolve the spine there,
+never create a local copy; ADRs and `ARCHITECTURE.md` stay per member
+(`/steer:reference polyrepo`).
 
 The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference `/steer:spec` draws

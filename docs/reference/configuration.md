@@ -63,9 +63,12 @@ manual. They are injected into every managed session by `inject-standards.sh`
     `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
     use GitHub issues, or deploy. Polyrepo topology is deliberately **not** an
     always-on rule — the ruleset is capped on its on-disk total, which a scoped
-    rule pays in full for every consumer. It is delivered instead by
-    `orient-session.sh`, which speaks only in a repo carrying `spec/workspace.yml` or
-    `spec/PRODUCT.md`. The router, context-hygiene, spec-workflow,
+    rule pays in full for every consumer. It is delivered instead by a
+    `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside
+    `orient-session.sh` — the hook itself speaks in every managed repo; only the
+    topology block is marker-gated. That block is registered on the same
+    `startup|resume|clear|compact` matcher as the ruleset, so it survives a
+    `/clear`, a resume and auto-compaction. The router, context-hygiene, spec-workflow,
     decision-capture, living-docs, roles, **gate-prompts (`61`)**, high-risk,
     not-the-gate, self-report, secrets, output, and artifacts rules carry no
     `inject-when` marker and so stay always-on.
@@ -98,6 +101,16 @@ deleted ~1 KB of rationale prose that existed nowhere else in the repo. Paying
 the bytes was judged cheaper than losing the prose. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
+
+The skill-listing ratchet moved in the same release, 11,500 → 11,900 chars, for a
+different reason: not a budget concession but a **measurement correction**.
+`/steer:work`'s `when_to_use` was an unquoted YAML scalar containing `("work on
+#123"`, so ` #` opened a comment and the value silently truncated at 75 of 546
+characters. The ratchet had been calibrated against that truncated value, reading
+22 chars of headroom while the intended payload was ~450 over. Fixing the YAML
+necessarily exposed the real total; `work`'s entry was first trimmed 932 → 747
+chars so the raise paid what it could. `LISTING_TOTAL_TARGET_CHARS` stays at
+10,000, again below the ceiling.
 
 The third is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
 17,500 bytes. That number is the harness's **compaction re-attach cap** — after

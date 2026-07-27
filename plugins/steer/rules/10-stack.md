@@ -11,7 +11,7 @@ These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
 *primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
 or **cli** follows its own package language and skips the app/web/compose
-bullets. `/steer:init` records the profile; the universal core (mise pinning,
+bullets; a **workspace** has no app stack. `/steer:init` records the profile; the universal core (mise pinning,
 `/spec` spine, CI hygiene) is the same for all.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.

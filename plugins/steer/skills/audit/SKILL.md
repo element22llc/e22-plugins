@@ -15,7 +15,17 @@ allowed-tools:
   - Bash(gh issue list *)
   - Bash(gh issue view *)
   - Bash(gh search issues *)
-disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
+  - Write
+# Read-only by construction, with one deliberate exception. Edit/NotebookEdit/
+# EnterWorktree are disallowed so the skill cannot mutate existing repo files,
+# branch, or worktree. Write STAYS GRANTED for the two post-confirmation outputs
+# this skill's modes instruct — the temp-dir Artifact dashboard and the optional
+# AUDIT-REPORT.md / DRIFT-REPORT.md — bound in prose by the read-only contract
+# below, exactly as /steer:status, /steer:explain, /steer:help and
+# /steer:questions bundle mode do. Do NOT disallow Write here on the theory that
+# a user confirmation ends the restriction: a skill's tool grants apply for the
+# whole invocation, so removing it makes the instructed write unreachable.
+disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
 <!-- steer:modes code,spec,all -->
@@ -24,14 +34,16 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 
 ## Read-only contract — both modes, whole run
 
-> Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
-> unavailable while this skill runs, so neither audit can edit code or spec. This
-> does not make the repo immutable — shell mutations stay governed by your
-> permission settings and hooks. The optional report writes (`AUDIT-REPORT.md`
-> / `DRIFT-REPORT.md`) and the optional **Artifact dashboard** happen only after you
-> confirm them (a fresh message), by which point the restriction has cleared — and
-> the Artifact's only write is its HTML to a system temp dir, never under the repo
-> tree (rule `88-artifacts`). Findings reach the tracker via
+> The in-place edit tools (`Edit`/`NotebookEdit`) and worktree creation are
+> unavailable while this skill runs, so neither audit can modify existing code or
+> spec. This does not make the repo immutable — shell mutations stay governed by
+> your permission settings and hooks. `Write` **is** granted, and is bound here
+> rather than by the frontmatter: use it for **nothing except** the two outputs
+> this skill's modes instruct, and only **after** the user confirms them in a
+> fresh message — the optional reports (`AUDIT-REPORT.md` / `DRIFT-REPORT.md`)
+> and the optional **Artifact dashboard**, whose only write is its HTML to a
+> system temp dir, never under the repo tree (rule `88-artifacts`). Never use
+> `Write` to create or replace any other file. Findings reach the tracker via
 > `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
 
 Both modes are **repository-read-only** — never an edit or a commit; their only

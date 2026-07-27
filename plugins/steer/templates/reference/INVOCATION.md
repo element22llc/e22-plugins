@@ -16,11 +16,14 @@ Read-only or purely advisory; inferring them from a question is fine.
 
 | Skill | What it does |
 |---|---|
-| `/steer:reference [conventions\|traceability\|design-sources\|context-hygiene\|architecture-diagrams\|artifacts\|gates\|polyrepo]` | Reference prose by topic — conventions (versioning, toolchain, lint/test), traceability (living docs, tracker, drift gates), design-sources (design exports), context-hygiene (session/context discipline), architecture-diagrams (Mermaid/LikeC4 tiers), artifacts (what each `/spec` file is for), gates (the human-authority gate protocol), polyrepo (workspace/member topology). |
+| `/steer:reference [conventions\|traceability\|design-sources\|context-hygiene\|architecture-diagrams\|artifacts\|gates\|polyrepo]` | Reference prose by topic — conventions (versioning, toolchain, lint/test), traceability (living docs, tracker, drift gates), design-sources (design exports), context-hygiene (session/context discipline), architecture-diagrams (Mermaid/LikeC4 tiers), artifacts (rendering a shareable Claude Artifact), gates (the human-authority gate protocol), polyrepo (workspace/member topology). |
 | `/steer:standards` | Re-loads the always-on rules on demand. |
 | `/steer:next` | Read-only workspace navigator — never edits or publishes. |
 | `/steer:audit` | Read-only health audit — reports, never edits. |
 | `/steer:audit spec` | Read-only spec-vs-tracker comparison — reports, never edits. |
+| `/steer:status` | Read-only delivery snapshot — reports, never edits. |
+| `/steer:explain` | Read-only walkthrough of a repo, file, or decision. |
+| `/steer:help` | Read-only orientation on the skills and where to start. |
 | `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs what's missing. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
@@ -46,6 +49,7 @@ an unrelated question.
 | `/steer:questions` | Resolves open questions, folding decisions into the spec. |
 | `/steer:roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:protect` | Sets/verifies GitHub branch protection (the PR gate). |
+| `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow — commits, pushes, opens a PR. |
 
 ## Tier 3 — internal orchestration only
 

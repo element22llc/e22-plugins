@@ -56,6 +56,15 @@ step, never a precondition for the spec work itself.
 
 ## Steps
 
+0. **Resolve the spine first.** If this repo carries `spec/PRODUCT.md` (a polyrepo
+   member), its spine is **partial by design**: every feature's `intent.md` /
+   `contract.md` lives in the **workspace** repo, not here. Resolve the workspace
+   before step 1 — `workspace.path` if the checkout exists, else the GitHub
+   gateway — and author the feature spec **there**. A missing local `intent.md`
+   means the workspace has not been read yet, never that the feature is
+   unspecified, so **never** author product-level spec files here to fill the gap.
+   If neither route reaches the workspace, say the spine is unreachable and stop.
+   Procedure: `/steer:reference polyrepo`.
 1. **Identify the feature.** Ask for a short kebab-case `[id]` (e.g.
    `export-csv`, `user-login`). If `spec/features/[id]/` already exists,
    **resume** it — never clobber filled-in content; merge into it.
@@ -71,7 +80,8 @@ step, never a precondition for the spec work itself.
    and concrete **acceptance criteria**. Keep it stack-free — this is the *what
    and why*, not the *how*. Park anything unresolved under `## Open questions`;
    **never invent an answer**.
-4. **Clarify — sweep the draft for gaps** (clarify mode, below) before
+4. **Clarify — sweep the draft for gaps** (clarify mode — procedure in
+   `MODES.md`) before
    presenting anything for approval: interrogate the draft against the gap
    classes and convert every real gap into a `Q-NNN` open question. This is
    where ambiguity becomes structured, answerable questions instead of
@@ -87,14 +97,14 @@ step, never a precondition for the spec work itself.
    is the what/why (PO-facing); `contract.md` is the testable behavior + data/API
    surface (dev-owned).
 7. **Approval gate — both exits stay code-free.** First **run `validate` on this
-   feature** (below) — an approval **cannot proceed while a blocking question
-   gated at `required_before: intent-approval` is unresolved** (the exact
-   predicate lives in approve mode, below); resolve or explicitly reclassify it
-   first. Then present the intent
+   feature** (procedure in `MODES.md`) — an approval **cannot proceed while a
+   blocking question gated at `required_before: intent-approval` is unresolved**
+   (the exact predicate lives in approve mode, in `MODES.md`); resolve or
+   explicitly reclassify it first. Then present the intent
    for PO approval — as an **answerable prompt** (Approve · Reject · Decide later,
    rule `61-gate-prompts`) when the PO is in the session, rather than leaving a
    `draft` for them to come back and flip. On PO approval, run **`approve <id>`**
-   (below) to record the approval and flip `Status:` to `approved` in one change,
+   (`MODES.md`) to record the approval and flip `Status:` to `approved` in one change,
    then offer:
    - file it via `/steer:issues` (which routes through the tracker gateway) →
      create or refresh the tracker item from this intent, writing the ref back

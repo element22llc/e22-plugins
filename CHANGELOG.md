@@ -7,6 +7,96 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** issue-first's sibling defect — **the polyrepo member write guard was
+  missing from the three surfaces that actually author the spine.** The 3.23.0
+  sweep gave rules `35-issue-tracker` and `36-issue-first` a member carve-out but
+  stopped there, so in a member repo — where all the code lives — the topology
+  still produced the split-brain spine it exists to prevent. Rule
+  `30-spec-workflow` carries **no** `inject-when` marker, so it injects in every
+  member session and instructed "Starting a user-facing feature →
+  `/spec/features/[id]/intent.md`" while `orient-session.sh` said, in the same
+  session, not to create product-level spec files there; it now names the member
+  exception (`spec/features/**` and the product-level files are the workspace's;
+  ADRs and `ARCHITECTURE.md` stay per member). `/steer:spec` gains a step 0 and
+  `/steer:spec-scaffold` a step-2 guard that resolve the workspace
+  (`workspace.path`, else the GitHub gateway) before writing, and stop rather
+  than write locally when neither route reaches it — the behaviour
+  `docs/concepts/product-spine.md` and `/steer:adopt` already claimed the skills
+  had. Paid for inside the existing rules ratchet, no raise.
+- **Fixed:** `/steer:tracker-sync` — the gateway **every** tracker read and write
+  is required to route through — had zero polyrepo awareness (no occurrence of
+  `PRODUCT.md`, `workspace.yml`, `polyrepo` or `member` in the skill). Its step 1
+  read the *local* `spec/tracker.md` every run and fell to the manual floor on
+  its absence, which is precisely the member case, while `/steer:work` and
+  `/steer:issues` resolved the workspace tracker and then mandated routing
+  through it. Step 1 now resolves a member's tracker at the workspace, treats a
+  missing local file as "not mine to read" rather than "no tracker", never
+  creates a local copy, and points at the cross-repo closing-ref rule since a
+  member's declared `repository:` is never its own repo.
+- **Fixed:** `/steer:intake` and `/steer:questions` silently mis-handled a member.
+  `intake` gated on `spec/` merely *existing* — true in a member, which uses it to
+  hold `spec/PRODUCT.md` — so the precondition passed and it routed `spec/sources/`
+  and product-level content into the member. `questions` grepped
+  `spec/vision.md`, `spec/features/*/intent.md` and `spec/PRODUCTIONIZATION.md`,
+  all absent in a member by design, and reported the empty result as a clean
+  sweep. Both now resolve the workspace first and say the spine is unreachable
+  rather than reporting zero.
+- **Fixed:** the polyrepo topology note could vanish exactly when it was still
+  needed. `orient-session.sh` was registered on `SessionStart` **`startup` only**,
+  while the ruleset it deliberately substitutes for runs on
+  `startup|resume|clear|compact` — so after a `/clear`, a resume, or
+  auto-compaction a polyrepo session kept every rule and lost the topology
+  entirely. It now carries the same matcher. Separately, the note sat *below* the
+  in-progress-PO-build branch, which `exit 0`s, so a workspace or member with an
+  open handoff gate never received it; the topology block is now emitted **before**
+  that branch. The workspace note also gains `/steer:protect` to the list of
+  reports that must declare their member scope, matching the skill.
+- **Fixed:** rules `20-layout` and `10-stack` enumerated the repo profiles without
+  `workspace`, and rule 20 asserted "the `/spec` spine is identical across all
+  profiles" — which the topology contradicts in both directions (a workspace holds
+  the whole product spine, a member's is partial by design). Both now name the
+  profile, and rule 20 states the polyrepo exception.
+- **Fixed:** `/steer:audit` disallowed `Write` in its frontmatter while its own
+  modes instruct two writes — the temp-dir Artifact dashboard and the optional
+  `AUDIT-REPORT.md` / `DRIFT-REPORT.md` — reconciled only by the claim that a user
+  confirmation means "the restriction has cleared". A skill's tool grants apply
+  for the whole invocation, so the instructed write was unreachable. `Write` is
+  now granted and bound **in prose**, exactly as `/steer:status`,
+  `/steer:explain`, `/steer:help` and `/steer:questions` bundle mode already do;
+  `Edit`/`NotebookEdit`/`EnterWorktree` stay disallowed, so the skill still cannot
+  modify an existing repo file.
+- **Fixed:** `/steer:tracker-sync`'s `SKILL.md` called its operation list "the
+  **full** catalogue" while omitting 6 of the 20 in `OPERATIONS.md` — including
+  `create`, which `hooks/check-bash-actions.sh` actively nudges agents toward, and
+  `bootstrap-fields`, which `/steer:init` and `/steer:adopt` both invoke by name.
+  Also added: `set-milestone`, `milestone-ensure`, `link-blocked-by`, `reopen`.
+- **Fixed:** `templates/reference/INVOCATION.md` defined the `artifacts` reference
+  topic as "what each `/spec` file is for" — a different document entirely
+  (`ARTIFACTS.md` is *Producing Claude Artifacts*). A regression from the previous
+  audit-fix pass, which added the five missing topics but glossed this one wrong.
+  Its tier matrix also omitted 4 of 26 skills; `loop` was the material gap, since
+  it commits, pushes and opens a PR yet was absent from the file whose stated job
+  is flagging exactly that.
+- **Fixed:** `/steer:spec materialize` does not exist — `materialize` is a
+  `/steer:issues` mode. Corrected in `templates/reference/CAPABILITIES.md`, which
+  `/steer:sync` reads during capability repair.
+- **Fixed:** compaction-factoring collateral in the split skill bodies.
+  `build/HANDOFF.md` and `build/IMPLEMENTATION.md` each misstated where the
+  other's steps live (both claimed steps that had moved were still in
+  `SKILL.md`); six "below" references pointed at procedure relocated into a
+  sibling file; three intra-document anchors resolved to headings that stayed
+  behind (`intake/SKILL.md`, `intake/PIPELINES.md`, `questions/BUNDLE.md` ×2); and
+  `/steer:sync`'s step **6.5** was scoped by `SKILL.md` but appeared in neither its
+  step list nor `RECONCILE.md`'s title. The `--check` read-only boundary is also
+  no longer one interposed sentence away from reading as "then branch".
+- **Changed:** `reporting.require_all_members` in `spec/workspace.yml` is
+  documented as what it is — a **declaration**, not a switch. `POLYREPO.md`
+  attributed report behaviour to the key, but nothing reads it and every report
+  names uncovered members unconditionally, so `false` would have changed nothing.
+  Both the reference and the template comment now say so.
+- **Fixed:** `templates/reference/POLYREPO.md`'s workspace-task table omitted
+  `mise run ws:list`, and `templates/scaffold/MANIFEST.md` named a private
+  internal template repository in a tree required to stay client-agnostic.
 - **Fixed:** `skills/init/SCAFFOLD.md`'s first instruction opened **mid-sentence**
   — "`lives in the plugin — no external template repo to fetch.`" The subject
   ("**Instantiate the bundled scaffold — core plus the profile's extras.**
@@ -279,7 +369,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   always-on budget by dropping a duplicated editor-preference line that
   `CONVENTIONS.md` already carries in full, so the change paid for itself where
   it landed. (Across the whole release the rules payload still grows to
-  64,492 B — see the ratchet entry above.)
+  65,193 B — see the ratchet entry above.)
 
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
@@ -315,9 +405,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   holding its living architecture diagram.
 - **Fixed:** a long-running skill no longer loses its **guardrails at
   compaction**. Claude Code re-attaches an invoked skill after auto-compaction
-  but keeps only the **first 5,000 tokens** of it, and seven skill bodies had
+  but keeps only the **first 5,000 tokens** of it, and nine skill bodies had
   grown past that — `issues`, `audit`, `work`, `sync`, `tracker-sync`, `init`,
-  `build`. What fell past the cut was precisely the standing safety content:
+  `build`, `intake` (18,589 B) and `questions` (17,787 B). What fell past the cut was precisely the standing safety content:
   `/steer:work` lost its **Guardrails** (including *the merge is the human
   gate*), `/steer:issues` lost **Guardrails + Coupling rules**, `/steer:audit`
   lost its **read-only output contract** and `all` mode. Because compaction only
@@ -327,8 +417,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — total always-resident skill prose fell ~26% (331,971 → 243,212 B).
-  The largest remaining body is `work` at 16,102 B (~4,600 tokens, **92% of the
+  dropped — total always-resident skill prose fell ~25% (331,971 → 248,165 B).
+  The largest remaining body is `work` at 15,932 B (~4,550 tokens, **91% of the
   17,500 B cap**), so the headroom this bought is real but thin: the next
   substantial skill body still has to be factored, not appended.
 - **Added:** `check_context_budget.py` now gates a third always-on surface — a
@@ -430,7 +520,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   teammate with no Claude Code, the same reason the version-pin scripts are
   committed copies. `spec/workspace.yml` is the single source of truth for the
   clone paths, the `include:` list, the `.gitignore` lines and
-  `[monorepo].config_roots`; `ws:status` reports where those have drifted apart.
+  `[monorepo].config_roots`; `ws:status` reports where the `include:` list and
+  the `.gitignore` lines have drifted from it (the commented `config_roots`
+  block is not machine-checked).
   `ws:sync` is fetch + fast-forward **only** — it refuses a dirty tree, a detached
   HEAD, a branch other than the declared one, or a divergence, and one unreachable
   remote never aborts the sweep.

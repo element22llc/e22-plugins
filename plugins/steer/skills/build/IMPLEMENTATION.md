@@ -1,9 +1,9 @@
 # `/steer:build` — steps 5 & 6: scaffold the real app, then build feature by feature
 
 Read this file when you reach step 5. Steps 1–4 (bootstrap, interview, draft
-intents, PO validation gate) and steps 7–10 (guardrails, demo, demo-validation
-gate, handoff) stay in `SKILL.md`, as do the PO-mode guardrails — which apply
-throughout everything below.
+intents, PO validation gate) and step 7 (guardrails) stay in `SKILL.md`, as do
+the PO-mode guardrails — which apply throughout everything below. Steps 8–10
+(demo, the PO demo-validation gate, handoff) are in `HANDOFF.md`.
 
 5. **Scaffold the real app.** Replace the starter `apps/web` with the default
    stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
