@@ -28,6 +28,10 @@ HOOKS="${PLUGIN}/hooks"
 export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/steer-hooktests.XXXXXX")"
+# Physical path: steer_repo_root resolves with `pwd -P`, so any assertion that
+# compares a returned root against a WORK-derived path must start from the
+# resolved form. On macOS $TMPDIR and /tmp are both symlinks into /private/.
+WORK="$(CDPATH='' cd -- "${WORK}" && pwd -P)"
 trap 'rm -rf "${WORK}"' EXIT
 # run_hook records the invoked hook's exit code here so assert_empty can require a
 # clean (rc 0) silent-allow — a hook that crashes before printing must NOT pass as
