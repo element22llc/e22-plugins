@@ -78,6 +78,24 @@ HEADER = (
     "/steer:init's Copilot step. -->"
 )
 
+# The rules are carried verbatim, so every skill cross-reference in them uses the
+# `/steer:<skill>` form Claude Code namespaces with a colon. Copilot in VS Code
+# surfaces the same skills as prompt files under `/steer-<skill>` (a hyphen), so
+# a reader following a router table below would type a command that does not
+# exist there. `gen_copilot_prompts.py` rewrites refs to the hyphen form for the
+# prompt artifacts, but this file is read by BOTH Copilot surfaces and the CLI
+# loads skills from the plugin manifest — so a blanket rewrite would be wrong for
+# one of them. State the mapping once, up front, instead.
+INVOCATION_NOTE = (
+    "> **Invoking a skill on this surface.** The standards below name skills in "
+    "the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot "
+    "for VS Code** the same skills ship as prompt files invoked as "
+    "**`/steer-<skill>`** — type `/steer-` in Chat to list them. On the "
+    "**Copilot CLI** they load from the plugin manifest. Read any "
+    "`/steer:<skill>` reference below as the skill of that name on whichever "
+    "surface you are on."
+)
+
 
 def iter_rule_files(rules_dir: Path) -> list[Path]:
     """The rule files, in the lexical order the SessionStart hook concatenates
@@ -93,7 +111,7 @@ def render(rules_dir: Path = RULES_DIR) -> str:
     body, blank-line separated, with a single trailing newline (mirrors
     ``inject-standards.sh`` minus its Claude-specific banner). Path-scoped rules
     are emitted separately by ``render_scoped``."""
-    parts: list[str] = [HEADER, "\n\n"]
+    parts: list[str] = [HEADER, "\n\n", INVOCATION_NOTE, "\n\n"]
     for f in iter_rule_files(rules_dir):
         parts.append(_INJECT_WHEN_MARKER.sub("", f.read_text(encoding="utf-8"), count=1))
         parts.append("\n\n")

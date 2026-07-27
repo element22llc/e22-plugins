@@ -163,7 +163,12 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    Python + FastAPI instead of the in-Next backend) **must** get one either way.
    **Status follows who decided.** When the dev *explicitly* chooses the stack in
    this interactive setup, that is a real forward decision: author the ADR as
-   **`Accepted`** with the dev as the named **Decider** and today's date. When
+   **`Accepted`** with the dev as the named **Decider** and today's date — and
+   stamp the ratification fields the template carries, `> Ratified by:` (the dev),
+   `> Ratified at:` (today) and `> Ratified via: in-session`. Every `Accepted` ADR
+   carries them (rule `61-gate-prompts`; `/steer:next` reports one that doesn't as
+   incomplete), and the channel stamp is what makes an in-session decision
+   auditable. When
    Claude merely *recommended* a default and the dev made no explicit choice,
    leave it **`Proposed`** until a named decider accepts it — generic
    bootstrap-PR approval does **not** ratify a `Proposed` ADR. (Contrast

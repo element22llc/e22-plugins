@@ -65,9 +65,10 @@ manual. They are injected into every managed session by `inject-standards.sh`
     always-on rule — the ruleset is capped on its on-disk total, which a scoped
     rule pays in full for every consumer. It is delivered instead by
     `orient-session.sh`, which speaks only in a repo carrying `spec/workspace.yml` or
-    `spec/PRODUCT.md`. The context-hygiene, spec-workflow,
-    decision-capture, living-docs, roles, secrets, output, and artifacts rules
-    stay always-on.
+    `spec/PRODUCT.md`. The router, context-hygiene, spec-workflow,
+    decision-capture, living-docs, roles, **gate-prompts (`61`)**, high-risk,
+    not-the-gate, self-report, secrets, output, and artifacts rules carry no
+    `inject-when` marker and so stay always-on.
 
 ## Tooling knobs
 

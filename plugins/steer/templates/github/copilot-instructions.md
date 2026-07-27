@@ -1,5 +1,7 @@
 <!-- Engineering standards (steer plugin). Generated from the plugin's rules/ — do not edit by hand. Refresh after a plugin update by re-running /steer:init's Copilot step. -->
 
+> **Invoking a skill on this surface.** The standards below name skills in the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot for VS Code** the same skills ship as prompt files invoked as **`/steer-<skill>`** — type `/steer-` in Chat to list them. On the **Copilot CLI** they load from the plugin manifest. Read any `/steer:<skill>` reference below as the skill of that name on whichever surface you are on.
+
 # Engineering Standards — Operating Manual (org standards)
 
 Org-wide engineering standards, injected into every session by the **steer**
@@ -83,7 +85,7 @@ when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
 
 **Full reference prose** loads on demand via `/steer:reference [conventions |
 traceability | design-sources | context-hygiene | architecture-diagrams |
-artifacts | gates]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
+artifacts | gates | polyrepo]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
 auto-injection), run `/steer:standards` at session start to load these rules.
 
 
@@ -449,7 +451,9 @@ areas — or when an edit would clobber filled-in content.
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
 Azure DevOps, …). **`/spec/tracker.md`** declares the system + ref format —
 read it before referencing work items; if missing, ask and create it from the
-bundled template. Refs live in `intent.md`'s `> Tracker:` line, the PR
+bundled template — **except in a polyrepo member** (`spec/PRODUCT.md` present),
+where the tracker is the workspace's: resolve it there and never create a local
+copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
 description (tracker's own linking syntax), and `HISTORY.md` `Refs:`. Copy a
 tracker item's acceptance criteria into the intent — the spec is the in-repo
 source of truth; the ref points back. **Keep a question in the spec's

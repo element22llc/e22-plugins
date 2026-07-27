@@ -73,10 +73,24 @@ def render(src: Path = HOOKS_JSON) -> str:
     events: dict[str, list[dict[str, Any]]] = {}
     for event, script, matcher_override in COPILOT_HOOKS:
         matcher, command, timeout = _find_claude_hook(data, event, script)
+        # The command path is built from ${CLAUDE_PLUGIN_ROOT}, so if the Copilot
+        # CLI does not export that Claude-named variable the path collapses to
+        # `/hooks/<script>` and `sh` fails before the script runs — which a bare
+        # `|| true` then converts into a clean exit 0 with no permissionDecision.
+        # The gate would be absent and *nothing would say so*: these two are the
+        # only enforcement Copilot has. An in-script fallback cannot help (the
+        # script is never reached), so guard on the resolved path instead and
+        # report the skip on stderr. Still fail-open — a hook must never break a
+        # session — but now diagnosable rather than invisible.
+        guarded = (
+            f'if [ -f "${{CLAUDE_PLUGIN_ROOT}}/hooks/{script}" ]; '
+            f"then STEER_HOOK_TARGET=copilot {command} || true; "
+            f'else echo "steer: CLAUDE_PLUGIN_ROOT unresolved — {script} gate skipped" >&2; fi'
+        )
         hook: dict[str, Any] = {
             "type": "command",
             "matcher": matcher_override if matcher_override is not None else matcher,
-            "bash": f"STEER_HOOK_TARGET=copilot {command} || true",
+            "bash": guarded,
         }
         if timeout is not None:
             hook["timeoutSec"] = timeout

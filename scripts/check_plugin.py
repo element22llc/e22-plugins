@@ -171,6 +171,43 @@ def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
                     )
 
 
+def _check_comment_truncation(path: Path, text: str, errors: list[str]) -> None:
+    """Flag a plain frontmatter scalar that YAML silently truncates at ``#``.
+
+    In an unquoted YAML scalar a ` #` begins a comment, so everything after it is
+    discarded with no parse error. `work`'s `when_to_use` shipped this way for
+    several releases — `("work on #123"` cut the value at 75 of 546 chars,
+    dropping every `--reviewed`/`--hotfix` trigger phrase from the routing
+    surface, and skewing the listing ratchet that measures the parsed value.
+
+    Failure is invisible by construction: the file reads correctly, the YAML is
+    valid, and only the loaded value is wrong. Nothing else catches it, so gate
+    it here. The fix is a `>-` folded block (what most skills already use), or
+    quoting the scalar.
+    """
+    lines = text.split("\n")
+    if not lines or lines[0].strip() != "---":
+        return
+    for raw in lines[1:]:
+        if raw.strip() == "---":
+            break
+        match = re.match(r"^([A-Za-z_][\w-]*):(.*)$", raw)
+        if not match:
+            continue
+        key, rest = match.group(1), match.group(2)
+        stripped = rest.strip()
+        # Block scalars (>, |) and quoted scalars treat `#` as literal content.
+        if not stripped or stripped[0] in "'\">|":
+            continue
+        if " #" in rest:
+            kept = rest.split(" #", 1)[0].strip()
+            errors.append(
+                f"{path}: frontmatter '{key}' is an unquoted scalar containing ' #', "
+                f"so YAML truncates it to {kept!r} and silently discards the rest. "
+                f"Use a '>-' folded block (as most skills do) or quote the value."
+            )
+
+
 def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> None:
     required = list(REQUIRED_SKILL_FRONTMATTER)
     if not require_when_to_use and "when_to_use" in required:
@@ -183,10 +220,12 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
         if not skill_md.is_file():
             errors.append(f"{skill_dir}: missing SKILL.md")
             continue
-        fm, err = parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        skill_text = skill_md.read_text(encoding="utf-8")
+        fm, err = parse_frontmatter(skill_text)
         if err:
             errors.append(f"{skill_md}: {err}")
             continue
+        _check_comment_truncation(skill_md, skill_text, errors)
         for key in required:
             value = fm.get(key)
             if not (isinstance(value, str) and value.strip()):

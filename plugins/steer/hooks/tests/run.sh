@@ -1740,6 +1740,48 @@ mkdir -p "${TRAITS_GH}/spec"
 printf 'system: github\n' >"${TRAITS_GH}/spec/tracker.md"
 steer_tracker_is_github "${TRAITS_GH}" && ok || bad "scope: tracker-github true for system: github"
 
+# A repo with NO tracker and NO member pointer is the single-repo case: the rule
+# is provably out of scope and must stay skipped (unchanged contract).
+TRAITS_NOTRK="$(new_repo traits_notrk)"
+printf '{}\n' >"${TRAITS_NOTRK}/package.json"
+steer_tracker_is_github "${TRAITS_NOTRK}" && bad "scope: tracker-github false with no tracker at all" || ok
+
+# ----- polyrepo member: the tracker is the WORKSPACE's, never local -----
+# A member's spec/tracker.md is absent BY DESIGN, so reading that absence as
+# "not GitHub" switched issue-first enforcement off in the repos holding all the
+# code. With no local workspace checkout declared, the predicate must fail OPEN.
+TRAITS_MEMNP="$(new_repo traits_memnp)"
+mkdir -p "${TRAITS_MEMNP}/spec"
+printf 'workspace:\n  repository: acme/product-spine\n  branch: main\n' \
+	>"${TRAITS_MEMNP}/spec/PRODUCT.md"
+steer_tracker_is_github "${TRAITS_MEMNP}" && ok || bad "scope: member with no local checkout must fail open"
+steer_inject_when_ok tracker-github "${TRAITS_MEMNP}" && ok || bad "scope: 36-issue-first must inject in a member"
+
+# With `workspace.path` naming a real local checkout, the workspace's tracker is
+# authoritative — both directions.
+TRAITS_MEMWS="$(new_repo traits_memws)"
+mkdir -p "${TRAITS_MEMWS}/ws/spec" "${TRAITS_MEMWS}/member/spec"
+printf 'system: github\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
+printf 'workspace:\n  repository: acme/spine\n  path: ../ws   # local checkout\n' \
+	>"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+assert_eq "scope: workspace.path parsed from PRODUCT.md" \
+	"$(steer_workspace_path "${TRAITS_MEMWS}/member")" "../ws"
+steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: member resolves workspace tracker as github"
+printf 'system: jira\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
+steer_tracker_is_github "${TRAITS_MEMWS}/member" && bad "scope: member honors a non-GitHub workspace tracker" || ok
+
+# A declared path that does not exist must also fail open, never fail closed.
+printf 'workspace:\n  path: ../gone\n' >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: unresolvable workspace.path fails open"
+
+# An unresolved placeholder path is treated as absent (→ fail open), and a
+# `path:` outside the `workspace:` block is never mistaken for it.
+printf 'workspace:\n  path: [relative path]\n' >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+steer_workspace_path "${TRAITS_MEMWS}/member" >/dev/null && bad "scope: placeholder workspace.path is absent" || ok
+printf 'workspace:\n  repository: acme/spine\nmember:\n  path: apps/api\n' \
+	>"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+steer_workspace_path "${TRAITS_MEMWS}/member" >/dev/null && bad "scope: member.path is not workspace.path" || ok
+
 # ----- polyrepo topology: role detection, traits, and the spine-state split -----
 # A single-repo product must match NEITHER role and pay zero always-on bytes.
 TRAITS_MONO="$(new_repo traits_mono)"

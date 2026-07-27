@@ -270,5 +270,8 @@ It covers, in detail:
 - **What crosses the repo edge** — sub-issues and Projects v2 do; milestones,
   closing keywords, drift gates and CI do not.
 
-This backs the scoped rule `21-polyrepo` (zero always-on bytes in a single-repo
-product) and the workspace profile in the bundled scaffold.
+There is deliberately **no always-on rule** for this topology — the ruleset is
+capped on its on-disk total, which every consumer pays even for a rule scoped to
+a minority of repos, so a single-repo product pays zero bytes for polyrepo. It is
+delivered instead by this topic, the `orient-session.sh` SessionStart note, and
+the workspace profile in the bundled scaffold.

@@ -260,6 +260,26 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 - **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
   gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no
   hooks. The advisory nudges live in the standards text, not as hooks.
+- **Invocation form differs by surface, and the instructions file is shared.**
+  `.github/copilot-instructions.md` carries the rules verbatim, so every skill
+  cross-reference in them reads `/steer:<skill>`. In VS Code the invocable form is
+  `/steer-<skill>` (prompt files); on the CLI skills load from the plugin
+  manifest. Because one file serves both surfaces, a blanket rewrite would be
+  wrong for one of them — the generated file therefore opens with a note stating
+  the mapping. The prompt artifacts *are* rewritten to the hyphen form by
+  `gen_copilot_prompts.py`.
+- **The two ported gates depend on `CLAUDE_PLUGIN_ROOT`.** `copilot-hooks.json`
+  builds each script path from that Claude-named variable. Whether the Copilot CLI
+  exports it is **unverified** — so treat the gates as *ported, not proven*. They
+  are guarded on the resolved path and report `CLAUDE_PLUGIN_ROOT unresolved —
+  <script> gate skipped` on stderr rather than silently exiting 0, so an
+  unresolved root is diagnosable instead of an invisible no-op. Standards delivery
+  never depended on hooks, so this bounds enforcement, not the standards.
+- **Polyrepo topology is Claude-only.** Workspace/member role detection is emitted
+  by the `orient-session.sh` SessionStart hook, and Copilot has no SessionStart
+  equivalent. There is deliberately no always-on polyrepo *rule* for the generator
+  to carry, so a Copilot session gets no topology note. Read
+  `/steer:reference polyrepo` from Claude Code for the full topology.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled

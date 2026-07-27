@@ -327,7 +327,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 |---|---|---|
 | Confirmed committed secret / critical exposure | Blocking now | Rotate & invalidate the value; then `/security-review` |
 | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
-| Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files (no command) |
+| Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files — `/steer:spec approve` per feature (offers the gate prompt) |
 | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/steer:adr` |
 | Adoption PR not yet opened | Blocking now (next transition) | Push the branch and open the adoption PR |
 | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |

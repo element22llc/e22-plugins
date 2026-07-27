@@ -82,7 +82,8 @@ commands).
   (and `cd infra && mise install` if they'll touch infra); it provisions every
   pinned runtime. Then verify each `mise.lock` gained real `[[tools.*]]` entries
   (the canonical pin procedure: `/steer:reference conventions` → "Toolchain:
-  `latest` in config, pinned in the lockfile") and commit it.
+  `latest` in config, pinned in the lockfile"). Report the lockfile as needing
+  to be committed — this skill never commits (see Guardrails); the caller does.
 - **`node` / `pnpm` / `uv` `shadowed`** — mise's pinned runtime exists but a
   global version manager (the `detail` names it: nvm/asdf/volta/fnm) or a
   system/Homebrew copy is ahead of it on `PATH`, so bare `pnpm`/`node` run the

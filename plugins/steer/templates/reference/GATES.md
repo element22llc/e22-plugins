@@ -144,8 +144,17 @@ system, and **asking is not authorization**:
   `62-hotfix`). Permitted ≠ auto-executed.
 - **Real secrets and credentials**, and **`/infra`** — never relaxed, not even
   pre-production (rule `60-high-risk`).
-- **Pushing to a protected branch**, and the ungraduated solo-trunk first push
-  while a graduation signal stands (rule `45`).
+- **Pushing to a protected branch** — the server-side wall is the authorization;
+  no in-session answer substitutes for it (rule `45`).
+
+**Not on this list: the ungraduated solo-trunk trunk push.** While a local
+graduation signal stands, rule `45-commit-autonomy` stops trunk pushes being
+*autonomous* — each one waits for a human yes — and `check-bash-actions.sh`
+surfaces that as a PreToolUse **`ask`**, deliberately never a deny. A yes there
+**does** authorize that push; the gate clears for good by graduating
+(`/steer:protect`). So it is answerable — but it is not one of the three gates in
+§2 either: it is a per-push permission decision the harness raises, with no
+`/spec` field to record and no three-option prompt.
 
 The boundary is the point of the rule: gates become **answerable**, never
 **removable**. A change that would let a prompt stand in for one of the above is

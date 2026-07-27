@@ -7,6 +7,156 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `templates/reference/GATES.md` listed the ungraduated solo-trunk
+  trunk push under **"never promptable — asking is not authorization"**, which
+  contradicted the two surfaces that actually implement it: rule
+  `45-commit-autonomy` says such a push "waits for a human yes", and
+  `hooks/check-bash-actions.sh` emits `permissionDecision: "ask"` —
+  deliberately never a deny — whose own reason text ends "Approving this prompt
+  pushes anyway". Claude reading GATES.md would have refused a push the human had
+  just approved. §5 now lists only protected-branch pushes (where the
+  server-side wall *is* the authorization, matching rule `61-gate-prompts`), and
+  says explicitly that the solo-trunk gate is answerable but is **not** one of the
+  three §2 gates: it is a per-push harness permission decision with no `/spec`
+  field to record and no three-option prompt.
+- **Fixed:** `templates/scaffold/MANIFEST.md` still asserted that
+  `steer_spine_state` "still reports `damaged`" for a polyrepo member — stale as
+  of the same release that fixed it, since `hooks/lib/spine.sh` now detects
+  `spec/PRODUCT.md` and validates members against `STEER_SPINE_REQUIRED_MEMBER`,
+  reporting `managed`. The passage now states the real mechanism and keeps the
+  still-correct instruction: `/steer:sync` and `/steer:doctor` establish the role
+  via `steer_polyrepo_role` first, and never "repair" a member's deliberately
+  absent product-level files.
+- **Fixed:** three **shipped** scaffold comments still advertised the retired
+  `markitdown` MCP server as live — `templates/scaffold/mise.toml` twice (once as
+  the justification for the always-installed Node/Python baseline, once claiming
+  "the same converter ships as an MCP server … in the plugin's `.mcp.json`",
+  directly above the `convert:doc` task that replaced it) and
+  `profiles/workspace/mise.toml` once, in a file this release *adds*. Consumer
+  repos received a bundle that contradicted itself, since `scaffold/README.md` and
+  `/steer:intake` both describe the retirement correctly. Each now cites the real
+  on-demand task. No gate covers this: `check_copilot_mcp.py` compares server
+  sets, not prose.
+- **Fixed:** `/steer:reference`'s two newest topics were missing from the
+  hand-maintained topic enumerations, so `polyrepo` was undiscoverable from the
+  only always-on surface. `rules/00-router.md` gains `polyrepo` (it already had
+  `gates`); `skills/standards/SKILL.md` — the Chat-tab/web fallback where no hook
+  injects, so exactly the readers with no other path — and the bundled
+  `templates/scaffold/CLAUDE.md`, which **ships into every consumer repo**, gain
+  both.
+- **Fixed:** `/steer:tidy` could propose relocating the root `ARCHITECTURE.md`
+  that rules `20-layout` and `32-living-docs` require there. `22-housekeeping`
+  gained the allowlist entry this cycle, but `HOUSEKEEPING.md` — which
+  `skills/tidy` names as its authoritative sweep procedure — still listed root
+  docs as `CLAUDE.md, README.md, DESIGN.md`, so the file read as a stray.
+- **Fixed:** three skills still advertised feature-intent approval as
+  "(no command)" — `/steer:build`, `/steer:issues` and `/steer:adopt` — after rule
+  `61-gate-prompts` made that gate answerable in-session. All three now route to
+  `/steer:spec approve`, which offers the prompt. (`/steer:adr` and `/steer:spec`
+  already scoped "no command" correctly, to the wrong-decider case.)
+- **Fixed:** `/steer:init` authored the stack ADR as `Accepted` without the
+  `> Ratified by:` / `> Ratified at:` / `> Ratified via:` stamp that the template
+  carries and `/steer:next` asserts every `Accepted` ADR has — so the one ADR
+  bootstrap creates was the one ADR that looked incomplete. It now stamps them
+  (`in-session`, the dev as ratifier). The single-writer property is unchanged:
+  init *creates* at `Accepted`, it does not transition.
+- **Fixed:** `/steer:tracker-sync` advertised an `issue <op>` argument grammar
+  with **zero** call sites — every one of ~60 uses the bare op form
+  (`create`, `close`, `field-set`, …), and the `issue` mode existed only in the
+  hint and the `steer:modes` marker, which agree with each other and with nothing
+  else. Both now describe reality, so a caller can't be led to write
+  `/steer:tracker-sync issue close #4`.
+- **Fixed:** `/steer:doctor` was told to "commit it" (the refreshed `mise.lock`)
+  by one step and "never edit repo files or commit from this skill" by its own
+  guardrails. It now reports the lockfile as needing a commit and leaves the
+  commit to the caller.
+- **Fixed:** the `v3.23.0` markitdown entry in `MIGRATIONS.md` sat between
+  `v3.13.0` and `v3.8.0`, breaking the ledger's declared newest-first order — a
+  reader walking it newest-first could stop before reaching it. Moved next to the
+  other `v3.23.0` entry; content unchanged.
+- **Fixed:** the two Copilot-ported gates could fail **invisibly**.
+  `copilot-hooks.json` builds each script path from `${CLAUDE_PLUGIN_ROOT}`, so if
+  the Copilot CLI does not export that Claude-named variable the path collapses to
+  `/hooks/<script>` and `sh` fails before the script runs — which the fail-open
+  `|| true` then turned into a clean exit 0 with no `permissionDecision`. These
+  two are the *only* enforcement Copilot has, and nothing would have said they
+  were absent (an in-script fallback cannot help; the script is never reached).
+  The generated command now guards on the resolved path and reports
+  `CLAUDE_PLUGIN_ROOT unresolved — <script> gate skipped` on stderr. Still
+  fail-open — a hook must never break a session — but diagnosable rather than
+  silent. Tested with the variable unset.
+- **Added:** the generated `.github/copilot-instructions.md` now opens with a
+  **surface invocation note**. The rules are carried verbatim, so every skill
+  cross-reference reads `/steer:<skill>`; in Copilot for VS Code the invocable
+  form is `/steer-<skill>`, so a reader following the router table typed a command
+  that does not exist. `gen_copilot_prompts.py` rewrites refs for the *prompt*
+  artifacts, but this file is read by **both** Copilot surfaces and the CLI loads
+  skills from the plugin manifest, so a blanket rewrite would be wrong for one of
+  them — the mapping is stated once, up front, instead. The
+  `docs/concepts/copilot-support.md` limitations list also now records that
+  polyrepo topology is Claude-only (no SessionStart equivalent, and deliberately
+  no always-on rule for the generator to carry) and that the ported gates are
+  *ported, not proven*.
+- **Fixed:** `/steer:work`'s routing text was **silently truncated by YAML** on
+  every surface. `when_to_use` was a plain scalar containing `("work on #123"`,
+  and in an unquoted scalar ` #` opens a comment — so the value ended at 75 of
+  546 characters with no parse error. Everything discarded was trigger
+  vocabulary: the whole `--reviewed` cluster ("deliver X carefully", "do this
+  with review", any change costly to unwind) and the whole `--hotfix` cluster
+  ("prod is down", "emergency fix"). Routing to the review and
+  production-incident paths was degraded for several releases, worst on Copilot
+  in VS Code where the generated capsule *is* the entire skill. Now a `>-` folded
+  block, as 19 of 26 skills already used; `work` was the only skill affected.
+- **Added:** `check_plugin.py` gates the failure class — a frontmatter scalar
+  that is neither quoted nor a block and contains ` #` is now an error naming the
+  truncated value. This bug is invisible by construction (the file reads
+  correctly, the YAML is valid, only the loaded value is wrong), and nothing
+  else caught it: `check_plugin`'s per-skill cap and `check_context_budget`'s
+  ratchet both measure the *parsed* value, so a truncation looks like brevity.
+- **Changed:** the skill-listing ratchet is re-baselined once, 11,500 → 11,900
+  chars, because the old number was never an honest measurement — it was
+  calibrated against the truncated value above, reading 22 chars of headroom
+  while the intended payload was ~450 over. Per the gate's own policy the fix
+  paid what it could first: `work`'s entry is trimmed 932 → 747 chars by dropping
+  a duplicate issue example, a third hotfix synonym, and a step enumeration the
+  body carries in full — every distinct trigger phrase is kept, and `work` is no
+  longer the largest listing consumer. Deliberately **not** funded by compressing
+  unrelated skills, which is the trade the rules-ceiling note records as the
+  wrong one. `LISTING_TOTAL_TARGET_CHARS` stays at 10,000 so the report keeps
+  showing the gap to reclaim.
+- **Fixed:** issue-first enforcement was silently **off in every polyrepo
+  member** — the repos that hold all the code. `steer_tracker_is_github` resolved
+  `spec/tracker.md` from the local root only, but a member's tracker is
+  product-level and lives in the workspace by design, so its absence was read as
+  "not a GitHub tracker": rule `36-issue-first` (`inject-when=tracker-github`)
+  never injected, and `check-write-nudges.sh`, `check-bash-actions.sh` and
+  `reconcile-issue-first.sh` all exited early. The predicate now resolves the
+  workspace's tracker via `spec/PRODUCT.md`'s optional `workspace.path` local
+  checkout, and where no checkout is declared it **degrades to inject** per
+  `lib/scope.sh`'s own fail-open contract — a needless nudge is recoverable, a
+  silently-absent gate is not. New helper `steer_workspace_path` reads the
+  pointer, scoped to the `workspace:` block so an unrelated `path:` can't be
+  mistaken for it. The single-repo path is byte-identical: no local tracker and
+  no `PRODUCT.md` still proves the rule out of scope.
+- **Fixed:** rule `35-issue-tracker` told a polyrepo member to create the one
+  file the topology forbids it to have. The rule is `inject-when=code-project`,
+  so it injects in a member, and instructed "if missing, ask and create it from
+  the bundled template" of `spec/tracker.md` — while `POLYREPO.md` and
+  `spec/PRODUCT.md` both say not to add product-level files to a member, because
+  that recreates the split-brain spine the topology exists to prevent. The rule
+  now carries the member exception inline: resolve the tracker at the workspace,
+  never create a local copy.
+- **Fixed:** shipped content cited a **rule `21-polyrepo` that does not exist**.
+  `skills/reference/COVERAGE.md` told a consumer session the polyrepo topic
+  "backs the scoped rule `21-polyrepo`", and `lib/scope.sh`'s `polyrepo`
+  predicate comment described that rule's text as if it shipped — while the
+  actual decision, recorded in this release, is that the topology is deliberately
+  **not** an always-on rule (it is delivered by `orient-session.sh` plus
+  `/steer:reference polyrepo`, so a single-repo product pays zero bytes). Both now
+  state the real design, and the predicate comment says plainly that no rule
+  carries `inject-when=polyrepo` so the token can't be mistaken for evidence of
+  one again.
+
 - **Changed:** the always-on `rules/*.md` ratchet ceiling is raised once, 62,500 →
   65,200 bytes (`check_context_budget.py`). The ratchet had drifted to **32 bytes**
   of headroom, so rule `61-gate-prompts` could only be added by compressing
@@ -85,8 +235,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   or rule referencing it, so the one job it exists to do was never actually
   wired to it — it read as unexplained tool-surface cost. Offset within the
   always-on budget by dropping a duplicated editor-preference line that
-  `CONVENTIONS.md` already carries in full; the rules payload is **smaller**
-  than before (62,468 B, from 62,497 B).
+  `CONVENTIONS.md` already carries in full, so the change paid for itself where
+  it landed. (Across the whole release the rules payload still grows to
+  64,492 B — see the ratchet entry above.)
 
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
@@ -108,10 +259,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   from the root allowlist, so the one rule that decides what may sit at the repo
   root read it as a stray — while `20-layout`, `32-living-docs`,
   `50-definition-of-done`, `52-deployment`, `55-drift-gates` and the scaffold all
-  mandate it there. It is now in the allowlist. The always-on payload was 3 bytes
-  under its ceiling, so the addition is paid for in place: `20-layout` and
+  mandate it there. It is now in the allowlist. The always-on payload was then 3
+  bytes under its ceiling, so the addition is paid for in place: `20-layout` and
   `32-living-docs` lose a few redundant words in the same sentences, with no
-  change of meaning and no ceiling raise.
+  change of meaning and without itself raising the ceiling (the separate ratchet
+  entry above raises it for the release as a whole).
 - **Changed:** the *why* behind the root-vs-`/spec` split is now stated where a
   reader hits it instead of only in the reference topic — the scaffold
   `ARCHITECTURE.md` explains that it is the **as-built** model while `/spec`
@@ -133,8 +285,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — the largest body fell from ~6,400 to ~2,400 tokens, and total
-  always-resident skill prose fell ~26%.
+  dropped — total always-resident skill prose fell ~26% (331,971 → 243,212 B).
+  The largest remaining body is `work` at 16,102 B (~4,600 tokens, **92% of the
+  17,500 B cap**), so the headroom this bought is real but thin: the next
+  substantial skill body still has to be factored, not appended.
 - **Added:** `check_context_budget.py` now gates a third always-on surface — a
   **per-skill `SKILL.md` body ceiling** of 17,500 bytes (the 5,000-token
   compaction cap at a pessimistic 3.5 B/token). Unlike the rules and listing

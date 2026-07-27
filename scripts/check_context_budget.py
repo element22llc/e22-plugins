@@ -93,7 +93,21 @@ PLUGIN_ROOT = Path("plugins/steer")
 # RULES_TOTAL_TARGET_BYTES deliberately stays at the old 62,500 so the report
 # keeps showing the gap as work to reclaim.
 RULES_TOTAL_MAX_BYTES = 65_200
-LISTING_TOTAL_MAX_CHARS = 11_500
+# LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
+# honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
+# containing `("work on #123"`, so ` #` opened a comment and the value silently
+# truncated at 75 of 546 chars — discarding every `--reviewed` and `--hotfix`
+# trigger phrase. The ratchet had been calibrated against that truncated value,
+# so it read 22 chars of headroom while the *intended* payload was ~450 chars
+# over. Fixing the YAML (now a `>-` block, as 19 of 26 skills already use)
+# necessarily exposes the real total.
+#
+# Per this file's own policy the fix paid what it could first: `work`'s entry was
+# trimmed 932 → 747 chars by dropping a duplicate issue example, a third hotfix
+# synonym, and a step enumeration the body carries in full — every distinct
+# trigger phrase is retained. Deliberately NOT funded by compressing unrelated
+# skills; that is the trade the RULES note above records as the wrong one.
+LISTING_TOTAL_MAX_CHARS = 11_900
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------
 # 5,000 tokens at a pessimistic 3.5 bytes/token (see the module docstring). This

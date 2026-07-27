@@ -4,7 +4,7 @@ description: "Internal gateway for all tracker metadata I/O (GitHub MCP-first, g
 when_to_use: >-
   Reached via /steer:issues, /steer:work, and the other owning skills — not a
   direct entry point.
-argument-hint: "[issue <op> | pull | push] [#issue | feature-id]"
+argument-hint: "[<op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
 # /steer:spec (materialize step), /steer:roadmap, /steer:intake (reconcile), and
 # /steer:next's read-only state reconstruction — plus the read flows of
@@ -36,7 +36,7 @@ allowed-tools:
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
 ---
-<!-- steer:modes issue,pull,push -->
+<!-- steer:modes pull,push -->
 
 # Sync the /spec spine with GitHub Issues
 

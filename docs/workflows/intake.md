@@ -31,8 +31,10 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
    The dropped file is **relocated** into that canonical home (a history-preserving
    `git mv` for an in-repo drop — the same move `/steer:tidy` performs), not copied,
    so it does not stay stalled where the PO uploaded it; a file outside the repo is
-   copied in and left in place. Conversion uses the **`mise run convert:doc`** task
-   shipped with the plugin, or the `mise run convert:doc` CLI task.
+   copied in and left in place. Conversion walks a ladder: the repo's
+   **`mise run convert:doc <file>`** task (the deterministic, committable path),
+   then a native `Read` for a text-bearing PDF, then a manual floor. There is no
+   markitdown MCP server — it was retired in favour of that on-demand task.
 3. **Diff** — `git diff`s the new extraction against the prior version and groups
    the hunks into change units by heading anchor (topic, not line number).
 4. **Report** — prints a structured *what-changed* table.
