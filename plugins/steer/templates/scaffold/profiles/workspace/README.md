@@ -14,13 +14,43 @@ PRs that can merge out of order.
 ```text
 spec/                THE product spine — vision, users, glossary, HISTORY,
                      app docs, and every feature's intent.md + contract.md
-spec/workspace.yml   the member manifest (repos, branches, profiles)
+spec/workspace.yml   the member manifest (repos, branches, profiles, paths)
 spec/tracker.md      the tracker for the whole product
+compose.yaml         include: one entry per member that runs local services
+scripts/ws.sh        the member driver behind the mise ws:* tasks
+[member dirs]/       git-ignored clones — NOT submodules
 ```
 
 Member repos carry `spec/PRODUCT.md` pointing back here, their own
 `spec/decisions/` and `ARCHITECTURE.md`, and their code. They never grow a second
 copy of a product-level artifact.
+
+## Quickstart
+
+```sh
+mise run ws:clone     # clone every member declared in spec/workspace.yml
+mise run ws:code      # generate the multi-root <product>.code-workspace
+mise run dev          # boot the whole product (all members' services)
+mise run ws:status    # per-member branch/dirty/spine version + manifest drift
+mise run ws:sync      # fast-forward each member to its manifest branch
+```
+
+The members are ordinary clones at the `path:` each declares in the manifest, and
+git-ignored here — no SHA pinning, so a member commit never dirties this repo, and
+you branch and push from inside the member as usual. `ws:sync` is
+fetch + fast-forward only: it refuses a dirty tree, a detached HEAD, a branch other
+than the declared one, or a divergence. Rebasing a member is yours to do.
+
+**The manifest is the source of truth.** `spec/workspace.yml` drives the clones,
+the generated `.code-workspace`, the `compose.yaml` include list, the `.gitignore`
+entries, and `[monorepo].config_roots` in `mise.toml`. `mise run ws:status`
+reports where those have drifted apart — fix the derived file, not the manifest.
+
+Two constraints worth knowing before the first `mise run dev`: Compose `include:`
+**warns and takes one side** on a service-name collision instead of merging, so
+namespace service names inside each member; and every member's scaffold publishes
+the same default host ports, so give each a distinct base port in its own `.env`.
+Details: `/steer:reference polyrepo`.
 
 ## Working across the members
 
@@ -34,8 +64,13 @@ copy of a product-level artifact.
   closing keywords only within one repo. Use `Refs owner/repo#N` and close the
   issue explicitly after merge.
 
-## What is not here yet
+## What this does not buy
 
-Running the whole product locally — one `mise run dev` booting every member via
-Compose `include:` and mise's monorepo task addressing — is deliberately not part
-of this scaffold. Clone the members wherever you like and run them as they stand.
+**Atomic cross-repo commits.** `mise run dev` boots the members together and
+`mise //backend:test` addresses them as one tree, but a contract change across two
+members is still two PRs that can merge out of order. This topology makes that
+visible; it cannot make it atomic. If you need atomicity, you need a monorepo.
+
+**Merge-time cross-repo drift gates.** CI here cannot see member code without
+credentials for each member repo, so cross-repo drift is an interactive
+`/steer:audit` concern, not something a gate catches on merge.

@@ -98,10 +98,13 @@ run = [
   # ShellCheck is the hard gate everywhere (see .shellcheckrc for the few
   # intentional disables). Covers repo scripts and the shipped scaffold scripts
   # too — the latter are installed into consumer repos, so they must be clean.
-  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh scripts/*.sh",
+  # `profiles/*/scripts/` carries the profile-specific scaffold scripts (the
+  # workspace profile's ws.sh) — installed into consumer repos just like the
+  # Layer-0 ones, so gated identically.
+  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
   # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
   # except plugins/steer/hooks/.
-  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh scripts/*.sh",
+  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
   # plugins/steer/hooks/ predates the formatter and is grandfathered (pre-commit
   # excludes the same prefix): report drift, never fail. `shfmt -w` to apply.
   "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh || true",

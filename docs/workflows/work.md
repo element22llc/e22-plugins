@@ -89,6 +89,15 @@ advances state either.
 declared tracker (`steer_tracker_repo`, `lib/scope.sh`) against the actual repo
 (`gh repo view --json nameWithOwner`).
 
+In a [polyrepo member](../concepts/product-spine.md#one-product-several-repos)
+the mismatch is structural rather than incidental — the tracker is always the
+workspace's — so the explicit-close path is taken every time. `start` also
+resolves the spine from `spec/PRODUCT.md` before reading the tracker or a
+feature's specs: a member carries neither `spec/tracker.md` nor
+`spec/features/**`, and a missing local `intent.md` means the workspace has not
+been read yet, never that the feature is unspecified. The spec update that a
+behavior change requires lands as its own change in the workspace repo.
+
 | | Closing ref | Who closes the issue |
 | --- | --- | --- |
 | Same repo, **or** either value unreadable | `Closes #N` — unchanged | GitHub, on merge |

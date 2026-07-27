@@ -1,0 +1,17 @@
+# --- Workspace (polyrepo spine host) additions -------------------------------
+# Merge these lines into the core .gitignore; never replace it.
+
+# Member checkouts. Each member repo is its OWN work tree cloned inside this one
+# (`mise run ws:clone` puts it at the `path:` from spec/workspace.yml) — not a
+# submodule, so nothing pins a SHA and no member commit ever dirties this repo.
+# Ignoring the dirs is what keeps a member's code out of the workspace's history.
+#
+# One line per member; /steer:init resolves them from the manifest and
+# `mise run ws:status` reports any member that is missing here. Anchored with a
+# leading slash so a member named `docs` doesn't also ignore `apps/docs`.
+# /frontend/
+# /backend/
+
+# Generated VS Code multi-root workspace (`mise run ws:code` — derived from
+# spec/workspace.yml, which is the source of truth).
+*.code-workspace

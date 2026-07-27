@@ -92,6 +92,36 @@ your **first action** is to reconcile it against the current bundled template
 (Phase 2). Do not skip this because the file "looks complete" — a newly added gate
 is invisible *precisely because* it isn't in the file yet.
 
+## Several repos, one product? Decide the topology before Phase 1
+
+Adoption is per repo. When the code you are adopting is **one product spread over
+several existing repos**, the spine is the thing at stake — reverse-engineer a
+full spine into each and you have manufactured the split-brain the polyrepo
+topology exists to prevent (three `vision.md`s, and a feature whose `intent.md`
+exists in one repo while its siblings have nothing to load).
+
+1. **Recommend a monorepo first, out loud.** It is the better arrangement and the
+   cheaper adoption. "We already have three repos" is not a mandate. Only an
+   externally mandated split — separate deployment, ownership, or compliance
+   boundaries — justifies the topology below.
+2. **If the split is mandated:** bootstrap the **workspace** repo first —
+   `/steer:init` with the `workspace` profile — so the product spine has a home
+   before any member gets one. Then adopt each member with this skill.
+3. **A member's spine is deliberately partial.** In a member, install
+   `spec/PRODUCT.md` (from `templates/spec/product.md`) and *skip* the
+   product-level artifacts — no `vision.md`, `users.md`, `glossary.md`,
+   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`. Those live once,
+   in the workspace. Everything else in the phase map is unchanged: the member
+   keeps its own `spec/decisions/`, `ARCHITECTURE.md`, tests, CI, and
+   `PRODUCTIONIZATION.md` — productionization is per repo, because deployment is.
+4. **Reverse-engineered intents go to the workspace**, not the member you are
+   standing in. Read `/steer:reference polyrepo` before advising or writing
+   anything under `spec/`.
+
+Already a member (`spec/PRODUCT.md` present) and only its spine looks incomplete?
+That is not damage — it is the design. Do not "repair" it here or via
+`/steer:sync`.
+
 ## Phase map
 
 Execute these in order. Each phase below is a one-line summary; the **detailed

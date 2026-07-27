@@ -1,0 +1,127 @@
+# mise — workspace (polyrepo spine host) flavor. REPLACES the core mise.toml.
+#
+# This repo holds the product `/spec` and the `spec/workspace.yml` member
+# manifest; the code lives in the member repos. So the tasks here are about the
+# members as a set — clone them, fast-forward them, report on them, boot the
+# whole product — not about building anything locally.
+#
+# Version strategy is identical to the core scaffold: tools resolve to `latest`,
+# `lockfile = true` + the committed `mise.lock` are the REAL pin, and the
+# scaffold ships NO lock (`/steer:init` creates it —
+# `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`).
+# Run /steer:reference conventions for the full rationale.
+
+[settings]
+lockfile = true
+# `experimental` unlocks the `[deps]` providers; kept for parity with the core
+# scaffold even though this repo has no workspace deps of its own.
+experimental = true
+
+# --- Monorepo task addressing across the members. UNCOMMENT both blocks once at
+# least one member is cloned locally (a `path:` in spec/workspace.yml + `mise run
+# ws:clone`). With them on, each member's own mise.toml becomes a config_root and
+# you get `mise //backend:test`, `mise '//...:lint'`, cross-project `depends`
+# (`"//backend:build"`), shared `[task_templates]`, and automatic trust
+# propagation — a freshly cloned member needs no `mise trust`.
+#
+# List the member dirs EXPLICITLY: filesystem auto-discovery of subdirectory
+# configs is deprecated upstream in favour of `config_roots`. Keep this list in
+# step with spec/workspace.yml — `mise run ws:status` reports drift.
+#
+# `[monorepo].lockfile` decides whether tool locks live at this root or stay
+# per-member. Set it EXPLICITLY: upstream is mid-rollout (warnings first, then the
+# default flips to root lockfiles), and a member repo must stay buildable
+# standalone, so `false` — per-member locks — is the right answer for a polyrepo.
+#
+# [settings]
+# monorepo_root = true
+#
+# [monorepo]
+# config_roots = [
+#   "frontend",
+#   "backend",
+# ]
+# lockfile = false   # members keep their own mise.lock — they build standalone
+
+[tools]
+# No Node/Python project lives here, but the agent-runtime baseline stays: MCP
+# servers and agent tooling run packages through `npx`/`uvx` (e.g. the steer
+# plugin's markitdown MCP server via `uvx markitdown-mcp`), and `/steer:intake`
+# converts PO documents here, at the spine host. Never prune these.
+node = "latest"
+python = "latest"
+uv = "latest"
+github-cli = "latest"           # gh — the tracker for the whole product lives here
+"aqua:koalaman/shellcheck" = "latest" # shell lint (CI gate — scripts/ws.sh)
+"aqua:rhysd/actionlint" = "latest"    # GitHub Actions workflow lint (CI gate)
+
+# Deliberately absent: pnpm/biome/ruff. Linters belong to the member that owns
+# the code — a workspace repo that lints nothing needs none of them. Add one only
+# if this repo ever grows code, which is a sign it should not be the spine host.
+
+[env]
+# The workspace boots every member's services through compose.yaml `include:`,
+# so it needs its own Compose identity — otherwise `mise run dev` here and a
+# member's standalone `mise run docker:up` fight over the same project name.
+# worktree-env.sh derives COMPOSE_PROJECT_NAME from this checkout's directory
+# name, which differs from every member's, so the two stacks stay separate.
+#
+# HOST PORTS still collide: this stack and a member's standalone stack both
+# default to 5432. Run the product from here OR a member standalone, not both —
+# or give one side an offset (`STEER_WORKTREE_OFFSET=<n>`).
+_.source = "scripts/worktree-env.sh"
+
+[tasks."ws:clone"]
+description = "Clone every member repo that declares a `path:` in spec/workspace.yml (idempotent)"
+run = "sh scripts/ws.sh clone"
+
+[tasks."ws:sync"]
+description = "Fast-forward each cloned member to its manifest branch (never rewrites; skips dirty/diverged)"
+run = "sh scripts/ws.sh sync"
+
+[tasks."ws:status"]
+description = "Per-member branch/dirty/spine-version report + manifest-vs-compose/.gitignore drift"
+run = "sh scripts/ws.sh status"
+
+[tasks."ws:code"]
+description = "Generate the VS Code multi-root workspace (<product>.code-workspace) from spec/workspace.yml"
+run = "sh scripts/ws.sh code"
+
+[tasks."ws:list"]
+description = "List the members declared in spec/workspace.yml"
+run = "sh scripts/ws.sh list"
+
+[tasks."docker:up"]
+description = "Start every member's backing services (compose.yaml include:) and wait until healthy"
+# The scaffold ships compose.yaml with every `include:` entry commented out, so
+# guard first: an unresolved file makes `docker compose` fail with a parse error
+# that says nothing about what to do. This turns it into the actual next step.
+run = [
+  "docker compose config >/dev/null 2>&1 || { printf 'compose.yaml has no resolved `include:` list yet — add one entry per member that runs local services (see the file header), or delete compose.yaml together with the docker:* and dev tasks.\\n' >&2; exit 1; }",
+  "docker compose up -d --wait",
+]
+
+[tasks."docker:down"]
+description = "Stop this workspace's services (data volumes are kept)"
+# Scoped to COMPOSE_PROJECT_NAME, so a member's standalone stack is untouched.
+run = "docker compose down"
+
+[tasks."docker:clean"]
+description = "Tear down this workspace's services AND volumes"
+run = "docker compose down --volumes --remove-orphans"
+
+[tasks.dev]
+description = "Boot the whole product locally — every member's services, then every member's dev server"
+# The services half works as soon as compose.yaml lists the members' compose
+# files. The app half needs mise monorepo mode (uncomment the [monorepo] block
+# above) and one `depends` entry per member that has a `dev` task:
+#   depends = ["docker:up", "//frontend:dev", "//backend:dev"]
+# mise runs `depends` in parallel, so the servers come up together (add
+# `--jobs N` for more than 4). /steer:init resolves this from the manifest.
+depends = ["docker:up"]
+
+[tasks."convert:doc"]
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake"
+# Kept from the core scaffold: PO documents land in THIS repo (spec/sources/),
+# because the spine is here. Same pinned-uv path as every other managed repo.
+run = "uvx --from 'markitdown[all]' markitdown"

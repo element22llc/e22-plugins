@@ -56,7 +56,9 @@ and runs only after the dev confirms. Default mode is `verify` (read-only).
 ## Preconditions
 
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
-   tracker is something else, say so and stop.
+   tracker is something else, say so and stop. In a **polyrepo member**
+   (`spec/PRODUCT.md`) there is no local tracker — read the workspace's
+   (`/steer:reference polyrepo`); the protection target is still *this* repo.
 2. **`gh auth status`** must succeed. If not, tell the dev to run `gh auth login`
    themselves (never run auth on their behalf) and stop.
 3. **Resolve `owner/repo`** from `git remote get-url origin` (or `gh repo view`).
@@ -202,6 +204,17 @@ keep visible, not an oversight.
   than forcing a second mechanism.
 - This skill never opens PRs, never pushes, never runs `gh auth`. It touches repo
   *settings* only, and only with a yes.
+- **Polyrepo: one run protects one repo.** A product spanning several repos needs
+  protection on the workspace **and every member**, and this skill only ever
+  governs the repo it runs in. So when `spec/workspace.yml` or `spec/PRODUCT.md`
+  is present, close the report by naming the repos still unprotected — read the
+  member list from the workspace manifest — rather than leaving a single-repo
+  verdict to read as product-wide. Do **not** reach into a sibling repo's
+  settings from here; say which repo to run it in next.
+  **Org-level rulesets** are the way out of N per-repo applications and N drifting
+  `policy/branch-protection.yml` copies, but they need **GitHub Team or
+  Enterprise**. On Free, the per-repo runs and the per-repo policy copies stand —
+  say so plainly instead of recommending a plan the org cannot buy into.
 - **Dependabot auto-merge exception.** The policy documents a deliberate carve-out
   to the required human review: Dependabot **patch/minor** PRs (majors excluded)
   are auto-approved and auto-merged once the required `ci` check is green — CI, not

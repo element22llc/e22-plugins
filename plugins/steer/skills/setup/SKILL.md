@@ -64,8 +64,10 @@ code. Detect the role before routing — the same spine state means different th
 **Adopting a polyrepo is not this skill's call.** If the user describes a product
 already split across repos, recommend a monorepo first unless the split is
 externally mandated (deployment, ownership, or compliance boundaries), then route
-to `/steer:init` for the workspace repo. Load `/steer:reference polyrepo` before
-advising — do not improvise the topology.
+to `/steer:init` for the workspace repo — and to `/steer:adopt`, once per member,
+when those repos already carry working code (`/steer:adopt` → "Several repos, one
+product?"). Load `/steer:reference polyrepo` before advising — do not improvise
+the topology.
 
 **Prerequisites first.** If the toolchain is missing (`git`, `mise`, Docker — "command
 not found", mise/docker errors), the bootstrap paths can't run. `/steer:init` and
