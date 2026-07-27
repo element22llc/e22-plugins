@@ -22,7 +22,12 @@ the product repo, from the bundled template.
 4. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
    until accepted; set Deciders. Leave the `> Ratified …` fields as-is —
-   `accept` writes them.
+   `accept` writes them. **One exception, `/steer:init` step 4:** when the dev
+   has just chosen the stack in that interactive setup, the decision is already
+   made, so init authors that ADR at `Accepted` with the ratification fields
+   stamped (`> Ratified via: in-session`). That is a *create*, not a
+   `Proposed → Accepted` transition — `accept` remains the single writer of the
+   transition.
 5. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
    author has to go and hand-edit.
 

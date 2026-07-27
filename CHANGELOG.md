@@ -7,6 +7,48 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `skills/init/SCAFFOLD.md`'s first instruction opened **mid-sentence**
+  — "`lives in the plugin — no external template repo to fetch.`" The subject
+  ("**Instantiate the bundled scaffold — core plus the profile's extras.**
+  Everything") stayed behind in `SKILL.md` step 2 when this cycle's compaction
+  factoring split the body out, so the file a session reads *just-in-time* to run
+  the scaffold install began with a dangling verb phrase. Restored, and the whole
+  body de-indented from the orphaned 3-space list depth it inherited from the
+  numbered item it used to live under.
+- **Fixed:** rule `36-issue-first` opened "When `/spec/tracker.md` declares
+  `system: github`" — a file a **polyrepo member does not have**. The predicate
+  fix this cycle taught `steer_tracker_is_github` to resolve a member's tracker
+  from the workspace, so the rule now *injects* there; but a model checking the
+  rule's own stated precondition found no such file and could conclude it was out
+  of scope — reinstating, at the prose layer, the silent-off bug the predicate fix
+  removed. Sibling rule `35-issue-tracker` already carried the member carve-out;
+  36 now does too (+109 B, absorbed within the existing ratchet — no raise).
+- **Fixed:** `templates/reference/INVOCATION.md` listed **3 of 8**
+  `/steer:reference` topics, omitting `context-hygiene`, `architecture-diagrams`,
+  `artifacts`, `gates` and `polyrepo`. This is the same hand-maintained-enumeration
+  drift this cycle swept from `rules/00-router.md`, `skills/standards` and the
+  scaffold `CLAUDE.md` — that sweep missed this surface.
+- **Fixed:** `skills/questions/SKILL.md`'s bundle-mode summary claimed the mode
+  "then **ingests** the filled return leg", contradicting `BUNDLE.md`'s "Bundle
+  itself changes nothing in the spec" — ingestion belongs to
+  `/steer:intake clarify`. The summary line, added during this cycle's split, now
+  matches the procedure it summarizes.
+- **Fixed:** `/steer:adr`'s default-mode step 4 ("Set Status to `Proposed` …
+  Leave the `> Ratified …` fields as-is") had no carve-out for `/steer:init`
+  step 4, which authors the stack ADR at `Accepted` **with** the stamps — so init
+  told the skill it invokes to do the opposite of what init itself requires. The
+  step now names the exception and restates that `accept` is still the single
+  writer of the `Proposed → Accepted` *transition*; a create at `Accepted` is not
+  one.
+- **Fixed:** `docs/reference/known-limitations.md` contradicted itself on the
+  push gate. Its hook-tier list omitted `check-bash-actions.sh` entirely, opened
+  "only one of them actually blocks an action", and closed "the **push / PR gate
+  is not a hook at all** … Nothing technically prevents a push" — while the same
+  page says at line 113 that the solo-trunk graduation gate pauses a push, and
+  `check-bash-actions.sh` does emit `permissionDecision: "ask"`. The list now
+  carries the `ask` tier (with its once-per-session-and-repo scope and the
+  advisory issue-create guard), and the last bullet is narrowed to the merge gate,
+  which genuinely is rule-only.
 - **Fixed:** `templates/reference/GATES.md` listed the ungraduated solo-trunk
   trunk push under **"never promptable — asking is not authorization"**, which
   contradicted the two surfaces that actually implement it: rule
