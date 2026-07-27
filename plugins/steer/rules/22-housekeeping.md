@@ -25,5 +25,9 @@ judgment or loss is at stake:
 - **Deleting** — never automatic. Only true junk (`desktop.ini`,
   `.DS_Store`), only on confirmation, plus a `.gitignore` pattern so it can't
   return.
+- **Polyrepo member** (`spec/PRODUCT.md` present): `spec/reference/`,
+  `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** —
+  never create one locally for a stray; report it and name the workspace as its
+  home. `spec/design/`, `spec/decisions/` are the member's own — handle normally.
 
 Run **`/steer:tidy`** for a full sweep.

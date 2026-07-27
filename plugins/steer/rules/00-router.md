@@ -1,10 +1,8 @@
 # Engineering Standards — Operating Manual (org standards)
 
 Org-wide engineering standards, injected into every session by the **steer**
-plugin and maintained centrally in
-[`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins) — never
-copy them into a product's `CLAUDE.md`, which holds only product-specific
-context.
+plugin and maintained centrally in `element22llc/e22-plugins` — never copy them
+into a product's `CLAUDE.md`, which holds only product-specific context.
 
 **Be concise by default** — in chat, in code, and in every artifact you write.
 Brevity is a standard here, not a preference: see Output discipline.
@@ -21,14 +19,12 @@ it yourself**.
   question offering the 2–3 likely intents.
 - **Auto-continue, bounded** — when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
-- **Routing moves navigation, never authority.** The human gates are
-  unchanged: issue creation beyond an explicit "fix / add / implement" ask
-  (Issue-first), ADR ratification (High-risk), and merge / deploy / real
-  secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
-  are **not** gates — they are autonomous delivery steps; the human gate is
-  the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
-  push). A gate whose decider is present is **answered in-session** — see
-  Answering a human gate.
+- **Routing moves navigation, never authority.** The human gates are unchanged:
+  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
+  ADR ratification (High-risk), and merge / deploy / real secrets (Commit
+  autonomy, High-risk). Pushing a branch and opening the PR are **not** gates —
+  they are autonomous delivery steps; the gate is the PR **merge**. A gate whose
+  decider is present is **answered in-session** — see Answering a human gate.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
@@ -74,10 +70,9 @@ management with no implementation this turn routes to `/steer:issues`.
 invocable too): `/steer:setup` → `/steer:init` (greenfield) / `/steer:adopt`
 (existing code) / `/steer:sync` (steady-state); `/steer:doctor` when
 prerequisites are missing (from init/build, not setup); `/steer:audit` →
-`/steer:tidy`;
-`/steer:issues` and `/steer:spec` → `/steer:questions`; `/steer:issues` →
-`/steer:roadmap`. GitHub reads/writes route through the internal
-`/steer:tracker-sync` gateway; feature specs are instantiated by the internal
+`/steer:tidy`; `/steer:issues` and `/steer:spec` → `/steer:questions`;
+`/steer:issues` → `/steer:roadmap`. GitHub reads/writes route through the
+internal `/steer:tracker-sync` gateway; feature specs are instantiated by
 `/steer:spec-scaffold` — neither is a user front door.
 
 **Full reference prose** loads on demand via `/steer:reference [conventions |

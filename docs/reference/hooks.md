@@ -136,6 +136,51 @@ one) exactly as it was.
 There is no equivalent handling for `cd <dir> && git push`: only `-C` states its
 target in the command line. That case still resolves from `cwd`.
 
+## Which rules apply, and to which repo (`lib/scope.sh`)
+
+Every scope decision a hook makes — which always-on rules to inject, whether the
+issue-first nudges apply, which repo a tracker write belongs to — comes from
+`hooks/lib/scope.sh`. It is sourced by every `SessionStart` and `PreToolUse` hook,
+so it stays POSIX `sh` with no `jq` and no network.
+
+`steer_inject_when_ok <token> <root>` is the entry point for rule scoping: a rule
+whose first line is `<!-- steer:inject-when=<token> -->` is injected only when the
+predicate holds. Tokens compose with `,` (all must hold). The predicates are
+`tracker-github`, `has-infra`, `has-iac`, `has-apps`, `has-compose`,
+`code-project`, `polyrepo`, `has-workspace-manifest` and `has-product-pointer`.
+**An unknown token fails open (injects)**, so a typo'd marker can never silently
+drop a rule from the always-on context.
+
+Three helpers resolve polyrepo topology:
+
+- `steer_polyrepo_role <root>` — prints `workspace` when `spec/workspace.yml` is
+  present, `member` when `spec/PRODUCT.md` is, and nothing in a single repo.
+- `steer_workspace_path <root>` — prints the *optional* relative path to a local
+  workspace checkout, read from `spec/PRODUCT.md`'s `workspace.path`. It is scoped
+  to the `workspace:` block, so an unrelated `path:` elsewhere in the pointer is
+  never mistaken for it, and an unresolved `[...]` placeholder counts as absent.
+- `steer_tracker_repo <root>` — the tracker's declared `repository:` value. In a
+  member this is deliberately **never that member's own repo**, which is why
+  closing refs across repos need the cross-repo form.
+
+The behaviourally largest of these is `steer_tracker_is_github`, which decides
+whether the issue-first rules and nudges apply. In a member there is no local
+`spec/tracker.md`, so it resolves the workspace's through `workspace.path` — and
+when no local checkout is declared it **fails open to inject**. That fail-open is
+what turns issue-first on in a polyrepo member (rule `36-issue-first`, plus
+`check-write-nudges.sh`, `check-bash-actions.sh` and `reconcile-issue-first.sh`):
+the alternative, treating an unreachable tracker as "no tracker", silently
+disabled the tracker discipline in exactly the repos where all the code lives.
+
+`steer_work_mode <root>` separates a code project from a **knowledge-work** folder;
+in knowledge mode `inject-standards.sh` skips every conditional rule and keeps only
+the unmarked always-on core.
+
+!!! note "`hooks/lib/` is exempt from the docs-impact gate"
+    `check_docs_impact.py` does not flag changes under `hooks/lib/`, so this
+    section is maintained by hand — see
+    [Documentation](../contributing/documentation.md).
+
 ## Surfaces without hooks
 
 Claude Code (CLI, IDE extensions, Desktop **Code** tab) and **Cowork** run hooks;

@@ -44,9 +44,8 @@ relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
 below; a GitHub-adopted repo still keeps the issue, closed from the commit — see
 Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
-built), auto-documented as features land (`/spec/HISTORY.md`, `/spec/app/`).
-`/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse to skip
-bootstrap now.
+built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
+to skip bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony

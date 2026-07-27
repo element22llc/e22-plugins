@@ -7,6 +7,91 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the polyrepo member write guard was missing from the **always-on
+  rules layer** — the one surface that fires without any skill being invoked, and
+  the last place this cycle's carve-out sweep had not reached. Rule
+  `22-housekeeping` (marked `inject-when=code-project`, so it injects in every
+  member session) told a session to move a stray root file into `/spec/reference/`
+  and "don't wait for a yes", while `/steer:tidy` and `HOUSEKEEPING.md` both say a
+  member must never create that product-level dir; rule `32-living-docs` (carrying
+  **no** `inject-when` marker, so it is always resident) routed `/spec/app/` and
+  `/spec/HISTORY.md` unconditionally, even though rule `30-spec-workflow` got the
+  carve-out and defers *to rule 32* for exactly that routing. A member session
+  therefore read the skill's guard and the rule's contradiction of it in the same
+  context. Both rules now name the member exception. Absorbed inside the existing
+  rules ratchet — **no ceiling raise** — by tightening redundant wording in
+  `00-router`, `10-stack`, `20-layout`, `30-spec-workflow`, `45-commit-autonomy`,
+  `85-practices` and `99-end-of-session`; no instruction was dropped.
+- **Fixed:** the same guard was missing from the three remaining skills that
+  append `/spec/HISTORY.md`. `/steer:protect apply` (which also flips the
+  delivery-mode marker), `/steer:spec approve` and `/steer:build`'s handoff all
+  wrote it unconditionally, while their structural twin `/steer:adr accept` and
+  `/steer:sync` both say "never create a local `HISTORY.md` in a member". All
+  three now route to the workspace via `workspace.path`, else the PR description.
+  `/steer:work --hotfix`'s follow-up step gained the same parenthetical.
+- **Fixed:** `/steer:protect`'s opening contract still told **`verify`** to
+  "reconcile the marker as part of the run" — 90 lines above the mode body's
+  "`verify` **writes nothing** … Do not edit those files from `verify`". The
+  previous pass fixed the mode body only, leaving the paragraph a session reads
+  *first* asserting the opposite. Now scoped to `apply`.
+- **Fixed:** the plugin `README.md` published the false-deferral theory that
+  `ARTIFACTS.md` and `/steer:audit`'s own frontmatter comment exist to refute —
+  "the restriction clears on the next user message, so confirmed follow-up writes
+  run as their own steps after the skill returns". Tool grants apply for the whole
+  invocation; there is no post-run window. The paragraph is replaced by that
+  invariant, and publication is described as a separate step because it is a
+  separate *skill* (`/steer:issues publish-*`), not a later phase of this one.
+- **Fixed:** `README.md` and `AUTHORING.md` both claimed the Tier 1 skills set
+  `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree` with **two** render
+  variants keeping `Write`; four kept it (`audit`, `explain`, `help`, `status`).
+  `AUTHORING.md` is the contract new skills are authored against, so it was
+  actively instructing the next Tier 1 render skill into the exact trap
+  `audit/SKILL.md` warns about. Both now define the tier by
+  `Edit`/`NotebookEdit`/`EnterWorktree` and describe `Write` as splitting it.
+- **Fixed:** `/steer:report` was documented as Tier 1 but **tool-enforced as
+  nothing** — it set no `disallowed-tools` at all, making it the one Tier 1 skill
+  with no frontmatter floor, and the one that posts to a shared upstream repo
+  unprompted. It now carries `disallowed-tools: Edit, NotebookEdit, EnterWorktree`
+  (keeping `Write` for the scrubbed temp file it builds the issue from), and the
+  three hand-maintained Tier 1 rosters that omitted it now list it.
+- **Fixed:** `/steer:audit`'s `Write` contract enumerated the permitted writes
+  exhaustively ("never … any other file") while its `spec` mode offers
+  `/steer:tracker-sync pull`, which materializes one markdown file per issue. The
+  contract now names that temp-dir export as the third sanctioned write.
+- **Fixed:** `MIGRATIONS.md` promised that `/steer:adopt` **and `/steer:build`**
+  consume ledger entries on a resume; `skills/build/` contains no migration step
+  at all, so a PO resuming a pre-3.x build silently skipped every pending
+  migration. The ledger now states that build reaches the transforms by handing
+  off to `/steer:adopt`.
+- **Fixed:** `/steer:build` declared Windows supported only "via WSL2 … see the
+  `Stack` rule", contradicting rule `10-stack` and `/steer:doctor`, which both
+  call Git for Windows a supported setup on the Claude Desktop Code tab — this
+  skill's own audience.
+- **Fixed:** `ARTIFACTS.md` forbade embedding a git SHA in a machine-keyed export
+  while `/steer:audit`'s triage export mandates one. The SHA is fixed for the run
+  and `publish-audit` reads it to flag stale keys, so it is now documented as a
+  deliberate exception rather than a violation, and `/steer:issues` names the
+  marker with its `sha=` field instead of without.
+- **Fixed:** `docs/concepts/authorization-model.md` said "every delivery verb
+  stay gated" while the same page, rule `45-commit-autonomy`, and
+  `check_standards.py` (which **fails the build** on it) all make `git push` and
+  `gh pr create`/`edit` autonomous. Narrowed to the merge/deploy verbs.
+  `AUTHORING.md` carried the same inversion, misattributed to rule 45.
+- **Fixed:** `docs/` attributed solo-trunk graduation to `/steer:protect`
+  mode-agnostically, though only `apply` raises the wall; `docs/reference/hooks.md`
+  had no section for `lib/scope.sh` — the library this release extended most, and
+  one `check_docs_impact.py` deliberately does not gate — so the member-aware
+  `steer_tracker_is_github` fail-open that switches issue-first on in a polyrepo
+  member was undocumented. Added, with the inject-when predicate list.
+  `docs/workflows/issues.md` also dropped `reconcile --all` and
+  `publish-findings --source` from its argument hint.
+- **Fixed:** `[Unreleased]` stopped quoting absolute always-on byte totals. Every
+  one went stale again inside this cycle — the entry that *fixed* three stale
+  measurements was itself stale within one commit — because any correctness fix to
+  a rule or skill moves them and no gate compares prose to the live figure. The
+  entries now point at `check_context_budget.py --report` and `mise run
+  rules:preview`, which cannot drift. One bullet also promised "three pins" and
+  listed two.
 - **Fixed:** `/steer:init`'s member carve-out stopped short of the step that
   actually populates the spine, so init still contradicted **itself**. The earlier
   pass covered step 2 (`SCAFFOLD.md`, which skips *creating* the product-level
@@ -86,8 +171,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   in the same cycle invalidated — the listing-ratchet note claimed `work` was
   trimmed to 747 chars and "no longer the largest listing consumer" (it is 794
   and still the largest), and the rules-payload and skill-prose totals were
-  stale. Corrected to the measured 11,884 / 65,222 B / 251,922 B, with the
-  16-char listing headroom stated plainly.
+  stale. The listing figure is corrected and its headroom stated plainly; the
+  **absolute** rules-payload and skill-prose byte totals are no longer quoted in
+  prose at all. Every one of them went stale again within the same cycle, because
+  any correctness fix to a rule or skill moves them and no gate compares prose to
+  the live measurement. `mise run rules:preview` and
+  `uv run python scripts/check_context_budget.py --report` are the only figures
+  that cannot drift — cite those instead of copying a number into prose.
 - **Fixed:** three surfaces stated an authorization or routing fact the code
   contradicts — the class the pre-release audit exists to catch, and two of the
   three were introduced by the *previous* audit-fix pass. (1) The authorization
@@ -532,8 +622,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   wired to it — it read as unexplained tool-surface cost. Offset within the
   always-on budget by dropping a duplicated editor-preference line that
   `CONVENTIONS.md` already carries in full, so the change paid for itself where
-  it landed. (Across the whole release the rules payload still grows to
-  65,222 B — see the ratchet entry above.)
+  it landed. (Across the whole release the rules payload still grows toward the
+  ceiling — see the ratchet entry above for the current figure.)
 
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
@@ -581,7 +671,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — total always-resident skill prose fell ~24% (331,971 → 251,922 B).
+  dropped — total always-resident skill prose fell roughly a quarter from the
+  331,971 B it stood at in 3.22.0.
   The largest remaining body is `work` at 15,991 B (~4,570 tokens, **91% of the
   17,500 B cap**), so the headroom this bought is real but thin: the next
   substantial skill body still has to be factored, not appended.
@@ -720,11 +811,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   sat in a blind spot where the repo's pre-commit hook hard-gated `shfmt` but
   `mise run shell` treated it as advisory, so the drift could only surface as a
   rejected commit.
-- **Changed:** the bundled CI workflow template refreshes three pins —
+- **Changed:** the bundled CI workflow template refreshes two pins —
   `actions/setup-node` `v6` → `v7` (the action moved to ESM and dropped a dummy
   `NODE_AUTH_TOKEN` export; neither affects the advisory `ai-slop` job's
   `node-version` usage) and `aislop` `0.12.1` → `0.14.0` (same
-  `scan . --sarif` interface).
+  `scan . --sarif` interface). The third pin from the same change,
+  `@google/design.md@0.3.0`, is recorded in the pinning entry below.
 - **Fixed:** every tool the bundled CI workflow template runs through `npx`/`uvx`
   is now version-pinned — `@google/design.md@0.3.0` in the DESIGN.md lint step,
   plus `yamllint@1.38.0`, `ansible-lint@26.6.0`, and `diff-cover@10.4.1`. Each

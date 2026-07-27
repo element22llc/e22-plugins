@@ -21,6 +21,14 @@ allowed-tools:
   - mcp__github__add_issue_comment
   - Bash(git remote *)
   - Bash(git rev-parse *)
+# Tier 1: this skill never touches the product repo — its only writes are the
+# upstream issue and the scrubbed temp file it is built from. Edit/NotebookEdit/
+# EnterWorktree are disallowed so a defect report can never mutate a local file,
+# branch, or worktree. Write STAYS GRANTED for that temp file (see step "Write the
+# scrubbed body to a temp file"), bound in prose to the temp path — do NOT disallow
+# it, since tool grants apply for the whole invocation and dropping it makes the
+# instructed write unreachable.
+disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
 # Report a steer plugin defect upstream

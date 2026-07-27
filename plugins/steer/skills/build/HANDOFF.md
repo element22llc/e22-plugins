@@ -61,7 +61,9 @@ real secrets). Steps 5–6 (scaffold, build feature by feature) are in
     to use the app, workflows, roles, in the PO's plain language, from the
     demo-validated intents) and append the build to `/spec/HISTORY.md` (what was
     built, why, requested by the PO, refs to the intents and — in PR flow — the
-    PR). **Then reconcile the root living docs as a handoff backstop:** confirm
+    PR). **In a polyrepo member** (`spec/PRODUCT.md`), `/spec/app/` and
+    `HISTORY.md` are the workspace's — write them there via `workspace.path`,
+    else record the build in the PR description; never create local copies. **Then reconcile the root living docs as a handoff backstop:** confirm
     `ARCHITECTURE.md`, `DESIGN.md`, and `apps/README.md` reflect the built v0 and
     carry no leftover template placeholders — the `[e.g. Node]` stack-table cells
     and `[web]` / `[core]` map rows, the `#000000` colors and placeholder product

@@ -154,7 +154,11 @@ If the PO is not the person in the session, surface that and leave the state alo
    given in-session rather than in an offline review, say so in the
    `Approval comment/link:` so the channel is part of the record.
 2. Flip `> Status:` to `approved`.
-3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs).
+3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs). **In a
+   polyrepo member** (`spec/PRODUCT.md`), `HISTORY.md` is the workspace's — append
+   it there if `workspace.path` resolves, else record the approval in the PR
+   description and say the workspace ledger still needs the entry. Never create a
+   local `HISTORY.md` in a member (`/steer:reference polyrepo`).
 4. Recommend the local next action — decompose into work
    (`/steer:issues decompose`, then execute each via
    `/steer:work`) or, for a PO-driven build,

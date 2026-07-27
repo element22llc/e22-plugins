@@ -41,4 +41,3 @@ anti-patterns prose: `/steer:reference conventions`.
   smart quotes, ellipsis, non-breaking spaces) belong in prose and docs, never
   in code, identifiers, config keys/values, or strings bound for an external
   API — use the ASCII equivalent. Strict validators reject the rest.
-  *(Rationale: `/steer:reference conventions`.)*

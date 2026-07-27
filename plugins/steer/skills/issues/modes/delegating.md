@@ -51,7 +51,8 @@ epic with the `epic` mode instead.
 Take an `/steer:audit` finding set and create/update the audit-run parent +
 selected finding children (see `/steer:audit`); file via
 `/steer:tracker-sync`. Selection comes from the session, **or from the audit
-dashboard's filled triage export** (the `<!-- steer:audit-triage -->` document —
+dashboard's filled triage export** (the
+`<!-- steer:audit-triage sha=<audited-sha> -->` document —
 rule `88-artifacts` return leg): file exactly the findings whose `finding-key`
 is checked, carry each note into the issue body, and **flag any key that doesn't
 match the current finding set** (stale or unknown — e.g. the code moved since

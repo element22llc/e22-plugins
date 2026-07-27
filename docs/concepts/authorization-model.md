@@ -65,8 +65,11 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     allowlist. `mise run dev` is a **named** task, not the banned `mise run:*`
     wildcard — `mise run deploy` still prompts. Bare `git checkout -- <file>`
     (discards work), destructive `git rm` (an unattended recursive/forced delete —
-    moved to `ask`), and every delivery verb stay gated. `check_standards.py`
-    asserts this set stays under `allow` so it can't silently regress.
+    moved to `ask`), and every **merge/deploy** verb stay gated — `gh pr merge`
+    sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
+    are autonomous delivery (rule `45-commit-autonomy`), and `check_standards.py`
+    fails the build if they leave `allow`. It asserts this whole set stays under
+    `allow` so it can't silently regress.
 
 !!! note "Issue creation is autonomous — but a host can still gate it"
     Some Claude Code permission modes classify an unprompted `gh issue create` as
@@ -110,9 +113,9 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     autonomously, with no `feat/*` branch and
     no per-feature PR — there is no second reviewer yet, so the PR gate has nothing
     behind it. CI still runs on every push, and the spine, tests, and Definition of
-    Done are unchanged. The mode ends at **graduation** — run `/steer:protect`, which
-    raises the server-side PR wall — once the MVP works, you first deploy, or a second
-    contributor joins. Once any of those signals is *visible locally* (a deploy
+    Done are unchanged. The mode ends at **graduation** — run `/steer:protect apply`,
+    which raises the server-side PR wall — once the MVP works, you first deploy, or a
+    second contributor joins. Once any of those signals is *visible locally* (a deploy
     workflow, an `infra/` tree, a `prod` branch), the trunk-push gate
     (`check-bash-actions.sh`) stops silent trunk pushes — the first `git push`
     each session surfaces for a human yes (repeats carry a non-blocking
@@ -231,7 +234,10 @@ The skill frontmatter encodes the same boundary:
 A skill's tier is not a separate label — it is readable straight from its
 frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,
 EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
-`reference`, `status`), a Tier 2 skill grants the write and git verbs it needs.
+`reference`, `report`, `status`), a Tier 2 skill grants the write and git verbs it
+needs. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
+`doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
+`status` and `report` keep it for a single temp-path write held in prose.
 
 `Write` splits that tier rather than defining it. Most Tier 1 skills disallow it
 outright (`next`, `standards`, `doctor`, `reference`). The four that render a

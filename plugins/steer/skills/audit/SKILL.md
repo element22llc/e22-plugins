@@ -42,13 +42,16 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 > this skill's modes instruct, and only **after** the user confirms them in a
 > fresh message — the optional reports (`AUDIT-REPORT.md` / `DRIFT-REPORT.md`)
 > and the optional **Artifact dashboard**, whose only write is its HTML to a
-> system temp dir, never under the repo tree (rule `88-artifacts`). Never use
-> `Write` to create or replace any other file. Findings reach the tracker via
+> system temp dir, never under the repo tree (rule `88-artifacts`). One further
+> temp-only write is sanctioned: the triage export that `/steer:tracker-sync pull`
+> materializes into a temp directory when `spec` mode offers it instead of pasting
+> — same temp-dir limit, never under the repo tree. Never use `Write` to create or
+> replace any other file. Findings reach the tracker via
 > `/steer:issues publish-audit` / `/steer:issues publish-drift`, each its own step.
 
 Both modes are **non-mutating** — they never change an existing file and never
 commit. The only things either mode may create are the two confirmed outputs
-named above. **Make no code or spec edits, and don't commit.** Publishing
+named above, plus the temp-dir triage export. **Make no code or spec edits, and don't commit.** Publishing
 findings to the tracker is a separate step (`/steer:issues publish-audit` /
 `publish-drift`) — this skill writes no issue itself. Fixing anything is a
 separate, approved step on its own branch + PR.
