@@ -4,7 +4,8 @@
 Before wrapping up a working session, run this checklist and **report** its
 state to the dev — don't silently close out, and don't turn the report into a
 round of per-item confirmations (satisfied items need no ack; only genuinely
-open items need the dev). Track open items with your todo tooling:
+open items need the dev). Track open items with your todo tooling so nothing is
+dropped:
 
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?

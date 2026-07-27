@@ -8,8 +8,8 @@ plugin and maintained centrally in
 copy them into a product's `CLAUDE.md`, which holds only product-specific
 context.
 
-**Be concise by default** — in chat, in code, and in every artifact you write;
-see Output discipline.
+**Be concise by default** — in chat, in code, and in every artifact you write.
+Brevity is a standard here, not a preference: see Output discipline.
 
 ## You are the router
 
@@ -23,11 +23,14 @@ it yourself**.
   question offering the 2–3 likely intents.
 - **Auto-continue, bounded** — when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
-- **Routing moves navigation, never authority.** The human gates are unchanged:
-  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
-  ADR ratification, and merge / deploy / real secrets. Branch, commit, push and
-  opening the PR are **not** gates (Commit autonomy owns that line). A gate whose
-  decider is present is **answered in-session** — see Answering a human gate.
+- **Routing moves navigation, never authority.** The human gates are
+  unchanged: issue creation beyond an explicit "fix / add / implement" ask
+  (Issue-first), ADR ratification (High-risk), and merge / deploy / real
+  secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
+  are **not** gates — they are autonomous delivery steps; the human gate is
+  the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
+  push). A gate whose decider is present is **answered in-session** — see
+  Answering a human gate.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
@@ -369,8 +372,8 @@ bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
-relaxes; scaffold, spine, tests and Definition of Done all hold. Canonical in
-Commit autonomy.
+relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
+and graduation are canonical in Commit autonomy.
 
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →
@@ -387,17 +390,21 @@ per-feature Brownfield change.
 
 A durable design decision — stack, auth model, data model, architecture, a
 locked scope or MVP cut — belongs in `/spec`: a feature's `intent.md`, a
-`contract.md`, or an ADR (`/steer:adr`). Scoping conversation, chat summaries,
-and **assistant memory** are working notes, not the record — never let a decision
-survive only there.
+`contract.md`, or an ADR (`/steer:adr`). That is the single source of truth a
+teammate inherits from the repo. Scoping conversation, chat summaries, and
+**assistant memory** are working notes, not the record — never let a decision
+survive only there, where the repo carries no trace of it.
 
 **No `/spec` spine yet? Bootstrap before you commit the decision, not after.**
-Never let memory or prose stand in for the missing spine. Run `/steer:init` (greenfield) or `/steer:adopt` (existing code)
-first, so the decision lands somewhere traceable and reviewable. The scoping
-dialogue is fine and expected (`init`'s interview is where it belongs); only the
-**durable capture** waits for the spine. See bootstrap precedence in the router
-and Living documentation (`32-living-docs`). Record each decision with its
-ratifier and date — see Answering a human gate.
+On a repo with no spine, do not persist architectural choices or a locked scope
+to memory or prose as a stand-in for the missing spine — that is the
+single-source-of-truth break this rule exists to prevent. Run `/steer:init`
+(greenfield) or `/steer:adopt` (existing code) first so the decision lands where
+it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
+is fine and expected — `init`'s own interview is where it belongs; what waits
+for the spine is the **durable capture** of what was decided. See bootstrap
+precedence in the router and Living documentation (`32-living-docs`). Record
+each decision with its ratifier and date — see Answering a human gate.
 
 
 ## Living documentation — document in parallel, not after
@@ -491,8 +498,8 @@ create the issue.
   `/steer:report` re-grant them via their own `allowed-tools`. A create that
   is *still* blocked is a **host-permission gate, not a missing issue** —
   don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue.
-  (ISSUE-WORKFLOW.md → "Host gating".)
+  `!gh issue create …` under their own identity, then continue. (Full
+  rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
 **Calling work a "prototype" does not waive it** — the only durable opt-out
@@ -521,8 +528,8 @@ from the per-feature branch/PR is solo-trunk delivery mode.
 
 ## Commit autonomy
 
-The reviewed **PR merge** is the gate (see "You are not the gate"), not each
-commit and not the push. Never pause work to ask
+Commits are cheap and local — the reviewed **PR merge** is the gate (see "You
+are not the gate"), not each commit and not the push. Never pause work to ask
 "should I commit / push / open the PR?".
 
 Delivery runs in exactly **two modes**, keyed to GitHub branch protection. The
@@ -535,28 +542,31 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   else `feat/*` / `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`).
   On `main` with changes? Create the branch first, then commit. When the work
   is **complete** (Definition of Done holds, end-of-session checklist clean),
-  **push the branch and open the PR without asking**. First push of a fresh
-  branch: `git push -u origin <branch>`. **Merging the PR is the one step that
-  waits for the dev; everything before it (branch, commit, push, open PR) does
-  not.**
+  **push the branch and open the PR without asking** — announce it, don't
+  request permission. First push of a fresh branch:
+  `git push -u origin <branch>`. **Merging the PR is the one step that waits
+  for the dev; everything before it (branch, commit, push, open PR) does not.**
 - **Solo trunk mode (unprotected `main` — pre-MVP greenfield).** If the product
   `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
-  asking** — no `feat/*` branch, no per-feature PR. CI still runs on every push;
-  only the branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
+  asking** — no `feat/*` branch, no per-feature PR. CI still runs on every
+  push; the spine, tests, and Definition of Done are **unchanged** — only the
+  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
   required and closed from the trunk commit (`Closes #N`), not via a PR (see
   Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
   works, you first deploy, or a second contributor joins, whichever comes
-  first. While a **local** graduation signal (a deploy target or `prod` branch)
-  stands unaddressed, each trunk push waits for a human yes until the repo
-  graduates; a second contributor is caught on demand by `/steer:protect` and
-  `/steer:audit`, not at push time.
+  first. While a **local** graduation signal (a deploy target or a `prod`
+  branch) stands unaddressed, trunk pushes stop being autonomous — each one
+  waits for a human yes until the repo graduates; a second contributor is
+  caught on demand by `/steer:protect` and `/steer:audit`, not at push time.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** If the repo runs
   pr-flow but `main` has no protection, the flow above applies unchanged — you
   still never merge — but say the wall is missing and recommend
   `/steer:protect`. Where protection is genuinely unavailable, record the
-  exception in an ADR; `/steer:protect verify` and `/steer:audit` keep flagging it.
-- In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes
-  an active GitHub issue (see Issue-first); autonomy is unchanged once it exists.
+  exception in an ADR; `/steer:protect verify` and `/steer:audit` keep
+  flagging it.
+- In a GitHub-adopted repo, the **first mutation** of a unit of work
+  presupposes an active GitHub issue (see Issue-first) — autonomy is unchanged
+  once that issue exists.
 - **Commit without asking** whenever a coherent unit of work is done — tests
   pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
@@ -576,7 +586,7 @@ A change is done when **all** of these hold. Reviewers check most of them; CI
 enforces only a thin floor. In **solo-trunk** there is no reviewer, so the
 scaffold's CI runs that floor on push to `main` — the changed-line coverage gate
 (rule 41) and the advisory spec-drift warning (rule 55) — as the only automated
-backstop. It is a floor, not the whole list.
+backstop. It is a floor, not the whole list: the rest is still on you.
 
 - [ ] Code follows existing patterns in the touched app/package.
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
@@ -710,52 +720,70 @@ architectural changes here speculatively:
 - **Auth & sessions** — sign-in/up, password reset, token issuance, session invalidation
 - **Authorization & permissions** — role checks, access control, multi-tenancy boundaries
 - **Database migrations** — schema changes, backfills, migration scripts
-- **Infrastructure** — anything in `/infra`, especially networking, IAM, secret stores
+- **Infrastructure** — anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
 - **Secrets handling** — anything reading, writing, or transmitting credentials/keys/tokens
 - **Deletion logic** — hard deletes, cascading deletes, retention/cleanup jobs
 - **Billing & payments** — pricing, charging, refunds, subscription state
 - **Deployment & release logic** — CI/CD workflows, release scripts, feature-flag rollouts
 
 Handling: scope with the dev **before** any code; contract or ADR first;
-smaller PRs; line-by-line review; validate in non-prod first. `@claude
-implement this` needs explicit in/out scope here.
+smaller PRs; line-by-line review; validate in non-prod before prod. `@claude
+implement this` is not appropriate here without explicit in/out scope.
 
-**Pre-production relaxation:** while a product is **pre-production** (nothing
-deployed, no real users or data), high-risk areas may be built for real locally
-without prior dev scoping — document the choices as you go (`contract.md`, ADR for
+**Pre-production relaxation:** these gates protect real systems and real data.
+While a product is **pre-production** (nothing deployed, no real users or
+data), high-risk areas may be built for real locally without prior dev
+scoping — document the choices as you go (`contract.md`, ADR for
 hard-to-reverse picks, the feature's `intent.md` → `## Open questions` for open
-items) and list them in the PR description so dev review hardens them at
-productionization.
-"Pre-production" is a property of the **product, not the laptop**: in a deployed
-product, local work still reaches real data on merge — no relaxation there. **Never relaxed**, even
+items) and list them
+in the PR description so dev review hardens them at productionization.
+"Pre-production" is a property of the **product, not the laptop**: working
+locally in a deployed product still produces migrations/deletions that reach
+real data on merge — no relaxation there. **Never relaxed**, even
 pre-production: real secrets/credentials, `/infra`, deploys, real third-party
 calls.
 
 
 ## Answering a human gate in-session
 
-A gate needs the deciding **human's** answer, not a particular channel. When they
-are in the session, ask and act in the same pass instead of leaving a `Proposed` /
-`draft` to hand-edit later. Never ratify on your own initiative.
+A gate needs the deciding **human's** answer — not a particular channel. When that
+human is in the session, don't send them out-of-band to edit a status field:
+**ask, then act in the same pass.** Never ratify on your own initiative.
 
-Ask once — **Approve · Reject · Decide later** — showing the tradeoff (rejected
-alternatives, negative consequences, locked scope), not just a title. Never
-pre-select, never read "ok" / silence / an earlier sign-off as approval.
-`Decide later` changes nothing. Record who decided, when, and that it was
-in-session — unrecorded self-ratification is the audit hole.
+| Gate | Decides | On Approve |
+|---|---|---|
+| ADR `Proposed → Accepted` | its `Deciders` | `/steer:adr accept <n>` |
+| Intent `draft → approved` | the PO | `/steer:spec approve <id>` |
+| `--reviewed` plan sign-off | who asked | implement |
 
-Applies to: ADR `Proposed → Accepted` (`/steer:adr accept`), intent
-`draft → approved` (`/steer:spec approve`), `--reviewed` plan sign-off.
-**Never promptable:** merge, deploy, real secrets, `/infra`, protected-branch
-pushes — asking does not authorize them.
+Ask once, three options — **Approve · Reject · Decide later**:
 
-Protocol: `/steer:reference gates`.
+- **Show the tradeoff** — rejected alternatives, negative consequences, locked
+  scope — never just a title; a human cannot decide what they cannot see.
+- **Never pre-select, never infer.** An unambiguous answer *to the decision
+  presented* ratifies it; ambient agreement ("ok", "thanks", silence, or sign-off
+  on an earlier plan) does not. Never bundle two decisions into one prompt.
+- **`Decide later` is always offered** and leaves every field untouched — the
+  artifact stays `Proposed` / `draft` exactly as before.
+- **Record who decided, when, and that it was in-session**, plus the
+  `/spec/HISTORY.md` entry. Self-ratification is legitimate; the *unrecorded*
+  kind is the audit hole this rule prevents.
+- **Preconditions fire first** — never show a gate the human cannot legitimately
+  pass (an unresolved blocking question → `/steer:questions`).
+- **Wrong decider?** Surface the mismatch and leave the state alone; you may not
+  record someone else's decision for them.
+- **Never promptable, in any mode:** merge, deploy, real secrets, `/infra`,
+  protected-branch pushes. These need a human acting in the real system — asking
+  does not authorize them, and this rule never relaxes them.
+
+Full protocol: `/steer:reference gates`.
 
 
 ## Hotfix / incident fast-path
 
-A production incident is high-risk and time-critical at once. The hotfix lane is
-the **only sanctioned speed lever** — run `/steer:work --hotfix`.
+A production incident is **high-risk and time-critical at once** — the one case
+where full ceremony and speed genuinely conflict. The hotfix lane is the **only
+sanctioned speed lever**. Run it via `/steer:work --hotfix`.
 
 **Objective entry condition (not self-asserted).** The lane opens only when the
 change targets an already-**deployed production** system with real users or data
@@ -777,10 +805,11 @@ deployed are **not** hotfixes — they take the normal lane.
   the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
   is **never auto-executed** — merge and deploy stay human-gated.
 
-**Mandatory follow-up once the fire is out.** Restore traceability:
+**Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
 and append a `/spec/HISTORY.md` entry. Definition of Done is **deferred under this
-lane, never waived** (rule 50).
+lane, never waived** (rule 50). A hotfix without its follow-up is unfinished work,
+not a shortcut earned.
 
 
 ## Secrets handling
@@ -963,8 +992,8 @@ no-export build): run **`/steer:reference design-sources`**.
 
 You have no path-based permission boundary in managed product repos — propose
 changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
-reviewing the PR is the hard gate. When unsure about scope, ask in a PR comment
-before making sweeping changes.
+reviewing the PR is the hard gate and catches out-of-scope or risky edits. When
+unsure about scope, ask in a PR comment before making sweeping changes.
 
 
 ## When steer itself misbehaves, report it upstream
@@ -993,7 +1022,8 @@ still report it so it gets fixed for everyone.
 Before wrapping up a working session, run this checklist and **report** its
 state to the dev — don't silently close out, and don't turn the report into a
 round of per-item confirmations (satisfied items need no ack; only genuinely
-open items need the dev). Track open items with your todo tooling:
+open items need the dev). Track open items with your todo tooling so nothing is
+dropped:
 
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?

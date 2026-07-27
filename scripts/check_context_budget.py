@@ -77,7 +77,22 @@ PLUGIN_ROOT = Path("plugins/steer")
 # skills (was 17,950). Headroom (~1-5%) absorbs small legitimate edits;
 # anything larger must trade prose out first. LOWER these again as further
 # reductions land.
-RULES_TOTAL_MAX_BYTES = 62_500
+#
+# RULES raised ONCE, deliberately, from 62,500 → 65,200 to fund rule
+# `61-gate-prompts` (answering a human gate in-session). The ratchet had drifted
+# to 32 bytes of headroom, so the rule could only be added by compressing
+# unrelated gate rules — and that trade deleted ~1 KB of rationale prose that
+# existed nowhere else in the repo. Paying bytes was judged the lesser cost than
+# losing the prose; the trims were reverted and the ceiling re-armed at the
+# measured total (64,492 B across 35 files) plus ~1%.
+#
+# This is NOT a precedent for growth-on-demand. Unlike SKILL_BODY_MAX_BYTES
+# below, this number is policy rather than harness behaviour, so it *can* move —
+# which is exactly why it needs a recorded reason each time. The default remains
+# "trade prose out first"; raising it again takes the same explicit decision, and
+# RULES_TOTAL_TARGET_BYTES deliberately stays at the old 62,500 so the report
+# keeps showing the gap as work to reclaim.
+RULES_TOTAL_MAX_BYTES = 65_200
 LISTING_TOTAL_MAX_CHARS = 11_500
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------
@@ -91,8 +106,11 @@ SKILL_BODY_MAX_BYTES = 17_500
 # --- Aspirational targets (reported, never enforced here) --------------------
 # PLAN.md Phase 1 closed with the original 30K rules target retired: after two
 # trim passes the surviving prose is imperative-dense, and rule demotion was
-# investigated and rejected (see PLAN.md Phase 1 close-out). The rules target
-# now equals the ratchet — hold the line; the listing target stands.
+# investigated and rejected (see PLAN.md Phase 1 close-out). The rules target is
+# held at the pre-61-gate-prompts ratchet, BELOW the current ceiling on purpose:
+# the gap is the standing invitation to reclaim those bytes (relocating rationale
+# into templates/reference/*, or demoting a rule to conditional hook delivery the
+# way polyrepo was). The listing target stands.
 RULES_TOTAL_TARGET_BYTES = 62_500
 LISTING_TOTAL_TARGET_CHARS = 10_000
 

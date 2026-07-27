@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the always-on `rules/*.md` ratchet ceiling is raised once, 62,500 →
+  65,200 bytes (`check_context_budget.py`). The ratchet had drifted to **32 bytes**
+  of headroom, so rule `61-gate-prompts` could only be added by compressing
+  unrelated gate rules — and that trade deleted ~1 KB of rationale prose (rules 00,
+  30, 31, 36, 45, 50, 60, 62, 95, 99) that existed nowhere else in the repo. Those
+  compressions are **reverted in full**; the ceiling is re-armed at the measured
+  total plus ~1%. Unlike `SKILL_BODY_MAX_BYTES`, which is derived from Claude Code's
+  compaction re-attach behaviour and cannot move, this number is policy — so the
+  raise carries its reason in the gate script, and the default answer to "it doesn't
+  fit" remains *trade prose out first* (relocate rationale to
+  `templates/reference/*`, or deliver a scoped rule via a hook as polyrepo does).
+  `RULES_TOTAL_TARGET_BYTES` deliberately stays at 62,500, below the ceiling, so the
+  report keeps showing the gap as work to reclaim.
+
 - **Added:** human authority gates are now **answerable in-session** instead of
   requiring an out-of-band field edit. A gate has always required the deciding
   *human*, never a particular channel — but there was no way to answer one from

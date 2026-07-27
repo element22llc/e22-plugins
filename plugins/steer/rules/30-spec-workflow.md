@@ -46,8 +46,8 @@ bootstrap now.
 
 **Solo greenfield can run on trunk** — when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
-relaxes; scaffold, spine, tests and Definition of Done all hold. Canonical in
-Commit autonomy.
+relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
+and graduation are canonical in Commit autonomy.
 
 **Brownfield** (change to an existing product): triage → size it (Change-size
 model) → medium+ work writes/updates the spec or ADR first → implement →

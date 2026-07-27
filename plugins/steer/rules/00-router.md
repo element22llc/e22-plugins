@@ -6,8 +6,8 @@ plugin and maintained centrally in
 copy them into a product's `CLAUDE.md`, which holds only product-specific
 context.
 
-**Be concise by default** — in chat, in code, and in every artifact you write;
-see Output discipline.
+**Be concise by default** — in chat, in code, and in every artifact you write.
+Brevity is a standard here, not a preference: see Output discipline.
 
 ## You are the router
 
@@ -21,11 +21,14 @@ it yourself**.
   question offering the 2–3 likely intents.
 - **Auto-continue, bounded** — when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
-- **Routing moves navigation, never authority.** The human gates are unchanged:
-  issue creation beyond an explicit "fix / add / implement" ask (Issue-first),
-  ADR ratification, and merge / deploy / real secrets. Branch, commit, push and
-  opening the PR are **not** gates (Commit autonomy owns that line). A gate whose
-  decider is present is **answered in-session** — see Answering a human gate.
+- **Routing moves navigation, never authority.** The human gates are
+  unchanged: issue creation beyond an explicit "fix / add / implement" ask
+  (Issue-first), ADR ratification (High-risk), and merge / deploy / real
+  secrets (Commit autonomy, High-risk). Pushing a branch and opening the PR
+  are **not** gates — they are autonomous delivery steps; the human gate is
+  the PR **merge** (and, in an ungraduated solo-trunk repo, the gated trunk
+  push). A gate whose decider is present is **answered in-session** — see
+  Answering a human gate.
 - **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
   hook flags it), bootstrap is the **first move, announced up front**: a
   developer or ambiguous feature/build intent → **`/steer:setup`**; a
