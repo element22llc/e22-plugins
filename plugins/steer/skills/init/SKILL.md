@@ -152,11 +152,18 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    ambiguity to `vision.md` → `## Open questions` rather than guessing.
    Confirm or override the stack defaults (the always-on Stack rules). A
    PO-driven idea→app flow runs through `/steer:build` instead.
+   - **In a polyrepo member** (step 2 resolved the role): `vision.md`,
+     `users.md`, `glossary.md` and `/spec/tracker.md` are the **workspace's** —
+     step 2 skipped creating them, so do not interview for them and never write
+     them locally. Fill only the README placeholders and confirm the stack
+     defaults; product-level ambiguity goes to the workspace's `vision.md`.
    - **If the tracker is GitHub Issues**, run `/steer:issues bootstrap-labels` to
      create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
      a form label that doesn't exist), then `/steer:tracker-sync bootstrap-fields`
      to verify the native **Priority/Effort/date** issue fields are available (it
      reports a capability gap or option mismatch; it never fabricates org config).
+     **In a member, skip both** — the tracker is declared once in the workspace,
+     which bootstraps it against the tracker repo.
 4. **Record the initial stack as the first ADR.** The stack choice is usually
    the first decision worth an ADR — run `/steer:adr`. **Any deviation from the
    defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or

@@ -150,8 +150,9 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    the build is right and the tracker spec is stale). Note which path needs **PO**
    approval (user-facing behavior changed) vs. **dev** approval
    (internal/architectural).
-3. **Open `spec-drift`-labelled issues** for findings that need a human decision,
-   so drift becomes a tracked item rather than a quiet failure. Scope these to
+3. **Nominate `spec-drift`-labelled issues** for findings that need a human
+   decision, so drift becomes a tracked item rather than a quiet failure — this
+   mode nominates, `/steer:issues publish-drift` files. Scope these to
    *actual* drift — Diverged, Done-but-Missing, and genuine conflicts — **not**
    expected-Missing backlog (those are unbuilt roadmap, not a decision to track).
    Each issue uses the **decision-checklist** body

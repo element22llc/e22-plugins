@@ -7,6 +7,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:init`'s member carve-out stopped short of the step that
+  actually populates the spine, so init still contradicted **itself**. The earlier
+  pass covered step 2 (`SCAFFOLD.md`, which skips *creating* the product-level
+  files) and step 7's `HISTORY.md` seed, but **step 3's interview** told every run
+  — member included — to populate `vision.md`, `users.md`, `glossary.md` and
+  `/spec/tracker.md`, and to bootstrap the GitHub label/field taxonomy off that
+  local tracker. A member following the steps in order skipped the files at step 2
+  and then recreated them at step 3: the split-brain spine the carve-out exists to
+  prevent. Step 3 now branches on the role resolved at step 2 — README placeholders
+  and stack defaults only, tracker bootstrap deferred to the workspace.
+- **Fixed:** `ARTIFACTS.md` — the single source of truth every rendering skill
+  defers to for Artifact mechanics — asserted that `/steer:audit`'s frontmatter
+  **disallows `Write`** and therefore "cannot publish during the tool-restricted
+  run", directing the render to a **post-run step** "once the run's tool
+  restriction has cleared". Audit *grants* `Write`, and its frontmatter comment
+  refutes exactly that theory: tool grants apply for the whole invocation, so
+  there is no post-run window and dropping `Write` makes the instructed render
+  unreachable rather than deferred. A session trusting the reference never rendered
+  the audit dashboard at all. `/steer:audit` and `/steer:status` now sit in the
+  "read-only skills keep `Write`" bullet, and the false deferral paragraph is
+  replaced by the stated invariant. `/steer:status` was also missing from the
+  file's skill roster and its "where each skill uses this" table; both now list it.
+- **Fixed:** `/steer:audit`'s non-mutating contract was still contradicted by its
+  own **mode summaries**, the two surfaces the previous two passes missed — the
+  mode picker in `audit/SKILL.md` listed code mode's verbs as "**file** findings in
+  the tracker", and `modes/code.md`'s stop-condition included "(with a yes)
+  **opened issues**", 68 lines below a description that says "files nothing" and
+  with no issue-create verb granted. `modes/spec.md`'s step 3 imperative still read
+  "**Open** `spec-drift`-labelled issues" while its own body routed filing to
+  `/steer:issues publish-drift`. All three now name the separate
+  `/steer:issues publish-audit` / `publish-drift` step; the procedures themselves
+  were already correct.
 - **Fixed:** `/steer:init` was the one bootstrap door with **no polyrepo-member
   path**, on the route the plugin itself prescribes. `init/SCAFFOLD.md` tells a
   workspace session to run `/steer:init` in each member and install
