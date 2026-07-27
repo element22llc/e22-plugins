@@ -288,6 +288,14 @@ It prints a per-rule inject/skip table with the scope token that decided each
 one, the bytes reclaimed by the skips, and the payload total. Use it after
 adding or re-scoping a rule to confirm the marker fires where you expect.
 
+**Never copy an absolute byte/char total into prose** — not into a rule, a
+skill, `CHANGELOG.md`, or the docs site. Any correctness fix to a rule or skill
+moves these numbers, no gate compares prose against the live measurement, and
+every figure quoted this way has gone stale within the same release cycle. Cite
+the command instead (`uv run python scripts/check_context_budget.py --report`,
+or `mise run rules:preview`), which cannot drift. Quoting a *ceiling* is fine —
+those change only when deliberately ratcheted.
+
 The preview runs the **real** `hooks/inject-standards.sh` for the bundle and the
 **real** `lib/scope.sh` predicates for the table, so it cannot drift from live
 behaviour. It is an authoring aid, not a gate — deliberately not in `check`/`ci`.

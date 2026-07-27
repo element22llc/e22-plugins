@@ -230,7 +230,7 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 - **Action:** read-then-propose an **in-file token substitution** over the live
   instruction surfaces only (`CLAUDE.md`, `README.md`,
   `.github/pull_request_template.md`) — never append-only/provenance prose
-  (`spec/HISTORY.md`, `spec/reports/*`, ADRs, feature `intent.md` provenance), where a
+  (`spec/HISTORY.md`, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`, ADRs, feature `intent.md` provenance), where a
   historical mention is a legitimate record. Show the diff, then replace **only** these
   exact pairs. Old-token cells are shown **without** the leading `/` so this ledger file
   itself passes the phantom-skill lint guard; in a managed repo they carry the leading

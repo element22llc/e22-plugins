@@ -178,6 +178,10 @@ For a new product, the starting point can be *anything* — a plain idea or
 conversation, a written brief, screenshots, or a Claude Design export. Do
 **not** assume a design artifact exists. Guide the dev/PO to a real spec:
 
+Steps 1–2 are **product-level, so they run in the workspace repo**. In a
+polyrepo member (`spec/PRODUCT.md` present) skip them — `vision.md`, `users.md`,
+`glossary.md` and `/spec/features/` live once, in the workspace.
+
 1. **Interview** to fill `/spec/vision.md` (what it is, why it exists, what
    success looks like, what it is NOT), `/spec/users.md` (who it serves, their
    job-to-be-done), and `/spec/glossary.md` (shared vocabulary). Ask, don't

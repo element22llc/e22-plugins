@@ -33,9 +33,9 @@ CONTRACT (mirrors template-reconcile.sh)
   `permissions` block has three sibling lists evaluated by precedence
   deny > ask > allow, so the SAME pattern string in two tiers is a
   contradiction, never a meaningful choice: the lower-precedence copy is dead
-  weight (e.g. `Bash(git push)` in both `allow` and `ask` always behaves as
+  weight (e.g. `Bash(gh pr merge)` in both `allow` and `ask` always behaves as
   `ask`). A plain array union manufactures exactly that contradiction — the
-  template carries `git push` in `ask`, a repo that locally allow-listed it
+  template carries `gh pr merge` in `ask`, a repo that locally allow-listed it
   ends up with it in both. So after merging, each permission pattern is kept
   only in its most-restrictive tier and dropped from the others. This both
   prevents a sync from creating the contradiction and heals one already on

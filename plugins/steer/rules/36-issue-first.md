@@ -27,8 +27,8 @@ create the issue.
   (related/blocking), not silent scope creep in the current one.
 - The scaffold pre-authorizes `gh issue create` / `gh issue edit` under
   `allow`; the MCP write tools (`mcp__github__issue_write` /
-  `sub_issue_write`) sit under `ask`, but `/steer:tracker-sync` and
-  `/steer:report` re-grant them via their own `allowed-tools`. A create that
+  `sub_issue_write`) sit under `ask`; `/steer:tracker-sync` re-grants both,
+  `/steer:report` only `issue_write`, via `allowed-tools`. A create that
   is *still* blocked is a **host-permission gate, not a missing issue** —
   don't loop retrying; confirm with the user, or have them run
   `!gh issue create …` under their own identity, then continue. (Full

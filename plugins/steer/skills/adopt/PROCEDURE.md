@@ -75,7 +75,13 @@ Phases 5–6.
 
 ## Phase 4 — Reverse-engineer the product spec
 
-Interview the dev (or PO) to fill `/spec/vision.md`, `/spec/users.md`,
+**In a polyrepo member, skip this phase entirely** (the topology resolved before
+Phase 1 — `spec/PRODUCT.md` present, or the workspace session said so). The
+product-level spine lives once, in the workspace; reverse-engineering one here is
+the split-brain the topology exists to prevent. Take what the code implies about
+vision/users/glossary to the **workspace** session instead.
+
+Otherwise, interview the dev (or PO) to fill `/spec/vision.md`, `/spec/users.md`,
 `/spec/glossary.md` — **ask, don't invent**. Seed each from what the code
 implies, then confirm with a human; unresolved product-level questions go to
 `vision.md` → `## Open questions`, not into guessed prose.
@@ -203,7 +209,18 @@ both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmles
 if no one uses Copilot), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
 leading dot — rename per the MANIFEST map). Also instantiate the living-docs
-artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`: `/spec/tracker.md` (ask
+artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`.
+
+**In a polyrepo member, install `spec/PRODUCT.md` (from
+`${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and skip every product-level
+artifact in this list** — `/spec/tracker.md` (and with it both tracker
+bootstraps below), `/spec/app/README.md`, `/spec/HISTORY.md`. Those live once, in
+the workspace; record the adoption in the workspace's `HISTORY.md`, else the PR
+description. The member still gets the rest: `spec/decisions/`, the design and
+sources homes, `ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
+non-`spec/` scaffold above.
+
+Otherwise: `/spec/tracker.md` (ask
 which tracker the team uses — if GitHub Issues, run
 `/steer:issues bootstrap-labels` to create the
 `source:*`/`needs:*`/`risk:*` taxonomy, then `/steer:tracker-sync bootstrap-fields`

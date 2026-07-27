@@ -124,8 +124,9 @@ it maps everyday intents to the skill that handles them.
   solo-trunk repo that has grown a deploy workflow, an `infra/` tree, or a
   `prod`/`production` branch, a `git push` surfaces as a `PreToolUse` **ask**
   (never a hard deny) pointing at `/steer:protect`; pr-flow repos are untouched.
-- **Commits, pushes, and opens the PR autonomously** on a `feat/*` / `fix/*`
-  branch, then **stops before merging** — everything up to the merge is
+- **Commits, pushes, and opens the PR autonomously** on a non-`main` branch
+  (`/steer:work` defaults to `issue/<number>-<slug>`; otherwise the repo's
+  convention, else `feat/*` / `fix/*`), then **stops before merging** — everything up to the merge is
   autonomous; the merge review is the backstop, enforced by branch protection.
 
 See the [Hooks reference](../reference/hooks.md) and

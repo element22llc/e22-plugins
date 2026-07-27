@@ -7,8 +7,8 @@
 
 ```mermaid
 flowchart TD
-    START[Coherent unit of work done] --> BRANCH{On a feat/fix branch?}
-    BRANCH -->|No, on main| MK[Create feat/* or fix/* branch first]
+    START[Coherent unit of work done] --> BRANCH{On a non-main branch?}
+    BRANCH -->|No, on main| MK[Create a branch first<br/>issue/* from work, else feat/* or fix/*]
     BRANCH -->|Yes| COMMIT
     MK --> COMMIT[Commit autonomously<br/>small, conventional message]
     COMMIT --> DONE{Definition of Done holds?}
@@ -31,8 +31,9 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
 
 ## What is autonomous
 
-- **Branching** off `main` onto `feat/*` / `fix/*` — never committing to `main`
-  directly.
+- **Branching** off `main` onto the repo's branch convention, else `feat/*` /
+  `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`) — never committing
+  to `main` directly.
 - **Committing** whenever a coherent unit of work is done (tests pass, lint is
   clean, it builds). Do not pause to ask "should I commit?". Commit subjects
   follow [Conventional Commits](https://www.conventionalcommits.org/)
@@ -46,7 +47,7 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
   announced, never asked (rule 00's heads-up pattern). Behind branch protection
   an open PR is inert until a human merges it, so gating its creation protected
   nothing; the delivery skills (`work`, `init`, `adopt`, `intake`, `sync`,
-  `build`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
+  `build`, `loop`) pre-approve `git push` / `gh pr create` in their `allowed-tools`
   (`work` additionally grants `gh pr edit`), and the scaffold allowlist carries
   the same grants — `gh pr edit` included. In
   solo-trunk, the equivalent autonomous delivery is the trunk commit + push
@@ -80,9 +81,9 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     default-permission session. The MCP write tools (`mcp__github__issue_write` /
     `sub_issue_write`) instead sit under `ask` — a bare/ad-hoc MCP issue write is
     an allowlist escape a consumer's security review flags — but the
-    `/steer:tracker-sync` and `/steer:report` skills re-grant them in their own
-    `allowed-tools`, so the governed find-or-create path stays silent within those
-    skills. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
+    `/steer:tracker-sync` skill re-grants both in its own `allowed-tools` (and
+    `/steer:report` re-grants `issue_write` alone), so the governed
+    find-or-create path stays silent within those skills. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
     delivery — the merge is the gate); `gh pr merge` stays under `ask` and
     force-pushes under `deny`. Where a host still blocks the create, it is a
     *host-permission gate, not a missing issue* — confirm with the user or run
@@ -132,7 +133,7 @@ view`, `gh label list`, `mise tasks`, and the named verify tasks `mise run check
 settings.json` pre-authorizes them all under `permissions.allow` — prompting on
 inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
-`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`) carry
+`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`, `/steer:status`) carry
 read-only `allowed-tools` grants in their frontmatter, so inspection stays silent
 even in a repo that predates the scaffold allowlist. The setup and build flows
 (`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
@@ -239,11 +240,9 @@ needs. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
 `doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
 `status` and `report` keep it for a single temp-path write held in prose.
 
-`Write` splits that tier rather than defining it. Most Tier 1 skills disallow it
-outright (`next`, `standards`, `doctor`, `reference`). The four that render a
-**derived artifact** — `audit`, `status`, `help`, `explain` — keep `Write`
-granted and bound *in prose* instead, to a temp-dir Artifact page or an
-explicitly confirmed report file; none of them may touch existing repo content,
-because `Edit` is still disallowed. `explain` additionally disallows `Bash`. See the
+Where `Write` is kept it is bound *in prose* instead — to a temp-dir Artifact
+page, the scrubbed issue body `report` builds, or an explicitly confirmed report
+file. None of those skills may touch existing repo content, because `Edit` is
+still disallowed. `explain` additionally disallows `Bash`. See the
 [Skills reference](../reference/skills.md) for the skill inventory and
 [Configuration](../reference/configuration.md) for how tools are constrained.

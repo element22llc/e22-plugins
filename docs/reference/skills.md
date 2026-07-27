@@ -52,6 +52,15 @@ specialized skills below as needed, so you rarely reach past this set.
 | `/steer:standards` | Load the always-on operating manual on demand — reads every `rules/*.md` in lexical order (no hand-maintained rule list to drift), for surfaces where the SessionStart hook doesn't fire. |
 | `/steer:report` | File a bug about the **steer plugin itself** upstream in `element22llc/e22-plugins` — gathers the defect (a recorded hook fault, a contradictory skill/rule, or a missing/broken template/script), scrubs it of secrets/paths/product-code, deduplicates by a stable fingerprint, and auto-files it via `gh` — no confirmation, with the scrub redacting or omitting anything unredactable (paste-URL fallback when offline or unauthenticated). For plugin defects, not product bugs. |
 
+!!! note "`standards` and `reference` are a pair"
+    Neither appears in the router's `Intent → skill` table — they are the two
+    user-invocable skills rule `00-router` surfaces only in its below-table
+    prose, which is why `/steer:help` presents them together. They are split
+    across the two tables here by *how you reach them*: `/steer:standards` is
+    invoked directly on surfaces where the SessionStart hook doesn't fire, while
+    `/steer:reference` is usually routed to (by `/steer:standards` or the model)
+    for one full-detail topic.
+
 ## Reached through a front door
 
 Directly invocable, but a front door auto-routes to each, so you rarely call one
@@ -60,7 +69,7 @@ by name. Each is reached through the front door noted.
 | Skill | Reached via | Purpose |
 | --- | --- | --- |
 | `/steer:init` | `/steer:setup` | One-time setup for a new repo — bootstrap the `/spec` spine + scaffold, or resolve legacy template placeholders. Offers solo **trunk mode** when one person is both PO and dev with no MVP yet (commit directly to `main`, no `feat/*`/PR ceremony, declared in the product `CLAUDE.md` `## Delivery mode`). |
-| `/steer:adopt` | `/steer:setup` | Reverse-engineer a `/spec` spine from an existing app's code and add the scaffold. See [Adopt](../workflows/adopt.md). |
+| `/steer:adopt` | `/steer:setup` | Reverse-engineer a `/spec` spine from an existing app's code and add the scaffold, plus a root `DESIGN.md` from the app's real visual identity and a `spec/PRODUCTIONIZATION.md` triage (Keep / Refactor / Rewrite / Reject per area). See [Adopt](../workflows/adopt.md). |
 | `/steer:sync` | `/steer:setup` | Bring a managed repo up to date with the current plugin — apply migrations, reconcile spine + scaffold, repair missing/mis-wired capability-critical scaffold (plugin enablement, in-CI loading, version-pin enforcement, drift gate, branch-protection, delivery-mode declaration), auto-detect & repair stale/invalid `/steer:` skill invocations in the repo's live instruction surfaces (CLAUDE.md, README, PR template), re-stamp `/spec/.version`, land a PR. `--check` runs a read-only capability + drift report. |
 | `/steer:doctor` | `/steer:init`, `/steer:build` | Detect and install the local prerequisites a repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs. Also flags a runtime **shadowed** by a global version manager (nvm/asdf/volta/fnm) or a system copy, so bare `pnpm`/`node` can't silently run an un-pinned version. |
 | `/steer:tidy` | `/steer:audit` | Sweep loose files out of the repo root into their correct home (`/spec/reference`, `/spec/design`). |

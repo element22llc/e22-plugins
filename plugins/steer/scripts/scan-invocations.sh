@@ -28,7 +28,7 @@
 #
 # WHAT IT SCANS (live instruction surfaces ONLY — the false-positive guard)
 #   CLAUDE.md, README.md, .github/pull_request_template.md. It deliberately does NOT
-#   scan append-only / historical / provenance prose (spec/HISTORY.md, spec/reports/*,
+#   scan append-only / historical / provenance prose (spec/HISTORY.md, spec/AUDIT-REPORT.md,
 #   spec/decisions/* ADRs, spec/sources/*, spec/reference/*, feature intent.md
 #   provenance lines) — a past `/e22-adopt` there is a legitimate record of what was
 #   run, not live guidance, and must never be rewritten.

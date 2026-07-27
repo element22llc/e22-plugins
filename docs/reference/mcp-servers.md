@@ -96,7 +96,8 @@ its own instruction — *"when you pick or change a piece, verify the current st
 version in-session via the bundled `context7` MCP server — never from
 training-data memory."* Reach for it whenever a version, API surface, or
 configuration question would otherwise be answered from training data. (For
-release-support windows and EOL dates, `10-stack` points at the registry,
+release-support windows and EOL dates, `CONVENTIONS.md` (via
+`/steer:reference conventions`) points at the registry,
 [endoflife.date](https://endoflife.date), or the vendor's own site — those are not
 library docs and context7 does not carry them.)
 

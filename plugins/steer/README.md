@@ -26,10 +26,13 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   skill cannot mutate an existing repo file, branch, or worktree. `Write` splits
   the tier. `standards`, `next`, `doctor` and `reference` disallow it too. The
   five temp-writing skills — `audit`, `explain`, `help`, `status`, `report` —
-  deliberately **keep** `Write`, because a single temp-dir path is their one
-  permitted write: the artifact HTML for the four render skills (the Markdown
-  fallback is printed inline, never saved), the scrubbed issue body for `report`.
-  That temp-only limit is held **in prose**, not by frontmatter. `explain` additionally disallows
+  deliberately **keep** `Write`: the artifact HTML for the four render skills
+  (the Markdown fallback is printed inline, never saved), the scrubbed issue
+  body for `report`. For `explain`, `help`, `status` and `report` a single
+  temp-dir path is the one permitted write; `audit` is the exception — besides
+  its temp artifact and triage export it may write `/spec/AUDIT-REPORT.md` and
+  `/spec/DRIFT-REPORT.md` under the repo tree, on confirmation (see its own
+  `Write` contract). Those limits are held **in prose**, not by frontmatter. `explain` additionally disallows
   `Bash` (it reads only local files, so it runs no shell); `status` keeps `Bash`,
   because it reads the tracker through `tracker-sync` (the `gh` read fallback
   needs shell), but writes nothing back. This does **not** make the repo

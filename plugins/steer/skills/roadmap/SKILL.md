@@ -4,9 +4,9 @@ description: "Generate a release timeline for the /spec spine as a GitHub Projec
 when_to_use: >-
   Use for a roadmap, release plan, or Projects v2 timeline — laying out where
   the product is going or turning target features into milestone-grouped issues.
-argument-hint: "[from-features | from-gap | sync]"
+argument-hint: "[<no argument = read-only preview> | from-features | from-gap | sync]"
 ---
-<!-- steer:modes from-features,from-gap,sync -->
+<!-- steer:modes default,from-features,from-gap,sync -->
 
 # Generate a release-milestone roadmap for the /spec spine
 
