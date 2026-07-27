@@ -24,6 +24,16 @@ flowchart TD
 New ADRs default to **Proposed** — the fixture suite asserts this. An ADR becomes
 **Accepted** only on an explicit human decision.
 
+That decision is **answerable in-session**. `/steer:adr accept <n>` is the single
+writer of `Proposed → Accepted`: it offers the three-option gate prompt
+(**Approve · Reject · Decide later**) carrying the ADR's rejected alternatives and
+negative consequences, then stamps `> Ratified by:` / `> Ratified at:` /
+`> Ratified via:` (`in-session` or `offline-review`) and appends one
+`/spec/HISTORY.md` entry. `Decide later` changes nothing, so an undecided ADR is
+never worse off. Self-ratification is legitimate — in a solo repo the author and
+decider are the same person, and the channel stamp is what keeps it auditable.
+See rule `61-gate-prompts` and `/steer:reference gates`.
+
 !!! warning "No ADR from inference"
     Reverse-engineering skills (`/steer:adopt`) must **never infer a ratified ADR
     from code**. An ADR records a decision a human made; the as-built spine

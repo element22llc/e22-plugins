@@ -7,6 +7,76 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** three **shipped** scaffold comments still advertised the retired
+  `markitdown` MCP server as live — `templates/scaffold/mise.toml` twice (once as
+  the justification for the always-installed Node/Python baseline, once claiming
+  "the same converter ships as an MCP server … in the plugin's `.mcp.json`",
+  directly above the `convert:doc` task that replaced it) and
+  `profiles/workspace/mise.toml` once, in a file this release *adds*. Consumer
+  repos received a bundle that contradicted itself, since `scaffold/README.md` and
+  `/steer:intake` both describe the retirement correctly. Each now cites the real
+  on-demand task. No gate covers this: `check_copilot_mcp.py` compares server
+  sets, not prose.
+- **Fixed:** `/steer:reference`'s two newest topics were missing from the
+  hand-maintained topic enumerations, so `polyrepo` was undiscoverable from the
+  only always-on surface. `rules/00-router.md` gains `polyrepo` (it already had
+  `gates`); `skills/standards/SKILL.md` — the Chat-tab/web fallback where no hook
+  injects, so exactly the readers with no other path — and the bundled
+  `templates/scaffold/CLAUDE.md`, which **ships into every consumer repo**, gain
+  both.
+- **Fixed:** `/steer:tidy` could propose relocating the root `ARCHITECTURE.md`
+  that rules `20-layout` and `32-living-docs` require there. `22-housekeeping`
+  gained the allowlist entry this cycle, but `HOUSEKEEPING.md` — which
+  `skills/tidy` names as its authoritative sweep procedure — still listed root
+  docs as `CLAUDE.md, README.md, DESIGN.md`, so the file read as a stray.
+- **Fixed:** three skills still advertised feature-intent approval as
+  "(no command)" — `/steer:build`, `/steer:issues` and `/steer:adopt` — after rule
+  `61-gate-prompts` made that gate answerable in-session. All three now route to
+  `/steer:spec approve`, which offers the prompt. (`/steer:adr` and `/steer:spec`
+  already scoped "no command" correctly, to the wrong-decider case.)
+- **Fixed:** `/steer:init` authored the stack ADR as `Accepted` without the
+  `> Ratified by:` / `> Ratified at:` / `> Ratified via:` stamp that the template
+  carries and `/steer:next` asserts every `Accepted` ADR has — so the one ADR
+  bootstrap creates was the one ADR that looked incomplete. It now stamps them
+  (`in-session`, the dev as ratifier). The single-writer property is unchanged:
+  init *creates* at `Accepted`, it does not transition.
+- **Fixed:** `/steer:tracker-sync` advertised an `issue <op>` argument grammar
+  with **zero** call sites — every one of ~60 uses the bare op form
+  (`create`, `close`, `field-set`, …), and the `issue` mode existed only in the
+  hint and the `steer:modes` marker, which agree with each other and with nothing
+  else. Both now describe reality, so a caller can't be led to write
+  `/steer:tracker-sync issue close #4`.
+- **Fixed:** `/steer:doctor` was told to "commit it" (the refreshed `mise.lock`)
+  by one step and "never edit repo files or commit from this skill" by its own
+  guardrails. It now reports the lockfile as needing a commit and leaves the
+  commit to the caller.
+- **Fixed:** the `v3.23.0` markitdown entry in `MIGRATIONS.md` sat between
+  `v3.13.0` and `v3.8.0`, breaking the ledger's declared newest-first order — a
+  reader walking it newest-first could stop before reaching it. Moved next to the
+  other `v3.23.0` entry; content unchanged.
+- **Fixed:** the two Copilot-ported gates could fail **invisibly**.
+  `copilot-hooks.json` builds each script path from `${CLAUDE_PLUGIN_ROOT}`, so if
+  the Copilot CLI does not export that Claude-named variable the path collapses to
+  `/hooks/<script>` and `sh` fails before the script runs — which the fail-open
+  `|| true` then turned into a clean exit 0 with no `permissionDecision`. These
+  two are the *only* enforcement Copilot has, and nothing would have said they
+  were absent (an in-script fallback cannot help; the script is never reached).
+  The generated command now guards on the resolved path and reports
+  `CLAUDE_PLUGIN_ROOT unresolved — <script> gate skipped` on stderr. Still
+  fail-open — a hook must never break a session — but diagnosable rather than
+  silent. Tested with the variable unset.
+- **Added:** the generated `.github/copilot-instructions.md` now opens with a
+  **surface invocation note**. The rules are carried verbatim, so every skill
+  cross-reference reads `/steer:<skill>`; in Copilot for VS Code the invocable
+  form is `/steer-<skill>`, so a reader following the router table typed a command
+  that does not exist. `gen_copilot_prompts.py` rewrites refs for the *prompt*
+  artifacts, but this file is read by **both** Copilot surfaces and the CLI loads
+  skills from the plugin manifest, so a blanket rewrite would be wrong for one of
+  them — the mapping is stated once, up front, instead. The
+  `docs/concepts/copilot-support.md` limitations list also now records that
+  polyrepo topology is Claude-only (no SessionStart equivalent, and deliberately
+  no always-on rule for the generator to carry) and that the ported gates are
+  *ported, not proven*.
 - **Fixed:** `/steer:work`'s routing text was **silently truncated by YAML** on
   every surface. `when_to_use` was a plain scalar containing `("work on #123"`,
   and in an unquoted scalar ` #` opens a comment — so the value ended at 75 of

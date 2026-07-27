@@ -196,7 +196,7 @@ language.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| Intent not yet PO-approved | Human decision required | PO reviews & approves the drafted intent (no command) |
+| Intent not yet PO-approved | Human decision required | PO reviews & approves the drafted intent — offer the gate prompt, then `/steer:spec approve` |
 | Build incomplete / failing locally | Blocking now | Continue the build |
 | Built, not demo-validated | Human decision required | PO runs the demo and confirms it does what they meant (no command) |
 | Demo-validated, PR flow, PR not opened | Blocking now (next transition) | Push the branch and open the v0 PR for dev review |

@@ -31,7 +31,7 @@ install paths; keep it in sync when adding scaffold files.
 plugins/steer/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
-├── .mcp.json                       # plugin MCP servers (github, markitdown, context7)
+├── .mcp.json                       # plugin MCP servers (github, context7)
 ├── agents/                         # subagents (steer-reviewer — driven by /steer:audit &
 │                                   #   /steer:work --reviewed)
 ├── hooks/                          # SessionStart hook → injects rules/*.md; PreToolUse/Stop

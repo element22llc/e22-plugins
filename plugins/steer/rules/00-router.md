@@ -81,5 +81,5 @@ when prerequisites are missing; `/steer:audit` → `/steer:tidy`;
 
 **Full reference prose** loads on demand via `/steer:reference [conventions |
 traceability | design-sources | context-hygiene | architecture-diagrams |
-artifacts | gates]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
+artifacts | gates | polyrepo]`. On the **Claude Desktop Chat tab or claude.ai web chat** (no
 auto-injection), run `/steer:standards` at session start to load these rules.

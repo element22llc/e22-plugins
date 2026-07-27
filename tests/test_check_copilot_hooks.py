@@ -10,6 +10,7 @@ each referenced script exists on disk. The real plugin must be in sync.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import check_copilot_hooks
@@ -63,8 +64,13 @@ def test_render_shapes_copilot_manifest(tmp_path: Path):
     assert pins["matcher"] == "Write|Edit"  # no override
     assert bash["matcher"] == "Bash"  # override applied
     for h in hooks:
-        assert h["bash"].startswith("STEER_HOOK_TARGET=copilot ")
-        assert h["bash"].endswith("|| true")
+        # Guarded on the resolved script path (an unset CLAUDE_PLUGIN_ROOT must
+        # report the skip, not silently no-op), still carrying the target flag and
+        # still fail-open on the invocation itself.
+        assert h["bash"].startswith('if [ -f "${CLAUDE_PLUGIN_ROOT}/hooks/')
+        assert "STEER_HOOK_TARGET=copilot " in h["bash"]
+        assert "|| true" in h["bash"]
+        assert h["bash"].endswith("fi")
         assert h["timeoutSec"] == 10
 
 
@@ -103,3 +109,47 @@ def test_real_plugin_in_sync(monkeypatch):
             check_copilot_hooks, attr, REPO_ROOT / getattr(check_copilot_hooks, attr)
         )
     assert check_copilot_hooks.main() == 0
+
+
+def test_ported_command_guards_unresolved_plugin_root():
+    """Every ported command must guard on the resolved script path.
+
+    The path is built from ``${CLAUDE_PLUGIN_ROOT}``. If the Copilot CLI does not
+    export that Claude-named variable, the path collapses to ``/hooks/<script>``
+    and ``sh`` fails before the script runs — which a bare ``|| true`` turns into
+    a clean exit 0 with no permissionDecision. These two hooks are the only
+    enforcement Copilot has, so that failure must be visible, not silent.
+    """
+    from conftest import REPO_ROOT
+
+    doc = json.loads(gen_copilot_hooks.render(REPO_ROOT / gen_copilot_hooks.HOOKS_JSON))
+    hooks = doc["hooks"]["PreToolUse"]
+    assert len(hooks) == len(gen_copilot_hooks.COPILOT_HOOKS)
+    for hook in hooks:
+        bash = hook["bash"]
+        assert '[ -f "${CLAUDE_PLUGIN_ROOT}/hooks/' in bash, bash
+        assert ">&2" in bash, f"skip must be reported on stderr: {bash}"
+        assert "|| true" in bash, f"must stay fail-open: {bash}"
+        assert "STEER_HOOK_TARGET=copilot" in bash, bash
+
+
+def test_ported_command_is_fail_open_when_root_unset(tmp_path: Path):
+    """Run the real generated command with CLAUDE_PLUGIN_ROOT unset: it must exit
+    0 (never break a session) *and* say on stderr that the gate was skipped."""
+    import subprocess
+
+    from conftest import REPO_ROOT
+
+    doc = json.loads(gen_copilot_hooks.render(REPO_ROOT / gen_copilot_hooks.HOOKS_JSON))
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PLUGIN_ROOT"}
+    for hook in doc["hooks"]["PreToolUse"]:
+        proc = subprocess.run(
+            ["sh", "-c", hook["bash"]],
+            input='{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}',
+            capture_output=True,
+            text=True,
+            env=env,
+            cwd=tmp_path,
+        )
+        assert proc.returncode == 0, proc.stderr
+        assert "gate skipped" in proc.stderr, proc.stderr

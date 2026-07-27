@@ -17,8 +17,12 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    templates, and active fixtures is a member of ``enums.registry``; ENUMS.md
    agrees with the registry; the deprecated "Required before production" category
    appears nowhere.
-6. MANIFEST.md install-map sources exist; migration-ledger targets exist; and
-   every file under scaffold/ is declared in the map (reverse coverage).
+6. MANIFEST.md install-map sources exist, and every file under scaffold/ is
+   declared in the map (reverse coverage). NOTE: migration-ledger targets are
+   **not** machine-checked — MIGRATIONS.md entries are prose (a rename's source
+   must be absent and its destination present, expressed as `git mv` plus greps),
+   which no reliable parser extracts; they are verified in review instead. Do not
+   read this check as covering them.
 7. README skill inventory matches the skills on disk.
 8. Cross-field invariants (registry internal consistency; approval-evidence
    fields present in the intent template).
@@ -420,7 +424,7 @@ def _next_action_cells(text: str) -> list[str]:
     return cells
 
 
-# --- check 6: MANIFEST sources / migration targets exist ---
+# --- check 6: MANIFEST sources exist (+ reverse coverage) ---
 
 
 def check_manifest(errors: list[str]) -> None:

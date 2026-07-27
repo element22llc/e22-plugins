@@ -55,9 +55,9 @@ auto = true # runs `uv sync` when uv.lock changes (no-op without it)
 # tools you prune to match the product.
 
 # --- Agent-runtime baseline: ALWAYS installed, never delete — even in a
-# single-language product. AI agent tooling and MCP servers run packages on
-# demand through these runtimes: `npx <pkg>` (Node) and `uvx <pkg>` (Python) —
-# e.g. the steer plugin's markitdown MCP server runs via `uvx markitdown-mcp`.
+# single-language product. AI agent tooling runs packages on demand through these
+# runtimes: `npx <pkg>` (Node) and `uvx <pkg>` (Python) — e.g. the `convert:doc`
+# task below runs `uvx markitdown`, and `diagrams:render` runs via `npx`.
 # Pruning them breaks document conversion and any npx/uvx-based agent tool.
 node = "latest"
 python = "latest"
@@ -166,9 +166,11 @@ description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on st
 # markitdown through the pinned `uv` (no extra tool to install — `uvx` resolves it
 # on demand). `[all]` pulls the per-format extras (mammoth/python-pptx/openpyxl/
 # pdfminer); the bare package ships none of them, so without it conversion raises
-# MissingDependency on every format above. The same converter ships as an MCP
-# server (markitdown-mcp) in the plugin's .mcp.json; this task is the on-disk path
-# whose output gets committed as the diffable `extracted.md`. Redirect stdout to
+# MissingDependency on every format above. This task is the ONLY converter steer
+# ships — the `markitdown-mcp` server it once bundled was retired (a plugin MCP
+# server starts in every session, including the vast majority that never convert
+# a document), so nothing here depends on an MCP server being present. Its output
+# gets committed as the diffable `extracted.md`. Redirect stdout to
 # capture: `mise run convert:doc spec/sources/<id>/versions/<v>/original.docx >
 # .../extracted.md`.
 run = "uvx --from 'markitdown[all]' markitdown"

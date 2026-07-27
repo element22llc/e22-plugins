@@ -98,6 +98,44 @@ legitimate look-alike (e.g. an unchanged marketplace id).
   Idempotent: once the old filename is gone the precondition is empty, so
   re-running is a no-op.
 
+### v3.23.0 — markitdown MCP server retired for the `convert:doc` task
+
+- **What & why:** the `markitdown` MCP server has been removed from the plugin's
+  `.mcp.json`. It existed for exactly one skill (`/steer:intake`), but a plugin
+  MCP server starts automatically whenever the plugin is enabled — so every
+  session paid a `uvx markitdown-mcp` subprocess, including the overwhelming
+  majority that never convert a document. The same `markitdown` tool now runs
+  on demand through the scaffold's `mise run convert:doc <file>` task, which
+  `/steer:intake` already treated as its deterministic committable path — so
+  capability is unchanged and only the always-on cost goes away. The plugin's
+  own copy refreshes on `/plugin update`, but two *materialized* per-repo files
+  can still name the dead server: `.vscode/mcp.json` (the Copilot mirror, which
+  the scaffold installs) and, on a repo that predates v2.11.0, a repo-local
+  `.mcp.json`. Additive reconciliation cannot remove a key, so this is a
+  migration.
+- **Precondition:** a materialized MCP config still names markitdown — this grep
+  fires:
+
+  ```sh
+  grep -lE '"markitdown"|markitdown-mcp' .mcp.json .vscode/mcp.json 2>/dev/null
+  ```
+
+  No output ⇒ already migrated (or never had it) ⇒ no-op.
+- **Action:** read-then-propose, show the diff first. In each file that matched,
+  remove **only** the `markitdown` server entry, preserving every other server
+  and value — never clobber a dev-added entry.
+  - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The file is
+    generated from the plugin's `.mcp.json`, so the rest of it stays as-is and
+    additive reconciliation keeps it current afterwards.
+  - In a repo-local `.mcp.json`, drop the `markitdown` key. If removing it
+    leaves the file with **no** servers, `git rm` it — the plugin provides what
+    remains (see the v2.11.0 entry, which removes the duplicated `github` key on
+    the same file).
+
+  A stale entry is harmless while it lasts — it just starts a server nothing
+  calls — so this migration is a cleanup, never a blocker. Idempotent: once the
+  key is gone the precondition is empty, so re-running is a no-op.
+
 ### v3.16.0 — scaffold `.claude/settings.json`: push + PR-create move from `ask` to `allow`
 
 - **What & why:** the two-state delivery model (rule `45-commit-autonomy`) made
@@ -162,44 +200,6 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 
   Idempotent: once the key is gone the precondition is empty, so re-running is
   a no-op.
-
-### v3.23.0 — markitdown MCP server retired for the `convert:doc` task
-
-- **What & why:** the `markitdown` MCP server has been removed from the plugin's
-  `.mcp.json`. It existed for exactly one skill (`/steer:intake`), but a plugin
-  MCP server starts automatically whenever the plugin is enabled — so every
-  session paid a `uvx markitdown-mcp` subprocess, including the overwhelming
-  majority that never convert a document. The same `markitdown` tool now runs
-  on demand through the scaffold's `mise run convert:doc <file>` task, which
-  `/steer:intake` already treated as its deterministic committable path — so
-  capability is unchanged and only the always-on cost goes away. The plugin's
-  own copy refreshes on `/plugin update`, but two *materialized* per-repo files
-  can still name the dead server: `.vscode/mcp.json` (the Copilot mirror, which
-  the scaffold installs) and, on a repo that predates v2.11.0, a repo-local
-  `.mcp.json`. Additive reconciliation cannot remove a key, so this is a
-  migration.
-- **Precondition:** a materialized MCP config still names markitdown — this grep
-  fires:
-
-  ```sh
-  grep -lE '"markitdown"|markitdown-mcp' .mcp.json .vscode/mcp.json 2>/dev/null
-  ```
-
-  No output ⇒ already migrated (or never had it) ⇒ no-op.
-- **Action:** read-then-propose, show the diff first. In each file that matched,
-  remove **only** the `markitdown` server entry, preserving every other server
-  and value — never clobber a dev-added entry.
-  - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The file is
-    generated from the plugin's `.mcp.json`, so the rest of it stays as-is and
-    additive reconciliation keeps it current afterwards.
-  - In a repo-local `.mcp.json`, drop the `markitdown` key. If removing it
-    leaves the file with **no** servers, `git rm` it — the plugin provides what
-    remains (see the v2.11.0 entry, which removes the duplicated `github` key on
-    the same file).
-
-  A stale entry is harmless while it lasts — it just starts a server nothing
-  calls — so this migration is a cleanup, never a blocker. Idempotent: once the
-  key is gone the precondition is empty, so re-running is a no-op.
 
 ### v3.8.0 — `reference`-mode invocations: in-file token rewrite
 

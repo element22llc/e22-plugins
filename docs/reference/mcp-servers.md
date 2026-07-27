@@ -55,7 +55,7 @@ server", reachable from any bootstrapped repo.
 ## Office-document conversion is *not* a server
 
 Earlier versions wired Microsoft's
-[markitdown](https://github.com/microsoft/markitdown) as a fourth MCP server.
+[markitdown](https://github.com/microsoft/markitdown) as a third MCP server.
 It was removed: a plugin MCP server starts automatically whenever the plugin is
 enabled, so every session paid a `uvx markitdown-mcp` subprocess to serve the
 one skill that needs it ([`/steer:intake`](../workflows/intake.md)).
@@ -86,9 +86,17 @@ from PyPI.
 
 Wires the session to [Context7](https://context7.com)'s hosted MCP server, which
 returns **up-to-date, version-accurate documentation** for thousands of libraries
-and frameworks on demand. Reach for it when you're working against a fast-moving
-dependency and want the *current* API surface rather than what training data
-remembers — it pulls the docs for the exact version in play instead of guessing.
+and frameworks on demand. It pulls the docs for the exact version in play instead
+of guessing.
+
+This is **not** discretionary: rule `10-stack` names this server as how to satisfy
+its own instruction — *"when you pick or change a piece, verify the current stable
+version in-session via the bundled `context7` MCP server — never from
+training-data memory."* Reach for it whenever a version, API surface, or
+configuration question would otherwise be answered from training data. (For
+release-support windows and EOL dates, `10-stack` points at the registry,
+[endoflife.date](https://endoflife.date), or the vendor's own site — those are not
+library docs and context7 does not carry them.)
 
 Like `github`, it's an **HTTP** server (`https://mcp.context7.com/mcp`), so there
 is **no local process, package fetch, or runtime dependency** — nothing to install

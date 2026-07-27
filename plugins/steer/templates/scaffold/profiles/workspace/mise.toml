@@ -44,10 +44,10 @@ experimental = true
 # lockfile = false   # members keep their own mise.lock — they build standalone
 
 [tools]
-# No Node/Python project lives here, but the agent-runtime baseline stays: MCP
-# servers and agent tooling run packages through `npx`/`uvx` (e.g. the steer
-# plugin's markitdown MCP server via `uvx markitdown-mcp`), and `/steer:intake`
-# converts PO documents here, at the spine host. Never prune these.
+# No Node/Python project lives here, but the agent-runtime baseline stays: agent
+# tooling runs packages through `npx`/`uvx` (e.g. the `convert:doc` task below
+# runs `uvx markitdown`), and `/steer:intake` converts PO documents here, at the
+# spine host. Never prune these.
 node = "latest"
 python = "latest"
 uv = "latest"

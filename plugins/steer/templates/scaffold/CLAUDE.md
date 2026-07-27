@@ -21,7 +21,7 @@ or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 >
 > On-demand helpers from the plugin: `/steer:spec` (new feature
 > spec), `/steer:adr <slug>` (architecture decision), and
-> `/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts]`
+> `/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`
 > (full reference prose). If the plugin isn't installed, your teammate will be prompted to install
 > it when they trust this folder.
 

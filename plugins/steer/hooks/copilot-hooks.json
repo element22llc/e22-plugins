@@ -5,13 +5,13 @@
       {
         "type": "command",
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-        "bash": "STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" || true",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-version-pins.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       },
       {
         "type": "command",
         "matcher": "Bash",
-        "bash": "STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" || true",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-bash-actions.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       }
     ]
