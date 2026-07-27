@@ -32,9 +32,15 @@ flowchart TD
 ## Repo profiles
 
 Not every managed repo is an app monorepo. A repo carries a **profile** —
-`app` (default), `infra`, `service`, `library`, or `cli` — recorded as a
-`<!-- steer:profile=… -->` marker on the `CLAUDE.md` `## Profile` section (a
+`app` (default), `infra`, `service`, `library`, `cli`, or `workspace` — recorded
+as a `<!-- steer:profile=… -->` marker on the `CLAUDE.md` `## Profile` section (a
 sibling of the delivery-mode marker; **absent ⇒ `app`**, for back-compat).
+
+`workspace` is the odd one out: it hosts a [polyrepo](../concepts/product-spine.md)
+product's `/spec` spine and owns **no application code**. Its topology is derived
+from disk (`spec/workspace.yml` at the host, `spec/PRODUCT.md` at each member),
+never from this marker — so the marker follows the topology rather than declaring
+it.
 
 The profile is a **bootstrap-time** choice that selects an **additive** set of
 scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*):
@@ -56,7 +62,14 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill
   adapts `package.json`); `infra` substitutes a tofu/terragrunt/ansible-flavored
   **root** `mise.toml` (which still pins `node` and sources `worktree-env.sh`) and
-  gets CI that auto-detects `*.tf`/Ansible and runs `tofu fmt` / `ansible-lint`.
+  gets CI that auto-detects `*.tf`/Ansible and runs `tofu fmt` / `ansible-lint`;
+  `workspace` **replaces** the core `README.md`, `mise.toml` and `compose.yaml`
+  and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
+  pnpm/biome (no code here), keeps the agent-runtime baseline and `convert:doc`
+  (PO documents land at the spine host), and adds the `ws:*` member tasks and a
+  `dev` that boots the whole product; its `compose.yaml` declares **no services**
+  and `include:`s each member's file. The member checkouts are git-ignored
+  clones, not submodules, so nothing pins a member SHA.
 
 So a non-app repo is never skipped at bootstrap — it shares all of Core, and an
 `infra` repo that genuinely runs no local services simply deletes the core

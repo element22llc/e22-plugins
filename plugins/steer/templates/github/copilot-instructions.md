@@ -449,7 +449,9 @@ areas — or when an edit would clobber filled-in content.
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
 Azure DevOps, …). **`/spec/tracker.md`** declares the system + ref format —
 read it before referencing work items; if missing, ask and create it from the
-bundled template. Refs live in `intent.md`'s `> Tracker:` line, the PR
+bundled template — **except in a polyrepo member** (`spec/PRODUCT.md` present),
+where the tracker is the workspace's: resolve it there and never create a local
+copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
 description (tracker's own linking syntax), and `HISTORY.md` `Refs:`. Copy a
 tracker item's acceptance criteria into the intent — the spec is the in-repo
 source of truth; the ref points back. **Keep a question in the spec's

@@ -15,12 +15,50 @@
 # declares `system: github`. Single source of truth for GitHub-tracker
 # detection, shared with the issue-first hooks (check-write-nudges.sh,
 # reconcile-issue-first.sh) and the inject-when scope dispatch below.
+#
+# A polyrepo MEMBER has no local spec/tracker.md — the tracker is product-level
+# and lives in the workspace by design (templates/reference/POLYREPO.md), which
+# is precisely where all the code sits. Reading the absence as "not GitHub"
+# therefore switched issue-first enforcement OFF in exactly those repos: rule
+# 36-issue-first stopped injecting and check-write-nudges.sh /
+# check-bash-actions.sh / reconcile-issue-first.sh all exited early. So a member
+# resolves the workspace's tracker when spec/PRODUCT.md names a local checkout,
+# and otherwise degrades to "inject" per this file's fail-open contract — a
+# needless nudge is recoverable, a silently-absent gate is not.
 steer_tracker_is_github() {
-	_tracker="${1:-.}/spec/tracker.md"
-	[ -f "${_tracker}" ] || return 1
+	_root="${1:-.}"
+	_tracker="${_root}/spec/tracker.md"
+	if [ ! -f "${_tracker}" ]; then
+		# Not a member either → genuinely no tracker declared (single-repo case,
+		# unchanged): the rule is provably out of scope.
+		[ -f "${_root}/spec/PRODUCT.md" ] || return 1
+		_wsp="$(steer_workspace_path "${_root}")" || return 0
+		_tracker="${_root}/${_wsp}/spec/tracker.md"
+		[ -f "${_tracker}" ] || return 0
+	fi
 	# `github\b` (word boundary, as scripts/scan-capabilities.sh uses) so a value
 	# that merely STARTS with github (e.g. `system: githubbish`) never matches.
 	grep -iq '^[[:space:]]*system:[[:space:]]*github\b' "${_tracker}" 2>/dev/null
+}
+
+# steer_workspace_path <repo-root> — prints the OPTIONAL relative path to a local
+# workspace checkout, read from spec/PRODUCT.md's `workspace.path`; nothing when
+# the file, the key, or the value is absent, or the value is still the unresolved
+# "[...]" placeholder. Scoped to the `workspace:` block so an unrelated `path:`
+# elsewhere in the pointer can never be mistaken for it. No network and no
+# subprocess beyond sed — this file is sourced by every PreToolUse hook.
+steer_workspace_path() {
+	_pm="${1:-.}/spec/PRODUCT.md"
+	[ -f "${_pm}" ] || return 1
+	_v="$(sed -n '/^workspace:/,/^[^[:space:]#]/{s/^[[:space:]][[:space:]]*path:[[:space:]]*//p;}' "${_pm}" 2>/dev/null | head -n 1)"
+	# Strip a trailing inline comment and surrounding quotes/whitespace, matching
+	# steer_tracker_repo's idiom.
+	_v="${_v%%#*}"
+	_v="$(printf '%s' "${_v}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s/^"//; s/"$//')"
+	case "${_v}" in
+	'' | '['*) return 1 ;;
+	esac
+	printf '%s' "${_v}"
 }
 
 # steer_tracker_repo <repo-root> — prints the tracker's declared `repository:`
@@ -120,10 +158,16 @@ steer_inject_when_one() {
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
-	# polyrepo — true in EITHER role (workspace host or member). The topology
-	# rule is the same text for both sides; the roles differ in what they own,
-	# which the rule states inline. A single-repo product matches neither and
-	# pays nothing.
+	# polyrepo — true in EITHER role (workspace host or member); a single-repo
+	# product matches neither and pays nothing. NOTE: no rule currently carries
+	# `inject-when=polyrepo`, so this arm is not reachable from the inject loop.
+	# That is deliberate, not an oversight: the ruleset is capped on its on-disk
+	# total, which every consumer pays even for a rule scoped to a minority of
+	# repos, so the topology is delivered by orient-session.sh (a SessionStart
+	# note) and /steer:reference polyrepo instead. The predicate is kept because
+	# the has-* tokens beside it are evaluated the same way and a future scoped
+	# rule must not have to reintroduce it. Do NOT document a `21-polyrepo` rule
+	# on the strength of this token — there isn't one.
 	polyrepo) steer_polyrepo_role "$2" >/dev/null ;;
 	has-workspace-manifest) [ -f "$2/spec/workspace.yml" ] ;;
 	has-product-pointer) [ -f "$2/spec/PRODUCT.md" ] ;;

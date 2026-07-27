@@ -7,6 +7,39 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** issue-first enforcement was silently **off in every polyrepo
+  member** — the repos that hold all the code. `steer_tracker_is_github` resolved
+  `spec/tracker.md` from the local root only, but a member's tracker is
+  product-level and lives in the workspace by design, so its absence was read as
+  "not a GitHub tracker": rule `36-issue-first` (`inject-when=tracker-github`)
+  never injected, and `check-write-nudges.sh`, `check-bash-actions.sh` and
+  `reconcile-issue-first.sh` all exited early. The predicate now resolves the
+  workspace's tracker via `spec/PRODUCT.md`'s optional `workspace.path` local
+  checkout, and where no checkout is declared it **degrades to inject** per
+  `lib/scope.sh`'s own fail-open contract — a needless nudge is recoverable, a
+  silently-absent gate is not. New helper `steer_workspace_path` reads the
+  pointer, scoped to the `workspace:` block so an unrelated `path:` can't be
+  mistaken for it. The single-repo path is byte-identical: no local tracker and
+  no `PRODUCT.md` still proves the rule out of scope.
+- **Fixed:** rule `35-issue-tracker` told a polyrepo member to create the one
+  file the topology forbids it to have. The rule is `inject-when=code-project`,
+  so it injects in a member, and instructed "if missing, ask and create it from
+  the bundled template" of `spec/tracker.md` — while `POLYREPO.md` and
+  `spec/PRODUCT.md` both say not to add product-level files to a member, because
+  that recreates the split-brain spine the topology exists to prevent. The rule
+  now carries the member exception inline: resolve the tracker at the workspace,
+  never create a local copy.
+- **Fixed:** shipped content cited a **rule `21-polyrepo` that does not exist**.
+  `skills/reference/COVERAGE.md` told a consumer session the polyrepo topic
+  "backs the scoped rule `21-polyrepo`", and `lib/scope.sh`'s `polyrepo`
+  predicate comment described that rule's text as if it shipped — while the
+  actual decision, recorded in this release, is that the topology is deliberately
+  **not** an always-on rule (it is delivered by `orient-session.sh` plus
+  `/steer:reference polyrepo`, so a single-repo product pays zero bytes). Both now
+  state the real design, and the predicate comment says plainly that no rule
+  carries `inject-when=polyrepo` so the token can't be mistaken for evidence of
+  one again.
+
 - **Changed:** the always-on `rules/*.md` ratchet ceiling is raised once, 62,500 →
   65,200 bytes (`check_context_budget.py`). The ratchet had drifted to **32 bytes**
   of headroom, so rule `61-gate-prompts` could only be added by compressing
@@ -85,8 +118,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   or rule referencing it, so the one job it exists to do was never actually
   wired to it — it read as unexplained tool-surface cost. Offset within the
   always-on budget by dropping a duplicated editor-preference line that
-  `CONVENTIONS.md` already carries in full; the rules payload is **smaller**
-  than before (62,468 B, from 62,497 B).
+  `CONVENTIONS.md` already carries in full, so the change paid for itself where
+  it landed. (Across the whole release the rules payload still grows to
+  64,492 B — see the ratchet entry above.)
 
 - **Changed:** the living global architecture diagram moves from
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
@@ -108,10 +142,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   from the root allowlist, so the one rule that decides what may sit at the repo
   root read it as a stray — while `20-layout`, `32-living-docs`,
   `50-definition-of-done`, `52-deployment`, `55-drift-gates` and the scaffold all
-  mandate it there. It is now in the allowlist. The always-on payload was 3 bytes
-  under its ceiling, so the addition is paid for in place: `20-layout` and
+  mandate it there. It is now in the allowlist. The always-on payload was then 3
+  bytes under its ceiling, so the addition is paid for in place: `20-layout` and
   `32-living-docs` lose a few redundant words in the same sentences, with no
-  change of meaning and no ceiling raise.
+  change of meaning and without itself raising the ceiling (the separate ratchet
+  entry above raises it for the release as a whole).
 - **Changed:** the *why* behind the root-vs-`/spec` split is now stated where a
   reader hits it instead of only in the reference topic — the scaffold
   `ARCHITECTURE.md` explains that it is the **as-built** model while `/spec`
@@ -133,8 +168,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
   the dispatcher reads **just-in-time** for the one path it is executing (a tool
   result, so it never competes for the re-attach budget). No instruction was
-  dropped — the largest body fell from ~6,400 to ~2,400 tokens, and total
-  always-resident skill prose fell ~26%.
+  dropped — total always-resident skill prose fell ~26% (331,971 → 243,212 B).
+  The largest remaining body is `work` at 16,102 B (~4,600 tokens, **92% of the
+  17,500 B cap**), so the headroom this bought is real but thin: the next
+  substantial skill body still has to be factored, not appended.
 - **Added:** `check_context_budget.py` now gates a third always-on surface — a
   **per-skill `SKILL.md` body ceiling** of 17,500 bytes (the 5,000-token
   compaction cap at a pessimistic 3.5 B/token). Unlike the rules and listing
