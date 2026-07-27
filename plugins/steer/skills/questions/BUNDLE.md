@@ -35,7 +35,7 @@ touches the tracker not at all — gathering uses read-only `Glob` / `Read` /
    features under `spec/features/*/` and ask which, never guess.
 
 2. **Gather.** Collect the **same open questions the default flow's
-   [step-2 sweep](#steps) identifies** — using the read-only `Grep`/`Read`
+   step-2 sweep (`SKILL.md` → "Steps") identifies** — using the read-only `Grep`/`Read`
    tools only (step 2's `grep | grep` pipeline is an illustration; reproduce
    its result without running shell). Read each item's **structured fields** —
    `status`, `impact`, `owner` — not just the `- [ ]` line. A legacy
@@ -49,7 +49,7 @@ touches the tracker not at all — gathering uses read-only `Glob` / `Read` /
    - **Audience.** Include what the PO owns or co-owns: `owner:` **`product`**
      and **`shared`** (the PO owns a half), plus **`design`** / **`security`**
      questions that are product / policy / scope / UX calls. **Exclude**
-     *code-fact* questions (the [step-4 triage](#steps) — asking a PO what
+     *code-fact* questions (the step-4 triage in `SKILL.md` — asking a PO what
      their own code does is a wasted turn) and questions owned solely by
      **`development`**. Report the excluded count, split code-fact vs dev, so
      nothing looks silently dropped and a `shared`/`design`/`security`

@@ -65,6 +65,42 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # so the session never gets two competing session-start banners.
 [ "$(steer_spine_state "${ROOT}")" = "managed" ] || exit 0
 
+# Polyrepo topology. Deliberately NOT an always-on rule: the always-on ruleset is
+# budget-capped on its ON-DISK total (scripts/check_context_budget.py), which a
+# scoped rule pays in full even though it injects for a small minority of repos.
+# This note is the better-targeted equivalent — emitted only in a repo that
+# actually is a workspace or a member, and additive to everything below rather
+# than replacing it. Emitted BEFORE the in-progress-PO-build branch on purpose:
+# that branch exits early, and a workspace/member with an open handoff gate still
+# needs the topology or the build resumes against the wrong spine. Full topology:
+# /steer:reference polyrepo.
+POLY_ROLE="$(steer_polyrepo_role "${ROOT}")" || POLY_ROLE=""
+if [ -n "${POLY_ROLE}" ]; then
+	printf '<!-- steer: polyrepo topology -->\n'
+	if [ "${POLY_ROLE}" = "workspace" ]; then
+		printf 'This repo is the **workspace** of a product that spans several repos: it '
+		printf 'hosts THE `/spec` spine (including every feature `intent.md`) and owns no '
+		printf 'application code, so an absent `apps/` is expected, not a gap. Members are '
+		printf 'listed in `spec/workspace.yml`. Any report you produce here (`/steer:next`, '
+		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`, `/steer:protect`) must '
+		printf 'name the members it covered and flag any it could read neither locally nor '
+		printf 'over the GitHub gateway as **uncovered** — never present a fraction of the '
+		printf 'product as the whole. Load `/steer:reference polyrepo` before acting on the '
+		printf 'topology.\n'
+	else
+		printf 'This repo is a **member** of a product whose `/spec` spine lives in the '
+		printf 'workspace repo named in `spec/PRODUCT.md`. Its spine is partial **by '
+		printf 'design** — product-level artifacts and every feature `intent.md` live in '
+		printf 'the workspace, so a missing local intent means you have not read the '
+		printf 'workspace yet, never that the feature is unspecified. Do not create '
+		printf 'product-level spec files here to fill a gap. A PR here cannot auto-close a '
+		printf 'workspace issue with `Closes #N` (GitHub honours closing keywords only '
+		printf 'within one repo) — use `Refs owner/repo#N` and close explicitly after '
+		printf 'merge. Load `/steer:reference polyrepo` before acting on the topology.\n'
+	fi
+	printf '\n'
+fi
+
 # An in-progress PO build is the one case we steer DETERMINISTICALLY instead of
 # waiting for the user to describe a goal: a returning owner must be put straight
 # back into the guided flow, not greeted with a blank "what do you want to do?".
@@ -81,38 +117,6 @@ if [ -f "${BUILD_STATUS}" ] && grep -q '^- \[ \]' "${BUILD_STATUS}" 2>/dev/null;
 	printf 'interview or re-ask settled questions, and do not wait for the user to name '
 	printf 'a command.\n'
 	exit 0
-fi
-
-# Polyrepo topology. Deliberately NOT an always-on rule: the always-on ruleset is
-# budget-capped on its ON-DISK total (scripts/check_context_budget.py), which a
-# scoped rule pays in full even though it injects for a small minority of repos.
-# This note is the better-targeted equivalent — emitted only in a repo that
-# actually is a workspace or a member, and additive to the orientation below
-# rather than replacing it. Full topology: /steer:reference polyrepo.
-POLY_ROLE="$(steer_polyrepo_role "${ROOT}")" || POLY_ROLE=""
-if [ -n "${POLY_ROLE}" ]; then
-	printf '<!-- steer: polyrepo topology -->\n'
-	if [ "${POLY_ROLE}" = "workspace" ]; then
-		printf 'This repo is the **workspace** of a product that spans several repos: it '
-		printf 'hosts THE `/spec` spine (including every feature `intent.md`) and owns no '
-		printf 'application code, so an absent `apps/` is expected, not a gap. Members are '
-		printf 'listed in `spec/workspace.yml`. Any report you produce here (`/steer:next`, '
-		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`) must name the members it '
-		printf 'covered and flag any it could read neither locally nor over the GitHub '
-		printf 'gateway as **uncovered** — never present a fraction of the product as the '
-		printf 'whole. Load `/steer:reference polyrepo` before acting on the topology.\n'
-	else
-		printf 'This repo is a **member** of a product whose `/spec` spine lives in the '
-		printf 'workspace repo named in `spec/PRODUCT.md`. Its spine is partial **by '
-		printf 'design** — product-level artifacts and every feature `intent.md` live in '
-		printf 'the workspace, so a missing local intent means you have not read the '
-		printf 'workspace yet, never that the feature is unspecified. Do not create '
-		printf 'product-level spec files here to fill a gap. A PR here cannot auto-close a '
-		printf 'workspace issue with `Closes #N` (GitHub honours closing keywords only '
-		printf 'within one repo) — use `Refs owner/repo#N` and close explicitly after '
-		printf 'merge. Load `/steer:reference polyrepo` before acting on the topology.\n'
-	fi
-	printf '\n'
 fi
 
 printf '<!-- steer: session orientation -->\n'

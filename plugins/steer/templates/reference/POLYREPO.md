@@ -96,8 +96,11 @@ Every such report must:
 - name any member it could reach **neither** way as **uncovered** — explicitly,
   never by omission.
 
-`spec/workspace.yml` → `reporting.require_all_members: true` makes the uncovered
-case loud rather than silent. Silence must never read as "nothing there".
+Naming the uncovered members is **unconditional** — every report does it, and no
+setting turns it off. `spec/workspace.yml` → `reporting.require_all_members`
+records that expectation explicitly for the humans and audits reading the
+manifest; it is a declaration, not a switch the skills branch on. Silence must
+never read as "nothing there".
 
 ## Tracker behaviour across repos
 
@@ -162,6 +165,7 @@ acme-workspace/
 | `mise run ws:sync` | Fetch + **fast-forward only**. Refuses a dirty tree, a detached HEAD, a branch other than the declared one, or a divergence — it never rewrites a member's history. |
 | `mise run ws:status` | Per member: branch, dirty, `/spec/.version`, and drift between the manifest and `compose.yaml` / `.gitignore`. |
 | `mise run ws:code` | Generate `<product>.code-workspace` (multi-root VS Code). Generated + git-ignored: edit the manifest, not the output. |
+| `mise run ws:list` | List every member the manifest declares — name, repo, branch, profile, local path. |
 | `mise run dev` | Boot the product — every member's services via Compose `include:`, then each member's dev server. |
 
 **mise monorepo mode** makes each member's own `mise.toml` a config_root, so

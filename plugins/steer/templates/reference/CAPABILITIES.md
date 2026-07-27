@@ -274,7 +274,7 @@ and **Repair**.
 - **Why it matters:** the write verbs live in `/steer:tracker-sync`'s
   `allowed-tools`, but a skill's `allowed-tools` grant applies **only while that
   skill is the invoked one**. The lifecycle reaches the gateway transitively — a
-  PO runs `/steer:issues capture` (or `/steer:work`, `/steer:spec materialize`),
+  PO runs `/steer:issues capture` (or `/steer:work`, `/steer:issues materialize`),
   which *delegates to* tracker-sync in prose — so tracker-sync's grants never take
   effect and the `gh issue create/edit/comment` write falls through to
   `.claude/settings.json`. Without these allow entries the write is prompted

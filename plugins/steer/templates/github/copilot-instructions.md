@@ -130,7 +130,7 @@ These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
 *primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
 or **cli** follows its own package language and skips the app/web/compose
-bullets. `/steer:init` records the profile; the universal core (mise pinning,
+bullets; a **workspace** has no app stack. `/steer:init` records the profile; the universal core (mise pinning,
 `/spec` spine, CI hygiene) is the same for all.
 
 - **Frontend:** Next.js + TypeScript + Tailwind.
@@ -207,7 +207,9 @@ shadowed. Either way run `/steer:doctor`; activation-order rationale:
 This layout is the **app** profile: a monorepo of apps + shared packages. A
 **library** / **cli** is a single package (no `/apps` split); an **infra** repo
 is organized as IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
-— see Stack. The `/spec` spine is identical across all profiles.
+— see Stack; a **workspace** hosts the spine and no app code. The `/spec` spine
+is identical across profiles **except** in a polyrepo: the workspace holds the
+product spine, a member only its own (`/steer:reference polyrepo`).
 
 - **`/apps`** — deployable applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).
@@ -332,8 +334,7 @@ Create the artifact when the trigger fires — don't defer it:
 
 - **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code — author via **`/steer:spec`**
-  (or **`/steer:build`** for a PO). `[id]` is a short kebab-case slug
-  (`user-login`, `export-csv`).
+  (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Architectural or hard-to-reverse choice** (stack, database, auth,
   deployment, a new cross-cutting pattern) → ADR at
   `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
@@ -348,6 +349,11 @@ Create the artifact when the trigger fires — don't defer it:
   shapes it in the issue, **`materialize`** writes the approved intent to
   `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
   to `approved`. The issue is the work record; the spec stays product truth.
+
+**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**` and the
+product-level files above are the **workspace's** — resolve the spine there,
+never create a local copy; ADRs and `ARCHITECTURE.md` stay per member
+(`/steer:reference polyrepo`).
 
 The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference `/steer:spec` draws

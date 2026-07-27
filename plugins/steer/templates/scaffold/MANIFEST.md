@@ -3,8 +3,7 @@
 This directory is the **bundled repository scaffold**: everything a new
 product repo needs to be locally operational, carried by the plugin so it is
 always current (`/plugin update`) and needs no external template repo. It
-replaces the old static `element22llc/repository-template` as the bootstrap
-source.
+replaces the old static template repository as the bootstrap source.
 
 It is consumed by **`/steer:init`** (greenfield bootstrap) and **`/steer:adopt`**
 (scaffolding sync into an existing app). Both follow the same discipline:

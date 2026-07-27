@@ -4,7 +4,9 @@
 This layout is the **app** profile: a monorepo of apps + shared packages. A
 **library** / **cli** is a single package (no `/apps` split); an **infra** repo
 is organized as IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
-— see Stack. The `/spec` spine is identical across all profiles.
+— see Stack; a **workspace** hosts the spine and no app code. The `/spec` spine
+is identical across profiles **except** in a polyrepo: the workspace holds the
+product spine, a member only its own (`/steer:reference polyrepo`).
 
 - **`/apps`** — deployable applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).

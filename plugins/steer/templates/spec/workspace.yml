@@ -45,9 +45,11 @@ members:
     # One line: what this member is responsible for.
     description:
 
-# Whether a report may claim it covered the product without reaching every
-# member. Reads fall back to the GitHub gateway; when neither a checkout nor
-# gateway access is available for a member, reports must name it as UNCOVERED
-# rather than omit it.
+# Records this product's expectation that a report never claims full coverage
+# without reaching every member. Reads fall back to the GitHub gateway; when
+# neither a checkout nor gateway access is available for a member, reports name
+# it as UNCOVERED rather than omit it. This is a DECLARATION for humans and
+# audits, not a switch the skills branch on — naming uncovered members is
+# unconditional, so lowering it to false does not change what a report does.
 reporting:
   require_all_members: true

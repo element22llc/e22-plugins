@@ -26,6 +26,29 @@ flowchart LR
 `check_changelog.py` also validates that `plugin.json`'s version equals the newest
 released heading and that released headings are in descending semver order.
 
+## Publication is automatic
+
+Cutting the release PR is the last manual step. When a release PR (the
+`plugin.json` version bump) merges to `main`,
+`.github/workflows/release-publish.yml` fires — gated on the version bump — and
+creates the `vX.Y.Z` git tag plus the GitHub Release. The body is that version's
+CHANGELOG bullets, extracted by `scripts/changelog_release_notes.py`, followed by
+GitHub's auto-generated "What's Changed" (merged-PR list, contributors, compare
+link) via `--generate-notes`. It is idempotent and re-runnable through
+`workflow_dispatch`, so a failed run can simply be re-run:
+
+```bash
+gh workflow run release-publish.yml -f version=X.Y.Z
+```
+
+Two other post-merge runs are worth watching: `docs-deploy.yml` publishes the
+documentation site from `main` (a red run leaves the live site stale), and the
+e2e suite is **local-only** — run `mise run e2e` before a substantive cut if you
+want the skill-level signal.
+
+Because the tag is created here, `git describe --tags` stays an accurate anchor
+for the next release's diff — nothing about tagging is manual.
+
 ## What does NOT need a changelog entry
 
 Changes confined to `CLAUDE.md`, `docs/`, or `.claude/` ship nothing in the

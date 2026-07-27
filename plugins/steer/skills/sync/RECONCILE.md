@@ -1,4 +1,4 @@
-# `/steer:sync` — steps 5 & 6: template reconciliation and capability repair
+# `/steer:sync` — steps 5, 6 & 6.5: template reconciliation, capability repair, invocation hygiene
 
 Read this file when you reach step 5 of `/steer:sync`. Steps 1–4 (confirm,
 update the plugin, read the stamp, apply ledger migrations) and steps 7–9

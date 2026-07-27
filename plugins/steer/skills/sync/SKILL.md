@@ -124,7 +124,10 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
    **If invoked as `/steer:sync --check`**, do **not** branch or write anything:
    run steps 2–6.5 read-only (the migration preview, the capability status table,
-   and the invocation-hygiene findings) and stop. The rest of this section is the full (writing) flow. Then
+   and the invocation-hygiene findings), report, and **stop here — nothing below
+   this paragraph runs under `--check`.**
+
+   **Otherwise (the full, writing flow):**
    branch a `feat/sync` off `BASE` and work there — never commit to `main` or
    to `BASE` directly (commit-autonomy rule). If `BASE` *is* `main` (the dev ran
    sync from a clean trunk), that's the one case the PR targets `main`. Nothing is
@@ -199,14 +202,16 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    the diff of proposed substitutions before applying. List each migration
    you're applying (and each skipped, with why) before touching files.
 
-5. **Reconcile the materialized templates (additive)** and
-   6. **repair capability gaps (missing / mis-wired scaffold wiring).** These two
-   steps carry the bulk of the procedure — the template-reconciliation
-   convention, the `scaffold_reconcile.py` structured merge, the `.mcp.json`
-   exemption, and the capability scan/repair table. Read them in
-   [`RECONCILE.md`](${CLAUDE_PLUGIN_ROOT}/skills/sync/RECONCILE.md) before
-   executing. Both are additive and never clobber; under `--check` they report
-   only.
+5. **Reconcile the materialized templates (additive)**,
+   6. **repair capability gaps (missing / mis-wired scaffold wiring)**, and
+   6.5. **repair invocation hygiene (stale / invalid slash invocations in live
+   prose).** These steps carry the bulk of the procedure — the
+   template-reconciliation convention, the `scaffold_reconcile.py` structured
+   merge, the `.mcp.json` exemption, the capability scan/repair table, and the
+   `scan-invocations.sh` findings. All three live in
+   [`RECONCILE.md`](${CLAUDE_PLUGIN_ROOT}/skills/sync/RECONCILE.md) — read it
+   before executing. All are additive and never clobber; under `--check` they
+   report only.
 
 7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
 

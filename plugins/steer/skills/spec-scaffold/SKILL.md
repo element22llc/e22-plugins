@@ -20,7 +20,13 @@ feature, using the canonical templates bundled with this plugin.
 
 1. Determine the feature `[id]` — a short kebab-case slug (`user-login`,
    `export-csv`). Ask the dev if it isn't obvious.
-2. Create the folder `spec/features/[id]/` in the product repo. **If it already
+2. Create the folder `spec/features/[id]/` **in the repo that owns the product
+   spine**. Normally that is this repo — but in a polyrepo **member**
+   (`spec/PRODUCT.md` present) all of `spec/features/**` belongs to the
+   **workspace**: resolve it via `workspace.path`, else the GitHub gateway, and
+   create the feature there. **Never** create `spec/features/**` in a member; if
+   the workspace is unreachable by either route, say so and stop rather than
+   writing locally (`/steer:reference polyrepo`). **If the folder already
    exists**, this `[id]` was scaffolded before — do not clobber it; go to step 3's
    reconcile branch.
 3. Instantiate the two spec files from the bundled templates:

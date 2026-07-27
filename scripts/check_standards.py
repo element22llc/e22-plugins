@@ -943,6 +943,9 @@ _PAYLOAD_DIRS = [
     "templates/spec",
     "templates/github",
     "templates/reference",
+    # Instantiated per deployable app by /steer:build and /steer:adopt, so it
+    # lands in consumer repos like the rest — gate it identically.
+    "templates/docker",
 ]
 _BRAND_RE = re.compile(r"element[\s-]22", re.IGNORECASE)
 

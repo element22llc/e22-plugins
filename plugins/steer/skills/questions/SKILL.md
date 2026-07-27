@@ -84,6 +84,13 @@ its own loud line — the cue to promote it (step 6) or defer it (step 7).
    when a bullet needs more. Skip items already resolved (`- [x]`) or
    annotated as a deliberate deferral.
 
+   **In a polyrepo member** (`spec/PRODUCT.md` present) all three of those paths
+   are absent by design, so the grep returns nothing — that is **not** a clean
+   sweep. Resolve the workspace (`workspace.path`, else the GitHub gateway) and
+   run the sweep against its spine, reporting which repo you covered; if it is
+   unreachable, say the spine is unreachable rather than reporting zero open
+   questions (`/steer:reference polyrepo`).
+
 3. **Present a worklist.** Print a consolidated table — **product-level
    (`vision.md`) first**, then per feature — with the source file and the
    question. Hook-escalated **stale** questions (blocking, open >14 days) jump

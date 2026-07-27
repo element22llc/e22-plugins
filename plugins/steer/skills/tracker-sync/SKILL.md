@@ -50,8 +50,9 @@ manual export. It is glue, not a new source of truth.
 
 ## Guardrails
 
-- **Read `/spec/tracker.md` first, every run** (step 1). Non-GitHub tracker →
-  manual path, no API calls, no pretending.
+- **Read `/spec/tracker.md` first, every run** (step 1) — resolved at the
+  **workspace** in a polyrepo member, which carries no local copy. Non-GitHub
+  tracker → manual path, no API calls, no pretending.
 - **Idempotent pushes.** Before creating any issue, search existing open issues
   for a match (finding key / question text / feature id) and **skip duplicates**;
   log what was skipped. Re-running `push` must not double-file.
@@ -88,6 +89,16 @@ shell escaping. Detect capability **in this order, every run**:
    is Jira/Linear/Azure DevOps/other, print the manual-export instructions (the
    same paste/path flow `/steer:audit spec` uses today) and **stop** — there is no
    GitHub API path for a non-GitHub tracker. Don't fabricate one.
+
+   **Polyrepo member** (`spec/PRODUCT.md` present, no local `spec/tracker.md`):
+   the tracker is the **workspace's** by design — resolve it there via
+   `workspace.path`, else the GitHub gateway, and read it from **there**. A
+   missing local file is never "no tracker", so do not fall to the manual floor
+   on its absence and never create a local copy. Issues are filed against the
+   tracker's declared `repository:`, which in a member is not this repo — so the
+   cross-repo closing-ref rule in `OPERATIONS.md` applies (`Refs owner/repo#N`
+   plus an explicit `close`). If the workspace is unreachable by either route,
+   say the spine is unreachable and stop (`/steer:reference polyrepo`).
 2. **Probe for GitHub MCP tools** (e.g. an issues list/get/create tool exposed by
    the github MCP server). If present → **MCP path**.
 3. **Else probe `gh auth status`.** If authenticated → **`gh` CLI path**
@@ -118,10 +129,11 @@ to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 Each operation is MCP-first → `gh` → manual, and reports which path it took. The
-full catalogue — `search`, `get`, `find-or-create`, `update`, `comment`,
-`set-type`, `label`, `field-get`/`field-set`, `transition`, `assign`,
-`link-parent`, `link-related`, `link-pr`, `close`, and the cross-repo closing-ref
-rule — is in
+full catalogue — `search`, `get`, `find-or-create`, `create`, `update`,
+`comment`, `set-type`, `label`, `set-milestone`, `milestone-ensure`,
+`field-get`/`field-set`, `bootstrap-fields`, `transition`, `assign`,
+`link-parent`, `link-related`, `link-pr`, `link-blocked-by`, `close`/`reopen`,
+and the cross-repo closing-ref rule — is in
 [`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md).
 **Read it before performing any operation.**
 
