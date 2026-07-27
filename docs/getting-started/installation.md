@@ -27,8 +27,9 @@ Opening a new session in a managed repo then shows the injected version banner a
 the top of the standards block — that banner is your confirmation the rules loaded.
 
 !!! note "Prerequisites for the full workflow"
-    `/steer:setup` invokes **`/steer:doctor`** to install the local toolchain
-    (git, mise, Docker) when it's missing. The issue and PR steps additionally need
+    `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);
+    `/steer:init` and `/steer:build` are the skills that invoke **`/steer:doctor`**
+    to install it when it's absent. The issue and PR steps additionally need
     an authenticated GitHub path: check `gh auth status` (run `gh auth login` if
     it fails), or export a `GITHUB_PAT` for the GitHub MCP server.
 

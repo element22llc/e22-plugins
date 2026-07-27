@@ -8,10 +8,11 @@ A **manual, read-only conformance audit.** It compares the **as-built spec**
 (the `/spec` spine `/steer:adopt` reverse-engineered from the code — a faithful
 description of what the product *actually does*) against the **tracker spec**
 (what it was *supposed* to do, exported from the issue tracker as markdown) and
-surfaces every place the two diverge. Its outputs are a drift report, a proposed
-Rule-5 resolution per finding, and `spec-drift` issues (its only writes) for
-anything needing a human decision. Resolving drift is a separate, approved step
-(see the spec-framework reference, Rule 5).
+surfaces every place the two diverge. Its outputs are a drift report and a
+proposed Rule-5 resolution per finding; anything needing a human decision is
+*proposed* as a `spec-drift` issue, which **`/steer:issues publish-drift` files
+as a separate step** — this mode writes nothing itself. Resolving drift is in
+turn a separate, approved step (see the spec-framework reference, Rule 5).
 
 **Boundaries.** `/steer:adopt` is the one-time bootstrap for an un-specced repo
 — it reverse-engineers the as-built `/spec` from the code; the `spec` audit is

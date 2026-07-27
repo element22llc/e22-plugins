@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and files ranked findings in the tracker; spec mode surfaces as-built vs intended drift; all runs both. Proposes and files, never edits code or spec.
+description: 'Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and ranks findings; spec mode surfaces as-built vs intended drift; all runs both. Non-mutating: proposes only, files nothing, edits nothing.'
 ---
 
 <!-- Generated from the steer plugin's skills/audit/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:audit` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and files ranked findings in the tracker; spec mode surfaces as-built vs intended drift; all runs both. Proposes and files, never edits code or spec.
+**Purpose.** Repeatable, read-only audits of a managed repo — code mode sweeps repo health against the standards and ranks findings; spec mode surfaces as-built vs intended drift; all runs both. Non-mutating: proposes only, files nothing, edits nothing.
 
 **When to use.** Use for a periodic standards-conformance pass — audit overall code health and the highest-leverage improvements (code), confirm the build matches what the tracker asked for (spec), or both (all).
 

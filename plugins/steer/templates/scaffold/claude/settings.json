@@ -33,6 +33,7 @@
       "Bash(gh run watch:*)",
       "Bash(gh repo view:*)",
       "Bash(gh label list:*)",
+      "Bash(gh label create:*)",
       "Bash(mise tasks:*)",
       "Bash(mise install:*)",
       "Bash(mise lock:*)",

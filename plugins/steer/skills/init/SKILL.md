@@ -201,7 +201,9 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    same PR, plus the app guide and an action-history entry (Living
    documentation rule).
 7. **Hand off.** Seed `/spec/HISTORY.md` with the bootstrap entry (what, why,
-   who asked, the bootstrap PR). **Stamp the spine version:** write
+   who asked, the bootstrap PR) — **except in a polyrepo member**, where
+   `HISTORY.md` is the workspace's: record the bootstrap in the PR description
+   instead and never create a local copy. **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a
    later `/steer:sync` knows which structural migrations this repo predates:

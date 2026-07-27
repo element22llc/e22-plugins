@@ -31,8 +31,9 @@ for a Product Owner to answer offline; see [Bundle mode](#bundle-mode-bundle).
 > **Dispatch `bundle` first — before step 1.** A `bundle` invocation renders
 > and **stops** — it must **not** fall through into the default resolve flow,
 > whose step-1 unconditional legacy delete would violate the read-only
-> guarantee. Route on the argument at the very top; the **Read-only**
-> invariant below is the authoritative list of what bundle must not write.
+> guarantee. Route on the argument at the very top; the **Read-only — a hard
+> invariant** section in `BUNDLE.md` is the authoritative list of what bundle
+> must not write.
 
 ## Where open questions live
 
