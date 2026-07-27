@@ -46,6 +46,16 @@ confirmation.
    to lay out yet.
 3. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues/milestones were touched.
+4. **Polyrepo? Milestones cannot carry the plan.** With `spec/workspace.yml` or
+   `spec/PRODUCT.md` present, run from the **workspace** (a member has no
+   product-level spine to lay out — resolve it per `/steer:reference polyrepo`) and
+   switch the release axis: **a GitHub Milestone is per-repository and cannot span
+   members**, so grouping member issues by milestone would silently split the plan
+   N ways. Projects v2 *is* cross-repo, so group releases by a Project
+   **iteration or single-select field** instead, and say in the output that the
+   release axis moved and why. Everything else — one issue per unshipped feature,
+   native date fields, no fabricated dates — is unchanged. Name the members the
+   plan covers and any it could not reach, exactly as the other reports do.
 
 ## Modes
 
@@ -143,7 +153,11 @@ shape as an inline table (milestone → issues → dates).
   is an update. Re-running a mode must not double-file issues or milestones.
 - **Native attributes only.** Writes are Milestone, links, labels, Type, and the
   native Start/Target **date** issue fields — never a Project-*item* planning field
-  (Status/Iteration/Size), never mirrored into an issue body.
+  (Status/Iteration/Size), never mirrored into an issue body. **One exception, and
+  only one:** in a polyrepo the release axis *must* be a Project iteration or
+  single-select field, because a Milestone cannot span repositories (step 4). That
+  is a forced substitution for the Milestone, not licence to start writing
+  Status/Size — those stay off-limits in every topology.
 - **Milestone = release, not epic.** An epic (a `kind=epic` parent grouping features
   by goal) is an **orthogonal axis** to the release Milestone (when work ships). This
   skill groups by Milestone exactly as above; it may *display* epic membership but

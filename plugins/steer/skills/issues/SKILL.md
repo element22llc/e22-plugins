@@ -69,6 +69,15 @@ sequences those across the lifecycle.
    `/steer:tracker-sync` apply. Never fabricate tracker state.
 2. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues were actually touched.
+3. **Polyrepo? The tracker and the specs are in the workspace.** In a member
+   (`spec/PRODUCT.md`) there is no local `spec/tracker.md` and no
+   `spec/features/**` — resolve the workspace first and read both from there
+   (`/steer:reference polyrepo`); never file a product issue against the member's
+   own repo to work around it. Two facts shape decomposition: **sub-issues do
+   cross repositories** within an org (100 children per parent, 8 levels), so a
+   workspace epic can parent member issues unmodified; **closing keywords do
+   not**, so an issue in the workspace tracker never auto-closes from a member PR
+   and must be closed explicitly after merge.
 
 Read the references before acting: the lifecycle, state model, and authority
 table in `${CLAUDE_PLUGIN_ROOT}/templates/reference/ISSUE-WORKFLOW.md`; the issue

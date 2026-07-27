@@ -168,8 +168,15 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp `/spec/.version` as usual.
    Treating a member as a damaged spine and "repairing" it recreates exactly the
    split-brain the topology removes. In a **workspace**, reconcile the spine
-   normally but skip the app-code surface (`package.json`, `compose.yaml`,
-   `apps/`) — it owns none. Detail: `/steer:reference polyrepo`.
+   normally but skip the app-code surface (`package.json`, `apps/`) — it owns
+   none — and reconcile the **workspace flavor** of the rest: the
+   `profiles/workspace/` `mise.toml` (member `ws:*` tasks), `compose.yaml` (an
+   `include:` list, no services of its own), the `.gitignore` member lines, and
+   `scripts/ws.sh`. A workspace bootstrapped before those shipped is *missing*
+   them, not opted out — propose them. Never regenerate the resolved
+   `include:` list, member `.gitignore` lines, or `[monorepo].config_roots` from
+   the template: they are derived from `spec/workspace.yml`, which the team owns.
+   Detail: `/steer:reference polyrepo`.
 
    **Members sync independently.** There is no workspace mode that syncs every
    member in one pass; run `/steer:sync` in each repo. Because the plugin version

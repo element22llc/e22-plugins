@@ -50,8 +50,20 @@ These hold for the whole run, in every mode.
 
 ## Preconditions
 
+0. **Polyrepo member? Resolve the spine first.** If this repo has
+   `spec/PRODUCT.md` (a polyrepo member), its spine is **partial by design**: the
+   tracker and every feature's `intent.md` / `contract.md` live in the workspace
+   repo, not here. Resolve the workspace before step 1 — `workspace.path` if the
+   checkout exists, else the GitHub gateway — and read the tracker and the linked
+   specs from **there**. A missing local `intent.md` means the workspace has not
+   been read yet, never that the feature is unspecified, so **never** author
+   product-level spec files here to fill the gap. If neither route reaches the
+   workspace, say the spine is unreachable and stop. Procedure:
+   `/steer:reference polyrepo`.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
-   tracker is something else, say so and stop (manual flow only).
+   tracker is something else, say so and stop (manual flow only). In a member,
+   this is the **workspace's** `spec/tracker.md` resolved in step 0 — a member
+   never carries its own.
 2. **Route all tracker reads/writes through `/steer:tracker-sync`** (the gateway —
    `search`/`get`/`find-or-create`/`update`/`comment`/`set-type`/`label`/
    `transition`/`assign`/`link-pr`/`close`). Never hit `gh`/MCP for issues
@@ -151,6 +163,12 @@ lifecycle-transition evidence, the issue never advances state either.
   [`CLOSING-REF.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/CLOSING-REF.md).
 
 Divert **only on positive proof of a mismatch**.
+
+In a **polyrepo member** the mismatch is structural, not incidental: the tracker
+is the workspace's, so a member PR can never auto-close its issue. Take the
+`Refs owner/repo#N` + explicit-close path every time, and land the spec update
+(the owning `contract.md`) as its own change in the **workspace** repo — those two
+PRs cannot be atomic (`/steer:reference polyrepo`).
 
 ## Completion semantics
 

@@ -63,21 +63,36 @@ lives in the plugin — no external template repo to fetch. Read
        `mise.toml` and adapt `ARCHITECTURE.md`/README to the IaC layout.
      - **`workspace`** (polyrepo spine host): install
        `${CLAUDE_PLUGIN_ROOT}/templates/spec/workspace.yml` as **`spec/workspace.yml`**
-       (it is a spec artifact — product-level truth — not a root config file) plus
-       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/workspace/README.md`
-       (replaces the core README), and **skip
-       Layer 1 entirely**. This repo owns no application code, so drop Layer 0's
-       `compose.yaml`, `scripts/worktree-env.sh`, `apps/`, and the Dockerfile
-       refs; keep mise, CI, the `/spec` spine, and `.claude/`. Interview for the
-       member list and resolve every `spec/workspace.yml` placeholder — **never ship
-       fabricated repo names or branches**; leave the file with a single
-       placeholder member if the dev does not know them yet. If the dev plans to
-       clone members inside this repo, add those dirs to `.gitignore`. Then
-       bootstrap each member separately: run `/steer:init` in it with its own
+       (it is a spec artifact — product-level truth — not a root config file), then
+       the Layer-2 dir `profiles/workspace/`: `README.md` and `mise.toml` and
+       `compose.yaml` all **replace** their core counterparts, `gitignore` merges
+       into `.gitignore`, and `scripts/ws.sh` installs as `scripts/ws.sh`. **Skip
+       Layer 1 entirely** — this repo owns no application code, so also drop
+       Layer 0's `apps/` and the Dockerfile refs. **Keep** Layer 0's
+       `scripts/worktree-env.sh`: the workspace boots the members' services
+       together and needs its own Compose project name so it never collides with a
+       member's standalone stack.
+       Interview for the member list and resolve every `spec/workspace.yml`
+       placeholder — **never ship fabricated repo names or branches**; leave the
+       file with a single placeholder member if the dev does not know them yet.
+       Then derive the rest **from that manifest** (it is the one source of truth —
+       `mise run ws:status` reports any of these that drift):
+       - `.gitignore` — one anchored line per member `path:` (`/frontend/`).
+       - `compose.yaml` — one `include:` entry per member that will run local
+         services, long syntax. If none will, delete the file **and** the
+         `docker:*` + `dev` tasks in `mise.toml`.
+       - `mise.toml` — the `dev` task's `depends` (one `//<member>:dev` per member
+         with a dev server), and, once members are actually cloned, uncomment
+         `[settings] monorepo_root` + `[monorepo]` with `config_roots` listed
+         explicitly and `lockfile = false`.
+       Then bootstrap each member separately: run `/steer:init` in it with its own
        profile, and instantiate `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`
        as its `spec/PRODUCT.md` **instead of** the product-level spine files
        (`vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`,
-       `spec/features/`, `spec/tracker.md`) — those live once, here.
+       `spec/features/`, `spec/tracker.md`) — those live once, here. Namespace each
+       member's Compose service/volume/network names while you are in it: `include:`
+       warns and takes one side on a collision instead of merging. Members that
+       already have working code go through `/steer:adopt` instead.
        **Recommend a monorepo first** unless the split is externally mandated, and
        read `/steer:reference polyrepo` before advising.
      **Set the profile marker:** write the chosen profile into the `CLAUDE.md`

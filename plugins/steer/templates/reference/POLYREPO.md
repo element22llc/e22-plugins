@@ -139,12 +139,51 @@ runs per repo, so N members can settle on N plugin versions. Mitigations:
 - Sync the members deliberately, in one pass, and check `/spec/.version` agrees
   across them.
 
-## Not in scope here
+## Running the whole product locally
 
-Running the whole product locally — mise `monorepo_root` task addressing, Compose
-`include:` to boot every member with one command, a generated `.code-workspace` —
-is deliberately absent. It is generic multi-repo devx rather than spine
-management, and it carries upstream churn this reference does not want to inherit
-(mise's monorepo discovery is migrating to explicit `[monorepo].config_roots`,
-and `[monorepo].lockfile` changes default in a future release). Clone the members
-wherever you like and run them as they stand.
+The members are cloned **inside** the workspace, at the `path:` each declares in
+the manifest, and git-ignored there. They are ordinary clones, not submodules:
+nothing pins a SHA, so no member commit ever dirties the workspace, and each
+member stays a normal repo you branch and push from directly.
+
+```text
+acme-workspace/
+├── spec/                  THE product spine (+ workspace.yml)
+├── mise.toml              ws:* tasks, monorepo config_roots, dev
+├── compose.yaml           include: one entry per member that runs services
+├── scripts/ws.sh          the member driver behind the ws:* tasks
+├── .gitignore             /frontend/ /backend/ *.code-workspace
+└── frontend/ backend/     git-ignored clones — NOT submodules
+```
+
+| Task | What it does |
+| --- | --- |
+| `mise run ws:clone` | Clone every member that declares a `path:`, at its manifest branch. Idempotent. |
+| `mise run ws:sync` | Fetch + **fast-forward only**. Refuses a dirty tree, a detached HEAD, a branch other than the declared one, or a divergence — it never rewrites a member's history. |
+| `mise run ws:status` | Per member: branch, dirty, `/spec/.version`, and drift between the manifest and `compose.yaml` / `.gitignore`. |
+| `mise run ws:code` | Generate `<product>.code-workspace` (multi-root VS Code). Generated + git-ignored: edit the manifest, not the output. |
+| `mise run dev` | Boot the product — every member's services via Compose `include:`, then each member's dev server. |
+
+**mise monorepo mode** makes each member's own `mise.toml` a config_root, so
+`mise //backend:test`, `mise '//...:lint'`, cross-project `depends`, shared
+`[task_templates]`, and automatic trust propagation all work from the workspace.
+It is **off in the shipped scaffold** and turned on once members are cloned — the
+workspace `mise.toml` carries the block to uncomment. Two things to get right:
+list the member dirs in `[monorepo].config_roots` **explicitly** (filesystem
+auto-discovery is deprecated upstream), and set `[monorepo].lockfile` explicitly
+to `false` — root lockfiles are mid-rollout upstream and a member must stay
+buildable standalone.
+
+**Compose `include:` does not merge on a name collision** — it warns and takes one
+side, so two members that both ship a service called `postgres` give you one
+database and a warning, not two. Namespace service, volume and network names in
+each *member's* compose file. Host ports are a separate problem the topology does
+not solve: every member's scaffold publishes `${POSTGRES_PORT:-5432}`, so give
+each member a distinct base port in its own `.env`. Container/volume/network names
+never clash with a member's standalone stack — mise sources
+`scripts/worktree-env.sh`, which gives the workspace its own
+`COMPOSE_PROJECT_NAME`.
+
+This is a **partial monorepo simulation** and worth naming as such: coupled local
+development without atomic cross-repo commits. Nothing above changes the fact
+that a contract change across two members is two PRs.

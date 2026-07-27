@@ -36,6 +36,11 @@ members:
     # OPTIONAL relative dir when this member is cloned inside the workspace,
     # e.g. "frontend". Omit it and steer reads the member over the GitHub
     # gateway instead.
+    #
+    # This dir is what `mise run ws:clone` clones into, and it must also appear
+    # in .gitignore, in the compose.yaml `include:` list (if the member runs
+    # local services), and in mise.toml `[monorepo].config_roots`. This file is
+    # the source of truth for all four - `mise run ws:status` reports drift.
     path:
     # One line: what this member is responsible for.
     description:

@@ -217,6 +217,52 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   covered and flag any they could reach neither locally nor over the GitHub
   gateway as **uncovered**, so a fraction of a product is never presented as the
   whole.
+- **Added:** polyrepo **local runtime** for the `workspace` profile — one
+  `mise run dev` boots the whole product. The profile now carries its own
+  `mise.toml` (member `ws:*` tasks; the mise `[settings] monorepo_root` +
+  `[monorepo]` blocks ship commented, to be enabled with `config_roots` listed
+  explicitly and `lockfile = false` once members are cloned), a `compose.yaml`
+  that declares no services and `include:`s each member's file, a `.gitignore`
+  fragment for the member checkouts and the generated `*.code-workspace`, and
+  `scripts/ws.sh`. Members are **git-ignored clones, not submodules**: nothing
+  pins a SHA, so a member commit never dirties the workspace and detached-HEAD
+  work loss is off the table. The workspace keeps `scripts/worktree-env.sh`,
+  which is what gives its aggregated stack a Compose project name distinct from
+  every member's standalone one.
+- **Added:** `mise run ws:clone` / `ws:sync` / `ws:status` / `ws:code` / `ws:list`
+  in a workspace repo, backed by the shipped `scripts/ws.sh` — so they work for a
+  teammate with no Claude Code, the same reason the version-pin scripts are
+  committed copies. `spec/workspace.yml` is the single source of truth for the
+  clone paths, the `include:` list, the `.gitignore` lines and
+  `[monorepo].config_roots`; `ws:status` reports where those have drifted apart.
+  `ws:sync` is fetch + fast-forward **only** — it refuses a dirty tree, a detached
+  HEAD, a branch other than the declared one, or a divergence, and one unreachable
+  remote never aborts the sweep.
+- **Changed:** `/steer:work` resolves the spine from `spec/PRODUCT.md` before
+  reading the tracker or a feature's specs. Previously a member repo had no local
+  `spec/tracker.md` and no `spec/features/**`, so the skill stopped at its first
+  precondition or read a missing `intent.md` as "unspecified" — the one failure
+  the workspace topology exists to prevent. In a member the closing-ref mismatch
+  is now treated as structural rather than incidental: always
+  `Refs owner/repo#N` + an explicit close.
+- **Changed:** `/steer:issues`, `/steer:protect` and `/steer:roadmap` are
+  topology-aware. `issues` reads the tracker from the workspace and states which
+  edges cross repos (sub-issues do, closing keywords do not). `protect` names the
+  sibling repos still unprotected instead of letting a one-repo verdict read as
+  product-wide, and says plainly that org-level rulesets need GitHub Team or
+  Enterprise. `roadmap` moves the release axis off Milestones — which cannot span
+  repositories — onto a Project iteration/single-select field, recorded as the one
+  named exception to its native-attributes-only guardrail.
+- **Changed:** `/steer:adopt` handles one product spread across several existing
+  repos: recommend a monorepo out loud first, then bootstrap the workspace before
+  any member, and install `spec/PRODUCT.md` in a member *instead of* a full spine.
+  Reverse-engineering a complete spine into each repo was the one way adoption
+  could manufacture the split-brain the topology removes.
+- **Changed:** `/steer:sync` reconciles the workspace flavor of `mise.toml`,
+  `compose.yaml` and `scripts/ws.sh` (a workspace bootstrapped before those
+  shipped is missing them, not opted out) and never regenerates the resolved
+  `include:` list, member `.gitignore` lines or `config_roots` — those are derived
+  from a manifest the team owns.
 - **Fixed:** `scripts/scan-invocations.sh` is reformatted to satisfy `shfmt`
   (one brace-placement nit). Formatting only, no behavior change — the script
   sat in a blind spot where the repo's pre-commit hook hard-gated `shfmt` but
