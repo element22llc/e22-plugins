@@ -14,10 +14,12 @@ discipline) is in **`/steer:reference architecture-diagrams`**.
 
 - **Tier 1 — Mermaid (default, no toolchain).** Hand-author the blocks below. They
   render natively in GitHub's file view and in the docs site — nothing to install.
-- **Tier 2 — LikeC4 (opt-in).** Define a C4 model under `architecture/*.likec4` and
-  generate the Mermaid below from it (`mise run diagrams:render` — see the reference
-  topic). When on Tier 2 the blocks below are **generated; do not hand-edit** —
-  edit the `.likec4` source and regenerate.
+- **Tier 2 — LikeC4 (opt-in).** Define a C4 model in the sibling folder
+  `architecture/` (`architecture/*.likec4` is the *model*; this file is the
+  *rendered diagram*) and generate the Mermaid below from it (`mise run
+  diagrams:render` — see the reference topic). When on Tier 2 the blocks below
+  are **generated; do not hand-edit** — edit the `.likec4` source and
+  regenerate.
 
 ## System context & containers
 

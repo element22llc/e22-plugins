@@ -21,8 +21,8 @@ flowchart TD
 
 1. Reads the existing code to capture **what is** — not what someone decided.
 2. Materializes the `/spec` spine from the bundled templates — including the
-   `design/` home (`README.md`, `source.md`, the living `architecture.md`
-   diagram) and `sources/README.md`.
+   `design/` home (`README.md`, `source.md`, the living
+   `architecture-diagram.md`) and `sources/README.md`.
 3. Installs the repo scaffold (toolchain, CI, PR template).
 4. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:issues bootstrap-labels`) and verifies the org-level

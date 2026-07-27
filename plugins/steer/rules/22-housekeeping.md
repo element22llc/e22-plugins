@@ -4,7 +4,7 @@
 The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
 `packages/`, `configs/`, `infra/`, `spec/`) plus root config files
 (`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
-`CLAUDE.md`, `README.md`, `DESIGN.md`).
+`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md`).
 
 Loose **source/research materials** — spreadsheets, inventories, vendor
 metadata, schema/DDL dumps, discovery docs, and **specification /

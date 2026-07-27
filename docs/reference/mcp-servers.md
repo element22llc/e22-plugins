@@ -25,8 +25,7 @@ server-by-server content is reconciled by hand against the source of truth.
     This `.mcp.json` is read by the Claude Code **CLI / Code tab**, not by the
     **Cowork** or **Chat** tabs, which wire MCP through their own **Connectors**.
     On Cowork the `${GITHUB_PAT}` `github` server can't authenticate (no shell to
-    export the PAT into) and the local-process `markitdown` server can't run (no
-    installs in the sandbox) — so for GitHub work in Cowork, enable the **built-in
+    export the PAT into) — so for GitHub work in Cowork, enable the **built-in
     GitHub connector** instead. See
     [Known limitations → Claude Cowork's sandbox](known-limitations.md#claude-coworks-sandbox-no-installs-connector-only-github).
 
@@ -35,7 +34,6 @@ server-by-server content is reconciled by hand against the source of truth.
 | Server | Transport | Auth | Purpose |
 | --- | --- | --- | --- |
 | `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${GITHUB_PAT}` (your shell) | Read issues, comment on PRs, inspect workflow runs. |
-| `markitdown` | local process (`uvx markitdown-mcp`) | none | Convert provided Office documents to Markdown. |
 | `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
@@ -54,33 +52,35 @@ server", reachable from any bootstrapped repo.
     Don't put the PAT in a repo file (even a gitignored one) or paste it into a
     Claude message.
 
-## `markitdown`
+## Office-document conversion is *not* a server
 
-Wires the session to Microsoft's
-[markitdown](https://github.com/microsoft/markitdown) MCP server
-(`packages/markitdown-mcp`), which converts binary Office documents — `.docx`,
-`.xlsx`, `.pptx`, plus HTML/EPUB/CSV and more — into clean Markdown. Reach for it
-when a stakeholder hands over source material in those formats, so Claude reads it
-cheaply instead of choking on raw zip+XML.
+Earlier versions wired Microsoft's
+[markitdown](https://github.com/microsoft/markitdown) as a fourth MCP server.
+It was removed: a plugin MCP server starts automatically whenever the plugin is
+enabled, so every session paid a `uvx markitdown-mcp` subprocess to serve the
+one skill that needs it ([`/steer:intake`](../workflows/intake.md)).
+
+The same tool now runs **on demand** as the scaffold's mise task, which
+`/steer:intake` already used as its deterministic committable path:
+
+```sh
+mise run convert:doc path/to/document.docx     # Markdown on stdout
+```
+
+It runs `uvx markitdown`, so it needs `uv` (and a Python for `uv` to manage) on
+`PATH` — no token. The scaffold `mise.toml` pins `node`, `python`, and `uv` as
+an always-installed agent-runtime baseline, so `mise install` makes this work
+out of the box regardless of product stack. First use auto-fetches the package
+from PyPI.
 
 !!! tip "PDFs and images don't need it"
     Claude's native `Read` tool already handles PDFs (it renders pages visually)
-    and images. Use `markitdown` for the Office binaries specifically.
+    and images. Use `convert:doc` for the Office binaries specifically.
 
-[`/steer:intake`](../workflows/intake.md) is the main consumer: it converts each
-version of a PO-supplied document to the normalized `extracted.md` it commits and
-diffs. The same converter is available off-MCP as the `mise run convert:doc`
-scaffold task, the deterministic on-disk path.
-
-It runs via `uvx markitdown-mcp`, so it needs `uv` (and a Python for `uv` to
-manage) on `PATH` — **no token**. The scaffold `mise.toml` pins `node`, `python`,
-and `uv` as an always-installed agent-runtime baseline (AI tooling and MCP
-servers run packages on demand via `npx`/`uvx`), so
-`mise install` makes this work out of the box regardless of product stack. First
-use auto-fetches the package from PyPI.
-
-!!! warning "Local, trusted use only"
-    markitdown-mcp is meant for local use — don't expose it over HTTP/SSE.
+!!! note "Stale entries are harmless"
+    A repo bootstrapped before the removal may still list a `markitdown` server
+    in `.mcp.json` or `.vscode/mcp.json`. Nothing breaks — it just starts a
+    server nothing calls. [`/steer:sync`](skills.md) clears it.
 
 ## `context7`
 
@@ -111,6 +111,5 @@ tier works out of the box.
 
 Restart Claude Code in the repo and run `/mcp`. Each configured server should
 report **connected**. A server that shows disconnected means its prerequisite is
-missing — a `GITHUB_PAT` not exported (for `github`), or `uv`/`python` removed
-from `mise.toml` (for `markitdown`). Nothing breaks when a server is
-disconnected; only that server's tools are unavailable.
+missing — typically a `GITHUB_PAT` not exported (for `github`). Nothing breaks
+when a server is disconnected; only that server's tools are unavailable.

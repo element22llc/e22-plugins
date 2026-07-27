@@ -52,6 +52,87 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   Both header forms are now accepted, and an ADR still carrying the template's
   whole `Proposed | Accepted | …` enum reports `unresolved-template` rather than
   being read as a real decision state.
+- **Changed:** the **`markitdown` MCP server is retired** in favour of the
+  on-demand `mise run convert:doc <file>` task. A plugin MCP server starts
+  automatically whenever the plugin is enabled, so every session spawned a
+  `uvx markitdown-mcp` subprocess to serve the one skill that needs it
+  (`/steer:intake`) — including the overwhelming majority of sessions that never
+  convert a document. `convert:doc` runs the same `markitdown` tool, and
+  `/steer:intake` already treated it as its deterministic committable path, so
+  **capability is unchanged** and only the always-on cost goes away. The
+  converter ladder is now `convert:doc` → native `Read` (text-bearing PDFs) →
+  manual floor. The VS Code Copilot mirror regenerates from the plugin
+  `.mcp.json`, so it drops the server too. Migration `v3.23.0` clears a stale
+  `markitdown` entry from a repo's `.mcp.json` / `.vscode/mcp.json`; until it
+  runs the entry is harmless.
+- **Changed:** rule `10-stack` now names the bundled **`context7`** MCP server as
+  the way to satisfy its own "verify the current stable version in-session,
+  never from training-data memory" instruction. context7 shipped with no skill
+  or rule referencing it, so the one job it exists to do was never actually
+  wired to it — it read as unexplained tool-surface cost. Offset within the
+  always-on budget by dropping a duplicated editor-preference line that
+  `CONVENTIONS.md` already carries in full; the rules payload is **smaller**
+  than before (62,468 B, from 62,497 B).
+
+- **Changed:** the living global architecture diagram moves from
+  `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
+  shared a basename with the root `ARCHITECTURE.md` that links to it, differing
+  only by case and path — two files called "architecture" at two altitudes read
+  as a duplicate or a half-finished move — and it collided with the Tier 2
+  LikeC4 *model folder* `spec/design/architecture/` sitting beside it. The three
+  artifacts are now legible by name: model folder `architecture/` → rendered
+  diagram `architecture-diagram.md` → narrative `ARCHITECTURE.md`. The
+  root/`spec` **split is unchanged** — `ARCHITECTURE.md` stays at the repo root
+  as the as-built system model, narrative and tables only, still linking rather
+  than inlining. Bundled template renamed to
+  `templates/spec/design-architecture-diagram.md`; the LikeC4 model folder and
+  the `diagrams:render` paths are untouched. A **`MIGRATIONS.md` v3.23.0 entry**
+  carries the `git mv` plus the enumerated in-file token rewrite, so
+  `/steer:sync` moves the file in already-bootstrapped repos with history
+  following it.
+- **Fixed:** the root-tidiness rule (`22-housekeeping`) omitted `ARCHITECTURE.md`
+  from the root allowlist, so the one rule that decides what may sit at the repo
+  root read it as a stray — while `20-layout`, `32-living-docs`,
+  `50-definition-of-done`, `52-deployment`, `55-drift-gates` and the scaffold all
+  mandate it there. It is now in the allowlist. The always-on payload was 3 bytes
+  under its ceiling, so the addition is paid for in place: `20-layout` and
+  `32-living-docs` lose a few redundant words in the same sentences, with no
+  change of meaning and no ceiling raise.
+- **Changed:** the *why* behind the root-vs-`/spec` split is now stated where a
+  reader hits it instead of only in the reference topic — the scaffold
+  `ARCHITECTURE.md` explains that it is the **as-built** model while `/spec`
+  holds **intent** (and that keeping them apart is what lets `/steer:audit spec`
+  compare them), and `ARCHITECTURE-DIAGRAMS.md` explains the naming. The
+  design-export lifecycle no longer tells a shipped product to delete the folder
+  holding its living architecture diagram.
+- **Fixed:** a long-running skill no longer loses its **guardrails at
+  compaction**. Claude Code re-attaches an invoked skill after auto-compaction
+  but keeps only the **first 5,000 tokens** of it, and seven skill bodies had
+  grown past that — `issues`, `audit`, `work`, `sync`, `tracker-sync`, `init`,
+  `build`. What fell past the cut was precisely the standing safety content:
+  `/steer:work` lost its **Guardrails** (including *the merge is the human
+  gate*), `/steer:issues` lost **Guardrails + Coupling rules**, `/steer:audit`
+  lost its **read-only output contract** and `all` mode. Because compaction only
+  fires on long runs, the protections disappeared exactly when a run had gone on
+  long enough to need them. Two fixes, applied together: every skill now
+  **front-loads** its guardrails, coupling rules, and output contracts near the
+  top of `SKILL.md`; and per-mode/per-phase procedure moved into sibling files
+  the dispatcher reads **just-in-time** for the one path it is executing (a tool
+  result, so it never competes for the re-attach budget). No instruction was
+  dropped — the largest body fell from ~6,400 to ~2,400 tokens, and total
+  always-resident skill prose fell ~26%.
+- **Added:** `check_context_budget.py` now gates a third always-on surface — a
+  **per-skill `SKILL.md` body ceiling** of 17,500 bytes (the 5,000-token
+  compaction cap at a pessimistic 3.5 B/token). Unlike the rules and listing
+  ratchets this is a hard ceiling derived from harness behaviour, not a
+  baseline: it does not move down as bodies shrink, and it must not be raised to
+  fit new prose. `--report` gained a largest-body row and a per-skill
+  percentage-of-cap table for release PRs.
+- **Fixed:** `check_fixtures.py`'s workflow-authority check scanned only
+  `SKILL.md`, so factoring a skill body across sibling files could relocate the
+  `draft->approved` transition-owner marker out of view. Authority is a property
+  of the *skill*, so it now scans the whole skill directory — as
+  `check_standards.py`'s script-grant check already did.
 - **Fixed:** hooks now judge **the repo being acted on**, not the session `cwd`.
   With a git repo nested inside another work tree — a vendored or gitignored
   clone, a `tools/` checkout, a polyrepo member cloned inside its workspace — the

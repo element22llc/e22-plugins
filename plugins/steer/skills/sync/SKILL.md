@@ -49,6 +49,42 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
 (`/steer:audit`). Those operate on different axes; this one is
 **repo-structure-vs-plugin-conventions**.
 
+## Guardrails
+
+- **Structure only, never behavior.** Sync moves/renames artifacts and splices
+  in template additions; it does not refactor app code, resolve open questions,
+  or re-triage productionization. Code health is `/steer:audit`; drift is
+  `/steer:audit spec`.
+- **The ledger is the source of truth for non-additive changes.** Apply
+  renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
+  improvise a transform from memory of "what changed."
+- **Capability repair is presence + wiring only.** `CAPABILITIES.md` is the
+  source of truth for which files unlock which capability and how to repair a gap.
+  Create a capability-critical file only when its conditional predicate applies
+  and it isn't `disabled`; re-copy a `verbatim` script only because it's
+  contractually identical (after showing the diff); otherwise splice the named
+  marker / propose, never clobber. Don't broaden into app code (`/steer:audit`)
+  or spec↔tracker drift (`/steer:audit spec`).
+- **Read-then-propose, never clobber.** Diff and ask before touching any file
+  that exists; reconcile scaffold into it rather than replacing it; preserve
+  every filled-in value. Never touch working app code.
+- **Invocation hygiene is a token rewrite on live prose only.** Apply only the
+  detector's deterministic classes (`legacy-e22`, `reference-mode`) as exact-token
+  rewrites; propose (never auto-apply) `noncallable-gateway` front-door swaps and
+  surface `unknown` tokens for the dev. Scan only the live instruction surfaces the
+  detector targets — never rewrite append-only/provenance prose (`spec/HISTORY.md`,
+  reports, ADRs), and never the marketplace id `e22-plugins`.
+- **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
+  `/spec/.version` — never from training-data memory.
+- **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
+  **merge review** is the hard gate; push the branch and open the PR yourself,
+  announced — never merge it.
+- **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
+  dev invoked the sync from (captured in step 1), so the sync lands back onto the
+  work it continues. Only when `BASE` is itself `main` does the PR target `main`.
+  Never silently default `gh pr create` to the repo's default branch, and never
+  ask the dev to pick the base — `BASE` already answers that.
+
 ## Axis at a glance
 
 | Skill | Compares | Edits |
@@ -156,152 +192,14 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    the diff of proposed substitutions before applying. List each migration
    you're applying (and each skipped, with why) before touching files.
 
-5. **Reconcile the materialized templates (additive).** After structural
-   migrations, run the standard **Template reconciliation** convention
-   (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
-   reconciliation") across the copied-in files this repo has —
-   `PRODUCTIONIZATION.md`, each feature's `intent.md` / `contract.md`,
-   `tracker.md`, `app/README.md`, and the scaffold files
-   (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …): for each, run
-   that convention's diff command and splice in only what's missing, additive-only
-   (never overwrite, reorder, or delete a dev/PO-added row). Reference prose
-   (`templates/reference/*`) and ADRs are exempt — do not reconcile them (they're
-   read in place / immutable).
-   For the scaffold, follow the **copy-and-adapt, never clobber** discipline from
-   the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
-   config), adapt to the repo's real stack, and never touch working app code.
-   For the **non-Markdown** scaffold files the heading/checklist convention can't
-   parse — `.gitignore` and the JSON configs (`.claude/settings.json`,
-   `biome.json`, `configs/tsconfig.base.json`) — reconcile with the
-   structured helper instead, which is additive and never overwrites an existing
-   value or line:
-
-   ```
-   # check (read-only): empty output = current; any output = additive delta
-   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
-     auto .gitignore "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitignore"
-   # apply the additive merge once you've shown the delta
-   python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" \
-     auto .claude/settings.json \
-     "${CLAUDE_PLUGIN_ROOT}/templates/scaffold/claude/settings.json" --apply
-   ```
-
-   This is the **content**-level merge (permission lists, companion-plugin
-   entries, config keys). For the `permissions` block it also **de-conflicts
-   across precedence tiers** (deny > ask > allow): a pattern that would end up
-   in two tiers — e.g. a locally allow-listed `Bash(git push)` meeting the
-   template's `ask` copy — is kept only in its most-restrictive tier, so the
-   merge never leaves a contradictory `allow`+`ask` pair (a `-` line in the
-   delta shows the dropped copy). The plugin-*enablement* wiring inside
-   `.claude/settings.json` — the `steer@e22-plugins` marker — is separately
-   verified by capability repair (step 6); both are additive and the merge here
-   never flips an existing value, so a deliberate `"steer@e22-plugins": false`
-   opt-off is preserved.
-
-   **No `.mcp.json` reconcile.** The `github`, `markitdown`, and `context7` MCP
-   servers ship with the **plugin** (`plugins/steer/.mcp.json`), not the scaffold — so they
-   refresh with the `/plugin update` in step 2 and are **not** part of scaffold
-   reconciliation; there is no scaffold template to diff a repo `.mcp.json`
-   against. A repo bootstrapped before v2.11.0 still has the old repo-local
-   `.mcp.json`, whose entries now duplicate the plugin's; the **v2.11.0 migration
-   in step 4** removes the redundant copy (or just the duplicated keys, keeping
-   product-specific servers). Don't reconcile `.mcp.json` here.
-
-6. **Repair capability gaps (missing / mis-wired scaffold wiring).** Additive
-   reconciliation (step 5) only splices into files that *already exist* and the
-   ledger only transforms files that exist — so a repo adopted before a
-   capability shipped (or that lost a wiring file) silently lacks it, and the
-   sync so far would report "current." Close that here. Run the read-only
-   detector and walk the capability map:
-
-   ```sh
-   sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-capabilities.sh" .
-   ```
-
-   It prints one `id<TAB>status<TAB>files` line per capability
-   (`present-wired | absent | mis-wired | disabled | n/a`) plus a `stack`
-   fingerprint, on stdout (gaps are **not** a nonzero exit). For each capability
-   read its entry in
-   `${CLAUDE_PLUGIN_ROOT}/templates/reference/CAPABILITIES.md` for the repair
-   semantics + conditionality, then:
-
-   - **`present-wired` / `n/a` / `disabled`** → nothing to do. `n/a` means the
-     conditional predicate doesn't apply (wrong stack/tracker) — never re-add it.
-     `disabled` (a `"steer@e22-plugins": false`) is a deliberate opt-off — respect
-     it. There is no opt-out file; a deliberately-dropped *always* capability will
-     re-appear as a proposal each sync and the dev declines it.
-   - **`absent`** → **create** the file(s) from the bundled scaffold
-     (copy-and-adapt per the scaffold `MANIFEST.md`), adapting to the repo's real
-     stack. `compose.yaml` is the exception: its need isn't knowable — **propose
-     only after confirming with the dev**, and when uncertain, ask rather than
-     create.
-   - **`mis-wired`** → for `verbatim` files (the version-pin scripts) **re-copy**
-     from the plugin source — but **show the diff first** and warn that local
-     edits are lost (move product-specific pins to `policy/versions.yml`). For
-     everything else, **additively splice** only the named wiring marker (the
-     `steer@e22-plugins` entry, a CI step, a PR-template section), preserving every
-     existing key/step — never clobber.
-
-   Some repairs need a human/external step sync can't do: `branch-protection.yml`
-   is written here but applied server-side by `/steer:protect`. (`claude.yml`
-   needs only the `ANTHROPIC_API_KEY` secret to run — the marketplace repo is
-   public, so the plugin clone is anonymous and needs no credential.)
-
-   Emit a **capability status table** (this is the whole output under `--check`):
-
-   ```markdown
-   | Capability | Files | Status | Action |
-   |---|---|---|---|
-   | plugin-enabled-local | .claude/settings.json | mis-wired | splice enabledPlugins.steer (proposed) |
-   | delivery-mode-declared | CLAUDE.md | mis-wired | splice ## Delivery mode, default pr-flow (proposed); ask if solo-trunk fits |
-   | in-ci-plugin-loading | .github/workflows/claude.yml | absent | create from scaffold (proposed); needs ANTHROPIC_API_KEY secret |
-   | version-pin-enforcement | policy/versions.yml, scripts/… | mis-wired | re-copy verbatim scripts (proposed, diff shown) |
-   | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |
-   | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:protect |
-   | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |
-   ```
-
-   **Under `--check`**, don't branch or write — continue to step 6.5 (invocation
-   hygiene) and stop *there*; that is where `--check` ends, not here. Otherwise
-   apply the proposed repairs on `feat/sync` under the read-then-propose discipline
-   and carry on.
-
-6.5. **Repair invocation hygiene (stale / invalid slash invocations in live prose).**
-   A repo's live instruction prose (`CLAUDE.md`, `README.md`,
-   `.github/pull_request_template.md`) is frozen at the version that wrote it, so a
-   skill rename, a skill folded into a `reference` mode, or a skill turned
-   `user-invocable: false` leaves invocations that no longer resolve — and Claude
-   Code has no built-in check that a referenced skill exists. The v2.0.0 ledger
-   migration (step 4) rewrites the pre-rebrand `/e22-*` tokens once; this step is the
-   **standing** every-sync backstop that also catches the post-rebrand classes and
-   any later drift. Run the read-only detector:
-
-   ```sh
-   sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-invocations.sh" .
-   ```
-
-   It derives the *valid* invocation surface live from the plugin (skill names, the
-   `user-invocable: false` set, and the `reference` modes) — so it never goes stale —
-   and prints one TAB line per problem occurrence,
-   `<file>\t<lineno>\t<found>\t<class>\t<suggested-fix>` (clean repo = silent; findings
-   are on stdout, never a nonzero exit). See
-   `${CLAUDE_PLUGIN_ROOT}/templates/reference/INVOCATION.md` → "Drift detection &
-   auto-repair" for the class semantics. Then, read-then-propose on `feat/sync`:
-
-   - **`legacy-e22`** and **`reference-mode`** → **deterministic**: apply the exact
-     `suggested-fix` token rewrite (a bare `reference`-mode invocation becomes
-     `/steer:reference <mode>`), showing the diff. Replace only the flagged tokens —
-     never a broader match, never the marketplace id.
-   - **`noncallable-gateway`** → the fix is a **front-door swap that changes meaning**
-     (e.g. `/steer:spec-scaffold <id>` → `/steer:spec`; `/steer:tracker-sync` →
-     `/steer:issues`), so **propose it and let the dev confirm** — do not auto-rewrite.
-   - **`unknown`** → a token that resolves to no skill/mode (e.g. a removed skill) →
-     **surface only**, no rewrite; the dev decides.
-
-   The detector scans only live instruction surfaces and deliberately skips
-   append-only/provenance prose (`spec/HISTORY.md`, `spec/reports/*`, ADRs, feature
-   `intent.md` provenance) — a past `e22-adopt` mention there is a legitimate record, not
-   live guidance. **`--check` stops here**: print the findings and exit — no writes.
+5. **Reconcile the materialized templates (additive)** and
+   6. **repair capability gaps (missing / mis-wired scaffold wiring).** These two
+   steps carry the bulk of the procedure — the template-reconciliation
+   convention, the `scaffold_reconcile.py` structured merge, the `.mcp.json`
+   exemption, and the capability scan/repair table. Read them in
+   [`RECONCILE.md`](${CLAUDE_PLUGIN_ROOT}/skills/sync/RECONCILE.md) before
+   executing. Both are additive and never clobber; under `--check` they report
+   only.
 
 7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
 
@@ -344,39 +242,3 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    Pick one `Current recommended action` by precedence (a failed migration
    outranks a capability gap). An opened-but-unmerged sync PR is **not**
    `Complete`. Never clobbers, never commits to `main`.
-
-## Guardrails
-
-- **Structure only, never behavior.** Sync moves/renames artifacts and splices
-  in template additions; it does not refactor app code, resolve open questions,
-  or re-triage productionization. Code health is `/steer:audit`; drift is
-  `/steer:audit spec`.
-- **The ledger is the source of truth for non-additive changes.** Apply
-  renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
-  improvise a transform from memory of "what changed."
-- **Capability repair is presence + wiring only.** `CAPABILITIES.md` is the
-  source of truth for which files unlock which capability and how to repair a gap.
-  Create a capability-critical file only when its conditional predicate applies
-  and it isn't `disabled`; re-copy a `verbatim` script only because it's
-  contractually identical (after showing the diff); otherwise splice the named
-  marker / propose, never clobber. Don't broaden into app code (`/steer:audit`)
-  or spec↔tracker drift (`/steer:audit spec`).
-- **Read-then-propose, never clobber.** Diff and ask before touching any file
-  that exists; reconcile scaffold into it rather than replacing it; preserve
-  every filled-in value. Never touch working app code.
-- **Invocation hygiene is a token rewrite on live prose only.** Apply only the
-  detector's deterministic classes (`legacy-e22`, `reference-mode`) as exact-token
-  rewrites; propose (never auto-apply) `noncallable-gateway` front-door swaps and
-  surface `unknown` tokens for the dev. Scan only the live instruction surfaces the
-  detector targets — never rewrite append-only/provenance prose (`spec/HISTORY.md`,
-  reports, ADRs), and never the marketplace id `e22-plugins`.
-- **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
-  `/spec/.version` — never from training-data memory.
-- **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
-  **merge review** is the hard gate; push the branch and open the PR yourself,
-  announced — never merge it.
-- **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
-  dev invoked the sync from (captured in step 1), so the sync lands back onto the
-  work it continues. Only when `BASE` is itself `main` does the PR target `main`.
-  Never silently default `gh pr create` to the repo's default branch, and never
-  ask the dev to pick the base — `BASE` already answers that.

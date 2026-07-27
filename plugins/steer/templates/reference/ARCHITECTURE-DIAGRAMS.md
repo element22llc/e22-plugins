@@ -29,7 +29,7 @@ is*; D2 answers *how it's wired in the cloud*. Most repos need only the first.
 The canonical home for the diagram is:
 
 ```text
-spec/design/architecture.md
+spec/design/architecture-diagram.md
 ```
 
 Two reasons for a separate file rather than inlining Mermaid into `ARCHITECTURE.md`:
@@ -37,9 +37,18 @@ Two reasons for a separate file rather than inlining Mermaid into `ARCHITECTURE.
 - **`ARCHITECTURE.md` stays prose.** Its value is the written system model — the
   tech stack, the apps/packages map, cross-cutting concerns. A large diagram buried
   in the middle fights that.
-- **One canonical, renderable home.** `spec/design/architecture.md` renders on its
-  own in GitHub's file view and in the docs site, and it is the single place the
-  living-docs rule points at for "keep the diagram current."
+- **One canonical, renderable home.** `spec/design/architecture-diagram.md` renders
+  on its own in GitHub's file view and in the docs site, and it is the single place
+  the living-docs rule points at for "keep the diagram current."
+
+**Why `-diagram` is in the name.** The two files sit at different altitudes and the
+distinction is load-bearing, so they do not share a basename: `ARCHITECTURE.md` is
+the *written system model* at the root, `architecture-diagram.md` is the *picture*
+it links to. A `spec/design/architecture.md` differing from the root file only by
+case and path reads as a duplicate or a move, and it also collided with the Tier 2
+LikeC4 model folder (`spec/design/architecture/`) sitting right beside it. The
+suffix keeps all three legible: **model folder** `architecture/` → **rendered
+diagram** `architecture-diagram.md` → **narrative** `ARCHITECTURE.md`.
 
 `spec/design/` also holds disposable UI/UX design *exports* (Claude Design, Figma);
 the architecture diagram is the opposite — a **living, maintained** artifact. See
@@ -71,8 +80,8 @@ GUI-first tools as the *source of truth*:
 ## Tier 1 — Mermaid (default, zero toolchain)
 
 For most repos this is the whole feature. Hand-author two blocks in
-`spec/design/architecture.md`; they render natively in GitHub and in the Zensical docs
-site with **nothing to install**.
+`spec/design/architecture-diagram.md`; they render natively in GitHub and in the
+Zensical docs site with **nothing to install**.
 
 - **System context & containers** — a `flowchart` (or Mermaid's C4-style blocks)
   showing users, deployable containers (group them in `subgraph`s), datastores, and
@@ -86,8 +95,8 @@ plain `flowchart` with subgraphs for the container view unless you specifically 
 C4 notation.
 
 Keep the global view small. Push deeper, per-area diagrams into their own files under
-`spec/design/` and link them from the bottom of `architecture.md` — don't grow one
-unreadable mega-diagram.
+`spec/design/` and link them from the bottom of `architecture-diagram.md` — don't
+grow one unreadable mega-diagram.
 
 ## Tier 2 — LikeC4 (opt-in, when Mermaid stops scaling)
 
@@ -118,7 +127,7 @@ It is **opt-in by adoption** — nothing is installed until a repo adds a model:
    SVG. Both take the model folder as a positional path.)
 
 3. **Compose with Tier 1.** `likec4 gen mermaid` **emits Mermaid**, so the generated
-   views can be folded straight into `spec/design/architecture.md` — the file
+   views can be folded straight into `spec/design/architecture-diagram.md` — the file
    `ARCHITECTURE.md` already links to. Nothing downstream changes; the diagram just
    gains a model behind it.
 
@@ -135,7 +144,8 @@ recognisable cloud-vendor icons, that is a different picture at a different alti
 and **D2** is the better-adapted tool. Typical triggers: an `infra` or `service`
 repo with real topology, or a client asking for a visual of the deployment.
 
-It is a **separate, optional artifact** — it does not replace `architecture.md`:
+It is a **separate, optional artifact** — it does not replace the architecture
+diagram:
 
 ```text
 spec/design/infrastructure.d2     # source (hand-authored, diff-reviewed)
@@ -211,9 +221,9 @@ A diagram that lies is worse than none. The rule (`32-living-docs`): the same PR
 changes the stack, adds/removes/renames an app or package, or reshapes
 cross-component data flow **updates the diagram too**.
 
-- **Tier 1:** `spec/design/architecture.md` is hand-authored — edit the Mermaid
-  directly in that PR.
-- **Tier 2:** `spec/design/architecture.md` is **generated** from the `.likec4`
+- **Tier 1:** `spec/design/architecture-diagram.md` is hand-authored — edit the
+  Mermaid directly in that PR.
+- **Tier 2:** `spec/design/architecture-diagram.md` is **generated** from the `.likec4`
   model — treat it as a build artifact. Edit the model, re-run `mise run
   diagrams:render`, and commit both. Never hand-edit the generated Mermaid.
 - **D2 infra diagram:** `spec/design/infrastructure.d2` is the source;

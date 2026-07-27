@@ -70,6 +70,28 @@ be unique. The full field set actually used in this repo:
 > `plugins/steer/.claude-plugin/plugin.json` (the `/plugin` menu label). There is
 > no `model:` field on any skill; do not add one.
 
+> **No `model:` or `effort:` on a skill — the router makes them leak.** Claude
+> Code supports both as skill frontmatter, and the token math is tempting:
+> `effort: low` on a mechanical instantiator like `spec-scaffold` or `standards`
+> looks free. It is not, **for this plugin specifically**. Frontmatter effort
+> "applies when that skill is active", overriding the session level, and steer's
+> router is built to **auto-continue** — rule `00-router`: *"when a skill
+> finishes, continue into its single best next action"*. So the override does not
+> stay with the cheap skill:
+>
+> - `/steer:help` at `effort: low` → the router continues into `/steer:work`,
+>   which now executes the implementation at low effort.
+> - `spec-scaffold` is worse, because it is an **internal gateway invoked
+>   mid-flow** by `build`, `init`, `intake`, and `spec` — a low-effort override
+>   there downgrades the *calling* skill's remaining work in that turn.
+>
+> The user chose their model and effort; a navigation step must not silently
+> re-set them for the work it navigates into. Same reasoning as `model:`. If a
+> skill genuinely needs cheaper reasoning for a bounded piece of work, delegate
+> that piece to a **subagent** instead — `agents/*.md` supports `model` and
+> `effort`, and a subagent has its own context and cannot leak its override back
+> into the parent turn (`steer-reviewer` is the worked example).
+
 > **Listing cap.** Claude Code concatenates `description` + `when_to_use` into the
 > skill listing it uses for routing and truncates the combined text at **1,536
 > characters** (the documented `skillListingMaxDescChars` default); past the cap the
@@ -77,6 +99,48 @@ be unique. The full field set actually used in this repo:
 > combined length exceeds the cap. Keep the description to purpose + primary trigger
 > and let `when_to_use` carry the extra trigger phrases — a paragraph-length
 > description otherwise crowds out its own routing signal.
+
+> **Body cap — the compaction trap.** An invoked skill's `SKILL.md` enters the
+> conversation and stays there for the rest of the session. When auto-compaction
+> fires, Claude Code re-attaches the most recent invocation of each skill but
+> keeps only **the first 5,000 tokens of each** (re-attached skills also share a
+> combined 25,000-token budget). Everything past that point is silently dropped
+> mid-run — so an oversized `SKILL.md` is a *correctness* bug, not just a cost:
+> the tail is where Guardrails and Coupling rules historically sat, and they
+> vanish exactly when a run has gone long enough to compact. Two rules follow:
+>
+> 1. **Front-load the standing instructions.** Guardrails, coupling rules, and
+>    output contracts go near the **top** of `SKILL.md`, never the bottom.
+> 2. **Keep the body under 17,500 bytes** — the 5,000-token cap at a pessimistic
+>    3.5 B/token. `check_context_budget.py` fails any skill over it. This is a
+>    real ceiling derived from harness behaviour, **not** a ratchet: do not raise
+>    it to fit new prose.
+>
+> The fix when a skill outgrows the cap is always the same — factor per-mode or
+> per-phase procedure into a sibling file (next section), never trim a guardrail.
+
+**Factoring a skill body — sibling procedure files.** A skill whose body would
+exceed the cap keeps a slim `SKILL.md` (frontmatter, guardrails, coupling rules,
+the standing contracts, and a **mode/phase map**) and moves the step-by-step
+procedure into sibling Markdown under the skill directory, which the dispatcher
+reads **just-in-time for the one path it is executing**. A file read that way is
+a tool result, not skill content, so it never competes for the re-attach budget.
+
+Naming in use: `modes/<mode>.md` for mode dispatch (`issues`, `audit`, `work`),
+and a topic name for a single factored body (`PROCEDURE.md`, `OPERATIONS.md`,
+`RECONCILE.md`, `SCAFFOLD.md`, `IMPLEMENTATION.md`, `HANDOFF.md`, `MODES.md`).
+Rules:
+
+- Link with the runtime-resolved
+  `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/<file>.md` form, and say **read only the
+  one you need** so the dispatcher doesn't pull them all back in.
+- Every declared mode must still appear in `SKILL.md` (the mode map satisfies
+  `check_standards.py`'s bidirectional marker check).
+- Sibling bodies are in scope for the same checks as `SKILL.md` — link
+  resolution, token/enum membership, script grants, and workflow authority all
+  scan the skill directory, not just `SKILL.md`.
+- Never move a guardrail, an authorization gate, or an output contract into a
+  sibling file. If it must hold for the whole run, it belongs in `SKILL.md`.
 
 **`when_to_use` quoting gotcha.** `check_standards.py` does a restricted-grammar
 balance check (not a full YAML parse). A single-quoted scalar must contain exactly

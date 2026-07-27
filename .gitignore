@@ -100,6 +100,15 @@ out/
 *.tgz
 *.tar.gz
 
+# `build/` above is a build-artifact pattern, but it also matches the steer
+# `build` SKILL directory, which is source. Its SKILL.md is already tracked, so
+# the breakage is silent and one-way: every *new* file added to that skill
+# (a factored-out procedure body, a supporting script) is ignored, and the skill
+# ships pointing at a file that never reached the repo. Re-include the directory
+# — a `!` on a path inside it would not work, since git does not descend into an
+# excluded directory.
+!plugins/steer/skills/build/
+
 # ---------------------------------------------------------------------------
 # Documentation site build output (`mise run docs:build` → site_dir)
 # ---------------------------------------------------------------------------

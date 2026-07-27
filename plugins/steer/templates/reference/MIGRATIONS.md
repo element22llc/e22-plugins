@@ -54,6 +54,50 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.23.0 — `spec/design/architecture.md` → `spec/design/architecture-diagram.md`
+
+- **What & why:** the living global architecture diagram shared a basename with
+  the root `ARCHITECTURE.md` it is linked from, differing only by case and path.
+  Two files called "architecture" at two altitudes read as a duplicate or a
+  half-finished move, and the name also collided with the Tier 2 LikeC4 **model
+  folder** `spec/design/architecture/` sitting right beside it. The diagram is
+  now `spec/design/architecture-diagram.md`, so the three artifacts are legible
+  by name: model folder `architecture/` → rendered diagram
+  `architecture-diagram.md` → narrative `ARCHITECTURE.md`. The **split itself is
+  unchanged** — the root file stays narrative + tables and still only links to
+  the diagram; only the diagram's filename moves. The LikeC4 model folder keeps
+  its name, and the `diagrams:render` task's paths are unaffected.
+- **Precondition:** the repo still carries the old filename — this fires:
+
+  ```sh
+  test -f spec/design/architecture.md && echo pending
+  ```
+
+  Already renamed, or a repo that never materialized the file ⇒ no-op. If
+  **both** names exist, do **not** merge or delete: surface the conflict and let
+  the dev pick which is current.
+- **Action:** `git mv spec/design/architecture.md
+  spec/design/architecture-diagram.md` (never copy+delete — history follows the
+  file). The file's own contents are unchanged.
+
+  Then an **in-file token rewrite** across the repo's tracked text files for the
+  exact pairs below — and only these; never a broader match, and never inside
+  `CHANGELOG.md` or `spec/HISTORY.md`, whose entries are historical record:
+
+  | Old | New |
+  |---|---|
+  | `spec/design/architecture.md` | `spec/design/architecture-diagram.md` |
+  | `` `architecture.md` `` | `` `architecture-diagram.md` `` |
+
+  Leave every `spec/design/architecture/` (no `.md`) path untouched — that is the
+  LikeC4 model folder, which is **not** renamed. Show the diff before applying.
+  Typical hit sites: root `ARCHITECTURE.md`, `README.md`, `CLAUDE.md`,
+  `spec/design/README.md`, and the commented `diagrams:render` block in
+  `mise.toml`.
+
+  Idempotent: once the old filename is gone the precondition is empty, so
+  re-running is a no-op.
+
 ### v3.16.0 — scaffold `.claude/settings.json`: push + PR-create move from `ask` to `allow`
 
 - **What & why:** the two-state delivery model (rule `45-commit-autonomy`) made
@@ -118,6 +162,44 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 
   Idempotent: once the key is gone the precondition is empty, so re-running is
   a no-op.
+
+### v3.23.0 — markitdown MCP server retired for the `convert:doc` task
+
+- **What & why:** the `markitdown` MCP server has been removed from the plugin's
+  `.mcp.json`. It existed for exactly one skill (`/steer:intake`), but a plugin
+  MCP server starts automatically whenever the plugin is enabled — so every
+  session paid a `uvx markitdown-mcp` subprocess, including the overwhelming
+  majority that never convert a document. The same `markitdown` tool now runs
+  on demand through the scaffold's `mise run convert:doc <file>` task, which
+  `/steer:intake` already treated as its deterministic committable path — so
+  capability is unchanged and only the always-on cost goes away. The plugin's
+  own copy refreshes on `/plugin update`, but two *materialized* per-repo files
+  can still name the dead server: `.vscode/mcp.json` (the Copilot mirror, which
+  the scaffold installs) and, on a repo that predates v2.11.0, a repo-local
+  `.mcp.json`. Additive reconciliation cannot remove a key, so this is a
+  migration.
+- **Precondition:** a materialized MCP config still names markitdown — this grep
+  fires:
+
+  ```sh
+  grep -lE '"markitdown"|markitdown-mcp' .mcp.json .vscode/mcp.json 2>/dev/null
+  ```
+
+  No output ⇒ already migrated (or never had it) ⇒ no-op.
+- **Action:** read-then-propose, show the diff first. In each file that matched,
+  remove **only** the `markitdown` server entry, preserving every other server
+  and value — never clobber a dev-added entry.
+  - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The file is
+    generated from the plugin's `.mcp.json`, so the rest of it stays as-is and
+    additive reconciliation keeps it current afterwards.
+  - In a repo-local `.mcp.json`, drop the `markitdown` key. If removing it
+    leaves the file with **no** servers, `git rm` it — the plugin provides what
+    remains (see the v2.11.0 entry, which removes the duplicated `github` key on
+    the same file).
+
+  A stale entry is harmless while it lasts — it just starts a server nothing
+  calls — so this migration is a cleanup, never a blocker. Idempotent: once the
+  key is gone the precondition is empty, so re-running is a no-op.
 
 ### v3.8.0 — `reference`-mode invocations: in-file token rewrite
 

@@ -69,6 +69,14 @@ code, or this skill greenfield — never `/steer:sync`.
 
 ---
 
+## Guardrails
+
+
+Never clobber working code or overwrite a value the dev already filled in.
+Never commit secrets — `.env`/`.env.local` stay git-ignored, names documented in
+`.env.example`. Propose batches for approval; don't commit to `main` (except in
+solo trunk mode — see step 1).
+
 ## Path A — legacy template fork
 
 Detected by the placeholders above. Follow the full procedure in
@@ -129,87 +137,13 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
      a declared `bin`/entrypoint → `cli`). The profile chooses which scaffold the
      next step lays down — it does **not** change the universal core (mise pinning,
      the `/spec` spine, CI hygiene), which every profile gets.
-2. **Instantiate the bundled scaffold — core plus the profile's extras.** Everything
-   lives in the plugin — no external template repo to fetch. Read
-   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/MANIFEST.md` and follow its
-   install map **and its "Profile overlays" section**: copy each scaffold file to
-   its target path (renaming the
-   dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
-   `.env.example`, `claude/`, `vscode/`), instantiate the GitHub
-   templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
-   GitHub-templates section maps the Issue Forms, workflows, PR template, and the
-   full generated Copilot/VS Code surface — `copilot-instructions.md`,
-   `prompts/*.prompt.md` (skills), `agents/*.agent.md` (custom agents), and
-   `instructions/*.instructions.md` (path-scoped standards) — into `.github/`;
-   the opt-in `copilot-setup-steps.yml` is **not** auto-installed), and instantiate the
-   spec spine from
-   `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
-   `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
-   `/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
-   `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`) — and the
-   design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
-   `/spec/design/source.md` (from `design-source.md`),
-   `/spec/design/architecture.md` (from `design-architecture.md` — the living
-   global architecture diagram `ARCHITECTURE.md` links to), and
-   `/spec/sources/README.md` (from `sources-readme.md` — the versioned home for
-   recurring PO documents, maintained by `/steer:intake`). Install the
-   bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs
-   survive the first commit (an empty dir does not — `/steer:spec-scaffold`
-   and `/steer:adr` populate them later). **Adapt to the chosen stack
-   and never clobber existing files** (the MANIFEST's per-file notes say what
-   to adapt — e.g. for a Python-only product skip the Layer-1 Node baseline and
-   use `pyproject.toml`/Ruff, swap task commands to `uv run …`). Greenfield repos
-   rarely have these already, but if a target `.gitignore` or JSON config
-   (`.claude/settings.json`, `biome.json`) **does** exist, reconcile
-   it additively with
-   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`
-   instead of overwriting it.
-   - **Apply the layered profile overlays** (MANIFEST "Profile overlays"). The
-     Core install map (Layer 0) lands for **every** profile; then compose
-     **additively** — later layers only *add*:
-     - **Node-stack profiles** (`app` / `service` / `library` / `cli` on a Node
-       stack): also install **Layer 1**, the Node baseline
-       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/_node/` (`package.json`,
-       `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`), then the
-       profile's **Layer 2** dir — `profiles/app/` → `apps/README.md` + `DESIGN.md`
-       + `claude/launch.json` (Desktop Code-tab preview server; copy only if the
-       repo has no `.claude/launch.json` — never overwrite; repoint at `mise run
-       dev` if the repo is polyglot);
-       `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing.
-       Adapt `package.json`: `library` → publishable (drop `private`); `cli` → add
-       the `bin` entrypoint. (A **Python-only** `service`/`library`/`cli` skips
-       Layer 1 — use `pyproject.toml`/Ruff instead.)
-     - **`infra`**: install
-       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/infra/mise.toml` as the
-       **repo-root `mise.toml`** (replaces the core one) and **skip Layer 1
-       entirely** (no Node project files). Core's `compose.yaml` +
-       `scripts/worktree-env.sh` still land from Layer 0 — delete them only if the
-       repo runs no local services. Enable the matching IaC engine in that
-       `mise.toml` and adapt `ARCHITECTURE.md`/README to the IaC layout.
-     - **`workspace`** (polyrepo spine host): install
-       `${CLAUDE_PLUGIN_ROOT}/templates/spec/workspace.yml` as **`spec/workspace.yml`**
-       (it is a spec artifact — product-level truth — not a root config file) plus
-       `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/profiles/workspace/README.md`
-       (replaces the core README), and **skip
-       Layer 1 entirely**. This repo owns no application code, so drop Layer 0's
-       `compose.yaml`, `scripts/worktree-env.sh`, `apps/`, and the Dockerfile
-       refs; keep mise, CI, the `/spec` spine, and `.claude/`. Interview for the
-       member list and resolve every `spec/workspace.yml` placeholder — **never ship
-       fabricated repo names or branches**; leave the file with a single
-       placeholder member if the dev does not know them yet. If the dev plans to
-       clone members inside this repo, add those dirs to `.gitignore`. Then
-       bootstrap each member separately: run `/steer:init` in it with its own
-       profile, and instantiate `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`
-       as its `spec/PRODUCT.md` **instead of** the product-level spine files
-       (`vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`,
-       `spec/features/`, `spec/tracker.md`) — those live once, here.
-       **Recommend a monorepo first** unless the split is externally mandated, and
-       read `/steer:reference polyrepo` before advising.
-     **Set the profile marker:** write the chosen profile into the `CLAUDE.md`
-     `## Profile` marker (`<!-- steer:profile=<profile> -->`) and its prose — the
-     scaffold ships `=app`; rewrite the token for any other profile. A **root
-     `mise.toml` must always land** (core or infra flavor) — it is what clears the
-     scaffold nudge.
+2. **Instantiate the bundled scaffold — core plus the profile's extras.** The
+   install map, the profile matrix (what a knowledge/code/deployable repo each
+   get), the dotfile-without-the-dot convention, and the per-file adaptation
+   rules are in
+   [`SCAFFOLD.md`](${CLAUDE_PLUGIN_ROOT}/skills/init/SCAFFOLD.md) — read it
+   before writing anything. Copy-and-adapt, never clobber.
+
 3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
    `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
    `/spec/tracker.md`** (which issue tracker does this product use — Jira,
@@ -284,13 +218,6 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    where real code is triaged into `/spec/PRODUCTIONIZATION.md` before a
    production deploy. Frame the PR (body, HISTORY entry) as the bootstrap/setup
    gate, never as the productionization gate.
-
-### Guardrails
-
-Never clobber working code or overwrite a value the dev already filled in.
-Never commit secrets — `.env`/`.env.local` stay git-ignored, names documented in
-`.env.example`. Propose batches for approval; don't commit to `main` (except in
-solo trunk mode — see step 1).
 
 ## Recommend the next action
 
