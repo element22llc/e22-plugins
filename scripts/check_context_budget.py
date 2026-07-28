@@ -103,7 +103,19 @@ PLUGIN_ROOT = Path("plugins/steer")
 # heading. Each is a factual correction, not new prose, and the alternative —
 # shaving rationale to pay for them — is precisely the trade the note above
 # records as wrong and reverted. +100 B is ~0.15%; the target stays 62,500.
-RULES_TOTAL_MAX_BYTES = 65_300
+#
+# RAISED a third time, 65,300 → 66,500, to fund the worktree-trust step in rule
+# `24-worktrees` (#416). `mise trust` is path-based, so a worktree created
+# mid-session is untrusted and every `mise run …` in it fails on trust rather than
+# on the task; steer's SessionStart check inherits that trust for a session
+# *started* in a worktree, but a `git worktree add` inside a running session is
+# exactly the case no hook can reach, so the instruction has to be always-on to be
+# there when it is needed. The ratchet stood at 5 bytes of headroom, so the only
+# alternative was trading out rule 24's own rationale — the trade this note has
+# twice recorded as wrong. Re-armed at the measured total (65,795 B across 35
+# files) plus ~1%, restoring real headroom instead of the 5-to-7-byte margins that
+# made each of the last two raises inevitable. The target stays 62,500.
+RULES_TOTAL_MAX_BYTES = 66_500
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently

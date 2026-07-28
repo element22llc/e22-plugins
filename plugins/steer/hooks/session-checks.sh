@@ -4,11 +4,12 @@
 # WHY THIS EXISTS
 #   The startup/resume/clear matcher used to register five separate hook
 #   commands (template drift, open questions, unmanaged repo, fault surfacing,
-#   graduation). Each registration pays the harness's per-hook overhead —
+#   graduation) — six now, with worktree trust. Each registration pays the
+#   harness's per-hook overhead —
 #   spawn, stdin delivery, timeout envelope, output collection — at every
 #   session start in every managed repo (PLAN.md Phase 1). This orchestrator
-#   keeps hooks.json to a single registration and runs the same five checks,
-#   in the same order, itself.
+#   keeps hooks.json to a single registration and runs the same checks, in the
+#   same order, itself.
 #
 # MECHANISM
 #   Stdin (the SessionStart JSON payload) is captured once and re-fed to each
@@ -26,6 +27,12 @@
 #   it to the list below AND to the roster in CROSS-SURFACE.md; the pytest
 #   latency budget (tests/test_hook_latency.py) times this whole chain.
 #
+#   One check does more than print: check-worktree-trust.sh inherits the primary
+#   checkout's `mise trust` into a linked worktree (see its header for why that
+#   grants nothing new). It is gated on being in a linked worktree, so a plain
+#   checkout — the common case the latency budget measures — exits before it
+#   invokes anything.
+#
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Invoked via an explicit `sh` prefix from hooks.json, so
 #   the executable bit does not matter.
@@ -41,7 +48,8 @@ for _check in \
 	check-open-questions.sh \
 	check-unmanaged-repo.sh \
 	surface-faults.sh \
-	check-graduation.sh; do
+	check-graduation.sh \
+	check-worktree-trust.sh; do
 	_out="$(printf '%s' "${STEER_SESSION_INPUT}" | sh "${HERE}/${_check}")" || :
 	[ -n "${_out}" ] && printf '%s\n' "${_out}"
 done

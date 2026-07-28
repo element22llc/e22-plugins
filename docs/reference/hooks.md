@@ -12,7 +12,7 @@ a session.
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
     `PreToolUse`, `PostToolUse`, `Stop`). Note what each tier actually does: the
-    `SessionStart` hook **injects** the rules; most `PreToolUse` checks are
+    `SessionStart` hook **injects** the rules (and one session check, `check-worktree-trust`, also **writes** — it marks this worktree's path trusted in mise's local trust store); most `PreToolUse` checks are
     **advisory nudges** that let the write proceed (the two dimensions of
     `check-write-nudges`, the issue-create contract guard in `check-bash-actions`);
     only `check-version-pins` issues a hard `deny`, and the trunk-push gate in
@@ -28,13 +28,14 @@ a session.
 flowchart TD
     subgraph SessionStart
       inject[inject-standards.sh<br/>injects rules/*.md]
-      checks[session-checks.sh<br/>orchestrates the five session checks]
+      checks[session-checks.sh<br/>orchestrates the six session checks]
       orient[orient-session.sh]
       checks --> drift[check-template-drift.sh]
       checks --> oq[check-open-questions.sh]
       checks --> unmanaged[check-unmanaged-repo.sh]
       checks --> faults[surface-faults.sh]
       checks --> grad[check-graduation.sh]
+      checks --> wt[check-worktree-trust.sh]
     end
     subgraph PreToolUse
       pins[check-version-pins.sh]
@@ -53,7 +54,7 @@ flowchart TD
 
 Since the session-checks consolidation, `hooks.json` carries **three**
 `SessionStart` registrations: the rule injection, one `session-checks.sh`
-orchestrator, and the orientation hook. The five session checks are no longer
+orchestrator, and the orientation hook. The session checks are no longer
 registered individually — `session-checks.sh` runs them in the order below,
 failure-isolated (a crashing check never blocks the rest) and always exiting
 `0`; each check keeps its own contract (read the payload from stdin, print a
@@ -62,12 +63,13 @@ notice or nothing) and stays individually testable.
 | Hook | Matcher | Role |
 | --- | --- | --- |
 | `inject-standards.sh` | `startup\|resume\|clear\|compact` | Concatenates `rules/*.md` (lexical order) into session context. A rule carrying a first-line `<!-- steer:inject-when=… -->` marker is injected only when its scope applies — `code-project` for the code-loop rules (a git work tree, or any code/config marker within `maxdepth 2`), issue-first on GitHub-tracked repos, deployment when the repo deploys (`has-iac` **or** `has-apps` — IaC meaning an `/infra` dir, root `*.tf`/`*.hcl`, `ansible.cfg`, `site.yml`, `Pulumi.yaml`, or `roles/` + `playbooks/`; apps meaning an `apps/` dir, a `package.json`, or a `pnpm-workspace.yaml`) — and the marker line is stripped. In **knowledge-work mode** (a confidently non-code folder — the typical Cowork product-owner case), it injects only the lean always-on PO core and **skips every `inject-when`-marked rule** (see [Knowledge-work mode](known-limitations.md)). Fail-soft: if its rules directory is missing it still emits a fallback banner (the hook always exits `0`, so the notice reaches the session) and records a self-fault for `/steer:report`. |
-| `session-checks.sh` | `startup\|resume\|clear` | Consolidated orchestrator for the five session checks below (one `hooks.json` registration instead of five). Captures the SessionStart payload once and re-feeds it to each check unchanged, in registration order; failure-isolated; always exits `0`. Contains no check logic of its own. |
+| `session-checks.sh` | `startup\|resume\|clear` | Consolidated orchestrator for the six session checks below (one `hooks.json` registration; five of them were once registered individually, and `check-worktree-trust.sh` was added inside the roster). Captures the SessionStart payload once and re-feeds it to each check unchanged, in registration order; failure-isolated; always exits `0`. Contains no check logic of its own. |
 | `check-template-drift.sh` | via `session-checks.sh` | Warns when the materialized spine/scaffold lags the plugin templates — diffs the `##`/`###` headings of each instantiated spec file (`PRODUCTIONIZATION.md`, `BUILD-STATUS.md`, feature `intent.md`/`contract.md`) against the current bundled template and names any section the template adds that the file lacks. Headings carrying `<!-- steer:placeholder -->` (the seed `### Q-001 — …` open-question block) are skipped, since those are rewritten or deleted as a feature is specced — matching `check-open-questions.sh`, which ignores the same marker — so a correctly-completed file is never falsely flagged. Resolves the work-tree root from the session `cwd`, so it still finds drift when Claude Code starts in a subdirectory (e.g. `apps/web`). |
 | `check-open-questions.sh` | via `session-checks.sh` | Surfaces unresolved spec open questions, and **escalates stale ones** — a blocking, un-promoted question open more than 14 days (from its `created:` date, or `git blame` when absent) gets a loud line naming the feature, question, owner, and age. |
 | `check-unmanaged-repo.sh` | via `session-checks.sh` | On a repo with no `/spec` spine, prints a compact plain-language **onboarding card**: the user can just say what they want — think an idea through (`/steer:spec` **lite mode**, works with no bootstrap), build an app (`/steer:build`, non-technical owner), or set the repo up (`/steer:init` greenfield / `/steer:adopt` existing code, with `/steer:setup` picking between them). Feature *code* still requires the bootstrap first — spec-only work is the one sanctioned exception. Resolves the work-tree root from the session `cwd` in the hook payload, so it anchors correctly from a subdirectory. |
 | `surface-faults.sh` | via `session-checks.sh` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
 | `check-graduation.sh` | via `session-checks.sh` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree — detected by the shared `lib/graduation.sh`, the same detector the `check-bash-actions.sh` trunk-push gate uses), nudges the owner to graduate to PR flow via `/steer:protect` and notes that trunk pushes are gated until then. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
+| `check-worktree-trust.sh` | via `session-checks.sh` | Only in a **linked worktree**: inherits the primary checkout's `mise trust` so `mise run …` works there immediately. `mise trust` is path-based, so a new worktree is untrusted and the whole scaffolded dev loop fails on *trust* rather than on the task — triggered by the scaffold's own `[env] _.source = "scripts/worktree-env.sh"`, which mise refuses to load untrusted. Inheriting grants nothing new: mise keys trust by **path**, not by content, so the primary checkout already trusts every future edit of that config. It never *creates* trust: an **untrusted** primary checkout means the repo was never set up (it names `mise trust && mise install`), and a primary checkout with **no mise config at all** means the worktree's branch introduced one, so no prior decision exists anywhere (it names `mise trust` here) — either way it changes nothing and leaves the call to the user. A third notice covers `mise trust` itself failing. Silent in a plain checkout (gated before `mise` is ever invoked), outside any work tree, without mise on `PATH`, when the worktree is already trusted, and when it has no mise config. |
 | `orient-session.sh` | `startup\|resume\|clear\|compact` | Two audiences. In a **non-code knowledge-work folder** (no git work tree) it emits a one-time, plain-language confirmation that the lean standards are loaded and that the user need not learn any `/steer:*` names — gated to `source: startup` so it does not re-greet after a `/clear`, resume or compaction. Otherwise, on a fully managed spine only: if an in-progress PO build exists (a `spec/BUILD-STATUS.md` with an open handoff gate), steers deterministically back into `/steer:build` to resume from its current step; once the build is handed off (every gate box checked) it falls back to reminding the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Also emits a short **polyrepo topology note** in a repo carrying `spec/workspace.yml` (workspace host) or `spec/PRODUCT.md` (member), role-specific — this hook is the sole *automatic* delivery path for the topology, which is deliberately not an always-on rule (`/steer:reference polyrepo` is the on-demand path). The topology note is emitted **before** the PO-build branch, which exits early, so a workspace or member with an open handoff gate still receives it; and it carries the same `startup|resume|clear|compact` matcher as the ruleset it substitutes for, so a `/clear`, a resume or auto-compaction does not silently drop it. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
 
 ## PreToolUse
@@ -145,7 +147,10 @@ primary's root for a linked worktree, reading the `gitdir:` pointer out of the
 worktree's `.git` **file** rather than shelling out to `git` (this file is sourced
 on the PreToolUse hot path). Anything it cannot read with certainty — an
 unparseable `.git`, a relative `gitdir:`, a `--separate-git-dir` layout — returns
-`<root>` unchanged. Its consumer is `steer_workspace_root`, below.
+`<root>` unchanged. Two consumers: `steer_workspace_root` (below) anchors relative
+marker paths with it, and `check-worktree-trust.sh` uses it as the linked-worktree
+**detector** — a returned root that differs from the session's root *is* the signal
+that this checkout is a linked worktree.
 
 ## Which rules apply, and to which repo (`lib/scope.sh`)
 

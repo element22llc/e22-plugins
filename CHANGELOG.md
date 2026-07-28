@@ -7,6 +7,50 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `hooks/check-worktree-trust.sh` — a SessionStart check that inherits the
+  primary checkout's `mise trust` into a linked worktree, so a fresh worktree is
+  usable immediately instead of failing every `mise run …` until someone trusts it
+  (#416). `mise trust` is path-based and a worktree is a new path, so the whole
+  scaffolded dev loop — `docker:up`, `dev:setup`, `db:migrate`, the lint/test tasks —
+  failed there with an error about *trust* rather than about the task, and rule
+  `24-worktrees` positions parallel worktrees as normal practice (a polyrepo pays it
+  per member per feature). The trigger is the scaffold's own isolation feature: mise
+  loads a data-only config (`min_version`, plain `[tools]`, `[tasks]`) untrusted and
+  refuses one that executes code at load time — which is exactly `[env] _.source =
+  "scripts/worktree-env.sh"`, the line that gives each worktree its own
+  `COMPOSE_PROJECT_NAME` and port offset. **Inheriting grants nothing new:** mise
+  keys trust by path and does **not** content-hash it, so a repo trusted once has
+  every later edit of its config trusted at that path — anything the worktree's
+  config could execute, the primary checkout would already execute unprompted. The
+  check never *creates* trust: when the primary checkout is itself untrusted the repo
+  has never been set up, and it says so and changes nothing, leaving that first
+  decision to the user (`mise trust && mise install`, rule `15-commands`). It is
+  silent in a plain checkout (gated before `mise` is ever invoked, so the common case
+  and the hook-latency budget are unaffected), outside any work tree, on a machine
+  without mise, in an already-trusted worktree, and in a worktree with no mise config. Registered inside
+  the existing `session-checks.sh` roster, so it costs no extra hook registration;
+  fourteen fixture cases in `hooks/tests/run.sh` cover it, including both
+  no-decision-to-inherit paths (an untrusted primary checkout, and a primary with no
+  mise config at all because the worktree's branch introduced it) writing nothing.
+- **Changed:** rule `24-worktrees` now opens with the worktree-trust step — a
+  worktree you *start a session in* inherits the primary checkout's trust (the new
+  session check does it), one you create with `git worktree add` mid-session does
+  not and needs `mise trust` before the first `mise run …`, and an untrusted repo is
+  the user's call (`mise trust && mise install`). The mid-session case is precisely
+  the one no hook can reach, which is why it belongs in an always-on rule rather
+  than only in the hook's notice. The scaffold's `.worktreeinclude` header carries
+  the same guidance for the plain-terminal reader, with the mechanism behind it
+  (path-keyed trust, and the `[env] _.source` line that triggers it).
+- **Changed:** the always-on rules ceiling moves 65,300 → 66,500 B to fund that rule
+  step. The ratchet stood at **5 bytes** of headroom, so the alternative was trading
+  out rule 24's own rationale — the trade `check_context_budget.py`'s own notes twice
+  record as wrong and reverted. Re-armed at the measured total (65,795 B across 35
+  files) plus ~1%, deliberately restoring real headroom instead of the 5-to-7-byte
+  margins that made each of the last two raises inevitable; the reason is recorded in
+  the gate script and `docs/reference/configuration.md` beside the two earlier
+  raises. The target stays 62,500 B, so the budget report keeps showing the gap as
+  work to reclaim.
+
 - **Fixed:** the workspace scaffold's `mise.toml` leaked whole-product tasks into
   every member cloned inside it (#415). Members live at the `path:` each declares
   *inside* the workspace, and mise loads every **ancestor** config, so the
