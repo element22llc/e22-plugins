@@ -30,10 +30,21 @@ copy of a product-level artifact.
 ```sh
 mise run ws:clone     # clone every member declared in spec/workspace.yml
 mise run ws:code      # generate the multi-root <product>.code-workspace
-mise run dev          # boot the whole product (all members' services)
+mise run ws:dev       # boot the whole product (all members' services)
 mise run ws:status    # per-member branch/dirty/spine version + manifest drift
 mise run ws:sync      # fast-forward each member to its manifest branch
 ```
+
+**Every task here is `ws:`-prefixed**, including `ws:dev` and
+`ws:docker:up`/`down`/`clean`. That is deliberate: members are cloned *inside* this
+workspace and mise loads every ancestor config, so this repo's `mise.toml` is also
+loaded in every member. A task name a member does not define falls through to this
+file — so an unprefixed `dev` here would make `mise run dev` in a member boot the
+whole product, and an unprefixed `docker:clean` in a member with no compose file
+would drop every member's volumes. Prefixing makes both unreachable. The mirror
+image holds too: `ws:*` tasks work from inside a member, and always act on the
+workspace (mise runs a task in its own config root), so `cd backend && mise run
+ws:status` is a legitimate way to report on the whole product.
 
 The members are ordinary clones at the `path:` each declares in the manifest, and
 git-ignored here — no SHA pinning, so a member commit never dirties this repo, and
@@ -46,7 +57,7 @@ the generated `.code-workspace`, the `compose.yaml` include list, the `.gitignor
 entries, and `[monorepo].config_roots` in `mise.toml`. `mise run ws:status`
 reports where those have drifted apart — fix the derived file, not the manifest.
 
-Two constraints worth knowing before the first `mise run dev`: Compose `include:`
+Two constraints worth knowing before the first `mise run ws:dev`: Compose `include:`
 **warns and takes one side** on a service-name collision instead of merging, so
 namespace service names inside each member; and every member's scaffold publishes
 the same default host ports, so give each a distinct base port in its own `.env`.
@@ -66,7 +77,7 @@ Details: `/steer:reference polyrepo`.
 
 ## What this does not buy
 
-**Atomic cross-repo commits.** `mise run dev` boots the members together and
+**Atomic cross-repo commits.** `mise run ws:dev` boots the members together and
 `mise //backend:test` addresses them as one tree, but a contract change across two
 members is still two PRs that can merge out of order. This topology makes that
 visible; it cannot make it atomic. If you need atomicity, you need a monorepo.
