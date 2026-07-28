@@ -1,7 +1,7 @@
 # Local runtime for the WHOLE product — workspace (polyrepo spine host) flavor.
 #
 # This repo owns no services of its own. It composes the members' Compose files
-# with `include:`, so one `mise run dev` at the workspace boots the product, while
+# with `include:`, so one `mise run ws:dev` at the workspace boots the product, while
 # each member's compose.yaml stays valid standalone.
 #
 # ============================================================================
@@ -9,8 +9,8 @@
 # `/steer:adopt`) resolves the list from spec/workspace.yml: one entry per member
 # that declares a `path:` AND has a compose.yaml. Until at least one member is
 # resolved this file has no active keys and `docker compose` will refuse it — if
-# no member runs local services, DELETE this file together with the `docker:*`
-# and `dev` tasks in mise.toml. `mise run ws:status` reports members whose
+# no member runs local services, DELETE this file together with the `ws:docker:*`
+# and `ws:dev` tasks in mise.toml. `mise run ws:status` reports members whose
 # include entry is missing.
 # ============================================================================
 #

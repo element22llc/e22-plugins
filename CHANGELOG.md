@@ -41,6 +41,49 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   starts a session and is therefore handled by the hook, and mise's own error names
   `mise trust` for the ad-hoc case.
 
+- **Fixed:** the workspace scaffold's `mise.toml` leaked whole-product tasks into
+  every member cloned inside it (#415). Members live at the `path:` each declares
+  *inside* the workspace, and mise loads every **ancestor** config, so the
+  workspace's `mise.toml` is loaded in every member and every member worktree —
+  plain config-hierarchy behaviour, present whether or not monorepo mode is on. For
+  a name the member also defines the nearest config wins, so the bite was names it
+  does **not** define: they fell through to the workspace's file with nothing in the
+  output saying the task came from another repo. Two ordinary commands became
+  cross-repo surprises: `mise run dev` in a member — the most natural command in the
+  repo, and one the core scaffold deliberately omits (a Node-only member runs `pnpm
+  dev`) — booted the whole product's aggregated Compose stack; and `mise run
+  docker:clean` in a member that ships no `compose.yaml` tore down **every** member's
+  containers *and volumes*, which is exactly the command rule `24-worktrees` tells
+  every agent to run before removing a worktree. Every task in
+  `profiles/workspace/mise.toml` is now `ws:`-prefixed — `ws:dev`, `ws:docker:up`,
+  `ws:docker:down`, `ws:docker:clean` — so nothing it defines can shadow a member's
+  task, because no member scaffold defines a `ws:*` name. `convert:doc` stays
+  unprefixed as the one exception, safe because it is byte-identical to the core
+  scaffold's (falling through to it is a no-op) — and a new `check_standards.py`
+  guard fails the build if it ever drifts, if a new unprefixed task appears, or if a
+  `depends` entry goes unprefixed. That last one is its own trap: `depends` resolves
+  by name in the **caller's** task set, so `ws:dev`'s dependency had to become
+  `ws:docker:up` — a bare `docker:up` bound to the *member's* task whenever `ws:dev`
+  was invoked from inside a member, booting one member's services and calling it the
+  product. Reachability itself was never the defect and is unchanged: `ws:*` tasks
+  still work from inside a member and still act on the workspace (mise runs a task in
+  its own config root), which is what `cd backend && mise run ws:status` should do.
+- **Fixed:** the workspace scaffold's commented monorepo-mode block never worked as
+  shipped (#415). `monorepo_root` is a **top-level** TOML key, but the block placed
+  it under `[settings]`, where mise reports `unknown field: settings.monorepo_root`
+  and monorepo mode silently never turns on — the warning was the only signal. The
+  block now leads the file, above `[settings]`, with a note that a bare TOML key
+  belongs to the table above it so it must be uncommented **in place**. Its
+  `lockfile = false` line is also gone: the current mise release rejects the key
+  (`unknown field: monorepo.?.lockfile`) and warns on *every* invocation, and
+  per-member locks — what a polyrepo wants, since a member must stay buildable
+  standalone — are already the default. With the corrected block, uncommenting now
+  enables monorepo mode with zero warnings, which additionally seals bare-name
+  fall-through (`mise run dev` in a member resolves as `//backend:dev`); the `ws:`
+  prefixes above are what hold *before* any member is cloned, when a fresh workspace
+  is most exposed. `POLYREPO.md`, `MANIFEST.md`, the workspace README/compose
+  comments, `ws.sh`, and `/steer:init`'s scaffold guidance all state the corrected
+  keys and the namespace invariant.
 - **Fixed:** a polyrepo member's spine was unreachable from a git worktree, and
   failed **silently**. `workspace.path` is relative to the checkout it was written
   against, so the `..` that `templates/spec/product.md` recommends for a member

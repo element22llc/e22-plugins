@@ -173,7 +173,7 @@ member stays a normal repo you branch and push from directly.
 ```text
 acme-workspace/
 ├── spec/                  THE product spine (+ workspace.yml)
-├── mise.toml              ws:* tasks, monorepo config_roots, dev
+├── mise.toml              ws:* tasks only, monorepo config_roots
 ├── compose.yaml           include: one entry per member that runs services
 ├── scripts/ws.sh          the member driver behind the ws:* tasks
 ├── .gitignore             /frontend/ /backend/ *.code-workspace
@@ -187,17 +187,73 @@ acme-workspace/
 | `mise run ws:status` | Per member: branch, dirty, `/spec/.version`, and drift between the manifest and `compose.yaml` / `.gitignore`. |
 | `mise run ws:code` | Generate `<product>.code-workspace` (multi-root VS Code). Generated + git-ignored: edit the manifest, not the output. |
 | `mise run ws:list` | List every member the manifest declares — name, repo, branch, profile, local path. |
-| `mise run dev` | Boot the product — every member's services via Compose `include:`, then each member's dev server. |
+| `mise run ws:dev` | Boot the product — every member's services via Compose `include:`, then each member's dev server. |
+| `mise run ws:docker:up` / `ws:docker:down` / `ws:docker:clean` | The aggregated stack alone: start it and wait for health, stop it, or tear it down with its volumes. |
+
+### Every workspace task is `ws:`-prefixed — and must stay that way
+
+The workspace `mise.toml` defines **no unprefixed task** except `convert:doc`. That
+is an invariant the topology depends on, not a naming preference.
+
+Members are cloned inside the workspace, and mise loads **every ancestor config** —
+so the workspace's `mise.toml` is loaded in every member and every member worktree
+(`cd backend && mise config ls` lists both). This is plain config-hierarchy
+behaviour, present whether or not monorepo mode is on. For a name the member also
+defines, the nearest config wins and the member's own task runs. The bite is names
+the member does **not** define: they fall through to the workspace's file, silently
+and with nothing in the output saying the task came from another repo.
+
+Unprefixed, that turned two ordinary commands into cross-repo surprises:
+
+- `mise run dev` in a member — the most natural command in the repo, and one the
+  core scaffold does not define (a Node-only member runs `pnpm dev`) — booted the
+  **whole product's** aggregated Compose stack.
+- `mise run docker:clean` in a member that ships no `compose.yaml` (a library or cli
+  member, which the core scaffold lets you strip) tore down **every** member's
+  containers *and volumes* — while rule `24-worktrees` tells every agent to run
+  exactly that command before removing a worktree.
+
+`ws:`-prefixing removes the fall-through by construction: no member scaffold defines
+a `ws:*` name, so nothing the workspace defines can shadow a member's task.
+`convert:doc` is the one exception and is safe because it is byte-identical to the
+core scaffold's — falling through to it converts the same way.
+
+Two corollaries:
+
+- **`ws:*` from inside a member is legitimate.** mise runs a task in its own
+  config root, so `cd backend && mise run ws:status` reports on the workspace, which
+  is what you asked for. Reachability was never the defect; shadowing was.
+- **Cross-boundary `depends` must use the `ws:` name.** `depends` resolves by name
+  in the *caller's* task set, so `ws:dev`'s dependency is spelled `ws:docker:up`; a
+  bare `docker:up` would bind to the **member's** task whenever `ws:dev` is invoked
+  from inside a member, booting one member's services and calling it the product.
 
 **mise monorepo mode** makes each member's own `mise.toml` a config_root, so
-`mise //backend:test`, `mise '//...:lint'`, cross-project `depends`, shared
-`[task_templates]`, and automatic trust propagation all work from the workspace.
-It is **off in the shipped scaffold** and turned on once members are cloned — the
-workspace `mise.toml` carries the block to uncomment. Two things to get right:
-list the member dirs in `[monorepo].config_roots` **explicitly** (filesystem
-auto-discovery is deprecated upstream), and set `[monorepo].lockfile` explicitly
-to `false` — root lockfiles are mid-rollout upstream and a member must stay
-buildable standalone.
+`mise //backend:test`, `mise '//...:lint'`, cross-project `depends`, and shared
+`[task_templates]` all work from the workspace, and trust propagates from the
+workspace root down to the members (not to a *linked worktree* — its root is a new
+path, trusted separately). It also seals bare-name fall-through on its own: with it
+on, `mise run dev` inside `backend` resolves as `//backend:dev` rather than reaching
+the workspace, and the workspace's own tasks are addressed `mise run //:ws:dev`. The
+`ws:` prefixes do not depend on that and are not made redundant by it — they hold
+before any member is cloned, which is exactly when a fresh workspace is most
+exposed.
+
+Monorepo mode is **off in the shipped scaffold** and turned on once members are
+cloned — the workspace `mise.toml` carries the block to uncomment. Three things to
+get right:
+
+- `monorepo_root = true` is a **top-level key**, not a `[settings]` entry. Nested
+  under `[settings]`, mise reports `unknown field: settings.monorepo_root` and
+  monorepo mode simply never turns on — that warning is the only signal you get.
+  TOML puts a bare key in the table above it, so the scaffold keeps the commented
+  line above `[settings]`; uncomment it in place.
+- List the member dirs in `[monorepo].config_roots` **explicitly** — filesystem
+  auto-discovery of subdirectory configs is deprecated upstream.
+- Leave `[monorepo].lockfile` **unset** unless your mise release accepts it: the
+  current release rejects the key (`unknown field: monorepo.?.lockfile`) and warns on
+  every invocation. Per-member locks — what a polyrepo wants, since a member must
+  stay buildable standalone — are today's default. When you do set it, set `false`.
 
 **Compose `include:` does not merge on a name collision** — it warns and takes one
 side, so two members that both ship a service called `postgres` give you one
@@ -218,7 +274,7 @@ several members at once, so a name taken from the worktree basename alone put
 
 Members are git-ignored clones, and a worktree is populated from git refs, so a
 worktree of the workspace is a spine host with **zero members**: `ws:status`
-reports `NOT CLONED` for every one, and `mise run dev` cannot boot anything.
+reports `NOT CLONED` for every one, and `mise run ws:dev` cannot boot anything.
 `.worktreeinclude` cannot fix this — a member is a whole repo with its own `.git`,
 not local config to copy.
 
