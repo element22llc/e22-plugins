@@ -12,6 +12,16 @@
 # on top of it (scripts/worktree-env.sh), so the copy does not cause a clash.
 # Before removing a worktree, run `mise run docker:clean` so its containers and
 # volumes don't leak.
+#
+# mise trust is PATH-based, so a new worktree starts untrusted and every
+# `mise run …` in it fails with a trust error until someone trusts it — the
+# trigger being this repo's own `[env] _.source = "scripts/worktree-env.sh"`,
+# which mise will not load untrusted. A Claude Code session started in a
+# worktree inherits the primary checkout's trust automatically (steer's
+# SessionStart check does it, and it grants nothing new: mise keys trust by path,
+# not by content, so the primary already trusts every future edit of that file).
+# In a plain terminal, or in a worktree you create with `git worktree add` inside
+# a running session, run `mise trust` there once.
 
 # Local env / secrets the app needs to boot (mirrors .gitignore)
 .env

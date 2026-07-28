@@ -7,6 +7,40 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added:** `hooks/check-worktree-trust.sh` — a SessionStart check that inherits the
+  primary checkout's `mise trust` into a linked worktree, so a fresh worktree is
+  usable immediately instead of failing every `mise run …` until someone trusts it
+  (#416). `mise trust` is path-based and a worktree is a new path, so the whole
+  scaffolded dev loop — `docker:up`, `dev:setup`, `db:migrate`, the lint/test tasks —
+  failed there with an error about *trust* rather than about the task, and rule
+  `24-worktrees` positions parallel worktrees as normal practice (a polyrepo pays it
+  per member per feature). The trigger is the scaffold's own isolation feature: mise
+  loads a data-only config (`min_version`, plain `[tools]`, `[tasks]`) untrusted and
+  refuses one that executes code at load time — which is exactly `[env] _.source =
+  "scripts/worktree-env.sh"`, the line that gives each worktree its own
+  `COMPOSE_PROJECT_NAME` and port offset. **Inheriting grants nothing new:** mise
+  keys trust by path and does **not** content-hash it, so a repo trusted once has
+  every later edit of its config trusted at that path — anything the worktree's
+  config could execute, the primary checkout would already execute unprompted. The
+  check never *creates* trust: when the primary checkout is itself untrusted the repo
+  has never been set up, and it says so and changes nothing, leaving that first
+  decision to the user (`mise trust && mise install`, rule `15-commands`). It is
+  silent in a plain checkout (gated before `mise` is ever invoked, so the common case
+  and the hook-latency budget are unaffected), outside any work tree, on a machine
+  without mise, in an already-trusted worktree, and in a worktree with no mise config. Registered inside
+  the existing `session-checks.sh` roster, so it costs no extra hook registration;
+  fourteen fixture cases in `hooks/tests/run.sh` cover it, including both
+  no-decision-to-inherit paths (an untrusted primary checkout, and a primary with no
+  mise config at all because the worktree's branch introduced it) writing nothing.
+- **Changed:** the scaffold's `.worktreeinclude` header now documents worktree
+  trust — that a new worktree starts untrusted, that a session started in one
+  inherits the primary checkout's trust automatically, and that a plain terminal or a
+  worktree created mid-session with `git worktree add` needs one `mise trust`. It is
+  documented there rather than in `rules/24-worktrees` deliberately: the always-on
+  ruleset is at its byte ceiling, `claude --worktree` (the sanctioned path) always
+  starts a session and is therefore handled by the hook, and mise's own error names
+  `mise trust` for the ad-hoc case.
+
 - **Fixed:** a polyrepo member's spine was unreachable from a git worktree, and
   failed **silently**. `workspace.path` is relative to the checkout it was written
   against, so the `..` that `templates/spec/product.md` recommends for a member
