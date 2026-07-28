@@ -45,6 +45,17 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     families are prose-heavy — a read-only skill *names* ``mise run dev:setup`` as
     the contract it verifies without ever running it — so they can't be classified
     mechanically without false positives).
+13. The **workspace** scaffold's ``mise.toml`` defines only ``ws:``-prefixed tasks
+    (plus a small allowlist of names it shares byte-identically with the core
+    scaffold), every cross-boundary ``depends`` entry uses one of those names, and
+    the commented ``monorepo_root`` line stays above ``[settings]``. Members are
+    cloned INSIDE the workspace and mise loads every ancestor config, so this file
+    is loaded in every member: an unprefixed task name silently shadows any member
+    that does not define it (issue #415 — an unprefixed ``dev`` made ``mise run
+    dev`` in a member boot the whole product; an unprefixed ``docker:clean`` in a
+    compose-less member dropped every member's volumes), and ``monorepo_root``
+    under ``[settings]`` is an unknown field mise ignores, so monorepo mode never
+    turns on.
 
 Usage::
 
@@ -59,6 +70,7 @@ import fnmatch
 import json
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 from check_plugin import PLUGIN_ROOT, parse_frontmatter
@@ -1122,6 +1134,119 @@ def check_skill_script_grants(errors: list[str]) -> None:
                 )
 
 
+# --- check 13: the workspace scaffold cannot shadow a member's tasks ---
+
+_WS_MISE = PLUGIN_ROOT / "templates/scaffold/profiles/workspace/mise.toml"
+_CORE_MISE = PLUGIN_ROOT / "templates/scaffold/mise.toml"
+
+# Unprefixed task names the workspace config is allowed to define, because a
+# member falling through to them is a NO-OP: the workspace's `run` is identical to
+# the core scaffold's, so the member gets the behaviour it would have had anyway.
+# Identity is asserted below, not assumed — a divergent copy is a silent shadow.
+_WS_SHARED_TASKS = {"convert:doc"}
+
+
+def _mise_tasks(path: Path) -> dict[str, dict]:
+    """The ``[tasks.*]`` table of a mise config, or {} when absent/unparseable."""
+    if not path.is_file():
+        return {}
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError:
+        return {}
+    tasks = data.get("tasks")
+    if not isinstance(tasks, dict):
+        return {}
+    return {k: v for k, v in tasks.items() if isinstance(v, dict)}
+
+
+def check_workspace_task_namespace(errors: list[str]) -> None:
+    """Assert the workspace scaffold's mise tasks cannot shadow a member's (#415).
+
+    Members are cloned INSIDE the workspace at the ``path:`` each declares, and mise
+    loads every ANCESTOR config — so the workspace's ``mise.toml`` is loaded in every
+    member and every member worktree. A name the member also defines resolves to the
+    member's (nearest config wins); a name it does NOT define falls through to the
+    workspace's, with nothing in the output saying the task came from another repo.
+    ``ws:``-prefixing every task removes the fall-through by construction.
+    """
+    rel = "templates/scaffold/profiles/workspace/mise.toml"
+    if not _WS_MISE.is_file():
+        errors.append(f"{rel}: workspace profile mise.toml is missing")
+        return
+
+    text = _WS_MISE.read_text(encoding="utf-8")
+    ws_tasks = _mise_tasks(_WS_MISE)
+    if not ws_tasks:
+        errors.append(f"{rel}: no [tasks.*] parsed — the namespace check cannot verify this file")
+        return
+    core_tasks = _mise_tasks(_CORE_MISE)
+
+    allowed = set()
+    for name, body in sorted(ws_tasks.items()):
+        if name.startswith("ws:"):
+            allowed.add(name)
+            continue
+        if name not in _WS_SHARED_TASKS:
+            errors.append(
+                f"{rel}: task `{name}` is not ws:-prefixed — the workspace config is an "
+                f"ancestor config in every member, so this shadows any member that does "
+                f"not define `{name}` (#415). Rename it `ws:{name}`."
+            )
+            continue
+        # A shared name is only safe while it stays identical to the core scaffold's.
+        core = core_tasks.get(name)
+        if core is None:
+            errors.append(
+                f"{rel}: task `{name}` is allowlisted as shared with the core scaffold, but "
+                f"the core scaffold defines no `{name}` — either rename it `ws:{name}` or "
+                f"drop it from _WS_SHARED_TASKS"
+            )
+        elif core.get("run") != body.get("run"):
+            errors.append(
+                f"{rel}: task `{name}` is allowlisted as shared with the core scaffold but "
+                f"its `run` has drifted from it — a member falling through to this no longer "
+                f"gets the behaviour it would have had, so it is a silent shadow. Re-align "
+                f"the two or rename it `ws:{name}`."
+            )
+        allowed.add(name)
+
+    # `depends` resolves by NAME in the caller's task set, so an unprefixed entry
+    # binds to the MEMBER's task whenever a ws:* task is invoked from inside a
+    # member. Monorepo addresses (`//frontend:dev`) are explicit and fine.
+    for name, body in sorted(ws_tasks.items()):
+        deps = body.get("depends")
+        deps = deps if isinstance(deps, list) else ([deps] if isinstance(deps, str) else [])
+        for dep in deps:
+            if not isinstance(dep, str) or dep.startswith("//") or dep in allowed:
+                continue
+            errors.append(
+                f"{rel}: task `{name}` depends on `{dep}` — `depends` resolves by name in the "
+                f"CALLER's task set, so from inside a member this binds to the member's "
+                f"`{dep}`, not this file's. Use the ws: name or a //member:task address (#415)."
+            )
+
+    # `monorepo_root` is a TOP-LEVEL key. TOML puts a bare key in the table above
+    # it, so the commented line must stay above `[settings]` — uncommented in place
+    # under `[settings]` mise reports `unknown field: settings.monorepo_root` and
+    # monorepo mode silently never turns on.
+    lines = text.splitlines()
+    mono = next((i for i, ln in enumerate(lines) if re.match(r"^#?\s*monorepo_root\s*=", ln)), None)
+    settings = next((i for i, ln in enumerate(lines) if ln.strip() == "[settings]"), None)
+    if mono is None:
+        errors.append(
+            f"{rel}: no `monorepo_root =` line (commented or live) — the monorepo-mode block "
+            f"the polyrepo reference tells consumers to uncomment is missing"
+        )
+    elif settings is not None and mono > settings:
+        errors.append(
+            f"{rel}: the `monorepo_root =` line (line {mono + 1}) sits below `[settings]` "
+            f"(line {settings + 1}) — TOML would make it `settings.monorepo_root`, an unknown "
+            f"field mise ignores, so uncommenting it never enables monorepo mode (#415). "
+            f"Keep it above `[settings]`."
+        )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1143,6 +1268,7 @@ def run_checks(errors: list[str]) -> None:
     check_payload_debranded(errors)
     check_noncallable_imperatives(errors)
     check_skill_script_grants(errors)
+    check_workspace_task_namespace(errors)
 
 
 def main() -> int:

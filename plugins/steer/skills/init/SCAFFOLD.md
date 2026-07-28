@@ -96,11 +96,16 @@ instead of overwriting it.
     - `.gitignore` — one anchored line per member `path:` (`/frontend/`).
     - `compose.yaml` — one `include:` entry per member that will run local
       services, long syntax. If none will, delete the file **and** the
-      `docker:*` + `dev` tasks in `mise.toml`.
-    - `mise.toml` — the `dev` task's `depends` (one `//<member>:dev` per member
-      with a dev server), and, once members are actually cloned, uncomment
-      `[settings] monorepo_root` + `[monorepo]` with `config_roots` listed
-      explicitly and `lockfile = false`.
+      `ws:docker:*` + `ws:dev` tasks in `mise.toml`.
+    - `mise.toml` — the `ws:dev` task's `depends` (keep `ws:docker:up` first, then
+      one `//<member>:dev` per member with a dev server), and, once members are
+      actually cloned, uncomment the top-of-file `monorepo_root = true` (a
+      **top-level** key — under `[settings]` mise ignores it as an unknown field
+      and monorepo mode never turns on) + `[monorepo]` with `config_roots` listed
+      explicitly. Leave `[monorepo].lockfile` unset unless the pinned mise release
+      accepts it. **Every task you add here stays `ws:`-prefixed** — the workspace
+      config is an ancestor config in every member, so an unprefixed name shadows
+      any member that does not define it (`/steer:reference polyrepo`).
     Then bootstrap each member separately: run `/steer:init` in it with its own
     profile, and instantiate `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`
     as its `spec/PRODUCT.md` **instead of** the product-level spine files

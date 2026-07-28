@@ -37,7 +37,7 @@ die() {
 # exist only in the checkout you cloned them into. A worktree is populated from
 # git refs, which means a worktree of the workspace repo is a spine host with
 # ZERO members — `ws:status` says NOT CLONED for every one of them and
-# `mise run dev` cannot boot anything. That is expected, not a broken manifest,
+# `mise run ws:dev` cannot boot anything. That is expected, not a broken manifest,
 # and the report has to say so or it reads as drift.
 ws_in_linked_worktree() {
 	_wd=$(git rev-parse --git-dir 2>/dev/null) || return 1
@@ -272,7 +272,7 @@ cmd_code() {
 }
 
 # cmd_check — the manifest against the two files that must agree with it:
-# compose.yaml `include:` (so `mise run dev` boots the whole product) and
+# compose.yaml `include:` (so `mise run ws:dev` boots the whole product) and
 # .gitignore (so a member's code never lands in the workspace's history).
 # Advisory — it prints drift and exits 0. The manifest is the source of truth.
 cmd_check() {
@@ -317,7 +317,7 @@ cmd_check() {
 # cmd_preflight — can the aggregated stack actually boot from HERE? Exits non-zero
 # with the real reason and the real next step.
 #
-# WHY IT EXISTS: `docker:up` used to guard on `docker compose config` alone, which
+# WHY IT EXISTS: `ws:docker:up` used to guard on `docker compose config` alone, which
 # fails identically for two unrelated causes and blamed the wrong one — it reported
 # that compose.yaml had no resolved `include:` list even when every include was
 # correct and the member checkout was simply absent, sending you to edit a file
