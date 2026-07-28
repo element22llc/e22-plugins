@@ -61,11 +61,15 @@ stale the moment the spec changes — regenerate to refresh.
   `/steer:adopt` (existing code) and **stop**; there is nothing to render yet.
 - **In a polyrepo member** (`spec/PRODUCT.md` present), `spec/features/**` is
   absent **by design** — it lives once in the workspace. Resolve the workspace
-  first: read `workspace.path` from `spec/PRODUCT.md` and, if it is set and the
-  directory exists, read the feature from **there**, saying which repo you
-  rendered. `Bash` is disallowed here, so the GitHub-gateway route is not
-  available to this skill: if `workspace.path` is unset or missing, say the
-  product spine is unreachable and **stop**. Never render an absent local
+  first: read `workspace.path` from `spec/PRODUCT.md`, resolve it against this
+  repo's **primary checkout** (not a linked worktree), and read the feature from
+  **there** — saying which repo you rendered — only if `spec/workspace.yml` is
+  present at that path. Test for that manifest, not for a directory: `..`, the
+  recommended value, resolves inside a worktree to a real but empty
+  `.claude/worktrees`, and accepting it renders every feature as unspecified.
+  `Bash` is disallowed here, so the GitHub-gateway route is not available to this
+  skill: if `workspace.path` is unset, or no manifest is there, say the product
+  spine is unreachable and **stop**. Never render an absent local
   `intent.md` as *"not specified in the spec"* — absent local intent is not "no
   intent" (`/steer:reference polyrepo`).
 - No feature id given, or it's ambiguous → list the features under

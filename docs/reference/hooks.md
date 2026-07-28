@@ -136,6 +136,17 @@ one) exactly as it was.
 There is no equivalent handling for `cd <dir> && git push`: only `-C` states its
 target in the command line. That case still resolves from `cwd`.
 
+`steer_primary_worktree <root>` answers a different question: which checkout a
+**relative marker path** should be resolved against. A linked worktree
+(`.claude/worktrees/<name>`) is a different work-tree root than the checkout the
+marker was written in, so a relative path resolved against it silently points
+somewhere else. It returns `<root>` unchanged for a primary checkout and the
+primary's root for a linked worktree, reading the `gitdir:` pointer out of the
+worktree's `.git` **file** rather than shelling out to `git` (this file is sourced
+on the PreToolUse hot path). Anything it cannot read with certainty — an
+unparseable `.git`, a relative `gitdir:`, a `--separate-git-dir` layout — returns
+`<root>` unchanged. Its consumer is `steer_workspace_root`, below.
+
 ## Which rules apply, and to which repo (`lib/scope.sh`)
 
 Every scope decision a hook makes — which always-on rules to inject, whether the
@@ -153,7 +164,7 @@ listed predicate holds (the one shipped composite is `52-deployment`'s
 **An unknown token fails open (injects)**, so a typo'd marker can never silently
 drop a rule from the always-on context.
 
-Three helpers resolve polyrepo topology:
+Four helpers resolve polyrepo topology:
 
 - `steer_polyrepo_role <root>` — prints `workspace` when `spec/workspace.yml` is
   present, `member` when `spec/PRODUCT.md` is, and nothing in a single repo.
@@ -161,14 +172,24 @@ Three helpers resolve polyrepo topology:
   workspace checkout, read from `spec/PRODUCT.md`'s `workspace.path`. It is scoped
   to the `workspace:` block, so an unrelated `path:` elsewhere in the pointer is
   never mistaken for it, and an unresolved `[...]` placeholder counts as absent.
+  This is the raw reader; callers wanting a usable checkout use the next one.
+- `steer_workspace_root <root>` — the local workspace checkout a member can
+  actually read the spine from, or non-zero meaning "use the GitHub gateway". It
+  adds the two tests the raw path lacks, both of which were silent failures: a
+  relative path is anchored on `steer_primary_worktree` (so it survives a linked
+  worktree), and `spec/workspace.yml` must be **present** at the resolved path — a
+  directory that merely exists is not a workspace. Without the second test the
+  `path: ..` the member template recommends resolved, inside a worktree, to a real
+  but empty `.claude/worktrees` directory, which satisfied an existence check and
+  made every product-level spec read as absent.
 - `steer_tracker_repo <root>` — the tracker's declared `repository:` value. In a
   member this is deliberately **never that member's own repo**, which is why
   closing refs across repos need the cross-repo form.
 
-A fourth helper, `steer_tracker_is_github`, is the behaviourally largest — it decides
+A fifth helper, `steer_tracker_is_github`, is the behaviourally largest — it decides
 whether the issue-first rules and nudges apply. In a member there is no local
-`spec/tracker.md`, so it resolves the workspace's through `workspace.path` — and
-when no local checkout is declared it **fails open to inject**. That fail-open is
+`spec/tracker.md`, so it resolves the workspace's through `steer_workspace_root` —
+and when no local checkout is declared it **fails open to inject**. That fail-open is
 what turns issue-first on in a polyrepo member (rule `36-issue-first`, plus
 `check-write-nudges.sh`, `check-bash-actions.sh` and `reconcile-issue-first.sh`):
 the alternative, treating an unreachable tracker as "no tracker", silently

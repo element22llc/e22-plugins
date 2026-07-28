@@ -7,6 +7,56 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** a polyrepo member's spine was unreachable from a git worktree, and
+  failed **silently**. `workspace.path` is relative to the checkout it was written
+  against, so the `..` that `templates/spec/product.md` recommends for a member
+  cloned inside its workspace resolved from `<member>/.claude/worktrees/<name>` to
+  `<member>/.claude/worktrees` — a directory that *exists*. Step 1 of the
+  documented resolution ladder ("path set and the directory exists") therefore
+  won, the GitHub-gateway fallback in step 2 was never reached, and every skill
+  that resolves the spine from a member (`/steer:work`, `/steer:spec`,
+  `/steer:next`, `/steer:intake`, `/steer:adr`, `/steer:questions`,
+  `/steer:tracker-sync`, `/steer:explain`) read an empty tree and reported the
+  product's specs as absent — the exact split-brain the topology exists to
+  prevent, in the repos holding all the code. New `steer_primary_worktree`
+  (`hooks/lib/repo-root.sh`, subprocess-free: a linked worktree's `.git` is a file
+  holding the `gitdir:` pointer) anchors relative paths on the primary checkout,
+  and new `steer_workspace_root` (`hooks/lib/scope.sh`) additionally requires
+  `spec/workspace.yml` at the resolved path — a directory that merely exists is not
+  a workspace, so the remaining failure modes fall back to the gateway instead of
+  reading a wrong tree. The ladder in `templates/spec/product.md` and
+  `POLYREPO.md` now states both tests, as do the three skills that restated the
+  old one-test form inline rather than pointing at the ladder — `/steer:work`,
+  `/steer:spec`, and `/steer:explain`, the last of which holds no `Bash` and so
+  has no gateway to fall back to: it would have rendered every feature as *"not
+  specified in the spec"*, the exact output its own instructions forbid.
+  `steer_tracker_is_github` was the one consumer already safe here, via its
+  fail-open contract.
+- **Fixed:** `COMPOSE_PROJECT_NAME` collided across repos in a polyrepo, and
+  `mise run docker:clean` in one repo's worktree tore down another's stack —
+  containers, volumes and networks. `scripts/worktree-env.sh` derived the name from
+  the worktree's basename alone, which is not unique across repos: a polyrepo runs
+  the same feature branch in several members at once, so `<memberA>/.claude/
+  worktrees/feat-x` and `<memberB>/.claude/worktrees/feat-x` shared one Compose
+  project. Distinct port offsets did not help — the collision is in the namespace,
+  not the ports — and this contradicted both rule `24-worktrees` ("it won't touch
+  a sibling's stack") and the workspace `mise.toml`. A linked worktree's project
+  name is now `<repo>-<worktree>`; the primary checkout keeps its bare basename, so
+  no existing stack is renamed.
+- **Fixed:** a worktree of a **workspace** repo has no members — the clones are
+  git-ignored, so a worktree populated from git refs carries none of them — and
+  the tooling misreported it three ways. `mise run docker:up` failed with
+  "compose.yaml has no resolved `include:` list yet" even when every include was
+  correct, sending you to edit a correct file; `ws.sh check` *silently skipped* its
+  compose-include assertion for an absent member, so a skipped line read as a pass
+  and real manifest drift was invisible for every member at once; and `ws:status`
+  offered `mise run ws:clone` with no hint that it means a full duplicate of every
+  member at the manifest branch. `ws.sh` gains a `preflight` subcommand that
+  separates "manifest unresolved" from "checkout absent" and names the real next
+  step (now what `docker:up` guards on), reports an explicit `absent` line instead
+  of going quiet, and prints the worktree state once per run. `POLYREPO.md`
+  documents the topology.
+
 ### 3.23.0
 
 *This was a long cycle with a large internal sweep, so many **Fixed** entries

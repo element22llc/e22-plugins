@@ -96,7 +96,10 @@ A member's spine is therefore **partial by design** — never "repaired" by addi
 product-level files back, which would recreate the split. A missing local
 `intent.md` means the workspace has not been read yet, so the skills resolve it
 first: `workspace.path` when a checkout exists, else over the GitHub gateway,
-else stop rather than guess.
+else stop rather than guess. "A checkout exists" means `spec/workspace.yml` is
+present at the resolved path, and a relative path resolves against the repo's
+primary checkout — not against a linked worktree, where the recommended `..`
+points at a real but empty directory.
 
 Two consequences worth knowing before adopting the topology:
 
@@ -116,7 +119,10 @@ Members are cloned **inside** the workspace and git-ignored there — ordinary
 clones, not submodules, so nothing pins a SHA and a member commit never dirties
 the workspace. From the workspace, `mise run ws:clone` / `ws:sync` / `ws:status`
 / `ws:code` / `ws:list` manage them as a set and `mise run dev` boots the whole
-product via Compose `include:`. What this never buys is **atomic cross-repo commits**: a contract
+product via Compose `include:`. Because those clones are git-ignored, a **worktree**
+of the workspace has none of them: do spine work there, but run the product from
+the primary checkout — `ws:status`, `ws:check` and `ws:preflight` say so
+explicitly rather than reporting an absent member as drift. What this never buys is **atomic cross-repo commits**: a contract
 change across two members is still two PRs that can merge out of order. The
 topology makes that visible; it cannot make it atomic.
 

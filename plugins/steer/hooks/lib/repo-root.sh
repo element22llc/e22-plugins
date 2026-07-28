@@ -31,6 +31,63 @@ steer_repo_root() {
 	return 1
 }
 
+# steer_primary_worktree <repo-root> — the work-tree root of the PRIMARY checkout
+# backing <repo-root>: <repo-root> itself when it already IS the primary checkout,
+# and the primary's root when <repo-root> is a linked worktree.
+#
+# WHY: every path a steer marker declares is relative to "the repo", and a linked
+# worktree is a DIFFERENT root than the checkout the marker was written against.
+# The one that bites is a polyrepo member's `workspace.path: ..` — the value
+# templates/spec/product.md recommends for a member cloned inside its workspace.
+# From `<member>/.claude/worktrees/<name>` that resolves to
+# `<member>/.claude/worktrees`, a directory that EXISTS but holds no spine, so a
+# consumer that only tests `-d` reads an empty tree and reports the product's
+# specs as absent — silently, and in exactly the repos holding all the code.
+# Anchoring on the primary checkout makes `..` mean what it says from a worktree.
+#
+# Subprocess-free (PreToolUse hot path), so no `git rev-parse --git-common-dir`:
+# a linked worktree's `.git` is a FILE holding
+# `gitdir: <primary>/.git/worktrees/<name>`, which is all this needs.
+#
+# Fail-soft in the direction of today's behaviour — an unreadable `.git`, a
+# relative `gitdir:`, a git dir not named `.git` (`--separate-git-dir`, whose
+# parent is NOT a work tree), or a resolved path that is not a directory all
+# return <repo-root> unchanged.
+steer_primary_worktree() {
+	_pw_root="${1:-.}"
+	# A primary checkout has .git as a DIRECTORY — nothing to resolve. (`.git` as a
+	# file also covers submodules, which the layout guards below reject.)
+	[ -f "${_pw_root}/.git" ] || {
+		printf '%s' "${_pw_root}"
+		return 0
+	}
+	_pw_gd="$(sed -n 's/^gitdir:[[:space:]]*//p' "${_pw_root}/.git" 2>/dev/null | head -n 1)"
+	# Only the absolute linked-worktree layout is recognised.
+	case "${_pw_gd}" in
+	/*/worktrees/*) ;;
+	*)
+		printf '%s' "${_pw_root}"
+		return 0
+		;;
+	esac
+	_pw_common="${_pw_gd%/worktrees/*}" # <primary>/.git
+	# Require the shared git dir to be the repo's own `.git`, so its parent really
+	# is the primary work tree.
+	case "${_pw_common}" in
+	*/.git) ;;
+	*)
+		printf '%s' "${_pw_root}"
+		return 0
+		;;
+	esac
+	_pw_primary="${_pw_common%/*}" # <primary>
+	if [ -n "${_pw_primary}" ] && [ -d "${_pw_primary}" ]; then
+		printf '%s' "${_pw_primary}"
+		return 0
+	fi
+	printf '%s' "${_pw_root}"
+}
+
 # steer_action_root <cwd> [action_path] — the work-tree root of the thing the tool
 # is ACTING ON, falling back to the session cwd's root.
 #
