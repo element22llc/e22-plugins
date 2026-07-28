@@ -20,7 +20,7 @@
 # member items, 4-space scalar fields), so the awk parse below is reliable. It is
 # NOT a general YAML parser — keep the manifest in the shipped shape.
 #
-# Usage: sh scripts/ws.sh <list|clone|sync|status|code|check>
+# Usage: sh scripts/ws.sh <list|clone|sync|status|code|check|preflight>
 set -eu
 
 MANIFEST="spec/workspace.yml"
@@ -29,6 +29,35 @@ TAB=$(printf '\t')
 die() {
 	printf 'ws: %s\n' "$1" >&2
 	exit 1
+}
+
+# ws_in_linked_worktree — true inside a linked worktree of THIS repo.
+#
+# WHY EVERY SUBCOMMAND CARES: member checkouts are git-IGNORED clones, so they
+# exist only in the checkout you cloned them into. A worktree is populated from
+# git refs, which means a worktree of the workspace repo is a spine host with
+# ZERO members — `ws:status` says NOT CLONED for every one of them and
+# `mise run dev` cannot boot anything. That is expected, not a broken manifest,
+# and the report has to say so or it reads as drift.
+ws_in_linked_worktree() {
+	_wd=$(git rev-parse --git-dir 2>/dev/null) || return 1
+	_wc=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
+	[ -n "${_wd}" ] && [ -n "${_wc}" ] && [ "${_wd}" != "${_wc}" ]
+}
+
+# ws_worktree_note — the one explanation of the state above, printed by the
+# subcommands that would otherwise report an absent member as drift. At most once
+# per run: `status` calls it beside its own member list and then delegates to
+# `check`, which calls it too.
+WS_NOTE_SHOWN=0
+ws_worktree_note() {
+	ws_in_linked_worktree || return 0
+	[ "${WS_NOTE_SHOWN}" = 0 ] || return 0
+	WS_NOTE_SHOWN=1
+	printf '  NOTE    this is a linked worktree; member clones are git-ignored, so it has\n'
+	printf '          none of them. Do spine work here and run the product from the primary\n'
+	printf '          checkout, or `mise run ws:clone` here to get a second set of clones\n'
+	printf '          (at the manifest branch, not this worktree'"'"'s).\n'
 }
 
 [ -f "${MANIFEST}" ] || die "no ${MANIFEST} — this is not a polyrepo workspace repo"
@@ -214,6 +243,7 @@ cmd_status() {
 			"${current}" "${state}" "${drift}" \
 			"$(cat "${path}/spec/.version" 2>/dev/null || printf -- '-')"
 	done
+	ws_worktree_note
 	printf '\n# Workspace spine\n  spine=%s\n\n' "$(cat spec/.version 2>/dev/null || printf -- '-')"
 	cmd_check
 }
@@ -253,6 +283,24 @@ cmd_check() {
 	fi
 	ws_members | while IFS="${TAB}" read -r name _repo _branch _profile path; do
 		[ -n "${path}" ] || continue
+		# The .gitignore assertion is answered by the manifest alone, so it holds
+		# whether or not the member is cloned in THIS checkout.
+		if grep -qE "^/?${path}/?$" .gitignore 2>/dev/null; then
+			printf '  ok      %-16s git-ignored\n' "${name}"
+		else
+			printf '  MISSING %-16s %s is NOT in .gitignore — its code would be committed here\n' \
+				"${name}" "${path}"
+		fi
+		# The compose assertion needs the checkout — "does this member run services?"
+		# is a question about its files. Say the check could not RUN rather than
+		# passing over it in silence: a skipped line reads as a pass, and in a
+		# worktree (which has no member cloned at all) that hid real
+		# manifest-vs-compose drift for every member at once.
+		if [ ! -d "${path}" ]; then
+			printf '  absent  %-16s not cloned at %s — compose-include check not run\n' \
+				"${name}" "${path}"
+			continue
+		fi
 		if [ -f "${path}/compose.yaml" ] || [ -f "${path}/compose.yml" ]; then
 			if grep -qF -- "${path}/compose" compose.yaml 2>/dev/null; then
 				printf '  ok      %-16s compose include present\n' "${name}"
@@ -261,14 +309,44 @@ cmd_check() {
 					"${name}" "${path}"
 			fi
 		fi
-		if grep -qE "^/?${path}/?$" .gitignore 2>/dev/null; then
-			printf '  ok      %-16s git-ignored\n' "${name}"
-		else
-			printf '  MISSING %-16s %s is NOT in .gitignore — its code would be committed here\n' \
-				"${name}" "${path}"
-		fi
 	done
+	ws_worktree_note
 	return 0
+}
+
+# cmd_preflight — can the aggregated stack actually boot from HERE? Exits non-zero
+# with the real reason and the real next step.
+#
+# WHY IT EXISTS: `docker:up` used to guard on `docker compose config` alone, which
+# fails identically for two unrelated causes and blamed the wrong one — it reported
+# that compose.yaml had no resolved `include:` list even when every include was
+# correct and the member checkout was simply absent, sending you to edit a file
+# that was already right. Diagnose the manifest and the checkouts first; fall
+# through to compose only once those hold.
+cmd_preflight() {
+	ws_require_members
+	if [ "$(ws_local_count)" = 0 ]; then
+		die 'no member declares a local `path:` — there is nothing to boot here'
+	fi
+	ws_members >"${RECORDS}"
+	missing=''
+	while IFS="${TAB}" read -r name _repo _branch _profile path; do
+		[ -n "${path}" ] || continue
+		[ -d "${path}" ] || missing="${missing} ${name} (${path})"
+	done <"${RECORDS}"
+	if [ -n "${missing}" ]; then
+		printf 'ws: member checkout(s) absent —%s\n' "${missing}" >&2
+		if ws_in_linked_worktree; then
+			printf 'ws: this is a linked worktree, and member clones are git-ignored, so it has\n' >&2
+			printf 'ws: none of them. Boot the product from the primary checkout, or run\n' >&2
+			printf 'ws: `mise run ws:clone` here for a second set of clones.\n' >&2
+		else
+			printf 'ws: run `mise run ws:clone` first.\n' >&2
+		fi
+		exit 1
+	fi
+	docker compose config >/dev/null 2>&1 ||
+		die 'compose.yaml does not resolve — add one `include:` entry per member that runs local services (see the file header), or delete compose.yaml together with the docker:* and dev tasks'
 }
 
 case "${1:-}" in
@@ -278,5 +356,6 @@ sync) cmd_sync ;;
 status) cmd_status ;;
 code) cmd_code ;;
 check) cmd_check ;;
-*) die "usage: sh scripts/ws.sh <list|clone|sync|status|code|check>" ;;
+preflight) cmd_preflight ;;
+*) die "usage: sh scripts/ws.sh <list|clone|sync|status|code|check|preflight>" ;;
 esac

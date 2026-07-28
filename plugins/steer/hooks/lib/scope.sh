@@ -32,8 +32,8 @@ steer_tracker_is_github() {
 		# Not a member either → genuinely no tracker declared (single-repo case,
 		# unchanged): the rule is provably out of scope.
 		[ -f "${_root}/spec/PRODUCT.md" ] || return 1
-		_wsp="$(steer_workspace_path "${_root}")" || return 0
-		_tracker="${_root}/${_wsp}/spec/tracker.md"
+		_wsr="$(steer_workspace_root "${_root}")" || return 0
+		_tracker="${_wsr}/spec/tracker.md"
 		[ -f "${_tracker}" ] || return 0
 	fi
 	# `github\b` (word boundary, as scripts/scan-capabilities.sh uses) so a value
@@ -59,6 +59,37 @@ steer_workspace_path() {
 	'' | '['*) return 1 ;;
 	esac
 	printf '%s' "${_v}"
+}
+
+# steer_workspace_root <repo-root> — the path to a local workspace checkout this
+# member can actually read the product spine from, or non-zero when there is
+# none. Returning non-zero is not an error: it is the signal to fall back to the
+# GitHub gateway (templates/spec/product.md → "Resolving the spine").
+#
+# THE RAW `workspace.path` IS NOT ENOUGH, and both gaps were silent:
+#
+#   - Worktrees. The value is relative to the checkout it was written against, so
+#     it resolves against steer_primary_worktree (see repo-root.sh) rather than a
+#     linked worktree's own root. Without that, the recommended `path: ..` points
+#     at `<member>/.claude/worktrees` from inside a worktree.
+#   - Existence is not workspace-ness. The ladder used to accept any directory
+#     that merely EXISTED at the resolved path — and the path above exists. So the
+#     member manifest `spec/workspace.yml` must be PRESENT there: that file is
+#     what makes a directory a workspace at all (steer_polyrepo_role, below), and
+#     requiring it turns a silent read of an empty tree — which reports the
+#     product's specs as absent — into a clean gateway fallback.
+#
+# An absolute `workspace.path` is honoured as given; only a relative one is
+# anchored. Subprocess-free beyond the sed in steer_workspace_path.
+steer_workspace_root() {
+	_wr_root="${1:-.}"
+	_wr_rel="$(steer_workspace_path "${_wr_root}")" || return 1
+	case "${_wr_rel}" in
+	/*) _wr_abs="${_wr_rel}" ;;
+	*) _wr_abs="$(steer_primary_worktree "${_wr_root}")/${_wr_rel}" ;;
+	esac
+	[ -f "${_wr_abs}/spec/workspace.yml" ] || return 1
+	printf '%s' "${_wr_abs}"
 }
 
 # steer_tracker_repo <repo-root> — prints the tracker's declared `repository:`

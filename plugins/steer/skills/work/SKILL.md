@@ -59,9 +59,11 @@ These hold for the whole run, in every mode.
 0. **Polyrepo member? Resolve the spine first.** If this repo has
    `spec/PRODUCT.md` (a polyrepo member), its spine is **partial by design**: the
    tracker and every feature's `intent.md` / `contract.md` live in the workspace
-   repo, not here. Resolve the workspace before step 1 — `workspace.path` if the
-   checkout exists, else the GitHub gateway — and read the tracker and the linked
-   specs from **there**. A missing local `intent.md` means the workspace has not
+   repo, not here. Resolve the workspace before step 1 — `workspace.path` when
+   `spec/workspace.yml` is present there (resolved against the **primary
+   checkout**, since `..` from a linked worktree lands on an empty
+   `.claude/worktrees`), else the GitHub gateway — and read the tracker and the
+   linked specs from **there**. A missing local `intent.md` means the workspace has not
    been read yet, never that the feature is unspecified, so **never** author
    product-level spec files here to fill the gap. If neither route reaches the
    workspace, say the spine is unreachable and stop. Procedure:

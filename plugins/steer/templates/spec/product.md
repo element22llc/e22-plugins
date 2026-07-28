@@ -39,7 +39,12 @@ workspace rather than writing a second copy here.
 
 ## Resolving the spine
 
-1. `workspace.path` set and the directory exists → read the spine from there.
+1. `workspace.path` set and `spec/workspace.yml` present at that path → read the
+   spine from there. Require the **manifest**, not just a directory: a relative
+   `path` is relative to the repo's **primary checkout**, so from a linked
+   worktree (`.claude/worktrees/<name>`) the recommended `..` lands on a real but
+   empty directory. Resolve against the primary checkout, and treat a resolved
+   path with no manifest as no local checkout.
 2. Otherwise → read it from `workspace.repository` at `workspace.branch` over the
    GitHub tracker gateway (`/steer:tracker-sync`).
 3. Neither available → say the spine is unreachable and stop. Do **not** proceed

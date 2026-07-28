@@ -64,7 +64,10 @@ github-cli = "latest"           # gh — the tracker for the whole product lives
 # so it needs its own Compose identity — otherwise `mise run dev` here and a
 # member's standalone `mise run docker:up` fight over the same project name.
 # worktree-env.sh derives COMPOSE_PROJECT_NAME from this checkout's directory
-# name, which differs from every member's, so the two stacks stay separate.
+# name, which differs from every member's, so the two stacks stay separate. In a
+# linked worktree it is `<repo>-<worktree>` — the repo prefix is what keeps this
+# workspace's `feat-x` worktree out of a member's `feat-x` worktree, which shared
+# one Compose project when the name was the worktree basename alone.
 #
 # HOST PORTS still collide: this stack and a member's standalone stack both
 # default to 5432. Run the product from here OR a member standalone, not both —
@@ -93,11 +96,14 @@ run = "sh scripts/ws.sh list"
 
 [tasks."docker:up"]
 description = "Start every member's backing services (compose.yaml include:) and wait until healthy"
-# The scaffold ships compose.yaml with every `include:` entry commented out, so
-# guard first: an unresolved file makes `docker compose` fail with a parse error
-# that says nothing about what to do. This turns it into the actual next step.
+# Guard first: `docker compose` alone fails with a parse error that says nothing
+# about what to do, and it fails IDENTICALLY for two unrelated causes — an
+# unresolved `include:` list (the scaffold ships every entry commented out) and an
+# absent member checkout (always the case in a linked worktree, where the clones
+# are git-ignored and so were never carried in). ws.sh preflight separates them and
+# names the actual next step.
 run = [
-  "docker compose config >/dev/null 2>&1 || { printf 'compose.yaml has no resolved `include:` list yet — add one entry per member that runs local services (see the file header), or delete compose.yaml together with the docker:* and dev tasks.\\n' >&2; exit 1; }",
+  "sh scripts/ws.sh preflight",
   "docker compose up -d --wait",
 ]
 

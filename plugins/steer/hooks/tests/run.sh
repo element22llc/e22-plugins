@@ -1791,21 +1791,89 @@ steer_tracker_is_github "${TRAITS_MEMNP}" && ok || bad "scope: member with no lo
 steer_inject_when_ok tracker-github "${TRAITS_MEMNP}" && ok || bad "scope: 36-issue-first must inject in a member"
 
 # With `workspace.path` naming a real local checkout, the workspace's tracker is
-# authoritative — both directions.
+# authoritative — both directions. `spec/workspace.yml` is what makes the target a
+# workspace, so the fixture carries it (steer_workspace_root requires it).
 TRAITS_MEMWS="$(new_repo traits_memws)"
 mkdir -p "${TRAITS_MEMWS}/ws/spec" "${TRAITS_MEMWS}/member/spec"
+printf 'members:\n  - name: member\n' >"${TRAITS_MEMWS}/ws/spec/workspace.yml"
 printf 'system: github\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
 printf 'workspace:\n  repository: acme/spine\n  path: ../ws   # local checkout\n' \
 	>"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
 assert_eq "scope: workspace.path parsed from PRODUCT.md" \
 	"$(steer_workspace_path "${TRAITS_MEMWS}/member")" "../ws"
+assert_eq "scope: workspace_root resolves to the validated checkout" \
+	"$(steer_workspace_root "${TRAITS_MEMWS}/member")" "${TRAITS_MEMWS}/member/../ws"
 steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: member resolves workspace tracker as github"
 printf 'system: jira\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
 steer_tracker_is_github "${TRAITS_MEMWS}/member" && bad "scope: member honors a non-GitHub workspace tracker" || ok
+printf 'system: github\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
+
+# A resolved path that EXISTS but carries no member manifest is not a workspace.
+# This is the silent case worktrees produce (`path: ..` → `.claude/worktrees`, a
+# real but empty directory): accepting it read an empty tree and reported every
+# product-level spec as absent instead of falling back to the gateway.
+mkdir -p "${TRAITS_MEMWS}/bare/spec"
+printf 'system: github\n' >"${TRAITS_MEMWS}/bare/spec/tracker.md"
+printf 'workspace:\n  path: ../bare\n' >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+steer_workspace_root "${TRAITS_MEMWS}/member" >/dev/null &&
+	bad "scope: a directory with no workspace.yml is not a workspace" || ok
+steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: manifest-less path fails open"
+
+# An ABSOLUTE workspace.path is honoured as given, never re-anchored.
+printf 'workspace:\n  path: %s/ws\n' "${TRAITS_MEMWS}" >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
+assert_eq "scope: absolute workspace.path used verbatim" \
+	"$(steer_workspace_root "${TRAITS_MEMWS}/member")" "${TRAITS_MEMWS}/ws"
 
 # A declared path that does not exist must also fail open, never fail closed.
 printf 'workspace:\n  path: ../gone\n' >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
 steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: unresolvable workspace.path fails open"
+
+# ----- worktrees: workspace.path is anchored on the PRIMARY checkout -----
+# The regression this guards: `path: ..` (what templates/spec/product.md
+# recommends for a member cloned inside its workspace) resolved from
+# `<member>/.claude/worktrees/<n>` to `<member>/.claude/worktrees` — a directory
+# that EXISTS, so step 1 of the ladder won and the gateway was never reached.
+# Real linked-worktree layout: .git is a FILE holding a gitdir: pointer.
+WT_WS="${WORK}/wt_polyrepo"
+mkdir -p "${WT_WS}/spec" "${WT_WS}/member/.git/worktrees/feat-x" \
+	"${WT_WS}/member/.claude/worktrees/feat-x/spec"
+printf 'members:\n  - name: member\n' >"${WT_WS}/spec/workspace.yml"
+printf 'system: github\n' >"${WT_WS}/spec/tracker.md"
+printf 'workspace:\n  repository: acme/spine\n  path: ..\n' \
+	>"${WT_WS}/member/.claude/worktrees/feat-x/spec/PRODUCT.md"
+printf 'gitdir: %s/member/.git/worktrees/feat-x\n' "${WT_WS}" \
+	>"${WT_WS}/member/.claude/worktrees/feat-x/.git"
+WT_LINK="${WT_WS}/member/.claude/worktrees/feat-x"
+
+assert_eq "worktree: primary checkout resolved from a linked worktree" \
+	"$(steer_primary_worktree "${WT_LINK}")" "${WT_WS}/member"
+assert_eq "worktree: workspace.path anchored on the primary, not the worktree" \
+	"$(steer_workspace_root "${WT_LINK}")" "${WT_WS}/member/.."
+steer_tracker_is_github "${WT_LINK}" && ok || bad "worktree: member worktree resolves the workspace tracker"
+printf 'system: jira\n' >"${WT_WS}/spec/tracker.md"
+steer_tracker_is_github "${WT_LINK}" && bad "worktree: worktree honors a non-GitHub workspace tracker" || ok
+
+# Without the anchoring, `..` would land here — assert the trap really is a real
+# directory, so this test keeps testing something.
+[ -d "${WT_LINK}/.." ] && ok || bad "worktree: the mis-resolved path must exist to be a trap"
+steer_workspace_root "${WORK}/wt_polyrepo/member/.claude/worktrees" >/dev/null 2>&1 &&
+	bad "worktree: the mis-resolved directory must not read as a workspace" || ok
+
+# Fail-soft: a primary checkout, an unparseable .git, and a --separate-git-dir
+# layout (whose git dir is NOT named .git, so its parent is no work tree) all
+# return the given root unchanged rather than guessing.
+assert_eq "worktree: primary checkout passes through" \
+	"$(steer_primary_worktree "${WT_WS}/member")" "${WT_WS}/member"
+assert_eq "worktree: empty .git passes through" \
+	"$(steer_primary_worktree "${TRAITS_MEMWS}")" "${TRAITS_MEMWS}"
+WT_SEP="${WORK}/wt_separate"
+mkdir -p "${WT_SEP}"
+printf 'gitdir: /elsewhere/repo.git/worktrees/x\n' >"${WT_SEP}/.git"
+assert_eq "worktree: non-.git common dir passes through" \
+	"$(steer_primary_worktree "${WT_SEP}")" "${WT_SEP}"
+printf 'gitdir: ../relative/.git/worktrees/x\n' >"${WT_SEP}/.git"
+assert_eq "worktree: relative gitdir passes through" \
+	"$(steer_primary_worktree "${WT_SEP}")" "${WT_SEP}"
 
 # An unresolved placeholder path is treated as absent (→ fail open), and a
 # `path:` outside the `workspace:` block is never mistaken for it.

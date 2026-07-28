@@ -83,8 +83,8 @@ product-level files — that recreates the fragmentation.
 
 ## Resolving the spine from a member
 
-1. `workspace.path` in `spec/PRODUCT.md` is set and the directory exists → read
-   the spine from there.
+1. `workspace.path` in `spec/PRODUCT.md` is set **and `spec/workspace.yml` is
+   present at that path** → read the spine from there.
 2. Otherwise → read `workspace.repository` at `workspace.branch` over the GitHub
    gateway (`/steer:tracker-sync`). No local clone required.
 3. Neither → say the spine is unreachable and **stop**. Do not proceed on a guess
@@ -92,6 +92,17 @@ product-level files — that recreates the fragmentation.
 
 Absent local intent is never "no intent". It means the workspace has not been
 read yet.
+
+**Step 1 tests for the manifest, not for a directory, and resolves against the
+primary checkout.** Both halves exist because of worktrees. `workspace.path` is
+relative to the checkout it was written against, and a linked worktree
+(`.claude/worktrees/<name>`) is a different root — so the `..` this topology
+recommends resolves from a worktree to `<member>/.claude/worktrees`, which
+*exists*. A step 1 that accepted any existing directory therefore read an empty
+tree, reported every product-level spec as absent, and never reached the gateway
+in step 2 — silently, in the repos holding all the code. `steer_workspace_root`
+(`hooks/lib/scope.sh`) implements both halves for the hooks; skills resolving the
+spine themselves must apply the same two tests.
 
 ## Reporting across members
 
@@ -195,8 +206,27 @@ each *member's* compose file. Host ports are a separate problem the topology doe
 not solve: every member's scaffold publishes `${POSTGRES_PORT:-5432}`, so give
 each member a distinct base port in its own `.env`. Container/volume/network names
 never clash with a member's standalone stack — mise sources
-`scripts/worktree-env.sh`, which gives the workspace its own
-`COMPOSE_PROJECT_NAME`.
+`scripts/worktree-env.sh`, which gives each checkout its own
+`COMPOSE_PROJECT_NAME`: the repo's directory name for a primary checkout, and
+`<repo>-<worktree>` inside a linked worktree. The repo prefix is load-bearing
+here and not in a single-repo product: a polyrepo runs the same feature branch in
+several members at once, so a name taken from the worktree basename alone put
+`memberA`'s `feat-x` and `memberB`'s `feat-x` in the *same* Compose project — and
+`mise run docker:clean` in one then tore down the other's containers and volumes.
+
+## Worktrees of the workspace repo have no members
+
+Members are git-ignored clones, and a worktree is populated from git refs, so a
+worktree of the workspace is a spine host with **zero members**: `ws:status`
+reports `NOT CLONED` for every one, and `mise run dev` cannot boot anything.
+`.worktreeinclude` cannot fix this — a member is a whole repo with its own `.git`,
+not local config to copy.
+
+Do spine work in a workspace worktree freely; run the *product* from the primary
+checkout. `mise run ws:clone` does work inside a worktree if you want a second set
+of clones, but they land at the manifest branch, not the worktree's, and they cost
+a full duplicate of every member. `ws:status` / `ws:check` / `ws:preflight` all
+name this state explicitly rather than reporting an absent member as drift.
 
 This is a **partial monorepo simulation** and worth naming as such: coupled local
 development without atomic cross-repo commits. Nothing above changes the fact
