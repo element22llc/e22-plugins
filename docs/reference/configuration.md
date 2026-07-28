@@ -97,16 +97,21 @@ instead of `rules/` (the polyrepo precedent above).
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
-happening quietly. The rules ceiling has been raised twice. First from 62,500 to
-65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32 bytes of
-headroom, so the only way to add the rule was compressing unrelated gate rules,
-and that trade deleted ~1 KB of rationale prose that existed nowhere else in the
-repo. Paying the bytes was judged cheaper than losing the prose. Then from 65,200
-to 65,300, because the polyrepo work landed in the same cycle and consumed that
-new headroom down to 7 bytes — leaving three factual corrections to always-on
+happening quietly. The rules ceiling has been raised three times. First from
+62,500 to 65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32
+bytes of headroom, so the only way to add the rule was compressing unrelated gate
+rules, and that trade deleted ~1 KB of rationale prose that existed nowhere else in
+the repo. Paying the bytes was judged cheaper than losing the prose. Then from
+65,200 to 65,300, because the polyrepo work landed in the same cycle and consumed
+that new headroom down to 7 bytes — leaving three factual corrections to always-on
 rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
-root allowlist, a mis-cited rule heading) with nothing to spend. The *target*
-deliberately
+root allowlist, a mis-cited rule heading) with nothing to spend. Then from 65,300
+to 66,500, to fund the worktree-trust step in rule `24-worktrees`: a worktree
+created with `git worktree add` mid-session is the one case no hook can reach — the
+`check-worktree-trust` session check covers a session *started* in a worktree — so
+the instruction has to be always-on to exist when it is needed. That raise also
+re-armed at measured + ~1% rather than the 5-to-7-byte margins that had made each
+previous raise inevitable. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 

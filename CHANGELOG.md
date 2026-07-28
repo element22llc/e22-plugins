@@ -32,14 +32,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   fourteen fixture cases in `hooks/tests/run.sh` cover it, including both
   no-decision-to-inherit paths (an untrusted primary checkout, and a primary with no
   mise config at all because the worktree's branch introduced it) writing nothing.
-- **Changed:** the scaffold's `.worktreeinclude` header now documents worktree
-  trust — that a new worktree starts untrusted, that a session started in one
-  inherits the primary checkout's trust automatically, and that a plain terminal or a
-  worktree created mid-session with `git worktree add` needs one `mise trust`. It is
-  documented there rather than in `rules/24-worktrees` deliberately: the always-on
-  ruleset is at its byte ceiling, `claude --worktree` (the sanctioned path) always
-  starts a session and is therefore handled by the hook, and mise's own error names
-  `mise trust` for the ad-hoc case.
+- **Changed:** rule `24-worktrees` now opens with the worktree-trust step — a
+  worktree you *start a session in* inherits the primary checkout's trust (the new
+  session check does it), one you create with `git worktree add` mid-session does
+  not and needs `mise trust` before the first `mise run …`, and an untrusted repo is
+  the user's call (`mise trust && mise install`). The mid-session case is precisely
+  the one no hook can reach, which is why it belongs in an always-on rule rather
+  than only in the hook's notice. The scaffold's `.worktreeinclude` header carries
+  the same guidance for the plain-terminal reader, with the mechanism behind it
+  (path-keyed trust, and the `[env] _.source` line that triggers it).
+- **Changed:** the always-on rules ceiling moves 65,300 → 66,500 B to fund that rule
+  step. The ratchet stood at **5 bytes** of headroom, so the alternative was trading
+  out rule 24's own rationale — the trade `check_context_budget.py`'s own notes twice
+  record as wrong and reverted. Re-armed at the measured total (65,795 B across 35
+  files) plus ~1%, deliberately restoring real headroom instead of the 5-to-7-byte
+  margins that made each of the last two raises inevitable; the reason is recorded in
+  the gate script and `docs/reference/configuration.md` beside the two earlier
+  raises. The target stays 62,500 B, so the budget report keeps showing the gap as
+  work to reclaim.
 
 - **Fixed:** the workspace scaffold's `mise.toml` leaked whole-product tasks into
   every member cloned inside it (#415). Members live at the `path:` each declares
