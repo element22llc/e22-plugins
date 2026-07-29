@@ -8,7 +8,12 @@ ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` �
 "Gate hooks on Copilot"), reshaped into Copilot's flat manifest schema:
 
 * only the ``PreToolUse`` gates that can act as a blocking ``permissionDecision``
-  are ported (the advisory SessionStart/Stop nudges have no Copilot analog);
+  are ported. The SessionStart/Stop hooks are not: Copilot's ``sessionStart``
+  ignores stdout, which is the entire delivery mechanism for the advisory checks,
+  and for the one side-effecting check (``check-worktree-trust.sh``) it would drop
+  the message explaining what happened while leaving the trust decision's two
+  human-owned branches mute. Rule ``24-worktrees`` carries that remedy as standards
+  text instead — see ``docs/concepts/copilot-support.md`` → "Known limitations";
 * each shared ``.sh`` is invoked with ``STEER_HOOK_TARGET=copilot`` (so it emits
   Copilot's ``permissionDecision`` envelope) and made **fail-open** (``|| true``,
   since Copilot's ``preToolUse`` is fail-*closed*);

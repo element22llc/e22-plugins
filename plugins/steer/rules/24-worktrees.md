@@ -6,12 +6,14 @@ worktree; your local services must not collide with — or outlive — a sibling
 (A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
 discipline still applies to anything you start.)
 
-**Trust a worktree you create.** `mise trust` is path-based, so a new worktree is
-untrusted and every `mise run …` there fails on *trust*, not on the task. A session
-you **start** in a worktree already inherits the primary checkout's trust (steer
-does it at session start); one you create with `git worktree add` mid-session does
-not — run `mise trust` in it before the first `mise run …`. If the repo itself was
-never trusted, that first decision is the user's: `mise trust && mise install`.
+**Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
+new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
+task. Run `mise trust` in the worktree before your first `mise run …` — it is
+idempotent, so it costs nothing when a session-start check already inherited the
+primary checkout's trust (that check is Claude-Code-only, and covers only a session
+*started* in the worktree — not one you create with `git worktree add` mid-session,
+and not another agent surface). If the repo itself was never trusted, that first
+decision is the user's: `mise trust && mise install`.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
 sources `scripts/worktree-env.sh`, giving each worktree a unique
