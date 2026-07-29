@@ -26,6 +26,15 @@ flowchart LR
 `check_changelog.py` also validates that `plugin.json`'s version equals the newest
 released heading and that released headings are in descending semver order.
 
+## Before the cut: drive the audit to convergence
+
+The release skills run a deep pre-release audit and **block** on any
+release-stopping finding. Because each fix changes the tree the audit reads, a
+single pass rarely settles it. The repo-local `/audit-loop` helper runs that same
+audit in a loop — audit, fix in-tree, re-gate, re-audit — until a round comes back
+clean, accumulating every round as a commit on one branch and one PR. Merge that
+PR, then cut the release; its audit should pass in a single pass.
+
 ## Publication is automatic
 
 Cutting the release PR is the last manual step. When a release PR (the

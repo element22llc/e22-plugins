@@ -83,13 +83,17 @@ This skill is **read-only until Phase B begins** — exactly like `/release`.
 
 ## Phase A — deterministic pre-release gate (read-only)
 
-This is `/release` Phase A with the two subagent dimensions (A3 coherence
-fan-out, A4 documentation-reviewer accuracy review) removed. Run the steps below;
-they are a strict subset, so the deterministic invariants are unchanged.
+This is the shared pre-release audit
+([`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md)) with
+the two subagent dimensions (Step 3 coherence fan-out, Step 4a
+documentation-reviewer accuracy review) removed — **Steps 1, 2, 4b and 5 only**.
+That file is authoritative for what each retained step checks; the steps below
+are the same content, scoped to this fast path. They are a strict subset, so the
+deterministic invariants are unchanged.
 
 ### Q1. Pre-flight — refuse to start on a dirty or stale base.
 
-Identical to `/release` A1:
+Identical to the procedure's Step 1:
 
 - `git status --porcelain` must be empty — else stop; tell the user to commit or
   stash first.
@@ -99,8 +103,8 @@ Identical to `/release` A1:
   least one bullet** — else there is nothing to release; stop and say so.
 - Establish `$LAST_RELEASE` (the newest released `### X.Y.Z` heading's commit, via
   its `vX.Y.Z` tag, else the most recent `chore(release):` commit) only if you
-  need it for the freshness check below; the coherence diff that consumed it in
-  `/release` is not run here.
+  need it for the freshness check below; the coherence diff that consumes it in
+  the full audit is not run here.
 
 ### Q2. Deterministic gate — the machine checks, up front, blocking.
 
@@ -121,8 +125,8 @@ re-run.
 ### Q3. Deployed-docs freshness (deterministic, cheap — kept).
 
 This check is cheap and catches a stale live site, so it stays. (It is the
-deterministic half of `/release` A4; the `documentation-reviewer` accuracy half
-is the part this skill drops.)
+procedure's Step 4b; the `documentation-reviewer` accuracy half — Step 4a — is
+the part this skill drops.)
 
 - `gh run list --workflow=docs-deploy.yml --branch main --limit 5` — the most
   recent run must have **succeeded**. A failed/cancelled latest run means the live
