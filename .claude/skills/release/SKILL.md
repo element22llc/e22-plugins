@@ -70,158 +70,51 @@ release that can't pass its own audit shouldn't have a branch at all.
 
 ## Phase A — deep pre-release audit (read-only gate)
 
-### A1. Pre-flight — refuse to start on a dirty or stale base.
+**The audit procedure is single-sourced in
+[`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md).** Open
+it and execute **Steps 1–5 in full** — every dimension, no subset (that subset is
+`/quick-release`'s job). If that file and the index below ever disagree, the
+procedure file is authoritative.
 
-- `git status --porcelain` must be empty (no uncommitted changes). If not, stop
-  and tell the user to commit or stash first.
-- `git fetch origin main`, then confirm the local base is **not behind**
-  `origin/main`. A release is cut from current `main`; auditing a stale tree
-  would audit the wrong thing.
-- Confirm `CHANGELOG.md` has a `### [Unreleased]` section under `## steer` **with
-  at least one bullet**. If it is missing or empty, there is nothing to release —
-  stop and say so.
-- Establish the **last-release ref** for the diff-based checks below: the newest
-  `### X.Y.Z` heading in `CHANGELOG.md` is the last released version; find its
-  commit via the `vX.Y.Z` git tag if one exists (`git describe --tags --match
-  'v*' --abbrev=0`), else the most recent commit whose subject starts
-  `chore(release):`. Call it `$LAST_RELEASE`. If neither exists, fall back to the
-  start of history and say so (the coherence pass just reviews more).
+As the `/release` caller, you supply these pre/post-conditions around it:
 
-### A2. Deterministic gate — run the machine checks first, and run them *up front*.
+- **Base contract (procedure Step 1).** The base must be current `main` — clean
+  tree, not behind `origin/main` — and `### [Unreleased]` must carry **at least
+  one bullet**, or there is nothing to release.
+- **Bump input (procedure Step 3, dimension 1).** Carry forward the subagent's
+  note on whether the highest-impact bullet implies a larger bump than a naive
+  reading — it is input to Step B1.
+- **Timing note (procedure Step 4b).** State honestly that *this release's own*
+  docs changes deploy only after this PR merges; Phase A proves the docs source
+  is current and that *prior* docs changes are live. The post-merge deploy is a
+  Phase-B follow-up the user owns (Step B9).
 
-Blocking, mechanical problems must surface before any human-judgment review, and
-before the version bump — not at the end where a red gate wastes the bump work.
+The one-line index, for orientation only:
 
-- **`mise run ci`** — the full CI-equivalent gate (lint, plugin-check, fixtures,
-  test, shell, hooktests, version-scan, docs:check, delivery-gates). Report a
-  per-gate pass/fail line.
-- **`mise run docs:build`** — the **strict** Zensical build (fails on broken
-  links / nav). This is **not** part of `mise run ci`; it normally runs only in
-  the `docs-deploy.yml` build job. Run it here because the GitHub Pages deploy
-  happens **post-merge from `main`**: if the strict build is red, the merge will
-  publish a broken or stale site. Catching it now is the difference between a
-  clean release and a silently-broken live doc.
-  - This pulls the `docs` dependency-group on demand (`uv run --group docs`); it
-    is heavier than the rest. If the toolchain genuinely can't be provisioned in
-    this environment, do not skip silently — report it as **`[blocker] strict
-    docs build not verified`** so the user runs `mise run docs:build` themselves
-    before merging.
+- **Step 1 — base preconditions.** Clean tree, not behind `origin/main`,
+  `[Unreleased]` populated, `$LAST_RELEASE` established as the diff anchor.
+- **Step 2 — deterministic gate.** `mise run ci` + the strict `mise run
+  docs:build`, up front and blocking.
+- **Step 3 — judgment coherence fan-out.** Six read-only subagent dimensions
+  (CHANGELOG ↔ diff, version/manifest, cross-reference, namespace/brand, payload,
+  behavioral), then vet every candidate against the code it cites.
+- **Step 4 — docs accuracy + deployed-site freshness.** `documentation-reviewer`
+  deep review, plus the `docs-deploy.yml` run-status freshness check.
+- **Step 5 — compile, rank, classify.** Severity (`[blocker]` … `[low]`) and
+  disposition (`fixable-in-tree` / `out-of-tree`) on every finding.
 
-Do not proceed past a red gate. A failing deterministic check is a blocker by
-definition — fix it (on its own fix PR, accumulating a `### [Unreleased]` entry)
-and re-run `/release`.
+### A6. Audit gate — decide.
 
-### A3. Judgment-based coherence audit — fan out, then vet.
+- **If any `[blocker]` exists, STOP.** Do not branch, do not bump. Report the
+  blockers and the fix each needs, and tell the user to resolve them and re-run
+  `/release`. When several blockers are fixable in-tree, **point them at
+  `/audit-loop`** — it fixes and re-audits until a round comes back clean, which
+  is what turns a five-attempt release into a one-attempt one.
+- **`[high]` / `[medium]` / `[low]`** do not by themselves halt the release.
+  Surface them so the user can decide to fold a quick fix in or ship and file the
+  rest.
 
-Deterministic checks prove *structure*; they cannot judge *coherence* — a skill
-whose description no longer matches its body, a `[Unreleased]` bullet that
-overstates a change, a rule that contradicts a skill. Dispatch **read-only**
-review subagents (the `Task` tool, `subagent_type: general-purpose`), **one per
-dimension, in parallel**. Each subagent is told: *read-only; every finding must
-carry `path:line` evidence and a one-line statement of the incoherence; default
-to silence over speculation.* The dimensions:
-
-1. **CHANGELOG ↔ change coherence (both directions).** Diff
-   `git diff $LAST_RELEASE..HEAD -- plugins/steer/` and the `### [Unreleased]`
-   bullets. Flag (a) any bullet with no corresponding change in the diff
-   (overstated/phantom entry), and (b) any behavior-affecting change under
-   `plugins/steer/` with **no** bullet (`check_changelog.py --base` enforces this
-   per-PR, but the *accumulated* set can still have gaps). Note whether the
-   highest-impact bullet implies a larger bump than a naive reading — input to
-   Step B1.
-2. **Version & manifest coherence.** The three version-bearing manifests
-   (`plugins/steer/.claude-plugin/plugin.json`,
-   `plugins/steer/.github/plugin/plugin.json`,
-   `.github/plugin/marketplace.json` steer entry) must currently all equal the
-   newest **released** heading. Any pre-existing drift between them, or against
-   version pins in `plugins/steer/policy/versions.yml` and the scaffold copy at
-   `plugins/steer/templates/scaffold/policy/versions.yml`, is a finding. Run
-   `sh plugins/steer/scripts/scan-version-pins.sh .` and
-   `sh plugins/steer/scripts/check-policy-freshness.sh` and fold their output in.
-3. **Cross-reference & inventory integrity.** Every `/steer:<skill>` reference
-   resolves to a real skill; the hand-maintained enumerations (CLAUDE.md skills
-   block, README inventory, the `standards` skill's rule list, CROSS-SURFACE.md
-   rule count + SessionStart hook roster, `docs/reference/*`) all name the same
-   set that is on disk. `check_standards.py` guards much of this — the subagent
-   looks for *semantic* drift it can't catch (a skill renamed in spirit, a
-   description that no longer describes the body).
-4. **Namespace & brand hygiene.** No stale `/e22-*` invocation survives; every
-   invocation is `/steer:`; no org-specific brand leaks into shipped
-   `templates/` (scaffold/spec/reference stay client-agnostic).
-5. **Payload & placeholder hygiene.** No unresolved `TODO`/`FIXME`/`[Replace`
-   leaks into shipped (non-`templates/`) content; scaffold dotfiles stored
-   without their leading dot map correctly in `MANIFEST.md`; migration-ledger
-   targets exist.
-6. **Behavioral coherence across surfaces.** `rules/`, `skills/`, and
-   `templates/` do not contradict each other (a rule asserting X while a skill
-   does not-X; an `allowed-tools`/`disallowed-tools` boundary a skill's prose
-   then violates).
-
-**Vet before reporting.** Subagents over-report. Re-read the cited `path:line`
-for every candidate and drop false positives, intentional patterns with a
-why-comment, and cross-dimension duplicates. A finding that survives states the
-incoherence, the evidence, and why it's real.
-
-### A4. Documentation accuracy & deployed-site freshness.
-
-`validate_docs.py` (already run inside `mise run ci`) proves the docs *structure*
-is in sync — inventory, nav, links, namespace. It does **not** judge whether the
-prose is *accurate and current*, nor whether the **live** site reflects `main`.
-Cover both:
-
-- **Accuracy (judgment).** Dispatch the **`documentation-reviewer`** subagent
-  (`Task`, `subagent_type: documentation-reviewer`) to deep-review `docs/`
-  against the plugin source of truth (skill frontmatter, `hooks.json`, rules) for
-  staleness, coverage gaps, and claims that don't trace back to source. Fold its
-  blocker/high findings into the report. (This is exactly the review the
-  `/plugin-docs` skill drives; running it here makes "docs are current" a release
-  gate, not an afterthought.)
-- **Deployed-site freshness (deterministic).** The site is published to
-  GitHub Pages from `main` by `docs-deploy.yml`, only when `docs/**` or
-  `mkdocs.yml` change. Rather than fetching the public site (subject to CDN cache
-  lag, so a fetch can disagree with `main` for minutes after a deploy), use the
-  deploy **run status** as the source of truth:
-  - `gh run list --workflow=docs-deploy.yml --branch main --limit 5` — confirm the
-    most recent run **succeeded**. A failed/cancelled latest run means the live
-    site is stale relative to `main` → **`[blocker] deployed docs stale: last
-    docs-deploy on main did not succeed`**; tell the user to re-run it (`gh run
-    rerun <id>` or the Actions UI) and let it go green before releasing.
-  - Confirm no merged-but-undeployed docs change is sitting on `main`: if the
-    latest commit touching `docs/`/`mkdocs.yml` on `origin/main` is **newer** than
-    the head commit of the latest successful docs-deploy run, the live site lags
-    `main` → same blocker.
-  - If `gh` is unavailable or unauthenticated in this environment, **fail open**
-    but loudly: report **`[warn] deployed-docs freshness not verified — run gh
-    run list --workflow=docs-deploy.yml --branch main`** so the human closes the
-    loop. Do not pretend it passed.
-  - As a courtesy only, you may `WebFetch` the live URL to confirm it is reachable
-    (a 302 to Access is expected and fine) — never treat its body as the freshness
-    signal.
-
-  Note the timing honestly in the report: **this release's own** docs changes
-  deploy only *after* this PR merges to `main`. Phase A proves the docs *source*
-  is correct and current and that *prior* docs changes are live; the post-merge
-  deploy of this release's docs is a Phase-B follow-up the user owns (Step B9).
-
-### A5. Audit gate — compile, rank, and decide.
-
-Print a **release-readiness report**: a short summary table (dimension → finding
-count → top finding) followed by a severity-ordered list, each finding with
-`path:line` evidence and the one-line incoherence. Use explicit severity markers:
-
-- **`[blocker]`** — must be fixed before any release (red gate, version/manifest
-  drift, missing-or-phantom changelog coverage, stale deployed docs, a doc claim
-  that contradicts the code). **If any blocker exists, STOP.** Do not branch, do
-  not bump. Report the blockers and the fix each needs, and tell the user to
-  resolve them on their own fix PRs (which add `### [Unreleased]` entries) and
-  re-run `/release`.
-- **`[high]` / `[medium]` / `[low]`** — report them, but they do not by
-  themselves halt the release. Surface them so the user can decide to fold a
-  quick fix in or ship and file the rest.
-
-State plainly when a dimension came back **clean** — silence must never be
-mistaken for "not checked." Only when there are **zero blockers** proceed to
-Phase B.
+Only when there are **zero blockers** proceed to Phase B.
 
 ---
 
@@ -230,7 +123,8 @@ Phase B.
 ### B1. Determine the new version.
 
 Read the current `version` from `plugins/steer/.claude-plugin/plugin.json` and
-the `### [Unreleased]` bullets (and the Step-A3.1 note on implied bump). Propose
+the `### [Unreleased]` bullets (and the implied-bump note carried out of the
+audit's Step 3 dimension 1). Propose
 the bump from the **nature** of those entries, then confirm with the user before
 editing:
 
@@ -346,7 +240,7 @@ re-gate result.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the same merge commit (gated on the
   `plugin.json` version bump) and cuts the Release with this version's CHANGELOG
-  bullets as the body. Confirm that run went green. This is what keeps Step A1's
+  bullets as the body. Confirm that run went green. This is what keeps the audit's
   `$LAST_RELEASE` diff anchor (`git describe --tags`) accurate for the next cut —
   so it is no longer a manual step. If the workflow is unavailable, re-publish by
   hand with `gh workflow run release-publish.yml -f version=X.Y.Z`, or, as a last

@@ -108,7 +108,11 @@ nothing and need none. `check_changelog.py --base` enforces this on every PR.
 
 Releases publish themselves: merging the version bump to `main` fires
 `.github/workflows/release-publish.yml`, which cuts the tag and GitHub Release.
-Repo-local `/release` and `/quick-release` drive the cut.
+Repo-local `/release` and `/quick-release` drive the cut; repo-local
+`/audit-loop` clears the way for them by running the pre-release audit
+repeatedly — fixing findings and re-auditing until a round comes back clean — so
+the release itself passes its own audit in one attempt. All three execute the
+same audit procedure, single-sourced in `.claude/audit/PRE-RELEASE-AUDIT.md`.
 
 ## GitHub templates — two sets, don't confuse them
 

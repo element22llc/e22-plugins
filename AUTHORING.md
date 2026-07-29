@@ -9,7 +9,9 @@ already enforce — it does **not** introduce new policy.
 
 > Repo-local helpers do the mechanical parts for you: `/new-skill`, `/new-rule`,
 > and `/preflight` (defined under `.claude/skills/`, not shipped). Read the
-> relevant section below to understand what they generate.
+> relevant section below to understand what they generate. At release time,
+> `/audit-loop` drives the pre-release audit to convergence and `/release` /
+> `/quick-release` cut the release.
 
 ## What I touched → what to run
 
