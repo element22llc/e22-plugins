@@ -111,8 +111,10 @@ floor** on push to `main`: the changed-line coverage gate self-gates on the
 delivery-mode marker and enforces "cover what you touch" against the previous
 commit (it skips post-merge pushes in pr-flow, where the PR already gated those
 lines). A returning session is also nudged to *graduate* out of solo-trunk once a
-`prod` branch, a deploy target, or a second contributor appears — see
-[`/steer:protect`](../reference/skills.md).
+`prod` branch, a deploy target, or an `infra/` tree appears. All three are
+**local, offline** signals — a second contributor joining is equally a reason to
+graduate, but no hook can see it, so that one is caught on demand by
+[`/steer:protect`](../reference/skills.md) or `/steer:audit`, never at push time.
 
 ## What steer never decides for you
 

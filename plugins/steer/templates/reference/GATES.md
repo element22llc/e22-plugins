@@ -149,8 +149,9 @@ system, and **asking is not authorization**:
 
 **Not on this list: the ungraduated solo-trunk trunk push.** While a local
 graduation signal stands, rule `45-commit-autonomy` stops trunk pushes being
-*autonomous* — each one waits for a human yes — and `check-bash-actions.sh`
-surfaces that as a PreToolUse **`ask`**, deliberately never a deny. A yes there
+*silent* — the session's **first** one waits for a human yes, and repeats carry a
+non-blocking reminder — and `check-bash-actions.sh` surfaces that first push as a
+PreToolUse **`ask`**, deliberately never a deny. A yes there
 **does** authorize that push; the gate clears for good by graduating
 (`/steer:protect`). So it is answerable — but it is not one of the three gates in
 §2 either: it is a per-push permission decision the harness raises, with no

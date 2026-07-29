@@ -98,12 +98,25 @@ as "stale by that same test".
    `check-open-questions.sh` ignores it for the same reason).
 
    **Legacy `- [ ]` checkboxes.** A spec predating the structured format may
-   still carry plain `- [ ]` items under `## Open questions`
-   (`grep -rn '^- \[ \] ' spec/vision.md spec/features/*/intent.md` finds them),
-   which `check-open-questions.sh` still counts as backlog for one deprecation
-   window. Sweep those too, and **convert each into a `### Q-NNN` block as you
-   resolve it** — this skill is the opportunistic converter the **v1.38.0**
-   migration entry names
+   still carry plain `- [ ]` items — but **only inside a `## Open questions`
+   section, and only outside any `### ` block**, which is exactly the scope
+   `check-open-questions.sh` counts as backlog (`inq && !inblk`) for one
+   deprecation window:
+
+   ```sh
+   grep -rn -A20 '^## Open questions' spec/vision.md spec/features/*/intent.md \
+     spec/PRODUCTIONIZATION.md 2>/dev/null | grep -E '^\S+[:-][0-9]+[:-]- \[ \] '
+   ```
+
+   **Never sweep a `- [ ]` line outside that section.** `## PO acceptance`, the
+   acceptance criteria, and the productionization gap checklists are `- [ ]` too,
+   and they are **gates** — `/steer:spec approve` ticks them. Converting one into
+   a `Q-NNN` block, or closing it as `resolved`, destroys the PO gate. Confirm
+   each hit's section before touching it.
+
+   In-scope legacy items are swept like any other question, and **converted into
+   a `### Q-NNN` block as you resolve one** — this skill is the opportunistic
+   converter the **v1.38.0** migration entry names
    ([`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md)); never bulk-rewrite
    a file just to convert.
 
@@ -224,8 +237,14 @@ as "stale by that same test".
 ## Done when
 
 - A legacy `spec/SPEC-QUESTIONS.md` present at the start no longer exists (step 1).
-- Every swept question is `status: resolved` with its decision recorded, or
-  `status: deferred` with an explicit reason — none silently dropped or guessed.
+- Every swept question ends in one of exactly three states — `status: resolved`
+  with its decision recorded, `status: deferred` with an explicit reason and a
+  revisit trigger, or **still `open`** because the human who owns it could not
+  answer it yet (step 8). None silently dropped, none guessed.
+  **Never stamp `deferred` on a question merely to close the sweep:** `deferred`
+  drops out of the SessionStart count, so mislabelling an unanswered blocking
+  question hides it from the one mechanism built to resurface it — while
+  `/steer:spec approve` still refuses it. Leaving it `open` is the honest outcome.
 - No legacy `- [ ]` item you resolved this run is left as a checkbox — it is a
   `### Q-NNN` block now (step 2).
 

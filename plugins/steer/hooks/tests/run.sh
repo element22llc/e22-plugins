@@ -1329,7 +1329,10 @@ mkdir -p "${IR0}/.github" "${IR0}/spec"
 	printf 'Run /steer:sync to update.\n'                    # valid -> no emit
 	printf 'Correct: /steer:reference conventions.\n'        # valid -> no emit
 	printf 'Marketplace element22llc/e22-plugins stays.\n'   # not flagged
-	printf 'Bootstrap: /e22-standards:e22-init once.\n'      # compound legacy -> /steer:init
+	printf 'Bootstrap: /e22-standards:e22-init once.\n'      # compound legacy (pair 1) -> /steer:init
+	printf 'Then /e22-standards:doctor to verify.\n'          # compound legacy (pair 2) -> /steer:doctor
+	printf 'Legacy scaffold: /e22-standards:e22-spec-scaffold x.\n' # legacy -> noncallable-gateway, NO fix
+	printf 'Legacy prose: /e22-conventions covers it.\n'     # legacy -> reference-mode
 } >"${IR0}/CLAUDE.md"
 printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md"       # reference-mode
 printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
@@ -1349,6 +1352,17 @@ assert_eq "inv: /steer:bogus -> unknown" "$(invclass "${out}" /steer:bogus)" "un
 # `/steer:standards:e22-init`).
 assert_eq "inv: /e22-standards:e22-init -> legacy-e22" "$(invclass "${out}" /e22-standards:e22-init)" "legacy-e22"
 assert_eq "inv: /e22-standards:e22-init fix -> /steer:init" "$(invfix "${out}" /e22-standards:e22-init)" "/steer:init"
+# MIGRATIONS.md v2.0.0 pair 2: the single-prefix form, `:<skill>` with no `e22-`.
+assert_eq "inv: /e22-standards:doctor -> legacy-e22" "$(invclass "${out}" /e22-standards:doctor)" "legacy-e22"
+assert_eq "inv: /e22-standards:doctor fix -> /steer:doctor" "$(invfix "${out}" /e22-standards:doctor)" "/steer:doctor"
+# A legacy token must get the SAME verdict its /steer: spelling would: a
+# user-invocable:false gateway is a human routing decision (no mechanical fix, since
+# RECONCILE.md applies a legacy-e22 fix deterministically), and a `reference` mode
+# gets the deterministic reference form rather than degrading to `unknown`.
+assert_eq "inv: legacy gateway -> noncallable-gateway" "$(invclass "${out}" /e22-standards:e22-spec-scaffold)" "noncallable-gateway"
+assert_eq "inv: legacy gateway -> no mechanical fix" "$(invfix "${out}" /e22-standards:e22-spec-scaffold)" "-"
+assert_eq "inv: legacy mode -> reference-mode" "$(invclass "${out}" /e22-conventions)" "reference-mode"
+assert_eq "inv: legacy mode fix -> reference form" "$(invfix "${out}" /e22-conventions)" "/steer:reference conventions"
 # ...and the compound head must not ALSO be reported as the bare `standards` skill.
 printf '%s' "${out}" | awk -F '\t' '$3=="/e22-standards"' | grep -q . &&
 	bad "inv: compound head must not double-report as /e22-standards" || ok

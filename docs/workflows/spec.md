@@ -27,7 +27,7 @@ approval evidence.
 | `/steer:spec <feature-id>` | Open or shape the feature's `intent.md` + `contract.md`. |
 | `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval — interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. Never invents an answer. |
 | `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness, plus the cross-artifact **analyze** pass — intent ↔ contract ↔ tracker consistency and acceptance-criteria quality (all warnings). |
-| `/steer:spec approve <feature-id>` | Record approval evidence on the intent. One of the three **promptable** gates: it offers **Approve · Reject · Decide later** in-session, showing the acceptance criteria and locked scope, and records the channel alongside the owner + timestamp. Blocking open questions are a precondition — a failed question gate means the prompt is never shown. |
+| `/steer:spec approve <feature-id>` | Record approval evidence on the intent. One of the three **promptable** gates: it offers **Approve · Reject · Decide later** in-session, showing the acceptance criteria and locked scope, and records the channel alongside the owner + timestamp. A blocking open question gated at `required_before: intent-approval` is a precondition — a failed question gate means the prompt is never shown; a blocking question gated at a *later* transition blocks that gate, not this one. |
 
 ## Approval evidence
 

@@ -165,7 +165,7 @@ description = "Tear down this workspace's services AND volumes"
 run = "docker compose down --volumes --remove-orphans"
 
 [tasks."ws:dev"]
-description = "Boot the whole product locally — every member's services, then every member's dev server"
+description = "Boot the product's backing services; add per-member depends (monorepo mode) for the dev servers"
 # The services half works as soon as compose.yaml lists the members' compose
 # files. The app half needs mise monorepo mode (uncomment the [monorepo] block
 # above) and one `depends` entry per member that has a `dev` task:

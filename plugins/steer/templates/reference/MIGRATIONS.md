@@ -55,6 +55,60 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v4.0.0 — workspace profile: whole-product `mise` tasks namespaced under `ws:`
+
+- **What & why:** in a **workspace** (polyrepo spine) repo the root `mise.toml` is an
+  *ancestor config* of every member cloned inside it, so an unprefixed task name
+  shadows any member that does not define that name itself. Unprefixed, `mise run
+  dev` inside a member booted the **whole product**, and `mise run docker:clean` in a
+  member that ships no `compose.yaml` dropped **every** member's volumes — the
+  cleanup rule `24-worktrees` tells every agent to run before removing a worktree.
+  The workspace profile therefore renamed its whole-product tasks: `dev` → `ws:dev`
+  and `docker:up` / `docker:down` / `docker:clean` → `ws:docker:*` (`convert:doc` is
+  the one deliberate exception). The always-on rules moved with it — `15-commands`,
+  `24-worktrees` and `99-end-of-session` now name the `ws:` forms — so an
+  **already-scaffolded** workspace repo receives injected rules naming tasks its
+  `mise.toml` does not define until this migration is applied. Additive
+  reconciliation cannot carry it: it splices in what is missing and never renames or
+  deletes, so it would leave both the old and the new task names in place.
+  **Workspace-profile repos only** — a repo whose `## Profile` marker is `app` or
+  `infra` has no `ws:*` tasks and must be left alone.
+- **Precondition:** the repo's `## Profile` marker (in `CLAUDE.md`) is `workspace`
+  **and** its root `mise.toml` still defines any of `[tasks.dev]`,
+  `[tasks."docker:up"]`, `[tasks."docker:down"]`, `[tasks."docker:clean"]`. Once
+  applied, only the `ws:`-prefixed forms remain and re-running is a no-op:
+
+  ```sh
+  grep -nE '^\[tasks\.(dev|"docker:(up|down|clean)")\]' mise.toml 2>/dev/null
+  ```
+
+- **Action:** read-then-propose an **in-file rename** in the workspace repo's root
+  `mise.toml`, then re-take one script. Show the diff first; never clobber a
+  dev-added task.
+  1. Rename the four table headers, longest/most-specific first:
+     `[tasks."docker:clean"]` → `[tasks."ws:docker:clean"]`,
+     `[tasks."docker:down"]` → `[tasks."ws:docker:down"]`,
+     `[tasks."docker:up"]` → `[tasks."ws:docker:up"]`, `[tasks.dev]` →
+     `[tasks."ws:dev"]`. **Leave `convert:doc` unprefixed.**
+  2. Repoint every intra-file reference to the renamed tasks — `ws:dev`'s
+     `depends = ["docker:up"]` → `["ws:docker:up"]` (a bare `docker:up` in `depends`
+     resolves in the **caller's** task set, so from inside a member it binds to that
+     member's task and boots only that member), and `ws:docker:up`'s `run` →
+     `sh scripts/ws.sh preflight`.
+  3. If the file carries a commented `monorepo_root` line, make sure it sits
+     **above** `[settings]` — a bare TOML key belongs to the table above it, so under
+     `[settings]` mise rejects it as an unknown field and monorepo mode never turns
+     on when uncommented.
+  4. Re-take `scripts/ws.sh` verbatim from
+     `templates/scaffold/profiles/workspace/scripts/ws.sh` for the `preflight`
+     subcommand step 2 points at, and because its own failure messages name the
+     renamed tasks.
+  Follow with additive [Template reconciliation](SPEC-FRAMEWORK.md) for the rest of
+  the file. **False-positive guard:** rename only these four exact table headers and
+  only in a `workspace`-profile repo's **root** `mise.toml` — never a member's own
+  `mise.toml` (a member's `dev` / `docker:*` tasks are correct unprefixed), and never
+  a `dev:setup` / `docker:*` task in an `app`/`infra` repo.
+
 ### v3.23.0 — `spec/design/architecture.md` → `spec/design/architecture-diagram.md`
 
 - **What & why:** the living global architecture diagram shared a basename with

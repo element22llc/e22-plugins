@@ -69,8 +69,12 @@ fi
 # repo's stack — the precise failure this file exists to prevent. Distinct port
 # offsets did not help: the collision is in the namespace, not the ports.
 #
-# The primary checkout keeps its bare basename, so no existing stack is renamed
-# by this and `docker compose down` still finds containers started before it.
+# The primary checkout keeps its bare basename, so its stack is NOT renamed and
+# `docker compose down` there still finds containers started before this landed.
+# A LINKED worktree's stack IS renamed (`<owner>-<worktree>`): if one is already
+# running when this file is re-taken, tear it down FIRST (or `docker compose -p
+# <old-name> down -v`) — under the new name compose no longer sees those
+# containers or volumes and they are orphaned.
 _wt_ident=$(basename "$_wt_root")
 if [ "$_wt_linked" = 1 ]; then
 	# $_wt_common is `<primary>/.git` (absolute inside a linked worktree), so the

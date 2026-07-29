@@ -89,7 +89,8 @@ step, never a precondition for the spec work itself.
    surprises at implementation.
 5. **Resolve open questions.** Run the `/steer:questions` read-then-propose loop on
    this feature: surface each question, propose options, fold the *confirmed*
-   decision back into the spec, strike the question. Explicit deferral with a
+   decision back into the spec, close the question (`status: resolved`; the
+   `Q-NNN` block stays). Explicit deferral with a
    reason is a valid outcome. A question needing an external owner or scheduling
    → leave it open, to be filed as an issue via `/steer:issues` at step 7.
 6. **Write `contract.md` only where it earns its place.** Add testable behavior

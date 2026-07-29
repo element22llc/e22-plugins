@@ -6,8 +6,9 @@
 #   crashed helper) to a per-repo log via lib/report-fault.sh — they never phone
 #   home themselves (no network/`gh`/time budget on the hot path). This hook is
 #   the one place that reads that log at session start and raises any UNREPORTED
-#   faults into session context, so the always-on self-report rule can offer
-#   `/steer:report` and the user decides whether to file upstream.
+#   faults into session context, so the always-on self-report rule can point at
+#   `/steer:report` — which auto-files upstream after scrubbing and deduping, with
+#   no confirmation step (rule 97-self-report).
 #
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path

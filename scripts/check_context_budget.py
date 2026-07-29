@@ -129,7 +129,10 @@ PLUGIN_ROOT = Path("plugins/steer")
 # was shaving rationale, the trade this note twice records as wrong and reverted.
 # Trimming to fit under 66,500 would have left ~16 B of headroom — precisely the
 # margin this note blames for making the last two raises inevitable — so the
-# ceiling is re-armed at the measured total (66,516 B) plus ~1.2%. Target: 62,500.
+# ceiling is re-armed at the total measured when that raise landed (66,516 B) plus
+# ~1.2%. That figure is a historical basis, NOT a current measurement — later
+# factual corrections have grown the tree past it; run --report for the live number.
+# Target: 62,500.
 RULES_TOTAL_MAX_BYTES = 67_300
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar

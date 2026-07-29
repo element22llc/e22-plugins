@@ -9,7 +9,7 @@
 # and are ignored here for ecosystems governed by the version-pin policy.
 #
 # Ecosystems: `github-actions` is enabled because every scaffolded repo ships
-# workflows. The app-stack blocks (npm / pip / docker) are commented out — the
+# workflows. The stack blocks (npm / pip / docker / terraform) are commented out — the
 # scaffold is stack-agnostic; /steer:init and /steer:adopt UNCOMMENT the block
 # that matches the detected stack (mirrors how ci.yml gates stack steps). Add or
 # remove blocks to match what the repo actually builds.

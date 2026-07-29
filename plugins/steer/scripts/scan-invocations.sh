@@ -37,10 +37,11 @@
 #   <file>\t<lineno>\t<found>\t<class>\t<suggested-fix>
 #   class ∈ legacy-e22 | reference-mode | noncallable-gateway | unknown
 #     legacy-e22           /e22-<skill> pre-rebrand prefix; <skill> resolves
-#                          -> fix /steer:<skill>. Also the compound
-#                          /e22-standards:e22-<skill> (the plugin's own old name in
-#                          front of the skill) -> fix /steer:<skill>, taken from
-#                          AFTER the `:e22-`, never from `standards`.
+#                          -> fix /steer:<skill>. Also the compound forms
+#                          /e22-standards:e22-<skill> and /e22-standards:<skill>
+#                          (the plugin's own old name qualifying the skill)
+#                          -> fix /steer:<skill>, taken from AFTER the colon,
+#                          never from `standards`.
 #     reference-mode       /steer:<mode> where <mode> is a `reference` topic, not a
 #                          skill -> fix /steer:reference <mode>
 #     noncallable-gateway  /steer:<skill> where <skill> is user-invocable:false; a
@@ -132,6 +133,32 @@ in_set() { case "$2" in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
 emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 
+# classify_legacy <rel> <lineno> <found> <tok> — the shared verdict for BOTH legacy
+# passes below. It routes a pre-rebrand token through the SAME classifier ladder the
+# `/steer:` pass uses, so a legacy token gets the verdict its modern spelling would.
+# Classifying against $SKILLS alone got two cases wrong, and both matter because
+# RECONCILE.md applies a `legacy-e22` suggested-fix DETERMINISTICALLY:
+#   * a `reference` mode (`/e22-conventions`) degraded to `unknown` with no fix,
+#     when the deterministic `/steer:reference conventions` is exactly right;
+#   * a `user-invocable:false` gateway (`/e22-standards:e22-spec-scaffold`) was
+#     auto-rewritten to `/steer:spec-scaffold` — an invocation INVOCATION.md
+#     documents as untypable. It must be a human routing decision, no mechanical fix.
+# Pre-2.0.0 prose is the likeliest place both shapes appear: `conventions` and
+# `spec-scaffold` were typable skills back then.
+classify_legacy() {
+	if in_set "$4" "$MODES"; then
+		emit "$1" "$2" "$3" "reference-mode" "/steer:reference $4"
+	elif in_set "$4" "$NONCALLABLE"; then
+		emit "$1" "$2" "$3" "noncallable-gateway" "-"
+	elif in_set "$4" "$SKILLS"; then
+		emit "$1" "$2" "$3" "legacy-e22" "/steer:$4"
+	else
+		# a renamed/removed skill (e.g. /e22-drift) — legacy, but not a pure token
+		# swap; flag for a human.
+		emit "$1" "$2" "$3" "unknown" "-"
+	fi
+}
+
 # --- scan the live instruction surfaces --------------------------------------
 
 # Fixed allowlist: unambiguously live, human-facing instruction prose. Extend
@@ -156,24 +183,21 @@ for REL in $SURFACES; do
 		fi
 	done
 
-	# `/e22-standards:e22-<tok>` — the COMPOUND pre-rebrand form. The plugin itself
-	# was named `e22-standards`, so a pre-2.0.0 repo carries a doubled prefix; the
-	# real skill token is the one AFTER `:e22-` (MIGRATIONS.md v2.0.0, pair 1).
+	# `/e22-standards:[e22-]<tok>` — the COMPOUND pre-rebrand forms. The plugin
+	# itself was named `e22-standards`, so a pre-2.0.0 repo qualifies invocations
+	# with it, either doubled (`/e22-standards:e22-init`, MIGRATIONS.md v2.0.0
+	# pair 1) or single (`/e22-standards:init`, pair 2). Both carry the real skill
+	# token AFTER the colon; `standards` is never it.
 	# This pass must run BEFORE the simple one below and is not optional: `standards`
 	# is itself a live skill name, so the simple pass reads `/e22-standards:e22-init`
 	# as the `standards` skill and suggests `/steer:standards` — and RECONCILE.md
 	# applies a legacy-e22 suggested-fix DETERMINISTICALLY, rewriting the line to
 	# the nonsense `/steer:standards:e22-init`. A wrong automatic rewrite of a
 	# consumer's CLAUDE.md is worse than no finding at all.
-	grep -noE '/e22-standards:e22-[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _found; do
-		tok="${_found##*:e22-}"
-		if in_set "$tok" "$SKILLS"; then
-			emit "$REL" "$_ln" "$_found" "legacy-e22" "/steer:$tok"
-		else
-			# doubled prefix around a token that is no longer a skill — legacy, but
-			# the target is a human decision, not a token swap.
-			emit "$REL" "$_ln" "$_found" "unknown" "-"
-		fi
+	grep -noE '/e22-standards:(e22-)?[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _found; do
+		_tail="${_found#/e22-standards:}"
+		tok="${_tail#e22-}"
+		classify_legacy "$REL" "$_ln" "$_found" "$tok"
 	done
 
 	# `/e22-<tok>` occurrences — the simple pre-rebrand prefix. Skip the marketplace
@@ -181,18 +205,20 @@ for REL in $SURFACES; do
 	grep -noE '/e22-[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _tok; do
 		tok="${_tok#/e22-}"
 		[ "$tok" = "plugins" ] && continue
-		# Don't double-report the head of a compound match the pass above owns.
+		# Don't double-report the head of a compound match the pass above owns. A bare
+		# `/e22-standards` with no `:<tok>` tail still reports here (the `standards`
+		# skill is real, so /steer:standards is the correct rewrite).
+		# HONEST LIMITATION: the guard is LINE-scoped, not occurrence-scoped, so a
+		# genuine bare `/e22-standards` sharing a line with a compound token is not
+		# separately reported. That under-reports by at most one finding on one
+		# implausible line shape; the alternative — rewriting every `/e22-standards`
+		# occurrence on such a line — would corrupt the compound into
+		# `/steer:standards:init`. Under-report over wrong rewrite, deliberately.
 		if [ "$tok" = "standards" ] &&
-			sed -n "${_ln}p" "$F" 2>/dev/null | grep -q '/e22-standards:e22-'; then
+			sed -n "${_ln}p" "$F" 2>/dev/null | grep -q '/e22-standards:[a-z]'; then
 			continue
 		fi
-		if in_set "$tok" "$SKILLS"; then
-			emit "$REL" "$_ln" "$_tok" "legacy-e22" "/steer:$tok"
-		else
-			# a renamed/removed skill (e.g. /e22-drift) — legacy but not a pure
-			# token swap; flag for a human.
-			emit "$REL" "$_ln" "$_tok" "unknown" "-"
-		fi
+		classify_legacy "$REL" "$_ln" "$_tok" "$tok"
 	done
 done
 

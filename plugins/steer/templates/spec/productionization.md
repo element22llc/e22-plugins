@@ -164,6 +164,25 @@ Bad practices found in the as-built code (anti-patterns vs the `practices` rule)
 
 ## Open questions
 
-- [Dev-facing hardening ambiguities surfaced during adoption.] Product/behavior
-  ambiguities live in each feature's `intent.md` → `## Open questions` (and
-  `vision.md` for product-level). Run `/steer:questions` to work them all down.
+Dev-facing hardening ambiguities surfaced during adoption. Product/behavior
+ambiguities live in each feature's `intent.md` → `## Open questions` (and
+`vision.md` for product-level). Run `/steer:questions` to work them all down.
+
+Use the **same structured format** as the rest of the spine (stable `Q-NNN` ids and
+the field block below) — the SessionStart hook and `/steer:questions` both parse
+`### Q-NNN` blocks, so a question written as a plain bullet here is counted by
+neither. The seed below is marked `<!-- steer:placeholder -->` so the hook ignores
+it on a fresh scaffold — **delete the marker** (and the bracketed title) when you
+fill in a real question.
+
+### Q-001 — [A dev-facing hardening ambiguity this adoption surfaced] <!-- steer:placeholder -->
+
+- created:                # YYYY-MM-DD this question was raised (optional; drives staleness)
+- status: open            # open | investigating | resolved | deferred | cancelled
+- impact: blocking        # blocking | non-blocking
+- owner: development      # product | development | design | security | shared
+- required_before: production-release   # intent-approval | contract-approval | implementation | non-prod-validation | production-release
+- tracker:                # issue ref once promoted (e.g. #142), else empty
+
+_Resolution:_ recorded here when answered, then folded into the hardening sections
+above.
