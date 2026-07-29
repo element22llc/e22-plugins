@@ -197,13 +197,14 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    ledger by precondition. Apply each as the ledger directs — `git mv` for
    renames so history follows, `git rm` for deletions, an **in-file token
    rewrite** (replace only the exact old→new string pairs the entry enumerates,
-   never a broader match), or a **whole-file re-take** (the entry names a file whose
-   content moved past any enumerable pair set, so the current template replaces it
-   wholesale — carry the consumer's own edits forward) — all **read-then-propose,
-   never clobber** filled-in content. For a token-rewrite entry, run its precondition
-   grep first and show the diff of proposed substitutions before applying; for a
-   whole-file re-take, show the diff against the consumer's copy — never a blind
-   overwrite. List each migration
+   never a broader match), or a **whole-file or whole-section re-take** (the entry
+   names a file — or one bounded region inside it — whose content moved past any
+   enumerable pair set, so the current template replaces that whole file or region;
+   carry the consumer's own edits forward) — all **read-then-propose, never clobber**
+   filled-in content. For a token-rewrite entry, run its precondition grep first and
+   show the diff of proposed substitutions before applying; for a re-take, show the
+   diff against the consumer's copy — never a blind overwrite — and for a section
+   re-take confirm the entry's stated region boundaries before replacing anything. List each migration
    you're applying (and each skipped, with why) before touching files.
 
 5. **Reconcile the materialized templates (additive)**,

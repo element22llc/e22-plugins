@@ -186,7 +186,9 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   numbering, hook rules, and a "what I touched → what to run" matrix. Repo-local
   helpers `/new-skill`, `/new-rule`, and `/preflight` scaffold and verify for you.
 - **Behaviour changes are gated twice:** a change under `plugins/steer/`
-  (skills, rules, hooks, templates, scripts, policy) needs a `CHANGELOG.md`
+  (skills, rules, hooks, templates, scripts, policy) — or to any of the three
+  version-bearing manifests, including the root
+  `.github/plugin/marketplace.json` — needs a `CHANGELOG.md`
   `## steer` → `### [Unreleased]` entry — `check_changelog.py --base` enforces
   this on PRs (`tests/` are exempt). The `plugin.json` `version` bump happens
   **once**, at release. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/`

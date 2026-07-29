@@ -88,8 +88,11 @@ chore(release): steer 3.22.0
 ## CHANGELOG
 
 Any change to plugin behavior — anything under
-`plugins/steer/{skills,rules,hooks,templates,scripts,policy}/` or
-`plugins/steer/.claude-plugin/plugin.json` — needs an entry. `tests/` is exempt,
+`plugins/steer/{skills,rules,hooks,templates,scripts,policy}/`, or any of the three
+version-bearing manifests (`plugins/steer/.claude-plugin/plugin.json`,
+`plugins/steer/.github/plugin/plugin.json`, `.github/plugin/marketplace.json`) —
+needs an entry. `BEHAVIOUR_PREFIXES` / `BEHAVIOUR_EXACT` in
+`scripts/check_changelog.py` are the authoritative list; this sentence mirrors them. `tests/` is exempt,
 and changes confined to `CLAUDE.md`, `docs/`, `.claude/`, or root Markdown ship
 nothing and need none. `check_changelog.py --base` enforces this on every PR.
 

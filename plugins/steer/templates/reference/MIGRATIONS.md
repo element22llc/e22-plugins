@@ -1,9 +1,9 @@
 # Spec-spine migration ledger
 
 Append-only, ordered record of **non-additive** structural changes to the spec
-spine and bundled scaffold — renames, moves, deletions, default changes, and
+spine and bundled scaffold — renames, moves, deletions, default changes,
 **in-file token rewrites** (replacing a string that already exists in a
-materialized file) that
+materialized file), and **whole-file or whole-section re-takes** that
 the [purely-additive Template reconciliation](SPEC-FRAMEWORK.md) convention
 cannot express. A reconciliation diff sees a renamed file as *old-present +
 new-absent* and would happily add the new file while orphaning the old one; only
@@ -50,9 +50,12 @@ regex, never a string the entry doesn't enumerate. Its precondition must be a gr
 that fires only while a stale token is still present and that cannot match a
 legitimate look-alike (e.g. an unchanged marketplace id).
 
-The fourth action class is a **whole-file re-take**: the entry names a shipped file
-whose *content* has moved on so far that no enumerable set of old→new pairs
-describes it, so the current template version replaces it wholesale. It is
+The fourth action class is a **whole-file or whole-section re-take**: the entry names
+a shipped file — or one delimited region inside it — whose *content* has moved on so
+far that no enumerable set of old→new pairs describes it, so the current template
+version replaces that whole file or region. A section re-take must say where the
+region starts and ends (a heading, a comment banner, a table) so the replacement is
+bounded and re-runnable; everything outside it is left untouched. It is
 read-then-propose like every other class — **show the diff, never a blind
 overwrite** — and it must **carry the consumer's own edits forward** rather than
 discard them. Reserve it for a file additive reconciliation cannot reach (that
@@ -65,6 +68,53 @@ Name the file and say what to carry forward.
 
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
+
+### v3.24.0 — `COMPOSE_PROJECT_NAME` gains a repo prefix in linked worktrees
+
+- **What & why:** `scripts/worktree-env.sh` derived `COMPOSE_PROJECT_NAME` from the
+  checkout's **bare basename**. A worktree's basename is the *worktree's* name
+  (`feat-x`), which is not unique across repos — so in a polyrepo running the same
+  branch in two members, `<memberA>/.claude/worktrees/feat-x` and
+  `<memberB>/.claude/worktrees/feat-x` drew the **same** Compose project, and
+  therefore the same containers, volumes and networks. `mise run docker:clean`
+  (`down --volumes --remove-orphans`) in one member's worktree tore down the
+  **other** member's stack — the precise failure this file exists to prevent, and
+  distinct port offsets do not help because the collision is in the namespace, not
+  the ports. A **linked** worktree's identity is now `<repo>-<worktree>`; a primary
+  checkout keeps its bare basename and is **not** renamed. Additive reconciliation
+  cannot carry this: it splices in what is missing and never rewrites an existing
+  assignment, and `worktree-port-isolation` is `Verbatim: no` with a *create*-only
+  repair (`CAPABILITIES.md`), so an already-scaffolded repo keeps the colliding name
+  until this entry is applied.
+- **Precondition:** `scripts/worktree-env.sh` exists and still lacks the owning-repo
+  prefix logic. Once applied, re-running is a no-op:
+
+  ```sh
+  test -f scripts/worktree-env.sh && ! grep -q '_wt_owner' scripts/worktree-env.sh
+  ```
+
+- **Action — a whole-section re-take**, not a whole-file one: the file's host-port
+  baseline below this section is explicitly the product's to adapt, so replacing the
+  file would discard real customization.
+  1. **Tear down any running linked-worktree stack FIRST.** Under the new name
+     compose no longer sees the old containers or volumes and they are orphaned. In
+     each linked worktree with a running stack, run `mise run docker:clean` (or
+     `docker compose -p <old-name> down -v`) **before** applying this entry. A
+     primary checkout needs nothing — its name does not change.
+  2. Replace exactly the region from the `# --- Compose project name` banner through
+     the `export COMPOSE_PROJECT_NAME=` line with the current template's version,
+     read-then-propose as a diff. That region is self-contained: it derives
+     `_wt_ident`, adds the owning-repo prefix when `_wt_linked=1`, sanitizes to
+     `[a-z0-9_-]`, and exports. It depends only on `_wt_root`, `_wt_linked` and
+     `_wt_common`, all set above it and unchanged by this entry.
+  3. **Leave everything outside that region alone** — in particular the port-offset
+     block above it and the `BASELINE: default-stack host ports` block below it,
+     which a product is invited to adapt to its own services.
+  **False-positive guard:** apply only to the repo's own
+  `scripts/worktree-env.sh` at the repo root, never a member's copy from inside a
+  workspace checkout, and never a file a consumer has rewritten to derive the project
+  name some other deliberate way — if `_wt_owner` is absent but the export is
+  visibly hand-authored, report it and stop rather than replacing it.
 
 ### v3.24.0 — workspace profile: whole-product `mise` tasks namespaced under `ws:`
 
@@ -562,9 +612,11 @@ Name the file and say what to carry forward.
 - **What & why:** <the structural change and the reason a repo must follow it>
 - **Precondition:** <a check that is true only while the migration is still
   pending — e.g. "spec/OLD.md exists", "spec/features/*/spec.md exists">
-- **Action:** <the concrete transform — `git mv …`, move/merge, delete, or an
+- **Action:** <the concrete transform — `git mv …`, move/merge, delete, an
   **in-file token rewrite** (an explicit list of old→new string pairs replaced in
-  place across named files, with a false-positive guard) — applied
+  place across named files, with a false-positive guard), or a **whole-file or
+  whole-section re-take** (the current template replaces the named file or bounded
+  region; state the region's boundaries and what to carry forward) — applied
   read-then-propose, never clobbering filled-in content; follow with additive
   reconciliation if a renamed file is also template-tracked>
 

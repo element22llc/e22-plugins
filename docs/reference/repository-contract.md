@@ -63,7 +63,9 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
 - **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/` +
   `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill
   adapts `package.json`); `infra` substitutes a tofu/terragrunt/ansible-flavored
-  **root** `mise.toml` (which still pins `node` and sources `worktree-env.sh`) and
+  **root** `mise.toml` (which still pins `node`, sources `worktree-env.sh`, and
+  defines the core `docker:up`/`docker:down`/`docker:clean` tasks the always-on
+  worktree rules mandate — it keeps the core `compose.yaml`) and
   gets CI that auto-detects `*.tf`/Ansible and runs `tofu fmt` / `ansible-lint`;
   `workspace` **replaces** the core `README.md`, `mise.toml` and `compose.yaml`
   and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
@@ -157,10 +159,14 @@ that already governed, effective behavior is unchanged.
 against. After a plugin release, `/steer:sync` applies pending structural
 migrations from the ledger, reconciles additively, and re-stamps `.version`.
 Ledger migrations cover the non-additive changes reconciliation cannot express
-— renames and moves (`git mv`), deletions (`git rm`), and **in-file token
+— renames and moves (`git mv`), deletions (`git rm`), **in-file token
 rewrites** (replacing a string that already exists in a materialized file, e.g.
-the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
-never clobbering filled-in content.
+the `e22-standards` → `steer` rebrand), and **whole-file or whole-section
+re-takes** (the file's content, or one bounded region of it, has moved past any
+enumerable set of old→new pairs, so the current template replaces it; a section
+re-take states its region boundaries) — each applied read-then-propose,
+never clobbering filled-in content, and each carrying the consumer's own edits
+forward rather than discarding them.
 
 Two ledger entries landed in **3.23.0**, so a repo syncing up to it should expect
 both: the living global architecture diagram is renamed
@@ -181,7 +187,10 @@ leave both the old and the new names in place. That is exactly the case a ledger
 entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
 headers, repoints every reference to a renamed task (including the live `ws:dev`
 `depends`, which resolves in the *caller's* task set and would otherwise bind to a
-member's `docker:up`), diffs in `scripts/ws.sh` for its `preflight` subcommand,
+member's `docker:up`), **re-takes `scripts/ws.sh`** whole — the new script carries
+the `preflight` subcommand the rename points a task at, plus its own stale `mise run
+dev` header comment and `ws:`-prefixed failure messages, so no enumerable pair set
+describes it; a consumer's added `ws:` subcommands carry forward —
 replaces `ws:docker:up`'s first `run` element with that `preflight` guard while
 leaving the line that boots the stack alone, and relocates the whole commented
 monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile

@@ -7,6 +7,42 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the `COMPOSE_PROJECT_NAME` change earlier in this cycle
+  (`<worktree>` → `<repo>-<worktree>` for a linked worktree) shipped with **no ledger
+  entry**, so it could never reach an already-scaffolded repo: additive
+  reconciliation never rewrites an existing assignment, and
+  `worktree-port-isolation` is `Verbatim: no` with a *create*-only repair — meaning
+  the cross-repo `docker:clean` bug it fixes stayed live everywhere the fix was most
+  needed, and its destructive precondition ("tear the stack down first, or the old
+  containers and volumes are orphaned") reached nobody. `MIGRATIONS.md` now carries
+  the entry, as a **whole-section** re-take bounded to the `# --- Compose project
+  name` region: the host-port baseline below it is explicitly the product's to adapt,
+  so a whole-*file* re-take would have discarded real customization. Step 1 of the
+  action is the tear-down.
+- **Fixed:** `/steer:protect`'s `apply` step emitted
+  `"required_status_checks":{"strict":true,...}` while `policy/branch-protection.yml`
+  — the file the skill exists to diff and apply — declares `strict: false` for both
+  the default branch and the `prod` entry. Since `apply` then re-runs the verify
+  diff, every application ended by reporting `strict` as drifted on the branch it had
+  just "fixed". The example body now matches the policy, and the step says plainly
+  that **every** value comes from the policy file rather than from the illustration,
+  the way the `ci` context name is already resolved from the workflow. The policy's
+  own prose was the other half: two comments claimed the branch must be "up to date
+  before merge", which is exactly what `strict: false` disables — corrected in both
+  the plugin copy and the byte-identical scaffold copy.
+- **Fixed:** the fourth migration action class added earlier in this cycle covered a
+  whole-*file* re-take, but the same entry's step 5 replaces a whole commented
+  **section** of `mise.toml` — so the procedure still had no authorized shape for a
+  step it must run. The class is now **whole-file or whole-section re-take** in both
+  `MIGRATIONS.md` and `/steer:sync`, and a section re-take must state its region
+  boundaries so the replacement is bounded and re-runnable. The ledger's own scope
+  sentence and its copy-me new-entry template now name the class too, so an author
+  writing the next entry can find it.
+- **Fixed:** `steer-reviewer`'s body told the spawned reviewer it was invoked by
+  three callers while its own `description` — and every mirror repaired earlier in
+  this cycle — names four. The `/steer:loop` caller was missing from the one surface
+  the agent actually reads at runtime, and it is the caller whose fan-out is
+  *unconditional*, so it is the one a reviewer cannot infer.
 - **Fixed:** the shipped CI workflow never triggered on a PR targeting `prod`, while
   `policy/branch-protection.yml` makes `ci` a **required status check** on that
   branch — so the promotion PR that rule 52 calls *the* production gate blocked
@@ -14,8 +50,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   includes `prod`. `/steer:protect`'s existing guard only covered the
   absent-*workflow* case ("must match the check-run GitHub actually reports"), not a
   present workflow whose triggers exclude the branch. Fixed by making the workflow
-  match the declared policy, not by dropping the requirement — the required review
-  alone was never the gate rule 52 describes.
+  match the declared policy, not by dropping the requirement: rule 52 names the
+  `prod` approval as the production gate, and the policy additionally requires `ci`
+  there — so removing the required check to unblock the PR would have quietly
+  narrowed the gate instead of repairing it.
 - **Fixed:** the **infra** profile's root `mise.toml` replaces the core one but
   defined no `docker:up` / `docker:down` / `docker:clean`, while still shipping the
   core `compose.yaml` and sourcing `scripts/worktree-env.sh` — so rules `24-worktrees`
@@ -24,9 +62,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   not have. (Rule 24 carves out only the **workspace** profile's `ws:` prefix.) The
   three tasks are now defined in the infra profile too, identical to the core
   definitions. This is the same rule-vs-scaffold mismatch already closed for the
-  workspace profile; the infra profile was not swept at the time. No
-  `CAPABILITIES.md` row covers these tasks, so `/steer:sync` could not have repaired
-  it either.
+  workspace profile; the infra profile was not swept at the time. No ledger entry is
+  needed: adding three absent task tables is purely additive, so `/steer:sync`'s
+  template reconciliation (which explicitly covers `mise.toml` tasks) splices them
+  into an already-adopted infra repo.
 - **Fixed:** `MIGRATIONS.md` and `/steer:sync` authorized exactly three migration
   action shapes — `git mv`, `git rm`, and an in-file token rewrite enumerating
   old→new pairs — but the `ws:` entry's `scripts/ws.sh` step is none of them: it
@@ -237,12 +276,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the stack, so replacing the whole array would have left the task unable to boot
   anything. It also said to re-take `scripts/ws.sh` **verbatim**, a mode
   `CAPABILITIES.md` reserves for the version-pin scripts alone, which would clobber a
-  consumer's own `ws:` subcommand. This round replaced the whole array with a
-  `run[0]`-only edit, moved the `monorepo_root` step, and made `ws.sh`
-  read-then-propose. **Superseded in both respects by the entry below**, which found
-  this correction over-swung: `run[0]` *is* a legitimate old→new pair (it carries the
-  stale unprefixed vocabulary), and the `monorepo_root` step needs the whole section
-  replaced, not merely moved.
+  consumer's own `ws:` subcommand. That round's entry therefore left every `run`
+  alone, stated the `monorepo_root` step as an explicit move, and made `ws.sh`
+  read-then-propose. **Both of the first two were superseded by the entry above**,
+  which found this correction over-swung in the other direction: `run[0]` *is* a
+  legitimate old→new pair (it carries the stale unprefixed vocabulary), and the
+  `monorepo_root` step needs the whole section replaced, not merely moved. Read the
+  shipped ledger, not this bullet, for the current procedure.
 - **Fixed:** the promoted-question mechanism corrected in `/steer:tracker-sync` was
   still stated the old way in the two surfaces that *govern* it: `templates/spec/tracker.md`
   — installed as the consumer's `/spec/tracker.md`, and the file `/steer:tracker-sync`
