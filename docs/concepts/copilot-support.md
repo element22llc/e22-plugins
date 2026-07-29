@@ -281,6 +281,17 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   equivalent. There is deliberately no always-on polyrepo *rule* for the generator
   to carry, so a Copilot session gets no topology note. Read
   `/steer:reference polyrepo` from Claude Code for the full topology.
+- **Worktree `mise trust` inheritance is Claude-only.** `check-worktree-trust.sh`
+  is a SessionStart check, so a Copilot session started in a linked worktree does
+  **not** inherit the primary checkout's trust and its first `mise run …` fails on
+  *trust*, not on the task — the cost a polyrepo pays per member per feature. The
+  standards carry the remedy instead of a hook: rule `24-worktrees` tells the agent
+  to run `mise trust` in the worktree before its first `mise run …` and names the
+  inheriting check as Claude-Code-only, so no Copilot surface is told trust it does
+  not have. `mise trust` is idempotent, so the instruction is also free on Claude
+  Code where the check already ran. Everything *else* about worktree isolation is
+  surface-agnostic — the per-worktree `COMPOSE_PROJECT_NAME`/port offset comes from
+  the scaffold's `mise` config (`scripts/worktree-env.sh`), not from a hook.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled

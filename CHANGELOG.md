@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the worktree-trust guidance no longer promises GitHub Copilot a hook it
+  does not have. `check-worktree-trust.sh` is a SessionStart check and Copilot has no
+  SessionStart equivalent (its `sessionStart` ignores stdout, and only the two
+  `PreToolUse` gates are ported to `copilot-hooks.json`), yet rule `24-worktrees` is
+  carried verbatim into the generated `.github/copilot-instructions.md` — so a Copilot
+  session started in a linked worktree read "already inherits the primary checkout's
+  trust", skipped `mise trust`, and hit a trust error with nothing explaining why the
+  promise did not hold. Worse than no guidance. The rule now states the `mise trust`
+  step unconditionally and scopes the inheriting check to Claude Code, so both Copilot
+  surfaces (CLI and VS Code, the latter having no hook mechanism at all) get an
+  instruction that works. `docs/concepts/copilot-support.md` records it under Known
+  limitations, and `gen_copilot_hooks.py` now states why a side-effecting SessionStart
+  check still is not ported: Copilot would apply the trust but drop both human-owned
+  branches of the decision. The rest of worktree isolation was already surface-
+  agnostic — the per-worktree `COMPOSE_PROJECT_NAME` and port offset come from the
+  scaffold's `mise` config, not from a hook.
 - **Added:** `hooks/check-worktree-trust.sh` — a SessionStart check that inherits the
   primary checkout's `mise trust` into a linked worktree, so a fresh worktree is
   usable immediately instead of failing every `mise run …` until someone trusts it
@@ -32,13 +48,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   fourteen fixture cases in `hooks/tests/run.sh` cover it, including both
   no-decision-to-inherit paths (an untrusted primary checkout, and a primary with no
   mise config at all because the worktree's branch introduced it) writing nothing.
-- **Changed:** rule `24-worktrees` now opens with the worktree-trust step — a
-  worktree you *start a session in* inherits the primary checkout's trust (the new
-  session check does it), one you create with `git worktree add` mid-session does
-  not and needs `mise trust` before the first `mise run …`, and an untrusted repo is
-  the user's call (`mise trust && mise install`). The mid-session case is precisely
-  the one no hook can reach, which is why it belongs in an always-on rule rather
-  than only in the hook's notice. The scaffold's `.worktreeinclude` header carries
+- **Changed:** rule `24-worktrees` now opens with the worktree-trust step — run
+  `mise trust` in a worktree before the first `mise run …`; it is idempotent, so it
+  costs nothing where the new session check already inherited the primary checkout's
+  trust, and that check is named as Claude-Code-only and start-of-session-only. An
+  untrusted repo stays the user's call (`mise trust && mise install`). Stating the
+  action unconditionally is what makes the rule correct on every surface that reads
+  it: the two cases no hook reaches — a worktree created with `git worktree add`
+  mid-session, and a non-Claude agent surface — are exactly the ones an always-on
+  rule has to cover. The scaffold's `.worktreeinclude` header carries
   the same guidance for the plain-terminal reader, with the mechanism behind it
   (path-keyed trust, and the `[env] _.source` line that triggers it).
 - **Changed:** the always-on rules ceiling moves 65,300 → 66,500 B to fund that rule
