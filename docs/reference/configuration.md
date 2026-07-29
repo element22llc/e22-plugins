@@ -146,7 +146,7 @@ rather than the only physically available move. The policy is unchanged: trimmin
 first remains the default, `check_plugin.py`'s per-skill 1,536-char cap is untouched
 so no single skill can absorb the new headroom, and the target stays 10,000.
 
-The third is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
+The third *surface* is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
 17,500 bytes. That number is the harness's **compaction re-attach cap** — after
 auto-compaction Claude Code re-attaches an invoked skill but keeps only the
 first ~5,000 tokens of it, so anything past that point is silently dropped

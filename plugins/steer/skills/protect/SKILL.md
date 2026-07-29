@@ -177,7 +177,9 @@ When rules are drifted or absent:
    echo '{"required_status_checks":{"strict":false,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
      | gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --input -
    ```
-   **Every value in that body comes from the policy file, not from this example** —
+   **Every *policy* value in that body comes from the policy file, not from this
+   example** (`restrictions: null` is the one exception — the API requires the field
+   and the policy does not carry it) —
    `policy/branch-protection.yml` is the source of truth, and the body above shows
    its *current* values only as an illustration. Read each field from the policy for
    the branch in scope (`strict`, `contexts`, the review counts, `enforce_admins`,

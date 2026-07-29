@@ -177,7 +177,13 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-A further entry covers the workspace task rename. The workspace profile's
+Three further entries are accumulating for the next release. Two are non-additive
+edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
+gains a repo prefix on `COMPOSE_PROJECT_NAME` in a linked worktree (a whole-section
+re-take — and **tear any running linked-worktree stack down first**, or its containers
+and volumes are orphaned under the new project name), and `spec/tracker.md`'s promoted-
+question rule is reversed (the `### Q-NNN` block now *stays*, with the ref in its
+`tracker:` field). The third covers the workspace task rename. The workspace profile's
 whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /
 `clean`), because an unprefixed name in the workspace's `mise.toml` is an ancestor
 config in every member cloned inside it and shadows any member that does not define

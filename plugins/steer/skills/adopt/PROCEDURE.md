@@ -216,9 +216,10 @@ artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`.
 artifact in this list** — `/spec/tracker.md` (and with it both tracker
 bootstraps below), `/spec/app/README.md`, `/spec/HISTORY.md`. Those live once, in
 the workspace; record the adoption in the workspace's `HISTORY.md`, else the PR
-description. The member still gets the rest: `spec/decisions/`, the design and
-sources homes, `ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
-non-`spec/` scaffold above.
+description. The member still gets the rest: `spec/decisions/`, the design home,
+`ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
+non-`spec/` scaffold above. **Not** `spec/sources/` — like `spec/reference/`, that
+one is the workspace's (rule `22-housekeeping`); never create it in a member.
 
 Otherwise: `/spec/tracker.md` (ask
 which tracker the team uses — if GitHub Issues, run

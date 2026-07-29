@@ -21,8 +21,16 @@ conventions change, and `/steer:adopt` consumes the same entries so a repo first
 touched under an older plugin version picks up structural changes too — not just
 additive ones. `/steer:build` has no ledger step of its own: it reaches these
 transforms by handing off to `/steer:adopt`. **Add an entry here in the same change
-that lands a rename/move/deletion** in `templates/spec/` or
-`templates/scaffold/`; do not hand-code the transform inline in a skill.
+that lands any non-additive transform** — a rename, move, deletion, default change,
+in-file token rewrite, or whole-file/whole-section re-take — in `templates/spec/` or
+`templates/scaffold/`; do not hand-code the transform inline in a skill. The test is
+not "did a file move" but **"can additive reconciliation carry it?"** — it splices in
+what is missing and never rewrites, reorders, or deletes, so *replacing an existing
+line* in a materialized file needs an entry just as much as moving the file does. A
+procedural instruction a skill or a human then follows (a step in
+`spec/tracker.md`, a documented command in a profile `README.md`) is squarely in
+scope: leaving the old wording in place keeps the consumer executing the behaviour
+the change exists to remove.
 
 ## How a migration is applied
 
@@ -69,6 +77,43 @@ Name the file and say what to carry forward.
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.24.0 — promoted questions keep their `### Q-NNN` block
+
+- **What & why:** `spec/tracker.md`'s traceability rule told the reader that promoting
+  an open question to a tracker item means **replacing the question with the ref**.
+  The mechanism is now the opposite: the `### Q-NNN` block **stays**, and the ref goes
+  in its `tracker:` field — the issue carries the same id via
+  `<!-- steer:question-id=Q-NNN -->`, and that pair *is* the bidirectional link.
+  `/steer:spec validate` **fails** a promoted question with no `tracker:` ref back, so
+  a repo still following the old instruction deletes the block, loses the back-ref, and
+  then hard-fails its own spec validation. `spec/tracker.md` is materialized at
+  bootstrap and is the file `/steer:tracker-sync` reads first every run, so the stale
+  sentence governs real behaviour. Additive reconciliation lists `tracker.md` but is
+  additive-only, so it can never replace the sentence.
+- **Precondition:** the repo's `spec/tracker.md` still carries the old instruction.
+  Once applied, re-running is a no-op:
+
+  ```sh
+  grep -n 'replace the question with the ref' spec/tracker.md 2>/dev/null
+  ```
+
+- **Action — an in-file token rewrite**, one pair, read-then-propose as a diff:
+  1. Replace `then replace the question with the ref.` with the current template's
+     wording — "then put the ref in that question's `tracker:` field", followed by the
+     **Keep the `### Q-NNN` block** sentence and its `/steer:spec validate`
+     consequence. Take the replacement text verbatim from
+     `${CLAUDE_PLUGIN_ROOT}/templates/spec/tracker.md`'s `## Traceability` section so
+     the two stay identical.
+  2. **Leave the rest of the bullet alone** — the 14-day blocking-question escalation
+     and the Owners-map routing are unchanged.
+  3. If the repo already has questions that were promoted *and deleted* under the old
+     rule, say so and stop short of inventing them: the blocks are gone and only a
+     human knows which issues they became. Report the promoted issues carrying a
+     `steer:question-id` comment with no matching block, and let the dev restore them.
+  **False-positive guard:** rewrite only in the repo's own `spec/tracker.md`, never in
+  a member's copy from inside a workspace checkout, and never in `/spec/HISTORY.md`
+  prose that quotes the old rule as history.
+
 ### v3.24.0 — `COMPOSE_PROJECT_NAME` gains a repo prefix in linked worktrees
 
 - **What & why:** `scripts/worktree-env.sh` derived `COMPOSE_PROJECT_NAME` from the
@@ -101,15 +146,32 @@ Name the file and say what to carry forward.
      each linked worktree with a running stack, run `mise run docker:clean` (or
      `docker compose -p <old-name> down -v`) **before** applying this entry. A
      primary checkout needs nothing — its name does not change.
-  2. Replace exactly the region from the `# --- Compose project name` banner through
-     the `export COMPOSE_PROJECT_NAME=` line with the current template's version,
-     read-then-propose as a diff. That region is self-contained: it derives
-     `_wt_ident`, adds the owning-repo prefix when `_wt_linked=1`, sanitizes to
-     `[a-z0-9_-]`, and exports. It depends only on `_wt_root`, `_wt_linked` and
-     `_wt_common`, all set above it and unchanged by this entry.
-  3. **Leave everything outside that region alone** — in particular the port-offset
-     block above it and the `BASELINE: default-stack host ports` block below it,
-     which a product is invited to adapt to its own services.
+  2. Replace the whole **worktree-identity plumbing** region, read-then-propose as a
+     diff. Bound it by two lines that are byte-identical in the old file and the new
+     one, so the region is locatable in the file you are transforming:
+     - **starts at** the line `_wt_root=$(git rev-parse --show-toplevel 2>/dev/null)
+       || _wt_root=$PWD`, together with the explanatory comment block immediately
+       above it;
+     - **ends at** the line `export COMPOSE_PROJECT_NAME="$_wt_name"`.
+
+     The region **must** span that whole span, not just the Compose-name part: the
+     new naming logic branches on `_wt_linked`, and **`_wt_linked` does not exist in
+     the old file at all** — it was introduced by this same change, replacing an
+     inline `--git-dir`/`--git-common-dir` test that lived in the port-offset
+     `elif`. Swapping only the naming block would leave `_wt_linked` unset, so
+     `[ "$_wt_linked" = 1 ]` is false, the repo silently keeps the bare basename —
+     the exact behaviour this entry exists to remove — and the precondition below
+     then reports the migration as already applied. The region as bounded above
+     carries all three pieces together: the `_wt_root`/`_wt_gitdir`/`_wt_common`
+     lookups, the `_wt_linked` derivation, the port-offset block that branches on
+     it, and the Compose-name derivation and export.
+  3. **Leave everything below `export COMPOSE_PROJECT_NAME=` alone** — in particular
+     the `BASELINE: default-stack host ports` block, which a product is invited to
+     adapt to its own services, and which consumes `_wt_offset` that the replaced
+     region still sets. If a consumer has edited the plumbing region itself (an
+     added lookup, a changed offset formula), carry those edits forward into the new
+     version rather than dropping them — and if the two cannot be reconciled
+     mechanically, show both and ask.
   **False-positive guard:** apply only to the repo's own
   `scripts/worktree-env.sh` at the repo root, never a member's copy from inside a
   workspace checkout, and never a file a consumer has rewritten to derive the project
@@ -164,6 +226,19 @@ Name the file and say what to carry forward.
        enabling monorepo mode, so leaving it stale hands them the very
        caller-scope shadowing this migration exists to remove.
      - the `[env]` comment `` `mise run dev` `` → `` `mise run ws:dev` ``.
+  2b. Rewrite the same task names in the **other three materialized workspace files**,
+     same pairs, same profile-gated scope. These are not cosmetic: the README's
+     quickstart is the command a human is told to run, and after the rename it names a
+     task the repo no longer defines.
+     - `README.md` (the workspace profile replaces the core one): the quickstart
+       `mise run dev` → `mise run ws:dev`, and the same substitution wherever the
+       whole-product `docker:*` tasks are named.
+     - `compose.yaml` (also profile-replaced): the header comment naming the tasks to
+       delete alongside the file — `ws:docker:*` / `ws:dev`.
+     - `.worktreeinclude`: the cleanup instruction naming `docker:clean` gains the
+       `ws:docker:clean` form for a workspace host.
+     Skip any of the three a consumer has clearly rewritten in their own words —
+     report it and let them decide, rather than forcing the template's phrasing back.
   3. Re-take `scripts/ws.sh` **before** step 4, which repoints a task at its
      `preflight` subcommand: a repo at 3.23.0 has a `ws.sh` with **no `preflight`**
      (it arrived later in this same cycle), so taking the script first means no

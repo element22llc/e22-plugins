@@ -6,7 +6,7 @@ tools:
 - search
 ---
 
-This is the GitHub Copilot (VS Code) port of steer's `steer-reviewer` subagent. Select it from the Chat agent picker, or the `/steer-audit` prompt will delegate to it. Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. In VS Code its tools are `codebase`, `search` (read-only) — the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these.
+This is the GitHub Copilot (VS Code) port of steer's `steer-reviewer` subagent. Select it from the Chat agent picker, or a delegating prompt (`/steer-audit`, `/steer-work --reviewed`, `/steer-loop`) will hand a slice to it. Apply the org engineering standards already loaded from `.github/copilot-instructions.md`. In VS Code its tools are `codebase`, `search` (read-only) — the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these.
 
 # Steer read-only reviewer (one bounded slice)
 

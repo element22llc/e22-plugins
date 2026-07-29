@@ -7,6 +7,66 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the scaffold's `.gitignore` ignored `.vscode/mcp.json` — the very file the
+  install map ships so **Copilot/VS Code teammates get the plugin's MCP servers**
+  (Copilot does not read the Claude-only `.mcp.json`). It was installed and then made
+  uncommittable, so no teammate ever received it, and the markitdown migration greps a
+  consumer's committed copy that could not exist. Now un-ignored alongside
+  `extensions.json` and `settings.json`.
+- **Fixed:** `MANIFEST.md` told a `library`/`cli` repo to prune `docker:*`/`db:*` while
+  `compose.yaml` stays core for every profile — so a repo that pruned but kept the
+  compose file lost the `mise run docker:clean` that rules `24-worktrees` and
+  `99-end-of-session` mandate. The prune is now coupled to deleting `compose.yaml`,
+  the same coupling the `infra` profile already states.
+- **Fixed:** `/steer:issues capture` applied a `source:po` label that the canonical
+  taxonomy does not define, `bootstrap-labels` never creates, and `issue_source` has no
+  value for — GitHub silently drops an unknown label, so agent-captured issues landed
+  unsourced. It now applies `source:human`, matching the same file's own `triage` step
+  and every shipped Issue Form.
+- **Fixed:** `/steer:adopt` gave a polyrepo member a `spec/sources/` home that rule
+  `22-housekeeping` forbids creating locally (it is the workspace's, like
+  `spec/reference/`) — the skip list named only three artifacts.
+- **Fixed:** the `COMPOSE_PROJECT_NAME` ledger entry added earlier in this cycle was a
+  **silent no-op on every repo it targeted**. Its region ran from the `# ---  Compose
+  project name` banner to the export, but the new naming logic branches on
+  `_wt_linked` — a variable *this same change introduced*, sitting **above** that
+  region, which the entry then forbade touching. Applying it left `_wt_linked` unset,
+  so the linked-worktree branch could never fire and the repo kept the colliding bare
+  basename; worse, the precondition (`_wt_owner`, which *is* inside the region) then
+  reported the migration as applied, so it never re-fired. The banner it named as the
+  start anchor also does not exist in the file being transformed — it arrived with the
+  same change. The region now spans the whole worktree-identity plumbing block, bounded
+  by two lines byte-identical in both versions (the `_wt_root=$(git rev-parse
+  --show-toplevel …)` assignment and the `export COMPOSE_PROJECT_NAME=` line), and
+  carries the `_wt_linked` derivation and the port-offset block with it.
+- **Fixed:** the ledger's **normative mandate** still required an entry only for "a
+  rename/move/deletion", naming neither in-file token rewrites nor the re-take classes
+  — while its scope sentence listed all five. That gap is the mechanism behind two real
+  coverage misses this cycle. The mandate now covers any non-additive transform and
+  states the actual test: **not "did a file move" but "can additive reconciliation
+  carry it?"** — reconciliation splices in what is missing and never rewrites, so
+  replacing an existing line in a materialized file needs an entry just as much as
+  moving the file does, and a procedural instruction a skill or human then follows is
+  squarely in scope.
+- **Fixed:** the promoted-question rule reversal never got a ledger entry, so an
+  already-adopted repo kept `spec/tracker.md` telling it to **replace the question with
+  the ref** — the opposite of the current mechanism, and a guaranteed
+  `/steer:spec validate` failure, since validate fails a promoted question with no
+  `tracker:` ref back. `spec/tracker.md` is materialized at bootstrap and is the file
+  `/steer:tracker-sync` reads first every run, and reconciliation is additive-only, so
+  nothing could have replaced the sentence. Added as an in-file token rewrite, with a
+  step for the repo that already deleted blocks under the old rule (report the orphaned
+  `steer:question-id` issues; never invent the blocks back).
+- **Fixed:** the `ws:` rename entry rewrote the far less consequential `mise.toml`
+  `[env]` comment but not the workspace **README's quickstart command**, so a migrated
+  workspace repo documented `mise run dev` — a task its `mise.toml` no longer defines.
+  The entry now also covers `README.md`, `compose.yaml` and `.worktreeinclude` (same
+  pairs, same profile gate), and skips any a consumer has visibly reworded.
+- **Fixed:** the `steer-reviewer` caller-list fix reached the agent body but not two
+  further surfaces: `MANIFEST.md`'s agent row named two callers, and the **generator's
+  own hardcoded preamble** named one — so the generated Copilot agent contradicted
+  itself nine lines apart. Both now name the delegating set, and the preamble no longer
+  hardcodes a single prompt.
 - **Fixed:** the `COMPOSE_PROJECT_NAME` change earlier in this cycle
   (`<worktree>` → `<repo>-<worktree>` for a linked worktree) shipped with **no ledger
   entry**, so it could never reach an already-scaffolded repo: additive
@@ -451,8 +511,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `check_context_budget.py --report`) as the only current measurement. The target
   stays 62,500 B. The skill-listing ratchet
   has since been **re-armed** 11,900 → 12,400 chars — not to fund any edit below, but
-  because the corrections below left it at 11,879 of 11,900, a 21-char margin under
-  which the next factual `description` fix could not be paid for in place at all. The
+  because the cycle's accumulated `description` work left it at 11,879 of 11,900 by the
+  time the re-arm landed, a 21-char margin under which the next factual `description`
+  fix could not be paid for in place at all. (The corrections *below* this bullet took
+  it to 11,865; the last few chars came from the `/steer:standards` fix recorded
+  above.) The
   corrections below *were* paid for by trimming inside those same entries, per that
   ratchet's own policy — with one exception to record honestly. Two trigger phrases were cut, not just redundancy:
   `init`'s `@github-handle` and `help`'s `"what can you do?"`. `@github-handle` has
@@ -530,10 +593,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   It also tells the applier to replace **only** `ws:docker:up`'s `run[0]` — the
   inline guard whose message names the stale unprefixed tasks — and to leave `run[1]`
   alone, since `docker compose up -d --wait` is what actually starts the stack.
-  **Release note — the entry is keyed `### v3.24.0`, an assumption the release PR
-  must confirm.** The ledger keys each entry by the version that introduced it, so
-  the heading has to match the bump actually cut: re-key it if this release is not
-  3.24.0. The audit that produced this entry split on that call — the letter of the
+  **Release note — this release now has THREE `### v3.24.0` ledger entries (this
+  `ws:` rename, the `COMPOSE_PROJECT_NAME` prefix, and the promoted-question rule),
+  and the key on all three is an assumption the release PR must confirm.** The ledger
+  keys each entry by the version that introduced it, so the heading has to match the
+  bump actually cut: re-key **all three** if this release is not 3.24.0. Weigh the bump
+  against all three, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
+  mandatory destructive tear-down on the consumer side (an already-running linked
+  worktree's containers and volumes are orphaned otherwise), which is the strongest
+  "anything a consuming repo must react to" signal in the release. The audit that produced this entry split on that call — the letter of the
   release skill's rule ("renamed… template; anything a consuming repo must react
   to") reads major, while this repo's applied precedent reads minor: six prior
   ledger-carried scaffold/spec changes shipped as minors, including v3.23.0 itself,
