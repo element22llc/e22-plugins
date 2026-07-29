@@ -215,8 +215,10 @@ Unprefixed, that turned two ordinary commands into cross-repo surprises:
 
 `ws:`-prefixing removes the fall-through by construction: no member scaffold defines
 a `ws:*` name, so nothing the workspace defines can shadow a member's task.
-`convert:doc` is the one exception and is safe because it is byte-identical to the
-core scaffold's — falling through to it converts the same way.
+`convert:doc` is the one exception and is safe because its `run` command is identical
+to the core scaffold's — falling through to it converts the same way. Only `run` has
+to match: the descriptions differ, and that is all a `check_standards.py` guard
+asserts, because the command is the only load-bearing half.
 
 Two corollaries:
 

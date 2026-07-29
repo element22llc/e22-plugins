@@ -139,14 +139,15 @@ even in a repo that predates the scaffold allowlist. The setup and build flows
 (`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run — git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
-`git push` / `gh pr create` delivery grants as the other delivery skills, and
-named dev tasks (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run`
-wildcard, so `gh pr merge` and unknown commands still prompt. Those flows also pre-approve the
-bundled plugin helper scripts they execute on every run — `template-reconcile.sh`,
-`scaffold_reconcile.py`, `scan-prereqs.sh`, and `/steer:next`'s
-`workspace-snapshot.sh` — under a matching interpreter
-(`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper prompts the
-user mid-flow every time. The scaffold's MCP allowlist tracks
+`git push` / `gh pr create` delivery grants as the other delivery skills, and — in
+`/steer:build`, the flow that actually runs them — named dev tasks
+(`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run`
+wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
+pre-approves the bundled plugin helper scripts *it* executes, under a matching
+interpreter (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
+prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` and
+`/steer:adopt`, `template-reconcile.sh` in `/steer:adopt` and `/steer:build`,
+`scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`. The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
 (`issue_read`, `list_issues`, `search_issues`, `add_issue_comment`) sit under
 `allow` so find-before-create is silent, while the **write** tools (`issue_write`,
@@ -238,11 +239,15 @@ EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
 `reference`, `report`, `status`), a Tier 2 skill grants the write and git verbs it
 needs. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
 `doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
-`status` and `report` keep it for a single temp-path write held in prose.
+`status` and `report` keep it for writes bound in prose — a temp path in every
+case except `audit`, which may additionally write a confirmed
+`/spec/AUDIT-REPORT.md` or `DRIFT-REPORT.md`.
 
 Where `Write` is kept it is bound *in prose* instead — to a temp-dir Artifact
 page, the scrubbed issue body `report` builds, or an explicitly confirmed report
-file. None of those skills may touch existing repo content, because `Edit` is
-still disallowed. `explain` additionally disallows `Bash`. See the
+file. None of those skills may **modify** existing repo content, because `Edit` is
+still disallowed; the one deletion any of them performs is `report` clearing its
+own git-ignored `.claude/steer-faults.*` scratch, so the real boundary is nothing
+**tracked**. `explain` additionally disallows `Bash`. See the
 [Skills reference](../reference/skills.md) for the skill inventory and
 [Configuration](../reference/configuration.md) for how tools are constrained.

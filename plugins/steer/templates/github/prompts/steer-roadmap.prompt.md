@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline.
+description: Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline.
 ---
 
 <!-- Generated from the steer plugin's skills/roadmap/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:roadmap` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline.
+**Purpose.** Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline.
 
-**When to use.** Use for a roadmap, release plan, or Projects v2 timeline — where the product is going, or turning target features into milestone issues.
+**When to use.** Use for a roadmap, release plan, or Projects v2 timeline — where the product is going, or turning features into milestone issues.
 
 **Arguments.** [<no argument = read-only preview> | from-features | from-gap | sync]
 

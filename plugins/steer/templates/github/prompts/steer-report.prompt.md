@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via gh. For steer's own defects, not product bugs (those go to /steer-issues).
+description: File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer-issues).
 ---
 
 <!-- Generated from the steer plugin's skills/report/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:report` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via gh. For steer's own defects, not product bugs (those go to /steer-issues).
+**Purpose.** File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer-issues).
 
 **When to use.** Use when steer misbehaves — a SessionStart self-fault notice, contradictory or impossible skill/rule instructions, a missing or crashing bundled helper — or on "report this steer bug".
 

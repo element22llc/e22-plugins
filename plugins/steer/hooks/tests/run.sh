@@ -1287,6 +1287,17 @@ printf '%s\n' "${out}" | awk -F '\t' '$1!="stack" && $1!="profile"{print $1}' | 
 done >"${WORK}/cap-undoc"
 assert_empty "cap: all emitted ids documented in CAPABILITIES.md" "$(cat "${WORK}/cap-undoc")"
 
+# ...and the reverse direction: every capability documented in CAPABILITIES.md has
+# a detector. Only the emit->doc half was ever asserted, so a documented-but-
+# undetected capability was invisible to /steer:sync: RECONCILE.md drives the
+# capability walk entirely from this scanner's output, so an id it never emits
+# never reaches the status table and is never proposed or repaired. The trailing
+# space in the grep keeps the `### <capability-id>` authoring stub out of the set.
+grep -oE '^### [a-z][a-z-]+ ' "${CAPS_MD}" | sed 's/^### //; s/ $//' | while IFS= read -r _id; do
+	printf '%s\n' "${out}" | cut -f1 | grep -qx "${_id}" || printf 'UNDETECTED %s\n' "${_id}"
+done >"${WORK}/cap-undetected"
+assert_empty "cap: all documented ids have a detector" "$(cat "${WORK}/cap-undetected")"
+
 # Exit-code contract: gaps on stdout (exit 0); usage -> 2; unreadable root -> 3.
 sh "${CAPSCAN}" "${CR0}" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "cap: gaps run exits 0" "$?" 0

@@ -24,7 +24,7 @@ Detection is deterministic via
 [`scripts/scan-capabilities.sh`](../../scripts/scan-capabilities.sh), which emits
 `present-wired | absent | mis-wired | disabled | n/a` per capability plus two
 informational fingerprints, `stack` (`node | python | polyglot | none`) and
-`profile` (`app | infra | service | library | cli`, from the `CLAUDE.md`
+`profile` (`app | infra | service | library | cli | workspace`, from the `CLAUDE.md`
 `## Profile` marker). **Keep the capability set in that script in lockstep with
 the entries below** (the hook test suite asserts every id the script emits is
 documented here, exempting the `stack`/`profile` fingerprints). This doc owns the
@@ -238,6 +238,8 @@ and **Repair**.
 - **Conditional:** Node stack only — applies when `package.json` or
   `pnpm-workspace.yaml` is present (polyglot counts; the predicate is "Node
   present", inclusive). Python-only / pre-app repos report `n/a`.
+- **Wired-when:** `biome.json` present — that file alone is the wired test; the
+  shared tsconfig is part of the baseline but is not probed.
 - **Repair:** create the missing Node config from the scaffold; adapt to the
   repo's real layout.
 - **Verbatim:** no
@@ -248,6 +250,8 @@ and **Repair**.
 - **Files:** `.github/ISSUE_TEMPLATE/*` (`config.yml` + the YAML forms)
 - **Conditional:** tracker is GitHub Issues — read `spec/tracker.md` frontmatter
   `system: github`. Any other tracker reports `n/a`.
+- **Wired-when:** `.github/ISSUE_TEMPLATE/config.yml` present; the individual
+  forms beside it are not probed.
 - **Repair:** create from `templates/github/ISSUE_TEMPLATE/*`; then labels need
   **`/steer:issues bootstrap-labels`** (a follow-up, not this repair).
 - **Verbatim:** no
@@ -289,6 +293,8 @@ and **Repair**.
   deterministically knowable.** The detector reports raw absence; the skill
   **proposes only after confirming with the dev**, and when uncertain asks rather
   than creating an unused `compose.yaml`.
+- **Wired-when:** `compose.yaml` present. There is no content probe — per
+  Conditional, absence is reported raw and is never a defect on its own.
 - **Repair:** create from the scaffold once the service need is confirmed; adapt
   the real service list.
 - **Verbatim:** no

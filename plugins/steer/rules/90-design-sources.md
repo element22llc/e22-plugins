@@ -13,7 +13,7 @@ is an **ADR-gated, kill-dated exception**, never the default.
 
 When the design is absent or partial, **build the UI deliberately instead of
 defaulting to generic AI aesthetics**: the **`frontend-design`** plugin
-(installed from this marketplace) carries that craft; these standards scope it to
+(this marketplace, Claude Code only) carries that craft; these standards scope it to
 a professional/enterprise default, the standard stack (Next + TS + Tailwind), and
 accessibility.
 

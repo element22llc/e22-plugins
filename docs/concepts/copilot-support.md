@@ -37,9 +37,11 @@ versions — is generated from that one source and guarded by a build-time **dri
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
 committed artifact drifts. A **symmetry meta-gate** (`check_copilot_symmetry.py`,
 part of `plugin-check`) further asserts every `gen_copilot_*.py` is wired into
-`gen:copilot` and every `check_copilot_*.py` into `plugin-check` — so no future
-mirror can ship with a generator but no gate, or vice versa. The surfaces can
-never silently diverge, and no Copilot artifact is hand-maintained.
+`gen:copilot` and every `check_copilot_*.py` into `plugin-check` — so a generator
+no task runs, or a gate no task invokes, fails the build. It asserts *wiring*, not
+generator↔gate pairing: `gen_copilot_manifests.py` has no `check_copilot_manifests.py`
+counterpart, because the manifest versions are gated by `check_plugin.py`'s
+version-sync check instead. No Copilot artifact is hand-maintained.
 
 ## Why the surfaces differ
 
@@ -299,11 +301,25 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   recorded hook faults (rule `97-self-report`). Copilot's `sessionStart` ignores
   stdout, so the notice never comes — and its *absence* reads as "condition not
   present," which is worse than no promise at all. Each rule now scopes the flag to
-  Claude Code and tells every other surface to check for the condition itself.
+  Claude Code and, where there is something a reader could look for themselves
+  (rules `00-router` and `05-roles`), says to do that instead; rule `97-self-report`
+  only scopes, because recorded hook faults exist on no other surface.
   Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
   pins without qualification: the ported gate only *asks* on the Copilot CLI, and
   VS Code has no hook mechanism, so the rule now says to keep the pins current
   yourself.
+- **Three further rules scoped, plus one skill.** The same sweep, finished. Rule
+  `62-hotfix` said a `hotfix/<n>-slug` branch makes "issue-first reconciliation"
+  read the lane as sanctioned — that reconciliation is the `Stop` hook
+  `reconcile-issue-first.sh`, and only the two `PreToolUse` gates are ported, so
+  here the prefix carries the convention alone. Rule `36-issue-first` described the
+  `allow`/`ask` permission tiers, which live in `.claude/settings.json` and Claude
+  skill frontmatter; Copilot applies its own host permissions instead. Rule
+  `90-design-sources` pointed at the `frontend-design` plugin, which the Copilot
+  marketplace does not list. And `/steer:questions` leaned on
+  `check-open-questions.sh` for both the backlog nudge and the 14-day blocking
+  escalation with no alternative — its body now tells any other surface to apply
+  that age test by hand.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled

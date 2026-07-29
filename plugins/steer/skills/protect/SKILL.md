@@ -1,10 +1,9 @@
 ---
 name: protect
-description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Graduation also flips the CLAUDE.md delivery-mode marker. Verify by default."
+description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/HISTORY.md entry. Verify by default."
 when_to_use: >-
-  Use when asked to protect main or a prod branch, check branch protection /
-  merge rules, graduate solo trunk to PR flow, or as the last step of
-  init/adopt.
+  Use when asked to protect main or a prod branch, check merge rules, graduate
+  solo trunk to PR flow, or as init/adopt's last step.
 argument-hint: "[verify | apply]"
 allowed-tools:
   - Bash(gh auth status *)
@@ -157,8 +156,9 @@ not as a compliance gap to fix immediately. In that case also report the
 (`gh api repos/{owner}/{repo}/collaborators --jq 'length'` > 1), a `prod`/`production`
 branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, say
 so plainly and recommend graduating now — and note that while the local signals
-stand, the trunk-push hook already surfaces every `git push` for a human yes
-(rule 45), so graduating also restores silent delivery; when none holds, note
+stand, the trunk-push hook surfaces the session's **first** `git push` for a human
+yes (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
+repeat is a silent allow), so graduating also restores silent delivery; when none holds, note
 that staying on solo-trunk is fine for now. (The SessionStart
 `check-graduation.sh` hook surfaces
 the local signals each session; this is the networked, on-demand check.)

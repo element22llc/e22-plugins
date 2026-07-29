@@ -68,8 +68,9 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    ```
 
    It prints one `id<TAB>status<TAB>files` line per capability
-   (`present-wired | absent | mis-wired | disabled | n/a`) plus a `stack`
-   fingerprint, on stdout (gaps are **not** a nonzero exit). For each capability
+   (`present-wired | absent | mis-wired | disabled | n/a`) plus two
+   informational fingerprints, `stack` and `profile` — report both, repair
+   neither — on stdout (gaps are **not** a nonzero exit). For each capability
    read its entry in
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/CAPABILITIES.md` for the repair
    semantics + conditionality, then:
