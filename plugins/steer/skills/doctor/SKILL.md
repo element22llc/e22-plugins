@@ -1,11 +1,10 @@
 ---
 name: doctor
-description: Detect and install the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — with per-OS guidance and confirmation-gated installs.
+description: Detect and install the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — flagging shadowed runtimes, with per-OS guidance and confirmation-gated installs.
 when_to_use: >-
   Use on a fresh machine, or whenever a tool is missing ("command not found",
   "tool not found", mise/docker errors), before /steer:init, /steer:build, or
-  `mise run dev:setup`. /steer:build and /steer:init invoke it when prerequisites
-  are absent.
+  `mise run dev:setup`.
 allowed-tools:
   - Bash(git rev-parse *)
   - Bash(git --version)

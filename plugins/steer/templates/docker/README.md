@@ -20,7 +20,9 @@ In a pnpm monorepo each `apps/<app>/` is independently deployable, so:
 - The Dockerfile installs at **`apps/<app>/Dockerfile`** (one per deployable app).
 - `.dockerignore` installs at the **repo root** — the build context is the repo
   root (`docker build -f apps/<app>/Dockerfile .`) so the lockfile and workspace
-  `packages/` are in scope.
+  `packages/` are in scope. Its source is stored here **without the leading dot**
+  (`templates/docker/dockerignore`) — the same convention the scaffold bundle
+  uses, so it cannot act on this plugin repo. Add the dot when you install it.
 
 ## When it is instantiated
 

@@ -7,6 +7,64 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** three more always-on rules promised GitHub Copilot mechanisms it does
+  not have, and one skill did the same — the sweep further down claimed to have
+  found "the rest of it" and had not. Rule `62-hotfix` told the agent a
+  `hotfix/<n>-slug` branch makes issue-first reconciliation read the lane as
+  sanctioned; that reconciliation is the `Stop` hook `reconcile-issue-first.sh`, and
+  only the two `PreToolUse` gates are ported to `copilot-hooks.json`, so elsewhere
+  the prefix carries the convention alone. Rule `36-issue-first` stated the
+  scaffold's `allow`/`ask` permission tiers as fact when they are
+  `.claude/settings.json` plus Claude skill frontmatter, and another host applies
+  its own. Rule `90-design-sources` pointed at the `frontend-design` plugin, which
+  `.github/plugin/marketplace.json` does not list. `/steer:questions` leaned on
+  `check-open-questions.sh` for both the backlog nudge **and** the 14-day blocking
+  escalation with no fallback — the one case where the missing notice silently
+  disables a documented rule rather than merely withholding a convenience — so its
+  body now tells any other surface to age blocking entries from `created:` itself.
+  All four are recorded in `docs/concepts/copilot-support.md`.
+- **Fixed:** `/steer:protect` misstated the trunk-push gate and then argued from the
+  misstatement. It claimed the hook "surfaces **every** `git push` for a human yes",
+  so graduating restores silent delivery; `check-bash-actions.sh` fires that ask
+  **once per session+repo** and downgrades repeats to a non-blocking reminder — a
+  silent allow under `STEER_HOOK_TARGET=copilot`. `/steer:work` already described it
+  correctly, so two skills contradicted each other about one hook. Recommending
+  graduation was right for the wrong reason; the reason is now the real one.
+- **Fixed:** four more skill `description`s understated their own behavior — the
+  same always-on routing surface, and the same defect class as the entry below.
+  `protect` announced the `CLAUDE.md` delivery-mode marker but not the
+  `/spec/HISTORY.md` append, half its local write surface; `roadmap` described only
+  its writing modes, never the no-argument read-only preview; `report` said
+  "auto-file via gh" when the body prefers GitHub MCP; `doctor` omitted the
+  `shadowed`-runtime check the docs advertise as a headline capability. Paid for
+  **inside those same four entries** per `check_context_budget.py`'s own policy — by
+  cutting genuine redundancy, never a trigger phrase — so the listing lands at
+  11,865 of 11,900 chars and the ratchet does not move.
+- **Added:** a detector for the `dependency-automation` capability, plus the
+  reverse-direction gate that would have caught its absence. `CAPABILITIES.md` has
+  documented that capability (Dependabot + the scoped auto-merge exception) with
+  full `Files` / `Wired-when` / `Repair` fields ever since it shipped, but
+  `scan-capabilities.sh` never emitted it — 14 documented, 13 detected.
+  `RECONCILE.md` drives the entire capability walk from that scanner's output, so
+  the one capability `/steer:sync` could never see was also the one it could never
+  report, propose, or repair, while `docs/reference/github-integration.md` promised
+  sync "keeps both files wired". The detector reports `mis-wired` when the
+  auto-merge workflow loses its `dependabot[bot]` actor guard or its `update-type`
+  gating, since auto-merge not scoped to patch/minor Dependabot PRs is worse than no
+  automation. The hook suite asserted only detector→doc; it now asserts
+  **doc→detector** as well, so a documented-but-undetected capability fails the
+  build (508 fixture cases, up from 507).
+- **Fixed:** reference prose that misdescribed the tooling it documents.
+  `CAPABILITIES.md`'s `profile` enum omitted `workspace`, which `steer_repo_profile`
+  emits, on a page that self-describes as standing invariants; three of its 14
+  entries (`node-tooling`, `github-issue-forms`, `backing-services-compose`) lacked
+  the `Wired-when` field the same file declares mandatory and the detector really
+  computes. `RECONCILE.md` said the scanner prints one fingerprint when it prints
+  two, so a sync run would not know to report `profile`. `INVOCATION.md` announced
+  two Tier-1 caveats and had three — `/steer:doctor` offers to install system
+  software. Two hook nudges named an incomplete profile list. And
+  `templates/docker/README.md` now records that its `.dockerignore` source is stored
+  dot-less, the one shipped dot-stripped file that no manifest mapped.
 - **Fixed:** the always-on cleanup command did not exist in a **workspace** repo.
   Rules `24-worktrees` and `99-end-of-session` (and the scaffold's
   `.worktreeinclude`) mandate `mise run docker:clean` before a worktree is removed,
@@ -40,11 +98,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   would have left ~16 B of headroom, precisely the margin those notes blame for
   making the last two raises inevitable, so the ceiling is re-armed at the measured
   total (66,516 B) plus ~1.2%. The target stays 62,500 B. The skill-listing ratchet
-  is **unchanged** at 11,900 chars: the six `description` corrections below were paid
-  for by trimming inside those same six entries, per that ratchet's own policy.
-- **Fixed:** six skill `description`s did not describe what their bodies do — the
+  is **unchanged** at 11,900 chars: the `description` corrections below were paid
+  for by trimming inside those same entries, per that ratchet's own policy.
+- **Fixed:** five skill `description`s did not describe what their bodies do — the
   always-on routing surface, so an unannounced capability is invisible exactly where
-  routing happens. `audit`, `roadmap` and `help` render an Artifact
+  routing happens (six corrections across the five; `audit` needed two). `audit`,
+  `roadmap` and `help` render an Artifact
   (`templates/reference/ARTIFACTS.md` declares all three) without saying so; `init`
   never revealed that it offers and recommends **solo-trunk** mode, an entire
   delivery mode that writes a lasting `steer:delivery-mode` marker; `protect` scoped
@@ -61,8 +120,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed:** `docs/reference/known-limitations.md` mischaracterized knowledge-work
   mode, naming six rule families as surviving when 13 of the 35 rules inject, and
   omitting that `60-high-risk` and `95-not-the-gate` are always-on despite reading as
-  code-specific (rules 61 and 05 both cross-reference rule 60, so dropping it would
-  break the rules that survive). It also described `SessionStart` as injection only,
+  code-specific (rules `00-router`, `05-roles`, `32-living-docs` and `70-secrets` all
+  cross-reference rule 60, so dropping it would break the rules that survive). It
+  also described `SessionStart` as injection only,
   omitting the one check that mutates local state — `check-worktree-trust.sh` — on
   the page a reader consults to learn what steer can change without asking.
 - **Fixed:** `check_standards.py` now derives the SessionStart roster from
@@ -83,7 +143,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   exception; `POLYREPO.md` said Compose names "never" clash when two *primary*
   checkouts sharing a directory name still do; `ws.sh`'s own failure message still
   named the unprefixed `docker:*`/`dev` tasks; the `convert:doc` "byte-identical"
-  claim was false in three places (only `run` matches — which is all
+  claim was false in four places (only `run` matches — which is all
   `check_standards.py` asserts and all that is load-bearing); and
   `docs/contributing/documentation.md` understated which `hooks/lib/` contracts are
   hand-maintained, omitting `lib/scope.sh` — the file this cycle changed.
@@ -171,8 +231,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `profiles/workspace/mise.toml` is now `ws:`-prefixed — `ws:dev`, `ws:docker:up`,
   `ws:docker:down`, `ws:docker:clean` — so nothing it defines can shadow a member's
   task, because no member scaffold defines a `ws:*` name. `convert:doc` stays
-  unprefixed as the one exception, safe because it is byte-identical to the core
-  scaffold's (falling through to it is a no-op) — and a new `check_standards.py`
+  unprefixed as the one exception, safe because its `run` command is identical to the
+  core scaffold's (falling through to it is a no-op) — and a new `check_standards.py`
   guard fails the build if it ever drifts, if a new unprefixed task appears, or if a
   `depends` entry goes unprefixed. That last one is its own trap: `depends` resolves
   by name in the **caller's** task set, so `ws:dev`'s dependency had to become

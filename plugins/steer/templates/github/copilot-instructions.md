@@ -526,7 +526,8 @@ create the issue.
 - The scaffold pre-authorizes `gh issue create` / `gh issue edit` under
   `allow`; the MCP write tools (`mcp__github__issue_write` /
   `sub_issue_write`) sit under `ask`; `/steer:tracker-sync` re-grants both,
-  `/steer:report` only `issue_write`, via `allowed-tools`. A create that
+  `/steer:report` only `issue_write`, via `allowed-tools` — that tiering is
+  Claude Code's; elsewhere your host's own permissions apply. A create that
   is *still* blocked is a **host-permission gate, not a missing issue** —
   don't loop retrying; confirm with the user, or have them run
   `!gh issue create …` under their own identity, then continue. (Full
@@ -822,9 +823,10 @@ deployed are **not** hotfixes — they take the normal lane.
 **What the lane relaxes — ceremony and ordering, never authority:**
 
 - **Issue after-the-fact.** File or backfill the GitHub issue as soon as
-  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
-  so issue-first reconciliation recognises the sanctioned lane. This relaxes
-  issue-first *timing* (rule 36), not its existence.
+  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch so
+  the lane reads as sanctioned rather than as a skipped step (in Claude Code the
+  end-of-turn reconciliation keys on that prefix; on other surfaces the convention
+  carries it alone). This relaxes issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
   gate still stands** — no self-merge.
@@ -1004,7 +1006,7 @@ is an **ADR-gated, kill-dated exception**, never the default.
 
 When the design is absent or partial, **build the UI deliberately instead of
 defaulting to generic AI aesthetics**: the **`frontend-design`** plugin
-(installed from this marketplace) carries that craft; these standards scope it to
+(this marketplace, Claude Code only) carries that craft; these standards scope it to
 a professional/enterprise default, the standard stack (Next + TS + Tailwind), and
 accessibility.
 

@@ -14,9 +14,10 @@ deployed are **not** hotfixes — they take the normal lane.
 **What the lane relaxes — ceremony and ordering, never authority:**
 
 - **Issue after-the-fact.** File or backfill the GitHub issue as soon as
-  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
-  so issue-first reconciliation recognises the sanctioned lane. This relaxes
-  issue-first *timing* (rule 36), not its existence.
+  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch so
+  the lane reads as sanctioned rather than as a skipped step (in Claude Code the
+  end-of-turn reconciliation keys on that prefix; on other surfaces the convention
+  carries it alone). This relaxes issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
   gate still stands** — no self-merge.

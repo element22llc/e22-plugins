@@ -61,6 +61,13 @@ nudge. The hook also **escalates a blocking question still open after 14 days**
 (from its `created:` date, or the heading's `git blame` date when absent) with
 its own loud line — the cue to promote it (step 6) or defer it (step 7).
 
+That hook is **Claude Code only** — no other surface has a SessionStart channel
+that can reach you, so nothing announces either the backlog or the 14-day
+escalation there. Apply both yourself instead: read each feature's `## Open
+questions` list, and age every blocking entry from its `created:` date (or the
+heading's `git blame` date). Wherever a step below says "hook-escalated", read it
+as "stale by that same test".
+
 ## Steps
 
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first — before you answer

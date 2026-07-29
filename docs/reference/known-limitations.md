@@ -41,7 +41,7 @@ PO-relevant** ruleset instead of the full engineering manual. This is the typica
 In that mode 13 of the 35 rules inject — the router, roles, context-hygiene,
 spec-workflow, decision-capture, living-docs, high-risk, gate-prompts, secrets,
 output-discipline, artifacts, not-the-gate and self-report rules — while the 22
-marked `code-project` / `has-iac` / `tracker-github` (stack, commands, layout,
+marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack, commands, layout,
 testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
 end-of-session, …) are **intentionally omitted** to reclaim context budget and cut
 noise. That reclaims ~39 kB, and `orient-session` confirms in plain language that
@@ -49,9 +49,9 @@ the standards are active.
 
 Two of the injected rules read as code-specific and are always-on anyway, by
 design: **high-risk areas** (rule 60) and **not the gate** (rule 95) name paths
-like `/infra` and `/apps`, but rule 61's gate prompts and rule 05's role
-boundaries both cross-reference rule 60, so dropping it would break the rules that
-survive. Run `mise run rules:preview -- --knowledge` for the authoritative
+like `/infra` and `/apps`, but four rules that survive all cross-reference rule
+60 — the router, rule 05's role boundaries, living-docs and secrets — so dropping
+it would break them. Run `mise run rules:preview -- --knowledge` for the authoritative
 inject/skip table.
 
 The classification is **fail-safe**: a git repo, *any* code/config marker, or any

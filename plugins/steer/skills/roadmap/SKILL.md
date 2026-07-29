@@ -1,9 +1,9 @@
 ---
 name: roadmap
-description: "Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates. The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline."
+description: "Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap — unshipped intent becomes issues grouped under release milestones with due dates (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Renders an Artifact timeline."
 when_to_use: >-
   Use for a roadmap, release plan, or Projects v2 timeline — where the product
-  is going, or turning target features into milestone issues.
+  is going, or turning features into milestone issues.
 argument-hint: "[<no argument = read-only preview> | from-features | from-gap | sync]"
 ---
 <!-- steer:modes default,from-features,from-gap,sync -->

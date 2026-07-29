@@ -12,10 +12,12 @@ be *careful* about that.
 
 ## Tier 1 — safe to infer (read-only / navigation / reference)
 
-Read-only or purely advisory; inferring them from a question is fine. Two carry a
+Read-only or purely advisory; inferring them from a question is fine. Three carry a
 caveat worth knowing before you infer them: `/steer:report` **auto-files** an
-upstream issue with no confirmation step, and `/steer:audit` will offer to write a
-report file into `/spec`. Neither changes existing repo content.
+upstream issue with no confirmation step; `/steer:audit` will offer to write a
+report file into `/spec`; and `/steer:doctor` will offer to **install system
+software**. None of the three changes existing repo content, and the latter two
+act only on an explicit yes.
 
 | Skill | What it does |
 |---|---|

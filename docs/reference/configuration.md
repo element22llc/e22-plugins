@@ -124,8 +124,9 @@ back ~120 B of the cost. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 
-The skill-listing ratchet moved in the same release, 11,500 → 11,900 chars, for a
-different reason: not a budget concession but a **measurement correction**.
+The skill-listing ratchet moved once, in 3.23.0, 11,500 → 11,900 chars, for a
+different reason: not a budget concession but a **measurement correction**. It has
+not moved since.
 `/steer:work`'s `when_to_use` was an unquoted YAML scalar containing `("work on
 #123"`, so ` #` opened a comment and the value silently truncated at 75 of 546
 characters. The ratchet had been calibrated against that truncated value, reading

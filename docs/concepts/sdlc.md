@@ -20,11 +20,11 @@ flowchart LR
     P --> W["3 · Build<br/>work (--reviewed)"]
     W --> V["4 · Verify<br/>Definition of Done · drift gates"]
     V --> D["5 · Deliver<br/>merge → deploy · protect"]
-    D --> M["6 · Maintain<br/>audit · next · sync · tidy · loop"]
+    D --> M["6 · Maintain<br/>audit · next · sync · tidy · loop · report"]
     M -.re-enters.-> P
 ```
 
-## The six phases
+## The seven phases
 
 | Phase | Skills | Produces | Gate that closes it |
 | --- | --- | --- | --- |
@@ -90,7 +90,8 @@ description** and the flag blocks merge until the reviewer explicitly resolves i
 (you may not waive your own flag):
 
 > intent drift · contract drift · undocumented behavior change · security-sensitive
-> · compliance-impacting · operational (deploy/CI/infra) · local setup changed ·
+> · compliance-impacting · operational (deploy/CI/infra) · local setup or
+> deployment changed ·
 > app docs invalidated · architecture/stack drift
 
 Periodic sweeps with [`/steer:audit`](../reference/skills.md) catch what slips

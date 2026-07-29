@@ -1,6 +1,6 @@
 ---
 name: report
-description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via gh. For steer's own defects, not product bugs (those go to /steer:issues)."
+description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer:issues)."
 when_to_use: >-
   Use when steer misbehaves — a SessionStart self-fault notice, contradictory or
   impossible skill/rule instructions, a missing or crashing bundled helper — or
