@@ -346,7 +346,7 @@ cmd_preflight() {
 		exit 1
 	fi
 	docker compose config >/dev/null 2>&1 ||
-		die 'compose.yaml does not resolve — add one `include:` entry per member that runs local services (see the file header), or delete compose.yaml together with the docker:* and dev tasks'
+		die 'compose.yaml does not resolve — add one `include:` entry per member that runs local services (see the file header), or delete compose.yaml together with the ws:docker:* and ws:dev tasks'
 }
 
 case "${1:-}" in

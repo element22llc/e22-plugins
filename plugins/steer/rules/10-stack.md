@@ -39,7 +39,8 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
   locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
   point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
   keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins (exceptions: ADR +
+  plugin hook denies stale image-major pins — it only *asks* on the Copilot CLI,
+  and VS Code has no hook, so keep the pins current yourself (exceptions: ADR +
   `# steer:allow-pin`). **Every published host port overridable** —
   `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the override
   var in `.env.example`.

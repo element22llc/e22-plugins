@@ -21,8 +21,10 @@ allowed-tools:
   - mcp__github__add_issue_comment
   - Bash(git remote *)
   - Bash(git rev-parse *)
-# Tier 1: this skill never touches the product repo — its only writes are the
-# upstream issue and the scrubbed temp file it is built from. Edit/NotebookEdit/
+# Tier 1: this skill never touches the product repo's TRACKED files — it writes the
+# upstream issue, the scrubbed temp file it is built from, and (in aftercare) it
+# deletes the git-ignored `.claude/steer-faults.*` scratch files once their faults
+# are filed. Nothing tracked, nothing committed. Edit/NotebookEdit/
 # EnterWorktree are disallowed so a defect report can never mutate a local file,
 # branch, or worktree. Write STAYS GRANTED for that temp file (see step "Write the
 # scrubbed body to a temp file"), bound in prose to the temp path — do NOT disallow
@@ -142,5 +144,6 @@ gh issue create --repo element22llc/e22-plugins \
   remove `<repo-root>/.claude/steer-faults.log` and
   `<repo-root>/.claude/steer-faults.surfaced` so resolved faults don't linger or
   re-surface. If only some were filed, leave the rest.
-- Never commit these files or the report to the product repo — this channel
-  touches the plugin's repo only, and `.claude/steer-faults.*` is git-ignored.
+- Never commit these files or the report to the product repo — the only *repo*
+  this channel files into is the plugin's, and the fault log it clears here is
+  git-ignored scratch state, never a tracked product file.

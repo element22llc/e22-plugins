@@ -40,8 +40,11 @@ flowchart LR
 - **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
   `skills/`, `rules/`, or `hooks/` without touching `docs/`. Two paths are
   exempt: `/tests/` and `/hooks/lib/`. Note that `hooks/lib/` *is* documented (the
-  `lib/json.sh` and `lib/repo-root.sh` contracts in the hooks reference), so a
-  change to that plumbing escapes the gate — update the docs by hand.
+  `lib/json.sh`, `lib/repo-root.sh` **and `lib/scope.sh`** contracts in the hooks
+  reference), so a change to that plumbing escapes the gate — update the docs by
+  hand. `lib/scope.sh` carries the rule-injection scope predicates and the
+  workspace/spine resolution ladder, so it is the exempt file most likely to
+  invalidate a doc page.
 
 ## Page templates
 

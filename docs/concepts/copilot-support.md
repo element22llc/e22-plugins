@@ -292,6 +292,18 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   Code where the check already ran. Everything *else* about worktree isolation is
   surface-agnostic — the per-worktree `COMPOSE_PROJECT_NAME`/port offset comes from
   the scaffold's `mise` config (`scripts/worktree-env.sh`), not from a hook.
+- **SessionStart *notices* never arrive, so the rules no longer promise them.**
+  Beyond the worktree check above, three always-on rules used to tell the agent a
+  SessionStart hook would flag a condition: a missing `/spec` spine (rule
+  `00-router`), an in-progress `spec/BUILD-STATUS.md` (rule `05-roles`), and
+  recorded hook faults (rule `97-self-report`). Copilot's `sessionStart` ignores
+  stdout, so the notice never comes — and its *absence* reads as "condition not
+  present," which is worse than no promise at all. Each rule now scopes the flag to
+  Claude Code and tells every other surface to check for the condition itself.
+  Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
+  pins without qualification: the ported gate only *asks* on the Copilot CLI, and
+  VS Code has no hook mechanism, so the rule now says to keep the pins current
+  yourself.
 - **Manual refresh.** Unlike Claude Code's live injection, the Copilot files must
   be regenerated after a plugin update (see above).
 - **Hooks are Preview.** Copilot's plugin hooks are Preview and can be disabled

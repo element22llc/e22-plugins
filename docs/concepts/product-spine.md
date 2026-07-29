@@ -118,15 +118,23 @@ Two consequences worth knowing before adopting the topology:
 Members are cloned **inside** the workspace and git-ignored there — ordinary
 clones, not submodules, so nothing pins a SHA and a member commit never dirties
 the workspace. From the workspace, `mise run ws:clone` / `ws:sync` / `ws:status`
-/ `ws:code` / `ws:list` manage them as a set and `mise run ws:dev` boots the whole
-product via Compose `include:`. Every workspace task carries that `ws:` prefix on
-purpose: mise loads every *ancestor* config, so the workspace's `mise.toml` is
+/ `ws:code` / `ws:list` manage them as a set. `mise run ws:dev` brings up the
+product's backing services via Compose `include:` as soon as `compose.yaml` lists
+the members' compose files; the *app* half — each member's own dev server — needs
+mise monorepo mode enabled (uncomment the `[monorepo]` block in the workspace
+`mise.toml`) plus one `depends` entry per member that has a `dev` task, so a fresh
+workspace boots services only. Every task the workspace profile defines carries
+that `ws:` prefix on purpose — `convert:doc` is the one deliberate exception,
+unprefixed so `/steer:intake` keeps one vocabulary and safe because its `run`
+command is identical to the core scaffold's. The reason is mise's config
+hierarchy: it loads every *ancestor* config, so the workspace's `mise.toml` is
 loaded inside each member too, and an unprefixed name there would shadow any member
 that does not define it — an unprefixed `dev` made `mise run dev` in a member boot
 the whole product instead of that member's server. Because those clones are git-ignored, a **worktree**
 of the workspace has none of them: do spine work there, but run the product from
-the primary checkout — `ws:status`, `ws:check` and `ws:preflight` say so
-explicitly rather than reporting an absent member as drift. What this never buys is **atomic cross-repo commits**: a contract
+the primary checkout — `mise run ws:status`, and the `ws.sh` `check` and
+`preflight` subcommands behind it, say so explicitly rather than reporting an
+absent member as drift. What this never buys is **atomic cross-repo commits**: a contract
 change across two members is still two PRs that can merge out of order. The
 topology makes that visible; it cannot make it atomic.
 

@@ -112,10 +112,25 @@ PLUGIN_ROOT = Path("plugins/steer")
 # exactly the case no hook can reach, so the instruction has to be always-on to be
 # there when it is needed. The ratchet stood at 5 bytes of headroom, so the only
 # alternative was trading out rule 24's own rationale — the trade this note has
-# twice recorded as wrong. Re-armed at the measured total (65,795 B across 35
+# twice recorded as wrong. Re-armed at the measured total (65,933 B across 35
 # files) plus ~1%, restoring real headroom instead of the 5-to-7-byte margins that
 # made each of the last two raises inevitable. The target stays 62,500.
-RULES_TOTAL_MAX_BYTES = 66_500
+#
+# RAISED a fourth time, 66,500 → 67,300, to fund six surface-scoping corrections
+# that made always-on rules honest on the surfaces that read them. Rules 00, 05, 97
+# promised a SessionStart flag Copilot cannot receive (its `sessionStart` ignores
+# stdout) and rule 10 promised a hard `deny` that is only an `ask` on the Copilot
+# CLI and absent in VS Code — each was a rule telling an agent a mechanism would
+# catch something it will not. Rules 24 and 99 named `docker:up`/`docker:clean`,
+# which the workspace profile renamed `ws:*`, so the mandated cleanup command did
+# not exist in a spine host; rule 15 now carries the workspace task vocabulary once
+# and rule 24 cross-references it rather than restating it, which paid back ~120 B
+# of the cost. All six are factual corrections, not new capability: the alternative
+# was shaving rationale, the trade this note twice records as wrong and reverted.
+# Trimming to fit under 66,500 would have left ~16 B of headroom — precisely the
+# margin this note blames for making the last two raises inevitable — so the
+# ceiling is re-armed at the measured total (66,516 B) plus ~1.2%. Target: 62,500.
+RULES_TOTAL_MAX_BYTES = 67_300
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently

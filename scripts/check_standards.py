@@ -537,7 +537,11 @@ def _token_present(name: str, haystack: str) -> bool:
 
 
 def _sessionstart_hook_basenames() -> set[str]:
-    """Basenames of every SessionStart hook script registered in hooks.json."""
+    """Basenames of every SessionStart hook script *registered* in hooks.json.
+
+    Registration only — the checks `session-checks.sh` orchestrates are not here.
+    Use `_session_subchecks()` for those; the roster check asserts both.
+    """
     data = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
     names: set[str] = set()
     for entry in data.get("hooks", {}).get("SessionStart", []):
@@ -545,6 +549,24 @@ def _sessionstart_hook_basenames() -> set[str]:
             for m in re.finditer(r"hooks/([a-z0-9-]+\.sh)", hook.get("command", "")):
                 names.add(m.group(1))
     return names
+
+
+def _session_subchecks() -> set[str]:
+    """Basenames of the checks `session-checks.sh` sequences in its dispatch loop.
+
+    hooks.json names only the orchestrator, so deriving the roster from it alone
+    leaves every child ungated — and `session-checks.sh` instructs authors to add
+    each new check to the CROSS-SURFACE.md roster, an instruction nothing enforced.
+    Parsed from the `for _check in \\ … ; do` list, the one place the roster lives.
+    """
+    orchestrator = PLUGIN_ROOT / "hooks/session-checks.sh"
+    if not orchestrator.is_file():
+        return set()
+    text = orchestrator.read_text(encoding="utf-8")
+    m = re.search(r"for\s+_check\s+in\s+(.*?);\s*do", text, re.DOTALL)
+    if not m:
+        return set()
+    return set(re.findall(r"([a-z0-9-]+\.sh)", m.group(1)))
 
 
 def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
@@ -623,6 +645,14 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
             errors.append(
                 f"CROSS-SURFACE.md: SessionStart hook roster missing "
                 f"{sorted(missing_hooks)} (registered in hooks.json)"
+            )
+        # The orchestrated sub-checks too: hooks.json names only session-checks.sh,
+        # so without this every child is ungated and a seventh would land unnoticed.
+        missing_subchecks = {h for h in _session_subchecks() if h not in text}
+        if missing_subchecks:
+            errors.append(
+                f"CROSS-SURFACE.md: SessionStart hook roster missing "
+                f"{sorted(missing_subchecks)} (orchestrated by session-checks.sh)"
             )
 
 

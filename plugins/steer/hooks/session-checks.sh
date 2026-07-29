@@ -24,8 +24,10 @@
 #   The individual check scripts stay authoritative and individually testable
 #   (hooks/tests/run.sh drives them directly); this file must contain NO check
 #   logic of its own — only sequencing. Add a new session check by appending
-#   it to the list below AND to the roster in CROSS-SURFACE.md; the pytest
-#   latency budget (tests/test_hook_latency.py) times this whole chain.
+#   it to the list below AND to the roster in CROSS-SURFACE.md; check_standards.py
+#   parses the `for _check in` list below and fails the build if the roster omits
+#   one, so the two cannot drift. The pytest latency budget
+#   (tests/test_hook_latency.py) times this whole chain.
 #
 #   One check does more than print: check-worktree-trust.sh inherits the primary
 #   checkout's `mise trust` into a linked worktree (see its header for why that

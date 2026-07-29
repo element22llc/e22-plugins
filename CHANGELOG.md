@@ -7,6 +7,91 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the always-on cleanup command did not exist in a **workspace** repo.
+  Rules `24-worktrees` and `99-end-of-session` (and the scaffold's
+  `.worktreeinclude`) mandate `mise run docker:clean` before a worktree is removed,
+  but the `ws:`-prefixing below renamed that task to `ws:docker:clean`, and the
+  workspace profile **replaces** core `mise.toml` — so in a spine host the mandated
+  command failed `task not found` and the aggregated stack it was meant to tear
+  down stayed up, containers and volumes included. It worked at 3.23.0 and did not
+  after, which makes it a regression the `ws:` fix introduced: `POLYREPO.md` cited
+  rule 24 as the rename's motivating example without updating the rule. All three
+  surfaces now name the `ws:` form, rule `15-commands` carries the workspace task
+  vocabulary once (it holds no code, so it has no `dev:setup` or linters at all, and
+  each member runs its own), and rule 24 cross-references it rather than restating
+  it. `MANIFEST.md` records the substitution beside the "replaces core mise" note.
+- **Fixed:** four always-on rules promised GitHub Copilot mechanisms it does not
+  have — the same defect class as the worktree-trust entry below, found by sweeping
+  for the rest of it. Rules `00-router` (a missing `/spec` spine), `05-roles` (an
+  in-progress `spec/BUILD-STATUS.md`) and `97-self-report` (recorded hook faults)
+  each told the agent a SessionStart hook would flag a condition; Copilot's
+  `sessionStart` ignores stdout, so the notice never arrives and its *absence* reads
+  as "condition not present" — worse than no promise. Rule `10-stack` claimed a hook
+  **denies** stale image-major pins, which is only an `ask` on the Copilot CLI and
+  nothing at all in VS Code, where there is no hook mechanism. Each rule now scopes
+  the mechanism to the surface that has it and tells the others to check for
+  themselves. `docs/concepts/copilot-support.md` records all four under Known
+  limitations.
+- **Changed:** the always-on rules ceiling moves 66,500 → 67,300 B to fund those six
+  surface-scoping corrections. They are factual corrections, not new capability, so
+  the alternative was shaving rationale — the trade `check_context_budget.py`'s notes
+  record as wrong and reverted twice. Deduplicating the workspace task vocabulary
+  into rule 15 paid back ~120 B of the cost; trimming the rest to fit under 66,500
+  would have left ~16 B of headroom, precisely the margin those notes blame for
+  making the last two raises inevitable, so the ceiling is re-armed at the measured
+  total (66,516 B) plus ~1.2%. The target stays 62,500 B. The skill-listing ratchet
+  is **unchanged** at 11,900 chars: the six `description` corrections below were paid
+  for by trimming inside those same six entries, per that ratchet's own policy.
+- **Fixed:** six skill `description`s did not describe what their bodies do — the
+  always-on routing surface, so an unannounced capability is invisible exactly where
+  routing happens. `audit`, `roadmap` and `help` render an Artifact
+  (`templates/reference/ARTIFACTS.md` declares all three) without saying so; `init`
+  never revealed that it offers and recommends **solo-trunk** mode, an entire
+  delivery mode that writes a lasting `steer:delivery-mode` marker; `protect` scoped
+  its writes to `gh api` when a graduation also flips that marker; `audit`'s "files
+  nothing, edits nothing" contradicted its own `/spec/AUDIT-REPORT.md` write.
+- **Fixed:** two skills asserted a write boundary their own bodies crossed.
+  `protect` said it "touches repo **settings** only" while instructing an edit to the
+  product `CLAUDE.md` delivery-mode section and an append to `/spec/HISTORY.md` — and
+  because rule `45-commit-autonomy` makes that marker the cache the hooks read, an
+  agent trusting the narrower claim would protect `main` and leave the repo pushing
+  straight to it. `report` claimed it "never touches the product repo" while
+  deleting `.claude/steer-faults.*` there; both now state the real boundary (nothing
+  *tracked*, in `report`'s case).
+- **Fixed:** `docs/reference/known-limitations.md` mischaracterized knowledge-work
+  mode, naming six rule families as surviving when 13 of the 35 rules inject, and
+  omitting that `60-high-risk` and `95-not-the-gate` are always-on despite reading as
+  code-specific (rules 61 and 05 both cross-reference rule 60, so dropping it would
+  break the rules that survive). It also described `SessionStart` as injection only,
+  omitting the one check that mutates local state — `check-worktree-trust.sh` — on
+  the page a reader consults to learn what steer can change without asking.
+- **Fixed:** `check_standards.py` now derives the SessionStart roster from
+  `session-checks.sh`'s own dispatch loop, not just `hooks.json`. The orchestrator
+  instructs authors to add each new sub-check to the `CROSS-SURFACE.md` roster, but
+  the gate only ever saw `session-checks.sh` itself, so all six children were
+  ungated and a seventh would have gone unnoticed. Nothing had drifted; the
+  instruction simply had no enforcement.
+- **Fixed:** documentation and scaffold prose that no longer matched the shipped
+  files. `docs/reference/repository-contract.md` described the workspace profile as
+  adding "a `dev` that boots the whole product" — the unprefixed name that *was* the
+  defect; `POLYREPO.md` and `docs/concepts/product-spine.md` wrote `ws:check` /
+  `ws:preflight` as `mise` tasks when both are `ws.sh` subcommands with no wrapper
+  (`mise run ws:check` fails); `MANIFEST.md`'s `ws.sh` row omitted the new
+  `preflight`; `product-spine.md` claimed `ws:dev` boots the whole product when the
+  app half needs monorepo mode plus a `depends` entry per member, and claimed
+  *every* workspace task is `ws:`-prefixed despite the deliberate `convert:doc`
+  exception; `POLYREPO.md` said Compose names "never" clash when two *primary*
+  checkouts sharing a directory name still do; `ws.sh`'s own failure message still
+  named the unprefixed `docker:*`/`dev` tasks; the `convert:doc` "byte-identical"
+  claim was false in three places (only `run` matches — which is all
+  `check_standards.py` asserts and all that is load-bearing); and
+  `docs/contributing/documentation.md` understated which `hooks/lib/` contracts are
+  hand-maintained, omitting `lib/scope.sh` — the file this cycle changed.
+- **Note for existing workspace repos:** the `ws:` rename ships in the scaffold
+  template, and there is no reconcile path for `mise.toml`, so an
+  already-scaffolded workspace repo does not pick it up. To adopt it, rename that
+  repo's whole-product tasks to `ws:*` (including `ws:dev`'s `depends`) and re-take
+  `scripts/ws.sh` from the scaffold for the new `preflight` subcommand.
 - **Fixed:** the worktree-trust guidance no longer promises GitHub Copilot a hook it
   does not have. `check-worktree-trust.sh` is a SessionStart check and Copilot has no
   SessionStart equivalent (its `sessionStart` ignores stdout, and only the two
@@ -62,7 +147,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Changed:** the always-on rules ceiling moves 65,300 → 66,500 B to fund that rule
   step. The ratchet stood at **5 bytes** of headroom, so the alternative was trading
   out rule 24's own rationale — the trade `check_context_budget.py`'s own notes twice
-  record as wrong and reverted. Re-armed at the measured total (65,795 B across 35
+  record as wrong and reverted. Re-armed at the measured total (65,933 B across 35
   files) plus ~1%, deliberately restoring real headroom instead of the 5-to-7-byte
   margins that made each of the last two raises inevitable; the reason is recorded in
   the gate script and `docs/reference/configuration.md` beside the two earlier
@@ -150,7 +235,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   no existing stack is renamed.
 - **Fixed:** a worktree of a **workspace** repo has no members — the clones are
   git-ignored, so a worktree populated from git refs carries none of them — and
-  the tooling misreported it three ways. `mise run docker:up` failed with
+  the tooling misreported it three ways. `mise run ws:docker:up` failed with
   "compose.yaml has no resolved `include:` list yet" even when every include was
   correct, sending you to edit a correct file; `ws.sh check` *silently skipped* its
   compose-include assertion for an absent member, so a skipped line read as a pass
@@ -158,7 +243,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   offered `mise run ws:clone` with no hint that it means a full duplicate of every
   member at the manifest branch. `ws.sh` gains a `preflight` subcommand that
   separates "manifest unresolved" from "checkout absent" and names the real next
-  step (now what `docker:up` guards on), reports an explicit `absent` line instead
+  step (now what `ws:docker:up` guards on), reports an explicit `absent` line instead
   of going quiet, and prints the worktree state once per run. `POLYREPO.md`
   documents the topology.
 

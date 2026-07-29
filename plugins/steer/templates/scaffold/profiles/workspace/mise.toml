@@ -19,9 +19,10 @@
 # this file defines can shadow a member's task, because no member scaffold defines
 # a `ws:*` name.
 #
-# The one exception is `convert:doc`, which is byte-identical to the core
+# The one exception is `convert:doc`, whose `run` command is identical to the core
 # scaffold's — falling through to it is a no-op, so it stays unprefixed to keep one
-# vocabulary for /steer:intake.
+# vocabulary for /steer:intake. (Only `run` has to match; the descriptions differ,
+# and a check_standards.py guard asserts the commands stay in lockstep.)
 #
 # The corollary: `ws:*` tasks ARE reachable from inside a member, by design. mise
 # runs a task in its config_root, so `cd backend && mise run ws:status` operates on
@@ -182,6 +183,7 @@ depends = ["ws:docker:up"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake"
 # Kept from the core scaffold: PO documents land in THIS repo (spec/sources/),
 # because the spine is here. Same pinned-uv path as every other managed repo.
-# The ONE unprefixed task here, and safe because it is byte-identical to the core
-# scaffold's: a member falling through to it converts the same way it would itself.
+# The ONE unprefixed task here, and safe because its `run` command is identical to
+# the core scaffold's: a member falling through to it converts the same way it
+# would itself. (The `description` differs; only `run` is load-bearing.)
 run = "uvx --from 'markitdown[all]' markitdown"

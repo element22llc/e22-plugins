@@ -4,7 +4,8 @@
 You may be one of several agents working the same repo at once, each in its own
 worktree; your local services must not collide with — or outlive — a sibling's.
 (A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
-discipline still applies to anything you start.)
+discipline still applies to anything you start.) Task names below are the core
+scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
 
 **Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
 new worktree is untrusted and every `mise run …` there fails on *trust*, not on the

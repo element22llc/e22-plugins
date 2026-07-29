@@ -1,9 +1,9 @@
 ---
 name: init
-description: "One-time setup for a new managed repo — bootstrap the /spec spine + scaffolding from the plugin's bundled scaffold, pin the toolchain, and leave the repo working spec-first; also resolves placeholders in a legacy template fork."
+description: "One-time setup for a new managed repo — bootstrap the /spec spine + scaffolding, pin the toolchain, leave it working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode."
 when_to_use: >-
   Use on a new repo with no /spec spine ("set up this new repo"), or when
-  template placeholders ([Replace …], [Product Name], @github-handle) remain.
+  template placeholders ([Replace …], [Product Name]) remain.
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)

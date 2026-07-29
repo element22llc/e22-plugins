@@ -1,10 +1,10 @@
 ---
 name: help
-description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; every line is built from the live router table, and a completeness check proves no front-door row was dropped."
+description: "Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; every line comes from the live router table, and a completeness check proves no front-door row was dropped. Renders an Artifact menu."
 when_to_use: >-
-  Use to browse steer's capabilities — "what can steer do?", "what can you do?",
+  Use to browse steer's capabilities — "what can steer do?",
   "show me the commands", "list the skills". Discovery only: "what should I do
-  next" routes to /steer:next.
+  next" is /steer:next.
 argument-hint: "[optional: a skill or area to zoom into]"
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---

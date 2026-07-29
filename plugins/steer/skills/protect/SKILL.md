@@ -1,10 +1,10 @@
 ---
 name: protect
-description: "Make GitHub branch protection reliable on a managed repo — diff policy/branch-protection.yml against the live settings and, on explicit confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Verify by default."
+description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Graduation also flips the CLAUDE.md delivery-mode marker. Verify by default."
 when_to_use: >-
-  Use when asked to protect main or a prod branch, set up or check branch
-  protection / merge rules, graduate solo trunk to the PR flow, or as the final
-  step of init/adopt.
+  Use when asked to protect main or a prod branch, check branch protection /
+  merge rules, graduate solo trunk to PR flow, or as the last step of
+  init/adopt.
 argument-hint: "[verify | apply]"
 allowed-tools:
   - Bash(gh auth status *)
@@ -212,8 +212,11 @@ keep visible, not an oversight.
   Repository **rulesets** are the modern equivalent with the same intent; if the
   repo already governs the branch via a ruleset, report it as compliant rather
   than forcing a second mechanism.
-- This skill never opens PRs, never pushes, never runs `gh auth`. It touches repo
-  *settings* only, and only with a yes.
+- This skill never opens PRs, never pushes, never runs `gh auth`. On a yes it
+  changes repo **settings** via `gh api`, and — when the apply ends solo-trunk
+  mode — the two local files that record the graduation: the `CLAUDE.md`
+  `## Delivery mode` section (prose + the `steer:delivery-mode` marker the hooks
+  read) and `/spec/HISTORY.md`. Nothing else. `verify` writes nothing at all.
 - **Polyrepo: one run protects one repo.** A product spanning several repos needs
   protection on the workspace **and every member**, and this skill only ever
   governs the repo it runs in. So when `spec/workspace.yml` or `spec/PRODUCT.md`
