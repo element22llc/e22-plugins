@@ -228,7 +228,11 @@ The skill frontmatter encodes the same boundary:
 
 - **Tier 1 (read-only)** skills never modify a file that already exists in the
   repo: they all set `disallowed-tools: Edit, NotebookEdit, EnterWorktree` — e.g.
-  `audit`, `next`, `standards`.
+  `audit`, `next`, `standards`. Read-only is scoped to **tracked repo content**, not
+  to side effects generally: `/steer:doctor` is Tier 1 with the strictest frontmatter
+  of the set and still offers, on an explicit yes, to **install toolchain software on
+  the machine** (`brew install mise`, `xcode-select --install`) — the largest
+  real-world side effect any Tier-1 skill has.
 - **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
   and open the PR — but never merge it or commit to `main` outside solo-trunk —
   e.g. `sync`, `work`, `tidy`.

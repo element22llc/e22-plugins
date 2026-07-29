@@ -179,8 +179,8 @@ until you merge it. `gh pr merge` stays behind a confirmation prompt, and
 force-pushes are denied outright. On an unprotected pre-MVP repo the same
 autonomy applies to trunk pushes (solo-trunk mode) until the repo shows it has
 outgrown that — then the steer trunk-push hook surfaces the session's first push
-for your confirmation (repeats carry a non-blocking reminder) until you graduate
-via `/steer:protect`.
+for your confirmation (repeats carry a non-blocking reminder in Claude Code; on the
+Copilot CLI they pass silently) until you graduate via `/steer:protect`.
 
 Don't set this up by hand — run **`/steer:protect`**. It reads that policy, diffs
 it against the repo's live settings, and (on your confirmation) applies what's

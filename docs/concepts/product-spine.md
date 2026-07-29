@@ -31,9 +31,13 @@ These three layers are deliberately distinct:
 - The **issue** is the *workflow* — where a decision or unit of work is driven.
 - An **ADR** is the durable record of a hard-to-reverse *decision*.
 
-A question stays in a spec's `## Open questions` (as `Q-NNN`) when it's local to
-one feature; it is **promoted to an issue** when it needs a named owner, blocks
-multiple features, needs stakeholder input, or could outlive the session. A
+A question lives in a spec's `## Open questions` (as `Q-NNN`) and is additionally
+**promoted to an issue** when it needs a named owner, blocks multiple features,
+needs stakeholder input, or could outlive the session. Promotion does not move it
+out of the spec: the `Q-NNN` block stays and gains a `tracker:` ref, the issue
+carries the same id via `<!-- steer:question-id=Q-NNN -->`, and that pair is the
+bidirectional link — `/steer:spec validate` flags a promoted question with no
+`tracker:` ref back. A
 blocking question still open after 14 days has, by definition, outlived the
 session: the SessionStart hook escalates it, and promotion assigns it to its
 `owner:` role via the `owners:` map in `tracker.md`. So questions get *pushed*

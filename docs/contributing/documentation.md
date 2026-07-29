@@ -38,7 +38,7 @@ flowchart LR
   no orphan pages; internal links resolve; `/steer:` refs
   are valid and no stale `/e22-*` references remain.
 - **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
-  `skills/`, `rules/`, or `hooks/` without touching `docs/`. Two paths are
+  `skills/`, `rules/`, `hooks/`, or `agents/` without touching `docs/`. Two paths are
   exempt: `/tests/` and `/hooks/lib/`. Note that `hooks/lib/` *is* documented (the
   `lib/json.sh`, `lib/repo-root.sh` **and `lib/scope.sh`** contracts in the hooks
   reference), so a change to that plumbing escapes the gate — update the docs by

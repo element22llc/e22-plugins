@@ -150,11 +150,12 @@ system, and **asking is not authorization**:
 **Not on this list: the ungraduated solo-trunk trunk push.** While a local
 graduation signal stands, rule `45-commit-autonomy` stops trunk pushes being
 *silent* — the session's **first** one waits for a human yes, and repeats carry a
-non-blocking reminder — and `check-bash-actions.sh` surfaces that first push as a
-PreToolUse **`ask`**, deliberately never a deny. A yes there
+non-blocking reminder (on the Copilot CLI the repeat is instead a **silent allow**:
+that envelope has no non-blocking channel) — and `check-bash-actions.sh` surfaces
+that first push as a PreToolUse **`ask`**, deliberately never a deny. A yes there
 **does** authorize that push; the gate clears for good by graduating
 (`/steer:protect`). So it is answerable — but it is not one of the three gates in
-§2 either: it is a per-push permission decision the harness raises, with no
+§2 either: it is a push-time permission decision the harness raises once, with no
 `/spec` field to record and no three-option prompt.
 
 The boundary is the point of the rule: gates become **answerable**, never

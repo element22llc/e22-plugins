@@ -124,7 +124,8 @@ it maps everyday intents to the skill that handles them.
   solo-trunk repo that has grown a deploy workflow, an `infra/` tree, or a
   `prod`/`production` branch, the session's **first** `git push` surfaces as a
   `PreToolUse` **ask** (never a hard deny) pointing at `/steer:protect`; later
-  pushes in that session carry a non-blocking reminder instead. pr-flow repos are
+  pushes in that session carry a non-blocking reminder instead — or, on the Copilot
+  CLI, pass silently, since that envelope carries decisions only. pr-flow repos are
   untouched.
 - **Commits, pushes, and opens the PR autonomously** on a non-`main` branch
   (`/steer:work` defaults to `issue/<number>-<slug>`; otherwise the repo's

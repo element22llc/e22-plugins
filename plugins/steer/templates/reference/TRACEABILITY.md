@@ -149,8 +149,12 @@ exactly what `/steer:audit spec` audits.
 
 **Questions not yet tracked externally** live in `## Open questions`. Promote
 one to a tracker item when it needs scheduling, an external owner, or client
-visibility — then replace the question with the ref (and a one-line summary so
-the spec still reads standalone).
+visibility — then set that question's `tracker:` field to the ref. The
+`### Q-NNN` block **stays**: it already reads standalone, the issue carries the
+same id via `<!-- steer:question-id=Q-NNN -->`, and that spec-`tracker:` ↔
+issue-`question-id` pair is the bidirectional link — deleting the block strands
+the issue and fails `/steer:spec validate`, which flags a promoted question with
+no `tracker:` ref back.
 
 ---
 

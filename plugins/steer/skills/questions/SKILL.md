@@ -98,10 +98,14 @@ as "stale by that same test".
    `check-open-questions.sh` ignores it for the same reason).
 
    **Legacy `- [ ]` checkboxes.** A spec predating the structured format may
-   still carry plain `- [ ]` items — but **only inside a `## Open questions`
-   section, and only outside any `### ` block**, which is exactly the scope
-   `check-open-questions.sh` counts as backlog (`inq && !inblk`) for one
-   deprecation window:
+   still carry plain `- [ ]` items. In scope are only those **inside a
+   `## Open questions` section and outside any `### ` block** — the scope
+   `check-open-questions.sh` counts as backlog (`inq && !inblk`, skipping a
+   bracketed `[placeholder]` rest) for one deprecation window. The grep below
+   anchors the *section* but cannot express the rest: it has no block state, so
+   **you** must drop any hit that sits inside a `### Q-NNN` block (a sub-task
+   bullet within a question is part of that question, not a separate one — never
+   split it out) or whose text is a bracketed placeholder:
 
    ```sh
    grep -rn -A20 '^## Open questions' spec/vision.md spec/features/*/intent.md \

@@ -30,7 +30,7 @@ copy of a product-level artifact.
 ```sh
 mise run ws:clone     # clone every member declared in spec/workspace.yml
 mise run ws:code      # generate the multi-root <product>.code-workspace
-mise run ws:dev       # boot the whole product (all members' services)
+mise run ws:dev       # boot every member's backing services (see note below)
 mise run ws:status    # per-member branch/dirty/spine version + manifest drift
 mise run ws:sync      # fast-forward each member to its manifest branch
 ```

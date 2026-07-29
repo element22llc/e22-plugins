@@ -46,7 +46,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
-| `97-self-report.md` | When steer itself misbehaves, offer `/steer:report` to file it upstream. |
+| `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping — no confirmation step. |
 | `99-end-of-session.md` | End-of-session checklist. |
 
 !!! note "Conditional injection"

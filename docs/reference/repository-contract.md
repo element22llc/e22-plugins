@@ -85,9 +85,12 @@ only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
 **traits** via the `inject-when` mechanism, so the injected rule context always
-matches what is on disk. The predicates are `has-apps`, `has-compose`,
-`has-infra`, `has-iac`, `code-project` and `tracker-github`; `lib/scope.sh` also
-defines `polyrepo`, `has-workspace-manifest` and `has-product-pointer`, which are
+matches what is on disk. Only four expressions actually gate a
+shipped rule: `code-project` (19 rules), `has-iac` (`12-stack-infra`),
+`tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
+(`52-deployment`) — so `has-apps` appears only inside that composite.
+`lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,
+`has-workspace-manifest` and `has-product-pointer`, all of which are
 **available but carry no rule today** — the polyrepo topology is deliberately
 delivered by a SessionStart note rather than an always-on rule, so the existence
 of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
@@ -159,7 +162,7 @@ rewrites** (replacing a string that already exists in a materialized file, e.g.
 the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
 never clobbering filled-in content.
 
-Two ledger entries land in **3.23.0**, so a repo syncing up to it should expect
+Two ledger entries landed in **3.23.0**, so a repo syncing up to it should expect
 both: the living global architecture diagram is renamed
 `spec/design/architecture.md` → **`spec/design/architecture-diagram.md`** (a
 `git mv` plus an enumerated in-file token rewrite, so history follows the file
@@ -168,15 +171,16 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-**One scaffold change carries no ledger entry and no reconcile path.** The
-workspace profile's whole-product tasks are now `ws:`-prefixed (`ws:dev`,
-`ws:docker:up` / `down` / `clean`), because an unprefixed name in the workspace's
-`mise.toml` is an ancestor config in every member cloned inside it and shadows any
-member that does not define that name. `mise.toml` is materialized and
-product-owned, so reconciliation does not rewrite it and an
-**already-scaffolded workspace repo does not pick the rename up from
-`/steer:sync`**. Adopt it by hand: rename that repo's whole-product tasks to
-`ws:*` — including `ws:dev`'s `depends`, which resolves in the *caller's* task set
-and would otherwise bind to a member's `docker:up` — and re-take
-`scripts/ws.sh` from the scaffold for its new `preflight` subcommand. Member
-repos and non-workspace profiles are unaffected.
+A further entry covers the workspace task rename. The workspace profile's
+whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /
+`clean`), because an unprefixed name in the workspace's `mise.toml` is an ancestor
+config in every member cloned inside it and shadows any member that does not define
+that name. `mise.toml` is materialized and product-owned, so additive
+reconciliation cannot carry a *rename* — it splices in what is missing and would
+leave both the old and the new names in place. That is exactly the case a ledger
+entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
+headers, repoints `ws:dev`'s `depends` (which resolves in the *caller's* task set
+and would otherwise bind to a member's `docker:up`), moves the commented
+`monorepo_root` block above `[settings]` where mise will actually accept it, and
+diffs in `scripts/ws.sh` for its `preflight` subcommand. The entry is precondition-gated to `workspace`-profile
+repos, so member repos and non-workspace profiles are untouched.

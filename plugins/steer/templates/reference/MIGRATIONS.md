@@ -55,7 +55,7 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
-### v4.0.0 — workspace profile: whole-product `mise` tasks namespaced under `ws:`
+### v3.24.0 — workspace profile: whole-product `mise` tasks namespaced under `ws:`
 
 - **What & why:** in a **workspace** (polyrepo spine) repo the root `mise.toml` is an
   *ancestor config* of every member cloned inside it, so an unprefixed task name
@@ -90,19 +90,27 @@ legitimate look-alike (e.g. an unchanged marketplace id).
      `[tasks."docker:down"]` → `[tasks."ws:docker:down"]`,
      `[tasks."docker:up"]` → `[tasks."ws:docker:up"]`, `[tasks.dev]` →
      `[tasks."ws:dev"]`. **Leave `convert:doc` unprefixed.**
-  2. Repoint every intra-file reference to the renamed tasks — `ws:dev`'s
-     `depends = ["docker:up"]` → `["ws:docker:up"]` (a bare `docker:up` in `depends`
-     resolves in the **caller's** task set, so from inside a member it binds to that
-     member's task and boots only that member), and `ws:docker:up`'s `run` →
-     `sh scripts/ws.sh preflight`.
-  3. If the file carries a commented `monorepo_root` line, make sure it sits
-     **above** `[settings]` — a bare TOML key belongs to the table above it, so under
-     `[settings]` mise rejects it as an unknown field and monorepo mode never turns
-     on when uncommented.
-  4. Re-take `scripts/ws.sh` verbatim from
-     `templates/scaffold/profiles/workspace/scripts/ws.sh` for the `preflight`
-     subcommand step 2 points at, and because its own failure messages name the
-     renamed tasks.
+  2. Repoint the one intra-file reference to a renamed task: `ws:dev`'s
+     `depends = ["docker:up"]` → `depends = ["ws:docker:up"]`. This is not cosmetic —
+     a bare `docker:up` in `depends` resolves in the **caller's** task set, so invoked
+     from inside a member it binds to that member's task and boots only that member.
+     **Change nothing else inside any task body.** In particular leave every `run`
+     alone: the rename touched no `run` line (`ws:docker:up`'s two-element
+     `["sh scripts/ws.sh preflight", "docker compose up -d --wait"]` predates it and
+     is unchanged), so "repointing" one would drop the command that starts the stack.
+  3. **Move** the commented monorepo block if it sits in the wrong place: a repo
+     scaffolded before this change carries `# monorepo_root = true` **below**
+     `[settings]`. Delete it there and re-insert it (with the `# [monorepo]` /
+     `# config_roots` lines) **above** `[settings]`, contents unchanged — a bare TOML
+     key belongs to the table above it, so under `[settings]` mise rejects it as an
+     unknown field and monorepo mode never turns on when uncommented. A repo that
+     already has it above `[settings]` needs no edit.
+  4. Re-take `scripts/ws.sh` for the `preflight` subcommand `ws:docker:up` calls, and
+     because its own failure messages name the renamed tasks — **read-then-propose,
+     as a diff, not a verbatim overwrite.** `ws.sh` is not a `verbatim` capability
+     file (only the version-pin scripts are — see
+     [`CAPABILITIES.md`](CAPABILITIES.md)), so a consumer may have added their own
+     `ws:` subcommand; carry those edits forward instead of clobbering them.
   Follow with additive [Template reconciliation](SPEC-FRAMEWORK.md) for the rest of
   the file. **False-positive guard:** rename only these four exact table headers and
   only in a `workspace`-profile repo's **root** `mise.toml` — never a member's own

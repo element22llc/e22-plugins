@@ -50,9 +50,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   count and the sweep: the same false-clean-sweep defect, on the one seed the first
   pass did not reach. It now ships the structured seed like `feature-intent.md` and
   `vision.md`.
-- **Fixed:** `ws:dev`'s "boots the whole product" claim survived in four **shipped**
+- **Fixed:** `ws:dev`'s "boots the whole product" claim survived in **seven** shipped
   surfaces after the docs page was corrected — the task's own `description`, the
-  `ws.sh` header comment, `POLYREPO.md`'s task table, and `MANIFEST.md`. As shipped
+  `ws.sh` header comment, `POLYREPO.md`'s task table, two `MANIFEST.md` rows, the
+  workspace profile's `README.md` quickstart (which installs as the consumer's
+  README), and the profile `compose.yaml` header. Each successive audit round found
+  the surfaces the previous round's grep had missed, which is the argument for
+  sweeping a claim by concept rather than by phrase. As shipped
   it is `depends = ["ws:docker:up"]`: services only, the app half requiring monorepo
   mode plus one `depends` entry per member. Also `worktree-env.sh` reassured the
   reader that "no existing stack is renamed", true only of the **primary** checkout:
@@ -64,7 +68,51 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed:** the shipped `dependabot.yml` header undercounted its own commented
   ecosystems (`npm` / `pip` / `docker`), omitting `terraform` — the one an `infra`
   profile repo needs, so the block least likely to be uncommented was also the one
-  not advertised to the skill uncommenting it.
+  not advertised to the skill uncommenting it. The `MANIFEST.md` row that **is** that
+  skill's install map carried the same three-item list, so the header fix alone left
+  the stated rationale unmet on the surface that matters most.
+- **Fixed:** the Copilot silent-allow caveat added to rule `45` reached the rule and
+  the generated Copilot instructions but not four siblings carrying the same
+  sentence — `GATES.md` (which cites rule 45 by name, and is reachable on Copilot via
+  the `steer-reference` prompt), `/steer:work`'s body (read natively by the Copilot
+  CLI), the shipped scaffold `README.md`, and `team-onboarding.md`. Two of those had
+  just been rewritten into the corrected first-push wording **in the same commit that
+  added the caveat**, so the fix re-introduced the sentence without it.
+- **Fixed:** `/steer:questions`' re-anchored legacy sweep claimed its grep matched
+  `check-open-questions.sh`'s backlog scope "exactly". It cannot: the hook's scope is
+  `inq && !inblk` plus a bracketed-placeholder exclusion, and a grep pipeline has no
+  block state. So a `- [ ]` sub-task **inside** a `### Q-NNN` block was reported as a
+  standalone legacy item, and step 2 would have split it into its own question,
+  fragmenting the host block. The section anchor is real and stays; the in-block and
+  placeholder exclusions are now stated as the reader's job rather than claimed of
+  the command.
+- **Fixed:** the new `ws:` migration entry told the applier to do two things that
+  would have damaged a consumer repo. It said to repoint `ws:docker:up`'s `run` to
+  `sh scripts/ws.sh preflight` — but that task's `run` is a **two**-element array
+  whose second element (`docker compose up -d --wait`) is the only line that starts
+  the stack, and the rename changed no `run` line at all, so there was no old→new
+  pair to apply and following it literally would have left the task unable to boot
+  anything. It also said to re-take `scripts/ws.sh` **verbatim**, a mode
+  `CAPABILITIES.md` reserves for the version-pin scripts alone, which would clobber a
+  consumer's own `ws:` subcommand. The entry now leaves every `run` alone, states the
+  `monorepo_root` step as an explicit move (a pre-change repo really does carry it
+  below `[settings]`, where mise rejects it), and diffs `ws.sh` read-then-propose.
+- **Fixed:** the promoted-question mechanism corrected in `/steer:tracker-sync` was
+  still stated the old way in the two surfaces that *govern* it: `templates/spec/tracker.md`
+  — installed as the consumer's `/spec/tracker.md`, and the file `/steer:tracker-sync`
+  reads first every run — and `TRACEABILITY.md`, which rule `35-issue-tracker` and the
+  skill both name as canonical for this convention. Both said "replace the question
+  with the ref", so a model consulting the authority the skill delegated to got the
+  retired mechanism, and following it guarantees a `/steer:spec validate` failure.
+  Found only because this round swept the *concept*; the previous round's sweep for
+  the word "strike" could not match either phrasing.
+- **Fixed:** `CROSS-SURFACE.md` attributed a **destructive-git** check to
+  `check-bash-actions.sh`, which has never had one — its two checks are the trunk-push
+  gate and the issue-create guard, and the destructive-`git` tier lives in the
+  scaffold `.claude/settings.json` `ask` list. Wrong layer, in the one table whose job
+  is telling a reader which gates survive the port to Copilot. `GATES.md` also still
+  closed the corrected paragraph by calling the gate a "per-push permission decision",
+  four lines below its own new first-push-then-reminder sentence.
 - **Fixed:** `/steer:questions` swept a format the spine no longer uses, so on any
   repo scaffolded from the current template it reported a clean sweep while the
   SessionStart hook was printing a backlog in the same session. Its gather step
@@ -277,8 +325,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   define — the exact rule-vs-scaffold mismatch this cycle set out to close, fixed for
   new repos and left open for existing ones. The entry is precondition-gated to
   `workspace`-profile repos, renames only the four whole-product task headers
-  (leaving `convert:doc` alone), repoints `ws:dev`'s `depends` and `ws:docker:up`'s
-  `run`, fixes the `monorepo_root` placement, and re-takes `scripts/ws.sh`. It
+  (leaving `convert:doc` alone), repoints `ws:dev`'s `depends`, moves the commented
+  `monorepo_root` block above `[settings]` (where a pre-change repo does **not**
+  have it, so mise rejects the key and monorepo mode never turns on), and diffs in
+  `scripts/ws.sh` read-then-propose — explicitly **not** a verbatim overwrite, since
+  `ws.sh` is not a `verbatim` capability file and a consumer may have extended it.
+  It also explicitly tells the applier to leave every task `run` alone: the rename
+  changed no `run` line, so "repointing" `ws:docker:up`'s would have dropped the
+  `docker compose up -d --wait` that actually starts the stack.
+  **Release note — the entry is keyed `### v3.24.0`, an assumption the release PR
+  must confirm.** The ledger keys each entry by the version that introduced it, so
+  the heading has to match the bump actually cut: re-key it if this release is not
+  3.24.0. The audit that produced this entry split on that call — the letter of the
+  release skill's rule ("renamed… template; anything a consuming repo must react
+  to") reads major, while this repo's applied precedent reads minor: six prior
+  ledger-carried scaffold/spec changes shipped as minors, including v3.23.0 itself,
+  which carried both a spec-artifact rename and an MCP-server removal, and no file
+  here is renamed or removed (the `ws:` change is an in-file edit to materialized
+  config, which is exactly what the ledger exists to deliver). Keyed to the minor on
+  that precedent; the bump remains the release PR's decision. Mechanically either key
+  is safe — consumers skip entries at or below their `/spec/.version` stamp, and no
+  stamp can sit above an unreleased version — so this is a documentation-correctness
+  point, not a delivery risk. It
   replaces the hand-migration note this entry previously carried, whose stated
   premise — "there is no reconcile path for `mise.toml`" — was false:
   `RECONCILE.md` names `mise.toml` tasks explicitly, and the ledger has two

@@ -1,7 +1,8 @@
 # Local runtime for the WHOLE product — workspace (polyrepo spine host) flavor.
 #
 # This repo owns no services of its own. It composes the members' Compose files
-# with `include:`, so one `mise run ws:dev` at the workspace boots the product, while
+# with `include:`, so one `mise run ws:dev` at the workspace boots every member's
+# backing services (the dev-server half needs monorepo mode + per-member depends), while
 # each member's compose.yaml stays valid standalone.
 #
 # ============================================================================
