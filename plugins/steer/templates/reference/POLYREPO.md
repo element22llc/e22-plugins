@@ -261,10 +261,12 @@ database and a warning, not two. Namespace service, volume and network names in
 each *member's* compose file. Host ports are a separate problem the topology does
 not solve: every member's scaffold publishes `${POSTGRES_PORT:-5432}`, so give
 each member a distinct base port in its own `.env`. Container/volume/network names
-never clash with a member's standalone stack — mise sources
-`scripts/worktree-env.sh`, which gives each checkout its own
-`COMPOSE_PROJECT_NAME`: the repo's directory name for a primary checkout, and
-`<repo>-<worktree>` inside a linked worktree. The repo prefix is load-bearing
+do not clash between a member's worktrees or across members — mise sources
+`scripts/worktree-env.sh`, which sets `COMPOSE_PROJECT_NAME` to the repo's
+directory name for a primary checkout and `<repo>-<worktree>` inside a linked
+worktree. Two *primary* checkouts sharing a directory name (two products each
+with a member called `backend`) still share one Compose project: clone them under
+distinct names, or set `COMPOSE_PROJECT_NAME` in one repo's `.env`. The repo prefix is load-bearing
 here and not in a single-repo product: a polyrepo runs the same feature branch in
 several members at once, so a name taken from the worktree basename alone put
 `memberA`'s `feat-x` and `memberB`'s `feat-x` in the *same* Compose project — and
@@ -281,8 +283,10 @@ not local config to copy.
 Do spine work in a workspace worktree freely; run the *product* from the primary
 checkout. `mise run ws:clone` does work inside a worktree if you want a second set
 of clones, but they land at the manifest branch, not the worktree's, and they cost
-a full duplicate of every member. `ws:status` / `ws:check` / `ws:preflight` all
-name this state explicitly rather than reporting an absent member as drift.
+a full duplicate of every member. `mise run ws:status`, and the `ws.sh`
+subcommands behind it (`sh scripts/ws.sh check`, `sh scripts/ws.sh preflight` —
+neither has a `mise` task wrapper), all name this state explicitly rather than
+reporting an absent member as drift.
 
 This is a **partial monorepo simulation** and worth naming as such: coupled local
 development without atomic cross-repo commits. Nothing above changes the fact

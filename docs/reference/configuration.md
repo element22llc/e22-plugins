@@ -97,7 +97,7 @@ instead of `rules/` (the polyrepo precedent above).
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
-happening quietly. The rules ceiling has been raised three times. First from
+happening quietly. The rules ceiling has been raised four times. First from
 62,500 to 65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32
 bytes of headroom, so the only way to add the rule was compressing unrelated gate
 rules, and that trade deleted ~1 KB of rationale prose that existed nowhere else in
@@ -111,7 +111,16 @@ created with `git worktree add` mid-session is the one case no hook can reach �
 `check-worktree-trust` session check covers a session *started* in a worktree — so
 the instruction has to be always-on to exist when it is needed. That raise also
 re-armed at measured + ~1% rather than the 5-to-7-byte margins that had made each
-previous raise inevitable. The *target* deliberately
+previous raise inevitable. Then from 66,500 to 67,300, to fund six
+**surface-scoping corrections**: rules 00, 05 and 97 told the agent a SessionStart
+hook would flag a condition, which is true in Claude Code but not on Copilot
+(whose `sessionStart` ignores stdout), and rule 10 promised a hard `deny` that is
+only an `ask` on the Copilot CLI and absent in VS Code — in each case a rule
+asserting a safety net that would not be there. Rules 24 and 99 named
+`docker:up`/`docker:clean`, which the workspace profile renamed to `ws:*`, so the
+cleanup command those rules mandate did not exist in a spine host. Rule 15 now
+carries the workspace task vocabulary once and rule 24 cross-references it, paying
+back ~120 B of the cost. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 

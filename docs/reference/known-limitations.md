@@ -38,11 +38,21 @@ When a session opens a folder that is **confidently not a code project** — no 
 work tree and no code/config markers nearby — steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode the spec-workflow, decision-capture, living-docs, roles, secrets and
-output rules still apply, but the code/infra/tracker-specific rules (stack,
-testing, coverage, worktrees, deployment, drift-gates, …) are **intentionally
-omitted** to reclaim context budget and cut noise, and `orient-session` confirms
-in plain language that the standards are active.
+In that mode 13 of the 35 rules inject — the router, roles, context-hygiene,
+spec-workflow, decision-capture, living-docs, high-risk, gate-prompts, secrets,
+output-discipline, artifacts, not-the-gate and self-report rules — while the 22
+marked `code-project` / `has-iac` / `tracker-github` (stack, commands, layout,
+testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
+end-of-session, …) are **intentionally omitted** to reclaim context budget and cut
+noise. That reclaims ~39 kB, and `orient-session` confirms in plain language that
+the standards are active.
+
+Two of the injected rules read as code-specific and are always-on anyway, by
+design: **high-risk areas** (rule 60) and **not the gate** (rule 95) name paths
+like `/infra` and `/apps`, but rule 61's gate prompts and rule 05's role
+boundaries both cross-reference rule 60, so dropping it would break the rules that
+survive. Run `mise run rules:preview -- --knowledge` for the authoritative
+inject/skip table.
 
 The classification is **fail-safe**: a git repo, *any* code/config marker, or any
 uncertainty resolves to full `code` mode — steer never silently drops a rule from
@@ -224,6 +234,12 @@ Even when hooks fire, only one of them **hard-blocks** an action, and one more
 raises a prompt. Be honest about the tiers:
 
 - **`SessionStart` → `inject-standards.sh`** injects the rules. Real and load-bearing.
+- **`SessionStart` → `session-checks.sh`** is otherwise read-only, with **one**
+  exception worth knowing: `check-worktree-trust.sh` runs `mise trust` in a linked
+  worktree to inherit the primary checkout's decision, so a fresh worktree's `mise
+  run …` doesn't fail on trust rather than on the task. It never *creates* trust —
+  an untrusted primary checkout leaves it untouched and says so, keeping that
+  first decision yours. Everything else the roster does is report-only.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
   dimensions) is an **advisory nudge** that lets the write proceed. It is
   explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the

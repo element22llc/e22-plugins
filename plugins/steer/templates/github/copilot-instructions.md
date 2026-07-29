@@ -29,9 +29,10 @@ it yourself**.
   autonomy, High-risk). Pushing a branch and opening the PR are **not** gates —
   they are autonomous delivery steps; the gate is the PR **merge**. A gate whose
   decider is present is **answered in-session** — see Answering a human gate.
-- **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
-  hook flags it), bootstrap is the **first move, announced up front**: a
-  developer or ambiguous feature/build intent → **`/steer:setup`**; a
+- **Bootstrap precedence** — on a repo with no `/spec` spine (in Claude Code the
+  SessionStart hook flags it; elsewhere check for it), bootstrap is the **first
+  move, announced up front**: a developer or ambiguous feature/build intent →
+  **`/steer:setup`**; a
   non-technical owner's idea → **`/steer:build`**. One exception: a purely
   spec-thinking intent ("think this through", "shape the acceptance criteria")
   → **`/steer:spec`** directly — it runs **spec-only on an unmanaged repo
@@ -99,9 +100,9 @@ handling because the person is non-technical.
 **In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
 Docker, pnpm) yourself rather than handing over commands. Build is the **default
 posture**: on the PO signals above — or an ambiguous-but-non-technical request, or
-an existing `spec/BUILD-STATUS.md` (an in-progress build, flagged by the
-SessionStart hook) — auto-start `/steer:build` with a one-line heads-up and resume
-from its current step. When the PO wants to think a feature through before any
+an existing `spec/BUILD-STATUS.md` (an in-progress build; the SessionStart hook
+flags it in Claude Code, otherwise look) — auto-start `/steer:build` with a
+one-line heads-up and resume from its current step. When the PO wants to think a feature through before any
 code, that is `/steer:spec` — offer it plainly ("we can work out what this should
 do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
 real secrets/credentials or real third-party accounts. A pre-production build may
@@ -154,7 +155,8 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
   locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
   point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
   keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins (exceptions: ADR +
+  plugin hook denies stale image-major pins — it only *asks* on the Copilot CLI,
+  and VS Code has no hook, so keep the pins current yourself (exceptions: ADR +
   `# steer:allow-pin`). **Every published host port overridable** —
   `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the override
   var in `.env.example`.
@@ -189,7 +191,10 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
 uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
 `infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
-infrastructure. The `mise trust && mise install` first step is universal.
+infrastructure. A **workspace** (polyrepo spine) repo holds no code, so it has no
+`dev:setup` or linters at all: its tasks are `ws:`-prefixed (`ws:clone`,
+`ws:docker:up`, `ws:dev`) and each member repo runs its own. The `mise trust &&
+mise install` first step is universal; `mise tasks` lists what a repo really has.
 
 Commands assume mise is activated and **wins PATH** over any other version
 manager (nvm/asdf/volta/fnm) — otherwise bare `pnpm`/`node` silently run a
@@ -272,7 +277,8 @@ Run **`/steer:tidy`** for a full sweep.
 You may be one of several agents working the same repo at once, each in its own
 worktree; your local services must not collide with — or outlive — a sibling's.
 (A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
-discipline still applies to anything you start.)
+discipline still applies to anything you start.) Task names below are the core
+scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
 
 **Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
 new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
@@ -1023,7 +1029,7 @@ steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's
 **own machinery** misbehaves, treat it as a plugin defect to report — not a
 thing to silently work around:
 
-- A SessionStart **self-fault notice** flags recorded hook faults.
+- A SessionStart **self-fault notice** flags recorded hook faults (Claude Code only).
 - A skill or rule gives **contradictory or impossible** instructions.
 - A referenced **template, script, or helper is missing, malformed, or crashes**.
 
@@ -1052,7 +1058,7 @@ dropped:
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
 - [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean` + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
+- [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?

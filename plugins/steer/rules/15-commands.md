@@ -16,7 +16,10 @@
 The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
 uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
 `infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
-infrastructure. The `mise trust && mise install` first step is universal.
+infrastructure. A **workspace** (polyrepo spine) repo holds no code, so it has no
+`dev:setup` or linters at all: its tasks are `ws:`-prefixed (`ws:clone`,
+`ws:docker:up`, `ws:dev`) and each member repo runs its own. The `mise trust &&
+mise install` first step is universal; `mise tasks` lists what a repo really has.
 
 Commands assume mise is activated and **wins PATH** over any other version
 manager (nvm/asdf/volta/fnm) — otherwise bare `pnpm`/`node` silently run a

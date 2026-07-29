@@ -25,9 +25,10 @@ it yourself**.
   autonomy, High-risk). Pushing a branch and opening the PR are **not** gates —
   they are autonomous delivery steps; the gate is the PR **merge**. A gate whose
   decider is present is **answered in-session** — see Answering a human gate.
-- **Bootstrap precedence** — on a repo with no `/spec` spine (the SessionStart
-  hook flags it), bootstrap is the **first move, announced up front**: a
-  developer or ambiguous feature/build intent → **`/steer:setup`**; a
+- **Bootstrap precedence** — on a repo with no `/spec` spine (in Claude Code the
+  SessionStart hook flags it; elsewhere check for it), bootstrap is the **first
+  move, announced up front**: a developer or ambiguous feature/build intent →
+  **`/steer:setup`**; a
   non-technical owner's idea → **`/steer:build`**. One exception: a purely
   spec-thinking intent ("think this through", "shape the acceptance criteria")
   → **`/steer:spec`** directly — it runs **spec-only on an unmanaged repo

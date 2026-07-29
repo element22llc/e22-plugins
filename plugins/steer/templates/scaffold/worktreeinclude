@@ -11,7 +11,8 @@
 # below keeps its fixed POSTGRES_PORT, but mise re-derives a per-worktree port
 # on top of it (scripts/worktree-env.sh), so the copy does not cause a clash.
 # Before removing a worktree, run `mise run docker:clean` so its containers and
-# volumes don't leak.
+# volumes don't leak (`ws:docker:clean` in a workspace repo, where every task the
+# spine host defines is ws:-prefixed).
 #
 # mise trust is PATH-based, so a new worktree starts untrusted and every
 # `mise run …` in it fails with a trust error until someone trusts it — the

@@ -4,7 +4,7 @@ steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's
 **own machinery** misbehaves, treat it as a plugin defect to report — not a
 thing to silently work around:
 
-- A SessionStart **self-fault notice** flags recorded hook faults.
+- A SessionStart **self-fault notice** flags recorded hook faults (Claude Code only).
 - A skill or rule gives **contradictory or impossible** instructions.
 - A referenced **template, script, or helper is missing, malformed, or crashes**.
 

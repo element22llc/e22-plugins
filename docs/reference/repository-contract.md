@@ -68,8 +68,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   `workspace` **replaces** the core `README.md`, `mise.toml` and `compose.yaml`
   and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
   pnpm/biome (no code here), keeps the agent-runtime baseline and `convert:doc`
-  (PO documents land at the spine host), and adds the `ws:*` member tasks and a
-  `dev` that boots the whole product; its `compose.yaml` declares **no services**
+  (PO documents land at the spine host), and adds the `ws:*` member tasks —
+  including `ws:dev`, which boots the whole product. Every task the workspace
+  profile defines is `ws:`-prefixed (bar `convert:doc`) so that it cannot shadow
+  a member's own task; its `compose.yaml` declares **no services**
   and `include:`s each member's file. The member checkouts are git-ignored
   clones, not submodules, so nothing pins a member SHA.
 

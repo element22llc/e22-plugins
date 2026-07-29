@@ -85,6 +85,27 @@ def test_sessionstart_hook_basenames_matches_hooks_json():
     assert len(names) == 3  # bump if a SessionStart hook is added/removed
 
 
+def test_session_subchecks_parses_the_orchestrator_roster():
+    """The sub-checks are gated too: hooks.json names only `session-checks.sh`, so
+    deriving the CROSS-SURFACE.md roster from registration alone left every child
+    unenforced — the orchestrator tells authors to update that roster."""
+    subs = check_standards._session_subchecks()
+    assert "surface-faults.sh" in subs
+    assert "check-worktree-trust.sh" in subs
+    # The orchestrator itself is not one of its own children.
+    assert "session-checks.sh" not in subs
+    assert len(subs) == 6  # bump when a session sub-check is added/removed
+
+
+def test_live_subcheck_roster_is_in_cross_surface():
+    """Every sub-check the shipped orchestrator runs is named in CROSS-SURFACE.md."""
+    subs = check_standards._session_subchecks()
+    assert subs, "parser returned nothing — the roster gate would silently pass"
+    text = check_standards.CROSS_SURFACE.read_text(encoding="utf-8")
+    for name in sorted(subs):
+        assert name in text, f"CROSS-SURFACE.md roster omits {name}"
+
+
 def test_token_present_respects_word_boundary():
     f = check_standards._token_present
     assert f("spec-scaffold", "uses spec-scaffold here")
@@ -93,8 +114,12 @@ def test_token_present_respects_word_boundary():
     assert f("spec", "the spec is ready")
 
 
-def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, cross):
-    """Point the guard's file/dir globals at temp fixtures."""
+def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, cross, subchecks=()):
+    """Point the guard's file/dir globals at temp fixtures.
+
+    `subchecks` stubs the session-checks.sh roster; it defaults to empty so a test
+    that does not care about it isn't measured against the real orchestrator.
+    """
     rules_dir = tmp_path / "rules"
     rules_dir.mkdir()
     for stem in rules:
@@ -106,6 +131,7 @@ def _patch_enum_sources(monkeypatch, tmp_path: Path, *, rules, claude, cross):
     monkeypatch.setattr(check_standards, "RULES_DIR", rules_dir)
     monkeypatch.setattr(check_standards, "CLAUDE_MD", claude_md)
     monkeypatch.setattr(check_standards, "CROSS_SURFACE", cross_md)
+    monkeypatch.setattr(check_standards, "_session_subchecks", lambda: set(subchecks))
 
 
 def test_enumeration_drift_clean(monkeypatch, tmp_path: Path):
@@ -144,6 +170,28 @@ def test_enumeration_drift_catches_each_surface(monkeypatch, tmp_path: Path):
     assert "CLAUDE.md" in joined and "beta" in joined
     assert "(1 files)" in joined  # count mismatch reported
     assert "inject-standards.sh" in joined  # missing hook reported
+
+
+def test_enumeration_drift_catches_missing_subcheck(monkeypatch, tmp_path: Path):
+    """An orchestrated sub-check missing from the roster is reported, and named as
+    orchestrated rather than registered so the fix is unambiguous."""
+    _patch_enum_sources(
+        monkeypatch,
+        tmp_path,
+        rules=["00-a"],
+        claude="skills/ alpha (no commands/",
+        cross="(1 files)\ninject-standards.sh\ncheck-graduation.sh",
+        subchecks=["check-graduation.sh", "check-newthing.sh"],
+    )
+    monkeypatch.setattr(
+        check_standards, "_sessionstart_hook_basenames", lambda: {"inject-standards.sh"}
+    )
+    errors: list[str] = []
+    check_standards.check_enumeration_drift(errors, {"alpha"})
+    joined = "\n".join(errors)
+    assert "check-newthing.sh" in joined
+    assert "orchestrated by session-checks.sh" in joined
+    assert "check-graduation.sh" not in joined  # already in the roster
 
 
 def test_enumeration_drift_skill_count_and_buckets_clean(monkeypatch, tmp_path: Path):

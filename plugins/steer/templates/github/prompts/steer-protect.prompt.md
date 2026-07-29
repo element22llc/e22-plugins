@@ -1,15 +1,15 @@
 ---
 mode: agent
-description: Make GitHub branch protection reliable on a managed repo — diff policy/branch-protection.yml against the live settings and, on explicit confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Verify by default.
+description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Graduation also flips the CLAUDE.md delivery-mode marker. Verify by default.
 ---
 
 <!-- Generated from the steer plugin's skills/protect/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:protect` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Make GitHub branch protection reliable on a managed repo — diff policy/branch-protection.yml against the live settings and, on explicit confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Verify by default.
+**Purpose.** Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the missing pieces via gh api (protection, secret scanning, Dependabot alerts). Graduation also flips the CLAUDE.md delivery-mode marker. Verify by default.
 
-**When to use.** Use when asked to protect main or a prod branch, set up or check branch protection / merge rules, graduate solo trunk to the PR flow, or as the final step of init/adopt.
+**When to use.** Use when asked to protect main or a prod branch, check branch protection / merge rules, graduate solo trunk to PR flow, or as the last step of init/adopt.
 
 **Arguments.** [verify | apply]
 
