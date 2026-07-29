@@ -80,6 +80,42 @@ Name the file and say what to carry forward.
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.24.0 — `PRODUCTIONIZATION.md`'s open-question seed becomes a `### Q-NNN` block
+
+- **What & why:** the `## Open questions` seed in `spec/PRODUCTIONIZATION.md` was a single
+  bracketed **bullet**. Both the SessionStart open-questions hook and `/steer:questions`
+  parse `### Q-NNN` blocks only, so a question written as a plain bullet — which is
+  exactly what that seed modelled — is counted by **neither**: it never ages into the
+  14-day blocking escalation and never appears in a sweep. The seed is now prose plus a
+  `### Q-001` field block carrying `created:`/`status:`/`impact:`/`owner:`/
+  `required_before:`/`tracker:`, marked `<!-- steer:placeholder -->` so the hook ignores
+  it until filled in. Reconciliation **provably cannot** carry this: the diff helper
+  extracts anchors with `grep -hE '^(#{2,3} |- \[)'` and then drops every
+  `steer:placeholder` line, so the new `### Q-001` anchor is stripped from the bundled
+  side, the new prose is not an anchor at all, and the old bullet is already present on
+  the consumer's side — the comparison output is empty and the step is a no-op.
+- **Precondition:** the repo has a materialized `spec/PRODUCTIONIZATION.md` still
+  carrying the bullet seed. Once applied, re-running is a no-op:
+
+  ```sh
+  grep -n 'Dev-facing hardening ambiguities surfaced during adoption\.\]' spec/PRODUCTIONIZATION.md 2>/dev/null
+  ```
+
+- **Action — an in-file token rewrite**, one pair, read-then-propose as a diff:
+  1. Replace the bracketed bullet line (it begins `- [Dev-facing hardening ambiguities
+     surfaced during adoption.]`) with the current template's `## Open questions` body,
+     taken verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/spec/productionization.md` —
+     the two prose paragraphs, the `### Q-001` placeholder block, and its `_Resolution:_`
+     line.
+  2. **Leave every real question alone.** If the repo already wrote its own questions
+     under this heading in *any* shape, splice the format guidance in and convert only
+     the seed; never restructure a filled-in question, and never delete one.
+  3. A repo whose `## Open questions` section is already `### Q-NNN`-shaped needs no edit.
+  **False-positive guard:** apply only to the repo's own `spec/PRODUCTIONIZATION.md`,
+  never to a `/spec/HISTORY.md` entry quoting the old seed, and never to a feature's
+  `intent.md` (whose `## Open questions` is governed by the spec framework, not this
+  entry).
+
 ### v3.24.0 — a member resolves the spine on the workspace *manifest*, not a directory
 
 - **What & why:** `spec/PRODUCT.md`'s spine-resolution ladder said step 1 was

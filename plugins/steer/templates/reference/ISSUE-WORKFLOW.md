@@ -288,7 +288,9 @@ Not every red build is an issue. To avoid both lost signal and duplicate noise:
 A question stays in the spec's `## Open questions` (structured `Q-NNN`, see
 [`SPEC-FRAMEWORK.md`](SPEC-FRAMEWORK.md)) when it is local to one feature,
 answerable during active specification, not separately scheduled, and not blocked
-on an external party. **Promote it to a `source:spec-question` issue** when it
+on an external party. **Promote it to a `spec-question` issue**
+(`steer:kind=spec-question`, labelled `source:spec` — kind is a marker + Issue Type,
+never a label) when it
 needs a named owner, blocks multiple features, requires stakeholder consultation
 or research, must be prioritized independently, or could outlive the current
 session. On resolution: update the canonical spec, record the decision on the

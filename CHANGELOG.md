@@ -7,6 +7,69 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `spec/PRODUCTIONIZATION.md`'s `## Open questions` seed was restructured from a
+  bracketed bullet to a `### Q-NNN` field block earlier in this cycle with **no ledger
+  entry**, and reconciliation *provably* cannot carry it: the diff helper extracts anchors
+  with `grep -hE '^(#{2,3} |- \[)'` and then drops every `steer:placeholder` line, so the
+  new `### Q-001` anchor is stripped from the bundled side, the new prose is not an anchor,
+  and the old bullet already exists on the consumer's side — the comparison output is
+  empty. Every already-materialized `PRODUCTIONIZATION.md` therefore keeps a seed
+  modelling the one shape neither the SessionStart hook nor `/steer:questions` counts,
+  which is the exact defect the restructure was for. Added as a fifth `### v3.24.0` entry.
+- **Fixed:** the CI "no test contract → fail" guard was **self-satisfying**. It grepped
+  every `package.json` for a `"test"` script, and the scaffold's own root `package.json`
+  ships `"test": "pnpm --recursive --if-present run test"` — a fan-out, not a contract. So
+  a freshly bootstrapped Node repo passed the guard with zero real tests and
+  `pnpm run test --if-present` no-opped to green, while rule `50-definition-of-done` names
+  that guard as solo-trunk's **only** automated backstop. The guard now requires at least
+  one `test` script that is not a pass-through fan-out. **Consumer-visible:** because the
+  Node phase activates as soon as a root `package.json` exists, a freshly bootstrapped repo
+  now has a red `ci` until some package defines a real `test` script. That is the guard
+  working as documented; the scaffold README said the opposite ("before any app exists,
+  only the hygiene phase runs") and has been corrected.
+- **Fixed:** the always-on infra rule mandates S3 remote state with the native
+  `use_lockfile` lock, while `infra/README.md` — installed into every infra repo *and*
+  every monorepo with a nested `/infra` — told the reader to bootstrap an S3 **+ DynamoDB**
+  lock table. Corrected in both places it appeared.
+- **Fixed:** `/steer:next`'s next-actions table still categorized "PR merged but issue
+  still `validate`" as *Blocking now* with a bare reconcile, after `/steer:work`'s
+  identical row was corrected to propose-only — and `/steer:next` is the surface that
+  *arbitrates* across workflows, so the two shipped opposite categories for one state.
+- **Fixed:** the `spec/sources/` member exclusion reached `adopt/PROCEDURE.md`, `init` and
+  `MANIFEST.md` but not `adopt/SKILL.md` — whose topology section is read *before* the
+  phase map and whose "everything else in the phase map is unchanged" clause turned the
+  omission into an affirmative licence — nor `/steer:sync`'s "absent by design" list.
+- **Fixed:** the scaffold `mise.toml` told any "product without a database" to delete
+  `compose.yaml`, two ways wrong: the licensing condition is *no local backing services*
+  (an app running Redis but no DB was being told to delete it), there was no profile gate,
+  and it contradicted its own file seven lines later. It now states the condition, the
+  profiles, and the `docker:*`-prune coupling.
+- **Fixed:** `ISSUE-WORKFLOW.md` told the reader to promote a spec question to a
+  `source:spec-question`-labelled issue. `spec-question` is a `steer:kind`, `spec` is the
+  source, and kind is never a label — so GitHub silently dropped it. Same class as the
+  `source:po` fix earlier in this cycle.
+- **Fixed:** the round-4 grant letting a `library`/`cli` delete `scripts/worktree-env.sh`
+  was **unreachable for exactly those profiles**: `worktree-port-isolation` falls to `n/a`
+  only when the stack is `none`, which a Node/Python package never is, so the scanner
+  reports `absent` and `/steer:sync` re-creates the file every run, forever. Scoped that
+  half of the permission back to `infra` (whose stack *can* be `none`) and said why, in
+  the manifest and on the docs site. The `compose.yaml` half stands for all three.
+- **Fixed:** `AUTHORING.md` — the surface an author consults when scoping a gateway —
+  understated **both** gateways' caller sets, and `docs/concepts/authorization-model.md`'s
+  helper-grant list omitted three real grants (`template-reconcile.sh` in
+  `/steer:spec-scaffold`, `scan-capabilities.sh` + `scan-invocations.sh` in `/steer:sync`)
+  while reading as exhaustive.
+- **Migration coverage — two entries are owed and deliberately NOT written here.** Both
+  are non-additive changes to *materialized* files that this cycle shipped
+  greenfield-only, and writing them needs a convention call the release PR should make,
+  not this branch: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, and (2) the infra
+  profile's three `docker:*` task tables. The blocker is that the ledger's own scope
+  sentence covers `templates/spec/` and `templates/scaffold/` — **`templates/github/` is
+  neither**, yet every file in it is materialized in a consumer repo, which is precisely
+  how `ci.yml` slipped through. Decide whether the mandate's scope becomes "any
+  materialized template", then write both entries. Until then an already-adopted repo
+  keeps the `main`-only CI trigger while `/steer:protect` requires `ci` on `prod` — the
+  "blocked forever" state, still live for existing repos.
 - **Fixed:** the spine-resolution ladder in `spec/PRODUCT.md` was rewritten earlier in
   this cycle with **no ledger entry**, and nothing could carry it:
   `template-reconcile.sh` anchors on headings and checklist items, so a rewritten
@@ -180,7 +243,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   match the declared policy, not by dropping the requirement: rule 52 names the
   `prod` approval as the production gate, and the policy additionally requires `ci`
   there — so removing the required check to unblock the PR would have quietly
-  narrowed the gate instead of repairing it.
+  narrowed the gate instead of repairing it. **Greenfield only:** changing
+  `branches: [main]` to `[main, prod]` is a value *replacement*, which additive
+  reconciliation cannot express, and `drift-gate`'s wired-when only checks that
+  `ci.yml` invokes the pin scanner — so an already-adopted repo keeps the `main`-only
+  trigger and still hits the deadlock. A ledger entry is owed but not yet written:
+  see the "migration coverage" note below.
 - **Fixed:** the **infra** profile's root `mise.toml` replaces the core one but
   defined no `docker:up` / `docker:down` / `docker:clean`, while still shipping the
   core `compose.yaml` and sourcing `scripts/worktree-env.sh` — so rules `24-worktrees`
@@ -189,15 +257,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   not have. (Rule 24 carves out only the **workspace** profile's `ws:` prefix.) The
   three tasks are now defined in the infra profile too, identical to the core
   definitions. This is the same rule-vs-scaffold mismatch already closed for the
-  workspace profile; the infra profile was not swept at the time. No ledger entry is
-  needed: adding three absent task tables is purely additive, so `/steer:sync`'s
-  template reconciliation (which explicitly covers `mise.toml` tasks) splices them
-  into an already-adopted infra repo.
+  workspace profile; the infra profile was not swept at the time. **Greenfield only for
+  now:** an earlier draft of this entry claimed reconciliation would splice the tables
+  into an already-adopted infra repo — that is wrong. The diff helper anchors on `##`
+  headings and `- [` checklist items, and the structured merger handles only
+  `.gitignore`-shaped and JSON files, so **nothing deterministic carries a TOML task
+  table**. `/steer:sync`'s step-5 file list does name `mise.toml` tasks, so a model may
+  splice them by judgment, but that is unbacked by an anchor or a forcing command.
+  Whether this needs a ledger entry is an open call for the release PR — see the
+  "migration coverage" note below.
 - **Fixed:** `MIGRATIONS.md` and `/steer:sync` authorized exactly three migration
   action shapes — `git mv`, `git rm`, and an in-file token rewrite enumerating
   old→new pairs — but the `ws:` entry's `scripts/ws.sh` step is none of them: it
   re-takes a whole file whose content moved past any enumerable pair set. Both files
-  now name a fourth class, **whole-file re-take**, in the same vocabulary: the
+  now name a fourth class, **whole-file re-take** — *later widened in this same cycle to
+  "whole-file **or whole-section** re-take"; read the shipped ledger, not this bullet* —
+  in the same vocabulary: the
   current template replaces the file wholesale, still read-then-propose (show the
   diff, never a blind overwrite), carrying the consumer's own edits forward, and
   reserved for files additive reconciliation cannot reach and that are not
@@ -660,11 +735,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   It also tells the applier to replace **only** `ws:docker:up`'s `run[0]` — the
   inline guard whose message names the stale unprefixed tasks — and to leave `run[1]`
   alone, since `docker compose up -d --wait` is what actually starts the stack.
-  **Release note — this release now has THREE `### v3.24.0` ledger entries (this
-  `ws:` rename, the `COMPOSE_PROJECT_NAME` prefix, and the promoted-question rule),
-  and the key on all three is an assumption the release PR must confirm.** The ledger
-  keys each entry by the version that introduced it, so the heading has to match the
-  bump actually cut: re-key **all three** if this release is not 3.24.0. Weigh the bump
+  **Release note — this release now has FIVE `### v3.24.0` ledger entries (this `ws:`
+  rename, the `COMPOSE_PROJECT_NAME` prefix, the promoted-question rule, the
+  `spec/PRODUCT.md` spine-resolution ladder, and the `PRODUCTIONIZATION.md` open-question
+  seed), and the key on all five is an assumption the release PR must confirm.** The
+  ledger keys each entry by the version that introduced it, so the heading has to match
+  the bump actually cut: re-key **all five** if this release is not 3.24.0. Note the five
+  entries make the minor **non-optional**: a patch cut would ship five entries keyed to a
+  version that never exists, and every consumer's stamp comparison would skip them
+  forever. Weigh the bump
   against all three, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
   mandatory destructive tear-down on the consumer side (an already-running linked
   worktree's containers and volumes are orphaned otherwise), which is the strongest

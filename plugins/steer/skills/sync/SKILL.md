@@ -166,8 +166,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    **Establish the polyrepo role** via `steer_polyrepo_role` (`lib/scope.sh`)
    before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
    the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
-   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md` — are absent
-   **by design**; they live once in the workspace repo. **Never reinstall them
+   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
+   `spec/reference/` — are absent
+   **by design**; they live once in the workspace repo (rule `22-housekeeping`). **Never reinstall them
    here.** Reconcile only the member's own surface (scaffold, CI, `mise.toml`,
    `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp `/spec/.version` as usual.
    Treating a member as a damaged spine and "repairing" it recreates exactly the

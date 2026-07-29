@@ -84,7 +84,10 @@ So a non-app repo is never skipped at bootstrap — it shares all of Core, and a
 `infra`, `library` or `cli` repo that genuinely runs no local services simply
 deletes the core `compose.yaml`. That deletion is what licenses pruning the
 `docker:*`/`db:*` tasks: keep the compose file and you keep the tasks, because the
-always-on worktree and end-of-session rules mandate `mise run docker:clean`. The **installed** repo layout is unchanged by this organization;
+always-on worktree and end-of-session rules mandate `mise run docker:clean`. An `infra`
+repo may drop the paired `scripts/worktree-env.sh` (and its `mise.toml`
+`[env]._.source` line) too; a `library`/`cli` should keep it, since
+`worktree-port-isolation` reports `n/a` only when the stack is `none`. The **installed** repo layout is unchanged by this organization;
 only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
@@ -180,13 +183,20 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-Three further entries are accumulating for the next release. Two are non-additive
+**Five** further entries are accumulating for the next release. Four are non-additive
 edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
 gains a repo prefix on `COMPOSE_PROJECT_NAME` in a linked worktree (a whole-section
 re-take — and **tear any running linked-worktree stack down first**, or its containers
-and volumes are orphaned under the new project name), and `spec/tracker.md`'s promoted-
+and volumes are orphaned under the new project name); `spec/tracker.md`'s promoted-
 question rule is reversed (the `### Q-NNN` block now *stays*, with the ref in its
-`tracker:` field). The third covers the workspace task rename. The workspace profile's
+`tracker:` field); a polyrepo member's `spec/PRODUCT.md` spine-resolution ladder now
+requires `spec/workspace.yml` to be **present at** `workspace.path` rather than merely a
+directory (resolved against the primary checkout — from a linked worktree the
+recommended relative `..` otherwise lands on a real but empty directory and the
+product's specs read as absent); and `spec/PRODUCTIONIZATION.md`'s open-question seed
+becomes a `### Q-NNN` field block, because the SessionStart hook and `/steer:questions`
+count only those, so the old bullet seed modelled a shape neither one sees. The fifth
+covers the workspace task rename. The workspace profile's
 whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /
 `clean`), because an unprefixed name in the workspace's `mise.toml` is an ancestor
 config in every member cloned inside it and shadows any member that does not define

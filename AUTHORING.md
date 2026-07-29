@@ -186,8 +186,10 @@ matrix):
 - **Tier 3 — hidden from the slash menu** (`user-invocable: false`): still
   model-callable, just not in the menu. Reserved for *internal gateways* a parent
   skill always drives with context a user can't supply by hand — `tracker-sync`
-  (GitHub gateway, called with subcommands by `issues`/`work`) and `spec-scaffold`
-  (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`).
+  (GitHub gateway, called with subcommands by `issues`/`work`, plus `spec`, `roadmap`,
+  `questions`, `next`, `audit`/`status` reads, and `init`/`adopt` for
+  `bootstrap-fields`) and `spec-scaffold`
+  (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`/`intake`).
   The specialized skills reached through a front door (`init`/`adopt`/`sync`/`doctor`
   via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via `/steer:issues`;
   `questions` via `/steer:spec`/`/steer:issues`; the `reference` loader) stay

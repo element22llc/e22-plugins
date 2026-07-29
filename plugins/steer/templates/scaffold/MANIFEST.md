@@ -25,8 +25,9 @@ path in both this map and that file in the same change.
 otherwise:** the `infra/*` rows are marked `Conditional:`; the `infra` profile
 substitutes its own `mise.toml`; and the `workspace` profile substitutes `mise.toml`,
 `compose.yaml` **and** `README.md` (Layer 2 overrides, noted per row). An `infra`,
-`library` or `cli` repo may additionally *delete* the core `compose.yaml` **and its
-paired `scripts/worktree-env.sh`** — permission, not substitution.
+`library` or `cli` repo may additionally *delete* the core `compose.yaml` — permission,
+not substitution — and an `infra` repo may drop the paired
+`scripts/worktree-env.sh` with it (see that row for why the Node profiles should not).
 Read the row, not this heading, when they disagree.
 Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
@@ -54,7 +55,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `policy/branch-protection.yml` | `policy/branch-protection.yml` | **Branch-protection policy** (the GitHub-side PR gate `main` must enforce). Read by `/steer:protect`, which diffs it against the repo's live settings and applies the gap on confirmation. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |
 | `scripts/version-policy.sh` | `scripts/version-policy.sh` | Shared policy parser/decider the scanner sources. Verbatim copy of the plugin's `hooks/lib/version-policy.sh`. |
-| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | **Core for every profile** (pairs with `compose.yaml`). Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. An `infra`, `library` or `cli` repo with no local backing services may delete it together with `compose.yaml` and the `[env]._.source` line — permission, not substitution. A **`workspace`** repo keeps it too — that is what gives the workspace's aggregated stack a Compose project name distinct from every member's standalone one. |
+| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | **Core for every profile** (pairs with `compose.yaml`). Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. An **`infra`** repo with no local backing services may delete it together with `compose.yaml` and the `[env]._.source` line — permission, not substitution. (A `library`/`cli` may delete `compose.yaml` but should **keep** this file: `worktree-port-isolation` only reports `n/a` when the stack is `none`, which a Node/Python package never is, so deleting it there just makes every `/steer:sync` propose it back.) A **`workspace`** repo keeps it too — that is what gives the workspace's aggregated stack a Compose project name distinct from every member's standalone one. |
 
 ## Spec spine (instantiate from `../spec/`)
 
