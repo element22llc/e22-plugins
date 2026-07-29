@@ -7,6 +7,45 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the qualification added to `MANIFEST.md`'s Layer-0 heading was itself
+  incomplete — it named two Layer-2 substitutions when there are **three**: the
+  `workspace` profile also **replaces the core `README.md`**, disclosed only 145 lines
+  later in its own row, with the Layer-0 row silent (unlike the `mise.toml` and
+  `compose.yaml` rows, which do carry the override note). So the heading's own "read
+  the row" escape clause did not rescue that case. It also read as a cross-product
+  attributing a `compose.yaml` substitution to `infra`, which only *deletes* it.
+- **Fixed:** the `ws:` migration entry's `monorepo_root` step scoped its move to the
+  commented **block** when the defect spans the whole commented **section**. Baseline
+  repos carry ~15 lines of explanatory prose directly above that block which say to
+  "UNCOMMENT both blocks" and to set `[monorepo].lockfile` "EXPLICITLY … `false`" —
+  both reversed by the current template, which leaves the key unset because the pinned
+  mise release rejects it outright. Moving the block alone left that prose sitting
+  below `[settings]`, re-introducing the exact advice the step drops one line earlier,
+  and additive reconciliation can never rewrite a comment. The step now replaces the
+  whole section. Its stated failure mode was also wrong in the safe direction: a
+  moved-but-unreshaped block declares `[settings]` **twice**, so mise fails to parse
+  the config at all rather than silently ignoring an unknown field — corrected, along
+  with a branch for a repo that already enabled monorepo mode by hand.
+- **Fixed:** `/steer:standards`' corrected description created a fresh contradiction
+  in the other direction. "All `rules/*.md`, including the scope-gated ones a session
+  may not carry" only has content on Claude Code — the one surface whose `when_to_use`
+  and body both say the hook injects automatically and *you don't need this skill*.
+  The withheld rules are withheld deliberately (`inject-standards.sh`: dead weight
+  where they can't apply), so the description is the side that was wrong; it now leads
+  with the surface the skill is actually for and states the all-rules read as fact.
+- **Fixed:** the retired `/steer:doctor` over-claim survived in `INVOCATION.md`, the
+  one **shipped** surface among its mirrors — "with a yes, installs what's missing"
+  after naming git/mise/Docker, when the skill installs only mise and the runtimes it
+  manages (git is a sudo command handed over, Docker a GUI app). That file is read via
+  `RECONCILE.md`'s invocation-hygiene step, so the claim was reaching consumer repos.
+  The same string also stood in the README's public inventory, `docs/reference/skills.md`,
+  and `docs/concepts/authorization-model.md`, which additionally cited
+  `xcode-select --install` — the *git* handover — as an example of what doctor installs.
+- **Fixed:** `steer-reviewer`'s fourth caller reached the agent but not its mirrors:
+  `docs/reference/agents.md` (twice), `docs/workflows/index.md`'s loop step list,
+  `docs/concepts/copilot-support.md`, and `CLAUDE.md`'s layout comment all still named
+  two or three callers, omitting the `/steer:loop` workflow rule 53 **mandates** routes
+  through it.
 - **Fixed:** the `ws:` migration entry listed its steps with a dependency **after**
   its dependent — the `run[0]` swap points a task at `ws.sh preflight`, a subcommand
   a 3.23.0 `ws.sh` does not have until the re-take step runs. Harmless in practice
@@ -50,7 +89,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   alone.
 - **Fixed:** three skill `description`s that understated or misstated their own
   behavior — the always-on routing surface — landed as a **length-neutral set** (+1
-  char total, 11,866 of 11,900), so the ratchet does not move. `questions` claimed
+  char across the three), so the ratchet does not move. The listing ends this cycle at
+  **11,882 of 11,900** — the other +16 is the `@github-handle` trigger restored to
+  `init` (below), not these three. `questions` claimed
   only "folding decisions back into the spec" while its step 1 **unconditionally
   deletes** a legacy `spec/SPEC-QUESTIONS.md` before answering anything and step 6
   **opens a GitHub issue**; `standards` said that in Claude Code it "only repeats" the

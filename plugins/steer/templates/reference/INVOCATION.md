@@ -29,7 +29,7 @@ act only on an explicit yes.
 | `/steer:status` | Read-only delivery snapshot — reports, never edits. |
 | `/steer:explain` | Renders **one feature's spec** as a stakeholder-readable Artifact — presentation only, never authoring. |
 | `/steer:help` | Read-only orientation on the skills and where to start. |
-| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs what's missing. |
+| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
 ## Tier 2 — requires explicit user intent (side-effecting)

@@ -160,8 +160,8 @@ Two differences from Claude Code matter on **both** Copilot surfaces:
 steer's subagents in the plugin's `agents/` reach VS Code as **custom agents** —
 `.github/agents/<name>.agent.md`, selectable from the Copilot Chat agent picker
 (this is the format formerly called "custom chat modes"/`.chatmode.md`). Today
-that is `steer-reviewer`, the read-only reviewer that `/steer-audit` and
-`/steer-work --reviewed` delegate a single bounded slice to.
+that is `steer-reviewer`, the read-only reviewer that `/steer-audit`,
+`/steer-work --reviewed` and `/steer-loop` delegate a single bounded slice to.
 
 The build renders one `.agent.md` per subagent (`gen_copilot_agents.py`, drift
 gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/

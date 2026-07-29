@@ -22,9 +22,11 @@ path in both this map and that file in the same change.
 ## Install map — Layer 0 (Core)
 
 **Core is profile-agnostic — every profile installs it, except where a row says
-otherwise:** the `infra/*` rows are marked `Conditional:`, and the `infra` and
-`workspace` profiles *substitute* their own `mise.toml` / `compose.yaml` (Layer 2
-overrides, noted per row). Read the row, not this heading, when they disagree.
+otherwise:** the `infra/*` rows are marked `Conditional:`; the `infra` profile
+substitutes its own `mise.toml`; and the `workspace` profile substitutes `mise.toml`,
+`compose.yaml` **and** `README.md` (Layer 2 overrides, noted per row). An `infra` repo
+may additionally *delete* the core `compose.yaml` — permission, not substitution.
+Read the row, not this heading, when they disagree.
 Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
 itself); rename on copy as mapped below. The Node project files and per-type
@@ -32,7 +34,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 
 | Bundled path | Install as | Notes |
 |---|---|---|
-| `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/steer:init`. |
+| `README.md` | `README.md` | Product README: status, quickstarts (PO + dev), WSL, CI secret, branch protection. Fill placeholders via `/steer:init`. **workspace** substitutes `profiles/workspace/README.md` (Layer 2) — see that row. |
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
 | `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:init`, reverse-engineered by `/steer:adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:adopt` reverse-engineered or a team populated. |
 | `mise.toml` | `mise.toml` | Toolchain (`node`/`python`/`uv` pinned — **mandatory for agent tooling**) + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack (`library`/`cli` prune `docker:*`/`db:*`). No `mise.lock` ships — `/steer:init`/`/steer:adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. **`infra` substitutes `profiles/infra/mise.toml`** and **`workspace` substitutes `profiles/workspace/mise.toml`** (Layer 2). |

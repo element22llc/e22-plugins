@@ -90,8 +90,9 @@ legitimate look-alike (e.g. an unchanged marketplace id).
      `[tasks."docker:down"]` → `[tasks."ws:docker:down"]`,
      `[tasks."docker:up"]` → `[tasks."ws:docker:up"]`, `[tasks.dev]` →
      `[tasks."ws:dev"]`. **Leave `convert:doc` unprefixed.**
-  2. Repoint **every** reference to a renamed task — there are three, and the two
-     commented ones matter as much as the live one:
+  2. Repoint every **task-addressing** reference to a renamed task — there are three,
+     and the two commented ones matter as much as the live one. (A fourth mention
+     lives inside `ws:docker:up`'s `run[0]` guard *message*; step 4 owns that one.)
      - `ws:dev`'s live `depends = ["docker:up"]` → `depends = ["ws:docker:up"]`. Not
        cosmetic: a bare `docker:up` in `depends` resolves in the **caller's** task
        set, so invoked from inside a member it binds to *that member's* task and boots
@@ -105,8 +106,9 @@ legitimate look-alike (e.g. an unchanged marketplace id).
   3. Re-take `scripts/ws.sh` **before** step 4, which repoints a task at its
      `preflight` subcommand: a repo at 3.23.0 has a `ws.sh` with **no `preflight`**
      (it arrived later in this same cycle), so taking the script first means no
-     intermediate state ever points at a subcommand that does not exist. It is also
-     re-taken because its own failure messages name the renamed tasks. Do it
+     intermediate state ever points at a subcommand that does not exist. It also
+     carries a stale reference of its own — a header comment naming `mise run dev` —
+     and the new script's failure messages name the `ws:`-prefixed forms. Do it
      **read-then-propose, as a diff, not a verbatim overwrite** — `ws.sh` is not a
      `verbatim` capability file (only the version-pin scripts are — see
      [`CAPABILITIES.md`](CAPABILITIES.md)), so a consumer may have added their own
@@ -123,32 +125,33 @@ legitimate look-alike (e.g. an unchanged marketplace id).
      its first element leaves the task unable to boot anything. Leave every *other*
      task's `run` alone, and never touch a filled-in value (a dev-added task, an edited
      description, a resolved `config_roots` list).
-  5. **Move — and reshape — the commented monorepo block** if it sits in the wrong
-     place. A repo scaffolded before this change carries the block **below** the real
-     `[settings]`, headed by its own commented `# [settings]` line and tailed by
-     `# lockfile = false`. Do **not** move it verbatim: re-insert **above**
-     `[settings]` only these lines —
+  5. **Replace the whole commented monorepo section, and move it above
+     `[settings]`.** Scope this by *section*, not by the block alone: a repo scaffolded
+     before this change carries the commented `# [settings]` / `# monorepo_root` /
+     `# [monorepo]` block **below** the real `[settings]`, **and** ~15 lines of
+     explanatory prose immediately above it (the comment that opens
+     `# --- Monorepo task addressing …`). Both are template prose and both are wrong
+     now, so **delete the entire run — prose and block — and re-insert the current
+     template's version above `[settings]`**, carrying over only any `config_roots`
+     member entries the dev filled in.
 
-     ```toml
-     # monorepo_root = true
-     #
-     # [monorepo]
-     # config_roots = [
-     #   "frontend",
-     #   "backend",
-     # ]
-     ```
+     Two things must not survive the move, and moving the block alone leaves both:
 
-     — **dropping the commented `# [settings]` header and the `# lockfile` line**, and
-     preserving any `config_roots` entries the dev already filled in. Both omissions
-     are the point. A bare TOML key belongs to the table above it, so carrying the
-     `# [settings]` header along leaves `monorepo_root` nested under it once
-     uncommented — mise rejects `settings.monorepo_root` as an unknown field and
-     monorepo mode never turns on, which is the whole defect this step exists to fix
-     (the file says "uncomment in place", so the nesting is what the dev would get).
-     And `[monorepo].lockfile` must stay **unset**: the pinned mise release rejects the
-     key outright and warns on every invocation. A repo that already has the block
-     above `[settings]` needs no edit.
+     - **The commented `# [settings]` header.** The file says "uncomment in place", so
+       a dev who uncomments the moved-but-unreshaped block declares `[settings]`
+       **twice** — the config then fails to parse at all (`Cannot declare ('settings',)
+       twice`) and mise cannot load it. (Not a silent unknown-field warning: it is a
+       hard, loud parse error. Either way monorepo mode never turns on, which is the
+       defect this step exists to remove.)
+     - **The `[monorepo].lockfile` guidance.** The old prose says to "Set it
+       EXPLICITLY … `false`" and the old block ships `# lockfile = false`. The current
+       template deliberately leaves the key **unset** — the pinned mise release
+       rejects it outright (`unknown field: monorepo.?.lockfile`) and warns on every
+       invocation. Keeping either the prose or the line re-introduces the advice.
+
+     A repo that already has the section above `[settings]` needs no edit. A repo that
+     has **already enabled** monorepo mode necessarily hand-repaired the nesting to get
+     there — leave its live `[monorepo]` table alone and only reconcile the prose.
   Follow with additive [Template reconciliation](SPEC-FRAMEWORK.md) for the rest of
   the file. **False-positive guard:** rename only these four exact table headers and
   only in a `workspace`-profile repo's **root** `mise.toml` — never a member's own

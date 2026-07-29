@@ -179,8 +179,10 @@ that name. `mise.toml` is materialized and product-owned, so additive
 reconciliation cannot carry a *rename* — it splices in what is missing and would
 leave both the old and the new names in place. That is exactly the case a ledger
 entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
-headers, repoints `ws:dev`'s `depends` (which resolves in the *caller's* task set
-and would otherwise bind to a member's `docker:up`), moves the commented
-`monorepo_root` block above `[settings]` where mise will actually accept it, and
-diffs in `scripts/ws.sh` for its `preflight` subcommand. The entry is precondition-gated to `workspace`-profile
+headers, repoints every reference to a renamed task (including the live `ws:dev`
+`depends`, which resolves in the *caller's* task set and would otherwise bind to a
+member's `docker:up`), diffs in `scripts/ws.sh` for its `preflight` subcommand,
+replaces `ws:docker:up`'s first `run` element with that `preflight` guard while
+leaving the line that boots the stack alone, and relocates the whole commented
+monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile
 repos, so member repos and non-workspace profiles are untouched.

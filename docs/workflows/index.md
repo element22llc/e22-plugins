@@ -97,4 +97,4 @@ below give the detail.
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to audit the built app against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace (read-only). |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
-| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule — discovers, triages, drafts a fix, pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |
+| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule — discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` — rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |
