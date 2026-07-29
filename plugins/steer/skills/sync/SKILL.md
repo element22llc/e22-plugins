@@ -195,11 +195,15 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    an entry already applied — or never relevant — is a safe no-op). Because the
    precondition is the real gate, when `FROM` is `unstamped` walk the **whole**
    ledger by precondition. Apply each as the ledger directs — `git mv` for
-   renames so history follows, `git rm` for deletions, or an **in-file token
+   renames so history follows, `git rm` for deletions, an **in-file token
    rewrite** (replace only the exact old→new string pairs the entry enumerates,
-   never a broader match) — all **read-then-propose, never clobber** filled-in
-   content. For a token-rewrite entry, run its precondition grep first and show
-   the diff of proposed substitutions before applying. List each migration
+   never a broader match), or a **whole-file re-take** (the entry names a file whose
+   content moved past any enumerable pair set, so the current template replaces it
+   wholesale — carry the consumer's own edits forward) — all **read-then-propose,
+   never clobber** filled-in content. For a token-rewrite entry, run its precondition
+   grep first and show the diff of proposed substitutions before applying; for a
+   whole-file re-take, show the diff against the consumer's copy — never a blind
+   overwrite. List each migration
    you're applying (and each skipped, with why) before touching files.
 
 5. **Reconcile the materialized templates (additive)**,

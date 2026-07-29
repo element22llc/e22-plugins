@@ -2,11 +2,15 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # `prod` is here because `policy/branch-protection.yml` makes `ci` a REQUIRED
+    # status check on the `prod` promotion branch. Without this trigger the check
+    # never reports on a main -> prod PR and the production gate blocks forever.
+    branches: [main, prod]
   push:
     branches: [main]
 
-# The `ci` job is the single required status check on `main`. It ALWAYS runs
+# The `ci` job is the single required status check on `main` (and on `prod`, where
+# it gates the promotion PR alongside the required review). It ALWAYS runs
 # stack-AGNOSTIC hygiene (actionlint, shellcheck, the version-pin scan), then
 # runs the checks for whatever stack it DETECTS in the repo:
 #   - Node/TS   when package.json or pnpm-workspace.yaml is present

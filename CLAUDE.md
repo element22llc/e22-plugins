@@ -91,7 +91,9 @@ capture. Read it before your first PR here. The essentials, condensed:
   Scopes in use: `steer`, `hooks`, `skills`, `rules`, `scaffold`, `docs`, `dx`,
   `release`. No commit-lint gate; the PR review is the gate.
 - Two sets of GitHub templates, easy to confuse: `.github/` at the root is **this
-  repo's own** (ships nothing, no changelog entry);
+  repo's own** (ships nothing, no changelog entry) — **except
+  `.github/plugin/marketplace.json`**, the consumer-facing Copilot marketplace,
+  which carries steer's released version and *is* plugin behavior;
   `plugins/steer/templates/github/` is what **consumer repos** get (plugin
   behavior — changelog entry required).
 - Any change to plugin behavior needs a `CHANGELOG.md` entry. Accumulate entries

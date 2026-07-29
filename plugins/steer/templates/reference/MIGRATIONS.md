@@ -50,6 +50,17 @@ regex, never a string the entry doesn't enumerate. Its precondition must be a gr
 that fires only while a stale token is still present and that cannot match a
 legitimate look-alike (e.g. an unchanged marketplace id).
 
+The fourth action class is a **whole-file re-take**: the entry names a shipped file
+whose *content* has moved on so far that no enumerable set of old→new pairs
+describes it, so the current template version replaces it wholesale. It is
+read-then-propose like every other class — **show the diff, never a blind
+overwrite** — and it must **carry the consumer's own edits forward** rather than
+discard them. Reserve it for a file additive reconciliation cannot reach (that
+splices in what is missing and never rewrites or deletes) and that is *not* a
+`verbatim` capability file — a `verbatim` file is re-copied by
+[`CAPABILITIES.md`](CAPABILITIES.md)'s own repair path and needs no ledger entry.
+Name the file and say what to carry forward.
+
 ## Entries
 
 > Newest first. Each entry: the introducing **version**, **what & why**, a

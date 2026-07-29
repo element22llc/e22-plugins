@@ -138,8 +138,9 @@ See the [Hooks reference](../reference/hooks.md) and
 ## When something breaks
 
 - **A tool is missing** (`command not found`, mise/Docker errors) — run
-  **`/steer:doctor`**; it detects what's absent and, with your yes, installs the
-  toolchain.
+  **`/steer:doctor`**; it detects what's absent and, with your yes, installs mise
+  and the runtimes it manages. `git` and Docker Desktop it hands back to you: a
+  command to run yourself, or a GUI app to launch.
 - **steer itself misbehaves** (a skill does the wrong thing, a hook misfires) —
   run **`/steer:report`**, which files a bug about the plugin upstream so it gets
   fixed for everyone.

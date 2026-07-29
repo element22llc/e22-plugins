@@ -119,6 +119,7 @@ same audit procedure, single-sourced in `.claude/audit/PRE-RELEASE-AUDIT.md`.
 | Path | Audience | Changelog entry? |
 | --- | --- | --- |
 | `.github/` at the repo root | **This repo.** `pull_request_template.md`, `ISSUE_TEMPLATE/steer-self-report.yml`, `workflows/`, `dependabot.yml`. | No — ships nothing. |
+| `.github/plugin/marketplace.json` | **Consumers.** The Copilot marketplace manifest; carries steer's released version. Sits under the root `.github/` but is not this repo's own. | **Yes** — plugin behavior. |
 | `plugins/steer/templates/github/` | **Managed product repos** — installed by `/steer:init` / `/steer:adopt`. Issue Forms, `workflows/ci.yml`, `claude.yml`, the product PR template. | **Yes** — this is plugin behavior. |
 
 `templates/github/` is the single source of truth for what consumer repos get —

@@ -19,9 +19,16 @@ specialized skills below as needed, so you rarely reach past this set.
     `ARCHITECTURE.md` and code — `spec/features/**`, `vision.md`, `HISTORY.md` and
     `spec/tracker.md` live once in the workspace. Every skill that reads or writes
     those (`setup`, `spec`, `spec-scaffold`, `intake`, `questions`, `work`,
-    `issues`, `tracker-sync`, `next`, `status`, `audit`, `roadmap`, `explain`,
+    `issues`, `tracker-sync`, `next`, `audit`, `roadmap`, `explain`,
     `adr`, `sync`, `protect`) resolves the workspace before acting and says so,
     rather than reporting an absent local file as empty.
+
+    `/steer:status` is deliberately **not** in that list: it reports rather than
+    resolves. From a member it names its scope — "this covers one repo of several"
+    — and points at the workspace instead of reading across it. *Resolving the
+    spine from a member* and *reporting across members* are separate contracts; see
+    [the product spine](../concepts/product-spine.md) and `/steer:reference
+    polyrepo` for the full treatment.
 
     The two **bootstrap** doors carry the same carve-out in the other direction:
     `/steer:init` and `/steer:adopt` install `spec/PRODUCT.md` and **skip** the

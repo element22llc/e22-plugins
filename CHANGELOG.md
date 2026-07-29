@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the shipped CI workflow never triggered on a PR targeting `prod`, while
+  `policy/branch-protection.yml` makes `ci` a **required status check** on that
+  branch — so the promotion PR that rule 52 calls *the* production gate blocked
+  forever on a check that could never report. `ci.yml`'s `pull_request.branches` now
+  includes `prod`. `/steer:protect`'s existing guard only covered the
+  absent-*workflow* case ("must match the check-run GitHub actually reports"), not a
+  present workflow whose triggers exclude the branch. Fixed by making the workflow
+  match the declared policy, not by dropping the requirement — the required review
+  alone was never the gate rule 52 describes.
+- **Fixed:** the **infra** profile's root `mise.toml` replaces the core one but
+  defined no `docker:up` / `docker:down` / `docker:clean`, while still shipping the
+  core `compose.yaml` and sourcing `scripts/worktree-env.sh` — so rules `24-worktrees`
+  and `99-end-of-session`, which inject in any code project and mandate
+  `mise run docker:clean` before removing a worktree, named a task an infra repo did
+  not have. (Rule 24 carves out only the **workspace** profile's `ws:` prefix.) The
+  three tasks are now defined in the infra profile too, identical to the core
+  definitions. This is the same rule-vs-scaffold mismatch already closed for the
+  workspace profile; the infra profile was not swept at the time. No
+  `CAPABILITIES.md` row covers these tasks, so `/steer:sync` could not have repaired
+  it either.
+- **Fixed:** `MIGRATIONS.md` and `/steer:sync` authorized exactly three migration
+  action shapes — `git mv`, `git rm`, and an in-file token rewrite enumerating
+  old→new pairs — but the `ws:` entry's `scripts/ws.sh` step is none of them: it
+  re-takes a whole file whose content moved past any enumerable pair set. Both files
+  now name a fourth class, **whole-file re-take**, in the same vocabulary: the
+  current template replaces the file wholesale, still read-then-propose (show the
+  diff, never a blind overwrite), carrying the consumer's own edits forward, and
+  reserved for files additive reconciliation cannot reach and that are not
+  `verbatim` capability files. Without the named class the step was unauthorized by
+  the very procedure that has to apply it.
 - **Fixed:** the qualification added to `MANIFEST.md`'s Layer-0 heading was itself
   incomplete — it named two Layer-2 substitutions when there are **three**: the
   `workspace` profile also **replaces the core `README.md`**, disclosed only 145 lines
@@ -89,9 +119,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   alone.
 - **Fixed:** three skill `description`s that understated or misstated their own
   behavior — the always-on routing surface — landed as a **length-neutral set** (+1
-  char across the three), so the ratchet does not move. The listing ends this cycle at
-  **11,882 of 11,900** — the other +16 is the `@github-handle` trigger restored to
-  `init` (below), not these three. `questions` claimed
+  char across the three), so the ratchet did not move to accommodate them. The listing
+  stood at **11,882 of the then-current 11,900** — the other +16 is the
+  `@github-handle` trigger restored to `init` (below), not these three. (That margin
+  is what later prompted the re-arm to 12,400 recorded below.) `questions` claimed
   only "folding decisions back into the spec" while its step 1 **unconditionally
   deletes** a legacy `spec/SPEC-QUESTIONS.md` before answering anything and step 6
   **opens a GitHub issue**; `standards` said that in Claude Code it "only repeats" the
@@ -203,13 +234,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   would have damaged a consumer repo. It said to repoint `ws:docker:up`'s `run` to
   `sh scripts/ws.sh preflight` — but that task's `run` is a **two**-element array
   whose second element (`docker compose up -d --wait`) is the only line that starts
-  the stack, and the rename changed no `run` line at all, so there was no old→new
-  pair to apply and following it literally would have left the task unable to boot
+  the stack, so replacing the whole array would have left the task unable to boot
   anything. It also said to re-take `scripts/ws.sh` **verbatim**, a mode
   `CAPABILITIES.md` reserves for the version-pin scripts alone, which would clobber a
-  consumer's own `ws:` subcommand. The entry now leaves every `run` alone, states the
-  `monorepo_root` step as an explicit move (a pre-change repo really does carry it
-  below `[settings]`, where mise rejects it), and diffs `ws.sh` read-then-propose.
+  consumer's own `ws:` subcommand. This round replaced the whole array with a
+  `run[0]`-only edit, moved the `monorepo_root` step, and made `ws.sh`
+  read-then-propose. **Superseded in both respects by the entry below**, which found
+  this correction over-swung: `run[0]` *is* a legitimate old→new pair (it carries the
+  stale unprefixed vocabulary), and the `monorepo_root` step needs the whole section
+  replaced, not merely moved.
 - **Fixed:** the promoted-question mechanism corrected in `/steer:tracker-sync` was
   still stated the old way in the two surfaces that *govern* it: `templates/spec/tracker.md`
   — installed as the consumer's `/spec/tracker.md`, and the file `/steer:tracker-sync`
@@ -313,8 +346,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   "auto-file via gh" when the body prefers GitHub MCP; `doctor` omitted the
   `shadowed`-runtime check the docs advertise as a headline capability. Paid for
   **inside those same four entries** per `check_context_budget.py`'s own policy — by
-  cutting genuine redundancy, never a trigger phrase — so the listing lands at
-  11,865 of 11,900 chars and the ratchet does not move.
+  cutting genuine redundancy, never a trigger phrase — so the listing landed at
+  11,865 of the then-current 11,900 chars and the ratchet did not move for them.
 - **Added:** a detector for the `dependency-automation` capability, plus the
   reverse-direction gate that would have caught its absence. `CAPABILITIES.md` has
   documented that capability (Dependabot + the scoped auto-merge exception) with
@@ -377,9 +410,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the ceiling as the ceiling, and `mise run rules:preview` (or
   `check_context_budget.py --report`) as the only current measurement. The target
   stays 62,500 B. The skill-listing ratchet
-  is **unchanged** at 11,900 chars: the `description` corrections below were paid
-  for by trimming inside those same entries, per that ratchet's own policy — with one
-  exception to record honestly. Two trigger phrases were cut, not just redundancy:
+  has since been **re-armed** 11,900 → 12,400 chars — not to fund any edit below, but
+  because the corrections below left it at 11,879 of 11,900, a 21-char margin under
+  which the next factual `description` fix could not be paid for in place at all. The
+  corrections below *were* paid for by trimming inside those same entries, per that
+  ratchet's own policy — with one exception to record honestly. Two trigger phrases were cut, not just redundancy:
   `init`'s `@github-handle` and `help`'s `"what can you do?"`. `@github-handle` has
   been **restored** — it is a blocking unresolved placeholder that `/steer:init`
   gates on and `/steer:setup` routes on, so its absence was a real routing hole.
@@ -446,14 +481,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   define — the exact rule-vs-scaffold mismatch this cycle set out to close, fixed for
   new repos and left open for existing ones. The entry is precondition-gated to
   `workspace`-profile repos, renames only the four whole-product task headers
-  (leaving `convert:doc` alone), repoints `ws:dev`'s `depends`, moves the commented
-  `monorepo_root` block above `[settings]` (where a pre-change repo does **not**
-  have it, so mise rejects the key and monorepo mode never turns on), and diffs in
+  (leaving `convert:doc` alone), repoints `ws:dev`'s `depends`, replaces the whole
+  commented `monorepo_root` section and re-inserts it above `[settings]` (where a
+  pre-change repo does **not** have it, so mise rejects the key and monorepo mode
+  never turns on), and diffs in
   `scripts/ws.sh` read-then-propose — explicitly **not** a verbatim overwrite, since
   `ws.sh` is not a `verbatim` capability file and a consumer may have extended it.
-  It also explicitly tells the applier to leave every task `run` alone: the rename
-  changed no `run` line, so "repointing" `ws:docker:up`'s would have dropped the
-  `docker compose up -d --wait` that actually starts the stack.
+  It also tells the applier to replace **only** `ws:docker:up`'s `run[0]` — the
+  inline guard whose message names the stale unprefixed tasks — and to leave `run[1]`
+  alone, since `docker compose up -d --wait` is what actually starts the stack.
   **Release note — the entry is keyed `### v3.24.0`, an assumption the release PR
   must confirm.** The ledger keys each entry by the version that introduced it, so
   the heading has to match the bump actually cut: re-key it if this release is not
