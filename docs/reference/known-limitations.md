@@ -44,7 +44,7 @@ output-discipline, artifacts, not-the-gate and self-report rules — while the 2
 marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack, commands, layout,
 testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
 end-of-session, …) are **intentionally omitted** to reclaim context budget and cut
-noise. That reclaims ~39 kB, and `orient-session` confirms in plain language that
+noise. That reclaims ~40 kB, and `orient-session` confirms in plain language that
 the standards are active.
 
 Two of the injected rules read as code-specific and are always-on anyway, by

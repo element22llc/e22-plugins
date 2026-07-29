@@ -56,7 +56,8 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
   or re-triage productionization. Code health is `/steer:audit`; drift is
   `/steer:audit spec`.
 - **The ledger is the source of truth for non-additive changes.** Apply
-  renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
+  renames, deletions, in-file token rewrites, and whole-file/whole-section re-takes
+  only from `MIGRATIONS.md` entries — never
   improvise a transform from memory of "what changed."
 - **Capability repair is presence + wiring only.** `CAPABILITIES.md` is the
   source of truth for which files unlock which capability and how to repair a gap.

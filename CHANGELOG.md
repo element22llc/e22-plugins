@@ -7,6 +7,69 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the spine-resolution ladder in `spec/PRODUCT.md` was rewritten earlier in
+  this cycle with **no ledger entry**, and nothing could carry it:
+  `template-reconcile.sh` anchors on headings and checklist items, so a rewritten
+  numbered item under an unchanged `## Resolving the spine` heading offers no anchor at
+  all. Every already-materialized member therefore kept the directory-only test — and
+  from a linked worktree the recommended relative `..` resolves to a real but **empty**
+  directory, so the test passed, the spine read as present, and every skill resolving
+  it saw an empty tree and reported the product's specs as absent. Added as a
+  fourth `### v3.24.0` in-file token rewrite.
+- **Fixed:** `/steer:init` still installed `spec/sources/README.md` into a polyrepo
+  member, which rule `22-housekeeping` forbids — the round that fixed this for
+  `/steer:adopt` swept only one of the two bootstrap doors, and `MANIFEST.md`'s member
+  "minus" list did not subtract it either. All three surfaces now agree.
+- **Fixed:** `SPEC-FRAMEWORK.md` — the reference that *defines* the additive-vs-non-
+  additive split, and so the place an author decides whether an entry is owed — still
+  stated the superseded "rename, move, or deletion" mandate. It now names all the
+  non-additive classes and carries the same "can additive reconciliation carry it?"
+  test as the ledger. `CAPABILITIES.md`'s three-axis ownership row had the same stale
+  parenthetical, and `/steer:sync`'s **Guardrails** authorized only three classes —
+  which mattered more than it looks: Guardrails are front-loaded to survive
+  compaction, so under compaction the surviving instruction forbade the re-take the
+  skill's own step 4 must perform.
+- **Fixed:** the promoted-question ledger entry pointed the applier at a
+  `## Traceability` section of `spec/tracker.md` that does not exist (the text lives
+  under `## Conventions (summary)`) — the same "named region absent from the file"
+  defect that made the `COMPOSE_PROJECT_NAME` entry a no-op. The ledger mandate also
+  now states explicitly that a comment or prose line **only describing** behaviour is
+  below the bar, closing an ambiguity that would otherwise be re-litigated every
+  audit.
+- **Fixed:** the `ws:` entry's README step named only the quickstart, leaving two of
+  the three `mise run dev` occurrences stale in a migrated workspace repo, and no step
+  carried the `ws:dev` task **description** — whose old text claimed it boots "every
+  member's dev server", one of the seven surfaces that overclaim was corrected on.
+- **Fixed:** `MANIFEST.md` disclosure gaps around the compose/worktree pair: the
+  `scripts/worktree-env.sh` row still called it "core for every profile" while three
+  shipped surfaces grant an `infra` repo permission to delete it, and the new
+  `library`/`cli` prune coupling presupposed a `compose.yaml` deletion that both the
+  compose row and the Layer-0 heading restricted to `infra`.
+- **Fixed:** the `ISSUE-WORKFLOW.md` Status↔state crosswalk — which declares itself
+  the single authority and is what spec `Status:` is *derived* from — said `validate`
+  means "PR merged" while the transition table in the same file reaches `validate` on
+  PR **opened**. Every feature with an open PR was therefore deriving the wrong
+  `Status:`. Relatedly, `/steer:work`'s next-actions table made "reconcile to `done`"
+  a *blocking* agent action off a merged PR alone, contradicting both the propose-only
+  `validate → done` transition and the same file 80 lines earlier.
+- **Fixed:** `NEXT-ACTIONS.md` forbade a `Suggested command` for "a PO approving an
+  intent" while its own category table 170 lines earlier declares that gate promptable
+  and "a real command" — `/steer:spec approve` exists. Only an out-of-session approval
+  is command-less.
+- **Fixed:** `/steer:audit`, `/steer:help` and `/steer:roadmap` descriptions asserted
+  "Renders an Artifact …" as an accomplished capability while all three bodies make it
+  an explicit **offer** that is never auto-published — and the description is the
+  routing surface. Now "Optionally renders".
+- **Fixed:** both internal gateways' declared caller sets understated their blast
+  radius: `/steer:spec-scaffold` omitted `/steer:intake` (which routes to it directly,
+  before `/steer:spec`), and `/steer:tracker-sync` omitted `/steer:init` and
+  `/steer:adopt`, which invoke `bootstrap-fields` by name — both **write**-path
+  callers. Corrected on all three surfaces each.
+- **Fixed:** `/steer:doctor`'s manual floor omitted `git`, so the floor did not
+  actually support the claim made for it — installing git is a `sudo`/host command the
+  skill presents rather than runs. Also corrected "the steer marketplace" (the plugin
+  is `steer`; the marketplace is `e22-plugins`) and `/steer:build`'s matching
+  hand-over sentence.
 - **Fixed:** the scaffold's `.gitignore` ignored `.vscode/mcp.json` — the very file the
   install map ships so **Copilot/VS Code teammates get the plugin's MCP servers**
   (Copilot does not read the Claude-only `.mcp.json`). It was installed and then made
@@ -75,18 +138,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the cross-repo `docker:clean` bug it fixes stayed live everywhere the fix was most
   needed, and its destructive precondition ("tear the stack down first, or the old
   containers and volumes are orphaned") reached nobody. `MIGRATIONS.md` now carries
-  the entry, as a **whole-section** re-take bounded to the `# --- Compose project
-  name` region: the host-port baseline below it is explicitly the product's to adapt,
-  so a whole-*file* re-take would have discarded real customization. Step 1 of the
-  action is the tear-down.
+  the entry, as a **whole-section** re-take rather than a whole-*file* one: the
+  host-port baseline below the region is explicitly the product's to adapt, so
+  replacing the file would have discarded real customization. Step 1 of the action is
+  the tear-down. **The region this bullet first described was wrong and was rebounded
+  later in this same cycle** — read the shipped ledger, not this bullet, for the
+  current boundaries.
 - **Fixed:** `/steer:protect`'s `apply` step emitted
   `"required_status_checks":{"strict":true,...}` while `policy/branch-protection.yml`
   — the file the skill exists to diff and apply — declares `strict: false` for both
   the default branch and the `prod` entry. Since `apply` then re-runs the verify
   diff, every application ended by reporting `strict` as drifted on the branch it had
   just "fixed". The example body now matches the policy, and the step says plainly
-  that **every** value comes from the policy file rather than from the illustration,
-  the way the `ci` context name is already resolved from the workflow. The policy's
+  that every **policy** value comes from the policy file rather than from the
+  illustration, the way the `ci` context name is already resolved from the workflow
+  (`restrictions: null` is the one exception — the API requires the field and the
+  policy does not carry it). The policy's
   own prose was the other half: two comments claimed the branch must be "up to date
   before merge", which is exactly what `strict: false` disables — corrected in both
   the plugin copy and the byte-identical scaffold copy.

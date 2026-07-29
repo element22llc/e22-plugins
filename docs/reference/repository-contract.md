@@ -81,8 +81,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   clones, not submodules, so nothing pins a member SHA.
 
 So a non-app repo is never skipped at bootstrap — it shares all of Core, and an
-`infra` repo that genuinely runs no local services simply deletes the core
-`compose.yaml`. The **installed** repo layout is unchanged by this organization;
+`infra`, `library` or `cli` repo that genuinely runs no local services simply
+deletes the core `compose.yaml`. That deletion is what licenses pruning the
+`docker:*`/`db:*` tasks: keep the compose file and you keep the tasks, because the
+always-on worktree and end-of-session rules mandate `mise run docker:clean`. The **installed** repo layout is unchanged by this organization;
 only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
@@ -137,7 +139,8 @@ Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.
 and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
 and the JSON configs (`.claude/settings.json`, `biome.json`,
 `tsconfig`, and the committed editor config `.vscode/extensions.json` /
-`.vscode/settings.json`) — reconcile with `scaffold_reconcile.py`, which unions
+`.vscode/settings.json` / `.vscode/mcp.json`, the last being how Copilot/VS Code
+teammates get the same MCP servers) — reconcile with `scaffold_reconcile.py`, which unions
 JSON arrays and adds missing keys/lines without overwriting, reordering, or
 removing any existing value. The array union is what lets a repo's existing
 `.vscode/extensions.json` recommendations gain the scaffold's (VS Code is the

@@ -32,7 +32,7 @@ Check every class this PR touches.
 
 - [ ] Added my own bullet under `## steer` → `### [Unreleased]` (heading left intact — `merge=union` depends on it)
 - [ ] `plugins/steer/.claude-plugin/plugin.json` version **untouched** (release PRs only)
-- [ ] N/A — nothing under `plugins/steer/` changed
+- [ ] N/A — nothing under `plugins/steer/` changed, **and** no version-bearing manifest (incl. the root `.github/plugin/marketplace.json`)
 
 ## Gates
 

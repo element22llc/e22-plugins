@@ -83,9 +83,9 @@ Both replace the old static `repository-template` as the bootstrap source.
     auto-verify screenshots run the repo's real dev command (`pnpm dev` on port
     3000) instead of relying on auto-detection. Bring services/DB up first with
     `mise run dev:setup`; repoint the config at `mise run dev` once the repo goes
-    polyglot. It never overwrites an existing `launch.json`, and other profiles
-    (`service` can copy it; `library`/`cli`/`infra`/`workspace` skip it) don't
-    get one.
+    polyglot. It never overwrites an existing `launch.json`, and no other profile
+    (`service`, `library`, `cli`, `infra`, `workspace`) gets one — a `service` repo
+    that wants debugging can of course copy it by hand.
 
 ## Keeping a repo in sync
 

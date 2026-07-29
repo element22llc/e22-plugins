@@ -212,7 +212,7 @@ It applies to the **feature path only** — `bug`, `task`, `finding`, and
 | `ready-for-spec` | `draft` | `intent.md` authored, awaiting PO approval |
 | `ready-for-dev` | `approved` | intent PO-approved; contract authored/ready |
 | `in-progress` | `approved` | building; behavior not yet merged |
-| `validate` | `implemented` | PR merged; awaiting **product** validation |
+| `validate` | `implemented` | PR **opened**; awaiting merge + **product** validation |
 | `done` | `validated` → `live` | `validated` on accepted close; `live` once released to users |
 | `blocked` | _(retains prior)_ | orthogonal hold; spec `Status:` is unchanged |
 | `cancelled` | _(none)_ | not delivered; no satisfied `Status:` |

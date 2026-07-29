@@ -11,7 +11,7 @@ after structural migrations + additive reconciliation and **before** re-stamping
 
 | Mechanism | Owns | Re-evaluated |
 |---|---|---|
-| [MIGRATIONS.md](MIGRATIONS.md) | non-additive transforms of artifacts that *exist* (rename/move/delete) | once, version-keyed |
+| [MIGRATIONS.md](MIGRATIONS.md) | non-additive transforms of artifacts that *exist* (rename/move/delete, default change, in-file token rewrite, whole-file or whole-section re-take) | once, version-keyed |
 | Template reconciliation ([SPEC-FRAMEWORK.md](SPEC-FRAMEWORK.md)) | additive splices *within files that exist* (`##` sections, `- [ ]` items, rows) | every sync |
 | **CAPABILITIES.md** (this file) | **whole-file presence + wiring** of capability-critical scaffold | every sync |
 

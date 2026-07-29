@@ -25,9 +25,12 @@ the toolchain-install logic lives; `/steer:init` and `/steer:build` call here
 rather than carrying their own copies.
 
 **What a skill cannot do — the manual floor.** Installing **Claude Code** itself,
-**adding the steer marketplace**, and the **Docker Desktop** app are GUI/host
-steps no skill can perform (a skill can't run before its host exists). This skill
-*detects* and *links* them; for everything below the floor — mise and the
+**adding the `e22-plugins` marketplace**, and the **Docker Desktop** app are GUI/host
+steps no skill can perform (a skill can't run before its host exists). **`git` is on
+the floor too**, for a different reason: installing it is a `sudo`/host command
+(`xcode-select --install`, `sudo apt-get install git`), which this skill presents for
+you to run rather than running itself. This skill
+*detects* and *links* everything on the floor; for everything below it — mise and the
 runtimes it manages — it installs with your confirmation.
 
 ## 1. Detect — run the scan, don't eyeball

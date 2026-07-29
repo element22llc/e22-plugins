@@ -30,7 +30,10 @@ line* in a materialized file needs an entry just as much as moving the file does
 procedural instruction a skill or a human then follows (a step in
 `spec/tracker.md`, a documented command in a profile `README.md`) is squarely in
 scope: leaving the old wording in place keeps the consumer executing the behaviour
-the change exists to remove.
+the change exists to remove. **Below the bar:** a comment or prose line that only
+*describes* behaviour — one no skill reads and no human executes — needs no entry,
+even though it is technically a replaced line. The distinguishing question is whether
+anything acts on the words.
 
 ## How a migration is applied
 
@@ -77,6 +80,41 @@ Name the file and say what to carry forward.
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.24.0 — a member resolves the spine on the workspace *manifest*, not a directory
+
+- **What & why:** `spec/PRODUCT.md`'s spine-resolution ladder said step 1 was
+  "`workspace.path` set **and the directory exists**". A relative `path` resolves
+  against the repo's **primary checkout**, so from a linked worktree
+  (`.claude/worktrees/<name>`) the recommended `..` lands on a real but **empty**
+  directory — the test passed, the spine read as present, and every skill resolving
+  it from that member saw an empty tree and reported the product's specs as absent.
+  The ladder now requires `spec/workspace.yml` **at** that path, resolves against the
+  primary checkout, and treats a resolved path with no manifest as *no local
+  checkout* (so step 2's gateway route fires instead). `spec/PRODUCT.md` is
+  materialized in **every** polyrepo member. Additive reconciliation cannot carry it:
+  `template-reconcile.sh` anchors on `##`/`###` headings and `- [` items, so a
+  rewritten numbered item under an unchanged `## Resolving the spine` heading offers
+  no anchor at all.
+- **Precondition:** the member's `spec/PRODUCT.md` still carries the directory-only
+  test. Once applied, re-running is a no-op:
+
+  ```sh
+  grep -n 'the directory exists' spec/PRODUCT.md 2>/dev/null
+  ```
+
+- **Action — an in-file token rewrite**, one pair, read-then-propose as a diff:
+  1. Replace step 1's line — `` `workspace.path` set and the directory exists → read
+     the spine from there.`` — with the current template's step 1, taken verbatim from
+     `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`'s `## Resolving the spine`
+     section (the manifest requirement, the primary-checkout resolution, and the
+     no-manifest-means-no-local-checkout clause).
+  2. **Leave steps 2 and 3 alone** — the gateway fallback and the stop-on-neither rule
+     are unchanged, and step 3's split-brain warning is what step 1 now actually
+     upholds.
+  **False-positive guard:** rewrite only in a **member**'s own `spec/PRODUCT.md`
+  (`workspace:` frontmatter present); a workspace host has no `PRODUCT.md`, and never
+  touch a `/spec/HISTORY.md` entry quoting the old ladder as history.
+
 ### v3.24.0 — promoted questions keep their `### Q-NNN` block
 
 - **What & why:** `spec/tracker.md`'s traceability rule told the reader that promoting
@@ -102,8 +140,8 @@ Name the file and say what to carry forward.
      wording — "then put the ref in that question's `tracker:` field", followed by the
      **Keep the `### Q-NNN` block** sentence and its `/steer:spec validate`
      consequence. Take the replacement text verbatim from
-     `${CLAUDE_PLUGIN_ROOT}/templates/spec/tracker.md`'s `## Traceability` section so
-     the two stay identical.
+     `${CLAUDE_PLUGIN_ROOT}/templates/spec/tracker.md`'s `## Conventions (summary)`
+     section so the two stay identical.
   2. **Leave the rest of the bullet alone** — the 14-day blocking-question escalation
      and the Owners-map routing are unchanged.
   3. If the repo already has questions that were promoted *and deleted* under the old
@@ -230,9 +268,15 @@ Name the file and say what to carry forward.
      same pairs, same profile-gated scope. These are not cosmetic: the README's
      quickstart is the command a human is told to run, and after the rename it names a
      task the repo no longer defines.
-     - `README.md` (the workspace profile replaces the core one): the quickstart
-       `mise run dev` → `mise run ws:dev`, and the same substitution wherever the
-       whole-product `docker:*` tasks are named.
+     - `README.md` (the workspace profile replaces the core one): **every**
+       `mise run dev` → `mise run ws:dev` — the shipped template has **three**
+       (the quickstart, the "before the first" note, and the atomic-cross-repo-commits
+       note), not just the quickstart — plus any whole-product `docker:*` mention.
+     - the workspace `mise.toml`'s `ws:dev` **`description`**: the old text claimed it
+       boots "every member's dev server", which the task no longer does — replace it
+       with the current template's ("Boot the product's backing services; add
+       per-member `depends` (monorepo mode) for the dev servers"). Skip a description
+       the consumer has edited.
      - `compose.yaml` (also profile-replaced): the header comment naming the tasks to
        delete alongside the file — `ws:docker:*` / `ws:dev`.
      - `.worktreeinclude`: the cleanup instruction naming `docker:clean` gains the

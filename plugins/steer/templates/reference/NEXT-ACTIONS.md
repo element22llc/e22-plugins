@@ -202,8 +202,11 @@ system (it is either pre-launch or live), so at most one appears.
   or the literal sentence `No action is currently required.`
 - **`Suggested command` is optional.** Include it on its own line *only* when a
   real, applicable plugin (or built-in) command advances the action. Omit it when the
-  next step is human or external — rotating a credential, a PO approving an intent,
+  next step is human or external — rotating a credential,
   a reviewer reviewing a PR, or configuring an external system are **not** commands.
+  (A PO approving an intent *is* promptable and does carry a command — see the
+  in-session carve-out above; only an approval from a PO who is **not** in the session
+  is command-less.)
   *Actively watching CI to conclusion and fixing a red build, by contrast, is a
   concrete agent step* — name its command (`gh pr checks --watch`, or the harness
   `/loop` over `gh pr checks` when detached). Only the **passive** sense of "wait until a human

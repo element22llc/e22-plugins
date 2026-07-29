@@ -7,7 +7,7 @@ via PR. Releases are cut from accumulated `[Unreleased]` changelog entries.
 
 ```mermaid
 flowchart LR
-    PR[Implementation PR] -->|touches plugins/steer/**| ENTRY["Add CHANGELOG entry<br/>## steer → ### [Unreleased]"]
+    PR[Implementation PR] -->|touches plugins/steer/** or a version-bearing manifest| ENTRY["Add CHANGELOG entry<br/>## steer → ### [Unreleased]"]
     ENTRY --> MERGE[Merge to main]
     MERGE --> REPEAT{More changes?}
     REPEAT -->|yes| PR
@@ -15,9 +15,11 @@ flowchart LR
 ```
 
 1. **Every behavior change** under `plugins/steer/` (skills, rules, hooks,
-   templates, scripts, policy) needs a `CHANGELOG.md` entry under `## steer` →
-   `### [Unreleased]`. `check_changelog.py --base` enforces this on PRs;
-   `tests/` are exempt.
+   templates, scripts, policy) — or to any of the **three version-bearing
+   manifests**, including the root `.github/plugin/marketplace.json`, which sits
+   outside `plugins/steer/` so no prefix reaches it — needs a `CHANGELOG.md` entry
+   under `## steer` → `### [Unreleased]`. `check_changelog.py --base` enforces this
+   on PRs; `tests/` are exempt.
 2. **Implementation PRs do not bump** `plugins/steer/.claude-plugin/plugin.json`.
    The `version` bump happens **once**, in the release PR that renames
    `[Unreleased]` to the new `X.Y.Z` — so a stream of PRs cuts one coherent

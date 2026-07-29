@@ -297,14 +297,19 @@ missing them.
 
 ### Non-additive changes: the migration ledger + version stamp
 
-Reconciliation above is **purely additive** — it can splice in a new section but
-cannot express a **rename, move, or deletion**. A renamed file looks to the diff
+Reconciliation above is **purely additive** — it splices in what is missing and
+never rewrites, reorders, or deletes. So it cannot express a **rename, move,
+deletion, default change, in-file token rewrite, or whole-file/whole-section
+re-take**. A renamed file looks to the diff
 like *old-present + new-absent*, so reconciliation would add the new file and
-orphan the old one. Those structural transforms live in the **migration ledger**,
+orphan the old one; a *replaced line* it cannot touch at all. Those transforms live
+in the **migration ledger**,
 [`templates/reference/MIGRATIONS.md`](MIGRATIONS.md) — the single source of truth
-for them. Land a ledger entry in the same change that renames/moves a
+for them. Land a ledger entry in the same change that lands **any non-additive
+transform** to a
 `templates/spec/` or `templates/scaffold/` artifact; never hand-code the transform
-inline in a skill.
+inline in a skill. The test is not "did a file move" but **"can additive
+reconciliation carry it?"**
 
 Each ledger entry is keyed by the plugin version that introduced it and is
 **idempotent and self-detecting** (a precondition that fires only while the

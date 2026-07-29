@@ -24,8 +24,9 @@ path in both this map and that file in the same change.
 **Core is profile-agnostic — every profile installs it, except where a row says
 otherwise:** the `infra/*` rows are marked `Conditional:`; the `infra` profile
 substitutes its own `mise.toml`; and the `workspace` profile substitutes `mise.toml`,
-`compose.yaml` **and** `README.md` (Layer 2 overrides, noted per row). An `infra` repo
-may additionally *delete* the core `compose.yaml` — permission, not substitution.
+`compose.yaml` **and** `README.md` (Layer 2 overrides, noted per row). An `infra`,
+`library` or `cli` repo may additionally *delete* the core `compose.yaml` **and its
+paired `scripts/worktree-env.sh`** — permission, not substitution.
 Read the row, not this heading, when they disagree.
 Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
@@ -38,7 +39,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `CLAUDE.md` | `CLAUDE.md` | Product-specific context only — the org standards are injected by this plugin, never copied in. |
 | `ARCHITECTURE.md` | `ARCHITECTURE.md` | System-architecture + tech-stack overview (the engineer's system model). Auto-populated by `/steer:init`, reverse-engineered by `/steer:adopt`; drift-gated. **Never overwrite** an `ARCHITECTURE.md` that `/steer:adopt` reverse-engineered or a team populated. |
 | `mise.toml` | `mise.toml` | Toolchain (`node`/`python`/`uv` pinned — **mandatory for agent tooling**) + standard tasks (`dev:setup`, `docker:*`, `db:*`). Adapt tasks to the product's stack — a `library`/`cli` prunes `docker:*`/`db:*` **only if it also deletes `compose.yaml`**: the always-on worktree and end-of-session rules mandate `mise run docker:clean`, so a repo that keeps the compose file must keep the tasks (same coupling the `infra` profile states). No `mise.lock` ships — `/steer:init`/`/steer:adopt` create and commit it (`touch mise.lock`, `mise install`, `mise lock --platform linux-x64,macos-arm64`). Until then CI installs unlocked; never commit an empty lock. **`infra` substitutes `profiles/infra/mise.toml`** and **`workspace` substitutes `profiles/workspace/mise.toml`** (Layer 2). |
-| `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). **Core for every profile** — the containerize-by-default nudge (run services in Docker, not on the host). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). An `infra` repo with no local services may delete it; **`workspace` substitutes `profiles/workspace/compose.yaml`** (Layer 2), which declares no services and `include:`s the members' files instead. |
+| `compose.yaml` | `compose.yaml` | Local backing services (PostgreSQL baseline). **Core for every profile** — the containerize-by-default nudge (run services in Docker, not on the host). Host ports stay env-overridable (`${POSTGRES_PORT:-5432}`). An `infra`, `library` or `cli` repo with no local services may delete it — and deleting it is what licenses pruning the `docker:*`/`db:*` tasks; **`workspace` substitutes `profiles/workspace/compose.yaml`** (Layer 2), which declares no services and `include:`s the members' files instead. |
 | `env.example` | `.env.example` | Documented variable *names* (never values). Pair with a git-ignored `.env`. |
 | `gitignore` | `.gitignore` | Merge into an existing one rather than replacing it — reconcile additively with `scripts/scaffold_reconcile.py` (never removes a repo's own lines). |
 | `gitattributes` | `.gitattributes` | Ships `CHANGELOG.md merge=union` so concurrent PRs appending bullets under `### [Unreleased]` never collide — the built-in `union` driver keeps both sides' added lines, honored by local merge/rebase and GitHub's merge button. Merge additively if one exists — reconcile with `scripts/scaffold_reconcile.py` (line-based, never removes a repo's own lines). |
@@ -53,7 +54,7 @@ structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 | `policy/branch-protection.yml` | `policy/branch-protection.yml` | **Branch-protection policy** (the GitHub-side PR gate `main` must enforce). Read by `/steer:protect`, which diffs it against the repo's live settings and applies the gap on confirmation. Seeded from the plugin default; the product may tighten it. |
 | `scripts/scan-version-pins.sh` | `scripts/scan-version-pins.sh` | CI version-pin scanner (the committed-state backstop). Shipped so consumer CI runs it without the plugin checked out. Kept byte-identical to the plugin's copy. |
 | `scripts/version-policy.sh` | `scripts/version-policy.sh` | Shared policy parser/decider the scanner sources. Verbatim copy of the plugin's `hooks/lib/version-policy.sh`. |
-| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | **Core for every profile** (pairs with `compose.yaml`). Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. A **`workspace`** repo keeps it too — that is what gives the workspace's aggregated stack a Compose project name distinct from every member's standalone one. |
+| `scripts/worktree-env.sh` | `scripts/worktree-env.sh` | **Core for every profile** (pairs with `compose.yaml`). Sourced by `mise.toml` (`[env]._.source`): gives each Claude Code worktree a unique `COMPOSE_PROJECT_NAME` + a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`) so parallel agents don't collide on Docker/ports. Primary checkout = offset 0 (ports unchanged). Adapt the BASELINE block to the product's services. An `infra`, `library` or `cli` repo with no local backing services may delete it together with `compose.yaml` and the `[env]._.source` line — permission, not substitution. A **`workspace`** repo keeps it too — that is what gives the workspace's aggregated stack a Compose project name distinct from every member's standalone one. |
 
 ## Spec spine (instantiate from `../spec/`)
 
@@ -89,8 +90,10 @@ reason the rest of the spine does.
 
 **A polyrepo member's spine is deliberately partial.** A member installs the Core
 map *minus* the product-level artifacts — no `vision.md`, `users.md`,
-`glossary.md`, `HISTORY.md`, `spec/app/`, `spec/features/`, or `spec/tracker.md`;
-those live once, in the workspace. It keeps `spec/decisions/`, `spec/design/`, and
+`glossary.md`, `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, or
+`spec/sources/README.md`;
+those live once, in the workspace (rule `22-housekeeping` forbids creating
+`spec/sources/` or `spec/reference/` in a member). It keeps `spec/decisions/`, `spec/design/`, and
 gains `spec/PRODUCT.md`. `steer_spine_state` detects that pointer and validates a
 member against the reduced `STEER_SPINE_REQUIRED_MEMBER` set (`hooks/lib/spine.sh`),
 so such a repo reports `managed`, **not** `damaged`. `/steer:sync` and

@@ -139,8 +139,8 @@ These hold for the whole build, at every step.
      platform, breaking CI's `mise install --locked`), and verify each `mise.lock`
      gained a `platforms.linux-x64` `url` + `checksum` block (canonical procedure
      + rationale: `/steer:reference conventions` → "Toolchain: `latest` in
-     config, pinned in the lockfile"). The PO still installs Claude Code and Docker Desktop by hand (the
-     manual floor doctor can only link, not script).
+     config, pinned in the lockfile"). The PO still installs Claude Code, `git` and Docker Desktop by
+     hand (the manual floor doctor can only link or hand over, not script).
 2. **Interview → product spec.** Follow Greenfield step 1 of the spec-framework
    reference (`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md`):
    ask plain-language questions to fill `spec/vision.md`,

@@ -71,6 +71,9 @@ model, or cap turns tightly. A pure read-and-return fan-out has no such loop.
 - `/steer:work --reviewed` spawns a **fresh reviewer subagent** for its plan gate —
   a separate context given the plan, the restated requirements, and the steer rules
   as the rubric.
+- the `/steer:loop` scaffolded workflow spawns one **unconditionally** — rule
+  `53-autonomous-loops` splits ideation from verification, so the reviewer that
+  checks the loop's work is never the context that produced it.
 
 ## 2. Keep durable state in files, not the chat
 
