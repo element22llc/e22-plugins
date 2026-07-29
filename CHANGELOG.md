@@ -7,6 +7,78 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the `ws:` migration entry listed its steps with a dependency **after**
+  its dependent — the `run[0]` swap points a task at `ws.sh preflight`, a subcommand
+  a 3.23.0 `ws.sh` does not have until the re-take step runs. Harmless in practice
+  (a migration lands as one atomic PR, so the intermediate state is never exercised)
+  but wrong to read; the re-take now comes first. Also, `MANIFEST.md` opened Layer 0
+  with the flat claim "Core is profile-agnostic: every profile installs all of it",
+  which its own table contradicts three rows later — the `infra/*` rows are
+  `Conditional:`, and `infra`/`workspace` substitute their own `mise.toml` /
+  `compose.yaml`.
+- **Fixed:** the `ws:` migration entry's `monorepo_root` step said to move the
+  commented block "contents unchanged", which would have **reproduced the very bug the
+  step exists to fix**. The pre-change block is headed by its own commented
+  `# [settings]` line, so moving it intact above the real `[settings]` still leaves
+  `# monorepo_root` nested under a commented `[settings]` — and the file's own
+  instruction is "uncomment in place", so the dev ends up with
+  `settings.monorepo_root`, which mise rejects as an unknown field, leaving monorepo
+  mode permanently off. It also dragged along `# lockfile = false`, which current
+  guidance says to leave unset because the pinned mise release rejects the key. The
+  step now spells out exactly which lines to re-insert and which two to drop.
+  Relatedly, the entry claimed `ws:dev`'s `depends` was "the one" intra-file reference
+  to a renamed task; there are **three**, and the two commented ones matter — the
+  copy-paste `depends` template the dev extends when enabling monorepo mode, and an
+  `[env]` reference to `mise run dev` — while the accompanying "change nothing else
+  inside any task body" actively forbade fixing the first. Additive reconciliation
+  cannot rewrite an existing comment, so the migration was the only thing that could.
+- **Fixed:** the `ws:` migration entry's `run` step was wrong in **both** directions
+  before this, because the ledger is **release**-relative and the two earlier attempts
+  reasoned **commit**-relative. A repo scaffolded at 3.23.0 has a two-element
+  `docker:up` `run` whose `run[0]` is an inline `docker compose config … || { printf
+  … }` guard — and that guard's own message names the **unprefixed** `docker:*` / `dev`
+  tasks, so it is exactly the stale vocabulary this rename exists to remove.
+  `sh scripts/ws.sh preflight` did not predate the rename for that consumer; it
+  arrived inside this same unreleased cycle. So the first attempt ("repoint the
+  `run`") would have replaced the whole array and dropped the
+  `docker compose up -d --wait` that starts the stack, while the second ("leave every
+  `run` alone") left the stale guard in place and made step 5's stated reason —
+  re-take `ws.sh` *for the `preflight` subcommand `ws:docker:up` calls* — unmet by
+  step 3. Neither additive reconciliation nor anything else could recover it: the
+  migration is the only mechanism allowed to replace an existing string. The entry now
+  enumerates `run[0]` as the one old→new pair and says explicitly to leave `run[1]`
+  alone.
+- **Fixed:** three skill `description`s that understated or misstated their own
+  behavior — the always-on routing surface — landed as a **length-neutral set** (+1
+  char total, 11,866 of 11,900), so the ratchet does not move. `questions` claimed
+  only "folding decisions back into the spec" while its step 1 **unconditionally
+  deletes** a legacy `spec/SPEC-QUESTIONS.md` before answering anything and step 6
+  **opens a GitHub issue**; `standards` said that in Claude Code it "only repeats" the
+  injected rules, false wherever injection is `inject-when`-scope-filtered — 22 of the
+  35 rules are gated, and the skill reads all 35, so on a knowledge-work folder it
+  loads 22 the session never had; `doctor` advertised installing **git and Docker**,
+  which its own manual floor says it cannot (git is a sudo command handed over, Docker
+  a GUI app), against a frontmatter that grants no install verb for either.
+- **Fixed:** `/steer:tidy`'s known-dirs list omitted `policy/` — six of the seven
+  rule `22-housekeeping` names. `policy/` is Layer-0 core scaffold present at the root
+  of every managed repo (it holds the version pins and the branch-protection data
+  `/steer:protect` reads), so a sweep driven from the skill summary alone could
+  classify it as a stray and move it. Same omission class as the missing `scripts/`
+  entry a previous rules-ceiling raise was spent fixing.
+- **Fixed:** the `steer-reviewer` agent enumerated its callers exhaustively and left
+  out the one rule 53 **mandates** — the `/steer:loop` scheduled workflow, whose
+  split-ideation-from-verification step routes the check through exactly this agent.
+  Symmetrically, `/steer:loop`'s description advertised drafting "in **reviewed**
+  worktrees" while its body's own summary of the loop never mentioned a review step
+  at all, leaving the mandated gate visible only in the workflow template's prompt.
+- **Fixed:** the README inventory under-described eight skills' shipped surface,
+  worst of all omitting **`/steer:work --hotfix`** entirely — the one
+  incident-response path steer advertises, with its own always-on rule and its own
+  `/steer:help` journey group, invisible in the public inventory. Also added
+  `spec clarify`, `questions bundle`, `intake clarify`/`status`, `sync --check`,
+  `roadmap`'s no-arg preview + `sync`, `adr accept <n>` (the only Proposed→Accepted
+  path), and `loop verify`/`remove`.
+
 - **Fixed:** the trunk-push claim corrected in rule `45` was still standing, in the
   same wrong form, in the two places that carry it to a reader. `GATES.md` said
   "each one waits for a human yes" **and attributed it to rule `45` by name**, so
@@ -265,7 +337,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `check_context_budget.py --report`) as the only current measurement. The target
   stays 62,500 B. The skill-listing ratchet
   is **unchanged** at 11,900 chars: the `description` corrections below were paid
-  for by trimming inside those same entries, per that ratchet's own policy.
+  for by trimming inside those same entries, per that ratchet's own policy — with one
+  exception to record honestly. Two trigger phrases were cut, not just redundancy:
+  `init`'s `@github-handle` and `help`'s `"what can you do?"`. `@github-handle` has
+  been **restored** — it is a blocking unresolved placeholder that `/steer:init`
+  gates on and `/steer:setup` routes on, so its absence was a real routing hole.
+  `"what can you do?"` stays cut **deliberately**: unqualified, it is at least as
+  likely to be a question about the assistant's own capabilities as about steer's, and
+  `help`'s entry retains three unambiguous triggers (`"what can steer do?"`,
+  `"show me the commands"`, `"list the skills"`).
 - **Fixed:** five skill `description`s did not describe what their bodies do — the
   always-on routing surface, so an unannounced capability is invisible exactly where
   routing happens (six corrections across the five; `audit` needed two). `audit`,

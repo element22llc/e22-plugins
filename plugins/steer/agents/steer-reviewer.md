@@ -1,8 +1,10 @@
 ---
 name: steer-reviewer
 description: >-
-  Read-only worker invoked explicitly by /steer:audit, /steer:audit spec, and
-  /steer:work --reviewed (optional code-gate standards check) to
+  Read-only worker invoked explicitly by /steer:audit, /steer:audit spec,
+  /steer:work --reviewed (optional code-gate standards check), and the
+  /steer:loop scaffolded workflow (rule 53's split-ideation-from-verification
+  step) to
   analyze ONE bounded slice (a single audit dimension, or a single feature's
   as-built-vs-intended diff) in an isolated context and return a compact,
   evidence-cited findings summary. Not for general use and not for

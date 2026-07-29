@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Detect and install the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — flagging shadowed runtimes, with per-OS guidance and confirmation-gated installs.
+description: Detect the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), Docker — flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI steps handed over.
 ---
 
 <!-- Generated from the steer plugin's skills/doctor/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:doctor` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Detect and install the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), and Docker — flagging shadowed runtimes, with per-OS guidance and confirmation-gated installs.
+**Purpose.** Detect the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), Docker — flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI steps handed over.
 
 **When to use.** Use on a fresh machine, or whenever a tool is missing ("command not found", "tool not found", mise/docker errors), before /steer-init, /steer-build, or `mise run dev:setup`.
 

@@ -21,7 +21,11 @@ path in both this map and that file in the same change.
 
 ## Install map — Layer 0 (Core)
 
-**Core is profile-agnostic: every profile installs all of it.** Dotfiles are
+**Core is profile-agnostic — every profile installs it, except where a row says
+otherwise:** the `infra/*` rows are marked `Conditional:`, and the `infra` and
+`workspace` profiles *substitute* their own `mise.toml` / `compose.yaml` (Layer 2
+overrides, noted per row). Read the row, not this heading, when they disagree.
+Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
 itself); rename on copy as mapped below. The Node project files and per-type
 structure live in **profile overlays** (Layer 1 / Layer 2) — see below.

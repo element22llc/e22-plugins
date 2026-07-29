@@ -35,7 +35,10 @@ ruleset.
 
 **The one invariant, always: the loop closes only up to a human gate — never
 through one** (rule 53). It discovers, triages, drafts in an isolated worktree,
-runs the verify loop, pushes its **own work branch**, and opens a **draft** PR —
+runs the verify loop, has the change checked by an **independent reviewer** it did
+not author with (`steer-reviewer` / `/steer:audit` — rule 53's
+split-ideation-from-verification step; the drafting agent never clears its own
+work), pushes its **own work branch**, and opens a **draft** PR —
 autonomous delivery up to the merge, exactly like an interactive session (Commit
 autonomy). It does **not** merge, deploy,
 push to `main` or any protected branch, ratify an ADR, or handle real secrets.

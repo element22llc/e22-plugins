@@ -1,6 +1,6 @@
 ---
 name: questions
-description: "Sweep every open question across the /spec spine and walk the PO/dev through answering each one, folding decisions back into the spec. bundle mode renders the PO-answerable questions as a fillable questionnaire (Claude Artifact with Markdown fallback) to answer offline."
+description: "Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback)."
 when_to_use: >-
   Use to work down accumulated open questions, before a release or PO-to-dev
   handoff, or to fold in answers ingested via /steer:intake clarify; use bundle

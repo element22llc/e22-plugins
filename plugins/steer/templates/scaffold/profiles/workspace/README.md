@@ -77,7 +77,7 @@ Details: `/steer:reference polyrepo`.
 
 ## What this does not buy
 
-**Atomic cross-repo commits.** `mise run ws:dev` boots the members together and
+**Atomic cross-repo commits.** `mise run ws:dev` brings the members' services up together and
 `mise //backend:test` addresses them as one tree, but a contract change across two
 members is still two PRs that can merge out of order. This topology makes that
 visible; it cannot make it atomic. If you need atomicity, you need a monorepo.

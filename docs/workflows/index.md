@@ -93,7 +93,7 @@ below give the detail.
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. |
+| `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to audit the built app against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace (read-only). |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |

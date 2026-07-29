@@ -13,8 +13,8 @@ Read the full sweep procedure bundled with this plugin:
 Key points (read the file for the full detail):
 
 - The repo **root** holds scaffolding + config only. Everything on the **root
-  allowlist** (and the known dirs `apps/ packages/ configs/ infra/ scripts/
-  spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
+  allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
+  scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
 - **Polyrepo member (`spec/PRODUCT.md` present): never create a product-level
   spine dir locally.** `spec/reference/`, `spec/sources/`, `spec/features/` and
   `spec/app/` belong to the **workspace** — so a stray whose home is one of them
