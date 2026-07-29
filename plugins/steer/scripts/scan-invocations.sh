@@ -37,7 +37,10 @@
 #   <file>\t<lineno>\t<found>\t<class>\t<suggested-fix>
 #   class ∈ legacy-e22 | reference-mode | noncallable-gateway | unknown
 #     legacy-e22           /e22-<skill> pre-rebrand prefix; <skill> resolves
-#                          -> fix /steer:<skill>
+#                          -> fix /steer:<skill>. Also the compound
+#                          /e22-standards:e22-<skill> (the plugin's own old name in
+#                          front of the skill) -> fix /steer:<skill>, taken from
+#                          AFTER the `:e22-`, never from `standards`.
 #     reference-mode       /steer:<mode> where <mode> is a `reference` topic, not a
 #                          skill -> fix /steer:reference <mode>
 #     noncallable-gateway  /steer:<skill> where <skill> is user-invocable:false; a
@@ -153,11 +156,36 @@ for REL in $SURFACES; do
 		fi
 	done
 
-	# `/e22-<tok>` occurrences — pre-rebrand prefix. Skip the marketplace id
-	# (`/e22-plugins`), the one legitimate slash-prefixed e22- token.
+	# `/e22-standards:e22-<tok>` — the COMPOUND pre-rebrand form. The plugin itself
+	# was named `e22-standards`, so a pre-2.0.0 repo carries a doubled prefix; the
+	# real skill token is the one AFTER `:e22-` (MIGRATIONS.md v2.0.0, pair 1).
+	# This pass must run BEFORE the simple one below and is not optional: `standards`
+	# is itself a live skill name, so the simple pass reads `/e22-standards:e22-init`
+	# as the `standards` skill and suggests `/steer:standards` — and RECONCILE.md
+	# applies a legacy-e22 suggested-fix DETERMINISTICALLY, rewriting the line to
+	# the nonsense `/steer:standards:e22-init`. A wrong automatic rewrite of a
+	# consumer's CLAUDE.md is worse than no finding at all.
+	grep -noE '/e22-standards:e22-[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _found; do
+		tok="${_found##*:e22-}"
+		if in_set "$tok" "$SKILLS"; then
+			emit "$REL" "$_ln" "$_found" "legacy-e22" "/steer:$tok"
+		else
+			# doubled prefix around a token that is no longer a skill — legacy, but
+			# the target is a human decision, not a token swap.
+			emit "$REL" "$_ln" "$_found" "unknown" "-"
+		fi
+	done
+
+	# `/e22-<tok>` occurrences — the simple pre-rebrand prefix. Skip the marketplace
+	# id (`/e22-plugins`), the one legitimate slash-prefixed e22- token.
 	grep -noE '/e22-[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _tok; do
 		tok="${_tok#/e22-}"
 		[ "$tok" = "plugins" ] && continue
+		# Don't double-report the head of a compound match the pass above owns.
+		if [ "$tok" = "standards" ] &&
+			sed -n "${_ln}p" "$F" 2>/dev/null | grep -q '/e22-standards:e22-'; then
+			continue
+		fi
 		if in_set "$tok" "$SKILLS"; then
 			emit "$REL" "$_ln" "$_tok" "legacy-e22" "/steer:$tok"
 		else

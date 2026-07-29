@@ -69,7 +69,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
   pnpm/biome (no code here), keeps the agent-runtime baseline and `convert:doc`
   (PO documents land at the spine host), and adds the `ws:*` member tasks —
-  including `ws:dev`, which boots the whole product. Every task the workspace
+  including `ws:dev`, which as shipped boots the members' backing **services**
+  via Compose `include:`; the *app* half (each member's own dev server) needs
+  mise monorepo mode enabled plus one `depends` entry per member with a `dev`
+  task, which `/steer:init` resolves from the manifest. Every task the workspace
   profile defines is `ws:`-prefixed (bar `convert:doc`) so that it cannot shadow
   a member's own task; its `compose.yaml` declares **no services**
   and `include:`s each member's file. The member checkouts are git-ignored

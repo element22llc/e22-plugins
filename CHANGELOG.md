@@ -7,6 +7,47 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:questions` swept a format the spine no longer uses, so on any
+  repo scaffolded from the current template it reported a clean sweep while the
+  SessionStart hook was printing a backlog in the same session. Its gather step
+  grepped for `- [ ]` checkbox items and step 3 says "if there are none, say so and
+  stop" — but `templates/spec/feature-intent.md` and `vision.md` ship structured
+  `### Q-NNN` blocks with **no checkbox**, which is what `check-open-questions.sh`
+  parses and what rule `35-issue-tracker` mandates. The sweep now reads `### Q-`
+  blocks, scopes itself to `status: open|investigating`, skips
+  `<!-- steer:placeholder -->` seeds like the hook does, resolves by setting
+  `status: resolved` plus the `_Resolution:_` line instead of ticking a box, defers
+  by setting `status: deferred`, and picks up the legacy→`Q-NNN` conversion that
+  `MIGRATIONS.md` v1.38.0 assigned to this skill and no step performed. Two places
+  in the same skill (`BUNDLE.md`, and the steps that read `created:`/`impact:`)
+  already assumed the structured format, which is what made the stale half visible.
+- **Fixed:** rule `45-commit-autonomy` overstated the trunk-push gate it owns —
+  the same misstatement `/steer:protect` was corrected for below, in the rule both
+  skills cite as the source. It said trunk pushes "stop being autonomous — each
+  waits for a human yes"; `check-bash-actions.sh` fires that ask **once per
+  session+repo** and downgrades repeats to a non-blocking reminder (a silent allow
+  under `STEER_HOOK_TARGET=copilot`). `check-graduation.sh`, `/steer:work`,
+  `/steer:protect`, and the hook's own fixture all already said "first push each
+  session"; the rule was the lone outlier, and it is the always-on surface.
+- **Fixed:** the self-fault SessionStart notice promised a confirmation step that
+  rule `97-self-report` and `/steer:report` both explicitly abolish. `surface-faults.sh`
+  told the agent to run `/steer:report` to "review a scrubbed bug report and (with
+  your confirmation) file it upstream", while the rule says it "**auto-files** …
+  no confirmation step" and the skill says "**Never pause to ask the user**" — so
+  the injected text directed a pause the ruleset forbids. The notice now states the
+  auto-file contract and names the scrub-by-omission as the safety floor; the same
+  stale wording in `hooks/lib/report-fault.sh`'s header is corrected with it.
+- **Fixed:** `scan-invocations.sh` emitted a **wrong deterministic rewrite** for the
+  one token shape every pre-2.0.0 consumer repo actually carries. `standards` is
+  itself a live skill name, so `/e22-standards:e22-init` — the doubled prefix from
+  when the plugin was named `e22-standards` — matched the simple `/e22-<skill>`
+  branch and suggested `/steer:standards`; `RECONCILE.md` applies a `legacy-e22`
+  suggested-fix **deterministically**, so `/steer:sync` would have rewritten the
+  line to the nonsense `/steer:standards:e22-init`. `MIGRATIONS.md` v2.0.0 has
+  always had the correct rule (take the token *after* `:e22-`), and its own
+  false-positive guard names only `plugins` as the exclusion. The compound form is
+  now matched first and the head is no longer double-reported; three fixtures cover
+  it (511 cases, up from 508) — the previous suite exercised only `/e22-adopt`.
 - **Fixed:** three more always-on rules promised GitHub Copilot mechanisms it does
   not have, and one skill did the same — the sweep further down claimed to have
   found "the rest of it" and had not. Rule `62-hotfix` told the agent a
