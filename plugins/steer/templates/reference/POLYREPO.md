@@ -187,7 +187,7 @@ acme-workspace/
 | `mise run ws:status` | Per member: branch, dirty, `/spec/.version`, and drift between the manifest and `compose.yaml` / `.gitignore`. |
 | `mise run ws:code` | Generate `<product>.code-workspace` (multi-root VS Code). Generated + git-ignored: edit the manifest, not the output. |
 | `mise run ws:list` | List every member the manifest declares — name, repo, branch, profile, local path. |
-| `mise run ws:dev` | Boot the product — every member's services via Compose `include:`, then each member's dev server. |
+| `mise run ws:dev` | Boot every member's services via Compose `include:`. As shipped that is all it does — the dev-server half needs monorepo mode (uncomment `[monorepo]`) plus one `depends` entry per member with a `dev` task; `/steer:init` resolves those from the manifest. |
 | `mise run ws:docker:up` / `ws:docker:down` / `ws:docker:clean` | The aggregated stack alone: start it and wait for health, stop it, or tear it down with its volumes. |
 
 ### Every workspace task is `ws:`-prefixed — and must stay that way

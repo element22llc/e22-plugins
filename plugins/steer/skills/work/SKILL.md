@@ -101,7 +101,8 @@ commit, push, and open/update the PR — the full delivery loop up to the merge
 > the human, and tracker I/O still routes through `/steer:tracker-sync`. In an
 > ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
 > session's first `git push` for confirmation while graduation signals stand
-> (rule 45; repeats carry a non-blocking reminder).
+> (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
+> repeat is a silent allow).
 
 ## Delivery mode
 

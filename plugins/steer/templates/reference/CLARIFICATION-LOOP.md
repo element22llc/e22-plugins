@@ -25,7 +25,8 @@ here; when the contract changes, it changes in this one place.
    `spec/sources/`), segments it into units, maps each unit — by its machine
    key where present — and sorts them into the three-bucket worklist below.
 4. **Fold — `/steer:questions`** (the default resolve flow) applies each routed
-   answer to the spec under its step-6 tier gate and strikes the question.
+   answer to the spec under its step-6 tier gate and closes the question
+   (`status: resolved`, decision in `_Resolution:_`; the block itself stays).
 
 ## The return-document contract
 
@@ -131,7 +132,7 @@ output as it is worked:
   answer**, its **source-ref** (`spec/sources/<id>/versions/<v>/`) and **exact
   quoted span**, marked **`pending /steer:questions fold`**. This is the same
   durable Open-questions write intake already makes when it *raises* a `Q-NNN`
-  in default mode — it is **not** a resolution: intake does not strike the
+  in default mode — it is **not** a resolution: intake does not close the
   question, fold the answer into `intent.md` / `vision.md`, or decide anything.
   The annotation is written **update-in-place per `Q-NNN`** (find the existing
   pending line and replace, not append): if the question already carries a
@@ -153,7 +154,7 @@ proposed-answer annotations / raised `Q-NNN`s, the step-5 gateway routing, and
 unit durably routed — not that every answer has been folded.**
 **`/steer:questions` owns the fold:** it applies its step-6 tier gate to the
 pending answer, writes it into the owning `intent.md` / `vision.md` with the
-source-ref + quoted span as provenance, and strikes the question. Questions
+source-ref + quoted span as provenance, and closes the question. Questions
 never touches the source pointer; intake never folds. Advancing the pointer is
 therefore correct and strands nothing — the pending answers are already durable
 on the `Q-NNN`s.

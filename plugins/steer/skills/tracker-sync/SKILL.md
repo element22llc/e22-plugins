@@ -65,7 +65,8 @@ manual export. It is glue, not a new source of truth.
   disclosure takes human review.
 - **No code, no spec rewrites beyond refs.** The only spec edits this skill makes
   are: an `intent.md` `> Tracker:` line, importing acceptance criteria
-  (append/merge), and striking a promoted `## Open questions` item for its ref.
+  (append/merge), and setting a promoted question's `tracker:` field to its ref
+  (the `### Q-NNN` block itself stays).
   It never edits `/apps`, `/packages`, or `contract.md` behavior.
 
 ## Coupling rules
@@ -160,8 +161,12 @@ and the cross-repo closing-ref rule — is in
   not execute. Scope to *actual* drift (Diverged, Done-but-Missing, genuine
   conflicts) — **never** expected-Missing backlog.
 - **Promote an open question.** Take a `## Open questions` entry that needs an
-  external owner or scheduling, open an issue from it, then **replace the
-  question with the ref** (`#123`) — closing the Rule-35 loop automatically.
+  external owner or scheduling, open an issue from it, then **write the ref into
+  the question's `tracker:` field** (`#123`) — closing the Rule-35 loop
+  automatically. **Keep the `### Q-NNN` block**: the issue carries the same id via
+  `<!-- steer:question-id=Q-NNN -->`, that pair is the bidirectional link
+  (`ISSUE-WORKFLOW.md`), and `/steer:spec validate` fails a promoted question whose
+  `tracker:` ref is missing. Deleting the block breaks marker-based dedup.
 - **New feature request.** From an approved `intent.md`, open a feature-request
   issue using the repo's `.github/ISSUE_TEMPLATE/feature.yml` form fields (or the
   machine-readable issue contract — see the issue-schema reference), and write

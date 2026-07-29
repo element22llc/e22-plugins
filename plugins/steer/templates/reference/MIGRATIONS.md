@@ -55,6 +55,109 @@ legitimate look-alike (e.g. an unchanged marketplace id).
 > Newest first. Each entry: the introducing **version**, **what & why**, a
 > **precondition** (apply only if true), and the **action**.
 
+### v3.24.0 — workspace profile: whole-product `mise` tasks namespaced under `ws:`
+
+- **What & why:** in a **workspace** (polyrepo spine) repo the root `mise.toml` is an
+  *ancestor config* of every member cloned inside it, so an unprefixed task name
+  shadows any member that does not define that name itself. Unprefixed, `mise run
+  dev` inside a member booted the **whole product**, and `mise run docker:clean` in a
+  member that ships no `compose.yaml` dropped **every** member's volumes — the
+  cleanup rule `24-worktrees` tells every agent to run before removing a worktree.
+  The workspace profile therefore renamed its whole-product tasks: `dev` → `ws:dev`
+  and `docker:up` / `docker:down` / `docker:clean` → `ws:docker:*` (`convert:doc` is
+  the one deliberate exception). The always-on rules moved with it — `15-commands`,
+  `24-worktrees` and `99-end-of-session` now name the `ws:` forms — so an
+  **already-scaffolded** workspace repo receives injected rules naming tasks its
+  `mise.toml` does not define until this migration is applied. Additive
+  reconciliation cannot carry it: it splices in what is missing and never renames or
+  deletes, so it would leave both the old and the new task names in place.
+  **Workspace-profile repos only** — a repo whose `## Profile` marker is `app` or
+  `infra` has no `ws:*` tasks and must be left alone.
+- **Precondition:** the repo's `## Profile` marker (in `CLAUDE.md`) is `workspace`
+  **and** its root `mise.toml` still defines any of `[tasks.dev]`,
+  `[tasks."docker:up"]`, `[tasks."docker:down"]`, `[tasks."docker:clean"]`. Once
+  applied, only the `ws:`-prefixed forms remain and re-running is a no-op:
+
+  ```sh
+  grep -nE '^\[tasks\.(dev|"docker:(up|down|clean)")\]' mise.toml 2>/dev/null
+  ```
+
+- **Action:** read-then-propose an **in-file rename** in the workspace repo's root
+  `mise.toml`, then re-take one script. Show the diff first; never clobber a
+  dev-added task.
+  1. Rename the four table headers, longest/most-specific first:
+     `[tasks."docker:clean"]` → `[tasks."ws:docker:clean"]`,
+     `[tasks."docker:down"]` → `[tasks."ws:docker:down"]`,
+     `[tasks."docker:up"]` → `[tasks."ws:docker:up"]`, `[tasks.dev]` →
+     `[tasks."ws:dev"]`. **Leave `convert:doc` unprefixed.**
+  2. Repoint every **task-addressing** reference to a renamed task — there are three,
+     and the two commented ones matter as much as the live one. (A fourth mention
+     lives inside `ws:docker:up`'s `run[0]` guard *message*; step 4 owns that one.)
+     - `ws:dev`'s live `depends = ["docker:up"]` → `depends = ["ws:docker:up"]`. Not
+       cosmetic: a bare `docker:up` in `depends` resolves in the **caller's** task
+       set, so invoked from inside a member it binds to *that member's* task and boots
+       only that member.
+     - the commented copy-paste template just above it,
+       `#   depends = ["docker:up", "//frontend:dev", "//backend:dev"]` →
+       `#   depends = ["ws:docker:up", …]`. This is the line the dev extends when
+       enabling monorepo mode, so leaving it stale hands them the very
+       caller-scope shadowing this migration exists to remove.
+     - the `[env]` comment `` `mise run dev` `` → `` `mise run ws:dev` ``.
+  3. Re-take `scripts/ws.sh` **before** step 4, which repoints a task at its
+     `preflight` subcommand: a repo at 3.23.0 has a `ws.sh` with **no `preflight`**
+     (it arrived later in this same cycle), so taking the script first means no
+     intermediate state ever points at a subcommand that does not exist. It also
+     carries a stale reference of its own — a header comment naming `mise run dev` —
+     and the new script's failure messages name the `ws:`-prefixed forms. Do it
+     **read-then-propose, as a diff, not a verbatim overwrite** — `ws.sh` is not a
+     `verbatim` capability file (only the version-pin scripts are — see
+     [`CAPABILITIES.md`](CAPABILITIES.md)), so a consumer may have added their own
+     `ws:` subcommand; carry those edits forward instead of clobbering them.
+  4. Replace **only the first element** of `ws:docker:up`'s `run` array. A repo
+     scaffolded at 3.23.0 or earlier has a two-element `run` whose `run[0]` is an
+     inline `docker compose config >/dev/null 2>&1 || { printf '…' >&2; exit 1; }`
+     guard — and that guard's own message names the **unprefixed** `docker:*` / `dev`
+     tasks, so leaving it in place keeps the stale vocabulary this rename exists to
+     remove. Replace that one element with `sh scripts/ws.sh preflight` — the same
+     check with a better message, and present because step 3 took it.
+     **Leave `run[1]` — `docker compose up -d --wait` — exactly as it is:** it is the
+     only line that actually starts the stack, so replacing the whole array instead of
+     its first element leaves the task unable to boot anything. Leave every *other*
+     task's `run` alone, and never touch a filled-in value (a dev-added task, an edited
+     description, a resolved `config_roots` list).
+  5. **Replace the whole commented monorepo section, and move it above
+     `[settings]`.** Scope this by *section*, not by the block alone: a repo scaffolded
+     before this change carries the commented `# [settings]` / `# monorepo_root` /
+     `# [monorepo]` block **below** the real `[settings]`, **and** ~15 lines of
+     explanatory prose immediately above it (the comment that opens
+     `# --- Monorepo task addressing …`). Both are template prose and both are wrong
+     now, so **delete the entire run — prose and block — and re-insert the current
+     template's version above `[settings]`**, carrying over only any `config_roots`
+     member entries the dev filled in.
+
+     Two things must not survive the move, and moving the block alone leaves both:
+
+     - **The commented `# [settings]` header.** The file says "uncomment in place", so
+       a dev who uncomments the moved-but-unreshaped block declares `[settings]`
+       **twice** — the config then fails to parse at all (`Cannot declare ('settings',)
+       twice`) and mise cannot load it. (Not a silent unknown-field warning: it is a
+       hard, loud parse error. Either way monorepo mode never turns on, which is the
+       defect this step exists to remove.)
+     - **The `[monorepo].lockfile` guidance.** The old prose says to "Set it
+       EXPLICITLY … `false`" and the old block ships `# lockfile = false`. The current
+       template deliberately leaves the key **unset** — the pinned mise release
+       rejects it outright (`unknown field: monorepo.?.lockfile`) and warns on every
+       invocation. Keeping either the prose or the line re-introduces the advice.
+
+     A repo that already has the section above `[settings]` needs no edit. A repo that
+     has **already enabled** monorepo mode necessarily hand-repaired the nesting to get
+     there — leave its live `[monorepo]` table alone and only reconcile the prose.
+  Follow with additive [Template reconciliation](SPEC-FRAMEWORK.md) for the rest of
+  the file. **False-positive guard:** rename only these four exact table headers and
+  only in a `workspace`-profile repo's **root** `mise.toml` — never a member's own
+  `mise.toml` (a member's `dev` / `docker:*` tasks are correct unprefixed), and never
+  a `dev:setup` / `docker:*` task in an `app`/`infra` repo.
+
 ### v3.23.0 — `spec/design/architecture.md` → `spec/design/architecture-diagram.md`
 
 - **What & why:** the living global architecture diagram shared a basename with

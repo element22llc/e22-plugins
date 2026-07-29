@@ -66,8 +66,9 @@ product-repo-facing version of this.
 `plugins/steer/templates/github/`):
 
 - **`.github/dependabot.yml`** — the `github-actions` ecosystem is enabled live
-  (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` blocks are
-  commented out for init/adopt to **uncomment per detected stack** (mirroring how
+  (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` /
+  `terraform` blocks are commented out for init/adopt to **uncomment per detected
+  stack** (`terraform` is the one an `infra` repo needs) (mirroring how
   `ci.yml` gates stack steps). Updates are grouped, and **major** bumps are
   `ignore`d — they're deferred to a deliberate `policy/versions.yml` decision.
 - **`.github/workflows/dependabot-auto-merge.yml`** — auto-approves Dependabot

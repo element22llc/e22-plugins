@@ -9,8 +9,9 @@
 #   OWN machinery misbehaves (a rules dir vanished, a sourced lib is missing, a
 #   helper script crashed), the hook records a one-line fault to a session-local
 #   log instead. surface-faults.sh raises unreported faults at SessionStart, and
-#   the always-on self-report rule then offers `/steer:report` — which does the
-#   gated, scrubbed, deduped upstream filing with the user in the loop.
+#   the always-on self-report rule then points at `/steer:report` — which does the
+#   scrubbed, deduped upstream filing and AUTO-FILES: no confirmation step (the
+#   scrub's omit-what-you-can't-redact rule is the safety floor, not a prompt).
 #
 # LOG SHAPE
 #   Per-repo, git-ignored, append-only at  <repo-root>/.claude/steer-faults.log.

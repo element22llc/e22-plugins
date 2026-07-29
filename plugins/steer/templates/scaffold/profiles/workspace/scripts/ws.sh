@@ -272,7 +272,7 @@ cmd_code() {
 }
 
 # cmd_check — the manifest against the two files that must agree with it:
-# compose.yaml `include:` (so `mise run ws:dev` boots the whole product) and
+# compose.yaml `include:` (so `mise run ws:dev` boots the members' services) and
 # .gitignore (so a member's code never lands in the workspace's history).
 # Advisory — it prints drift and exits 0. The manifest is the source of truth.
 cmd_check() {

@@ -29,7 +29,7 @@ act only on an explicit yes.
 | `/steer:status` | Read-only delivery snapshot — reports, never edits. |
 | `/steer:explain` | Renders **one feature's spec** as a stakeholder-readable Artifact — presentation only, never authoring. |
 | `/steer:help` | Read-only orientation on the skills and where to start. |
-| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs what's missing. |
+| `/steer:doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
 ## Tier 2 — requires explicit user intent (side-effecting)
@@ -89,9 +89,9 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 
 | Class | Meaning | Repair |
 |---|---|---|
-| `legacy-e22` | a pre-rebrand `e22-<skill>` prefix whose `<skill>` still resolves | **deterministic** — rewrite to `/steer:<skill>` |
-| `reference-mode` | a bare `steer:<mode>` where `<mode>` is a `reference` topic, not a skill | **deterministic** — rewrite to `/steer:reference <mode>` |
-| `noncallable-gateway` | `/steer:<skill>` where `<skill>` is `user-invocable: false` (a user can't type it) | **human decision** — route to a front door (e.g. `spec-scaffold`→`/steer:spec`, `tracker-sync`→`/steer:issues`); the swap changes meaning, so propose, don't auto-rewrite |
+| `legacy-e22` | a pre-rebrand prefix whose `<skill>` still resolves — bare `e22-<skill>`, or the plugin's own former name qualifying it, `e22-standards:e22-<skill>` and `e22-standards:<skill>` (the token is the one **after** the colon, never `standards`). Old-token forms are written here **without** the leading `/`, as in `MIGRATIONS.md`, so this file passes the stale-`/e22-*` lint guard; in a managed repo they carry it | **deterministic** — rewrite to `/steer:<skill>` |
+| `reference-mode` | `<mode>` is a `reference` topic, not a skill — whether written `/steer:<mode>` or with a legacy prefix | **deterministic** — rewrite to `/steer:reference <mode>` |
+| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) — again whichever prefix it arrives with | **human decision** — route to a front door (e.g. `spec-scaffold`→`/steer:spec`, `tracker-sync`→`/steer:issues`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** — the dev decides |
 
 `/steer:sync` auto-applies the two deterministic classes read-then-propose on its PR

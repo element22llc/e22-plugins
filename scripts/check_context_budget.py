@@ -129,7 +129,10 @@ PLUGIN_ROOT = Path("plugins/steer")
 # was shaving rationale, the trade this note twice records as wrong and reverted.
 # Trimming to fit under 66,500 would have left ~16 B of headroom — precisely the
 # margin this note blames for making the last two raises inevitable — so the
-# ceiling is re-armed at the measured total (66,516 B) plus ~1.2%. Target: 62,500.
+# ceiling is re-armed at the total measured when that raise landed (66,516 B) plus
+# ~1.2%. That figure is a historical basis, NOT a current measurement — later
+# factual corrections have grown the tree past it; run --report for the live number.
+# Target: 62,500.
 RULES_TOTAL_MAX_BYTES = 67_300
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
@@ -145,7 +148,30 @@ RULES_TOTAL_MAX_BYTES = 67_300
 # synonym, and a step enumeration the body carries in full — every distinct
 # trigger phrase is retained. Deliberately NOT funded by compressing unrelated
 # skills; that is the trade the RULES note above records as the wrong one.
-LISTING_TOTAL_MAX_CHARS = 11_900
+#
+# RAISED a second time, 11,900 → 12,400, as a deliberate re-arming of the ratchet
+# rather than to fund any specific edit. The re-baseline above landed at 11,879 of
+# 11,900 — **21 chars** — so the very next factual correction to any `description`
+# or `when_to_use` could not be paid for in place. The five-round pre-release audit
+# (#423) hit exactly that: its three description corrections had to be engineered
+# as a *length-neutral* set, which is the ratchet dictating the wording of a
+# correctness fix instead of merely bounding its cost. That is the failure mode the
+# RULES notes above record four times over, each raise made inevitable by the
+# 5-to-32-byte margin left by the one before it. Re-arming at measured+1% would
+# reproduce it a fifth time.
+#
+# The basis for 12,400: the mean per-skill listing entry is ~457 chars
+# (11,879 / 26), so 12,400 buys ~521 chars — one whole additional skill, or roughly
+# eight to ten factual corrections, before the ceiling is load-bearing again. That
+# is the smallest headroom under which "trade prose out first" stays a real policy
+# choice rather than the only physically available move.
+#
+# This does NOT relax the policy. Trading prose out remains the default and the
+# per-skill 1536-char cap in `check_plugin.py` is untouched, so no single skill can
+# consume the new headroom alone. LISTING_TOTAL_TARGET_CHARS deliberately stays at
+# 10,000: the widened gap is the standing invitation to reclaim it, and the report
+# keeps showing it as work outstanding.
+LISTING_TOTAL_MAX_CHARS = 12_400
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------
 # 5,000 tokens at a pessimistic 3.5 bytes/token (see the module docstring). This

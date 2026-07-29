@@ -160,8 +160,8 @@ Two differences from Claude Code matter on **both** Copilot surfaces:
 steer's subagents in the plugin's `agents/` reach VS Code as **custom agents** —
 `.github/agents/<name>.agent.md`, selectable from the Copilot Chat agent picker
 (this is the format formerly called "custom chat modes"/`.chatmode.md`). Today
-that is `steer-reviewer`, the read-only reviewer that `/steer-audit` and
-`/steer-work --reviewed` delegate a single bounded slice to.
+that is `steer-reviewer`, the read-only reviewer that `/steer-audit`,
+`/steer-work --reviewed` and `/steer-loop` delegate a single bounded slice to.
 
 The build renders one `.agent.md` per subagent (`gen_copilot_agents.py`, drift
 gate `check_copilot_agents.py`). The subagent's Claude `tools` (`Read`/`Grep`/
@@ -231,9 +231,14 @@ could block edits.
 Two gates are ported so far, both surfacing as a soft **`ask`** (Copilot prompts
 you to confirm): the **version-pin policy** (`check-version-pins.sh`, a hard
 `deny` on Claude softened to `ask` here) and the **trunk-push graduation gate**
-(`check-bash-actions.sh`, an `ask` on both surfaces). The same hook logic runs on
-both surfaces; each emits Copilot's flat `permissionDecision` envelope when
-invoked with `STEER_HOOK_TARGET=copilot`. The advisory spec-first / issue-first
+(`check-bash-actions.sh`, an `ask` on both surfaces). One hook script serves both
+surfaces, each emitting Copilot's flat `permissionDecision` envelope when invoked
+with `STEER_HOOK_TARGET=copilot` — but the two paths are not identical: the
+trunk-push gate's **repeat** push downgrades to a non-blocking `additionalContext`
+reminder on Claude and to a **silent allow** under Copilot, which has no
+non-blocking channel (`check-bash-actions.sh` — the `STEER_HOOK_TARGET` check on
+the marker-present branch). Rule `45-commit-autonomy` states that caveat inline so
+a Copilot reader sees it. The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
 `check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`
 cannot inject non-blocking context); their intent is carried by the standards in

@@ -1,6 +1,6 @@
 ---
 name: questions
-description: "Sweep every open question across the /spec spine and walk the PO/dev through answering each one, folding decisions back into the spec. bundle mode renders the PO-answerable questions as a fillable questionnaire (Claude Artifact with Markdown fallback) to answer offline."
+description: "Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback)."
 when_to_use: >-
   Use to work down accumulated open questions, before a release or PO-to-dev
   handoff, or to fold in answers ingested via /steer:intake clarify; use bundle
@@ -40,7 +40,9 @@ for a Product Owner to answer offline; see [Bundle mode](#bundle-mode-bundle).
 There is **no `SPEC-QUESTIONS.md`** — questions live next to their context:
 
 - **Per feature** → each `spec/features/*/intent.md` → `## Open questions`
-  (the `- [ ]` items).
+  (the structured `### Q-NNN` blocks — `status` / `impact` / `owner` /
+  `required_before` / `created` / `tracker`; the canonical format is in
+  [`SPEC-FRAMEWORK.md`](../../templates/reference/SPEC-FRAMEWORK.md)).
 - **Product-level** (anything not yet tied to one feature) → `spec/vision.md`
   → `## Open questions`.
 - If present, `spec/PRODUCTIONIZATION.md` → `## Open questions` (dev-facing
@@ -79,18 +81,48 @@ as "stale by that same test".
    **delete the file in this same step** (a move, not an answer; the deletion
    never waits on answers), then sweep the migrated copies below.
 
-2. **Gather.** Collect every open question across the spine. A grep over the
-   `## Open questions` sections finds them — for example:
+2. **Gather.** Collect every open question across the spine. Questions live in
+   structured `### Q-NNN` blocks under `## Open questions` — sweep those, not
+   checkboxes:
+
+   ```sh
+   grep -rn -A8 '^### Q-' spec/vision.md spec/features/*/intent.md \
+     spec/PRODUCTIONIZATION.md 2>/dev/null
+   ```
+
+   The `-A8` window carries the whole field block — **don't read each owning
+   file wholesale**; open just the specific `## Open questions` section when a
+   block needs more. **In scope** are `status: open` and `status: investigating`;
+   skip anything already `resolved` / `deferred` / `cancelled`, and skip any
+   block still marked `<!-- steer:placeholder -->` (an unfilled scaffold seed —
+   `check-open-questions.sh` ignores it for the same reason).
+
+   **Legacy `- [ ]` checkboxes.** A spec predating the structured format may
+   still carry plain `- [ ]` items. In scope are only those **inside a
+   `## Open questions` section and outside any `### ` block** — the scope
+   `check-open-questions.sh` counts as backlog (`inq && !inblk`, skipping a
+   bracketed `[placeholder]` rest) for one deprecation window. The grep below
+   anchors the *section* but cannot express the rest: it has no block state, so
+   **you** must drop any hit that sits inside a `### Q-NNN` block (a sub-task
+   bullet within a question is part of that question, not a separate one — never
+   split it out) or whose text is a bracketed placeholder:
 
    ```sh
    grep -rn -A20 '^## Open questions' spec/vision.md spec/features/*/intent.md \
-     spec/PRODUCTIONIZATION.md 2>/dev/null | grep -E '^\S+:[0-9]+[:-]- \[ \]'
+     spec/PRODUCTIONIZATION.md 2>/dev/null | grep -E '^\S+[:-][0-9]+[:-]- \[ \] '
    ```
 
-   The grep's `-A20` window is usually enough context — **don't read each
-   owning file wholesale**; open just the specific `## Open questions` section
-   when a bullet needs more. Skip items already resolved (`- [x]`) or
-   annotated as a deliberate deferral.
+   **Never sweep a `- [ ]` line outside that section.** `## PO acceptance`, the
+   acceptance criteria, and the productionization gap checklists are `- [ ]` too,
+   and they are **gates** — `/steer:spec approve` ticks them. Converting one into
+   a `Q-NNN` block, or closing it as `resolved`, destroys the PO gate. Confirm
+   each hit's section before touching it.
+
+   In-scope legacy items are swept like any other question, and **converted into
+   a `### Q-NNN` block as you resolve one** — this skill is the opportunistic
+   converter the **v1.38.0** migration entry names
+   ([`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md)); never bulk-rewrite
+   a file just to convert.
 
    **In a polyrepo member** (`spec/PRODUCT.md` present) all three of those paths
    are absent by design, so the grep returns nothing — that is **not** a clean
@@ -162,8 +194,12 @@ as "stale by that same test".
    For each answered question:
    - Update the owning `intent.md` / `contract.md` (or `vision.md`) so the
      decision lives in the durable spec, not just the chat.
-   - **Strike the question from its `## Open questions` list** — `- [x]` with
-     the decision, or remove it once captured elsewhere in the spec.
+   - **Close the question in its `## Open questions` block** — set
+     `status: resolved` and record the decision in its `_Resolution:_` line
+     (the block stays, so its `Q-NNN` id keeps resolving from anything that
+     cites it — a promoted issue, an ADR, a `pending fold` annotation). A
+     legacy checkbox item is converted to a resolved `Q-NNN` block (step 2)
+     rather than merely ticked.
    - **Code-fact answers** carry the grounding (`file:line`), marked
      **dev-sign-off** — confirmed at PR review, not decided now. User-facing
      answers reflect **PO** decisions, other technical answers **dev**
@@ -171,7 +207,7 @@ as "stale by that same test".
    - **Doc-sourced answers** (from `/steer:intake clarify`) are folded with
      their **source-ref** and **exact quoted span** — as code-fact answers
      carry `file:line` — so a mis-mapped clarification is auditable and
-     reversible at PR review, and struck like any other answered question.
+     reversible at PR review, and closed like any other answered question.
    - A hard-to-reverse or cross-cutting answer → **`/steer:adr`**; propagating
      a decision *already made* into a superseding ADR is itself auto-apply.
    - A question that needs a **named owner, blocks multiple features, needs
@@ -192,8 +228,11 @@ as "stale by that same test".
      still-`open` question is a validation failure (`/steer:spec validate`).
 
 7. **Explicit deferral is a valid outcome.** If a question genuinely can't be
-   answered yet, keep the item but annotate **why** (and a revisit trigger) so
-   it reads as a deliberate decision, not neglect — tracked, not rotting.
+   answered yet, set its `status: deferred` and annotate **why** (and a revisit
+   trigger) so it reads as a deliberate decision, not neglect — tracked, not
+   rotting. `deferred` also drops it out of the next sweep and out of the
+   SessionStart count, which is the point: a deferral you must re-triage every
+   session is not a decision.
 
 8. **Never guess a decision.** A human-decision the human can't answer stays
    open, unchanged — don't invent it. (Grounding a *code-fact* in the code is
@@ -202,8 +241,16 @@ as "stale by that same test".
 ## Done when
 
 - A legacy `spec/SPEC-QUESTIONS.md` present at the start no longer exists (step 1).
-- Every swept question is struck with its decision or left open with an
-  explicit deferral reason — none silently dropped or guessed.
+- Every swept question ends in one of exactly three states — `status: resolved`
+  with its decision recorded, `status: deferred` with an explicit reason and a
+  revisit trigger, or **still `open`** because the human who owns it could not
+  answer it yet (step 8). None silently dropped, none guessed.
+  **Never stamp `deferred` on a question merely to close the sweep:** `deferred`
+  drops out of the SessionStart count, so mislabelling an unanswered blocking
+  question hides it from the one mechanism built to resurface it — while
+  `/steer:spec approve` still refuses it. Leaving it `open` is the honest outcome.
+- No legacy `- [ ]` item you resolved this run is left as a checkbox — it is a
+  `### Q-NNN` block now (step 2).
 
 ## Recommend the next action
 

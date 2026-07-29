@@ -58,7 +58,11 @@ owners:
 - **Unresolved product questions** that are *not yet* tracked externally live
   in the owning spec's `## Open questions` (feature `intent.md`, or `vision.md`
   for product-level) — promote one to a tracker item when it needs scheduling
-  or an external owner, then replace the question with the ref. A **blocking**
+  or an external owner, then put the ref in that question's `tracker:` field.
+  **Keep the `### Q-NNN` block:** the issue carries the same id via
+  `<!-- steer:question-id=Q-NNN -->`, and that pair is the bidirectional link —
+  `/steer:spec validate` fails a promoted question with no `tracker:` ref back.
+  A **blocking**
   question still open after 14 days is escalated by the SessionStart hook so it
   can't rot unseen; promotion routes it to a named human via the **Owners map**.
 - **Owners map (`owners:` frontmatter):** maps a question's `owner:` role

@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Sweep every open question across the /spec spine and walk the PO/dev through answering each one, folding decisions back into the spec. bundle mode renders the PO-answerable questions as a fillable questionnaire (Claude Artifact with Markdown fallback) to answer offline.
+description: Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
 ---
 
 <!-- Generated from the steer plugin's skills/questions/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
 
 This mirrors steer's `/steer:questions` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Sweep every open question across the /spec spine and walk the PO/dev through answering each one, folding decisions back into the spec. bundle mode renders the PO-answerable questions as a fillable questionnaire (Claude Artifact with Markdown fallback) to answer offline.
+**Purpose.** Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
 
 **When to use.** Use to work down accumulated open questions, before a release or PO-to-dev handoff, or to fold in answers ingested via /steer-intake clarify; use bundle mode to hand a Product Owner the open questions across every feature at once.
 

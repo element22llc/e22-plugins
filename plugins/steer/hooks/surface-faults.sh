@@ -6,8 +6,9 @@
 #   crashed helper) to a per-repo log via lib/report-fault.sh — they never phone
 #   home themselves (no network/`gh`/time budget on the hot path). This hook is
 #   the one place that reads that log at session start and raises any UNREPORTED
-#   faults into session context, so the always-on self-report rule can offer
-#   `/steer:report` and the user decides whether to file upstream.
+#   faults into session context, so the always-on self-report rule can point at
+#   `/steer:report` — which auto-files upstream after scrubbing and deduping, with
+#   no confirmation step (rule 97-self-report).
 #
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path
@@ -57,9 +58,11 @@ printf 'itself misbehaved, not your code. The unreported faults:\n\n'
 tail -n "${NEW}" "${LOG}" 2>/dev/null | while IFS='|' read -r _ver _src _sig; do
 	printf -- '- `%s` in **%s** — %s\n' "${_ver}" "${_src}" "${_sig}"
 done
-printf '\nThis is a defect in the steer plugin. Run `/steer:report` to review a '
-printf 'scrubbed bug report and (with your confirmation) file it upstream in '
-printf 'element22llc/e22-plugins. Do not silently work around it.\n'
+printf '\nThis is a defect in the steer plugin. Run `/steer:report` — it scrubs, '
+printf 'dedupes, and auto-files upstream in element22llc/e22-plugins with no '
+printf 'confirmation step (rule 97-self-report; the scrub omits anything it '
+printf 'cannot safely redact, which is the safety floor instead of a prompt). '
+printf 'Do not silently work around it.\n'
 
 # Mark these faults surfaced so they are never raised again. Fail-soft.
 printf '%s\n' "${TOTAL}" >"${MARK}" 2>/dev/null || true

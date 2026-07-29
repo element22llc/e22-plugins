@@ -32,8 +32,8 @@ plugins/steer/
 ├── .claude-plugin/plugin.json      # name + version (bump on any behavior change)
 ├── .github/plugin/plugin.json      # Copilot plugin manifest (the generated Copilot target)
 ├── .mcp.json                       # plugin MCP servers (github, context7)
-├── agents/                         # subagents (steer-reviewer — driven by /steer:audit &
-│                                   #   /steer:work --reviewed)
+├── agents/                         # subagents (steer-reviewer — driven by /steer:audit,
+│                                   #   /steer:work --reviewed, and the /steer:loop workflow)
 ├── hooks/                          # SessionStart hooks → inject rules/*.md + orientation;
 │                                   #   PreToolUse/PostToolUse/Stop gates;
 │                                   #   copilot-hooks.json (Copilot-CLI hook variant)

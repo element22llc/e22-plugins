@@ -36,9 +36,11 @@ touches the tracker not at all — gathering uses read-only `Glob` / `Read` /
 
 2. **Gather.** Collect the **same open questions the default flow's
    step-2 sweep (`SKILL.md` → "Steps") identifies** — using the read-only `Grep`/`Read`
-   tools only (step 2's `grep | grep` pipeline is an illustration; reproduce
-   its result without running shell). Read each item's **structured fields** —
-   `status`, `impact`, `owner` — not just the `- [ ]` line. A legacy
+   tools only (step 2's `grep` commands are an illustration; reproduce their
+   result without running shell). Read each `### Q-NNN` block's **structured
+   fields** — `status`, `impact`, `owner` — not just its heading, and honour the
+   same scope: `status: open|investigating`, no `steer:placeholder` seeds, and
+   legacy `- [ ]` items only where they sit **inside** `## Open questions`. A legacy
    `spec/SPEC-QUESTIONS.md` (step 1) is included **read-only**, never silently
    omitted: `Read` its `## Open` items into the gather scoped `[product]`,
    never migrate or delete it here, and add a notice to run the default

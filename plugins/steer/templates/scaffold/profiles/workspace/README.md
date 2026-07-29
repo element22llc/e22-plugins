@@ -30,7 +30,7 @@ copy of a product-level artifact.
 ```sh
 mise run ws:clone     # clone every member declared in spec/workspace.yml
 mise run ws:code      # generate the multi-root <product>.code-workspace
-mise run ws:dev       # boot the whole product (all members' services)
+mise run ws:dev       # boot every member's backing services (see note below)
 mise run ws:status    # per-member branch/dirty/spine version + manifest drift
 mise run ws:sync      # fast-forward each member to its manifest branch
 ```
@@ -77,7 +77,7 @@ Details: `/steer:reference polyrepo`.
 
 ## What this does not buy
 
-**Atomic cross-repo commits.** `mise run ws:dev` boots the members together and
+**Atomic cross-repo commits.** `mise run ws:dev` brings the members' services up together and
 `mise //backend:test` addresses them as one tree, but a contract change across two
 members is still two PRs that can merge out of order. This topology makes that
 visible; it cannot make it atomic. If you need atomicity, you need a monorepo.

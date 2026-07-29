@@ -27,7 +27,7 @@ flowchart TD
 | `.gitattributes` | scaffold | Marks `CHANGELOG.md merge=union` so concurrent PRs appending bullets under `### [Unreleased]` auto-resolve — git's built-in union driver keeps both sides' added lines instead of raising a conflict. |
 | `compose.yaml`, README quickstart | scaffold | Local run + onboarding. Host ports are env-overridable so they don't collide across products or worktrees. |
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. Its header also documents worktree **`mise trust`**: trust is path-keyed, so a new worktree starts untrusted and every `mise run …` there fails on trust until someone trusts it. A Claude Code session started in a worktree inherits the primary checkout's trust automatically (the `check-worktree-trust` session check — see [Hooks](hooks.md)); a plain terminal, or a worktree created mid-session with `git worktree add`, needs one `mise trust` there. |
-| `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos — in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree — spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the always-on **Parallel worktrees** rule. |
+| `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos. **Re-taking this file renames an existing linked worktree's stack**, so tear a running one down first — under the new project name Compose no longer sees the old containers or volumes (recover with `docker compose -p <old-name> down -v`) — in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree — spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the always-on **Parallel worktrees** rule. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. Carries the `<!-- steer:profile=… -->` marker (see Repo profiles). |
 | `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root — narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Keeping it apart from `/spec` (which holds **intent**) is what lets `/steer:audit spec` compare the two. Required at the root by rules `20-layout` and `32-living-docs`, and allowlisted there by `22-housekeeping` so `/steer:tidy` never proposes relocating it. |
 
@@ -69,7 +69,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
   pnpm/biome (no code here), keeps the agent-runtime baseline and `convert:doc`
   (PO documents land at the spine host), and adds the `ws:*` member tasks —
-  including `ws:dev`, which boots the whole product. Every task the workspace
+  including `ws:dev`, which as shipped boots the members' backing **services**
+  via Compose `include:`; the *app* half (each member's own dev server) needs
+  mise monorepo mode enabled plus one `depends` entry per member with a `dev`
+  task, which `/steer:init` resolves from the manifest. Every task the workspace
   profile defines is `ws:`-prefixed (bar `convert:doc`) so that it cannot shadow
   a member's own task; its `compose.yaml` declares **no services**
   and `include:`s each member's file. The member checkouts are git-ignored
@@ -82,9 +85,12 @@ only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
 **traits** via the `inject-when` mechanism, so the injected rule context always
-matches what is on disk. The predicates are `has-apps`, `has-compose`,
-`has-infra`, `has-iac`, `code-project` and `tracker-github`; `lib/scope.sh` also
-defines `polyrepo`, `has-workspace-manifest` and `has-product-pointer`, which are
+matches what is on disk. Only four expressions actually gate a
+shipped rule: `code-project` (19 rules), `has-iac` (`12-stack-infra`),
+`tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
+(`52-deployment`) — so `has-apps` appears only inside that composite.
+`lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,
+`has-workspace-manifest` and `has-product-pointer`, all of which are
 **available but carry no rule today** — the polyrepo topology is deliberately
 delivered by a SessionStart note rather than an always-on rule, so the existence
 of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
@@ -156,7 +162,7 @@ rewrites** (replacing a string that already exists in a materialized file, e.g.
 the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
 never clobbering filled-in content.
 
-Two ledger entries land in **3.23.0**, so a repo syncing up to it should expect
+Two ledger entries landed in **3.23.0**, so a repo syncing up to it should expect
 both: the living global architecture diagram is renamed
 `spec/design/architecture.md` → **`spec/design/architecture-diagram.md`** (a
 `git mv` plus an enumerated in-file token rewrite, so history follows the file
@@ -165,15 +171,18 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-**One scaffold change carries no ledger entry and no reconcile path.** The
-workspace profile's whole-product tasks are now `ws:`-prefixed (`ws:dev`,
-`ws:docker:up` / `down` / `clean`), because an unprefixed name in the workspace's
-`mise.toml` is an ancestor config in every member cloned inside it and shadows any
-member that does not define that name. `mise.toml` is materialized and
-product-owned, so reconciliation does not rewrite it and an
-**already-scaffolded workspace repo does not pick the rename up from
-`/steer:sync`**. Adopt it by hand: rename that repo's whole-product tasks to
-`ws:*` — including `ws:dev`'s `depends`, which resolves in the *caller's* task set
-and would otherwise bind to a member's `docker:up` — and re-take
-`scripts/ws.sh` from the scaffold for its new `preflight` subcommand. Member
-repos and non-workspace profiles are unaffected.
+A further entry covers the workspace task rename. The workspace profile's
+whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /
+`clean`), because an unprefixed name in the workspace's `mise.toml` is an ancestor
+config in every member cloned inside it and shadows any member that does not define
+that name. `mise.toml` is materialized and product-owned, so additive
+reconciliation cannot carry a *rename* — it splices in what is missing and would
+leave both the old and the new names in place. That is exactly the case a ledger
+entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
+headers, repoints every reference to a renamed task (including the live `ws:dev`
+`depends`, which resolves in the *caller's* task set and would otherwise bind to a
+member's `docker:up`), diffs in `scripts/ws.sh` for its `preflight` subcommand,
+replaces `ws:docker:up`'s first `run` element with that `preflight` guard while
+leaving the line that boots the stack alone, and relocates the whole commented
+monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile
+repos, so member repos and non-workspace profiles are untouched.

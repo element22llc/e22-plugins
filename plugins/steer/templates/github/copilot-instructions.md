@@ -587,8 +587,10 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
   works, you first deploy, or a second contributor joins, whichever comes first.
   While a **local** graduation signal (a deploy target or a `prod` branch)
-  stands unaddressed, trunk pushes stop being autonomous — each waits for a
-  human yes until the repo graduates.
+  stands unaddressed, trunk pushes stop being silent — the session's **first**
+  one waits for a human yes, and repeats carry a non-blocking reminder, until
+  the repo graduates. On the Copilot CLI the repeat is a **silent allow** (no
+  reminder channel), so don't retry a declined push there — graduate instead.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
   applies unchanged — you still never merge — but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record

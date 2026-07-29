@@ -173,6 +173,14 @@ Apply the **minimal targeted** change each finding calls for:
 - Respect this repo's frozen-scope rule: fixing an incoherence in `CLAUDE.md`,
   `AUTHORING.md`, `CONTRIBUTING.md`, or a gate script is in scope when the audit
   found it; *redefining* a convention while you are there is not.
+- **Convention mandate (rare, human-granted).** If
+  [`.claude/audit/CONVENTION-MANDATE.md`](../../audit/CONVENTION-MANDATE.md)
+  exists, read it: a human has pre-authorized the convention changes it
+  enumerates, and only those. Fix them like any other finding. Everything outside
+  its scope stays `deferred-for-human` — the file is a list, not a licence. The
+  round that acts on it **deletes it in the same commit** and says so in the
+  ledger; a grant that outlives its round becomes a permanent convention change
+  nobody reviewed. Absent the file, the bullet above governs unchanged.
 
 ### e. Re-gate and commit the round.
 
