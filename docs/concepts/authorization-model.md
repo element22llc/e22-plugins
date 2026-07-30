@@ -146,7 +146,9 @@ wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
 pre-approves the bundled plugin helper scripts *it* executes, under a matching
 interpreter (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
 prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` and
-`/steer:adopt`, `template-reconcile.sh` in `/steer:adopt` and `/steer:build`,
+`/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
+`/steer:build` and `/steer:spec-scaffold`, `scan-capabilities.sh` +
+`scan-invocations.sh` in `/steer:sync`,
 `scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`. The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
 (`issue_read`, `list_issues`, `search_issues`, `add_issue_comment`) sit under

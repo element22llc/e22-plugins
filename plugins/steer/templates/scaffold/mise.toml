@@ -102,7 +102,10 @@ description = "One-command local env: services up, schema migrated, data seeded 
 #
 # Baseline wired to the default stack (Postgres via compose.yaml + Drizzle).
 # Adapt on fork (/steer:init): Python products swap the pnpm calls below for
-# `uv run …`; products without a database delete the db:* tasks and compose.yaml.
+# `uv run …`. An `infra`/`library`/`cli` repo that runs NO local backing services at
+# all may delete `compose.yaml` — and only then may it prune `docker:*`/`db:*`, since
+# the always-on worktree rules mandate `mise run docker:clean`. A repo that keeps
+# compose but has no database drops only the `db:*` tasks.
 #
 # Ordering is DECLARED, not a manual command list: `dev:setup` depends on
 # `db:seed`, which depends on `db:migrate`, which depends on `docker:up` — so the

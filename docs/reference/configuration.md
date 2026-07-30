@@ -124,9 +124,9 @@ back ~120 B of the cost. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 
-The skill-listing ratchet moved once, in 3.23.0, 11,500 → 11,900 chars, for a
-different reason: not a budget concession but a **measurement correction**. It has
-not moved since.
+The skill-listing ratchet has moved twice. The first, in 3.23.0, 11,500 → 11,900
+chars, for a different reason than the rules ceiling: not a budget concession but a
+**measurement correction**.
 `/steer:work`'s `when_to_use` was an unquoted YAML scalar containing `("work on
 #123"`, so ` #` opened a comment and the value silently truncated at 75 of 546
 characters. The ratchet had been calibrated against that truncated value, reading
@@ -135,7 +135,18 @@ necessarily exposed the real total; `work`'s entry was first trimmed 932 → 747
 chars so the raise paid what it could. `LISTING_TOTAL_TARGET_CHARS` stays at
 10,000, again below the ceiling.
 
-The third is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
+The second, 11,900 → 12,400, is a deliberate **re-arming** rather than payment for
+any specific edit. The correction above landed at 11,879 of 11,900 — 21 chars — so
+the next factual fix to any `description` or `when_to_use` could not be paid for in
+place at all. A pre-release audit hit exactly that: three description corrections
+had to be engineered as a *length-neutral set*, which is the ratchet dictating the
+wording of a correctness fix instead of merely bounding its cost. 12,400 buys ~521
+chars — about one mean listing entry — so trading prose out stays a real choice
+rather than the only physically available move. The policy is unchanged: trimming
+first remains the default, `check_plugin.py`'s per-skill 1,536-char cap is untouched
+so no single skill can absorb the new headroom, and the target stays 10,000.
+
+The third *surface* is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
 17,500 bytes. That number is the harness's **compaction re-attach cap** — after
 auto-compaction Claude Code re-attaches an invoked skill but keeps only the
 first ~5,000 tokens of it, so anything past that point is silently dropped

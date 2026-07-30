@@ -113,7 +113,9 @@ exists in one repo while its siblings have nothing to load).
 3. **A member's spine is deliberately partial.** In a member, install
    `spec/PRODUCT.md` (from `templates/spec/product.md`) and *skip* the
    product-level artifacts — no `vision.md`, `users.md`, `glossary.md`,
-   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`. Those live once,
+   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, and no
+   `spec/sources/` (like `spec/reference/`, that one is the workspace's — rule
+   `22-housekeeping` forbids creating it in a member). Those live once,
    in the workspace. Everything else in the phase map is unchanged: the member
    keeps its own `spec/decisions/`, `ARCHITECTURE.md`, tests, CI, and
    `PRODUCTIONIZATION.md` — productionization is per repo, because deployment is.

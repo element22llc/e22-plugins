@@ -63,7 +63,9 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
 - **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/` +
   `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill
   adapts `package.json`); `infra` substitutes a tofu/terragrunt/ansible-flavored
-  **root** `mise.toml` (which still pins `node` and sources `worktree-env.sh`) and
+  **root** `mise.toml` (which still pins `node`, sources `worktree-env.sh`, and
+  defines the core `docker:up`/`docker:down`/`docker:clean` tasks the always-on
+  worktree rules mandate — it keeps the core `compose.yaml`) and
   gets CI that auto-detects `*.tf`/Ansible and runs `tofu fmt` / `ansible-lint`;
   `workspace` **replaces** the core `README.md`, `mise.toml` and `compose.yaml`
   and adds `scripts/ws.sh` plus a `.gitignore` fragment. Its `mise.toml` drops
@@ -79,8 +81,13 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   clones, not submodules, so nothing pins a member SHA.
 
 So a non-app repo is never skipped at bootstrap — it shares all of Core, and an
-`infra` repo that genuinely runs no local services simply deletes the core
-`compose.yaml`. The **installed** repo layout is unchanged by this organization;
+`infra`, `library` or `cli` repo that genuinely runs no local services simply
+deletes the core `compose.yaml`. That deletion is what licenses pruning the
+`docker:*`/`db:*` tasks: keep the compose file and you keep the tasks, because the
+always-on worktree and end-of-session rules mandate `mise run docker:clean`. An `infra`
+repo may drop the paired `scripts/worktree-env.sh` (and its `mise.toml`
+`[env]._.source` line) too; a `library`/`cli` should keep it, since
+`worktree-port-isolation` reports `n/a` only when the stack is `none`. The **installed** repo layout is unchanged by this organization;
 only the plugin's bundle and the init/adopt composition differ.
 
 Always-on **rules** do not read the marker — they self-gate on filesystem
@@ -135,7 +142,8 @@ Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.
 and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
 and the JSON configs (`.claude/settings.json`, `biome.json`,
 `tsconfig`, and the committed editor config `.vscode/extensions.json` /
-`.vscode/settings.json`) — reconcile with `scaffold_reconcile.py`, which unions
+`.vscode/settings.json` / `.vscode/mcp.json`, the last being how Copilot/VS Code
+teammates get the same MCP servers) — reconcile with `scaffold_reconcile.py`, which unions
 JSON arrays and adds missing keys/lines without overwriting, reordering, or
 removing any existing value. The array union is what lets a repo's existing
 `.vscode/extensions.json` recommendations gain the scaffold's (VS Code is the
@@ -157,10 +165,14 @@ that already governed, effective behavior is unchanged.
 against. After a plugin release, `/steer:sync` applies pending structural
 migrations from the ledger, reconciles additively, and re-stamps `.version`.
 Ledger migrations cover the non-additive changes reconciliation cannot express
-— renames and moves (`git mv`), deletions (`git rm`), and **in-file token
+— renames and moves (`git mv`), deletions (`git rm`), **in-file token
 rewrites** (replacing a string that already exists in a materialized file, e.g.
-the `e22-standards` → `steer` rebrand) — each applied read-then-propose,
-never clobbering filled-in content.
+the `e22-standards` → `steer` rebrand), and **whole-file or whole-section
+re-takes** (the file's content, or one bounded region of it, has moved past any
+enumerable set of old→new pairs, so the current template replaces it; a section
+re-take states its region boundaries) — each applied read-then-propose,
+never clobbering filled-in content, and each carrying the consumer's own edits
+forward rather than discarding them.
 
 Two ledger entries landed in **3.23.0**, so a repo syncing up to it should expect
 both: the living global architecture diagram is renamed
@@ -171,7 +183,20 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-A further entry covers the workspace task rename. The workspace profile's
+**Five** further entries are accumulating for the next release. Four are non-additive
+edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
+gains a repo prefix on `COMPOSE_PROJECT_NAME` in a linked worktree (a whole-section
+re-take — and **tear any running linked-worktree stack down first**, or its containers
+and volumes are orphaned under the new project name); `spec/tracker.md`'s promoted-
+question rule is reversed (the `### Q-NNN` block now *stays*, with the ref in its
+`tracker:` field); a polyrepo member's `spec/PRODUCT.md` spine-resolution ladder now
+requires `spec/workspace.yml` to be **present at** `workspace.path` rather than merely a
+directory (resolved against the primary checkout — from a linked worktree the
+recommended relative `..` otherwise lands on a real but empty directory and the
+product's specs read as absent); and `spec/PRODUCTIONIZATION.md`'s open-question seed
+becomes a `### Q-NNN` field block, because the SessionStart hook and `/steer:questions`
+count only those, so the old bullet seed modelled a shape neither one sees. The fifth
+covers the workspace task rename. The workspace profile's
 whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /
 `clean`), because an unprefixed name in the workspace's `mise.toml` is an ancestor
 config in every member cloned inside it and shadows any member that does not define
@@ -181,7 +206,10 @@ leave both the old and the new names in place. That is exactly the case a ledger
 entry exists for, so the rename ships as one: `/steer:sync` proposes the four task
 headers, repoints every reference to a renamed task (including the live `ws:dev`
 `depends`, which resolves in the *caller's* task set and would otherwise bind to a
-member's `docker:up`), diffs in `scripts/ws.sh` for its `preflight` subcommand,
+member's `docker:up`), **re-takes `scripts/ws.sh`** whole — the new script carries
+the `preflight` subcommand the rename points a task at, plus its own stale `mise run
+dev` header comment and `ws:`-prefixed failure messages, so no enumerable pair set
+describes it; a consumer's added `ws:` subcommands carry forward —
 replaces `ws:docker:up`'s first `run` element with that `preflight` guard while
 leaving the line that boots the stack alone, and relocates the whole commented
 monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile

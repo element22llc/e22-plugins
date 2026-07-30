@@ -187,7 +187,7 @@ it against the repo's live settings, and (on your confirmation) applies what's
 missing via the GitHub API. `init`/`adopt` recommend it as the final bootstrap
 step, and `/steer:audit` flags it when it drifts.
 
-Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the version-pin scan), then auto-detects your stack and runs its checks — Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran". Before any app exists, only the hygiene phase runs and `ci` reports that application validation is not yet active. The `design.md` lint job is advisory and intentionally not required.
+Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the version-pin scan), then auto-detects your stack and runs its checks — Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran" — and the root `package.json`'s `--if-present` fan-out does **not** count as a contract, so this bites from the first commit: the Node phase activates as soon as that file exists, and `ci` stays red until some package defines a real `test` script. That is deliberate (Definition of Done), not a misconfiguration — write the first test with the first slice. The `design.md` lint job is advisory and intentionally not required.
 
 #### Dependabot — and the auto-merge exception
 

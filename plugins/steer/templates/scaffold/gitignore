@@ -57,6 +57,9 @@ spec/.work/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+# mcp.json is how Copilot/VS Code teammates get the plugin's MCP servers (Copilot
+# does not read the Claude-only .mcp.json), so it is shared, not per-user.
+!.vscode/mcp.json
 .idea/
 *.swp
 *.swo

@@ -2,11 +2,15 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # `prod` is here because `policy/branch-protection.yml` makes `ci` a REQUIRED
+    # status check on the `prod` promotion branch. Without this trigger the check
+    # never reports on a main -> prod PR and the production gate blocks forever.
+    branches: [main, prod]
   push:
     branches: [main]
 
-# The `ci` job is the single required status check on `main`. It ALWAYS runs
+# The `ci` job is the single required status check on `main` (and on `prod`, where
+# it gates the promotion PR alongside the required review). It ALWAYS runs
 # stack-AGNOSTIC hygiene (actionlint, shellcheck, the version-pin scan), then
 # runs the checks for whatever stack it DETECTS in the repo:
 #   - Node/TS   when package.json or pnpm-workspace.yaml is present
@@ -139,7 +143,13 @@ jobs:
         # A detected stack with no test script would let `pnpm run test`
         # (--if-present) no-op to green. Fail instead — green must mean tests ran.
         run: |
-          if ! git ls-files '*package.json' | xargs grep -lE '"test"[[:space:]]*:' >/dev/null 2>&1; then
+          # The root package.json ships a `--recursive --if-present` fan-out, which is
+          # NOT a test contract — matching it would make this guard self-satisfying on a
+          # freshly scaffolded repo. Require at least one `test` script that is not a
+          # pass-through fan-out.
+          if ! git ls-files '*package.json' \
+               | xargs grep -hE '"test"[[:space:]]*:' 2>/dev/null \
+               | grep -qv -- '--if-present'; then
             echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
             exit 1
           fi

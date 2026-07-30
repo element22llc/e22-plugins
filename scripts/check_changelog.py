@@ -45,7 +45,15 @@ BEHAVIOUR_PREFIXES = (
     "plugins/steer/scripts/",
     "plugins/steer/policy/",
 )
-BEHAVIOUR_EXACT = ("plugins/steer/.claude-plugin/plugin.json",)
+# The three version-bearing manifests. All are consumer-facing: the Claude plugin
+# manifest, the Copilot plugin manifest, and the Copilot marketplace entry that
+# carries steer's released version. `.github/plugin/marketplace.json` lives outside
+# `plugins/steer/`, so no prefix above reaches it — it needs the exact entry.
+BEHAVIOUR_EXACT = (
+    "plugins/steer/.claude-plugin/plugin.json",
+    "plugins/steer/.github/plugin/plugin.json",
+    ".github/plugin/marketplace.json",
+)
 EXEMPT_SUBSTRINGS = ("/tests/",)
 
 _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")

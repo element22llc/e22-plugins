@@ -91,7 +91,9 @@ capture. Read it before your first PR here. The essentials, condensed:
   Scopes in use: `steer`, `hooks`, `skills`, `rules`, `scaffold`, `docs`, `dx`,
   `release`. No commit-lint gate; the PR review is the gate.
 - Two sets of GitHub templates, easy to confuse: `.github/` at the root is **this
-  repo's own** (ships nothing, no changelog entry);
+  repo's own** (ships nothing, no changelog entry) — **except
+  `.github/plugin/marketplace.json`**, the consumer-facing Copilot marketplace,
+  which carries steer's released version and *is* plugin behavior;
   `plugins/steer/templates/github/` is what **consumer repos** get (plugin
   behavior — changelog entry required).
 - Any change to plugin behavior needs a `CHANGELOG.md` entry. Accumulate entries
@@ -184,7 +186,9 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   numbering, hook rules, and a "what I touched → what to run" matrix. Repo-local
   helpers `/new-skill`, `/new-rule`, and `/preflight` scaffold and verify for you.
 - **Behaviour changes are gated twice:** a change under `plugins/steer/`
-  (skills, rules, hooks, templates, scripts, policy) needs a `CHANGELOG.md`
+  (skills, rules, hooks, templates, scripts, policy) — or to any of the three
+  version-bearing manifests, including the root
+  `.github/plugin/marketplace.json` — needs a `CHANGELOG.md`
   `## steer` → `### [Unreleased]` entry — `check_changelog.py --base` enforces
   this on PRs (`tests/` are exempt). The `plugin.json` `version` bump happens
   **once**, at release. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/`

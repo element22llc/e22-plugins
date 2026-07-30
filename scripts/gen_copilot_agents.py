@@ -2,8 +2,9 @@
 """Generate GitHub Copilot custom-agent artifacts from steer's subagents.
 
 steer's subagents live at ``plugins/steer/agents/<name>.md`` and reach Claude
-Code as plugin-scoped subagents (spawned by ``/steer:audit`` and
-``/steer:work --reviewed``). GitHub Copilot in VS Code has a native analog —
+Code as plugin-scoped subagents (spawned by ``/steer:audit``,
+``/steer:work --reviewed``, and the ``/steer:loop`` workflow). GitHub Copilot in
+VS Code has a native analog —
 **custom agents** (``.github/agents/<name>.agent.md``, formerly "custom chat
 modes"/``.chatmode.md``), selectable in the Chat agent picker and invocable as
 subagents. This script ports each steer subagent into that format so a Copilot
@@ -136,8 +137,9 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     )
     preamble = (
         "This is the GitHub Copilot (VS Code) port of steer's "
-        f"`{name}` subagent. Select it from the Chat agent picker, or the "
-        "`/steer-audit` prompt will delegate to it. Apply the org engineering "
+        f"`{name}` subagent. Select it from the Chat agent picker, or a "
+        "delegating prompt (`/steer-audit`, `/steer-work --reviewed`, "
+        "`/steer-loop`) will hand a slice to it. Apply the org engineering "
         f"standards already loaded from `.github/copilot-instructions.md`.{tools_note}"
     )
 

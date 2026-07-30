@@ -186,8 +186,10 @@ matrix):
 - **Tier 3 — hidden from the slash menu** (`user-invocable: false`): still
   model-callable, just not in the menu. Reserved for *internal gateways* a parent
   skill always drives with context a user can't supply by hand — `tracker-sync`
-  (GitHub gateway, called with subcommands by `issues`/`work`) and `spec-scaffold`
-  (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`).
+  (GitHub gateway, called with subcommands by `issues`/`work`, plus `spec`, `roadmap`,
+  `questions`, `next`, `audit`/`status` reads, and `init`/`adopt` for
+  `bootstrap-fields`) and `spec-scaffold`
+  (template instantiator, called with a feature id by `spec`/`build`/`init`/`adopt`/`intake`).
   The specialized skills reached through a front door (`init`/`adopt`/`sync`/`doctor`
   via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via `/steer:issues`;
   `questions` via `/steer:spec`/`/steer:issues`; the `reference` loader) stay
@@ -337,8 +339,12 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   semantic clash still needs a human glance at release time.
 - **Behaviour gate:** `check_changelog.py --base <ref>` requires a `CHANGELOG.md`
   edit when any behaviour file changes. Behaviour prefixes are
-  `plugins/steer/{skills,hooks,rules,templates,scripts,policy}/` plus
-  `plugins/steer/.claude-plugin/plugin.json`. Anything matching `tests/` is
+  `plugins/steer/{skills,hooks,rules,templates,scripts,policy}/` plus all three
+  version-bearing manifests as exact paths —
+  `plugins/steer/.claude-plugin/plugin.json`,
+  `plugins/steer/.github/plugin/plugin.json`, and
+  `.github/plugin/marketplace.json` (which sits outside `plugins/steer/`, so no
+  prefix reaches it). Anything matching `tests/` is
   exempt. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/` are not
   behaviour files and need no entry.
 - `check_changelog.py` also validates (always, no git needed) that `plugin.json`'s

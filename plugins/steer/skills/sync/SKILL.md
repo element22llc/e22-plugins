@@ -56,7 +56,8 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
   or re-triage productionization. Code health is `/steer:audit`; drift is
   `/steer:audit spec`.
 - **The ledger is the source of truth for non-additive changes.** Apply
-  renames/moves/in-file rewrites only from `MIGRATIONS.md` entries — never
+  renames, deletions, in-file token rewrites, and whole-file/whole-section re-takes
+  only from `MIGRATIONS.md` entries — never
   improvise a transform from memory of "what changed."
 - **Capability repair is presence + wiring only.** `CAPABILITIES.md` is the
   source of truth for which files unlock which capability and how to repair a gap.
@@ -165,8 +166,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    **Establish the polyrepo role** via `steer_polyrepo_role` (`lib/scope.sh`)
    before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
    the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
-   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md` — are absent
-   **by design**; they live once in the workspace repo. **Never reinstall them
+   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
+   `spec/reference/` — are absent
+   **by design**; they live once in the workspace repo (rule `22-housekeeping`). **Never reinstall them
    here.** Reconcile only the member's own surface (scaffold, CI, `mise.toml`,
    `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp `/spec/.version` as usual.
    Treating a member as a damaged spine and "repairing" it recreates exactly the
@@ -195,11 +197,16 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    an entry already applied — or never relevant — is a safe no-op). Because the
    precondition is the real gate, when `FROM` is `unstamped` walk the **whole**
    ledger by precondition. Apply each as the ledger directs — `git mv` for
-   renames so history follows, `git rm` for deletions, or an **in-file token
+   renames so history follows, `git rm` for deletions, an **in-file token
    rewrite** (replace only the exact old→new string pairs the entry enumerates,
-   never a broader match) — all **read-then-propose, never clobber** filled-in
-   content. For a token-rewrite entry, run its precondition grep first and show
-   the diff of proposed substitutions before applying. List each migration
+   never a broader match), or a **whole-file or whole-section re-take** (the entry
+   names a file — or one bounded region inside it — whose content moved past any
+   enumerable pair set, so the current template replaces that whole file or region;
+   carry the consumer's own edits forward) — all **read-then-propose, never clobber**
+   filled-in content. For a token-rewrite entry, run its precondition grep first and
+   show the diff of proposed substitutions before applying; for a re-take, show the
+   diff against the consumer's copy — never a blind overwrite — and for a section
+   re-take confirm the entry's stated region boundaries before replacing anything. List each migration
    you're applying (and each skipped, with why) before touching files.
 
 5. **Reconcile the materialized templates (additive)**,

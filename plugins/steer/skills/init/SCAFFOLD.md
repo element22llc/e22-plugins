@@ -10,7 +10,9 @@ present, or if the workspace session that sent you here said so. In a member,
 install `spec/PRODUCT.md` (from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and **skip every
 product-level artifact** below — `vision.md`, `users.md`, `glossary.md`,
-`/spec/HISTORY.md`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`. Those
+`/spec/HISTORY.md`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`, and
+`/spec/sources/` (like `/spec/reference/`, that one is the workspace's — rule
+`22-housekeeping` forbids creating it in a member). Those
 live once, in the workspace. The member still gets its own internals:
 `spec/decisions/`, `spec/design/`, `DESIGN.md`, `ARCHITECTURE.md`,
 `PRODUCTIONIZATION.md`, and the whole non-`spec/` scaffold. Writing the

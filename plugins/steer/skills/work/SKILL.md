@@ -264,7 +264,7 @@ without redefining the subcommands above:
 | PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | PR open, CI red | Blocking now | Fix the failure, re-push, re-watch |
 | PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
-| PR merged but issue still `validate` (stale) | Blocking now | Reconcile to `done` — `/steer:work resume #N` |
+| PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed — a merged PR is necessary, not sufficient (`/steer:work resume #N`) |
 | Issue `done` | Complete | Optional: start another ready issue — `/steer:work start #N`, else `No action is currently required.` |
 
 Choose one `Current recommended action` by precedence. The block recommends only

@@ -174,10 +174,19 @@ When rules are drifted or absent:
    prompt. The piped form below has no terminator and pastes safely at any
    indentation (single-quote the JSON so the shell does not expand `$`):
    ```sh
-   echo '{"required_status_checks":{"strict":true,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
+   echo '{"required_status_checks":{"strict":false,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
      | gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --input -
    ```
-   When you emit the concrete command for a dev, substitute the resolved
+   **Every *policy* value in that body comes from the policy file, not from this
+   example** (`restrictions: null` is the one exception — the API requires the field
+   and the policy does not carry it) —
+   `policy/branch-protection.yml` is the source of truth, and the body above shows
+   its *current* values only as an illustration. Read each field from the policy for
+   the branch in scope (`strict`, `contexts`, the review counts, `enforce_admins`,
+   `required_linear_history`) exactly as you already resolve the `ci` context name
+   from the workflow. Emitting a value this example hardcodes while the policy says
+   otherwise makes the step-4 re-verify report permanent drift on a branch you just
+   "fixed". When you emit the concrete command for a dev, substitute the resolved
    `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
    placeholders or a heredoc in the command you hand them to run. Run this PUT
    **once per branch in scope** (default branch, then each declared branch that

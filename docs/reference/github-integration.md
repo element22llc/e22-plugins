@@ -113,7 +113,13 @@ nothing is ever pushed to `prod` directly.
 
 `/steer:protect` reads `protected_branches` and configures each branch's rules
 (required PR, required `ci` check, no direct pushes); `/steer:sync` keeps the
-policy file and the protection in step as the plugin evolves. See
+policy file and the protection in step as the plugin evolves.
+
+Because `ci` is a *required* check on `prod`, the shipped `ci.yml` must trigger on
+PRs targeting `prod` as well as `main` — its `pull_request.branches` is
+`[main, prod]`. A repo whose `ci.yml` predates that (or was forked from it) sees the
+promotion PR wait forever on a check that never reports; add `prod` to the trigger to
+clear it. See
 [Deployment & environments](../concepts/deployment.md#promotion) for the full
 promotion model.
 

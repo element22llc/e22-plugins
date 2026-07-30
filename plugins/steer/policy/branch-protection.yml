@@ -29,7 +29,10 @@ required_pull_request_reviews:
   required_approving_review_count: 1
   dismiss_stale_reviews: true          # new commits invalidate stale approvals
 
-# The `ci` gate must be green and the branch up to date before merge.
+# The `ci` gate must be green before merge. `strict: false` deliberately does NOT
+# require the branch to be up to date first: on an active repo that forces a
+# rebase-and-rerun on every intervening merge to main, which serializes delivery
+# without catching much CI does not already catch on the merge commit.
 # context is the check-run name; /steer:protect resolves the real name from
 # .github/workflows/ci.yml rather than trusting this string blindly.
 required_status_checks:
@@ -87,8 +90,9 @@ dependabot_security_updates: true
 #     bumps are EXCLUDED — they can carry breaking changes and may need a
 #     policy/versions.yml floor decision, so they stay human-reviewed.
 #   - STILL ENFORCED: the `ci` required check. Auto-merge only completes once CI
-#     is green and the branch is up to date, so a bump that breaks tests, lint, or
-#     the version-pin scan never lands. CI — not a human — guarantees the bump is
+#     is green, so a bump that breaks tests, lint, or
+#     the version-pin scan never lands. (Being up to date with the base is NOT
+#     required — see `strict: false` above.) CI — not a human — guarantees the bump is
 #     safe; only the review is waived, never the tests.
 #   - ENACTED BY: .github/workflows/dependabot-auto-merge.yml (installed via the
 #     scaffold / /steer:sync), NOT by /steer:protect. That workflow waits for the

@@ -10,7 +10,7 @@ Open an issue from the current conversation, prototype, screenshot, or design
 source. Gather the same **semantic fields** the matching Issue Form asks for
 (feature / bug / product-question / improvement) and **render them into the
 machine-readable body** (markers + headings + managed block) — do **not** try to
-submit a Form (it's human UI only). Default labels per kind (`source:po`,
+submit a Form (it's human UI only). Default labels per kind (`source:human`,
 `needs:triage`); enters **Inbox**.
 
 **Before creating, search the corpus** via `/steer:tracker-sync search` (open +

@@ -82,6 +82,24 @@ run = "terragrunt run --all init"
 # sources = ["requirements.yml"]
 # outputs = [".galaxy-installed"]
 
+# --- Local backing services. This profile keeps the core `compose.yaml` and
+# `scripts/worktree-env.sh`, and the always-on worktree/end-of-session rules
+# mandate `mise run docker:clean` before removing a worktree — so these tasks must
+# exist here too, not only in the core mise.toml this file replaces. Definitions
+# are identical to the core ones (scoped to this worktree's COMPOSE_PROJECT_NAME).
+# Delete this block only if you also deleted `compose.yaml`.
+[tasks."docker:up"]
+description = "Start local backing services (compose.yaml) and wait until healthy"
+run = "docker compose up -d --wait"
+
+[tasks."docker:down"]
+description = "Stop this worktree's backing services (data volumes are kept)"
+run = "docker compose down"
+
+[tasks."docker:clean"]
+description = "Tear down this worktree's services AND volumes (run before removing a worktree)"
+run = "docker compose down --volumes --remove-orphans"
+
 # --- Terraform / OpenTofu tasks (delete for an Ansible-only repo) ---
 [tasks."infra:fmt"]
 description = "Check IaC formatting (tofu fmt + terragrunt hclfmt)"
