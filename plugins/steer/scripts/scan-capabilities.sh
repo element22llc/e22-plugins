@@ -184,6 +184,36 @@ else
 	emit "version-pin-enforcement" "present-wired" "$vp_files"
 fi
 
+# --- copilot-surface-current — Copilot reads the CURRENT standards ---
+# Generated artifacts, contractually byte-identical to the plugin source. Copilot
+# support is opt-in at bootstrap, so a repo that never installed it is n/a — never
+# "absent", or sync would install a surface nobody asked for.
+CPI=".github/copilot-instructions.md"
+cp_files="$CPI,.github/prompts,.github/agents,.github/instructions"
+if ! exists "$CPI"; then
+	emit "copilot-surface-current" "n/a" "$cp_files"
+elif ! exists ".github/prompts"; then
+	# Instructions installed but the skill surface never was: half-wired.
+	emit "copilot-surface-current" "mis-wired" "$cp_files"
+else
+	_cp_drift=false
+	cmp -s "$ROOT/$CPI" "$PLUGIN/templates/github/copilot-instructions.md" 2>/dev/null ||
+		_cp_drift=true
+	# Every plugin-side generated file must exist downstream and match byte-for-byte.
+	for _d in prompts agents instructions; do
+		for _f in "$PLUGIN/templates/github/$_d"/*; do
+			[ -f "$_f" ] || continue
+			_b=$(basename "$_f")
+			cmp -s "$_f" "$ROOT/.github/$_d/$_b" 2>/dev/null || _cp_drift=true
+		done
+	done
+	if $_cp_drift; then
+		emit "copilot-surface-current" "mis-wired" "$cp_files"
+	else
+		emit "copilot-surface-current" "present-wired" "$cp_files"
+	fi
+fi
+
 # --- drift-gate — CI hygiene job + PR-template checklists ---
 F=".github/workflows/ci.yml"
 PRT=".github/pull_request_template.md"

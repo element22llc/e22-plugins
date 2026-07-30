@@ -12,6 +12,19 @@ operations and pull-request delivery are NOT gateway operations** — they belon
 to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
+**GraphQL is granted, and this boundary is what limits it.** Projects v2
+issue-field I/O and native blocked-by edges have no REST or MCP equivalent, so
+`gh api graphql` is the only transport for `field-get` / `field-set` /
+`link-blocked-by` / `bootstrap-fields` — and `SKILL.md` pre-approves
+`Bash(gh api graphql:*)` so a *read* never prompts on a direct invocation. That
+grant matches a command-string prefix, so it would equally match a delivery-surface
+mutation GraphQL can express (`mergePullRequest`, `createBranchProtectionRule`,
+repository deletion). **Issue only the queries and mutations this file
+enumerates.** Anything touching PR merge, branch protection, or repo settings is
+out of bounds here regardless of what the grant matches — it belongs to
+`/steer:work` or `/steer:protect` under their own gating. Nothing checks this
+mechanically; it is a prose boundary.
+
 Each operation is MCP-first → `gh` → manual, and reports which path it took:
 
 - **`search`** — find issues by marker (`steer:finding-key`, `steer:feature-id`+kind,

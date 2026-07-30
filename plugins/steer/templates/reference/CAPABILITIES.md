@@ -155,6 +155,33 @@ and **Repair**.
 - **Why it matters:** without it the in-CI `@claude` agent runs standards-less —
   no Definition of Done, no spec/drift discipline.
 
+### copilot-surface-current — Copilot reads the *current* standards
+- **Files:** `.github/copilot-instructions.md`, `.github/prompts/*.prompt.md`,
+  `.github/agents/*.agent.md`, `.github/instructions/*.instructions.md`
+- **Conditional:** `.github/copilot-instructions.md` present. Copilot support is
+  opt-in at bootstrap, so a repo that never installed it is `n/a`, never
+  `absent` — sync must not install a surface nobody asked for. Once the
+  instructions file exists the whole set is in scope (instructions present but no
+  `prompts/` is `mis-wired`, not `n/a`).
+- **Wired-when:** every generated file is **byte-identical** to its plugin source
+  under `${CLAUDE_PLUGIN_ROOT}/templates/github/` (`copilot-instructions.md`,
+  `prompts/`, `agents/`, `instructions/`). These are generated artifacts, so
+  byte-equality is the only meaningful test — any difference means the consumer is
+  reading standards from an older plugin version.
+- **Repair:** **verbatim re-copy** of the differing files from the plugin source.
+  This is the never-clobber exception: those rows are declared "overwrite-managed,
+  copy verbatim, never reconcile" (`MANIFEST.md`), and repo-specific Copilot
+  guidance belongs in a *separate* `*.instructions.md` the consumer owns, which this
+  never touches. Show the file list before copying; never additively splice a
+  generated file.
+- **Verbatim:** yes — re-copy, the never-clobber exception.
+- **Why it matters:** Copilot has no context-injecting SessionStart hook, so this
+  static set *is* its entire standards surface. With no refresh path it freezes at
+  whatever plugin version bootstrapped the repo: a Copilot teammate silently works
+  against retired rules and stale task names while their Claude Code colleagues are
+  current, and every rule correction shipped since bootstrap reaches only half the
+  team.
+
 ### version-pin-enforcement — committed-state version-pin gate
 - **Files:** `policy/versions.yml`, `scripts/scan-version-pins.sh`,
   `scripts/version-policy.sh` (+ the `ci.yml` scanner step, covered by

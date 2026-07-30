@@ -110,18 +110,34 @@ standards load regardless of a teammate's VS Code defaults.
 ## Refreshing after a steer update
 
 The Copilot files are a **static snapshot**, so they go stale when steer's rules
-or skills change. To refresh, update the plugin and re-run init's install step
-from Claude Code:
+or skills change. Refresh them with **`/steer:sync`** from Claude Code:
 
 ```shell
 copilot plugin update steer       # CLI only: pull the new plugin version
 # then, from Claude Code in the repo:
-/steer:init                       # regenerates copilot-instructions.md + prompts/
+/steer:sync                       # re-copies copilot-instructions.md, prompts/,
+                                  # agents/, instructions/ from the new plugin
+/steer:sync --check               # read-only: reports the surface as mis-wired
+                                  # when it has fallen behind
 ```
+
+`/steer:sync` owns this because the refresh is a **capability repair**:
+`copilot-surface-current` is wired only when every generated file is
+byte-identical to its plugin source, and the repair is a verbatim re-copy.
+**`/steer:init` is not the refresh path** — it installs the surface at bootstrap
+and then deliberately stops on an already-initialized repo, so re-running it does
+nothing.
+
+Because Copilot has no context-injecting SessionStart hook, this static set *is*
+its entire standards surface — so a repo that never refreshes leaves Copilot
+teammates working against the rules of whatever plugin version bootstrapped it,
+while their Claude Code colleagues are current. Put the refresh on whoever owns
+plugin updates; the [launch checklist](../team-rollout/launch-checklist.md) carries
+it as a rollout item.
 
 The files are **fully steer-managed** — overwritten on refresh and never
 hand-edited. Repo-specific Copilot guidance belongs in a separate
-`*.instructions.md` file, not in these.
+`*.instructions.md` file, not in these; the re-copy never touches a file you own.
 
 ## Skills on Copilot
 

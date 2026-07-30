@@ -7,6 +7,48 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
+  `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
+  `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**
+  to its plugin source, repaired by verbatim re-copy. Closes a real hole: Copilot has
+  no context-injecting SessionStart hook, so that static set *is* its whole standards
+  surface, yet `MANIFEST.md` and the consumer-facing Copilot marketplace manifest both
+  named "re-run `/steer:init`" as the refresh path while `init` **stops** on an
+  already-initialized repo, and `/steer:sync` had zero Copilot references. The surface
+  therefore froze at whatever plugin version bootstrapped the repo — a Copilot
+  teammate silently worked against retired rules while their Claude Code colleagues
+  were current. Byte-equality is the right test because these are generated artifacts;
+  repo-specific Copilot guidance lives in a *separate* `*.instructions.md` the consumer
+  owns, which the re-copy never touches. Copilot support stays **opt-in**: a repo with
+  no `copilot-instructions.md` reports `n/a`, never `absent`, so sync never installs a
+  surface nobody asked for. This also self-heals the drift found in
+  `copilot-instructions.md` (an agent-executed end-of-session item still naming the
+  pre-rename `docker:clean`) with no ledger entry — the artifact is regenerated from
+  `rules/`, so a plugin-sourced re-copy is the transform.
+- **Fixed:** `/steer:tracker-sync` withheld `gh api` on the rationale that it is "the
+  delivery surface", but **GraphQL is the only transport** for `field-get` /
+  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md`
+  places *inside* the gateway's own tracker-metadata boundary. So a documented **read**
+  prompted on a direct invocation, contradicting the skill's "Reads never confirm."
+  Granted `Bash(gh api graphql:*)` as a scoped carve-out; delivery-surface mutation
+  (PR merge, branch protection, repo settings) stays withheld. **The grant is broader
+  than the boundary and the limit is prose-enforced:** allowed-tools matches a
+  command-string prefix, so it cannot distinguish a Projects field query from
+  `mergePullRequest` or `createBranchProtectionRule`, which GraphQL can also express.
+  Both `SKILL.md` and `OPERATIONS.md` now state that the gateway issues only the
+  enumerated operations and that nothing checks this mechanically. Never widen to
+  `Bash(gh api:*)` — `check_standards.py` bans that form outright.
+- **Fixed:** `/steer:audit spec` made a `contract.md` `path:line` pointer the
+  **mandatory** evidence for every verdict ("never assert a match from the tracker spec
+  alone"), but `## Implementation pointers` is declared *optional*, "not a maintained
+  index", and file-level at best — and **no skill ever writes a `path:line` there**, so
+  the required evidence could never exist and every verdict was formally
+  unevidenceable. Relaxed to the evidence that does exist: cite the `contract.md`
+  **section** that captures the behavior (named or quoted); treat a pointer as
+  corroboration when present, never a requirement; and where code-level confirmation is
+  genuinely needed and no pointer exists, search the repo and cite what you find. The
+  real guarantee — never assert a match from the tracker spec alone — is unchanged.
+
 - **Fixed:** `/steer:status` detected in-flight work from "an **in-progress label**", a
   label that does not exist and that the taxonomy forbids: `LABELS.md` states lifecycle
   state is the `steer:state` marker "(never a label)" and "Do not encode status… as
@@ -923,16 +965,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   rename, the `COMPOSE_PROJECT_NAME` prefix, the promoted-question rule, the
   `spec/PRODUCT.md` spine-resolution ladder, the `PRODUCTIONIZATION.md` open-question
   seed, and the nested-`/infra` `README.md`'s S3 + DynamoDB → native `use_lockfile` prose
-  rewrite), and
-  the key on all six is an assumption the release PR must confirm.** The
-  ledger keys each entry by the version that introduced it, so the heading has to match
-  the bump actually cut: re-key **all six** if this release is not 3.24.0 — this
-  instruction is the *only* compensating control, so an under-count here orphans a real
-  entry. Note the six
-  entries make the minor **non-optional**: a patch cut would ship six entries keyed to a
-  version that never exists, and every consumer's stamp comparison would skip them
-  forever. Weigh the bump
-  against all six, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
+  rewrite).**
+
+  **The bump is decided: `3.24.0` — a minor.** The six ledger headings are keyed to
+  it and are correct as written; **no re-keying is needed**. Had the cut landed
+  anywhere else, all six headings would have had to move with it — that instruction
+  was the only compensating control for the hard-coded keys, so the decision being
+  settled here is what retires the risk. A patch was never available: six entries
+  keyed to a version that never ships would be skipped by every consumer's stamp
+  comparison forever.
+
+  Major was the live alternative and was **considered and declined**. Weigh it
+  against all six entries, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
   mandatory destructive tear-down on the consumer side (an already-running linked
   worktree's containers and volumes are orphaned otherwise), which is the strongest
   "anything a consuming repo must react to" signal in the release. The audit that produced this entry split on that call — the letter of the
@@ -941,8 +985,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   ledger-carried scaffold/spec changes shipped as minors, including v3.23.0 itself,
   which carried both a spec-artifact rename and an MCP-server removal, and no file
   here is renamed or removed (the `ws:` change is an in-file edit to materialized
-  config, which is exactly what the ledger exists to deliver). Keyed to the minor on
-  that precedent; the bump remains the release PR's decision. Mechanically either key
+  config, which is exactly what the ledger exists to deliver). **Resolved in favour of
+  the minor**, on that precedent — so the release PR inherits a made decision, not an
+  open one. The consumer-facing consequences are not waived by that call: the
+  `COMPOSE_PROJECT_NAME` tear-down and the `ws:` task rename both still need a release
+  note a consumer will actually read, and each is carried by a ledger entry that
+  `/steer:sync` proposes. Mechanically either key
   is safe — consumers skip entries at or below their `/spec/.version` stamp, and no
   stamp can sit above an unreleased version — so this is a documentation-correctness
   point, not a delivery risk. It

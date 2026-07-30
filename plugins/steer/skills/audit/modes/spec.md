@@ -32,8 +32,10 @@ first** — there is no as-built spec to compare against.
 1. **The as-built `/spec` spine** — `features/*/intent.md` + `contract.md`,
    `decisions/*`, `vision.md`, `glossary.md`, as produced by a prior
    `/steer:adopt` run. This stands in for the code: its `contract.md` sections were
-   *derived from the real code* and carry the `path:line` pointers. If it's
-   absent, redirect to `/steer:adopt` and stop.
+   *derived from the real code*. A contract's `## Implementation pointers` section
+   is **optional and explicitly not a maintained index** — it may name an owning
+   app/package, a file, or nothing at all — so never depend on it being there. If
+   the spine itself is absent, redirect to `/steer:adopt` and stop.
 2. **The tracker spec export** — markdown files from any issue tracker (Jira,
    Linear, GitHub Issues, …), **one file per epic/issue or per story / task**. A
    coarse-grained file (epic, large issue) contains several sub-items with their
@@ -71,9 +73,17 @@ The tracker export is the *intended* spec. Decompose it into comparable units.
 Map each intended-behavior unit to the as-built `/spec` feature
 (`contract.md`/`intent.md`) that owns it, and classify the comparison. The
 **as-built spec is reality** (it describes the code); the **tracker spec is
-intent**. Cite the as-built evidence — the `contract.md` section and the
-`path:line` pointer it already carries — never assert a match from the tracker
-spec alone.
+intent**. Cite the as-built evidence — **the `contract.md` section** that captures
+the behavior, named or quoted. That section is the required evidence; never assert
+a match from the tracker spec alone.
+
+**Do not require a `path:line` pointer.** If the contract's optional
+`## Implementation pointers` section happens to carry an owning app/package or a
+file, add it as corroboration — but a verdict is fully evidenced without it. That
+section is a hint and "not a maintained index" (`SPEC-FRAMEWORK.md` rule 2), no
+skill writes or maintains `path:line` values into it, so demanding one would make
+every verdict unevidenceable. Where you genuinely need code-level confirmation and
+no pointer exists, search the repo and cite what you find.
 
 | Verdict | Meaning |
 |---|---|
