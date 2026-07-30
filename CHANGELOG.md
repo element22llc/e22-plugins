@@ -7,6 +7,42 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the two golden fixtures pinning "PR merged but issue still `validate`" —
+  `next-actions-fixtures/work-pr-merged-tracker-stale.md` and
+  `next-fixtures/merged-stale-vs-new-work.md` — still expected **`Blocking now`** and the
+  action "*Reconcile* the stale tracker state for #123 to `done`", the exact text this
+  cycle replaced in `/steer:work` and `/steer:next` when that transition was corrected to
+  propose-only. Their READMEs instruct a reviewer to walk a skill's table against each
+  `Given` and confirm the outcome matches, so the shipped fixtures were vetting the
+  corrected skills as **wrong** — and a reviewer trusting them would have an agent
+  *perform* a `validate → done` transition `ISSUE-WORKFLOW.md` reserves for the PO. Both
+  now expect `Human decision required` with a propose-only action, and both name
+  performing the transition as a `Must not`. (The prior round's claim that `/steer:status`
+  was "the last surviving outlier" was wrong: these two were.)
+- **Fixed:** `fixtures/managed-block/README.md` asserted its transform fixtures "**all**
+  model the **same** operation" — the canonical whole-block rewrite to `## Outcome` /
+  `Updated by agent.` — which is true of only **two** of the five pairs on disk.
+  `epic-link-child-feature` appends a child ref *inside* the block and keeps the existing
+  `## Outcome`; `human-form-normalization` appends the block *below* a preserved human
+  body; `schema-migration` rewrites frontmatter markers *outside* it. Applying the
+  documented operation to those three cannot reproduce their `.expected.md`, so a reviewer
+  following the README reads three conformance fixtures as broken. The index table also
+  carried four rows for five pairs — `epic-link-child-feature` was listed nowhere and
+  referenced by no file in the repo. Each row now names the operation it models, and the
+  missing pair is listed.
+- **Fixed:** `/steer:status`'s next-actions block had two further defects, both exposed by
+  this cycle's correction to its acceptance row. (1) Open `owner: product` **blocking**
+  questions were categorized `Recommended`, which `NEXT-ACTIONS.md` reserves for work that
+  is "neither blocking nor release-mandatory"; every peer surface (`/steer:next`,
+  `/steer:questions`, `/steer:issues`) calls that state `Blocking now`. The
+  mis-categorization was inert while both rows sat at the same level — raising the
+  acceptance row to `Human decision required` made it load-bearing, so a client report
+  with unanswered blocking product questions would have headlined "the PO confirms
+  acceptance" instead of "hand the client the questionnaire". Now `Blocking now`. (2) The
+  acceptance row inherited `/steer:work`'s remedy without its **"PR merged"**
+  precondition, while its own trigger (`implemented`, i.e. issue `validate`) also covers
+  the PR-still-open half that `work` and `next` route to "a reviewer reviews". Split into
+  two rows on that precondition.
 - **Fixed:** `/steer:status`'s next-actions row for a feature `implemented` but not
   `validated`/`live` named **`/steer:spec validate <id>`** as the command that "confirms
   acceptance". `validate` is a read-only, GitHub-independent lint over the open-question
@@ -82,17 +118,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   helper-grant list omitted three real grants (`template-reconcile.sh` in
   `/steer:spec-scaffold`, `scan-capabilities.sh` + `scan-invocations.sh` in `/steer:sync`)
   while reading as exhaustive.
-- **Migration coverage — two entries are owed and deliberately NOT written here.** Both
-  are non-additive changes to *materialized* files that this cycle shipped
+- **Migration coverage — one entry written, three still owed and deliberately NOT written
+  here.** The one written is the infra profile's **S3 + DynamoDB → native `use_lockfile`**
+  prose rewrite: it is a *procedural* replacement in `templates/scaffold/infra/README.md`,
+  squarely inside the ledger's own stated scope ("a documented command in a profile
+  `README.md`"), so it needed no convention call and is now a `### v3.24.0` entry — with a
+  guard that keeps the transform to the prose and hands any *live* backend migration off
+  a DynamoDB lock table to the dev as separate, reviewed infrastructure work. The three
+  still owed are non-additive changes to *materialized* files that this cycle shipped
   greenfield-only, and writing them needs a convention call the release PR should make,
-  not this branch: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, and (2) the infra
-  profile's three `docker:*` task tables. The blocker is that the ledger's own scope
-  sentence covers `templates/spec/` and `templates/scaffold/` — **`templates/github/` is
-  neither**, yet every file in it is materialized in a consumer repo, which is precisely
-  how `ci.yml` slipped through. Decide whether the mandate's scope becomes "any
-  materialized template", then write both entries. Until then an already-adopted repo
-  keeps the `main`-only CI trigger while `/steer:protect` requires `ci` on `prod` — the
-  "blocked forever" state, still live for existing repos.
+  not this branch: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, (2) `ci.yml`'s
+  test-contract guard rewrite, and (3) the infra profile's three `docker:*` task tables.
+  The blocker for the first two is that the ledger's scope sentence covers
+  `templates/spec/` and `templates/scaffold/` — **`templates/github/` is neither**, yet
+  every file in it is materialized in a consumer repo, which is precisely how `ci.yml`
+  slipped through twice. Decide whether the mandate's scope becomes "any materialized
+  template", then write all three. Until then an already-adopted repo keeps the
+  `main`-only CI trigger while `/steer:protect` requires `ci` on `prod` — the "blocked
+  forever" state, still live for existing repos — **and** keeps the self-satisfying test
+  contract, so its `ci` can stay green having run no tests. Note that the
+  "**Consumer-visible:**" note on the test-contract bullet above describes only the
+  greenfield effect; unlike its two sibling bullets it carries no "greenfield only"
+  caveat, and adopted repos do not receive the guard at all.
 - **Fixed:** the spine-resolution ladder in `spec/PRODUCT.md` was rewritten earlier in
   this cycle with **no ledger entry**, and nothing could carry it:
   `template-reconcile.sh` anchors on headings and checklist items, so a rewritten

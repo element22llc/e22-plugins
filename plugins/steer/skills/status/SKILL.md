@@ -191,8 +191,9 @@ delegating each to its owner:
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| Open `owner: product` blocking questions in the report | Recommended | Hand the client the questionnaire — `/steer:questions bundle` |
-| A feature is `implemented` but not `validated`/`live` | Human decision required | The PO confirms acceptance (no command confirms it — `validate → done` is propose-only); `/steer:work resume #N` proposes `done` once they have |
+| Open `owner: product` blocking questions in the report | Blocking now | Hand the client the questionnaire — `/steer:questions bundle` |
+| A feature is `implemented`, PR **merged**, not yet `validated`/`live` | Human decision required | The PO confirms acceptance (no command confirms it — `validate → done` is propose-only); `/steer:work resume #N` proposes `done` once they have |
+| A feature is `implemented` with its PR still **open** | Human decision required | A reviewer reviews the PR (no command) |
 | Milestone dates missing / roadmap stale vs shipped work | Recommended | Refresh the timeline — `/steer:roadmap sync` |
 | Report rendered, nothing outstanding for the client | Complete | `No action is currently required.` |
 

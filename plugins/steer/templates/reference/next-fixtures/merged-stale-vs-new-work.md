@@ -12,15 +12,15 @@ state is stale) vs. picking up an unrelated ready issue.
 - Issue #160 is `ready-for-dev` and actionable, not started — even if a human set
   its **Priority** to `Urgent`, that does **not** change the outcome: Priority is a
   within-level tie-break, below the structural safety level, so it cannot lift #160
-  above the level-4 transition on #123.
+  above the level-3 decision on #123.
 
 ## Expected highest-priority action
 
-Reconcile the stale tracker state for #123 to `done`.
+**Propose** `done` for #123 once acceptance is confirmed — a merged PR is necessary, not sufficient.
 
 ## Expected category
 
-Blocking now
+Human decision required (`validate → done` is propose-only, PO-owned for features)
 
 ## Expected suggested command
 
@@ -28,7 +28,10 @@ Blocking now
 
 ## Must not recommend first
 
-`/steer:work start #160`, or claiming the workspace is `Complete`. Finishing the
-current workflow's own next lifecycle transition (level 4) outranks starting
-unrelated optional work (level 6); a merged-but-unreconciled issue is not
-`Complete`.
+`/steer:work start #160`, or claiming the workspace is `Complete`. Routing the
+unfinished lifecycle on #123 (level 3) outranks starting unrelated optional work
+(level 6); a merged-but-unreconciled issue is not `Complete`.
+
+Nor **performing** #123's transition: `validate → done` is propose-only, so the
+navigator names the PO's decision and offers `resume` as the follow-up — it never
+reconciles the state itself.

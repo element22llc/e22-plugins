@@ -374,6 +374,42 @@ Name the file and say what to carry forward.
   `mise.toml` (a member's `dev` / `docker:*` tasks are correct unprefixed), and never
   a `dev:setup` / `docker:*` task in an `app`/`infra` repo.
 
+### v3.24.0 — infra profile: S3 + DynamoDB state lock → native `use_lockfile`
+
+- **What & why:** `infra/README.md`'s `## Conventions` told the reader the state backend
+  is **S3 + DynamoDB locking**, and that "the bucket **and lock table** are bootstrapped
+  once per environment"; its `root.hcl` sketch named the `remote_state` block as
+  "(S3 + DynamoDB)". Always-on rule `12-stack-infra` mandates S3 with the **native
+  `use_lockfile` lock** — S3 conditional writes replace the lock table. Both lines are
+  **procedural**, not descriptive: a human follows the first to bootstrap an environment
+  and the second to write `root.hcl`, so a repo still carrying them provisions and pays
+  for a DynamoDB table the standard no longer wants, and authors a `remote_state` block
+  that contradicts a rule injected into every session. `infra/README.md` is materialized
+  into every infra repo *and* every monorepo with a nested `/infra`, and additive
+  reconciliation can never replace an existing line.
+- **Precondition:** the repo has an `infra/README.md` still naming DynamoDB. Once
+  applied, re-running is a no-op:
+
+  ```sh
+  grep -n 'DynamoDB' infra/README.md 2>/dev/null
+  ```
+
+- **Action — an in-file token rewrite**, two lines, read-then-propose as a diff. Take
+  both replacements verbatim from
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/infra/README.md` so the two stay identical:
+  1. In `## Conventions`, replace the **State backend** bullet with the current
+     template's — S3 with the native `use_lockfile` lock, the **bucket** (no longer "and
+     lock table") bootstrapped once per environment, and the closing sentence "No
+     DynamoDB lock table is needed — S3 conditional writes replace it."
+  2. In the `root.hcl` paragraph, replace `(S3 + DynamoDB)` with
+     `` (S3 + `use_lockfile = true`) ``.
+  **False-positive guard:** rewrite only the repo's own `infra/README.md`, and **only the
+  prose**. Do *not* touch a live `root.hcl`, `*.tf`, or `*.hcl` file — moving a real state
+  backend off a DynamoDB lock table is an infrastructure change with its own plan, review,
+  and blast radius, not a docs rewrite. If the repo's `root.hcl` still configures
+  `dynamodb_table`, say so, land the prose fix, and hand the backend migration to the dev
+  as separate work.
+
 ### v3.23.0 — `spec/design/architecture.md` → `spec/design/architecture-diagram.md`
 
 - **What & why:** the living global architecture diagram shared a basename with

@@ -62,8 +62,9 @@ draft → approved → implemented → validated → live
 ```
 
 `approved` is the owner's sign-off on **intent**, not a technical guarantee —
-the build is vetted by a human dev at PR review (the Verify gate), which is what
-moves the spec to `implemented`. See
+the build is vetted by a human dev at PR review (the Verify gate). That review is
+the quality gate rather than the state write: the spec reads `implemented` from
+PR-open onward, and reaches `validated` only on the PO's acceptance. See
 [Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
 spec is a vetted *target*, not a vetted build.
 

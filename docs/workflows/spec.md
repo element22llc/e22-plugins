@@ -49,8 +49,11 @@ transition has a named owner.
     resolved. It does **not** assert that any implementation is correct, safe, or
     production-ready. A non-technical owner's approval can't carry that assurance,
     and steer deliberately doesn't pretend it does: the technical gate is a human
-    dev reviewing the PR ("review *is* productionization"), which is what moves
-    the spec to `implemented` and later `validated`. Treat an `approved` spec as a
+    dev reviewing the PR ("review *is* productionization"). That review is the
+    quality gate, not a state write — the spec reads `implemented` from the moment
+    the PR is **opened** (issue `in-progress → validate`, before anyone has
+    reviewed it), and reaches `validated` only on the PO's acceptance at an
+    accepted close (`validate → done`, propose-only). Treat an `approved` spec as a
     vetted target, not a vetted build. In
     [solo-trunk mode](../concepts/authorization-model.md) there is no separate dev
     PR gate, so that assurance rests on whoever commits to trunk — read `approved`
