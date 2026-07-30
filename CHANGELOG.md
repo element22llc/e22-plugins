@@ -7,6 +7,43 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:status` detected in-flight work from "an **in-progress label**", a
+  label that does not exist and that the taxonomy forbids: `LABELS.md` states lifecycle
+  state is the `steer:state` marker "(never a label)" and "Do not encode status… as
+  labels", and `bootstrap-labels` creates no lifecycle label — so the filter silently
+  matched nothing and the report's "In progress" section under-counted with no error.
+  `/steer:next` already did this correctly by reading the marker. Now reads `steer:state`
+  (`in-progress` or `validate`) from the issue body, with the label trap called out. This
+  also grounds the acceptance row corrected earlier in this cycle, whose trigger keys on
+  the issue being in `validate` — a marker value the skill was nowhere instructed to read.
+- **Fixed:** the `v3.24.0` infra ledger entry and its docs-site description both
+  mis-stated **which repos carry the file**. Both said or implied the `infra` *profile*,
+  but `MANIFEST.md` installs `infra/README.md` conditionally on **a nested `/infra` dir
+  inside a monorepo** — and such a repo stays profile `app`, explicitly "distinct from the
+  `infra` *profile*". A root-level infra repo keeps these conventions in its **own README**
+  (rule `12-stack-infra`: "Detail in `/infra/README.md` (monorepo) or the repo README"),
+  which the entry does not rewrite. So the most common carrier of the stale prose — an
+  app-profile monorepo with `/infra` — would have read both surfaces and concluded the
+  migration didn't apply to it, while an infra-profile reader would have looked for a file
+  they don't have. Both now name the real carrier and say the root-level case needs a
+  hand check.
+- **Fixed:** `docs/concepts/authorization-model.md` claimed "`gh api`/`gh:*` stay prompted
+  by omission" as a plugin-wide property. `/steer:protect` carries `Bash(gh api repos/*)`
+  — the plugin's **only** `gh api` grant — so `gh api repos/…` reads are silent in a
+  `protect` session, and the page's own enumeration of every skill with scoped frontmatter
+  grants omitted `/steer:protect` entirely. The omission claim is now scoped to the
+  scaffold allowlist, `protect`'s re-grant is named in both places, and the page carries
+  the argument-order invariant that is the *actual* reason its writes still prompt —
+  previously documented only inside the skill, with no docs surface at all.
+- **Fixed:** the migration-coverage note undercounted the owed entries again — **four**,
+  not three. The fourth is the scaffold root `mise.toml`'s prune instruction ("products
+  without a database delete the `db:*` tasks **and `compose.yaml`**", replaced with a
+  conditioned version): a procedural line a human executes, inside `templates/scaffold/`,
+  so in scope on exactly the grounds the `infra/README.md` entry was written on. The note
+  now also splits the four by *whether they need the convention call* — (1) and (2) do,
+  because they live in `templates/github/`; (3) and (4) do not — instead of implying one
+  decision gates all of them, and states why the two in-scope ones were still left for a
+  human.
 - **Fixed:** `/steer:status`'s acceptance row was split earlier in this cycle on a **"PR
   merged" precondition the skill cannot observe.** `status` grants only issue/search read
   verbs (no `gh pr` verb, no PR-read MCP tool), and its own sourcing rule says *not* to
@@ -182,25 +219,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   helper-grant list omitted three real grants (`template-reconcile.sh` in
   `/steer:spec-scaffold`, `scan-capabilities.sh` + `scan-invocations.sh` in `/steer:sync`)
   while reading as exhaustive.
-- **Migration coverage — one entry written, three still owed and deliberately NOT written
-  here.** The one written is the infra profile's **S3 + DynamoDB → native `use_lockfile`**
+- **Migration coverage — one entry written, four still owed and deliberately NOT written
+  here.** The one written is the scaffold `infra/README.md`'s **S3 + DynamoDB → native
+  `use_lockfile`**
   prose rewrite: it is a *procedural* replacement in `templates/scaffold/infra/README.md`,
   squarely inside the ledger's own stated scope ("a documented command in a profile
   `README.md`"), so it needed no convention call and is now a `### v3.24.0` entry — with a
   guard that keeps the transform to the prose and hands any *live* backend migration off
-  a DynamoDB lock table to the dev as separate, reviewed infrastructure work. The three
+  a DynamoDB lock table to the dev as separate, reviewed infrastructure work. The four
   still owed are non-additive changes to *materialized* files that this cycle shipped
-  greenfield-only, and writing them needs a convention call the release PR should make,
-  not this branch: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, (2) `ci.yml`'s
-  test-contract guard rewrite, and (3) the infra profile's three `docker:*` task tables.
-  The blocker for the first two is that the ledger's scope sentence covers
-  `templates/spec/` and `templates/scaffold/` — **`templates/github/` is neither**, yet
-  every file in it is materialized in a consumer repo, which is precisely how `ci.yml`
-  slipped through twice. Decide whether the mandate's scope becomes "any materialized
-  template", then write all three. Until then an already-adopted repo keeps the
-  `main`-only CI trigger while `/steer:protect` requires `ci` on `prod` — the "blocked
-  forever" state, still live for existing repos — **and** keeps the self-satisfying test
-  contract, so its `ci` can stay green having run no tests. Note that the
+  greenfield-only: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, (2) `ci.yml`'s
+  test-contract guard rewrite, (3) the infra profile's three `docker:*` task tables, and
+  (4) the scaffold root `mise.toml`'s prune instruction — "products without a database
+  delete the `db:*` tasks **and `compose.yaml`**" replaced with a conditioned version.
+  **(1) and (2) need a convention call the release PR should make, not this branch:** the
+  ledger's scope sentence covers `templates/spec/` and `templates/scaffold/` —
+  **`templates/github/` is neither**, yet every file in it is materialized in a consumer
+  repo, which is precisely how `ci.yml` slipped through twice. Decide whether the
+  mandate's scope becomes "any materialized template", then write both. **(3) and (4) do
+  *not* need that call** — both are inside `templates/scaffold/`, and (4) is a procedural
+  instruction a human executes, so by the same grounds the `infra/README.md` entry was
+  written on it is already in scope; (3)'s open question is narrower (does a TOML
+  task-table addition need an entry at all, given nothing deterministic carries one).
+  Both were left for a human because this branch's threshold was blockers + high and each
+  new ledger entry this loop wrote produced follow-on defects in the next round. Until all
+  four land, an already-adopted repo keeps the `main`-only CI trigger while
+  `/steer:protect` requires `ci` on `prod` — the "blocked forever" state, still live for
+  existing repos — keeps the self-satisfying test contract, so its `ci` can stay green
+  having run no tests, and keeps a licence to delete `compose.yaml` while rules
+  `24-worktrees` / `99-end-of-session` still mandate `mise run docker:clean`. Note that the
   "**Consumer-visible:**" note on the test-contract bullet above describes only the
   greenfield effect; unlike its two sibling bullets it carries no "greenfield only"
   caveat, and adopted repos do not receive the guard at all.

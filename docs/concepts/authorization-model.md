@@ -149,7 +149,11 @@ prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` a
 `/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
 `/steer:build` and `/steer:spec-scaffold`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:sync`,
-`scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`. The scaffold's MCP allowlist tracks
+`scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`.
+`/steer:protect` likewise declares a scoped grant for what it routinely reads — `gh auth
+status`, `gh repo view`, `git remote`, and the read-scoped `Bash(gh api repos/*)` above —
+while the `gh api` write that applies protection stays prompted (see the argument-order
+note below). The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
 (`issue_read`, `list_issues`, `search_issues`, `add_issue_comment`) sit under
 `allow` so find-before-create is silent, while the **write** tools (`issue_write`,
@@ -160,8 +164,15 @@ the pre-rename names no longer resolve.
 
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks —
 the verify pair (`check`/`ci`) plus `dev` for running the app locally — never the
-wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission (the
-mutation vector for repo delete, PR merge, and branch protection). `check_standards.py`
+wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission **from the scaffold allowlist** (the
+mutation vector for repo delete, PR merge, and branch protection). One skill re-grants a
+narrow slice: `/steer:protect` carries `Bash(gh api repos/*)` — the plugin's only `gh api`
+grant — so *reading* live protection settings is silent in a `protect` session. Its
+**writes** stay prompted, but only because the grant is a path prefix and every write in
+the skill puts `-X PUT`/`-X PATCH` **before** the endpoint path, so it falls outside the
+prefix; a write with the flag after the path would match the read grant and apply with no
+prompt. Argument order is load-bearing there — the same discipline, inverted, as
+`/steer:report` keeping `--repo` first to *stay inside* its grant. `check_standards.py`
 asserts both halves so the split can't regress, and separately asserts every skill
 grants the bundled plugin helper scripts its body — including a factored-out
 `PROCEDURE.md` — invokes, so the prompt-on-every-run class can't creep back.

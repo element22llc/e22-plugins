@@ -135,8 +135,14 @@ Ask `/steer:tracker-sync` for the tracker reads; read `/spec` directly for the r
   (`/steer:tracker-sync` reads closed issues; the `gh` path filters
   `closed:>=<start>`), grouped by feature, in plain language. Include **milestone
   completion** (closed vs total) as a progress meter per active milestone.
-- **In progress** — open issues in an in-progress state (assigned / an
-  in-progress label / linked to a feature currently `implemented` but not `live`).
+- **In progress** — open issues whose **`steer:state` marker** reads `in-progress` or
+  `validate`, grouped by feature. The marker is the lifecycle source of truth — read it
+  from the issue body, **never** a label: per
+  `${CLAUDE_PLUGIN_ROOT}/templates/reference/LABELS.md`, state is "never a label" and the
+  canonical set contains no lifecycle label, so a label filter here silently matches
+  nothing. An assignee may corroborate, never substitute. A `validate` issue is exactly
+  what the next-actions block below reports as `implemented` but not yet
+  `validated`/`live`.
 - **Needs your input** — open questions with `impact: blocking` **and**
   `owner: product` across the spine (`spec/features/*/intent.md`, `vision.md`),
   counted and titled in plain language. The follow-up that lets the client

@@ -215,7 +215,10 @@ leaving the line that boots the stack alone, and relocates the whole commented
 monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile
 repos, so member repos and non-workspace profiles are untouched.
 
-The sixth is an in-file token rewrite in the `infra` profile's `infra/README.md`: its
+The sixth is an in-file token rewrite in the scaffold's `infra/README.md` — the copy
+materialized into **a monorepo with a nested `/infra` dir**, which stays profile `app`,
+*not* the `infra` profile (a root-level infra repo keeps these conventions in its own
+README, which this entry leaves alone). Its
 state-backend prose named **S3 + DynamoDB locking** and told the reader to bootstrap a
 bucket *and lock table*, while rule `12-stack-infra` mandates S3 with the native
 `use_lockfile` lock (S3 conditional writes replace the table). Both lines are

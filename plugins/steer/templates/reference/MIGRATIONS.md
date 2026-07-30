@@ -385,8 +385,12 @@ Name the file and say what to carry forward.
   and the second to write `root.hcl`, so a repo still carrying them provisions and pays
   for a DynamoDB table the standard no longer wants, and authors a `remote_state` block
   that contradicts a rule injected into every session. `infra/README.md` is materialized
-  into every infra repo *and* every monorepo with a nested `/infra`, and additive
-  reconciliation can never replace an existing line.
+  into **every monorepo with a nested `/infra` dir** — `MANIFEST.md` marks that row
+  conditional on the directory, and such a repo stays profile `app`, so this is *not* the
+  `infra` profile. A root-level infra repo (profile `infra`) carries the same conventions
+  in its **own README** instead (rule `12-stack-infra`: "Detail in `/infra/README.md`
+  (monorepo) or the repo README"); this entry does not rewrite that file, so check it by
+  hand if the repo is one. Additive reconciliation can never replace an existing line.
 - **Precondition:** the repo's `infra/README.md` still carries one of the two *stale*
   tokens. Grep for those, **not** for `DynamoDB` on its own — the replacement text ends
   "No DynamoDB lock table is needed", so a bare `DynamoDB` grep fires forever and the
