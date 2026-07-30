@@ -3,7 +3,7 @@ mode: agent
 description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
 ---
 
-<!-- Generated from the steer plugin's skills/adopt/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/adopt/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:adopt` workflow for GitHub Copilot in VS Code.
 

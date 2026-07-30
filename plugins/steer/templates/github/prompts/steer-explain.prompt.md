@@ -3,7 +3,7 @@ mode: agent
 description: 'Render one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback) — status pipeline, acceptance meter, user journey, scope and open-question boards. A read-only derived view: every visual encodes a real spec value; never writes into /spec, /apps, or /packages.'
 ---
 
-<!-- Generated from the steer plugin's skills/explain/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/explain/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:explain` workflow for GitHub Copilot in VS Code.
 

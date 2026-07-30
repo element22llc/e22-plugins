@@ -3,7 +3,7 @@ mode: agent
 description: File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer-issues).
 ---
 
-<!-- Generated from the steer plugin's skills/report/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/report/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:report` workflow for GitHub Copilot in VS Code.
 

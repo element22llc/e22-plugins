@@ -1,6 +1,6 @@
-<!-- Generated from the steer plugin's agents/steer-reviewer.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's agents/steer-reviewer.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 ---
-description: Read-only worker invoked explicitly by /steer:audit, /steer:audit spec, /steer:work --reviewed (optional code-gate standards check), and the /steer:loop scaffolded workflow (rule 53's split-ideation-from-verification step) to analyze ONE bounded slice (a single audit dimension, or a single feature's as-built-vs-intended diff) in an isolated context and return a compact, evidence-cited findings summary. Not for general use and not for auto-delegation; the calling skill vets, ranks, and routes what it returns.
+description: Read-only worker invoked explicitly by /steer-audit, /steer-audit spec, /steer-work --reviewed (optional code-gate standards check), and the /steer-loop scaffolded workflow (rule 53's split-ideation-from-verification step) to analyze ONE bounded slice (a single audit dimension, or a single feature's as-built-vs-intended diff) in an isolated context and return a compact, evidence-cited findings summary. Not for general use and not for auto-delegation; the calling skill vets, ranks, and routes what it returns.
 tools:
 - codebase
 - search

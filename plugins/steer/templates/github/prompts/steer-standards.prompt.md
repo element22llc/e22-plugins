@@ -3,7 +3,7 @@ mode: agent
 description: Load the always-on operating manual on demand where the SessionStart hook cannot inject it — reads every rules/*.md.
 ---
 
-<!-- Generated from the steer plugin's skills/standards/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/standards/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:standards` workflow for GitHub Copilot in VS Code.
 

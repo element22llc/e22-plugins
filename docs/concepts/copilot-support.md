@@ -218,7 +218,13 @@ one sanctioned difference: the auth placeholder (env var → prompted input, map
 in the generator's `AUTH_INPUTS`). A byte-equality drift gate
 (`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the committed
 mirror falls out of sync. Edit `.mcp.json` and regenerate — never hand-edit the
-mirror.
+template **in this repo**.
+
+That byte-gate governs the plugin-side template only. Unlike the four artifacts
+under `.github/`, the **installed** `.vscode/mcp.json` is not steer-managed: it sits
+outside `/steer:sync`'s `copilot-surface-current` capability, so a consumer owns
+their copy and is expected to merge additively and remove servers they don't use.
+Nothing re-copies it over their edits; only a one-shot ledger migration amends it.
 
 ## Cloud coding agent (opt-in)
 

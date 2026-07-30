@@ -107,13 +107,16 @@ def render_prompt(name: str, fm: dict) -> str:
         width=10**9,
     ).rstrip("\n")
 
-    # `/steer-sync`, not `/steer:sync` — this artifact is read only by Copilot in
-    # VS Code, where the same rewrite `_to_copilot_refs` applies to the body must
-    # apply here too, or the one actionable command in the file does not resolve.
+    # `/steer:sync` (colon) is correct here and must NOT go through
+    # `_to_copilot_refs`. The refresh is a verbatim re-copy from
+    # ${CLAUDE_PLUGIN_ROOT}, which does not exist in VS Code — so this is a pointer
+    # to an action taken from Claude Code, not a command this file's reader types.
+    # Body/description refs DO get rewritten: those are cross-links to sibling
+    # prompt files, which do resolve here.
     header = (
         f"<!-- Generated from the steer plugin's skills/{name}/SKILL.md — do not "
-        f"edit by hand. Refresh with /steer-sync in a managed repo, or mise run "
-        f"gen:copilot in the plugin repo. -->"
+        f"edit by hand. Refresh with /steer:sync from Claude Code in a managed "
+        f"repo, or mise run gen:copilot in the plugin repo. -->"
     )
 
     body = [

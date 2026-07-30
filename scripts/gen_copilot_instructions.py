@@ -77,7 +77,8 @@ _INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 HEADER = (
     "<!-- Engineering standards (steer plugin). Generated from the plugin's "
     "rules/ — do not edit by hand. Refresh after a plugin update with /steer:sync "
-    "in a managed repo, or mise run gen:copilot in the plugin repo. -->"
+    "from Claude Code in a managed repo, or mise run gen:copilot in the plugin "
+    "repo. -->"
 )
 
 # The rules are carried verbatim, so every skill cross-reference in them uses the
@@ -139,13 +140,14 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
             width=10**9,
         ).rstrip("\n")
         header = (
-            # `/steer-sync` (hyphen): a path-scoped instructions file is loaded by
-            # Copilot in VS Code on its own, without the flat instructions file's
-            # `/steer:<skill>` → `/steer-<skill>` mapping preamble, so a colon-form
-            # ref here would not resolve for the only reader it has.
+            # `/steer:sync` (colon) with the surface named explicitly. The refresh is
+            # a verbatim re-copy from ${CLAUDE_PLUGIN_ROOT}, absent in VS Code, so it
+            # is an action taken from Claude Code — naming the surface is what makes
+            # the colon form unambiguous without this file needing the flat
+            # instructions file's `/steer:` → `/steer-` mapping preamble.
             f"<!-- Generated from the steer plugin's rules/{rule_name} — do not edit "
-            f"by hand. Refresh with /steer-sync in a managed repo, or mise run "
-            f"gen:copilot in the plugin repo. -->"
+            f"by hand. Refresh with /steer:sync from Claude Code in a managed repo, "
+            f"or mise run gen:copilot in the plugin repo. -->"
         )
         out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"
     return out

@@ -131,8 +131,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    **Otherwise (the full, writing flow):**
    branch a `feat/sync` off `BASE` and work there — never commit to `main` or
    to `BASE` directly (commit-autonomy rule). If `BASE` *is* `main` (the dev ran
-   sync from a clean trunk), that's the one case the PR targets `main`. Nothing is
-   committed until the dev approves.
+   sync from a clean trunk), that's the one case the PR targets `main`. Commit,
+   push, and open the PR autonomously as step 6 says — only the **merge** waits
+   for the dev (commit-autonomy rule; never pause to ask whether to commit).
 
 2. **Update the plugin first.** The ledger and templates this skill reads are
    only current if the plugin is. Tell the dev to run

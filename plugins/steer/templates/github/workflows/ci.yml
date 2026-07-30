@@ -16,9 +16,12 @@ on:
 #   - Node/TS   when package.json or pnpm-workspace.yaml is present
 #   - Python    when a pyproject.toml is present
 # A detected stack with NO test contract FAILS the build — so a green `ci` is
-# never a false "tests ran". Before any app exists, the stack steps simply don't
-# run and the job reports that application validation is not yet active. See
-# README.md#branch-protection.
+# never a false "tests ran". Note this bites from the first commit on any profile
+# that ships a root package.json: the Node phase activates as soon as that file
+# exists, so `ci` stays red until some package defines a real `test` script (a
+# pass-through `--if-present` fan-out does not count). Only when NO stack is
+# detected at all do the stack steps skip and the job report that application
+# validation is not yet active. See README.md#branch-protection.
 #
 # Note on testing: there is deliberately NO test-file-name gate (a filename check
 # can't tell a real test from an empty one). Test presence is enforced by the

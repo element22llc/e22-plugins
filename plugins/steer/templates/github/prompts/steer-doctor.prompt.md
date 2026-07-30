@@ -3,7 +3,7 @@ mode: agent
 description: Detect the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), Docker — flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI steps handed over.
 ---
 
-<!-- Generated from the steer plugin's skills/doctor/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/doctor/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:doctor` workflow for GitHub Copilot in VS Code.
 

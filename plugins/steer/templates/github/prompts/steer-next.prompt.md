@@ -3,7 +3,7 @@ mode: agent
 description: Read-only workspace navigator — reconstructs workspace state cold (branch/PR, feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action. Never edits, commits, merges, or advances state.
 ---
 
-<!-- Generated from the steer plugin's skills/next/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/next/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:next` workflow for GitHub Copilot in VS Code.
 

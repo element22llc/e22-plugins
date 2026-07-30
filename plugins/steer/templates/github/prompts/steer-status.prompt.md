@@ -3,7 +3,7 @@ mode: agent
 description: Client-facing, time-boxed progress report across the whole /spec spine — what shipped, what's in progress, what needs the client's input, and what's next — rendered as a shareable Claude Artifact with a Markdown fallback. Read-only and derived; never fabricates counts, dates, or status.
 ---
 
-<!-- Generated from the steer plugin's skills/status/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/status/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:status` workflow for GitHub Copilot in VS Code.
 

@@ -136,10 +136,12 @@ inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
 `/steer:setup`, `/steer:status`) carry read-only `allowed-tools` grants in their
 frontmatter, so inspection stays silent even in a repo that predates the scaffold
-allowlist. `/steer:sync`, `/steer:work`, and `/steer:issues` grant the same
-inspection commands but are **not** read-only overall — `sync` and `work` also carry
-`git add`/`commit`/`push` + `gh pr create` (and `work`, `gh pr edit`), and `issues`
-carries `gh label create`; their delivery grants are enumerated above. The setup and build flows
+allowlist. `/steer:sync`, `/steer:work`, and `/steer:issues` grant an overlapping
+subset of those inspection commands, but are **not** read-only overall — `sync` and
+`work` also carry `git add`/`commit`/`push` + `gh pr create` (and `work`,
+`gh pr edit`), and `issues` carries `gh label create` plus its own
+`gh issue list`/`view` and `gh search issues` reads; their delivery grants are
+enumerated above. The setup and build flows
 (`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run — git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same

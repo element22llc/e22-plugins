@@ -3,7 +3,7 @@ mode: agent
 description: Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback).
 ---
 
-<!-- Generated from the steer plugin's skills/questions/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/questions/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:questions` workflow for GitHub Copilot in VS Code.
 

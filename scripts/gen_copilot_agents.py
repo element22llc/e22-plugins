@@ -99,7 +99,17 @@ def iter_agents(agents_dir: Path) -> list[tuple[str, dict, str]]:
 
 def render_agent(name: str, fm: dict, body: str) -> str:
     """Render one VS Code custom-agent artifact from a steer subagent."""
-    description = " ".join(str(fm.get("description", "")).split()).strip()
+    # Rewrite `/steer:<skill>` → `/steer-<skill>` here too, not just in the body:
+    # this description is what Copilot's agent picker shows, the file carries no
+    # `/steer:` → `/steer-` mapping preamble, and these are cross-links to sibling
+    # prompt files that DO resolve on this surface. `gen_copilot_prompts.py` already
+    # rewrites its descriptions; without this the two generators disagree and one
+    # artifact ships both address forms.
+    description = re.sub(
+        r"/steer:([a-z][a-z0-9-]*)",
+        r"/steer-\1",
+        " ".join(str(fm.get("description", "")).split()).strip(),
+    )
 
     front: dict[str, object] = {"description": description}
     tools = _copilot_tools(fm.get("tools", "")) if fm.get("tools") else []
@@ -117,12 +127,13 @@ def render_agent(name: str, fm: dict, body: str) -> str:
         width=10**9,
     ).rstrip("\n")
 
-    # `/steer-sync`, not `/steer:sync` — Copilot-only artifact, so the header takes
-    # the same hyphen form the body rewrite below applies.
+    # `/steer:sync` (colon), deliberately NOT rewritten: the refresh is a verbatim
+    # re-copy from ${CLAUDE_PLUGIN_ROOT}, which VS Code does not have, so this names
+    # an action taken from Claude Code rather than a command this reader types.
     header = (
         f"<!-- Generated from the steer plugin's agents/{name}.md — do not edit by "
-        f"hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot "
-        f"in the plugin repo. -->"
+        f"hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise "
+        f"run gen:copilot in the plugin repo. -->"
     )
 
     # The source body is Claude-oriented; rewrite /steer:<skill> references to the

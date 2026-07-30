@@ -3,7 +3,7 @@ mode: agent
 description: Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` records approval and flips intent Status, `validate` checks the open-question contract plus intent/contract/tracker consistency. Ends at an approved intent, not a build.
 ---
 
-<!-- Generated from the steer plugin's skills/spec/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/spec/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:spec` workflow for GitHub Copilot in VS Code.
 

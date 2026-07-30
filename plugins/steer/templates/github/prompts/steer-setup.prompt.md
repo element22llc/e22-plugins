@@ -3,7 +3,7 @@ mode: agent
 description: One front door for getting a repo onto the standards — detect the /spec spine state and route to greenfield init, brownfield adopt, or steady-state sync, flagging missing prerequisites before routing.
 ---
 
-<!-- Generated from the steer plugin's skills/setup/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/setup/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:setup` workflow for GitHub Copilot in VS Code.
 

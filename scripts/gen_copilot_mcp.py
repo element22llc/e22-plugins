@@ -64,8 +64,9 @@ _PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 HEADER_COMMENT = [
     "// Generated from the steer plugin's .mcp.json. This copy is a starting point",
     "// you own: merge additively into an existing file and remove servers you do",
-    "// not use. It is NOT refreshed by /steer:sync, which manages only",
-    "// .github/copilot-instructions.md, prompts/, agents/ and instructions/.",
+    "// not use. /steer:sync's copilot-surface-current capability does NOT cover",
+    "// .vscode/, so nothing re-copies this file over your edits (a one-shot ledger",
+    "// migration may still amend it -- e.g. removing a retired server).",
     "// In the plugin repo, regenerate the template with mise run gen:copilot.",
     "//",
     "// Model Context Protocol servers for GitHub Copilot in VS Code (Chat + Agent",

@@ -42,8 +42,10 @@ user-invocable: false
 # delivery-surface mutation is out of bounds here even though the grant would match
 # it, and belongs to /steer:work or /steer:protect under their own gating. Never
 # widen this to `Bash(gh api:*)`. check_standards.py bans that form in the SCAFFOLD's
-# .claude/settings.json only — no gate inspects a skill's own allowed-tools, so widening
-# this line would pass every check. Treat it as a review obligation, not a guarded one.
+# .claude/settings.json only — nothing constrains WHAT a skill's own allowed-tools may
+# grant (the one per-skill assertion, check_skill_script_grants, only checks that helper
+# scripts the body invokes are covered), so widening this line would pass every check.
+# Treat it as a review obligation, not a guarded one.
 allowed-tools:
   - mcp__github__issue_write
   - mcp__github__issue_read

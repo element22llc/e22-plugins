@@ -3,7 +3,7 @@ mode: agent
 description: Sweep loose files out of the repo root into their correct home — source/research materials (incl. spec/requirements PDFs and docs) to /spec/reference, diagrams to /spec/design. Moves confidently-classified strays immediately; proposes renames and deletes and ambiguous cases for a yes.
 ---
 
-<!-- Generated from the steer plugin's skills/tidy/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/tidy/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:tidy` workflow for GitHub Copilot in VS Code.
 

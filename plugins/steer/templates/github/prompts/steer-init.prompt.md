@@ -3,7 +3,7 @@ mode: agent
 description: One-time setup for a new managed repo — bootstrap the /spec spine + scaffolding, pin the toolchain, leave it working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode.
 ---
 
-<!-- Generated from the steer plugin's skills/init/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/init/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:init` workflow for GitHub Copilot in VS Code.
 
