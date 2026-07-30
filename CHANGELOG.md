@@ -28,8 +28,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   but its `/steer:` → `/steer-` rewrite ran blindly, so `prompts/steer-work.prompt.md`
   shipped `/steer-tracker-sync` in both its body and the `description` Copilot's picker
   displays — a VS Code slash-command that will never exist. The rewrite is now scoped to
-  the names actually emitted; a reference to a gateway keeps the colon form, which reads as
-  the Claude-Code-side gateway it is.
+  the names actually emitted, in **both** generators (`gen_copilot_prompts.py` and
+  `gen_copilot_agents.py` — the agents one was latent, since the shipped reviewer happens
+  to reference no gateway, and the `check_copilot_*` drift gates cannot catch a regression
+  here because they compare the artifact against the generator's own output). A reference
+  to a gateway keeps the colon form, which reads as the Claude-Code-side gateway it is, and
+  a test now pins both halves.
 - **Fixed:** the shipped PR template told the author "these are review aids, not CI gates"
   above a checklist whose changed-line-coverage item **is** a blocking gate — `ci` runs
   `diff-cover --fail-under` on touched lines and fails the PR. Both files install into the

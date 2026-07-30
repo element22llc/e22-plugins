@@ -172,4 +172,5 @@ not recurring junk.
    what you left in place or flagged ambiguous.
 8. **Commit the approved result without asking** (Commit autonomy). What needs a
    yes is each rename/move/delete in steps 5-6 — not the commit that records them.
-   Never pause to ask "should I commit this?"; the merge is the only human gate.
+   Never pause to ask "should I commit this?" — in branch-and-PR mode the merge is
+   the gate, and in solo trunk the first push of a session is.

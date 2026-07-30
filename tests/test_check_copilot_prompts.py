@@ -74,3 +74,31 @@ def test_real_plugin_prompts_in_sync():
         assert check_copilot_prompts.main() == 0
     finally:
         os.chdir(cwd)
+
+
+def test_gateway_refs_keep_the_colon_form():
+    """A `/steer-<name>` ref must never point at a skill with no prompt file.
+
+    The `user-invocable: false` gateways (`spec-scaffold`, `tracker-sync`) get no
+    prompt file, so rewriting a reference to one would assert a VS Code
+    slash-command Copilot never offers. The `check_copilot_*` drift gates cannot
+    catch a regression here: they compare the committed artifact against
+    `render_all()`, so a generator change moves both sides and still passes.
+    """
+    import sys
+
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import gen_copilot_prompts
+
+    emitted = frozenset({"work", "issues"})
+    text = "counterpart to /steer:issues, routing I/O through /steer:tracker-sync."
+    out = gen_copilot_prompts._to_copilot_refs(text, emitted)
+    assert "/steer-issues" in out, "an emitted skill must be hyphenized"
+    assert "/steer:tracker-sync" in out, "a gateway must keep the colon form"
+    assert "/steer-tracker-sync" not in out
+
+    # And end-to-end: no committed artifact may carry a hyphen ref to a gateway.
+    rendered = gen_copilot_prompts.render_all(REPO_ROOT / "plugins/steer/skills")
+    for name, text in rendered.items():
+        for gateway in ("spec-scaffold", "tracker-sync"):
+            assert f"/steer-{gateway}" not in text, f"{name} carries /steer-{gateway}"

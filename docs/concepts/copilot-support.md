@@ -201,11 +201,15 @@ keeps them in sync.
 !!! warning "A scoped rule reaches VS Code only"
     Because the exclusion is unconditional (`iter_rule_files` filters `SCOPED_RULES`),
     a path-scoped rule is **not** in `.github/copilot-instructions.md` — today that
-    means rule `12-stack-infra`, the IaC stack standards. `.github/instructions/` is
-    a VS Code mechanism, so unless the Copilot **CLI** also reads that directory
-    (unverified here), a CLI teammate working on Terraform receives no IaC standards.
-    If you need them on the CLI, load the file explicitly. Do not "fix" this by
-    un-excluding the rule — that double-loads it in VS Code.
+    means rule `12-stack-infra`, the IaC stack standards. That directory is read by
+    Copilot in VS Code and by the cloud coding agent; whether the Copilot **CLI**
+    reads it is unverified here, so a CLI teammate working on Terraform may receive
+    no IaC standards. If you need them there, load the file explicitly.
+
+    Do not "fix" this by dropping the rule from `SCOPED_RULES`: that key drives both
+    the flat-file exclusion *and* the scoped emission, and `main()` prunes the
+    orphaned file — so you would move the rule into every consumer's always-on
+    context and delete `infra.instructions.md`, not resolve the gap.
 
 Repo-specific Copilot guidance you author yourself also goes in a *separate*
 `*.instructions.md` you own — never edit the steer-generated ones.
