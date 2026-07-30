@@ -76,7 +76,10 @@ Pointers are a hint, not a maintained index (the spec ↔ code coupling rules co
 ## Testing
 
 Per the Definition of Done (injected every session by the `steer` plugin).
-These are review aids, not CI gates.
+Mostly review aids — with one exception: **changed-line coverage is a real CI
+gate.** `ci` runs `diff-cover --fail-under` on touched lines and fails the PR, so
+the coverage box below is enforced, not advisory. There is deliberately no global
+coverage threshold and no test-file-naming gate.
 
 - [ ] Added or updated automated tests for this change (same PR, not "later")
 - [ ] **Bug fix:** added a regression test that fails before the fix and passes after

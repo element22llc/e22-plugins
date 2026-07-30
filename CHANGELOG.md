@@ -7,6 +7,41 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the commit-approval clause survived a second time, in the file `/steer:tidy`
+  actually executes. `templates/reference/HOUSEKEEPING.md` said "**Don't commit** until the
+  user approves the result" — semantically identical to the `/steer:sync` clause fixed
+  above, and live behavioral prose (`tidy/SKILL.md` sends the model to read that file).
+  It escaped `check_standards.py`'s `_NO_COMMIT_RE` purely on orthography: the pattern has
+  no contraction branch, so `Don't commit` cannot match at any path. The earlier fix
+  addressed the one instance the gate's canned verdict named without sweeping the class;
+  this one swept it (the remaining hits — rule 50's DoD item and `init`'s "don't commit to
+  `main`" — both carry correct solo-trunk carve-outs). Approval belongs on each
+  rename/move/delete, not on the commit that records them.
+- **Fixed:** rule `05-roles` stated the PO delivery gate as an absolute ("a PO-built app is
+  normal `feat/*` work that merges to `main` as v0 only after a dev approves the PR") while
+  `/steer:build` **offers and recommends** solo trunk, which commits straight to `main` with
+  no PR. Rules 30 and 45 both carry the carve-out; rule 05 — always-on session context —
+  did not, so a model holding it would resist the path `build` is instructed to recommend.
+  Rule 05 now names both modes and points at Commit autonomy.
+- **Fixed:** a `/steer-<skill>` reference could point at a prompt file that is never
+  generated. `gen_copilot_prompts.py` skips the `user-invocable: false` gateways (correct)
+  but its `/steer:` → `/steer-` rewrite ran blindly, so `prompts/steer-work.prompt.md`
+  shipped `/steer-tracker-sync` in both its body and the `description` Copilot's picker
+  displays — a VS Code slash-command that will never exist. The rewrite is now scoped to
+  the names actually emitted; a reference to a gateway keeps the colon form, which reads as
+  the Claude-Code-side gateway it is.
+- **Fixed:** the shipped PR template told the author "these are review aids, not CI gates"
+  above a checklist whose changed-line-coverage item **is** a blocking gate — `ci` runs
+  `diff-cover --fail-under` on touched lines and fails the PR. Both files install into the
+  same consumer `.github/` from the same PR. The heading now names the one enforced item
+  and keeps the (accurate) no-global-threshold / no-naming-gate statement.
+- **Fixed:** `/steer:audit code`'s DX dimension reported a false finding on every compliant
+  repo. `templates/reference/AUDIT-DIMENSIONS.md` told it to flag a `mise.toml` "missing the
+  tasks a contributor needs (`setup`, `dev`, `test`, `lint`)" — but the scaffold's task is
+  `dev:setup`, not `setup`, and per the Stack rule `test`/`lint` deliberately live in
+  `package.json` with `mise` only delegating one-way. So a freshly scaffolded, fully
+  rule-compliant repo tripped the dimension. Now names the scaffold's real entry points and
+  says explicitly not to flag `test`/`lint`.
 - **Fixed:** `/steer:sync` shipped the one sentence this repo's own gate hard-fails as a
   rule-45 contradiction. `skills/sync/SKILL.md` said "Nothing is committed until the dev
   approves" while `rules/45-commit-autonomy.md` says "Never pause work to ask 'should I
@@ -30,8 +65,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed:** the shipped `ci.yml` header said "Before any app exists, the stack steps
   simply don't run" — the exact claim the scaffold README retracted earlier in this cycle.
   Node detection is `[ -f package.json ]` and `profiles/_node/package.json` is a Layer-1
-  install, so for every app/service/library/cli profile the guard fails from the first
-  commit. Two files a consumer installs together contradicted each other; the header now
+  install, so on any profile that ships a root `package.json` the guard fails from the
+  first commit (a Python-only product ships none, and is unaffected). Two files a consumer installs together contradicted each other; the header now
   states when the guard bites and that only a wholly undetected stack skips the phase.
 - **Fixed:** the generated Copilot **agent** artifact shipped both invocation forms.
   `gen_copilot_agents.py` applied the `/steer:` → `/steer-` rewrite to the body but not to
@@ -57,13 +92,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   byte-gated by `check_copilot_*`, so they are never hand-edited. The
   `gen_copilot_instructions.py` comment that justified the old path as deliberate is
   replaced with the reason it is wrong. Every artifact names **`/steer:sync` from Claude
-  Code** — the colon form, with the surface stated. This is the one `/steer:` reference in
-  these files that must **not** go through the generators' `/steer:` → `/steer-` rewrite:
-  the repair is a verbatim re-copy from `${CLAUDE_PLUGIN_ROOT}`, which VS Code does not
-  have, so the header points at an action taken on the other surface rather than a command
-  its reader types. `docs/concepts/copilot-support.md` and the `steer-sync` prompt capsule
-  both already said exactly this. Body and description refs keep the hyphen rewrite — those
-  are cross-links to sibling prompt files, which do resolve in VS Code.
+  Code** — the colon form, with the surface stated. The header ref is deliberately kept out
+  of the generators' `/steer:` → `/steer-` rewrite: the repair is a verbatim re-copy from
+  `${CLAUDE_PLUGIN_ROOT}`, which VS Code does not have, so it points at an action taken on
+  the other surface rather than a command its reader types.
+  `docs/concepts/copilot-support.md` and the `steer-sync` prompt capsule both already said
+  exactly this. (It is not the only un-rewritten colon ref: the prompt capsules' two
+  generator boilerplate lines name the Claude-Code skill explicitly for the same reason,
+  and the flat `copilot-instructions.md` is colon-form throughout by design, resolved by
+  its own mapping preamble.) Cross-links to **sibling prompt files** do take the hyphen
+  rewrite, since those resolve in VS Code.
 - **Fixed:** `scaffold/vscode/mcp.json`'s generated header claimed a refresh path that
   nothing performs. `/steer:sync`'s `copilot-surface-current` capability covers only
   `.github/copilot-instructions.md`, `prompts/`, `agents/` and `instructions/` —
@@ -71,8 +109,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   config from reconciliation outright. The file is also the one Copilot artifact the
   consumer **owns**: `MANIFEST.md` tells them to "merge additively… remove servers the
   repo doesn't use", which its own "do not edit by hand" line forbade. The header now
-  says what is true — a starting point you own, explicitly *not* refreshed by
-  `/steer:sync`, regenerated with `mise run gen:copilot` in the plugin repo.
+  says what is true — a starting point you own, outside the `copilot-surface-current`
+  capability so nothing re-copies it over your edits (a one-shot ledger migration may
+  still amend it), regenerated with `mise run gen:copilot` in the plugin repo. The
+  `MANIFEST.md` row and `docs/concepts/copilot-support.md` now say the same.
 - **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
   `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
   `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**

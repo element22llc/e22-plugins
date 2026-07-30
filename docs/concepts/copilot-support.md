@@ -23,10 +23,10 @@ truth and how to install and refresh the Copilot side.
 | Capability | Claude Code | Copilot CLI | Copilot in VS Code |
 |---|---|---|---|
 | Always-on standards | SessionStart hook → `additionalContext` | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (read natively) |
-| Path-scoped standards | rule `inject-when` traits | (folded into instructions file) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
+| Path-scoped standards | rule `inject-when` traits | **not delivered** — emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.github/prompts/*.prompt.md` (`/steer-<skill>`) |
-| Subagents | plugin `agents/` | plugin `agents/` via manifest | `.github/agents/*.agent.md` (agent picker) |
-| MCP servers | plugin `.mcp.json` | plugin `.mcp.json` | `.vscode/mcp.json` |
+| Subagents | plugin `agents/` | **not declared** — the Copilot manifest carries `skills` + `hooks` only | `.github/agents/*.agent.md` (agent picker) |
+| MCP servers | plugin `.mcp.json` | **not declared** — the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
@@ -197,6 +197,15 @@ gating; the same rule source drives both, and a scoped rule is **excluded** from
 the flat file so it never double-loads. The same generator + drift gate as the
 flat instructions (`gen_copilot_instructions.py` / `check_copilot_instructions.py`)
 keeps them in sync.
+
+!!! warning "A scoped rule reaches VS Code only"
+    Because the exclusion is unconditional (`iter_rule_files` filters `SCOPED_RULES`),
+    a path-scoped rule is **not** in `.github/copilot-instructions.md` — today that
+    means rule `12-stack-infra`, the IaC stack standards. `.github/instructions/` is
+    a VS Code mechanism, so unless the Copilot **CLI** also reads that directory
+    (unverified here), a CLI teammate working on Terraform receives no IaC standards.
+    If you need them on the CLI, load the file explicitly. Do not "fix" this by
+    un-excluding the rule — that double-loads it in VS Code.
 
 Repo-specific Copilot guidance you author yourself also goes in a *separate*
 `*.instructions.md` you own — never edit the steer-generated ones.

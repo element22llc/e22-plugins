@@ -46,7 +46,10 @@ so in the report.
    `ARCHITECTURE.md` stale vs the code — stack table diverged from
    `package.json` / `mise.toml`, or the apps/packages map missing/naming a
    directory that doesn't match `apps/*`+`packages/*`; `mise.toml` missing the
-   tasks a contributor needs (`setup`, `dev`, `test`, `lint`).
+   entry points a contributor needs — the scaffold's own names are `dev:setup`
+   (idempotent env bootstrap) and the `docker:*` / `db:*` pairs. Do **not** flag a
+   missing `test` or `lint` task: per the Stack rule those live in `package.json`
+   (Node) or the Python toolchain, and a `mise` task only ever delegates to them.
 
 **Out of scope of every dimension** — correctness bugs, security
 vulnerabilities, and mechanical cleanup are delegated, never re-run by the
