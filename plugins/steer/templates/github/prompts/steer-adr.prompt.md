@@ -3,7 +3,7 @@ mode: agent
 description: Create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed → Accepted transition.
 ---
 
-<!-- Generated from the steer plugin's skills/adr/SKILL.md — do not edit by hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/adr/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:adr` workflow for GitHub Copilot in VS Code.
 

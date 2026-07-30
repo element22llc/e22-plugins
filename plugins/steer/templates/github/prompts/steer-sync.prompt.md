@@ -3,7 +3,7 @@ mode: agent
 description: Bring a bootstrapped repo up to date with the current plugin — apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers.
 ---
 
-<!-- Generated from the steer plugin's skills/sync/SKILL.md — do not edit by hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/sync/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:sync` workflow for GitHub Copilot in VS Code.
 

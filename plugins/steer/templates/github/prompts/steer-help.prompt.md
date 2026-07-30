@@ -3,7 +3,7 @@ mode: agent
 description: Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; every line comes from the live router table, and a completeness check proves no front-door row was dropped. Optionally renders an Artifact menu.
 ---
 
-<!-- Generated from the steer plugin's skills/help/SKILL.md — do not edit by hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Generated from the steer plugin's skills/help/SKILL.md — do not edit by hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:help` workflow for GitHub Copilot in VS Code.
 

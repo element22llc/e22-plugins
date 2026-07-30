@@ -8,9 +8,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 - **Fixed: the generated Copilot artifacts named the one refresh path that cannot
-  refresh.** All 27 shipped artifacts — `copilot-instructions.md`, the 24
-  `prompts/*.prompt.md`, `agents/steer-reviewer.agent.md`,
-  `instructions/infra.instructions.md`, plus `scaffold/vscode/mcp.json` — carried a
+  refresh.** All 27 steer-managed artifacts — `copilot-instructions.md`, the 24
+  `prompts/*.prompt.md`, `agents/steer-reviewer.agent.md` and
+  `instructions/infra.instructions.md` — carried a
   generated header telling the reader to "re-run `/steer:init`'s Copilot step". That is
   the exact path the `copilot-surface-current` capability was added to replace, because
   `/steer:init` **stops on an already-initialized repo** and so can never refresh
@@ -20,11 +20,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   corrected in this cycle — the artifacts a consumer actually *reads* were not, leaving
   the defect alive in the highest-visibility place. Headers now name **`/steer:sync`**
   for a managed repo and `mise run gen:copilot` for the plugin repo, so the maintainer-only
-  task is no longer shipped as a consumer instruction. Fixed in the five generators
-  (`gen_copilot_{instructions,prompts,agents,mcp}.py`) and regenerated — the artifacts are
+  task is no longer shipped as a consumer instruction. Fixed in the three generators
+  (`gen_copilot_{instructions,prompts,agents}.py`) and regenerated — the artifacts are
   byte-gated by `check_copilot_*`, so they are never hand-edited. The
   `gen_copilot_instructions.py` comment that justified the old path as deliberate is
-  replaced with the reason it is wrong.
+  replaced with the reason it is wrong. Two details the surface forces: the three
+  **Copilot-only** artifacts (`prompts/`, `agents/`, `instructions/`) take the
+  **`/steer-sync`** hyphen form, because VS Code resolves prompt files with a hyphen and
+  a path-scoped instructions file is loaded without the flat file's `/steer:` → `/steer-`
+  mapping preamble — a colon-form ref there would not resolve for its only reader; the
+  flat `copilot-instructions.md` keeps the colon form, which its preamble explains.
+- **Fixed:** `scaffold/vscode/mcp.json`'s generated header claimed a refresh path that
+  nothing performs. `/steer:sync`'s `copilot-surface-current` capability covers only
+  `.github/copilot-instructions.md`, `prompts/`, `agents/` and `instructions/` —
+  `scan-capabilities.sh` never looks at `.vscode/`, and `sync/RECONCILE.md` exempts MCP
+  config from reconciliation outright. The file is also the one Copilot artifact the
+  consumer **owns**: `MANIFEST.md` tells them to "merge additively… remove servers the
+  repo doesn't use", which its own "do not edit by hand" line forbade. The header now
+  says what is true — a starting point you own, explicitly *not* refreshed by
+  `/steer:sync`, regenerated with `mise run gen:copilot` in the plugin repo.
 - **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
   `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
   `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**
@@ -44,11 +58,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   pre-rename `docker:clean`) with no ledger entry — the artifact is regenerated from
   `rules/`, so a plugin-sourced re-copy is the transform.
 - **Fixed:** `/steer:tracker-sync` withheld `gh api` on the rationale that it is "the
-  delivery surface", but **GraphQL is the only transport that does not prompt** for
-  `field-get` / `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops
-  `OPERATIONS.md` places *inside* the gateway's own tracker-metadata boundary (the
-  REST/MCP fallbacks those ops document are real, but no granted prefix covers them).
-  So a documented **read**
+  delivery surface", but **GraphQL is the transport to reach for** on `field-get` /
+  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md` places
+  *inside* the gateway's own tracker-metadata boundary. The fallbacks those ops document
+  are real but neither substitutes cleanly: the REST endpoints sit outside every granted
+  prefix and so prompt, and the MCP github tools are granted but expose issue fields only
+  where the org enabled them. So a documented **read**
   prompted on a direct invocation, contradicting the skill's "Reads never confirm."
   Granted `Bash(gh api graphql:*)` as a scoped carve-out; delivery-surface mutation
   (PR merge, branch protection, repo settings) stays withheld. **The grant is broader
@@ -57,7 +72,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `mergePullRequest` or `createBranchProtectionRule`, which GraphQL can also express.
   Both `SKILL.md` and `OPERATIONS.md` now state that the gateway issues only the
   enumerated operations and that nothing checks this mechanically. Never widen to
-  `Bash(gh api:*)` — `check_standards.py` bans that form outright.
+  `Bash(gh api:*)` — a review obligation, not a gated one: `check_standards.py` bans that
+  form only in the scaffold's `.claude/settings.json`, and no gate inspects a skill's own
+  `allowed-tools`, so widening the grant would pass every check.
 - **Fixed:** `/steer:audit spec` made a `contract.md` `path:line` pointer the
   **mandatory** evidence for every verdict ("never assert a match from the tracker spec
   alone"), but `## Implementation pointers` is declared *optional*, "not a maintained
@@ -94,7 +111,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   re-key note above.
 - **Fixed:** `docs/concepts/authorization-model.md` claimed "`gh api`/`gh:*` stay prompted
   by omission" as a plugin-wide property. `/steer:protect` carries `Bash(gh api repos/*)`
-  — the plugin's **only** `gh api` grant — so `gh api repos/…` reads are silent in a
+  — one of the plugin's two `gh api` grants, alongside `/steer:tracker-sync`'s
+  `Bash(gh api graphql:*)` carve-out — so `gh api repos/…` reads are silent in a
   `protect` session, and the page's own enumeration of every skill with scoped frontmatter
   grants omitted `/steer:protect` entirely. The omission claim is now scoped to the
   scaffold allowlist, `protect`'s re-grant is named in both places, and the page carries
@@ -245,17 +263,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   every `package.json` for a `"test"` script, and the scaffold's own root `package.json`
   ships `"test": "pnpm --recursive --if-present run test"` — a fan-out, not a contract. So
   a freshly bootstrapped Node repo passed the guard with zero real tests and
-  `pnpm run test --if-present` no-opped to green, while rule `50-definition-of-done` names
-  that guard as solo-trunk's **only** automated backstop. The guard now requires at least
+  `pnpm run test --if-present` no-opped to green — in a solo-trunk repo, where rule
+  `50-definition-of-done` leans on CI as the **only** automated backstop (it names the
+  changed-line coverage gate and the spec-drift warning; this guard sits alongside them in
+  the same `ci` run). The guard now requires at least
   one `test` script that is not a pass-through fan-out. **Consumer-visible:** because the
   Node phase activates as soon as a root `package.json` exists, a freshly bootstrapped repo
   now has a red `ci` until some package defines a real `test` script. That is the guard
   working as documented; the scaffold README said the opposite ("before any app exists,
   only the hygiene phase runs") and has been corrected.
 - **Fixed:** the always-on infra rule mandates S3 remote state with the native
-  `use_lockfile` lock, while `infra/README.md` — installed into every infra repo *and*
-  every monorepo with a nested `/infra` — told the reader to bootstrap an S3 **+ DynamoDB**
-  lock table. Corrected in both places it appeared.
+  `use_lockfile` lock, while `infra/README.md` — installed on a nested `/infra` dir inside
+  a monorepo, which is **distinct from** the `infra` profile — told the reader to bootstrap
+  an S3 **+ DynamoDB** lock table. Corrected in both places it appeared.
 - **Fixed:** `/steer:next`'s next-actions table still categorized "PR merged but issue
   still `validate`" as *Blocking now* with a bare reconcile, after `/steer:work`'s
   identical row was corrected to propose-only — and `/steer:next` is the surface that

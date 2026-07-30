@@ -117,9 +117,11 @@ def render_agent(name: str, fm: dict, body: str) -> str:
         width=10**9,
     ).rstrip("\n")
 
+    # `/steer-sync`, not `/steer:sync` — Copilot-only artifact, so the header takes
+    # the same hyphen form the body rewrite below applies.
     header = (
         f"<!-- Generated from the steer plugin's agents/{name}.md — do not edit by "
-        f"hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot "
+        f"hand. Refresh with /steer-sync in a managed repo, or mise run gen:copilot "
         f"in the plugin repo. -->"
     )
 

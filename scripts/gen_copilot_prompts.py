@@ -107,9 +107,12 @@ def render_prompt(name: str, fm: dict) -> str:
         width=10**9,
     ).rstrip("\n")
 
+    # `/steer-sync`, not `/steer:sync` — this artifact is read only by Copilot in
+    # VS Code, where the same rewrite `_to_copilot_refs` applies to the body must
+    # apply here too, or the one actionable command in the file does not resolve.
     header = (
         f"<!-- Generated from the steer plugin's skills/{name}/SKILL.md — do not "
-        f"edit by hand. Refresh with /steer:sync in a managed repo, or mise run "
+        f"edit by hand. Refresh with /steer-sync in a managed repo, or mise run "
         f"gen:copilot in the plugin repo. -->"
     )
 

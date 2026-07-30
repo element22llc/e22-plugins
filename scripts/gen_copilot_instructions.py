@@ -139,8 +139,12 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
             width=10**9,
         ).rstrip("\n")
         header = (
+            # `/steer-sync` (hyphen): a path-scoped instructions file is loaded by
+            # Copilot in VS Code on its own, without the flat instructions file's
+            # `/steer:<skill>` → `/steer-<skill>` mapping preamble, so a colon-form
+            # ref here would not resolve for the only reader it has.
             f"<!-- Generated from the steer plugin's rules/{rule_name} — do not edit "
-            f"by hand. Refresh with /steer:sync in a managed repo, or mise run "
+            f"by hand. Refresh with /steer-sync in a managed repo, or mise run "
             f"gen:copilot in the plugin repo. -->"
         )
         out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"
