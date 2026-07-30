@@ -68,9 +68,10 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     (discards work), destructive `git rm` (an unattended recursive/forced delete —
     moved to `ask`), and every **merge/deploy** verb stay gated — `gh pr merge`
     sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
-    are autonomous delivery (rule `45-commit-autonomy`), and `check_standards.py`
-    fails the build if they leave `allow`. It asserts this whole set stays under
-    `allow` so it can't silently regress.
+    are autonomous delivery (rule `45-commit-autonomy`). `check_standards.py` pins
+    two of them — `Bash(git push)` and `Bash(gh pr create:*)` — so those cannot
+    silently leave `allow`; the rest of the set (`gh pr edit`, the `git push
+    origin`/`-u` variants) sits under `allow` unasserted.
 
 !!! note "Issue creation is autonomous — but a host can still gate it"
     Some Claude Code permission modes classify an unprompted `gh issue create` as
@@ -133,9 +134,14 @@ view`, `gh label list`, `mise tasks`, and the named verify tasks `mise run check
 settings.json` pre-authorizes them all under `permissions.allow` — prompting on
 inspection was the bulk of the "asks for approval constantly" friction without
 protecting anything. The read-heavy navigators (`/steer:next`, `/steer:audit`,
-`/steer:issues`, `/steer:sync`, `/steer:setup`, `/steer:work`, `/steer:status`) carry
-read-only `allowed-tools` grants in their frontmatter, so inspection stays silent
-even in a repo that predates the scaffold allowlist. The setup and build flows
+`/steer:setup`, `/steer:status`) carry read-only `allowed-tools` grants in their
+frontmatter, so inspection stays silent even in a repo that predates the scaffold
+allowlist. `/steer:sync`, `/steer:work`, and `/steer:issues` grant an overlapping
+subset of those inspection commands, but are **not** read-only overall — `sync` and
+`work` also carry `git add`/`commit`/`push` + `gh pr create` (and `work`,
+`gh pr edit`), and `issues` carries `gh label create` plus its own
+`gh issue list`/`view` and `gh search issues` reads; their delivery grants are
+enumerated above. The setup and build flows
 (`/steer:init`, `/steer:adopt`, `/steer:intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run — git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
@@ -143,15 +149,17 @@ branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 `/steer:build`, the flow that actually runs them — named dev tasks
 (`mise run dev:*`, `pnpm dev*`), never a `git`/`gh`/`mise run`
 wildcard, so `gh pr merge` and unknown commands still prompt. Each flow also
-pre-approves the bundled plugin helper scripts *it* executes, under a matching
-interpreter (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
+pre-approves the bundled plugin helper scripts it executes **by literal path in its
+own files**, under a matching interpreter
+(`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
 prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` and
 `/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
 `/steer:build` and `/steer:spec-scaffold`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:sync`,
 `scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`.
 `/steer:protect` likewise declares a scoped grant for what it routinely reads — `gh auth
-status`, `gh repo view`, `git remote`, and the read-scoped `Bash(gh api repos/*)` above —
+status`, `gh repo view`, `git remote`, `git rev-parse`, and the read-scoped
+`Bash(gh api repos/*)` above —
 while the `gh api` write that applies protection stays prompted (see the argument-order
 note below). The scaffold's MCP allowlist tracks
 the hosted GitHub MCP's consolidated issue verbs: the **read/dedup** tools
@@ -165,17 +173,50 @@ the pre-rename names no longer resolve.
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks —
 the verify pair (`check`/`ci`) plus `dev` for running the app locally — never the
 wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission **from the scaffold allowlist** (the
-mutation vector for repo delete, PR merge, and branch protection). One skill re-grants a
-narrow slice: `/steer:protect` carries `Bash(gh api repos/*)` — the plugin's only `gh api`
-grant — so *reading* live protection settings is silent in a `protect` session. Its
-**writes** stay prompted, but only because the grant is a path prefix and every write in
-the skill puts `-X PUT`/`-X PATCH` **before** the endpoint path, so it falls outside the
-prefix; a write with the flag after the path would match the read grant and apply with no
-prompt. Argument order is load-bearing there — the same discipline, inverted, as
-`/steer:report` keeping `--repo` first to *stay inside* its grant. `check_standards.py`
-asserts both halves so the split can't regress, and separately asserts every skill
+mutation vector for repo delete, PR merge, and branch protection). **Two skills re-grant a
+narrow slice**, each for a different transport:
+
+- `/steer:protect` carries `Bash(gh api repos/*)`, so *reading* live protection settings
+  is silent in a `protect` session. Its **writes** stay prompted, but only because the
+  grant is a path prefix and every write in the skill puts `-X PUT`/`-X PATCH` **before**
+  the endpoint path, so it falls outside the prefix; a write with the flag after the path
+  would match the read grant and apply with no prompt. Argument order is load-bearing
+  there — the same discipline, inverted, as `/steer:report` keeping `--repo` first to
+  *stay inside* its grant. **Nothing enforces either half mechanically.** The discipline
+  lives in the skills' own prose — `skills/protect/SKILL.md` ("Keep `-X PUT` / `-X PATCH`
+  as the first argument, before the endpoint path") and `skills/report/SKILL.md`
+  (`--repo …` "as the **first** flag") — and a reordered write would pass every gate in
+  this repo. Treat it as a review obligation, not a guardrail.
+- `/steer:tracker-sync` carries `Bash(gh api graphql:*)` as a scoped carve-out, so a
+  Projects v2 issue-field read does not prompt on a direct invocation — `field-get`,
+  plus the `field-set` / `link-blocked-by` / `bootstrap-fields` operations that sit
+  inside the gateway's declared tracker-metadata boundary. GraphQL is the transport to
+  reach for on these: the REST equivalents fall outside every granted prefix and so
+  prompt, and the MCP github tools are granted but expose issue fields only where the org
+  enabled them. **This grant is broader than the boundary it
+  serves, and the limit is prose-enforced:** `allowed-tools` matches a command-string
+  prefix, so it cannot distinguish a field query from `mergePullRequest` or
+  `createBranchProtectionRule`, which GraphQL expresses just as well. The gateway issues
+  only the operations its `OPERATIONS.md` enumerates, and nothing checks that
+  mechanically. **Nor does anything stop the grant itself from being widened.**
+  `check_standards.py` does ban `Bash(gh api:*)` — but only in the scaffold's
+  `.claude/settings.json` (the forbidden-form loop runs inside the block scoped to that
+  one file); no gate inspects any skill's own `allowed-tools` for a forbidden form. The
+  only per-skill assertion is helper-script coverage. So "never widen this to
+  `Bash(gh api:*)`" is a review obligation exactly like the argument-order rule above it,
+  not something the build will catch.
+
+`check_standards.py` separately asserts that every skill
 grants the bundled plugin helper scripts its body — including a factored-out
-`PROCEDURE.md` — invokes, so the prompt-on-every-run class can't creep back.
+`PROCEDURE.md` — invokes. That reaches only helpers named by **literal path inside
+the skill's own directory** (`_SCRIPT_INVOCATION` matches
+`${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`), so a helper reached through a
+cross-referenced convention is outside it. There is a live example: `/steer:sync`
+step 5 delegates to the Template-reconciliation convention in
+`templates/reference/SPEC-FRAMEWORK.md`, whose command is
+`template-reconcile.sh` — which `sync` does not grant. The gate is green and that
+step prompts. So the prompt-on-every-run class is narrowed by this assertion, not
+closed by it.
 
 !!! warning "Chained commands defeat the allowlist"
     A permission rule matches a *single* command string. `git status && git diff`

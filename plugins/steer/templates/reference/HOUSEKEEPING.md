@@ -170,4 +170,7 @@ not recurring junk.
      add its pattern to `.gitignore` (if not already there) so it can't return.
 7. **Report** what was auto-moved, what renamed/moved/deleted on approval, and
    what you left in place or flagged ambiguous.
-8. **Don't commit** until the user approves the result.
+8. **Commit the approved result without asking** (Commit autonomy). What needs a
+   yes is each rename/move/delete in steps 5-6 — not the commit that records them.
+   Never pause to ask "should I commit this?" — in branch-and-PR mode the merge is
+   the gate, and in solo trunk the first push of a session is.

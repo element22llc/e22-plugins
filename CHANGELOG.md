@@ -7,6 +7,116 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the commit-approval clause survived a second time, in the file `/steer:tidy`
+  actually executes. `templates/reference/HOUSEKEEPING.md` said "**Don't commit** until the
+  user approves the result" — semantically identical to the `/steer:sync` clause fixed
+  above, and live behavioral prose (`tidy/SKILL.md` sends the model to read that file).
+  It escaped `check_standards.py`'s `_NO_COMMIT_RE` purely on orthography: the pattern has
+  no contraction branch, so `Don't commit` cannot match at any path. The earlier fix
+  addressed the one instance the gate's canned verdict named without sweeping the class;
+  this one swept it (the remaining hits — rule 50's DoD item and `init`'s "don't commit to
+  `main`" — both carry correct solo-trunk carve-outs). Approval belongs on each
+  rename/move/delete, not on the commit that records them.
+- **Fixed:** rule `05-roles` stated the PO delivery gate as an absolute ("a PO-built app is
+  normal `feat/*` work that merges to `main` as v0 only after a dev approves the PR") while
+  `/steer:build` **offers and recommends** solo trunk, which commits straight to `main` with
+  no PR. Rules 30 and 45 both carry the carve-out; rule 05 — always-on session context —
+  did not, so a model holding it would resist the path `build` is instructed to recommend.
+  Rule 05 now names both modes and points at Commit autonomy.
+- **Fixed:** a `/steer-<skill>` reference could point at a prompt file that is never
+  generated. `gen_copilot_prompts.py` skips the `user-invocable: false` gateways (correct)
+  but its `/steer:` → `/steer-` rewrite ran blindly, so `prompts/steer-work.prompt.md`
+  shipped `/steer-tracker-sync` in both its body and the `description` Copilot's picker
+  displays — a VS Code slash-command that will never exist. The rewrite is now scoped to
+  the names actually emitted, in **both** generators (`gen_copilot_prompts.py` and
+  `gen_copilot_agents.py` — the agents one was latent, since the shipped reviewer happens
+  to reference no gateway, and the `check_copilot_*` drift gates cannot catch a regression
+  here because they compare the artifact against the generator's own output). A reference
+  to a gateway keeps the colon form, which reads as the Claude-Code-side gateway it is, and
+  a test now pins both halves.
+- **Fixed:** the shipped PR template told the author "these are review aids, not CI gates"
+  above a checklist whose changed-line-coverage item **is** a blocking gate — `ci` runs
+  `diff-cover --fail-under` on touched lines and fails the PR. Both files install into the
+  same consumer `.github/` from the same PR. The heading now names the one enforced item
+  and keeps the (accurate) no-global-threshold / no-naming-gate statement.
+- **Fixed:** `/steer:audit code`'s DX dimension reported a false finding on every compliant
+  repo. `templates/reference/AUDIT-DIMENSIONS.md` told it to flag a `mise.toml` "missing the
+  tasks a contributor needs (`setup`, `dev`, `test`, `lint`)" — but the scaffold's task is
+  `dev:setup`, not `setup`, and per the Stack rule `test`/`lint` deliberately live in
+  `package.json` with `mise` only delegating one-way. So a freshly scaffolded, fully
+  rule-compliant repo tripped the dimension. Now names the scaffold's real entry points and
+  says explicitly not to flag `test`/`lint`.
+- **Fixed:** `/steer:sync` shipped the one sentence this repo's own gate hard-fails as a
+  rule-45 contradiction. `skills/sync/SKILL.md` said "Nothing is committed until the dev
+  approves" while `rules/45-commit-autonomy.md` says "Never pause work to ask 'should I
+  commit / push / open the PR?'" — and `check_standards.py`'s `_NO_COMMIT_RE` matches that
+  wording verbatim, with a canned verdict ("commit, push, and the PR are autonomous, only
+  the merge waits for the dev"). It never fired because `check_authorization` applies the
+  regex to exactly three paths (`init/SKILL.md`, `adopt/SKILL.md`,
+  `adopt/PROCEDURE.md`). The skill also contradicted **itself** two screens earlier
+  ("push the branch and open the PR yourself, announced"). Clause replaced with the
+  autonomous-commit/merge-waits statement. **Not fixed here, deliberately:** widening the
+  gate's file list to `skills/**/*.md` would have caught this — that is a gate-scope change
+  and belongs in its own PR.
+- **Fixed:** the `markitdown` ledger entry told consumers that after editing
+  `.vscode/mcp.json`, "additive reconciliation keeps it current afterwards" — nothing does
+  that. `sync/RECONCILE.md` says "Don't reconcile `.mcp.json` here", and neither
+  `scan-capabilities.sh` nor `scaffold_reconcile.py` mentions `.vscode/` at all. Same
+  false-refresh-path class as the header fixed above, surviving in the ledger — which is
+  the surface a consumer actually follows during `/steer:sync`. The entry now says the
+  file is theirs once installed, sits outside `copilot-surface-current`, and is amended
+  only by a one-shot ledger entry like that one.
+- **Fixed:** the shipped `ci.yml` header said "Before any app exists, the stack steps
+  simply don't run" — the exact claim the scaffold README retracted earlier in this cycle.
+  Node detection is `[ -f package.json ]` and `profiles/_node/package.json` is a Layer-1
+  install, so on any profile that ships a root `package.json` the guard fails from the
+  first commit (a Python-only product ships none, and is unaffected). Two files a consumer installs together contradicted each other; the header now
+  states when the guard bites and that only a wholly undetected stack skips the phase.
+- **Fixed:** the generated Copilot **agent** artifact shipped both invocation forms.
+  `gen_copilot_agents.py` applied the `/steer:` → `/steer-` rewrite to the body but not to
+  `description` — the field Copilot's agent picker displays, in a file that carries no
+  mapping preamble — so `steer-reviewer.agent.md` named `/steer:audit` in frontmatter and
+  `/steer-audit` in its body. `gen_copilot_prompts.py` already rewrote its descriptions;
+  the two generators now agree.
+- **Fixed: the generated Copilot artifacts named the one refresh path that cannot
+  refresh.** All 27 steer-managed artifacts — `copilot-instructions.md`, the 24
+  `prompts/*.prompt.md`, `agents/steer-reviewer.agent.md` and
+  `instructions/infra.instructions.md` — carried a
+  generated header telling the reader to "re-run `/steer:init`'s Copilot step". That is
+  the exact path the `copilot-surface-current` capability was added to replace, because
+  `/steer:init` **stops on an already-initialized repo** and so can never refresh
+  anything: a Copilot teammate who followed the header would conclude no refresh path
+  existed, which is the silent-staleness failure the capability closes. The capability,
+  `MANIFEST.md`, and the consumer-facing Copilot marketplace description were all
+  corrected in this cycle — the artifacts a consumer actually *reads* were not, leaving
+  the defect alive in the highest-visibility place. Headers now name **`/steer:sync`**
+  for a managed repo and `mise run gen:copilot` for the plugin repo, so the maintainer-only
+  task is no longer shipped as a consumer instruction. Fixed in the three generators
+  (`gen_copilot_{instructions,prompts,agents}.py`) and regenerated — the artifacts are
+  byte-gated by `check_copilot_*`, so they are never hand-edited. The
+  `gen_copilot_instructions.py` comment that justified the old path as deliberate is
+  replaced with the reason it is wrong. Every artifact names **`/steer:sync` from Claude
+  Code** — the colon form, with the surface stated. The header ref is deliberately kept out
+  of the generators' `/steer:` → `/steer-` rewrite: the repair is a verbatim re-copy from
+  `${CLAUDE_PLUGIN_ROOT}`, which VS Code does not have, so it points at an action taken on
+  the other surface rather than a command its reader types.
+  `docs/concepts/copilot-support.md` and the `steer-sync` prompt capsule both already said
+  exactly this. (It is not the only un-rewritten colon ref: the prompt capsules' two
+  generator boilerplate lines name the Claude-Code skill explicitly for the same reason,
+  and the flat `copilot-instructions.md` is colon-form throughout by design, resolved by
+  its own mapping preamble.) Cross-links to **sibling prompt files** do take the hyphen
+  rewrite, since those resolve in VS Code.
+- **Fixed:** `scaffold/vscode/mcp.json`'s generated header claimed a refresh path that
+  nothing performs. `/steer:sync`'s `copilot-surface-current` capability covers only
+  `.github/copilot-instructions.md`, `prompts/`, `agents/` and `instructions/` —
+  `scan-capabilities.sh` never looks at `.vscode/`, and `sync/RECONCILE.md` exempts MCP
+  config from reconciliation outright. The file is also the one Copilot artifact the
+  consumer **owns**: `MANIFEST.md` tells them to "merge additively… remove servers the
+  repo doesn't use", which its own "do not edit by hand" line forbade. The header now
+  says what is true — a starting point you own, outside the `copilot-surface-current`
+  capability so nothing re-copies it over your edits (a one-shot ledger migration may
+  still amend it), regenerated with `mise run gen:copilot` in the plugin repo. The
+  `MANIFEST.md` row and `docs/concepts/copilot-support.md` now say the same.
 - **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
   `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
   `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**
@@ -26,9 +136,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   pre-rename `docker:clean`) with no ledger entry — the artifact is regenerated from
   `rules/`, so a plugin-sourced re-copy is the transform.
 - **Fixed:** `/steer:tracker-sync` withheld `gh api` on the rationale that it is "the
-  delivery surface", but **GraphQL is the only transport** for `field-get` /
-  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md`
-  places *inside* the gateway's own tracker-metadata boundary. So a documented **read**
+  delivery surface", but **GraphQL is the transport to reach for** on `field-get` /
+  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md` places
+  *inside* the gateway's own tracker-metadata boundary. The fallbacks those ops document
+  are real but neither substitutes cleanly: the REST endpoints sit outside every granted
+  prefix and so prompt, and the MCP github tools are granted but expose issue fields only
+  where the org enabled them. So a documented **read**
   prompted on a direct invocation, contradicting the skill's "Reads never confirm."
   Granted `Bash(gh api graphql:*)` as a scoped carve-out; delivery-surface mutation
   (PR merge, branch protection, repo settings) stays withheld. **The grant is broader
@@ -37,7 +150,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `mergePullRequest` or `createBranchProtectionRule`, which GraphQL can also express.
   Both `SKILL.md` and `OPERATIONS.md` now state that the gateway issues only the
   enumerated operations and that nothing checks this mechanically. Never widen to
-  `Bash(gh api:*)` — `check_standards.py` bans that form outright.
+  `Bash(gh api:*)` — a review obligation, not a gated one: `check_standards.py` bans that
+  form only in the scaffold's `.claude/settings.json`, and nothing constrains *what* a
+  skill's own `allowed-tools` may grant (the one per-skill assertion checks only that
+  helper scripts the body invokes are covered), so widening the grant would pass every
+  check.
 - **Fixed:** `/steer:audit spec` made a `contract.md` `path:line` pointer the
   **mandatory** evidence for every verdict ("never assert a match from the tracker spec
   alone"), but `## Implementation pointers` is declared *optional*, "not a maintained
@@ -74,7 +191,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   re-key note above.
 - **Fixed:** `docs/concepts/authorization-model.md` claimed "`gh api`/`gh:*` stay prompted
   by omission" as a plugin-wide property. `/steer:protect` carries `Bash(gh api repos/*)`
-  — the plugin's **only** `gh api` grant — so `gh api repos/…` reads are silent in a
+  — one of the plugin's two `gh api` grants, alongside `/steer:tracker-sync`'s
+  `Bash(gh api graphql:*)` carve-out — so `gh api repos/…` reads are silent in a
   `protect` session, and the page's own enumeration of every skill with scoped frontmatter
   grants omitted `/steer:protect` entirely. The omission claim is now scoped to the
   scaffold allowlist, `protect`'s re-grant is named in both places, and the page carries
@@ -225,17 +343,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   every `package.json` for a `"test"` script, and the scaffold's own root `package.json`
   ships `"test": "pnpm --recursive --if-present run test"` — a fan-out, not a contract. So
   a freshly bootstrapped Node repo passed the guard with zero real tests and
-  `pnpm run test --if-present` no-opped to green, while rule `50-definition-of-done` names
-  that guard as solo-trunk's **only** automated backstop. The guard now requires at least
+  `pnpm run test --if-present` no-opped to green — in a solo-trunk repo, where rule
+  `50-definition-of-done` leans on CI as the **only** automated backstop (it names the
+  changed-line coverage gate and the spec-drift warning; this guard sits alongside them in
+  the same `ci` run). The guard now requires at least
   one `test` script that is not a pass-through fan-out. **Consumer-visible:** because the
   Node phase activates as soon as a root `package.json` exists, a freshly bootstrapped repo
   now has a red `ci` until some package defines a real `test` script. That is the guard
   working as documented; the scaffold README said the opposite ("before any app exists,
   only the hygiene phase runs") and has been corrected.
 - **Fixed:** the always-on infra rule mandates S3 remote state with the native
-  `use_lockfile` lock, while `infra/README.md` — installed into every infra repo *and*
-  every monorepo with a nested `/infra` — told the reader to bootstrap an S3 **+ DynamoDB**
-  lock table. Corrected in both places it appeared.
+  `use_lockfile` lock, while `infra/README.md` — installed on a nested `/infra` dir inside
+  a monorepo, which is **distinct from** the `infra` profile — told the reader to bootstrap
+  an S3 **+ DynamoDB** lock table. Corrected in both places it appeared.
 - **Fixed:** `/steer:next`'s next-actions table still categorized "PR merged but issue
   still `validate`" as *Blocking now* with a bare reconcile, after `/steer:work`'s
   identical row was corrected to propose-only — and `/steer:next` is the surface that

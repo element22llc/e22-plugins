@@ -13,9 +13,16 @@ to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 **GraphQL is granted, and this boundary is what limits it.** Projects v2
-issue-field I/O and native blocked-by edges have no REST or MCP equivalent, so
-`gh api graphql` is the only transport for `field-get` / `field-set` /
-`link-blocked-by` / `bootstrap-fields` — and `SKILL.md` pre-approves
+issue-field I/O and native blocked-by edges have no `gh issue` subcommand, and
+`gh api graphql` is the transport to reach for on `field-get` / `field-set` /
+`link-blocked-by` / `bootstrap-fields`. The fallbacks named with those ops below are
+real, but neither substitutes cleanly: the **REST** endpoints fall outside every
+granted prefix, so reaching for one turns a documented read into a confirmation
+(and widening the grant to `Bash(gh api:*)` is forbidden — see `SKILL.md`, where the
+limit is a review obligation, not a gated one); the **MCP** github tools *are*
+granted, but only expose issue fields if the org has enabled them, which is why those
+ops hedge with "if it exposes issue fields" rather than promising a path.
+`SKILL.md` pre-approves
 `Bash(gh api graphql:*)` so a *read* never prompts on a direct invocation. That
 grant matches a command-string prefix, so it would equally match a delivery-surface
 mutation GraphQL can express (`mergePullRequest`, `createBranchProtectionRule`,
@@ -150,9 +157,9 @@ parent per issue), which holds for every hop of the chain.
   is surfaced for a human, not acted on.
 - **`link-blocked-by #N <blocker>`** — record a **native** GitHub issue
   dependency (`#N` is blocked by `#blocker`; the reciprocal "blocks" edge is
-  created by GitHub automatically). Native relationships are GraphQL-only — use the
-  blocked-by add/remove mutations via `gh api graphql` (issue **node id**, not
-  number), else the MCP equivalent. **Capability-degrading:** where native issue
+  created by GitHub automatically). Native relationships have no `gh issue`
+  subcommand — use the blocked-by add/remove mutations via `gh api graphql` (issue
+  **node id**, not number), else the MCP equivalent if it exposes them. **Capability-degrading:** where native issue
   relationships are unavailable, fall back to `link-related #N <blocker>
   depends-on`. **One representation only:** when the native edge is written, do
   **not** also add a managed-block `depends-on`/`blocks` line for the same pair —

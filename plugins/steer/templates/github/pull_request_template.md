@@ -76,7 +76,12 @@ Pointers are a hint, not a maintained index (the spec ↔ code coupling rules co
 ## Testing
 
 Per the Definition of Done (injected every session by the `steer` plugin).
-These are review aids, not CI gates.
+Mostly review aids — with one exception: **changed-line coverage becomes a real CI
+gate once this repo wires coverage tooling.** `ci` then runs `diff-cover
+--fail-under` on touched lines and fails the PR. Until a coverage provider is
+added (`@vitest/coverage-v8` / `pytest-cov` — deliberately not pinned by the
+scaffold), the step fail-opens and the box below is advisory like the rest. There
+is no global coverage threshold and no test-file-naming gate in either case.
 
 - [ ] Added or updated automated tests for this change (same PR, not "later")
 - [ ] **Bug fix:** added a regression test that fails before the fix and passes after

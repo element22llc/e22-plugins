@@ -97,9 +97,49 @@ def iter_agents(agents_dir: Path) -> list[tuple[str, dict, str]]:
     return out
 
 
+def _emitted_prompt_names() -> frozenset[str]:
+    """Names that actually get a `.github/prompts/steer-<name>.prompt.md` artifact.
+
+    A `/steer-<name>` ref is a VS Code prompt-file slash-command, so it is only
+    correct for a skill a prompt file is emitted for. The `user-invocable: false`
+    gateways (`spec-scaffold`, `tracker-sync`) get none, so a rewritten ref to one
+    would assert a command Copilot never offers.
+    """
+    skills_dir = Path("plugins/steer/skills")
+    names: set[str] = set()
+    if not skills_dir.is_dir():
+        return frozenset()
+    for skill_dir in sorted(p for p in skills_dir.glob("*") if p.is_dir()):
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        fm, _ = _parse_frontmatter(skill_md.read_text(encoding="utf-8"))
+        if not fm or not fm.get("name") or fm.get("user-invocable") is False:
+            continue
+        names.add(str(fm["name"]))
+    return frozenset(names)
+
+
+def _to_copilot_refs(text: str, emitted: frozenset[str]) -> str:
+    """Rewrite `/steer:<skill>` → `/steer-<skill>`, but only where that resolves."""
+
+    def _sub(m: re.Match[str]) -> str:
+        return f"/steer-{m.group(1)}" if m.group(1) in emitted else m.group(0)
+
+    return re.sub(r"/steer:([a-z][a-z0-9-]*)", _sub, text)
+
+
 def render_agent(name: str, fm: dict, body: str) -> str:
     """Render one VS Code custom-agent artifact from a steer subagent."""
-    description = " ".join(str(fm.get("description", "")).split()).strip()
+    # Rewrite `/steer:<skill>` → `/steer-<skill>` in the description too, not just
+    # the body: the description is what Copilot's agent picker shows, and this file
+    # carries no `/steer:` → `/steer-` mapping preamble. Scoped to emitted names for
+    # the same reason `gen_copilot_prompts.py` is — an unscoped rewrite would ship a
+    # dangling `/steer-tracker-sync` the moment an agent references a gateway.
+    emitted = _emitted_prompt_names()
+    description = _to_copilot_refs(
+        " ".join(str(fm.get("description", "")).split()).strip(), emitted
+    )
 
     front: dict[str, object] = {"description": description}
     tools = _copilot_tools(fm.get("tools", "")) if fm.get("tools") else []
@@ -117,17 +157,20 @@ def render_agent(name: str, fm: dict, body: str) -> str:
         width=10**9,
     ).rstrip("\n")
 
+    # `/steer:sync` (colon), deliberately NOT rewritten: the refresh is a verbatim
+    # re-copy from ${CLAUDE_PLUGIN_ROOT}, which VS Code does not have, so this names
+    # an action taken from Claude Code rather than a command this reader types.
     header = (
         f"<!-- Generated from the steer plugin's agents/{name}.md — do not edit by "
-        f"hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot "
-        f"step). -->"
+        f"hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise "
+        f"run gen:copilot in the plugin repo. -->"
     )
 
     # The source body is Claude-oriented; rewrite /steer:<skill> references to the
     # /steer-<skill> prompt-file names Copilot surfaces in VS Code so cross-links
     # resolve. The tool-name prose ("Read, Grep, Glob") stays descriptive of the
     # read-only intent; the frontmatter `tools` is what actually constrains Copilot.
-    ported = re.sub(r"/steer:([a-z][a-z0-9-]*)", r"/steer-\1", body).strip()
+    ported = _to_copilot_refs(body, emitted).strip()
 
     tools_note = (
         f" In VS Code its tools are {', '.join(f'`{t}`' for t in tools)} (read-only) —"

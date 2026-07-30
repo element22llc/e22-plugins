@@ -3,7 +3,7 @@ mode: agent
 description: GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, bounded reconcile, the publish-* family (audit/drift/adoption/findings), and bootstrap-labels. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer.
 ---
 
-<!-- Generated from the steer plugin's skills/issues/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
+<!-- Generated from the steer plugin's skills/issues/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:issues` workflow for GitHub Copilot in VS Code.
 

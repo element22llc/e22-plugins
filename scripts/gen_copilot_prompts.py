@@ -43,8 +43,20 @@ import yaml
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
 
 
-def _to_copilot_refs(text: str) -> str:
-    return _STEER_REF.sub(r"/steer-\1", text)
+def _to_copilot_refs(text: str, emitted: frozenset[str]) -> str:
+    """Rewrite `/steer:<skill>` → `/steer-<skill>`, but only where that resolves.
+
+    A hyphen ref is a VS Code prompt-file slash-command, so it is correct only for
+    a skill we actually emit a prompt file for. The `user-invocable: false`
+    gateways (`spec-scaffold`, `tracker-sync`) get no prompt file, so rewriting a
+    reference to one would assert a command Copilot will never offer. Those keep
+    the colon form, which reads as the Claude-Code-side gateway it is.
+    """
+
+    def _sub(m: re.Match[str]) -> str:
+        return f"/steer-{m.group(1)}" if m.group(1) in emitted else m.group(0)
+
+    return _STEER_REF.sub(_sub, text)
 
 
 SKILLS_DIR = Path("plugins/steer/skills")
@@ -90,11 +102,11 @@ def iter_skills(skills_dir: Path) -> list[tuple[str, dict]]:
     return out
 
 
-def render_prompt(name: str, fm: dict) -> str:
+def render_prompt(name: str, fm: dict, emitted: frozenset[str] = frozenset()) -> str:
     """Render one VS Code prompt-file artifact for a skill (intent capsule)."""
-    description = _to_copilot_refs(str(fm.get("description", "")).strip())
-    when_to_use = _to_copilot_refs(str(fm.get("when_to_use", "")).strip())
-    argument_hint = _to_copilot_refs(str(fm.get("argument-hint", "")).strip())
+    description = _to_copilot_refs(str(fm.get("description", "")).strip(), emitted)
+    when_to_use = _to_copilot_refs(str(fm.get("when_to_use", "")).strip(), emitted)
+    argument_hint = _to_copilot_refs(str(fm.get("argument-hint", "")).strip(), emitted)
 
     # YAML frontmatter — safe-dumped so descriptions with colons/quotes/em-dashes
     # are escaped correctly; width is unbounded so long descriptions stay on one
@@ -107,10 +119,18 @@ def render_prompt(name: str, fm: dict) -> str:
         width=10**9,
     ).rstrip("\n")
 
+    # `/steer:sync` (colon) is correct here and must NOT go through
+    # `_to_copilot_refs`. The refresh is a verbatim re-copy from
+    # ${CLAUDE_PLUGIN_ROOT}, which does not exist in VS Code — so this is a pointer
+    # to an action taken from Claude Code, not a command this file's reader types.
+    # Body/description refs DO get rewritten, but only for names we actually emit
+    # a prompt file for — see `_to_copilot_refs`. The two `/steer:{name}` lines in
+    # the body below are likewise deliberate: they name the Claude-Code skill this
+    # capsule mirrors, not a command to type here.
     header = (
         f"<!-- Generated from the steer plugin's skills/{name}/SKILL.md — do not "
-        f"edit by hand. Refresh with: mise run gen:copilot (or re-run "
-        f"/steer:init's Copilot step). -->"
+        f"edit by hand. Refresh with /steer:sync from Claude Code in a managed "
+        f"repo, or mise run gen:copilot in the plugin repo. -->"
     )
 
     body = [
@@ -142,9 +162,12 @@ def render_prompt(name: str, fm: dict) -> str:
 
 def render_all(skills_dir: Path = SKILLS_DIR) -> dict[str, str]:
     """Return {artifact_filename: rendered_text} for every user-invocable skill."""
+    skills = iter_skills(skills_dir)
+    # The set of names that actually get a prompt file — what a `/steer-<name>`
+    # ref is allowed to point at (see `_to_copilot_refs`).
+    emitted = frozenset(name for name, _ in skills)
     return {
-        f"{PROMPT_PREFIX}{name}.prompt.md": render_prompt(name, fm)
-        for name, fm in iter_skills(skills_dir)
+        f"{PROMPT_PREFIX}{name}.prompt.md": render_prompt(name, fm, emitted) for name, fm in skills
     }
 
 

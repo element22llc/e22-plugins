@@ -486,9 +486,12 @@ Name the file and say what to carry forward.
 - **Action:** read-then-propose, show the diff first. In each file that matched,
   remove **only** the `markitdown` server entry, preserving every other server
   and value — never clobber a dev-added entry.
-  - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The file is
-    generated from the plugin's `.mcp.json`, so the rest of it stays as-is and
-    additive reconciliation keeps it current afterwards.
+  - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The rest of
+    the file stays as-is. Note this file is **yours** once installed — it is
+    seeded from the plugin's `.mcp.json` but sits outside `/steer:sync`'s
+    `copilot-surface-current` capability, so nothing reconciles or re-copies it
+    afterwards; a one-shot ledger entry like this one is the only thing that
+    amends it.
   - In a repo-local `.mcp.json`, drop the `markitdown` key. If removing it
     leaves the file with **no** servers, `git rm` it — the plugin provides what
     remains (see the v2.11.0 entry, which removes the duplicated `github` key on

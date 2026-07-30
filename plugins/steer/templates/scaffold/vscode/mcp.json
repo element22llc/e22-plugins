@@ -1,6 +1,10 @@
 {
-  // Generated from the steer plugin's .mcp.json — do not edit by hand.
-  // Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step).
+  // Generated from the steer plugin's .mcp.json. This copy is a starting point
+  // you own: merge additively into an existing file and remove servers you do
+  // not use. /steer:sync's copilot-surface-current capability does NOT cover
+  // .vscode/, so nothing re-copies this file over your edits (a one-shot ledger
+  // migration may still amend it -- e.g. removing a retired server).
+  // In the plugin repo, regenerate the template with mise run gen:copilot.
   //
   // Model Context Protocol servers for GitHub Copilot in VS Code (Chat + Agent
   // mode) and Visual Studio. Mirrors the servers the steer plugin wires into

@@ -3,7 +3,7 @@ mode: agent
 description: Scaffold an autonomous loop for a managed repo — a scheduled GitHub Actions workflow that triages work (CI failures, open issues, drift) via /steer-audit + /steer-next, drafts fixes in reviewed worktrees, and opens draft PRs. Stops at every human gate; never merges or deploys.
 ---
 
-<!-- Generated from the steer plugin's skills/loop/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
+<!-- Generated from the steer plugin's skills/loop/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:loop` workflow for GitHub Copilot in VS Code.
 

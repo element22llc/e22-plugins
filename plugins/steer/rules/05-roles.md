@@ -24,4 +24,7 @@ brief. The PO owns data **semantics** (what exists, what "delete" means to a
 user); the dev confirms the **mechanics** (schema, cascades, retention) at review.
 
 **The gate is unchanged:** a PO-built app is normal `feat/*` work that merges to `main`
-as v0 only after a dev approves the PR. That review *is* productionization.
+as v0 only after a dev approves the PR. That review *is* productionization. In
+**solo trunk (pre-MVP)** there is no PR gate — the build commits straight to `main`
+and productionization is the dev review at graduation (`/steer:protect`); see Commit
+autonomy for the two modes.

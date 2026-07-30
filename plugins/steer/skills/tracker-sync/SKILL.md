@@ -24,11 +24,15 @@ user-invocable: false
 # deliberately NOT listed — it stays host-gated.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
-# reads/writes and native blocked-by edges have no REST or MCP equivalent, so
-# GraphQL is the ONLY transport for `field-get`, `field-set`, `link-blocked-by` and
+# reads/writes and native blocked-by edges have no `gh issue` subcommand, so GraphQL is
+# the transport to reach for on `field-get`, `field-set`, `link-blocked-by` and
 # `bootstrap-fields` — all four squarely inside this gateway's declared
-# tracker-metadata boundary (OPERATIONS.md). Withholding it made `field-get` prompt
-# on a direct invocation, contradicting "Reads never confirm" below.
+# tracker-metadata boundary (OPERATIONS.md). The fallbacks those ops document are real
+# but neither substitutes cleanly: the REST endpoints sit outside every granted prefix
+# (so they prompt), and the MCP github tools are granted but expose issue fields only
+# where the org enabled them. Withholding GraphQL made `field-get` prompt on a direct
+# invocation,
+# contradicting "Reads never confirm" below.
 #
 # That grant is BROADER THAN THE BOUNDARY, and the limit is prose-enforced, not
 # tool-enforced: allowed-tools matches a command-string prefix, so it cannot
@@ -37,7 +41,11 @@ user-invocable: false
 # therefore issues ONLY the queries and mutations OPERATIONS.md enumerates; a
 # delivery-surface mutation is out of bounds here even though the grant would match
 # it, and belongs to /steer:work or /steer:protect under their own gating. Never
-# widen this to `Bash(gh api:*)` — check_standards.py bans that form outright.
+# widen this to `Bash(gh api:*)`. check_standards.py bans that form in the SCAFFOLD's
+# .claude/settings.json only — nothing constrains WHAT a skill's own allowed-tools may
+# grant (the one per-skill assertion, check_skill_script_grants, only checks that helper
+# scripts the body invokes are covered), so widening this line would pass every check.
+# Treat it as a review obligation, not a guarded one.
 allowed-tools:
   - mcp__github__issue_write
   - mcp__github__issue_read

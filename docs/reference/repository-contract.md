@@ -140,15 +140,17 @@ When `/steer:init`, `/steer:adopt`, or `/steer:sync` install a scaffold file tha
 already exists in the target repo, they **merge additively and never clobber**:
 Markdown spec files reconcile on heading/checklist anchors (`template-reconcile.sh`),
 and the structured-config files — the line-based `.gitignore` / `.worktreeinclude`
-and the JSON configs (`.claude/settings.json`, `biome.json`,
-`tsconfig`, and the committed editor config `.vscode/extensions.json` /
-`.vscode/settings.json` / `.vscode/mcp.json`, the last being how Copilot/VS Code
-teammates get the same MCP servers) — reconcile with `scaffold_reconcile.py`, which unions
+and the JSON configs `.claude/settings.json`, `biome.json` and `tsconfig` —
+reconcile with `scaffold_reconcile.py`, which unions
 JSON arrays and adds missing keys/lines without overwriting, reordering, or
-removing any existing value. The array union is what lets a repo's existing
-`.vscode/extensions.json` recommendations gain the scaffold's (VS Code is the
-default editor; see the Stack rule / `/steer:reference conventions`) without losing local
-additions.
+removing any existing value.
+
+The committed editor configs (`.vscode/extensions.json`, `.vscode/settings.json`,
+and `.vscode/mcp.json` — the last being how Copilot/VS Code teammates get the same
+MCP servers) are **merged by hand**, not by that script: all three templates carry
+`//` comments, and `scaffold_reconcile.py` parses with strict JSON, so it refuses
+them. They are yours once installed — merge additively, drop what you don't use.
+VS Code is the default editor; see the Stack rule / `/steer:reference conventions`.
 
 The one exception is the `.claude/settings.json` `permissions` block, which
 Claude Code evaluates by precedence **deny > ask > allow**. There, the same

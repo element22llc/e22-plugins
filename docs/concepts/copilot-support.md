@@ -23,10 +23,10 @@ truth and how to install and refresh the Copilot side.
 | Capability | Claude Code | Copilot CLI | Copilot in VS Code |
 |---|---|---|---|
 | Always-on standards | SessionStart hook → `additionalContext` | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (read natively) |
-| Path-scoped standards | rule `inject-when` traits | (folded into instructions file) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
+| Path-scoped standards | rule `inject-when` traits | **not delivered** — emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.github/prompts/*.prompt.md` (`/steer-<skill>`) |
-| Subagents | plugin `agents/` | plugin `agents/` via manifest | `.github/agents/*.agent.md` (agent picker) |
-| MCP servers | plugin `.mcp.json` | plugin `.mcp.json` | `.vscode/mcp.json` |
+| Subagents | plugin `agents/` | **not declared** — the Copilot manifest carries `skills` + `hooks` only | `.github/agents/*.agent.md` (agent picker) |
+| MCP servers | plugin `.mcp.json` | **not declared** — the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
@@ -198,6 +198,19 @@ the flat file so it never double-loads. The same generator + drift gate as the
 flat instructions (`gen_copilot_instructions.py` / `check_copilot_instructions.py`)
 keeps them in sync.
 
+!!! warning "A scoped rule reaches VS Code only"
+    Because the exclusion is unconditional (`iter_rule_files` filters `SCOPED_RULES`),
+    a path-scoped rule is **not** in `.github/copilot-instructions.md` — today that
+    means rule `12-stack-infra`, the IaC stack standards. That directory is read by
+    Copilot in VS Code and by the cloud coding agent; whether the Copilot **CLI**
+    reads it is unverified here, so a CLI teammate working on Terraform may receive
+    no IaC standards. If you need them there, load the file explicitly.
+
+    Do not "fix" this by dropping the rule from `SCOPED_RULES`: that key drives both
+    the flat-file exclusion *and* the scoped emission, and `main()` prunes the
+    orphaned file — so you would move the rule into every consumer's always-on
+    context and delete `infra.instructions.md`, not resolve the gap.
+
 Repo-specific Copilot guidance you author yourself also goes in a *separate*
 `*.instructions.md` you own — never edit the steer-generated ones.
 
@@ -218,7 +231,13 @@ one sanctioned difference: the auth placeholder (env var → prompted input, map
 in the generator's `AUTH_INPUTS`). A byte-equality drift gate
 (`check_copilot_mcp.py`, part of `plugin-check`) fails the build if the committed
 mirror falls out of sync. Edit `.mcp.json` and regenerate — never hand-edit the
-mirror.
+template **in this repo**.
+
+That byte-gate governs the plugin-side template only. Unlike the four artifacts
+under `.github/`, the **installed** `.vscode/mcp.json` is not steer-managed: it sits
+outside `/steer:sync`'s `copilot-surface-current` capability, so a consumer owns
+their copy and is expected to merge additively and remove servers they don't use.
+Nothing re-copies it over their edits; only a one-shot ledger migration amends it.
 
 ## Cloud coding agent (opt-in)
 
