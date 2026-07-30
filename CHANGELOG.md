@@ -25,8 +25,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   which the entry does not rewrite. So the most common carrier of the stale prose — an
   app-profile monorepo with `/infra` — would have read both surfaces and concluded the
   migration didn't apply to it, while an infra-profile reader would have looked for a file
-  they don't have. Both now name the real carrier and say the root-level case needs a
-  hand check.
+  they don't have. All **four** surfaces now name the real carrier and say the root-level
+  case needs a hand check: the ledger entry's body, its scannable **heading** (which the
+  first pass left saying "infra profile", so the entry contradicted itself at the one line
+  a consumer skims during `/steer:sync`), the docs-site description, and the release-PR
+  re-key note above.
 - **Fixed:** `docs/concepts/authorization-model.md` claimed "`gh api`/`gh:*` stay prompted
   by omission" as a plugin-wide property. `/steer:protect` carries `Bash(gh api repos/*)`
   — the plugin's **only** `gh api` grant — so `gh api repos/…` reads are silent in a
@@ -919,7 +922,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   **Release note — this release now has SIX `### v3.24.0` ledger entries (this `ws:`
   rename, the `COMPOSE_PROJECT_NAME` prefix, the promoted-question rule, the
   `spec/PRODUCT.md` spine-resolution ladder, the `PRODUCTIONIZATION.md` open-question
-  seed, and the infra profile's S3 + DynamoDB → native `use_lockfile` prose rewrite), and
+  seed, and the nested-`/infra` `README.md`'s S3 + DynamoDB → native `use_lockfile` prose
+  rewrite), and
   the key on all six is an assumption the release PR must confirm.** The
   ledger keys each entry by the version that introduced it, so the heading has to match
   the bump actually cut: re-key **all six** if this release is not 3.24.0 — this

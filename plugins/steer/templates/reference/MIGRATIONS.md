@@ -374,7 +374,7 @@ Name the file and say what to carry forward.
   `mise.toml` (a member's `dev` / `docker:*` tasks are correct unprefixed), and never
   a `dev:setup` / `docker:*` task in an `app`/`infra` repo.
 
-### v3.24.0 — infra profile: S3 + DynamoDB state lock → native `use_lockfile`
+### v3.24.0 — nested `/infra` dir: S3 + DynamoDB state lock → native `use_lockfile`
 
 - **What & why:** `infra/README.md`'s `## Conventions` told the reader the state backend
   is **S3 + DynamoDB locking**, and that "the bucket **and lock table** are bootstrapped
