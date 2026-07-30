@@ -119,8 +119,8 @@ def render_agent(name: str, fm: dict, body: str) -> str:
 
     header = (
         f"<!-- Generated from the steer plugin's agents/{name}.md — do not edit by "
-        f"hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot "
-        f"step). -->"
+        f"hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot "
+        f"in the plugin repo. -->"
     )
 
     # The source body is Claude-oriented; rewrite /steer:<skill> references to the

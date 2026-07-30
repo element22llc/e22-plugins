@@ -7,6 +7,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the generated Copilot artifacts named the one refresh path that cannot
+  refresh.** All 27 shipped artifacts — `copilot-instructions.md`, the 24
+  `prompts/*.prompt.md`, `agents/steer-reviewer.agent.md`,
+  `instructions/infra.instructions.md`, plus `scaffold/vscode/mcp.json` — carried a
+  generated header telling the reader to "re-run `/steer:init`'s Copilot step". That is
+  the exact path the `copilot-surface-current` capability was added to replace, because
+  `/steer:init` **stops on an already-initialized repo** and so can never refresh
+  anything: a Copilot teammate who followed the header would conclude no refresh path
+  existed, which is the silent-staleness failure the capability closes. The capability,
+  `MANIFEST.md`, and the consumer-facing Copilot marketplace description were all
+  corrected in this cycle — the artifacts a consumer actually *reads* were not, leaving
+  the defect alive in the highest-visibility place. Headers now name **`/steer:sync`**
+  for a managed repo and `mise run gen:copilot` for the plugin repo, so the maintainer-only
+  task is no longer shipped as a consumer instruction. Fixed in the five generators
+  (`gen_copilot_{instructions,prompts,agents,mcp}.py`) and regenerated — the artifacts are
+  byte-gated by `check_copilot_*`, so they are never hand-edited. The
+  `gen_copilot_instructions.py` comment that justified the old path as deliberate is
+  replaced with the reason it is wrong.
 - **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
   `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
   `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**
@@ -26,9 +44,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   pre-rename `docker:clean`) with no ledger entry — the artifact is regenerated from
   `rules/`, so a plugin-sourced re-copy is the transform.
 - **Fixed:** `/steer:tracker-sync` withheld `gh api` on the rationale that it is "the
-  delivery surface", but **GraphQL is the only transport** for `field-get` /
-  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md`
-  places *inside* the gateway's own tracker-metadata boundary. So a documented **read**
+  delivery surface", but **GraphQL is the only transport that does not prompt** for
+  `field-get` / `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops
+  `OPERATIONS.md` places *inside* the gateway's own tracker-metadata boundary (the
+  REST/MCP fallbacks those ops document are real, but no granted prefix covers them).
+  So a documented **read**
   prompted on a direct invocation, contradicting the skill's "Reads never confirm."
   Granted `Bash(gh api graphql:*)` as a scoped carve-out; delivery-surface mutation
   (PR merge, branch protection, repo settings) stays withheld. **The grant is broader

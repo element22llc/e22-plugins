@@ -13,9 +13,12 @@ to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 **GraphQL is granted, and this boundary is what limits it.** Projects v2
-issue-field I/O and native blocked-by edges have no REST or MCP equivalent, so
+issue-field I/O and native blocked-by edges have no `gh issue` subcommand, and
 `gh api graphql` is the only transport for `field-get` / `field-set` /
-`link-blocked-by` / `bootstrap-fields` — and `SKILL.md` pre-approves
+`link-blocked-by` / `bootstrap-fields` that does **not** prompt — the REST and MCP
+fallbacks named with those ops below do exist, but they fall outside every granted
+prefix (and `Bash(gh api:*)` is banned outright), so reaching for one turns a
+documented read into a confirmation. `SKILL.md` pre-approves
 `Bash(gh api graphql:*)` so a *read* never prompts on a direct invocation. That
 grant matches a command-string prefix, so it would equally match a delivery-surface
 mutation GraphQL can express (`mergePullRequest`, `createBranchProtectionRule`,

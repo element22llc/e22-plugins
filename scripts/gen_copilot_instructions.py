@@ -69,13 +69,15 @@ SCOPED_RULES: dict[str, dict[str, str]] = {
 _INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
-# (`/steer:init` resolves to a real skill). The refresh path is the explicit
-# re-run of init's Copilot step from Claude Code — Copilot teammates only consume
-# the installed file.
+# (`/steer:sync` resolves to a real skill). The refresh path is `/steer:sync` — its
+# `copilot-surface-current` capability re-copies each generated artifact verbatim
+# from the plugin. It is NOT `/steer:init`: init stops on an already-initialized
+# repo, so it can never refresh anything. Copilot teammates only consume the
+# installed file, so the header must name a path that works from a managed repo.
 HEADER = (
     "<!-- Engineering standards (steer plugin). Generated from the plugin's "
-    "rules/ — do not edit by hand. Refresh after a plugin update by re-running "
-    "/steer:init's Copilot step. -->"
+    "rules/ — do not edit by hand. Refresh after a plugin update with /steer:sync "
+    "in a managed repo, or mise run gen:copilot in the plugin repo. -->"
 )
 
 # The rules are carried verbatim, so every skill cross-reference in them uses the
@@ -138,8 +140,8 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
         ).rstrip("\n")
         header = (
             f"<!-- Generated from the steer plugin's rules/{rule_name} — do not edit "
-            f"by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's "
-            f"Copilot step). -->"
+            f"by hand. Refresh with /steer:sync in a managed repo, or mise run "
+            f"gen:copilot in the plugin repo. -->"
         )
         out[f"{spec['name']}.instructions.md"] = f"{header}\n---\n{front}\n---\n\n{body}\n"
     return out

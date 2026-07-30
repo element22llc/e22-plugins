@@ -109,8 +109,8 @@ def render_prompt(name: str, fm: dict) -> str:
 
     header = (
         f"<!-- Generated from the steer plugin's skills/{name}/SKILL.md — do not "
-        f"edit by hand. Refresh with: mise run gen:copilot (or re-run "
-        f"/steer:init's Copilot step). -->"
+        f"edit by hand. Refresh with /steer:sync in a managed repo, or mise run "
+        f"gen:copilot in the plugin repo. -->"
     )
 
     body = [

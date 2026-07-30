@@ -57,7 +57,8 @@ _PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 # lines mark the file generated; the rest is the standing guidance for consumers.
 HEADER_COMMENT = [
     "// Generated from the steer plugin's .mcp.json — do not edit by hand.",
-    "// Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step).",
+    "// Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the",
+    "// plugin repo.",
     "//",
     "// Model Context Protocol servers for GitHub Copilot in VS Code (Chat + Agent",
     "// mode) and Visual Studio. Mirrors the servers the steer plugin wires into",

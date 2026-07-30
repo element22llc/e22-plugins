@@ -1,4 +1,4 @@
-<!-- Engineering standards (steer plugin). Generated from the plugin's rules/ — do not edit by hand. Refresh after a plugin update by re-running /steer:init's Copilot step. -->
+<!-- Engineering standards (steer plugin). Generated from the plugin's rules/ — do not edit by hand. Refresh after a plugin update with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 > **Invoking a skill on this surface.** The standards below name skills in the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot for VS Code** the same skills ship as prompt files invoked as **`/steer-<skill>`** — type `/steer-` in Chat to list them. On the **Copilot CLI** they load from the plugin manifest. Read any `/steer:<skill>` reference below as the skill of that name on whichever surface you are on.
 

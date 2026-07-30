@@ -24,11 +24,13 @@ user-invocable: false
 # deliberately NOT listed — it stays host-gated.
 #
 # `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
-# reads/writes and native blocked-by edges have no REST or MCP equivalent, so
-# GraphQL is the ONLY transport for `field-get`, `field-set`, `link-blocked-by` and
-# `bootstrap-fields` — all four squarely inside this gateway's declared
-# tracker-metadata boundary (OPERATIONS.md). Withholding it made `field-get` prompt
-# on a direct invocation, contradicting "Reads never confirm" below.
+# reads/writes and native blocked-by edges have no `gh issue` subcommand, and GraphQL
+# is the only transport for `field-get`, `field-set`, `link-blocked-by` and
+# `bootstrap-fields` that does NOT prompt — all four squarely inside this gateway's
+# declared tracker-metadata boundary (OPERATIONS.md). The REST/MCP fallbacks those
+# ops document do exist, but no granted prefix covers them, so they cannot carry a
+# silent read. Withholding GraphQL made `field-get` prompt on a direct invocation,
+# contradicting "Reads never confirm" below.
 #
 # That grant is BROADER THAN THE BOUNDARY, and the limit is prose-enforced, not
 # tool-enforced: allowed-tools matches a command-string prefix, so it cannot

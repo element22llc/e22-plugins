@@ -3,7 +3,7 @@ mode: agent
 description: Execute a GitHub issue end-to-end from local Claude Code — claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer-issues, routing all tracker-metadata I/O through /steer-tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path.
 ---
 
-<!-- Generated from the steer plugin's skills/work/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
+<!-- Generated from the steer plugin's skills/work/SKILL.md — do not edit by hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:work` workflow for GitHub Copilot in VS Code.
 

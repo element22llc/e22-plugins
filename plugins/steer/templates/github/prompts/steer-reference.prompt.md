@@ -3,7 +3,7 @@ mode: agent
 description: 'Load one of steer''s full reference docs on demand: conventions (toolchain, stack defaults, commit style), traceability (spec routing, living docs, tracker, drift, audit evidence), design-sources, context-hygiene (subagents, durable state on long runs), architecture-diagrams (Mermaid vs LikeC4), artifacts, gates, or polyrepo. Read-only loader.'
 ---
 
-<!-- Generated from the steer plugin's skills/reference/SKILL.md — do not edit by hand. Refresh with: mise run gen:copilot (or re-run /steer:init's Copilot step). -->
+<!-- Generated from the steer plugin's skills/reference/SKILL.md — do not edit by hand. Refresh with /steer:sync in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:reference` workflow for GitHub Copilot in VS Code.
 

@@ -165,15 +165,33 @@ the pre-rename names no longer resolve.
 The boundary is deliberate: `mise run` is allowlisted **only** for named tasks —
 the verify pair (`check`/`ci`) plus `dev` for running the app locally — never the
 wildcard, since an open `mise run:*` would silently green-light `mise run deploy`. `gh api`/`gh:*` stay prompted by omission **from the scaffold allowlist** (the
-mutation vector for repo delete, PR merge, and branch protection). One skill re-grants a
-narrow slice: `/steer:protect` carries `Bash(gh api repos/*)` — the plugin's only `gh api`
-grant — so *reading* live protection settings is silent in a `protect` session. Its
-**writes** stay prompted, but only because the grant is a path prefix and every write in
-the skill puts `-X PUT`/`-X PATCH` **before** the endpoint path, so it falls outside the
-prefix; a write with the flag after the path would match the read grant and apply with no
-prompt. Argument order is load-bearing there — the same discipline, inverted, as
-`/steer:report` keeping `--repo` first to *stay inside* its grant. `check_standards.py`
-asserts both halves so the split can't regress, and separately asserts every skill
+mutation vector for repo delete, PR merge, and branch protection). **Two skills re-grant a
+narrow slice**, each for a different transport:
+
+- `/steer:protect` carries `Bash(gh api repos/*)`, so *reading* live protection settings
+  is silent in a `protect` session. Its **writes** stay prompted, but only because the
+  grant is a path prefix and every write in the skill puts `-X PUT`/`-X PATCH` **before**
+  the endpoint path, so it falls outside the prefix; a write with the flag after the path
+  would match the read grant and apply with no prompt. Argument order is load-bearing
+  there — the same discipline, inverted, as `/steer:report` keeping `--repo` first to
+  *stay inside* its grant. **Nothing enforces either half mechanically.** The discipline
+  lives in the skills' own prose (`skills/protect/SKILL.md` → "Keep `-X PUT` / `-X PATCH`
+  as the first argument, before the endpoint path"), and a reordered write would pass
+  every gate in this repo. Treat it as a review obligation, not a guardrail.
+- `/steer:tracker-sync` carries `Bash(gh api graphql:*)` as a scoped carve-out, so a
+  Projects v2 issue-field read does not prompt on a direct invocation — `field-get`,
+  plus the `field-set` / `link-blocked-by` / `bootstrap-fields` operations that sit
+  inside the gateway's declared tracker-metadata boundary. GraphQL is the only transport
+  for these that does **not** prompt (a REST equivalent exists for some of them, but it
+  falls outside every granted prefix). **This grant is broader than the boundary it
+  serves, and the limit is prose-enforced:** `allowed-tools` matches a command-string
+  prefix, so it cannot distinguish a field query from `mergePullRequest` or
+  `createBranchProtectionRule`, which GraphQL expresses just as well. The gateway issues
+  only the operations its `OPERATIONS.md` enumerates, and nothing checks that
+  mechanically. `check_standards.py` does ban `Bash(gh api:*)` outright, so the carve-out
+  can never be widened into the whole REST surface.
+
+`check_standards.py` separately asserts that every skill
 grants the bundled plugin helper scripts its body — including a factored-out
 `PROCEDURE.md` — invokes, so the prompt-on-every-run class can't creep back.
 
