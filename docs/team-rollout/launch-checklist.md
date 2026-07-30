@@ -32,7 +32,9 @@ a real (or throwaway) repo, not against production work.
       drift (e.g. add a skill without updating the reference) is caught by CI.
 - [ ] **One PO dry run completed.** A non-developer walks
       [the PO happy path](../workflows/build.md#the-po-happy-path) end to end:
-      idea → preview → PR for dev review.
+      idea → preview → hand-off for dev review. Expect a **PR** if the run
+      answers that a developer will review it, and **solo trunk** (no PR, work on
+      the main line) if it answers sole-contributor — both are correct endings.
 - [ ] **Rollback / uninstall documented.** The team knows how to back out (below).
 
 ## Rollback / uninstall

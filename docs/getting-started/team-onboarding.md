@@ -76,9 +76,13 @@ Just describe your idea in plain language, or run [`/steer:build`](../workflows/
 /steer:build I want an app that …
 ```
 
-Claude interviews you, shapes a spec, builds a working local app, and opens a PR
-for a developer to review. You never touch issues, specs, or work commands
-directly — Claude routes everything. Walk the full path in
+Claude interviews you, shapes a spec, builds a working local app, and hands off
+for developer review. Claude asks at the start which shape applies: if a
+developer will review it, the hand-off is a **PR**; if you're the sole
+contributor with no developer yet, it recommends **solo trunk** instead — the
+work lives on the main line with no PR, and review comes later, when a developer
+joins. You never touch issues, specs, or work commands directly — Claude routes
+everything. Walk the full path in
 [The PO happy path](../workflows/build.md#the-po-happy-path).
 
 ### If you're a dev
@@ -156,8 +160,10 @@ Pushing the branch and opening the PR are **not** gates — Claude does both
 autonomously; the review happens on the open PR, which is inert behind branch
 protection until a human merges.
 
-If you're a PO, your build ends at a **PR for dev review** by design — that's the
-hand-off, not a failure. If you're a dev, you *are* that reviewer.
+If you're a PO, your build ends at a **hand-off for dev review** by design —
+that's the point, not a failure. In PR flow that hand-off is the v0 PR; in solo
+trunk it's graduation off the trunk via `/steer:protect` when a developer joins.
+If you're a dev, you *are* that reviewer.
 
 ## Where to go next
 

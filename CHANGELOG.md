@@ -7,6 +7,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:status`'s next-actions row for a feature `implemented` but not
+  `validated`/`live` named **`/steer:spec validate <id>`** as the command that "confirms
+  acceptance". `validate` is a read-only, GitHub-independent lint over the open-question
+  contract (`spec/MODES.md`) — it advances no state, and no `/steer:spec` mode writes
+  `implemented → validated`; `ENUMS.md` derives those from the issue's `steer:state` and
+  `ISSUE-WORKFLOW.md` marks `validate → done` propose-only, PO-owned. So the row forced a
+  command that cannot perform the action it was named for — exactly what
+  `NEXT-ACTIONS.md`'s "Never force a command" clause forbids, in a block `/steer:status`
+  itself declares it emits *per* that contract. Recategorized to **Human decision
+  required** with the PO named as the actor and `/steer:work resume #N` offered as the
+  genuine follow-up, matching the identical correction already made to `/steer:next`'s row
+  earlier in this cycle. `/steer:status` was the last surviving outlier.
+- **Fixed:** the PO hand-off was documented as *always* ending in a PR on two surfaces —
+  `docs/getting-started/team-onboarding.md` ("opens a PR for a developer to review", "your
+  build ends at a **PR for dev review** by design") and the launch checklist's PO dry-run
+  item ("idea → preview → PR for dev review"). `/steer:build` **offers and recommends solo
+  trunk** when the PO is the sole contributor (no `feat/*` branch, no v0 PR; hand-off is
+  graduation via `/steer:protect`), and `docs/workflows/build.md` already carried the dual
+  account — so a solo-PO dry run walked the checklist to an outcome the checklist called
+  wrong. Both surfaces now state both shapes. Also corrected the root `README.md`, the last
+  place still annotating `/steer:doctor` as "*usually via setup*" — rule `00-router`, the
+  `setup` skill, and `docs/reference/skills.md` all say the opposite (reached from
+  init/build; `setup` only *surfaces* the gap).
 - **Fixed:** `spec/PRODUCTIONIZATION.md`'s `## Open questions` seed was restructured from a
   bracketed bullet to a `### Q-NNN` field block earlier in this cycle with **no ledger
   entry**, and reconciliation *provably* cannot carry it: the diff helper extracts anchors
