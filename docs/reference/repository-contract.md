@@ -183,7 +183,7 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-**Five** further entries are accumulating for the next release. Four are non-additive
+**Six** further entries are accumulating for the next release. Four are non-additive
 edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
 gains a repo prefix on `COMPOSE_PROJECT_NAME` in a linked worktree (a whole-section
 re-take — and **tear any running linked-worktree stack down first**, or its containers
@@ -214,3 +214,16 @@ replaces `ws:docker:up`'s first `run` element with that `preflight` guard while
 leaving the line that boots the stack alone, and relocates the whole commented
 monorepo section above `[settings]` where mise will actually accept the key. The entry is precondition-gated to `workspace`-profile
 repos, so member repos and non-workspace profiles are untouched.
+
+The sixth is an in-file token rewrite in the `infra` profile's `infra/README.md`: its
+state-backend prose named **S3 + DynamoDB locking** and told the reader to bootstrap a
+bucket *and lock table*, while rule `12-stack-infra` mandates S3 with the native
+`use_lockfile` lock (S3 conditional writes replace the table). Both lines are
+procedural — a human follows one to bootstrap an environment and the other to write
+`root.hcl` — so a repo still carrying them provisions a lock table the standard no
+longer wants. The entry rewrites **only those two lines** and is precondition-gated on
+one of the stale tokens still being present. It deliberately stops at the prose: moving
+a *live* state backend off a DynamoDB lock table is an infrastructure change with its
+own plan, review, and blast radius, so if the repo's `root.hcl` still configures
+`dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
+migration to a dev as separate work.

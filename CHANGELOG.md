@@ -7,6 +7,70 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** `/steer:status`'s acceptance row was split earlier in this cycle on a **"PR
+  merged" precondition the skill cannot observe.** `status` grants only issue/search read
+  verbs (no `gh pr` verb, no PR-read MCP tool), and its own sourcing rule says *not* to
+  source from merged PRs because commit/PR detail is dev-facing noise for a client
+  audience — so both halves of the split were undecidable in its domain. Collapsed back to
+  one row keyed on what the report actually reads (the issue in `validate` / spec
+  `Status: implemented`), which names the PO's decision and explicitly hands the merge
+  precondition to `/steer:work`, the skill that *can* see it. Third correction to this one
+  table in this cycle: the original defect was a command that couldn't perform the action,
+  the second was a mis-categorization plus a missing precondition, and this is the
+  precondition being unobservable — worth a human eye on the final shape.
+- **Fixed:** `/steer:next`'s row for "PR merged but issue still `validate`" was the only
+  row in a table headed "Category (safety level)" carrying no `(L#)` marker, and this
+  cycle's golden fixture now asserts "level 3" for exactly that state — leaving the fixture
+  with nothing in the table to be walked against. Added `(L3)`.
+- **Fixed:** adding the sixth `### v3.24.0` ledger entry earlier in this cycle left three
+  surfaces counting five. `docs/reference/repository-contract.md` said "**Five** further
+  entries are accumulating" and described only five, so the sixth had no description
+  anywhere on the docs site — a consumer reading that page to learn what `/steer:sync`
+  will propose was told nothing about the `infra/README.md` rewrite or its
+  never-touch-a-live-backend guard. Worse, this changelog's own release note said "FIVE"
+  and instructed the release PR to "re-key **all five** if this release is not 3.24.0" —
+  and that instruction is the *only* compensating control for the hard-coded headings, so
+  the under-count would have orphaned the sixth entry at a version that never ships,
+  permanently skipped by every consumer's stamp comparison. A third count in the same
+  paragraph still said "all three", stale from an earlier round. All corrected to six.
+- **Fixed:** the `v3.24.0` infra `use_lockfile` ledger entry added earlier in this cycle
+  shipped a **self-satisfying precondition**. Its grep was `grep -n 'DynamoDB'
+  infra/README.md`, but the replacement text the entry itself mandates ends "No
+  **DynamoDB** lock table is needed" — so the precondition fires forever, "once applied,
+  re-running is a no-op" was false, and `/steer:sync` would re-propose the same transform
+  on every run. This is exactly what the ledger's own rule forbids ("its precondition must
+  be a grep that fires only while a stale token is still present"). Now greps the two
+  genuinely stale tokens (`S3 + DynamoDB`, `bucket and lock table`), both verified absent
+  from the migrated text, with a note saying why the obvious grep is wrong.
+- **Fixed:** `/steer:issues triage` told the reader to infer a missing kind as "feature /
+  bug / **product-question** / **improvement**" and write it to the `steer:kind` marker.
+  `issue_kind` is a **closed** enum (`epic` · `feature` · `bug` · `task` · `finding` ·
+  `spec-question` · `spec-drift` · `audit-run`) containing neither: `product-question` is
+  the Issue *Form*'s name for what the marker calls `spec-question`, and `improvement` is
+  a Form with deliberately **no kind of its own** — its own template comment says an
+  improvement "is classified at triage into Feature, Task, or Bug — it is not a permanent
+  kind." Triage was being instructed to write two out-of-enum marker values, and `task`
+  was missing from the list entirely. Now names only enum members and states the
+  Improvement Form's classify-into-three rule.
+- **Fixed:** `/steer:protect` asserts that writing repo settings is "**NOT**
+  pre-authorized", but its read grant `Bash(gh api repos/*)` matches on the *endpoint
+  path* and cannot express "reads only" — so `gh api repos/O/R/vulnerability-alerts -X
+  PUT` prefix-matches it and would apply a privileged write with **no** prompt. Whether
+  the gate the skill promises actually fires depended on argument order, which no prose
+  stated. All three writes in the procedure already put `-X PUT`/`-X PATCH` first (so they
+  correctly prompt); the invariant is now documented as load-bearing, with the reason, so
+  a later reorder can't silently disarm the gate.
+- **Fixed:** three golden fixtures cited the wrong precedence level for the category they
+  pin. `adopt-awaiting-po-approval.md` and `adopt-pr-awaiting-review.md` called publishing
+  findings "level 5" — level 5 is the *release-timing* band; publishing is `Recommended`,
+  i.e. optional follow-up at level 6. `spec-blocking-question.md` called intent approval
+  "the approval transition (level 4)" — it is `Human decision required`, level 3.
+  `adopt-awaiting-po-approval.md` additionally pinned the expected command as "none — no
+  plugin command performs it", contradicting both the `adopt` table row it exists to pin
+  (which names `/steer:spec approve`) and `NEXT-ACTIONS.md`'s explicit carve-out that an
+  **in-session** PO approval *is* promptable and does carry a command. Third round running
+  that this fixture class has drifted from the skill tables it pins; nothing gates fixture
+  content against those tables, which is why it keeps recurring.
 - **Fixed:** the two golden fixtures pinning "PR merged but issue still `validate`" —
   `next-actions-fixtures/work-pr-merged-tracker-stale.md` and
   `next-fixtures/merged-stale-vs-new-work.md` — still expected **`Blocking now`** and the
@@ -805,16 +869,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   It also tells the applier to replace **only** `ws:docker:up`'s `run[0]` — the
   inline guard whose message names the stale unprefixed tasks — and to leave `run[1]`
   alone, since `docker compose up -d --wait` is what actually starts the stack.
-  **Release note — this release now has FIVE `### v3.24.0` ledger entries (this `ws:`
+  **Release note — this release now has SIX `### v3.24.0` ledger entries (this `ws:`
   rename, the `COMPOSE_PROJECT_NAME` prefix, the promoted-question rule, the
-  `spec/PRODUCT.md` spine-resolution ladder, and the `PRODUCTIONIZATION.md` open-question
-  seed), and the key on all five is an assumption the release PR must confirm.** The
+  `spec/PRODUCT.md` spine-resolution ladder, the `PRODUCTIONIZATION.md` open-question
+  seed, and the infra profile's S3 + DynamoDB → native `use_lockfile` prose rewrite), and
+  the key on all six is an assumption the release PR must confirm.** The
   ledger keys each entry by the version that introduced it, so the heading has to match
-  the bump actually cut: re-key **all five** if this release is not 3.24.0. Note the five
-  entries make the minor **non-optional**: a patch cut would ship five entries keyed to a
+  the bump actually cut: re-key **all six** if this release is not 3.24.0 — this
+  instruction is the *only* compensating control, so an under-count here orphans a real
+  entry. Note the six
+  entries make the minor **non-optional**: a patch cut would ship six entries keyed to a
   version that never exists, and every consumer's stamp comparison would skip them
   forever. Weigh the bump
-  against all three, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
+  against all six, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
   mandatory destructive tear-down on the consumer side (an already-running linked
   worktree's containers and volumes are orphaned otherwise), which is the strongest
   "anything a consuming repo must react to" signal in the release. The audit that produced this entry split on that call — the letter of the

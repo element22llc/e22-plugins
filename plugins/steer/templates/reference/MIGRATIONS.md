@@ -387,11 +387,13 @@ Name the file and say what to carry forward.
   that contradicts a rule injected into every session. `infra/README.md` is materialized
   into every infra repo *and* every monorepo with a nested `/infra`, and additive
   reconciliation can never replace an existing line.
-- **Precondition:** the repo has an `infra/README.md` still naming DynamoDB. Once
-  applied, re-running is a no-op:
+- **Precondition:** the repo's `infra/README.md` still carries one of the two *stale*
+  tokens. Grep for those, **not** for `DynamoDB` on its own — the replacement text ends
+  "No DynamoDB lock table is needed", so a bare `DynamoDB` grep fires forever and the
+  entry would never converge. Once applied, re-running is a no-op:
 
   ```sh
-  grep -n 'DynamoDB' infra/README.md 2>/dev/null
+  grep -nE 'S3 \+ DynamoDB|bucket and lock table' infra/README.md 2>/dev/null
   ```
 
 - **Action — an in-file token rewrite**, two lines, read-then-propose as a diff. Take

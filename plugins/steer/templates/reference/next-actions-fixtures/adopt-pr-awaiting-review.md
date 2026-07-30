@@ -22,4 +22,4 @@ none — PR review is a human action.
 
 ## Must not recommend first
 
-`Complete`. An opened-but-unmerged PR is execution-complete, **not** lifecycle-integrated, so the workflow is not `Complete`; the open PR is the current human gate (level 3) ahead of publishing (level 5).
+`Complete`. An opened-but-unmerged PR is execution-complete, **not** lifecycle-integrated, so the workflow is not `Complete`; the open PR is the current human gate (level 3) ahead of publishing, which is optional follow-up (level 6).

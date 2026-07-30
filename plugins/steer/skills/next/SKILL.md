@@ -169,7 +169,7 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves — answerable in-session via `/steer:spec` |
 | PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command — **never** promptable) |
 | Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/steer:work resume #N` |
-| PR merged but issue still `validate` (stale tracker) | Human decision required — `validate → done` is propose-only, and a merged PR is necessary but not sufficient | `/steer:work resume #N` proposes `done` once acceptance is confirmed |
+| PR merged but issue still `validate` (stale tracker) | Human decision required (L3) — `validate → done` is propose-only, and a merged PR is necessary but not sufficient | `/steer:work resume #N` proposes `done` once acceptance is confirmed |
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now — next transition (L4) | owning skill |
 | Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer:questions` |
 | Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer:questions` |

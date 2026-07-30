@@ -58,6 +58,15 @@ confirmation: reading `gh auth status`, the repo's live protection settings, and
 NOT pre-authorized** — the `gh api` PUT/PATCH that applies protection is proposed
 and runs only after the dev confirms. Default mode is `verify` (read-only).
 
+**Keep `-X PUT` / `-X PATCH` as the first argument, before the endpoint path.** The
+pre-approval is the prefix `Bash(gh api repos/*)`, which matches on the *path* and
+cannot express "reads only" — so `gh api repos/O/R/vulnerability-alerts -X PUT`
+prefix-matches the read grant and would apply a privileged write with **no** prompt,
+while `gh api -X PUT repos/O/R/vulnerability-alerts` does not match and prompts as
+this section requires. Flag order is what makes the gate real; never reorder a write
+to put the path first. (Same discipline, inverted, as `/steer:report` keeping
+`--repo` first to *stay* inside its grant.)
+
 ## Preconditions
 
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the

@@ -22,4 +22,4 @@ Blocking now
 
 ## Must not recommend first
 
-Presenting the intent for PO approval, or `/steer:tracker-sync push`. A blocking question (`required_before: intent-approval`) is a failed required gate (level 2) and must clear before the approval transition (level 4). Per the locality rule, only this feature's questions are considered.
+Presenting the intent for PO approval, or `/steer:tracker-sync push`. A blocking question (`required_before: intent-approval`) is a failed required gate (level 2) and must clear before the approval decision (level 3). Per the locality rule, only this feature's questions are considered.
