@@ -30,9 +30,23 @@ a real (or throwaway) repo, not against production work.
       [GitHub Actions integration](../reference/github-integration.md).
 - [ ] **Docs drift CI tested.** `mise run docs:check` passes, and a deliberate
       drift (e.g. add a skill without updating the reference) is caught by CI.
+- [ ] **Copilot surface verified (if the team uses Copilot).** Confirm
+      `.github/copilot-instructions.md`, `.github/prompts/`, `.github/agents/` and
+      `.vscode/mcp.json` landed, then in VS Code Copilot Chat run `/steer-help` and
+      confirm the reply reflects steer standards (proves the instructions loaded —
+      Copilot has no SessionStart hook, so that static set *is* its whole standards
+      surface). **Tell the team the refresh rule:** those files are generated and
+      freeze at the plugin version that bootstrapped the repo, so someone runs
+      **`/steer:sync`** after a plugin update — it re-copies them via the
+      `copilot-surface-current` capability, and `/steer:sync --check` reports the
+      surface as `mis-wired` when it has fallen behind. `/steer:init` installs but
+      stops on an already-initialized repo, so it is not the refresh path. See
+      [Copilot support](../concepts/copilot-support.md).
 - [ ] **One PO dry run completed.** A non-developer walks
       [the PO happy path](../workflows/build.md#the-po-happy-path) end to end:
-      idea → preview → PR for dev review.
+      idea → preview → hand-off for dev review. Expect a **PR** if the run
+      answers that a developer will review it, and **solo trunk** (no PR, work on
+      the main line) if it answers sole-contributor — both are correct endings.
 - [ ] **Rollback / uninstall documented.** The team knows how to back out (below).
 
 ## Rollback / uninstall

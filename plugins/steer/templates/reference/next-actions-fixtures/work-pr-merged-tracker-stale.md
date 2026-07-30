@@ -9,16 +9,18 @@ Workflow: `/steer:work #123`
 
 ## Expected highest-priority action
 
-Reconcile the stale tracker state for #123 to `done`.
+**Propose** `done` for #123 once acceptance is confirmed — a merged PR is necessary, not sufficient.
 
 ## Expected category
 
-Blocking now (the current workflow's own lifecycle transition is unfinished)
+Human decision required (`validate → done` is propose-only, PO-owned for features)
 
 ## Expected suggested command
 
-`/steer:work resume #123` — `resume` owns post-merge reconciliation (it reconciles "a PR that merged/closed while away"). `status` only reports the staleness read-only; `finish` transitions to `validate`, never `done`.
+`/steer:work resume #123` — `resume` owns post-merge reconciliation (it reconciles "a PR that merged/closed while away") and **proposes** the transition; it never performs it. `status` only reports the staleness read-only; `finish` transitions to `validate`, never `done`.
 
 ## Must not recommend first
 
-Starting a new issue, or `Complete`. Reconciling the just-merged work outranks picking up unrelated work.
+Starting a new issue, or `Complete`. The unfinished lifecycle on the just-merged work outranks picking up unrelated work.
+
+Nor **performing** the transition: this row is `Human decision required`, not `Blocking now` — an agent that reconciles #123 to `done` on its own has written a state only the PO owns.

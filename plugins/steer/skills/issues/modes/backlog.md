@@ -30,10 +30,14 @@ Keep the backlog clean and correctly labelled. For each issue:
 - **Label correctness (esp. human-created issues)** — apply the right
   `source:*` (e.g. `source:human` for manually opened issues), `needs:*`, and
   `risk:*` labels from `templates/reference/LABELS.md`. When the kind is
-  missing (issue opened without a Form or marker), infer it (feature / bug /
-  product-question / improvement) from the content and set the `steer:kind`
-  marker + GitHub Issue **Type**. Resolve conflicting labels (e.g. both
-  `bug`-ish and `feature`-ish). Kind is never a plain label.
+  missing (issue opened without a Form or marker), infer it from the content and
+  set the `steer:kind` marker + GitHub Issue **Type**. Infer only a member of the
+  closed `issue_kind` enum (`ISSUE-SCHEMA.md`) — for a hand-filed issue that is
+  normally `feature` / `bug` / `task` / `spec-question`. An issue filed on the
+  **Improvement** Form has no kind of its own by design: classify it into `feature`
+  (user-visible), `task` (internal/refactor), or `bug` (wrong behavior). Resolve
+  conflicting labels (e.g. both `bug`-ish and `feature`-ish). Kind is never a plain
+  label.
 - **Missing required information** — bug without repro/expected-vs-actual,
   feature without acceptance criteria, etc. Post the request in **one** managed
   comment and apply `needs:triage` rather than guessing the content.

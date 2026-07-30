@@ -85,10 +85,17 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      stack. `compose.yaml` is the exception: its need isn't knowable — **propose
      only after confirming with the dev**, and when uncertain, ask rather than
      create.
-   - **`mis-wired`** → for `verbatim` files (the version-pin scripts) **re-copy**
-     from the plugin source — but **show the diff first** and warn that local
-     edits are lost (move product-specific pins to `policy/versions.yml`). For
-     everything else, **additively splice** only the named wiring marker (the
+   - **`mis-wired`** → for `verbatim` files **re-copy** from the plugin source —
+     but **show the diff first** (or, for a generated set, the changed-file list)
+     and warn that local edits are lost. Two capabilities are `verbatim`: the
+     **version-pin scripts** (move product-specific pins to `policy/versions.yml`)
+     and the **generated Copilot surface** (`copilot-surface-current` —
+     `.github/copilot-instructions.md`, `prompts/`, `agents/`, `instructions/`;
+     repo-specific Copilot guidance lives in a *separate* `*.instructions.md` the
+     consumer owns, which the re-copy never touches). This re-copy is the whole
+     refresh path for Copilot after a plugin update — Copilot has no SessionStart
+     hook, so without it that surface stays frozen at the bootstrapping version.
+     For everything else, **additively splice** only the named wiring marker (the
      `steer@e22-plugins` entry, a CI step, a PR-template section), preserving every
      existing key/step — never clobber.
 

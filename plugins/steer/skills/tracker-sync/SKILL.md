@@ -20,8 +20,24 @@ user-invocable: false
 # scaffold's gh-issue allow-list is the real backstop for the orchestrated path;
 # the `github-issue-permissions` capability (CAPABILITIES.md) detects a repo
 # missing it. MCP-first; the scoped `gh issue *` verbs are the fallback. Mutation
-# of the delivery surface (gh api / graphql, PR merge, branch protection) is
+# of the *delivery* surface (PR merge, branch protection, repo settings) is
 # deliberately NOT listed — it stays host-gated.
+#
+# `Bash(gh api graphql:*)` IS granted, as the one carve-out. Projects v2 issue-field
+# reads/writes and native blocked-by edges have no REST or MCP equivalent, so
+# GraphQL is the ONLY transport for `field-get`, `field-set`, `link-blocked-by` and
+# `bootstrap-fields` — all four squarely inside this gateway's declared
+# tracker-metadata boundary (OPERATIONS.md). Withholding it made `field-get` prompt
+# on a direct invocation, contradicting "Reads never confirm" below.
+#
+# That grant is BROADER THAN THE BOUNDARY, and the limit is prose-enforced, not
+# tool-enforced: allowed-tools matches a command-string prefix, so it cannot
+# distinguish a Projects field query from `mergePullRequest` or
+# `createBranchProtectionRule`, which GraphQL can also express. This gateway
+# therefore issues ONLY the queries and mutations OPERATIONS.md enumerates; a
+# delivery-surface mutation is out of bounds here even though the grant would match
+# it, and belongs to /steer:work or /steer:protect under their own gating. Never
+# widen this to `Bash(gh api:*)` — check_standards.py bans that form outright.
 allowed-tools:
   - mcp__github__issue_write
   - mcp__github__issue_read
@@ -36,6 +52,7 @@ allowed-tools:
   - Bash(gh issue view:*)
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
+  - Bash(gh api graphql:*)
 ---
 <!-- steer:modes pull,push -->
 

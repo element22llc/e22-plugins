@@ -7,6 +7,211 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `/steer:sync` now refreshes the generated Copilot surface.** New
+  `copilot-surface-current` capability (15th) — `.github/copilot-instructions.md`,
+  `prompts/`, `agents/`, `instructions/` — wired-when every file is **byte-identical**
+  to its plugin source, repaired by verbatim re-copy. Closes a real hole: Copilot has
+  no context-injecting SessionStart hook, so that static set *is* its whole standards
+  surface, yet `MANIFEST.md` and the consumer-facing Copilot marketplace manifest both
+  named "re-run `/steer:init`" as the refresh path while `init` **stops** on an
+  already-initialized repo, and `/steer:sync` had zero Copilot references. The surface
+  therefore froze at whatever plugin version bootstrapped the repo — a Copilot
+  teammate silently worked against retired rules while their Claude Code colleagues
+  were current. Byte-equality is the right test because these are generated artifacts;
+  repo-specific Copilot guidance lives in a *separate* `*.instructions.md` the consumer
+  owns, which the re-copy never touches. Copilot support stays **opt-in**: a repo with
+  no `copilot-instructions.md` reports `n/a`, never `absent`, so sync never installs a
+  surface nobody asked for. This also self-heals the drift found in
+  `copilot-instructions.md` (an agent-executed end-of-session item still naming the
+  pre-rename `docker:clean`) with no ledger entry — the artifact is regenerated from
+  `rules/`, so a plugin-sourced re-copy is the transform.
+- **Fixed:** `/steer:tracker-sync` withheld `gh api` on the rationale that it is "the
+  delivery surface", but **GraphQL is the only transport** for `field-get` /
+  `field-set` / `link-blocked-by` / `bootstrap-fields` — four ops `OPERATIONS.md`
+  places *inside* the gateway's own tracker-metadata boundary. So a documented **read**
+  prompted on a direct invocation, contradicting the skill's "Reads never confirm."
+  Granted `Bash(gh api graphql:*)` as a scoped carve-out; delivery-surface mutation
+  (PR merge, branch protection, repo settings) stays withheld. **The grant is broader
+  than the boundary and the limit is prose-enforced:** allowed-tools matches a
+  command-string prefix, so it cannot distinguish a Projects field query from
+  `mergePullRequest` or `createBranchProtectionRule`, which GraphQL can also express.
+  Both `SKILL.md` and `OPERATIONS.md` now state that the gateway issues only the
+  enumerated operations and that nothing checks this mechanically. Never widen to
+  `Bash(gh api:*)` — `check_standards.py` bans that form outright.
+- **Fixed:** `/steer:audit spec` made a `contract.md` `path:line` pointer the
+  **mandatory** evidence for every verdict ("never assert a match from the tracker spec
+  alone"), but `## Implementation pointers` is declared *optional*, "not a maintained
+  index", and file-level at best — and **no skill ever writes a `path:line` there**, so
+  the required evidence could never exist and every verdict was formally
+  unevidenceable. Relaxed to the evidence that does exist: cite the `contract.md`
+  **section** that captures the behavior (named or quoted); treat a pointer as
+  corroboration when present, never a requirement; and where code-level confirmation is
+  genuinely needed and no pointer exists, search the repo and cite what you find. The
+  real guarantee — never assert a match from the tracker spec alone — is unchanged.
+
+- **Fixed:** `/steer:status` detected in-flight work from "an **in-progress label**", a
+  label that does not exist and that the taxonomy forbids: `LABELS.md` states lifecycle
+  state is the `steer:state` marker "(never a label)" and "Do not encode status… as
+  labels", and `bootstrap-labels` creates no lifecycle label — so the filter silently
+  matched nothing and the report's "In progress" section under-counted with no error.
+  `/steer:next` already did this correctly by reading the marker. Now reads `steer:state`
+  (`in-progress` or `validate`) from the issue body, with the label trap called out. This
+  also grounds the acceptance row corrected earlier in this cycle, whose trigger keys on
+  the issue being in `validate` — a marker value the skill was nowhere instructed to read.
+- **Fixed:** the `v3.24.0` infra ledger entry and its docs-site description both
+  mis-stated **which repos carry the file**. Both said or implied the `infra` *profile*,
+  but `MANIFEST.md` installs `infra/README.md` conditionally on **a nested `/infra` dir
+  inside a monorepo** — and such a repo stays profile `app`, explicitly "distinct from the
+  `infra` *profile*". A root-level infra repo keeps these conventions in its **own README**
+  (rule `12-stack-infra`: "Detail in `/infra/README.md` (monorepo) or the repo README"),
+  which the entry does not rewrite. So the most common carrier of the stale prose — an
+  app-profile monorepo with `/infra` — would have read both surfaces and concluded the
+  migration didn't apply to it, while an infra-profile reader would have looked for a file
+  they don't have. All **four** surfaces now name the real carrier and say the root-level
+  case needs a hand check: the ledger entry's body, its scannable **heading** (which the
+  first pass left saying "infra profile", so the entry contradicted itself at the one line
+  a consumer skims during `/steer:sync`), the docs-site description, and the release-PR
+  re-key note above.
+- **Fixed:** `docs/concepts/authorization-model.md` claimed "`gh api`/`gh:*` stay prompted
+  by omission" as a plugin-wide property. `/steer:protect` carries `Bash(gh api repos/*)`
+  — the plugin's **only** `gh api` grant — so `gh api repos/…` reads are silent in a
+  `protect` session, and the page's own enumeration of every skill with scoped frontmatter
+  grants omitted `/steer:protect` entirely. The omission claim is now scoped to the
+  scaffold allowlist, `protect`'s re-grant is named in both places, and the page carries
+  the argument-order invariant that is the *actual* reason its writes still prompt —
+  previously documented only inside the skill, with no docs surface at all.
+- **Fixed:** the migration-coverage note undercounted the owed entries again — **four**,
+  not three. The fourth is the scaffold root `mise.toml`'s prune instruction ("products
+  without a database delete the `db:*` tasks **and `compose.yaml`**", replaced with a
+  conditioned version): a procedural line a human executes, inside `templates/scaffold/`,
+  so in scope on exactly the grounds the `infra/README.md` entry was written on. The note
+  now also splits the four by *whether they need the convention call* — (1) and (2) do,
+  because they live in `templates/github/`; (3) and (4) do not — instead of implying one
+  decision gates all of them, and states why the two in-scope ones were still left for a
+  human.
+- **Fixed:** `/steer:status`'s acceptance row was split earlier in this cycle on a **"PR
+  merged" precondition the skill cannot observe.** `status` grants only issue/search read
+  verbs (no `gh pr` verb, no PR-read MCP tool), and its own sourcing rule says *not* to
+  source from merged PRs because commit/PR detail is dev-facing noise for a client
+  audience — so both halves of the split were undecidable in its domain. Collapsed back to
+  one row keyed on what the report actually reads (the issue in `validate` / spec
+  `Status: implemented`), which names the PO's decision and explicitly hands the merge
+  precondition to `/steer:work`, the skill that *can* see it. Third correction to this one
+  table in this cycle: the original defect was a command that couldn't perform the action,
+  the second was a mis-categorization plus a missing precondition, and this is the
+  precondition being unobservable — worth a human eye on the final shape.
+- **Fixed:** `/steer:next`'s row for "PR merged but issue still `validate`" was the only
+  row in a table headed "Category (safety level)" carrying no `(L#)` marker, and this
+  cycle's golden fixture now asserts "level 3" for exactly that state — leaving the fixture
+  with nothing in the table to be walked against. Added `(L3)`.
+- **Fixed:** adding the sixth `### v3.24.0` ledger entry earlier in this cycle left three
+  surfaces counting five. `docs/reference/repository-contract.md` said "**Five** further
+  entries are accumulating" and described only five, so the sixth had no description
+  anywhere on the docs site — a consumer reading that page to learn what `/steer:sync`
+  will propose was told nothing about the `infra/README.md` rewrite or its
+  never-touch-a-live-backend guard. Worse, this changelog's own release note said "FIVE"
+  and instructed the release PR to "re-key **all five** if this release is not 3.24.0" —
+  and that instruction is the *only* compensating control for the hard-coded headings, so
+  the under-count would have orphaned the sixth entry at a version that never ships,
+  permanently skipped by every consumer's stamp comparison. A third count in the same
+  paragraph still said "all three", stale from an earlier round. All corrected to six.
+- **Fixed:** the `v3.24.0` infra `use_lockfile` ledger entry added earlier in this cycle
+  shipped a **self-satisfying precondition**. Its grep was `grep -n 'DynamoDB'
+  infra/README.md`, but the replacement text the entry itself mandates ends "No
+  **DynamoDB** lock table is needed" — so the precondition fires forever, "once applied,
+  re-running is a no-op" was false, and `/steer:sync` would re-propose the same transform
+  on every run. This is exactly what the ledger's own rule forbids ("its precondition must
+  be a grep that fires only while a stale token is still present"). Now greps the two
+  genuinely stale tokens (`S3 + DynamoDB`, `bucket and lock table`), both verified absent
+  from the migrated text, with a note saying why the obvious grep is wrong.
+- **Fixed:** `/steer:issues triage` told the reader to infer a missing kind as "feature /
+  bug / **product-question** / **improvement**" and write it to the `steer:kind` marker.
+  `issue_kind` is a **closed** enum (`epic` · `feature` · `bug` · `task` · `finding` ·
+  `spec-question` · `spec-drift` · `audit-run`) containing neither: `product-question` is
+  the Issue *Form*'s name for what the marker calls `spec-question`, and `improvement` is
+  a Form with deliberately **no kind of its own** — its own template comment says an
+  improvement "is classified at triage into Feature, Task, or Bug — it is not a permanent
+  kind." Triage was being instructed to write two out-of-enum marker values, and `task`
+  was missing from the list entirely. Now names only enum members and states the
+  Improvement Form's classify-into-three rule.
+- **Fixed:** `/steer:protect` asserts that writing repo settings is "**NOT**
+  pre-authorized", but its read grant `Bash(gh api repos/*)` matches on the *endpoint
+  path* and cannot express "reads only" — so `gh api repos/O/R/vulnerability-alerts -X
+  PUT` prefix-matches it and would apply a privileged write with **no** prompt. Whether
+  the gate the skill promises actually fires depended on argument order, which no prose
+  stated. All three writes in the procedure already put `-X PUT`/`-X PATCH` first (so they
+  correctly prompt); the invariant is now documented as load-bearing, with the reason, so
+  a later reorder can't silently disarm the gate.
+- **Fixed:** three golden fixtures cited the wrong precedence level for the category they
+  pin. `adopt-awaiting-po-approval.md` and `adopt-pr-awaiting-review.md` called publishing
+  findings "level 5" — level 5 is the *release-timing* band; publishing is `Recommended`,
+  i.e. optional follow-up at level 6. `spec-blocking-question.md` called intent approval
+  "the approval transition (level 4)" — it is `Human decision required`, level 3.
+  `adopt-awaiting-po-approval.md` additionally pinned the expected command as "none — no
+  plugin command performs it", contradicting both the `adopt` table row it exists to pin
+  (which names `/steer:spec approve`) and `NEXT-ACTIONS.md`'s explicit carve-out that an
+  **in-session** PO approval *is* promptable and does carry a command. Third round running
+  that this fixture class has drifted from the skill tables it pins; nothing gates fixture
+  content against those tables, which is why it keeps recurring.
+- **Fixed:** the two golden fixtures pinning "PR merged but issue still `validate`" —
+  `next-actions-fixtures/work-pr-merged-tracker-stale.md` and
+  `next-fixtures/merged-stale-vs-new-work.md` — still expected **`Blocking now`** and the
+  action "*Reconcile* the stale tracker state for #123 to `done`", the exact text this
+  cycle replaced in `/steer:work` and `/steer:next` when that transition was corrected to
+  propose-only. Their READMEs instruct a reviewer to walk a skill's table against each
+  `Given` and confirm the outcome matches, so the shipped fixtures were vetting the
+  corrected skills as **wrong** — and a reviewer trusting them would have an agent
+  *perform* a `validate → done` transition `ISSUE-WORKFLOW.md` reserves for the PO. Both
+  now expect `Human decision required` with a propose-only action, and both name
+  performing the transition as a `Must not`. (The prior round's claim that `/steer:status`
+  was "the last surviving outlier" was wrong: these two were.)
+- **Fixed:** `fixtures/managed-block/README.md` asserted its transform fixtures "**all**
+  model the **same** operation" — the canonical whole-block rewrite to `## Outcome` /
+  `Updated by agent.` — which is true of only **two** of the five pairs on disk.
+  `epic-link-child-feature` appends a child ref *inside* the block and keeps the existing
+  `## Outcome`; `human-form-normalization` appends the block *below* a preserved human
+  body; `schema-migration` rewrites frontmatter markers *outside* it. Applying the
+  documented operation to those three cannot reproduce their `.expected.md`, so a reviewer
+  following the README reads three conformance fixtures as broken. The index table also
+  carried four rows for five pairs — `epic-link-child-feature` was listed nowhere and
+  referenced by no file in the repo. Each row now names the operation it models, and the
+  missing pair is listed.
+- **Fixed:** `/steer:status`'s next-actions block had two further defects, both exposed by
+  this cycle's correction to its acceptance row. (1) Open `owner: product` **blocking**
+  questions were categorized `Recommended`, which `NEXT-ACTIONS.md` reserves for work that
+  is "neither blocking nor release-mandatory"; every peer surface (`/steer:next`,
+  `/steer:questions`, `/steer:issues`) calls that state `Blocking now`. The
+  mis-categorization was inert while both rows sat at the same level — raising the
+  acceptance row to `Human decision required` made it load-bearing, so a client report
+  with unanswered blocking product questions would have headlined "the PO confirms
+  acceptance" instead of "hand the client the questionnaire". Now `Blocking now`. (2) The
+  acceptance row inherited `/steer:work`'s remedy without its **"PR merged"**
+  precondition, while its own trigger (`implemented`, i.e. issue `validate`) also covers
+  the PR-still-open half that `work` and `next` route to "a reviewer reviews". Split into
+  two rows on that precondition.
+- **Fixed:** `/steer:status`'s next-actions row for a feature `implemented` but not
+  `validated`/`live` named **`/steer:spec validate <id>`** as the command that "confirms
+  acceptance". `validate` is a read-only, GitHub-independent lint over the open-question
+  contract (`spec/MODES.md`) — it advances no state, and no `/steer:spec` mode writes
+  `implemented → validated`; `ENUMS.md` derives those from the issue's `steer:state` and
+  `ISSUE-WORKFLOW.md` marks `validate → done` propose-only, PO-owned. So the row forced a
+  command that cannot perform the action it was named for — exactly what
+  `NEXT-ACTIONS.md`'s "Never force a command" clause forbids, in a block `/steer:status`
+  itself declares it emits *per* that contract. Recategorized to **Human decision
+  required** with the PO named as the actor and `/steer:work resume #N` offered as the
+  genuine follow-up, matching the identical correction already made to `/steer:next`'s row
+  earlier in this cycle. `/steer:status` was the last surviving outlier.
+- **Fixed:** the PO hand-off was documented as *always* ending in a PR on two surfaces —
+  `docs/getting-started/team-onboarding.md` ("opens a PR for a developer to review", "your
+  build ends at a **PR for dev review** by design") and the launch checklist's PO dry-run
+  item ("idea → preview → PR for dev review"). `/steer:build` **offers and recommends solo
+  trunk** when the PO is the sole contributor (no `feat/*` branch, no v0 PR; hand-off is
+  graduation via `/steer:protect`), and `docs/workflows/build.md` already carried the dual
+  account — so a solo-PO dry run walked the checklist to an outcome the checklist called
+  wrong. Both surfaces now state both shapes. Also corrected the root `README.md`, the last
+  place still annotating `/steer:doctor` as "*usually via setup*" — rule `00-router`, the
+  `setup` skill, and `docs/reference/skills.md` all say the opposite (reached from
+  init/build; `setup` only *surfaces* the gap).
 - **Fixed:** `spec/PRODUCTIONIZATION.md`'s `## Open questions` seed was restructured from a
   bracketed bullet to a `### Q-NNN` field block earlier in this cycle with **no ledger
   entry**, and reconciliation *provably* cannot carry it: the diff helper extracts anchors
@@ -59,17 +264,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   helper-grant list omitted three real grants (`template-reconcile.sh` in
   `/steer:spec-scaffold`, `scan-capabilities.sh` + `scan-invocations.sh` in `/steer:sync`)
   while reading as exhaustive.
-- **Migration coverage — two entries are owed and deliberately NOT written here.** Both
-  are non-additive changes to *materialized* files that this cycle shipped
-  greenfield-only, and writing them needs a convention call the release PR should make,
-  not this branch: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, and (2) the infra
-  profile's three `docker:*` task tables. The blocker is that the ledger's own scope
-  sentence covers `templates/spec/` and `templates/scaffold/` — **`templates/github/` is
-  neither**, yet every file in it is materialized in a consumer repo, which is precisely
-  how `ci.yml` slipped through. Decide whether the mandate's scope becomes "any
-  materialized template", then write both entries. Until then an already-adopted repo
-  keeps the `main`-only CI trigger while `/steer:protect` requires `ci` on `prod` — the
-  "blocked forever" state, still live for existing repos.
+- **Migration coverage — one entry written, four still owed and deliberately NOT written
+  here.** The one written is the scaffold `infra/README.md`'s **S3 + DynamoDB → native
+  `use_lockfile`**
+  prose rewrite: it is a *procedural* replacement in `templates/scaffold/infra/README.md`,
+  squarely inside the ledger's own stated scope ("a documented command in a profile
+  `README.md`"), so it needed no convention call and is now a `### v3.24.0` entry — with a
+  guard that keeps the transform to the prose and hands any *live* backend migration off
+  a DynamoDB lock table to the dev as separate, reviewed infrastructure work. The four
+  still owed are non-additive changes to *materialized* files that this cycle shipped
+  greenfield-only: (1) `ci.yml`'s `branches: [main]` → `[main, prod]`, (2) `ci.yml`'s
+  test-contract guard rewrite, (3) the infra profile's three `docker:*` task tables, and
+  (4) the scaffold root `mise.toml`'s prune instruction — "products without a database
+  delete the `db:*` tasks **and `compose.yaml`**" replaced with a conditioned version.
+  **(1) and (2) need a convention call the release PR should make, not this branch:** the
+  ledger's scope sentence covers `templates/spec/` and `templates/scaffold/` —
+  **`templates/github/` is neither**, yet every file in it is materialized in a consumer
+  repo, which is precisely how `ci.yml` slipped through twice. Decide whether the
+  mandate's scope becomes "any materialized template", then write both. **(3) and (4) do
+  *not* need that call** — both are inside `templates/scaffold/`, and (4) is a procedural
+  instruction a human executes, so by the same grounds the `infra/README.md` entry was
+  written on it is already in scope; (3)'s open question is narrower (does a TOML
+  task-table addition need an entry at all, given nothing deterministic carries one).
+  Both were left for a human because this branch's threshold was blockers + high and each
+  new ledger entry this loop wrote produced follow-on defects in the next round. Until all
+  four land, an already-adopted repo keeps the `main`-only CI trigger while
+  `/steer:protect` requires `ci` on `prod` — the "blocked forever" state, still live for
+  existing repos — keeps the self-satisfying test contract, so its `ci` can stay green
+  having run no tests, and keeps a licence to delete `compose.yaml` while rules
+  `24-worktrees` / `99-end-of-session` still mandate `mise run docker:clean`. Note that the
+  "**Consumer-visible:**" note on the test-contract bullet above describes only the
+  greenfield effect; unlike its two sibling bullets it carries no "greenfield only"
+  caveat, and adopted repos do not receive the guard at all.
 - **Fixed:** the spine-resolution ladder in `spec/PRODUCT.md` was rewritten earlier in
   this cycle with **no ledger entry**, and nothing could carry it:
   `template-reconcile.sh` anchors on headings and checklist items, so a rewritten
@@ -735,16 +961,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   It also tells the applier to replace **only** `ws:docker:up`'s `run[0]` — the
   inline guard whose message names the stale unprefixed tasks — and to leave `run[1]`
   alone, since `docker compose up -d --wait` is what actually starts the stack.
-  **Release note — this release now has FIVE `### v3.24.0` ledger entries (this `ws:`
+  **Release note — this release now has SIX `### v3.24.0` ledger entries (this `ws:`
   rename, the `COMPOSE_PROJECT_NAME` prefix, the promoted-question rule, the
-  `spec/PRODUCT.md` spine-resolution ladder, and the `PRODUCTIONIZATION.md` open-question
-  seed), and the key on all five is an assumption the release PR must confirm.** The
-  ledger keys each entry by the version that introduced it, so the heading has to match
-  the bump actually cut: re-key **all five** if this release is not 3.24.0. Note the five
-  entries make the minor **non-optional**: a patch cut would ship five entries keyed to a
-  version that never exists, and every consumer's stamp comparison would skip them
-  forever. Weigh the bump
-  against all three, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
+  `spec/PRODUCT.md` spine-resolution ladder, the `PRODUCTIONIZATION.md` open-question
+  seed, and the nested-`/infra` `README.md`'s S3 + DynamoDB → native `use_lockfile` prose
+  rewrite).**
+
+  **The bump is decided: `3.24.0` — a minor.** The six ledger headings are keyed to
+  it and are correct as written; **no re-keying is needed**. Had the cut landed
+  anywhere else, all six headings would have had to move with it — that instruction
+  was the only compensating control for the hard-coded keys, so the decision being
+  settled here is what retires the risk. A patch was never available: six entries
+  keyed to a version that never ships would be skipped by every consumer's stamp
+  comparison forever.
+
+  Major was the live alternative and was **considered and declined**. Weigh it
+  against all six entries, not just this one — the `COMPOSE_PROJECT_NAME` entry opens with a
   mandatory destructive tear-down on the consumer side (an already-running linked
   worktree's containers and volumes are orphaned otherwise), which is the strongest
   "anything a consuming repo must react to" signal in the release. The audit that produced this entry split on that call — the letter of the
@@ -753,8 +985,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   ledger-carried scaffold/spec changes shipped as minors, including v3.23.0 itself,
   which carried both a spec-artifact rename and an MCP-server removal, and no file
   here is renamed or removed (the `ws:` change is an in-file edit to materialized
-  config, which is exactly what the ledger exists to deliver). Keyed to the minor on
-  that precedent; the bump remains the release PR's decision. Mechanically either key
+  config, which is exactly what the ledger exists to deliver). **Resolved in favour of
+  the minor**, on that precedent — so the release PR inherits a made decision, not an
+  open one. The consumer-facing consequences are not waived by that call: the
+  `COMPOSE_PROJECT_NAME` tear-down and the `ws:` task rename both still need a release
+  note a consumer will actually read, and each is carried by a ledger entry that
+  `/steer:sync` proposes. Mechanically either key
   is safe — consumers skip entries at or below their `/spec/.version` stamp, and no
   stamp can sit above an unreleased version — so this is a documentation-correctness
   point, not a delivery risk. It
