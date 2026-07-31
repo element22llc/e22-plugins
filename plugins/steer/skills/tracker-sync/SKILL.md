@@ -79,9 +79,14 @@ manual export. It is glue, not a new source of truth.
 - **Read `/spec/tracker.md` first, every run** (step 1) — resolved at the
   **workspace** in a polyrepo member, which carries no local copy. Non-GitHub
   tracker → manual path, no API calls, no pretending.
-- **Idempotent pushes.** Before creating any issue, search existing open issues
-  for a match (finding key / question text / feature id) and **skip duplicates**;
-  log what was skipped. Re-running `push` must not double-file.
+- **Idempotent pushes.** Before creating any issue, search existing issues in
+  **all** states — open *and* closed — for a match (finding key / question text /
+  feature id) and **skip duplicates**; log what was skipped. Re-running `push`
+  must not double-file. Closed matches are the whole point: a finding closed as
+  `resolution:false-positive` stays closed, and an open-only search would re-file
+  it on the next audit. Handle a closed exact match per **`ISSUE-SCHEMA.md`
+  §"Idempotency & deduplication"** — reopen only when it is genuinely the same
+  unfinished work, else open a linked follow-up — never a bare duplicate.
 - **Intent-aware confirmation.** Reads never confirm. Creation follows intent,
   not a blanket "outward-facing → confirm" rule: an explicit capture or
   implementation request ("create an issue for…", "add to the backlog", "fix

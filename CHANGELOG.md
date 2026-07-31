@@ -7,7 +7,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Changed:** the action history is now a **directory of immutable per-entry files**
+- **Changed (breaking):** the action history is now a **directory of immutable per-entry files**
   (`spec/history/YYYY-MM-DD-HHMM-<slug>.md`) instead of the single append-only
   `spec/HISTORY.md`. The old file put every PR's entry at the same anchor — the top of
   `## Entries` — so **every pair of concurrent PRs conflicted there**. The conflict is
@@ -34,6 +34,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   pre-migration archive (deliberately *not* split — those entries are immutable
   evidence), rewrites the path in the live instruction surfaces `/steer:sync` can reach,
   and logs the migration as the directory's first entry.
+- **Changed:** a `MIGRATIONS.md` ledger entry is now authored as `### [Unreleased] — <what>`
+  and renamed to `### vX.Y.Z` by the release, instead of being keyed to a guessed version.
+  An entry lands in an implementation PR, which merges *before* the release that names it,
+  so the introducing version is not knowable at authoring time — and a guess is not a
+  cosmetic error: a key **below** the version the entry actually shipped in is read as "at
+  or below the stamp" by every repo stamped in between, so `/steer:sync` **silently skips
+  the migration** and nothing ever reports it. `[Unreleased]` is never at or below any
+  stamp, so a forgotten rename is safe and self-correcting — the entry is always walked and
+  applied by its own precondition. This is the first release in which a consumer's
+  `/steer:sync` meets a ledger heading that is not a version number.
+- **Fixed:** `/steer:tracker-sync`'s idempotent-push guardrail searched only **open**
+  issues before creating one, contradicting both its own `search` operation and the
+  normative dedup contract in `ISSUE-SCHEMA.md`, which require **all** states. The
+  guardrail governs *every* create, so the narrow version won in practice: a finding
+  closed as `resolution:false-positive` is invisible to an open-only search, so the next
+  `/steer:audit` + `publish-audit` re-filed it — defeating the reconcile-not-accumulate
+  guarantee. It now searches open *and* closed and routes a closed exact match through
+  the reopen-or-link-follow-up protocol.
 
 ### 3.24.0
 
