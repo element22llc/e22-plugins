@@ -82,9 +82,9 @@ manual export. It is glue, not a new source of truth.
 - **Idempotent pushes.** Before creating any issue, search existing issues in
   **all** states — open *and* closed — for a match (finding key / question text /
   feature id) and **skip duplicates**; log what was skipped. Re-running `push`
-  must not double-file. Closed matches are the whole point: a finding closed as
-  `resolution:false-positive` stays closed, and an open-only search would re-file
-  it on the next audit. Handle a closed exact match per **`ISSUE-SCHEMA.md`
+  must not double-file. Closed matches are the whole point: a finding closed as a
+  false positive stays closed, and an open-only search would re-file it on the
+  next audit. Handle a closed exact match per **`ISSUE-SCHEMA.md`
   §"Idempotency & deduplication"** — reopen only when it is genuinely the same
   unfinished work, else open a linked follow-up — never a bare duplicate.
 - **Intent-aware confirmation.** Reads never confirm. Creation follows intent,
@@ -208,7 +208,9 @@ and the cross-repo closing-ref rule — is in
 1. Read `/spec/tracker.md`; confirm GitHub. Detect MCP vs `gh` (above).
 2. Take the drift findings (from a just-run `/steer:audit spec`, or a findings file the
    dev points to).
-3. Dedup against existing open `spec-drift` issues.
+3. Dedup against existing spec-drift issues in **all** states — open *and* closed
+   (Guardrails → **Idempotent pushes**). An open-only search re-files a finding
+   that was already closed as a false positive.
 4. Create per **Intent-aware confirmation** in Guardrails: an explicit
    capture/implement request creates without confirmation; an **inferred** batch
    not directly requested (e.g. spec-drift or question findings surfaced by

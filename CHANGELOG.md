@@ -42,16 +42,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   or below the stamp" by every repo stamped in between, so `/steer:sync` **silently skips
   the migration** and nothing ever reports it. `[Unreleased]` is never at or below any
   stamp, so a forgotten rename is safe and self-correcting — the entry is always walked and
-  applied by its own precondition. This is the first release in which a consumer's
-  `/steer:sync` meets a ledger heading that is not a version number.
+  applied by its own precondition. What ships is the convention itself — the ledger's
+  authoring prose and its entry template; the pending entry's own heading is renamed to a
+  real version by the release PR, so a consumer never receives an `[Unreleased]` key.
+  `/steer:sync`'s ledger walk now says so explicitly: a non-version heading is always
+  walked by precondition rather than compared against the repo's stamp.
 - **Fixed:** `/steer:tracker-sync`'s idempotent-push guardrail searched only **open**
   issues before creating one, contradicting both its own `search` operation and the
   normative dedup contract in `ISSUE-SCHEMA.md`, which require **all** states. The
   guardrail governs *every* create, so the narrow version won in practice: a finding
-  closed as `resolution:false-positive` is invisible to an open-only search, so the next
+  closed as a false positive is invisible to an open-only search, so the next
   `/steer:audit` + `publish-audit` re-filed it — defeating the reconcile-not-accumulate
-  guarantee. It now searches open *and* closed and routes a closed exact match through
-  the reopen-or-link-follow-up protocol.
+  guarantee. Both sites now say open *and* closed — the guardrail and the numbered
+  `push`-from-drift procedure, which carried the same narrow instruction — and a closed
+  exact match routes through the reopen-or-link-follow-up protocol.
 
 ### 3.24.0
 

@@ -195,7 +195,10 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    oldest→newest. For each entry whose introducing version is **greater than
    `FROM`**, check its **precondition** against the repo; apply the **action**
    only if the precondition holds (entries are idempotent and self-detecting, so
-   an entry already applied — or never relevant — is a safe no-op). Because the
+   an entry already applied — or never relevant — is a safe no-op). An entry
+   headed **`### [Unreleased]`** carries no version to compare, so it is **always
+   walked** by its precondition, never skipped — that is the property that makes a
+   forgotten release-time rename safe. Because the
    precondition is the real gate, when `FROM` is `unstamped` walk the **whole**
    ledger by precondition. Apply each as the ledger directs — `git mv` for
    renames so history follows, `git rm` for deletions, an **in-file token

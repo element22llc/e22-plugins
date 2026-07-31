@@ -232,10 +232,9 @@ own plan, review, and blast radius, so if the repo's `root.hcl` still configures
 `dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
 migration to a dev as separate work.
 
-One entry is **pending** — not yet in a release, so `/steer:sync` proposes it as soon as
-the release carrying it lands: the action history becomes a **directory of immutable
-per-entry files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the single
-append-only `spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
+The **newest** entry makes the action history a **directory of immutable per-entry
+files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the single append-only
+`spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
 and it is deliberately not a move: the old file is **frozen in place** as the
 pre-migration archive and is **never split** into per-entry records, because those
 entries are immutable review evidence that a bulk rewrite would re-date and risk
@@ -250,9 +249,17 @@ each `spec/sources/*/source.md`, and a polyrepo member's `spec/PRODUCT.md`. It l
 from the plugin on the same sync — and a false-positive guard keeps it away from
 provenance prose, where a mention of `spec/HISTORY.md` is a legitimate record of where
 something was written at the time. In a polyrepo the history belongs to the
-**workspace**, so a member gets only the path rewrites and no local `spec/history/`.
+**workspace**, so a member gets no local `spec/history/` and only four of those
+rewrites — `CLAUDE.md`, `spec/PRODUCT.md`, the PR template and `ci.yml`.
 Finally the migration logs itself as the directory's first entry, which both satisfies
 the living-docs rule for the migration PR and proves the new path works.
+
+Ledger entries are keyed by the release that **introduced** them, and `/steer:sync` skips
+every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut
+is keyed `[Unreleased]` — never a guessed number, since an implementation PR merges before
+the release that names it — and the release PR renames it. A `[Unreleased]` heading is
+never "at or below" any stamp, so such an entry is always walked by its precondition
+rather than silently skipped.
 
 Because the history is now append-only *per file*, a **correction is a new entry**
 carrying `- **Corrects:** <filename>` — never an edit to the entry it corrects.
