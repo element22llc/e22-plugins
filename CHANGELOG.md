@@ -7,7 +7,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Changed:** the action history is now a **directory of immutable per-entry files**
+- **Changed (breaking):** the action history is now a **directory of immutable per-entry files**
   (`spec/history/YYYY-MM-DD-HHMM-<slug>.md`) instead of the single append-only
   `spec/HISTORY.md`. The old file put every PR's entry at the same anchor — the top of
   `## Entries` — so **every pair of concurrent PRs conflicted there**. The conflict is
@@ -34,6 +34,46 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   pre-migration archive (deliberately *not* split — those entries are immutable
   evidence), rewrites the path in the live instruction surfaces `/steer:sync` can reach,
   and logs the migration as the directory's first entry.
+- **Changed:** a `MIGRATIONS.md` ledger entry is now authored as `### [Unreleased] — <what>`
+  and renamed to `### vX.Y.Z` by the release, instead of being keyed to a guessed version.
+  An entry lands in an implementation PR, which merges *before* the release that names it,
+  so the introducing version is not knowable at authoring time — and a guess is not a
+  cosmetic error: a key **below** the version the entry actually shipped in is read as "at
+  or below the stamp" by every repo stamped in between, so `/steer:sync` **silently skips
+  the migration** and nothing ever reports it. `[Unreleased]` is never at or below any
+  stamp, so a forgotten rename is safe and self-correcting — the entry is always walked and
+  applied by its own precondition. What ships is the convention itself — the ledger's
+  authoring prose and its entry template; the pending entry's own heading is renamed to a
+  real version by the release PR, so a consumer never receives an `[Unreleased]` key.
+  `/steer:sync`'s ledger walk now says so explicitly: a non-version heading is always
+  walked by precondition rather than compared against the repo's stamp.
+- **Fixed:** `/steer:tracker-sync`'s idempotent-push guardrail searched only **open**
+  issues before creating one, contradicting both its own `search` operation and the
+  normative dedup contract in `ISSUE-SCHEMA.md`, which require **all** states. The
+  guardrail governs *every* create, so the narrow version won in practice: a finding
+  closed as a false positive is invisible to an open-only search, so the next
+  `/steer:audit` + `publish-audit` re-filed it — defeating the reconcile-not-accumulate
+  guarantee. Both sites now say open *and* closed — the guardrail and the numbered
+  `push`-from-drift procedure, which carried the same narrow instruction — and a closed
+  exact match routes through the reopen-or-link-follow-up protocol.
+- **Fixed:** `/steer:sync` step 3 short-circuited the whole migration walk — "if `FROM`
+  already equals `TARGET`, there are no pending migrations; skip to step 5" — which
+  stranded an `### [Unreleased]` ledger entry on exactly the repos already stamped at
+  that version, the failure the `[Unreleased]` keying convention exists to prevent. The
+  stamp is an optimization; the precondition is the safety mechanism. Step 4 now always
+  walks version-less entries.
+- **Fixed:** the two solo-trunk issue-first advisories offered `'(#N)' in the subject` as
+  an alternative to a `Closes #N` trailer. GitHub does not close an issue on a bare
+  `(#N)` cross-reference, so an agent taking that option left the issue open and failed
+  rule 50's Definition of Done — and in solo-trunk, where there is no PR, the closed
+  issue *is* the completion record, so the work ended with no terminal evidence at all.
+  Both hooks now name the trailer as the only closing mechanism.
+- **Fixed:** the sticky scaffold nudge misstated the profile install map — "only app repos
+  get `package.json` / `compose.yaml`". `compose.yaml` is core for **every** profile and
+  `package.json` ships with any Node-stack profile (`app`, `service`, `library`, `cli`).
+  The nudge re-fires on every write until a repo is bootstrapped, so it was the most-read
+  wrong sentence in the hook set, and a `service` or `library` bootstrap driven off it
+  skipped files it should have had.
 
 ### 3.24.0
 

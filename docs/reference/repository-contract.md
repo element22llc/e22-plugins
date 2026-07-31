@@ -176,8 +176,7 @@ re-take states its region boundaries) — each applied read-then-propose,
 never clobbering filled-in content, and each carrying the consumer's own edits
 forward rather than discarding them.
 
-Two ledger entries landed in **3.23.0**, so a repo syncing up to it should expect
-both: the living global architecture diagram is renamed
+Two ledger entries landed in **3.23.0**: the living global architecture diagram is renamed
 `spec/design/architecture.md` → **`spec/design/architecture-diagram.md`** (a
 `git mv` plus an enumerated in-file token rewrite, so history follows the file
 and the links to it are updated), and the retired `markitdown` MCP server is
@@ -185,7 +184,7 @@ cleared from `.mcp.json` / `.vscode/mcp.json` (harmless until the migration
 runs — the converter is now the on-demand `mise run convert:doc` task). Neither
 requires manual work; `/steer:sync` proposes both.
 
-**Six** further entries are accumulating for the next release. Four are non-additive
+**Six** further entries landed in **3.24.0**. Four are non-additive
 edits to materialized files that reconciliation cannot carry: `scripts/worktree-env.sh`
 gains a repo prefix on `COMPOSE_PROJECT_NAME` in a linked worktree (a whole-section
 re-take — and **tear any running linked-worktree stack down first**, or its containers
@@ -232,3 +231,35 @@ a *live* state backend off a DynamoDB lock table is an infrastructure change wit
 own plan, review, and blast radius, so if the repo's `root.hcl` still configures
 `dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
 migration to a dev as separate work.
+
+The **newest** entry makes the action history a **directory of immutable per-entry
+files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the single append-only
+`spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
+and it is deliberately not a move: the old file is **frozen in place** as the
+pre-migration archive and is **never split** into per-entry records, because those
+entries are immutable review evidence that a bulk rewrite would re-date and risk
+mangling. The entry creates the directory (materializing `spec/history/README.md`, the
+format doc), adds the frozen banner to the archive's header prose without touching a
+single entry below `## Entries`, and rewrites the old path in the live instruction
+surfaces reconciliation cannot reach — `ci.yml`'s `spec-drift` filter (which keeps
+`^spec/HISTORY\.md$` alongside the new pattern, so a repo mid-migration is not flagged),
+the PR template's living-docs checkbox, `README.md`, `CLAUDE.md`, `spec/tracker.md`,
+each `spec/sources/*/source.md`, and a polyrepo member's `spec/PRODUCT.md`. It leaves
+`.github/copilot-instructions.md` and `.github/prompts/*` alone — those are re-copied
+from the plugin on the same sync — and a false-positive guard keeps it away from
+provenance prose, where a mention of `spec/HISTORY.md` is a legitimate record of where
+something was written at the time. In a polyrepo the history belongs to the
+**workspace**, so a member gets no local `spec/history/` and only four of those
+rewrites — `CLAUDE.md`, `spec/PRODUCT.md`, the PR template and `ci.yml`.
+Finally the migration logs itself as the directory's first entry, which both satisfies
+the living-docs rule for the migration PR and proves the new path works.
+
+Ledger entries are keyed by the release that **introduced** them, and `/steer:sync` skips
+every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut
+is keyed `[Unreleased]` — never a guessed number, since an implementation PR merges before
+the release that names it — and the release PR renames it. A `[Unreleased]` heading is
+never "at or below" any stamp, so such an entry is always walked by its precondition
+rather than silently skipped.
+
+Because the history is now append-only *per file*, a **correction is a new entry**
+carrying `- **Corrects:** <filename>` — never an edit to the entry it corrects.

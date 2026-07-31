@@ -186,7 +186,14 @@ uses). This is where the version becomes real:
 grep -n '^### \[Unreleased\]' plugins/steer/templates/reference/MIGRATIONS.md
 ```
 
-Rename each match to `### vX.Y.Z — <the same what>`, keeping the body untouched.
+Rename each match **inside `## Entries`** to `### vX.Y.Z — <the same what>`, keeping
+the body untouched. **`### [Unreleased]` is not unique in this file** — the authoring
+stub inside the trailing `<!-- Template for a new entry -->` HTML comment carries the
+same heading at column 0, so it matches the grep. **Never rename that one**: stamping a
+version onto the stub reinstates the guessed-version pattern this convention exists to
+eliminate, and no gate catches it (`check_migration_versions` errors only on a key
+*ahead* of `plugin.json`, so a stub keyed to the release you just cut passes silently).
+Confirm each hit's line number is above the comment block before editing it.
 Usually there are none (most releases carry no non-additive transform) — that is
 a normal, silent no-op, not a missing step. Unlike `CHANGELOG.md`, do **not**
 re-seed an empty `[Unreleased]` heading here: the ledger's `## Entries` list has no

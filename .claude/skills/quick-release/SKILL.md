@@ -179,11 +179,14 @@ only:
   gotcha: `### [Unreleased]` also appears as prose lower in the file — `grep -n`
   first and edit only the lowest-line-number heading.
 - **B3b — Rename any migration-ledger heading.** `grep -n '^### \[Unreleased\]'
-  plugins/steer/templates/reference/MIGRATIONS.md`; rename each hit to
-  `### vX.Y.Z — <same what>`, body untouched, and **do not** re-seed an empty
-  `[Unreleased]` there. No hits is the normal case, not a skipped step. An entry
-  keyed below the release it ships in is silently skipped by consumers, so this is
-  correctness, not tidiness.
+  plugins/steer/templates/reference/MIGRATIONS.md`; rename each hit **inside
+  `## Entries`** to `### vX.Y.Z — <same what>`, body untouched, and **do not** re-seed
+  an empty `[Unreleased]` there. Same gotcha as B3: the heading is **not unique** — the
+  authoring stub in the trailing `<!-- Template for a new entry -->` comment matches too.
+  **Never rename that one**; stamping the stub reinstates the guessed-version pattern the
+  convention removes, and no gate catches it. No hits is the normal case, not a skipped
+  step. An entry keyed below the release it ships in is silently skipped by consumers, so
+  this is correctness, not tidiness.
 - **B4 — Bump every manifest to `X.Y.Z`** (all three: `.claude-plugin/plugin.json`,
   `.github/plugin/plugin.json`, `.github/plugin/marketplace.json` steer entry;
   leave `metadata.version` alone).

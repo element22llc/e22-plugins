@@ -123,7 +123,7 @@ Name the file and say what to carry forward.
   { test -f spec/HISTORY.md && ! test -d spec/history && echo pending; }
   grep -lE '/?spec/HISTORY\.md' \
     .github/workflows/ci.yml .github/pull_request_template.md README.md CLAUDE.md \
-    spec/tracker.md spec/PRODUCT.md spec/source-manifest.md 2>/dev/null
+    spec/tracker.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null
   ```
 
   Both empty ⇒ already migrated (or a repo that never materialized a spine) ⇒ no-op.
@@ -155,7 +155,7 @@ Name the file and say what to carry forward.
      | `README.md` | the "Action history" link target: `./spec/HISTORY.md` → `./spec/history/`. |
      | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` → `spec/history/`. |
      | `spec/tracker.md` | the traceability bullet — "every `/spec/HISTORY.md` entry lists the tracker ref" → "every `/spec/history/` entry". |
-     | `spec/source-manifest.md` | the absorbed-versions table's `[HISTORY entry · …]` cell → `[history entry · …]`. |
+     | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry · …]` cell → `[history entry · …]`. One file per tracked source — `/steer:intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
      | `spec/PRODUCT.md` | (polyrepo members only) the ownership row listing `HISTORY.md` among the workspace-owned artifacts → `spec/history/`. |
 
      **Leave `.github/copilot-instructions.md` and `.github/prompts/*` alone** — they are
