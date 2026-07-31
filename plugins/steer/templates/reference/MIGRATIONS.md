@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
+### v4.0.0 — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
 
 - **What & why:** the action history was a single append-only, newest-first file, so
   **every** PR inserted its entry at the same anchor (the top of `## Entries`) and every
@@ -122,17 +122,31 @@ Name the file and say what to carry forward.
   ```sh
   { test -f spec/HISTORY.md && ! test -d spec/history && echo pending; }
   grep -lE '/?spec/HISTORY\.md' \
-    .github/workflows/ci.yml .github/pull_request_template.md README.md CLAUDE.md \
-    spec/tracker.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null
+    .github/workflows/ci.yml .github/pull_request_template.md README.md \
+    spec/tracker.md 2>/dev/null
+  grep -lE '`HISTORY\.md`|\[HISTORY entry' \
+    CLAUDE.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null
   ```
 
-  Both empty ⇒ already migrated (or a repo that never migrated a spine) ⇒ no-op.
-  The grep is scoped to those **live** files on purpose: after the migration the only
+  All three empty ⇒ already migrated (or a repo that never migrated a spine) ⇒ no-op.
+  The greps are scoped to those **live** files on purpose: after the migration the only
   legitimate mentions of `spec/HISTORY.md` left in the repo are the archive pointer in
   `spec/history/README.md` and the frozen banner in the archive itself, so a
   repo-wide grep would never converge.
 
-  **The grep matches an *unescaped* token only, and that is what makes this entry
+  **Two greps, because the stale token is not the same string in every file.** Four of
+  the seven surfaces name the full path `spec/HISTORY.md`; the other three do not, and a
+  single pattern silently skipped them — `CLAUDE.md` and `spec/PRODUCT.md` carry a bare
+  `` `HISTORY.md` `` and `spec/sources/*/source.md` carries `[HISTORY entry · …]`. That
+  mattered because the shape check goes quiet as soon as step 1 creates the directory, so
+  a partially-applied step 3 would converge to "already migrated" with the stale prose
+  still in place — and a **polyrepo member** has no local `spec/HISTORY.md` at all, which
+  leaves the grep as the only detector. Both patterns are case-sensitive and both clear
+  after step 3 rewrites them (`spec/history/`, and a lower-case `[history entry`).
+  **`ci.yml` stays on the first grep's original pattern** — the unescaped-token invariant
+  below depends on it.
+
+  **The first grep matches an *unescaped* token only, and that is what makes this entry
   idempotent.** The post-migration `ci.yml` deliberately keeps the old path in its
   `spec-drift` filter as the regex literal `^spec/HISTORY\.md$` (so a repo mid-migration
   is not flagged) — the backslash means the precondition's `HISTORY\.md` does not match

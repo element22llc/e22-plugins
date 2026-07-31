@@ -165,7 +165,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    migration in the ledger writes `=app` when the marker is missing (idempotent —
    it fires only while absent). The profile selects which scaffold overlay
    steps 5–6 reconcile against (an `infra` repo reconciles the root infra
-   `mise.toml` + infra CI, never `package.json`/`compose.yaml`). If the marker
+   `mise.toml` + infra CI, never `package.json`; `compose.yaml` is core for every
+   profile, so it still reconciles unless the repo has deleted it). If the marker
    was changed since the last sync, **offer the newly-matching overlay
    additively** — never remove the prior profile's files (clobber-free).
 

@@ -7,31 +7,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Fixed:** the action-history `MIGRATIONS.md` entry is now genuinely idempotent. Its
-  second precondition greps a repo's live instruction surfaces for a mention of the old
-  `spec/HISTORY.md` path — and the bundled `ci.yml`'s `spec-drift` block, which the entry
-  instructs copying **verbatim**, carried that path as a bare token in a YAML comment. So
-  the grep matched in every fully-migrated repo: the entry reported `pending` on every
-  subsequent `/steer:sync` and its final step minted a **duplicate history entry each
-  run**, silently accumulating in the artifact whose whole purpose is audit evidence. The
-  comment is re-worded to carry no bare token (the legacy path stays only as the escaped
-  regex literal `^spec/HISTORY\.md$`, which the precondition deliberately does not match),
-  and `check_standards.py` now enforces that invariant on the bundled template so it
-  cannot regress.
-- **Fixed:** the `spec-drift` CI gate no longer clears on a touch to
-  `spec/history/README.md`. The filter matched any `.md` under the directory, so editing
-  the **format doc** counted as writing an action-history entry and cleared the gate for a
-  behaviour change with no entry at all. It now matches date-named entry files only.
+### 4.0.0
+
+- **Fixed:** the action-history migration's second precondition can now detect every
+  surface its own action table rewrites. It grepped a single pattern, `/?spec/HISTORY\.md`,
+  across all seven files — but three of them never carried that token: `CLAUDE.md` and
+  `spec/PRODUCT.md` name a bare `` `HISTORY.md` `` and `spec/sources/*/source.md` carries
+  `[HISTORY entry · …]`. Once step 1 created the directory the shape check went quiet, so a
+  step 3 that missed any of those three converged to "already migrated" and the stale prose
+  was never re-detected. Worst for a **polyrepo member**, which has no local
+  `spec/HISTORY.md` at all, leaving the grep as the only detector. The precondition is now
+  split into two file-scoped greps, keeping `ci.yml` on the original unescaped pattern so
+  the idempotency invariant above is untouched.
+- **Fixed:** `/steer:sync` no longer tells an `infra` repo to skip `compose.yaml`. Its
+  profile note read "an `infra` repo reconciles the root infra `mise.toml` + infra CI,
+  never `package.json`/`compose.yaml`", but `compose.yaml` is **core for every profile** —
+  an `infra` repo with no local services *may* delete it, which is permission, not
+  exclusion. So sync was instructed to skip a Layer 0 file on an `infra` repo that
+  legitimately runs backing services. The `package.json` half was correct and stays.
 - **Fixed:** `/steer:init` and `/steer:sync` now carry the same polyrepo action-history
   branch the other history-writing skills do — in a member, write the entry to the
   **workspace** when `workspace.path` resolves, and fall back to the PR description only
   when it does not. Both previously skipped straight to the PR-description fallback, so a
   member with a resolvable local workspace checkout never got a durable entry. Also drops
   a stale `(step 4)` cross-reference in `/steer:sync` that pointed at the migrations step.
-- **Fixed:** `/steer:adopt` now names `spec/history/README.md` (the format doc) explicitly
-  in the spine it instantiates, matching `/steer:init`. It previously said only
-  "`/spec/history/` seeded with the adoption as the first entry", which read as an entry
-  file in a directory with no format doc — the artifact the MANIFEST maps.
 - **Fixed:** `scan-version-pins.sh` now prunes `.claude/worktrees`. Linked worktrees are
   full checkouts of the same repo, so every scanned file was reported once per live
   worktree and a violation on another branch was reported against the branch you are on.
@@ -64,7 +63,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   which creates `spec/history/`, **freezes** `spec/HISTORY.md` as the
   pre-migration archive (deliberately *not* split — those entries are immutable
   evidence), rewrites the path in the live instruction surfaces `/steer:sync` can reach,
-  and logs the migration as the directory's first entry.
+  and logs the migration as the directory's first entry. That entry is idempotent by
+  construction: its precondition greps only for an **unescaped** mention of the legacy
+  path, so the bundled `ci.yml` may carry `spec/HISTORY.md` only as the escaped regex
+  literal `^spec/HISTORY\.md$` and never as a bare token in a comment or operator
+  message — otherwise the block the entry copies **verbatim** would satisfy the
+  precondition forever and mint a duplicate history entry on every `/steer:sync`.
+  `check_standards.py` enforces that invariant on the bundled template so it cannot
+  regress.
 - **Changed:** a `MIGRATIONS.md` ledger entry is now authored as `### [Unreleased] — <what>`
   and renamed to `### vX.Y.Z` by the release, instead of being keyed to a guessed version.
   An entry lands in an implementation PR, which merges *before* the release that names it,
