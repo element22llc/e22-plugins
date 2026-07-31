@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 3.24.0
+
 - **Fixed:** the commit-approval clause survived a second time, in the file `/steer:tidy`
   actually executes. `templates/reference/HOUSEKEEPING.md` said "**Don't commit** until the
   user approves the result" — semantically identical to the `/steer:sync` clause fixed
@@ -35,10 +37,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   to a gateway keeps the colon form, which reads as the Claude-Code-side gateway it is, and
   a test now pins both halves.
 - **Fixed:** the shipped PR template told the author "these are review aids, not CI gates"
-  above a checklist whose changed-line-coverage item **is** a blocking gate — `ci` runs
-  `diff-cover --fail-under` on touched lines and fails the PR. Both files install into the
-  same consumer `.github/` from the same PR. The heading now names the one enforced item
-  and keeps the (accurate) no-global-threshold / no-naming-gate statement.
+  above a checklist whose changed-line-coverage item **can become** a blocking gate — once
+  the repo wires coverage tooling, `ci` runs `diff-cover --fail-under` on touched lines and
+  fails the PR; until a coverage provider is added (deliberately not pinned by the scaffold)
+  the step fail-opens and that box is advisory like the rest. Both files install into the
+  same consumer `.github/` from the same PR. The heading now names the one conditionally
+  enforced item and keeps the (accurate) no-global-threshold / no-naming-gate statement.
 - **Fixed:** `/steer:audit code`'s DX dimension reported a false finding on every compliant
   repo. `templates/reference/AUDIT-DIMENSIONS.md` told it to flag a `mise.toml` "missing the
   tasks a contributor needs (`setup`, `dev`, `test`, `lint`)" — but the scaffold's task is
@@ -660,7 +664,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `xcode-select --install` — the *git* handover — as an example of what doctor installs.
 - **Fixed:** `steer-reviewer`'s fourth caller reached the agent but not its mirrors:
   `docs/reference/agents.md` (twice), `docs/workflows/index.md`'s loop step list,
-  `docs/concepts/copilot-support.md`, and `CLAUDE.md`'s layout comment all still named
+  `docs/concepts/copilot-support.md`, `CLAUDE.md`'s layout comment, and the shipped
+  `templates/reference/CONTEXT-HYGIENE.md` — whose subagent list is explicitly "(all
+  reviewer delegations)" yet named only the two `--reviewed` paths — all still named
   two or three callers, omitting the `/steer:loop` workflow rule 53 **mandates** routes
   through it.
 - **Fixed:** the `ws:` migration entry listed its steps with a dependency **after**
