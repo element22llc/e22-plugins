@@ -10,7 +10,9 @@ the conventions that `claude plugin validate` does not know about:
 - skill names are unique and match their directory;
 - no unresolved placeholders (``TODO``, ``FIXME``, ``[Replace``) leak into
   authored content;
-- relative markdown links inside the plugin resolve to real files.
+- relative markdown links inside the plugin resolve to real files;
+- no ``MIGRATIONS.md`` entry is keyed to a version ahead of ``plugin.json`` (a
+  guessed next version, which makes the migration silently skippable).
 
 Scope notes (kept deliberately narrow so the checks stay honest):
 
@@ -208,6 +210,71 @@ def _check_comment_truncation(path: Path, text: str, errors: list[str]) -> None:
             )
 
 
+def check_migration_versions(root: Path, errors: list[str]) -> None:
+    """No ``MIGRATIONS.md`` entry may be keyed to an unreleased version.
+
+    Ledger entries are keyed by the plugin version that introduced them, and
+    ``/steer:sync`` skips every entry at or below a repo's ``spec/.version``
+    stamp. But an entry lands in an *implementation* PR, which merges before the
+    release that names it — so the introducing version is not knowable when the
+    entry is authored, and an author who guesses gets it wrong whenever the
+    release turns out to be a major (or a patch, or one release later than
+    assumed).
+
+    A guess that lands *below* the version the entry actually shipped in is read
+    as "at or below the stamp" by every repo stamped in between, so the migration
+    is **silently skipped** and never runs — no error, no transform, no signal.
+    That is the failure this check exists to make impossible.
+
+    The rule is therefore: a ledger heading may name any version at or below the
+    current ``plugin.json`` version (a real, released entry), or the literal
+    ``[Unreleased]`` (the authoring state, which the release PR renames). A
+    heading naming a version *above* the current one is always a guess about a
+    release that has not happened. Non-semver headings — ``[Unreleased]`` and the
+    ``vX.Y.Z`` placeholder in the file's own entry template — do not parse as
+    versions and are ignored.
+    """
+    ledger = root / "templates" / "reference" / "MIGRATIONS.md"
+    if not ledger.is_file():
+        return
+
+    manifest = root / ".claude-plugin" / "plugin.json"
+    if not manifest.is_file():
+        return  # check_plugin_json already reports the missing source of truth.
+    try:
+        current_raw = json.loads(manifest.read_text(encoding="utf-8")).get("version")
+    except json.JSONDecodeError:
+        return  # check_plugin_json already reports the malformed source of truth.
+    current = _semver(current_raw or "")
+    if current is None:
+        return  # check_plugin_json / the changelog validator own a bad version.
+
+    for lineno, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.startswith("### "):
+            continue
+        head = line[4:].split("—")[0].strip().rstrip(":").strip()
+        if not head.startswith("v"):
+            continue  # `[Unreleased]` and prose headings carry no version key.
+        entry = _semver(head[1:])
+        if entry is None:
+            continue  # the entry template's literal `vX.Y.Z` placeholder.
+        if entry > current:
+            errors.append(
+                f"{ledger}:{lineno}: migration entry keyed 'v{head[1:]}' is ahead of the "
+                f"current plugin version {current_raw} — a guessed next version. An entry "
+                f"keyed below the release it actually ships in is silently SKIPPED by every "
+                f"repo stamped in between, so the migration never runs. Author it as "
+                f"'### [Unreleased] — <what>'; the release PR renames the heading."
+            )
+
+
+def _semver(text: str) -> tuple[int, int, int] | None:
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", text.strip())
+    if match is None:
+        return None
+    return (int(match[1]), int(match[2]), int(match[3]))
+
+
 def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> None:
     required = list(REQUIRED_SKILL_FRONTMATTER)
     if not require_when_to_use and "when_to_use" in required:
@@ -366,6 +433,7 @@ def run_checks(
         return [f"{root}: plugin root directory not found"]
     check_plugin_json(root, errors)
     check_copilot_version_sync(root, errors)
+    check_migration_versions(root, errors)
     check_skills(root, errors, require_when_to_use)
     check_agents(root, errors)
     check_placeholders(root, errors)

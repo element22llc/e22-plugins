@@ -350,6 +350,20 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - `check_changelog.py` also validates (always, no git needed) that `plugin.json`'s
   version equals the newest semver heading and that released headings descend in
   strict semver order.
+- **Never write a next-version number anywhere in an implementation PR** — not in
+  prose, not in a code comment, and above all not as a
+  `templates/reference/MIGRATIONS.md` entry heading. Your PR merges *before* the
+  release that names it, so the number is a guess, and for the ledger a wrong guess
+  is a correctness bug rather than a typo: entries are keyed by the version that
+  introduced them and `/steer:sync` **skips** every entry at or below a repo's
+  `spec/.version` stamp, so an entry keyed *below* the release it actually ships in
+  is silently skipped by every repo stamped in between — the migration never runs
+  and nothing reports it. Author ledger entries as `### [Unreleased] — <what>`; the
+  release PR renames the heading (step B3b) in the same commit that bumps the
+  manifests. `check_plugin.py`'s `check_migration_versions` fails the build on any
+  ledger heading ahead of `plugin.json`, so a guess cannot reach `main`. For a code
+  comment, describe the *shape* ("a repo bootstrapped before that shape…") rather
+  than keying it to a release at all.
 
 ## Scaffold discipline
 

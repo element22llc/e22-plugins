@@ -229,3 +229,77 @@ def test_copilot_manifest_version_drift_fails(tmp_path: Path):
 
 def test_real_plugin_passes():
     assert check_plugin.run_checks(REAL_PLUGIN) == []
+
+
+# --- migration-ledger version keys ---------------------------------------
+
+
+def _write_ledger(root: Path, *headings: str) -> None:
+    ref = root / "templates" / "reference"
+    ref.mkdir(parents=True, exist_ok=True)
+    body = "# Ledger\n\n## Entries\n\n"
+    for heading in headings:
+        body += f"{heading}\n\n- **What & why:** a transform.\n\n"
+    (ref / "MIGRATIONS.md").write_text(body, encoding="utf-8")
+
+
+def test_migration_versions_real_plugin_clean():
+    errors: list[str] = []
+    check_plugin.check_migration_versions(REAL_PLUGIN, errors)
+    assert errors == []
+
+
+def test_migration_versions_accepts_unreleased_heading(tmp_path: Path):
+    """`[Unreleased]` is the authoring state — an entry lands before its release."""
+    root = _make_plugin(tmp_path)
+    _write_ledger(root, "### [Unreleased] — a pending transform")
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert errors == []
+
+
+def test_migration_versions_accepts_released_and_older(tmp_path: Path):
+    root = _make_plugin(tmp_path)  # plugin.json version is 0.1.0
+    _write_ledger(root, "### v0.1.0 — the current release", "### v0.0.9 — an older one")
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert errors == []
+
+
+def test_migration_versions_rejects_guessed_next_version(tmp_path: Path):
+    """A heading ahead of plugin.json is a guess about a release that has not happened.
+
+    Keyed below the release it really ships in, the entry reads as "at or below the
+    stamp" for every repo stamped in between, so /steer:sync SKIPS it silently.
+    """
+    root = _make_plugin(tmp_path)  # 0.1.0
+    _write_ledger(root, "### v0.2.0 — a guessed next minor")
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert len(errors) == 1
+    assert "guessed next version" in errors[0]
+    assert "[Unreleased]" in errors[0]
+
+
+def test_migration_versions_rejects_guessed_major_and_patch(tmp_path: Path):
+    root = _make_plugin(tmp_path)  # 0.1.0
+    _write_ledger(root, "### v1.0.0 — guessed major", "### v0.1.1 — guessed patch")
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert len(errors) == 2
+
+
+def test_migration_versions_ignores_entry_template_placeholder(tmp_path: Path):
+    """The ledger's own copy-me template carries a literal `vX.Y.Z`, not a version."""
+    root = _make_plugin(tmp_path)
+    _write_ledger(root, "### vX.Y.Z — <one-line what>")
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert errors == []
+
+
+def test_migration_versions_no_ledger_is_silent(tmp_path: Path):
+    root = _make_plugin(tmp_path)
+    errors: list[str] = []
+    check_plugin.check_migration_versions(root, errors)
+    assert errors == []

@@ -25,6 +25,18 @@ flowchart LR
    `[Unreleased]` to the new `X.Y.Z` — so a stream of PRs cuts one coherent
    release instead of a bump per PR.
 
+3. **Never write a next-version number in an implementation PR.** It merges before
+   the release that names it, so the number is always a guess. This bites hardest in
+   the spec-spine [migration ledger](../reference/repository-contract.md)
+   (`templates/reference/MIGRATIONS.md`), whose entries are *keyed* by the version
+   that introduced them: `/steer:sync` skips every entry at or below a repo's
+   `spec/.version` stamp, so an entry keyed **below** the release it actually shipped
+   in is silently skipped by every repo stamped in between — the migration never runs
+   and nothing reports it. Author ledger entries as `### [Unreleased] — <what>`, the
+   same convention the changelog uses; the release PR renames the heading alongside
+   the manifest bump. `check_plugin.py` fails the build on any ledger heading ahead
+   of `plugin.json`, so a guess cannot reach `main`.
+
 `check_changelog.py` also validates that `plugin.json`'s version equals the newest
 released heading and that released headings are in descending semver order.
 

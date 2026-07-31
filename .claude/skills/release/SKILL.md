@@ -174,6 +174,31 @@ not first.
   enough surrounding context (the blank line + first bullet) that it is
   unambiguous.
 
+### B3b. Rename the migration-ledger heading, if there is one.
+
+`plugins/steer/templates/reference/MIGRATIONS.md` keys each entry by the plugin
+version that **introduced** it, and `/steer:sync` skips every entry at or below a
+repo's `spec/.version` stamp. Implementation PRs cannot know that version, so they
+author entries as `### [Unreleased] — <what>` (the same convention `CHANGELOG.md`
+uses). This is where the version becomes real:
+
+```sh
+grep -n '^### \[Unreleased\]' plugins/steer/templates/reference/MIGRATIONS.md
+```
+
+Rename each match to `### vX.Y.Z — <the same what>`, keeping the body untouched.
+Usually there are none (most releases carry no non-additive transform) — that is
+a normal, silent no-op, not a missing step. Unlike `CHANGELOG.md`, do **not**
+re-seed an empty `[Unreleased]` heading here: the ledger's `## Entries` list has no
+union-merge requirement, and an empty version heading would read as a real entry.
+
+**Why this matters more than a cosmetic heading:** a ledger entry keyed *below*
+the version it actually shipped in is read as "at or below the stamp" by every
+repo stamped in between, so the migration is **silently skipped** — it never runs
+and nothing reports it. `check_plugin.py`'s `check_migration_versions` fails the
+build on any heading ahead of `plugin.json`, which catches the guess at authoring
+time; this step is what stops the entry shipping as a permanent `[Unreleased]`.
+
 ### B4. Bump every manifest version to `X.Y.Z`.
 
 The plugin ships to two marketplaces, so three files carry the version and must
