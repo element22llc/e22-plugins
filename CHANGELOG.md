@@ -29,8 +29,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `35`, `50`, `53`, `55`, `61`, `62`, `75`, `99`, the `/steer:reference traceability`
   prose, the PR template, and every skill that records an entry (`init`, `adopt`, `sync`,
   `spec`, `adr`, `intake`, `protect`, `build`, `work --hotfix`, `next`) now name the
-  directory. Existing repos are carried forward by the **v3.25.0 `MIGRATIONS.md` ledger
-  entry**, which creates `spec/history/`, **freezes** `spec/HISTORY.md` as the
+  directory. Existing repos are carried forward by a **`MIGRATIONS.md` ledger entry**,
+  which creates `spec/history/`, **freezes** `spec/HISTORY.md` as the
   pre-migration archive (deliberately *not* split — those entries are immutable
   evidence), rewrites the path in the live instruction surfaces `/steer:sync` can reach,
   and logs the migration as the directory's first entry.

@@ -58,8 +58,8 @@ steer_spine_state() {
 		_rest="${STEER_SPINE_REQUIRED_MEMBER}"
 	else
 		_rest="${STEER_SPINE_REQUIRED}"
-		# Action history: a DIRECTORY of immutable per-entry files (spec/history/)
-		# since v3.25.0. A repo bootstrapped earlier still carries the single-file
+		# Action history: a DIRECTORY of immutable per-entry files (spec/history/).
+		# A repo bootstrapped before that shape still carries the single-file
 		# spec/HISTORY.md and is carried forward by the /steer:sync ledger entry
 		# (MIGRATIONS.md), so EITHER shape counts as present here — reporting
 		# `damaged` on every not-yet-migrated repo would fire the repair nudge for

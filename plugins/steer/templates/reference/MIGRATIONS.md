@@ -52,6 +52,19 @@ costs extra no-op checks, never a bad transform. Resolve the current plugin
 version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from
 memory — and re-stamp to it after applying.
 
+**Author a new entry as `### [Unreleased] — <what>`, never a guessed version
+number.** An entry lands in an implementation PR, which merges *before* the
+release that names it, so the introducing version is not knowable at authoring
+time — and guessing it is not a cosmetic error. A key **below** the version the
+entry actually shipped in is silently **skipped** by every repo stamped in
+between (they read it as "at or below the stamp"), so the migration never runs
+and nothing reports it. The release renames this heading to `### vX.Y.Z` in the
+same PR that bumps `plugin.json` — exactly as it renames `CHANGELOG.md`'s
+`### [Unreleased]`. Forgetting the rename is safe and self-correcting: an
+`[Unreleased]` heading is never "at or below" any stamp, so the entry is always
+walked and applied by its precondition. A guessed number is the only unsafe
+option.
+
 All migrations follow the spine discipline: **read-then-propose, never clobber**,
 preserve filled-in content, and land on a `feat/*` branch through a PR. Use
 `git mv` (not copy+delete) for renames so history follows the file. An **in-file
@@ -77,10 +90,11 @@ Name the file and say what to carry forward.
 
 ## Entries
 
-> Newest first. Each entry: the introducing **version**, **what & why**, a
-> **precondition** (apply only if true), and the **action**.
+> Newest first. Each entry: the introducing **version** — `[Unreleased]` until the
+> release renames it, never a guessed number — **what & why**, a **precondition**
+> (apply only if true), and the **action**.
 
-### v3.25.0 — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
+### [Unreleased] — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
 
 - **What & why:** the action history was a single append-only, newest-first file, so
   **every** PR inserted its entry at the same anchor (the top of `## Entries`) and every
@@ -894,7 +908,9 @@ Name the file and say what to carry forward.
 
 <!-- Template for a new entry — copy above the most recent one:
 
-### vX.Y.Z — <one-line what>
+### [Unreleased] — <one-line what>
+
+(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
 
 - **What & why:** <the structural change and the reason a repo must follow it>
 - **Precondition:** <a check that is true only while the migration is still

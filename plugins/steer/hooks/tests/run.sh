@@ -159,7 +159,7 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	for _sf in vision.md users.md glossary.md tracker.md; do
 		printf 'x\n' >"$1/spec/${_sf}"
 	done
-	# Action history is a DIRECTORY of per-entry files (the post-v3.25.0 shape).
+	# Action history is a DIRECTORY of per-entry files (the current shape).
 	mkdir -p "$1/spec/history"
 	printf 'x\n' >"$1/spec/history/README.md"
 }
@@ -1980,7 +1980,7 @@ touch "${SPINE_BROKEN}/spec/.version"
 for _f in vision.md users.md tracker.md; do touch "${SPINE_BROKEN}/spec/${_f}"; done
 assert_eq "spine: missing glossary still damaged" "$(steer_spine_state "${SPINE_BROKEN}")" "damaged"
 # Action history: EITHER shape counts as present, so a repo that has not yet run
-# the v3.25.0 directory migration is not reported damaged (spine.sh).
+# the action-history directory migration is not reported damaged (spine.sh).
 SPINE_LEGACY="$(new_repo spine_legacy)"
 mkdir -p "${SPINE_LEGACY}/spec"
 touch "${SPINE_LEGACY}/spec/.version"
