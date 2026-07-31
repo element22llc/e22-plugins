@@ -211,8 +211,11 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `YYYY-MM-DD-HHMM-repo-bootstrapped.md`, from `templates/spec/history-entry.md`
    (what, why,
    who asked, the bootstrap PR) — **except in a polyrepo member**, where
-   the action history is the workspace's: record the bootstrap in the PR description
-   instead and never create a local copy. **Stamp the spine version:** write
+   the action history is the workspace's: write the entry **there** if
+   `workspace.path` resolves, and otherwise record the bootstrap in the PR
+   description and say the workspace ledger still needs the entry. Never create a
+   local `spec/history/` in a member (`/steer:reference polyrepo`).
+   **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a
    later `/steer:sync` knows which structural migrations this repo predates:

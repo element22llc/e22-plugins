@@ -90,7 +90,7 @@ Rules that keep it a decision:
   silence, a reaction, or approval of an earlier plan are **not** ratification.
   When a reply is plausibly either, ask once more, narrowly.
 - **Never re-ask a gate already answered.** Ratification is idempotent: an ADR
-  already `Accepted` reports its existing stamp and appends no duplicate history.
+  already `Accepted` reports its existing stamp and writes no duplicate history entry.
 - **Never bundle.** Two ADRs, or an ADR plus an intent, are two prompts — a
   single "approve all" collapses distinct decisions into one answer.
 - **`Reject` is a real outcome, not a retry.** Capture the reason; do not

@@ -41,8 +41,8 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
 5. **Reconcile** — routes each change through the skill that owns the artifact
    (`/steer:spec-scaffold`, `/steer:spec`, `/steer:audit`, `/steer:roadmap`,
    `/steer:questions`), **never clobbering human prose**: conflicts become Open
-   questions, drift is surfaced for a human, and every absorbed change appends a
-   `spec/history/` entry.
+   questions, drift is surfaced for a human, and every absorbed change writes a
+   new `spec/history/` entry file.
 
 **Clarify mode** takes a different middle: a *client clarification document* is not
 a version of a prior spec, so instead of the diff (steps 3–4) it **segments** the

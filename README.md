@@ -137,9 +137,12 @@ plugin carries everything it provided (latest versions, centrally updated).
 - **New repos:** don't fork the template — start empty and run `/steer:init`.
 - **Existing forks keep working.** Nothing breaks; the fork already has the
   scaffolding. On the next `/steer:init` run (or by asking Claude), back-fill
-  the artifacts the template never shipped: `/spec/HISTORY.md`,
+  the artifacts the template never shipped: `/spec/history/`,
   `/spec/tracker.md`, `/spec/app/README.md`, and the drift-gate PR template —
-  all instantiated from the plugin's bundle.
+  all instantiated from the plugin's bundle. A fork that already carries a
+  single-file `/spec/HISTORY.md` keeps it as the frozen pre-migration archive;
+  `/steer:sync` applies that migration and moves new entries into
+  `/spec/history/`.
 - **Scaffolding updates** (CI, `mise.toml` tasks, PR template, …) now arrive
   via `/plugin update` + the template-reconciliation convention instead of
   manual copying between repos. Standards prose and scaffolding files are

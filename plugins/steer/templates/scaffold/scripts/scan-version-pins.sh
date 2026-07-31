@@ -85,8 +85,14 @@ scan_file() {
 }
 
 VIOLATIONS="$(
+	# `.claude/worktrees` holds linked worktrees — full checkouts of this same repo
+	# (and, in a polyrepo, of its members). Without pruning it, every scanned file
+	# is reported once per live worktree, and a violation on another branch is
+	# reported against the branch you are on. Pruned by PATH, not by -name, so a
+	# `worktrees/` directory that is genuinely part of the repo still gets scanned.
 	find "${ROOT}" \
-		\( -name .git -o -name node_modules -o -name .venv -o -name venv \
+		\( -path '*/.claude/worktrees' -o -name .git -o -name node_modules \
+		-o -name .venv -o -name venv \
 		-o -name vendor -o -name dist -o -name build -o -name target \
 		-o -name .terraform -o -name .next -o -name .work \) -prune -o \
 		-type f \( \

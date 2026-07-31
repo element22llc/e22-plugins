@@ -22,7 +22,7 @@ flowchart LR
 
 | Phase | What it does |
 | --- | --- |
-| `capture` | Record a raw idea as an issue without losing open questions. Searches the existing backlog first — to dedupe and to link related/dependent/conflicting issues. |
+| `capture` | Record a raw idea as an issue without losing open questions. Searches the existing backlog first — open **and** closed — to dedupe and to link related/dependent/conflicting issues. A closed duplicate is the one that matters most: filing it again is how the same rejected or already-shipped idea re-enters the backlog. |
 | `triage` | Sort the inbox; set state/labels, and **escalate-only auto-set the native Priority field** from mechanical signals (`risk:security`→Urgent, blocking-question gate→High, …) — `max(current, floor)`, never downgrading a human's value. Effort/dates stay human-set. |
 | `brainstorm` | Explore an idea before committing to a spec. Searches the existing issues (open **and** closed) to surface overlaps, dependencies, and conflicts, and records them as related-issue cross-links. |
 | `materialize` | Turn an explored idea into a `/spec` intent. (Features only — an epic has no intent and is not materializable.) |

@@ -509,7 +509,7 @@ layout: center
 <div class="arr">→</div>
 
 <div class="link border-green-400/50 bg-green-400/10">
-<div class="font-bold">📜 HISTORY</div>
+<div class="font-bold">📜 history</div>
 <div class="sub">the permanent log</div>
 </div>
 
@@ -531,15 +531,15 @@ and walk from the answer back to the decision, the discussion and the person who
 <div v-click class="mt-5 text-center text-sm opacity-60">
 
 Documentation is written **in the same PR as the change** — extract-don't-embellish — so the record never lags the code.
-Every merged change appends one entry to an append-only <code>HISTORY.md</code>: what, why, who, references.
+Every merged change writes one immutable entry file under <code>/spec/history/</code>: what, why, who, references.
 
 </div>
 
 <!--
 This is the traceability chain from TRACEABILITY.md: intent → contract →
-tracker ref → implementation → PR review → HISTORY. The "living docs" rule
-means the artifacts update in the same PR, not in a doc sprint later. New
-joiner onboarding: read the last quarter of HISTORY.md in five minutes.
+tracker ref → implementation → PR review → action history. The "living docs"
+rule means the artifacts update in the same PR, not in a doc sprint later. New
+joiner onboarding: read the last quarter of /spec/history/ in five minutes.
 -->
 
 ---
@@ -772,7 +772,7 @@ the real portability argument.
 
 <div v-click class="flex gap-3 items-start p-2.5 rounded-lg border border-rose-400/20 bg-rose-400/5">
 <div class="w-40 shrink-0 opacity-60">Verify · Deliver</div>
-<div>A developer reviews and merges; the change deploys through the protected branch. <code>HISTORY.md</code> gains one line: <i>what, why, who, refs #142/#143</i>.</div>
+<div>A developer reviews and merges; the change deploys through the protected branch. <code>/spec/history/</code> gains one entry file: <i>what, why, who, refs #142/#143</i>.</div>
 </div>
 
 <div v-click class="flex gap-3 items-start p-2.5 rounded-lg border border-sky-400/20 bg-sky-400/5">
@@ -787,7 +787,7 @@ the real portability argument.
 <!--
 The concrete walk-through that makes the abstractions land. Every artifact
 named here is real: intent/contract, Q-NNN answer captured, issue-first,
-issue/<n>-<slug> branch, PR + human merge, HISTORY.md entry.
+issue/<n>-<slug> branch, PR + human merge, /spec/history/ entry.
 -->
 
 ---

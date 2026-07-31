@@ -7,6 +7,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed:** the action-history `MIGRATIONS.md` entry is now genuinely idempotent. Its
+  second precondition greps a repo's live instruction surfaces for a mention of the old
+  `spec/HISTORY.md` path — and the bundled `ci.yml`'s `spec-drift` block, which the entry
+  instructs copying **verbatim**, carried that path as a bare token in a YAML comment. So
+  the grep matched in every fully-migrated repo: the entry reported `pending` on every
+  subsequent `/steer:sync` and its final step minted a **duplicate history entry each
+  run**, silently accumulating in the artifact whose whole purpose is audit evidence. The
+  comment is re-worded to carry no bare token (the legacy path stays only as the escaped
+  regex literal `^spec/HISTORY\.md$`, which the precondition deliberately does not match),
+  and `check_standards.py` now enforces that invariant on the bundled template so it
+  cannot regress.
+- **Fixed:** the `spec-drift` CI gate no longer clears on a touch to
+  `spec/history/README.md`. The filter matched any `.md` under the directory, so editing
+  the **format doc** counted as writing an action-history entry and cleared the gate for a
+  behaviour change with no entry at all. It now matches date-named entry files only.
+- **Fixed:** `/steer:init` and `/steer:sync` now carry the same polyrepo action-history
+  branch the other history-writing skills do — in a member, write the entry to the
+  **workspace** when `workspace.path` resolves, and fall back to the PR description only
+  when it does not. Both previously skipped straight to the PR-description fallback, so a
+  member with a resolvable local workspace checkout never got a durable entry. Also drops
+  a stale `(step 4)` cross-reference in `/steer:sync` that pointed at the migrations step.
+- **Fixed:** `/steer:adopt` now names `spec/history/README.md` (the format doc) explicitly
+  in the spine it instantiates, matching `/steer:init`. It previously said only
+  "`/spec/history/` seeded with the adoption as the first entry", which read as an entry
+  file in a directory with no format doc — the artifact the MANIFEST maps.
+- **Fixed:** `scan-version-pins.sh` now prunes `.claude/worktrees`. Linked worktrees are
+  full checkouts of the same repo, so every scanned file was reported once per live
+  worktree and a violation on another branch was reported against the branch you are on.
 - **Changed (breaking):** the action history is now a **directory of immutable per-entry files**
   (`spec/history/YYYY-MM-DD-HHMM-<slug>.md`) instead of the single append-only
   `spec/HISTORY.md`. The old file put every PR's entry at the same anchor — the top of
@@ -23,12 +51,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   New templates `templates/spec/history-readme.md` (the format doc, installed as
   `spec/history/README.md`) and `templates/spec/history-entry.md` (per-entry, on demand)
   replace `templates/spec/history.md`. The spec-drift CI gate now clears on any
-  `spec/history/*.md` touch (still accepting `spec/HISTORY.md`, so a repo mid-migration
-  is not flagged), and `hooks/lib/spine.sh` accepts **either** shape as a present action
+  **date-named** `spec/history/` entry (the directory's own `README.md` format doc does
+  not clear it — editing the format doc is not writing an entry) and still accepts the
+  legacy single-file path, so a repo mid-migration is not flagged; `hooks/lib/spine.sh`
+  accepts **either** shape as a present action
   history so an unmigrated repo is not reported `damaged`. Rules `20`, `26`, `30`, `32`,
   `35`, `50`, `53`, `55`, `61`, `62`, `75`, `99`, the `/steer:reference traceability`
   prose, the PR template, and every skill that records an entry (`init`, `adopt`, `sync`,
-  `spec`, `adr`, `intake`, `protect`, `build`, `work --hotfix`, `next`) now name the
+  `spec`, `adr`, `intake`, `protect`, `build`, `work --hotfix`) — plus `next`, which only
+  reads them to orient — now name the
   directory. Existing repos are carried forward by a **`MIGRATIONS.md` ledger entry**,
   which creates `spec/history/`, **freezes** `spec/HISTORY.md` as the
   pre-migration archive (deliberately *not* split — those entries are immutable

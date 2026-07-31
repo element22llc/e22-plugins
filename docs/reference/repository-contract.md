@@ -60,8 +60,10 @@ scaffold layers `/steer:init` / `/steer:adopt` lay down (later layers only *add*
   with the mise-pinned pnpm version, so corepack (e.g. in a Docker build) uses
   the same pnpm that wrote `pnpm-lock.yaml`. Skipped for
   `infra`, and replaced by `pyproject.toml`/Ruff for a Python-only product.
-- **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/` +
-  `DESIGN.md`; `service` adds `apps/`; `library`/`cli` add nothing (the skill
+- **Layer 2 — Profile extras** (`profiles/<profile>/`): `app` adds `apps/`,
+  `DESIGN.md` and `.claude/launch.json` (the Claude Desktop **Code tab**
+  preview-server config — convenience only, never overwritten if the repo already
+  has one); `service` adds `apps/`; `library`/`cli` add nothing (the skill
   adapts `package.json`); `infra` substitutes a tofu/terragrunt/ansible-flavored
   **root** `mise.toml` (which still pins `node`, sources `worktree-env.sh`, and
   defines the core `docker:up`/`docker:down`/`docker:clean` tasks the always-on
@@ -232,7 +234,9 @@ own plan, review, and blast radius, so if the repo's `root.hcl` still configures
 `dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
 migration to a dev as separate work.
 
-The **newest** entry makes the action history a **directory of immutable per-entry
+The **newest** entry — keyed `[Unreleased]` until the release PR that cuts it renames
+the heading to its version, so this paragraph gets a version stamp then — makes the
+action history a **directory of immutable per-entry
 files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the single append-only
 `spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
 and it is deliberately not a move: the old file is **frozen in place** as the
@@ -241,8 +245,10 @@ entries are immutable review evidence that a bulk rewrite would re-date and risk
 mangling. The entry creates the directory (materializing `spec/history/README.md`, the
 format doc), adds the frozen banner to the archive's header prose without touching a
 single entry below `## Entries`, and rewrites the old path in the live instruction
-surfaces reconciliation cannot reach — `ci.yml`'s `spec-drift` filter (which keeps
-`^spec/HISTORY\.md$` alongside the new pattern, so a repo mid-migration is not flagged),
+surfaces reconciliation cannot reach — `ci.yml`'s `spec-drift` filter (which matches
+date-named entries only, so editing the directory's `README.md` format doc does not
+clear the gate, and keeps `^spec/HISTORY\.md$` alongside the new pattern so a repo
+mid-migration is not flagged),
 the PR template's living-docs checkbox, `README.md`, `CLAUDE.md`, `spec/tracker.md`,
 each `spec/sources/*/source.md`, and a polyrepo member's `spec/PRODUCT.md`. It leaves
 `.github/copilot-instructions.md` and `.github/prompts/*` alone — those are re-copied

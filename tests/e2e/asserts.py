@@ -39,7 +39,12 @@ SPINE_FILES = (
     "spec/vision.md",
     "spec/users.md",
     "spec/glossary.md",
-    "spec/HISTORY.md",
+    # The action history is a DIRECTORY of immutable per-entry files. What init/adopt
+    # materialize is its format doc; the entries themselves are date-named, so no
+    # single entry filename is assertable here. The legacy single-file
+    # `spec/HISTORY.md` is only ever an artifact of a pre-migration repo — a freshly
+    # bootstrapped one must not have it.
+    "spec/history/README.md",
     "spec/tracker.md",
     "spec/app/README.md",
 )

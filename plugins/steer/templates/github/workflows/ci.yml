@@ -430,11 +430,18 @@ jobs:
             | grep -Ev '(^|/)(tests?|__tests__|e2e|fixtures)/|\.(test|spec)\.[A-Za-z0-9]+$' \
             || true)
           # Any feature contract/intent or action-history touch clears the gate.
-          # The history is a directory of per-entry files (spec/history/<date>-<slug>.md);
-          # spec/HISTORY.md is the frozen pre-migration archive, still accepted so a
-          # repo mid-migration is not flagged.
+          # The history is a directory of per-entry files (spec/history/<date>-<slug>.md).
+          # Entry names start with the date, so the directory's own format doc
+          # (spec/history/README.md) does NOT clear the gate — editing the format
+          # doc is not writing an entry.
+          # The legacy single-file archive path is still accepted (third alternation
+          # below) so a repo mid-migration is not flagged. It is spelled ONLY inside
+          # the regex, never in this prose: the migration ledger's precondition greps
+          # this file for a bare mention of the old path to decide whether the
+          # migration is still pending, and a comment naming it would make that
+          # check never converge.
           spec=$(printf '%s\n' "$changed" \
-            | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/history/.+\.md$|^spec/HISTORY\.md$' \
+            | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/history/[0-9][^/]*\.md$|^spec/HISTORY\.md$' \
             || true)
           if [ -n "$behavior" ] && [ -z "$spec" ]; then
             {

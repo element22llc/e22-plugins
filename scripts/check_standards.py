@@ -1277,6 +1277,39 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
         )
 
 
+def check_migration_precondition_converges(errors: list[str]) -> None:
+    """Assert the bundled ``ci.yml`` cannot make the history migration self-matching.
+
+    The ``spec/HISTORY.md`` -> ``spec/history/`` ledger entry decides "still pending?"
+    by grepping the consumer's live instruction surfaces — ``.github/workflows/ci.yml``
+    among them — for an *unescaped* mention of the old path. That same entry instructs
+    copying this template's ``spec-drift`` block verbatim into the consumer. So if the
+    template mentions the legacy path anywhere OTHER than the deliberate regex literal
+    (``^spec/HISTORY\\.md$``, which the backslash exempts), every migrated repo carries a
+    file that satisfies the precondition forever: the entry reports ``pending`` on every
+    ``/steer:sync`` and its step 4 mints a duplicate history entry each run.
+    """
+    rel = "templates/github/workflows/ci.yml"
+    path = PLUGIN_ROOT / rel
+    if not path.is_file():
+        errors.append(f"{rel}: bundled CI template is missing")
+        return
+
+    # The ledger's own precondition pattern, verbatim: an unescaped `spec/HISTORY.md`.
+    bare = re.compile(r"/?spec/HISTORY\.md")
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if bare.search(line):
+            errors.append(
+                f"{rel}:{lineno}: mentions `spec/HISTORY.md` as a bare token — the history "
+                f"migration's precondition greps a consumer's ci.yml for exactly this, and "
+                f"that entry copies this block verbatim, so the migration would report "
+                f"`pending` forever and duplicate its history entry on every /steer:sync. "
+                f"Keep the legacy path only as the escaped regex literal "
+                f"`^spec/HISTORY\\.md$`; re-word any prose (see "
+                f"templates/reference/MIGRATIONS.md)."
+            )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1299,6 +1332,7 @@ def run_checks(errors: list[str]) -> None:
     check_noncallable_imperatives(errors)
     check_skill_script_grants(errors)
     check_workspace_task_namespace(errors)
+    check_migration_precondition_converges(errors)
 
 
 def main() -> int:
