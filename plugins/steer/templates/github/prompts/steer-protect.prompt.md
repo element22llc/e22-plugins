@@ -1,13 +1,13 @@
 ---
 mode: agent
-description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/HISTORY.md entry. Verify by default.
+description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry. Verify by default.
 ---
 
 <!-- Generated from the steer plugin's skills/protect/SKILL.md — do not edit by hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
 This mirrors steer's `/steer:protect` workflow for GitHub Copilot in VS Code.
 
-**Purpose.** Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/HISTORY.md entry. Verify by default.
+**Purpose.** Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry. Verify by default.
 
 **When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, or as init/adopt's last step.
 

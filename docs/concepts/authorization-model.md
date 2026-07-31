@@ -249,7 +249,7 @@ closed by it.
     tradeoff (an ADR's rejected alternatives and negative consequences, an intent's
     criteria and locked scope, a plan's residual risk). On `Approve` the owning
     skill writes the transition and stamps *who*, *when*, and the **channel**
-    (`in-session` vs `offline-review`), plus one `HISTORY.md` entry — so
+    (`in-session` vs `offline-review`), plus one `/spec/history/` entry — so
     self-ratification, which is legitimate in a solo repo, stays auditable.
     `Decide later` leaves every field untouched, so the artifact stays
     `Proposed`/`draft` exactly as before.

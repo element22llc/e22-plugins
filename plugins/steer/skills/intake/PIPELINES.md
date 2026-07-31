@@ -30,7 +30,7 @@ from the PO's filename (the PO renames files; identity must not follow the name)
    `/steer:tidy` uses). On a match the PO re-sent an identical file (often
    under a new name) — report `already absorbed as <vNNNN>`, record the new
    filename in `source.md` if it differs, and **stop**: no new version, no
-   diff, no edits, no HISTORY entry. If that re-sent file sits at an **in-repo
+   diff, no edits, no history entry. If that re-sent file sits at an **in-repo
    drop location** (anywhere but its committed `original.<ext>`), it is a
    redundant duplicate of an already-absorbed source: surface it and route it
    to `/steer:tidy` (which removes it on a yes) — never delete it silently,
@@ -119,11 +119,13 @@ the accepted divergence).
 ### 6. Record
 
 For every **absorbed** change (one that produced a spec edit, an Open question, or
-a filed issue), append **one** entry to `spec/HISTORY.md` in the template's exact
-bold-key format (`spec/HISTORY.md` → `## Format`):
+a filed issue), write **one** `spec/history/` entry file in the template's exact
+bold-key format (`templates/spec/history-entry.md`; format doc:
+`spec/history/README.md`):
 
 ```markdown
-## YYYY-MM-DD — <what changed>
+# YYYY-MM-DD HH:MM — <what changed>
+
 - **Why:** absorbed <source-id> <version>
 - **Requested by:** <PO handle> via intake
 - **Refs:** spec/sources/<id>/versions/<v>/ · spec/features/<id>/ · #issue

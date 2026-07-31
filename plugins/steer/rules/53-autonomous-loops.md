@@ -21,7 +21,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   change — route the check through an independent reviewer (`steer-reviewer`,
   `/steer:audit`, the test harness).
 - **Keep durable state outside the model.** A loop's memory is the tracker +
-  `/spec/**` (issues, `HISTORY.md`), not chat context — record what it did and
+  `/spec/**` (issues, `/spec/history/`), not chat context — record what it did and
   what's left so the next run resumes instead of repeating.
 - **Only loop on checkable work.** Judgment calls, design decisions, and
   long-compute runs have no fast pass/fail — the loop surfaces them for a

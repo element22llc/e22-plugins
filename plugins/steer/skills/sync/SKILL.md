@@ -73,7 +73,7 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
   detector's deterministic classes (`legacy-e22`, `reference-mode`) as exact-token
   rewrites; propose (never auto-apply) `noncallable-gateway` front-door swaps and
   surface `unknown` tokens for the dev. Scan only the live instruction surfaces the
-  detector targets — never rewrite append-only/provenance prose (`spec/HISTORY.md`,
+  detector targets — never rewrite append-only/provenance prose (`spec/history/*`, `spec/HISTORY.md`,
   reports, ADRs), and never the marketplace id `e22-plugins`.
 - **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
   `/spec/.version` — never from training-data memory.
@@ -167,7 +167,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    **Establish the polyrepo role** via `steer_polyrepo_role` (`lib/scope.sh`)
    before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
    the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
-   `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
+   `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
    `spec/reference/` — are absent
    **by design**; they live once in the workspace repo (rule `22-housekeeping`). **Never reinstall them
    here.** Reconcile only the member's own surface (scaffold, CI, `mise.toml`,
@@ -228,10 +228,10 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    <TARGET>
    ```
 
-8. **Record and hand off.** Append a `/spec/HISTORY.md` entry (what synced —
+8. **Record and hand off.** Write a `/spec/history/` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled, which
    capability gaps repaired — why, who asked, refs). **In a polyrepo member,
-   `HISTORY.md` is the workspace's (step 4) — do not create one here.** Record the
+   the action history is the workspace's (step 4) — do not create one here.** Record the
    sync in the PR description instead; the member's `/spec/.version` stamp is the
    durable local record. Commit on `feat/sync`, then
    push and open the PR

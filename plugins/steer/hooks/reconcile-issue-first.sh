@@ -222,7 +222,7 @@ hotfix/*)
 	# Hotfix fast-path (rule 62): a production hotfix files its issue after-the-fact
 	# by design, so the standard "branch does not reference an issue" nag is a false
 	# positive here. Reframe as the mandatory post-incident follow-up reminder instead.
-	REASON="Issue-first reconciliation (hotfix lane, rule 62): this turn made implementation-affecting changes on hotfix branch '${SAFE_BRANCH}': ${SAFE_LIST}A production hotfix may file its issue after-the-fact, so this is not a skipped step. Once the incident is resolved, complete the MANDATORY follow-up to restore traceability: backfill or finish the GitHub issue and reference it from the PR/commit, write the spec/ADR if a durable decision was made, and append a /spec/HISTORY.md entry. Definition of Done is deferred under the hotfix lane, not waived (rule 50). One-time advisory for this session — it will not repeat."
+	REASON="Issue-first reconciliation (hotfix lane, rule 62): this turn made implementation-affecting changes on hotfix branch '${SAFE_BRANCH}': ${SAFE_LIST}A production hotfix may file its issue after-the-fact, so this is not a skipped step. Once the incident is resolved, complete the MANDATORY follow-up to restore traceability: backfill or finish the GitHub issue and reference it from the PR/commit, write the spec/ADR if a durable decision was made, and write a /spec/history/ entry. Definition of Done is deferred under the hotfix lane, not waived (rule 50). One-time advisory for this session — it will not repeat."
 	;;
 *)
 	if [ "${MODE}" = "solo-trunk" ]; then

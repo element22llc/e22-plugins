@@ -15,7 +15,7 @@ can — so keep the working context lean.
 - **Don't offer to save findings to session memory** — private auto-memory is
   invisible to the repo, the PR, and every teammate. Route each fact to its
   canonical home by type: a **bug fix** → a regression test; an **operational
-  or behavioral fact** → the app guide / `/spec/HISTORY.md`; an **unresolved
+  or behavioral fact** → the app guide / a `/spec/history/` entry; an **unresolved
   follow-up** → a linked tracker issue; a **durable design decision** → the
   spine. One home per fact — surface the capture, don't ask whether to
   remember it.

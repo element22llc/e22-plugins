@@ -11,7 +11,7 @@ Create the artifact when the trigger fires — don't defer it:
   stack choice is usually the first ADR.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
   the app guide (`/spec/app/`) if it describes the old behavior, and a
-  `/spec/HISTORY.md` entry; see Living documentation.
+  `/spec/history/` entry; see Living documentation.
 - **Open questions** → the feature's `intent.md` → `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.

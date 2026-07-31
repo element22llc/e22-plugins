@@ -147,7 +147,8 @@ fall back to sweeping the dimensions manually as specified below.
   `published-snapshot` means its findings already live as issues (counted under
   the tracker dimension) — its checkboxes are **historical, not separate work**,
   so don't double-count them.
-- **Recent context** — skim `spec/HISTORY.md` (newest first) only to orient; it is
+- **Recent context** — skim the newest `spec/history/` entries (`ls -r
+  spec/history/*.md`) only to orient; it is
   informational, not a source of actions.
 
 State a dimension as **clean** or **not applicable** explicitly so silence never

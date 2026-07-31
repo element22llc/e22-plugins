@@ -69,7 +69,7 @@ initiative**; drafting an ADR does not authorize accepting it.
 Refuse (report the current state, write nothing) when the ADR is `Superseded` or
 `Deprecated` — ratification never revives a retired record. **Idempotent on
 `Accepted`**: report the existing `> Ratified by:` / `> Ratified at:` and append
-**no** duplicate HISTORY entry.
+**no** duplicate history entry.
 
 On a clean acceptance, in one change:
 
@@ -77,12 +77,12 @@ On a clean acceptance, in one change:
 2. Stamp `> Ratified by: @<handle>`, `> Ratified at: <YYYY-MM-DD>`, and
    `> Ratified via: in-session` (or `offline-review` when the decision came from a
    review outside the session).
-3. Append **one** `/spec/HISTORY.md` entry — what / why / who asked / refs (rule
+3. Write **one** `/spec/history/` entry file — what / why / who asked / refs (rule
    `32-living-docs`: one entry per ratified decision). **In a polyrepo member**
-   (`spec/PRODUCT.md`), ADRs live here but `HISTORY.md` is the workspace's — append
+   (`spec/PRODUCT.md`), ADRs live here but the action history is the workspace's — write
    the entry there if `workspace.path` resolves, and otherwise record the
    ratification in the PR description and say the workspace ledger still needs the
-   entry. Never create a local `HISTORY.md` in a member
+   entry. Never create a local `spec/history/` in a member
    (`/steer:reference polyrepo`).
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` — never delete or renumber it.

@@ -1,6 +1,6 @@
 ---
 name: protect
-description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/HISTORY.md entry. Verify by default."
+description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry. Verify by default."
 when_to_use: >-
   Use when asked to protect main or a prod branch, check merge rules, graduate
   solo trunk to PR flow, or as init/adopt's last step.
@@ -43,11 +43,11 @@ ends trunk mode. After applying in that case, also update the product `CLAUDE.md
 `## Delivery mode` section to `PR flow` — both the prose **and** the machine-readable
 marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so the
 steer hooks resume the per-feature branch/PR flow (the mode is over — the server wall
-now enforces it) — and append a graduation entry to `/spec/HISTORY.md`. **In a
+now enforces it) — and write a graduation entry under `/spec/history/`. **In a
 polyrepo member** (`spec/PRODUCT.md`), the `CLAUDE.md` marker is this repo's own and
-is flipped here, but `HISTORY.md` is the workspace's — append the entry there if
+is flipped here, but the action history is the workspace's — write the entry there if
 `workspace.path` resolves, and otherwise record the graduation in the PR description
-and say the workspace ledger still needs it. Never create a local `HISTORY.md` in a
+and say the workspace ledger still needs it. Never create a local `spec/history/` in a
 member (`/steer:reference polyrepo`).
 
 ## Authorization (what invoking this grants)
@@ -144,7 +144,7 @@ the fix; the marker flip itself is `apply`'s job:
   graduated (someone applied protection outside this skill). Report that the
   marker is stale and recommend `/steer:protect apply`, which flips it to
   `<!-- steer:delivery-mode=pr-flow -->`, updates the section prose, and appends
-  the graduation entry to `/spec/HISTORY.md` (in a polyrepo member, to the
+  the graduation entry under `/spec/history/` (in a polyrepo member, to the
   workspace's ledger — never a local copy). Do not edit those files from
   `verify`: a mode documented as read-only must stay read-only, and a stale
   marker is a finding to report, not a side effect to apply unasked.
@@ -234,7 +234,7 @@ keep visible, not an oversight.
   changes repo **settings** via `gh api`, and — when the apply ends solo-trunk
   mode — the two local files that record the graduation: the `CLAUDE.md`
   `## Delivery mode` section (prose + the `steer:delivery-mode` marker the hooks
-  read) and `/spec/HISTORY.md`. Nothing else. `verify` writes nothing at all.
+  read) and `/spec/history/`. Nothing else. `verify` writes nothing at all.
 - **Polyrepo: one run protects one repo.** A product spanning several repos needs
   protection on the workspace **and every member**, and this skill only ever
   governs the repo it runs in. So when `spec/workspace.yml` or `spec/PRODUCT.md`

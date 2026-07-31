@@ -15,7 +15,7 @@ among others:
 | `intent.md` (per feature) | The feature's purpose, acceptance criteria, tracker ref, and `## Open questions`. |
 | `contract.md` | The feature's externally observable contract. |
 | `vision.md`, `users.md`, `glossary.md` | Product-level framing shared across features. |
-| `HISTORY.md` | Append-only log of what shipped, with tracker `Refs:`. |
+| `history/` | Append-only log of what shipped, with tracker `Refs:` — **one immutable file per entry** (`YYYY-MM-DD-HHMM-<slug>.md`), so concurrent PRs never conflict on it. A repo bootstrapped before the directory keeps a frozen `HISTORY.md` archive beside it. |
 | `tracker.md` | Declares the issue-tracking system and ref format. |
 | `design/` | Design-export home: `README.md`, product-level `source.md` provenance (greenfield), and the living global `architecture-diagram.md` that the root `ARCHITECTURE.md` links to. |
 | `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:intake`](../workflows/intake.md). |
@@ -73,7 +73,7 @@ it is invisible to the repo, the PR, and every teammate — so steer does not of
 to "remember" a finding there. The always-on `26-context-hygiene` rule routes
 each fact to its canonical on-disk home **by type** instead: a **bug fix** → a
 regression test; an **operational or behavioral fact** → the app guide or
-`/spec/HISTORY.md`; an **unresolved bug or follow-up** → a
+a `/spec/history/` entry; an **unresolved bug or follow-up** → a
 [linked tracker issue](../workflows/issues.md); a **durable design decision** →
 the spine. Each fact lands in exactly one home, and that capture is surfaced as
 part of the work rather than offered as an optional "want me to remember this?".

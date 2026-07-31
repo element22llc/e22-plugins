@@ -221,7 +221,7 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
 - **`/spec`** — source of truth for what the product does and
   why. Design exports: `/spec/design` (product) or
-  `/spec/features/[id]/design-export/` (feature). Also `/spec/HISTORY.md`
+  `/spec/features/[id]/design-export/` (feature). Also `/spec/history/`
   (action history) and `/spec/tracker.md` (issue-tracker declaration).
 - **`/spec/app`** — knowledge docs: usage, workflows, roles,
   configuration, limitations, troubleshooting, release notes.
@@ -334,7 +334,7 @@ can — so keep the working context lean.
 - **Don't offer to save findings to session memory** — private auto-memory is
   invisible to the repo, the PR, and every teammate. Route each fact to its
   canonical home by type: a **bug fix** → a regression test; an **operational
-  or behavioral fact** → the app guide / `/spec/HISTORY.md`; an **unresolved
+  or behavioral fact** → the app guide / a `/spec/history/` entry; an **unresolved
   follow-up** → a linked tracker issue; a **durable design decision** → the
   spine. One home per fact — surface the capture, don't ask whether to
   remember it.
@@ -359,7 +359,7 @@ Create the artifact when the trigger fires — don't defer it:
   stack choice is usually the first ADR.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
   the app guide (`/spec/app/`) if it describes the old behavior, and a
-  `/spec/HISTORY.md` entry; see Living documentation.
+  `/spec/history/` entry; see Living documentation.
 - **Open questions** → the feature's `intent.md` → `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.
@@ -453,11 +453,12 @@ update (or propose) the owning artifact **in the same change as the code**:
   establishes the stack or first app also retires the scaffold's now-false
   placeholder prose — a stub left after the thing it describes exists is
   drift.
-- What changed, why, who asked, refs → append to `/spec/HISTORY.md`, one
-  short entry per merged change or ratified decision.
+- What changed, why, who asked, refs → a **new file** under `/spec/history/`
+  (`YYYY-MM-DD-HHMM-<slug>.md`), one short entry per merged change or ratified
+  decision — never appended to a shared log, and immutable once merged.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
-and `/spec/HISTORY.md` are the **workspace's** — write them there via
+and `/spec/history/` are the **workspace's** — write them there via
 `workspace.path`, else note it in the PR description; never a local copy.
 `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
 
@@ -482,7 +483,7 @@ read it before referencing work items; if missing, ask and create it from the
 bundled template — **except in a polyrepo member** (`spec/PRODUCT.md` present),
 where the tracker is the workspace's: resolve it there and never create a local
 copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
-description (tracker's own linking syntax), and `HISTORY.md` `Refs:`. Copy a
+description (tracker's own linking syntax), and the `/spec/history/` entry's `Refs:`. Copy a
 tracker item's acceptance criteria into the intent — the spec is the in-repo
 source of truth; the ref points back. **Keep a question in the spec's
 `## Open questions`** (structured `Q-NNN`) when it's local to one feature and
@@ -627,7 +628,7 @@ backstop. It is a floor, not the whole list: the rest is still on you.
 - [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
-- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; `/spec/HISTORY.md` entry appended (see Living documentation).
+- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; a `/spec/history/` entry written (see Living documentation).
 - [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
 - [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
@@ -637,7 +638,7 @@ backstop. It is a floor, not the whole list: the rest is still on you.
 **Hotfix exception (see Hotfix / incident fast-path):** under a declared production
 hotfix, items above may be **deferred** to the mandatory post-incident follow-up —
 **never waived**. The follow-up backfills the issue, the spec/ADR, and the
-`/spec/HISTORY.md` entry so this list is satisfied once the fire is out.
+`/spec/history/` entry so this list is satisfied once the fire is out.
 
 
 ## Verify loop — iterate against the harness, don't flail
@@ -713,7 +714,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   change — route the check through an independent reviewer (`steer-reviewer`,
   `/steer:audit`, the test harness).
 - **Keep durable state outside the model.** A loop's memory is the tracker +
-  `/spec/**` (issues, `HISTORY.md`), not chat context — record what it did and
+  `/spec/**` (issues, `/spec/history/`), not chat context — record what it did and
   what's left so the next run resumes instead of repeating.
 - **Only loop on checkable work.** Judgment calls, design decisions, and
   long-compute runs have no fast pass/fail — the loop surfaces them for a
@@ -739,7 +740,7 @@ Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
 
 The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
 (never blocks) when a change touches application behavior without updating a
-feature `contract.md` / `intent.md` or `spec/HISTORY.md` — a machine backstop for
+feature `contract.md` / `intent.md` or a `spec/history/` entry — a machine backstop for
 the *undocumented behavior change* class. It runs on PRs and on push to `main`
 (the latter is the only enforcer in solo-trunk, which has no PR). A warning is a
 prompt to do the right thing, not a substitute for the flag: still flag the class
@@ -800,7 +801,7 @@ Ask once, three options — **Approve · Reject · Decide later**:
 - **`Decide later` is always offered** and leaves every field untouched — the
   artifact stays `Proposed` / `draft` exactly as before.
 - **Record who decided, when, and that it was in-session**, plus the
-  `/spec/HISTORY.md` entry. Self-ratification is legitimate; the *unrecorded*
+  `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded*
   kind is the audit hole this rule prevents.
 - **Preconditions fire first** — never show a gate the human cannot legitimately
   pass (an unresolved blocking question → `/steer:questions`).
@@ -842,7 +843,7 @@ deployed are **not** hotfixes — they take the normal lane.
 
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
-and append a `/spec/HISTORY.md` entry. Definition of Done is **deferred under this
+and write a `/spec/history/` entry. Definition of Done is **deferred under this
 lane, never waived** (rule 50). A hotfix without its follow-up is unfinished work,
 not a shortcut earned.
 
@@ -882,7 +883,7 @@ say "aligned", never "compliant": no workflow or artifact makes a product
 compliant; certification scope, compliance accountability, and
 production-readiness approval stay with humans. The artifacts double as audit
 evidence — keep the chain intact: traceability (intent → spec → tracker ref →
-PR → `HISTORY.md`), review evidence (dev-approved PRs, drift flags, DoD),
+PR → `/spec/history/`), review evidence (dev-approved PRs, drift flags, DoD),
 change history (ADRs + action history), and access-conscious secure defaults
 (secrets rules, high-risk gates, branch protection). Evidence map:
 `/steer:reference traceability`.
@@ -1063,7 +1064,7 @@ dropped:
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
 - [ ] Tests added/updated for the change; bug fix has a regression test?
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
-- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
+- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/history/` entry written, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?

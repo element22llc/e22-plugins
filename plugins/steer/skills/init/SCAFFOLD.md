@@ -10,7 +10,7 @@ present, or if the workspace session that sent you here said so. In a member,
 install `spec/PRODUCT.md` (from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and **skip every
 product-level artifact** below — `vision.md`, `users.md`, `glossary.md`,
-`/spec/HISTORY.md`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`, and
+`/spec/history/`, `/spec/app/`, `/spec/features/`, `/spec/tracker.md`, and
 `/spec/sources/` (like `/spec/reference/`, that one is the workspace's — rule
 `22-housekeeping` forbids creating it in a member). Those
 live once, in the workspace. The member still gets its own internals:
@@ -37,7 +37,7 @@ the opt-in `copilot-setup-steps.yml` is **not** auto-installed), and instantiate
 spec spine from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
 `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —
-`/spec/HISTORY.md` (from `history.md`), `/spec/tracker.md` (from
+`/spec/history/README.md` (from `history-readme.md`), `/spec/tracker.md` (from
 `tracker.md`), and `/spec/app/README.md` (from `app-docs.md`) — and the
 design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
 `/spec/design/source.md` (from `design-source.md`),
@@ -111,7 +111,7 @@ instead of overwriting it.
     Then bootstrap each member separately: run `/steer:init` in it with its own
     profile, and instantiate `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`
     as its `spec/PRODUCT.md` **instead of** the product-level spine files
-    (`vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`,
+    (`vision.md`, `users.md`, `glossary.md`, `spec/history/`, `spec/app/`,
     `spec/features/`, `spec/tracker.md`) — those live once, here. Namespace each
     member's Compose service/volume/network names while you are in it: `include:`
     warns and takes one side on a collision instead of merging. Members that

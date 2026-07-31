@@ -149,7 +149,7 @@ output as it is worked:
 
 **Intake owns ingestion + routing:** the `spec/sources/` commit, the pending
 proposed-answer annotations / raised `Q-NNN`s, the step-5 gateway routing, and
-— at its step 6 — the `spec/HISTORY.md` row and advancing `source.md`'s
+— at its step 6 — the `spec/history/` entry and advancing `source.md`'s
 `Latest absorbed version`. **"Absorbed" means the doc was ingested and every
 unit durably routed — not that every answer has been folded.**
 **`/steer:questions` owns the fold:** it applies its step-6 tier gate to the

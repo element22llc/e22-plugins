@@ -24,7 +24,7 @@ describes the whole product.
 
 | Artifact | Home |
 | --- | --- |
-| `vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/` | **workspace** |
+| `vision.md`, `users.md`, `glossary.md`, `spec/history/`, `spec/app/` | **workspace** |
 | `spec/features/**` — every feature's `intent.md` + `contract.md` | **workspace** |
 | `spec/tracker.md` | **workspace** |
 | `spec/sources/`, `spec/reference/` — PO source docs + research | **workspace** |

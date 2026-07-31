@@ -12,7 +12,7 @@ scaffold, leaving the repo working spec-first.
 ```mermaid
 flowchart TD
     CODE[Existing codebase] --> READ[Read code + structure]
-    READ --> SPINE[Materialize /spec spine<br/>intent, contract, glossary, HISTORY]
+    READ --> SPINE[Materialize /spec spine<br/>intent, contract, glossary, history/]
     READ --> SCAFFOLD[Install bundled scaffold<br/>CI, mise.toml, compose, PR template]
     SPINE --> STAMP[Stamp /spec/.version]
     SCAFFOLD --> STAMP

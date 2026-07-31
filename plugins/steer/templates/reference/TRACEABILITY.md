@@ -25,14 +25,14 @@ already approved.
 |---|---|
 | "Users should be able to…", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) — PO approves scope changes |
 | "Actually, it should behave like…" (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) — same PR as the code |
-| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one line in `/spec/HISTORY.md` |
+| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one entry in `/spec/history/` |
 | "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) — usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; `validated` status in `intent.md` |
-| Anything merged or ratified | `/spec/HISTORY.md` entry: what, why, who asked, refs |
+| Anything merged or ratified | `/spec/history/` entry: what, why, who asked, refs |
 
 **In a polyrepo member** (`spec/PRODUCT.md` present), the product-level
-destinations in this table — `/spec/HISTORY.md`, `/spec/app/`,
+destinations in this table — `/spec/history/`, `/spec/app/`,
 `/spec/features/` — are the **workspace's**. Do not create them locally: route
 the entry to the workspace checkout (`workspace.path` in `spec/PRODUCT.md`), else
 carry it in the PR description. `spec/decisions/` and `spec/design/` are the
@@ -57,7 +57,7 @@ member's own, so ADRs are recorded normally.
 
 | | PO-facing | Dev-facing |
 |---|---|---|
-| Artifacts | `vision.md`, `users.md`, `intent.md`, app guide, release notes, HISTORY "why" lines | `contract.md`, ADRs, implementation pointers, `PRODUCTIONIZATION.md`, runbook, tests |
+| Artifacts | `vision.md`, `users.md`, `intent.md`, app guide, release notes, history "why" lines | `contract.md`, ADRs, implementation pointers, `PRODUCTIONIZATION.md`, runbook, tests |
 | Register | Plain language, no stack vocabulary, user-visible outcomes | Precise enough to implement and review against: rules, data, APIs, error states |
 | Owns | Intent, user workflows, acceptance criteria, product decisions, open product questions | Contracts, architecture, tests, infra, security, operations, release readiness |
 
@@ -67,27 +67,47 @@ engineer intent from prose — that's what contracts and ADRs are for.
 
 ---
 
-## 2. Action history (`/spec/HISTORY.md`)
+## 2. Action history (`/spec/history/`)
 
-An append-only, newest-first log: **what changed, why, who or what requested
-it, and which specs/issues/decisions/code areas were affected.** One entry per
-merged change or ratified decision — not per commit. 3–6 lines each; detail
-lives in the linked spec/ADR/PR.
+An append-only log: **what changed, why, who or what requested it, and which
+specs/issues/decisions/code areas were affected.** One entry per merged change or
+ratified decision — not per commit. 3–6 lines each; detail lives in the linked
+spec/ADR/PR.
+
+**One file per entry**, named for the moment it merged:
+
+```text
+spec/history/YYYY-MM-DD-HHMM-<slug>.md
+```
 
 ```markdown
-## 2026-06-10 — CSV export added to vendor list
+# 2026-06-10 14:32 — CSV export added to vendor list
+
 - **Why:** PO needs to hand vendor data to finance monthly
 - **Requested by:** @pat-po
 - **Refs:** PROJ-214 · spec/features/export-csv/ · PR #87
 - **Areas:** apps/web, packages/core
 ```
 
-It serves: **auditability** (when/why/who for any change), **onboarding**
-(read the last quarter in five minutes), **review evidence** (entry rides in
-the reviewed PR), **decision archaeology** (why is it like this?), and
-**drift detection over time** (`/steer:audit spec` and `/steer:audit` use it as a
-timeline). Never rewrite or delete entries; correct with a new entry that
-references the old one.
+**Why a directory, not one file.** A single shared log put every PR's entry at
+the same insertion point — the top of the file — so every pair of concurrent
+changes conflicted there, and no date or time granularity helps: the collision is
+positional, not content-based. Git's `union` merge driver looks like the fix and
+is worse than the conflict: being *line*-based, when two entries share a trailing
+line (`- **Areas:** apps/web` is the common case) it splices the blocks together
+and **silently drops a field** in a merge that shows no markers and gets no
+review. One file per entry means two PRs write different paths, so there is
+nothing to resolve. Read the timeline newest-first with `ls -r spec/history/*.md`.
+
+Entries are **immutable**: never rewrite, re-date, or delete one. A correction is
+a new entry carrying `- **Corrects:** <filename>`. A repo bootstrapped before the
+directory existed keeps its earlier entries in a frozen `spec/HISTORY.md` archive.
+
+The log serves: **auditability** (when/why/who for any change), **onboarding**
+(read the last quarter in five minutes), **review evidence** (the entry rides in
+the reviewed PR), **decision archaeology** (why is it like this?), and **drift
+detection over time** (`/steer:audit spec` and `/steer:audit` use it as a
+timeline).
 
 ---
 
@@ -138,7 +158,7 @@ connect the two.** Only one file knows which tracker is in use:
 - Feature `intent.md` header: `> Tracker: PROJ-123` (or `none yet`).
 - PR description: under "Related issue", using the tracker's own
   closing/linking syntax where it has one.
-- `/spec/HISTORY.md`: in each entry's `Refs:` line.
+- `/spec/history/`: in each entry's `Refs:` line.
 - ADRs: link the driving tracker item in Context when one exists.
 
 **Preserving issue context:** when work starts from a tracker item, copy its
@@ -194,7 +214,7 @@ What the workflow contributes, mapped to what auditors typically ask for:
 
 | Expectation | Where it lives here |
 |---|---|
-| Traceability of changes | intent → contract → tracker ref → PR → `/spec/HISTORY.md` |
+| Traceability of changes | intent → contract → tracker ref → PR → `/spec/history/` |
 | Review evidence | dev-approved PRs as the production gate; drift flags + DoD in the PR record |
 | Change history | ADRs (decisions), action history (what/why/who), git history (code) |
 | Access-conscious workflow | branch protection, least-scope tokens, no direct-to-`main`, PO/dev role split |
@@ -218,7 +238,7 @@ Claude, in parallel with any prototyping: drafts
 only, CSV columns…), adds `> Tracker: none yet`, asks one clarifying question
 ("every vendor field, or a fixed set?") and records it under `## Open
 questions`, updates the app guide's Roles table proposal (admins gain
-"Export"), and — once built and merged — appends the HISTORY entry and a
+"Export"), and — once built and merged — writes the history entry and a
 release-notes line ("Admins can now download the vendor list as CSV"). The PO
 read and approved exactly one artifact: the intent. Everything stayed in plain
 language.
@@ -232,7 +252,7 @@ language.
 Claude: updates `contract.md` (API surface unchanged; behavior rule added for
 streaming + max-size error state), notes the move in Implementation pointers,
 checks the PR's drift-gate flags — "Contract drift" (contract updated to
-match) and nothing else — appends the HISTORY entry (`Requested by: @dev,
+match) and nothing else — writes the history entry (`Requested by: @dev,
 perf finding`), and reminds that the app guide is unaffected (no user-visible
 change). Tests ride in the same PR per the testing rules. The reviewer sees
 the flag, the contract diff, and the regression test together.

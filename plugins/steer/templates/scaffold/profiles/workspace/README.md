@@ -12,7 +12,7 @@ PRs that can merge out of order.
 ## Layout
 
 ```text
-spec/                THE product spine — vision, users, glossary, HISTORY,
+spec/                THE product spine — vision, users, glossary, history/,
                      app docs, and every feature's intent.md + contract.md
 spec/workspace.yml   the member manifest (repos, branches, profiles, paths)
 spec/tracker.md      the tracker for the whole product

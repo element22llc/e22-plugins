@@ -68,7 +68,7 @@ It covers, in detail:
   questions, validations) to their owning artifacts; extraction discipline
   (extract don't embellish, ask on ambiguity, same-PR updates, propose don't
   stealth-edit); the PO-facing vs dev-facing register split.
-- **Action history** — `/spec/HISTORY.md` format and worked entry; what it
+- **Action history** — `/spec/history/` format and worked entry; what it
   serves (auditability, onboarding, review evidence, decision archaeology,
   drift over time); append-only discipline.
 - **App knowledge docs** — `/spec/app/` structure (usage, workflows, roles,
@@ -240,7 +240,7 @@ It covers, in detail:
   an intent's criteria and locked scope; a plan's residual risk). Never pre-select,
   never infer approval from ambient agreement, never bundle two decisions.
 - **Recording it** — transition + who + when + **channel**, plus one
-  `HISTORY.md` entry. Legitimate self-ratification vs. the unrecorded kind that is
+  `/spec/history/` entry. Legitimate self-ratification vs. the unrecorded kind that is
   the actual audit hole; and the wrong-decider case.
 - **Never promptable** — PR merge, deploy, real secrets, `/infra`, protected-branch
   pushes. Gates become answerable, never removable.

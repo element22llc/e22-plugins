@@ -388,7 +388,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # ADVISORY — spec-drift gate. Warns (never blocks) when a change touches
   # application behavior without updating a feature `contract.md` / `intent.md`
-  # or `spec/HISTORY.md`. Pure shell + git: no stack, no Python — runs for every
+  # or a `spec/history/` entry. Pure shell + git: no stack, no Python — runs for every
   # repo. Resolve a warning by updating the spec in the same change, or confirm
   # via the PR template's "Spec sync" checkbox that there is no behavior change.
   # This is the machine surface of rule 55 (drift gates). Runs on PR and on push
@@ -429,16 +429,19 @@ jobs:
             | grep -E '^(apps|packages|src|services|lib|app)/' \
             | grep -Ev '(^|/)(tests?|__tests__|e2e|fixtures)/|\.(test|spec)\.[A-Za-z0-9]+$' \
             || true)
-          # Any feature contract/intent or HISTORY touch clears the gate.
+          # Any feature contract/intent or action-history touch clears the gate.
+          # The history is a directory of per-entry files (spec/history/<date>-<slug>.md);
+          # spec/HISTORY.md is the frozen pre-migration archive, still accepted so a
+          # repo mid-migration is not flagged.
           spec=$(printf '%s\n' "$changed" \
-            | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/HISTORY\.md$' \
+            | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/history/.+\.md$|^spec/HISTORY\.md$' \
             || true)
           if [ -n "$behavior" ] && [ -z "$spec" ]; then
             {
               echo "## Spec drift (advisory)"
               echo
               echo "Behavior changed but no \`spec/features/<id>/contract.md\`, \`intent.md\`,"
-              echo "or \`spec/HISTORY.md\` was updated in this change. Update the spec in the"
+              echo "or a \`spec/history/\` entry was written in this change. Update the spec in the"
               echo "same change, or confirm via the PR template's **Spec sync** checkbox that"
               echo "there is no behavior change."
               echo
@@ -447,7 +450,7 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
             printf '%s\n' "$behavior" | while IFS= read -r f; do
               [ -z "$f" ] && continue
-              echo "::warning file=${f}::Behavior changed without a spec/contract/HISTORY update (spec-drift, advisory)"
+              echo "::warning file=${f}::Behavior changed without a spec/contract/history update (spec-drift, advisory)"
             done
           fi
 

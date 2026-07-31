@@ -53,7 +53,7 @@ none apply.
 
 ## Living docs sync
 
-- [ ] `/spec/HISTORY.md` has an entry for this change (what, why, who asked, refs)
+- [ ] `/spec/history/` has an entry file for this change (what, why, who asked, refs)
 - [ ] `/spec/app/` updated if user-facing behavior or configuration changed
 - [ ] `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed
 - [ ] N/A — no behavior, setup, or decision change

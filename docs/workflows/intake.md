@@ -42,7 +42,7 @@ normalized Markdown extraction — so a plain `git diff` of successive extractio
    (`/steer:spec-scaffold`, `/steer:spec`, `/steer:audit`, `/steer:roadmap`,
    `/steer:questions`), **never clobbering human prose**: conflicts become Open
    questions, drift is surfaced for a human, and every absorbed change appends a
-   `spec/HISTORY.md` entry.
+   `spec/history/` entry.
 
 **Clarify mode** takes a different middle: a *client clarification document* is not
 a version of a prior spec, so instead of the diff (steps 3–4) it **segments** the
@@ -50,7 +50,7 @@ extraction semantically, **maps** each unit inline against open questions and th
 feature list, and sorts them into a three-bucket, human-confirmed worklist —
 answers → `/steer:questions`, new scope → the reconcile rows, unmatched → surfaced
 for the human (never guessed). The shared front-end (identity, versioned commit,
-`HISTORY` record) is unchanged.
+action-history record) is unchanged.
 
 ## Modes
 

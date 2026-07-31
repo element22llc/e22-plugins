@@ -120,7 +120,7 @@ record all four of:
    an inline ratification from a considered offline review. Both are valid; they
    are not the same evidence, and the record should not blur them.
 
-Plus **one** `/spec/HISTORY.md` entry — rule `32-living-docs` already requires
+Plus **one** `/spec/history/` entry — rule `32-living-docs` already requires
 one per ratified decision (what / why / who asked / refs). One entry, not one per
 field.
 

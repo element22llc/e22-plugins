@@ -11,7 +11,7 @@ dropped:
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
 - [ ] Tests added/updated for the change; bug fix has a regression test?
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
-- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/HISTORY.md` entry appended, tracker refs recorded?
+- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/history/` entry written, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?

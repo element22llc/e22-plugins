@@ -24,7 +24,7 @@ never edits code).
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). Once the fire is
     out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a
-    `HISTORY.md` entry: Definition of Done is *deferred, never waived*.
+    `/spec/history/` entry: Definition of Done is *deferred, never waived*.
 
 ## End-to-end flow
 
