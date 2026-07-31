@@ -234,11 +234,9 @@ own plan, review, and blast radius, so if the repo's `root.hcl` still configures
 `dynamodb_table`, `/steer:sync` lands the prose fix, says so, and hands the backend
 migration to a dev as separate work.
 
-The **newest** entry — keyed `[Unreleased]` until the release PR that cuts it renames
-the heading to its version, so this paragraph gets a version stamp then — makes the
-action history a **directory of immutable per-entry
-files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the single append-only
-`spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
+One further entry landed in **4.0.0**, and it makes the action history a **directory of
+immutable per-entry files**, `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, replacing the
+single append-only `spec/HISTORY.md`. It is the most consequential entry for an adopted repo,
 and it is deliberately not a move: the old file is **frozen in place** as the
 pre-migration archive and is **never split** into per-entry records, because those
 entries are immutable review evidence that a bulk rewrite would re-date and risk
