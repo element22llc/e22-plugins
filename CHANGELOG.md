@@ -56,6 +56,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   guarantee. Both sites now say open *and* closed — the guardrail and the numbered
   `push`-from-drift procedure, which carried the same narrow instruction — and a closed
   exact match routes through the reopen-or-link-follow-up protocol.
+- **Fixed:** `/steer:sync` step 3 short-circuited the whole migration walk — "if `FROM`
+  already equals `TARGET`, there are no pending migrations; skip to step 5" — which
+  stranded an `### [Unreleased]` ledger entry on exactly the repos already stamped at
+  that version, the failure the `[Unreleased]` keying convention exists to prevent. The
+  stamp is an optimization; the precondition is the safety mechanism. Step 4 now always
+  walks version-less entries.
+- **Fixed:** the two solo-trunk issue-first advisories offered `'(#N)' in the subject` as
+  an alternative to a `Closes #N` trailer. GitHub does not close an issue on a bare
+  `(#N)` cross-reference, so an agent taking that option left the issue open and failed
+  rule 50's Definition of Done — and in solo-trunk, where there is no PR, the closed
+  issue *is* the completion record, so the work ended with no terminal evidence at all.
+  Both hooks now name the trailer as the only closing mechanism.
+- **Fixed:** the sticky scaffold nudge misstated the profile install map — "only app repos
+  get `package.json` / `compose.yaml`". `compose.yaml` is core for **every** profile and
+  `package.json` ships with any Node-stack profile (`app`, `service`, `library`, `cli`).
+  The nudge re-fires on every write until a repo is bootstrapped, so it was the most-read
+  wrong sentence in the hook set, and a `service` or `library` bootstrap driven off it
+  skipped files it should have had.
 
 ### 3.24.0
 

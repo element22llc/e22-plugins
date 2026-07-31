@@ -151,9 +151,14 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
    `unstamped` means the repo predates stamping (bootstrapped before this
    feature) — treat `FROM` as `0.0.0` and rely on each migration's precondition
-   to decide what actually applies. If `FROM` already equals `TARGET`, there are
-   no pending migrations; skip to step 5 (additive reconciliation can still find
-   template drift) — say so rather than going silent.
+   to decide what actually applies. If `FROM` already equals `TARGET`, no
+   **version-keyed** entry can be pending — but do **not** skip step 4: an entry
+   headed `### [Unreleased]` carries no version to compare, and skipping it here
+   would strand it on exactly the repos already stamped at that version, which is
+   the failure the `[Unreleased]` convention exists to prevent. Walk the ledger for
+   those entries, then continue to step 5 (additive reconciliation can still find
+   template drift) — say so rather than going silent. The stamp is an
+   **optimization, not the safety mechanism**; the precondition is.
 
    **Establish the repo profile.** Read the `CLAUDE.md` `## Profile` marker
    (`<!-- steer:profile=… -->`); **absent → `app`** (back-compat). The back-fill
