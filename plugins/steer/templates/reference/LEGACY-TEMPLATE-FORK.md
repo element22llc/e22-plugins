@@ -69,7 +69,8 @@ the old template lacked.
 7. **Back-fill the newer scaffold artifacts.** A fork of the old template
    predates the plugin-bundled scaffold, so it lacks the living-docs spine —
    instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
-   `/spec/HISTORY.md` (from `history.md`, seeded with a bootstrap entry),
+   `/spec/history/README.md` (from `history-readme.md`, plus a seeded bootstrap
+   entry file from `history-entry.md`),
    `/spec/tracker.md` (from `tracker.md` — ask which tracker the product uses),
    and `/spec/app/README.md` (from `app-docs.md`). Also back-fill the root
    `ARCHITECTURE.md` from

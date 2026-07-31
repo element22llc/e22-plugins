@@ -7,7 +7,7 @@ read it before referencing work items; if missing, ask and create it from the
 bundled template — **except in a polyrepo member** (`spec/PRODUCT.md` present),
 where the tracker is the workspace's: resolve it there and never create a local
 copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
-description (tracker's own linking syntax), and `HISTORY.md` `Refs:`. Copy a
+description (tracker's own linking syntax), and the `/spec/history/` entry's `Refs:`. Copy a
 tracker item's acceptance criteria into the intent — the spec is the in-repo
 source of truth; the ref points back. **Keep a question in the spec's
 `## Open questions`** (structured `Q-NNN`) when it's local to one feature and

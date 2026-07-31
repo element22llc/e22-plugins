@@ -101,7 +101,7 @@ materialize` deliberately stops at `draft`. Other workflows (notably
 `/steer:build`) **delegate** here after an explicit PO approval —
 they invoke this operation but **must not reproduce its field-editing logic**
 (the `## PO acceptance` checkboxes, `> Approved by:` / `> Approved at:`, the
-`Status:` flip, or the HISTORY entry). An explicit PO statement authorizes Claude
+`Status:` flip, or the history entry). An explicit PO statement authorizes Claude
 to run this operation; the PO never has to know or type the slash command.
 
 **Allowed transition — `draft → approved` only.** This is the spec side of the
@@ -114,7 +114,7 @@ it. Approving here is the gate that lets the issue advance to `ready-for-dev`.
   appending nothing.
 - **Idempotent on `approved`** — if the feature is already `approved`, report the
   existing `> Approved by:` / `> Approved at:` and append **no** duplicate
-  HISTORY entry.
+  history entry.
 
 **Blocking-question gate (exact predicate).** Refuse the approval **iff** there
 exists a question with **all** of:
@@ -154,11 +154,11 @@ If the PO is not the person in the session, surface that and leave the state alo
    given in-session rather than in an offline review, say so in the
    `Approval comment/link:` so the channel is part of the record.
 2. Flip `> Status:` to `approved`.
-3. Append **one** `/spec/HISTORY.md` entry (what / why / who-asked / refs). **In a
-   polyrepo member** (`spec/PRODUCT.md`), `HISTORY.md` is the workspace's — append
+3. Write **one** `/spec/history/` entry file (what / why / who-asked / refs). **In a
+   polyrepo member** (`spec/PRODUCT.md`), the action history is the workspace's — write
    it there if `workspace.path` resolves, else record the approval in the PR
    description and say the workspace ledger still needs the entry. Never create a
-   local `HISTORY.md` in a member (`/steer:reference polyrepo`).
+   local `spec/history/` in a member (`/steer:reference polyrepo`).
 4. Recommend the local next action — decompose into work
    (`/steer:issues decompose`, then execute each via
    `/steer:work`) or, for a PO-driven build,
@@ -166,4 +166,4 @@ If the PO is not the person in the session, surface that and leave the state alo
    the `## Recommended next actions` block.
 
 `approve` writes only under `/spec/**` (the intent header, PO-acceptance block,
-and HISTORY); it stays as code-free as the rest of this skill.
+and the history entry); it stays as code-free as the rest of this skill.

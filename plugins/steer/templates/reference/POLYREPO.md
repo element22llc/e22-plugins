@@ -49,7 +49,7 @@ reports the contradiction.
 
 **In the workspace, once:**
 
-- `vision.md`, `users.md`, `glossary.md`, `HISTORY.md`, `spec/app/`
+- `vision.md`, `users.md`, `glossary.md`, `spec/history/`, `spec/app/`
 - `spec/tracker.md` — the tracker for the whole product
 - **all** of `spec/features/**` — every `intent.md` and `contract.md`
 - `spec/sources/` and `spec/reference/` — PO source documents and research feed

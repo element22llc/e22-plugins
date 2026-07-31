@@ -7,6 +7,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the action history is now a **directory of immutable per-entry files**
+  (`spec/history/YYYY-MM-DD-HHMM-<slug>.md`) instead of the single append-only
+  `spec/HISTORY.md`. The old file put every PR's entry at the same anchor — the top of
+  `## Entries` — so **every pair of concurrent PRs conflicted there**. The conflict is
+  positional, not content-based, so finer date/time granularity in the heading does not
+  help; and git's `union` merge driver, the obvious cheap fix, is actively unsafe for
+  this file: union is *line*-based, so when two entries share a trailing line
+  (`- **Areas:** apps/web` is the common case, `Areas` being the template's last field)
+  it splices the two blocks together and **silently drops a field**, producing a clean
+  merge with no conflict markers that no reviewer ever sees — verified against the
+  shipped template's exact field order. One file per entry means two PRs write different
+  paths, so there is nothing to resolve, and it suits an append-only audit log better:
+  entries are immutable, a correction is a new entry carrying `- **Corrects:**`.
+  New templates `templates/spec/history-readme.md` (the format doc, installed as
+  `spec/history/README.md`) and `templates/spec/history-entry.md` (per-entry, on demand)
+  replace `templates/spec/history.md`. The spec-drift CI gate now clears on any
+  `spec/history/*.md` touch (still accepting `spec/HISTORY.md`, so a repo mid-migration
+  is not flagged), and `hooks/lib/spine.sh` accepts **either** shape as a present action
+  history so an unmigrated repo is not reported `damaged`. Rules `20`, `26`, `30`, `32`,
+  `35`, `50`, `53`, `55`, `61`, `62`, `75`, `99`, the `/steer:reference traceability`
+  prose, the PR template, and every skill that records an entry (`init`, `adopt`, `sync`,
+  `spec`, `adr`, `intake`, `protect`, `build`, `work --hotfix`, `next`) now name the
+  directory. Existing repos are carried forward by a **`MIGRATIONS.md` ledger entry**,
+  which creates `spec/history/`, **freezes** `spec/HISTORY.md` as the
+  pre-migration archive (deliberately *not* split — those entries are immutable
+  evidence), rewrites the path in the live instruction surfaces `/steer:sync` can reach,
+  and logs the migration as the directory's first entry.
+
 ### 3.24.0
 
 - **Fixed:** the commit-approval clause survived a second time, in the file `/steer:tidy`

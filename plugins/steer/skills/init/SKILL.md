@@ -207,9 +207,11 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    broad implementation. Behavior changes update the owning `contract.md` in the
    same PR, plus the app guide and an action-history entry (Living
    documentation rule).
-7. **Hand off.** Seed `/spec/HISTORY.md` with the bootstrap entry (what, why,
+7. **Hand off.** Seed the first `/spec/history/` entry — one file,
+   `YYYY-MM-DD-HHMM-repo-bootstrapped.md`, from `templates/spec/history-entry.md`
+   (what, why,
    who asked, the bootstrap PR) — **except in a polyrepo member**, where
-   `HISTORY.md` is the workspace's: record the bootstrap in the PR description
+   the action history is the workspace's: record the bootstrap in the PR description
    instead and never create a local copy. **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a
@@ -222,7 +224,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 
    **Solo trunk mode:** commit the bootstrap **directly to `main`** with no PR
    and push it (Commit autonomy), and
-   note in the `HISTORY.md` entry that the repo runs on trunk until graduation
+   note in the history entry that the repo runs on trunk until graduation
    (`/steer:protect`) — there is no bootstrap PR. Otherwise (a repo with a reviewer):
    commit on the `feat/*` branch, push, and open the PR for dev review — the **bootstrap
    gate** that brings the repo under the standards and lets spec-first work begin
@@ -230,7 +232,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    scaffold and an empty spec spine, with no app to harden. Productionization is
    a later, per-app event — the `/steer:build` v0 handoff or `/steer:adopt`,
    where real code is triaged into `/spec/PRODUCTIONIZATION.md` before a
-   production deploy. Frame the PR (body, HISTORY entry) as the bootstrap/setup
+   production deploy. Frame the PR (body, history entry) as the bootstrap/setup
    gate, never as the productionization gate.
 
 ## Recommend the next action

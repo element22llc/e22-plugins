@@ -19,11 +19,12 @@ update (or propose) the owning artifact **in the same change as the code**:
   establishes the stack or first app also retires the scaffold's now-false
   placeholder prose — a stub left after the thing it describes exists is
   drift.
-- What changed, why, who asked, refs → append to `/spec/HISTORY.md`, one
-  short entry per merged change or ratified decision.
+- What changed, why, who asked, refs → a **new file** under `/spec/history/`
+  (`YYYY-MM-DD-HHMM-<slug>.md`), one short entry per merged change or ratified
+  decision — never appended to a shared log, and immutable once merged.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
-and `/spec/HISTORY.md` are the **workspace's** — write them there via
+and `/spec/history/` are the **workspace's** — write them there via
 `workspace.path`, else note it in the PR description; never a local copy.
 `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
 

@@ -79,7 +79,7 @@ marker — so its verdicts never go stale as skills change.
 
 **Scan scope (false-positive guard).** It reads only unambiguously *live* instruction
 surfaces: `CLAUDE.md`, `README.md`, `.github/pull_request_template.md`. It deliberately
-skips append-only/provenance prose (`spec/HISTORY.md`, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`,
+skips append-only/provenance prose (`spec/history/*`, `spec/HISTORY.md`, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`,
 `spec/decisions/*` ADRs, `spec/sources/*`, `spec/reference/*`, feature `intent.md`
 provenance) — a past `e22-adopt` mention there records what was run and must not be
 rewritten. The marketplace id `e22-plugins` is never flagged.

@@ -166,7 +166,7 @@ These hold for the whole build, at every step.
    approval, **delegate the transition to `/steer:spec approve
    <feature-id>`** — that mode is the single owner of `draft → approved` and
    writes the `## PO acceptance` boxes, the `> Approved by:` / `> Approved at:`
-   header, the `Status:` flip, and the HISTORY entry. Do **not** edit those
+   header, the `Status:` flip, and the history entry. Do **not** edit those
    approval fields here; an explicit PO statement authorizes the delegated run,
    and the PO never types a command. **Do not start broad implementation before
    the intents are approved.**

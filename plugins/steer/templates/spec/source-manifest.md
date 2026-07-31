@@ -25,7 +25,7 @@
 
 | Version | Received | Binary | Extraction | Absorbed | Refs |
 |---|---|---|---|---|---|
-| [vNNNN-YYYY-MM-DD] | [YYYY-MM-DD] | [versions/<v>/original.<ext>] | [ok \| none — reason] | [yes \| no] | [HISTORY entry · #issue · spec/features/<id>/] |
+| [vNNNN-YYYY-MM-DD] | [YYYY-MM-DD] | [versions/<v>/original.<ext>] | [ok \| none — reason] | [yes \| no] | [history entry · #issue · spec/features/<id>/] |
 
 ## Mapped features
 

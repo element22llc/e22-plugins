@@ -20,7 +20,7 @@ Ask once, three options — **Approve · Reject · Decide later**:
 - **`Decide later` is always offered** and leaves every field untouched — the
   artifact stays `Proposed` / `draft` exactly as before.
 - **Record who decided, when, and that it was in-session**, plus the
-  `/spec/HISTORY.md` entry. Self-ratification is legitimate; the *unrecorded*
+  `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded*
   kind is the audit hole this rule prevents.
 - **Preconditions fire first** — never show a gate the human cannot legitimately
   pass (an unresolved blocking question → `/steer:questions`).

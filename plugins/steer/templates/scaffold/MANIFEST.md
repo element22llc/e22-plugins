@@ -70,18 +70,19 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/design-readme.md` | `spec/design/README.md` | What belongs in `spec/design/` — the design-export home, lifecycle, and brownfield notes. |
 | `../spec/design-source.md` | `spec/design/source.md` | Product-level design-source provenance (Greenfield only). |
 | `../spec/design-architecture-diagram.md` | `spec/design/architecture-diagram.md` | The living, global architecture diagram (Mermaid by default; opt-in LikeC4) that `ARCHITECTURE.md` links to. |
-| `../spec/history.md` | `spec/HISTORY.md` | **Action history** — append-only what/why/who-asked/refs log. |
+| `../spec/history-readme.md` | `spec/history/README.md` | **Action history** — the log's format doc: naming, immutability, and why the log is a directory. Entries are one file each at `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, written on demand from `../spec/history-entry.md`; nothing is ever appended to a shared file, so concurrent PRs cannot conflict there. |
 | `../spec/tracker.md` | `spec/tracker.md` | Which issue tracker this product uses + reference conventions. |
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index — usage, roles, configuration, limitations, troubleshooting, release notes. |
 | `../spec/sources-readme.md` | `spec/sources/README.md` | What belongs in `spec/sources/` — the versioned home for recurring PO documents, maintained by `/steer:intake`. |
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
 | `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
 
-Eight more `templates/spec/` templates also live there but are instantiated **on
+Nine more `templates/spec/` templates also live there but are instantiated **on
 demand** by their skills — not copied at bootstrap — so they are not in this
 install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
 `adr.md` (`/steer:adr`), `build-status.md` + `productionization.md`
-(`/steer:build`), `source-manifest.md` (`/steer:intake`), and the two polyrepo
+(`/steer:build`), `source-manifest.md` (`/steer:intake`),
+`history-entry.md` (every change that logs an action-history entry), and the two polyrepo
 markers (`/steer:init` / `/steer:adopt`) — `product.md` → `spec/PRODUCT.md` for a
 **member** and `workspace.yml` → `spec/workspace.yml` for the **workspace**. Their
 presence is the `has-product-pointer` / `has-workspace-manifest` trait, so a
@@ -91,7 +92,7 @@ reason the rest of the spine does.
 
 **A polyrepo member's spine is deliberately partial.** A member installs the Core
 map *minus* the product-level artifacts — no `vision.md`, `users.md`,
-`glossary.md`, `HISTORY.md`, `spec/app/`, `spec/features/`, `spec/tracker.md`, or
+`glossary.md`, `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, or
 `spec/sources/README.md`;
 those live once, in the workspace (rule `22-housekeeping` forbids creating
 `spec/sources/` or `spec/reference/` in a member). It keeps `spec/decisions/`, `spec/design/`, and

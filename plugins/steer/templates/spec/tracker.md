@@ -53,7 +53,7 @@ owners:
   header (`> Tracker:`); a feature with no tracked item yet says `none yet`.
 - **PRs:** the description references the tracker item using `reference_format`
   above (use the tracker's auto-linking/closing syntax where it has one).
-- **Action history:** every `/spec/HISTORY.md` entry lists the tracker ref in
+- **Action history:** every `/spec/history/` entry lists the tracker ref in
   its `Refs:` line when one exists.
 - **Unresolved product questions** that are *not yet* tracked externally live
   in the owning spec's `## Open questions` (feature `intent.md`, or `vision.md`

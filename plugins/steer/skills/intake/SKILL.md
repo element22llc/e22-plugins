@@ -129,7 +129,7 @@ point, not before.
 
 | Case | Handling |
 |---|---|
-| First-ever version (no baseline) | No diff. Report "initial import"; treat the whole extraction as new content and route via `/steer:spec` / `/steer:spec-scaffold` (PO-gated). HISTORY: "initial absorb of `<source-id> v0001`." |
+| First-ever version (no baseline) | No diff. Report "initial import"; treat the whole extraction as new content and route via `/steer:spec` / `/steer:spec-scaffold` (PO-gated). history entry: "initial absorb of `<source-id> v0001`." |
 | Converter unavailable | Commit the binary, state which path was missing and how to enable it, and stop before diffing — never fabricate an extraction. |
 | Non-convertible / unknown format | Commit the binary, record `extraction: none` in `source.md`, raise an Open question for manual review. No diff, no auto-edits. |
 | Scanned PDF, no text layer | Detect low text yield; commit the binary, record `extraction: none (scanned — no text layer)`, raise an Open question asking the PO for a text-bearing version. No diff. |
@@ -162,5 +162,5 @@ Source-document provenance (traceability link + committed Claude-readable
 extraction) follows the design-sources model — `/steer:reference design-sources`.
 Conformance verdicts and `finding-key` reconciliation are `/steer:audit`'s; the
 spec framework is `SPEC-FRAMEWORK.md`; the append-only change-log format is
-`spec/HISTORY.md`; the PO clarification-loop contract is
+`spec/history/`; the PO clarification-loop contract is
 `CLARIFICATION-LOOP.md`. Intake delegates to these — it does not duplicate them.

@@ -14,7 +14,10 @@
 #
 # STEER_SPINE_REQUIRED — spine files that must exist for a .version-stamped repo to
 # count as complete. Keep in sync with the scaffold and init step 4.
-STEER_SPINE_REQUIRED="vision.md users.md glossary.md tracker.md HISTORY.md"
+# The action history is NOT in this list: it is a directory (spec/history/) whose
+# legacy single-file shape is still valid, so it needs an either-or test rather
+# than a file existence check. See the history block in steer_spine_state below.
+STEER_SPINE_REQUIRED="vision.md users.md glossary.md tracker.md"
 
 # STEER_SPINE_REQUIRED_MEMBER — the required set for a POLYREPO MEMBER, whose spine
 # is partial BY DESIGN: the product-level artifacts live once in the workspace repo,
@@ -55,6 +58,17 @@ steer_spine_state() {
 		_rest="${STEER_SPINE_REQUIRED_MEMBER}"
 	else
 		_rest="${STEER_SPINE_REQUIRED}"
+		# Action history: a DIRECTORY of immutable per-entry files (spec/history/).
+		# A repo bootstrapped before that shape still carries the single-file
+		# spec/HISTORY.md and is carried forward by the /steer:sync ledger entry
+		# (MIGRATIONS.md), so EITHER shape counts as present here — reporting
+		# `damaged` on every not-yet-migrated repo would fire the repair nudge for
+		# a spine that is structurally fine, just older. A migrated repo has both
+		# (the frozen archive alongside the directory), which also passes.
+		[ -d "${_root}/spec/history" ] || [ -f "${_root}/spec/HISTORY.md" ] || {
+			printf 'damaged'
+			return 0
+		}
 	fi
 	while [ -n "${_rest}" ]; do
 		_f="${_rest%% *}"

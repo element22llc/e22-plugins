@@ -156,9 +156,12 @@ json_notebook() { # <cwd> <session> <notebook_path>
 managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	mkdir -p "$1/spec"
 	printf '1.0.0\n' >"$1/spec/.version"
-	for _sf in vision.md users.md glossary.md tracker.md HISTORY.md; do
+	for _sf in vision.md users.md glossary.md tracker.md; do
 		printf 'x\n' >"$1/spec/${_sf}"
 	done
+	# Action history is a DIRECTORY of per-entry files (the current shape).
+	mkdir -p "$1/spec/history"
+	printf 'x\n' >"$1/spec/history/README.md"
 }
 
 # Fully bootstrapped state (managed spine + declared tracker + root mise.toml)
@@ -1967,14 +1970,38 @@ assert_eq "spine: member with pointer only -> managed" "$(steer_spine_state "${S
 SPINE_WS="$(new_repo spine_ws)"
 mkdir -p "${SPINE_WS}/spec"
 touch "${SPINE_WS}/spec/.version" "${SPINE_WS}/spec/workspace.yml"
-for _f in vision.md users.md glossary.md tracker.md HISTORY.md; do touch "${SPINE_WS}/spec/${_f}"; done
+for _f in vision.md users.md glossary.md tracker.md; do touch "${SPINE_WS}/spec/${_f}"; done
+mkdir -p "${SPINE_WS}/spec/history"
 assert_eq "spine: workspace holds the full product set -> managed" "$(steer_spine_state "${SPINE_WS}")" "managed"
 # The member split must NOT excuse a genuinely broken single-repo spine.
 SPINE_BROKEN="$(new_repo spine_broken)"
-mkdir -p "${SPINE_BROKEN}/spec"
+mkdir -p "${SPINE_BROKEN}/spec/history"
 touch "${SPINE_BROKEN}/spec/.version"
-for _f in vision.md users.md tracker.md HISTORY.md; do touch "${SPINE_BROKEN}/spec/${_f}"; done
+for _f in vision.md users.md tracker.md; do touch "${SPINE_BROKEN}/spec/${_f}"; done
 assert_eq "spine: missing glossary still damaged" "$(steer_spine_state "${SPINE_BROKEN}")" "damaged"
+# Action history: EITHER shape counts as present, so a repo that has not yet run
+# the action-history directory migration is not reported damaged (spine.sh).
+SPINE_LEGACY="$(new_repo spine_legacy)"
+mkdir -p "${SPINE_LEGACY}/spec"
+touch "${SPINE_LEGACY}/spec/.version"
+for _f in vision.md users.md glossary.md tracker.md HISTORY.md; do touch "${SPINE_LEGACY}/spec/${_f}"; done
+assert_eq "spine: legacy single-file HISTORY.md -> managed" "$(steer_spine_state "${SPINE_LEGACY}")" "managed"
+SPINE_MIGRATED="$(new_repo spine_migrated)"
+mkdir -p "${SPINE_MIGRATED}/spec/history"
+touch "${SPINE_MIGRATED}/spec/.version" "${SPINE_MIGRATED}/spec/HISTORY.md"
+for _f in vision.md users.md glossary.md tracker.md; do touch "${SPINE_MIGRATED}/spec/${_f}"; done
+assert_eq "spine: migrated repo (dir + frozen archive) -> managed" "$(steer_spine_state "${SPINE_MIGRATED}")" "managed"
+SPINE_NOHIST="$(new_repo spine_nohist)"
+mkdir -p "${SPINE_NOHIST}/spec"
+touch "${SPINE_NOHIST}/spec/.version"
+for _f in vision.md users.md glossary.md tracker.md; do touch "${SPINE_NOHIST}/spec/${_f}"; done
+assert_eq "spine: no action history at all -> damaged" "$(steer_spine_state "${SPINE_NOHIST}")" "damaged"
+# A polyrepo MEMBER carries no action history of its own (it lives in the
+# workspace), so the either-or test must not fire there.
+SPINE_MEM2="$(new_repo spine_mem2)"
+mkdir -p "${SPINE_MEM2}/spec"
+touch "${SPINE_MEM2}/spec/.version" "${SPINE_MEM2}/spec/PRODUCT.md"
+assert_eq "spine: member needs no action history -> managed" "$(steer_spine_state "${SPINE_MEM2}")" "managed"
 # A stamped spine with neither the product set nor a pointer is damaged, not member.
 SPINE_EMPTY="$(new_repo spine_empty)"
 mkdir -p "${SPINE_EMPTY}/spec"

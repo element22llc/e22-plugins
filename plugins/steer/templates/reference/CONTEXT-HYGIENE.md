@@ -88,7 +88,7 @@ teammate — so it is working notes, **never the team's record**. Don't offer to
 a finding to session memory as a substitute for capturing it on disk. Route each
 durable fact to its canonical home **by type** instead: a **bug fix** → a regression
 test (Testing / Definition of done); an **operational or behavioral fact** → the app
-guide or `/spec/HISTORY.md` (Living docs); an **unresolved bug or follow-up** → a
+guide or a `/spec/history/` entry (Living docs); an **unresolved bug or follow-up** → a
 linked tracker issue (Issue-first); a **durable design decision** → the spine
 (Decision capture). Each fact lands in exactly one home, and that capture is
 surfaced rather than offered as an optional "want me to remember this?".
@@ -100,7 +100,7 @@ never only in the chat:
   in `/spec/BUILD-STATUS.md`; `/steer:work` keeps the issue, branch, and session
   breadcrumbs in its `spec/.work/<branch>.md` marker. Resuming reads the file first.
 - **Decisions and constraints** → the durable spine (`/spec/features/*/intent.md`,
-  `/spec/decisions/` ADRs, `/spec/HISTORY.md`) or a purpose-built sidecar the run
+  `/spec/decisions/` ADRs, `/spec/history/`) or a purpose-built sidecar the run
   reads on entry.
 
 A sidecar is just a small structured file that travels with the data instead of the

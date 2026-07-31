@@ -25,7 +25,8 @@ validation, and operation. Treat it as infrastructure.
 ├── vision.md                   # Why this product exists — plus an `## Open questions` section for product-level ambiguities
 ├── users.md                    # Who uses it and what they need
 ├── glossary.md                 # Shared vocabulary — PO, devs, and Claude all read this
-├── HISTORY.md                  # Action history — append-only what/why/who-asked/refs log (see /steer:reference traceability)
+├── history/                    # Action history — one immutable file per entry: YYYY-MM-DD-HHMM-<slug>.md (see /steer:reference traceability)
+│   └── README.md               # Format doc: naming, immutability, why it is a directory
 ├── tracker.md                  # Which issue tracker this product uses + reference conventions (client-agnostic)
 ├── BUILD-STATUS.md             # PO builds only — /steer:build flow state (step, per-feature progress, handoff gate)
 ├── PRODUCTIONIZATION.md        # Dev's hardening brief — gaps + Keep/Refactor/Rewrite/Reject per area (/steer:adopt, and /steer:build at handoff)

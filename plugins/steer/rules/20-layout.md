@@ -14,7 +14,7 @@ product spine, a member only its own (`/steer:reference polyrepo`).
 - **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
 - **`/spec`** — source of truth for what the product does and
   why. Design exports: `/spec/design` (product) or
-  `/spec/features/[id]/design-export/` (feature). Also `/spec/HISTORY.md`
+  `/spec/features/[id]/design-export/` (feature). Also `/spec/history/`
   (action history) and `/spec/tracker.md` (issue-tracker declaration).
 - **`/spec/app`** — knowledge docs: usage, workflows, roles,
   configuration, limitations, troubleshooting, release notes.

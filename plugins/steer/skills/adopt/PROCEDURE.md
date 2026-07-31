@@ -214,8 +214,8 @@ artifacts from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`.
 **In a polyrepo member, install `spec/PRODUCT.md` (from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/product.md`) and skip every product-level
 artifact in this list** — `/spec/tracker.md` (and with it both tracker
-bootstraps below), `/spec/app/README.md`, `/spec/HISTORY.md`. Those live once, in
-the workspace; record the adoption in the workspace's `HISTORY.md`, else the PR
+bootstraps below), `/spec/app/README.md`, `/spec/history/`. Those live once, in
+the workspace; record the adoption as a workspace `spec/history/` entry, else the PR
 description. The member still gets the rest: `spec/decisions/`, the design home,
 `ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
 non-`spec/` scaffold above. **Not** `spec/sources/` — like `spec/reference/`, that
@@ -228,7 +228,7 @@ which tracker the team uses — if GitHub Issues, run
 to verify the native **Priority/Effort/date** issue fields are available — it
 reports a capability gap or option mismatch; it never fabricates org config),
 `/spec/app/README.md` (seed the usage/roles sections from what
-Phases 3–5 learned about the app — as-built, dev confirms), `/spec/HISTORY.md`
+Phases 3–5 learned about the app — as-built, dev confirms), `/spec/history/`
 seeded with the adoption itself as the first entry, and the design/sources homes
 the MANIFEST maps: `/spec/design/README.md` + `/spec/design/source.md` (the
 design-export home; on a brownfield repo `source.md` usually stays a stub —

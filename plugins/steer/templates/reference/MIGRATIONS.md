@@ -52,6 +52,19 @@ costs extra no-op checks, never a bad transform. Resolve the current plugin
 version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from
 memory — and re-stamp to it after applying.
 
+**Author a new entry as `### [Unreleased] — <what>`, never a guessed version
+number.** An entry lands in an implementation PR, which merges *before* the
+release that names it, so the introducing version is not knowable at authoring
+time — and guessing it is not a cosmetic error. A key **below** the version the
+entry actually shipped in is silently **skipped** by every repo stamped in
+between (they read it as "at or below the stamp"), so the migration never runs
+and nothing reports it. The release renames this heading to `### vX.Y.Z` in the
+same PR that bumps `plugin.json` — exactly as it renames `CHANGELOG.md`'s
+`### [Unreleased]`. Forgetting the rename is safe and self-correcting: an
+`[Unreleased]` heading is never "at or below" any stamp, so the entry is always
+walked and applied by its precondition. A guessed number is the only unsafe
+option.
+
 All migrations follow the spine discipline: **read-then-propose, never clobber**,
 preserve filled-in content, and land on a `feat/*` branch through a PR. Use
 `git mv` (not copy+delete) for renames so history follows the file. An **in-file
@@ -77,8 +90,96 @@ Name the file and say what to carry forward.
 
 ## Entries
 
-> Newest first. Each entry: the introducing **version**, **what & why**, a
-> **precondition** (apply only if true), and the **action**.
+> Newest first. Each entry: the introducing **version** — `[Unreleased]` until the
+> release renames it, never a guessed number — **what & why**, a **precondition**
+> (apply only if true), and the **action**.
+
+### [Unreleased] — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
+
+- **What & why:** the action history was a single append-only, newest-first file, so
+  **every** PR inserted its entry at the same anchor (the top of `## Entries`) and every
+  pair of concurrent changes conflicted there. The conflict is positional, not
+  content-based — two entries dated the same day are no more likely to collide than two
+  dated a week apart — so date/time granularity cannot fix it. Nor can git's `union`
+  merge driver, the obvious cheap fix: union is **line**-based, and when two entries
+  share a trailing line (`- **Areas:** apps/web` is the common case, since `Areas` is the
+  template's last field) it splices the two blocks together and **silently drops a
+  field**, producing a clean merge with no conflict markers that no reviewer ever
+  sees — data loss in the artifact whose entire purpose is review evidence. The history
+  is therefore a **directory**: one entry per file at
+  `spec/history/YYYY-MM-DD-HHMM-<slug>.md`, so two concurrent PRs write different paths
+  and cannot conflict at all. Additive reconciliation cannot carry this — it splices
+  missing sections into existing files and never creates a directory, relocates an
+  artifact, or rewrites the CI regex and PR-template checkbox that name the old path.
+- **The old file is FROZEN, not moved and not split.** `spec/HISTORY.md` stays exactly
+  where it is as the pre-migration archive. Do **not** mechanically split its entries
+  into per-file records: those entries are immutable evidence, and a bulk rewrite would
+  re-date them, risk mangling them, and destroy the very audit property the log exists
+  for. New entries go in the directory; anything older is read from the archive.
+- **Precondition:** the repo still has the single-file shape, **or** a live instruction
+  surface still routes writes to the old path. Once applied, re-running is a no-op:
+
+  ```sh
+  { test -f spec/HISTORY.md && ! test -d spec/history && echo pending; }
+  grep -lE '/?spec/HISTORY\.md' \
+    .github/workflows/ci.yml .github/pull_request_template.md README.md CLAUDE.md \
+    spec/tracker.md spec/PRODUCT.md spec/source-manifest.md 2>/dev/null
+  ```
+
+  Both empty ⇒ already migrated (or a repo that never materialized a spine) ⇒ no-op.
+  The grep is scoped to those **live** files on purpose: after the migration the only
+  legitimate mentions of `spec/HISTORY.md` left in the repo are the archive pointer in
+  `spec/history/README.md` and the frozen banner in the archive itself, so a
+  repo-wide grep would never converge.
+- **Action:** read-then-propose, show the diff first.
+  1. **Create the directory** and materialize `spec/history/README.md` from
+     `${CLAUDE_PLUGIN_ROOT}/templates/spec/history-readme.md` (the format doc: naming,
+     immutability, why it is a directory, and the archive pointer). Resolve
+     `[Product Name]` from the repo's existing `spec/vision.md` or `CLAUDE.md` rather
+     than leaving the placeholder.
+  2. **Freeze the archive** — the one edit to `spec/HISTORY.md`, bounded to its **header
+     prose above `## Entries`**: add a line stating the file is the frozen pre-migration
+     archive and that new entries go in `spec/history/`. **Touch no entry**, do not
+     re-order, re-date, or delete anything below `## Entries`, and do not add an entry
+     here. If the repo has no `spec/HISTORY.md` at all (a spine materialized without
+     one), skip this step — there is nothing to freeze.
+  3. **Rewrite the path in the live instruction surfaces** — an in-file token rewrite,
+     only in these files, which additive reconciliation cannot reach (both `ci.yml` and
+     the PR template are `Verbatim: no` under the `drift-gate` capability, so nothing
+     re-copies them):
+
+     | File | What changes |
+     |---|---|
+     | `.github/workflows/ci.yml` | the `spec-drift` job's path filter — add `^spec/history/.+\.md$` to the `grep -E` alternation, **keeping** `^spec/HISTORY\.md$` so a repo mid-migration is not flagged — plus the two operator messages naming the old path. Take all three verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci.yml`. |
+     | `.github/pull_request_template.md` | the living-docs checkbox: `/spec/HISTORY.md` has an entry → a `/spec/history/` entry exists for this change. |
+     | `README.md` | the "Action history" link target: `./spec/HISTORY.md` → `./spec/history/`. |
+     | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` → `spec/history/`. |
+     | `spec/tracker.md` | the traceability bullet — "every `/spec/HISTORY.md` entry lists the tracker ref" → "every `/spec/history/` entry". |
+     | `spec/source-manifest.md` | the absorbed-versions table's `[HISTORY entry · …]` cell → `[history entry · …]`. |
+     | `spec/PRODUCT.md` | (polyrepo members only) the ownership row listing `HISTORY.md` among the workspace-owned artifacts → `spec/history/`. |
+
+     **Leave `.github/copilot-instructions.md` and `.github/prompts/*` alone** — they are
+     `Verbatim: yes` under the `copilot-surface-current` capability and are re-copied
+     from the plugin on the same sync, so rewriting them here would be undone and is
+     unnecessary.
+  4. **Log the migration as the directory's first entry.** The PR applying this is itself
+     a merged change, so write `spec/history/<date>-<time>-action-history-becomes-a-directory.md`
+     from `${CLAUDE_PLUGIN_ROOT}/templates/spec/history-entry.md`, with
+     `Requested by: adoption/audit finding` and `Areas: spec-only`. This both satisfies
+     the living-docs rule for the migration PR and proves the new path works.
+  5. **Polyrepo:** the action history belongs to the **workspace**, not a member
+     (`/steer:reference polyrepo`). Apply steps 1, 2 and 4 in the workspace repo only; in
+     a member apply step 3's `CLAUDE.md` / `spec/PRODUCT.md` / PR-template / `ci.yml`
+     rewrites and create **no** local `spec/history/`.
+
+  **False-positive guard:** never rewrite the path inside append-only or provenance prose
+  — the archive's own entries, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`, ADRs under
+  `spec/decisions/`, or a feature `intent.md` provenance line — where a mention of
+  `spec/HISTORY.md` is a legitimate record of where something was written at the time. If
+  the repo already has a `spec/history/` directory containing entries **and** an
+  unfrozen `HISTORY.md` still being appended to, do not merge them: report both and let
+  the dev say which is current. Idempotent — once the directory exists and the live
+  surfaces name it, both precondition checks are empty.
 
 ### v3.24.0 — `PRODUCTIONIZATION.md`'s open-question seed becomes a `### Q-NNN` block
 
@@ -807,7 +908,9 @@ Name the file and say what to carry forward.
 
 <!-- Template for a new entry — copy above the most recent one:
 
-### vX.Y.Z — <one-line what>
+### [Unreleased] — <one-line what>
+
+(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
 
 - **What & why:** <the structural change and the reason a repo must follow it>
 - **Precondition:** <a check that is true only while the migration is still

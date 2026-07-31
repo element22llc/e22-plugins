@@ -156,6 +156,6 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      **surface only**, no rewrite; the dev decides.
 
    The detector scans only live instruction surfaces and deliberately skips
-   append-only/provenance prose (`spec/HISTORY.md`, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`, ADRs, feature
+   append-only/provenance prose (`spec/history/*`, the frozen `spec/HISTORY.md`, `spec/AUDIT-REPORT.md`, `spec/DRIFT-REPORT.md`, ADRs, feature
    `intent.md` provenance) — a past `e22-adopt` mention there is a legitimate record, not
    live guidance. **`--check` stops here**: print the findings and exit — no writes.

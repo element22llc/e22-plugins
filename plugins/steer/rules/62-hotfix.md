@@ -28,6 +28,6 @@ deployed are **not** hotfixes — they take the normal lane.
 
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
-and append a `/spec/HISTORY.md` entry. Definition of Done is **deferred under this
+and write a `/spec/history/` entry. Definition of Done is **deferred under this
 lane, never waived** (rule 50). A hotfix without its follow-up is unfinished work,
 not a shortcut earned.

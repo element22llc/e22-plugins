@@ -183,7 +183,7 @@ on-demand CLI task, not a long-lived MCP server.
 Identity is the kebab-case `source-id`, decoupled from the filename, so a renamed
 re-send still maps to the same source. Absorbed changes route into the spine and
 tracker through the usual gateways (never clobbering human prose; conflicts become
-Open questions) and append a `spec/HISTORY.md` entry. A document sent **once** can
+Open questions) and write a `spec/history/` entry. A document sent **once** can
 stay loose under `spec/reference/`; the moment it starts arriving in versions, it
 belongs under `spec/sources/`. See `spec/sources/README.md` in a bootstrapped repo
 for the layout.

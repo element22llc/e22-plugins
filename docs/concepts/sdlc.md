@@ -48,7 +48,7 @@ is the **only sanctioned speed lever** (rule `62-hotfix`): it opens only for a r
 incident on a deployed system, relaxes *ceremony and ordering* (issue filed
 after-the-fact on a `hotfix/<n>` branch, single-reviewer) while keeping every human
 authority gate, and requires a **mandatory post-incident follow-up** — backfill the
-issue, write the spec/ADR, add a `HISTORY.md` entry — so the phases skipped under
+issue, write the spec/ADR, add a `/spec/history/` entry — so the phases skipped under
 fire are restored, not waived.
 
 ## Two state machines
@@ -102,7 +102,7 @@ The shipped CI scaffold also carries an **advisory `spec-drift` job** as a machi
 backstop for the *undocumented behavior change* class: pure shell + git (no stack,
 no Python), it *warns* — never blocks — when a change touches application behavior
 (`apps/`, `packages/`, `src/`, …) without updating a feature `contract.md` /
-`intent.md` or `spec/HISTORY.md`. It runs on PRs and on push to `main`, so it is
+`intent.md` or a `spec/history/` entry. It runs on PRs and on push to `main`, so it is
 the only spec-drift signal in **solo-trunk** mode, which has no PR. The warning
 prompts you to update the spec or confirm "no behavior change" via the PR
 template — it does not replace the human-resolved flag.
