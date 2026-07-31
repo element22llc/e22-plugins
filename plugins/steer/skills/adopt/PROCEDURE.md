@@ -228,8 +228,9 @@ which tracker the team uses — if GitHub Issues, run
 to verify the native **Priority/Effort/date** issue fields are available — it
 reports a capability gap or option mismatch; it never fabricates org config),
 `/spec/app/README.md` (seed the usage/roles sections from what
-Phases 3–5 learned about the app — as-built, dev confirms), `/spec/history/`
-seeded with the adoption itself as the first entry, and the design/sources homes
+Phases 3–5 learned about the app — as-built, dev confirms), `/spec/history/README.md`
+(from `history-readme.md` — the format doc) plus the adoption itself as the
+directory's first entry file (from `history-entry.md`), and the design/sources homes
 the MANIFEST maps: `/spec/design/README.md` + `/spec/design/source.md` (the
 design-export home; on a brownfield repo `source.md` usually stays a stub —
 design provenance lives per feature), `/spec/design/architecture-diagram.md` (the living

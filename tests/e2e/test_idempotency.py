@@ -31,7 +31,7 @@ _skip = pytest.mark.skipif(
 def test_init_is_rerun_safe(seed_repo):
     """init twice on the same repo: the second run hits init's greenfield-guard
     and must leave the already-bootstrapped repo untouched (no clobber, no
-    duplicate HISTORY entry, no version churn)."""
+    duplicate action-history entry, no version churn)."""
     first = run_skill(seed_repo, INIT)
     summarize_run("/steer:init (1st)", first)
     assert not first.is_error, f"first init failed: {first.stderr[:1500]}"

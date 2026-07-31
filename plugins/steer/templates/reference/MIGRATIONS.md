@@ -126,11 +126,22 @@ Name the file and say what to carry forward.
     spec/tracker.md spec/PRODUCT.md spec/sources/*/source.md 2>/dev/null
   ```
 
-  Both empty ⇒ already migrated (or a repo that never materialized a spine) ⇒ no-op.
+  Both empty ⇒ already migrated (or a repo that never migrated a spine) ⇒ no-op.
   The grep is scoped to those **live** files on purpose: after the migration the only
   legitimate mentions of `spec/HISTORY.md` left in the repo are the archive pointer in
   `spec/history/README.md` and the frozen banner in the archive itself, so a
   repo-wide grep would never converge.
+
+  **The grep matches an *unescaped* token only, and that is what makes this entry
+  idempotent.** The post-migration `ci.yml` deliberately keeps the old path in its
+  `spec-drift` filter as the regex literal `^spec/HISTORY\.md$` (so a repo mid-migration
+  is not flagged) — the backslash means the precondition's `HISTORY\.md` does not match
+  it. The corollary is a **standing constraint on the bundled `ci.yml`**: the legacy path
+  may appear there only inside that regex, never as a bare token in a YAML comment or
+  operator message, or step 3 would copy a self-matching file into every migrated repo
+  and the entry would report `pending` forever — re-minting a duplicate step-4 history
+  entry on every `/steer:sync`. `check_standards.py` enforces this invariant on the
+  bundled template so it cannot regress.
 - **Action:** read-then-propose, show the diff first.
   1. **Create the directory** and materialize `spec/history/README.md` from
      `${CLAUDE_PLUGIN_ROOT}/templates/spec/history-readme.md` (the format doc: naming,
@@ -150,7 +161,7 @@ Name the file and say what to carry forward.
 
      | File | What changes |
      |---|---|
-     | `.github/workflows/ci.yml` | the `spec-drift` job's path filter — add `^spec/history/.+\.md$` to the `grep -E` alternation, **keeping** `^spec/HISTORY\.md$` so a repo mid-migration is not flagged — plus the two operator messages naming the old path. Take all three verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci.yml`. |
+     | `.github/workflows/ci.yml` | the `spec-drift` job's path filter — add `^spec/history/[0-9][^/]*\.md$` to the `grep -E` alternation (date-prefixed **entries** only, so editing the directory's `README.md` format doc does not clear the gate), **keeping** `^spec/HISTORY\.md$` so a repo mid-migration is not flagged — plus the two operator messages naming the old path, **and the comment block above the filter**, which is worded to carry no bare `spec/HISTORY.md` token (see the precondition note above). Take the whole block verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci.yml` — do not re-word it. |
      | `.github/pull_request_template.md` | the living-docs checkbox: `/spec/HISTORY.md` has an entry → a `/spec/history/` entry exists for this change. |
      | `README.md` | the "Action history" link target: `./spec/HISTORY.md` → `./spec/history/`. |
      | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` → `spec/history/`. |

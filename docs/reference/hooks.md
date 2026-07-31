@@ -152,6 +152,50 @@ marker paths with it, and `check-worktree-trust.sh` uses it as the linked-worktr
 **detector** — a returned root that differs from the session's root *is* the signal
 that this checkout is a linked worktree.
 
+## Is this repo spine-managed, and is the spine intact (`lib/spine.sh`)
+
+Three hooks need to know whether the repo in front of them has a steer-managed
+`/spec` spine before they say anything: `check-unmanaged-repo.sh` (the bootstrap
+nudge), `orient-session.sh` (the `SessionStart` orientation line) and
+`check-write-nudges.sh`. They all get the answer from one helper,
+`hooks/lib/spine.sh` — also sourced by `/steer:setup`, `/steer:sync` and
+`scripts/workspace-snapshot.sh`. Its only dependency is `lib/repo-root.sh`, so it
+stays usable on the hook hot path.
+
+`steer_spine_state <repo_root>` prints exactly one of four words:
+
+| State | Means | Consequence |
+| --- | --- | --- |
+| `unmanaged` | no `spec/` directory | nudge toward `/steer:init` / `/steer:adopt` |
+| `foreign` | `spec/` exists but no `spec/.version` | not a steer spine — stay quiet |
+| `damaged` | `spec/.version` present, a required artifact missing | nudge toward repair / `/steer:sync` |
+| `managed` | `spec/.version` + every required artifact present | silent |
+
+Two things about that classification are load-bearing:
+
+- **`spec/.version`, not `spec/`, is the ownership marker.** A bare `spec/`
+  directory proves nothing — an empty folder, or a foreign OpenAPI `spec/`, would
+  otherwise silence the bootstrap nudges in a repo that was never bootstrapped.
+- **A polyrepo member's spine is partial by design.** Product-level artifacts live
+  once in the workspace repo, so a member (detected by `spec/PRODUCT.md`) is checked
+  against `STEER_SPINE_REQUIRED_MEMBER` — just the pointer — instead of the full
+  `STEER_SPINE_REQUIRED`. Without that split every member would report `damaged` and
+  `/steer:sync` would "repair" it by reinstalling the very product-level files the
+  topology exists to de-duplicate, recreating the split-brain spine.
+
+The **action history is deliberately absent from `STEER_SPINE_REQUIRED`**. It is a
+directory (`spec/history/`) whose legacy single-file shape is still valid, so it needs
+an either-or presence test rather than a file-existence check: a repo that predates
+that migration is structurally fine, just older, and reporting `damaged` would fire
+the repair nudge on every such repo. A migrated repo has both — the directory plus the
+frozen archive — which also passes. The migration itself is carried by the
+`MIGRATIONS.md` ledger, not by the spine check.
+
+Version drift — a spine *older* or *newer* than the installed plugin — is
+intentionally **not** decided here. `/steer:sync` and `/steer:next` own that semver
+comparison; this helper answers only the structural question so the always-on hooks
+stay fast and dependency-free.
+
 ## Which rules apply, and to which repo (`lib/scope.sh`)
 
 Every scope decision a hook makes — which always-on rules to inject, whether the
@@ -205,8 +249,10 @@ in knowledge mode `inject-standards.sh` skips every conditional rule and keeps o
 the unmarked always-on core.
 
 !!! note "`hooks/lib/` is exempt from the docs-impact gate"
-    `check_docs_impact.py` does not flag changes under `hooks/lib/`, so this
-    section is maintained by hand — see
+    `check_docs_impact.py` does not flag changes under `hooks/lib/`, so the four
+    `lib/*.sh` sections above (`json.sh`, `repo-root.sh`, `spine.sh`, `scope.sh`) are
+    maintained by hand — a behavioural change to any of them will not be caught by a
+    gate. Update them in the same PR as the change; see
     [Documentation](../contributing/documentation.md).
 
 ## Surfaces without hooks

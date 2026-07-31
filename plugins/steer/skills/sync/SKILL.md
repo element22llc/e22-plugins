@@ -238,10 +238,12 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 8. **Record and hand off.** Write a `/spec/history/` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled, which
-   capability gaps repaired — why, who asked, refs). **In a polyrepo member,
-   the action history is the workspace's (step 4) — do not create one here.** Record the
-   sync in the PR description instead; the member's `/spec/.version` stamp is the
-   durable local record. Commit on `feat/sync`, then
+   capability gaps repaired — why, who asked, refs). **In a polyrepo member the
+   action history is the workspace's** (`/steer:reference polyrepo`) — write the entry
+   **there** if `workspace.path` resolves, and otherwise record the sync in the PR
+   description and say the workspace ledger still needs the entry. Never create a local
+   `spec/history/` in a member; its `/spec/.version` stamp is the durable local
+   record. Commit on `feat/sync`, then
    push and open the PR
    **against `BASE`** (the branch captured in step 1) without asking, announcing
    it (Commit autonomy) — the dev's merge review of that PR is the gate. The PR base

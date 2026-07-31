@@ -155,7 +155,11 @@ _SPINE_FILES = (
     ("vision.md", "# Vision\n\nA billing tool.\n"),
     ("users.md", "# Users\n\nBilling ops.\n"),
     ("glossary.md", "# Glossary\n\n- customer: a billed account.\n"),
-    ("HISTORY.md", "# History\n\n- 2026-01-01 — seeded.\n"),
+    # Action history: a directory of immutable per-entry files, seeded with its
+    # format doc plus one date-named entry — the shape init/adopt produce, so a
+    # fixture repo is not mistaken for one that predates that migration.
+    ("history/README.md", "# Action history\n\nOne file per merged change.\n"),
+    ("history/2026-01-01-0900-seeded.md", "# seeded\n\n- **Areas:** spec-only\n"),
     ("tracker.md", "system: github\n"),
 )
 
@@ -164,7 +168,9 @@ def _seed_spine(repo: Path, version: str = "2.0.0") -> None:
     (repo / "spec").mkdir(parents=True, exist_ok=True)
     (repo / "spec" / ".version").write_text(f"{version}\n", encoding="utf-8")
     for name, body in _SPINE_FILES:
-        (repo / "spec" / name).write_text(body, encoding="utf-8")
+        target = repo / "spec" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body, encoding="utf-8")
 
 
 @pytest.fixture
