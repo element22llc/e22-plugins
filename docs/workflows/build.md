@@ -63,10 +63,12 @@ resuming once the build is handed off — every box in its handoff gate checked.
 !!! warning "\"Prototype\" is not an escape hatch"
     Saying *"just a prototype"*, *"quick"*, or *"throwaway"* relaxes only the
     **ceremony** — lighter approval-gate formality, no per-feature
-    issue/branch/PR while the repo has no tracker, and high-risk choices recorded
+    issue/branch/PR while the repo has no GitHub tracker, and high-risk choices recorded
     in `contract.md` as `proposed — dev confirms at review` rather than waved
     through (only what needs real users or real data — hard deletes, retention
     jobs, real payments, production auth — is stubbed to the minimum that demos).
+    A floor is never relaxed: no deploy or promotion to any environment, no
+    `/infra`, no real secrets or third-party accounts.
     Issue-first is scoped to `system: github`, so it does not apply in prototype
     mode at all; once the repo is GitHub-adopted it does, and the issue survives
     for any change above [Tiny](../concepts/sdlc.md#change-size). It does **not** skip

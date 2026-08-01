@@ -20,8 +20,7 @@ specialized skills below as needed, so you rarely reach past this set.
     `spec/history/` and
     `spec/tracker.md` live once in the workspace. Every skill that reads or writes
     those (`spec`, `spec-scaffold`, `intake`, `questions`, `work`, `issues`,
-    `tracker-sync`, `next`, `audit`, `roadmap`, `explain`, `adr`, `protect`,
-    `build`)
+    `tracker-sync`, `next`, `audit`, `roadmap`, `explain`, `adr`, `protect`)
     resolves the workspace before acting and says so, rather than reporting an
     absent local file as empty.
 

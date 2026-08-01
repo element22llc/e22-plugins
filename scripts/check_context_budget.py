@@ -175,9 +175,11 @@ RULES_TOTAL_MAX_BYTES = 68_400
 # (#423) hit exactly that: its three description corrections had to be engineered
 # as a *length-neutral* set, which is the ratchet dictating the wording of a
 # correctness fix instead of merely bounding its cost. That is the failure mode the
-# RULES notes above record five times over — the first four made inevitable by the
-# 5-to-32-byte margin left by the one before, the fifth an explicit decision to fund
-# new capability. Re-arming at measured+1% would reproduce it a sixth time.
+# RULES notes above record five times over. Raises 2-4 were forced by the
+# 5-to-32-byte margin the previous ceiling left; the first and fifth were deliberate
+# decisions to fund new always-on capability (rule `61-gate-prompts`, then the Tiny
+# exemption) against a ratchet with nothing to spare. Re-arming at measured+1% would
+# reproduce it a sixth time.
 #
 # The basis for 12,400: the mean per-skill listing entry is ~457 chars
 # (11,879 / 26), so 12,400 buys ~521 chars — one whole additional skill, or roughly

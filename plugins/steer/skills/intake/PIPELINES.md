@@ -118,10 +118,11 @@ the accepted divergence).
 
 ### 6. Record
 
-For every **absorbed** change (one that produced a spec edit, an Open question, or
-a filed issue), write **one** `spec/history/` entry file in the template's exact
-bold-key format (`templates/spec/history-entry.md`; format doc:
-`spec/history/README.md`):
+Absorbing a PO source document is **one** notable event, so the run writes
+**one** `spec/history/` entry — not one per absorbed change. Summarize what the
+version brought (the spec edits, Open questions, and filed issues it produced)
+in that single entry, in the template's exact bold-key format
+(`templates/spec/history-entry.md`; format doc: `spec/history/README.md`):
 
 ```markdown
 # YYYY-MM-DD HH:MM — <what changed>

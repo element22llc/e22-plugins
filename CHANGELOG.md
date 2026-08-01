@@ -57,7 +57,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   decisions worth finding. Rules `30`, `32`, `50`, `55`, `75`, `99`, the consumer PR
   template, `TRACEABILITY.md`, `GATES.md`, and the installed `spec/history/README.md` all
   move together. Every skill that writes an entry today (`adr`, `spec approve`, `protect`
-  graduation, `init`, `adopt`, `sync`, `intake`, `build`'s v0 handoff, the hotfix
+  graduation, `init`, `adopt`, `sync`, `intake` (one entry per absorb — see below),
+  `build`'s v0 handoff, the hotfix
   follow-up) already fires on a
   notable event, so none of them change. The advisory `spec-drift` CI job keeps its
   existing path filter — a repo mid-migration is still not flagged — but rule `55` no
@@ -143,6 +144,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   merged change writes no entry.**" The one example a consumer reads contradicted the
   rule directly above it. Both now show an ADR ratification, and the slug examples in
   `history-entry.md` and `history-readme.md` follow.
+- **Fixed:** `/steer:intake` writes **one** `/spec/history/` entry per absorbed source
+  version, not one per absorbed change. Its record step said "for every absorbed change
+  … write **one** entry file", and step 3 of the same pipeline splits a source diff into
+  many per-heading units — so a single document absorb could emit a dozen entries, the
+  padding the notable-event narrowing exists to prevent. Rule `32` and
+  `history-readme.md` both make "a PO source document absorbed" a single event, and
+  intake's own edge-case row already wrote one per absorb; only the pipeline disagreed.
+- **Fixed:** `/steer:work`'s find-or-create step and the SDLC deck both stated
+  issue-first as an absolute ("no change without an issue"). Both now carry the **Tiny**
+  qualifier, matching rule `36`. The onboarding deck's matching line follows.
+- **Fixed:** the v4.0.0 action-history migration no longer *installs* the retired
+  per-change obligation into the repos it migrates. Its action table told the migration
+  to rewrite the consumer PR template's living-docs checkbox to "a `/spec/history/`
+  entry exists **for this change**" — the shipped template now reads "only if this PR is
+  a notable event; an ordinary change needs none", and the template is `Verbatim: no`,
+  so nothing re-copies over the stale wording a mid-migration repo would receive. The
+  ledger now takes that checkbox verbatim from the plugin. Its step 4 also justified the
+  migration's own history entry as "the PR applying this is itself a merged change" —
+  true, but the retired rationale; the entry is earned because a spine migration is a
+  repo-level event.
+- **Fixed:** the shipped `spec-question` issue template said to write an ADR "when the
+  decision is **architectural or** hard to reverse" — the `or` left un-thresholded
+  "architectural" as a sufficient trigger, the same formulation the reversal-cost
+  reframe deleted from rule `99`.
 
 ### 4.0.0
 
