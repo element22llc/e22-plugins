@@ -1,15 +1,32 @@
 # Action history — [Product Name]
 
-> Append-only log of meaningful changes: what changed, why, who (or what) asked
+> Append-only log of **notable events**: what happened, why, who (or what) asked
 > for it, and which specs/issues/decisions/code areas were affected.
-> **One file per entry** in this directory — one entry per merged change or
-> ratified decision, not per commit. Claude writes the entry file in the same PR
-> as the change; the PR review is what makes it evidence.
+> **One file per entry** in this directory. Claude writes the entry file in the
+> same PR as the change; the PR review is what makes it evidence.
 >
 > This log exists for auditability (SOC 2 / ISO 27001-**aligned** traceability
 > and review evidence), onboarding, reconstructing product decisions, and
 > spotting intent drift over time. Keep entries short — 3–6 lines. Detail lives
 > in the linked spec/ADR/PR, not here.
+
+## What earns an entry
+
+An entry records what the git log and the PR **cannot** reconstruct — the *why*
+behind a durable choice, not the fact that a change shipped:
+
+- A **ratified decision** — an ADR moved to `Accepted`, an intent approved.
+- A **scope change** to an already-approved intent.
+- A **repo-level event** — bootstrap, adoption, a plugin sync, graduating from
+  solo trunk to the PR flow.
+- A **PO source document absorbed** into the spine.
+- A **production incident** and its post-incident follow-up.
+
+**An ordinary merged change writes no entry.** Its record is the commit history
+plus the reviewed PR, which already carry what changed, when, by whom, and the
+tracker ref. Re-typing that here by hand adds a file to maintain and no
+information — and a log padded with routine entries is one nobody reads, which
+costs the decisions worth finding.
 
 ## One file per entry — and why
 

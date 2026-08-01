@@ -113,8 +113,11 @@ fall back to sweeping the dimensions manually as specified below.
   their review state, CI status, and merge status (`git`, `gh pr`/`gh run` —
   read-only). Note a `main` checkout with no active branch.
 - **Spec features** — for each `spec/features/<id>/intent.md`, read the
-  frontmatter `> Status: draft | approved | implemented | validated | live`, and
-  whether `contract.md` exists where behavior demands one.
+  frontmatter `> Status: draft | approved | live`, and whether `contract.md` exists
+  where behavior demands one. `Status:` is product state only: an `approved`
+  feature may be unstarted, mid-build, or merged-but-unreleased, so **take
+  delivery progress from the feature's tracker issue** (`steer:state`) and never
+  infer it from the spec.
 - **Open questions** — sweep every `intent.md` and `spec/vision.md`
   `## Open questions` for `### Q-NNN` entries: `status:`,
   `impact: blocking | non-blocking`, `required_before:`

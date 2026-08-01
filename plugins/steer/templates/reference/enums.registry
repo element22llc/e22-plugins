@@ -16,7 +16,7 @@
 # Changing a controlled vocabulary means editing THIS file, then ENUMS.md to
 # match (CI fails if they diverge).
 
-feature_status=draft|approved|implemented|validated|live
+feature_status=draft|approved|live
 question_status=open|investigating|resolved|deferred|cancelled
 question_impact=blocking|non-blocking
 required_before=intent-approval|contract-approval|implementation|non-prod-validation|production-release

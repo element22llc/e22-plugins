@@ -28,8 +28,8 @@ already approved.
 | "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one entry in `/spec/history/` |
 | "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) — usage, workflows, roles & permissions, configuration |
-| "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; `validated` status in `intent.md` |
-| Anything merged or ratified | `/spec/history/` entry: what, why, who asked, refs |
+| "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; the PO-acceptance checkbox in `intent.md` (its `Status:` becomes `live` only at the actual release) |
+| A **notable event** — decision ratified, scope changed, repo-level event, PO document absorbed, incident (not an ordinary merged change) | `/spec/history/` entry: what, why, who asked, refs |
 
 **In a polyrepo member** (`spec/PRODUCT.md` present), the product-level
 destinations in this table — `/spec/history/`, `/spec/app/`,
@@ -69,10 +69,18 @@ engineer intent from prose — that's what contracts and ADRs are for.
 
 ## 2. Action history (`/spec/history/`)
 
-An append-only log: **what changed, why, who or what requested it, and which
-specs/issues/decisions/code areas were affected.** One entry per merged change or
-ratified decision — not per commit. 3–6 lines each; detail lives in the linked
-spec/ADR/PR.
+An append-only log: **what happened, why, who or what requested it, and which
+specs/issues/decisions/code areas were affected.** 3–6 lines each; detail lives
+in the linked spec/ADR/PR.
+
+**One entry per notable event** — a ratified decision (ADR `Accepted`, intent
+approved), a scope change to an approved intent, a repo-level event (bootstrap,
+adoption, plugin sync, solo-trunk graduation), a PO source document absorbed, or
+a production incident and its follow-up. **Not** one per merged change and not
+one per commit: an ordinary change's record is the commit plus the reviewed PR,
+which already carry what/when/who and the tracker ref. The log's value is that
+everything in it is worth reading; routine entries dilute that and cost
+maintenance for no information.
 
 **One file per entry**, named for the moment it merged:
 
@@ -214,7 +222,7 @@ What the workflow contributes, mapped to what auditors typically ask for:
 
 | Expectation | Where it lives here |
 |---|---|
-| Traceability of changes | intent → contract → tracker ref → PR → `/spec/history/` |
+| Traceability of changes | intent → contract → tracker ref → reviewed PR (each change's own record) |
 | Review evidence | dev-approved PRs as the production gate; drift flags + DoD in the PR record |
 | Change history | ADRs (decisions), action history (what/why/who), git history (code) |
 | Access-conscious workflow | branch protection, least-scope tokens, no direct-to-`main`, PO/dev role split |

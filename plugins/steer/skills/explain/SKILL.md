@@ -121,10 +121,14 @@ spec leaves empty is shown as *"not specified in the spec"*, never a mocked-up
 chart. Map the intent's own sections to these visuals:
 
 - **Status → a lifecycle pipeline.** Render the fixed spine
-  `draft → approved → implemented → validated → live` as a horizontal progress
-  tracker with the intent's `Status:` marked as the current stage and later stages
-  dimmed. **Never advance the marker past the recorded `Status:`** — the pipeline
-  reflects the spec, it does not predict. (Enum lives in `ENUMS.md`.)
+  `draft → approved → live` as a horizontal progress tracker with the intent's
+  `Status:` marked as the current stage and later stages dimmed. **Never advance
+  the marker past the recorded `Status:`** — the pipeline reflects the spec, it
+  does not predict. (Enum lives in `ENUMS.md`.) The three stages are the spec's
+  own product state; **delivery progress is not on this spine** and must not be
+  inferred onto it — an `approved` feature may be half-built or merged, and only
+  its tracker issue knows which. If the reader needs that, point them at the issue
+  (`> Tracker:`) rather than drawing a stage the spec cannot support.
 - **PO acceptance → a completion meter.** Show the four acceptance checkboxes as a
   small progress meter / ring with the ratio (e.g. "2 of 4"), each item's ticked
   state taken **verbatim** from the intent — never tick a box the spec leaves
@@ -165,7 +169,7 @@ in `/steer:reference artifacts` — and do not restate it here. Two things are
   per-feature name is what lets a same-session re-run redeploy to the *same* URL.
   Write only there (a system temp dir), never under the repo tree.
 - **The Markdown fallback keeps this skill's at-a-glance shape** — status as an
-  inline pipeline (`draft → **approved** → implemented → validated → live`),
+  inline pipeline (`draft → **approved** → live`),
   acceptance as a checklist with its "N of 4" count, the journey as a numbered list,
   scope as two ✓ / ✗ lists. Print it inline; never write it to a file under the
   repo (that would be the drifting second copy of the spec this skill avoids).

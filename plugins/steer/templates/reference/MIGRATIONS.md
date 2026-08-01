@@ -94,6 +94,50 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — `feature_status` narrows to `draft · approved · live`
+
+- **What & why:** a feature's spec `> Status:` used to carry five values
+  (`draft · approved · implemented · validated · live`) and was declared *derived*
+  from the issue `steer:state` — but it was stored in `intent.md` and hand-edited, so
+  it was a derived value nobody recomputed. Seven of the crosswalk's nine rows added
+  no information the issue did not already hold, while every merge, close, and reopen
+  had to be replayed by hand into a second file. `implemented` and `validated` are
+  therefore **retired**: they were pure mirrors of issue `validate`/`done`. The spec
+  now stores only the two facts no issue state implies — the PO approved this scope
+  (`approved`) and users can see it (`live`) — so `Status:` moves at exactly two human
+  events and a merged PR can no longer leave it stale.
+- **Precondition:** apply only if some `spec/features/*/intent.md` carries
+  `> Status: implemented` or `> Status: validated`, **or** its `> Status:` line still
+  lists the five-value enum. A spine whose intents are all already
+  `draft`/`approved`/`live` **and** whose template line reads the three-value enum is
+  migrated; skip it.
+- **Action:**
+  1. **Rewrite the retired values**, one file at a time, mapping by what the value
+     actually meant:
+     - `Status: implemented` → **`approved`** (it was built but not released; the
+       build is the issue's business, and the scope approval is what the spec holds).
+     - `Status: validated` → **`approved`** — *unless* the feature is genuinely
+       released to users, in which case **`live`**. Do **not** assume accepted ==
+       released; `validated` conflated the two, which is why it is going away. When
+       the release state is not evident from the repo (no deploy, no release notes in
+       `/spec/app/`, no `live` sibling), take `approved` and **say so in the sync PR**
+       so a human can promote it — never guess `live`.
+  2. **Rewrite the enum hint** on the `> Status:` line of every `intent.md` and of
+     `spec/features/*/intent.md` templates carried locally: the five-value list
+     becomes `draft | approved | live`, with the parenthetical from
+     `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` (product state only —
+     delivery progress lives on the tracker issue).
+  3. **Touch no issue.** This migration is spec-side only: `steer:state` markers are
+     already the lifecycle store and are correct as they stand. A feature whose intent
+     now reads `approved` while its issue reads `done` is the **intended** pairing, not
+     drift to repair.
+  4. **Leave the PO-acceptance checkboxes alone**, including *PO validated the working
+     demo* — that record moves to the checkbox and is unaffected by the `Status:`
+     rewrite.
+- **Polyrepo:** `spec/features/**` is the **workspace's**, so a member applies none of
+  this locally — resolve the workspace and migrate there, or note it in the PR when
+  `workspace.path` does not resolve.
+
 ### v4.0.0 — `spec/HISTORY.md` → `spec/history/`, one immutable file per entry
 
 - **What & why:** the action history was a single append-only, newest-first file, so

@@ -10,17 +10,28 @@ Every `Status:` / state / `source:` / `required_before:` / next-action token tha
 appears in rules, skills, templates, and active fixtures must be a member of the
 matching enum below (CI enforces this too).
 
-## `feature_status` — a feature intent's lifecycle
+## `feature_status` — a feature intent's product state
 
-`draft · approved · implemented · validated · live`
+`draft · approved · live`
 
-A materialized intent starts at **`draft`** (`/steer:issues
-materialize` never approves). Only **`/steer:spec approve`** flips it
-to **`approved`**. `implemented` / `validated` / `live` track its progress
-through delivery and into production. This status is **derived from a feature's
-issue `steer:state`** via the Status↔state crosswalk in `ISSUE-WORKFLOW.md` —
-that table is the single authority for how the two align. (See
-`SPEC-FRAMEWORK.md`, `ISSUE-WORKFLOW.md`.)
+**Three values, because the spec stores only what the tracker cannot express.**
+A materialized intent starts at **`draft`** (`/steer:issues materialize` never
+approves). Only **`/steer:spec approve`** flips it to **`approved`**. **`live`**
+means released to users — a fact no issue state implies, since `done` is an
+accepted close, not a release.
+
+**Delivery progress is not in here, deliberately.** Whether a feature is being
+built, has an open PR, or was merged is the issue's `steer:state`
+(`in-progress`/`validate`/`done`) and is read from the tracker, never mirrored
+into `intent.md`. A mirrored value is a value that drifts: it used to be copied
+here as `implemented`/`validated`, which meant every merge, close, and reopen had
+to be replayed by hand into a second file, and `reconcile` existed largely to
+repair what that missed. `Status:` now changes at exactly **two** human events —
+PO approval and release — so a merge can no longer leave it stale.
+
+Consequence for readers: to answer "is it built?" read the issue; to answer "did
+the PO approve this scope?" or "can users see it?" read the spec. (See
+`SPEC-FRAMEWORK.md`, and the crosswalk in `ISSUE-WORKFLOW.md`.)
 
 ## `question_status` — an open question's state
 
@@ -80,8 +91,9 @@ The base source of truth; a Project `Status` field mirrors it when Projects are
 enabled. `done` and `cancelled` are the two terminal states: **`done`** = closed
 as completed; **`cancelled`** = closed for a non-completion reason
 (`rejected`/`duplicate`/`obsolete`/`not-planned`/`superseded`). Closure *reason*,
-not mere closure, decides which. For a feature, this state **drives** the spec
-`feature_status` via the Status↔state crosswalk in `ISSUE-WORKFLOW.md`. (See
+not mere closure, decides which. For a feature, this state is the **only** record of
+delivery progress — it is not copied into the spec's `feature_status`, which holds
+product state alone (see the crosswalk in `ISSUE-WORKFLOW.md`). (See
 `ISSUE-WORKFLOW.md` Completion rules and crosswalk.)
 
 ## `issue_source` — origin (the `steer:source` marker; the `source:*` label mirrors it)

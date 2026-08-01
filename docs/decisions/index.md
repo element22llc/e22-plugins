@@ -6,13 +6,20 @@ the plugin itself, decisions are captured in `CHANGELOG.md` and PRs.
 
 ## When to write an ADR
 
-Use [`/steer:adr`](../reference/skills.md) for any hard-to-reverse or
-cross-cutting choice — stack, database, auth, deployment, a new pattern — or when
-asked to record a decision.
+**The bar is reversal cost, not novelty.** Use [`/steer:adr`](../reference/skills.md)
+when undoing the choice later would mean changing work built on top of it — stack,
+database, auth, deployment, tenancy model — or when asked to record a decision.
+
+A **first-time pattern is not an ADR**. Used in one place it is a `contract.md`
+line; it earns an ADR when a third use makes it the house style. In a young
+codebase almost every pattern is new, so treating novelty as the trigger turns
+ordinary work into a decision record nobody reads. The practical test: if you
+cannot name the work a reversal would force you to redo, it is not an ADR yet.
 
 ```mermaid
 flowchart TD
-    Q{Hard to reverse<br/>or cross-cutting?} -->|No| SKIP[No ADR needed]
+    Q{"Would reversing it mean
+    redoing work built on top?"} -->|No| SKIP[No ADR needed]
     Q -->|Yes| PROPOSED[ADR: Proposed]
     PROPOSED --> REVIEW{Ratified by a human?}
     REVIEW -->|Yes| ACCEPTED[ADR: Accepted]

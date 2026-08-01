@@ -118,9 +118,9 @@ than inventing a parallel one:
 - open-question `impact: blocking | non-blocking` and `required_before:` →
   separates **Blocking now** / **Human decision required** from the
   release-timing categories;
-- feature `Status: draft | approved | implemented | validated | live` — and this
+- feature `Status: draft | approved | live` — and this
   status (plus repo deploy state) is what **picks which release category
-  applies**: a system not yet in production (`draft … implemented`, no live
+  applies**: a system not yet in production (`draft`/`approved`, no live
   deployment) → **Required before initial production**; one already
   `live`/deployed → **Required before next production release**, escalating to
   **Urgent live-system remediation** when the live system is actively exposing

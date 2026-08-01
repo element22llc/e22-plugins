@@ -51,33 +51,50 @@ authority gate, and requires a **mandatory post-incident follow-up** — backfil
 issue, write the spec/ADR, add a `/spec/history/` entry — so the phases skipped under
 fire are restored, not waived.
 
-## Two state machines
+## One lifecycle store, two questions
 
-The lifecycle tracks progress in **two** places that describe overlapping reality.
+Progress lives in **one** place. The spec stores only what the tracker cannot say.
 
-The **spec** records where a feature's *intent* stands:
-
-```text
-draft → approved → implemented → validated → live
-```
-
-`approved` is the owner's sign-off on **intent**, not a technical guarantee —
-the build is vetted by a human dev at PR review (the Verify gate). That review is
-the quality gate rather than the state write: the spec reads `implemented` from
-PR-open onward, and reaches `validated` only on the PO's acceptance. See
-[Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
-spec is a vetted *target*, not a vetted build.
-
-The **issue** records where a *unit of work* stands (the canonical set; see
-[Lifecycle](lifecycle.md) for the full state diagram and per-kind paths):
+The **issue** is the single record of where a *unit of work* stands (the canonical
+set; see [Lifecycle](lifecycle.md) for the full state diagram and per-kind paths):
 
 ```text
 inbox → exploring → ready-for-spec → ready-for-dev → in-progress → validate → done
 ```
 
-They are reconciled by an explicit `reconcile` operation and by
-[`/steer:audit spec`](../reference/skills.md), which surfaces divergence between
-the as-built spec and the intended spec.
+The **spec** records two facts about the *product* that no issue state implies:
+
+```text
+draft → approved → live
+```
+
+`approved` is the owner's sign-off on **intent**, not a technical guarantee — the
+build is vetted by a human dev at PR review (the Verify gate). `live` means
+released to users, which an accepted close (`done`) does not imply. See
+[Spec approval](../workflows/spec.md#approval-evidence) for why an `approved`
+spec is a vetted *target*, not a vetted build.
+
+So the two answer different questions, and neither mirrors the other:
+
+| Question | Read |
+|---|---|
+| Is it built? Being worked on? Merged? | the issue `steer:state` |
+| Did the owner approve this scope? | the spec `Status:` |
+| Can users see it? | the spec `Status: live` |
+
+A feature whose spec says `approved` while its issue says `done` is **correct**,
+not drift — the spec is not tracking delivery. `Status:` moves at exactly two human
+events, approval and release, so a merge, close, or reopen cannot leave it stale
+and there is no derived value to reconcile.
+
+This is deliberate. The spec used to carry `implemented` and `validated` too,
+mirroring the issue's `validate`/`done` — a derived value stored in a second file
+and updated by hand, so every merge had to be replayed into the spec and `reconcile`
+existed largely to repair what that missed. Those two values were retired; what
+remains of reconciliation is pointer and question consistency, plus
+[`/steer:audit spec`](../reference/skills.md), which compares the **as-built code**
+against the intended spec — a genuinely different comparison from syncing two
+status fields.
 
 !!! warning "Two machines, one reality"
     Keeping the spec `Status:` and the issue `steer:state` aligned is a recurring
@@ -101,8 +118,8 @@ past the per-PR flag.
 The shipped CI scaffold also carries an **advisory `spec-drift` job** as a machine
 backstop for the *undocumented behavior change* class: pure shell + git (no stack,
 no Python), it *warns* — never blocks — when a change touches application behavior
-(`apps/`, `packages/`, `src/`, …) without updating a feature `contract.md` /
-`intent.md` or a `spec/history/` entry. It runs on PRs and on push to `main`, so it is
+(`apps/`, `packages/`, `src/`, …) without updating the owning feature
+`contract.md` / `intent.md`. It runs on PRs and on push to `main`, so it is
 the only spec-drift signal in **solo-trunk** mode, which has no PR. The warning
 prompts you to update the spec or confirm "no behavior change" via the PR
 template — it does not replace the human-resolved flag.

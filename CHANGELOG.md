@@ -7,6 +7,73 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the ADR threshold is now **reversal cost, not novelty**, and a first-time
+  pattern no longer triggers one. Rule `30` asked for an ADR on "a new cross-cutting
+  **pattern**", rule `80` classed "new pattern" as Large, and rule `50`'s Definition of
+  Done said "architectural choices captured as an ADR" with no threshold at all — so in a
+  young codebase, where nearly every pattern is new, ordinary work kept producing decision
+  records nobody reads. An ADR is now for a choice whose undoing would mean changing work
+  built on top of it; a pattern used in **one** place is a `contract.md` line and earns an
+  ADR on its **third** use, the same 3+ threshold `DESIGN.md` already uses for design
+  tokens. The practical test, stated in `/steer:adr`: if you cannot name the work a
+  reversal would force you to redo, it is not an ADR yet. **`hard-to-reverse` and
+  `cross-cutting` remain triggers** — only novelty is dropped; a cross-cutting choice is
+  costly to reverse by construction. Rules `30`, `50`, `80`, the `adr` skill, and
+  `docs/decisions/` move together.
+- **Changed:** `feature_status` narrows to **`draft · approved · live`** — the spec stops
+  mirroring delivery progress. `implemented` and `validated` are **retired**. Both were
+  pure restatements of the issue's `validate`/`done`: `ISSUE-WORKFLOW.md` declared the
+  spec `Status:` *derived* from the issue `steer:state`, but it was stored in `intent.md`
+  and hand-edited, so it was a derived value nobody recomputed — seven of the crosswalk's
+  nine rows carried no information the issue did not already hold, while every merge,
+  close and reopen had to be replayed by hand into a second file. `reconcile` existed
+  largely to repair what that missed. The spec now holds only the two facts no issue state
+  implies: the PO approved this scope (`approved`) and users can see it (`live`, which an
+  accepted close does **not** imply). `Status:` therefore moves at exactly two human
+  events — `/steer:spec approve` and the release — so a merged PR, a close, or a reopen
+  can no longer leave it stale. **A feature reading `approved` whose issue reads `done` is
+  now the intended pairing, not drift.** Reading rule: "is it built?" is an issue
+  question; "was this scope approved?" and "can users see it?" are spec questions.
+  `reconcile --all` drops the *merged PRs that left a stale `Status`* sweep entirely and
+  narrows the closed-feature sweep to a `live` intent whose issue never went terminal;
+  `/steer:work status|resume|finish` and `/steer:tracker-sync transition` no longer touch
+  the spec. Moves together: `enums.registry`, `ENUMS.md`, the `ISSUE-WORKFLOW.md`
+  crosswalk (kept, now a statement of independence), `feature-intent.md`,
+  `NEXT-ACTIONS.md`, `TRACEABILITY.md`, the `all-clean-no-action` fixture, and the
+  `spec`, `work`, `tracker-sync`, `issues`, `audit`, `status`, `explain`, `roadmap`,
+  `next` and `build` skills. A ledger entry migrates adopted repos: `implemented` →
+  `approved`, `validated` → `approved` (or `live` only where the repo shows a real
+  release), touching no issue, and the *PO validated the working demo* checkbox now
+  carries the acceptance record that `Status: validated` used to imply.
+- **Changed:** the action history (`/spec/history/`) is now a log of **notable events**,
+  not one entry per merged change. An entry is written when the *why* is something the
+  commit history and the reviewed PR cannot reconstruct — a ratified decision (ADR
+  `Accepted`, intent approved), a scope change to an approved intent, a repo-level event
+  (bootstrap, adoption, plugin sync, solo-trunk graduation), an absorbed PO source
+  document, or a production incident and its follow-up. An ordinary change writes none:
+  its record is the commit plus the PR, which already carry what changed, when, by whom,
+  and the tracker ref, so the hand-written entry duplicated version control for no added
+  information — and a log padded with routine entries is one nobody reads, which costs the
+  decisions worth finding. Rules `30`, `32`, `50`, `55`, `75`, `99`, the consumer PR
+  template, `TRACEABILITY.md`, `GATES.md`, and the installed `spec/history/README.md` all
+  move together. Every skill that writes an entry today (`adr`, `spec approve`, `protect`
+  graduation, `init`, `adopt`, `sync`, `intake`, the hotfix follow-up) already fires on a
+  notable event, so none of them change. The advisory `spec-drift` CI job keeps its
+  existing path filter — a repo mid-migration is still not flagged — but rule `55` no
+  longer advertises a history entry as a way to clear it, since updating the owning
+  `contract.md` / `intent.md` is now the only routine path for a behavior change.
+- **Changed:** the **Change-size model** (rule `80`) is now authoritative for per-change
+  ceremony, and the **Tiny** class is a real exemption instead of advisory prose. Rule `80`
+  said Tiny (≈<20 lines, no logic change) could "just open a PR", but Issue-first (`36`)
+  required an issue before the first mutation with size-blind exemptions, and Definition of
+  Done (`50`) applied unconditionally — so a typo fix still cost an issue, a branch, a spec
+  check, and the full DoD sweep. Tiny now needs **no issue, no spec update, no ADR, no
+  plan**: the PR is the record and the audit-evidence anchor. `36` carries the carve-out in
+  its out-of-scope list, `50` marks the size-gated items and states that rule `80` sets the
+  thresholds. Guarded on both sides: Tiny requires *zero* behavior change (any behavior
+  difference is Small at minimum, however few the lines), anything under High-risk areas is
+  **Risky** at any line count, and an arguable class takes the larger one.
+
 ### 4.0.0
 
 - **Fixed:** the action-history migration's second precondition can now detect every

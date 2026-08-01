@@ -50,11 +50,11 @@ transition has a named owner.
     production-ready. A non-technical owner's approval can't carry that assurance,
     and steer deliberately doesn't pretend it does: the technical gate is a human
     dev reviewing the PR ("review *is* productionization"). That review is the
-    quality gate, not a state write — the spec reads `implemented` from the moment
-    the PR is **opened** (issue `in-progress → validate`, before anyone has
-    reviewed it), and reaches `validated` only on the PO's acceptance at an
-    accepted close (`validate → done`, propose-only). Treat an `approved` spec as a
-    vetted target, not a vetted build. In
+    quality gate, and it writes no spec state at all: `Status:` stays `approved`
+    through the entire build, so an `approved` feature may be unstarted, mid-build,
+    or merged — only its tracker issue (`in-progress` → `validate` → `done`) says
+    which. `Status:` advances again only at the release, to `live`. Treat an
+    `approved` spec as a vetted target, not a vetted build. In
     [solo-trunk mode](../concepts/authorization-model.md) there is no separate dev
     PR gate, so that assurance rests on whoever commits to trunk — read `approved`
     accordingly.

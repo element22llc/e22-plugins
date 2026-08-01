@@ -48,7 +48,7 @@ feature; `--all` sweeps every `intent.md` + `vision.md` in the spine.
 
 Flag each of these, citing the `Q-NNN` and file:
 
-- ✗ an **approved** intent (`Status: approved`/`implemented`/`validated`/`live`)
+- ✗ an **approved** intent (`Status: approved` or `live`)
   that still contains an `open` `blocking` question with
   `required_before: intent-approval` (later gates — `contract-approval`,
   `implementation`, … — block their own gate, not the already-granted approval);
@@ -105,13 +105,17 @@ they invoke this operation but **must not reproduce its field-editing logic**
 to run this operation; the PO never has to know or type the slash command.
 
 **Allowed transition — `draft → approved` only.** This is the spec side of the
-`ready-for-dev` row of the Status↔state crosswalk (`ISSUE-WORKFLOW.md`): the
-issue is the base source of truth and a feature's spec `Status:` is derived from
-it. Approving here is the gate that lets the issue advance to `ready-for-dev`.
+`ready-for-dev` row of the Status↔state crosswalk (`ISSUE-WORKFLOW.md`): the issue
+is the single lifecycle store, and `Status:` records only the PO's scope approval —
+which is exactly what this mode writes. Approving here is the gate that lets the
+issue advance to `ready-for-dev`.
 
-- Refuse on `implemented`, `validated`, or `live`: approval never downgrades or
-  rewrites a feature past implementation — report the current state and stop,
-  appending nothing.
+- Refuse on `live`: approval never downgrades or rewrites a released feature —
+  report the current state and stop, appending nothing.
+- **Delivery state is never a reason to refuse, and never a thing to write.**
+  Whether the issue is `in-progress`, `validate`, or `done` does not gate this
+  approval and does not appear in `Status:`; approving a feature already being
+  built is legitimate (a late scope sign-off) and touches the spec only.
 - **Idempotent on `approved`** — if the feature is already `approved`, report the
   existing `> Approved by:` / `> Approved at:` and append **no** duplicate
   history entry.

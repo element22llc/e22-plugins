@@ -1,7 +1,8 @@
 # [Feature Name]
 
 > Owner: [PO github handle]
-> Status: draft | approved | implemented | validated | live
+> Status: draft | approved | live
+>   (product state only — delivery progress lives on the tracker issue below)
 > Created: YYYY-MM-DD
 > Tracker: [ref in this product's format — see /spec/tracker.md — or "none yet"]
 > Approved by: [PO github handle — written by `/steer:spec approve`, else "not yet"]

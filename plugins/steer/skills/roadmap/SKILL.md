@@ -65,7 +65,10 @@ milestone plan (below), and stop without writing.
 ### `from-features` — target features → timeline (forward planning)
 
 The work-set is every `spec/features/*/intent.md` whose `> Status:` is not yet
-`live` (`draft | approved | implemented | validated`). For each feature:
+`live` (`draft | approved`). Delivery progress is not in `Status:`, so a feature
+already merged but unreleased is still in the work-set — check its tracker issue
+before planning it into a future milestone rather than re-planning shipped work.
+For each feature:
 
 - **Find-or-create a feature-level issue** via `/steer:issues materialize` /
   `/steer:tracker-sync find-or-create` (idempotent on `feature-id`+`kind` — a match

@@ -116,11 +116,12 @@ Each operation is MCP-first → `gh` → manual, and reports which path it took:
   Like `milestone-ensure`, it is **create-or-leave**: never overwrite an option set
   a human configured. `/steer:init` and `/steer:adopt` call it during setup (next to
   `bootstrap-labels`); it is safe to re-run.
-- **`transition #N <state>`** — set the `steer:state` marker (base source of truth).
-  Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where permitted.
-  For a feature, the derived spec `Status:` follows the Status↔state crosswalk in
-  `ISSUE-WORKFLOW.md`; this op never writes the spec — `/steer:spec` /
-  `/steer:work` reconcile it from the new state.
+- **`transition #N <state>`** — set the `steer:state` marker, the **single lifecycle
+  store**. Honor the authority table in `ISSUE-WORKFLOW.md` — perform only where
+  permitted. This op never writes the spec, and no delivery transition has a spec
+  counterpart to write: a feature's `Status:` holds product state only
+  (`draft`/`approved`/`live`) and is moved by `/steer:spec approve` and the release,
+  never by a state change here (crosswalk in `ISSUE-WORKFLOW.md`).
 - **`assign/claim #N`** — set GitHub assignment (accountable human) and/or the
   `steer:claimed-by` marker (active execution context). **Default subject is the
   invoking user** (self-assign): resolve it as `@me` on the `gh` path

@@ -67,19 +67,31 @@ contract forbids).
 the fixture suite asserts this so the lifecycle can't silently lose a terminal
 state.
 
-## Two state machines, one crosswalk
+## One lifecycle store, and what the spec adds
 
-Progress is tracked in two places: the issue `steer:state` marker (`inbox →
-exploring → ready-for-spec → ready-for-dev → in-progress → validate → done`) and,
-for features, a spec intent's `> Status:` line (`draft → approved → implemented →
-validated → live`). The **issue state is the base source of truth**; a feature's
-spec `Status:` is **derived** from it. To keep `reconcile` deterministic rather
-than ad-hoc, the plugin publishes a single authoritative **Status↔state
-crosswalk** — the table lives in the bundled `ISSUE-WORKFLOW.md` reference and is
-the one place that defines how the two align (e.g. `ready-for-dev ⇒ approved`,
-`validate ⇒ implemented`, a closed-and-released `done ⇒ live`). The
-`/steer:tracker-sync`, `/steer:spec`, `/steer:audit spec`, and `/steer:work`
-reconcile steps all defer to it, and a `check_standards.py` guard fails the build
-if a new state or status token is ever added without a matching crosswalk row.
-When a feature's recorded `Status:` disagrees with the crosswalk, that is drift:
-it is surfaced for human review, never silently rewritten.
+Progress is tracked in **one** place: the issue `steer:state` marker (`inbox →
+exploring → ready-for-spec → ready-for-dev → in-progress → validate → done`). For
+features, a spec intent's `> Status:` line (`draft → approved → live`) adds the two
+facts that marker cannot express — **the owner approved this scope**, and **users
+can see it** (`done` is an accepted close, not a release). Nothing else is copied
+into the spec, so there is no derived value to keep in step.
+
+The plugin still publishes a single authoritative **Status↔state crosswalk** — the
+table lives in the bundled `ISSUE-WORKFLOW.md` reference — but it now reads as a
+statement of *independence*: `ready-for-dev ⇒ approved`, a released `done ⇒ live`,
+and every delivery state (`in-progress`, `validate`, `done`) leaves `Status:`
+**unchanged**. A `check_standards.py` guard fails the build if a state or status
+token is ever added without a matching crosswalk row.
+
+Because `Status:` moves only at `/steer:spec approve` and the release, a merge,
+close, or reopen cannot leave it stale — the drift class disappears rather than
+being caught. A feature reading `approved` while its issue reads `done` is the
+**intended** pairing. The two mismatches that remain are real and human-resolved: an
+`approved` feature with no tracker ref, and a `live` intent whose issue never
+reached a terminal state.
+
+This replaces an earlier model in which the spec also carried `implemented` and
+`validated`, mirroring the issue's `validate`/`done`. Those were a derived value
+stored in a second file and maintained by hand, so every merge had to be replayed
+into the spec — and `reconcile` existed largely to repair what that missed. They
+were retired; delivery progress is now read from the issue.

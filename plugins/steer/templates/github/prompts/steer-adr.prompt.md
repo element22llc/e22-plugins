@@ -9,7 +9,7 @@ This mirrors steer's `/steer:adr` workflow for GitHub Copilot in VS Code.
 
 **Purpose.** Create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed → Accepted transition.
 
-**When to use.** Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern), when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") — including one drafted earlier.
+**When to use.** Use for a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) — reversal cost is the bar, not novelty, so a first-time pattern used in one place is a contract.md line instead. Also when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") — including one drafted earlier.
 
 **Arguments.** [<slug> | accept <n>]
 

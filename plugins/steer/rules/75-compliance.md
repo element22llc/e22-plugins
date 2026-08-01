@@ -6,7 +6,8 @@ say "aligned", never "compliant": no workflow or artifact makes a product
 compliant; certification scope, compliance accountability, and
 production-readiness approval stay with humans. The artifacts double as audit
 evidence — keep the chain intact: traceability (intent → spec → tracker ref →
-PR → `/spec/history/`), review evidence (dev-approved PRs, drift flags, DoD),
-change history (ADRs + action history), and access-conscious secure defaults
+the reviewed PR, each change's own record), review evidence (dev-approved PRs,
+drift flags, DoD), change history (ADRs + action history), and
+access-conscious secure defaults
 (secrets rules, high-risk gates, branch protection). Evidence map:
 `/steer:reference traceability`.

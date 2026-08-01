@@ -15,9 +15,8 @@ until the reviewer explicitly resolves it — you may not waive your own flag.
 Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
 
 The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
-(never blocks) when a change touches application behavior without updating a
-feature `contract.md` / `intent.md` or a `spec/history/` entry — a machine backstop for
-the *undocumented behavior change* class. It runs on PRs and on push to `main`
-(the latter is the only enforcer in solo-trunk, which has no PR). A warning is a
-prompt to do the right thing, not a substitute for the flag: still flag the class
-and update the spec in the same change.
+(never blocks) when a change touches application behavior without updating the
+owning `contract.md` / `intent.md` — a machine backstop for the *undocumented
+behavior change* class, and in solo-trunk (no PR) the only one. A warning is a
+prompt, not a substitute for the flag: still flag the class and update the spec in
+the same change. Mechanics: `/steer:reference gates`.
