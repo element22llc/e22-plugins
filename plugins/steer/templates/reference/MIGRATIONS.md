@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] — `feature_status` narrows to `draft · approved · live`
+### v5.0.0 — `feature_status` narrows to `draft · approved · live`
 
 - **What & why:** a feature's spec `> Status:` used to carry five values
   (`draft · approved · implemented · validated · live`) and was declared *derived*

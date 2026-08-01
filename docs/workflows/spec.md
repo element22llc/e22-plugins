@@ -7,8 +7,8 @@ approval evidence.
 !!! info "When to use"
     Use to think a feature through before implementation, shape acceptance
     criteria, sweep the draft for gaps, validate a spec's question state, or
-    refine a spec you intend to compare against the code later via
-    `/steer:audit spec`.
+    refine the spine that `/steer:audit spec` later diffs against the tracker's
+    intent.
 
 !!! tip "Lite mode — works on any repo, no bootstrap"
     `/steer:spec` runs **spec-only on an unmanaged repo** (no `/spec` spine, no
@@ -67,8 +67,9 @@ flowchart LR
     spec --> decompose["/steer:issues decompose"]
     decompose --> work["/steer:work"]
     work -. compare later .-> drift["/steer:audit spec"]
-    spec -. is the baseline for .-> drift
+    spec -. is the as-built side of .-> drift
 ```
 
-The spec is the in-repo source of truth that `/steer:audit spec` later compares the
-built code against.
+The spine is the **as-built** side — a faithful description of what the product
+actually does. `/steer:audit spec` diffs it against the **tracker spec** (what it
+was supposed to do, exported from the issue tracker) and surfaces every divergence.
