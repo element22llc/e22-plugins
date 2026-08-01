@@ -89,7 +89,7 @@ offer after a long scoping pass. Honor that:
 - **"Prototype" / "quick" / "throwaway" never waives bootstrap.** A prototype is greenfield: it
   still gets the bundled scaffold and a `/spec` spine. Those words change spec *depth* and
   *ceremony* (lighter interview; declaring solo-trunk mode drops per-feature branch/PR — a
-  GitHub-adopted repo still keeps the issue per change, see Issue-first), never *whether* scaffold
+  GitHub-adopted repo still keeps the issue for any change above Tiny, see Issue-first), never *whether* scaffold
   and spine exist. The greenfield-vs-prototype ceremony mechanics are canonical in Spec workflow
   (`30-spec-workflow`) — don't restate them; route and let that skill own depth.
 

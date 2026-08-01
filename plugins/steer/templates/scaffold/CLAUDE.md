@@ -48,7 +48,8 @@ branch protection; run `/steer:protect` to verify/apply it). This is the default
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:init` when one person is both PO and dev with no MVP yet): commit directly
 to `main` and push, no per-feature branch or PR, until graduation. Issue-first still holds
-(every change keeps a GitHub issue, closed from the trunk commit); only the branch
+(a change that needs an issue keeps it, closed from the trunk commit — a Tiny change
+needs none, per the Change-size model); only the branch
 and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
 Definition of Done are unchanged. **Graduate** to `PR flow` — run
 **`/steer:protect`**, which raises the server-side PR wall — the moment the MVP

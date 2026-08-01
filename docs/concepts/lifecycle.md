@@ -44,6 +44,10 @@ active issue (the *issue-first* rule). `/steer:work` will find-or-create the iss
 before the first change. Commit autonomy is unchanged once that issue exists — see
 the [Authorization model](authorization-model.md).
 
+The rule is **size-gated**: a [**Tiny**](sdlc.md#change-size) change (≈<20 lines,
+no behavior change) needs no issue at all — its PR is the evidence anchor instead.
+Rule `80-change-size` sets that threshold; issue-first defers to it.
+
 **Solo-trunk mode keeps the issue, drops the PR.** In
 [solo-trunk mode](authorization-model.md) — a pre-MVP greenfield repo whose
 `CLAUDE.md` `## Delivery mode` section carries the machine-readable marker
@@ -56,6 +60,10 @@ the commit, *not* "open a PR" or "create an `issue/<N>` branch"). `/steer:protec
 flips the marker to `pr-flow` at graduation, after which the per-feature PR flow
 resumes. Calling work a "prototype" does not waive issue-first — declaring
 solo-trunk mode is the only durable opt-out, and it drops the PR, not the issue.
+
+The full out-of-scope set (no issue needed) is: `/spec` edits, documentation,
+generated output, lockfiles, a **Tiny** change, and a plugin-maintenance
+`/steer:sync` on its own `feat/sync` branch.
 
 Plugin-maintenance flows are exempt, just as editing the `/spec` spine is:
 `/steer:sync` reconciles the materialized spine and scaffold against the plugin's

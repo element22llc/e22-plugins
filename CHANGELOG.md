@@ -73,6 +73,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   thresholds. Guarded on both sides: Tiny requires *zero* behavior change (any behavior
   difference is Small at minimum, however few the lines), anything under High-risk areas is
   **Risky** at any line count, and an arguable class takes the larger one.
+- **Fixed:** the ADR reversal-cost reframe reached the two surfaces it had missed.
+  `SPEC-FRAMEWORK.md` still listed "you are introducing a new pattern that other
+  features will follow" as a write-an-ADR trigger — the exact novelty bar the reframe
+  removed — and it is the document `/steer:adr` names as "Full guidance" and rule `30`
+  declares canonical, so an agent that followed the pointer read the retired rule.
+  Rule `99`'s end-of-session checklist likewise still asked "architectural choice made
+  → ADR written?", the same un-thresholded formulation the reframe set out to delete,
+  injected into every session alongside rule `50`'s corrected wording. Both now state
+  reversal cost as the bar and that a first-time pattern is not an ADR.
+- **Fixed:** the **Tiny** exemption reached the three consumer-facing surfaces that
+  still stated issue-first as an absolute. `ISSUE-WORKFLOW.md` — which rule `36` names
+  for "Full rationale" — enumerated an exempt set that read as complete and omitted
+  Tiny; the scaffold's `CLAUDE.md`, installed as durable context in every consumer
+  repo, said solo-trunk keeps an issue for "every change"; and the `setup` skill said a
+  GitHub-adopted repo "keeps the issue per change". All three now defer to the
+  Change-size model, so a ≤20-line typo fix is no longer told to file an issue rule
+  `36` says it does not need.
+- **Fixed:** `hooks/lib/lifecycle.sh` no longer presents the retired five-value
+  `feature_status` ladder as the current vocabulary. Its docstring published
+  `implemented` and `validated` as canonical while naming `enums.registry` — now
+  `draft|approved|live` — as its single source of truth. The two case arms **stay** as
+  tolerance for an adopted repo that has not yet run the migration ledger entry, but
+  are labelled as retired, and the docstring now states the intended consequence of the
+  spec/delivery split: `approved` is what a built-but-unreleased feature reads, so a
+  question gated past `intent-approval` ranks as a later transition rather than
+  blocking now. No gate could have caught this — `check_standards.py`'s enum sweep
+  reads `.md` under `rules/`, `skills/`, `templates/` only, never shell.
+- **Fixed:** rule `55`'s "Mechanics" pointer routed to `/steer:reference gates`, which
+  loads `GATES.md` — in-session human decision prompts, containing no drift-gate
+  content at all. The drift-gate mechanics live in `TRACEABILITY.md`, so the pointer is
+  now `/steer:reference traceability`.
 
 ### 4.0.0
 

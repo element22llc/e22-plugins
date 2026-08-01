@@ -19,4 +19,4 @@ The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
 owning `contract.md` / `intent.md` — a machine backstop for the *undocumented
 behavior change* class, and in solo-trunk (no PR) the only one. A warning is a
 prompt, not a substitute for the flag: still flag the class and update the spec in
-the same change. Mechanics: `/steer:reference gates`.
+the same change. Mechanics: `/steer:reference traceability`.

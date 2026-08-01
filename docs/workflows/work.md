@@ -49,8 +49,9 @@ flowchart TD
 How the work reaches `main` is governed by the repo's **delivery mode**, declared
 in the product `CLAUDE.md` `## Delivery mode` section (the same marker the steer
 hooks read — `solo-trunk` vs `pr-flow`; absent or unreadable → **pr-flow**).
-**Issue-first holds in both modes** — every implementation-affecting change is tied
-to a GitHub issue; the modes differ only in the branch/PR ceremony around it.
+**Issue-first holds in both modes** — every implementation-affecting change above
+[**Tiny**](../concepts/sdlc.md#change-size) is tied to a GitHub issue; the modes
+differ only in the branch/PR ceremony around it.
 
 | | **pr-flow** (default) | **solo-trunk** (pre-MVP greenfield) |
 | --- | --- | --- |
