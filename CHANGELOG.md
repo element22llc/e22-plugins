@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the ADR threshold is now **reversal cost, not novelty**, and a first-time
+  pattern no longer triggers one. Rule `30` asked for an ADR on "a new cross-cutting
+  **pattern**", rule `80` classed "new pattern" as Large, and rule `50`'s Definition of
+  Done said "architectural choices captured as an ADR" with no threshold at all — so in a
+  young codebase, where nearly every pattern is new, ordinary work kept producing decision
+  records nobody reads. An ADR is now for a choice whose undoing would mean changing work
+  built on top of it; a pattern used in **one** place is a `contract.md` line and earns an
+  ADR on its **third** use, the same 3+ threshold `DESIGN.md` already uses for design
+  tokens. The practical test, stated in `/steer:adr`: if you cannot name the work a
+  reversal would force you to redo, it is not an ADR yet. **`hard-to-reverse` and
+  `cross-cutting` remain triggers** — only novelty is dropped; a cross-cutting choice is
+  costly to reverse by construction. Rules `30`, `50`, `80`, the `adr` skill, and
+  `docs/decisions/` move together.
 - **Changed:** `feature_status` narrows to **`draft · approved · live`** — the spec stops
   mirroring delivery progress. `implemented` and `validated` are **retired**. Both were
   pure restatements of the issue's `validate`/`done`: `ISSUE-WORKFLOW.md` declared the

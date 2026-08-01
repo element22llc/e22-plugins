@@ -353,10 +353,12 @@ Create the artifact when the trigger fires — don't defer it:
 - **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code — author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
-- **Architectural or hard-to-reverse choice** (stack, database, auth,
-  deployment, a new cross-cutting pattern) → ADR at
+- **Hard-to-reverse or cross-cutting choice** (stack, database, auth, deployment) → ADR at
   `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
-  stack choice is usually the first ADR.
+  stack choice is usually the first ADR. **The bar is reversal cost, not
+  novelty:** an ADR is for a choice whose undoing later means changing work built
+  on top of it. A pattern used in **one** place is a `contract.md` line; it earns
+  an ADR when a third use makes it the house style.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
   the app guide (`/spec/app/`) if it describes the old behavior; see Living
   documentation.
@@ -636,7 +638,7 @@ needs only a PR.
 - [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; a `/spec/history/` entry only for a notable event (see Living documentation).
 - [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
 - [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
-- [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
+- [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).
 - [ ] High-risk areas were scoped first (see High-risk areas).
 - [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
 
@@ -905,7 +907,7 @@ from here, and an arguable class takes the larger one.
   evidence anchor. Any behavior change is Small at minimum, however few the lines.
 - **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
 - **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
-- **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
+- **Large** (crosses areas, touches infra, or a choice costly to reverse): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs. A first-time pattern is not itself Large.
 - **Risky** (any high-risk area, regardless of line count): follow high-risk handling above — never Tiny.
 
 **Medium** and larger start in plan mode (or a posted plan): review the

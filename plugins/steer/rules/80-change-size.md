@@ -10,7 +10,7 @@ from here, and an arguable class takes the larger one.
   evidence anchor. Any behavior change is Small at minimum, however few the lines.
 - **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
 - **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
-- **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
+- **Large** (crosses areas, touches infra, or a choice costly to reverse): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs. A first-time pattern is not itself Large.
 - **Risky** (any high-risk area, regardless of line count): follow high-risk handling above — never Tiny.
 
 **Medium** and larger start in plan mode (or a posted plan): review the

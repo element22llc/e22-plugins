@@ -1,7 +1,7 @@
 ---
 name: adr
 description: "Create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed → Accepted transition."
-when_to_use: Use for any hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, new pattern), when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") — including one drafted earlier.
+when_to_use: Use for a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) — reversal cost is the bar, not novelty, so a first-time pattern used in one place is a contract.md line instead. Also when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") — including one drafted earlier.
 argument-hint: "[<slug> | accept <n>]"
 ---
 
@@ -93,13 +93,21 @@ decider, and reviewer are the same person, and that is legitimate — an
 
 ## When to write one (and when not)
 
-Write an ADR for choices that are hard to reverse (database, auth provider,
-deployment platform, tenancy model, major pattern), a new pattern other features
-will follow, an explicit rejection of an obvious alternative, or anything a
-future dev would ask "why did they do it this way?" about.
+**The bar is reversal cost, not novelty.** Write an ADR for a hard-to-reverse or
+cross-cutting choice — one whose undoing later would mean changing work built on
+top of it: database, auth provider, deployment platform, tenancy model — or when it
+rejects an obvious alternative a future dev would ask "why did they do it this way?"
+about.
 
 Do **not** write one for routine implementation choices, things obvious from the
 code, or single-feature decisions (those go in the feature's `contract.md`).
+
+**A first-time pattern is not an ADR.** Used in one place it is a `contract.md`
+line; it earns an ADR when a **third** use makes it the house style — the same 3+
+threshold `DESIGN.md` uses for design tokens. In a young codebase almost every
+pattern is new, so treating novelty as the trigger turns ordinary work into a
+decision record nobody reads. If you cannot name the work that a reversal would
+force you to redo, it is not an ADR yet.
 
 When superseding an ADR, mark the old one `Superseded by [link]` and link the new
 one — do not delete or renumber it. Full guidance:
