@@ -220,7 +220,7 @@ Name the file and say what to carry forward.
      | File | What changes |
      |---|---|
      | `.github/workflows/ci.yml` | the `spec-drift` job's path filter — add `^spec/history/[0-9][^/]*\.md$` to the `grep -E` alternation (date-prefixed **entries** only, so editing the directory's `README.md` format doc does not clear the gate), **keeping** `^spec/HISTORY\.md$` so a repo mid-migration is not flagged — plus the two operator messages naming the old path, **and the comment block above the filter**, which is worded to carry no bare `spec/HISTORY.md` token (see the precondition note above). Take the whole block verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/github/workflows/ci.yml` — do not re-word it. |
-     | `.github/pull_request_template.md` | the living-docs checkbox: `/spec/HISTORY.md` has an entry → a `/spec/history/` entry exists for this change. |
+     | `.github/pull_request_template.md` | the living-docs checkbox: `/spec/HISTORY.md` has an entry → a `/spec/history/` entry exists — **only if this PR is a notable event**; an ordinary change needs none. Take the wording verbatim from `${CLAUDE_PLUGIN_ROOT}/templates/github/pull_request_template.md` so the installed checkbox does not re-teach the retired per-change obligation. |
      | `README.md` | the "Action history" link target: `./spec/HISTORY.md` → `./spec/history/`. |
      | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` → `spec/history/`. |
      | `spec/tracker.md` | the traceability bullet — "every `/spec/HISTORY.md` entry lists the tracker ref" → "every `/spec/history/` entry". |
@@ -231,11 +231,14 @@ Name the file and say what to carry forward.
      `Verbatim: yes` under the `copilot-surface-current` capability and are re-copied
      from the plugin on the same sync, so rewriting them here would be undone and is
      unnecessary.
-  4. **Log the migration as the directory's first entry.** The PR applying this is itself
-     a merged change, so write `spec/history/<date>-<time>-action-history-becomes-a-directory.md`
+  4. **Log the migration as the directory's first entry.** A spine migration is a
+     repo-level event, which is exactly what earns an entry, so write
+     `spec/history/<date>-<time>-action-history-becomes-a-directory.md`
      from `${CLAUDE_PLUGIN_ROOT}/templates/spec/history-entry.md`, with
-     `Requested by: adoption/audit finding` and `Areas: spec-only`. This both satisfies
-     the living-docs rule for the migration PR and proves the new path works.
+     `Requested by: adoption/audit finding` and `Areas: spec-only`. (An ordinary merged
+     change would write none — the entry is earned by the event, not by the PR.) This
+     both satisfies the living-docs rule for the migration PR and proves the new path
+     works.
   5. **Polyrepo:** the action history belongs to the **workspace**, not a member
      (`/steer:reference polyrepo`). Apply steps 1, 2 and 4 in the workspace repo only; in
      a member apply step 3's `CLAUDE.md` / `spec/PRODUCT.md` / PR-template / `ci.yml`

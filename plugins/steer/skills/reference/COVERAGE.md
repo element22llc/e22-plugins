@@ -78,7 +78,7 @@ It covers, in detail:
   (`/spec/tracker.md` declares; everything else just uses the declared ref
   format), the Jira/GitHub/Linear/Azure DevOps adapter table, where refs live,
   and how untracked questions get promoted.
-- **Drift gates** — the eight review-sensitive classes, flag-when-noticed
+- **Drift gates** — the nine review-sensitive classes, flag-when-noticed
   mechanics, who may resolve a flag, and the periodic sweeps
   (`/steer:audit spec`, `/steer:audit`, `/steer:questions`).
 - **SOC 2 / ISO 27001-aligned delivery** — "aligned, never compliant" wording,

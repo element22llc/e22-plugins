@@ -190,7 +190,7 @@ is durable **product truth**
 ### 🎫 The tracker
 is the **work & decision layer**
 
-<div class="text-sm opacity-60 mt-2">Every change starts as a tracked issue. Discussion and status live there.</div>
+<div class="text-sm opacity-60 mt-2">Every change above Tiny starts as a tracked issue. Discussion and status live there.</div>
 
 </div>
 
@@ -357,7 +357,7 @@ Q-NNN open questions, /steer:spec approve is blocked on blocking questions.
 ### 🎫 Plan — issue-first
 The approved spec is decomposed into **tracked issues** — triaged, sized, prioritized.
 
-**The rule: no change without an issue.** Every modification traces back to a ticket *before* the first line changes — enforced by a session gate, not just good intentions.
+**The rule: no change above Tiny without an issue.** Every modification beyond a ≤20-line no-behaviour-change tweak traces back to a ticket *before* the first line changes — enforced by a session gate, not just good intentions.
 
 <div class="text-sm opacity-60 mt-3">Tracker-agnostic: GitHub Issues, Jira, Linear or Azure DevOps — one file in the repo declares which, everything else adapts.</div>
 

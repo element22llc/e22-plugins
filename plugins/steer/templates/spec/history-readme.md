@@ -51,7 +51,7 @@ Naming:
 - `YYYY-MM-DD` — the date the change merged or the decision was ratified.
 - `HHMM` — 24-hour local time. Makes same-day entries sort deterministically and
   keeps two of them from colliding on one filename.
-- `<slug>` — 3–6 kebab-case words naming the change (`csv-export`,
+- `<slug>` — 3–6 kebab-case words naming the event (`adr-0004-accepted`,
   `vendor-list-filter`, `retire-legacy-auth`).
 
 The filenames sort chronologically, so read the timeline newest-first with a
@@ -73,11 +73,11 @@ Copy `${CLAUDE_PLUGIN_ROOT}/templates/spec/history-entry.md`, or write the shape
 directly:
 
 ```markdown
-# 2026-06-10 14:32 — CSV export added to vendor list
+# 2026-06-10 14:32 — ADR 0004 accepted: Postgres for vendor search
 
-- **Why:** PO needs to hand vendor data to finance monthly
+- **Why:** vendor search outgrew the in-memory index; reversing this once reports depend on it would mean redoing them
 - **Requested by:** @pat-po
-- **Refs:** PROJ-214 · spec/features/export-csv/ · PR #87
+- **Refs:** PROJ-214 · spec/decisions/0004-postgres-for-vendor-search.md · PR #87
 - **Areas:** apps/web, packages/core
 ```
 

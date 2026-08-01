@@ -8,7 +8,7 @@ open items need the dev). Track open items with your todo tooling so nothing is
 dropped:
 
 - [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
-- [ ] Architectural choice made → ADR written under `/spec/decisions/`?
+- [ ] Choice costly to reverse made → ADR written under `/spec/decisions/`? (Reversal cost is the bar, not novelty — a first-time pattern is not an ADR.)
 - [ ] Tests added/updated for the change; bug fix has a regression test?
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
 - [ ] Living docs in sync — app guide updated for behavior changes, tracker refs recorded?

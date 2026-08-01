@@ -28,5 +28,5 @@ entry in the spec's `## Open questions`.]
 
 [Filled when decided. On resolution: update the canonical spec, record the
 decision here, close the issue, and write an ADR only when the decision is
-architectural or hard to reverse.]
+costly to reverse — reversal cost is the bar, not novelty.]
 <!-- steer:managed:end -->

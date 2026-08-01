@@ -57,7 +57,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   decisions worth finding. Rules `30`, `32`, `50`, `55`, `75`, `99`, the consumer PR
   template, `TRACEABILITY.md`, `GATES.md`, and the installed `spec/history/README.md` all
   move together. Every skill that writes an entry today (`adr`, `spec approve`, `protect`
-  graduation, `init`, `adopt`, `sync`, `intake`, the hotfix follow-up) already fires on a
+  graduation, `init`, `adopt`, `sync`, `intake` (one entry per absorb — see below),
+  `build`'s v0 handoff, the hotfix
+  follow-up) already fires on a
   notable event, so none of them change. The advisory `spec-drift` CI job keeps its
   existing path filter — a repo mid-migration is still not flagged — but rule `55` no
   longer advertises a history entry as a way to clear it, since updating the owning
@@ -73,6 +75,99 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   thresholds. Guarded on both sides: Tiny requires *zero* behavior change (any behavior
   difference is Small at minimum, however few the lines), anything under High-risk areas is
   **Risky** at any line count, and an arguable class takes the larger one.
+- **Fixed:** the ADR reversal-cost reframe reached the two surfaces it had missed.
+  `SPEC-FRAMEWORK.md` still listed "you are introducing a new pattern that other
+  features will follow" as a write-an-ADR trigger — the exact novelty bar the reframe
+  removed — and it is the document `/steer:adr` names as "Full guidance" and rule `30`
+  declares canonical, so an agent that followed the pointer read the retired rule.
+  Rule `99`'s end-of-session checklist likewise still asked "architectural choice made
+  → ADR written?", the same un-thresholded formulation the reframe set out to delete,
+  injected into every session alongside rule `50`'s corrected wording. Both now state
+  reversal cost as the bar and that a first-time pattern is not an ADR.
+- **Fixed:** the **Tiny** exemption reached the three consumer-facing surfaces that
+  still stated issue-first as an absolute. `ISSUE-WORKFLOW.md` — which rule `36` names
+  for "Full rationale" — enumerated an exempt set that read as complete and omitted
+  Tiny; the scaffold's `CLAUDE.md`, installed as durable context in every consumer
+  repo, said solo-trunk keeps an issue for "every change"; and the `setup` skill said a
+  GitHub-adopted repo "keeps the issue per change". All three now defer to the
+  Change-size model, so a ≤20-line typo fix is no longer told to file an issue rule
+  `36` says it does not need.
+- **Fixed:** `hooks/lib/lifecycle.sh` no longer presents the retired five-value
+  `feature_status` ladder as the current vocabulary. Its docstring published
+  `implemented` and `validated` as canonical while naming `enums.registry` — now
+  `draft|approved|live` — as its single source of truth. The two case arms **stay** as
+  tolerance for an adopted repo that has not yet run the migration ledger entry, but
+  are labelled as retired, and the docstring now states the intended consequence of the
+  spec/delivery split: `approved` is what a built-but-unreleased feature reads, so a
+  question gated past `intent-approval` ranks as a later transition rather than
+  blocking now. No gate could have caught this — `check_standards.py`'s enum sweep
+  reads `.md` under `rules/`, `skills/`, `templates/` only, never shell.
+- **Fixed:** rule `55`'s "Mechanics" pointer routed to `/steer:reference gates`, which
+  loads `GATES.md` — in-session human decision prompts, containing no drift-gate
+  content at all. The drift-gate mechanics live in `TRACEABILITY.md`, so the pointer is
+  now `/steer:reference traceability`.
+- **Fixed:** `TRACEABILITY.md` — the canonical drift/living-docs reference — no longer
+  contradicts the notable-event narrowing inside its own pages. Its "the log serves"
+  list still promised **auditability for any change**, and both worked examples still
+  had Claude write a history entry for an ordinary merged change (shipping an approved
+  CSV export; an N+1 perf refactor) — the exact per-merged-change shape the narrowing
+  retired, in the document that teaches the pattern by example. The examples now write
+  none and say why, and the audit claim is scoped to notable events with the commit and
+  reviewed PR named as an ordinary change's record. The stale "**eight** review-sensitive
+  classes" count in the same file and in the `reference` skill's `COVERAGE.md` is now
+  **nine**, matching rule `55` and the shipped PR template's nine checkboxes.
+- **Fixed:** rule `30`'s prototype paragraph still stated issue-first as an absolute
+  ("a GitHub-adopted repo still keeps the issue"), and it is the rule the `setup` skill
+  names as canonical for exactly that prose — so the deferring surface knew about the
+  **Tiny** exemption while the surface it defers to did not. Rule `30` now reads "for
+  any change above Tiny".
+- **Fixed:** the two issue-first **hooks** now state the **Tiny** carve-out. Rounds of
+  doc fixes cleared `ISSUE-WORKFLOW.md`, the scaffold `CLAUDE.md`, the `setup` skill and
+  rule `30`, but `check-write-nudges.sh` and `reconcile-issue-first.sh` are the surfaces
+  that quote the rule *directly into a live session*, and both still enumerated the
+  exempt set as "not spec, docs, or lockfiles" — asserting a complete list and getting
+  it wrong, so a ≤20-line typo fix was nudged to file an issue rule `36` says it does
+  not need. Both remain advisory and fire once per session; only the text changed.
+- **Fixed:** `TRACEABILITY.md` now documents the advisory `spec-drift` CI job. Rule `55`
+  shed those mechanics to reference prose and points at this file — but the mechanics
+  were **deleted, not relocated**, so the pointer led to a document that never described
+  the job, and the recorded byte-budget rationale for a ceiling raise claimed a move that
+  had not happened. §5 now carries the job: warns-never-blocks, what clears it
+  (`contract.md`/`intent.md` routinely; a dated history entry or a mid-migration
+  `spec/HISTORY.md` also match the filter, the directory README does not), and that it
+  runs on push to `main`, making it the only spec-drift signal in solo-trunk.
+- **Fixed:** the action-history **worked examples** no longer teach the shape the
+  notable-event narrowing retired. Both `TRACEABILITY.md` §2 and the installed
+  `spec/history/README.md` illustrated an entry with "CSV export added to vendor list"
+  — an ordinary shipped feature — the first sitting beside prose that now says that
+  exact scenario writes no entry, the second 49 lines below its own "**An ordinary
+  merged change writes no entry.**" The one example a consumer reads contradicted the
+  rule directly above it. Both now show an ADR ratification, and the slug examples in
+  `history-entry.md` and `history-readme.md` follow.
+- **Fixed:** `/steer:intake` writes **one** `/spec/history/` entry per absorbed source
+  version, not one per absorbed change. Its record step said "for every absorbed change
+  … write **one** entry file", and step 3 of the same pipeline splits a source diff into
+  many per-heading units — so a single document absorb could emit a dozen entries, the
+  padding the notable-event narrowing exists to prevent. Rule `32` and
+  `history-readme.md` both make "a PO source document absorbed" a single event, and
+  intake's own edge-case row already wrote one per absorb; only the pipeline disagreed.
+- **Fixed:** `/steer:work`'s find-or-create step and the SDLC deck both stated
+  issue-first as an absolute ("no change without an issue"). Both now carry the **Tiny**
+  qualifier, matching rule `36`. The onboarding deck's matching line follows.
+- **Fixed:** the v4.0.0 action-history migration no longer *installs* the retired
+  per-change obligation into the repos it migrates. Its action table told the migration
+  to rewrite the consumer PR template's living-docs checkbox to "a `/spec/history/`
+  entry exists **for this change**" — the shipped template now reads "only if this PR is
+  a notable event; an ordinary change needs none", and the template is `Verbatim: no`,
+  so nothing re-copies over the stale wording a mid-migration repo would receive. The
+  ledger now takes that checkbox verbatim from the plugin. Its step 4 also justified the
+  migration's own history entry as "the PR applying this is itself a merged change" —
+  true, but the retired rationale; the entry is earned because a spine migration is a
+  repo-level event.
+- **Fixed:** the shipped `spec-question` issue template said to write an ADR "when the
+  decision is **architectural or** hard to reverse" — the `or` left un-thresholded
+  "architectural" as a sufficient trigger, the same formulation the reversal-cost
+  reframe deleted from rule `99`.
 
 ### 4.0.0
 

@@ -2,8 +2,8 @@
 # steer Stop hook — issue-first working-tree reconciliation (end-of-turn).
 #
 # WHY THIS EXISTS
-#   rule 36-issue-first wants every implementation-affecting mutation tied to a
-#   GitHub issue in a GitHub-adopted repo. The PreToolUse nudge
+#   rule 36-issue-first wants every implementation-affecting mutation above
+#   Tiny tied to a GitHub issue in a GitHub-adopted repo. The PreToolUse nudge
 #   (the issue-first dimension of check-write-nudges.sh) catches *editor*
 #   writes (Write/Edit/
 #   MultiEdit) at the point of action — but it is deliberately blind to Bash:
@@ -226,9 +226,9 @@ hotfix/*)
 	;;
 *)
 	if [ "${MODE}" = "solo-trunk" ]; then
-		REASON="Issue-first reconciliation (solo-trunk mode): this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree: ${SAFE_LIST}Solo-trunk commits straight to main, but issue-first (rule 36) still ties every implementation-affecting mutation to a GitHub issue. Before committing, make sure this work carries an issue reference in the trunk commit — close the issue from the commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it — GitHub does not close on that). If you have no issue yet, capture or reuse one via /steer:tracker-sync. If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. Do NOT create an issue/<N> branch or a PR — that ceremony is relaxed pre-MVP. If this work is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+		REASON="Issue-first reconciliation (solo-trunk mode): this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree: ${SAFE_LIST}Solo-trunk commits straight to main, but issue-first (rule 36) still ties every implementation-affecting mutation above Tiny to a GitHub issue. Before committing, make sure this work carries an issue reference in the trunk commit — close the issue from the commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it — GitHub does not close on that). If you have no issue yet, capture or reuse one via /steer:tracker-sync. If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. Do NOT create an issue/<N> branch or a PR — that ceremony is relaxed pre-MVP. If this work is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
 	else
-		REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker). If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. If it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
+		REASON="Issue-first reconciliation: this GitHub-adopted repo ended the turn with implementation-affecting changes in the working tree on branch '${SAFE_BRANCH}', which does not reference a GitHub issue: ${SAFE_LIST}Issue-first (rule 36) ties every implementation-affecting mutation above Tiny (under ~20 lines with no behavior change) to a GitHub issue. If this work is intended, capture or reuse an issue and route it through /steer:work (branch like issue/<n>-slug, which records a spec/.work marker). If an autonomous 'gh issue create' was blocked by host permissions this turn, that is a host gate, not a skipped step — ask the user to confirm the create or have them run '!gh issue create'. If it is throwaway, you can disregard this. One-time advisory for this session — it will not repeat."
 	fi
 	;;
 esac

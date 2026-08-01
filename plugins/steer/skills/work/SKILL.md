@@ -78,7 +78,7 @@ These hold for the whole run, in every mode.
    directly. **Git and PR delivery are not gateway operations** — they are this
    skill's execution concern, under the repo's commit/PR-autonomy rules.
 3. **No issue named but a mutation was requested?** Find-or-create one first
-   (Issue-first), then `start`.
+   (Issue-first — a Tiny change needs none), then `start`.
 
 ## Authorization (what an implement request grants)
 

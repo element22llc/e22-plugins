@@ -40,7 +40,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
-| `80-change-size.md` | Change-size model. |
+| `80-change-size.md` | Change-size model — **authoritative for per-change ceremony**; Issue-first and Definition of Done take their thresholds from it. Tiny (≈<20 lines, no behavior change) needs no issue, spec, ADR, or plan; any behavior change is Small at minimum; a high-risk area is Risky at any line count; an arguable class takes the larger one. |
 | `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII in code and values. |
 | `87-output-discipline.md` | Earn every line — tight responses, comments the exception, least code that does the job, lean durable prose. |
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
@@ -97,7 +97,7 @@ instead of `rules/` (the polyrepo precedent above).
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
-happening quietly. The rules ceiling has been raised four times. First from
+happening quietly. The rules ceiling has been raised five times. First from
 62,500 to 65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32
 bytes of headroom, so the only way to add the rule was compressing unrelated gate
 rules, and that trade deleted ~1 KB of rationale prose that existed nowhere else in
@@ -120,7 +120,17 @@ asserting a safety net that would not be there. Rules 24 and 99 named
 `docker:up`/`docker:clean`, which the workspace profile renamed to `ws:*`, so the
 cleanup command those rules mandate did not exist in a spine host. Rule 15 now
 carries the workspace task vocabulary once and rule 24 cross-references it, paying
-back ~120 B of the cost. The *target* deliberately
+back ~120 B of the cost. Finally from 67,300 to **68,400**, to fund the **Tiny**
+ceremony exemption in rule `80-change-size` and its two consumers — unlike the
+fourth raise this is new capability rather than a correction, so it took an
+explicit decision. Making the size class actually govern needs three always-on
+statements (the exemption, the authority claim, the size-gated markers) and cannot
+be expressed by cross-reference alone, because the rules being exempted are the
+ones a session reads. Traded out first, as the default requires: rule 32's
+notable-event enumeration and rule 55's `spec-drift` mechanics moved to reference
+prose, and the per-change `/spec/history/` obligation left rules 30, 50, 55 and 99
+outright (−136 B) — the same change that shrinks a per-change duty paid part of its
+own cost. Net +511 B, re-armed at the measured total plus ~1%. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 

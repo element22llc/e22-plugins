@@ -211,10 +211,10 @@ implement → update the owning `contract.md` if behavior changed.
 
 ## Architecture Decision Records (ADRs)
 
-Write an ADR when:
+**The bar is reversal cost, not novelty.** Write an ADR when:
 
-- You are making a choice that is hard to reverse later, such as database, auth provider, deployment platform, tenancy model, or major architecture pattern
-- You are introducing a new pattern that other features will follow
+- You are making a choice that is hard to reverse later — one whose undoing would mean changing work built on top of it: database, auth provider, deployment platform, tenancy model, or major architecture pattern
+- The choice is cross-cutting (costly to reverse by construction)
 - You are explicitly rejecting an obvious alternative
 - The next dev to look at the code would ask, why did they do it this way?
 
@@ -223,6 +223,10 @@ Do not write an ADR for:
 - Routine implementation choices
 - Things that are obvious from the code itself
 - Decisions about a single feature. Those go in `/spec/features/[id]/contract.md`.
+- A **first-time pattern**. Used in one place it is a `contract.md` line; it earns
+  an ADR when a **third** use makes it the house style — the same 3+ threshold
+  `DESIGN.md` uses for design tokens. If you cannot name the work a reversal would
+  force you to redo, it is not an ADR yet.
 
 Number ADRs sequentially. Do not renumber when you supersede one. Mark the old
 one as superseded and link to the new one. Status values: **Proposed** (under

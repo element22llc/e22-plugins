@@ -643,7 +643,7 @@ Idea → **shape it** → **break it down** → **build it** → **review it**.
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🎫</div>
-<div><b><code>/steer:issues</code></b> — decompose into tracked work. <b>Issue-first</b>: code changes trace back to an issue.</div>
+<div><b><code>/steer:issues</code></b> — decompose into tracked work. <b>Issue-first</b>: code changes above Tiny trace back to an issue.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">

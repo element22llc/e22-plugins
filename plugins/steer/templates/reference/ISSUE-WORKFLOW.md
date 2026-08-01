@@ -27,7 +27,8 @@ Two invariants underpin everything:
    GitHub-adopted repo (`/spec/tracker.md` → `system: github`), reuse the issue
    the user names or create one before the first code/config/infra/behavior
    change. "Implementation-affecting" is the scope: editing the `/spec` spine,
-   documentation, generated output, and lockfiles is exempt. Two non-blocking
+   documentation, generated output, lockfiles, and a **Tiny** change (Change-size
+   model — the PR is the evidence anchor instead) are exempt. Two non-blocking
    safety nets reinforce this — a PreToolUse nudge at the first editor write, and
    a Stop-time working-tree reconciliation that catches Bash-mediated mutations
    the editor nudge never sees. Both report; neither enforces.

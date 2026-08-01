@@ -25,17 +25,29 @@ steer_required_before_order() {
 # question whose gate is at or before this is overdue; the gate one step past it
 # is "blocking now"; anything further is a later transition.
 #
+# The current `feature_status` vocabulary is three values (enums.registry):
+#
 #   draft       → (none)              not yet intent-approved
-#   approved    → intent-approval     intent approved, contract/impl ahead
-#   implemented → implementation      built, validation/release ahead
-#   validated   → non-prod-validation demo-validated, release ahead
+#   approved    → intent-approval     intent approved, everything else ahead
 #   live        → production-release  in production
+#
+# Because the spec no longer mirrors delivery progress, `approved` is what a
+# built-but-unreleased feature reads, so questions gated past `intent-approval`
+# rank as a *later* transition rather than blocking now. That is the intended
+# consequence of the spec/delivery split — "is it built?" is an issue question.
+#
+# RETIRED (pre-migration tolerance, NOT current vocabulary): `implemented` and
+# `validated` were removed from `feature_status`. The arms below stay only so an
+# adopted repo that has not yet run the migration ledger entry
+# (templates/reference/MIGRATIONS.md) still ranks sensibly instead of silently
+# falling through to "nothing cleared". Do not treat them as valid statuses, and
+# do not add new ones here without changing enums.registry first.
 steer_status_cleared_gate() {
 	case "$1" in
 	approved) printf 'intent-approval' ;;
-	implemented) printf 'implementation' ;;
-	validated) printf 'non-prod-validation' ;;
 	live) printf 'production-release' ;;
+	implemented) printf 'implementation' ;;      # retired — un-migrated repos only
+	validated) printf 'non-prod-validation' ;;   # retired — un-migrated repos only
 	*) : ;; # draft / unknown / absent → none cleared
 	esac
 }

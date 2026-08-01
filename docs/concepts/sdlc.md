@@ -30,7 +30,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | **0 · Bootstrap** | [`/steer:setup`](../workflows/index.md) → `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | — (enablement, not a gate) |
 | **1 · Shape** | [`/steer:spec`](../workflows/spec.md), `questions`, `adr`, `roadmap` | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` — blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
-| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: every implementation-affecting mutation has an issue **before** the first change |
+| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: every implementation-affecting mutation has an issue **before** the first change — except a [**Tiny**](#change-size) change, `/spec` edits, docs, generated output, lockfiles, and `/steer:sync` |
 | **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change-size + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** — "review *is* productionization" |
 | **5 · Deliver** | merge → [deploy](deployment.md); [`/steer:protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
@@ -50,6 +50,33 @@ after-the-fact on a `hotfix/<n>` branch, single-reviewer) while keeping every hu
 authority gate, and requires a **mandatory post-incident follow-up** — backfill the
 issue, write the spec/ADR, add a `/spec/history/` entry — so the phases skipped under
 fire are restored, not waived.
+
+## Change size
+
+The phases above describe the full path. **How much of it a given change actually
+walks is set by its size** — rule `80-change-size` is authoritative for per-change
+ceremony, and both Issue-first and the Definition of Done take their thresholds
+from it. When a change is arguable between two classes, it takes the **larger**
+one.
+
+| Class | Roughly | Ceremony it earns |
+| --- | --- | --- |
+| **Tiny** | ≈<20 lines, **no behavior change** — copy, typo, formatting, comment | Open a PR and stop: **no issue, no spec, no ADR, no plan**. The PR is the evidence anchor. |
+| **Small** | ≈<200 lines, contained behavior change | Confirm intent; update `contract.md` if behavior changed. |
+| **Medium** | A new screen, feature, or capability | `intent.md` first, PO approval, then implement with `contract.md`. Starts in plan mode (or a posted plan). |
+| **Large** | Crosses areas, touches infra, or a choice costly to reverse — **a first-time pattern is not itself Large** | An ADR in `/spec/decisions/` first, agree with the team, ship in small PRs. Starts in plan mode (or a posted plan). |
+| **Risky** | Any [high-risk area](../reference/configuration.md), *regardless of line count* | High-risk handling — **never Tiny**. |
+
+Tiny is guarded on both sides, which is what keeps it from becoming a loophole: it
+requires *zero* behavior change (any behavior difference is Small at minimum,
+however few the lines), and anything in a high-risk area is Risky at any line
+count. The two Definition-of-Done items that a Tiny change is excused from are
+marked **(size-gated)** in rule `50`: **tests** and the **GitHub issue** with its
+`steer:state`. (Rule 50's tests bullet also covers the regression test a bug fix
+requires, but that clause never reaches a Tiny change — a bug fix corrects
+behavior, so it is Small at minimum.) The
+spec-update item is not size-gated — it is simply moot for a Tiny change, which by
+definition changes no behavior.
 
 ## One lifecycle store, two questions
 
@@ -96,10 +123,12 @@ remains of reconciliation is pointer and question consistency, plus
 against the intended spec — a genuinely different comparison from syncing two
 status fields.
 
-!!! warning "Two machines, one reality"
-    Keeping the spec `Status:` and the issue `steer:state` aligned is a recurring
-    job, not an automatic one. When in doubt, the spine is product truth and the
-    issue is the workflow that got there.
+!!! warning "The two pairings that *are* worth a look"
+    Because there is no derived value to keep in step, almost every spec/issue
+    combination is legitimate — including `approved` + `done`. Only two pairings
+    still need a human: a **`live` intent whose issue never went terminal**, and an
+    **`approved` feature with no tracker ref**. When in doubt, the spine is product
+    truth and the issue is the workflow that got there.
 
 ## Drift gates
 
@@ -119,7 +148,10 @@ The shipped CI scaffold also carries an **advisory `spec-drift` job** as a machi
 backstop for the *undocumented behavior change* class: pure shell + git (no stack,
 no Python), it *warns* — never blocks — when a change touches application behavior
 (`apps/`, `packages/`, `src/`, …) without updating the owning feature
-`contract.md` / `intent.md`. It runs on PRs and on push to `main`, so it is
+`contract.md` / `intent.md`. (A dated `spec/history/` entry also clears the job's
+filter, and `spec/HISTORY.md` still does so for a repo mid-migration — but
+updating the owning `contract.md` / `intent.md` is the routine path for a behavior
+change, and an ordinary change writes no history entry at all.) It runs on PRs and on push to `main`, so it is
 the only spec-drift signal in **solo-trunk** mode, which has no PR. The warning
 prompts you to update the spec or confirm "no behavior change" via the PR
 template — it does not replace the human-resolved flag.

@@ -258,6 +258,23 @@ rewrites — `CLAUDE.md`, `spec/PRODUCT.md`, the PR template and `ci.yml`.
 Finally the migration logs itself as the directory's first entry, which both satisfies
 the living-docs rule for the migration PR and proves the new path works.
 
+A further entry is queued as **`[Unreleased]`**, narrowing a feature's spec
+`> Status:` from five values to **`draft · approved · live`**. `implemented` and
+`validated` are retired — they were pure mirrors of the issue's `validate`/`done`,
+a derived value stored in a second file that nobody recomputed. The entry applies
+only if some `spec/features/*/intent.md` still carries a retired value or still
+prints the five-value enum hint; a spine already on three values is skipped. It
+rewrites `implemented` → `approved` (the build is the issue's business; scope
+approval is what the spec holds) and `validated` → `approved` **unless the feature
+is genuinely released**, in which case `live` — and where release state is not
+evident from the repo, it deliberately takes `approved` and **says so in the sync
+PR** for a human to promote, rather than guessing `live`. It **touches no issue**:
+an intent reading `approved` beside an issue reading `done` is the intended
+pairing, not drift. The PO-acceptance checkboxes, including *PO validated the
+working demo*, are left alone — that record now carries the acceptance that
+`Status: validated` used to imply. In a polyrepo `spec/features/**` belongs to the
+**workspace**, so a member applies none of it locally.
+
 Ledger entries are keyed by the release that **introduced** them, and `/steer:sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut
 is keyed `[Unreleased]` — never a guessed number, since an implementation PR merges before

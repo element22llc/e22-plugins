@@ -59,7 +59,7 @@ plugins/steer/
     ├── docker/                     # on-demand Dockerfile refs (Node/Python) — instantiated per
     │                               #   deployable app by /steer:build & /steer:adopt, NOT bootstrapped
     ├── github/                     # GitHub templates — single source of truth (issue forms,
-    │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml,
+    │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml + …,
     │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
     │                               #   (copilot-instructions.md, prompts/ — via `mise run gen:copilot`)
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, …)

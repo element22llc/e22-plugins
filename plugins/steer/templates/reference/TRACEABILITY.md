@@ -89,11 +89,11 @@ spec/history/YYYY-MM-DD-HHMM-<slug>.md
 ```
 
 ```markdown
-# 2026-06-10 14:32 — CSV export added to vendor list
+# 2026-06-10 14:32 — ADR 0004 accepted: Postgres for vendor search
 
-- **Why:** PO needs to hand vendor data to finance monthly
+- **Why:** vendor search outgrew the in-memory index; reversing this once reports depend on it would mean redoing them
 - **Requested by:** @pat-po
-- **Refs:** PROJ-214 · spec/features/export-csv/ · PR #87
+- **Refs:** PROJ-214 · spec/decisions/0004-postgres-for-vendor-search.md · PR #87
 - **Areas:** apps/web, packages/core
 ```
 
@@ -111,7 +111,8 @@ Entries are **immutable**: never rewrite, re-date, or delete one. A correction i
 a new entry carrying `- **Corrects:** <filename>`. A repo bootstrapped before the
 directory existed keeps its earlier entries in a frozen `spec/HISTORY.md` archive.
 
-The log serves: **auditability** (when/why/who for any change), **onboarding**
+The log serves: **auditability** (when/why/who for a notable event — an ordinary
+change's audit record is its commit and reviewed PR), **onboarding**
 (read the last quarter in five minutes), **review evidence** (the entry rides in
 the reviewed PR), **decision archaeology** (why is it like this?), and **drift
 detection over time** (`/steer:audit spec` and `/steer:audit` use it as a
@@ -192,7 +193,7 @@ Drift is any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker 
 app docs ↔ action history ↔ tests ↔ delivered behavior. The standing rule
 (spec-framework Rule 5): **resolve drift via explicit human review, never
 silently** — fix the code, fix the artifact, or record the accepted
-divergence. The always-on `drift-gates` rule lists the eight review-sensitive
+divergence. The always-on `drift-gates` rule lists the nine review-sensitive
 classes; the scaffold's PR template carries them as a checklist so the flag is
 part of the review record.
 
@@ -207,6 +208,25 @@ Mechanics:
 - Sweeps for drift that slipped past per-PR gates: `/steer:audit spec` (as-built spec
   vs tracker spec), `/steer:audit` (code vs standards), `/steer:questions` (open
   questions rotting).
+
+### The advisory `spec-drift` CI job
+
+The bundled CI scaffold carries a machine backstop for the *undocumented behavior
+change* class — pure shell and git, no stack and no Python, so it runs anywhere:
+
+- It **warns, never blocks.** The warning is a prompt to update the spec or to
+  confirm "no behavior change" via the PR template; it does not replace the
+  human-resolved flag, and it cannot resolve one.
+- It fires when a change touches application behavior (`apps/`, `packages/`,
+  `src/`, …) without a matching spec update in the same change.
+- **What clears it:** the owning feature's `contract.md` or `intent.md` — the
+  routine path for a behavior change. A dated `spec/history/` entry also clears
+  the filter, and a repo mid-migration still clears it with `spec/HISTORY.md`,
+  but neither is the routine path: an ordinary merged change writes no history
+  entry at all (§2). The directory's `README.md` format doc does **not** clear it —
+  the filter matches date-named entries only.
+- It runs **on PRs and on push to `main`**, which makes it the *only* spec-drift
+  signal in solo-trunk mode, where there is no PR to carry a flag.
 
 ---
 
@@ -246,8 +266,10 @@ Claude, in parallel with any prototyping: drafts
 only, CSV columns…), adds `> Tracker: none yet`, asks one clarifying question
 ("every vendor field, or a fixed set?") and records it under `## Open
 questions`, updates the app guide's Roles table proposal (admins gain
-"Export"), and — once built and merged — writes the history entry and a
-release-notes line ("Admins can now download the vendor list as CSV"). The PO
+"Export"), and — once built and merged — writes a release-notes line ("Admins can
+now download the vendor list as CSV"). No history entry: shipping an approved
+feature is an ordinary merged change, and the commit plus the reviewed PR are its
+record. (The *approval* of the intent, earlier, was the notable event.) The PO
 read and approved exactly one artifact: the intent. Everything stayed in plain
 language.
 
@@ -260,8 +282,8 @@ language.
 Claude: updates `contract.md` (API surface unchanged; behavior rule added for
 streaming + max-size error state), notes the move in Implementation pointers,
 checks the PR's drift-gate flags — "Contract drift" (contract updated to
-match) and nothing else — writes the history entry (`Requested by: @dev,
-perf finding`), and reminds that the app guide is unaffected (no user-visible
+match) and nothing else — writes no history entry (a perf refactor is an ordinary
+merged change), and reminds that the app guide is unaffected (no user-visible
 change). Tests ride in the same PR per the testing rules. The reviewer sees
 the flag, the contract diff, and the regression test together.
 

@@ -12,7 +12,7 @@ name from the merge/ratification moment:
 
   date +%Y-%m-%d-%H%M   →  2026-06-10-1432
 
-then add a 3–6 word kebab-case slug: 2026-06-10-1432-csv-export.md
+then add a 3–6 word kebab-case slug: 2026-06-10-1432-adr-0004-accepted.md
 
 Keep it to 3–6 lines; detail belongs in the linked spec/ADR/PR. Once merged the
 file is IMMUTABLE — a correction is a new entry carrying
