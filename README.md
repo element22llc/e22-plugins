@@ -106,7 +106,7 @@ flowchart TD
    **Non-technical PO** → type **`/steer:build`** and describe the idea.
 3. From there, Claude documents in parallel as you talk: intents/contracts per
    feature, ADRs for decisions, open questions for ambiguity, the app guide
-   for behavior, an action-history entry per change — and flags drift
+   for behavior, an action-history entry for each notable event — and flags drift
    (intent/contract/docs/security/ops) in the PR before merge. A dev approving
    the PR remains the production gate. The workflow is **SOC 2 / ISO
    27001-aligned** (traceability, review evidence, change history) — alignment

@@ -133,7 +133,26 @@ PLUGIN_ROOT = Path("plugins/steer")
 # ~1.2%. That figure is a historical basis, NOT a current measurement — later
 # factual corrections have grown the tree past it; run --report for the live number.
 # Target: 62,500.
-RULES_TOTAL_MAX_BYTES = 67_300
+#
+# RAISED a fifth time, 67,300 → 68,400, to fund the **Tiny** ceremony exemption in
+# rule `80-change-size` and its two consumers. Unlike the fourth raise this is new
+# capability, not a correction, so it took the explicit decision this note demands.
+# Rule 80 already said a Tiny change (≈<20 lines, no behavior change) could "just
+# open a PR", but that was advisory prose with no authority: rule 36's Issue-first
+# exemptions were content-typed, never size-typed, and rule 50's Definition of Done
+# applied unconditionally — so a typo fix still cost an issue, a branch, a spec
+# check and the full DoD sweep. Making the size class actually govern needs three
+# always-on statements (the exemption, the authority claim, the size-gated markers)
+# and cannot be expressed by cross-reference alone, because the rules being
+# exempted are the ones a session reads. Traded out first, as the default here
+# requires: rule 32's notable-event enumeration and rule 55's `spec-drift`
+# mechanics moved to reference prose, and the per-change `/spec/history/` obligation
+# left rules 30, 50, 55 and 99 outright (−136 B) — the same PR that shrinks a
+# per-change duty pays part of its own cost. Net +511 B. Re-armed at the measured
+# total (67,758 B across 35 files) plus ~1%, keeping real headroom rather than the
+# 5-to-16-byte margins this note blames for making earlier raises inevitable.
+# Target stays 62,500.
+RULES_TOTAL_MAX_BYTES = 68_400
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently

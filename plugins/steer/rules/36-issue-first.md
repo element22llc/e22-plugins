@@ -7,7 +7,8 @@ copy — every
 **implementation-affecting mutation** — code, config, infrastructure, or
 behavior — has a GitHub issue **before the first repository mutation**. Out of
 scope (no issue needed): `/spec` edits, documentation, generated output,
-lockfiles, and a plugin-maintenance `/steer:sync` on its own `feat/sync`
+lockfiles, a **Tiny** change (Change-size model — the PR is the evidence anchor
+instead), and a plugin-maintenance `/steer:sync` on its own `feat/sync`
 branch (structural, never app source). Reuse the issue the user names;
 otherwise find-or-create one through `/steer:tracker-sync` — an explicit
 "fix / implement / add / create" request does **not** need confirmation to

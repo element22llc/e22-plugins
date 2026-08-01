@@ -53,7 +53,7 @@ none apply.
 
 ## Living docs sync
 
-- [ ] `/spec/history/` has an entry file for this change (what, why, who asked, refs)
+- [ ] `/spec/history/` has an entry file — **only if this PR is a notable event** (a ratified decision, a scope change, a repo-level event, an absorbed PO document, an incident). An ordinary change needs none: this PR is its record.
 - [ ] `/spec/app/` updated if user-facing behavior or configuration changed
 - [ ] `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed
 - [ ] N/A — no behavior, setup, or decision change

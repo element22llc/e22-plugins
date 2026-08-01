@@ -19,9 +19,10 @@ update (or propose) the owning artifact **in the same change as the code**:
   establishes the stack or first app also retires the scaffold's now-false
   placeholder prose — a stub left after the thing it describes exists is
   drift.
-- What changed, why, who asked, refs → a **new file** under `/spec/history/`
-  (`YYYY-MM-DD-HHMM-<slug>.md`), one short entry per merged change or ratified
-  decision — never appended to a shared log, and immutable once merged.
+- A **notable event** — ratified decision, scope change, repo-level event,
+  absorbed PO document, incident → a **new file** under `/spec/history/`
+  (`YYYY-MM-DD-HHMM-<slug>.md`), immutable once merged. **An ordinary merged
+  change writes none** — the commit and the PR are its record.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
 and `/spec/history/` are the **workspace's** — write them there via

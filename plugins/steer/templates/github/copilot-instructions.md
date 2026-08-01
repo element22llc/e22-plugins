@@ -358,8 +358,8 @@ Create the artifact when the trigger fires — don't defer it:
   `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
   stack choice is usually the first ADR.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
-  the app guide (`/spec/app/`) if it describes the old behavior, and a
-  `/spec/history/` entry; see Living documentation.
+  the app guide (`/spec/app/`) if it describes the old behavior; see Living
+  documentation.
 - **Open questions** → the feature's `intent.md` → `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.
@@ -453,9 +453,10 @@ update (or propose) the owning artifact **in the same change as the code**:
   establishes the stack or first app also retires the scaffold's now-false
   placeholder prose — a stub left after the thing it describes exists is
   drift.
-- What changed, why, who asked, refs → a **new file** under `/spec/history/`
-  (`YYYY-MM-DD-HHMM-<slug>.md`), one short entry per merged change or ratified
-  decision — never appended to a shared log, and immutable once merged.
+- A **notable event** — ratified decision, scope change, repo-level event,
+  absorbed PO document, incident → a **new file** under `/spec/history/`
+  (`YYYY-MM-DD-HHMM-<slug>.md`), immutable once merged. **An ordinary merged
+  change writes none** — the commit and the PR are its record.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
 and `/spec/history/` are the **workspace's** — write them there via
@@ -509,7 +510,8 @@ copy — every
 **implementation-affecting mutation** — code, config, infrastructure, or
 behavior — has a GitHub issue **before the first repository mutation**. Out of
 scope (no issue needed): `/spec` edits, documentation, generated output,
-lockfiles, and a plugin-maintenance `/steer:sync` on its own `feat/sync`
+lockfiles, a **Tiny** change (Change-size model — the PR is the evidence anchor
+instead), and a plugin-maintenance `/steer:sync` on its own `feat/sync`
 branch (structural, never app source). Reuse the issue the user names;
 otherwise find-or-create one through `/steer:tracker-sync` — an explicit
 "fix / implement / add / create" request does **not** need confirmation to
@@ -623,14 +625,17 @@ scaffold's CI runs that floor on push to `main` — the changed-line coverage ga
 (rule 41) and the advisory spec-drift warning (rule 55) — as the only automated
 backstop. It is a floor, not the whole list: the rest is still on you.
 
+Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** change
+needs only a PR.
+
 - [ ] Code follows existing patterns in the touched app/package.
-- [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**.
+- [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**. **(size-gated)**
 - [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
-- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; a `/spec/history/` entry written (see Living documentation).
+- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; a `/spec/history/` entry only for a notable event (see Living documentation).
 - [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
-- [ ] GitHub-adopted repo: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
+- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Architectural choices captured as an ADR under `/spec/decisions/`.
 - [ ] High-risk areas were scoped first (see High-risk areas).
 - [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
@@ -739,12 +744,11 @@ until the reviewer explicitly resolves it — you may not waive your own flag.
 Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
 
 The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
-(never blocks) when a change touches application behavior without updating a
-feature `contract.md` / `intent.md` or a `spec/history/` entry — a machine backstop for
-the *undocumented behavior change* class. It runs on PRs and on push to `main`
-(the latter is the only enforcer in solo-trunk, which has no PR). A warning is a
-prompt to do the right thing, not a substitute for the flag: still flag the class
-and update the spec in the same change.
+(never blocks) when a change touches application behavior without updating the
+owning `contract.md` / `intent.md` — a machine backstop for the *undocumented
+behavior change* class, and in solo-trunk (no PR) the only one. A warning is a
+prompt, not a substitute for the flag: still flag the class and update the spec in
+the same change. Mechanics: `/steer:reference gates`.
 
 
 ## High-risk areas
@@ -883,21 +887,26 @@ say "aligned", never "compliant": no workflow or artifact makes a product
 compliant; certification scope, compliance accountability, and
 production-readiness approval stay with humans. The artifacts double as audit
 evidence — keep the chain intact: traceability (intent → spec → tracker ref →
-PR → `/spec/history/`), review evidence (dev-approved PRs, drift flags, DoD),
-change history (ADRs + action history), and access-conscious secure defaults
+the reviewed PR, each change's own record), review evidence (dev-approved PRs,
+drift flags, DoD), change history (ADRs + action history), and
+access-conscious secure defaults
 (secrets rules, high-risk gates, branch protection). Evidence map:
 `/steer:reference traceability`.
 
 
 ## Change-size model
 
-Match the workflow to the change. When uncertain, size **up**.
+Match the workflow to the change. When uncertain, size **up**. **This rule sets
+per-change ceremony** — Issue-first and Definition of Done take their thresholds
+from here, and an arguable class takes the larger one.
 
-- **Tiny** (≈<20 lines, no logic change — copy, padding, typo): just open a PR.
+- **Tiny** (≈<20 lines, **no behavior change** — copy, typo, formatting, comment):
+  open a PR and stop — **no issue, no spec, no ADR, no plan**; the PR is the
+  evidence anchor. Any behavior change is Small at minimum, however few the lines.
 - **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
 - **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
 - **Large** (crosses areas, new pattern, touches infra): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs.
-- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above.
+- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above — never Tiny.
 
 **Medium** and larger start in plan mode (or a posted plan): review the
 approach while it's cheap to change.
@@ -1064,7 +1073,7 @@ dropped:
 - [ ] Architectural choice made → ADR written under `/spec/decisions/`?
 - [ ] Tests added/updated for the change; bug fix has a regression test?
 - [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
-- [ ] Living docs in sync — app guide updated for behavior changes, `/spec/history/` entry written, tracker refs recorded?
+- [ ] Living docs in sync — app guide updated for behavior changes, tracker refs recorded?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?

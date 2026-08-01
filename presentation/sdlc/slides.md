@@ -531,7 +531,7 @@ and walk from the answer back to the decision, the discussion and the person who
 <div v-click class="mt-5 text-center text-sm opacity-60">
 
 Documentation is written **in the same PR as the change** — extract-don't-embellish — so the record never lags the code.
-Every merged change writes one immutable entry file under <code>/spec/history/</code>: what, why, who, references.
+Notable events — a ratified decision, a scope change, an incident — write one immutable entry file under <code>/spec/history/</code>: what, why, who, references. Ordinary changes need none: the reviewed PR is their record.
 
 </div>
 
@@ -772,7 +772,7 @@ the real portability argument.
 
 <div v-click class="flex gap-3 items-start p-2.5 rounded-lg border border-rose-400/20 bg-rose-400/5">
 <div class="w-40 shrink-0 opacity-60">Verify · Deliver</div>
-<div>A developer reviews and merges; the change deploys through the protected branch. <code>/spec/history/</code> gains one entry file: <i>what, why, who, refs #142/#143</i>.</div>
+<div>A developer reviews and merges; the change deploys through the protected branch. The merged <b>PR #143</b> is the change's own record — <i>what, why, who, refs #142</i> — so nothing is re-typed by hand.</div>
 </div>
 
 <div v-click class="flex gap-3 items-start p-2.5 rounded-lg border border-sky-400/20 bg-sky-400/5">
@@ -787,7 +787,9 @@ the real portability argument.
 <!--
 The concrete walk-through that makes the abstractions land. Every artifact
 named here is real: intent/contract, Q-NNN answer captured, issue-first,
-issue/<n>-<slug> branch, PR + human merge, /spec/history/ entry.
+issue/<n>-<slug> branch, PR + human merge. No /spec/history/ entry here — this
+walk-through is an ordinary change, and the reviewed PR is its record; the
+history log carries notable events (ratified decisions, scope changes, incidents).
 -->
 
 ---

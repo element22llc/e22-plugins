@@ -7,6 +7,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** the action history (`/spec/history/`) is now a log of **notable events**,
+  not one entry per merged change. An entry is written when the *why* is something the
+  commit history and the reviewed PR cannot reconstruct — a ratified decision (ADR
+  `Accepted`, intent approved), a scope change to an approved intent, a repo-level event
+  (bootstrap, adoption, plugin sync, solo-trunk graduation), an absorbed PO source
+  document, or a production incident and its follow-up. An ordinary change writes none:
+  its record is the commit plus the PR, which already carry what changed, when, by whom,
+  and the tracker ref, so the hand-written entry duplicated version control for no added
+  information — and a log padded with routine entries is one nobody reads, which costs the
+  decisions worth finding. Rules `30`, `32`, `50`, `55`, `75`, `99`, the consumer PR
+  template, `TRACEABILITY.md`, `GATES.md`, and the installed `spec/history/README.md` all
+  move together. Every skill that writes an entry today (`adr`, `spec approve`, `protect`
+  graduation, `init`, `adopt`, `sync`, `intake`, the hotfix follow-up) already fires on a
+  notable event, so none of them change. The advisory `spec-drift` CI job keeps its
+  existing path filter — a repo mid-migration is still not flagged — but rule `55` no
+  longer advertises a history entry as a way to clear it, since updating the owning
+  `contract.md` / `intent.md` is now the only routine path for a behavior change.
+- **Changed:** the **Change-size model** (rule `80`) is now authoritative for per-change
+  ceremony, and the **Tiny** class is a real exemption instead of advisory prose. Rule `80`
+  said Tiny (≈<20 lines, no logic change) could "just open a PR", but Issue-first (`36`)
+  required an issue before the first mutation with size-blind exemptions, and Definition of
+  Done (`50`) applied unconditionally — so a typo fix still cost an issue, a branch, a spec
+  check, and the full DoD sweep. Tiny now needs **no issue, no spec update, no ADR, no
+  plan**: the PR is the record and the audit-evidence anchor. `36` carries the carve-out in
+  its out-of-scope list, `50` marks the size-gated items and states that rule `80` sets the
+  thresholds. Guarded on both sides: Tiny requires *zero* behavior change (any behavior
+  difference is Small at minimum, however few the lines), anything under High-risk areas is
+  **Risky** at any line count, and an arguable class takes the larger one.
+
 ### 4.0.0
 
 - **Fixed:** the action-history migration's second precondition can now detect every

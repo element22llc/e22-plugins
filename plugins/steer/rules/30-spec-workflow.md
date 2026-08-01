@@ -10,8 +10,8 @@ Create the artifact when the trigger fires — don't defer it:
   `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
   stack choice is usually the first ADR.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
-  the app guide (`/spec/app/`) if it describes the old behavior, and a
-  `/spec/history/` entry; see Living documentation.
+  the app guide (`/spec/app/`) if it describes the old behavior; see Living
+  documentation.
 - **Open questions** → the feature's `intent.md` → `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.

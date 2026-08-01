@@ -120,9 +120,9 @@ record all four of:
    an inline ratification from a considered offline review. Both are valid; they
    are not the same evidence, and the record should not blur them.
 
-Plus **one** `/spec/history/` entry — rule `32-living-docs` already requires
-one per ratified decision (what / why / who asked / refs). One entry, not one per
-field.
+Plus **one** `/spec/history/` entry — a ratified decision is a notable event, one
+of the cases rule `32-living-docs` still requires an entry for (what / why / who
+asked / refs). One entry, not one per field.
 
 On `Reject`, record the reason where a future reader will find it: for an ADR,
 the ADR itself (it stays a point-in-time record — **never** delete or renumber

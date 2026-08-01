@@ -101,8 +101,8 @@ past the per-PR flag.
 The shipped CI scaffold also carries an **advisory `spec-drift` job** as a machine
 backstop for the *undocumented behavior change* class: pure shell + git (no stack,
 no Python), it *warns* — never blocks — when a change touches application behavior
-(`apps/`, `packages/`, `src/`, …) without updating a feature `contract.md` /
-`intent.md` or a `spec/history/` entry. It runs on PRs and on push to `main`, so it is
+(`apps/`, `packages/`, `src/`, …) without updating the owning feature
+`contract.md` / `intent.md`. It runs on PRs and on push to `main`, so it is
 the only spec-drift signal in **solo-trunk** mode, which has no PR. The warning
 prompts you to update the spec or confirm "no behavior change" via the PR
 template — it does not replace the human-resolved flag.
