@@ -63,15 +63,18 @@ one.
 | --- | --- | --- |
 | **Tiny** | ≈<20 lines, **no behavior change** — copy, typo, formatting, comment | Open a PR and stop: **no issue, no spec, no ADR, no plan**. The PR is the evidence anchor. |
 | **Small** | ≈<200 lines, contained behavior change | Confirm intent; update `contract.md` if behavior changed. |
-| **Medium** | A new screen, feature, or capability | `intent.md` first, PO approval, then implement with `contract.md`. Starts in plan mode. |
-| **Large** | Crosses areas, touches infra, or a choice costly to reverse | An ADR in `/spec/decisions/` first, agree with the team, ship in small PRs. Starts in plan mode. |
+| **Medium** | A new screen, feature, or capability | `intent.md` first, PO approval, then implement with `contract.md`. Starts in plan mode (or a posted plan). |
+| **Large** | Crosses areas, touches infra, or a choice costly to reverse — **a first-time pattern is not itself Large** | An ADR in `/spec/decisions/` first, agree with the team, ship in small PRs. Starts in plan mode (or a posted plan). |
 | **Risky** | Any [high-risk area](../reference/configuration.md), *regardless of line count* | High-risk handling — **never Tiny**. |
 
 Tiny is guarded on both sides, which is what keeps it from becoming a loophole: it
 requires *zero* behavior change (any behavior difference is Small at minimum,
 however few the lines), and anything in a high-risk area is Risky at any line
-count. The two Definition-of-Done items that are size-gated — the GitHub issue and
-its `steer:state`, and the spec update — are marked **(size-gated)** in rule `50`.
+count. The two Definition-of-Done items that a Tiny change is excused from are
+marked **(size-gated)** in rule `50`: **tests** (including the regression test a
+bug fix normally requires) and the **GitHub issue** with its `steer:state`. The
+spec-update item is not size-gated — it is simply moot for a Tiny change, which by
+definition changes no behavior.
 
 ## One lifecycle store, two questions
 

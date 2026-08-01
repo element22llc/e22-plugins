@@ -43,8 +43,8 @@ via `/steer:reference design-sources` — never fetch the URL (it 403s).
 
 **A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
-below; a GitHub-adopted repo still keeps the issue, closed from the commit — see
-Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
+below; a GitHub-adopted repo still keeps the issue for any change above Tiny,
+closed from the commit — see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
 built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
 to skip bootstrap now.

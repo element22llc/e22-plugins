@@ -104,6 +104,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   loads `GATES.md` — in-session human decision prompts, containing no drift-gate
   content at all. The drift-gate mechanics live in `TRACEABILITY.md`, so the pointer is
   now `/steer:reference traceability`.
+- **Fixed:** `TRACEABILITY.md` — the canonical drift/living-docs reference — no longer
+  contradicts the notable-event narrowing inside its own pages. Its "the log serves"
+  list still promised **auditability for any change**, and both worked examples still
+  had Claude write a history entry for an ordinary merged change (shipping an approved
+  CSV export; an N+1 perf refactor) — the exact per-merged-change shape the narrowing
+  retired, in the document that teaches the pattern by example. The examples now write
+  none and say why, and the audit claim is scoped to notable events with the commit and
+  reviewed PR named as an ordinary change's record. The stale "**eight** review-sensitive
+  classes" count in the same file and in the `reference` skill's `COVERAGE.md` is now
+  **nine**, matching rule `55` and the shipped PR template's nine checkboxes.
+- **Fixed:** rule `30`'s prototype paragraph still stated issue-first as an absolute
+  ("a GitHub-adopted repo still keeps the issue"), and it is the rule the `setup` skill
+  names as canonical for exactly that prose — so the deferring surface knew about the
+  **Tiny** exemption while the surface it defers to did not. Rule `30` now reads "for
+  any change above Tiny".
 
 ### 4.0.0
 
