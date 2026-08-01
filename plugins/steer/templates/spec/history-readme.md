@@ -75,9 +75,7 @@ directly:
 ```markdown
 # 2026-06-10 14:32 — ADR 0004 accepted: Postgres for vendor search
 
-- **Why:** vendor search outgrew the in-memory index; the reviewer ratified
-  Postgres over Elasticsearch, and reports built on it make the choice costly
-  to reverse
+- **Why:** vendor search outgrew the in-memory index; reversing this once reports depend on it would mean redoing them
 - **Requested by:** @pat-po
 - **Refs:** PROJ-214 · spec/decisions/0004-postgres-for-vendor-search.md · PR #87
 - **Areas:** apps/web, packages/core
