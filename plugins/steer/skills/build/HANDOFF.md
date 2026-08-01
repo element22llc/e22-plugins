@@ -19,8 +19,9 @@ real secrets). Steps 5–6 (scaffold, build feature by feature) are in
    Once the PO has actually used the running app and their step-8 feedback is
    incorporated, you may ask plainly: *"Does this do everything you wanted?
    Anything missing before a developer takes over?"* Only on their explicit
-   yes: check **PO validated the working demo** in each `intent.md`, set its
-   Status to `validated`, and mark the gate passed in `/spec/BUILD-STATUS.md`
+   yes: check **PO validated the working demo** in each `intent.md` (the
+   acceptance checkbox is the record — `Status:` stays `approved` until the build
+   is actually released to users), and mark the gate passed in `/spec/BUILD-STATUS.md`
    (with where the confirmation happened). If the PO says "it's done" or
    "ready for the developer" unprompted, that is the gate — record it the
    same way.

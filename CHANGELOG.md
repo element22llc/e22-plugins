@@ -7,6 +7,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed:** `feature_status` narrows to **`draft · approved · live`** — the spec stops
+  mirroring delivery progress. `implemented` and `validated` are **retired**. Both were
+  pure restatements of the issue's `validate`/`done`: `ISSUE-WORKFLOW.md` declared the
+  spec `Status:` *derived* from the issue `steer:state`, but it was stored in `intent.md`
+  and hand-edited, so it was a derived value nobody recomputed — seven of the crosswalk's
+  nine rows carried no information the issue did not already hold, while every merge,
+  close and reopen had to be replayed by hand into a second file. `reconcile` existed
+  largely to repair what that missed. The spec now holds only the two facts no issue state
+  implies: the PO approved this scope (`approved`) and users can see it (`live`, which an
+  accepted close does **not** imply). `Status:` therefore moves at exactly two human
+  events — `/steer:spec approve` and the release — so a merged PR, a close, or a reopen
+  can no longer leave it stale. **A feature reading `approved` whose issue reads `done` is
+  now the intended pairing, not drift.** Reading rule: "is it built?" is an issue
+  question; "was this scope approved?" and "can users see it?" are spec questions.
+  `reconcile --all` drops the *merged PRs that left a stale `Status`* sweep entirely and
+  narrows the closed-feature sweep to a `live` intent whose issue never went terminal;
+  `/steer:work status|resume|finish` and `/steer:tracker-sync transition` no longer touch
+  the spec. Moves together: `enums.registry`, `ENUMS.md`, the `ISSUE-WORKFLOW.md`
+  crosswalk (kept, now a statement of independence), `feature-intent.md`,
+  `NEXT-ACTIONS.md`, `TRACEABILITY.md`, the `all-clean-no-action` fixture, and the
+  `spec`, `work`, `tracker-sync`, `issues`, `audit`, `status`, `explain`, `roadmap`,
+  `next` and `build` skills. A ledger entry migrates adopted repos: `implemented` →
+  `approved`, `validated` → `approved` (or `live` only where the repo shows a real
+  release), touching no issue, and the *PO validated the working demo* checkbox now
+  carries the acceptance record that `Status: validated` used to imply.
 - **Changed:** the action history (`/spec/history/`) is now a log of **notable events**,
   not one entry per merged change. An entry is written when the *why* is something the
   commit history and the reviewed PR cannot reconstruct — a ratified decision (ADR

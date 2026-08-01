@@ -196,10 +196,12 @@ necessary for `done`, not sufficient on its own).
   where one applies. Cancelled work was not delivered.
 - PR closed **without** merge → back to `in-progress` or `blocked`.
 - `status` / `resume` / `finish` reconcile stale markers on the next interaction,
-  reading the closure reason rather than assuming "closed == done." When a feature
-  issue's state and its spec `Status:` disagree, derive the expected `Status:` from
-  the issue state via the Status↔state crosswalk (`ISSUE-WORKFLOW.md`) and surface
-  the mismatch — never silently rewrite the spec.
+  reading the closure reason rather than assuming "closed == done." **They never
+  touch the spec's `Status:`** — delivery progress lives only in the issue marker,
+  and an `approved` intent whose issue is `in-progress`, `validate`, or `done` is
+  correct, not drift (crosswalk in `ISSUE-WORKFLOW.md`). The one spec-side state
+  this flow can legitimately surface is a `live` intent whose issue never reached a
+  terminal state; report it, never rewrite it.
 
 ## Branch naming
 

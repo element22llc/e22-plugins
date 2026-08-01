@@ -6,7 +6,7 @@ manufacture busywork.
 ## Given
 
 - No committed secrets.
-- Every `spec/features/*/intent.md` is `approved`, `validated`, or `live`; no
+- Every `spec/features/*/intent.md` is `approved` or `live`; no
   open blocking questions and no production-gating questions anywhere.
 - No `Proposed` ADRs.
 - No open PRs; current branch is `main`; no claimed/in-progress issues; no
