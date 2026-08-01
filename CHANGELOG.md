@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 5.0.0
+
 - **Changed:** the ADR threshold is now **reversal cost, not novelty**, and a first-time
   pattern no longer triggers one. Rule `30` asked for an ADR on "a new cross-cutting
   **pattern**", rule `80` classed "new pattern" as Large, and rule `50`'s Definition of
@@ -20,7 +22,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `cross-cutting` remain triggers** — only novelty is dropped; a cross-cutting choice is
   costly to reverse by construction. Rules `30`, `50`, `80`, the `adr` skill, and
   `docs/decisions/` move together.
-- **Changed:** `feature_status` narrows to **`draft · approved · live`** — the spec stops
+- **Changed (breaking):** `feature_status` narrows to **`draft · approved · live`** — the spec stops
   mirroring delivery progress. `implemented` and `validated` are **retired**. Both were
   pure restatements of the issue's `validate`/`done`: `ISSUE-WORKFLOW.md` declared the
   spec `Status:` *derived* from the issue `steer:state`, but it was stored in `intent.md`
