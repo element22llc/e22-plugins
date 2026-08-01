@@ -62,8 +62,9 @@ resuming once the build is handed off — every box in its handoff gate checked.
 
 !!! warning "\"Prototype\" is not an escape hatch"
     Saying *"just a prototype"*, *"quick"*, or *"throwaway"* relaxes only the
-    **ceremony** — a lighter interview, no per-feature issue/branch/PR, high-risk
-    choices stubbed and marked. It does **not** skip the plugin's **bundled
+    **ceremony** — a lighter interview, branch/PR relaxed only under solo-trunk
+    mode, high-risk choices stubbed and marked. In a GitHub-adopted repo the issue
+    survives for any change above [Tiny](../concepts/sdlc.md#change-size). It does **not** skip the plugin's **bundled
     scaffold** (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) or
     the `/spec` spine. A prototype is still greenfield: it gets the scaffold (so it
     costs nothing to graduate later) and at least a minimal `/spec`. Hand-rolling

@@ -57,7 +57,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   decisions worth finding. Rules `30`, `32`, `50`, `55`, `75`, `99`, the consumer PR
   template, `TRACEABILITY.md`, `GATES.md`, and the installed `spec/history/README.md` all
   move together. Every skill that writes an entry today (`adr`, `spec approve`, `protect`
-  graduation, `init`, `adopt`, `sync`, `intake`, the hotfix follow-up) already fires on a
+  graduation, `init`, `adopt`, `sync`, `intake`, `build`'s v0 handoff, the hotfix
+  follow-up) already fires on a
   notable event, so none of them change. The advisory `spec-drift` CI job keeps its
   existing path filter — a repo mid-migration is still not flagged — but rule `55` no
   longer advertises a history entry as a way to clear it, since updating the owning
@@ -119,6 +120,29 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   names as canonical for exactly that prose — so the deferring surface knew about the
   **Tiny** exemption while the surface it defers to did not. Rule `30` now reads "for
   any change above Tiny".
+- **Fixed:** the two issue-first **hooks** now state the **Tiny** carve-out. Rounds of
+  doc fixes cleared `ISSUE-WORKFLOW.md`, the scaffold `CLAUDE.md`, the `setup` skill and
+  rule `30`, but `check-write-nudges.sh` and `reconcile-issue-first.sh` are the surfaces
+  that quote the rule *directly into a live session*, and both still enumerated the
+  exempt set as "not spec, docs, or lockfiles" — asserting a complete list and getting
+  it wrong, so a ≤20-line typo fix was nudged to file an issue rule `36` says it does
+  not need. Both remain advisory and fire once per session; only the text changed.
+- **Fixed:** `TRACEABILITY.md` now documents the advisory `spec-drift` CI job. Rule `55`
+  shed those mechanics to reference prose and points at this file — but the mechanics
+  were **deleted, not relocated**, so the pointer led to a document that never described
+  the job, and the recorded byte-budget rationale for a ceiling raise claimed a move that
+  had not happened. §5 now carries the job: warns-never-blocks, what clears it
+  (`contract.md`/`intent.md` routinely; a dated history entry or a mid-migration
+  `spec/HISTORY.md` also match the filter, the directory README does not), and that it
+  runs on push to `main`, making it the only spec-drift signal in solo-trunk.
+- **Fixed:** the action-history **worked examples** no longer teach the shape the
+  notable-event narrowing retired. Both `TRACEABILITY.md` §2 and the installed
+  `spec/history/README.md` illustrated an entry with "CSV export added to vendor list"
+  — an ordinary shipped feature — the first sitting beside prose that now says that
+  exact scenario writes no entry, the second 49 lines below its own "**An ordinary
+  merged change writes no entry.**" The one example a consumer reads contradicted the
+  rule directly above it. Both now show an ADR ratification, and the slug examples in
+  `history-entry.md` and `history-readme.md` follow.
 
 ### 4.0.0
 

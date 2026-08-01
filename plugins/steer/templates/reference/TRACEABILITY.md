@@ -89,11 +89,13 @@ spec/history/YYYY-MM-DD-HHMM-<slug>.md
 ```
 
 ```markdown
-# 2026-06-10 14:32 — CSV export added to vendor list
+# 2026-06-10 14:32 — ADR 0004 accepted: Postgres for vendor search
 
-- **Why:** PO needs to hand vendor data to finance monthly
+- **Why:** vendor search outgrew the in-memory index; the reviewer ratified
+  Postgres over Elasticsearch, and reports built on it make the choice costly
+  to reverse
 - **Requested by:** @pat-po
-- **Refs:** PROJ-214 · spec/features/export-csv/ · PR #87
+- **Refs:** PROJ-214 · spec/decisions/0004-postgres-for-vendor-search.md · PR #87
 - **Areas:** apps/web, packages/core
 ```
 
@@ -208,6 +210,25 @@ Mechanics:
 - Sweeps for drift that slipped past per-PR gates: `/steer:audit spec` (as-built spec
   vs tracker spec), `/steer:audit` (code vs standards), `/steer:questions` (open
   questions rotting).
+
+### The advisory `spec-drift` CI job
+
+The bundled CI scaffold carries a machine backstop for the *undocumented behavior
+change* class — pure shell and git, no stack and no Python, so it runs anywhere:
+
+- It **warns, never blocks.** The warning is a prompt to update the spec or to
+  confirm "no behavior change" via the PR template; it does not replace the
+  human-resolved flag, and it cannot resolve one.
+- It fires when a change touches application behavior (`apps/`, `packages/`,
+  `src/`, …) without a matching spec update in the same change.
+- **What clears it:** the owning feature's `contract.md` or `intent.md` — the
+  routine path for a behavior change. A dated `spec/history/` entry also clears
+  the filter, and a repo mid-migration still clears it with `spec/HISTORY.md`,
+  but neither is the routine path: an ordinary merged change writes no history
+  entry at all (§2). The directory's `README.md` format doc does **not** clear it —
+  the filter matches date-named entries only.
+- It runs **on PRs and on push to `main`**, which makes it the *only* spec-drift
+  signal in solo-trunk mode, where there is no PR to carry a flag.
 
 ---
 

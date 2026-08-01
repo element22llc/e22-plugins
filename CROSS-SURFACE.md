@@ -63,7 +63,7 @@ There is also one **non-Claude target already shipped**: **GitHub Copilot** (CLI
 VS Code), served not by porting the hook layer but by **build-time generation** —
 `mise run gen:copilot` renders the same `rules/` into a committed
 `.github/copilot-instructions.md` and the skills into `.github/prompts/*.prompt.md`
-(VS Code) / a Copilot plugin manifest (`.github/plugin/plugin.json`, CLI), with the
+(VS Code) / a Copilot plugin manifest (`plugins/steer/.github/plugin/plugin.json`, CLI), with the
 two CLI-only gates above. See
 [`docs/concepts/copilot-support.md`](docs/concepts/copilot-support.md).
 
@@ -101,7 +101,7 @@ two CLI-only gates above. See
     surface at all: the standards and skills reach Copilot as **generated,
     committed artifacts** (`.github/copilot-instructions.md`,
     `.github/prompts/*.prompt.md`, the Copilot plugin manifest
-    `.github/plugin/plugin.json`) rendered from the same `rules/` + `skills/` by
+    `plugins/steer/.github/plugin/plugin.json`) rendered from the same `rules/` + `skills/` by
     `mise run gen:copilot` — including the `steer-reviewer` subagent as
     `.github/agents/steer-reviewer.agent.md` — plus two CLI-only gates
     (`hooks/copilot-hooks.json`: the version-pin and bash-action `ask`s). VS Code

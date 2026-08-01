@@ -71,8 +71,10 @@ Tiny is guarded on both sides, which is what keeps it from becoming a loophole: 
 requires *zero* behavior change (any behavior difference is Small at minimum,
 however few the lines), and anything in a high-risk area is Risky at any line
 count. The two Definition-of-Done items that a Tiny change is excused from are
-marked **(size-gated)** in rule `50`: **tests** (including the regression test a
-bug fix normally requires) and the **GitHub issue** with its `steer:state`. The
+marked **(size-gated)** in rule `50`: **tests** and the **GitHub issue** with its
+`steer:state`. (Rule 50's tests bullet also covers the regression test a bug fix
+requires, but that clause never reaches a Tiny change — a bug fix corrects
+behavior, so it is Small at minimum.) The
 spec-update item is not size-gated — it is simply moot for a Tiny change, which by
 definition changes no behavior.
 
