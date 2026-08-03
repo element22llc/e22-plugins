@@ -68,14 +68,26 @@ script does not warn, it fails to parse.** The shell reads the trailing `\r` as
 part of the token, so `steer_repo_root() {` becomes
 `syntax error near unexpected token $'{\r'` and the script never runs at all.
 
-Both sides of this are now handled for you:
+Both sides of this are handled, but they arrive by different routes:
 
 - **The plugin** ships a `.gitattributes` pinning `* text=auto eol=lf`, so the
   bundled hooks and scripts check out as LF no matter what `core.autocrlf` says
-  on the host.
+  on the host. You get this automatically with any install or reinstall.
 - **Your repo** gets the same normalization from the bundled scaffold, so a
   Windows contributor can't commit CRLF into `scripts/*.sh`, a Docker
-  entrypoint, or the generated `.github/` Copilot surface.
+  entrypoint, or the generated `.github/` Copilot surface — but only when
+  `/steer:init` or `/steer:adopt` installs the scaffold. A repo **already**
+  managed by steer does not pick it up from `/steer:sync` today; copy
+  `templates/scaffold/gitattributes` in by hand (merging into an existing
+  `.gitattributes` rather than replacing it) if you want the policy now.
+
+!!! note "Normalization applies going forward, not retroactively"
+    Adding `.gitattributes` to a repo that already has CRLF **committed** does
+    not rewrite that history — git only normalizes what it is asked to stage
+    again. Convert the existing content once, in its own commit, with
+    `git add --renormalize . && git commit -m "chore: normalize line endings to LF"`.
+    Do it on a quiet branch: it touches every affected file, so it will collide
+    with anything in flight.
 
 !!! warning "An older install may predate the fix"
     `.gitattributes` only governs *future* checkouts, so a plugin installed
