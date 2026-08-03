@@ -10,7 +10,9 @@
 # WHAT IT COMPARES
 #   Structural anchors only: `##`/`###` headings and `- [ ]` checklist items.
 #   Checkbox state is flattened ([x]/[X] -> [ ]) and lines are sorted-unique, so
-#   checked-vs-unchecked and ordering never produce a false diff. Lines carrying
+#   checked-vs-unchecked and ordering never produce a false diff. Line endings
+#   are normalized too (CR stripped from BOTH files), so a CRLF file on either
+#   side compares by content and never manufactures a phantom gap. Lines carrying
 #   the `steer:placeholder` marker are dropped from BOTH files before the diff:
 #   those are seed stubs (e.g. the `### Q-001 — [...]` open-question block in a
 #   fresh intent) that the dev is meant to fill in and delete the marker from —
@@ -59,8 +61,18 @@ bundled=$2
 # (grep exit 1) doesn't abort the pipeline. Placeholder-marked seed lines
 # (`steer:placeholder`) are stripped first so filled-in/deleted stubs never
 # surface as a "missing" anchor.
+#
+# CR is deleted FIRST, before anything else looks at the line. A CRLF file on
+# either side would otherwise give every anchor an invisible trailing `\r`, so
+# no anchor could ever match its LF counterpart and the bundled template's
+# ENTIRE anchor set would be reported as missing — a silent false positive in
+# the one step whose contract is "additive, never clobber", and one a caller
+# acting on the output would turn into ~100 duplicate spliced sections. Repo
+# `.gitattributes` (`* text=auto eol=lf`) keeps CRLF out of the bundled side,
+# but the consumer file's endings are not ours to control, so normalize both.
 norm() {
-	{ grep -hE '^(#{2,3} |- \[)' "$1" || true; } |
+	tr -d '\r' <"$1" |
+		{ grep -hE '^(#{2,3} |- \[)' || true; } |
 		{ grep -v 'steer:placeholder' || true; } |
 		sed -E 's/\[[xX]\]/[ ]/' | sort -u
 }

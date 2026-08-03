@@ -4,8 +4,11 @@ description: Detect the local prerequisites a managed repo needs before init/bui
 when_to_use: >-
   Use on a fresh machine, or whenever a tool is missing ("command not found",
   "tool not found", mise/docker errors), before /steer:init, /steer:build, or
-  `mise run dev:setup`.
+  `mise run dev:setup`. Also when steer's own scripts fail to run at all
+  ("syntax error near unexpected token", every hook broken at once) — §0 checks
+  whether the plugin install itself is corrupt.
 allowed-tools:
+  - Bash(grep -rl *)
   - Bash(git rev-parse *)
   - Bash(git --version)
   - Bash(mise --version)
@@ -32,6 +35,40 @@ the floor too**, for a different reason: installing it is a `sudo`/host command
 you to run rather than running itself. This skill
 *detects* and *links* everything on the floor; for everything below it — mise and the
 runtimes it manages — it installs with your confirmation.
+
+## 0. Plugin integrity — is steer itself intact?
+
+Run this **first**, before the detector below. It is the one check that cannot
+be delegated to a bundled script, because the fault it looks for is what stops
+bundled scripts from running at all:
+
+```sh
+grep -rl "$(printf '\r')" "${CLAUDE_PLUGIN_ROOT}/hooks" "${CLAUDE_PLUGIN_ROOT}/scripts"
+```
+
+**Any output means the installed plugin has CRLF line endings** — the checkout
+was made on a host with `core.autocrlf=true` (the Git for Windows default; a WSL
+session reading a Windows-side plugin directory hits it too). A CRLF shell
+script does not warn, it fails to **parse**, so every hook lib and scan script
+is dead and the symptom reaching the user is an opaque
+`syntax error near unexpected token $'{\r'` from whichever script sourced a lib
+first. Worse, `template-reconcile.sh` may still *run* and report every anchor of
+a bundled template as a missing gap.
+
+Report it as a **plugin-install fault, not a missing prerequisite**, and stop —
+none of the checks below are meaningful until it is fixed. The repair:
+
+```sh
+# Re-clone the marketplace with normalization applied (preferred).
+/plugin uninstall steer   # then re-install; steer ships .gitattributes with eol=lf
+```
+
+If reinstalling is not immediately possible, the in-place unblock is
+`find "${CLAUDE_PLUGIN_ROOT}" -type f \( -name '*.sh' -o -name '*.md' \) -exec sed -i 's/\r$//' {} +`
+(on macOS, `sed -i ''`). Say plainly that this is a workaround on an installed
+copy which `/plugin update` will overwrite.
+
+Silence here is the pass — say nothing about it and move to §1.
 
 ## 1. Detect — run the scan, don't eyeball
 

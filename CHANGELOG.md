@@ -7,6 +7,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
+  install.** With no `.gitattributes`, a checkout under `core.autocrlf=true` (the
+  Git for Windows default — a WSL session reading a Windows-side plugin directory
+  hits it too) rewrote every bundled script to CRLF, and a CRLF shell script does
+  not warn, it fails to **parse**: `hooks/lib/{repo-root,spine,scope}.sh`,
+  `scripts/scan-{capabilities,invocations}.sh` and `scripts/template-reconcile.sh`
+  all died with `syntax error near unexpected token $'{\r'`, so `/steer:sync`
+  broke on its opening move. The repo now pins `* text=auto eol=lf` plus
+  per-extension `eol=lf` (and marks binaries `binary`), which normalizes both the
+  index and the checkout regardless of the consumer's `core.autocrlf`. (#438)
+- **Fixed: `template-reconcile.sh` can no longer manufacture phantom gaps from a
+  line-ending mismatch.** It now strips CR from **both** files before extracting
+  anchors. Previously a CRLF bundled template gave every anchor an invisible
+  trailing `\r`, so nothing matched the consumer's LF file and the template's
+  *entire* anchor set was reported as missing — the dangerous half of the bug
+  above, because it exits 0 and looks like a normal result. A caller acting on it
+  would have spliced ~100 duplicate sections into files that already had them, in
+  the one step whose contract is "additive, never clobber". (#438)
+- **`/steer:adopt` and `/steer:init` now scaffold consumer repos with a
+  line-ending policy.** The bundled `gitattributes` gained the same
+  `* text=auto eol=lf` normalization (plus `binary` for images/fonts and `-diff`
+  for lockfiles), so a Windows contributor can't commit CRLF into a managed repo's
+  `scripts/*.sh`, Docker entrypoints, or the `.github/` Copilot surface that
+  `/steer:sync` re-copies verbatim. (#438)
+- **`/steer:doctor` gained a §0 plugin-integrity check.** It greps the installed
+  `hooks/` and `scripts/` for CR before running anything else and reports a
+  CRLF install as a plugin fault rather than a missing prerequisite. This check
+  is deliberately a plain `grep` run by the skill, not a bundled script: under
+  the fault it detects, no bundled script can execute — a shell-based detector
+  would share the failure it is meant to diagnose. (#438)
+
 ### 5.0.0
 
 - **Changed:** the ADR threshold is now **reversal cost, not novelty**, and a first-time
