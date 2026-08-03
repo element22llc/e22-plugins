@@ -24,13 +24,15 @@
 *.toml text eol=lf
 *.json text eol=lf
 
-# Extension-less scaffold dotfiles (stored without their leading dot) are
-# shell/ini/Markdown-ish text and must land as LF too.
-plugins/steer/templates/scaffold/gitignore                   text eol=lf
-plugins/steer/templates/scaffold/gitattributes               text eol=lf
-plugins/steer/templates/scaffold/env.example                 text eol=lf
-plugins/steer/templates/scaffold/worktreeinclude             text eol=lf
+# Bundled templates with no matching extension rule above (dotfiles are stored
+# without their leading dot). They are shell/ini/Markdown-ish text and must land
+# as LF too. Belt-and-braces: `* text=auto eol=lf` already covers them.
+plugins/steer/templates/scaffold/gitignore                    text eol=lf
+plugins/steer/templates/scaffold/gitattributes                text eol=lf
+plugins/steer/templates/scaffold/env.example                  text eol=lf
+plugins/steer/templates/scaffold/worktreeinclude              text eol=lf
 plugins/steer/templates/scaffold/profiles/workspace/gitignore text eol=lf
+plugins/steer/templates/docker/dockerignore                   text eol=lf
 
 # Binaries must never be newline-normalized.
 *.png binary

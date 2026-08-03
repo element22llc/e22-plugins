@@ -154,7 +154,7 @@ own files**, under a matching interpreter
 (`Bash(sh *scripts/template-reconcile.sh*)`), since an ungranted helper
 prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` and
 `/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
-`/steer:build` and `/steer:spec-scaffold`, `scan-capabilities.sh` +
+`/steer:build`, `/steer:spec-scaffold` and `/steer:sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:sync`,
 `scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`.
 `/steer:protect` likewise declares a scoped grant for what it routinely reads — `gh auth
@@ -211,12 +211,14 @@ grants the bundled plugin helper scripts its body — including a factored-out
 `PROCEDURE.md` — invokes. That reaches only helpers named by **literal path inside
 the skill's own directory** (`_SCRIPT_INVOCATION` matches
 `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh|.py`), so a helper reached through a
-cross-referenced convention is outside it. There is a live example: `/steer:sync`
-step 5 delegates to the Template-reconciliation convention in
+cross-referenced convention is outside it. That blind spot has bitten once:
+`/steer:sync` step 5 delegates to the Template-reconciliation convention in
 `templates/reference/SPEC-FRAMEWORK.md`, whose command is
-`template-reconcile.sh` — which `sync` does not grant. The gate is green and that
-step prompts. So the prompt-on-every-run class is narrowed by this assertion, not
-closed by it.
+`template-reconcile.sh`, and `sync` did not grant it — the gate stayed green while
+the step prompted. Sync now grants it, and no skill currently reaches a helper it
+hasn't pre-approved, but the gap is structural: the next indirectly-reached helper
+will be just as invisible. So the prompt-on-every-run class is narrowed by this
+assertion, not closed by it.
 
 !!! warning "Chained commands defeat the allowlist"
     A permission rule matches a *single* command string. `git status && git diff`

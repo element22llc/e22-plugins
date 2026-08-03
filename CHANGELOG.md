@@ -35,13 +35,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **`/steer:sync`, `/steer:init` and `/steer:adopt` now name `.gitattributes` and
   `.worktreeinclude` in the set they reconcile additively.** `scaffold_reconcile.py`
   has always handled both as the same line-based kind, and the scaffold
-  `MANIFEST.md` directs the reader to that helper for them — but all three skills
+  `MANIFEST.md`'s `gitattributes` row already directed the reader to that helper —
+  but all three skills
   enumerated only `.gitignore` plus the JSON configs, so the behavior for an
   existing `.gitattributes` was indeterminate: one shipped instruction said merge
   it, another implied it wasn't in scope. This makes the enumerations match the
-  helper and the manifest. Merge-into-existing only — nothing *creates* the file
-  where a repo has none, so a repo bootstrapped before the scaffold carried one
-  still needs it copied in by hand. (#438)
+  helper and the manifest. It widens **reconciliation** only: `/steer:init` and
+  `/steer:adopt` already install `.gitattributes` outright from the install map,
+  and `/steer:sync` still splices solely into files that already exist — so a
+  steady-state repo with no `.gitattributes` at all is the one case still needing
+  a manual copy. (#438)
 - **Fixed: `/steer:sync` no longer prompts mid-run on its own template
   reconciliation.** Its `allowed-tools` granted `scan-capabilities.sh`,
   `scan-invocations.sh` and `scaffold_reconcile.py` but not
