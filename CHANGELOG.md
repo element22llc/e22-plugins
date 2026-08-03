@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:sync` can now create a missing `.gitattributes`, with consent.** A
+  managed repo with **no** `.gitattributes` at all never got one: step 5
+  reconciles additively *into files that already exist*, and no capability
+  covered this file — so a repo adopted before the scaffold carried one (< 3.12.0),
+  or one that lost it, stayed exposed through every steady-state sync. That is
+  the exact exposure that produced the v5.0.0 CRLF release, where a CRLF shell
+  script did not warn but failed to **parse**. New `line-ending-normalization`
+  capability: `scan-capabilities.sh` reports the file present or absent, and on
+  absent `/steer:sync` **proposes** creating it from
+  `templates/scaffold/gitattributes` and waits for a yes — one of only two
+  step-6 `absent` cases (with `compose.yaml`) that does not create unasked,
+  because the file changes how git treats every subsequent write. It affects
+  future writes only and **never** runs `git add --renormalize .`; converting
+  content already committed as CRLF stays a deliberate human one-shot. The probe
+  is presence-only by design — content pins remain step 5's additive reconcile.
+  (#447)
+
 ### 5.1.0
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
@@ -46,7 +63,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:adopt` already install `.gitattributes` outright from the install map,
   and `/steer:sync` still splices solely into files that already exist — so a
   steady-state repo with no `.gitattributes` at all is the one case still needing
-  a manual copy. (#438)
+  a manual copy. (#438) *(Superseded: the create-missing gap named in that last
+  sentence was closed by the `line-ending-normalization` capability — see
+  `[Unreleased]`, #447.)*
 - **Fixed: `/steer:sync` no longer prompts mid-run on its own template
   reconciliation.** Its `allowed-tools` granted `scan-capabilities.sh`,
   `scan-invocations.sh` and `scaffold_reconcile.py` but not

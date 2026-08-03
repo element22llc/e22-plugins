@@ -83,9 +83,23 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      re-appear as a proposal each sync and the dev declines it.
    - **`absent`** → **create** the file(s) from the bundled scaffold
      (copy-and-adapt per the scaffold `MANIFEST.md`), adapting to the repo's real
-     stack. `compose.yaml` is the exception: its need isn't knowable — **propose
-     only after confirming with the dev**, and when uncertain, ask rather than
-     create.
+     stack. **Two exceptions wait for a yes rather than being created:**
+     `compose.yaml`, whose need isn't knowable — when uncertain, ask rather than
+     create an unused one — and `.gitattributes`
+     (`line-ending-normalization`), which changes how git treats every subsequent
+     write in the repo. For the latter, propose it as:
+
+     ```text
+     .gitattributes absent → propose:
+       "Add LF normalization? (from templates/scaffold/gitattributes)"
+       affects future writes only; does NOT run `git add --renormalize .`
+     ```
+
+     Install the scaffold file **as `.gitattributes`** (the scaffold stores
+     dotfiles without their leading dot) and say plainly that existing committed
+     CRLF is untouched — renormalizing history is a deliberate one-shot that stays
+     the human's call. This is the **create-missing** path only; a repo that
+     *has* a `.gitattributes` gets its content reconciled additively in step 5.
    - **`mis-wired`** → for `verbatim` files **re-copy** from the plugin source —
      but **show the diff first** (or, for a generated set, the changed-file list)
      and warn that local edits are lost. Two capabilities are `verbatim`: the
@@ -116,6 +130,7 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    | version-pin-enforcement | policy/versions.yml, scripts/… | mis-wired | re-copy verbatim scripts (proposed, diff shown) |
    | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |
    | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer:protect |
+   | line-ending-normalization | .gitattributes | absent | create from scaffold (proposed, needs a yes); future writes only, no renormalize |
    | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |
    ```
 
