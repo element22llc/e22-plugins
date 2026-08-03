@@ -119,6 +119,14 @@ diagrams, and **specification / requirements documents** (`.pdf`, `.docx`, decks
 their home is `/spec/reference/`; architecture and flow diagrams go to
 `/spec/design/`.
 
+`DESIGN.md` is not documentation for humans only — it is **read**. A skill that
+renders a shareable Claude Artifact styles the page from the tokens `DESIGN.md`
+declares (root, or `apps/<app>/DESIGN.md`), falling back to the house default
+only when the repo declares none — rule `88-artifacts` and, in practice,
+[`/steer:explain`](skills.md). Populate it and stakeholder-facing pages carry the
+product's own palette, type scale, and spacing; leave it empty and they carry the
+generic look. Never an invented brand either way.
+
 Steer keeps the root clean as it works. When a session notices a loose root file
 it can **confidently classify**, it **moves it to the right home immediately**
 (`git mv`, filename preserved) — no confirmation for a move that was never in
