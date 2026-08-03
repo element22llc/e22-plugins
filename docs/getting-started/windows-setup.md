@@ -60,6 +60,40 @@ The Claude Desktop **Chat** tab and claude.ai web chat don't run plugin hooks on
 `/steer:standards`. This is an OS-independent surface limit — see
 [Known limitations](../reference/known-limitations.md).
 
+## Line endings
+
+`core.autocrlf=true` is the Git for Windows default, which means a plain checkout
+rewrites text files to CRLF. That matters more than it sounds: **a CRLF shell
+script does not warn, it fails to parse.** The shell reads the trailing `\r` as
+part of the token, so `steer_repo_root() {` becomes
+`syntax error near unexpected token $'{\r'` and the script never runs at all.
+
+Both sides of this are now handled for you:
+
+- **The plugin** ships a `.gitattributes` pinning `* text=auto eol=lf`, so the
+  bundled hooks and scripts check out as LF no matter what `core.autocrlf` says
+  on the host.
+- **Your repo** gets the same normalization from the bundled scaffold, so a
+  Windows contributor can't commit CRLF into `scripts/*.sh`, a Docker
+  entrypoint, or the generated `.github/` Copilot surface.
+
+!!! warning "An older install may predate the fix"
+    `.gitattributes` only governs *future* checkouts, so a plugin installed
+    before this fix shipped can still be sitting on disk with CRLF. The symptom
+    is unmistakable once you know it: **every** steer script fails at once with a
+    `syntax error near unexpected token` — most visibly `/steer:sync`, which
+    breaks on its opening move.
+
+    `/steer:doctor` checks for this **first**, before anything else, and names
+    it as a plugin-install fault rather than a missing prerequisite. The fix is
+    to reinstall the plugin so it re-clones with normalization applied.
+
+    One failure here is quiet rather than loud, so it is worth knowing about:
+    under CRLF, `template-reconcile.sh` could still *run* and report every
+    heading in a bundled template as a missing gap — because the CR-suffixed
+    anchors could never match your LF file. It now strips CR from both sides,
+    so it compares content and not line endings.
+
 ## Why the split
 
 steer's value is the always-on standards, and those ride on the hook lifecycle.

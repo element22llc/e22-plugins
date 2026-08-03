@@ -1,3 +1,45 @@
+# LINE ENDINGS — everything this repo ships is LF, on every platform.
+#
+# This plugin is CONSUMED as a checkout: `/plugin install` clones the
+# marketplace, and the consumer then executes the bundled `hooks/**.sh` and
+# `scripts/**.sh` directly. On a Windows host `core.autocrlf=true` is the Git
+# for Windows default, so without this file every bundled script checks out
+# with CRLF — and a CRLF shell script does not merely warn, it fails to PARSE
+# (`syntax error near unexpected token $'{\r'`). Every hook lib and scan script
+# dies, and `template-reconcile.sh` silently reports every anchor in a bundled
+# Markdown template as a missing gap, because the CR-suffixed anchors can never
+# match the consumer's LF file. See CHANGELOG "steer" and issue #438.
+#
+# `text=auto eol=lf` normalizes to LF in the index AND on checkout, regardless
+# of the consumer's core.autocrlf. The explicit extension lines below are
+# belt-and-braces for the file types whose CRLF failure mode is silent or
+# fatal; `text=auto` alone would already cover them.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.py   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+
+# Extension-less scaffold dotfiles (stored without their leading dot) are
+# shell/ini/Markdown-ish text and must land as LF too.
+plugins/steer/templates/scaffold/gitignore       text eol=lf
+plugins/steer/templates/scaffold/gitattributes   text eol=lf
+plugins/steer/templates/scaffold/env.example     text eol=lf
+plugins/steer/templates/scaffold/worktreeinclude text eol=lf
+
+# Binaries must never be newline-normalized.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff  binary
+*.woff2 binary
+
 # CHANGELOG is append-only: every PR adds bullets under `### [Unreleased]`, so
 # concurrent PRs touch the same lines and collide. The built-in `union` merge
 # driver resolves these by keeping BOTH sides' added lines instead of writing
