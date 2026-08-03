@@ -157,6 +157,14 @@ prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` a
 `/steer:build`, `/steer:spec-scaffold` and `/steer:sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:sync`,
 `scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`.
+`/steer:doctor` carries one grant that is deliberately *not* a helper script:
+`Bash(grep -rl *)`, for the §0 plugin-integrity check that greps the installed
+`hooks/` and `scripts/` for CR bytes. It is broader than the paths it serves — an
+unbounded-path filesystem read — and that is the point: the fault it detects
+(a CRLF checkout) is precisely what stops every bundled script from parsing, so a
+script-based detector would share the failure it is meant to diagnose. The grant is
+read-only (`grep -rl` lists names; it cannot mutate), which is what keeps the
+breadth acceptable.
 `/steer:protect` likewise declares a scoped grant for what it routinely reads — `gh auth
 status`, `gh repo view`, `git remote`, `git rev-parse`, and the read-scoped
 `Bash(gh api repos/*)` above —

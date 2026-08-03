@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 5.1.0
+
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
   install.** With no line-ending attributes set — the repo's `.gitattributes`
   covered only `CHANGELOG.md merge=union` — a checkout under `core.autocrlf=true` (the
