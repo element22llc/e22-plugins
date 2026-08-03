@@ -73,13 +73,10 @@ as "stale by that same test".
 ## Steps
 
 1. **Heal a legacy `spec/SPEC-QUESTIONS.md` first — before you answer
-   anything.** Legacy format: a fork from an older template revision
-   (pre-1.25.0) may still carry the retired standalone file; its heal is the
-   **v1.25.0 migration entry** in
-   [`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md), applied as a
-   **hard gate** before gathering — migrate the questions into the spine and
-   **delete the file in this same step** (a move, not an answer; the deletion
-   never waits on answers), then sweep the migrated copies below.
+   anything.** If that file exists (a fork from a pre-1.25.0 template revision),
+   healing it is a **hard gate before gathering**: read
+   [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §1 and apply
+   it, then sweep the migrated copies below.
 
 2. **Gather.** Collect every open question across the spine. Questions live in
    structured `### Q-NNN` blocks under `## Open questions` — sweep those, not
@@ -98,31 +95,12 @@ as "stale by that same test".
    `check-open-questions.sh` ignores it for the same reason).
 
    **Legacy `- [ ]` checkboxes.** A spec predating the structured format may
-   still carry plain `- [ ]` items. In scope are only those **inside a
-   `## Open questions` section and outside any `### ` block** — the scope
-   `check-open-questions.sh` counts as backlog (`inq && !inblk`, skipping a
-   bracketed `[placeholder]` rest) for one deprecation window. The grep below
-   anchors the *section* but cannot express the rest: it has no block state, so
-   **you** must drop any hit that sits inside a `### Q-NNN` block (a sub-task
-   bullet within a question is part of that question, not a separate one — never
-   split it out) or whose text is a bracketed placeholder:
-
-   ```sh
-   grep -rn -A20 '^## Open questions' spec/vision.md spec/features/*/intent.md \
-     spec/PRODUCTIONIZATION.md 2>/dev/null | grep -E '^\S+[:-][0-9]+[:-]- \[ \] '
-   ```
-
-   **Never sweep a `- [ ]` line outside that section.** `## PO acceptance`, the
-   acceptance criteria, and the productionization gap checklists are `- [ ]` too,
-   and they are **gates** — `/steer:spec approve` ticks them. Converting one into
-   a `Q-NNN` block, or closing it as `resolved`, destroys the PO gate. Confirm
-   each hit's section before touching it.
-
-   In-scope legacy items are swept like any other question, and **converted into
-   a `### Q-NNN` block as you resolve one** — this skill is the opportunistic
-   converter the **v1.38.0** migration entry names
-   ([`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md)); never bulk-rewrite
-   a file just to convert.
+   still carry plain `- [ ]` items inside `## Open questions`; those are in
+   scope, but sweeping them safely has its own rules — and a `- [ ]` line
+   **outside** that section is a **PO gate** that converting or resolving would
+   destroy. The moment you see any, read
+   [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §2 before
+   touching them.
 
    **In a polyrepo member** (`spec/PRODUCT.md` present) all three of those paths
    are absent by design, so the grep returns nothing — that is **not** a clean

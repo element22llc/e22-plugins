@@ -1,6 +1,6 @@
 ---
 name: spec
-description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` records approval and flips intent Status, `validate` checks the open-question contract plus intent/contract/tracker consistency. Ends at an approved intent, not a build."
+description: "Spec-only brainstorm for a feature — author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. Ends at an approved intent, not a build."
 when_to_use: >-
   Use to think a feature through before committing to implementation, shape
   acceptance criteria, or validate a spec's question state. Works spec-only on

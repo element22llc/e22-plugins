@@ -7,11 +7,7 @@ round of per-item confirmations (satisfied items need no ack; only genuinely
 open items need the dev). Track open items with your todo tooling so nothing is
 dropped:
 
-- [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
-- [ ] Choice costly to reverse made → ADR written under `/spec/decisions/`? (Reversal cost is the bar, not novelty — a first-time pattern is not an ADR.)
-- [ ] Tests added/updated for the change; bug fix has a regression test?
-- [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
-- [ ] Living docs in sync — app guide updated for behavior changes, tracker refs recorded?
+- [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
