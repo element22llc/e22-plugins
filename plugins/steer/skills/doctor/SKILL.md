@@ -60,7 +60,7 @@ none of the checks below are meaningful until it is fixed. The repair:
 
 ```sh
 # Re-clone the marketplace with normalization applied (preferred).
-/plugin uninstall steer   # then re-install; steer ships .gitattributes with eol=lf
+/plugin uninstall steer@e22-plugins   # then re-install; steer ships .gitattributes with eol=lf
 ```
 
 If reinstalling is not immediately possible, the in-place unblock is:
@@ -181,7 +181,7 @@ final scan.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| §0 failed — the installed plugin has CRLF line endings | Blocking now | steer itself is broken, so nothing below was checked: re-install it (`/plugin uninstall steer`, then re-install), or hand over the §0 in-place unblock |
+| §0 failed — the installed plugin has CRLF line endings | Blocking now | steer itself is broken, so nothing below was checked: re-install it (`/plugin uninstall steer@e22-plugins`, then re-install), or hand over the §0 in-place unblock |
 | A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (§3), then re-scan |
 | `os` = `windows` (Git Bash live) | Complete | Supported — hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan — or WSL2 for CLI/IDE dev |

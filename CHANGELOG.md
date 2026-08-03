@@ -7,6 +7,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:doctor` now names the plugin by its qualified id when telling you to
+  reinstall.** It said `/plugin uninstall steer` while every install instruction
+  — `README.md`, the installation page, and the launch checklist's uninstall
+  block — uses `steer@e22-plugins`. Now symmetric. (#448)
+
 - **`/steer:doctor`'s CRLF repair command now carries handover framing, and its
   §0 stop-state has a next-action.** The in-place
   `find … -exec sed -i 's/\r$//'` unblock was printed with no instruction about

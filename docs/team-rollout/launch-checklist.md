@@ -31,7 +31,8 @@ a real (or throwaway) repo, not against production work.
 - [ ] **Docs drift CI tested.** `mise run docs:check` passes, and a deliberate
       drift (e.g. add a skill without updating the reference) is caught by CI.
 - [ ] **Copilot surface verified (if the team uses Copilot).** Confirm
-      `.github/copilot-instructions.md`, `.github/prompts/`, `.github/agents/` and
+      `.github/copilot-instructions.md`, `.github/prompts/`,
+      `.github/instructions/*.instructions.md`, `.github/agents/` and
       `.vscode/mcp.json` landed, then in VS Code Copilot Chat run `/steer-help` and
       confirm the reply reflects steer standards (proves the instructions loaded —
       Copilot has no SessionStart hook, so that static set *is* its whole standards
