@@ -40,6 +40,7 @@ allowed-tools:
   - Bash(mise run check)
   - Bash(mise run shell)
   - Bash(mise run gen:copilot)
+  - Bash(mise run rules:preview*)
   - Bash(mise run docs:build*)
 ---
 
@@ -64,7 +65,7 @@ then pass in a single round, which is the entire point.
 
 ## Why the findings keep coming back (and why looping is the fix)
 
-Two real effects, not flakiness:
+Two **legitimate** effects, not flakiness:
 
 1. **Each fix changes what the audit reads.** Dimension 1 diffs
    `$LAST_RELEASE..HEAD`; a fix adds commits and CHANGELOG bullets, so the next
@@ -76,6 +77,23 @@ Two real effects, not flakiness:
 
 Neither converges in one shot; both converge in a few. A **clean round is strong
 evidence, not proof** — say so in the report, never upgrade it to a guarantee.
+
+There is a third effect, and it is **pure waste**:
+
+3. **The loop's own fixes manufacture findings.** A fix to a *doc*, *rule*, or
+   *skill* is prose, and prose asserts facts about the plugin. Assert one that
+   isn't true and the next round finds it — you have spent a full round (a `ci`,
+   a docs build, seven subagents) auditing your own invention. In the run this
+   guidance came from, **most of rounds 2 and 3 was correcting prose the previous
+   round had written**: round 1's replacement text claimed `/steer:sync` does not
+   deliver the scaffold `.gitattributes` (it had, since v3.12.0 — nine releases
+   back, routed through `scaffold_reconcile.py` by `MANIFEST.md:46`); round 2
+   invented a version-pin claim about `/steer:audit` and credited a gate with
+   reading `uv.lock`/`mise.lock` that `scan-version-pins.sh` never scans.
+
+Effects 1–2 are why the loop exists. Effect 3 is what **L3.e** and the claim
+discipline in **L3.d** exist to prevent: every round spent on effect 3 is a round
+that bought nothing.
 
 ---
 
@@ -137,12 +155,24 @@ Two caller-specific adjustments:
 
 Keep a running table across rounds — it is the report and the PR body:
 
-| Round | blocker | high | med | low | Fixed | Deferred |
-| --- | --- | --- | --- | --- | --- | --- |
+| Round | blocker | high | med | low | Fixed | Deferred | Self-inflicted |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
-For each finding also keep its identity (`path` + the one-line claim) and
-disposition (`fixable-in-tree` / `out-of-tree`) — L4's guards compare these
-across rounds.
+For each finding also keep its identity (`path` + the one-line claim), its
+disposition (`fixable-in-tree` / `out-of-tree`), and its **origin** —
+`pre-existing` or `self-inflicted` (introduced by an earlier round of *this*
+loop; `git log -- <path>` on the branch settles it in one command). L4's guards
+compare identity across rounds, and the self-inflicted count is the number that
+tells you whether the loop is converging or chasing itself.
+
+Keep a second, smaller ledger: the **claim log**. One row per factual assertion
+the round's own fixes wrote into prose, with the source that proves it (see
+**L3.d** → claim discipline). It is what **L3.e** self-reviews against and what
+makes the PR body auditable — a reviewer can check the claim without re-deriving
+it.
+
+| Round | File:line written | Claim asserted | Verified against |
+| --- | --- | --- | --- |
 
 ### c. Check the stop conditions (**L4**) *before* fixing anything.
 
@@ -170,6 +200,24 @@ Apply the **minimal targeted** change each finding calls for:
 - **Don't guess at intent.** If the right fix is a product/behavior decision (is
   the rule wrong, or the skill?), do not pick one to clear the round — mark it
   `deferred-for-human` with both options stated, and keep going.
+- **Before deferring, try to split the finding.** A finding that reads as one
+  human decision is often a decision *plus* a mechanical incoherence that needs
+  no decision at all. Ask what part of it is true regardless of which way the
+  human rules, and fix that part now; defer only the remainder, and say in the
+  ledger that you split it. (The run this guidance came from split a deferred
+  `[high]` into a genuinely-deferred half — nothing creates the file where it's
+  absent — and a fixable half that was real plugin incoherence: three skills
+  enumerating a merge set that excluded a file their own helper had always
+  handled.)
+- **Stay on this branch's concern.** A finding that is below the `--severity`
+  threshold *and* unrelated to what this convergence is about gets **reported,
+  not folded in** — CLAUDE.md's one-PR-one-concern rule binds this skill like any
+  other change. Vet it (confirm it's real, cite `path:line`), put it in the
+  residue as a named follow-up, and leave the tree alone.
+- A round that edits `rules/` should check payload headroom with
+  `mise run rules:preview` — the always-on payload runs close to its ceiling, so
+  *adding* prose to a rule can trip the gate even when the wording is right. Push
+  length into `templates/reference/*` instead.
 - Respect this repo's frozen-scope rule: fixing an incoherence in `CLAUDE.md`,
   `AUTHORING.md`, `CONTRIBUTING.md`, or a gate script is in scope when the audit
   found it; *redefining* a convention while you are there is not.
@@ -182,7 +230,66 @@ Apply the **minimal targeted** change each finding calls for:
   ledger; a grant that outlives its round becomes a permanent convention change
   nobody reviewed. Absent the file, the bullet above governs unchanged.
 
-### e. Re-gate and commit the round.
+#### Claim discipline — what keeps a round from auditing your own prose
+
+Every declarative sentence a fix writes about plugin behavior is a **claim**, and
+an unverified claim is a finding you are planting for the next round. Before you
+write one:
+
+1. **Read the source, in this round.** Not the docs about it, not another skill's
+   description of it, not your memory of it from an earlier round — the script,
+   the `SKILL.md`, the manifest, `hooks.json`, the template. Prior-round wording
+   is precisely what you are trying to stop trusting.
+2. **Log it** in the claim log (**L3.b**) with the path or command that proves it.
+   Recorded evidence beats recalled evidence: a reviewer, and the next round,
+   should be able to re-check it in one line.
+3. **If you cannot verify it, don't write it.** Narrow the sentence to what you
+   did verify. "Sync reconciles additively into files that already exist" is
+   checkable; "sync never delivers this file" is a far stronger claim that needs
+   far more proof.
+
+Claim shapes that have actually gone wrong here, and what each one needs:
+
+| Claim shape | What it needs |
+| --- | --- |
+| **Negative** — "X does not do Y", "nothing creates this" | The most-often-wrong kind, because not finding something feels like proof it isn't there. Needs *exhaustive* proof: enumerate every route that could do Y and show each one doesn't — the capability scan, the manifest, the helper, the skill's own steps. Absent that, rewrite it as the positive fact you did verify. |
+| **Gate / script capability** — "gate G checks C", "the scan reads file F" | Open the script and find the line. `scan-version-pins.sh` does not read `uv.lock`/`mise.lock`; asserting it did cost a round. |
+| **Skill behavior** — "`/steer:<skill>` reviews R" | Read that skill's `SKILL.md`. Never infer a skill's scope from its name, or from another surface's prose about it. |
+| **Historical** — "shipped in vX.Y.Z", "since release N" | `git log`/`git tag` on the actual path, or the CHANGELOG heading that introduced it. |
+| **Cross-surface routing** — "the manifest routes this through H" | Open the manifest *and* the helper; a route named in one is not a route implemented in the other. |
+
+### e. Propagate each fix, then self-review the round's own diff.
+
+This step is not optional and it is not the gate's job. It is the round auditing
+itself, so the *next* round can spend its budget on the plugin instead of on you.
+
+**Propagate.** A fix that changes a behavior changes every surface that describes
+that behavior. For each behavior fix, grep the changed fact across `rules/`,
+`skills/`, `templates/`, `docs/`, `CROSS-SURFACE.md`, `CLAUDE.md`, and `README.md`
+before you commit — and remember the generated Copilot surface mirrors the
+shipped one, so `mise run gen:copilot` may be part of the fix. Docs prose is the
+usual casualty: it likes to use current behavior as a worked example, so fixing a
+bug can silently turn an accurate page into a false one. (Round 3 of the run this
+came from existed largely because round 2's fix left
+`docs/concepts/authorization-model.md` using the fixed bug as a live example.)
+
+**Self-review.** Then read this round's own diff as a reviewer would —
+`git diff` on the uncommitted round, ignoring what the finding *told* you to fix
+and looking only at what you *wrote*:
+
+- Walk the claim log (**L3.b**) row by row. Every claim still traceable to the
+  source cited? Any sentence in the diff that makes a claim you never logged is
+  by definition unverified — verify it now or cut it.
+- Did a fix restate something as fact that you actually inferred from the finding
+  text? Findings are subagent prose too; they over-report and they mis-phrase.
+- Would a `[Unreleased]` bullet this round added survive dimension 1 — does it
+  describe what the diff does, no more?
+
+Anything this step catches is a finding you just avoided paying a full round for.
+Note in the ledger what self-review caught; a round where it caught nothing is
+worth stating too.
+
+### f. Re-gate and commit the round.
 
 - `mise run check` after the round's fixes (the next round's audit runs the full
   `ci` anyway). If a fix broke a gate, repair it **inside this round** — do not
@@ -200,9 +307,22 @@ Apply the **minimal targeted** change each finding calls for:
 
 Evaluate in order, before fixing:
 
-1. **Converged.** Zero actionable findings this round. Because a clean round
-   always audits a tree it did not itself modify, this *is* the confirming pass —
-   no extra round is needed. → success path, go to **L5**.
+1. **Converged.** Zero actionable findings this round **and the round then makes
+   no edits**. Both halves are required, and the second is the one that gets
+   dropped: a round with zero *actionable* findings can still be sitting on a pile
+   of below-threshold ones, and fixing those makes the tree you ship different
+   from the tree that just came back clean. There is then no confirming pass —
+   only an unaudited diff wearing a clean round's badge. (The run this guidance
+   came from shipped nine such edits in its "clean" round and had to caveat the
+   result.)
+
+   So when the round is clean, **stop editing.** Below-threshold findings go to
+   the residue as named follow-ups, not into this branch — which is also what
+   one-PR-one-concern wants. → success path, go to **L5**.
+
+   If you have already edited when you notice, you have two honest options: revert
+   the edits and converge on the clean tree, or keep them and run one more round
+   over them. Do not report the clean round as if it covered them.
 2. **Round cap.** `--max-rounds` reached with findings still open. → stop and
    escalate; report exactly what is still open.
 3. **No progress.** The actionable count did not fall versus the previous round
@@ -232,10 +352,18 @@ instead of the tree.
    - one line per round naming what it fixed;
    - the **deferred / dismissed / out-of-tree** residue, each with its evidence —
      the reviewer must see what was *not* fixed, not just what was;
-   - the final-round statement: which dimensions were checked and came back clean.
+   - the **claim log** for every prose fix that asserted a fact, with the source
+     each was verified against, so the reviewer checks claims instead of
+     re-deriving them;
+   - the final-round statement: which dimensions were checked, which came back
+     clean, and **that the final round made no edits** — i.e. the tree in this PR
+     is exactly the tree that audited clean.
 3. **Report to the user:** rounds run, findings fixed by severity, residue, branch,
    PR URL, final gate result. State plainly that a clean final round is strong
    evidence — not a guarantee — that `/release` Phase A will pass in one pass.
+   Say how much of each round went on the plugin versus on repairing the previous
+   round's prose: that ratio is this loop's efficiency, and a round spent on
+   effect 3 is one the claim discipline should have prevented.
 
 ## L6. Hand off.
 
