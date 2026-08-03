@@ -7,6 +7,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`/steer:doctor`'s CRLF repair command now carries handover framing, and its
+  §0 stop-state has a next-action.** The in-place
+  `find … -exec sed -i 's/\r$//'` unblock was printed with no instruction about
+  who runs it, even though the skill declares `disallowed-tools: Edit, Write`
+  and its own shell-rc guidance is explicit ("Print this for the dev to run —
+  never edit their shell rc yourself"). It now says the same thing, for the same
+  reason. Separately, §0 (plugin integrity) can halt the run — a CRLF-mangled
+  install means no bundled script can execute — but `## Recommended next
+  actions` had no row for it, leaving the one stop-state that isn't about the
+  host machine with no prescribed action; it is now the highest-precedence row.
+  (#445)
+
 ### 5.1.0
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
