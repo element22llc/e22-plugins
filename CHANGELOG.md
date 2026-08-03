@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the SessionStart hook no longer describes itself as running "once per
+  session".** `inject-standards.sh`'s header claimed `startup | resume | clear`,
+  but `hooks.json` registers `startup|resume|clear|compact` and there is no
+  once-per-session guard — `compact` can fire repeatedly within one session.
+  Re-injecting after a compaction is the *correct* behaviour (a compaction can
+  drop the injected rules), so the defect was the description, not the hook. The
+  hook header, `/steer:standards`, and the root README now all name the four
+  matchers and say why `compact` is among them. (#444)
+
 ### 5.1.0
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows

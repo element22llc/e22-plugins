@@ -2,8 +2,11 @@
 # steer SessionStart hook.
 #
 # Everything this script writes to stdout becomes `additionalContext` for the
-# session — i.e. the always-on engineering operating rules. It runs once per
-# session (startup | resume | clear) when the plugin is enabled.
+# session — i.e. the always-on engineering operating rules. hooks.json registers
+# it for `startup | resume | clear | compact`, and there is no once-per-session
+# guard: `compact` can fire repeatedly within one session, and re-injecting then
+# is the point — a compaction can drop the rules from context, so the hook has to
+# put them back.
 #
 # Design notes:
 #   - cwd is the CONSUMER repo, not the plugin, so paths use ${CLAUDE_PLUGIN_ROOT}.

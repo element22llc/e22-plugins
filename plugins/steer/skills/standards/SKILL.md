@@ -7,8 +7,10 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 
 # Operating manual — on-demand load
 
-The standards are normally injected once per session by the `steer`
-SessionStart hook. That hook **does not fire on the Claude Desktop *Chat* tab or
+The standards are normally injected by the `steer` SessionStart hook, which runs
+on `startup`, `resume`, `clear` **and** `compact` — the last so a compaction that
+drops the rules from context gets them back. That hook **does not fire on the
+Claude Desktop *Chat* tab or
 claude.ai web chat** — those surfaces install plugins (so skills and MCP work) but
 do **not** run hooks, so a session there starts with *none* of the org rules in
 context. Run this skill first on those surfaces. (On Claude Code — the CLI, the
