@@ -68,14 +68,32 @@ script does not warn, it fails to parse.** The shell reads the trailing `\r` as
 part of the token, so `steer_repo_root() {` becomes
 `syntax error near unexpected token $'{\r'` and the script never runs at all.
 
-Both sides of this are now handled for you:
+Both sides of this are handled, but they arrive by different routes:
 
 - **The plugin** ships a `.gitattributes` pinning `* text=auto eol=lf`, so the
   bundled hooks and scripts check out as LF no matter what `core.autocrlf` says
-  on the host.
+  on the host. You get this automatically with any install or reinstall.
 - **Your repo** gets the same normalization from the bundled scaffold, so a
   Windows contributor can't commit CRLF into `scripts/*.sh`, a Docker
-  entrypoint, or the generated `.github/` Copilot surface.
+  entrypoint, or the generated `.github/` Copilot surface. `/steer:init` and
+  `/steer:adopt` install it, merging *additively* if you already have one rather
+  than replacing it. For a repo **already** managed by steer, `/steer:sync`
+  reconciles it the same additive way — the scaffold has carried a
+  `.gitattributes` since 3.12.0, so most managed repos have the file, and the
+  merge adds the new pins without removing your own lines.
+  The gap is a repo with **no** `.gitattributes` at all: sync splices only into
+  files that already exist, and nothing creates this one. Ask Claude to copy the
+  plugin's bundled `templates/scaffold/gitattributes` into your repo **as
+  `.gitattributes`** — the scaffold stores dotfiles without their leading dot, so
+  a straight copy lands a file git ignores.
+
+!!! note "Normalization applies going forward, not retroactively"
+    Adding `.gitattributes` to a repo that already has CRLF **committed** does
+    not rewrite that history — git only normalizes what it is asked to stage
+    again. Convert the existing content once, in its own commit, with
+    `git add --renormalize . && git commit -m "chore: normalize line endings to LF"`.
+    Do it on a quiet branch: it touches every affected file, so it will collide
+    with anything in flight.
 
 !!! warning "An older install may predate the fix"
     `.gitattributes` only governs *future* checkouts, so a plugin installed

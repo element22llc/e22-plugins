@@ -8,7 +8,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
-  install.** With no `.gitattributes`, a checkout under `core.autocrlf=true` (the
+  install.** With no line-ending attributes set — the repo's `.gitattributes`
+  covered only `CHANGELOG.md merge=union` — a checkout under `core.autocrlf=true` (the
   Git for Windows default — a WSL session reading a Windows-side plugin directory
   hits it too) rewrote every bundled script to CRLF, and a CRLF shell script does
   not warn, it fails to **parse**: `hooks/lib/{repo-root,spine,scope}.sh`,
@@ -31,6 +32,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   for lockfiles), so a Windows contributor can't commit CRLF into a managed repo's
   `scripts/*.sh`, Docker entrypoints, or the `.github/` Copilot surface that
   `/steer:sync` re-copies verbatim. (#438)
+- **`/steer:sync`, `/steer:init` and `/steer:adopt` now name `.gitattributes` and
+  `.worktreeinclude` in the set they reconcile additively.** `scaffold_reconcile.py`
+  has always handled both as the same line-based kind, and the scaffold
+  `MANIFEST.md`'s `gitattributes` row already directed the reader to that helper —
+  but all three skills
+  enumerated only `.gitignore` plus the JSON configs, so the behavior for an
+  existing `.gitattributes` was indeterminate: one shipped instruction said merge
+  it, another implied it wasn't in scope. This makes the enumerations match the
+  helper and the manifest. It widens **reconciliation** only: `/steer:init` and
+  `/steer:adopt` already install `.gitattributes` outright from the install map,
+  and `/steer:sync` still splices solely into files that already exist — so a
+  steady-state repo with no `.gitattributes` at all is the one case still needing
+  a manual copy. (#438)
+- **Fixed: `/steer:sync` no longer prompts mid-run on its own template
+  reconciliation.** Its `allowed-tools` granted `scan-capabilities.sh`,
+  `scan-invocations.sh` and `scaffold_reconcile.py` but not
+  `template-reconcile.sh`, which step 5 reaches indirectly through the Template
+  reconciliation convention — so the heaviest step of the skill stopped for a
+  permission prompt. Every sibling that runs the script (`adopt`, `build`,
+  `spec-scaffold`) already granted it. (#438)
 - **`/steer:doctor` gained a §0 plugin-integrity check.** It greps the installed
   `hooks/` and `scripts/` for CR before running anything else and reports a
   CRLF install as a plugin fault rather than a missing prerequisite. This check
