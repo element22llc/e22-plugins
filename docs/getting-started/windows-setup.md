@@ -75,11 +75,14 @@ Both sides of this are handled, but they arrive by different routes:
   on the host. You get this automatically with any install or reinstall.
 - **Your repo** gets the same normalization from the bundled scaffold, so a
   Windows contributor can't commit CRLF into `scripts/*.sh`, a Docker
-  entrypoint, or the generated `.github/` Copilot surface — but only when
-  `/steer:init` or `/steer:adopt` installs the scaffold. A repo **already**
-  managed by steer does not pick it up from `/steer:sync` today; copy
-  `templates/scaffold/gitattributes` in by hand (merging into an existing
-  `.gitattributes` rather than replacing it) if you want the policy now.
+  entrypoint, or the generated `.github/` Copilot surface. `/steer:init` and
+  `/steer:adopt` install it outright. For a repo **already** managed by steer,
+  `/steer:sync` reconciles it *additively* into an existing `.gitattributes` —
+  the scaffold has carried one since 3.12.0, so most managed repos have the
+  file, and the merge adds the new pins without removing your own lines.
+  The gap is a repo with **no** `.gitattributes` at all: sync only splices into
+  files that already exist, and nothing creates this one, so copy
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitattributes` in by hand.
 
 !!! note "Normalization applies going forward, not retroactively"
     Adding `.gitattributes` to a repo that already has CRLF **committed** does

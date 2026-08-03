@@ -270,7 +270,8 @@ A **root `mise.toml` must always land** (it clears the scaffold nudge). **Reconc
 replace** — if the repo already has its
 own CI, compose, or config, merge into it rather than overwriting, and **never
 clobber working app code**: diff and ask before touching anything that exists. For
-the structured-config files an existing repo most often already owns — `.gitignore`
+the structured-config files an existing repo most often already owns — the
+line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
 and the JSON configs (`.claude/settings.json`, `biome.json`) —
 reconcile with the additive helper rather than by hand, which never overwrites an
 existing value or line (`check` first, show the delta, then `--apply`):

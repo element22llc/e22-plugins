@@ -52,7 +52,8 @@ and `/steer:adr` populate them later). **Adapt to the chosen stack
 and never clobber existing files** (the MANIFEST's per-file notes say what
 to adapt — e.g. for a Python-only product skip the Layer-1 Node baseline and
 use `pyproject.toml`/Ruff, swap task commands to `uv run …`). Greenfield repos
-rarely have these already, but if a target `.gitignore` or JSON config
+rarely have these already, but if a target line-based file (`.gitignore`,
+`.gitattributes`, `.worktreeinclude`) or JSON config
 (`.claude/settings.json`, `biome.json`) **does** exist, reconcile
 it additively with
 `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto <target> <scaffold-template> --apply`

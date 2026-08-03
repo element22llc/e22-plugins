@@ -20,7 +20,8 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    the scaffold `MANIFEST.md`: diff and merge into existing files (CI, compose,
    config), adapt to the repo's real stack, and never touch working app code.
    For the **non-Markdown** scaffold files the heading/checklist convention can't
-   parse — `.gitignore` and the JSON configs (`.claude/settings.json`,
+   parse — the line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
+   and the JSON configs (`.claude/settings.json`,
    `biome.json`, `configs/tsconfig.base.json`) — reconcile with the
    structured helper instead, which is additive and never overwrites an existing
    value or line:
