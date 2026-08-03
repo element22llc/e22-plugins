@@ -58,6 +58,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   is deliberately a plain `grep` run by the skill, not a bundled script: under
   the fault it detects, no bundled script can execute — a shell-based detector
   would share the failure it is meant to diagnose. (#438)
+- **Fixed: `/steer:explain` now reads a product's design tokens from
+  `DESIGN.md`.** It sourced them from the product `CLAUDE.md`, which no other
+  surface names as a token source — `rules/88-artifacts.md`,
+  `reference/ARTIFACTS.md` and `reference/COVERAGE.md` all specify `DESIGN.md`
+  (repo root or `apps/<app>/DESIGN.md`). A repo that had populated a `DESIGN.md`
+  therefore got the `artifact-design`/`dataviz` house default on its stakeholder
+  pages, silently, with nothing to indicate the declared tokens had been ignored.
+  The trailing claim that `artifact-design` "already reads them" is also dropped:
+  that skill supplies the house default, it does not read a product's token file.
 
 ### 5.0.0
 

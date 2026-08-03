@@ -108,8 +108,9 @@ git/CI/ADR/stack jargon). Build the page around the intent's own sections:
 - **Contract detail** (data model, API surface) is **dev jargon** — summarize it in
   a sentence or omit it. Do not paste tables of fields/types onto a stakeholder page.
 
-Pick up the product's design tokens if the product `CLAUDE.md` records them —
-the `artifact-design` skill already reads them.
+Style the page from the repo's `DESIGN.md` tokens when it declares them (repo
+root, or `apps/<app>/DESIGN.md` — see `/steer:reference design-sources`), else the
+`artifact-design`/`dataviz` house default. Never invent a brand.
 
 ### 3a. Show, don't tell — visual encodings (derived, never decorative)
 
