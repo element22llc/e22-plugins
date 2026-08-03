@@ -22,9 +22,13 @@ judgment or loss is at stake:
   existing name and offer the rename separately.
 - **Ambiguous** files (unclassifiable at a glance, or `Copy of …` look-alike
   pairs where picking wrong loses work) — **ask**, never guess.
-- **Deleting** — never automatic. Only true junk (`desktop.ini`,
-  `.DS_Store`), only on confirmation, plus a `.gitignore` pattern so it can't
-  return.
+- **Deleting** — never automatic, always waits for a yes, and only in two
+  cases. **True junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) — delete plus a
+  `.gitignore` pattern so it can't return. An **already-absorbed source** — a
+  spec/requirements doc whose bytes match a committed
+  `spec/sources/**/original.*` — is a redundant duplicate of content already
+  preserved, so propose deleting rather than moving it; no `.gitignore` pattern
+  there, since it isn't junk and a future version is expected.
 - **Polyrepo member** (`spec/PRODUCT.md` present): `spec/reference/`,
   `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** —
   never create one locally for a stray; report it and name the workspace as its
