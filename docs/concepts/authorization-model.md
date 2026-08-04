@@ -162,7 +162,9 @@ prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:init` a
 `/steer:adopt` and `/steer:sync`, `template-reconcile.sh` in `/steer:adopt`,
 `/steer:build`, `/steer:spec-scaffold` and `/steer:sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:sync`,
-`scan-prereqs.sh` in `/steer:doctor`, and `workspace-snapshot.sh` in `/steer:next`.
+`scan-prereqs.sh` in `/steer:doctor`, `workspace-snapshot.sh` in `/steer:next`, and
+`scan-spine-state.sh` in `/steer:setup`, `/steer:sync`, `/steer:work`,
+`/steer:status` and `/steer:audit`.
 `/steer:doctor` carries one grant that is deliberately *not* a helper script:
 `Bash(grep -rl *)`, for the §0 plugin-integrity check that greps the installed
 `hooks/` and `scripts/` for CR bytes. It is broader than the paths it serves — an
@@ -218,7 +220,8 @@ narrow slice**, each for a different transport:
   `check_standards.py` does ban `Bash(gh api:*)` — but only in the scaffold's
   `.claude/settings.json` (the forbidden-form loop runs inside the block scoped to that
   one file); no gate inspects any skill's own `allowed-tools` for a forbidden form. The
-  only per-skill assertion is helper-script coverage. So "never widen this to
+  only per-skill assertions are helper-script coverage and the dot-source ban below.
+  So "never widen this to
   `Bash(gh api:*)`" is a review obligation exactly like the argument-order rule above it,
   not something the build will catch.
 
@@ -235,6 +238,18 @@ the step prompted. Sync now grants it, and no skill currently reaches a helper i
 hasn't pre-approved, but the gap is structural: the next indirectly-reached helper
 will be just as invisible. So the prompt-on-every-run class is narrowed by this
 assertion, not closed by it.
+
+A second blind spot in the same gate ran deeper. `/steer:setup`, `/steer:sync` and
+`/steer:work`'s `CLOSING-REF.md` reached their detection helpers by **`.`-sourcing**
+`hooks/lib/*.sh` directly, then calling the sourced functions — a compound snippet,
+which the chained-command rule below defeats on its own, and one no skill grants in
+any form. `_SCRIPT_INVOCATION` never saw those steps either, because it only
+recognises `scripts/` calls. So the onboarding front door prompted on its very
+first action from `v3.0.0` until a pre-release audit found it. All three now call
+the bundled `scan-spine-state.sh`, and a second assertion,
+`check_skill_helper_sourcing`, fails the build on a dot-sourced hook helper
+anywhere under `skills/`. That half of the class *is* closed mechanically, because
+the fix never varies: wrap the reads in a bundled script and grant that.
 
 !!! warning "Chained commands defeat the allowlist"
     A permission rule matches a *single* command string. `git status && git diff`

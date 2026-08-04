@@ -7,6 +7,7 @@ when_to_use: >-
   tracker asked for (spec), or both.
 argument-hint: "[code | spec | all]"
 allowed-tools:
+  - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git diff *)
   - Bash(git log *)
@@ -93,8 +94,9 @@ again and again on a repo that already has one.
 
 ## Polyrepo scope — both modes
 
-Both modes sweep **one tree**. When `steer_polyrepo_role`
-(`lib/scope.sh`) reports a role, say up front which repos the audit covered and
+Both modes sweep **one tree**. When
+`sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"` reports a
+`- polyrepo role:` other than `none`, say up front which repos the audit covered and
 name any member you could read neither locally nor over the gateway as
 **uncovered** — an audit silently scoped to one member reads as a clean bill of
 health for the product. Two limits to state rather than paper over: drift that

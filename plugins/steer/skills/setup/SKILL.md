@@ -7,6 +7,7 @@ when_to_use: >-
   between /steer:init, /steer:adopt, and /steer:sync.
 argument-hint: "[init | adopt | sync]"
 allowed-tools:
+  - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git rev-parse *)
   - Bash(gh auth status *)
@@ -22,18 +23,15 @@ off to the owning skill. Do **not** re-implement their steps here.
 
 ## Detect, then route
 
-Compute the spine state with the existing helper rather than inventing detection:
+Compute the spine state with the bundled helper rather than inventing detection:
 
 ```sh
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
-root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
-steer_polyrepo_role "$root" || echo "(single-repo product)"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"
 ```
 
-`steer_polyrepo_role` prints `workspace`, `member`, or nothing. It changes what
-the state above *means* — see "Polyrepo" below — so read both before routing.
+One read-only call; it prints the repo root, the spine state, the polyrepo role,
+and the tracker repository the spine declares. The **polyrepo role** changes what
+the spine state *means* — see "Polyrepo" below — so read both lines before routing.
 
 | Detected state | Meaning | Route to |
 | --- | --- | --- |

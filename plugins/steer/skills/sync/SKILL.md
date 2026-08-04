@@ -21,6 +21,7 @@ allowed-tools:
   - Bash(git push -u origin *)
   - Bash(git push origin *)
   - Bash(gh pr create *)
+  - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(sh *scripts/scan-capabilities.sh*)
   - Bash(sh *scripts/scan-invocations.sh*)
   - Bash(sh *scripts/template-reconcile.sh*)
@@ -106,10 +107,12 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    exists:
 
    ```sh
-   . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
-   . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
-   root="$(steer_repo_root "$PWD")" && steer_spine_state "$root"
+   sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"
    ```
+
+   One read-only call; it prints the repo root, the spine state, the polyrepo
+   role step 6 needs, and the declared tracker repository. Run it **once** here
+   and carry the values forward.
 
    Only **`damaged`** and **`managed`** are sync cases. **`unmanaged`** or
    **`foreign`** is not: stop and redirect per `/steer:setup`'s routing table
@@ -171,8 +174,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    was changed since the last sync, **offer the newly-matching overlay
    additively** — never remove the prior profile's files (clobber-free).
 
-   **Establish the polyrepo role** via `steer_polyrepo_role` (`lib/scope.sh`)
-   before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
+   **Establish the polyrepo role** from step 1's `scan-spine-state.sh` output
+   (`- polyrepo role:`) before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
    the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
    `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
    `spec/reference/` — are absent

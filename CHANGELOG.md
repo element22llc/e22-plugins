@@ -7,6 +7,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **The onboarding front door prompted on its very first action, and had since
+  `v3.0.0`.** `/steer:setup`'s detection step was a five-line snippet that
+  `.`-sourced three `hooks/lib/*.sh` helpers and then called their functions — and
+  a permission rule matches a *single* command string, so a compound snippet
+  matches no rule even when its parts are allowlisted (the "Chained commands defeat
+  the allowlist" rule this repo already documents). No skill grants a dot-source in
+  any form, so there was no established grant to write either. The skill granted
+  `git status` / `git rev-parse` / `gh auth status` and then prompted anyway, on the
+  one surface where a first-run prompt costs most. Detection now
+  runs the new bundled **`scripts/scan-spine-state.sh`** — one read-only call
+  printing the repo root, spine state, polyrepo role and declared tracker
+  repository — granted with the established `Bash(sh *scripts/<name>.sh*)` form.
+  `/steer:sync` (step 1) and `/steer:work`'s cross-repo closing-ref check
+  (`CLOSING-REF.md`) had the same ungrantable snippet and move to the same helper;
+  `/steer:work` also gains the `Bash(gh repo view *)` grant that snippet always
+  needed. `/steer:status`, `/steer:audit` and `/steer:next` named the helper
+  functions in prose with nothing granted that could reach them — the first two now
+  point at the bundled script, and `/steer:next` reads the polyrepo role from
+  `workspace-snapshot.sh`, which now reports it alongside the spine state. As a side
+  effect `/steer:setup` no longer fails silently outside a git work tree: the old
+  snippet printed nothing at all when `steer_repo_root` found no `.git`, which is a
+  real greenfield case it must route.
+- **`check_standards.py` now fails on a dot-sourced hook helper in any skill body.**
+  `check_skill_script_grants` could not catch the above: it only inspects
+  `${CLAUDE_PLUGIN_ROOT}/scripts/*` invocations, so the one gap it exists to prevent
+  was invisible to it precisely because the command form was ungrantable. The new
+  sibling check scans every `*.md` under each skill directory and points authors at
+  the bundled-script pattern.
+
 - **`spec-drift` was instructed as a *label* on four surfaces; it is a kind, and no
   such label exists.** `LABELS.md` states that `bootstrap-labels` creates exactly
   the `source:*` / `needs:*` / `risk:*` set and that kind is carried by the

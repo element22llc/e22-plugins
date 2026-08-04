@@ -30,6 +30,7 @@ set -u
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)}"
 . "${PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${PLUGIN_ROOT}/hooks/lib/spine.sh"
+. "${PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 ROOT="${1:-}"
 if [ -z "${ROOT}" ]; then
@@ -64,6 +65,9 @@ fi
 # --- spine + version drift ------------------------------------------------
 printf '\n### Spine\n'
 printf -- '- state: %s\n' "$(steer_spine_state "${ROOT}")"
+# The role changes what the state MEANS — a member's spine is partial by design,
+# so `managed` there is not the same claim as `managed` in a single-repo product.
+printf -- '- polyrepo role: %s\n' "$(steer_polyrepo_role "${ROOT}" || printf 'none (single-repo product)')"
 _spec_ver="$(head -1 "${ROOT}/spec/.version" 2>/dev/null || printf 'none')"
 _plug_ver="$(sed -n 's/.*"version"[^"]*"\([^"]*\)".*/\1/p' \
 	"${PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null | head -1)"

@@ -77,8 +77,8 @@ If there is no `/spec` spine, there is nothing to reconstruct: the single
 recommended action is to **bootstrap** — `/steer:init` (greenfield) or `/steer:adopt`
 (existing "vibe-coded" code). Say which and stop. Don't run the rest.
 
-**Polyrepo.** Check `steer_polyrepo_role` (`lib/scope.sh`) alongside the spine
-state. In a **member**, the spine is partial by design — resolve the product spine
+**Polyrepo.** Phase 1's snapshot helper reports `- polyrepo role:` next to the
+spine state; read the two together. In a **member**, the spine is partial by design — resolve the product spine
 from `spec/PRODUCT.md` (local `workspace.path`, else the GitHub gateway) before
 concluding anything is missing; a member with only a pointer is `managed`, not
 broken. From the **workspace**, the arbitration below covers the members you can
@@ -92,7 +92,8 @@ Sweep each dimension and record what you find. Reuse the existing state
 vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only.
 
 **Start with the bundled snapshot helper** — one read-only call that gathers
-every *local* dimension below (git, spine + version drift, features, open
+every *local* dimension below (git, spine state + polyrepo role + version drift,
+features, open
 questions, Proposed ADRs, work claims, build/adoption markers, the declared
 tracker system) in a single sectioned summary:
 
