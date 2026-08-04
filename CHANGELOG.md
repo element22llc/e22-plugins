@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Resolved a contradiction between `/steer:tidy` and rule 22 on deleting an
+  absorbed spec source.** `tidy/SKILL.md` proposed deleting a spec/requirements
+  doc whose bytes match a committed `spec/sources/**/original.*` — correct, since
+  `/steer:intake` has already absorbed it and moving the stray would just
+  duplicate the source — while rule `22-housekeeping`, tidy's own later bullets,
+  and `HOUSEKEEPING.md`'s junk section all said only true junk is ever a deletion
+  candidate. Two shipped surfaces permitted what four forbade, and the rule text
+  also reaches the Copilot surface. Rule 22 now carries both cases, and the
+  `.gitignore`-pattern requirement is scoped to **true junk only** — a
+  `.gitignore` pattern makes no sense for an absorbed spec doc whose next version
+  is expected. Deletion stays **never automatic** and always waits for a yes, on
+  every surface. (#446)
+
 - **Reclaimed always-on context budget, and turned the rules ratchet down for the
   first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
   so the next rule edit that added prose would trip the gate even when the
