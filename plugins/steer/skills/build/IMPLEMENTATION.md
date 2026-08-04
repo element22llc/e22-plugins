@@ -5,10 +5,18 @@ intents, PO validation gate) and step 7 (guardrails) stay in `SKILL.md`, as do
 the PO-mode guardrails — which apply throughout everything below. Steps 8–10
 (demo, the PO demo-validation gate, handoff) are in `HANDOFF.md`.
 
-5. **Scaffold the real app.** Replace the starter `apps/web` with the default
-   stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`) per
-   `/steer:init` step 5. Generate and commit `pnpm-lock.yaml` (lockfile
-   discipline). Add the app's `apps/<app>/Dockerfile` from the plugin's
+5. **Scaffold the real app.** `apps/` starts **empty** — the bundled scaffold
+   deliberately ships no starter app (`templates/scaffold/MANIFEST.md` →
+   "Deliberately not bundled"), and step 1 bootstrapped this repo through
+   `/steer:init` **Path B**. So this step *creates* the first app on the default
+   stack (Next.js + TypeScript + Tailwind; PostgreSQL via `compose.yaml`); there is
+   no placeholder to replace. (A repo that *is* a legacy template fork does carry
+   one — swapping it is `LEGACY-TEMPLATE-FORK.md`'s job, on `/steer:init` Path A,
+   not this step's.) Then generate and commit `pnpm-lock.yaml` and resolve the root
+   `packageManager` placeholder to the mise-pinned pnpm version, per `/steer:init`
+   step 5 ("Pin the toolchain and lock the workspace"), which is written for exactly
+   this moment — "once the first real app/workspace exists". Add the app's
+   `apps/<app>/Dockerfile` from the plugin's
    `templates/docker/` reference (`Dockerfile.node`, or `Dockerfile.python` for a
    Python service) plus the repo-root `.dockerignore`, adapting the base image to
    the pinned runtime — CI builds it once present. Draft the initial stack ADR

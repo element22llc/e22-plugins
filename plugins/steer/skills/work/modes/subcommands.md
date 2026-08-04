@@ -12,7 +12,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   **claim** it (`assign` the invoking GitHub user — self-assign — + set
   `steer:claimed-by`, `transition` → `in-progress`);
   **(pr-flow)** create or reuse the branch and **write the local work marker**
-  `spec/.work/<branch>.md` (slashes → underscores) in the marker format below, so
+  `spec/.work/<branch>.md` (slashes → underscores) in the format `WORK-MARKER.md`
+  defines (§ Marker format), so
   the end-of-turn Stop-hook reconciliation recognizes the branch as
   issue-governed — **in solo-trunk, skip both: stay on `main`, no marker**;
   load linked specs (`steer:spec-path`, acceptance criteria);
@@ -20,7 +21,8 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
 - **`resume #N`** — reconstruct context from the issue + recorded `steer:branch` /
   `steer:pull-request` + working tree; reconcile stale markers (e.g. a recorded
   branch that no longer exists, a PR that merged/closed while away). **If the
-  marker's session list (below) has a head session different from the current
+  marker's session list (`WORK-MARKER.md` § Claude Code sessions) has a head
+  session different from the current
   one, surface it as a context source** — offer `claude --resume <id>` to re-enter
   that conversation, and (if present) the transcript located by globbing
   `"$CLAUDE_CONFIG_DIR"/projects/*/<id>.jsonl`. Treat it as a best-effort

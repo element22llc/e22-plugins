@@ -96,6 +96,6 @@ below give the detail.
 | --- | --- |
 | `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to diff the as-built `/spec` spine against its tracker specs, `all` for both. |
-| `/steer:next` | "What should I do next?" across the whole workspace (read-only). |
+| `/steer:next` | "What should I do next?" across the whole workspace. Read-only itself: it reconstructs, arbitrates, and names the one action that matters most. When that action is unambiguous and non-gated it is then announced and **continued into** as a fresh invocation of the owning skill (rule `00-router`'s bounded auto-continue); a close call, a gated step, or an action no command performs waits for you. |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
 | `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule — discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` — rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |

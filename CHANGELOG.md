@@ -35,6 +35,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   was invisible to it precisely because the command form was ungrantable. The new
   sibling check scans every `*.md` under each skill directory and points authors at
   the bundled-script pattern.
+- **Rule 00 said auto-continue; `/steer:next` said the human triggers it. Rule 00
+  wins.** `rules/00-router.md` has told every session to "continue into its single
+  best next action only if non-gated", while `skills/next/SKILL.md` ended its routing
+  section with "say so as a `Suggested command` — but the human still triggers it",
+  and `NEXT-ACTIONS.md` said the block "never auto-executes the recommendation".
+  Both cannot hold for the same moment, and the skill that exists to answer "what
+  now?" was the one refusing to act on its own answer. `/steer:next` now announces
+  and continues into the recommended action when it is **unambiguous and
+  non-gated**, and stops at a `Suggested command` when the arbitration was genuinely
+  close, the step is gated, or no real command performs it. The mechanism is stated
+  where it was previously ambiguous: the continuation is a **fresh invocation of the
+  owning skill**, so a Tier 1 navigator never performs Tier 2 writes inside its own
+  run and `/steer:next` stays read-only in the sense its frontmatter enforces. The
+  same clarification lands in `NEXT-ACTIONS.md`, which is canonical for the block
+  and shared by `/steer:init`, `/steer:adopt` and `/steer:build` — so the rule now
+  reads the same way whoever emits it.
+- **Four cross-references pointed at content that isn't where they said, one of them
+  describing a workflow that no longer exists.** Each sends a reader (or an agent
+  following the instruction literally) somewhere it will find nothing:
+  `SPEC-FRAMEWORK.md` resolved a question's `owner:` via a `## Owners` map in
+  `spec/tracker.md` — there is no such heading; the map is `owners:` **frontmatter**,
+  which is what `ISSUE-WORKFLOW.md` already calls it. `work/modes/subcommands.md`
+  twice said "below" for the marker format and the session list, both of which live
+  in `WORK-MARKER.md`; they now name that file and its section. `REVIEW-LOOP.md` §5
+  cited "step 4" of `/steer:work --reviewed`, whose mode file has no numbered steps
+  at all — it names the **Implement** phase now. And `/steer:build`'s step 5 said to
+  "replace the starter `apps/web` … per `/steer:init` step 5": the bundled scaffold
+  deliberately ships **no** starter app (`MANIFEST.md` → "Deliberately not bundled"),
+  so there was nothing to replace, and init's step 5 is toolchain pinning, not app
+  scaffolding. That step now says it *creates* the first app, points at
+  `LEGACY-TEMPLATE-FORK.md` for the fork case that genuinely has a starter app, and
+  cites init step 5 only for the lockfile and `packageManager` pin it really owns.
 
 - **`spec-drift` was instructed as a *label* on four surfaces; it is a kind, and no
   such label exists.** `LABELS.md` states that `bootstrap-labels` creates exactly
