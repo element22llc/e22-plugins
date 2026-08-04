@@ -60,8 +60,12 @@ manual. They are injected into every managed session by `inject-standards.sh`
     `99-end-of-session` — are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
-    `36-issue-first`, and `52-deployment` are likewise scoped to repos that do IaC,
-    use GitHub issues, or deploy. Polyrepo topology is deliberately **not** an
+    `36-issue-first`, and `52-deployment` are likewise scoped — respectively to
+    repos that do IaC (`has-iac`), use GitHub as the tracker (`tracker-github`), and
+    those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
+    an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` — so
+    `52-deployment` injects in any Node repo, not only one that deploys today).
+    Polyrepo topology is deliberately **not** an
     always-on rule — the ruleset is capped on its on-disk total, which a scoped
     rule pays in full for every consumer. It is delivered instead by a
     `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside
@@ -137,29 +141,21 @@ the gap as work to reclaim.
 Then, for the first time, the ratchet turned the other way: **68,400 → 67,500**.
 That fifth raise's ~1% headroom had been consumed back down to **178 bytes**,
 which made the ceiling load-bearing on the next rule edit of any kind. 1,632 B
-were reclaimed across nine rules, in three kinds. **Detail whose destination
-already held it:** rule 10's one-way-delegation definition and polyglot-Python
-example went to `CONVENTIONS.md` → "Standard mise tasks" (rule 10 keeps the
-`depends` / `depends_post` ordering imperative itself); rule 36's `allowed-tools`
-tiering to `ISSUE-WORKFLOW.md`, whose "Host gating" block — inside its Operating
-model principles, not a section of its own — asks the always-on rule for a terse,
-point-of-use reminder and never a second normative copy, though the tiering block
-there was only *completed* later in the same release; and rules 50 and 99 stopped
-restating each other's checklist. **Detail moved into a target edited to receive
-it:** rule 45's ungraduated-trunk-push mechanics into `GATES.md`, which gained the
-Copilot-CLI no-retry clause. **In-place compression with nothing relocated:**
-rules 00 and 30 reworded, rule 24's rationale for an unconditional instruction
-dropped, and rule 62's Claude-Code-specific branch-prefix clause dropped — its
-target states that the reconciliation hook keys on the prefix, but the "other
-surfaces carry it by convention" half is simply gone.
+were reclaimed across nine rules — 00, 10, 24, 30, 36, 45, 50, 62 and 99 — mostly
+by removing prose a `templates/reference/` file already carried, or by compressing
+wording in place. The per-rule attribution is recorded in one place only, the
+ratchet note in `scripts/check_context_budget.py`; it is deliberately not restated
+here, because a second copy of it has twice drifted from the first.
 
-One imperative **did** leave the always-on surface: rule 45's "don't retry a
-declined push — graduate instead" now lives only in `GATES.md`, so the Copilot CLI
-reads it on demand rather than every session. A deliberate trade, but not the
-"no rule lost an imperative" the change originally claimed. The ceiling came down
-by 900 B — deliberately **less** than was reclaimed — so headroom grew from 178 B
-to ~910 B in the same change that tightened the ratchet, and rule 22's
-absorbed-source correction then spent 360 B of that (it had been projected at
+One imperative **did** leave the always-on rules: rule 45's "don't retry a
+declined push — graduate instead" is no longer in any rule. It survives in
+`GATES.md` and in the trunk-push hook's own repeat reminder, so a Claude session
+still meets it at the moment it matters — but the Copilot CLI, where that repeat is
+a silent allow, now reads it on demand rather than every session. A deliberate
+trade, and the reason "no rule lost an imperative" is too strong a claim to repeat.
+The ceiling came down by 900 B — deliberately **less** than was reclaimed — so
+headroom grew roughly 5x in the same change that tightened the ratchet, and rule
+22's absorbed-source correction then spent 360 B of that (it had been projected at
 ~150 B). For the total on any given tree, run
 `uv run python scripts/check_context_budget.py --report` — a figure pinned in
 prose goes stale on the next rule edit. Re-arming at measured + 1% would have

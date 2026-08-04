@@ -169,7 +169,7 @@ Readiness is reported as `ready | incomplete | missing` — **never** `approved`
 
    PO approval is needed if user-facing behavior changed. Dev approval is enough if the change is internal or architectural.
 
-   The wrong move is silently leaving them diverged. If you cannot decide in the moment, open an issue labelled `spec-drift` and tag a dev. Drift becomes a tracked item, not a quiet failure.
+   The wrong move is silently leaving them diverged. If you cannot decide in the moment, open an issue of **kind** `spec-drift` (the `steer:kind` marker plus the GitHub Issue Type — not a label; see `LABELS.md`) and tag a dev. Drift becomes a tracked item, not a quiet failure.
 
 6. **Use the glossary.** If a term needs explaining, add it to `glossary.md` rather than redefining it in every spec.
 

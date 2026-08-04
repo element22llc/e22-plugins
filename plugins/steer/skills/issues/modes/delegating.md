@@ -97,6 +97,7 @@ flag `risk:security`; default to human review before public disclosure).
 ## Priority floor — all `publish-*` modes
 
 All `publish-*` modes **set the native Priority field to the derived floor on
-creation** (the floor table in `ISSUE-SCHEMA.md` → *Native issue fields*) via
+creation** (the floor table in `ISSUE-SCHEMA.md` → *Native issue fields & the
+Projects v2 compatibility boundary*) via
 `/steer:tracker-sync field-set` — applied once at create time; a reconcile rerun
 is escalate-only, so a human who later adjusts Priority is never overridden.

@@ -187,7 +187,7 @@ and the cross-repo closing-ref rule — is in
 ### `push` — spec → tracker (create)
 
 - **`spec-drift` issues.** Consume a `/steer:audit spec` finding set (from a just-run
-  drift report or a findings file) and open one `spec-drift`-labelled issue per
+  drift report or a findings file) and open one `spec-drift`-**kind** issue per
   finding that needs a human decision — the step `/steer:audit spec` describes but does
   not execute. Scope to *actual* drift (Diverged, Done-but-Missing, genuine
   conflicts) — **never** expected-Missing backlog.

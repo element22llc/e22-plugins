@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`spec-drift` was instructed as a *label* on four surfaces; it is a kind, and no
+  such label exists.** `LABELS.md` states that `bootstrap-labels` creates exactly
+  the `source:*` / `needs:*` / `risk:*` set and that kind is carried by the
+  `steer:kind` marker plus the GitHub Issue Type, never a label — and GitHub
+  **silently drops** a label that doesn't exist. So `/steer:tracker-sync push` (the
+  writing gateway), `/steer:audit spec`, `/steer:roadmap` and `SPEC-FRAMEWORK.md`
+  were each instructing a create call with a label that would vanish, and
+  `/steer:roadmap`'s "that label is reserved for actual drift" distinction was
+  unenforceable because a label filter returns nothing. All four now say **kind**.
+- **`steer-reviewer`'s evidence rule suppressed the very verdicts
+  `/steer:audit spec` fans it out to produce.** The agent's charter said "if you
+  cannot cite the line, you do not have a finding", but in a spec-conformance run an
+  *absence* is the finding — a criterion with no implementation has no as-built line,
+  and `audit/modes/spec.md` says outright "do not require a `path:line` pointer …
+  demanding one would make every verdict unevidenceable". A fanned-out reviewer
+  following its charter would drop every `Missing` / `Ambiguous` verdict, which that
+  mode calls its priority signal. The agent now carries a scoped exception: cite the
+  criterion's spec `path:line` and what you searched to conclude absence. Code-review
+  runs are unchanged.
 - **`ARTIFACTS.md` told `/steer:audit` it had only one permitted write; its own
   frontmatter documents two.** The temp-only rule ("an Artifact's **only**
   filesystem write is its HTML source … never a path under the repo working tree")
@@ -22,8 +41,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   no `.version`) and `damaged` — the load-bearing rule its own comment states 30
   lines lower. Creating `/spec` *swaps* the message, it does not clear it. Header,
   card, and the `docs/` state table now all say so.
-- **`CAPABILITIES.md`'s "two step-6 `absent` exceptions" read as a closed set it
-  isn't.** Several other capability entries say "propose" in their `Repair:` line —
+- **`CAPABILITIES.md`'s "two step-6 `absent` exceptions" read as a wider exception
+  than it is.** (The count of two was always right; the word "exception" was
+  ambiguous about *what* was being excepted.) Several other capability entries say "propose" in their `Repair:` line —
   meaning the read-then-propose discipline every repair follows on `feat/sync`, or
   a human follow-up like `/steer:protect` — so the sentence invited the reading
   that `sync` creates everything else unasked *and* that those entries contradict
@@ -51,9 +71,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   heading inside the State model, so all four resolve by name. `ISSUE-SCHEMA.md`
   pointed at a "*GitHub Projects v2 — compatibility boundary*" that no heading
   matched; the heading is now "Native issue fields & the Projects v2 compatibility
-  boundary", matching the "compatibility boundary" wording `/steer:roadmap`,
-  `/steer:tracker-sync` and `/steer:issues backlog` were already using loosely, and
-  all five citers were updated to quote it exactly. Rule 36's pointer stopped
+  boundary", matching the "compatibility boundary" wording `/steer:roadmap` and
+  `/steer:tracker-sync` were already using loosely. The two citers that quote the
+  title as a `→ *X*` pointer — `ISSUE-SCHEMA.md` itself and `/steer:issues
+  backlog`, plus `/steer:issues delegating`, which cited a truncated variant — now
+  quote it exactly; the remaining prose mentions name it loosely, which is fine.
+  Rule 36's pointer stopped
   implying "Host gating" is a heading (it is a bold label inside Operating model) —
   a `→ "X"` in this repo means a real heading.
 - **`/steer:standards` claimed parity it cannot have in a non-code folder.** It said
@@ -138,28 +161,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Reclaimed always-on context budget, and turned the rules ratchet down for the
   first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
   so the next rule edit that added prose would trip the gate even when the
-  wording was right. 1,632 B came out across nine rules, in three kinds:
-  **detail whose destination already held it** — rule 36's `allowed-tools` tiering
-  (`ISSUE-WORKFLOW.md`'s "Host gating", which asks the rule for a terse reminder
-  and never a second normative copy; note the tiering itself was only *completed*
-  there later in this same release, see the rule-36 bullet above), rule 10's
-  one-way-delegation definition and Python example (`CONVENTIONS.md`), and rules
-  50 and 99 no longer restating each other's checklist; **detail moved out to a
-  target edited to receive it** — rule 45's ungraduated-trunk-push mechanics into
-  `GATES.md` §5, which gained the Copilot-CLI no-retry clause; and **in-place
-  compression with nothing relocated** — rules 00 and 30 reworded, rule 24's
-  rationale for an unconditional instruction dropped, and rule 62's
-  Claude-Code-specific branch-prefix clause dropped (`work/modes/hotfix.md`
-  already stated that the reconciliation hook keys on the prefix, though not the
-  "other surfaces carry it by convention" half). Rule 10 kept its `depends` /
-  `depends_post` ordering imperative. **One imperative did leave the always-on
-  surface:** rule 45's "don't retry a declined push — graduate instead" now lives
-  only in `GATES.md`, so the Copilot CLI reads it on demand rather than every
-  session. The ceiling drops 68,400 → 67,500 — less than was reclaimed, so
-  headroom grew 178 B → ~910 B at that point in the change; rule 22's
-  absorbed-source correction below then spent 360 B of it. For the figure that is
-  true today, run `uv run python scripts/check_context_budget.py --report` — a
-  pinned byte total goes stale on the next rule edit. (#443)
+  wording was right. 1,632 B came out across nine rules — 00, 10, 24, 30, 36, 45,
+  50, 62, 99 — mostly by removing prose a `templates/reference/` file already
+  carried or by compressing wording in place; no rule lost an imperative it was
+  the only home for. **One imperative did leave the always-on surface:** rule 45's
+  "don't retry a declined push — graduate instead" is no longer in any rule. It
+  survives in `GATES.md` §5 and in the trunk-push hook's own repeat reminder — so a
+  Claude session still meets it at the moment it matters, but the Copilot CLI,
+  where that repeat is a silent allow, now reads it on demand rather than every
+  session. The ceiling drops 68,400 → 67,500 — less than was reclaimed, so headroom
+  grew roughly 5x at that point in the change; rule 22's absorbed-source correction
+  below then spent 360 B of it. For current figures run
+  `uv run python scripts/check_context_budget.py --report` — a byte total pinned in
+  prose goes stale on the next rule edit. (Per-rule attribution of the 1,632 B is
+  deliberately not restated here; `scripts/check_context_budget.py`'s ratchet note
+  is the one place that records it.) (#443)
 - **Trimmed the skill-listing routing surface by 232 chars.** `reference` stopped
   parenthesising each topic that its own `when_to_use` already explains in
   question form; `spec` and `intake` dropped restatement, and `work` additionally

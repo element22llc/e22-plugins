@@ -163,34 +163,36 @@ PLUGIN_ROOT = Path("plugins/steer")
 # itself 2.4x light — a reason to keep the reclaim ahead of the ceiling, not to
 # trust the estimate.
 #
-# 1,632 B were reclaimed across nine rules. Most of it is duplication removal,
-# the target already carrying the full text:
-#   - rule 10's one-way-delegation definition and polyglot-Python example →
-#     CONVENTIONS.md ("Standard mise tasks"); rule 10 keeps the
-#     `depends`/`depends_post` ordering imperative itself;
-#   - rule 45's ungraduated-trunk-push mechanics → GATES.md §5, which mostly
-#     owned them already but WAS edited here to receive the Copilot-CLI no-retry
-#     clause rather than lose it;
-#   - rule 36's `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating", which
-#     explicitly asks the always-on rule to carry "only a terse, point-of-use
-#     reminder … never a second normative copy". NB the tiering block itself was
-#     only completed in that target later in the same release (dffdde7), so at
-#     trim time the target did NOT yet hold the full text;
-#   - rule 62's Claude-Code-specific branch-prefix clause → work/modes/hotfix.md,
-#     which states that the reconciliation hook keys on the prefix but NOT the
-#     "other surfaces carry it by convention" half — that half is simply gone;
-#   - rules 50 and 99 stopped restating each other's checklist items.
-# The remainder is in-place compression with nothing relocated: rules 00 and 30
-# were reworded, and rule 24 dropped rationale for an instruction that is
-# unconditional anyway — prose deletion, not duplication removal, so the two
-# categories are named separately here rather than collapsed into one.
+# 1,632 B were reclaimed across nine rules — 00, 10, 24, 30, 36, 45, 50, 62, 99.
+# Per-rule, as measured (this is the ONE place that records the attribution; do not
+# restate it in CHANGELOG.md or docs/, where two attempts already went wrong):
+#   - 00 (-87) and 30 (-106): reworded in place, nothing relocated;
+#   - 10 (-167): the one-way-delegation definition and polyglot-Python example →
+#     CONVENTIONS.md ("Standard mise tasks"), which already held both. Rule 10
+#     KEEPS its own `depends`/`depends_post` ordering imperative;
+#   - 24 (-134): dropped rationale for an instruction that is unconditional
+#     anyway — prose deletion, not duplication removal;
+#   - 36 (-254): the `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating",
+#     which asks the rule for "only a terse, point-of-use reminder … never a
+#     second normative copy". The destination did NOT hold the tiering at trim
+#     time — the block was added by dffdde7 and refined by 8d639fc/8fadb86 later
+#     in this same release, so this is a move to a target that only later caught
+#     up, not a de-duplication;
+#   - 45 (-188): GATES.md §5 already owned the ungraduated-trunk-push mechanics;
+#     the only text ADDED there was the Copilot-CLI no-retry clause;
+#   - 50 (-298) and 99 (-280): stopped restating each other's checklist items;
+#   - 62 (-118): the Claude-Code-specific branch-prefix clause. hotfix.md states
+#     that the reconciliation hook keys on the prefix, but the "other surfaces
+#     carry it by convention" half is simply gone.
 #
-# One imperative DID leave the always-on surface: rule 45's "don't retry a
-# declined push — graduate instead" now lives only in GATES.md §5. That is a
-# deliberate trade, not a slip, but it means "no rule lost an imperative" is too
-# strong a claim to repeat — the Copilot CLI now reads that instruction on demand
-# rather than every session. Otherwise this is not the "shave rationale to pay for
-# an edit" trade the notes above twice record as wrong and reverted.
+# One imperative DID leave the always-on rules: rule 45's "don't retry a declined
+# push — graduate instead" is in no rules/*.md. It survives in GATES.md §5 AND in
+# check-bash-actions.sh's repeat-reminder text, so a Claude session still meets it
+# at the moment it matters; on the Copilot CLI, where that repeat is a silent
+# allow, it is on-demand only. A deliberate trade, but it means "no rule lost an
+# imperative" is too strong a claim to repeat. Otherwise this is not the "shave
+# rationale to pay for an edit" trade the notes above twice record as wrong and
+# reverted.
 #
 # The ceiling comes down by 900 B — deliberately LESS than the 1,632 B reclaimed,
 # so headroom grew from 178 B to ~910 B (5x) in the same change that tightens the

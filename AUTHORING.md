@@ -164,9 +164,11 @@ matrix):
   the skill cannot mutate an existing repo file, branch, or worktree. `Write`
   splits the tier: add it to `disallowed-tools` for a skill that writes nothing at
   all (`reference`, `standards`, `next`, `doctor`), and **keep it granted** for the
-  five that write one temp-dir path (`audit`, `explain`, `help`, `status` for the
-  artifact HTML; `report` for the scrubbed issue body). That temp-only limit is a **prose
-  invariant**, not a frontmatter one. **Never** disallow `Write` on the theory that
+  five that write a temp-dir path (`audit`, `explain`, `help`, `status` for the
+  artifact HTML; `report` for the scrubbed issue body). For four of the five that
+  temp path is the *only* write; `/steer:audit` is the exception, with a second
+  post-confirmation write its modes instruct (`/spec/AUDIT-REPORT.md` /
+  `DRIFT-REPORT.md`). That limit is a **prose invariant**, not a frontmatter one. **Never** disallow `Write` on the theory that
   a mid-run confirmation lifts the restriction: tool grants apply for the whole
   invocation, so dropping it makes the instructed render unreachable rather than
   deferred (`/steer:reference artifacts`). Shell varies independently: `explain`

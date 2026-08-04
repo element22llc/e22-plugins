@@ -39,6 +39,15 @@ for drift, which acceptance criterion diverges). If you cannot cite the line, yo
 do not have a finding. Read the cited line before asserting it; do not infer a
 violation from a filename, a guess, or training-data memory.
 
+**One exception, for spec-conformance runs only.** When a caller fans you out over
+a spec (`/steer-audit spec`), an *absence* is the finding: a criterion with no
+implementation has no line to cite, and requiring one would suppress every
+`Missing` / `Ambiguous` verdict — which is that mode's priority signal. There,
+cite the **criterion** (its spec `path:line`) instead of an as-built line, and say
+what you searched to conclude it is absent. That is a fully evidenced finding. The
+rule above still governs every code-review run, where a claimed violation always
+has a line.
+
 ## Return a compact summary, not a transcript
 
 Your value is context isolation: the caller wants conclusions, not the files you

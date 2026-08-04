@@ -91,8 +91,10 @@ or Diverged findings on the roadmap — those are drift to resolve via
 same way `from-features` does — **find-or-create** via `/steer:issues materialize` /
 `/steer:tracker-sync find-or-create` (idempotent on `feature-id`+`kind`; a match
 updates, never a duplicate). These are planned **backlog**, so they are **not**
-`spec-drift`-labelled — that label is reserved for actual drift (Diverged /
-Done-but-Missing), per `/steer:audit` and `/steer:tracker-sync push`.
+the `spec-drift` **kind** — that kind is reserved for actual drift (Diverged /
+Done-but-Missing), per `/steer:audit` and `/steer:tracker-sync push`. (`kind` is
+the `steer:kind` marker plus the GitHub Issue Type, never a label — see
+`LABELS.md`.)
 
 ### `sync` — reconcile the plan with reality (idempotent re-run)
 

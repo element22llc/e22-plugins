@@ -182,7 +182,7 @@ stays usable on the hook hot path.
 | State | Means | Consequence |
 | --- | --- | --- |
 | `unmanaged` | no `spec/` directory | nudge toward `/steer:init` / `/steer:adopt` |
-| `foreign` | `spec/` exists but no `spec/.version` | not a recognized steer spine — a softer one-off `/steer:adopt` offer, **not** silence |
+| `foreign` | `spec/` exists but no `spec/.version` | not a recognized steer spine — a shorter `/steer:adopt` offer instead of the full card, **not** silence |
 | `damaged` | `spec/.version` present, a required artifact missing | nudge toward repair / `/steer:sync` |
 | `managed` | `spec/.version` + every required artifact present | silent |
 
