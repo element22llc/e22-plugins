@@ -134,8 +134,12 @@ doubt. Confirmation is reserved for where judgment or loss is at stake:
 **renaming** a cryptic name to a cleaner one is *proposed* (the file still moves
 now, under its existing name); a file whose purpose or correct home is
 **ambiguous** — or a `Copy of …` / look-alike pair — is **asked about** before
-anything happens; and **deletion** is never automatic (only true OS junk like
-`.DS_Store`, on confirmation, with a `.gitignore` pattern added). Run
+anything happens; and **deletion** is never automatic, always waits for a yes,
+and covers only two cases — true OS junk like `.DS_Store` (which also gets a
+`.gitignore` pattern so it can't return), and an **already-absorbed source**, a
+spec/requirements doc whose bytes match a committed `spec/sources/**/original.*`,
+where deleting the redundant duplicate beats filing a second copy (no
+`.gitignore` pattern there — it isn't junk, and a later version is expected). Run
 [`/steer:tidy`](skills.md) for a full sweep of an accumulated pile.
 
 ## Scaffold storage convention

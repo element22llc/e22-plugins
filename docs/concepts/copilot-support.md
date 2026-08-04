@@ -272,8 +272,12 @@ with `STEER_HOOK_TARGET=copilot` — but the two paths are not identical: the
 trunk-push gate's **repeat** push downgrades to a non-blocking `additionalContext`
 reminder on Claude and to a **silent allow** under Copilot, which has no
 non-blocking channel (`check-bash-actions.sh` — the `STEER_HOOK_TARGET` check on
-the marker-present branch). Rule `45-commit-autonomy` states that caveat inline so
-a Copilot reader sees it. The advisory spec-first / issue-first
+the marker-present branch). That caveat lives in the `gates` reference doc, not
+inline in rule `45-commit-autonomy` — so the generated
+`.github/copilot-instructions.md` does **not** carry it, and a Copilot reader
+meets it only by loading `/steer-reference gates`, which also states that a push
+declined there must not be retried in the hope of a quieter second attempt.
+The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
 `check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`
 cannot inject non-blocking context); their intent is carried by the standards in
@@ -348,15 +352,20 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   pins without qualification: the ported gate only *asks* on the Copilot CLI, and
   VS Code has no hook mechanism, so the rule now says to keep the pins current
   yourself.
-- **Three further rules scoped, plus one skill.** The same sweep, finished. Rule
-  `62-hotfix` said a `hotfix/<n>-slug` branch makes "issue-first reconciliation"
-  read the lane as sanctioned — that reconciliation is the `Stop` hook
-  `reconcile-issue-first.sh`, and only the two `PreToolUse` gates are ported, so
-  here the prefix carries the convention alone. Rule `36-issue-first` described the
-  `allow`/`ask` permission tiers, which live in `.claude/settings.json` and Claude
-  skill frontmatter; Copilot applies its own host permissions instead. Rule
-  `90-design-sources` pointed at the `frontend-design` plugin, which the Copilot
-  marketplace does not list. And `/steer:questions` leaned on
+- **One further rule scoped, two whose detail moved out, plus one skill.** The same
+  sweep, finished. Rule `90-design-sources` pointed at the `frontend-design`
+  plugin, which the Copilot marketplace does not list, so it is scoped to Claude
+  Code inline. Two others no longer need scoping because the surface-specific
+  detail left the rule entirely: rule `62-hotfix` is now surface-neutral about the
+  `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
+  `reconcile-issue-first.sh`, which is not ported — only the two `PreToolUse` gates
+  are, so on Copilot the prefix carries the convention alone), and rule
+  `36-issue-first` no longer enumerates the `allow`/`ask` permission tiers. Those
+  tiers are Claude Code's — they live in `.claude/settings.json` and Claude skill
+  frontmatter, and are documented in the plugin's `ISSUE-WORKFLOW.md`, which the
+  flat Copilot standards file does not carry; Copilot applies its own host
+  permissions instead, which is what the rule's surviving text describes. And
+  `/steer:questions` leaned on
   `check-open-questions.sh` for both the backlog nudge and the 14-day blocking
   escalation with no alternative — its body now tells any other surface to apply
   that age test by hand.

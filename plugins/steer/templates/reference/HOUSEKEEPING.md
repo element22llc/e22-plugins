@@ -21,8 +21,11 @@ The three actions differ in how much they wait on you:
   gets moved now under its current name, and a cleaner name is **proposed**
   separately (never renamed silently). A bad name is not a reason to bury or
   delete a file; it's a reason to rename it — with a yes.
-- **Delete** — only true junk, and only after the user confirms. Never
-  automatic.
+- **Delete** — never automatic, always after the user confirms, and only in two
+  cases: **true junk** (which also gets a `.gitignore` pattern), and an
+  **already-absorbed source** whose bytes match a committed
+  `spec/sources/**/original.*` (no `.gitignore` pattern there — it isn't junk).
+  Both are detailed below.
 
 Anything you **can't confidently classify** — an unfamiliar purpose, a
 `Copy of …` / look-alike pair — is **not** auto-moved: ask first (see "Unclear

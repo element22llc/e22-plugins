@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`HOUSEKEEPING.md`'s own three-action summary still forbade the delete rule 22
+  now permits.** The absorbed-source deletion case landed in the taxonomy
+  carve-out and the junk section, but not in the definitional list at the top of
+  the file that states the contract — which still read "**Delete** — only true
+  junk". So the reference `/steer:tidy` is sent to "for the full detail"
+  contradicted both the always-on rule and its own later sections, and an agent
+  honouring it would have moved an already-absorbed source into
+  `/spec/reference/` — the second copy the carve-out exists to prevent. The
+  summary now names both cases and keeps the `.gitignore` step scoped to true
+  junk.
+- **Rule 36 pointed at a "full tiering" its target never carried.** The rule's
+  trim replaced the inline `allow`/`ask` enumeration with "(Full tiering and
+  rationale: `ISSUE-WORKFLOW.md` → "Host gating".)", but that block documented
+  only the `gh issue create`/`edit`/`comment` → `allow` tier and the blocked-create
+  fallback. The tiering survived nowhere in prose — only as machine-readable
+  config — so the pointer, which also reaches the Copilot surface verbatim,
+  promised more than the reference held. "Host gating" now carries the three tiers
+  it is cited for: the `allow` verbs, the two MCP write tools under `ask`, and the
+  per-skill `allowed-tools` re-grants (`/steer:tracker-sync` both,
+  `/steer:report` only `issue_write`), explicitly scoped as Claude Code's.
+
 - **Resolved a contradiction between `/steer:tidy` and rule 22 on deleting an
   absorbed spec source.** `tidy/SKILL.md` proposed deleting a spec/requirements
   doc whose bytes match a committed `spec/sources/**/original.*` — correct, since

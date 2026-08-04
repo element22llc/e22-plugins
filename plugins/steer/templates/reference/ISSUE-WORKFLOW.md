@@ -44,6 +44,18 @@ Two invariants underpin everything:
    gate, **not** a missing issue — don't loop retrying it; ask the user to confirm
    the create, or suggest they run `!gh issue create …` under their own identity,
    then continue.
+
+   **The full tiering.** These tiers are Claude Code's; on any other host its own
+   permission model applies instead, and the fallback above is what carries over.
+
+   - **`allow`** — the `gh issue` metadata verbs (`create`, `edit`, `comment`,
+     `list`, `view`), plus `mcp__github__issue_read`, `list_issues`,
+     `search_issues` and `add_issue_comment`.
+   - **`ask`** — the MCP write tools `mcp__github__issue_write` and
+     `mcp__github__sub_issue_write`, so a session prompts before either.
+   - **Re-granted per skill via `allowed-tools`** — `/steer:tracker-sync` re-grants
+     both write tools, being the gateway that performs issue mutation;
+     `/steer:report` re-grants only `issue_write`, never `sub_issue_write`.
 4. **A CLI implement request authorizes a bounded action set** — read/search,
    create-or-reuse issue, claim, branch, local edits, run tests, commit, push,
    and PR open/update (autonomous under Commit autonomy — the merge review is
