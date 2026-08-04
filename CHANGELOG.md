@@ -7,6 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **The scaffold's `ARCHITECTURE.md` told every consumer repo that
+  `/steer:audit spec` compares that file against `/spec`; it compares neither.**
+  The "why this lives at the root" rationale credited the split with enabling a
+  comparison `audit spec` does not perform — that mode diffs the as-built `/spec`
+  spine against the tracker spec export and reads no code and no
+  `ARCHITECTURE.md`. Staleness of this file is `/steer:audit code`'s DX & docs
+  dimension. The drift-class rationale is unchanged; only the false attribution
+  is gone.
+- **`ISSUE-WORKFLOW.md`'s new tiering block sent the orchestrated MCP write to the
+  wrong tier.** It said a transitively-reached `tracker-sync` write "falls through
+  to the `allow` tier" — but `allow` carries only the `gh issue` verbs, while the
+  two MCP write tools sit under `ask`. Since the gateway is **MCP-first**, the
+  primary path on the only route it is ever reached by *does* prompt, so the block
+  described the common case backwards and made a correct prompt read as a fault.
+  It now names the transport: MCP falls back to `ask` and prompts, the `gh issue`
+  fallback lands in `allow`, and that allow-list is the backstop.
+
 - **Two surfaces named `/steer:audit spec` as a caller of `/steer:spec validate`;
   it has never been one.** `SPEC-FRAMEWORK.md` — the reference the rest of the
   bundle defers to for spec structure and `validate` — and `spec/MODES.md` both

@@ -59,8 +59,12 @@ Two invariants underpin everything:
      one**, which splits the two cases: `/steer:report` is a direct entry point, so
      its re-grant takes effect, but `tracker-sync` is `user-invocable: false` and is
      always reached transitively from a front door — so its grants do **not** take
-     effect and the write falls through to the `allow` tier above. That tier, not
-     the gateway's frontmatter, is the real backstop for the orchestrated path.
+     effect, and where the write lands then depends on the transport. The gateway is
+     MCP-first, so its primary path falls back under `ask` and **does** prompt; only
+     its `gh issue` fallback lands in `allow`. That `gh`-verb allow-list, not the
+     gateway's frontmatter, is the backstop for the orchestrated path — so a prompt
+     on the MCP path is the tiering working as designed, not a fault to route
+     around.
 4. **A CLI implement request authorizes a bounded action set** — read/search,
    create-or-reuse issue, claim, branch, local edits, run tests, commit, push,
    and PR open/update (autonomous under Commit autonomy — the merge review is

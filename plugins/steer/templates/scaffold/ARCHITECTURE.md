@@ -17,8 +17,9 @@ adds an app/package, or reshapes the data flow (living-docs rule).
 **Why this lives at the root and not in `/spec`.** `/spec` is the product's
 *intent* — what the product should do and why, authored ahead of the code. This
 file is the *as-built* system model, authored behind it. Keeping the two apart
-is what lets `/steer:audit spec` compare them and lets the PR checklist flag
-*architecture/stack drift* as its own class.
+lets the PR checklist flag *architecture/stack drift* as its own class; this
+file going stale against the code is reported by `/steer:audit code` (its
+DX & docs dimension), not by `/steer:audit spec`.
 
 ## Tech stack
 
