@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`ARTIFACTS.md` told `/steer:audit` it had only one permitted write; its own
+  frontmatter documents two.** The temp-only rule ("an Artifact's **only**
+  filesystem write is its HTML source … never a path under the repo working tree")
+  is correct about the *Artifact*, but the read-only-skills bullet generalised it to
+  every write those skills make — so an agent that loaded
+  `/steer:reference artifacts` mid-audit could refuse the `/spec/AUDIT-REPORT.md`
+  write its own mode instructs. The bullet now names `/steer:audit` as the
+  exception and scopes the temp-only rule to the Artifact's write.
+- **`check-unmanaged-repo.sh` claimed it goes silent "once `/spec` exists"; it goes
+  silent once the spine is *managed*.** Both the hook header and the user-facing
+  card said the notice "clears itself once `/spec` exists", while the code exits
+  early only on `managed` and deliberately speaks on `foreign` (a bare `spec/` with
+  no `.version`) and `damaged` — the load-bearing rule its own comment states 30
+  lines lower. Creating `/spec` *swaps* the message, it does not clear it. Header,
+  card, and the `docs/` state table now all say so.
+- **`CAPABILITIES.md`'s "two step-6 `absent` exceptions" read as a closed set it
+  isn't.** Several other capability entries say "propose" in their `Repair:` line —
+  meaning the read-then-propose discipline every repair follows on `feat/sync`, or
+  a human follow-up like `/steer:protect` — so the sentence invited the reading
+  that `sync` creates everything else unasked *and* that those entries contradict
+  it. Both it and `sync/RECONCILE.md` now say what is actually distinctive: these
+  two do not write the file at all until asked. (This wording cost two audit rounds
+  to pin down; it is a terminology fix, not a behaviour change.)
+- **`INVOCATION.md` and `AUTHORING.md` each cited something that isn't there.**
+  `INVOCATION.md` pointed at a section called "Why not disabled yet" — the real
+  heading is "Why `disable-model-invocation` is not set yet", so the quoted title
+  was unsearchable. `AUTHORING.md`'s `hooks/lib/*.sh` roster listed eight helpers
+  where nine exist, omitting `graduation.sh` — a genuinely shared detector
+  (`check-graduation.sh` and `check-bash-actions.sh` both source it), so an author
+  following the list would not know to reuse it.
 - **`SPEC-FRAMEWORK.md` stated the intent-approval gate one status too narrowly.**
   It said an approval "cannot proceed while a blocking question … is open", but the
   gate `/steer:spec approve` actually enforces (`spec/MODES.md`) is the full
@@ -21,9 +51,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   heading inside the State model, so all four resolve by name. `ISSUE-SCHEMA.md`
   pointed at a "*GitHub Projects v2 — compatibility boundary*" that no heading
   matched; the heading is now "Native issue fields & the Projects v2 compatibility
-  boundary", which is also what `/steer:roadmap` and `/steer:tracker-sync` already
-  called it. Rule 36's pointer stopped implying "Host gating" is a heading (it is a
-  bold label inside Operating model) — a `→ "X"` in this repo means a real heading.
+  boundary", matching the "compatibility boundary" wording `/steer:roadmap`,
+  `/steer:tracker-sync` and `/steer:issues backlog` were already using loosely, and
+  all five citers were updated to quote it exactly. Rule 36's pointer stopped
+  implying "Host gating" is a heading (it is a bold label inside Operating model) —
+  a `→ "X"` in this repo means a real heading.
 - **`/steer:standards` claimed parity it cannot have in a non-code folder.** It said
   the rules it reads carry "the same status they would have if they had been
   injected at startup", but it reads all 35 while the SessionStart hook in
@@ -76,8 +108,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   summary now names both cases and keeps the `.gitignore` step scoped to true
   junk.
 - **Rule 36 pointed at a "full tiering" its target never carried.** The rule's
-  trim replaced the inline `allow`/`ask` enumeration with a bare pointer to
-  `ISSUE-WORKFLOW.md`'s "Host gating", but that block documented
+  trim replaced the inline `allow`/`ask` enumeration with a pointer offering "the
+  full tiering and rationale" in `ISSUE-WORKFLOW.md`'s "Host gating", but that
+  block documented
   only the `gh issue create`/`edit`/`comment` → `allow` tier and the blocked-create
   fallback. The tiering survived nowhere in the shipped reference bundle an agent
   can load — only in the docs site and as machine-readable config — so the
@@ -105,24 +138,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Reclaimed always-on context budget, and turned the rules ratchet down for the
   first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
   so the next rule edit that added prose would trip the gate even when the
-  wording was right. 1,632 B came out across nine rules. Most of it is
-  duplication removal, the target already carrying the full text: rule 10's mise
-  task-ordering and compose detail (`CONVENTIONS.md`), rule 36's `allowed-tools`
-  tiering (`ISSUE-WORKFLOW.md`'s "Host gating", which asks the rule for a terse
-  reminder and never a second normative copy), rule 62's Claude-Code-specific
-  branch-prefix clause (`skills/work/modes/hotfix.md`), and rule 45's
-  ungraduated-trunk-push mechanics (`GATES.md` §5 — the one target *edited* here,
-  gaining the Copilot-CLI no-retry clause rather than losing it), plus rules 50
-  and 99 no longer restating each other's checklist. The rest is in-place
-  compression with nothing relocated: rules 00 and 30 were reworded, and rule 24
-  dropped rationale for an instruction that is unconditional anyway. No rule lost
-  an imperative. The ceiling drops 68,400 → 67,500 — less than was reclaimed, so
-  headroom grew 178 B → ~910 B at that point in the change. (Rule 22's
-  absorbed-source correction below then spent 360 B of it, leaving ~550 B on the
-  released tree.) (#443)
+  wording was right. 1,632 B came out across nine rules, in three kinds:
+  **detail whose destination already held it** — rule 36's `allowed-tools` tiering
+  (`ISSUE-WORKFLOW.md`'s "Host gating", which asks the rule for a terse reminder
+  and never a second normative copy; note the tiering itself was only *completed*
+  there later in this same release, see the rule-36 bullet above), rule 10's
+  one-way-delegation definition and Python example (`CONVENTIONS.md`), and rules
+  50 and 99 no longer restating each other's checklist; **detail moved out to a
+  target edited to receive it** — rule 45's ungraduated-trunk-push mechanics into
+  `GATES.md` §5, which gained the Copilot-CLI no-retry clause; and **in-place
+  compression with nothing relocated** — rules 00 and 30 reworded, rule 24's
+  rationale for an unconditional instruction dropped, and rule 62's
+  Claude-Code-specific branch-prefix clause dropped (`work/modes/hotfix.md`
+  already stated that the reconciliation hook keys on the prefix, though not the
+  "other surfaces carry it by convention" half). Rule 10 kept its `depends` /
+  `depends_post` ordering imperative. **One imperative did leave the always-on
+  surface:** rule 45's "don't retry a declined push — graduate instead" now lives
+  only in `GATES.md`, so the Copilot CLI reads it on demand rather than every
+  session. The ceiling drops 68,400 → 67,500 — less than was reclaimed, so
+  headroom grew 178 B → ~910 B at that point in the change; rule 22's
+  absorbed-source correction below then spent 360 B of it. For the figure that is
+  true today, run `uv run python scripts/check_context_budget.py --report` — a
+  pinned byte total goes stale on the next rule edit. (#443)
 - **Trimmed the skill-listing routing surface by 232 chars.** `reference` stopped
   parenthesising each topic that its own `when_to_use` already explains in
-  question form; `work`, `spec` and `intake` dropped restatement. Seven literal
+  question form; `spec` and `intake` dropped restatement, and `work` additionally
+  dropped "from local Claude Code" — correct, since the same description is
+  mirrored into the shipped Copilot prompt, which is not local Claude Code. Seven
+  literal
   subtopic tokens went with it (`commit style`, `spec routing`, `audit evidence`,
   `subagents`, `durable state`, `Mermaid`, `LikeC4`) — the topics stay reachable
   through `reference`'s eight doc-name arguments and its `when_to_use` phrasing,

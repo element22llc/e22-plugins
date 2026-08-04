@@ -18,9 +18,12 @@
 #
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path
-#   as inject-standards.sh / check-open-questions.sh). SILENT once /spec exists,
-#   so an initialized or adopted repo gets zero noise and the notice clears
-#   itself. Presents the bootstrap routes (PO-guided build, developer init, or
+#   as inject-standards.sh / check-open-questions.sh). SILENT once the spine is
+#   `managed` — a complete, version-stamped spine (spec/.version + spine files) —
+#   so an initialized or adopted repo gets zero noise. Merely creating /spec is
+#   NOT enough: a `foreign` spec/ (no marker) gets a softer adopt offer and a
+#   `damaged` one gets a repair notice, so the message SWAPS rather than clears
+#   until the spine is complete. Presents the bootstrap routes (PO-guided build, developer init, or
 #   adopt) rather than guessing greenfield-vs-adopt from code volume (a brittle
 #   heuristic) — the session picks based on who is driving (a non-technical owner
 #   vs a developer) and whether the code is being written fresh or already existed.
@@ -101,5 +104,6 @@ printf 'detects the profile (app / infra / service / library / cli / workspace) 
 printf 'and lays the universal '
 printf 'core plus only the matching extras — never hand-write toolchain/CI from '
 printf 'scratch here.\n\n'
-printf 'This notice clears itself once `/spec` exists. (Not a managed product '
-printf 'repo? Ignore it.)\n'
+printf 'This notice clears itself once the repo has a complete, version-stamped '
+printf 'spec spine — which `/steer:init` or `/steer:adopt` creates. (Not a managed '
+printf 'product repo? Ignore it.)\n'

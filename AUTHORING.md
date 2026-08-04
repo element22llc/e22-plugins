@@ -309,8 +309,9 @@ behaviour. It is an authoring aid, not a gate — deliberately not in `check`/`c
 Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 - **POSIX `sh` only, no `jq`.** Reuse the helpers in `hooks/lib/*.sh`
-  (`classify.sh`, `json.sh`, `lifecycle.sh`, `repo-root.sh`, `report-fault.sh`,
-  `scope.sh`, `spine.sh`, `version-policy.sh`) rather than re-parsing.
+  (`classify.sh`, `graduation.sh`, `json.sh`, `lifecycle.sh`, `repo-root.sh`,
+  `report-fault.sh`, `scope.sh`, `spine.sh`, `version-policy.sh`) rather than
+  re-parsing.
 - `hooks.json` invokes each script with an explicit `sh` prefix, so the
   executable bit does not matter (marketplace install does not `chmod`). Keep the
   `sh` prefix when adding a hook.

@@ -137,26 +137,33 @@ the gap as work to reclaim.
 Then, for the first time, the ratchet turned the other way: **68,400 → 67,500**.
 That fifth raise's ~1% headroom had been consumed back down to **178 bytes**,
 which made the ceiling load-bearing on the next rule edit of any kind. 1,632 B
-were reclaimed across nine rules. Most of it is duplication removal, the target
-already carrying the full text. Rule 10's mise task-ordering and compose detail
-went to `CONVENTIONS.md`; rule 45's ungraduated-trunk-push mechanics to `GATES.md`
-(which gained the Copilot-CLI no-retry clause rather than losing it); rule 36's
-`allowed-tools` tiering to `ISSUE-WORKFLOW.md`, whose "Host gating" block —
-inside its Operating model principles, not a section of its own — already asked
-the always-on rule for a terse, point-of-use reminder and never a second normative
-copy; rule 62's Claude-Code-specific branch-prefix clause to
-`work/modes/hotfix.md`; and rules 50 and 99 stopped restating each other's
-checklist. The remainder is in-place compression with nothing relocated: rules 00
-and 30 were reworded, and rule 24 dropped rationale for an instruction that is
-unconditional anyway — prose deletion rather than duplication removal, so the two
-are worth naming separately. No rule lost an imperative, so this is not the
-shave-rationale-to-pay trade the earlier raises record as wrong and reverted. The
-ceiling came down by 900 B — deliberately **less** than was reclaimed — so
-headroom grew from 178 B to ~910 B in the same change that tightened the ratchet.
-Rule 22's absorbed-source correction then spent 360 B of that (it had been
-projected at ~150 B), so the released tree measures 66,950 B and carries ~550 B.
-Re-arming at measured + 1% would have restored the ~660-byte margin that made
-three of the earlier raises inevitable.
+were reclaimed across nine rules, in three kinds. **Detail whose destination
+already held it:** rule 10's one-way-delegation definition and polyglot-Python
+example went to `CONVENTIONS.md` → "Standard mise tasks" (rule 10 keeps the
+`depends` / `depends_post` ordering imperative itself); rule 36's `allowed-tools`
+tiering to `ISSUE-WORKFLOW.md`, whose "Host gating" block — inside its Operating
+model principles, not a section of its own — asks the always-on rule for a terse,
+point-of-use reminder and never a second normative copy, though the tiering block
+there was only *completed* later in the same release; and rules 50 and 99 stopped
+restating each other's checklist. **Detail moved into a target edited to receive
+it:** rule 45's ungraduated-trunk-push mechanics into `GATES.md`, which gained the
+Copilot-CLI no-retry clause. **In-place compression with nothing relocated:**
+rules 00 and 30 reworded, rule 24's rationale for an unconditional instruction
+dropped, and rule 62's Claude-Code-specific branch-prefix clause dropped — its
+target states that the reconciliation hook keys on the prefix, but the "other
+surfaces carry it by convention" half is simply gone.
+
+One imperative **did** leave the always-on surface: rule 45's "don't retry a
+declined push — graduate instead" now lives only in `GATES.md`, so the Copilot CLI
+reads it on demand rather than every session. A deliberate trade, but not the
+"no rule lost an imperative" the change originally claimed. The ceiling came down
+by 900 B — deliberately **less** than was reclaimed — so headroom grew from 178 B
+to ~910 B in the same change that tightened the ratchet, and rule 22's
+absorbed-source correction then spent 360 B of that (it had been projected at
+~150 B). For the total on any given tree, run
+`uv run python scripts/check_context_budget.py --report` — a figure pinned in
+prose goes stale on the next rule edit. Re-arming at measured + 1% would have
+restored the ~660-byte margin that made three of the earlier raises inevitable.
 
 The skill-listing ratchet has moved twice. The first, in 3.23.0, 11,500 → 11,900
 chars, for a different reason than the rules ceiling: not a budget concession but a

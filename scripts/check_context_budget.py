@@ -165,28 +165,39 @@ PLUGIN_ROOT = Path("plugins/steer")
 #
 # 1,632 B were reclaimed across nine rules. Most of it is duplication removal,
 # the target already carrying the full text:
-#   - rule 10's mise task-ordering and compose detail → CONVENTIONS.md
-#     ("Standard mise tasks", "Declaring task ordering", "Local services");
-#   - rule 45's ungraduated-trunk-push mechanics → GATES.md §5, which already
-#     owned them (the Copilot-CLI no-retry clause moved there rather than being
-#     dropped) — the one target actually edited by this change;
+#   - rule 10's one-way-delegation definition and polyglot-Python example →
+#     CONVENTIONS.md ("Standard mise tasks"); rule 10 keeps the
+#     `depends`/`depends_post` ordering imperative itself;
+#   - rule 45's ungraduated-trunk-push mechanics → GATES.md §5, which mostly
+#     owned them already but WAS edited here to receive the Copilot-CLI no-retry
+#     clause rather than lose it;
 #   - rule 36's `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating", which
 #     explicitly asks the always-on rule to carry "only a terse, point-of-use
-#     reminder … never a second normative copy";
+#     reminder … never a second normative copy". NB the tiering block itself was
+#     only completed in that target later in the same release (dffdde7), so at
+#     trim time the target did NOT yet hold the full text;
 #   - rule 62's Claude-Code-specific branch-prefix clause → work/modes/hotfix.md,
-#     which already stated it;
+#     which states that the reconciliation hook keys on the prefix but NOT the
+#     "other surfaces carry it by convention" half — that half is simply gone;
 #   - rules 50 and 99 stopped restating each other's checklist items.
 # The remainder is in-place compression with nothing relocated: rules 00 and 30
 # were reworded, and rule 24 dropped rationale for an instruction that is
-# unconditional anyway. No rule lost an imperative, so this is not the "shave
-# rationale to pay for an edit" trade the notes above twice record as wrong and
-# reverted — though rule 24's drop is prose deletion, not duplication removal, so
-# the two categories are named separately here rather than collapsed into one.
+# unconditional anyway — prose deletion, not duplication removal, so the two
+# categories are named separately here rather than collapsed into one.
+#
+# One imperative DID leave the always-on surface: rule 45's "don't retry a
+# declined push — graduate instead" now lives only in GATES.md §5. That is a
+# deliberate trade, not a slip, but it means "no rule lost an imperative" is too
+# strong a claim to repeat — the Copilot CLI now reads that instruction on demand
+# rather than every session. Otherwise this is not the "shave rationale to pay for
+# an edit" trade the notes above twice record as wrong and reverted.
 #
 # The ceiling comes down by 900 B — deliberately LESS than the 1,632 B reclaimed,
 # so headroom grew from 178 B to ~910 B (5x) in the same change that tightens the
-# ratchet. Rule 22's correction then spent 360 B of that, so the released tree
-# measures 66,950 B and carries ~550 B. Re-arming at measured+1% would have
+# ratchet. Rule 22's correction then spent 360 B of that. Do not pin the current
+# total in this comment — `--report` is the only honest source for it, and a pinned
+# figure goes stale on the next rule edit (it already did once). Re-arming at
+# measured+1% would have
 # restored the ~660-byte margin that made raises two, three and four inevitable;
 # the whole lesson of this comment block is that a tight ceiling dictates the
 # wording of correctness fixes instead of bounding their cost. Target stays

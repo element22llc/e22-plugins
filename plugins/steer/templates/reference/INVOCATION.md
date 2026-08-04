@@ -4,7 +4,8 @@ How the `steer` skills are meant to be reached — by natural-language
 inference vs. explicit user intent vs. internal orchestration only. This is
 **guidance**, not an enforced gate: `user-invocable: false` only hides a skill
 from the slash menu; it does not stop the model from invoking it, and no skill
-sets `disable-model-invocation` today (see "Why not disabled yet" below).
+sets `disable-model-invocation` today (see "Why `disable-model-invocation` is not
+set yet" below).
 
 Natural-language invocation is part of the plugin's mission, so the default is to
 let the model route to the right skill from intent. The tiers below say where to
