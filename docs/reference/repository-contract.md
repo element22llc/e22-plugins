@@ -29,7 +29,7 @@ flowchart TD
 | `.worktreeinclude` | scaffold | Carries git-ignored local config (`.env`, `.mise.local.toml`, `.claude/settings.local.json`) into each `claude --worktree` — worktrees start from git refs only, so without it the app can't boot there. Its header also documents worktree **`mise trust`**: trust is path-keyed, so a new worktree starts untrusted and every `mise run …` there fails on trust until someone trusts it. A Claude Code session started in a worktree inherits the primary checkout's trust automatically (the `check-worktree-trust` session check — see [Hooks](hooks.md)); a plain terminal, or a worktree created mid-session with `git worktree add`, needs one `mise trust` there. |
 | `scripts/worktree-env.sh` | scaffold | Sourced by `mise.toml` (`[env]._.source`) so parallel Claude Code worktrees of the same repo don't collide at runtime: it gives each worktree a unique `COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`). The primary checkout gets offset 0 (ports unchanged) and keeps its bare directory name; a linked worktree's project name is `<repo>-<worktree>`, because a worktree basename alone is not unique across repos. **Re-taking this file renames an existing linked worktree's stack**, so tear a running one down first — under the new project name Compose no longer sees the old containers or volumes (recover with `docker compose -p <old-name> down -v`) — in a polyrepo the same feature branch runs in several members, and a shared project name meant one member's `docker:clean` tore down another's containers and volumes. `mise run docker:clean` tears down a worktree's services + volumes before it is removed, scoped to that worktree — spelled `mise run ws:docker:clean` in a **workspace** repo, whose profile replaces core `mise.toml` and prefixes every whole-product task. This `[env]._.source` line is also what makes a new worktree need `mise trust`: mise loads a data-only config untrusted but refuses one that executes code at load time (see the `.worktreeinclude` row above). See the always-on **Parallel worktrees** rule. |
 | `CLAUDE.md` | product | **Only** product-specific context — standards prose is never duplicated here. Carries the `<!-- steer:profile=… -->` marker (see Repo profiles). |
-| `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root — narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Keeping it apart from `/spec` (which holds **intent**) is what lets `/steer:audit spec` compare the two. Required at the root by rules `20-layout` and `32-living-docs`, and allowlisted there by `22-housekeeping` so `/steer:tidy` never proposes relocating it. |
+| `ARCHITECTURE.md` | scaffold | The **as-built** system model at the repo root — narrative and tables only, linking rather than inlining the rendered diagram at `spec/design/architecture-diagram.md`. Its staleness is checked by `/steer:audit code` (the DX & docs dimension), not by `/steer:audit spec` — that mode is spec-vs-spec, diffing the as-built `/spec` spine against the tracker spec export and reading neither the code nor this file. Required at the root by rules `20-layout` and `32-living-docs`, and allowlisted there by `22-housekeeping` so `/steer:tidy` never proposes relocating it. |
 
 ## Repo profiles
 
@@ -134,8 +134,12 @@ doubt. Confirmation is reserved for where judgment or loss is at stake:
 **renaming** a cryptic name to a cleaner one is *proposed* (the file still moves
 now, under its existing name); a file whose purpose or correct home is
 **ambiguous** — or a `Copy of …` / look-alike pair — is **asked about** before
-anything happens; and **deletion** is never automatic (only true OS junk like
-`.DS_Store`, on confirmation, with a `.gitignore` pattern added). Run
+anything happens; and **deletion** is never automatic, always waits for a yes,
+and covers only two cases — true OS junk like `.DS_Store` (which also gets a
+`.gitignore` pattern so it can't return), and an **already-absorbed source**, a
+spec/requirements doc whose bytes match a committed `spec/sources/**/original.*`,
+where deleting the redundant duplicate beats filing a second copy (no
+`.gitignore` pattern there — it isn't junk, and a later version is expected). Run
 [`/steer:tidy`](skills.md) for a full sweep of an accumulated pile.
 
 ## Scaffold storage convention

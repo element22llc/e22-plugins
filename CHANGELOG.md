@@ -7,6 +7,60 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **The scaffold's `ARCHITECTURE.md` told every consumer repo that
+  `/steer:audit spec` compares that file against `/spec`; it compares neither.**
+  The "why this lives at the root" rationale credited the split with enabling a
+  comparison `audit spec` does not perform — that mode diffs the as-built `/spec`
+  spine against the tracker spec export and reads no code and no
+  `ARCHITECTURE.md`. Staleness of this file is `/steer:audit code`'s DX & docs
+  dimension. The drift-class rationale is unchanged; only the false attribution
+  is gone. `spec/SKILL.md` named "the code" / "the as-built code" as the operand
+  in the same way, in the two places it routes to `audit spec`; both now say the
+  as-built `/spec` spine, which is what stands in for the code.
+- **`ISSUE-WORKFLOW.md`'s new tiering block sent the orchestrated MCP write to the
+  wrong tier.** It said a transitively-reached `tracker-sync` write "falls through
+  to the `allow` tier" — but `allow` carries only the `gh issue` verbs, while the
+  two MCP write tools sit under `ask`. Since the gateway is **MCP-first**, the
+  primary path on the only route it is ever reached by *does* prompt, so the block
+  described the common case backwards and made a correct prompt read as a fault.
+  It now names the transport: MCP falls back to `ask` and prompts, the `gh issue`
+  fallback lands in `allow`, and that allow-list is the backstop.
+
+- **Two surfaces named `/steer:audit spec` as a caller of `/steer:spec validate`;
+  it has never been one.** `SPEC-FRAMEWORK.md` — the reference the rest of the
+  bundle defers to for spec structure and `validate` — and `spec/MODES.md` both
+  listed it alongside the three real
+  `/steer:issues` callers, but `validate` appears nowhere in the audit skill tree:
+  `audit spec` is a spec-vs-spec conformance diff with exactly two inputs (the
+  as-built `/spec` spine and the tracker export) and no such precondition. A
+  phantom gate in the authoritative place reads as a guarantee that no code
+  provides. Both now list only the callers that exist; whether `audit spec`
+  *should* gate on `validate` is a separate question, not settled here.
+
+- **`HOUSEKEEPING.md`'s own three-action summary still forbade the delete rule 22
+  now permits.** The absorbed-source deletion case landed in the taxonomy
+  carve-out and the junk section, but not in the definitional list at the top of
+  the file that states the contract — which still read "**Delete** — only true
+  junk". So the reference `/steer:tidy` is sent to "for the full detail"
+  contradicted both the always-on rule and its own later sections, and an agent
+  honouring it would have moved an already-absorbed source into
+  `/spec/reference/` — the second copy the carve-out exists to prevent. The
+  summary now names both cases and keeps the `.gitignore` step scoped to true
+  junk.
+- **Rule 36 pointed at a "full tiering" its target never carried.** The rule's
+  trim replaced the inline `allow`/`ask` enumeration with "(Full tiering and
+  rationale: `ISSUE-WORKFLOW.md` → "Host gating".)", but that block documented
+  only the `gh issue create`/`edit`/`comment` → `allow` tier and the blocked-create
+  fallback. The tiering survived nowhere in the shipped reference bundle an agent
+  can load — only in the docs site and as machine-readable config — so the
+  pointer, which also reaches the Copilot surface verbatim, promised more than the
+  reference held. "Host gating" now carries the three tiers it is cited for: the
+  `allow` verbs, the two MCP write tools under `ask`, and the per-skill
+  `allowed-tools` re-grants (`/steer:tracker-sync` both, `/steer:report` only
+  `issue_write`) — including the caveat that a grant fires only on a direct
+  invocation, so the gateway's, reached transitively, does not — explicitly
+  scoped as Claude Code's.
+
 - **Resolved a contradiction between `/steer:tidy` and rule 22 on deleting an
   absorbed spec source.** `tidy/SKILL.md` proposed deleting a spec/requirements
   doc whose bytes match a committed `spec/sources/**/original.*` — correct, since
