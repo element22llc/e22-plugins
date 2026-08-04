@@ -91,7 +91,8 @@ escalates a **blocking** question still open after `STEER_QUESTION_STALE_DAYS`
 (14) so it can't rot unseen. When `created:` is absent the hook falls back to the
 line's `git blame` date, so older questions still get an age. `owner:` is the role
 that should decide; on promotion it resolves to a GitHub assignee via the
-`## Owners` map in `spec/tracker.md` (see [`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md)).
+`owners:` frontmatter map in `spec/tracker.md` (see
+[`ISSUE-WORKFLOW.md`](ISSUE-WORKFLOW.md)).
 
 ### Spec validation (`/steer:spec validate`)
 

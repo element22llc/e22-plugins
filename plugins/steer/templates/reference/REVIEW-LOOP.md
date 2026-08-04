@@ -81,8 +81,9 @@ fix loop open.
 ## 5. Where the loop sits among the skills
 
 - **`/steer:work`** owns governed implementation — branch, commits, tests, PR,
-  tracker — in GitHub-adopted repos. Its `--reviewed` mode *is* this loop: step 4
-  runs the same governed implementation path, with the gates added around it. In
+  tracker — in GitHub-adopted repos. Its `--reviewed` mode *is* this loop: its
+  **Implement** phase runs the same governed `start`→`finish` path, with the gates
+  added around it. In
   prototype/local mode (no tracker) there is no `/steer:work`; apply this protocol
   directly around implementation, exactly as `/steer:build` does in that mode.
 - **`/steer:build`** is the PO-facing greenfield flow. In its governed mode it
