@@ -173,9 +173,12 @@ Three hooks need to know whether the repo in front of them has a steer-managed
 `/spec` spine before they say anything: `check-unmanaged-repo.sh` (the bootstrap
 nudge), `orient-session.sh` (the `SessionStart` orientation line) and
 `check-write-nudges.sh`. They all get the answer from one helper,
-`hooks/lib/spine.sh` — also sourced by `/steer:setup`, `/steer:sync` and
-`scripts/workspace-snapshot.sh`. Its only dependency is `lib/repo-root.sh`, so it
-stays usable on the hook hot path.
+`hooks/lib/spine.sh` — also sourced by the bundled `scripts/scan-spine-state.sh`
+and `scripts/workspace-snapshot.sh`, which is how the skills that need the state
+(`/steer:setup`, `/steer:sync`, `/steer:next`, …) reach it: a skill dot-sourcing
+this file directly cannot pre-approve the call, and `check_skill_helper_sourcing`
+now fails the build on it. Its only dependency is `lib/repo-root.sh`, so it stays
+usable on the hook hot path.
 
 `steer_spine_state <repo_root>` prints exactly one of four words:
 

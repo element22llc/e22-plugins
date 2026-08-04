@@ -1208,6 +1208,47 @@ def check_skill_script_grants(errors: list[str]) -> None:
                 )
 
 
+# A skill body that `.`-sources a hook helper reaches the right function by a form
+# that is not pre-approvable in practice: the source is only useful alongside the
+# calls to the functions it defines, and a permission rule matches a SINGLE command
+# string — so the compound snippet matches no rule even when its parts would (the
+# same reason `git status && git diff` prompts). No skill grants a dot-source in any
+# form, and the check above cannot see one either, since it only recognises
+# `scripts/` calls. That combination is how /steer:setup shipped from v3.0.0 with a
+# prompt on its very first action. Wrap the reads in a bundled `scripts/` helper
+# (scan-spine-state.sh is the worked example) and grant that instead.
+_HELPER_SOURCING = re.compile(
+    r"(?:^|[;&|(]|\s)(?:\.|source)\s+"
+    r"[\"']?\$\{CLAUDE_PLUGIN_ROOT\}/hooks/lib/(?P<helper>[A-Za-z0-9_.-]+\.sh)",
+    re.MULTILINE,
+)
+
+
+def check_skill_helper_sourcing(errors: list[str]) -> None:
+    """Assert no skill body dot-sources a ``hooks/lib/*.sh`` helper directly.
+
+    Sibling of :func:`check_skill_script_grants` covering the half of the #266
+    class that grant-matching can never reach: an ungrantable command form.
+    Scans every ``*.md`` under each skill directory, since the run step may live
+    in a factored-out body file while the grants live in SKILL.md frontmatter.
+    """
+    for skill_dir in sorted(p for p in SKILLS_DIR.iterdir() if p.is_dir()):
+        for md in sorted(skill_dir.rglob("*.md")):
+            body = md.read_text(encoding="utf-8")
+            helpers = sorted({m.group("helper") for m in _HELPER_SOURCING.finditer(body)})
+            if not helpers:
+                continue
+            rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
+            errors.append(
+                f"{rel}: dot-sources hooks/lib helper(s) {helpers} — a permission "
+                f"rule matches one command string, so the source plus the calls it "
+                f"enables match none, and /steer:{skill_dir.name} prompts on this "
+                f"step regardless of its grants. Wrap the reads in a "
+                f"bundled scripts/*.sh helper (see scripts/scan-spine-state.sh) and "
+                f"grant it with Bash(sh *scripts/<name>.sh*) (#266)"
+            )
+
+
 # --- check 13: the workspace scaffold cannot shadow a member's tasks ---
 
 _WS_MISE = PLUGIN_ROOT / "templates/scaffold/profiles/workspace/mise.toml"
@@ -1375,6 +1416,7 @@ def run_checks(errors: list[str]) -> None:
     check_payload_debranded(errors)
     check_noncallable_imperatives(errors)
     check_skill_script_grants(errors)
+    check_skill_helper_sourcing(errors)
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)
 

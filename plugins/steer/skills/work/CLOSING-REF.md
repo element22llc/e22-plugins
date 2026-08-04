@@ -15,10 +15,13 @@ issue never advances state either.
 Resolve both sides before writing any closing ref:
 
 ```sh
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
-tracker_repo="$(steer_tracker_repo "$PWD")"          # from /spec/tracker.md
-code_repo="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"   # `- tracker repo:` ← /spec/tracker.md
+gh repo view --json nameWithOwner -q .nameWithOwner      # the repo the code lives in
 ```
+
+`- tracker repo: none declared` covers all three no-op cases at once — no
+`spec/tracker.md`, no `repository:` key, and the unresolved
+`[owner/repository]` placeholder.
 
 Compare them **case-insensitively** (GitHub owner/repo names are), then:
 

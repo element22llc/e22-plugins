@@ -10,6 +10,7 @@ when_to_use: >-
   fix") — never for ordinary urgent work.
 argument-hint: "[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
+  - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
   - Bash(git switch *)
   - Bash(git checkout -b *)
@@ -24,6 +25,7 @@ allowed-tools:
   - Bash(git push origin *)
   - Bash(gh pr create *)
   - Bash(gh pr edit *)
+  - Bash(gh repo view *)
   - Bash(gh pr checks *)
   - Bash(gh run view *)
   - Bash(gh run watch *)

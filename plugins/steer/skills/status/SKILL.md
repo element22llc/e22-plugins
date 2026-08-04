@@ -16,6 +16,7 @@ argument-hint: "[this-week | since <date> | milestone [<name>]]"
 # the skill cannot mutate a repo file, branch, or worktree; Write stays for the
 # temp-dir artifact only.
 allowed-tools:
+  - Bash(sh *scripts/scan-spine-state.sh*)
   - mcp__github__issue_read
   - mcp__github__list_issues
   - mcp__github__search_issues
@@ -101,7 +102,8 @@ outside issues, say the report covers tracked issues only — don't guess at the
    stop.
 3. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took.
-4. **Determine report scope** via `steer_polyrepo_role` (`lib/scope.sh`). A
+4. **Determine report scope** from `- polyrepo role:` in
+   `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-spine-state.sh"`. A
    single-repo product covers itself — nothing to say. In a **polyrepo**, this
    report goes to a client, so scope has to be explicit: state which members it
    covers and how each was read (local checkout / gateway), and list any member

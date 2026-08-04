@@ -49,8 +49,10 @@ steer_spine_state() {
 	# of unquoted variables is a POSIX-sh behaviour that zsh does NOT perform by
 	# default, so a plain `for _f in ${STEER_SPINE_REQUIRED}` iterates once with
 	# the whole string under zsh and misclassifies a managed repo as damaged.
-	# This helper is sourced by the /steer:setup skill snippet, which the model
-	# runs in the host shell (zsh on macOS), so it must be correct there too.
+	# This helper is also sourced outside the hooks, by scripts/scan-spine-state.sh
+	# and scripts/workspace-snapshot.sh, so it must stay correct under whatever
+	# shell runs those — keep the expansion portable rather than relying on the
+	# hook runner's `sh`.
 	# A polyrepo member's product-level artifacts live in the workspace repo, not
 	# here; requiring them would report `damaged` by design. See
 	# STEER_SPINE_REQUIRED_MEMBER above.
