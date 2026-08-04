@@ -207,6 +207,11 @@ prompted to install when they trust the folder:
 
 ## Upgrading from `e22-standards`
 
+<!-- steer-legacy-ok -->
+<!-- This migration note has to show the pre-rebrand invocation form to be
+     useful, so the stale-token guard in check_standards.py is opted out for
+     this section only (it re-arms at the next heading). -->
+
 The plugin was renamed `e22-standards` → **`steer`** (and skills lost their
 redundant prefix: `/e22-standards:e22-init` → `/steer:init`). The marketplace
 (`e22-plugins`) and repo are unchanged, so this is a clean break with two manual
