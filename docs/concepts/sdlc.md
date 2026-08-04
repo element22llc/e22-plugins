@@ -119,9 +119,10 @@ mirroring the issue's `validate`/`done` — a derived value stored in a second f
 and updated by hand, so every merge had to be replayed into the spec and `reconcile`
 existed largely to repair what that missed. Those two values were retired; what
 remains of reconciliation is pointer and question consistency, plus
-[`/steer:audit spec`](../reference/skills.md), which compares the **as-built code**
-against the intended spec — a genuinely different comparison from syncing two
-status fields.
+[`/steer:audit spec`](../reference/skills.md), which compares the **as-built
+`/spec` spine** (reverse-engineered from the code by `/steer:adopt`, standing in
+for it) against the tracker spec — a genuinely different comparison from syncing
+two status fields.
 
 !!! warning "The two pairings that *are* worth a look"
     Because there is no derived value to keep in step, almost every spec/issue

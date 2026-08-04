@@ -54,8 +54,13 @@ Two invariants underpin everything:
    - **`ask`** — the MCP write tools `mcp__github__issue_write` and
      `mcp__github__sub_issue_write`, so a session prompts before either.
    - **Re-granted per skill via `allowed-tools`** — `/steer:tracker-sync` re-grants
-     both write tools, being the gateway that performs issue mutation;
-     `/steer:report` re-grants only `issue_write`, never `sub_issue_write`.
+     both write tools; `/steer:report` re-grants only `issue_write`, never
+     `sub_issue_write`. A grant applies **only while that skill is the invoked
+     one**, which splits the two cases: `/steer:report` is a direct entry point, so
+     its re-grant takes effect, but `tracker-sync` is `user-invocable: false` and is
+     always reached transitively from a front door — so its grants do **not** take
+     effect and the write falls through to the `allow` tier above. That tier, not
+     the gateway's frontmatter, is the real backstop for the orchestrated path.
 4. **A CLI implement request authorizes a bounded action set** — read/search,
    create-or-reuse issue, claim, branch, local edits, run tests, commit, push,
    and PR open/update (autonomous under Commit autonomy — the merge review is

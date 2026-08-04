@@ -273,10 +273,15 @@ trunk-push gate's **repeat** push downgrades to a non-blocking `additionalContex
 reminder on Claude and to a **silent allow** under Copilot, which has no
 non-blocking channel (`check-bash-actions.sh` — the `STEER_HOOK_TARGET` check on
 the marker-present branch). That caveat lives in the `gates` reference doc, not
-inline in rule `45-commit-autonomy` — so the generated
-`.github/copilot-instructions.md` does **not** carry it, and a Copilot reader
-meets it only by loading `/steer-reference gates`, which also states that a push
-declined there must not be retried in the hope of a quieter second attempt.
+inline in rule `45-commit-autonomy`, and the generated
+`.github/copilot-instructions.md` does **not** carry it either — so it is absent
+from the always-on standards both surfaces read. It reaches a reader only on the
+**CLI**, which loads the real `reference` skill from the Copilot plugin manifest;
+that doc also states a push declined there must not be retried in the hope of a
+quieter second attempt. In VS Code the prose is unreachable — the prompt files are
+intent capsules and their `${CLAUDE_PLUGIN_ROOT}` paths do not resolve (see
+Limitations) — but nothing is lost there, since VS Code has no hooks and so never
+raises the repeat-push decision the caveat is about.
 The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
 `check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`

@@ -88,7 +88,7 @@ The closed-issue check needs the tracker; when GitHub is unavailable, run the
 GitHub-independent checks and **say** the tracker-coupled ones were skipped —
 silence must never read as "passed." A failing check **blocks the relevant gate**
 (approval, `/steer:issues materialize`, a spec-changing PR). `/steer:issues`
-(`materialize`, `status`, `reconcile`) and `/steer:audit spec` call this before acting.
+(`materialize`, `status`, `reconcile`) calls this before acting.
 
 ## Approve mode — `/steer:spec approve <feature-id>`
 

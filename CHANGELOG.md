@@ -7,6 +7,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Two surfaces named `/steer:audit spec` as a caller of `/steer:spec validate`;
+  it has never been one.** `SPEC-FRAMEWORK.md` — the reference the rest of the
+  bundle defers to for spec structure and `validate` — and `spec/MODES.md` both
+  listed it alongside the three real
+  `/steer:issues` callers, but `validate` appears nowhere in the audit skill tree:
+  `audit spec` is a spec-vs-spec conformance diff with exactly two inputs (the
+  as-built `/spec` spine and the tracker export) and no such precondition. A
+  phantom gate in the authoritative place reads as a guarantee that no code
+  provides. Both now list only the callers that exist; whether `audit spec`
+  *should* gate on `validate` is a separate question, not settled here.
+
 - **`HOUSEKEEPING.md`'s own three-action summary still forbade the delete rule 22
   now permits.** The absorbed-source deletion case landed in the taxonomy
   carve-out and the junk section, but not in the definitional list at the top of
@@ -21,12 +32,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   trim replaced the inline `allow`/`ask` enumeration with "(Full tiering and
   rationale: `ISSUE-WORKFLOW.md` → "Host gating".)", but that block documented
   only the `gh issue create`/`edit`/`comment` → `allow` tier and the blocked-create
-  fallback. The tiering survived nowhere in prose — only as machine-readable
-  config — so the pointer, which also reaches the Copilot surface verbatim,
-  promised more than the reference held. "Host gating" now carries the three tiers
-  it is cited for: the `allow` verbs, the two MCP write tools under `ask`, and the
-  per-skill `allowed-tools` re-grants (`/steer:tracker-sync` both,
-  `/steer:report` only `issue_write`), explicitly scoped as Claude Code's.
+  fallback. The tiering survived nowhere in the shipped reference bundle an agent
+  can load — only in the docs site and as machine-readable config — so the
+  pointer, which also reaches the Copilot surface verbatim, promised more than the
+  reference held. "Host gating" now carries the three tiers it is cited for: the
+  `allow` verbs, the two MCP write tools under `ask`, and the per-skill
+  `allowed-tools` re-grants (`/steer:tracker-sync` both, `/steer:report` only
+  `issue_write`) — including the caveat that a grant fires only on a direct
+  invocation, so the gateway's, reached transitively, does not — explicitly
+  scoped as Claude Code's.
 
 - **Resolved a contradiction between `/steer:tidy` and rule 22 on deleting an
   absorbed spec source.** `tidy/SKILL.md` proposed deleting a spec/requirements
