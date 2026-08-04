@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 5.2.0
+
 - **The onboarding front door prompted on its very first action, and had since
   `v3.0.0`.** `/steer:setup`'s detection step was a five-line snippet that
   `.`-sourced three `hooks/lib/*.sh` helpers and then called their functions — and
