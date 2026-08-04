@@ -14,7 +14,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   spine against the tracker spec export and reads no code and no
   `ARCHITECTURE.md`. Staleness of this file is `/steer:audit code`'s DX & docs
   dimension. The drift-class rationale is unchanged; only the false attribution
-  is gone.
+  is gone. `spec/SKILL.md` named "the code" / "the as-built code" as the operand
+  in the same way, in the two places it routes to `audit spec`; both now say the
+  as-built `/spec` spine, which is what stands in for the code.
 - **`ISSUE-WORKFLOW.md`'s new tiering block sent the orchestrated MCP write to the
   wrong tier.** It said a transitively-reached `tracker-sync` write "falls through
   to the `allow` tier" — but `allow` carries only the `gh issue` verbs, while the

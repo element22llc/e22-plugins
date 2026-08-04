@@ -36,7 +36,8 @@ implementation.
 
 - Before committing to implementation, to think a feature through and pin its
   acceptance criteria.
-- To refine an intent you plan to compare against the code later (`/steer:audit spec`).
+- To refine an intent you plan to compare against the as-built `/spec` spine later
+  (`/steer:audit spec`).
 - Whenever a feature needs design discussion but **not** code yet.
 
 ## Lite mode — an unmanaged repo is not a blocker
@@ -154,7 +155,7 @@ step, never a precondition for the spec work itself.
 | `/steer:questions` | open-question sweep (behavior reused here) |
 | `/steer:build` | spec **and** build, PO-driven, ends in a code PR |
 | `/steer:tracker-sync` | file the intent as a tracker item (optional exit) |
-| `/steer:audit spec` | *later*: compare this intent against the as-built code |
+| `/steer:audit spec` | *later*: compare this intent against the as-built `/spec` spine |
 
 ## Coupling rules
 
