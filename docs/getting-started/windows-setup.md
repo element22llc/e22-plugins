@@ -104,7 +104,10 @@ Both sides of this are handled, but they arrive by different routes:
 
     `/steer:doctor` checks for this **first**, before anything else, and names
     it as a plugin-install fault rather than a missing prerequisite. The fix is
-    to reinstall the plugin so it re-clones with normalization applied.
+    to reinstall the plugin so it re-clones with normalization applied. Where
+    that isn't immediately possible, doctor **prints** an in-place `sed` unblock
+    for you to run — it never runs it itself, and it says plainly that a
+    `/plugin update` will overwrite the patched copy.
 
     One failure here is quiet rather than loud, so it is worth knowing about:
     under CRLF, `template-reconcile.sh` could still *run* and report every

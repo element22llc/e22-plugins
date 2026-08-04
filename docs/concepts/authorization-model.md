@@ -164,7 +164,9 @@ unbounded-path filesystem read — and that is the point: the fault it detects
 (a CRLF checkout) is precisely what stops every bundled script from parsing, so a
 script-based detector would share the failure it is meant to diagnose. The grant is
 read-only (`grep -rl` lists names; it cannot mutate), which is what keeps the
-breadth acceptable.
+breadth acceptable — and the *repair* is handed over on the same principle: doctor
+prints the in-place `sed` unblock for the dev to run rather than running it, the
+same way it prints a shell-rc edit instead of making one.
 `/steer:protect` likewise declares a scoped grant for what it routinely reads — `gh auth
 status`, `gh repo view`, `git remote`, `git rev-parse`, and the read-scoped
 `Bash(gh api repos/*)` above —

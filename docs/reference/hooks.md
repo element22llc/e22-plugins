@@ -9,6 +9,21 @@ orientation, and `PreToolUse` hooks; 30s for the consolidated session checks, th
 `PostToolUse` formatter, and the `Stop` reconcile) so a slow hook can never stall
 a session.
 
+!!! danger "Hook scripts must check out as LF — a CRLF copy breaks all of them at once"
+    Every hook here is a POSIX `sh` script, and **a CRLF shell script does not
+    warn, it fails to parse**: the shell reads the trailing `\r` as part of the
+    token, so `steer_repo_root() {` becomes
+    `syntax error near unexpected token $'{\r'` and the script never runs. Because
+    the hooks share `hooks/lib/*.sh`, one CRLF checkout takes out the whole set
+    simultaneously — this was the v5.0.0 fault. The plugin therefore ships a
+    `.gitattributes` pinning `* text=auto eol=lf`, so the bundled scripts check
+    out as LF regardless of the host's `core.autocrlf` (the Git for Windows
+    default is `true`). If you see every hook broken at once, run
+    [`/steer:doctor`](skills.md) — its **§0 plugin-integrity check** greps the
+    installed `hooks/` and `scripts/` for CR before anything else and reports it
+    as an install fault rather than a missing prerequisite. See
+    [Windows setup → Line endings](../getting-started/windows-setup.md#line-endings).
+
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
     `PreToolUse`, `PostToolUse`, `Stop`). Note what each tier actually does: the
