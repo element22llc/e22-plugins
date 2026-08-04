@@ -73,7 +73,8 @@ flowchart LR
 
 The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/steer/rules/*.md` to stdout (which Claude Code injects as
-session context). It runs once per session when the plugin is enabled.
+session context). It runs on `startup`, `resume`, `clear` and `compact` when the
+plugin is enabled — the last so a compaction that drops the rules re-injects them.
 
 > **Using GitHub Copilot?** The same rules and skills also ship as a generated
 > Copilot target (CLI + VS Code, prototype scope) — see
