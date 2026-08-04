@@ -140,8 +140,12 @@ This applies to **every** lockfile in the repo, not just mise's:
 
 ### Standard mise tasks
 
-Every product repo exposes the same task vocabulary via `[tasks]` in the root
-`mise.toml`, so one muscle memory works across all managed repos:
+Every product repo — an **app / service** or **infra** repo that holds code —
+exposes the same task vocabulary via `[tasks]` in the root `mise.toml`, so one
+muscle memory works across all managed repos. A **workspace** (polyrepo spine)
+repo is the exception: it holds no code, so it has no `dev:setup` and no linters,
+and its tasks are `ws:`-prefixed — see `POLYREPO.md`. Everything in this section
+describes the code-bearing profiles:
 
 - **`mise run dev:setup`** — the one-command local environment. **Idempotent**:
   safe to rerun anytime. It starts the Compose services (`docker compose up -d
@@ -204,8 +208,10 @@ The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
 `/steer:init`** — wire real migrate/seed commands, add services, swap pnpm for uv,
 or delete the docker/db tasks if the product has no backing services — and keep
-`dev:setup` green as the stack evolves: a fresh clone plus `mise install &&
-mise run dev:setup` must always produce a working local environment.
+`dev:setup` green as the stack evolves: in a code-bearing repo, a fresh clone plus
+`mise install && mise run dev:setup` must always produce a working local
+environment. (A workspace spine has no `dev:setup` to keep green; its equivalent
+is `ws:clone` + each member's own setup.)
 
 ### Declaring task ordering
 

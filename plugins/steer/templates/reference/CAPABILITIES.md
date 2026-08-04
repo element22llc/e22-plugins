@@ -328,10 +328,14 @@ and **Repair**.
 - **Repair:** **propose creating** it from
   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitattributes` (the scaffold stores
   dotfiles without the leading dot — install it **as `.gitattributes`**) and
-  **wait for a yes**. Like `backing-services-compose`, this is one of the two
-  step-6 `absent` cases that does *not* create unasked — not because the need is
-  unknowable, but because the file changes how git treats every subsequent write
-  in someone else's repo.
+  **wait for a yes**. Like `backing-services-compose`, this is one of only two
+  step-6 `absent` cases that waits for an **explicit yes before creating the
+  file** — not because the need is unknowable, but because the file changes how
+  git treats every subsequent write in someone else's repo. (Read that narrowly:
+  *every* repair is "proposed" in the sense that step 6 lands it on `feat/sync`
+  under the read-then-propose discipline, and several entries below say "propose"
+  meaning that, or meaning a human follow-up such as `/steer:protect`. These two
+  are the ones that do not write the file at all until asked.)
   **Never run `git add --renormalize .`.** The file governs *future* writes only;
   converting content already committed as CRLF is a deliberate, history-churning
   one-shot that stays the human's call (it touches every affected file and

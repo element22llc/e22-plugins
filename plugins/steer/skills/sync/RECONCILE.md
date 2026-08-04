@@ -83,7 +83,9 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      re-appear as a proposal each sync and the dev declines it.
    - **`absent`** → **create** the file(s) from the bundled scaffold
      (copy-and-adapt per the scaffold `MANIFEST.md`), adapting to the repo's real
-     stack. **Two exceptions wait for a yes rather than being created:**
+     stack. **Two exceptions wait for an explicit yes before the file is written
+     at all** (distinct from the read-then-propose discipline every repair follows
+     on `feat/sync`)**:**
      `compose.yaml`, whose need isn't knowable — when uncertain, ask rather than
      create an unused one — and `.gitattributes`
      (`line-ending-normalization`), which changes how git treats every subsequent

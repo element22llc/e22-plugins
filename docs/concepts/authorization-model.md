@@ -83,8 +83,10 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     `sub_issue_write`) instead sit under `ask` — a bare/ad-hoc MCP issue write is
     an allowlist escape a consumer's security review flags — but the
     `/steer:tracker-sync` skill re-grants both in its own `allowed-tools` (and
-    `/steer:report` re-grants `issue_write` alone), so the governed
-    find-or-create path stays silent within those skills. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
+    `/steer:report` re-grants `issue_write` alone). `/steer:report` is a direct
+    entry point, so its re-grant does take effect; `/steer:tracker-sync` is
+    `user-invocable: false` and always reached transitively, so in practice its
+    grants never fire — see the warning below. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
     delivery — the merge is the gate); `gh pr merge` stays under `ask` and
     force-pushes under `deny`. Where a host still blocks the create, it is a
     *host-permission gate, not a missing issue* — confirm with the user or run
@@ -98,11 +100,15 @@ third mode; `/steer:protect` moves a repo between them and reconciles the
     **transitively**: a PO runs `/steer:issues capture` (or `/steer:work`,
     `/steer:issues materialize`), which routes through tracker-sync *by description*,
     not by invoking it. So tracker-sync's grants never take effect on that path and
-    the `gh issue create/edit/comment` write falls through to
-    `.claude/settings.json` — where it is prompted (interactive) or **silently
-    auto-denied** (headless), surfacing as "the whole `gh` surface is walled off".
-    The scaffold `permissions.allow` list is therefore the **real backstop** for the
-    orchestrated path. `/steer:sync`'s `github-issue-permissions` capability
+    the write falls through to `.claude/settings.json` — and **which tier it lands
+    in depends on the transport**. The gateway is MCP-first, so its primary path
+    falls back to `ask` and legitimately **does** prompt; that prompt is correct
+    behaviour, not a fault. Only the `gh issue create/edit/comment` fallback lands
+    in `allow`, where it is silent — and it is silent *because* the scaffold ships
+    that allow-list. In a repo **missing** it, that same fallback is instead
+    prompted (interactive) or **silently auto-denied** (headless), surfacing as
+    "the whole `gh` surface is walled off". The scaffold `permissions.allow` list is
+    therefore the **real backstop** for the orchestrated path. `/steer:sync`'s `github-issue-permissions` capability
     (see [Repository contract](../reference/repository-contract.md)) detects a repo
     missing that allow-list — `absent` / `mis-wired` (a read-only-era `settings.json`
     with `gh issue list`/`view` but no `create`) / `present-wired` — so the gap is

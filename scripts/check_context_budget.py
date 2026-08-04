@@ -158,30 +158,52 @@ PLUGIN_ROOT = Path("plugins/steer")
 # to. The trigger was that the fifth raise's ~1% headroom had been consumed back
 # down to **178 bytes**, which made the ceiling load-bearing on the *next* rule
 # edit of any kind — #446 alone (broadening rule 22 to admit the byte-identical
-# absorbed-source delete) costs ~150 B and could not be paid for.
+# absorbed-source delete) was projected at ~150 B and could not be paid for. It
+# landed at **360 B**, so the projection that justified the size of this move was
+# itself 2.4x light — a reason to keep the reclaim ahead of the ceiling, not to
+# trust the estimate.
 #
-# 1,632 B were reclaimed, and every byte of it is duplication removal, not prose
-# deletion — each relocation target already carried the full text:
-#   - rule 10's mise task-ordering and compose detail → CONVENTIONS.md
-#     ("Standard mise tasks", "Declaring task ordering", "Local services");
-#   - rule 45's ungraduated-trunk-push mechanics → GATES.md §5, which already
-#     owned them (the Copilot-CLI no-retry clause moved there rather than being
-#     dropped);
-#   - rule 36's `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating", which
-#     explicitly asks the always-on rule to carry "only a terse, point-of-use
-#     reminder … never a second normative copy";
-#   - rules 50 and 99 stopped restating each other's checklist items, and rule 24
-#     dropped rationale for an instruction that is unconditional anyway.
-# No rule lost an imperative, so this is not the "shave rationale to pay for an
-# edit" trade the notes above twice record as wrong and reverted.
+# 1,632 B were reclaimed across nine rules — 00, 10, 24, 30, 36, 45, 50, 62, 99.
+# Per-rule, as measured (this is the ONE place that records the attribution; do not
+# restate it in CHANGELOG.md or docs/, where two attempts already went wrong):
+#   - 00 (-87) and 30 (-106): reworded in place, nothing relocated;
+#   - 10 (-167): the one-way-delegation definition and polyglot-Python example →
+#     CONVENTIONS.md ("Standard mise tasks"), which already held both. Rule 10
+#     KEEPS its own `depends`/`depends_post` ordering imperative;
+#   - 24 (-134): dropped rationale for an instruction that is unconditional
+#     anyway — prose deletion, not duplication removal;
+#   - 36 (-254): the `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating",
+#     which asks the rule for "only a terse, point-of-use reminder … never a
+#     second normative copy". The destination did NOT hold the tiering at trim
+#     time — the block was added by dffdde7 and refined by 8d639fc/8fadb86 later
+#     in this same release, so this is a move to a target that only later caught
+#     up, not a de-duplication;
+#   - 45 (-188): GATES.md §5 already owned the ungraduated-trunk-push mechanics;
+#     the only text ADDED there was the Copilot-CLI no-retry clause;
+#   - 50 (-298) and 99 (-280): stopped restating each other's checklist items;
+#   - 62 (-118): the Claude-Code-specific branch-prefix clause. hotfix.md states
+#     that the reconciliation hook keys on the prefix, but the "other surfaces
+#     carry it by convention" half is simply gone.
+#
+# One imperative DID leave the always-on rules: rule 45's "don't retry a declined
+# push — graduate instead" is in no rules/*.md. It survives in GATES.md §5 AND in
+# check-bash-actions.sh's repeat-reminder text, so a Claude session still meets it
+# at the moment it matters; on the Copilot CLI, where that repeat is a silent
+# allow, it is on-demand only. A deliberate trade, but it means "no rule lost an
+# imperative" is too strong a claim to repeat. Otherwise this is not the "shave
+# rationale to pay for an edit" trade the notes above twice record as wrong and
+# reverted.
 #
 # The ceiling comes down by 900 B — deliberately LESS than the 1,632 B reclaimed,
-# so headroom grows from 178 B to ~910 B (5x) in the same change that tightens the
-# ratchet. Re-arming at measured+1% would have restored the ~660-byte margin that
-# made raises two, three and four inevitable; the whole lesson of this comment
-# block is that a tight ceiling dictates the wording of correctness fixes instead
-# of bounding their cost. Target stays 62,500 — still 4,090 B of standing
-# invitation.
+# so headroom grew from 178 B to ~910 B (5x) in the same change that tightens the
+# ratchet. Rule 22's correction then spent 360 B of that. Do not pin the current
+# total in this comment — `--report` is the only honest source for it, and a pinned
+# figure goes stale on the next rule edit (it already did once). Re-arming at
+# measured+1% would have
+# restored the ~660-byte margin that made raises two, three and four inevitable;
+# the whole lesson of this comment block is that a tight ceiling dictates the
+# wording of correctness fixes instead of bounding their cost. Target stays
+# 62,500 — still 4,090 B of standing invitation.
 RULES_TOTAL_MAX_BYTES = 67_500
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
@@ -223,13 +245,17 @@ RULES_TOTAL_MAX_BYTES = 67_500
 # 10,000: the widened gap is the standing invitation to reclaim it, and the report
 # keeps showing it as work outstanding.
 #
-# HELD at 12,400 by #443, which reclaimed 244 chars (`reference` stopped
+# HELD at 12,400 by #443, which reclaimed 232 chars (`reference` stopped
 # parenthesising each topic its own `when_to_use` already explains; `work`, `spec`
-# and `intake` dropped restatement, no trigger phrase lost) and took headroom from
-# 190 back to ~434. Not ratcheted down, on this block's own stated basis: 12,400
-# was chosen to buy ~521 chars — "one whole additional skill" — and any lowering
-# from the current 11,966 leaves less than that. Reclaim more first, then the
-# ceiling can move.
+# and `intake` dropped restatement) and took headroom from 190 back to ~422. Seven
+# literal subtopic tokens did go with it — `commit style`, `spec routing`,
+# `audit evidence`, `subagents`, `durable state`, `Mermaid`, `LikeC4` — and they
+# survive nowhere else in the measured surface; the topics remain reachable via
+# `reference`'s eight doc-name arguments, but do not claim "no trigger phrase
+# lost". Not ratcheted down, on this block's own stated basis: 12,400 was chosen
+# to buy ~521 chars — "one whole additional skill" — and any lowering from the
+# current 11,978 leaves less than that. Reclaim more first, then the ceiling can
+# move.
 LISTING_TOTAL_MAX_CHARS = 12_400
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------

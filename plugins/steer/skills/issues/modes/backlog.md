@@ -50,7 +50,8 @@ Keep the backlog clean and correctly labelled. For each issue:
   guard, the PO-directed-seeding distinction (a human value: no ledger, no
   `max()` guard), and the Projects-v2 trap (the native issue field is the
   only writable home) are all canonical in `ISSUE-SCHEMA.md` → *Native issue
-  fields & the Projects v2 boundary* — apply them, don't restate them.
+  fields & the Projects v2 compatibility boundary* — apply them, don't restate
+  them.
   Surface a *missing* Effort or a missing **Priority on a `ready-for-dev`**
   issue as a field gap; propose, never auto-fill (human-set only).
 - **Routing** — suggest the next transition; propose Inbox → Exploring and

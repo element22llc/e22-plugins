@@ -77,7 +77,11 @@ read-only over the canonical sources even in a skill that otherwise writes.
   `/steer:status` and `/steer:audit` keep the mutating tools disallowed in
   frontmatter (`Edit`, `NotebookEdit`, `EnterWorktree`; `explain` also disallows
   `Bash`) — but `Write` is deliberately **not** disallowed, because writing the
-  HTML to temp is their one permitted write. `/steer:report` sits in the same tier
+  HTML to temp is a permitted write. For most of them it is the *only* one;
+  `/steer:audit` is the exception, whose frontmatter documents a **second**
+  post-confirmation write its modes instruct — the optional
+  `/spec/AUDIT-REPORT.md` / `DRIFT-REPORT.md`. The temp-only rule above governs
+  the **Artifact's** write, not every write these skills may make. `/steer:report` sits in the same tier
   for the same reason, though it renders no Artifact: its temp write is the
   scrubbed issue body. `/steer:questions bundle` lives in a
   write-capable skill and upholds the same limit as a **prose invariant**: bundle

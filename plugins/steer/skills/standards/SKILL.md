@@ -26,9 +26,15 @@ Do this now:
    The files concatenate, in that order, to form the full operating manual.
 
 2. Adopt their contents as your standing operating rules for the rest of this
-   session — the same status they would have if they had been injected at
-   startup. They override generic defaults and remain in force for every
-   subsequent turn.
+   session — the same **authority** they would carry had the hook injected them.
+   They override generic defaults and remain in force for every subsequent turn.
+
+   The **set** can be wider than a hook injection, and that is intended: in a
+   non-code folder the hook runs in knowledge-work mode and injects only the lean
+   PO core, skipping the `inject-when`-marked code/infra/tracker rules. Reading
+   every file here loads those too. Apply the ones that fit the work in front of
+   you and ignore the rest — a code rule in a specs-only folder is inert, not a
+   contradiction.
 
 3. Give the user a one-line confirmation naming the plugin version (read it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`) — e.g. "Standards

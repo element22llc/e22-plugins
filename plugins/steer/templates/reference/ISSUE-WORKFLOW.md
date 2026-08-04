@@ -189,7 +189,9 @@ path; smaller work skips the spec gates:
 | blocked → previous | Blocker resolved | dev | propose + perform (returns to the prior meaningful state) |
 | drift open → resolved | Spec or implementation intentionally reconciled | human (PO/dev) | propose only — **never auto-resolve** |
 
-Completion rules: **opening a PR moves the issue to `validate`, never `done`.**
+### Completion rules
+
+**Opening a PR moves the issue to `validate`, never `done`.**
 **Closure reason — not the mere fact of closure — decides the terminal state:**
 
 - Closed as **`completed`** (the work was delivered: PR merged & the acceptance

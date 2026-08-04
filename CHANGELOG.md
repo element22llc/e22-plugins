@@ -7,6 +7,98 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **`spec-drift` was instructed as a *label* on four surfaces; it is a kind, and no
+  such label exists.** `LABELS.md` states that `bootstrap-labels` creates exactly
+  the `source:*` / `needs:*` / `risk:*` set and that kind is carried by the
+  `steer:kind` marker plus the GitHub Issue Type, never a label — and GitHub
+  **silently drops** a label that doesn't exist. So `/steer:tracker-sync push` (the
+  writing gateway), `/steer:audit spec`, `/steer:roadmap` and `SPEC-FRAMEWORK.md`
+  were each instructing a create call with a label that would vanish, and
+  `/steer:roadmap`'s "that label is reserved for actual drift" distinction was
+  unenforceable because a label filter returns nothing. All four now say **kind**.
+- **`steer-reviewer`'s evidence rule suppressed the very verdicts
+  `/steer:audit spec` fans it out to produce.** The agent's charter said "if you
+  cannot cite the line, you do not have a finding", but in a spec-conformance run an
+  *absence* is the finding — a criterion with no implementation has no as-built line,
+  and `audit/modes/spec.md` says outright "do not require a `path:line` pointer …
+  demanding one would make every verdict unevidenceable". A fanned-out reviewer
+  following its charter would drop every `Missing` / `Ambiguous` verdict, which that
+  mode calls its priority signal. The agent now carries a scoped exception: cite the
+  criterion's spec `path:line` and what you searched to conclude absence. Code-review
+  runs are unchanged.
+- **`ARTIFACTS.md` told `/steer:audit` it had only one permitted write; its own
+  frontmatter documents two.** The temp-only rule ("an Artifact's **only**
+  filesystem write is its HTML source … never a path under the repo working tree")
+  is correct about the *Artifact*, but the read-only-skills bullet generalised it to
+  every write those skills make — so an agent that loaded
+  `/steer:reference artifacts` mid-audit could refuse the `/spec/AUDIT-REPORT.md`
+  write its own mode instructs. The bullet now names `/steer:audit` as the
+  exception and scopes the temp-only rule to the Artifact's write.
+- **`check-unmanaged-repo.sh` claimed it goes silent "once `/spec` exists"; it goes
+  silent once the spine is *managed*.** Both the hook header and the user-facing
+  card said the notice "clears itself once `/spec` exists", while the code exits
+  early only on `managed` and deliberately speaks on `foreign` (a bare `spec/` with
+  no `.version`) and `damaged` — the load-bearing rule its own comment states 30
+  lines lower. Creating `/spec` *swaps* the message, it does not clear it. Header,
+  card, and the `docs/` state table now all say so.
+- **`CAPABILITIES.md`'s "two step-6 `absent` exceptions" read as a wider exception
+  than it is.** (The count of two was always right; the word "exception" was
+  ambiguous about *what* was being excepted.) Several other capability entries say "propose" in their `Repair:` line —
+  meaning the read-then-propose discipline every repair follows on `feat/sync`, or
+  a human follow-up like `/steer:protect` — so the sentence invited the reading
+  that `sync` creates everything else unasked *and* that those entries contradict
+  it. Both it and `sync/RECONCILE.md` now say what is actually distinctive: these
+  two do not write the file at all until asked. (This wording cost two audit rounds
+  to pin down; it is a terminology fix, not a behaviour change.)
+- **`INVOCATION.md` and `AUTHORING.md` each cited something that isn't there.**
+  `INVOCATION.md` pointed at a section called "Why not disabled yet" — the real
+  heading is "Why `disable-model-invocation` is not set yet", so the quoted title
+  was unsearchable. `AUTHORING.md`'s `hooks/lib/*.sh` roster listed eight helpers
+  where nine exist, omitting `graduation.sh` — a genuinely shared detector
+  (`check-graduation.sh` and `check-bash-actions.sh` both source it), so an author
+  following the list would not know to reuse it.
+- **`SPEC-FRAMEWORK.md` stated the intent-approval gate one status too narrowly.**
+  It said an approval "cannot proceed while a blocking question … is open", but the
+  gate `/steer:spec approve` actually enforces (`spec/MODES.md`) is the full
+  unresolved set — `open` / `investigating` / `deferred` — and the same file already
+  wrote it that way for `contract-approval` two paragraphs later. A blocking
+  question parked as `deferred` would have read as passing the gate in the very
+  reference the bundle defers to for spec structure. It now names the triple and
+  states that deferral is not resolution.
+- **Three cross-references named sections that did not exist.** `ISSUE-WORKFLOW.md`'s
+  "Completion rules" was a plain-text lead-in cited four times (twice intra-file,
+  plus `ENUMS.md` and `ISSUE-SCHEMA.md`) — it is now a real `### Completion rules`
+  heading inside the State model, so all four resolve by name. `ISSUE-SCHEMA.md`
+  pointed at a "*GitHub Projects v2 — compatibility boundary*" that no heading
+  matched; the heading is now "Native issue fields & the Projects v2 compatibility
+  boundary", matching the "compatibility boundary" wording `/steer:roadmap` and
+  `/steer:tracker-sync` were already using loosely. The two citers that quote the
+  title as a `→ *X*` pointer — `ISSUE-SCHEMA.md` itself and `/steer:issues
+  backlog`, plus `/steer:issues delegating`, which cited a truncated variant — now
+  quote it exactly; the remaining prose mentions name it loosely, which is fine.
+  Rule 36's pointer stopped
+  implying "Host gating" is a heading (it is a bold label inside Operating model) —
+  a `→ "X"` in this repo means a real heading.
+- **`/steer:standards` claimed parity it cannot have in a non-code folder.** It said
+  the rules it reads carry "the same status they would have if they had been
+  injected at startup", but it reads all 35 while the SessionStart hook in
+  knowledge-work mode injects 13 and skips the 22 `inject-when`-marked
+  code/infra/tracker rules — and `CROSS-SURFACE.md` names this skill as the Cowork
+  fallback for exactly that surface. It now claims the same *authority*, says the
+  *set* is deliberately wider, and tells the agent to ignore rules that don't fit
+  the work rather than treat them as contradictions.
+- **`REVIEW-LOOP.md` §1 sent the plan gate to the one reviewer §3 says returns
+  nothing.** Under a heading marked non-negotiable it said "the gate is a
+  `steer-reviewer` subagent (or `/code-review`)", while §3 and §5 both state the
+  plan gate uses a fresh general subagent and explicitly *not* `steer-reviewer`,
+  which needs `path:line` evidence in existing code a prospective plan can't
+  supply. §1 now names which reviewer belongs to which gate.
+- **`CONVENTIONS.md` asserted a task vocabulary the workspace profile deliberately
+  lacks.** "Every product repo exposes the same task vocabulary" and "`mise run
+  dev:setup` must always produce a working local environment" carried no profile
+  scoping, while rule 15 and `POLYREPO.md` make "no `dev:setup`, no linters,
+  `ws:`-prefixed tasks only" a stated workspace invariant. Both statements are now
+  scoped to the code-bearing profiles, with the workspace exception named.
 - **The scaffold's `ARCHITECTURE.md` told every consumer repo that
   `/steer:audit spec` compares that file against `/spec`; it compares neither.**
   The "why this lives at the root" rationale credited the split with enabling a
@@ -17,15 +109,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   is gone. `spec/SKILL.md` named "the code" / "the as-built code" as the operand
   in the same way, in the two places it routes to `audit spec`; both now say the
   as-built `/spec` spine, which is what stands in for the code.
-- **`ISSUE-WORKFLOW.md`'s new tiering block sent the orchestrated MCP write to the
-  wrong tier.** It said a transitively-reached `tracker-sync` write "falls through
-  to the `allow` tier" — but `allow` carries only the `gh issue` verbs, while the
-  two MCP write tools sit under `ask`. Since the gateway is **MCP-first**, the
-  primary path on the only route it is ever reached by *does* prompt, so the block
-  described the common case backwards and made a correct prompt read as a fault.
-  It now names the transport: MCP falls back to `ask` and prompts, the `gh issue`
-  fallback lands in `allow`, and that allow-list is the backstop.
-
 - **Two surfaces named `/steer:audit spec` as a caller of `/steer:spec validate`;
   it has never been one.** `SPEC-FRAMEWORK.md` — the reference the rest of the
   bundle defers to for spec structure and `validate` — and `spec/MODES.md` both
@@ -48,8 +131,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   summary now names both cases and keeps the `.gitignore` step scoped to true
   junk.
 - **Rule 36 pointed at a "full tiering" its target never carried.** The rule's
-  trim replaced the inline `allow`/`ask` enumeration with "(Full tiering and
-  rationale: `ISSUE-WORKFLOW.md` → "Host gating".)", but that block documented
+  trim replaced the inline `allow`/`ask` enumeration with a pointer offering "the
+  full tiering and rationale" in `ISSUE-WORKFLOW.md`'s "Host gating", but that
+  block documented
   only the `gh issue create`/`edit`/`comment` → `allow` tier and the blocked-create
   fallback. The tiering survived nowhere in the shipped reference bundle an agent
   can load — only in the docs site and as machine-readable config — so the
@@ -77,22 +161,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Reclaimed always-on context budget, and turned the rules ratchet down for the
   first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
   so the next rule edit that added prose would trip the gate even when the
-  wording was right. 1,632 B came out as pure duplication removal, each
-  relocation target already carrying the full text: rule 10's mise
-  task-ordering and compose detail (`CONVENTIONS.md`), rule 45's
-  ungraduated-trunk-push mechanics (`GATES.md` §5, which gains the Copilot-CLI
-  no-retry clause rather than losing it), rule 36's `allowed-tools` tiering
-  (`ISSUE-WORKFLOW.md` → "Host gating", which asks the rule for a terse reminder
-  and never a second normative copy), plus rules 50 and 99 no longer restating
-  each other's checklist. No rule lost an imperative. The ceiling drops
-  68,400 → 67,500 — less than was reclaimed, so headroom grows 178 B → ~910 B in
-  the same change that tightens the ratchet. (#443)
-- **Trimmed the skill-listing routing surface by 244 chars.** `reference` stopped
+  wording was right. 1,632 B came out across nine rules — 00, 10, 24, 30, 36, 45,
+  50, 62, 99 — mostly by removing prose a `templates/reference/` file already
+  carried or by compressing wording in place; no rule lost an imperative it was
+  the only home for. **One imperative did leave the always-on surface:** rule 45's
+  "don't retry a declined push — graduate instead" is no longer in any rule. It
+  survives in `GATES.md` §5 and in the trunk-push hook's own repeat reminder — so a
+  Claude session still meets it at the moment it matters, but the Copilot CLI,
+  where that repeat is a silent allow, now reads it on demand rather than every
+  session. The ceiling drops 68,400 → 67,500 — less than was reclaimed, so headroom
+  grew roughly 5x at that point in the change; rule 22's absorbed-source correction
+  below then spent 360 B of it. For current figures run
+  `uv run python scripts/check_context_budget.py --report` — a byte total pinned in
+  prose goes stale on the next rule edit. (Per-rule attribution of the 1,632 B is
+  deliberately not restated here; `scripts/check_context_budget.py`'s ratchet note
+  is the one place that records it.) (#443)
+- **Trimmed the skill-listing routing surface by 232 chars.** `reference` stopped
   parenthesising each topic that its own `when_to_use` already explains in
-  question form; `work`, `spec` and `intake` dropped restatement. Every distinct
-  trigger phrase is retained, and the 12,400-char ceiling is deliberately held —
-  lowering it from 11,966 would leave less than the ~521 chars that ceiling was
-  chosen to buy. (#443)
+  question form; `spec` and `intake` dropped restatement, and `work` additionally
+  dropped "from local Claude Code" — correct, since the same description is
+  mirrored into the shipped Copilot prompt, which is not local Claude Code. Seven
+  literal
+  subtopic tokens went with it (`commit style`, `spec routing`, `audit evidence`,
+  `subagents`, `durable state`, `Mermaid`, `LikeC4`) — the topics stay reachable
+  through `reference`'s eight doc-name arguments and its `when_to_use` phrasing,
+  but those exact words are no longer anywhere in the routing surface. The
+  12,400-char ceiling is deliberately held — lowering it from the resulting
+  11,978 would leave less than the ~521 chars that ceiling was chosen to buy.
+  (#443)
 - **`/steer:questions` factored its legacy-format handling into a just-in-time
   sibling.** `SKILL.md` was 16,985 B — 97% of the 17,500 B compaction cap, past
   which auto-compaction silently drops the tail of an invoked skill mid-run. The
