@@ -91,9 +91,12 @@ There is a third effect, and it is **pure waste**:
    invented a version-pin claim about `/steer:audit` and credited a gate with
    reading `uv.lock`/`mise.lock` that `scan-version-pins.sh` never scans.
 
-Effects 1–2 are why the loop exists. Effect 3 is what **L3.e** and the claim
-discipline in **L3.d** exist to prevent: every round spent on effect 3 is a round
-that bought nothing.
+Effects 1–2 are why the loop exists. Effect 3 is what the claim discipline in
+**L3.d**, the self-review in **L3.e**, and **L4 condition 5** exist to prevent:
+every round spent on effect 3 is a round that bought nothing. The pattern is
+consistent enough to name — **it is almost always an over-precise number**: a
+per-item quantitative breakdown one round volunteered, which the next round
+re-derives and contradicts. `L3.d` rule 4 is the specific defence.
 
 ---
 
@@ -138,10 +141,34 @@ Repeat until a stop condition in **L4** fires.
 
 Execute [`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md)
 **Steps 1–5 in full** — all six coherence dimensions and both halves of Step 4.
-Never trim the dimension set to save a round; a dimension you skipped is a
-finding `/release` will hand back to you later.
+Never trim the dimension set to save a round on a hunch; a dimension you skipped
+because it *felt* unaffected is a finding `/release` hands back to you later.
 
-Two caller-specific adjustments:
+**The one permitted trim, and its evidence bar.** From **round 3 on**, a dimension
+may be skipped when **all three** hold, and only then:
+
+1. it returned **zero** blocker/high/medium in **every** prior round of this loop;
+2. the previous round's **file list** (`git show --stat` on that round's commit)
+   contains **none** of the dimension's inputs, per the table below — a mechanical
+   test on a concrete list, not a judgment about relevance;
+3. you **state the skip and this justification** in the round's ledger entry, the
+   report, and the PR body. An unstated skip is a coverage claim you did not earn.
+
+| Dimension | Its inputs | Skippable in practice? |
+| --- | --- | --- |
+| 1. CHANGELOG ↔ change | `CHANGELOG.md` + every `plugins/steer/**` path | **Never** — every round touches both by construction |
+| 2. Version & manifest | the three version manifests, `policy/versions.yml`, `templates/scaffold/policy/versions.yml` | Often, and this is the clean case |
+| 3. Cross-reference & inventory | `skills/*/SKILL.md`, `rules/`, `CLAUDE.md`, `README.md`, `CROSS-SURFACE.md`, `docs/reference/*` | Rarely |
+| 4. Namespace & brand | **any** shipped file that can carry an invocation token or brand string | Rarely — the input set is nearly everything shipped |
+| 5. Payload & placeholder | shipped non-`templates/` content, `templates/scaffold/**`, `MANIFEST.md`, `MIGRATIONS.md` | Often |
+| 6. Behavioural coherence | `rules/`, `skills/`, `templates/` | Rarely |
+
+Read that table before claiming a skip. The run this guidance came from skipped 2, 4
+and 5 in its confirming round: 2 and 5 were clean by this test, **4 was not** — the
+round had edited shipped skills and an agent file, which are exactly dimension 4's
+inputs. Cheap to run, and it should have been run.
+
+Two further caller-specific adjustments:
 
 - **Step 1 base rule, rounds 2+:** the tree must still be **clean** (the previous
   round's fixes are committed) but is now legitimately **ahead of** `main`. Being
@@ -197,6 +224,18 @@ Apply the **minimal targeted** change each finding calls for:
   validator, or dropping a doc claim to make it "true" is not convergence — it is
   hiding. If a finding is genuinely a false positive, say so with the evidence
   and mark it `dismissed`, don't silently edit around it.
+- **But a claim you wrote is not a check — and on its *second* miss, delete it
+  rather than reword it.** The bullet above governs assertions the plugin *relies*
+  on. A decorative detail one of your own earlier rounds volunteered — a per-item
+  breakdown, a byte count, a version attribution nobody asked for — is not load-
+  bearing, and rewording it a third time is not diligence, it is the loop paying a
+  full round to proofread itself. When a finding lands on prose **this loop wrote**
+  and a previous round already tried to fix it, the remedy is: **keep the coarser
+  claim that is stably true, in exactly one place, and delete the fine-grained one
+  everywhere.** Say in the ledger that you deleted rather than refined, and why —
+  that is a fix, not a retreat. (Round 3 of the run this came from broke a two-round
+  cycle exactly this way: it deleted a per-rule byte taxonomy from the CHANGELOG and
+  the docs, leaving the corrected numbers in the one place a gate recomputes them.)
 - **Don't guess at intent.** If the right fix is a product/behavior decision (is
   the rule wrong, or the skill?), do not pick one to clear the round — mark it
   `deferred-for-human` with both options stated, and keep going.
@@ -247,6 +286,14 @@ write one:
    did verify. "Sync reconciles additively into files that already exist" is
    checkable; "sync never delivers this file" is a far stronger claim that needs
    far more proof.
+4. **Don't volunteer a per-item quantitative breakdown at all.** A total you
+   measured once is one claim; the same total split per rule, per file, or per
+   release is a dozen claims, each independently falsifiable, none of which the
+   reader needed — and every one of them re-derivable by the next round's subagent,
+   which is why they come back. State the **aggregate**, put any fine-grained
+   accounting in the **single** place that recomputes it (a gate script's own note,
+   never a changelog bullet or a docs page), and never restate a number in two
+   surfaces. This one rule accounts for most of the wasted rounds observed so far.
 
 Claim shapes that have actually gone wrong here, and what each one needs:
 
@@ -256,6 +303,7 @@ Claim shapes that have actually gone wrong here, and what each one needs:
 | **Gate / script capability** — "gate G checks C", "the scan reads file F" | Open the script and find the line. `scan-version-pins.sh` does not read `uv.lock`/`mise.lock`; asserting it did cost a round. |
 | **Skill behavior** — "`/steer:<skill>` reviews R" | Read that skill's `SKILL.md`. Never infer a skill's scope from its name, or from another surface's prose about it. |
 | **Historical** — "shipped in vX.Y.Z", "since release N" | `git log`/`git tag` on the actual path, or the CHANGELOG heading that introduced it. |
+| **Quantitative** — "N bytes reclaimed", "−87/−167/−134 per rule", "11 sites" | The measurement, re-run in **this** round, on the exact range you cite. Then ask whether the number belongs in prose at all (rule 4 above): a per-item split is a claim per item, and a number restated in two surfaces goes stale in one of them the moment either changes. Prefer the aggregate, in one place. |
 | **Cross-surface routing** — "the manifest routes this through H" | Open the manifest *and* the helper; a route named in one is not a route implemented in the other. |
 
 ### e. Propagate each fix, then self-review the round's own diff.
@@ -333,13 +381,28 @@ Evaluate in order, before fixing:
    on *that* finding: report it, the fix that didn't take, and hand it to the
    human. (Finish the round's other fixes first — one recurring finding shouldn't
    strand the rest.)
-5. **Out-of-tree only.** Every remaining finding is `out-of-tree` (a workflow to
+5. **Self-inflicted majority — narrow the next round instead of running it wide.**
+   Not a stop; a **forced change of mode**. When self-inflicted findings are at
+   least **half** of a round's actionable set, the loop is auditing itself, and
+   another full round buys nothing. The next round then:
+   - fixes the self-inflicted set by **deletion or narrowing** (**L3.d**), never by
+     a further rewording — a third attempt at the same sentence is the failure mode,
+     not the fix;
+   - writes **no new factual prose** beyond what a finding strictly requires; and
+   - **says so in the ledger** — "round N ran narrow: X of Y findings were ours".
+
+   Report the self-inflicted count every round even when it is zero, so this
+   condition is evaluable rather than reconstructed at the end. The run this
+   guidance came from scored 6, 6, 3 — it hit this condition twice and had no rule
+   to name it, so rounds 2 and 3 each ran wide over prose the prior round wrote.
+6. **Out-of-tree only.** Every remaining finding is `out-of-tree` (a workflow to
    re-run, an upstream SHA to bump, a GitHub setting, a human decision). No number
    of rounds resolves these. → stop; list them as the human's checklist.
 
-Conditions 2–5 are **honest failures**. Report them as such: the loop did not
-converge, here is the residue, here is what each item needs. Never fix the report
-instead of the tree.
+Conditions 2, 3, 4 and 6 are **honest failures**. Report them as such: the loop did
+not converge, here is the residue, here is what each item needs. Never fix the report
+instead of the tree. Condition 5 is the one that is neither success nor failure — the
+loop keeps going, narrower.
 
 ## L5. Converged — prove it, then open the one PR.
 
@@ -357,7 +420,9 @@ instead of the tree.
      re-deriving them;
    - the final-round statement: which dimensions were checked, which came back
      clean, and **that the final round made no edits** — i.e. the tree in this PR
-     is exactly the tree that audited clean.
+     is exactly the tree that audited clean. Name every dimension the final round
+     **skipped** under L3.a, with the file-list evidence for each: a reader must
+     never have to infer coverage from silence.
 3. **Report to the user:** rounds run, findings fixed by severity, residue, branch,
    PR URL, final gate result. State plainly that a clean final round is strong
    evidence — not a guarantee — that `/release` Phase A will pass in one pass.
