@@ -56,13 +56,21 @@ workspace-wide reconstruction plus arbitration across *unrelated* state. It uses
 the same categories and the same shared safety precedence — it does not fork
 them, and it does not duplicate each skill's domain table.
 
-## Relationship to the workflow skills — it routes, it doesn't run them
+## Relationship to the workflow skills — it routes, they execute
 
 `/steer:next` recommends; the owning skill executes. It surfaces *that* a blocking
 question gates feature A and names `/steer:questions`; it does not answer the
-question. It flags a stale tracker state and names `/steer:work resume #N`; it does
-not reconcile it. If the single best action is itself running a skill, say so as
-a `Suggested command` — but the human still triggers it.
+question here. It flags a stale tracker state and names `/steer:work resume #N`; it
+does not reconcile it here.
+
+If the single best action is itself running a skill, **announce it and continue into
+that skill** when the action is unambiguous and non-gated: rule `00-router`'s bounded
+auto-continue binds this skill like any other. The continuation is a **fresh
+invocation** of the owning skill, which is what keeps this one read-only — nothing
+inside `/steer:next`'s own run edits, and the work then happens under the owning
+skill's tier and autonomy rules rather than a navigator's. Stop at a
+`Suggested command` and wait when the arbitration was genuinely close (that choice is
+the human's), when the action is gated, or when no real command performs it.
 
 ## When to run
 
@@ -235,10 +243,12 @@ keep the technical detail for devs. Emit, in order:
    command-less: no prompt substitutes for them. Aggregate candidates across the
    whole workspace; each entry names its feature/issue so the source is clear.
 
-Read-only coda: the block recommends; it does not act. `/steer:next` never edits,
-commits, publishes, merges, or advances any workflow's state — including a gate it
-reports as answerable: it **routes** to the owning skill, which runs the prompt and
-writes the transition. `/steer:next` never runs a ratification prompt itself.
+Read-only coda: `/steer:next` itself never edits, commits, publishes, merges, or
+advances any workflow's state — including a gate it reports as answerable: it
+**routes** to the owning skill, which runs the prompt and writes the transition.
+`/steer:next` never runs a ratification prompt itself. Auto-continuing into the
+recommended action does not weaken that — the continuation *is* the owning skill,
+running under its own rules.
 
 End the readout with one line inviting correction: if this recommendation (or a
 recent routing) missed the mark, saying so gets it reported upstream via

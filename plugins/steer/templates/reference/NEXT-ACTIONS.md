@@ -216,5 +216,10 @@ system (it is either pre-launch or live), so at most one appears.
   the human action, and offer the command only as the follow-up it genuinely is.
 - **Read-only.** The block is the last thing a skill emits and changes nothing. It
   does not publish issues, accept ADRs, claim work, push branches, or create PRs —
-  the owning workflow performs those under its own autonomy and gating rules. It
-  never auto-executes the recommendation.
+  the owning workflow performs those under its own autonomy and gating rules.
+  Emitting it is not necessarily the end of the turn, though: rule `00-router`'s
+  **bounded auto-continue** then applies, so an unambiguous, non-gated
+  `Suggested command` is announced and run as a **fresh invocation of the skill that
+  owns it** — never executed inside the emitting skill, whose tier may forbid the
+  writes involved. A gated step, a command-less human action, and a genuinely close
+  arbitration all wait for the human instead.
