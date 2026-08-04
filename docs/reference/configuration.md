@@ -137,17 +137,24 @@ the gap as work to reclaim.
 Then, for the first time, the ratchet turned the other way: **68,400 → 67,500**.
 That fifth raise's ~1% headroom had been consumed back down to **178 bytes**,
 which made the ceiling load-bearing on the next rule edit of any kind. 1,632 B
-were reclaimed, all of it duplication removal rather than prose deletion — each
-relocation target already carried the full text. Rule 10's mise task-ordering and
-compose detail went to `CONVENTIONS.md`; rule 45's ungraduated-trunk-push
-mechanics to `GATES.md` (which gained the Copilot-CLI no-retry clause rather than
-losing it); rule 36's `allowed-tools` tiering to `ISSUE-WORKFLOW.md`, whose "Host
-gating" section already asked the always-on rule for a terse, point-of-use
-reminder and never a second normative copy; and rules 50 and 99 stopped restating
-each other's checklist. No rule lost an imperative, so this is not the
+were reclaimed across nine rules. Most of it is duplication removal, the target
+already carrying the full text. Rule 10's mise task-ordering and compose detail
+went to `CONVENTIONS.md`; rule 45's ungraduated-trunk-push mechanics to `GATES.md`
+(which gained the Copilot-CLI no-retry clause rather than losing it); rule 36's
+`allowed-tools` tiering to `ISSUE-WORKFLOW.md`, whose "Host gating" block —
+inside its Operating model principles, not a section of its own — already asked
+the always-on rule for a terse, point-of-use reminder and never a second normative
+copy; rule 62's Claude-Code-specific branch-prefix clause to
+`work/modes/hotfix.md`; and rules 50 and 99 stopped restating each other's
+checklist. The remainder is in-place compression with nothing relocated: rules 00
+and 30 were reworded, and rule 24 dropped rationale for an instruction that is
+unconditional anyway — prose deletion rather than duplication removal, so the two
+are worth naming separately. No rule lost an imperative, so this is not the
 shave-rationale-to-pay trade the earlier raises record as wrong and reverted. The
 ceiling came down by 900 B — deliberately **less** than was reclaimed — so
 headroom grew from 178 B to ~910 B in the same change that tightened the ratchet.
+Rule 22's absorbed-source correction then spent 360 B of that (it had been
+projected at ~150 B), so the released tree measures 66,950 B and carries ~550 B.
 Re-arming at measured + 1% would have restored the ~660-byte margin that made
 three of the earlier raises inevitable.
 
@@ -173,13 +180,17 @@ rather than the only physically available move. The policy is unchanged: trimmin
 first remains the default, `check_plugin.py`'s per-skill 1,536-char cap is untouched
 so no single skill can absorb the new headroom, and the target stays 10,000.
 
-The listing ceiling was then deliberately **held** at 12,400 while 244 chars were
+The listing ceiling was then deliberately **held** at 12,400 while 232 chars were
 reclaimed alongside the rules trim above (`/steer:reference` stopped
 parenthesising each topic its own `when_to_use` already explains in question form;
-`work`, `spec` and `intake` dropped restatement, with every distinct trigger
-phrase retained). Lowering it would contradict this block's own basis: 12,400 was
-chosen to buy ~521 chars, and no reduction from the resulting 11,966 leaves that
-much. Reclaim more first, then the ceiling can move.
+`work`, `spec` and `intake` dropped restatement). Seven literal subtopic tokens
+went with it — `commit style`, `spec routing`, `audit evidence`, `subagents`,
+`durable state`, `Mermaid`, `LikeC4` — and they survive nowhere else in the
+measured surface; the topics stay reachable through `reference`'s eight doc-name
+arguments, so this was a deliberate trade, not a lossless one. Lowering the
+ceiling would contradict this block's own basis: 12,400 was chosen to buy ~521
+chars, and no reduction from the resulting 11,978 leaves that much. Reclaim more
+first, then the ceiling can move.
 
 The third *surface* is per-skill and **not** a ratchet: each `SKILL.md` body is capped at
 17,500 bytes. That number is the harness's **compaction re-attach cap** — after

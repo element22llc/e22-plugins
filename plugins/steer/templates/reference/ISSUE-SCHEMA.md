@@ -24,7 +24,7 @@ source of truth.
 |---|---|---|
 | `<!-- steer:schema=2 -->` | **Schema-version marker** — the contract version this body was written against. Required on every agent issue. | all |
 | `<!-- steer:kind=… -->` | Closed enum (work shape): `epic` · `feature` · `bug` · `task` · `finding` · `spec-question` · `spec-drift` · `audit-run`. | all |
-| `<!-- steer:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical — see *GitHub Projects v2 — compatibility boundary* below. | all |
+| `<!-- steer:state=… -->` | Lifecycle state (base source of truth): `inbox` · `exploring` · `ready-for-spec` · `ready-for-dev` · `in-progress` · `validate` · `blocked` · `done` · `cancelled`. `done` = closed as completed; `cancelled` = closed for a non-completion reason (see `ISSUE-WORKFLOW.md` Completion rules). A Project **Status** field may *mirror* this (derived, one-directional); the marker stays canonical — see *Native issue fields & the Projects v2 compatibility boundary* below. | all |
 | `<!-- steer:source=… -->` | Origin (canonical): `human` · `adoption` · `audit` · `security-review` · `code-review` · `ci` · `dependency` · `implementation` · `spec`. The `source:*` label is derived from this. | all |
 | `<!-- steer:feature-id=… -->` | Owning feature slug (kebab-case), when one exists. | feature, task, spec-question, spec-drift |
 | `<!-- steer:spec-path=… -->` | Path to the owning spec artifact (e.g. `spec/features/<id>/intent.md`). | feature, task, spec-question, spec-drift |
@@ -212,7 +212,7 @@ Three orthogonal axes; do not collapse them into one another:
 `finding` (keyed by `finding-key` + `source`) replaces the former
 `audit-finding` kind, which parsers still accept as a prior alias.
 
-## Native issue fields & the Projects v2 boundary
+## Native issue fields & the Projects v2 compatibility boundary
 
 GitHub now ships **native issue fields** — typed metadata (single-select, text,
 number, date) defined org-wide and stored **on the issue itself**, distinct from

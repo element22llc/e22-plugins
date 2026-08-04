@@ -32,8 +32,11 @@ The loop degrades into theater without all three.
 
 1. **Independence.** Each gate is a *fresh subagent* that never saw the rationale
    for the choices it reviews. A context that produced an artifact is anchored to
-   its own reasoning and will confirm it. This is why the gate is a `steer-reviewer`
-   subagent (or `/code-review`), not "re-read your own work."
+   its own reasoning and will confirm it. This is why each gate is a *separate*
+   subagent — a fresh general reviewer for the plan gate, `/code-review` (plus an
+   optional `steer-reviewer` standards pass) for the code gate — not "re-read your
+   own work." §3 says which belongs to which, and why `steer-reviewer` cannot do
+   the plan gate.
 2. **Explicit rubric.** The reviewer scores against the **restated requirements**
    (what success means, spelled out) plus the **relevant steer rules** — not a
    vague "is this good?". A reviewer with no rubric emits generic feedback that

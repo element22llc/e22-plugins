@@ -115,9 +115,11 @@ defense-in-depth floor that holds even when the tracker is unreachable. It flags
 
 `validate` runs at `/steer:spec approve` and is called by `/steer:issues`
 (`materialize`, `status`, `reconcile`); a spec-changing PR should run it too.
-A failing check blocks the relevant gate — e.g. an approval
-cannot proceed while a blocking question gated at
-`required_before: intent-approval` is open.
+A failing check blocks the relevant gate — e.g. an approval cannot proceed while
+a blocking question gated at `required_before: intent-approval` is **unresolved**,
+which is the full `open` / `investigating` / `deferred` set (see `ENUMS.md` →
+`question_status`). Deferral is not resolution: a blocking-but-`deferred` question
+keeps blocking until its `impact:` is explicitly reclassified `non-blocking`.
 
 ### Contract readiness (mechanically determinable)
 

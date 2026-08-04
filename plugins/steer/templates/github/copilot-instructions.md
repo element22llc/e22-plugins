@@ -534,7 +534,7 @@ create the issue.
   one anyway. A create that is blocked is a **host-permission gate, not a
   missing issue** — don't loop retrying; confirm with the user, or have them run
   `!gh issue create …` under their own identity, then continue. (Full tiering
-  and rationale: ISSUE-WORKFLOW.md → "Host gating".)
+  and rationale: ISSUE-WORKFLOW.md, "Host gating" in Operating model.)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
 **Calling work a "prototype" does not waive it** — the only durable opt-out
