@@ -302,6 +302,17 @@ else
 	emit "github-issue-permissions" "mis-wired" "$F"
 fi
 
+# --- line-ending-normalization — LF pinned for every checkout ---
+# Presence-only: whether the file's CONTENT carries the current pins is step 5's
+# additive reconcile, not a capability gap. This entry exists solely to close the
+# create-missing hole — step 5 splices only into files that already exist.
+F=".gitattributes"
+if exists "$F"; then
+	emit "line-ending-normalization" "present-wired" "$F"
+else
+	emit "line-ending-normalization" "absent" "$F"
+fi
+
 # --- backing-services-compose — local services (judgment: skill asks) ---
 # Whether a product NEEDS backing services is not deterministically knowable, so
 # absence is reported raw and the skill proposes only after confirming.

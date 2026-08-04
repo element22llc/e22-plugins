@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Resolved a contradiction between `/steer:tidy` and rule 22 on deleting an
+  absorbed spec source.** `tidy/SKILL.md` proposed deleting a spec/requirements
+  doc whose bytes match a committed `spec/sources/**/original.*` — correct, since
+  `/steer:intake` has already absorbed it and moving the stray would just
+  duplicate the source — while rule `22-housekeeping`, tidy's own later bullets,
+  and `HOUSEKEEPING.md`'s junk section all said only true junk is ever a deletion
+  candidate. Two shipped surfaces permitted what four forbade, and the rule text
+  also reaches the Copilot surface. Rule 22 now carries both cases, and the
+  `.gitignore`-pattern requirement is scoped to **true junk only** — a
+  `.gitignore` pattern makes no sense for an absorbed spec doc whose next version
+  is expected. Deletion stays **never automatic** and always waits for a yes, on
+  every surface. (#446)
+
 - **Reclaimed always-on context budget, and turned the rules ratchet down for the
   first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
   so the next rule edit that added prose would trip the gate even when the
@@ -34,6 +47,46 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   read only when a sweep actually meets one. The triggers and the "a `- [ ]`
   outside `## Open questions` is a PO gate" warning stay in `SKILL.md`; the body
   drops to 15,665 B (90%). (#443)
+- **`/steer:doctor` now names the plugin by its qualified id when telling you to
+  reinstall.** It said `/plugin uninstall steer` while every install instruction
+  — `README.md`, the installation page, and the launch checklist's uninstall
+  block — uses `steer@e22-plugins`. Now symmetric. (#448)
+
+- **`/steer:doctor`'s CRLF repair command now carries handover framing, and its
+  §0 stop-state has a next-action.** The in-place
+  `find … -exec sed -i 's/\r$//'` unblock was printed with no instruction about
+  who runs it, even though the skill declares `disallowed-tools: Edit, Write`
+  and its own shell-rc guidance is explicit ("Print this for the dev to run —
+  never edit their shell rc yourself"). It now says the same thing, for the same
+  reason. Separately, §0 (plugin integrity) can halt the run — a CRLF-mangled
+  install means no bundled script can execute — but `## Recommended next
+  actions` had no row for it, leaving the one stop-state that isn't about the
+  host machine with no prescribed action; it is now the highest-precedence row.
+  (#445)
+- **Fixed: the SessionStart hook no longer describes itself as running "once per
+  session".** `inject-standards.sh`'s header claimed `startup | resume | clear`,
+  but `hooks.json` registers `startup|resume|clear|compact` and there is no
+  once-per-session guard — `compact` can fire repeatedly within one session.
+  Re-injecting after a compaction is the *correct* behaviour (a compaction can
+  drop the injected rules), so the defect was the description, not the hook. The
+  hook header, `/steer:standards`, and the root README now all name the four
+  matchers and say why `compact` is among them. (#444)
+- **`/steer:sync` can now create a missing `.gitattributes`, with consent.** A
+  managed repo with **no** `.gitattributes` at all never got one: step 5
+  reconciles additively *into files that already exist*, and no capability
+  covered this file — so a repo adopted before the scaffold carried one (< 3.12.0),
+  or one that lost it, stayed exposed through every steady-state sync. That is
+  the exact exposure that produced the v5.0.0 CRLF release, where a CRLF shell
+  script did not warn but failed to **parse**. New `line-ending-normalization`
+  capability: `scan-capabilities.sh` reports the file present or absent, and on
+  absent `/steer:sync` **proposes** creating it from
+  `templates/scaffold/gitattributes` and waits for a yes — one of only two
+  step-6 `absent` cases (with `compose.yaml`) that does not create unasked,
+  because the file changes how git treats every subsequent write. It affects
+  future writes only and **never** runs `git add --renormalize .`; converting
+  content already committed as CRLF stays a deliberate human one-shot. The probe
+  is presence-only by design — content pins remain step 5's additive reconcile.
+  (#447)
 
 ### 5.1.0
 
@@ -74,7 +127,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:adopt` already install `.gitattributes` outright from the install map,
   and `/steer:sync` still splices solely into files that already exist — so a
   steady-state repo with no `.gitattributes` at all is the one case still needing
-  a manual copy. (#438)
+  a manual copy. (#438) *(Superseded: the create-missing gap named in that last
+  sentence was closed by the `line-ending-normalization` capability — see
+  `[Unreleased]`, #447.)*
 - **Fixed: `/steer:sync` no longer prompts mid-run on its own template
   reconciliation.** Its `allowed-tools` granted `scan-capabilities.sh`,
   `scan-invocations.sh` and `scaffold_reconcile.py` but not

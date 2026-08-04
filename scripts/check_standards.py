@@ -12,7 +12,12 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    the modes documented in its body, and every cross-skill mode reference.
 3. ``commands/`` is absent/empty (the shims were removed); skill names are unique.
 4. Every ``/steer:<skill>`` slash reference resolves to a real skill (no phantom
-   skill), and no stale ``/e22-*`` reference survives the rebrand.
+   skill), and no stale ``/e22-*`` reference survives the rebrand. This one check
+   also scans **root markdown** (see ``ROOT_MD_EXCLUDE``), which ships nothing but
+   is read by every contributor — the asymmetry where `README.md` could keep
+   slash-prefixed legacy tokens that shipped files contort their prose to avoid.
+   Prose whose whole point is to show the old form opts out with
+   ``<!-- steer-legacy-ok -->`` (see ``LEGACY_OK_MARKER``).
 5. Every Status:/question-field/marker/next-action token in rules, skills,
    templates, and active fixtures is a member of ``enums.registry``; ENUMS.md
    agrees with the registry; the deprecated "Required before production" category
@@ -88,6 +93,26 @@ CROSS_SURFACE = Path("CROSS-SURFACE.md")
 # Dirs whose markdown is scanned for tokens / command refs.
 SCAN_DIRS = ["rules", "skills", "templates"]
 
+# Root markdown is scanned by the *command-ref* check only (check 4), not by the
+# token-membership checks — those are about the shipped enum contract, which root
+# prose is not party to. Scanning it at all closes a real asymmetry: shipped files
+# contort their prose to satisfy the stale-`/e22-*` guard while root files, which
+# every contributor reads first, were never checked.
+#
+# CHANGELOG.md is exempt: it is an append-only historical record whose older
+# entries legitimately name the pre-rebrand skills, and it is `merge=union` in
+# .gitattributes, so a gate that could demand edits to already-merged bullets
+# would fight the merge driver.
+ROOT_MD_EXCLUDE = {"CHANGELOG.md"}
+
+# Opt-out for prose whose whole point is to show the pre-rebrand form — a
+# migration note is *less* useful without the old token. Section-scoped: the
+# marker exempts the stale-token check from where it appears until the next
+# Markdown heading, so it can't silently widen past the section that needs it.
+# It does NOT exempt the `/steer:<skill>` resolution check — a phantom skill is a
+# defect in any prose, historical or not.
+LEGACY_OK_MARKER = "<!-- steer-legacy-ok -->"
+
 # `default` denotes the no-subcommand invocation; it never appears as an
 # argument-hint keyword or a documented section, so it is exempt from the
 # "declared mode must be documented" direction.
@@ -120,6 +145,13 @@ def _iter_md(dirs: list[str]):
         base = PLUGIN_ROOT / d
         if base.is_dir():
             yield from sorted(base.rglob("*.md"))
+
+
+def _iter_root_md():
+    """Repo-root markdown — ships nothing, but every contributor reads it."""
+    for p in sorted(Path().glob("*.md")):
+        if p.name not in ROOT_MD_EXCLUDE:
+            yield p
 
 
 # --- check 1: when_to_use formatting (restricted grammar, not a YAML parse) ---
@@ -284,13 +316,25 @@ _STALE_E22_RE = re.compile(r"(?<![A-Za-z0-9])/e22-[a-z][a-z-]*")
 
 def check_command_refs(errors: list[str], skills: set[str]) -> None:
     ns_re = re.compile(r"/steer:([a-z][a-z-]*)")
-    for md in _iter_md(SCAN_DIRS):
+    heading_re = re.compile(r"^#{1,6} ")
+    for md in [*_iter_md(SCAN_DIRS), *_iter_root_md()]:
         text = md.read_text(encoding="utf-8")
+        legacy_ok = False
         for i, line in enumerate(text.splitlines(), 1):
-            for m in _STALE_E22_RE.finditer(line):
-                errors.append(
-                    f"{md}:{i}: stale '{m.group(0)}' — rebrand to the '/steer:' namespace"
-                )
+            # A heading closes any open opt-out, so the marker can never widen
+            # past the section that declared it.
+            if heading_re.match(line):
+                legacy_ok = False
+            if LEGACY_OK_MARKER in line:
+                legacy_ok = True
+                continue
+            if not legacy_ok:
+                for m in _STALE_E22_RE.finditer(line):
+                    errors.append(
+                        f"{md}:{i}: stale '{m.group(0)}' — rebrand to the '/steer:' "
+                        f"namespace, or mark a deliberate historical reference with "
+                        f"'{LEGACY_OK_MARKER}' in its section"
+                    )
             for m in ns_re.finditer(line):
                 if m.group(1) not in skills:
                     errors.append(f"{md}:{i}: '/steer:{m.group(1)}' does not resolve to a skill")

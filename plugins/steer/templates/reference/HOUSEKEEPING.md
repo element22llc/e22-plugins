@@ -116,9 +116,12 @@ and a quick look**:
 
 ## Junk — flag, never auto-delete, and gitignore the pattern
 
-Only **true junk** is a deletion candidate, and even then you ask first:
+Two things are deletion candidates, and both wait for a yes:
 
 - **OS/junk:** `desktop.ini`, `.DS_Store`, `Thumbs.db`.
+- **An already-absorbed source** — covered above; it is a redundant duplicate of
+  committed content, not junk, so the `.gitignore` step below does **not** apply
+  to it.
 
 When you delete a junk file, **also add its pattern to `.gitignore`** so it
 doesn't get re-committed and re-introduced later — deleting the file alone is

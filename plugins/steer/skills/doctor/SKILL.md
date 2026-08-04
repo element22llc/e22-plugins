@@ -60,13 +60,21 @@ none of the checks below are meaningful until it is fixed. The repair:
 
 ```sh
 # Re-clone the marketplace with normalization applied (preferred).
-/plugin uninstall steer   # then re-install; steer ships .gitattributes with eol=lf
+/plugin uninstall steer@e22-plugins   # then re-install; steer ships .gitattributes with eol=lf
 ```
 
-If reinstalling is not immediately possible, the in-place unblock is
-`find "${CLAUDE_PLUGIN_ROOT}" -type f \( -name '*.sh' -o -name '*.md' \) -exec sed -i 's/\r$//' {} +`
-(on macOS, `sed -i ''`). Say plainly that this is a workaround on an installed
-copy which `/plugin update` will overwrite.
+If reinstalling is not immediately possible, the in-place unblock is:
+
+```sh
+find "${CLAUDE_PLUGIN_ROOT}" -type f \( -name '*.sh' -o -name '*.md' \) \
+  -exec sed -i 's/\r$//' {} +          # on macOS: sed -i ''
+```
+
+**Print this for the dev to run — never run it yourself.** This skill disallows
+`Edit`/`Write` for the same reason it refuses to touch a shell rc: rewriting
+files inside an installed plugin directory is the dev's call, not the skill's.
+Say plainly that it is a workaround on an installed copy which `/plugin update`
+will overwrite, and that re-installing is the real fix.
 
 Silence here is the pass — say nothing about it and move to §1.
 
@@ -173,6 +181,7 @@ final scan.
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
+| §0 failed — the installed plugin has CRLF line endings | Blocking now | steer itself is broken, so nothing below was checked: re-install it (`/plugin uninstall steer@e22-plugins`, then re-install), or hand over the §0 in-place unblock |
 | A required tool still `missing`/`down`/`unmanaged` | Blocking now | Finish resolving it (§3), then re-scan |
 | `os` = `windows` (Git Bash live) | Complete | Supported — hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan — or WSL2 for CLI/IDE dev |

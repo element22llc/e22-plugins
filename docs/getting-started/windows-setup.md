@@ -81,11 +81,14 @@ Both sides of this are handled, but they arrive by different routes:
   reconciles it the same additive way — the scaffold has carried a
   `.gitattributes` since 3.12.0, so most managed repos have the file, and the
   merge adds the new pins without removing your own lines.
-  The gap is a repo with **no** `.gitattributes` at all: sync splices only into
-  files that already exist, and nothing creates this one. Ask Claude to copy the
-  plugin's bundled `templates/scaffold/gitattributes` into your repo **as
-  `.gitattributes`** — the scaffold stores dotfiles without their leading dot, so
-  a straight copy lands a file git ignores.
+  A repo with **no** `.gitattributes` at all is handled separately: additive
+  reconciliation splices only into files that already exist, so sync's
+  **capability repair** covers this one instead — it detects the absence and
+  *proposes* creating the file from the bundled
+  `templates/scaffold/gitattributes`, waiting for your yes. It installs it **as
+  `.gitattributes`** (the scaffold stores dotfiles without their leading dot, so
+  a straight copy would land a file git ignores) and it never runs
+  `git add --renormalize .` on your behalf.
 
 !!! note "Normalization applies going forward, not retroactively"
     Adding `.gitattributes` to a repo that already has CRLF **committed** does
@@ -104,7 +107,10 @@ Both sides of this are handled, but they arrive by different routes:
 
     `/steer:doctor` checks for this **first**, before anything else, and names
     it as a plugin-install fault rather than a missing prerequisite. The fix is
-    to reinstall the plugin so it re-clones with normalization applied.
+    to reinstall the plugin so it re-clones with normalization applied. Where
+    that isn't immediately possible, doctor **prints** an in-place `sed` unblock
+    for you to run — it never runs it itself, and it says plainly that a
+    `/plugin update` will overwrite the patched copy.
 
     One failure here is quiet rather than loud, so it is worth knowing about:
     under CRLF, `template-reconcile.sh` could still *run* and report every

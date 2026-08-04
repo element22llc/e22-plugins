@@ -73,7 +73,8 @@ flowchart LR
 
 The always-on rules are delivered by a `SessionStart` hook that concatenates
 `plugins/steer/rules/*.md` to stdout (which Claude Code injects as
-session context). It runs once per session when the plugin is enabled.
+session context). It runs on `startup`, `resume`, `clear` and `compact` when the
+plugin is enabled — the last so a compaction that drops the rules re-injects them.
 
 > **Using GitHub Copilot?** The same rules and skills also ship as a generated
 > Copilot target (CLI + VS Code, prototype scope) — see
@@ -205,6 +206,11 @@ prompted to install when they trust the folder:
 > First install prompts you to trust the `e22-plugins` marketplace.
 
 ## Upgrading from `e22-standards`
+
+<!-- steer-legacy-ok -->
+<!-- This migration note has to show the pre-rebrand invocation form to be
+     useful, so the stale-token guard in check_standards.py is opted out for
+     this section only (it re-arms at the next heading). -->
 
 The plugin was renamed `e22-standards` → **`steer`** (and skills lost their
 redundant prefix: `/e22-standards:e22-init` → `/steer:init`). The marketplace

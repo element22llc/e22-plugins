@@ -65,6 +65,7 @@ below give the detail.
 | Run the maintain-phase sweep on a schedule (triage → draft fix → PR) | `/steer:loop` |
 | Lock branch protection or flip the delivery mode | `/steer:protect` |
 | A tool is missing, or set up the local toolchain | `/steer:doctor` |
+| **Every** steer command fails at once (`syntax error near unexpected token`) — a CRLF-corrupted install, not a plugin bug | `/steer:doctor` (§0 diagnoses it locally) |
 | steer itself is misbehaving — file a plugin bug upstream | `/steer:report` |
 | Answer accumulated open questions | `/steer:questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:adr` |

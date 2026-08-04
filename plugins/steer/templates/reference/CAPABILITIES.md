@@ -314,6 +314,37 @@ and **Repair**.
   allow-list — verified by this capability — is the real backstop for that
   orchestrated path.
 
+### line-ending-normalization — LF pinned for every checkout
+- **Files:** `.gitattributes`
+- **Conditional:** always (every managed repo carries shell scripts, CI, or a
+  Docker entrypoint that a CRLF checkout would break).
+- **Wired-when:** `.gitattributes` **exists**. This is a **presence-only** probe
+  by design: whether the file's *content* carries the current pins is step 5's
+  additive reconcile (`scaffold_reconcile.py auto .gitattributes …`), not a
+  capability gap, so a repo with an older or hand-written `.gitattributes` is
+  `present-wired` here and gets its missing lines spliced there. This entry exists
+  solely to close the **create-missing** hole: step 5 splices only into files that
+  already exist, and until now nothing created this one.
+- **Repair:** **propose creating** it from
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitattributes` (the scaffold stores
+  dotfiles without the leading dot — install it **as `.gitattributes`**) and
+  **wait for a yes**. Like `backing-services-compose`, this is one of the two
+  step-6 `absent` cases that does *not* create unasked — not because the need is
+  unknowable, but because the file changes how git treats every subsequent write
+  in someone else's repo.
+  **Never run `git add --renormalize .`.** The file governs *future* writes only;
+  converting content already committed as CRLF is a deliberate, history-churning
+  one-shot that stays the human's call (it touches every affected file and
+  collides with anything in flight). Say that plainly when proposing.
+- **Verbatim:** no
+- **Why it matters:** this is the exposure that produced the v5.0.0 CRLF release.
+  A CRLF shell script does not warn, it fails to **parse** — so `scripts/*.sh`,
+  every CI step that runs them, and a Docker image's entrypoint all die at once
+  with `syntax error near unexpected token $'{\r'`. A repo that never had a
+  `.gitattributes` had no route to one at all: `/steer:init` and `/steer:adopt`
+  install it from the install map, but a repo adopted before it shipped (< 3.12.0)
+  or one that lost the file stayed exposed through every steady-state sync.
+
 ### backing-services-compose — local backing services
 - **Files:** `compose.yaml`
 - **Conditional:** only if the product runs backing services — **not

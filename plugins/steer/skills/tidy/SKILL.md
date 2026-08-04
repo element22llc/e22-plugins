@@ -37,8 +37,9 @@ Key points (read the file for the full detail):
   to one home and isn't ambiguous gets `git mv`'d there now, under its existing
   name, no confirmation. The obvious cases just happen.
 - Three actions otherwise: **move** is the automatic one above; **rename + move**
-  (cryptic/inconsistent name → a clear one) and **delete** (only true junk) are
-  **proposed and wait for a yes**. A bad filename is a reason to rename, not to
+  (cryptic/inconsistent name → a clear one) and **delete** (true junk, or an
+  already-absorbed source — the two cases above) are **proposed and wait for a
+  yes**. A bad filename is a reason to rename, not to
   bury or delete — move the file now and offer the rename separately.
 - **Ask before assuming.** A confusing or duplicate-looking name (`Copy of …`,
   coded names, `(002)`, case-variant pairs) does **not** mean a file is junk —
@@ -50,9 +51,12 @@ Key points (read the file for the full detail):
   any ambiguous file — with a source → destination/new name column for approval.
 - Use **`git mv`** for tracked files (moves *and* renames; history follows);
   plain `mv` for untracked ones. Create destination folders as needed.
-- **Never auto-delete.** Only true OS junk (`desktop.ini`, `.DS_Store`,
-  `Thumbs.db`) is a deletion candidate, and even that waits for a yes. When you
-  do delete junk, **also add its pattern to `.gitignore`** (broad, tree-wide,
-  only if not already present) so it can't be re-committed later.
+- **Never auto-delete.** Exactly two things are deletion candidates, and both
+  wait for a yes: **true OS junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) and
+  an **already-absorbed source** (bytes matching a committed
+  `spec/sources/**/original.*`). When you delete junk, **also add its pattern to
+  `.gitignore`** (broad, tree-wide, only if not already present) so it can't be
+  re-committed later. That step is **junk-only** — never gitignore an absorbed
+  spec document; it isn't junk, and a later version of it is expected.
 - If a moved/renamed file is referenced by a spec (`source.md`, an `intent.md`
   `Design source`), update the reference so the link still resolves.
