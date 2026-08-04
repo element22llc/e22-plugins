@@ -5,12 +5,11 @@ Create the artifact when the trigger fires — don't defer it:
 - **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code — author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
-- **Hard-to-reverse or cross-cutting choice** (stack, database, auth, deployment) → ADR at
-  `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
-  stack choice is usually the first ADR. **The bar is reversal cost, not
-  novelty:** an ADR is for a choice whose undoing later means changing work built
-  on top of it. A pattern used in **one** place is a `contract.md` line; it earns
-  an ADR when a third use makes it the house style.
+- **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
+  deployment) → ADR at `/spec/decisions/000N-[slug].md` (run
+  **`/steer:adr <slug>`**); the initial stack choice is usually the first.
+  **The bar is reversal cost, not novelty** — a pattern used in one place is a
+  `contract.md` line until a third use makes it the house style.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
   the app guide (`/spec/app/`) if it describes the old behavior; see Living
   documentation.

@@ -152,7 +152,37 @@ PLUGIN_ROOT = Path("plugins/steer")
 # total (67,758 B across 35 files) plus ~1%, keeping real headroom rather than the
 # 5-to-16-byte margins this note blames for making earlier raises inevitable.
 # Target stays 62,500.
-RULES_TOTAL_MAX_BYTES = 68_400
+#
+# LOWERED for the first time, 68,400 → 67,500 (#443). Every prior move on this
+# line was a raise; this is the ratchet finally turning the way it was designed
+# to. The trigger was that the fifth raise's ~1% headroom had been consumed back
+# down to **178 bytes**, which made the ceiling load-bearing on the *next* rule
+# edit of any kind — #446 alone (broadening rule 22 to admit the byte-identical
+# absorbed-source delete) costs ~150 B and could not be paid for.
+#
+# 1,632 B were reclaimed, and every byte of it is duplication removal, not prose
+# deletion — each relocation target already carried the full text:
+#   - rule 10's mise task-ordering and compose detail → CONVENTIONS.md
+#     ("Standard mise tasks", "Declaring task ordering", "Local services");
+#   - rule 45's ungraduated-trunk-push mechanics → GATES.md §5, which already
+#     owned them (the Copilot-CLI no-retry clause moved there rather than being
+#     dropped);
+#   - rule 36's `allowed-tools` tiering → ISSUE-WORKFLOW.md "Host gating", which
+#     explicitly asks the always-on rule to carry "only a terse, point-of-use
+#     reminder … never a second normative copy";
+#   - rules 50 and 99 stopped restating each other's checklist items, and rule 24
+#     dropped rationale for an instruction that is unconditional anyway.
+# No rule lost an imperative, so this is not the "shave rationale to pay for an
+# edit" trade the notes above twice record as wrong and reverted.
+#
+# The ceiling comes down by 900 B — deliberately LESS than the 1,632 B reclaimed,
+# so headroom grows from 178 B to ~910 B (5x) in the same change that tightens the
+# ratchet. Re-arming at measured+1% would have restored the ~660-byte margin that
+# made raises two, three and four inevitable; the whole lesson of this comment
+# block is that a tight ceiling dictates the wording of correctness fixes instead
+# of bounding their cost. Target stays 62,500 — still 4,090 B of standing
+# invitation.
+RULES_TOTAL_MAX_BYTES = 67_500
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently
@@ -192,6 +222,14 @@ RULES_TOTAL_MAX_BYTES = 68_400
 # consume the new headroom alone. LISTING_TOTAL_TARGET_CHARS deliberately stays at
 # 10,000: the widened gap is the standing invitation to reclaim it, and the report
 # keeps showing it as work outstanding.
+#
+# HELD at 12,400 by #443, which reclaimed 244 chars (`reference` stopped
+# parenthesising each topic its own `when_to_use` already explains; `work`, `spec`
+# and `intake` dropped restatement, no trigger phrase lost) and took headroom from
+# 190 back to ~434. Not ratcheted down, on this block's own stated basis: 12,400
+# was chosen to buy ~521 chars — "one whole additional skill" — and any lowering
+# from the current 11,966 leaves less than that. Reclaim more first, then the
+# ceiling can move.
 LISTING_TOTAL_MAX_CHARS = 12_400
 
 # --- Compaction re-attach cap (hard gate, per skill) -------------------------

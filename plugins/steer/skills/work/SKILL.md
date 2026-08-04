@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end from local Claude Code — claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer:issues, routing all tracker-metadata I/O through /steer:tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path."
+description: "Execute a GitHub issue end-to-end — claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer:issues, routing tracker-metadata I/O through /steer:tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
   #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted

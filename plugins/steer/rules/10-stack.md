@@ -34,25 +34,22 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Auth:** Better Auth — high-risk; scope with the dev and write an ADR
   first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
   never committed — see Secrets handling.
-- **Local services:** Docker Compose via a committed `compose.yaml` — adapt
-  the plugin's bundled scaffold one, don't author from scratch. **Same engine
-  locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
-  point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
-  keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins — it only *asks* on the Copilot CLI,
-  and VS Code has no hook, so keep the pins current yourself (exceptions: ADR +
-  `# steer:allow-pin`). **Every published host port overridable** —
-  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the override
-  var in `.env.example`.
-- **Task running:** mise is the single task entry point. Declare ordering with
-  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
-  Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
-  `package.json`; a mise task may delegate to them — delegation is
-  **one-way**: no `package.json` script shells out to `uv`/Python or
-  re-defines a mise task. A Python backend is a mise/`uv run` task; compose a
-  polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`), not a
-  root-`package.json` `concurrently` script. Let `[deps.pnpm]` / `[deps.uv]`
-  (`auto = true`) install workspace deps on lockfile change.
+- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
+  bundled scaffold one, don't author from scratch. **Same engine locally as
+  deployed** (no SQLite stand-in for PostgreSQL); **every published host port
+  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
+  with the override var in `.env.example`. A plugin hook denies stale
+  image-major pins, but only *asks* on the Copilot CLI and is absent in VS Code,
+  so keep pins current yourself (exceptions: ADR + `# steer:allow-pin`).
+- **Task running:** mise is the single task entry point; environment tasks live
+  in `mise.toml`, not `package.json`. Standard entry point `mise run dev:setup`
+  (idempotent: services up → migrate → seed) — keep it green. Declare ordering
+  with `depends` / `depends_post`, never `run = ["mise run …"]` chains.
+  App-level Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
+  `package.json` and a mise task may delegate to them — delegation is
+  **one-way**. Compose a polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`),
+  never a root `concurrently` script; let `[deps.pnpm]` / `[deps.uv]`
+  (`auto = true`) install on lockfile change.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules in Secrets handling.

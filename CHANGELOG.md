@@ -7,6 +7,34 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Reclaimed always-on context budget, and turned the rules ratchet down for the
+  first time.** `rules/*.md` sat at 68,222 B of a 68,400 B ceiling — 178 bytes —
+  so the next rule edit that added prose would trip the gate even when the
+  wording was right. 1,632 B came out as pure duplication removal, each
+  relocation target already carrying the full text: rule 10's mise
+  task-ordering and compose detail (`CONVENTIONS.md`), rule 45's
+  ungraduated-trunk-push mechanics (`GATES.md` §5, which gains the Copilot-CLI
+  no-retry clause rather than losing it), rule 36's `allowed-tools` tiering
+  (`ISSUE-WORKFLOW.md` → "Host gating", which asks the rule for a terse reminder
+  and never a second normative copy), plus rules 50 and 99 no longer restating
+  each other's checklist. No rule lost an imperative. The ceiling drops
+  68,400 → 67,500 — less than was reclaimed, so headroom grows 178 B → ~910 B in
+  the same change that tightens the ratchet. (#443)
+- **Trimmed the skill-listing routing surface by 244 chars.** `reference` stopped
+  parenthesising each topic that its own `when_to_use` already explains in
+  question form; `work`, `spec` and `intake` dropped restatement. Every distinct
+  trigger phrase is retained, and the 12,400-char ceiling is deliberately held —
+  lowering it from 11,966 would leave less than the ~521 chars that ceiling was
+  chosen to buy. (#443)
+- **`/steer:questions` factored its legacy-format handling into a just-in-time
+  sibling.** `SKILL.md` was 16,985 B — 97% of the 17,500 B compaction cap, past
+  which auto-compaction silently drops the tail of an invoked skill mid-run. The
+  legacy `SPEC-QUESTIONS.md` heal and the legacy `- [ ]` checkbox sweep are a
+  conditional migration path, so they now live in `skills/questions/LEGACY.md`,
+  read only when a sweep actually meets one. The triggers and the "a `- [ ]`
+  outside `## Open questions` is a PO gate" warning stay in `SKILL.md`; the body
+  drops to 15,665 B (90%). (#443)
+
 ### 5.1.0
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows

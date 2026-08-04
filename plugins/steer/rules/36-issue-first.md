@@ -26,15 +26,11 @@ create the issue.
   audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** gets its own linked issue
   (related/blocking), not silent scope creep in the current one.
-- The scaffold pre-authorizes `gh issue create` / `gh issue edit` under
-  `allow`; the MCP write tools (`mcp__github__issue_write` /
-  `sub_issue_write`) sit under `ask`; `/steer:tracker-sync` re-grants both,
-  `/steer:report` only `issue_write`, via `allowed-tools` — that tiering is
-  Claude Code's; elsewhere your host's own permissions apply. A create that
-  is *still* blocked is a **host-permission gate, not a missing issue** —
-  don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue. (Full
-  rationale: ISSUE-WORKFLOW.md → "Host gating".)
+- The scaffold pre-authorizes the tracker write verbs, but your host may block
+  one anyway. A create that is blocked is a **host-permission gate, not a
+  missing issue** — don't loop retrying; confirm with the user, or have them run
+  `!gh issue create …` under their own identity, then continue. (Full tiering
+  and rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
 **Calling work a "prototype" does not waive it** — the only durable opt-out

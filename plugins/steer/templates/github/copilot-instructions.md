@@ -53,16 +53,16 @@ as needed, so you rarely route outside this table.
 | get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it | `/steer:spec` |
-| absorb a new or updated PO document (docx/pptx/xlsx/pdf) — diff what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
+| absorb a new or updated PO document (docx/pptx/xlsx/pdf) — diff it against the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
-| respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
+| respond to a production incident (emergency hotfix to a deployed system) | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health, spec drift, and highest-leverage cleanups (read-only) | `/steer:audit` |
-| automate the triage/fix sweep on a schedule — an autonomous loop that drafts fixes, never merges (rule 53) | `/steer:loop` |
+| automate a triage/fix sweep on a schedule — an autonomous loop that drafts, never merges (rule 53) | `/steer:loop` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
-| get a plain-language, shareable page of one feature to hand a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
-| get a client-facing progress report over a time window — what shipped, what's in progress, what needs the client's input, what's next (a weekly status report; renders `/spec` + tracker, builds nothing) | `/steer:status` |
+| hand a stakeholder a plain-language, shareable page of one feature (renders `/spec`, builds nothing) | `/steer:explain` |
+| get a client-facing progress report over a time window — shipped, in progress, needs the client, next (renders `/spec` + tracker, builds nothing) | `/steer:status` |
 | browse what steer can do — a plain-language menu, no repo state needed | `/steer:help` |
 | "protect main" / graduate solo trunk to the PR flow / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
@@ -153,25 +153,22 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Auth:** Better Auth — high-risk; scope with the dev and write an ADR
   first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
   never committed — see Secrets handling.
-- **Local services:** Docker Compose via a committed `compose.yaml` — adapt
-  the plugin's bundled scaffold one, don't author from scratch. **Same engine
-  locally as deployed** (no SQLite stand-in for PostgreSQL). Standard entry
-  point: `mise run dev:setup` (idempotent: services up → migrate → seed) —
-  keep it green; environment tasks live in `mise.toml`, not `package.json`. A
-  plugin hook denies stale image-major pins — it only *asks* on the Copilot CLI,
-  and VS Code has no hook, so keep the pins current yourself (exceptions: ADR +
-  `# steer:allow-pin`). **Every published host port overridable** —
-  `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` — with the override
-  var in `.env.example`.
-- **Task running:** mise is the single task entry point. Declare ordering with
-  `depends` / `depends_post`, never `run = ["mise run …"]` chains. App-level
-  Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
-  `package.json`; a mise task may delegate to them — delegation is
-  **one-way**: no `package.json` script shells out to `uv`/Python or
-  re-defines a mise task. A Python backend is a mise/`uv run` task; compose a
-  polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`), not a
-  root-`package.json` `concurrently` script. Let `[deps.pnpm]` / `[deps.uv]`
-  (`auto = true`) install workspace deps on lockfile change.
+- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
+  bundled scaffold one, don't author from scratch. **Same engine locally as
+  deployed** (no SQLite stand-in for PostgreSQL); **every published host port
+  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
+  with the override var in `.env.example`. A plugin hook denies stale
+  image-major pins, but only *asks* on the Copilot CLI and is absent in VS Code,
+  so keep pins current yourself (exceptions: ADR + `# steer:allow-pin`).
+- **Task running:** mise is the single task entry point; environment tasks live
+  in `mise.toml`, not `package.json`. Standard entry point `mise run dev:setup`
+  (idempotent: services up → migrate → seed) — keep it green. Declare ordering
+  with `depends` / `depends_post`, never `run = ["mise run …"]` chains.
+  App-level Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
+  `package.json` and a mise task may delegate to them — delegation is
+  **one-way**. Compose a polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`),
+  never a root `concurrently` script; let `[deps.pnpm]` / `[deps.uv]`
+  (`auto = true`) install on lockfile change.
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` — bootstrap and storage
   rules in Secrets handling.
@@ -285,12 +282,11 @@ scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
 
 **Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
 new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
-task. Run `mise trust` in the worktree before your first `mise run …` — it is
-idempotent, so it costs nothing when a session-start check already inherited the
-primary checkout's trust (that check is Claude-Code-only, and covers only a session
-*started* in the worktree — not one you create with `git worktree add` mid-session,
-and not another agent surface). If the repo itself was never trusted, that first
-decision is the user's: `mise trust && mise install`.
+task. Run `mise trust` in the worktree first — it is idempotent, so it costs
+nothing when a session-start check already inherited the primary checkout's trust
+(Claude Code only, and only for a session *started* in the worktree). If the repo
+itself was never trusted, that first decision is the user's:
+`mise trust && mise install`.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
 sources `scripts/worktree-env.sh`, giving each worktree a unique
@@ -353,12 +349,11 @@ Create the artifact when the trigger fires — don't defer it:
 - **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
   `contract.md`, before or alongside the code — author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
-- **Hard-to-reverse or cross-cutting choice** (stack, database, auth, deployment) → ADR at
-  `/spec/decisions/000N-[slug].md` (run **`/steer:adr <slug>`**). The initial
-  stack choice is usually the first ADR. **The bar is reversal cost, not
-  novelty:** an ADR is for a choice whose undoing later means changing work built
-  on top of it. A pattern used in **one** place is a `contract.md` line; it earns
-  an ADR when a third use makes it the house style.
+- **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
+  deployment) → ADR at `/spec/decisions/000N-[slug].md` (run
+  **`/steer:adr <slug>`**); the initial stack choice is usually the first.
+  **The bar is reversal cost, not novelty** — a pattern used in one place is a
+  `contract.md` line until a third use makes it the house style.
 - **Behavior changes** → update the owning `contract.md` in the same PR — plus
   the app guide (`/spec/app/`) if it describes the old behavior; see Living
   documentation.
@@ -531,15 +526,11 @@ create the issue.
   audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** gets its own linked issue
   (related/blocking), not silent scope creep in the current one.
-- The scaffold pre-authorizes `gh issue create` / `gh issue edit` under
-  `allow`; the MCP write tools (`mcp__github__issue_write` /
-  `sub_issue_write`) sit under `ask`; `/steer:tracker-sync` re-grants both,
-  `/steer:report` only `issue_write`, via `allowed-tools` — that tiering is
-  Claude Code's; elsewhere your host's own permissions apply. A create that
-  is *still* blocked is a **host-permission gate, not a missing issue** —
-  don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue. (Full
-  rationale: ISSUE-WORKFLOW.md → "Host gating".)
+- The scaffold pre-authorizes the tracker write verbs, but your host may block
+  one anyway. A create that is blocked is a **host-permission gate, not a
+  missing issue** — don't loop retrying; confirm with the user, or have them run
+  `!gh issue create …` under their own identity, then continue. (Full tiering
+  and rationale: ISSUE-WORKFLOW.md → "Host gating".)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
 **Calling work a "prototype" does not waive it** — the only durable opt-out
@@ -594,11 +585,9 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   required and closed from the trunk commit (`Closes #N`), not via a PR (see
   Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
   works, you first deploy, or a second contributor joins, whichever comes first.
-  While a **local** graduation signal (a deploy target or a `prod` branch)
-  stands unaddressed, trunk pushes stop being silent — the session's **first**
-  one waits for a human yes, and repeats carry a non-blocking reminder, until
-  the repo graduates. On the Copilot CLI the repeat is a **silent allow** (no
-  reminder channel), so don't retry a declined push there — graduate instead.
+  Until then a standing **local** graduation signal (a deploy target or a `prod`
+  branch) stops trunk pushes being silent: the session's **first** one waits for
+  a human yes (`/steer:reference gates`).
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
   applies unchanged — you still never merge — but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
@@ -622,10 +611,9 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
 ## Definition of Done
 
 A change is done when **all** of these hold. Reviewers check most of them; CI
-enforces only a thin floor. In **solo-trunk** there is no reviewer, so the
-scaffold's CI runs that floor on push to `main` — the changed-line coverage gate
-(rule 41) and the advisory spec-drift warning (rule 55) — as the only automated
-backstop. It is a floor, not the whole list: the rest is still on you.
+enforces only a thin floor — in **solo-trunk**, where there is no reviewer, that
+floor (the changed-line coverage gate, rule 41; the advisory spec-drift warning,
+rule 55) is the *only* automated backstop. The rest is still on you.
 
 Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** change
 needs only a PR.
@@ -635,9 +623,9 @@ needs only a PR.
 - [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
-- [ ] Living docs in sync — app guide (`/spec/app/`) updated if user-facing behavior or configuration changed; `ARCHITECTURE.md` updated if the stack, an app/package, or cross-component data flow changed; a `/spec/history/` entry only for a notable event (see Living documentation).
+- [ ] Living docs in sync — app guide, `ARCHITECTURE.md`, and a `/spec/history/` entry each updated when their trigger fired (see Living documentation).
 - [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
-- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); the issue is referenced with the correct closing/non-closing relation — from the PR in PR flow, or from the closing commit (`Closes #N`) in solo-trunk; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
+- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).
 - [ ] High-risk areas were scoped first (see High-risk areas).
 - [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
@@ -835,10 +823,9 @@ deployed are **not** hotfixes — they take the normal lane.
 **What the lane relaxes — ceremony and ordering, never authority:**
 
 - **Issue after-the-fact.** File or backfill the GitHub issue as soon as
-  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch so
-  the lane reads as sanctioned rather than as a skipped step (in Claude Code the
-  end-of-turn reconciliation keys on that prefix; on other surfaces the convention
-  carries it alone). This relaxes issue-first *timing* (rule 36), not its existence.
+  practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
+  so the lane reads as sanctioned rather than as a skipped step. This relaxes
+  issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
   gate still stands** — no self-merge.
@@ -850,8 +837,8 @@ deployed are **not** hotfixes — they take the normal lane.
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
 and write a `/spec/history/` entry. Definition of Done is **deferred under this
-lane, never waived** (rule 50). A hotfix without its follow-up is unfinished work,
-not a shortcut earned.
+lane, never waived** (rule 50) — a hotfix without its follow-up is unfinished
+work, not a shortcut earned.
 
 
 ## Secrets handling
@@ -1071,11 +1058,7 @@ round of per-item confirmations (satisfied items need no ack; only genuinely
 open items need the dev). Track open items with your todo tooling so nothing is
 dropped:
 
-- [ ] New feature → `intent.md` + `contract.md` created or updated (Spec workflow)?
-- [ ] Choice costly to reverse made → ADR written under `/spec/decisions/`? (Reversal cost is the bar, not novelty — a first-time pattern is not an ADR.)
-- [ ] Tests added/updated for the change; bug fix has a regression test?
-- [ ] Spec/code drift resolved now, not deferred to "later"? Review-sensitive changes flagged for the PR (Drift gates)?
-- [ ] Living docs in sync — app guide updated for behavior changes, tracker refs recorded?
+- [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?

@@ -49,16 +49,16 @@ as needed, so you rarely route outside this table.
 | get a repo onto the standards — new repo, existing-code adoption, template fork, missing prerequisites, or sync to the latest plugin | `/steer:setup` |
 | build an app or feature as a non-technical owner (idea → working app) | `/steer:build` |
 | think a feature through / shape acceptance criteria without building it | `/steer:spec` |
-| absorb a new or updated PO document (docx/pptx/xlsx/pdf) — diff what changed vs. the last version and fold it into `/spec` | `/steer:intake` |
+| absorb a new or updated PO document (docx/pptx/xlsx/pdf) — diff it against the last version and fold it into `/spec` | `/steer:intake` |
 | start, resume, finish, or fix a specific issue ("fix #123"), or implement a change now | `/steer:work` |
-| respond to a production incident — ship an emergency hotfix to a deployed system | `/steer:work --hotfix` |
+| respond to a production incident (emergency hotfix to a deployed system) | `/steer:work --hotfix` |
 | manage the backlog without implementing now — capture, triage, brainstorm, decompose, status, or sequence into a release timeline (GitHub) | `/steer:issues` |
 | audit whole-repo health, spec drift, and highest-leverage cleanups (read-only) | `/steer:audit` |
-| automate the triage/fix sweep on a schedule — an autonomous loop that drafts fixes, never merges (rule 53) | `/steer:loop` |
+| automate a triage/fix sweep on a schedule — an autonomous loop that drafts, never merges (rule 53) | `/steer:loop` |
 | record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | find the single best next action across the workspace ("what now?", "I'm lost") | `/steer:next` |
-| get a plain-language, shareable page of one feature to hand a stakeholder (renders `/spec`, builds nothing) | `/steer:explain` |
-| get a client-facing progress report over a time window — what shipped, what's in progress, what needs the client's input, what's next (a weekly status report; renders `/spec` + tracker, builds nothing) | `/steer:status` |
+| hand a stakeholder a plain-language, shareable page of one feature (renders `/spec`, builds nothing) | `/steer:explain` |
+| get a client-facing progress report over a time window — shipped, in progress, needs the client, next (renders `/spec` + tracker, builds nothing) | `/steer:status` |
 | browse what steer can do — a plain-language menu, no repo state needed | `/steer:help` |
 | "protect main" / graduate solo trunk to the PR flow / set up or check branch protection & merge rules (GitHub) | `/steer:protect` |
 | report a defect in the **steer plugin itself** upstream (not a product bug) | `/steer:report` |
