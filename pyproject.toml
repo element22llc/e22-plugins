@@ -11,7 +11,7 @@ dependencies = [
 dev = [
   "pytest>=8.4",
   "pre-commit>=4.2",
-  "ruff>=0.12",
+  "ruff>=0.16.1",
 ]
 # Documentation-site toolchain. Kept in its own group (NOT in dev, the default
 # group `uv sync` installs) so the CI quality env stays light — `mise run
@@ -20,7 +20,7 @@ dev = [
 # initializes mermaid.js for `mermaid` code blocks on its own, so mermaid needs
 # no extra dependency — only the superfences custom_fence config in mkdocs.yml.
 docs = [
-  "zensical>=0.0.45",
+  "zensical>=0.0.53",
   "pymdown-extensions>=10",
 ]
 
