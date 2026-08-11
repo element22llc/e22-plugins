@@ -1032,7 +1032,7 @@ internal traceability. Never let one reach **app UI copy** (titles, labels,
 badges, tooltips, empty/error states, emails) or **`/spec/app/` guide copy and
 release notes** — state what changed for the user, not the record behind it;
 use the product's own domain language (`spec/glossary.md`). Refs
-stay dev-side: contracts, ADRs, history, runbook, PRs, commits.
+belong in intent, contracts, ADRs, history, runbook, PRs, commits.
 
 
 ## You are not the gate — the DEV is

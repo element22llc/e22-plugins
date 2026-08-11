@@ -15,25 +15,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   authorization. The mechanism it described was accurate (`Bash(gh pr merge:*)` is
   deliberately in `permissions.ask`); the framing was not. It now says Claude never merges and the `ask` entry is a backstop to
   decline.
-- **Fixed: the `traceability` reference's indexes did not mention the end-user copy
-  register or the rule it backs.** Rule `92-user-facing-copy` keeps its detail in
-  `TRACEABILITY.md`, but the `reference` skill's topic table and its `COVERAGE.md`
-  index both described only the PO-facing/dev-facing split, and neither
-  `COVERAGE.md` nor the file's own header listed `92` among the rules the doc backs
-  — so an agent choosing whether to load `/steer:reference traceability` was told
-  the doc lacked the section it had gained. All three surfaces now name it.
 - **Added: rule `92-user-facing-copy` — internal identifiers stay out of end-user
   surfaces.** The standards had a register split for *documents* (PO-facing prose vs
-  dev-facing contracts, `TRACEABILITY.md` → "Two audiences") but nothing covering the
+  dev-facing contracts, `TRACEABILITY.md` → "Two audiences, two registers") but nothing covering the
   product's own end-user surfaces, so ADR numbers, tracker refs, `Q-NNN` ids and spec
   slugs leaked into app UI copy — titles, labels, badges, tooltips, empty and error
   states — and into `/spec/app/` guide copy and release notes, which are read by app
   users, not devs. The new rule names those two surfaces, points naming at
-  `spec/glossary.md`, and keeps the dev-facing refs (contracts, ADRs,
-  `/spec/history/`, the `/spec/app/` runbook, PRs, commits)
-  explicitly exempt. The ban is scoped to the guide's *copy*, so the cross-link to
+  `spec/glossary.md`, and names where refs do belong (intent, contracts, ADRs,
+  `/spec/history/`, the `/spec/app/` runbook, PRs, commits) — `intent.md` included,
+  since rule `35-issue-tracker` puts the canonical tracker ref on its `> Tracker:`
+  line. The ban is scoped to the guide's *copy*, so the cross-link to
   `spec/glossary.md` that `app-docs.md` ships stays exactly where `TRACEABILITY.md`
-  puts it. An identifier a user must genuinely quote back — a support code,
+  puts it. Its full prose lives in the `traceability` reference, which the
+  `reference` skill's topic table and its `COVERAGE.md` index both name. An identifier a user must genuinely quote back — a support code,
   an audit reference — is a product feature with its own contract, not a passed-through
   internal id.
 
