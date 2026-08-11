@@ -67,7 +67,8 @@ It covers, in detail:
   routing table from plain-language statements (goals, decisions, trade-offs,
   questions, validations) to their owning artifacts; extraction discipline
   (extract don't embellish, ask on ambiguity, same-PR updates, propose don't
-  stealth-edit); the PO-facing vs dev-facing register split.
+  stealth-edit); the PO-facing vs dev-facing register split, and the third
+  register — the end-user surface, which carries no internal ids.
 - **Action history** — `/spec/history/` format and worked entry; what it
   serves (auditability, onboarding, review evidence, decision archaeology,
   drift over time); append-only discipline.
@@ -85,8 +86,8 @@ It covers, in detail:
   and the expectation→artifact evidence map.
 - **Worked examples** — a PO's day and a dev's day through the same workflow.
 
-The lean always-on versions of these rules are `32-living-docs`,
-`35-issue-tracker`, `55-drift-gates`, and `75-compliance` — this reference is
+The lean rule versions of these are `32-living-docs`, `35-issue-tracker`,
+`55-drift-gates`, `75-compliance`, and `92-user-facing-copy` — this reference is
 their full rationale and how-to.
 
 ## `design-sources`

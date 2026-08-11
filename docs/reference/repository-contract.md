@@ -96,8 +96,8 @@ only the plugin's bundle and the init/adopt composition differ.
 Always-on **rules** do not read the marker — they self-gate on filesystem
 **traits** via the `inject-when` mechanism, so the injected rule context always
 matches what is on disk. Only four expressions actually gate a
-shipped rule: `code-project` (the bulk of the code-loop rules, enumerated in
-[Configuration & rules](configuration.md)), `has-iac` (`12-stack-infra`),
+shipped rule: `code-project` (the code-loop rules, enumerated in
+[Configuration & rules](configuration.md#the-ruleset)), `has-iac` (`12-stack-infra`),
 `tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
 (`52-deployment`) — so `has-apps` appears only inside that composite.
 `lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,

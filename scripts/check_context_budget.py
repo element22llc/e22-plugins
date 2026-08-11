@@ -145,9 +145,9 @@ PLUGIN_ROOT = Path("plugins/steer")
 # always-on statements (the exemption, the authority claim, the size-gated markers)
 # and cannot be expressed by cross-reference alone, because the rules being
 # exempted are the ones a session reads. Traded out first, as the default here
-# requires: rule 32's notable-event enumeration and rule 55's `spec-drift`
-# mechanics moved to reference prose, and the per-change `/spec/history/` obligation
-# left rules 30, 50, 55 and 99 outright (−136 B) — the same PR that shrinks a
+# requires: rule 55's `spec-drift` mechanics moved to reference prose, and the
+# per-change `/spec/history/` obligation
+# left rules 30, 55 and 99 outright (−136 B) — the same PR that shrinks a
 # per-change duty pays part of its own cost. Net +511 B. Re-armed at the measured
 # total (67,758 B across 35 files) plus ~1%, keeping real headroom rather than the
 # 5-to-16-byte margins this note blames for making earlier raises inevitable.
@@ -203,7 +203,7 @@ PLUGIN_ROOT = Path("plugins/steer")
 # restored the ~660-byte margin that made raises two, three and four inevitable;
 # the whole lesson of this comment block is that a tight ceiling dictates the
 # wording of correctness fixes instead of bounding their cost. Target stays
-# 62,500 — still 4,090 B of standing invitation.
+# 62,500.
 #
 # SPENT, not moved: rule `92-user-facing-copy` then consumed most of what that
 # lowering had just restored, leaving a margin narrower than a typical rule edit.

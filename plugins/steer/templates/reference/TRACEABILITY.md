@@ -1,7 +1,8 @@
 # Traceability & living documentation
 
-Full prose behind the always-on `living-docs`, `issue-tracker`, `drift-gates`,
-and `compliance` rules. Loaded on demand via **`/steer:reference traceability`**.
+Full prose behind the `living-docs`, `issue-tracker`, `drift-gates`,
+`compliance`, and `user-facing-copy` rules. Loaded on demand via
+**`/steer:reference traceability`**.
 
 The goal: a PO can express intent in plain language, a dev can review precise
 contracts, and anyone — including an auditor — can walk the chain
@@ -68,7 +69,7 @@ engineer intent from prose — that's what contracts and ADRs are for.
 ### The end-user surface carries no internal ids
 
 Both registers above are *internal* — a PO reads bookkeeping refs fluently. The
-app's own users do not, and the always-on `user-facing-copy` rule keeps every
+app's own users do not, and the `user-facing-copy` rule keeps every
 internal identifier off the surfaces they read:
 
 - **App UI copy** — page, section and nav titles, labels, badges, chips,
@@ -216,7 +217,7 @@ Drift is any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker 
 app docs ↔ action history ↔ tests ↔ delivered behavior. The standing rule
 (spec-framework Rule 5): **resolve drift via explicit human review, never
 silently** — fix the code, fix the artifact, or record the accepted
-divergence. The always-on `drift-gates` rule lists the nine review-sensitive
+divergence. The `drift-gates` rule lists the nine review-sensitive
 classes; the scaffold's PR template carries them as a checklist so the flag is
 part of the review record.
 
