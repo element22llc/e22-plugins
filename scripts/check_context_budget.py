@@ -204,6 +204,16 @@ PLUGIN_ROOT = Path("plugins/steer")
 # the whole lesson of this comment block is that a tight ceiling dictates the
 # wording of correctness fixes instead of bounding their cost. Target stays
 # 62,500 — still 4,090 B of standing invitation.
+#
+# SPENT, not moved: rule `92-user-facing-copy` then consumed most of what that
+# lowering had just restored, leaving a margin narrower than a typical rule edit.
+# Run `--report` for the live figure; per the paragraph above, it is not pinned
+# here. Like the fifth raise and unlike the reclaim, this was new capability, not a
+# correction — so by this block's own standard it owed the explicit decision a
+# raise demands, and it recorded none. That decision is still open: either reclaim
+# from the always-on set, or re-arm the ceiling and record the reason here. Until
+# it is made the ceiling is load-bearing again, which is the condition the lowering
+# above existed to end.
 RULES_TOTAL_MAX_BYTES = 67_500
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar

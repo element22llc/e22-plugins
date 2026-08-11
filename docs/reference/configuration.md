@@ -157,7 +157,9 @@ trade, and the reason "no rule lost an imperative" is too strong a claim to repe
 The ceiling came down by 900 B — deliberately **less** than was reclaimed — so
 headroom grew roughly 5x in the same change that tightened the ratchet, and rule
 22's absorbed-source correction then spent 360 B of that (it had been projected at
-~150 B). For the total on any given tree, run
+~150 B). Rule `92-user-facing-copy` then spent most of what was left, so the
+ceiling is load-bearing again and the choice between reclaiming and re-arming it is
+open. For the total on any given tree, run
 `uv run python scripts/check_context_budget.py --report` — a figure pinned in
 prose goes stale on the next rule edit. Re-arming at measured + 1% would have
 restored the ~660-byte margin that made three of the earlier raises inevitable.

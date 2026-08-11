@@ -15,7 +15,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   states — and into `/spec/app/` guide pages and release notes, which are read by app
   users, not devs. The new rule names those two surfaces, points naming at
   `spec/glossary.md`, and keeps the dev-facing refs (contracts, ADRs,
-  `/spec/history/`, `ARCHITECTURE.md`, the `/spec/app/` runbook, PRs, commits)
+  `/spec/history/`, the `/spec/app/` runbook, PRs, commits)
   explicitly exempt. An identifier a user must genuinely quote back — a support code,
   an audit reference — is a product feature with its own contract, not a passed-through
   internal id.
