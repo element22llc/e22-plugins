@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 5.3.0
+
 - **Fixed: the bundled repo README told consumers a confirmation prompt was the
   merge gate.** `templates/scaffold/README.md` read "`gh pr merge` stays behind a
   confirmation prompt", which invites a reader to approve that prompt as if it
@@ -31,6 +33,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `reference` skill's topic table and its `COVERAGE.md` index both name. An identifier a user must genuinely quote back — a support code,
   an audit reference — is a product feature with its own contract, not a passed-through
   internal id.
+- **Fixed: rule `92-user-facing-copy`'s `spec/**` clause read as a ban on the
+  `spec/glossary.md` cross-link the bundled app guide itself ships.** The rule
+  listed `spec/**` paths among the internal ids that must never reach
+  "`/spec/app/` guide copy", while `templates/spec/app-docs.md` ships
+  `See [spec/glossary.md](…)` under its `## Glossary` heading — so a session
+  applying the always-on text literally could strip a link the standards
+  mandate. The carve-out existed only in the on-demand `traceability` reference
+  ("linked from the app guide rather than copied into it"), which an injected
+  session never sees. The rule now says the glossary is "linked not copied" in
+  the always-on text itself. Wording only — the ban, its two surfaces, and the
+  dev-facing runbook exception are unchanged.
 
 ### 5.2.0
 

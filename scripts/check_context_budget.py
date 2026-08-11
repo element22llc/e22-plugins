@@ -207,8 +207,21 @@ PLUGIN_ROOT = Path("plugins/steer")
 # SPENT, not moved: rule `92-user-facing-copy` then consumed most of what that
 # lowering had just restored, leaving the ceiling load-bearing again — the condition
 # the lowering existed to end. Run `--report` for the live figure; per the paragraph
-# above, it is not pinned here. The reclaim-or-re-arm choice is open.
-RULES_TOTAL_MAX_BYTES = 67_500
+# above, it is not pinned here.
+#
+# RE-ARMED, 67,500 → 68,200, closing the choice the paragraph above left open — and
+# closing it the way this comment block predicted it would have to be closed. The
+# 5.3.0 pre-release audit found rule 92's `spec/**` clause reading as a ban on the
+# `spec/glossary.md` cross-link that `templates/spec/app-docs.md` itself ships, and
+# the carve-out that fixes it cost 17 B against a 7 B margin. The content-preserving
+# wording did not fit; the wording that fit dropped "for the user", the rule's whole
+# contrast. That is verbatim the failure mode line 203 names — a tight ceiling
+# dictating the wording of a correctness fix instead of bounding its cost — so the
+# ceiling moved and the fix kept its words. Sized at measured+1% per line 201, which
+# restores a ~690 B margin. NOT a licence to spend it: the reclaim half of the
+# choice is still owed, and the 62,500 target is what it is owed against. Target
+# stays 62,500.
+RULES_TOTAL_MAX_BYTES = 68_200
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently
