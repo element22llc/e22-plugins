@@ -7,6 +7,14 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the bundled repo README told consumers a confirmation prompt was the
+  merge gate.** `templates/scaffold/README.md` read "`gh pr merge` stays behind a
+  confirmation prompt", which invites a reader to approve that prompt as if it
+  authorized the merge — while rule `45-commit-autonomy` forbids `gh pr merge`
+  outright and `GATES.md` → "Never promptable" states that asking is not
+  authorization. The mechanism it described was accurate (`Bash(gh pr merge:*)` is
+  deliberately in `permissions.ask`); the framing was not. It now says Claude never merges and the `ask` entry is a backstop to
+  decline.
 - **Fixed: the `traceability` reference's indexes did not mention the end-user copy
   register or the rule it backs.** Rule `92-user-facing-copy` keeps its detail in
   `TRACEABILITY.md`, but the `reference` skill's topic table and its `COVERAGE.md`
@@ -19,11 +27,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   dev-facing contracts, `TRACEABILITY.md` → "Two audiences") but nothing covering the
   product's own end-user surfaces, so ADR numbers, tracker refs, `Q-NNN` ids and spec
   slugs leaked into app UI copy — titles, labels, badges, tooltips, empty and error
-  states — and into `/spec/app/` guide pages and release notes, which are read by app
+  states — and into `/spec/app/` guide copy and release notes, which are read by app
   users, not devs. The new rule names those two surfaces, points naming at
   `spec/glossary.md`, and keeps the dev-facing refs (contracts, ADRs,
   `/spec/history/`, the `/spec/app/` runbook, PRs, commits)
-  explicitly exempt. An identifier a user must genuinely quote back — a support code,
+  explicitly exempt. The ban is scoped to the guide's *copy*, so the cross-link to
+  `spec/glossary.md` that `app-docs.md` ships stays exactly where `TRACEABILITY.md`
+  puts it. An identifier a user must genuinely quote back — a support code,
   an audit reference — is a product feature with its own contract, not a passed-through
   internal id.
 

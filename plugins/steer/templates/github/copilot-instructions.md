@@ -1029,7 +1029,7 @@ no-export build): run **`/steer:reference design-sources`**.
 
 ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths are
 internal traceability. Never let one reach **app UI copy** (titles, labels,
-badges, tooltips, empty/error states, emails) or the **`/spec/app/` guide and
+badges, tooltips, empty/error states, emails) or **`/spec/app/` guide copy and
 release notes** — state what changed for the user, not the record behind it;
 use the product's own domain language (`spec/glossary.md`). Refs
 stay dev-side: contracts, ADRs, history, runbook, PRs, commits.
