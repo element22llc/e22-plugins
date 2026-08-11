@@ -11,11 +11,11 @@
     "export": "slidev export"
   },
   "dependencies": {
-    "@slidev/cli": "52.18.0",
+    "@slidev/cli": "52.18.1",
     "@slidev/theme-seriph": "0.25.0",
     "vue": "3.5.40"
   },
   "devDependencies": {
-    "playwright-chromium": "1.62.0"
+    "playwright-chromium": "1.62.1"
   }
 }
