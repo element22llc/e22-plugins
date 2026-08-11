@@ -75,7 +75,7 @@ internal identifier off the surfaces they read:
 - **App UI copy** — page, section and nav titles, labels, badges, chips,
   tooltips, empty and error states, validation messages, in-app changelogs,
   onboarding text, notification and email templates.
-- **End-user docs** — the `/spec/app/` guide pages, troubleshooting, and release
+- **End-user docs** — the `/spec/app/` guide copy, troubleshooting, and release
   notes. State what changed for the user ("archived vendors now appear in
   search"), not the record that authorized it ("implements ADR 0004 /
   PROJ-214"). The `/spec/app/` **operational runbook** is the exception: it is
