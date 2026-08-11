@@ -45,6 +45,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `87-output-discipline.md` | Earn every line — tight responses, comments the exception, least code that does the job, lean durable prose. |
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |
+| `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces — ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or the `/spec/app/` guide and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping — no confirmation step. |
 | `99-end-of-session.md` | End-of-session checklist. |
@@ -57,7 +58,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
     `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
     `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
-    `99-end-of-session` — are marked
+    `92-user-facing-copy`, `99-end-of-session` — are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `36-issue-first`, and `52-deployment` are likewise scoped — respectively to

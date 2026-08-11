@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: rule `92-user-facing-copy` — internal identifiers stay out of end-user
+  surfaces.** The standards had a register split for *documents* (PO-facing prose vs
+  dev-facing contracts, `TRACEABILITY.md` → "Two audiences") but nothing covering the
+  product's own end-user surfaces, so ADR numbers, tracker refs, `Q-NNN` ids and spec
+  slugs leaked into app UI copy — titles, labels, badges, tooltips, empty and error
+  states — and into `/spec/app/` guide pages and release notes, which are read by app
+  users, not devs. The new rule names those two surfaces, points naming at
+  `spec/glossary.md`, and keeps the dev-facing refs (contracts, ADRs,
+  `/spec/history/`, `ARCHITECTURE.md`, the `/spec/app/` runbook, PRs, commits)
+  explicitly exempt. An identifier a user must genuinely quote back — a support code,
+  an audit reference — is a product feature with its own contract, not a passed-through
+  internal id.
+
 ### 5.2.0
 
 - **The onboarding front door prompted on its very first action, and had since
