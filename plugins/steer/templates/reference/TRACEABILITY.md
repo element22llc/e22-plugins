@@ -65,6 +65,29 @@ Don't make a PO read code (or a contract) to learn what the product does —
 that's what the app guide and intents are for. Don't make a dev reverse-
 engineer intent from prose — that's what contracts and ADRs are for.
 
+### The end-user surface carries no internal ids
+
+Both registers above are *internal* — a PO reads bookkeeping refs fluently. The
+app's own users do not, and the always-on `user-facing-copy` rule keeps every
+internal identifier off the surfaces they read:
+
+- **App UI copy** — page, section and nav titles, labels, badges, chips,
+  tooltips, empty and error states, validation messages, in-app changelogs,
+  onboarding text, notification and email templates.
+- **End-user docs** — the `/spec/app/` guide pages, troubleshooting, and release
+  notes. State what changed for the user ("archived vendors now appear in
+  search"), not the record that authorized it ("implements ADR 0004 /
+  PROJ-214"). The `/spec/app/` **operational runbook** is the exception: it is
+  dev-facing, so it keeps its refs.
+
+Name things in the product's own domain language; `spec/glossary.md` is the
+source for it, which is why the glossary is linked from the app guide rather
+than copied into it. If a user genuinely needs an identifier to quote back — a
+support code, an audit reference — that is a **product feature with its own
+contract and its own format**, not an internal id passed through. A leaked ADR
+number in a tooltip is a drift signal too: it means a dev-register artifact was
+pasted into a user-register one without translation.
+
 ---
 
 ## 2. Action history (`/spec/history/`)

@@ -1025,6 +1025,16 @@ walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
 no-export build): run **`/steer:reference design-sources`**.
 
 
+## Internal ids stay out of end-user surfaces
+
+ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths are
+internal traceability. Never let one reach **app UI copy** (titles, labels,
+badges, tooltips, empty/error states, emails) or the **`/spec/app/` guide and
+release notes** — state what changed for the user, not the record behind it;
+use the product's own domain language (`spec/glossary.md`). Refs
+stay dev-side: contracts, ADRs, history, runbook, PRs, commits.
+
+
 ## You are not the gate — the DEV is
 
 You have no path-based permission boundary in managed product repos — propose
