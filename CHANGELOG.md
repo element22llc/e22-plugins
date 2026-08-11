@@ -7,6 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the `traceability` reference's indexes did not mention the end-user copy
+  register or the rule it backs.** Rule `92-user-facing-copy` keeps its detail in
+  `TRACEABILITY.md`, but the `reference` skill's topic table and its `COVERAGE.md`
+  index both described only the PO-facing/dev-facing split, and neither
+  `COVERAGE.md` nor the file's own header listed `92` among the rules the doc backs
+  — so an agent choosing whether to load `/steer:reference traceability` was told
+  the doc lacked the section it had gained. All three surfaces now name it.
 - **Added: rule `92-user-facing-copy` — internal identifiers stay out of end-user
   surfaces.** The standards had a register split for *documents* (PO-facing prose vs
   dev-facing contracts, `TRACEABILITY.md` → "Two audiences") but nothing covering the
@@ -15,7 +22,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   states — and into `/spec/app/` guide pages and release notes, which are read by app
   users, not devs. The new rule names those two surfaces, points naming at
   `spec/glossary.md`, and keeps the dev-facing refs (contracts, ADRs,
-  `/spec/history/`, `ARCHITECTURE.md`, the `/spec/app/` runbook, PRs, commits)
+  `/spec/history/`, the `/spec/app/` runbook, PRs, commits)
   explicitly exempt. An identifier a user must genuinely quote back — a support code,
   an audit reference — is a product feature with its own contract, not a passed-through
   internal id.

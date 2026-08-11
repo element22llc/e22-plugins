@@ -145,9 +145,9 @@ PLUGIN_ROOT = Path("plugins/steer")
 # always-on statements (the exemption, the authority claim, the size-gated markers)
 # and cannot be expressed by cross-reference alone, because the rules being
 # exempted are the ones a session reads. Traded out first, as the default here
-# requires: rule 32's notable-event enumeration and rule 55's `spec-drift`
-# mechanics moved to reference prose, and the per-change `/spec/history/` obligation
-# left rules 30, 50, 55 and 99 outright (−136 B) — the same PR that shrinks a
+# requires: rule 55's `spec-drift` mechanics moved to reference prose, and the
+# per-change `/spec/history/` obligation left rules 30, 55 and 99 outright
+# (−136 B) — the same PR that shrinks a
 # per-change duty pays part of its own cost. Net +511 B. Re-armed at the measured
 # total (67,758 B across 35 files) plus ~1%, keeping real headroom rather than the
 # 5-to-16-byte margins this note blames for making earlier raises inevitable.
@@ -199,11 +199,15 @@ PLUGIN_ROOT = Path("plugins/steer")
 # ratchet. Rule 22's correction then spent 360 B of that. Do not pin the current
 # total in this comment — `--report` is the only honest source for it, and a pinned
 # figure goes stale on the next rule edit (it already did once). Re-arming at
-# measured+1% would have
-# restored the ~660-byte margin that made raises two, three and four inevitable;
+# measured+1% would have restored a ~660-byte margin;
 # the whole lesson of this comment block is that a tight ceiling dictates the
 # wording of correctness fixes instead of bounding their cost. Target stays
-# 62,500 — still 4,090 B of standing invitation.
+# 62,500.
+#
+# SPENT, not moved: rule `92-user-facing-copy` then consumed most of what that
+# lowering had just restored, leaving the ceiling load-bearing again — the condition
+# the lowering existed to end. Run `--report` for the live figure; per the paragraph
+# above, it is not pinned here. The reclaim-or-re-arm choice is open.
 RULES_TOTAL_MAX_BYTES = 67_500
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
