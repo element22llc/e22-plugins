@@ -38,9 +38,9 @@ When a session opens a folder that is **confidently not a code project** — no 
 work tree and no code/config markers nearby — steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode 13 of the 35 rules inject — the router, roles, context-hygiene,
+In that mode 13 of the 36 rules inject — the router, roles, context-hygiene,
 spec-workflow, decision-capture, living-docs, high-risk, gate-prompts, secrets,
-output-discipline, artifacts, not-the-gate and self-report rules — while the 22
+output-discipline, artifacts, not-the-gate and self-report rules — while the 23
 marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack, commands, layout,
 testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
 end-of-session, …) are **intentionally omitted** to reclaim context budget and cut
