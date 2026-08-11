@@ -24,7 +24,7 @@ something is genuinely unclear or the project warrants deviating, record an ADR
 | Topic | Reference file | Use for |
 |---|---|---|
 | `conventions` | `CONVENTIONS.md` | Tooling/convention questions, stack-default rationale. |
-| `traceability` | `TRACEABILITY.md` | Living docs, tracker refs, drift flags, audit evidence, PO vs dev split. |
+| `traceability` | `TRACEABILITY.md` | Living docs, tracker refs, drift flags, audit evidence, PO vs dev split, keeping internal ids out of end-user copy. |
 | `design-sources` | `DESIGN-SOURCES.md` | Features from a Claude Design export/URL, Figma, or screenshots. |
 | `context-hygiene` | `CONTEXT-HYGIENE.md` | Keeping a long/multi-phase run from bloating the session; subagent delegation and durable state that survives compaction. |
 | `architecture-diagrams` | `ARCHITECTURE-DIAGRAMS.md` | Authoring/maintaining the global system diagram: Tier 1 Mermaid vs Tier 2 LikeC4, which diagram types, and keeping it in sync. |

@@ -7,15 +7,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Fixed: the `traceability` reference and its loader index did not list the rule
-  whose prose they carry.** Rule `92-user-facing-copy` keeps its detail in
-  `TRACEABILITY.md`, but that file's header and the `reference` skill's
-  `COVERAGE.md` still advertised only the PO-facing/dev-facing split and omitted
-  `92` from the rules the doc backs — so an agent deciding whether to load
-  `/steer:reference traceability` was told the doc lacked the section it had
-  gained. Both indexes now name it. Also dropped a stale `always-on` qualifier
-  from both: of the rules that reference backs, only `32-living-docs` is
-  always-on — `35`, `55`, `75` and `92` are all `code-project`-scoped.
+- **Fixed: the `traceability` reference's indexes did not mention the end-user copy
+  register or the rule it backs.** Rule `92-user-facing-copy` keeps its detail in
+  `TRACEABILITY.md`, but the `reference` skill's topic table and its `COVERAGE.md`
+  index both described only the PO-facing/dev-facing split, and neither
+  `COVERAGE.md` nor the file's own header listed `92` among the rules the doc backs
+  — so an agent choosing whether to load `/steer:reference traceability` was told
+  the doc lacked the section it had gained. All three surfaces now name it.
 - **Added: rule `92-user-facing-copy` — internal identifiers stay out of end-user
   surfaces.** The standards had a register split for *documents* (PO-facing prose vs
   dev-facing contracts, `TRACEABILITY.md` → "Two audiences") but nothing covering the

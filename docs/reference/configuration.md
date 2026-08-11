@@ -131,11 +131,11 @@ fourth raise this is new capability rather than a correction, so it took an
 explicit decision. Making the size class actually govern needs three always-on
 statements (the exemption, the authority claim, the size-gated markers) and cannot
 be expressed by cross-reference alone, because the rules being exempted are the
-ones a session reads. Traded out first, as the default requires: rule 32's
-notable-event enumeration and rule 55's `spec-drift` mechanics moved to reference
-prose, and the per-change `/spec/history/` obligation left rules 30, 50, 55 and 99
-outright (−136 B) — the same change that shrinks a per-change duty paid part of its
-own cost. Net +511 B, re-armed at the measured total plus ~1%. The *target* deliberately
+ones a session reads. Trades were made first, as the default requires — the same
+change that shrinks a per-change duty paid part of its own cost. Which rules paid,
+and how much, is recorded only in the ratchet note in
+`scripts/check_context_budget.py`, for the reason given below. Net +511 B, re-armed
+at the measured total plus ~1%. The *target* deliberately
 stays at the old 62,500, below the ceiling, so the budget report keeps showing
 the gap as work to reclaim.
 
@@ -162,7 +162,7 @@ ceiling is load-bearing again and the choice between reclaiming and re-arming it
 open. For the total on any given tree, run
 `uv run python scripts/check_context_budget.py --report` — a figure pinned in
 prose goes stale on the next rule edit. Re-arming at measured + 1% would have
-restored the ~660-byte margin that made three of the earlier raises inevitable.
+restored a ~660-byte margin.
 
 The skill-listing ratchet has moved twice. The first, in 3.23.0, 11,500 → 11,900
 chars, for a different reason than the rules ceiling: not a budget concession but a
