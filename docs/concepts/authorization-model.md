@@ -262,8 +262,9 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 - **Merging the PR.** This is the one step that waits for the dev — everything
   before it (branching, committing, pushing, opening the PR) does not. The
   **merge review is the gate** — not each commit, not the push. `gh pr merge`
-  is never pre-approved (it sits under `ask` in the scaffold), and in a
-  protected repo the server wall enforces the review regardless.
+  is never pre-approved: rule `45-commit-autonomy` forbids it outright, so its
+  `ask` entry in the scaffold is a backstop to decline, not an approval path.
+  In a protected repo the server wall enforces the review regardless.
 - **Deploying**, in every mode — including the hotfix lane, where a deploy is
   policy-permitted but never auto-executed.
 - **Trunk pushes in a solo-trunk repo that has outgrown pre-MVP** — the
