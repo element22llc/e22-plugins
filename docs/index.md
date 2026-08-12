@@ -36,16 +36,62 @@ flowchart LR
 
 ## Where to go next
 
-- **New to the plugin?** Start with [Installation](getting-started/installation.md)
-  and the [First workflow](getting-started/first-workflow.md).
-- **Joining a team that uses it?** Read [Team onboarding](getting-started/team-onboarding.md).
-- **Rolling it out to a team?** See [Known limitations](reference/known-limitations.md)
-  and the [Launch checklist](team-rollout/launch-checklist.md).
-- **Want the mental model?** Read [Concepts](concepts/product-spine.md).
-- **Looking for a specific command?** See the [Skills reference](reference/skills.md).
-- **Contributing to the plugin itself?** See
-  [Contributing → Documentation](contributing/documentation.md) and
-  [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md).
+<div class="grid cards" markdown>
+
+-   **New to the plugin?**
+
+    ---
+
+    Add the marketplace, install `steer`, and run it end to end once.
+
+    [Installation](getting-started/installation.md) ·
+    [First workflow](getting-started/first-workflow.md)
+
+-   **Joining a team that uses it?**
+
+    ---
+
+    What the plugin does to a session you didn't set up, and what it expects of you.
+
+    [Team onboarding](getting-started/team-onboarding.md)
+
+-   **Rolling it out to a team?**
+
+    ---
+
+    Which surfaces run hooks, which only run skills, and what to verify before you announce it.
+
+    [Known limitations](reference/known-limitations.md) ·
+    [Launch checklist](team-rollout/launch-checklist.md)
+
+-   **Want the mental model?**
+
+    ---
+
+    The spec spine, the lifecycle it drives, and how authorization is decided.
+
+    [Product spine](concepts/product-spine.md) ·
+    [SDLC overview](concepts/sdlc.md)
+
+-   **Looking for a specific command?**
+
+    ---
+
+    Every `/steer:<skill>`, every hook, and the repository contract they assume.
+
+    [Skills reference](reference/skills.md) ·
+    [Hooks](reference/hooks.md)
+
+-   **Contributing to the plugin itself?**
+
+    ---
+
+    The docs contract, the release flow, and the authoring guide for rules and skills.
+
+    [Contributing → Documentation](contributing/documentation.md) ·
+    [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md)
+
+</div>
 
 !!! note "Docs are auto-maintained"
     This site is kept in sync with the plugin's source of truth by the repo-local
