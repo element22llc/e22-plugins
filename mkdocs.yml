@@ -24,14 +24,55 @@ docs_dir: docs
 site_dir: site
 use_directory_urls: true
 
+# Header repo link + the per-page "Edit"/"View source" actions
+# (theme features content.action.edit / content.action.view below).
+# `edit_uri` MUST be set explicitly: Zensical's inferred default for a
+# github.com `repo_url` is `edit/master/<docs_dir>`, and this repo's default
+# branch is `main` — leaving it inferred points every pencil at a dead branch.
+repo_url: https://github.com/element22llc/e22-plugins
+repo_name: element22llc/e22-plugins
+edit_uri: edit/main/docs
+# Rendered in the footer meta bar, left of Zensical's own attribution.
+copyright: Copyright &copy; 2026 Element 22 LLC — Apache-2.0
+
 theme:
   # `classic` matches the Material for MkDocs look & feel (vs Zensical's `modern`).
   variant: classic
+  icon:
+    # Beats the default generic book/person glyph and matches the plugin name.
+    logo: material/steering
   features:
+    # --- navigation ---------------------------------------------------------
+    # Top-level nav entries become header tabs; the sidebar then shows only the
+    # active section, which keeps a 30-page site from rendering as one long list.
+    - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
+    # A section whose first child is that section's own index page renders as a
+    # clickable section header instead of a redundant "Overview" leaf. Requires
+    # the nav shape used by `Workflows` below.
+    - navigation.indexes
     - navigation.top
     - navigation.instant
+    # Thin progress bar during instant navigation — without it a slow page load
+    # looks like a dead click.
+    - navigation.instant.progress
+    # Keep the URL's anchor in sync with the scrolled heading, so copying the
+    # address bar deep-links to the section actually on screen.
+    - navigation.tracking
+    # Previous/next links in the footer. These docs read linearly within a
+    # section (installation → first workflow → onboarding) and had no way to
+    # page through.
+    - navigation.footer
+    # --- content ------------------------------------------------------------
+    - content.action.edit
+    - content.action.view
     - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+    # --- search -------------------------------------------------------------
+    - search.highlight
+    - search.share
     - toc.follow
   palette:
     - scheme: default
@@ -50,9 +91,16 @@ theme:
 markdown_extensions:
   - admonition
   - attr_list
+  # Lets block-level Markdown render inside HTML wrappers — required for the
+  # `<div class="grid cards" markdown>` card grid on the home page.
+  - md_in_html
   - toc:
       permalink: true
   - pymdownx.details
+  # Without this, the `- [ ]` items on team-rollout/launch-checklist.md render
+  # as the literal text "[ ]" instead of checkboxes.
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
@@ -72,6 +120,13 @@ nav:
       - Windows setup: getting-started/windows-setup.md
       - First workflow: getting-started/first-workflow.md
       - Team onboarding: getting-started/team-onboarding.md
+      # External link: the Slidev decks are published into this same site at
+      # /presentation/<slug>/ by .github/workflows/docs-deploy.yml. Absolute URLs
+      # keep the strict build and validate_docs from treating them as missing
+      # pages. Filed under the section whose topic they cover rather than as
+      # top-level entries — with navigation.tabs on, a top-level entry costs a
+      # header tab, and 10 tabs overflow the 61rem grid.
+      - Onboarding deck: https://ai.element-22.com/presentation/onboarding/
   - Concepts:
       - SDLC overview: concepts/sdlc.md
       - Product spine: concepts/product-spine.md
@@ -79,8 +134,12 @@ nav:
       - Authorization model: concepts/authorization-model.md
       - Deployment & environments: concepts/deployment.md
       - GitHub Copilot support: concepts/copilot-support.md
+      # External link — see the note on the onboarding deck above.
+      - SDLC deck: https://ai.element-22.com/presentation/sdlc/
   - Workflows:
-      - Overview: workflows/index.md
+      # Bare path (no title) + the navigation.indexes feature: this page becomes
+      # the `Workflows` section landing page rather than an "Overview" child.
+      - workflows/index.md
       - Adopt: workflows/adopt.md
       - Spec: workflows/spec.md
       - Intake: workflows/intake.md
@@ -102,8 +161,3 @@ nav:
   - Contributing:
       - Documentation: contributing/documentation.md
       - Release process: contributing/release-process.md
-  # External links: the Slidev decks are published into this same site at
-  # /presentation/<slug>/ by .github/workflows/docs-deploy.yml. Absolute URLs
-  # keep the strict build and validate_docs from treating them as missing pages.
-  - Onboarding: https://ai.element-22.com/presentation/onboarding/
-  - SDLC deck: https://ai.element-22.com/presentation/sdlc/
