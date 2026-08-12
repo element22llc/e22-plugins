@@ -45,7 +45,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `87-output-discipline.md` | Earn every line — tight responses, comments the exception, least code that does the job, lean durable prose. |
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |
-| `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces — ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs. Third-register prose in the `traceability` reference. |
+| `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces — ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate — the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping — no confirmation step. |
 | `99-end-of-session.md` | End-of-session checklist. |
@@ -158,11 +158,14 @@ The ceiling came down by 900 B — deliberately **less** than was reclaimed — 
 headroom grew roughly 5x in the same change that tightened the ratchet, and rule
 22's absorbed-source correction then spent 360 B of that (it had been projected at
 ~150 B). Rule `92-user-facing-copy` then spent what was left, so the
-ceiling is load-bearing again and the choice between reclaiming and re-arming it is
-open. For the total on any given tree, run
+ceiling became load-bearing again. In 5.3.0 that choice was closed by
+**re-arming, 67,500 → 68,200**: a correctness fix to rule 92 cost 17 B against a
+7 B margin, so the ceiling was dictating the fix's wording rather than bounding
+its cost — the exact failure the 900 B lowering existed to end. Sized at
+measured + 1%, restoring a ~690-byte margin. The reclaim half of the choice is
+still owed, against the unchanged 62,500 target. For the total on any given tree, run
 `uv run python scripts/check_context_budget.py --report` — a figure pinned in
-prose goes stale on the next rule edit. Re-arming at measured + 1% would have
-restored a ~660-byte margin.
+prose goes stale on the next rule edit.
 
 The skill-listing ratchet has moved twice. The first, in 3.23.0, 11,500 → 11,900
 chars, for a different reason than the rules ceiling: not a budget concession but a
