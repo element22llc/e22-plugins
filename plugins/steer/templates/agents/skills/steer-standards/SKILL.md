@@ -1,0 +1,60 @@
+---
+name: steer-standards
+description: Load the always-on operating manual on demand where the SessionStart hook cannot inject it — reads every rules/*.md.
+---
+
+<!-- Generated from the steer plugin's skills/standards/SKILL.md — do not edit by hand.
+     Refresh with /steer:sync from Claude Code in a managed repo, or
+     `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
+     rendered here in the cross-tool Agent Skills format (agentskills.io) that
+     Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
+
+**When to use.** Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
+
+> **Read-only on this surface — enforced by instruction, not by tooling.**
+> In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, so
+> the restriction below is mechanical. No other agent has that mechanism: here
+> it is a hard instruction. Treat those capabilities as unavailable for the
+> whole run, and read any claim below that they "are unavailable" as a rule
+> you must keep rather than a guarantee you can rely on.
+
+# Operating manual — on-demand load
+
+The standards are normally injected by the `steer` SessionStart hook, which runs
+on `startup`, `resume`, `clear` **and** `compact` — the last so a compaction that
+drops the rules from context gets them back. That hook **does not fire on the
+Claude Desktop *Chat* tab or
+claude.ai web chat** — those surfaces install plugins (so skills and MCP work) but
+do **not** run hooks, so a session there starts with *none* of the org rules in
+context. Run this skill first on those surfaces. (On Claude Code — the CLI, the
+IDE extensions, and the Desktop *Code* tab — and in Cowork, the hook injects the
+rules automatically and you don't need this skill.)
+
+Do this now:
+
+1. Read every rule file, in lexical (numeric-prefix) order, from:
+
+   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/rules/`
+
+   The files concatenate, in that order, to form the full operating manual.
+
+2. Adopt their contents as your standing operating rules for the rest of this
+   session — the same **authority** they would carry had the hook injected them.
+   They override generic defaults and remain in force for every subsequent turn.
+
+   The **set** can be wider than a hook injection, and that is intended: in a
+   non-code folder the hook runs in knowledge-work mode and injects only the lean
+   PO core, skipping the `inject-when`-marked code/infra/tracker rules. Reading
+   every file here loads those too. Apply the ones that fit the work in front of
+   you and ignore the rest — a code rule in a specs-only folder is inert, not a
+   contradiction.
+
+3. Give the user a one-line confirmation naming the plugin version (read it from
+   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json`) — e.g. "Standards
+   vX.Y.Z loaded." Do **not** dump the full ruleset back to the user;
+   just confirm and proceed.
+
+The router (`00-router.md`) points to the on-demand reference skills
+(`/steer-reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`, `/steer-init`,
+`/steer-adopt`) — those work normally on the Chat tab and web chat since skills
+are supported there; only the always-on injection needed this fallback.

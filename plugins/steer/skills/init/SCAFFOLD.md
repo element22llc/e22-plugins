@@ -31,7 +31,7 @@ dotfiles as mapped — `gitignore` → `.gitignore`, `env.example` →
 templates from `${CLAUDE_PLUGIN_ROOT}/templates/github/` (the MANIFEST's
 GitHub-templates section maps the Issue Forms, workflows, PR template, and the
 full generated Copilot/VS Code surface — `copilot-instructions.md`,
-`prompts/*.prompt.md` (skills), `agents/*.agent.md` (custom agents), and
+`agents/*.agent.md` (custom agents), and
 `instructions/*.instructions.md` (path-scoped standards) — into `.github/`;
 the opt-in `copilot-setup-steps.yml` is **not** auto-installed), and instantiate the
 spec spine from
