@@ -100,11 +100,13 @@ run = [
   # too — the latter are installed into consumer repos, so they must be clean.
   # `profiles/*/scripts/` carries the profile-specific scaffold scripts (the
   # workspace profile's ws.sh) — installed into consumer repos just like the
-  # Layer-0 ones, so gated identically.
-  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
+  # Layer-0 ones, so gated identically. `evals/*/scaffold.sh` are the routing
+  # suite's per-case repo builders: not shipped, but pre-commit's `types: [shell]`
+  # matches them, so `check` must too or it stops being a superset.
+  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
   # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
   # except plugins/steer/hooks/.
-  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
+  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
   # plugins/steer/hooks/ predates the formatter and is grandfathered (pre-commit
   # excludes the same prefix): report drift, never fail. `shfmt -w` to apply.
   "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh || true",
@@ -176,6 +178,24 @@ depends = [
   "version-scan",
   "delivery-gates",
 ]
+
+# Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
+# spends real tokens (~$0.55 per case at runs: 1, both ablation arms), so it is
+# deliberately NOT in `ci`'s depends and stays off the PR path — run it on the
+# release path or when the routing surface changes.
+#
+# --scaffold is required: each case builds a managed repo from its own scaffold.sh,
+# which is author-supplied bash the tool will not run unless asked.
+#
+# `claude plugin eval` is EARLY ACCESS, enabled per organization. On a machine the
+# rollout has not reached it prints "currently in early access" and exits. For
+# machines that cannot receive it (CI runners, gateways, telemetry-disabled
+# clients) there is an enablement env var — obtain it from your Anthropic contact
+# and set it in your shell or ~/.claude/settings.json `env`, not in this repo's
+# .claude/settings.json (a committed value normally leaves the command gated off).
+[tasks."evals"]
+description = "Run the model-graded routing evals against the plugin (slow, costs tokens; needs plugin-eval early access)"
+run = ["claude plugin eval plugins/steer --scaffold --ablation with-without"]
 
 # Headless end-to-end skill suite — drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends
