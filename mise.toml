@@ -19,7 +19,7 @@ lockfile = true
 # so `claude plugin validate` is reproducible and the authoritative result can't
 # drift without a repo change. Bump deliberately after reviewing a new release.
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
-STEER_CLAUDE_CODE_VERSION = "2.1.220"
+STEER_CLAUDE_CODE_VERSION = "2.1.251"
 
 # Pin the precompiled CPython flavor for every `mise install` in this env,
 # mirroring the CI workflows (.github/workflows/plugin-quality.yml,
@@ -61,8 +61,12 @@ run = [
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
-  "claude plugin validate .",
-  "claude plugin validate plugins/steer",
+  # --strict promotes warnings (unrecognized fields, missing metadata) to
+  # errors: the runtime tolerates them, but a manifest that only *almost*
+  # validates is how a schema addition gets missed. Both manifests pass
+  # strict today, so this is a ratchet, not a migration.
+  "claude plugin validate . --strict",
+  "claude plugin validate plugins/steer --strict",
 ]
 
 [tasks.fixtures]
