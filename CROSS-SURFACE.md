@@ -34,7 +34,7 @@ behave the same. The headline, validated against current docs and changelog:
   surface that loads plugins at all. **MCP is more conditional than it looks:** the
   chat-family surfaces (Cowork, Chat, web) don't read the plugin `.mcp.json` and
   wire MCP through their own **Connectors** — and **Cowork is a no-install sandbox**
-  (no docker/mise/`gh`), so the shipped `${GITHUB_PAT}` `github` server doesn't work
+  (no docker/mise/`gh`), so the shipped `github` server doesn't work
   there; GitHub triage needs the **built-in GitHub
   connector** ([§4a](#4a-cowork-is-a-no-install-sandbox)).
 
@@ -112,7 +112,7 @@ two CLI-only gates above. See
 | Claude Code **CLI** | **1 — targeted** | ✅ | ✅ | ✅ | ✅ |
 | **IDE extensions** (VS Code, JetBrains) | **1 — targeted** | ✅ via CLI | ✅ via CLI | ✅ | ✅ |
 | Claude Desktop **Code tab** (Claude Code Desktop) | **2 — intended** | ✅ same engine as CLI | ✅ full engine | ✅ | ✅ |
-| Claude Desktop **Cowork tab** | **3 — best-effort (PO only)** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) — but **engineering work unsupported; use Claude Code** | ⚠️ **built-in connector only** — the plugin `.mcp.json` `${GITHUB_PAT}` `github` server **doesn't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
+| Claude Desktop **Cowork tab** | **3 — best-effort (PO only)** | ✅ from GitHub marketplace | ✅ docs: "run only in Cowork" — ⚠️ reconfirm plugin scope ([§4](#4-where-the-hook-layer-runs)) | ✅ (skills are install-free) — but **engineering work unsupported; use Claude Code** | ⚠️ **built-in connector only** — the plugin `.mcp.json` `github` server **doesn't work** in the no-install sandbox ([§4a](#4a-cowork-is-a-no-install-sandbox)) |
 | Claude Desktop **Chat tab** + **claude.ai** web chat | **3 — best-effort** | ✅ (chat) / ✅ as org Skills (web) | ❌ grayed out — use `/steer:standards` | ✅ | ⚠️ via the surface's own connector, not the plugin `.mcp.json` |
 | **GitHub Copilot** — **CLI** + **VS Code** | **3 — best-effort (prototype scope)** | ✅ CLI: `copilot plugin install steer@e22-plugins` (Copilot manifest) / VS Code: reads the committed `.github/` artifacts, no install | ⚠️ **generated, not hooked** — rules ship as committed `.github/copilot-instructions.md`; two gates (`copilot-hooks.json` version-pin + bash-action, soft `ask`, CLI-only; VS Code has no hooks) | ✅ CLI via the plugin manifest; VS Code as `/steer-<skill>` prompt files; `steer-reviewer` ported as a custom agent | ⚠️ Copilot's own MCP config — the plugin `.mcp.json` is Claude-Code-only |
 
@@ -177,7 +177,7 @@ knock-on effects correct the earlier "MCP is surface-agnostic" optimism of
 
 - **The plugin `.mcp.json` is not Cowork's MCP source.** MCP config isn't shared
   across surfaces — Cowork wires MCP through its own **Connectors**, not the CLI's
-  plugin `.mcp.json`. So the shipped `github` server (auth via `${GITHUB_PAT}`
+  plugin `.mcp.json`. So the shipped `github` server (auth via `${user_config.github_pat}`
   from a *shell* the sandbox doesn't have) can't authenticate and may be silently
   disabled ("disabled in your connector settings"). Only a plain hosted HTTP server
   with no token (e.g. `context7`) routes through. (steer ships no local-process MCP
@@ -275,7 +275,7 @@ Run on each app and record results back into the
 - [x] **Skills + MCP** (all surfaces) — run `/steer:next` and confirm
       `tracker-sync` finds the GitHub MCP connector. **Cowork result (June 2026):**
       the plugin `.mcp.json` `github` server does **not** authenticate (no
-      `${GITHUB_PAT}` shell, config not read by Cowork) and the `gh` fallback can't
+      user config not read by Cowork) and the `gh` fallback can't
       install — `tracker-sync` finds MCP issue tools **only** when the **built-in
       GitHub connector** is enabled (Customize → Connectors). See
       [§4a](#4a-cowork-is-a-no-install-sandbox). On the CLI both paths work as before.

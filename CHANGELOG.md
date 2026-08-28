@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed: the GitHub MCP server's token is now plugin user config, not a shell
+  export.** `.mcp.json` authenticated with `Bearer ${GITHUB_PAT}`, resolved from
+  whatever shell launched Claude Code — so every teammate had to edit a `~/.zshrc`
+  or `~/.bashrc`, on every machine, and the token sat in the environment of every
+  process the session spawned. The plugin manifest now declares a `userConfig`
+  field `github_pat` (`sensitive: true`) and `.mcp.json` reads
+  `${user_config.github_pat}`: Claude Code prompts for it once at install and
+  stores it in the **OS keychain**. The field is deliberately **not** `required`,
+  so the degraded path is unchanged — leave it blank and `github` reports
+  disconnected, and `/steer:tracker-sync` falls back to the `gh` CLI and then to
+  its manual floor, exactly as before. Set or rotate it later with
+  `claude plugin install steer --config github_pat=…`. The VS Code mirror
+  (`scaffold/vscode/mcp.json`) is **byte-identical** — Copilot has no notion of
+  Claude's plugin user config, so `gen_copilot_mcp.py` maps the new placeholder
+  onto the same `${input:github_pat}` prompted input it always emitted.
+
 ### 5.3.0
 
 - **Fixed: the bundled repo README told consumers a confirmation prompt was the
