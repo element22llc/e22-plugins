@@ -239,7 +239,15 @@ raises a prompt. Be honest about the tiers:
   worktree to inherit the primary checkout's decision, so a fresh worktree's `mise
   run …` doesn't fail on trust rather than on the task. It never *creates* trust —
   an untrusted primary checkout leaves it untouched and says so, keeping that
-  first decision yours. Everything else the roster does is report-only.
+  first decision yours. Everything else the roster does is report-only. The same
+  script also runs on `CwdChanged`, so a worktree *entered* mid-session gets the
+  same inherited trust.
+- **`SessionEnd` / `WorktreeRemove`** are the only hooks that act on your Docker
+  state, and only ever inside a **linked worktree**: `SessionEnd` stops that
+  worktree's services (volumes kept), `WorktreeRemove` runs the full
+  `docker:clean` because the checkout is being deleted. A plain checkout is never
+  touched, and `STEER_NO_WORKTREE_TEARDOWN=1` turns both off. Their output and
+  exit code are discarded by Claude Code, so neither can report or block.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
   dimensions) is an **advisory nudge** that lets the write proceed. It is
   explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the
