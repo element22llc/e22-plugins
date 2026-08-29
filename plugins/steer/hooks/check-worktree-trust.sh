@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — inherit mise config trust into a linked worktree.
+# steer SessionStart + CwdChanged hook — inherit mise config trust into a linked
+# worktree.
 #
 # WHY THIS EXISTS
 #   `mise trust` is PATH-based and a linked worktree is a new path, so a freshly
@@ -28,6 +29,23 @@
 #   untrusted the repo has never been set up (`mise trust && mise install` — rule
 #   `15-commands`), and that first decision belongs to the human: the hook names the
 #   command and changes nothing.
+#
+# WHY IT ALSO RUNS ON CwdChanged
+#   At SessionStart it can only cover a session that STARTED in a worktree. A
+#   worktree entered mid-session — `EnterWorktree`, a subagent's
+#   `isolation: worktree`, a background session — fires no SessionStart, so the
+#   trust step was silently skipped for exactly the worktrees the agent creates
+#   for itself. `CwdChanged` fires when the session moves into one.
+#
+#   Not `WorktreeCreate`, which looks like the precise event and cannot do this
+#   job: it runs BEFORE the worktree exists on disk (its documented contract —
+#   a hook may create the worktree itself there), and `mise trust -C <dir>` on a
+#   path that does not exist yet fails outright. The trust decision can only be
+#   copied once there is a path to copy it to.
+#
+#   Re-running is free: the FIRST cd into a worktree inherits the trust, and
+#   every later one finds it already `trusted` and exits before doing anything.
+#   A plain checkout — the overwhelmingly common case — never reaches `mise`.
 #
 # MECHANISM
 #   stdout becomes session `additionalContext` (same path as the other session

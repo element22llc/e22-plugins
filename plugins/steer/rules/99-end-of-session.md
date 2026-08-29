@@ -9,7 +9,7 @@ dropped:
 
 - [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
+- [ ] Worktree closing → dev servers and watchers you started stopped, freeing their ports? (steer's hooks tear down its Docker stack; a worktree removed by hand, outside a session, still needs `mise run docker:clean` — Parallel worktrees.)
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?

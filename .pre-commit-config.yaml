@@ -15,6 +15,13 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: ty
+        name: Type check (ty)
+        entry: uv run ty check scripts/
+        language: system
+        pass_filenames: false
+        files: ^scripts/.*\.py$
+
       - id: plugin-hygiene
         name: Plugin hygiene checks
         entry: uv run python scripts/check_plugin.py
@@ -45,6 +52,17 @@ repos:
         entry: actionlint
         language: system
         pass_filenames: false
+        files: ^\.github/workflows/.*\.ya?ml$
+
+      - id: zizmor
+        name: Actions security (zizmor)
+        entry: uv run zizmor --no-online-audits
+        language: system
+        pass_filenames: false
+        args: [.github/workflows/]
+        # This repo's own workflows only -- the hard tier. The shipped templates
+        # under plugins/steer/templates/github/workflows/ are audited advisorily
+        # by `mise run actions-security`, which is what `mise run check` runs.
         files: ^\.github/workflows/.*\.ya?ml$
 
       - id: shellcheck

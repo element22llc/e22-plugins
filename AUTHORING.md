@@ -28,8 +28,9 @@ regardless — this matrix is for tight iteration on a single failure.
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
 | any other `*.sh` — `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
-| `scripts/*.py` (the validators themselves) | `lint` + `test` | `uv run pytest && uv run ruff check .` |
-| `.github/workflows/**` | `actions` | `actionlint` |
+| `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
+| `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
+| `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** — reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
 | `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
 | `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
 | `CLAUDE.md`, `.claude/` | nothing ships | — (no changelog entry) |

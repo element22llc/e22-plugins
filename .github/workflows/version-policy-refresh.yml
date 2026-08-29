@@ -32,7 +32,11 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # This job DOES push with the checkout credential (`git push --force origin
+      # $branch`, below), so it is the one place `persist-credentials: false`
+      # would break the workflow rather than harden it. Scope is bounded by the
+      # `permissions:` block above and the branch name is generated, not input.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] — v7.0.1
 
       - name: Raise floors behind upstream EOL
         id: refresh
