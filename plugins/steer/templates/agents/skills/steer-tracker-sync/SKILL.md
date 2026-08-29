@@ -62,8 +62,8 @@ what the pointers mean and how drift gets resolved.
 ## Integration: MCP-first → `gh` fallback → manual floor
 
 The steer plugin ships GitHub MCP to every repo that enables it (the plugin's
-own `.mcp.json` — `api.githubcopilot.com/mcp/`, `GITHUB_PAT`), so MCP is
-preferred — its tools
+own `.mcp.json` — `api.githubcopilot.com/mcp/`, authenticated from the plugin's
+`github_pat` user config), so MCP is preferred — its tools
 take a JSON `body` field, making multi-line markdown issue bodies clean with no
 shell escaping. Detect capability **in this order, every run**:
 
@@ -92,8 +92,8 @@ shell escaping. Detect capability **in this order, every run**:
    took so the user knows whether issues were actually touched.
 
 **Sandboxed chat surfaces (Claude Cowork).** Cowork does **not** read the
-plugin's `.mcp.json`, and its no-install sandbox has no `${GITHUB_PAT}` shell and
-no `gh` CLI — so steps 2–3 only succeed when the user has enabled Cowork's
+plugin's `.mcp.json` or the `github_pat` user config it authenticates from, and
+its no-install sandbox has no `gh` CLI — so steps 2–3 only succeed when the user has enabled Cowork's
 **built-in GitHub connector** (Customize → Connectors), which exposes the
 repo-scoped issue tools the MCP path probes for. With it on, triage works; without
 it, you land on the manual floor (step 4) — the `gh` fallback is unavailable.
