@@ -289,7 +289,11 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
             continue
         skill_text = skill_md.read_text(encoding="utf-8")
         fm, err = parse_frontmatter(skill_text)
-        if err:
+        # Narrow on `fm`, not on `err`: they are correlated (err is set exactly
+        # when fm is None), but only this form tells a type checker so — and the
+        # alternative is an unchecked `.get` on a possible None, which is how a
+        # gate script crashes on the one malformed SKILL.md it exists to catch.
+        if fm is None:
             errors.append(f"{skill_md}: {err}")
             continue
         _check_comment_truncation(skill_md, skill_text, errors)
@@ -338,7 +342,7 @@ def check_agents(root: Path, errors: list[str]) -> None:
     seen_names: dict[str, Path] = {}
     for agent_md in _iter_markdown(agents_dir):
         fm, err = parse_frontmatter(agent_md.read_text(encoding="utf-8"))
-        if err:
+        if fm is None:  # correlated with err — see check_skills
             errors.append(f"{agent_md}: {err}")
             continue
         for key in REQUIRED_AGENT_FRONTMATTER:

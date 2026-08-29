@@ -29,6 +29,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2 # need HEAD~1 for the release-gate version diff
+          # The release is cut through `gh` with an explicit GH_TOKEN, and nothing
+          # here pushes with git — so no credential needs to survive the checkout.
+          persist-credentials: false
 
       - name: Release gate (only publish on a plugin.json version bump; manual always runs)
         id: gate
