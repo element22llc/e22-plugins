@@ -67,8 +67,11 @@ manual. They are injected into every managed session by `inject-standards.sh`
     an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` — so
     `52-deployment` injects in any Node repo, not only one that deploys today).
     Polyrepo topology is deliberately **not** an
-    always-on rule — the ruleset is capped on its on-disk total, which a scoped
-    rule pays in full for every consumer. It is delivered instead by a
+    always-on rule. (The original reason — that the ruleset was capped on its
+    on-disk total, so a scoped rule cost every consumer in full — no longer
+    holds: since the injected-payload re-base the budget gate measures the *injected* payload, and
+    scoping now earns full credit. The delivery choice stands on its own merits;
+    only the budget argument for it has lapsed.) It is delivered instead by a
     `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside
     `orient-session.sh` — the hook itself speaks in every managed repo; only the
     topology block is marker-gated. That block is registered on the same
@@ -94,17 +97,42 @@ Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
 added to `rules/`. That leanness is **enforced, not aspirational**: CI's
 `check_context_budget.py` gate holds hard ceilings over three context surfaces.
-Two are always-on and ratcheted — the total `rules/*.md` bytes (the SessionStart
-injection payload) and the total skill-listing `description` + `when_to_use`
-characters — re-armed at each reduction, so always-on weight normally only
-shrinks or holds. The default answer to "this rule doesn't fit" is therefore
+Two are always-on and ratcheted — the **injected rules payload** and the total
+skill-listing `description` + `when_to_use` characters — re-armed at each
+reduction, so always-on weight normally only shrinks or holds.
+
+**The rules ceiling was re-based** and now measures what a session
+actually receives, in tokens, rather than the `rules/*.md` total on disk. Two
+consumer profiles are gated: `knowledge` (a non-code folder, which drops every
+marked rule) and `code-max` (every scope predicate satisfied — the worst case any
+consumer pays). A typical product repo sits between them and is reported, not
+gated. Two things follow. Scoping a rule now *reduces* the gated number, where
+under the on-disk sum it changed nothing — so `inject-when` is a real budget
+lever, not just a runtime one. And dropping a rule's marker, which quietly pushes
+it onto every knowledge-work session, is now caught by the `knowledge` ceiling; the
+on-disk sum could never see it, because the bytes never moved. The history below
+describes the retired on-disk ratchet and is kept as the record of why it changed.
+
+The default answer to "this rule doesn't fit" is therefore
 **trade prose out first**: relocate rationale into
 `plugins/steer/templates/reference/`, or deliver a scoped rule through a hook
 instead of `rules/` (the polyrepo precedent above).
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
-happening quietly. The rules ceiling has been raised five times. First from
+happening quietly.
+
+What follows is the history of the **retired on-disk rules ratchet**, kept
+because it is the evidence for that re-base: read end to end, it is a ceiling
+moving seven times for a net +9.1% while its target never moved off 62,500 and was
+never met, and the gate script's own note names the same failure mode — a tight
+ceiling dictating the *wording* of a correctness fix instead of bounding its cost
+— five times before reproducing it a sixth. Every raise was argued honestly and
+every raise still happened, which is what says the number was wrong rather than
+the authors undisciplined: it gated a payload nobody received, so it could not be
+paid down by the one move that actually reduces always-on weight.
+
+The rules ceiling was raised five times. First from
 62,500 to 65,200, to fund rule `61-gate-prompts`: the ratchet had drifted to 32
 bytes of headroom, so the only way to add the rule was compressing unrelated gate
 rules, and that trade deleted ~1 KB of rationale prose that existed nowhere else in

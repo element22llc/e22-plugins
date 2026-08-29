@@ -280,8 +280,10 @@ order** by their numeric prefix into the always-on session context.
 
 A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
 marker, so the injected payload **differs per consumer repo** — and a
-knowledge-work folder drops every marked rule. Neither the file on disk nor
-`check_context_budget.py`'s total tells you what a given repo receives:
+knowledge-work folder drops every marked rule. Since the injected-payload re-base the budget gate
+measures this same payload (for two fixture profiles, `knowledge` and
+`code-max`), so the gate and this preview finally report the same variable — but
+the gate only ever sees those two synthetic shapes. To see what *your* repo gets:
 
 ```bash
 mise run rules:preview                        # what this repo gets

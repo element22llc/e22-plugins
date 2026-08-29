@@ -6,12 +6,22 @@ violation on a synthetic minimal plugin built in a tmp dir.
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import check_context_budget as ccb
 from conftest import REPO_ROOT
 
 REAL_PLUGIN = REPO_ROOT / "plugins" / "steer"
+
+
+# Since the injected-payload re-base the gate measures the payload the SessionStart hook emits, so a
+# synthetic plugin needs a hook to measure. This stub concatenates rules/*.md
+# unconditionally — it is standing in for delivery, not for scope.sh, so every
+# profile sees the same bytes and the profile ceilings can be exercised directly.
+# The real hook (and therefore the real scope predicates) is exercised by the
+# tests that run against REAL_PLUGIN.
+_STUB_HOOK = '#!/usr/bin/env sh\ncat "$(dirname "$0")"/../rules/*.md\n'
 
 
 def _make_plugin(
@@ -24,6 +34,8 @@ def _make_plugin(
     root = tmp_path / "plugin"
     (root / "rules").mkdir(parents=True)
     (root / "rules" / "00-demo.md").write_text("r" * rules_bytes, encoding="utf-8")
+    (root / "hooks").mkdir(parents=True)
+    (root / "hooks" / "inject-standards.sh").write_text(_STUB_HOOK, encoding="utf-8")
     skill_dir = root / "skills" / "demo-skill"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
@@ -46,24 +58,87 @@ def test_real_plugin_measure_is_nonzero():
     assert stats["rules_bytes"] > 0
     assert stats["listing_chars"] > 0
     assert stats["skills"]
+    assert stats["injected"]
 
 
 def test_minimal_plugin_is_clean(tmp_path: Path):
     assert ccb.run_checks(_make_plugin(tmp_path)) == []
 
 
-def test_rules_over_budget_fails(tmp_path: Path):
-    root = _make_plugin(tmp_path, rules_bytes=ccb.RULES_TOTAL_MAX_BYTES + 1)
+# --- injected-payload profiles ----------------------------------------
+
+
+def test_scoping_is_measured_knowledge_is_materially_leaner():
+    """The whole reason for the re-base: inject-when scoping must show up.
+
+    Under the retired on-disk ratchet these two profiles were the same number.
+    """
+    injected = ccb.measure(REAL_PLUGIN)["injected"]
+    assert injected["knowledge"]["tokens"] < injected["code"]["tokens"]
+    assert injected["code"]["tokens"] <= injected["code-max"]["tokens"]
+    # Not a rounding difference — scoping reclaims a large majority of the payload
+    # for a non-code folder. Loose bound so ordinary rule edits don't trip it.
+    assert injected["knowledge"]["tokens"] < injected["code-max"]["tokens"] * 0.6
+
+
+def test_real_plugin_is_inside_every_gated_ceiling():
+    for name, got in ccb.measure(REAL_PLUGIN)["injected"].items():
+        if got["max_tokens"] is None:
+            continue
+        assert got["tokens"] <= got["max_tokens"], (
+            f"profile {name}: {got['tokens']:,} tok over {got['max_tokens']:,}"
+        )
+
+
+def test_unscoping_a_rule_is_caught_by_the_knowledge_profile(tmp_path: Path):
+    """The regression the retired on-disk sum could never see.
+
+    Dropping a rule's inject-when marker pushes that rule onto every
+    knowledge-work session while leaving the on-disk total byte-for-byte
+    identical. Runs against a copy of the REAL plugin so the real scope.sh
+    predicates decide, not a stub.
+    """
+    root = tmp_path / "steer"
+    shutil.copytree(REAL_PLUGIN, root)
+
+    # Pick a real scoped rule and confirm the marker is the only thing changing.
+    victim = root / "rules" / "99-end-of-session.md"
+    original = victim.read_text(encoding="utf-8")
+    marker, _, rest = original.partition("\n")
+    assert marker.startswith("<!-- steer:inject-when="), marker
+
+    before = ccb.measure(root)
+
+    # Replace the marker with a same-length comment: identical bytes on disk.
+    victim.write_text(f"<!--{'-' * (len(marker) - 7)}-->\n{rest}", encoding="utf-8")
+    after = ccb.measure(root)
+
+    assert after["rules_bytes"] == before["rules_bytes"], "on-disk total must be unchanged"
+    assert after["injected"]["knowledge"]["tokens"] > before["injected"]["knowledge"]["tokens"], (
+        "un-scoping a rule must show up as growth in the knowledge profile"
+    )
+
+
+def test_profile_over_ceiling_fails(tmp_path: Path):
+    over = int(ccb.INJECTED_PROFILES["knowledge"]["max_tokens"] * ccb.BYTES_PER_TOKEN) + 100
+    errors = ccb.run_checks(_make_plugin(tmp_path, rules_bytes=over))
+    assert [e for e in errors if "'knowledge' profile" in e], errors
+    assert "inject-when" in " ".join(errors)
+
+
+def test_gate_fails_closed_when_it_cannot_measure(tmp_path: Path):
+    """A budget gate that cannot measure must never pass."""
+    root = _make_plugin(tmp_path)
+    (root / "hooks" / "inject-standards.sh").unlink()
     errors = ccb.run_checks(root)
     assert len(errors) == 1
-    assert "always-on budget" in errors[0]
+    assert "could not measure the injected payload" in errors[0]
 
 
-def test_rules_budget_sums_across_files(tmp_path: Path):
-    root = _make_plugin(tmp_path, rules_bytes=ccb.RULES_TOTAL_MAX_BYTES - 10)
-    (root / "rules" / "10-more.md").write_text("r" * 11, encoding="utf-8")
-    errors = ccb.run_checks(root)
-    assert len(errors) == 1 and "always-on budget" in errors[0]
+def test_token_conversion_is_pessimistic():
+    # 3.5 B/tok over-reports against the ~4.0 B/tok these rules actually measure.
+    assert ccb.BYTES_PER_TOKEN == 3.5
+    assert ccb.tokens(3500) == 1000
 
 
 def test_listing_over_budget_fails(tmp_path: Path):
@@ -128,14 +203,16 @@ def test_missing_root_reports(tmp_path: Path):
 def test_report_renders_table(tmp_path: Path):
     text = ccb.report(_make_plugin(tmp_path))
     assert "| Always-on surface |" in text
-    assert "rules/*.md injection" in text
+    assert "rules/*.md on disk" in text
+    assert "injected payload — knowledge" in text
     assert "largest SKILL.md body" in text
     assert "Largest skill bodies (compaction cap):" in text
     assert "demo-skill" in text
 
 
 def test_main_gate_and_report_exit_codes(tmp_path: Path, capsys):
-    root = _make_plugin(tmp_path, rules_bytes=ccb.RULES_TOTAL_MAX_BYTES + 1)
+    over = int(ccb.INJECTED_PROFILES["knowledge"]["max_tokens"] * ccb.BYTES_PER_TOKEN) + 100
+    root = _make_plugin(tmp_path, rules_bytes=over)
     assert ccb.main(["--plugin-root", str(root)]) == 1
     assert "problem(s) found" in capsys.readouterr().err
     # --report never gates, even over budget (it is the visibility surface).

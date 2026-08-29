@@ -15,13 +15,44 @@ fail the gate — lowering the ceilings toward them is deliberate, per-PR work.
 
 Budgets enforced:
 
-- ``RULES_TOTAL_MAX_BYTES`` — total bytes across ``rules/*.md`` (the
-  SessionStart injection payload);
+- ``INJECTED_PROFILES`` — the **injected payload**, in tokens, for each shape of
+  consumer repo. Measured by running the shipped ``inject-standards.sh`` against
+  a throwaway fixture, so it is what a session truly receives (see below);
 - ``LISTING_TOTAL_MAX_CHARS`` — total ``description`` + ``when_to_use``
   characters across all skills (the always-on routing surface). The *per-skill*
   1536-char cap lives in ``check_plugin.py``; this is the cross-skill sum.
 - ``SKILL_BODY_MAX_BYTES`` — per-skill ``SKILL.md`` body size, gating the
   **compaction re-attach cap** (see below).
+
+Why the injected payload, not the on-disk total
+-----------------------------------------------
+
+Until the injected-payload re-base this gate summed ``rules/*.md`` **on disk**.
+That number is not paid by anybody. Rules carrying a
+``<!-- steer:inject-when=… -->`` marker are injected
+only where the scope holds, so the payload differs per consumer, and the spread
+is not marginal — measured at the re-base, a knowledge-work folder received
+26,820 B where the on-disk total was 67,510 B.
+
+The consequence was worse than an inaccurate number. Scoping a rule from
+always-on to ``code-project`` is the single most effective way to cut real
+always-on weight, and it moved the gated total by **exactly zero** — the one
+lever that reduces the cost earned no credit from the gate that exists to reduce
+the cost. Meanwhile the on-disk ceiling moved seven times in its life for a net
++9.1% (that history is preserved verbatim below, because it is the evidence for
+this change).
+
+Gating the injected payload fixes both. It also buys a regression the on-disk
+sum could never see: **dropping a rule's ``inject-when`` marker** — which pushes
+that rule onto every knowledge-work session — now shows up immediately, as
+growth in the ``knowledge`` profile.
+
+Tokens, not bytes: the ceilings are expressed in tokens so they can be read
+against a context window, which is the question anyone actually has about this
+surface. Conversion uses the same deliberately pessimistic 3.5 bytes/token this
+file already applies to ``SKILL_BODY_MAX_BYTES`` — measured against
+``cl100k_base`` these rules run ~4.0 B/token, so 3.5 over-reports the cost and
+keeps the gate conservative without adding a tokenizer dependency.
 
 The compaction cap
 ------------------
@@ -64,14 +95,156 @@ Exit status is 0 when within budget, 1 when any ceiling is exceeded.
 from __future__ import annotations
 
 import argparse
+import os
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import yaml
 
 PLUGIN_ROOT = Path("plugins/steer")
 
-# --- Ratchet ceilings (hard gate) -------------------------------------------
+# --- Injected-payload profiles (hard gate) -----------------------------------
+# Reuse, not reimplementation. Each profile builds a throwaway fixture repo and
+# runs the REAL hooks/inject-standards.sh against it, exactly as
+# scripts/rules-preview.sh does — so the measured payload cannot drift from what
+# a session receives, and the scope predicates in hooks/lib/scope.sh stay the
+# single source of truth. Nothing is written to any real repo.
+#
+# `builder` receives the fixture directory and prepares whatever markers that
+# profile's scope predicates look for (see hooks/lib/scope.sh).
+BYTES_PER_TOKEN = 3.5
+
+
+def _fixture_knowledge(_d: Path) -> None:
+    """A non-code folder: no git, no manifests. steer_work_mode → 'knowledge'."""
+
+
+def _fixture_code(d: Path) -> None:
+    """A plain code repo: git work tree, no IaC, no apps/, no GitHub tracker."""
+    _git_init(d)
+
+
+def _fixture_code_max(d: Path) -> None:
+    """The heaviest consumer: every scope predicate satisfied, so every rule injects."""
+    _git_init(d)
+    (d / "infra").mkdir()  # has-iac, has-infra
+    (d / "apps").mkdir()  # has-apps
+    (d / "spec").mkdir()
+    (d / "spec" / "tracker.md").write_text("system: github\n", encoding="utf-8")  # tracker-github
+
+
+# Ceilings are sized to buy roughly ONE whole additional rule (the mean rule is
+# ~1,875 B ≈ 536 tokens), on the same basis LISTING_TOTAL_MAX_CHARS states below:
+# the smallest headroom under which "trade prose out first" stays a real policy
+# choice rather than the only physically available move. The whole lesson of the
+# retired-ratchet history below is that a 5-to-32-byte margin makes the ceiling
+# dictate the *wording* of correctness fixes instead of bounding their cost.
+#
+# Only two profiles are GATED. `code` sits strictly between them — un-scoping a
+# rule grows `knowledge`, and new prose grows `code-max` — so gating it too would
+# add a third ceiling to bump without catching anything the other two miss. It is
+# measured and reported because it is the number to quote for a typical consumer.
+INJECTED_PROFILES: dict[str, dict] = {
+    # The leanness lane, and the un-scoping detector: an always-on rule added
+    # without an `inject-when` marker lands here first and hardest.
+    "knowledge": {
+        "builder": _fixture_knowledge,
+        "max_tokens": 8_200,
+        "target_tokens": 7_100,
+        "gated": True,
+        "blurb": "non-code folder (Cowork PO lane)",
+    },
+    # Reported, not gated — bounded by the two above. See the note above.
+    "code": {
+        "builder": _fixture_code,
+        "max_tokens": None,
+        "target_tokens": 16_100,
+        "gated": False,
+        "blurb": "typical product repo",
+    },
+    # The absolute worst case any consumer pays: every scope predicate true.
+    "code-max": {
+        "builder": _fixture_code_max,
+        "max_tokens": 19_700,
+        "target_tokens": 17_700,
+        "gated": True,
+        "blurb": "every scope predicate satisfied",
+    },
+}
+
+
+def _git_init(d: Path) -> None:
+    subprocess.run(
+        ["git", "-c", "init.defaultBranch=main", "init", "-q", str(d)],
+        check=True,
+        capture_output=True,
+    )
+
+
+def measure_injected(root: Path, profile: str) -> int:
+    """Bytes the shipped SessionStart hook emits for one consumer profile.
+
+    Raises RuntimeError rather than guessing: a budget gate that cannot measure
+    must fail loudly, never fail open.
+    """
+    hook = root / "hooks" / "inject-standards.sh"
+    if not hook.is_file():
+        raise RuntimeError(f"{hook}: injection hook not found")
+    if shutil.which("git") is None:
+        raise RuntimeError("git not on PATH — cannot build the fixture repos this gate measures")
+
+    with tempfile.TemporaryDirectory(prefix="steer-budget-") as tmp:
+        fixture = Path(tmp) / profile
+        fixture.mkdir()
+        INJECTED_PROFILES[profile]["builder"](fixture)
+        payload = (
+            f'{{"session_id":"budget-gate","cwd":"{fixture}","hook_event_name":"SessionStart"}}'
+        )
+        env = {**os.environ, "CLAUDE_PLUGIN_ROOT": str(root.resolve())}
+        proc = subprocess.run(
+            ["sh", str(hook)],
+            input=payload,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+    if proc.returncode != 0:
+        raise RuntimeError(f"inject-standards.sh failed for profile '{profile}': {proc.stderr}")
+    return len(proc.stdout.encode("utf-8"))
+
+
+def tokens(byte_count: int) -> int:
+    """Pessimistic byte→token conversion. See the module docstring."""
+    return int(byte_count / BYTES_PER_TOKEN)
+
+
+# --- RETIRED: the on-disk byte ratchet (history, not a gate) -----------------
+# Superseded by INJECTED_PROFILES above (the injected-payload re-base). Kept in
+# full, deliberately: it is the evidence for that change, and per its own note
+# it is the ONE place
+# recording the per-rule trim attribution — do not restate it in CHANGELOG.md or
+# docs/, and do not delete it to tidy the file.
+#
+# Read as a whole it documents a mechanism failing in a specific, legible way.
+# The ceiling moved SEVEN times — 62,500 → 65,200 → 65,300 → 66,500 → 67,300 →
+# 68,400 → 67,500 → 68,200, a net +9.1% — while RULES_TOTAL_TARGET_BYTES never
+# moved off 62,500 and was never met. The block names its own failure mode ("a
+# tight ceiling dictates the wording of a correctness fix instead of bounding its
+# cost") five separate times, and then reproduces it a sixth for a 17-byte
+# carve-out against a 7-byte margin. Every raise was argued honestly and every
+# raise still happened, which is what tells you the number was wrong rather than
+# the authors undisciplined: it was gating a payload nobody receives, so it could
+# not be paid down by the one move that actually reduces always-on weight.
+#
+# What survives the retirement: the *policy* is unchanged. Trade prose out into
+# templates/reference/* first; a ceiling move is a deliberate, recorded decision;
+# and the targets below stay under the ceilings as the standing invitation to
+# reclaim. Only the measured variable changed.
+#
+# ----- history begins -----
 # Re-armed after the Phase 1 pass-2 rules trim (PLAN.md): rules 61,786 bytes
 # across 34 files (was 69,335 pre-Phase-1); listing 10,867 chars across 26
 # skills (was 17,950). Headroom (~1-5%) absorbs small legitimate edits;
@@ -221,7 +394,11 @@ PLUGIN_ROOT = Path("plugins/steer")
 # restores a ~690 B margin. NOT a licence to spend it: the reclaim half of the
 # choice is still owed, and the 62,500 target is what it is owed against. Target
 # stays 62,500.
-RULES_TOTAL_MAX_BYTES = 68_200
+# ----- history ends -----
+# The last value the retired ratchet held. Reported for continuity with the
+# release notes that cite it; NOT enforced. The live ceilings are per-profile in
+# INJECTED_PROFILES.
+RULES_ONDISK_LAST_CEILING = 68_200
 # LISTING re-baselined ONCE, 11,500 → 11,900, because the old number was never an
 # honest measurement. `work`'s `when_to_use` was an unquoted YAML scalar
 # containing `("work on #123"`, so ` #` opened a comment and the value silently
@@ -291,6 +468,10 @@ SKILL_BODY_MAX_BYTES = 17_500
 # the gap is the standing invitation to reclaim those bytes (relocating rationale
 # into templates/reference/*, or demoting a rule to conditional hook delivery the
 # way polyrepo was). The listing target stands.
+#
+# The rules target is now carried per-profile as `target_tokens` in
+# INJECTED_PROFILES; the on-disk figure below is kept only so the report can keep
+# showing the authoring surface next to the payload that is actually gated.
 RULES_TOTAL_TARGET_BYTES = 62_500
 LISTING_TOTAL_TARGET_CHARS = 10_000
 
@@ -338,9 +519,22 @@ def measure(root: Path) -> dict:
             skills.append((skill_dir.name, chars))
             bodies.append((skill_dir.name, skill_md.stat().st_size))
 
+    injected: dict[str, dict] = {}
+    for name, spec in INJECTED_PROFILES.items():
+        payload_bytes = measure_injected(root, name)
+        injected[name] = {
+            "bytes": payload_bytes,
+            "tokens": tokens(payload_bytes),
+            "max_tokens": spec["max_tokens"],
+            "target_tokens": spec["target_tokens"],
+            "gated": spec["gated"],
+            "blurb": spec["blurb"],
+        }
+
     return {
         "rules_files": len(rules),
         "rules_bytes": rules_bytes,
+        "injected": injected,
         "skills": skills,
         "listing_chars": listing_chars,
         "bodies": bodies,
@@ -351,15 +545,32 @@ def run_checks(root: Path) -> list[str]:
     errors: list[str] = []
     if not root.is_dir():
         return [f"{root}: plugin root directory not found"]
-    stats = measure(root)
+    try:
+        stats = measure(root)
+    except RuntimeError as exc:
+        # Fail loudly. A budget gate that cannot measure must never pass.
+        return [f"could not measure the injected payload: {exc}"]
 
-    if stats["rules_bytes"] > RULES_TOTAL_MAX_BYTES:
+    for name, got in stats["injected"].items():
+        ceiling = got["max_tokens"]
+        if ceiling is None or got["tokens"] <= ceiling:
+            continue
+        hint = (
+            "an always-on rule (one with no `inject-when` marker) is the usual cause — "
+            "scope it to the repos that need it, or trade prose out"
+            if name == "knowledge"
+            else "move prose to templates/reference/* (surfaced via /steer:reference) "
+            "and keep rules imperative"
+        )
         errors.append(
-            f"{root / 'rules'}: total {stats['rules_bytes']:,} bytes exceeds the "
-            f"{RULES_TOTAL_MAX_BYTES:,}-byte always-on budget — rules/*.md is "
-            f"injected into EVERY session. Move prose to templates/reference/* "
-            f"(surfaced via /steer:reference) and keep rules imperative; do not "
-            f"raise the ceiling to fit new prose (see PLAN.md Phase 1)."
+            f"{root / 'rules'}: the '{name}' profile ({got['blurb']}) receives "
+            f"~{got['tokens']:,} tokens ({got['bytes']:,} B), over its "
+            f"{ceiling:,}-token ceiling. This is the payload a session actually gets "
+            f"from inject-standards.sh, not the on-disk total — {hint}. Run "
+            f"`mise run rules:preview` to see which rules inject and why. Do not "
+            f"raise the ceiling to fit new prose; if a raise is genuinely right, "
+            f"record the reason beside the constant (see the retired-ratchet history "
+            f"in this file for what happens when that discipline slips)."
         )
     if stats["listing_chars"] > LISTING_TOTAL_MAX_CHARS:
         errors.append(
@@ -391,9 +602,18 @@ def report(root: Path) -> str:
     lines = [
         "| Always-on surface | Current | Ceiling (gate) | Target (plan) |",
         "| --- | --- | --- | --- |",
+    ]
+    for name, got in stats["injected"].items():
+        ceiling = f"{got['max_tokens']:,} tok" if got["max_tokens"] is not None else "— (not gated)"
+        lines.append(
+            f"| injected payload — {name} ({got['blurb']}) "
+            f"| {got['tokens']:,} tok / {got['bytes']:,} B | {ceiling} "
+            f"| {got['target_tokens']:,} tok |"
+        )
+    lines += [
         (
-            f"| rules/*.md injection ({stats['rules_files']} files) "
-            f"| {stats['rules_bytes']:,} B | {RULES_TOTAL_MAX_BYTES:,} B "
+            f"| rules/*.md on disk ({stats['rules_files']} files, authoring surface) "
+            f"| {stats['rules_bytes']:,} B | not gated "
             f"| {RULES_TOTAL_TARGET_BYTES:,} B |"
         ),
         (

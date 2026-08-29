@@ -176,21 +176,31 @@ done
 
 # --- totals vs the ratchet ----------------------------------------------------
 
-# Read the ceiling from the gate so the two can never disagree. Missing or
-# unparseable → report the total without a verdict rather than invent a bar.
-CEILING="$(sed -n 's/^RULES_TOTAL_MAX_BYTES[[:space:]]*=[[:space:]]*\([0-9_]*\).*/\1/p' \
-	"${BUDGET_PY}" 2>/dev/null | head -n 1 | tr -d '_')"
+# Read the ceilings out of the gate so the two can never disagree. Since the injected-payload re-base the
+# gate measures THIS number — the injected payload — for two fixture profiles, so
+# the preview and the gate are finally reporting the same variable. Missing or
+# unparseable → report the payload without a verdict rather than invent a bar.
+#
+# `sed` pulls each gated profile's `max_tokens:` from INJECTED_PROFILES. Order in
+# that dict is knowledge, code (ungated, no max_tokens line), code-max.
+CEILINGS="$(sed -n 's/^[[:space:]]*"max_tokens":[[:space:]]*\([0-9_]*\),.*/\1/p' \
+	"${BUDGET_PY}" 2>/dev/null | tr -d '_')"
+CEIL_KNOWLEDGE="$(printf '%s\n' "${CEILINGS}" | sed -n '1p')"
+CEIL_MAX="$(printf '%s\n' "${CEILINGS}" | sed -n '2p')"
+
+# Same pessimistic 3.5 B/token the gate documents; integer arithmetic in sh.
+INJECTED_TOKENS=$((INJECTED_BYTES * 10 / 35))
 
 printf '\n%s injected, %s skipped (%s B reclaimed)\n' \
 	"${KEPT}" "${DROPPED}" "${DROPPED_BYTES}"
+printf 'injected payload: %s B  (~%s tokens @3.5 B/tok)\n' \
+	"${INJECTED_BYTES}" "${INJECTED_TOKENS}"
 
-if [ -n "${CEILING}" ]; then
-	printf 'injected payload: %s B  (ratchet %s B for rules/*.md on disk)\n' \
-		"${INJECTED_BYTES}" "${CEILING}"
-	printf 'note: the ratchet gates the on-disk total; this repo receives %s B.\n' \
-		"${INJECTED_BYTES}"
-else
-	printf 'injected payload: %s B\n' "${INJECTED_BYTES}"
+if [ -n "${CEIL_KNOWLEDGE}" ] && [ -n "${CEIL_MAX}" ]; then
+	printf 'gated ceilings:   knowledge %s tok · code-max %s tok\n' \
+		"${CEIL_KNOWLEDGE}" "${CEIL_MAX}"
+	printf 'note: this repo is one point between those two profiles; the gate bounds\n'
+	printf '      the lean end (knowledge) and the worst case (code-max).\n'
 fi
 
 if [ "${FULL}" -eq 1 ]; then
