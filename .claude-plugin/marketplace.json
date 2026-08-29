@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "e22-plugins",
   "description": "Org-wide engineering standards for Claude Code. Ships steer (always-on operating rules + spec-workflow skills and templates) and re-lists Anthropic's frontend-design plugin (pinned, not forked) so product repos get distinctive UI craft from the same marketplace — org standards live in one place and update centrally instead of being frozen into every forked repo.",
   "owner": {
