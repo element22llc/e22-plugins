@@ -67,10 +67,35 @@ be unique. The full field set actually used in this repo:
 | `allowed-tools` | no | Pre-approve idempotent ops so the skill doesn't prompt — see below. |
 | `disallowed-tools` | no | Block mutation classes — used by read-only (Tier 1) skills. |
 | `user-invocable` | no | `false` hides the skill from the slash menu (Tier 3 internal helpers). |
+| `context` | no | `fork` runs the skill in a subagent instead of the main session — for a **pure renderer** only (see below). |
 
 > `displayName` is **not** a skill field — it belongs in
 > `plugins/steer/.claude-plugin/plugin.json` (the `/plugin` menu label). There is
 > no `model:` field on any skill; do not add one.
+
+> **Never `disable-model-invocation: true` on a steer skill.** The name reads
+> like "keep it out of auto-routing", and the byte math is tempting — it drops a
+> skill's description from the listing entirely, which is the one budget the
+> ratchet says is nearly full. But the flag does more than that: it makes the
+> skill **user-only**, so Claude cannot invoke it through the Skill tool *at
+> all*. steer's entire premise is that the model is the router and the user never
+> has to know a skill name (rule `00-router`, "map their plain-language goal to
+> the owning skill and **invoke it yourself**") — so every skill named in that
+> table, including the ones that look manual (`setup`, `protect`, `help`), is a
+> model-invocation target and would silently stop being reachable. `standards` is
+> worse still: it exists for the surfaces where no hook injects the rules, so its
+> listing description is the *only* thing that tells the model to load it there.
+> To reclaim listing budget, trim `description` + `when_to_use` at the source.
+
+> **`context: fork` is for pure renderers.** A forked skill runs as a subagent:
+> it gets the SKILL.md body as its prompt and **no access to the conversation
+> that invoked it**, and its tools come from the agent type rather than the
+> caller's turn. That is right for a skill whose whole input is its argument and
+> whose whole output is a rendered page — `/steer:status` and `/steer:explain`,
+> which read a lot of spine to emit a little. It is wrong for a skill that reads
+> the conversation (`/steer:report` files a bug about what just happened), and
+> wrong for one that writes or orchestrates other skills (`/steer:roadmap` opens
+> issues and drives `/steer:issues`). Don't add it to either class.
 
 > **No `model:` or `effort:` on a skill — the router makes them leak.** Claude
 > Code supports both as skill frontmatter, and the token math is tempting:
