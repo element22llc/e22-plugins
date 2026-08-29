@@ -263,7 +263,7 @@ clear the gate, and keeps `^spec/HISTORY\.md$` alongside the new pattern so a re
 mid-migration is not flagged),
 the PR template's living-docs checkbox, `README.md`, `CLAUDE.md`, `spec/tracker.md`,
 each `spec/sources/*/source.md`, and a polyrepo member's `spec/PRODUCT.md`. It leaves
-`.github/copilot-instructions.md` and `.github/prompts/*` alone — those are re-copied
+`.github/copilot-instructions.md` and `.agents/skills/*` alone — those are re-copied
 from the plugin on the same sync — and a false-positive guard keeps it away from
 provenance prose, where a mention of `spec/HISTORY.md` is a legitimate record of where
 something was written at the time. In a polyrepo the history belongs to the

@@ -19,7 +19,7 @@ lockfile = true
 # so `claude plugin validate` is reproducible and the authoritative result can't
 # drift without a repo change. Bump deliberately after reviewing a new release.
 # A separate, non-blocking CI job runs `latest` for an early compatibility signal.
-STEER_CLAUDE_CODE_VERSION = "2.1.220"
+STEER_CLAUDE_CODE_VERSION = "2.1.251"
 
 # Pin the precompiled CPython flavor for every `mise install` in this env,
 # mirroring the CI workflows (.github/workflows/plugin-quality.yml,
@@ -48,8 +48,8 @@ run = [
   # The committed Copilot instructions artifact (+ path-scoped instruction
   # files) must stay in sync with rules/.
   "uv run python scripts/check_copilot_instructions.py",
-  # The committed Copilot prompt-file artifacts must stay in sync with skills/.
-  "uv run python scripts/check_copilot_prompts.py",
+  # The committed cross-tool .agents/skills tree must stay in sync with skills/.
+  "uv run python scripts/check_agent_skills.py",
   # The committed Copilot custom-agent artifacts must stay in sync with agents/.
   "uv run python scripts/check_copilot_agents.py",
   # The VS Code MCP scaffold must mirror the plugin's .mcp.json servers.
@@ -61,8 +61,12 @@ run = [
   # Release validator (no base ref → release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
-  "claude plugin validate .",
-  "claude plugin validate plugins/steer",
+  # --strict promotes warnings (unrecognized fields, missing metadata) to
+  # errors: the runtime tolerates them, but a manifest that only *almost*
+  # validates is how a schema addition gets missed. Both manifests pass
+  # strict today, so this is a ratchet, not a migration.
+  "claude plugin validate . --strict",
+  "claude plugin validate plugins/steer --strict",
 ]
 
 [tasks.fixtures]
@@ -100,11 +104,13 @@ run = [
   # too — the latter are installed into consumer repos, so they must be clean.
   # `profiles/*/scripts/` carries the profile-specific scaffold scripts (the
   # workspace profile's ws.sh) — installed into consumer repos just like the
-  # Layer-0 ones, so gated identically.
-  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
+  # Layer-0 ones, so gated identically. `evals/*/scaffold.sh` are the routing
+  # suite's per-case repo builders: not shipped, but pre-commit's `types: [shell]`
+  # matches them, so `check` must too or it stops being a superset.
+  "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
   # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
   # except plugins/steer/hooks/.
-  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh scripts/*.sh",
+  "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
   # plugins/steer/hooks/ predates the formatter and is grandfathered (pre-commit
   # excludes the same prefix): report drift, never fail. `shfmt -w` to apply.
   "shfmt -d plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh || true",
@@ -127,10 +133,10 @@ description = "Show the always-on ruleset a real session receives (which rules i
 run = ["sh scripts/rules-preview.sh"]
 
 [tasks."gen:copilot"]
-description = "Regenerate the Copilot artifacts: instructions + path-scoped instructions (from rules/), prompt files (from skills/), custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
+description = "Regenerate the non-Claude surface artifacts: Copilot instructions + path-scoped instructions (from rules/), the cross-tool .agents/skills tree (from skills/), Copilot custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"
 run = [
   "uv run python scripts/gen_copilot_instructions.py --write",
-  "uv run python scripts/gen_copilot_prompts.py --write",
+  "uv run python scripts/gen_agent_skills.py --write",
   "uv run python scripts/gen_copilot_agents.py --write",
   "uv run python scripts/gen_copilot_mcp.py --write",
   "uv run python scripts/gen_copilot_hooks.py --write",
@@ -176,6 +182,24 @@ depends = [
   "version-scan",
   "delivery-gates",
 ]
+
+# Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
+# spends real tokens (~$0.55 per case at runs: 1, both ablation arms), so it is
+# deliberately NOT in `ci`'s depends and stays off the PR path — run it on the
+# release path or when the routing surface changes.
+#
+# --scaffold is required: each case builds a managed repo from its own scaffold.sh,
+# which is author-supplied bash the tool will not run unless asked.
+#
+# `claude plugin eval` is EARLY ACCESS, enabled per organization. On a machine the
+# rollout has not reached it prints "currently in early access" and exits. For
+# machines that cannot receive it (CI runners, gateways, telemetry-disabled
+# clients) there is an enablement env var — obtain it from your Anthropic contact
+# and set it in your shell or ~/.claude/settings.json `env`, not in this repo's
+# .claude/settings.json (a committed value normally leaves the command gated off).
+[tasks."evals"]
+description = "Run the model-graded routing evals against the plugin (slow, costs tokens; needs plugin-eval early access)"
+run = ["claude plugin eval plugins/steer --scaffold --ablation with-without"]
 
 # Headless end-to-end skill suite — drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends

@@ -10,8 +10,10 @@ scaffold ships ``plugins/steer/templates/scaffold/vscode/mcp.json`` (VS Code's
 This script renders that mirror from the single source of truth (``.mcp.json``)
 so the two never diverge; ``check_copilot_mcp.py`` fails the build if the
 committed mirror drifts. The one sanctioned difference is authentication: Claude
-uses an env-var placeholder (``${GITHUB_PAT}``) while VS Code uses a prompted
-input (``${input:github_pat}``) with a matching ``inputs`` block. That mapping
+resolves the token from plugin user config (``${user_config.github_pat}``,
+prompted at install and held in the OS keychain) while VS Code uses its own
+prompted input (``${input:github_pat}``) with a matching ``inputs`` block — two
+different secret stores, same "never in a repo file" property. That mapping
 lives in ``AUTH_INPUTS`` below — the MCP analog of ``gen_copilot_agents.py``'s
 ``_TOOL_MAP``. Any ``${...}`` placeholder without an ``AUTH_INPUTS`` entry is
 carried through unchanged.
@@ -35,13 +37,15 @@ from typing import Any
 CLAUDE_MCP = Path("plugins/steer/.mcp.json")
 VSCODE_MCP = Path("plugins/steer/templates/scaffold/vscode/mcp.json")
 
-# Map each env-var auth placeholder used on the Claude side to the VS Code
-# prompted-input it becomes, plus the ``inputs`` entry that declares it. Keys are
-# the env-var names as they appear inside ``${...}`` in ``.mcp.json``; the value's
-# ``id`` is what ``${input:<id>}`` references. Insertion order of the dict fields
-# is preserved in the emitted JSON (type, id, description, password).
+# Map each auth placeholder used on the Claude side to the VS Code prompted-input
+# it becomes, plus the ``inputs`` entry that declares it. Keys are the placeholder
+# names exactly as they appear inside ``${...}`` in ``.mcp.json`` — today that is
+# a ``user_config.*`` reference resolved from the plugin manifest's ``userConfig``
+# block, but a bare env-var name works the same way. The value's ``id`` is what
+# ``${input:<id>}`` references. Insertion order of the dict fields is preserved in
+# the emitted JSON (type, id, description, password).
 AUTH_INPUTS: dict[str, dict[str, Any]] = {
-    "GITHUB_PAT": {
+    "user_config.github_pat": {
         "type": "promptString",
         "id": "github_pat",
         "description": (
@@ -51,20 +55,23 @@ AUTH_INPUTS: dict[str, dict[str, Any]] = {
     },
 }
 
-_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+# Matches ``${NAME}`` where NAME may be dotted, so both a bare env var
+# (``${FOO}``) and a plugin user-config reference (``${user_config.foo}``)
+# are recognized.
+_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.]*)\}")
 
 # JSONC header injected inside the top-level object (2-space indented). The first
 # lines mark the file generated; the rest is the standing guidance for consumers.
 #
 # Unlike the four artifacts under templates/github/, this one is NOT steer-managed
-# in the consumer repo: `/steer:sync`'s copilot-surface-current capability does not
+# in the consumer repo: `/steer:sync`'s agent-surface-current capability does not
 # cover `.vscode/` (see scan-capabilities.sh), and the scaffold MANIFEST tells the
 # consumer to merge it additively and drop unused servers. So the header must not
 # promise a refresh path, and must not forbid the hand-editing the install expects.
 HEADER_COMMENT = [
     "// Generated from the steer plugin's .mcp.json. This copy is a starting point",
     "// you own: merge additively into an existing file and remove servers you do",
-    "// not use. /steer:sync's copilot-surface-current capability does NOT cover",
+    "// not use. /steer:sync's agent-surface-current capability does NOT cover",
     "// .vscode/, so nothing re-copies this file over your edits (a one-shot ledger",
     "// migration may still amend it -- e.g. removing a retired server).",
     "// In the plugin repo, regenerate the template with mise run gen:copilot.",
@@ -82,8 +89,8 @@ HEADER_COMMENT = [
 ]
 
 
-def _referenced_env_vars(obj: Any) -> list[str]:
-    """Env-var placeholder names in first-appearance order across all strings."""
+def _referenced_placeholders(obj: Any) -> list[str]:
+    """Placeholder names in first-appearance order across all strings."""
     found: list[str] = []
 
     def walk(value: Any) -> None:
@@ -103,7 +110,7 @@ def _referenced_env_vars(obj: Any) -> list[str]:
 
 
 def _to_vscode(obj: Any) -> Any:
-    """Rewrite ``${ENV}`` auth placeholders to ``${input:<id>}`` where mapped."""
+    """Rewrite mapped auth placeholders to ``${input:<id>}``; pass others through."""
     if isinstance(obj, dict):
         return {k: _to_vscode(v) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -111,8 +118,8 @@ def _to_vscode(obj: Any) -> Any:
     if isinstance(obj, str):
 
         def repl(match: re.Match[str]) -> str:
-            var = match.group(1)
-            spec = AUTH_INPUTS.get(var)
+            name = match.group(1)
+            spec = AUTH_INPUTS.get(name)
             return f"${{input:{spec['id']}}}" if spec else match.group(0)
 
         return _PLACEHOLDER.sub(repl, obj)
@@ -122,7 +129,9 @@ def _to_vscode(obj: Any) -> Any:
 def render(src: Path = CLAUDE_MCP) -> str:
     """Return the full VS Code ``mcp.json`` text (JSONC, single trailing newline)."""
     servers = json.loads(src.read_text(encoding="utf-8")).get("mcpServers", {})
-    inputs = [dict(AUTH_INPUTS[var]) for var in _referenced_env_vars(servers) if var in AUTH_INPUTS]
+    inputs = [
+        dict(AUTH_INPUTS[name]) for name in _referenced_placeholders(servers) if name in AUTH_INPUTS
+    ]
 
     doc: dict[str, Any] = {}
     if inputs:

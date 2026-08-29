@@ -98,12 +98,13 @@ def iter_agents(agents_dir: Path) -> list[tuple[str, dict, str]]:
 
 
 def _emitted_prompt_names() -> frozenset[str]:
-    """Names that actually get a `.github/prompts/steer-<name>.prompt.md` artifact.
+    """Skill names a `/steer-<name>` slash-command actually resolves to.
 
-    A `/steer-<name>` ref is a VS Code prompt-file slash-command, so it is only
-    correct for a skill a prompt file is emitted for. The `user-invocable: false`
-    gateways (`spec-scaffold`, `tracker-sync`) get none, so a rewritten ref to one
-    would assert a command Copilot never offers.
+    Every skill now ships to `.agents/skills/steer-<name>/`, but the
+    `user-invocable: false` gateways (`spec-scaffold`, `tracker-sync`) keep that
+    field in the portable copy — so an agent still never offers them as a typed
+    command, and a rewritten ref to one would assert something the user cannot
+    type. They stay excluded for that reason, not because the file is missing.
     """
     skills_dir = Path("plugins/steer/skills")
     names: set[str] = set()
@@ -134,7 +135,7 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     # Rewrite `/steer:<skill>` → `/steer-<skill>` in the description too, not just
     # the body: the description is what Copilot's agent picker shows, and this file
     # carries no `/steer:` → `/steer-` mapping preamble. Scoped to emitted names for
-    # the same reason `gen_copilot_prompts.py` is — an unscoped rewrite would ship a
+    # the same reason `gen_agent_skills.py` is — an unscoped rewrite would ship a
     # dangling `/steer-tracker-sync` the moment an agent references a gateway.
     emitted = _emitted_prompt_names()
     description = _to_copilot_refs(

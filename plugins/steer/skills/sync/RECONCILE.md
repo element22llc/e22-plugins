@@ -106,7 +106,7 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      but **show the diff first** (or, for a generated set, the changed-file list)
      and warn that local edits are lost. Two capabilities are `verbatim`: the
      **version-pin scripts** (move product-specific pins to `policy/versions.yml`)
-     and the **generated Copilot surface** (`copilot-surface-current` —
+     and the **generated Copilot surface** (`agent-surface-current` —
      `.github/copilot-instructions.md`, `prompts/`, `agents/`, `instructions/`;
      repo-specific Copilot guidance lives in a *separate* `*.instructions.md` the
      consumer owns, which the re-copy never touches). This re-copy is the whole

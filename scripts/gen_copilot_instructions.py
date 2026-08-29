@@ -70,7 +70,7 @@ _INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
 # (`/steer:sync` resolves to a real skill). The refresh path is `/steer:sync` — its
-# `copilot-surface-current` capability re-copies each generated artifact verbatim
+# `agent-surface-current` capability re-copies each generated artifact verbatim
 # from the plugin. It is NOT `/steer:init`: init stops on an already-initialized
 # repo, so it can never refresh anything. Copilot teammates only consume the
 # installed file, so the header must name a path that works from a managed repo.
@@ -85,7 +85,7 @@ HEADER = (
 # `/steer:<skill>` form Claude Code namespaces with a colon. Copilot in VS Code
 # surfaces the same skills as prompt files under `/steer-<skill>` (a hyphen), so
 # a reader following a router table below would type a command that does not
-# exist there. `gen_copilot_prompts.py` rewrites refs to the hyphen form for the
+# exist there. `gen_agent_skills.py` rewrites refs to the hyphen form for the
 # prompt artifacts, but this file is read by BOTH Copilot surfaces and the CLI
 # loads skills from the plugin manifest — so a blanket rewrite would be wrong for
 # one of them. State the mapping once, up front, instead.

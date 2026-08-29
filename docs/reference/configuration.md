@@ -86,7 +86,9 @@ manual. They are injected into every managed session by `inject-standards.sh`
   `/steer:protect` verifies the live GitHub settings against, and applies on
   explicit confirmation.
 - **`STEER_CLAUDE_CODE_VERSION`** (in `mise.toml`) — the pinned Claude Code
-  version CI installs, for reproducible `claude plugin validate`.
+  version CI installs, for reproducible `claude plugin validate --strict`.
+  Both manifests are validated in strict mode, so warnings the runtime
+  tolerates — unrecognized fields, missing metadata — fail the build.
 
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
