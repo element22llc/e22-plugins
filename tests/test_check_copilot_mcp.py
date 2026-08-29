@@ -33,14 +33,14 @@ def test_render_translates_github_pat(tmp_path: Path):
     out = gen_copilot_mcp.render(src)
     assert "// Generated from the steer plugin's .mcp.json" in out
     # Unlike the four artifacts under templates/github/, this one is NOT steer-managed
-    # in the consumer repo: `/steer:sync`'s copilot-surface-current capability does not
+    # in the consumer repo: `/steer:sync`'s agent-surface-current capability does not
     # cover `.vscode/`, and the scaffold MANIFEST tells the consumer to merge it
     # additively and drop unused servers. So the header must say the consumer owns it
     # and must NOT claim a refresh path — asserted here so it cannot regress to the
     # "do not edit by hand" / "refresh with /steer:sync" wording it carried before.
     assert "starting point" in out
     assert "you own" in out
-    assert "copilot-surface-current capability does NOT cover" in out
+    assert "agent-surface-current capability does NOT cover" in out
     assert "do not edit by hand" not in out
     # The env-var placeholder becomes a prompted input, with a matching inputs block.
     assert "${input:github_pat}" in out

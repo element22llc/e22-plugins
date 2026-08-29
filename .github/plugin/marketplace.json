@@ -13,7 +13,7 @@
       "name": "steer",
       "source": "./plugins/steer",
       "version": "5.3.0",
-      "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation, issue-tracker integration, testing rules, Definition of Done, drift gates, secrets handling, and compliance-aligned delivery. On Copilot (CLI and VS Code) the standards install as .github/copilot-instructions.md and the skills as .github/prompts/*.prompt.md (generated from the same rules/ and skills/ that Claude Code injects via a SessionStart hook); run /steer:init from Claude Code to install them, and /steer:sync after a plugin update to refresh them."
+      "description": "An always-on engineering operating manual — stack defaults, monorepo layout, spec workflow, living documentation, issue-tracker integration, testing rules, Definition of Done, drift gates, secrets handling, and compliance-aligned delivery. On Copilot (CLI and VS Code) the standards install as .github/copilot-instructions.md and the skills as a .agents/skills/ tree in the open Agent Skills format -- the same tree Cursor, Gemini CLI and Codex read (generated from the same rules/ and skills/ that Claude Code injects via a SessionStart hook); run /steer:init from Claude Code to install them, and /steer:sync after a plugin update to refresh them."
     }
   ]
 }

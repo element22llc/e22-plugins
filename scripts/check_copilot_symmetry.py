@@ -7,10 +7,16 @@ check enforces the wiring half of that invariant so a new
 ``scripts/gen_copilot_*.py`` or ``scripts/check_copilot_*.py`` can't be added and
 then silently left out of the build:
 
-* every ``scripts/gen_copilot_*.py`` is invoked by the ``gen:copilot`` mise task
-  (so ``mise run gen:copilot`` regenerates the whole Copilot surface); and
-* every ``scripts/check_copilot_*.py`` is invoked by the ``plugin-check`` mise
+* every ``scripts/gen_*.py`` for a non-Claude surface is invoked by the
+  ``gen:copilot`` mise task (so one command regenerates the whole surface); and
+* every matching ``scripts/check_*.py`` is invoked by the ``plugin-check`` mise
   task (so every drift gate runs in ``mise run check`` / CI).
+
+The globs cover two families: ``*_copilot_*`` (artifacts only GitHub Copilot
+reads — instructions, custom agents, the VS Code MCP mirror, the hook manifest)
+and ``*_agent_*`` (the cross-tool ``.agents/skills`` tree that Copilot, Cursor,
+Gemini CLI and Codex all read). Both are generated-from-Claude-source, so both
+need the same wiring guarantee.
 
 It does not re-verify artifact contents — the individual ``check_copilot_*`` gates
 do that. It guards against the failure mode of adding a mirror with a gate but no
@@ -32,6 +38,9 @@ from pathlib import Path
 
 SCRIPTS_DIR = Path("scripts")
 MISE_TOML = Path("mise.toml")
+
+# Script-name suffixes that mark a non-Claude surface generator/gate pair.
+SURFACE_GLOBS = ("copilot_*.py", "agent_*.py")
 
 
 def _task_run(data: dict, task: str) -> list[str]:
@@ -55,17 +64,26 @@ def main() -> int:
     check_cmds = " \n".join(_task_run(data, "plugin-check"))
 
     problems: list[str] = []
-    for script in sorted(SCRIPTS_DIR.glob("gen_copilot_*.py")):
+    gen_scripts = sorted(
+        {p for pattern in SURFACE_GLOBS for p in SCRIPTS_DIR.glob(f"gen_{pattern}")}
+    )
+    check_scripts = sorted(
+        {p for pattern in SURFACE_GLOBS for p in SCRIPTS_DIR.glob(f"check_{pattern}")}
+    )
+    for script in gen_scripts:
         if script.name not in gen_cmds:
             problems.append(f"{script.name} is not invoked by the 'gen:copilot' mise task")
-    for script in sorted(SCRIPTS_DIR.glob("check_copilot_*.py")):
+    for script in check_scripts:
         if script.name == "check_copilot_symmetry.py":
             continue  # this file — checked by being in plugin-check to run at all
         if script.name not in check_cmds:
             problems.append(f"{script.name} is not invoked by the 'plugin-check' mise task")
 
     if problems:
-        print("check_copilot_symmetry: Copilot generators/gates not fully wired:", file=sys.stderr)
+        print(
+            "check_copilot_symmetry: surface generators/gates not fully wired:",
+            file=sys.stderr,
+        )
         for problem in problems:
             print(f"  - {problem}", file=sys.stderr)
         return 1

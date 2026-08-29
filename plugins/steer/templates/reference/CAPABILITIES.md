@@ -155,17 +155,20 @@ and **Repair**.
 - **Why it matters:** without it the in-CI `@claude` agent runs standards-less —
   no Definition of Done, no spec/drift discipline.
 
-### copilot-surface-current — Copilot reads the *current* standards
-- **Files:** `.github/copilot-instructions.md`, `.github/prompts/*.prompt.md`,
-  `.github/agents/*.agent.md`, `.github/instructions/*.instructions.md`
-- **Conditional:** `.github/copilot-instructions.md` present. Copilot support is
-  opt-in at bootstrap, so a repo that never installed it is `n/a`, never
+### agent-surface-current — non-Claude agents read the *current* standards
+- **Files:** `.agents/skills/steer-*/**` (the cross-tool skill tree),
+  `.github/copilot-instructions.md`, `.github/agents/*.agent.md`,
+  `.github/instructions/*.instructions.md`
+- **Conditional:** `.github/copilot-instructions.md` present. The non-Claude
+  surface is opt-in at bootstrap, so a repo that never installed it is `n/a`, never
   `absent` — sync must not install a surface nobody asked for. Once the
   instructions file exists the whole set is in scope (instructions present but no
-  `prompts/` is `mis-wired`, not `n/a`).
+  `.agents/skills/` is `mis-wired`, not `n/a` — which is also the state a repo
+  lands in until the `.github/prompts` migration runs).
 - **Wired-when:** every generated file is **byte-identical** to its plugin source
-  under `${CLAUDE_PLUGIN_ROOT}/templates/github/` (`copilot-instructions.md`,
-  `prompts/`, `agents/`, `instructions/`). These are generated artifacts, so
+  under `${CLAUDE_PLUGIN_ROOT}/templates/` — `agents/skills/` for the skill tree,
+  `github/` for `copilot-instructions.md`, `agents/` and `instructions/` — **and**
+  the retired `.github/prompts/` is gone. These are generated artifacts, so
   byte-equality is the only meaningful test — any difference means the consumer is
   reading standards from an older plugin version.
 - **Repair:** **verbatim re-copy** of the differing files from the plugin source.
@@ -175,8 +178,11 @@ and **Repair**.
   never touches. Show the file list before copying; never additively splice a
   generated file.
 - **Verbatim:** yes — re-copy, the never-clobber exception.
-- **Why it matters:** Copilot has no context-injecting SessionStart hook, so this
-  static set *is* its entire standards surface. With no refresh path it freezes at
+- **Why it matters:** no non-Claude agent has a context-injecting SessionStart
+  hook, so this static set *is* their entire standards surface. The
+  `.agents/skills/` half is read by GitHub Copilot (CLI, VS Code, JetBrains, the
+  cloud coding agent and code review), Cursor, Gemini CLI and Codex alike — one
+  tree, every agent, in the open Agent Skills format. With no refresh path it freezes at
   whatever plugin version bootstrapped the repo: a Copilot teammate silently works
   against retired rules and stale task names while their Claude Code colleagues are
   current, and every rule correction shipped since bootstrap reaches only half the

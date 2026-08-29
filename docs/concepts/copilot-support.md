@@ -9,7 +9,8 @@ truth and how to install and refresh the Copilot side.
     The Copilot target covers the **always-on standards**
     (`.github/copilot-instructions.md`, read by both the CLI and VS Code), the
     **skills** (as cross-tool `SKILL.md` on the CLI, and as
-    `.github/prompts/*.prompt.md` slash-commands in VS Code), **custom agents**
+    `.agents/skills/steer-*/` in the open Agent Skills format, read by every
+    non-Claude agent), **custom agents**
     (`.github/agents/*.agent.md` — the `steer-reviewer` port), **path-scoped
     instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
     (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
@@ -24,7 +25,7 @@ truth and how to install and refresh the Copilot side.
 |---|---|---|---|
 | Always-on standards | SessionStart hook → `additionalContext` | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (read natively) |
 | Path-scoped standards | rule `inject-when` traits | **not delivered** — emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
-| Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.github/prompts/*.prompt.md` (`/steer-<skill>`) |
+| Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.agents/skills/steer-*/` (`/steer-<skill>`) |
 | Subagents | plugin `agents/` | **not declared** — the Copilot manifest carries `skills` + `hooks` only | `.github/agents/*.agent.md` (agent picker) |
 | MCP servers | plugin `.mcp.json` | **not declared** — the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
@@ -55,8 +56,8 @@ the Copilot CLI and Copilot in VS Code read.
 A build-time generator (`mise run gen:copilot`) concatenates the rules into that
 committed artifact, and a sync gate (`check_copilot_instructions.py`, part of
 `plugin-check`) fails the build if the artifact ever drifts from the rules. The
-same generator step also renders the per-skill prompt files (below), with its own
-drift gate (`check_copilot_prompts.py`).
+same generator step also renders the cross-tool skill tree (below), with its own
+drift gate (`check_agent_skills.py`).
 
 ## Why `.github/copilot-instructions.md`, not `AGENTS.md`
 
@@ -73,7 +74,7 @@ copy of the standards.
 
 ## Using it as a Copilot teammate
 
-The standards file and the prompt files are installed by `/steer:init` (new repos)
+The standards file and the skill tree are installed by `/steer:init` (new repos)
 or `/steer:adopt` (existing repos), run **from Claude Code** during bootstrap —
 see the [Adopt workflow](../workflows/adopt.md). Copilot teammates only consume
 the files; they do not need to generate them.
@@ -99,10 +100,11 @@ to `install` — it reads the committed repo files directly:
   recent VS Code). To confirm it loaded, expand the **References** section of a
   Copilot Chat response — the file is listed there (or right-click the Chat view
   → **Diagnostics**).
-- **Skills** — each user-invocable steer skill ships as a
-  `.github/prompts/steer-<skill>.prompt.md` *prompt file*, surfaced in Copilot
-  Chat as a `/steer-<skill>` slash-command (governed by the `chat.promptFiles`
-  setting). Type `/steer-` in Chat to see them.
+- **Skills** — every steer skill ships as a real `SKILL.md` under
+  `.agents/skills/steer-<skill>/`, one of the three project-skill locations VS Code
+  discovers (alongside `.github/skills/` and `.claude/skills/`). Each is surfaced in
+  Chat as a `/steer-<skill>` slash-command. Type `/steer-` in Chat to see them.
+  Nothing in `.vscode/settings.json` gates this — skill discovery is on by default.
 
 The bundled `.vscode/settings.json` sets both settings explicitly, so the
 standards load regardless of a teammate's VS Code defaults.
@@ -122,7 +124,7 @@ copilot plugin update steer       # CLI only: pull the new plugin version
 ```
 
 `/steer:sync` owns this because the refresh is a **capability repair**:
-`copilot-surface-current` is wired only when every generated file is
+`agent-surface-current` is wired only when every generated file is
 byte-identical to its plugin source, and the repair is a verbatim re-copy.
 **`/steer:init` is not the refresh path** — it installs the surface at bootstrap
 and then deliberately stops on an already-initialized repo, so re-running it does
@@ -151,25 +153,34 @@ surfaces differently:
   version — and the Copilot marketplace manifest's — is stamped from the source
   `plugin.json` by `gen_copilot_manifests.py` (`mise run gen:copilot`), so no
   Copilot manifest is hand-versioned either.
-- **Copilot in VS Code** uses prompt files instead. The build renders one
-  `.github/prompts/steer-<skill>.prompt.md` per user-invocable skill from the
-  skill's frontmatter.
+- **Copilot in VS Code** reads the committed `.agents/skills/` tree. This is not a
+  Copilot-specific rendering: `.agents/skills/` is one of the interoperable
+  locations defined by the [Agent Skills](https://agentskills.io) open standard, so
+  the same tree is discovered by **Cursor**, **Gemini CLI** and **Codex** without
+  any further work.
 
-Two differences from Claude Code matter on **both** Copilot surfaces:
+The build renders one `.agents/skills/steer-<skill>/` directory per skill —
+including the two `user-invocable: false` gateways, which the model can reach even
+though no one can type them — carrying the **real skill body** and its supporting
+mode files, not a summary. Three things are rewritten so a body works off Claude
+Code (`gen_agent_skills.py`):
 
-- **Tool-permission scoping is inert.** Copilot does not honor steer's
-  `allowed-tools` / `disallowed-tools`. steer's read-only skills rely on
-  `disallowed-tools` to guarantee they never write; on Copilot that guard is
-  **ignored**. Treat those skills as advisory there.
-- **Bodies are Claude-centric.** Skill instructions reference
-  `${CLAUDE_PLUGIN_ROOT}` paths and `/steer:<skill>` invocation, which do not
-  resolve in a repo-committed prompt file. The VS Code prompt files are therefore
-  **intent capsules** — purpose, when-to-use, and arguments — that drive the same
-  workflow on top of the always-on standards, not verbatim reproductions of the
-  skill procedure. `/steer:<skill>` cross-references are rewritten to the
-  `/steer-<skill>` prompt names, and the capsule points review-gated workflows at
-  the `steer-reviewer` custom agent (below). The authoritative procedure still
-  lives in the plugin.
+| In the authored skill | In the portable copy | Why |
+|---|---|---|
+| `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring ~262 KB (a 66 KB `MIGRATIONS.md` among it) into every consumer repo is not worth it, and the repo is public. |
+| `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
+
+Two differences from Claude Code remain on **both** Copilot surfaces:
+
+- **Tool-permission scoping is inert.** No non-Claude agent honors steer's
+  `allowed-tools` / `disallowed-tools`, and their values are Claude tool syntax
+  anyway — so the portable copy **drops** both fields rather than shipping a grant
+  that means nothing. A skill that was frontmatter-restricted upstream instead
+  opens with an explicit note that the restriction is now **enforced by
+  instruction, not by tooling**, so a body reading "the edit tools are unavailable"
+  is not mistaken for a guarantee. Treat those skills as advisory there.
+- **Hooks do not exist in VS Code**, so nothing gates a skill mid-run.
 
 ## Custom agents on Copilot
 
@@ -220,7 +231,7 @@ Copilot in VS Code does **not** read the plugin's `.mcp.json` (that wires Claude
 Code only). So the scaffold ships **`.vscode/mcp.json`** — VS Code's `servers`
 schema — mirroring the same servers: the **GitHub** MCP server that the tracker
 gateway (`tracker-sync`, reached through `/steer-issues` and `/steer-work` — it is
-`user-invocable: false`, so it has no prompt file of its own) is built around, and
+`user-invocable: false`, so no one types it directly) is built around, and
 **context7** for current library docs. The GitHub server prompts once for a PAT
 (stored in VS Code secret storage). Without it, Copilot's tracker workflow falls
 back to `gh` only.
@@ -235,7 +246,7 @@ template **in this repo**.
 
 That byte-gate governs the plugin-side template only. Unlike the four artifacts
 under `.github/`, the **installed** `.vscode/mcp.json` is not steer-managed: it sits
-outside `/steer:sync`'s `copilot-surface-current` capability, so a consumer owns
+outside `/steer:sync`'s `agent-surface-current` capability, so a consumer owns
 their copy and is expected to merge additively and remove servers they don't use.
 Nothing re-copies it over their edits; only a one-shot ledger migration amends it.
 
@@ -278,10 +289,10 @@ inline in rule `45-commit-autonomy`, and the generated
 from the always-on standards both surfaces read. It reaches a reader only on the
 **CLI**, which loads the real `reference` skill from the Copilot plugin manifest;
 that doc also states a push declined there must not be retried in the hope of a
-quieter second attempt. In VS Code the prose is unreachable — the prompt files are
-intent capsules and their `${CLAUDE_PLUGIN_ROOT}` paths do not resolve (see
-Limitations) — but nothing is lost there, since VS Code has no hooks and so never
-raises the repeat-push decision the caveat is about.
+quieter second attempt. In VS Code the `reference` skill now ships too, as
+`.agents/skills/steer-reference/`, so the prose is reachable there via the pointer
+it carries — and nothing was lost meanwhile, since VS Code has no hooks and so
+never raises the repeat-push decision the caveat is about.
 The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
 `check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`
@@ -315,11 +326,11 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 - **Invocation form differs by surface, and the instructions file is shared.**
   `.github/copilot-instructions.md` carries the rules verbatim, so every skill
   cross-reference in them reads `/steer:<skill>`. In VS Code the invocable form is
-  `/steer-<skill>` (prompt files); on the CLI skills load from the plugin
-  manifest. Because one file serves both surfaces, a blanket rewrite would be
-  wrong for one of them — the generated file therefore opens with a note stating
-  the mapping. The prompt artifacts *are* rewritten to the hyphen form by
-  `gen_copilot_prompts.py`.
+  `/steer-<skill>` (the `.agents/skills/` tree); on the CLI skills load from the
+  plugin manifest. Because one file serves both surfaces, a blanket rewrite would
+  be wrong for one of them — the generated file therefore opens with a note stating
+  the mapping. The skill-tree artifacts *are* rewritten to the hyphen form by
+  `gen_agent_skills.py`.
 - **The two ported gates depend on `CLAUDE_PLUGIN_ROOT`.** `copilot-hooks.json`
   builds each script path from that Claude-named variable. Whether the Copilot CLI
   exports it is **unverified** — so treat the gates as *ported, not proven*. They

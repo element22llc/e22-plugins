@@ -204,7 +204,7 @@ the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `docker:up/down`, `db:migrate`, `db:seed`), `compose.yaml`, CI under
 `.github/workflows/`, the PR template (drift-gate + living-docs checklists),
 `.github/copilot-instructions.md` (the generated Copilot standards surface) and
-`.github/prompts/*.prompt.md` (the generated Copilot/VS Code skill surface —
+`.agents/skills/steer-*/**` (the generated cross-tool skill surface —
 both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless
 if no one uses Copilot), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
