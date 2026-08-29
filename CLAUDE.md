@@ -185,11 +185,16 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   [`AUTHORING.md`](AUTHORING.md) for the frontmatter schema, rule
   numbering, hook rules, and a "what I touched → what to run" matrix. Repo-local
   helpers `/new-skill`, `/new-rule`, and `/preflight` scaffold and verify for you.
-- **Behaviour changes are gated twice:** a change under `plugins/steer/`
-  (skills, rules, hooks, templates, scripts, policy) — or to any of the three
-  version-bearing manifests, including the root
-  `.github/plugin/marketplace.json` — needs a `CHANGELOG.md`
-  `## steer` → `### [Unreleased]` entry — `check_changelog.py --base` enforces
-  this on PRs (`tests/` are exempt). The `plugin.json` `version` bump happens
-  **once**, at release. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/`
-  ship nothing and need no changelog entry.
+- **Behaviour changes are gated twice:** a change **anywhere under
+  `plugins/steer/`** — or to the root `.github/plugin/marketplace.json`, the one
+  version-bearing manifest outside it — needs a `CHANGELOG.md`
+  `## steer` → `### [Unreleased]` entry, enforced on PRs by
+  `check_changelog.py --base`. The gate is **deny-by-default**: everything the
+  plugin ships counts, and the exemptions are enumerated in that script with a
+  reason each (`tests/` anywhere, `evals/`, the plugin's maintainer `README.md`,
+  and `plugins/steer/.claude/`). Adding a new plugin component therefore requires
+  an entry without anyone remembering to widen the gate first — and exempting a
+  new directory is a deliberate edit that has to say why it ships nothing. The
+  `plugin.json` `version` bump happens **once**, at release. Changes confined to
+  `CLAUDE.md`, `docs/`, or the repo-root `.claude/` ship nothing and need no
+  changelog entry.
