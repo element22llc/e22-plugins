@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `lspServers` in `plugin.json` — real compiler diagnostics on the edit
+  path.** Two language servers matching the stack defaults in rule `10-stack`:
+  `typescript-language-server` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs`
+  `.cjs`) and `pyright-langserver` (`.py` `.pyi`). Claude Code now sees what an
+  edit actually broke instead of inferring it from surrounding text, and gets
+  jump-to-definition / find-references. This is the supported successor to a
+  code-intelligence MCP server: declared in the manifest, nothing for the plugin
+  to pin or spawn. A server activates **only when its binary is on `PATH`** — a
+  repo without them simply gets none, and both carry `restartOnCrash: false` so
+  a missing one fails once and stays quiet rather than thrashing. steer does not
+  install them and does not gate on them.
+- **Added: `$schema` on both manifests** (`.claude-plugin/marketplace.json`,
+  `plugins/steer/.claude-plugin/plugin.json`), pointing at the published
+  SchemaStore definitions. One line each: editor validation now, and a future
+  schema addition shows up as a visible diff instead of something the strict
+  validator happens to catch later.
+- **Added: `repository` on `plugin.json`** — a documented manifest field the
+  plugin was not filling in.
+
 - **Changed: the GitHub MCP server's token is now plugin user config, not a shell
   export.** `.mcp.json` authenticated with `Bearer ${GITHUB_PAT}`, resolved from
   whatever shell launched Claude Code — so every teammate had to edit a `~/.zshrc`

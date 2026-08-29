@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "steer",
   "displayName": "Steer — Engineering Standards",
   "version": "5.3.0",
@@ -15,12 +16,43 @@
     "spec-workflow",
     "always-on"
   ],
+  "repository": "https://github.com/element22llc/e22-plugins",
   "userConfig": {
     "github_pat": {
       "type": "string",
       "title": "GitHub personal access token",
       "description": "Fine-grained PAT for the bundled GitHub MCP server (repo + issues scope). Prompted once at install and stored in your OS keychain, so it never needs exporting from a shell rc and never lands in a repo file. Optional: leave it blank and the github server simply reports disconnected -- every skill that uses it falls back to the gh CLI, then to a manual floor.",
       "sensitive": true
+    }
+  },
+  "lspServers": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "extensionToLanguage": {
+        ".ts": "typescript",
+        ".tsx": "typescriptreact",
+        ".mts": "typescript",
+        ".cts": "typescript",
+        ".js": "javascript",
+        ".jsx": "javascriptreact",
+        ".mjs": "javascript",
+        ".cjs": "javascript"
+      },
+      "restartOnCrash": false
+    },
+    "python": {
+      "command": "pyright-langserver",
+      "args": [
+        "--stdio"
+      ],
+      "extensionToLanguage": {
+        ".py": "python",
+        ".pyi": "python"
+      },
+      "restartOnCrash": false
     }
   }
 }
