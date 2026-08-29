@@ -1,0 +1,16 @@
+# Routing case — see ../README.md for what this suite measures.
+schema_version: "1.1"
+name: routes-think-feature-through-to-spec
+tags: [routing]
+
+context:
+  # A steer-managed repo, so the ask is answerable. Runs only under --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |
+    think this feature through before we write any code
+  max_turns: 6
+  allowed_tools: [Read, Glob, Grep, Skill]
+
+runs: 1
