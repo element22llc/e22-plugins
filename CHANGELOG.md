@@ -22,6 +22,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   (`scaffold/vscode/mcp.json`) is **byte-identical** — Copilot has no notion of
   Claude's plugin user config, so `gen_copilot_mcp.py` maps the new placeholder
   onto the same `${input:github_pat}` prompted input it always emitted.
+- **Changed: the non-Claude skill surface moves from Copilot prompt files to the
+  cross-tool `.agents/skills/` tree.** steer shipped skills to Copilot as
+  `.github/prompts/steer-<skill>.prompt.md` — **intent capsules** carrying a
+  purpose, a when-to-use and an argument list, then deferring: "the fully authored
+  procedure lives in the steer plugin's `skills/<name>/SKILL.md`", a file the
+  reader could not open. That indirection existed because `SKILL.md` was assumed to
+  be Claude-Code-only. It is not: [Agent Skills](https://agentskills.io) is an open
+  standard, and GitHub Copilot (CLI, VS Code, JetBrains, cloud coding agent, code
+  review), Cursor, Gemini CLI and Codex all discover project skills in
+  **`.agents/skills/`**. The surface now ships the **real skill bodies** — all 26,
+  including the two `user-invocable: false` gateways that previously got no artifact
+  at all — with their mode and supporting files, to one tree every agent reads.
+  `gen_agent_skills.py` rewrites the three things that don't travel: intra-skill
+  asset paths become relative (the files travel alongside, per the spec's
+  colocation convention), shared-bundle paths become URLs into this public repo
+  (vendoring ~262 KB of reference prose into every consumer repo isn't worth it),
+  and `/steer:<skill>` becomes `/steer-<skill>` — the same names the prompt files
+  exposed, so nothing a teammate types changes. Claude tool grants
+  (`allowed-tools` / `disallowed-tools`) are **dropped** rather than mistranslated;
+  a skill that was frontmatter-restricted upstream now opens with an explicit note
+  that the restriction is enforced **by instruction, not by tooling**, so a body
+  reading "the edit tools are unavailable" is not mistaken for a guarantee it
+  cannot make. `gen_copilot_prompts.py` / `check_copilot_prompts.py` and the 24
+  capsule artifacts are retired; `check_agent_skills.py` gates the new tree for
+  drift the same way.
+- **Changed: the `copilot-surface-current` capability is now
+  `agent-surface-current`.** It governs a tree Cursor, Gemini CLI and Codex read as
+  much as Copilot does, so `/steer:sync` telling a Cursor user their "copilot
+  surface" is stale was misleading. It also now flags a leftover `.github/prompts/`
+  as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
+  carries the consumer-side migration: install `.agents/skills/`, delete only the
+  `steer-*` prompt files, leave any the team wrote themselves.
 
 ### 5.3.0
 

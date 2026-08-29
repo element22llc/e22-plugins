@@ -1,0 +1,16 @@
+# Routing case — see ../README.md for what this suite measures.
+schema_version: "1.1"
+name: routes-lost-user-to-next
+tags: [routing]
+
+context:
+  # A steer-managed repo, so the ask is answerable. Runs only under --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |
+    I'm lost — where do I even start in this repo?
+  max_turns: 6
+  allowed_tools: [Read, Glob, Grep, Skill]
+
+runs: 1

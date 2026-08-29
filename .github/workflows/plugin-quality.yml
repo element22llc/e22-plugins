@@ -80,6 +80,9 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Validate marketplace + plugin against latest
+        # --strict here as well, so a *new* warning introduced by an upstream
+        # schema change surfaces in this early-warning job rather than waiting
+        # for the next deliberate version bump.
         run: |
-          claude plugin validate .
-          claude plugin validate plugins/steer
+          claude plugin validate . --strict
+          claude plugin validate plugins/steer --strict

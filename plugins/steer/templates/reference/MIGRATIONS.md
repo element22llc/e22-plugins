@@ -94,6 +94,49 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — Copilot prompt files → the cross-tool `.agents/skills/` tree
+
+- **What & why:** the non-Claude skill surface was
+  `.github/prompts/steer-<skill>.prompt.md` — one **intent capsule** per skill,
+  carrying a purpose, a when-to-use and an argument list, then deferring: "the fully
+  authored procedure lives in the steer plugin's `skills/<name>/SKILL.md`", a file the
+  Copilot reader cannot open. That indirection existed because `SKILL.md` was assumed
+  to be a Claude-Code-only format. It no longer is: the
+  [Agent Skills](https://agentskills.io) format is an open standard, and GitHub
+  Copilot (CLI, VS Code, JetBrains, cloud coding agent, code review), Cursor, Gemini
+  CLI and Codex all discover project skills in **`.agents/skills/`**. So the surface
+  now ships the **real skill bodies** — full procedures, guardrails and mode files —
+  in one tree every agent reads, instead of a lossy per-surface rendering. The old
+  path must be removed, not merely superseded: two skill surfaces claiming the same
+  `/steer-<skill>` names is worse than one.
+- **Precondition:** `.github/prompts/` exists (with `steer-*.prompt.md` files in it).
+  A repo that never installed the Copilot surface is `n/a` and skips this entirely.
+- **Action:** read-then-propose, show the file list first.
+  1. **Install the new tree.** Copy `${CLAUDE_PLUGIN_ROOT}/templates/agents/skills/`
+     to `.agents/skills/` **verbatim** — it is `Verbatim: yes` under
+     `agent-surface-current`, so copy, never reconcile. This is what
+     `/steer:sync` does on its own once the directory exists; the migration exists to
+     create it the first time.
+  2. **Delete `.github/prompts/`** — the whole directory, but **only** the
+     `steer-*.prompt.md` files and, if nothing else remains, the directory itself. A
+     prompt file the team wrote that is *not* `steer-`-prefixed is theirs: leave it,
+     and leave the directory standing around it.
+  3. **Rewrite the two live pointers** — an in-file token rewrite, only in these
+     files, which additive reconciliation cannot reach:
+
+     | File | What changes |
+     |---|---|
+     | `.vscode/settings.json` | the comment above the Copilot toggles naming the per-skill prompt-file slash-commands → the `.agents/skills/` tree. `chat.promptFiles` itself **stays on** — it governs any prompt files the team keeps, which this migration does not touch. |
+     | `.gitignore` | if a previous cleanup added `.agents/`, remove that line — the skill tree is committed, not local state. Most repos have no such line; skip when absent. |
+
+  4. **No history entry is earned.** This is a surface swap that `/steer:sync`
+     performs, not a repo-level event — see `agent-surface-current`'s "Repair".
+
+  **False-positive guard:** do not rewrite `.github/prompts/` mentions inside
+  append-only or provenance prose — `spec/history/` entries, ADRs under
+  `spec/decisions/`, `spec/AUDIT-REPORT.md` — where the mention records what was
+  true at the time.
+
 ### v5.0.0 — `feature_status` narrows to `draft · approved · live`
 
 - **What & why:** a feature's spec `> Status:` used to carry five values
@@ -227,8 +270,8 @@ Name the file and say what to carry forward.
      | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry · …]` cell → `[history entry · …]`. One file per tracked source — `/steer:intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
      | `spec/PRODUCT.md` | (polyrepo members only) the ownership row listing `HISTORY.md` among the workspace-owned artifacts → `spec/history/`. |
 
-     **Leave `.github/copilot-instructions.md` and `.github/prompts/*` alone** — they are
-     `Verbatim: yes` under the `copilot-surface-current` capability and are re-copied
+     **Leave `.github/copilot-instructions.md` and `.agents/skills/*` alone** — they are
+     `Verbatim: yes` under the `agent-surface-current` capability and are re-copied
      from the plugin on the same sync, so rewriting them here would be undone and is
      unnecessary.
   4. **Log the migration as the directory's first entry.** A spine migration is a
@@ -662,7 +705,7 @@ Name the file and say what to carry forward.
   - In `.vscode/mcp.json`, drop the `markitdown` key from `servers`. The rest of
     the file stays as-is. Note this file is **yours** once installed — it is
     seeded from the plugin's `.mcp.json` but sits outside `/steer:sync`'s
-    `copilot-surface-current` capability, so nothing reconciles or re-copies it
+    `agent-surface-current` capability, so nothing reconciles or re-copies it
     afterwards; a one-shot ledger entry like this one is the only thing that
     amends it.
   - In a repo-local `.mcp.json`, drop the `markitdown` key. If removing it

@@ -1,0 +1,69 @@
+---
+name: steer-tidy
+description: Sweep loose files out of the repo root into their correct home — source/research materials (incl. spec/requirements PDFs and docs) to /spec/reference, diagrams to /spec/design. Moves confidently-classified strays immediately; proposes renames and deletes and ambiguous cases for a yes.
+---
+
+<!-- Generated from the steer plugin's skills/tidy/SKILL.md — do not edit by hand.
+     Refresh with /steer:sync from Claude Code in a managed repo, or
+     `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
+     rendered here in the cross-tool Agent Skills format (agentskills.io) that
+     Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
+
+**When to use.** Use when the repo root is cluttered with spreadsheets, docs, diagrams, exports, or other non-code files, or the user asks to organize, clean up, or tidy the repo.
+
+# Repo housekeeping (`/steer-tidy`)
+
+Read the full sweep procedure bundled with this plugin:
+
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/HOUSEKEEPING.md`
+
+Key points (read the file for the full detail):
+
+- The repo **root** holds scaffolding + config only. Everything on the **root
+  allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
+  scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
+- **Polyrepo member (`spec/PRODUCT.md` present): never create a product-level
+  spine dir locally.** `spec/reference/`, `spec/sources/`, `spec/features/` and
+  `spec/app/` belong to the **workspace** — so a stray whose home is one of them
+  does not get that dir created here. Report the stray and name the workspace as
+  its destination instead; `spec/design/` and `spec/decisions/` *are* the
+  member's own and are handled normally. See `/steer-reference polyrepo`.
+- Loose **source/research materials** (spreadsheets, inventories, vendor
+  metadata, schema/DDL dumps, discovery docs, PII/CMDB files, and
+  **spec/requirements documents** — `.pdf`/`.docx`/decks) → `/spec/reference/`.
+  An existing `Technical Metadata/`-style folder → `/spec/reference/technical-metadata/`.
+- **Architecture/flow diagrams** (SVG, "Flows for Review" decks) → `/spec/design/`.
+  A **Claude Design export** also → `/spec/design/` — defer to `/steer-reference design-sources`.
+- **Already-absorbed sources are the exception — delete, don't move.** A
+  spec/requirements doc whose bytes match a committed `spec/sources/**/original.*`
+  has already been absorbed by `/steer-intake`; the stray is a redundant duplicate,
+  so **propose deleting it** (content is preserved in the committed source) rather
+  than moving it to `/spec/reference/` — moving it would just duplicate the source.
+  Like every delete, it waits for a yes.
+- **Move confidently-classified strays immediately** — a file that maps cleanly
+  to one home and isn't ambiguous gets `git mv`'d there now, under its existing
+  name, no confirmation. The obvious cases just happen.
+- Three actions otherwise: **move** is the automatic one above; **rename + move**
+  (cryptic/inconsistent name → a clear one) and **delete** (true junk, or an
+  already-absorbed source — the two cases above) are **proposed and wait for a
+  yes**. A bad filename is a reason to rename, not to
+  bury or delete — move the file now and offer the rename separately.
+- **Ask before assuming.** A confusing or duplicate-looking name (`Copy of …`,
+  coded names, `(002)`, case-variant pairs) does **not** mean a file is junk —
+  it may be the important one. For anything you can't confidently classify or
+  tell apart, **ask the PO/dev what the file is for and which version is
+  current** before touching it, then move + rename (or, only if they confirm, delete).
+- **Plan only the gated work.** Auto-move the confident strays first, then
+  present a plan table for the leftovers — `rename + move` / `delete` rows and
+  any ambiguous file — with a source → destination/new name column for approval.
+- Use **`git mv`** for tracked files (moves *and* renames; history follows);
+  plain `mv` for untracked ones. Create destination folders as needed.
+- **Never auto-delete.** Exactly two things are deletion candidates, and both
+  wait for a yes: **true OS junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) and
+  an **already-absorbed source** (bytes matching a committed
+  `spec/sources/**/original.*`). When you delete junk, **also add its pattern to
+  `.gitignore`** (broad, tree-wide, only if not already present) so it can't be
+  re-committed later. That step is **junk-only** — never gitignore an absorbed
+  spec document; it isn't junk, and a later version of it is expected.
+- If a moved/renamed file is referenced by a spec (`source.md`, an `intent.md`
+  `Design source`), update the reference so the link still resolves.

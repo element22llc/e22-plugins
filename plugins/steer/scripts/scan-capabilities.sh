@@ -184,33 +184,55 @@ else
 	emit "version-pin-enforcement" "present-wired" "$vp_files"
 fi
 
-# --- copilot-surface-current — Copilot reads the CURRENT standards ---
-# Generated artifacts, contractually byte-identical to the plugin source. Copilot
-# support is opt-in at bootstrap, so a repo that never installed it is n/a — never
-# "absent", or sync would install a surface nobody asked for.
+# --- agent-surface-current — non-Claude agents read the CURRENT standards ---
+# Generated artifacts, contractually byte-identical to the plugin source. Two
+# families: the Copilot-only files under .github/, and the cross-tool
+# .agents/skills/ tree (Agent Skills format — Copilot, Cursor, Gemini CLI and
+# Codex all discover it). Support is opt-in at bootstrap, so a repo that never
+# installed it is n/a — never "absent", or sync would install a surface nobody
+# asked for.
 CPI=".github/copilot-instructions.md"
-cp_files="$CPI,.github/prompts,.github/agents,.github/instructions"
+cp_files="$CPI,.agents/skills,.github/agents,.github/instructions"
 if ! exists "$CPI"; then
-	emit "copilot-surface-current" "n/a" "$cp_files"
-elif ! exists ".github/prompts"; then
-	# Instructions installed but the skill surface never was: half-wired.
-	emit "copilot-surface-current" "mis-wired" "$cp_files"
+	emit "agent-surface-current" "n/a" "$cp_files"
+elif ! exists ".agents/skills"; then
+	# Instructions installed but the skill surface never was: half-wired. Also the
+	# state a repo lands in until the .github/prompts -> .agents/skills migration runs.
+	emit "agent-surface-current" "mis-wired" "$cp_files"
 else
 	_cp_drift=false
 	cmp -s "$ROOT/$CPI" "$PLUGIN/templates/github/copilot-instructions.md" 2>/dev/null ||
 		_cp_drift=true
 	# Every plugin-side generated file must exist downstream and match byte-for-byte.
-	for _d in prompts agents instructions; do
+	for _d in agents instructions; do
 		for _f in "$PLUGIN/templates/github/$_d"/*; do
 			[ -f "$_f" ] || continue
 			_b=$(basename "$_f")
 			cmp -s "$_f" "$ROOT/.github/$_d/$_b" 2>/dev/null || _cp_drift=true
 		done
 	done
+	# The skills tree is nested (skill dir + colocated supporting files), so walk
+	# it rather than globbing one level.
+	_src="$PLUGIN/templates/agents/skills"
+	if [ -d "$_src" ]; then
+		while IFS= read -r _f; do
+			[ -n "$_f" ] || continue
+			_rel=${_f#"$_src"/}
+			cmp -s "$_f" "$ROOT/.agents/skills/$_rel" 2>/dev/null || _cp_drift=true
+		done <<-EOF
+			$(find "$_src" -type f 2>/dev/null)
+		EOF
+	fi
+	# A retired artifact left behind is drift too: .github/prompts/ was the previous
+	# skill surface and must not linger alongside .agents/skills/. Written as an if
+	# rather than `&&` so the absent case doesn't leave a non-zero status behind.
+	if exists ".github/prompts"; then
+		_cp_drift=true
+	fi
 	if $_cp_drift; then
-		emit "copilot-surface-current" "mis-wired" "$cp_files"
+		emit "agent-surface-current" "mis-wired" "$cp_files"
 	else
-		emit "copilot-surface-current" "present-wired" "$cp_files"
+		emit "agent-surface-current" "present-wired" "$cp_files"
 	fi
 fi
 

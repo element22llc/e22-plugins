@@ -64,14 +64,14 @@ _PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.]*)\}")
 # lines mark the file generated; the rest is the standing guidance for consumers.
 #
 # Unlike the four artifacts under templates/github/, this one is NOT steer-managed
-# in the consumer repo: `/steer:sync`'s copilot-surface-current capability does not
+# in the consumer repo: `/steer:sync`'s agent-surface-current capability does not
 # cover `.vscode/` (see scan-capabilities.sh), and the scaffold MANIFEST tells the
 # consumer to merge it additively and drop unused servers. So the header must not
 # promise a refresh path, and must not forbid the hand-editing the install expects.
 HEADER_COMMENT = [
     "// Generated from the steer plugin's .mcp.json. This copy is a starting point",
     "// you own: merge additively into an existing file and remove servers you do",
-    "// not use. /steer:sync's copilot-surface-current capability does NOT cover",
+    "// not use. /steer:sync's agent-surface-current capability does NOT cover",
     "// .vscode/, so nothing re-copies this file over your edits (a one-shot ledger",
     "// migration may still amend it -- e.g. removing a retired server).",
     "// In the plugin repo, regenerate the template with mise run gen:copilot.",
