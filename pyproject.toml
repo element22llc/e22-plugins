@@ -12,6 +12,8 @@ dev = [
   "pytest>=8.4",
   "pre-commit>=4.2",
   "ruff>=0.16.1",
+  "ty>=0.0.75",
+  "zizmor>=1.29.0",
 ]
 # Documentation-site toolchain. Kept in its own group (NOT in dev, the default
 # group `uv sync` installs) so the CI quality env stays light — `mise run

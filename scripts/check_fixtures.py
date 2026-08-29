@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 PLUGIN_ROOT = Path("plugins/steer")
@@ -234,7 +235,7 @@ def check_repo_fixtures(errors: list[str]) -> None:
         errors.append(f"{REPO_FIXTURES}: scenario fixtures directory is missing")
         return
 
-    def require(path: Path, present: list[str] = (), absent: list[str] = ()) -> None:
+    def require(path: Path, present: Sequence[str] = (), absent: Sequence[str] = ()) -> None:
         if not path.is_file():
             errors.append(f"{path}: expected fixture file is missing")
             return

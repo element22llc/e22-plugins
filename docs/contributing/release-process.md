@@ -80,7 +80,7 @@ plugin and need no entry — this includes the documentation site itself.
 ## Before you push
 
 ```bash
-mise run check   # fast gate: lint, plugin-check, actions, shell, docs:check (pre-commit superset)
+mise run check   # fast gate: lint, typecheck, plugin-check, actions, actions-security, shell, docs:check (pre-commit superset)
 mise run ci      # full gate: adds fixtures, test, hooktests, version-scan, delivery-gates
 ```
 

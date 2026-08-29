@@ -144,14 +144,15 @@ capture. Read it before your first PR here. The essentials, condensed:
 
 The dev loop is driven by `mise` (run `mise tasks` to list everything):
 
-- **Before every commit — fast gate:** `mise run check` (lint + plugin-check +
-  actionlint + shell + docs:check). This is a strict superset of the installed
-  pre-commit hooks — a green `check` is never followed by a rejected `git
-  commit`. The pre-commit tier runs only the lighter hygiene checks (ruff,
-  `check_plugin.py`, `claude plugin validate plugins/steer`, docs-sync,
-  actionlint, shellcheck/shfmt), while `check` adds `check_standards.py`, the
-  copilot sync checks, the changelog release validator, and the
-  marketplace-manifest validation. **Keep the superset property:** when you add
+- **Before every commit — fast gate:** `mise run check` (lint + typecheck +
+  plugin-check + actionlint + actions-security + shell + docs:check). This is a
+  strict superset of the installed pre-commit hooks — a green `check` is never
+  followed by a rejected `git commit`. The pre-commit tier runs only the lighter
+  hygiene checks (ruff, `ty`, `check_plugin.py`, `claude plugin validate
+  plugins/steer`, docs-sync, actionlint, zizmor, shellcheck/shfmt), while
+  `check` adds `check_standards.py`, the copilot sync checks, the changelog
+  release validator, the marketplace-manifest validation, and the **advisory**
+  zizmor tier over the shipped workflow templates. **Keep the superset property:** when you add
   a pre-commit hook, wire its `mise` task into `check`'s `depends`, and keep the
   `shell` task's globs covering every `*.sh` that pre-commit's `types: [shell]`
   matches.
