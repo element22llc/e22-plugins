@@ -26,7 +26,8 @@ a session.
 
 !!! warning "Hooks are a Claude Code lifecycle feature — don't assume they ran"
     Everything below hangs off Claude Code's hook lifecycle (`SessionStart`,
-    `PreToolUse`, `PostToolUse`, `Stop`). Note what each tier actually does: the
+    `PreToolUse`, `PostToolUse`, `Stop`, plus the lifecycle events `CwdChanged`,
+    `SessionEnd` and `WorktreeRemove`). Note what each tier actually does: the
     `SessionStart` hook **injects** the rules (and one session check, `check-worktree-trust`, also **writes** — it marks this worktree's path trusted in mise's local trust store); most `PreToolUse` checks are
     **advisory nudges** that let the write proceed (the two dimensions of
     `check-write-nudges`, the issue-create contract guard in `check-bash-actions`);
@@ -62,6 +63,11 @@ flowchart TD
     end
     subgraph Stop
       reconcile[reconcile-issue-first.sh]
+    end
+    subgraph Lifecycle
+      cwd[CwdChanged<br/>check-worktree-trust.sh]
+      send[SessionEnd<br/>on-session-end.sh]
+      wtr[WorktreeRemove<br/>on-worktree-remove.sh]
     end
 ```
 
@@ -106,6 +112,25 @@ notice or nothing) and stays individually testable.
 | Hook | Role |
 | --- | --- |
 | `reconcile-issue-first.sh` | End-of-turn reconciliation of issue-first bookkeeping — it ties every implementation-affecting mutation **above [Tiny](../concepts/sdlc.md#change-size)** (under ~20 lines with no behavior change) to a GitHub issue. In solo-trunk mode it skips the branch-name check (`main` is expected) and rewords its advisory to "reference the issue in the trunk commit" rather than steering to an `issue/<N>` branch — issue-first still holds. Exempts the `/steer:sync` branch (`feat/sync`) the same way the point-of-action nudge does — silent unless app source also changed. Caps its per-file change classification scan (fail-soft — nothing governed found by the cap → silent), so a huge first-turn dirty tree cannot approach the 30s `Stop` timeout. |
+
+## Lifecycle events
+
+Three registrations that are not gates and not context injection: they run
+because the harness has told steer that something in the session's *environment*
+changed. `SessionEnd` and `WorktreeRemove` both have their **output and exit code
+discarded** by Claude Code, so neither can report anything or block anything —
+each is a side effect or nothing at all.
+
+| Hook | Event | Role |
+| --- | --- | --- |
+| `check-worktree-trust.sh` | `CwdChanged` | The same script the `SessionStart` roster runs, registered a second time. At `SessionStart` it can only cover a session that *started* in a worktree; a worktree entered **mid-session** — `EnterWorktree`, a subagent's `isolation: worktree`, a background session — fires no `SessionStart`, so the trust step was silently skipped for exactly the worktrees an agent makes for itself. Re-running is free: the first `cd` into a worktree inherits the trust and every later one finds it already trusted and exits before invoking `mise`; a plain checkout never reaches `mise` at all. Deliberately **not** `WorktreeCreate`, which looks like the precise event but runs *before* the worktree exists on disk — and `mise trust -C <dir>` refuses a directory that is not there yet. |
+| `on-session-end.sh` | `SessionEnd` (`logout\|prompt_input_exit\|other`) | Only in a **linked worktree**: runs that worktree's `docker:down` (`ws:docker:down` in a workspace root) so its containers stop and its ports are freed when the session really ends. **Volumes are kept** — a session ending is not the worktree ending, and the dev may still be in that checkout from a plain terminal. Never matches `clear` or `resume`: those continue the same working session, which is why the rules are re-injected for them. Silent in a plain checkout, without a compose file, without `mise`/`docker` on `PATH`, in a repo that pruned the `docker:*` tasks, and when `STEER_NO_WORKTREE_TEARDOWN` is set. |
+| `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown — `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) — because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. The hook fires *before* removal and a nonzero exit would **veto** it, so it always exits `0` whatever happens: steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
+
+The two teardown modes are the same distinction rules `24-worktrees` and
+`99-end-of-session` draw, now enforced rather than requested: stop what is
+running when a session ends, remove the data only when the thing that owned it
+is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`.
 
 ## Shared input extraction (`lib/json.sh`)
 

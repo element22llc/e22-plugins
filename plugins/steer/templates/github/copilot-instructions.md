@@ -308,13 +308,11 @@ defaults). So:
   `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing shared
   files.
 
-**Clean up before the worktree closes.** Containers, volumes, and background
-dev servers outlive the git worktree unless torn down:
-
-- Run `mise run docker:clean` (down + volumes + orphans, scoped to this
-  worktree's `COMPOSE_PROJECT_NAME` — it won't touch a sibling's stack).
-- Stop any background dev server / watcher you launched, freeing its port.
-- Leave no orphaned containers, volumes, processes, or held ports behind.
+**Clean up before the worktree closes.** steer's `SessionEnd` /
+`WorktreeRemove` hooks tear down this worktree's Docker stack, scoped to its
+`COMPOSE_PROJECT_NAME`. Yours: stop the dev servers and watchers you launched,
+freeing their ports — and run `mise run docker:clean` yourself when removing a
+worktree by hand, outside a session, where no hook fires.
 
 
 ## Context hygiene — delegate heavy runs, keep state in files
@@ -1074,7 +1072,7 @@ dropped:
 
 - [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree being closed/removed → local services and background dev servers it started torn down (`mise run docker:clean`, `ws:docker:clean` in a workspace repo, + stop watchers), leaving no orphaned containers, volumes, or held ports (Parallel worktrees)?
+- [ ] Worktree closing → dev servers and watchers you started stopped, freeing their ports? (steer's hooks tear down its Docker stack; a worktree removed by hand, outside a session, still needs `mise run docker:clean` — Parallel worktrees.)
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?

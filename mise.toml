@@ -36,6 +36,34 @@ MISE_PYTHON_PRECOMPILED_FLAVOR = "install_only_stripped"
 description = "Lint and format-check Python code"
 run = ["uv run ruff check .", "uv run ruff format --check ."]
 
+[tasks.typecheck]
+description = "Type-check the verification scripts (ty, non-strict)"
+# scripts/ IS the verification layer -- it is what stands between a bad rule and
+# every managed repo in the org -- and until now nothing checked it structurally:
+# ruff lints style, pytest exercises some paths, and a script that meets an
+# unexpected shape crashes or fails confusingly at exactly the moment it is
+# supposed to be the thing that catches something. `ty` (Astral, same toolchain
+# as ruff/uv) runs over scripts/ only, at its default non-strict level.
+run = ["uv run ty check scripts/"]
+
+[tasks.actions-security]
+description = "Static SECURITY analysis of GitHub Actions workflows (zizmor)"
+# Complements `actions` (actionlint), which checks syntax and embedded shell --
+# not template injection, credential persistence, cache poisoning or impostor
+# commits. Two tiers, deliberately:
+run = [
+  # HARD gate on this repo's own workflows. Clean today, so this is a ratchet.
+  "uv run zizmor --no-online-audits .github/workflows/",
+  # ADVISORY on the SHIPPED workflow templates, which are copied into every
+  # managed repo -- so one flaw there multiplies across the org, and that is
+  # precisely why they get reported rather than ignored. They are NOT clean
+  # today (unpinned action refs, missing `permissions:` blocks), and hardening
+  # consumer-facing CI is a change that deserves its own review rather than
+  # riding along with the linter that found it -- so this tier reports and never
+  # fails, exactly like shfmt's grandfathered tier below. See issue #492.
+  "uv run zizmor --no-online-audits plugins/steer/templates/github/workflows/*.yml || true",
+]
+
 [tasks.plugin-check]
 description = "Run plugin hygiene + standards-consistency + release checks"
 run = [
@@ -164,7 +192,7 @@ description = "Run fast local checks (a superset of the pre-commit hygiene tier)
 # is never followed by a rejected `git commit`. `shell` covers the shellcheck +
 # shfmt hooks; `docs:check` covers the docs-sync hook (validate_docs.py, no docs
 # deps needed). When you add a pre-commit hook, add its task here too.
-depends = ["lint", "plugin-check", "actions", "shell", "docs:check"]
+depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check"]
 
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"
