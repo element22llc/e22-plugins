@@ -2,7 +2,8 @@
 
 ``gen_copilot_mcp.py`` renders ``plugins/steer/templates/scaffold/vscode/mcp.json``
 (VS Code's ``servers`` schema) from ``plugins/steer/.mcp.json`` (Claude's
-``mcpServers``), translating the auth placeholder (env var → prompted input). The
+``mcpServers``), translating the auth placeholder (plugin user config → prompted
+input). The
 gate byte-compares the committed mirror against a fresh render. The real plugin's
 mirror must already be in sync.
 """
@@ -29,7 +30,7 @@ def _gh(auth: str) -> dict:
 
 def test_render_translates_github_pat(tmp_path: Path):
     src = tmp_path / ".mcp.json"
-    src.write_text(_claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}))
+    src.write_text(_claude({"github": _gh("${user_config.github_pat}"), "markitdown": MARKITDOWN}))
     out = gen_copilot_mcp.render(src)
     assert "// Generated from the steer plugin's .mcp.json" in out
     # Unlike the four artifacts under templates/github/, this one is NOT steer-managed
@@ -42,27 +43,31 @@ def test_render_translates_github_pat(tmp_path: Path):
     assert "you own" in out
     assert "agent-surface-current capability does NOT cover" in out
     assert "do not edit by hand" not in out
-    # The env-var placeholder becomes a prompted input, with a matching inputs block.
+    # The dotted user-config placeholder becomes a prompted input, with a matching
+    # inputs block. VS Code has no notion of Claude's plugin userConfig, so the
+    # reference must not survive into the mirror verbatim.
     assert "${input:github_pat}" in out
-    assert "${GITHUB_PAT}" not in out
+    assert "${user_config.github_pat}" not in out
     assert '"inputs"' in out
     assert '"servers"' in out
 
 
 def test_render_passes_through_unmapped_placeholder(tmp_path: Path):
     # A placeholder with no AUTH_INPUTS entry is carried through unchanged, and no
-    # inputs block is synthesized for it.
+    # inputs block is synthesized for it. Covers both placeholder shapes the
+    # regex accepts: a bare env var and a dotted user-config reference.
     src = tmp_path / ".mcp.json"
-    src.write_text(_claude({"svc": {"command": "x", "args": ["${OTHER}"]}}))
+    src.write_text(_claude({"svc": {"command": "x", "args": ["${OTHER}", "${user_config.other}"]}}))
     out = gen_copilot_mcp.render(src)
     assert "${OTHER}" in out
+    assert "${user_config.other}" in out
     assert '"inputs"' not in out
 
 
 def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
     src = tmp_path / ".mcp.json"
     dst = tmp_path / "mcp.json"
-    src.write_text(_claude({"github": _gh("${GITHUB_PAT}"), "markitdown": MARKITDOWN}))
+    src.write_text(_claude({"github": _gh("${user_config.github_pat}"), "markitdown": MARKITDOWN}))
     dst.write_text(gen_copilot_mcp.render(src), encoding="utf-8")
     monkeypatch.setattr(check_copilot_mcp, "CLAUDE_MCP", src)
     monkeypatch.setattr(check_copilot_mcp, "VSCODE_MCP", dst)

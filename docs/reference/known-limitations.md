@@ -82,11 +82,11 @@ through its own **Connectors**, not the plugin-shipped
 ships, one does **not** survive Cowork — and the no-install rule separately
 takes out document conversion:
 
-- **`github`** authenticates with `Authorization: Bearer ${GITHUB_PAT}` resolved
-  from your **local shell**. The sandbox has no shell you exported that PAT into,
-  and Cowork doesn't read the CLI `.mcp.json` for credentials anyway — so the
-  plugin's GitHub server appears to "try to connect like Claude Code" and fails
-  to authenticate. **Do not rely on it in Cowork.**
+- **`github`** authenticates with `Authorization: Bearer
+  ${user_config.github_pat}`, resolved from the **plugin's user config** (prompted
+  at install, held in the OS keychain). Cowork reads neither the CLI `.mcp.json`
+  nor that config store, so the plugin's GitHub server appears to "try to connect
+  like Claude Code" and fails to authenticate. **Do not rely on it in Cowork.**
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
   that does work if the surface routes it — nothing to install, no shell secret.
 - **Office-document conversion is not a server at all** — it is the

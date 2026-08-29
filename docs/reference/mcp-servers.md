@@ -24,16 +24,16 @@ server-by-server content is reconciled by hand against the source of truth.
 !!! warning "Claude Cowork doesn't use this file — MCP config isn't shared across surfaces"
     This `.mcp.json` is read by the Claude Code **CLI / Code tab**, not by the
     **Cowork** or **Chat** tabs, which wire MCP through their own **Connectors**.
-    On Cowork the `${GITHUB_PAT}` `github` server can't authenticate (no shell to
-    export the PAT into) — so for GitHub work in Cowork, enable the **built-in
-    GitHub connector** instead. See
+    Cowork reads neither this file nor the plugin's `userConfig`, so the `github`
+    server can't authenticate there — for GitHub work in Cowork, enable the
+    **built-in GitHub connector** instead. See
     [Known limitations → Claude Cowork's sandbox](known-limitations.md#claude-coworks-sandbox-no-installs-connector-only-github).
 
 ## Servers
 
 | Server | Transport | Auth | Purpose |
 | --- | --- | --- | --- |
-| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${GITHUB_PAT}` (your shell) | Read issues, comment on PRs, inspect workflow runs. |
+| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (OS keychain) | Read issues, comment on PRs, inspect workflow runs. |
 | `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
@@ -43,10 +43,20 @@ through MCP rather than shelling out. It is the **preferred** path for
 [`/steer:tracker-sync`](skills.md), which falls back to the `gh` CLI and then a
 manual floor when no MCP tracker tool is present.
 
-The config references `${GITHUB_PAT}`; the token **never lives in the repo** —
-you export a fine-grained PAT from your shell. Full setup (required scopes, shell
-export, secret-manager option) is in the scaffold `README.md` → "GitHub MCP
-server", reachable from any bootstrapped repo.
+The config references `${user_config.github_pat}`, a **plugin user-config**
+value declared in the plugin manifest's `userConfig` block and marked
+`sensitive`. Claude Code prompts for it once when the plugin is installed and
+holds it in your **OS keychain** — there is no shell rc to edit and nothing to
+re-export per machine or per terminal. The token **never lives in the repo**.
+
+The field is **optional**: skip the prompt and the `github` server simply reports
+disconnected, which every consumer of it already handles —
+[`/steer:tracker-sync`](skills.md) falls back to the `gh` CLI and then to a
+manual floor. To set or change it later, use `claude plugin install steer
+--config github_pat=…`, or re-run the install prompt.
+
+Full setup (the required fine-grained scopes) is in the scaffold `README.md` →
+"GitHub MCP server", reachable from any bootstrapped repo.
 
 !!! warning "Never commit the token"
     Don't put the PAT in a repo file (even a gitignored one) or paste it into a
@@ -122,5 +132,6 @@ tier works out of the box.
 
 Restart Claude Code in the repo and run `/mcp`. Each configured server should
 report **connected**. A server that shows disconnected means its prerequisite is
-missing — typically a `GITHUB_PAT` not exported (for `github`). Nothing breaks
-when a server is disconnected; only that server's tools are unavailable.
+missing — typically the `github_pat` plugin config left blank (for `github`).
+Nothing breaks when a server is disconnected; only that server's tools are
+unavailable.

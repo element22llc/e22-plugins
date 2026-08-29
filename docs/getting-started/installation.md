@@ -33,7 +33,9 @@ the top of the standards block — that banner is your confirmation the rules lo
     manages** on your confirmation, and hands over `git` (a sudo command) and Docker
     Desktop (a GUI app) as steps for you to run. The issue and PR steps additionally need
     an authenticated GitHub path: check `gh auth status` (run `gh auth login` if
-    it fails), or export a `GITHUB_PAT` for the GitHub MCP server.
+    it fails), or supply the plugin's `github_pat` config value for the GitHub MCP
+    server — Claude Code prompts for it at install and stores it in your OS
+    keychain.
 
 ## Where hooks fire (surfaces)
 
