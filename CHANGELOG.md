@@ -7,6 +7,39 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: end-of-session and worktree-removal teardown are now hooks, not a
+  request.** Rules `24-worktrees` and `99-end-of-session` asked the agent to tear
+  down the services a worktree started; asking is all a rule can do, it costs
+  always-on bytes every session, and the moment it matters is the moment nobody
+  is reading a checklist. Two new registrations do it instead. `SessionEnd`
+  (`on-session-end.sh`, matcher `logout|prompt_input_exit|other`) stops a **linked
+  worktree's** containers and frees its ports, **keeping volumes** — a session
+  ending is not the worktree ending, and `clear`/`resume` are excluded outright
+  because they continue the same working session. `WorktreeRemove`
+  (`on-worktree-remove.sh`) runs the full `docker:clean` (down + volumes +
+  orphans), because the checkout is being deleted and its per-worktree volumes
+  become unreachable regardless; it acts on the payload's `worktree_path`, not on
+  `cwd`, and always exits `0` since a nonzero exit there would veto the removal
+  the dev asked for. Both are scoped to a linked worktree with a compose file and
+  a defined `docker:*` (or workspace `ws:docker:*`) task, and both are disabled by
+  `STEER_NO_WORKTREE_TEARDOWN=1`. A plain checkout's stack is never touched.
+- **Added: `check-worktree-trust.sh` also runs on `CwdChanged`.** At
+  `SessionStart` it could only cover a session that *started* in a worktree — a
+  worktree entered **mid-session** (`EnterWorktree`, a subagent's
+  `isolation: worktree`, a background session) fires no `SessionStart`, so the
+  trust step was silently skipped for exactly the worktrees an agent creates for
+  itself, and every `mise run …` there failed on trust. Not `WorktreeCreate`,
+  which looks like the precise event and cannot do the job: it runs *before* the
+  worktree exists on disk, and `mise trust -C <dir>` refuses a directory that is
+  not there yet. Re-running is free — the first `cd` in inherits the trust and
+  every later one exits before invoking `mise`; a plain checkout never reaches it.
+- **Changed: rules `24-worktrees` and `99-end-of-session` now state the hook
+  boundary** instead of carrying the teardown command as an instruction — what
+  stays the agent's job is stopping the dev servers and watchers it started, plus
+  running `mise run docker:clean` by hand for a worktree removed outside a
+  session, where no hook fires. Net effect on the always-on payload: −208 bytes on
+  disk, −60 tokens at the `code-max` ceiling.
+
 - **Changed: the GitHub MCP server's token is now plugin user config, not a shell
   export.** `.mcp.json` authenticated with `Bearer ${GITHUB_PAT}`, resolved from
   whatever shell launched Claude Code — so every teammate had to edit a `~/.zshrc`

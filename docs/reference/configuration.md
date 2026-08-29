@@ -142,9 +142,11 @@ that new headroom down to 7 bytes — leaving three factual corrections to alway
 rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
 root allowlist, a mis-cited rule heading) with nothing to spend. Then from 65,300
 to 66,500, to fund the worktree-trust step in rule `24-worktrees`: a worktree
-created with `git worktree add` mid-session is the one case no hook can reach — the
-`check-worktree-trust` session check covers a session *started* in a worktree — so
-the instruction has to be always-on to exist when it is needed. That raise also
+created with `git worktree add` **in a plain terminal** is the one case no hook can
+reach, so the instruction has to be always-on to exist when it is needed. (The
+`check-worktree-trust` check covers a session *started* in a worktree at
+`SessionStart`, and one *entered* mid-session on `CwdChanged` — see
+[Hooks → Lifecycle events](hooks.md#lifecycle-events).) That raise also
 re-armed at measured + ~1% rather than the 5-to-7-byte margins that had made each
 previous raise inevitable. Then from 66,500 to 67,300, to fund six
 **surface-scoping corrections**: rules 00, 05 and 97 told the agent a SessionStart
