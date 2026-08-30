@@ -155,7 +155,10 @@ json_notebook() { # <cwd> <session> <notebook_path>
 
 managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	mkdir -p "$1/spec"
-	printf '1.0.0\n' >"$1/spec/.version"
+	# TWO lines, comment first — the exact shape /steer:init, /steer:sync and
+	# /steer:adopt write. A bare version here hid a reader that took line 1.
+	printf '# Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.\n1.0.0\n' \
+		>"$1/spec/.version"
 	for _sf in vision.md users.md glossary.md tracker.md; do
 		printf 'x\n' >"$1/spec/${_sf}"
 	done
@@ -2389,6 +2392,10 @@ printf -- '- issue: 42\n- branch: issue/42-checkout\n' >"${WS1}/spec/.work/issue
 run_sh "${SNAP}" "${WS1}"
 assert_rc "snapshot: managed repo exits 0" "${rc}" 0
 assert_has "snapshot: spine state reported" "${out}" "state: managed"
+# The stamp is comment-first; the snapshot must report the VERSION, never the
+# comment line (/steer:next compares this against the plugin version).
+assert_has "snapshot: spec version extracted, not the comment" "${out}" "spec/.version: 1.0.0 ("
+printf '%s' "${out}" | grep -q 'spec/.version: #' && bad "snapshot: reported the managed-by comment as the version" || ok
 assert_has "snapshot: feature status surfaced" "${out}" "checkout: status=draft contract=no"
 assert_has "snapshot: real open question surfaced" "${out}" "Q-001"
 assert_has "snapshot: question fields surfaced" "${out}" "impact: blocking"

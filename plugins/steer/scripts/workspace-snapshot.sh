@@ -68,7 +68,11 @@ printf -- '- state: %s\n' "$(steer_spine_state "${ROOT}")"
 # The role changes what the state MEANS — a member's spine is partial by design,
 # so `managed` there is not the same claim as `managed` in a single-repo product.
 printf -- '- polyrepo role: %s\n' "$(steer_polyrepo_role "${ROOT}" || printf 'none (single-repo product)')"
-_spec_ver="$(head -1 "${ROOT}/spec/.version" 2>/dev/null || printf 'none')"
+# The stamp is TWO lines — a managed-by comment, then the version (init, sync
+# and adopt all write it that way), so `head -1` returns the comment. Extract the
+# version itself, exactly as /steer:sync reads this same file.
+_spec_ver="$(grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "${ROOT}/spec/.version" \
+	2>/dev/null || printf 'none')"
 _plug_ver="$(sed -n 's/.*"version"[^"]*"\([^"]*\)".*/\1/p' \
 	"${PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null | head -1)"
 printf -- '- spec/.version: %s (plugin: %s)\n' "${_spec_ver}" "${_plug_ver:-unknown}"

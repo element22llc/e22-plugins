@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:next` compared a comment against the plugin version.**
+  `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
+  `/steer:adopt` and `/steer:sync` all write that stamp as two lines with the
+  managed-by comment first — so every managed repo's snapshot reported the
+  comment where the version belongs, and the version-drift check never compared
+  two versions. It now extracts the version exactly as `/steer:sync` reads the
+  same file. The hook-test fixture wrote a bare version, which is why the suite
+  passed over it; it now writes the real two-line stamp.
+
 - **Added: `lspServers` in `plugin.json` — real compiler diagnostics on the edit
   path.** Two language servers matching the stack defaults in rule `10-stack`:
   `typescript-language-server` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs`
