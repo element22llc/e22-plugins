@@ -15,7 +15,7 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
-  - Task
+  - Agent
   - WebFetch
   - Bash(git status*)
   - Bash(git diff*)
@@ -28,6 +28,9 @@ allowed-tools:
   - Bash(git rev-parse*)
   - Bash(git describe*)
   - Bash(git worktree*)
+  - Bash(git show*)
+  - Bash(git blame*)
+  - Bash(git merge-base*)
   - Bash(grep*)
   - Bash(gh run list*)
   - Bash(gh run view*)
@@ -86,10 +89,18 @@ There is a third effect, and it is **pure waste**:
    a docs build, seven subagents) auditing your own invention. In the run this
    guidance came from, **most of rounds 2 and 3 was correcting prose the previous
    round had written**: round 1's replacement text claimed `/steer:sync` does not
-   deliver the scaffold `.gitattributes` (it had, since v3.12.0 — nine releases
-   back, routed through `scaffold_reconcile.py` by `MANIFEST.md:46`); round 2
-   invented a version-pin claim about `/steer:audit` and credited a gate with
-   reading `uv.lock`/`mise.lock` that `scan-version-pins.sh` never scans.
+   deliver the scaffold `.gitattributes` — it does, and has for many releases, via
+   the same `scaffold_reconcile.py` route the scaffold `MANIFEST.md` gives every
+   other scaffold dotfile; round 2 invented a version-pin claim about
+   `/steer:audit` and credited a gate with reading `uv.lock`/`mise.lock` that
+   `scan-version-pins.sh` never scans.
+
+   This paragraph is itself the worked example. Until this revision it dated that
+   `.gitattributes` claim to a specific release "nine releases back" and cited the
+   manifest row as `MANIFEST.md:46`. The release count was wrong by the time
+   anyone read it, and the line number survives only until a row is inserted above
+   it. **A cautionary note about over-precise claims is not exempt from rule 4.**
+   Neither is anything else you are about to write.
 
 Effects 1–2 are why the loop exists. Effect 3 is what the claim discipline in
 **L3.d**, the self-review in **L3.e**, and **L4 condition 5** exist to prevent:
@@ -110,6 +121,18 @@ re-derives and contradicts. `L3.d` rule 4 is the specific defence.
 
 Each round costs a full `mise run ci`, a strict docs build, and seven subagents.
 State the parameters up front so the user knows what they authorized.
+
+**The `allowed-tools` grant does not survive the user's reply.** Per the Claude
+Code skills reference, a skill's `allowed-tools` grants permission *for the turn
+that invokes the skill*, and **the grant clears when the user sends their next
+message** — the skill body stays in context, the permissions do not. So every
+tool call after the first user reply is governed by the project's own permission
+settings alone. `.claude/settings.json` covers the common ones (`mise run *`,
+`uv run python scripts/*`, the read-only `git` verbs); anything outside it will
+prompt. That is not a failure — approve and continue — but do not read a prompt
+for a command this skill pre-authorized as a sign something is wrong, and do not
+abandon a step because it started prompting. Durable rules belong in
+`.claude/settings.json`, not in frontmatter.
 
 ## L2. Pre-flight, then isolate and branch — *before* the first round.
 
@@ -144,8 +167,18 @@ Execute [`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md)
 Never trim the dimension set to save a round on a hunch; a dimension you skipped
 because it *felt* unaffected is a finding `/release` hands back to you later.
 
-**The one permitted trim, and its evidence bar.** From **round 3 on**, a dimension
-may be skipped when **all three** hold, and only then:
+**Never trim the round that declares convergence.** A trim is a bet that a
+dimension had nothing to say; the confirming round is the one whose coverage claim
+the entire PR rests on, and it is the one place that bet is not affordable. So:
+**if a round comes back with zero actionable findings — i.e. it is about to fire
+L4 condition 1 — it must have run all six dimensions and both halves of Step 4.**
+A trimmed round can never be the converging round. If you trimmed and the round
+then came back clean, you have not converged: run the skipped dimensions before
+claiming it. This is not a rewording of the disclosure rule below — disclosure
+makes a gap visible, this forbids the gap.
+
+**The one permitted trim, and its evidence bar.** In a **non-final** round, from
+**round 3 on**, a dimension may be skipped when **all three** hold, and only then:
 
 1. it returned **zero** blocker/high/medium in **every** prior round of this loop;
 2. the previous round's **file list** (`git show --stat` on that round's commit)
@@ -164,9 +197,9 @@ may be skipped when **all three** hold, and only then:
 | 6. Behavioural coherence | `rules/`, `skills/`, `templates/` | Rarely |
 
 Read that table before claiming a skip. The run this guidance came from skipped 2, 4
-and 5 in its confirming round: 2 and 5 were clean by this test, **4 was not** — the
-round had edited shipped skills and an agent file, which are exactly dimension 4's
-inputs. Cheap to run, and it should have been run.
+and 5 in its **confirming** round: 2 and 5 were clean by this test, **4 was not** —
+the round had edited shipped skills and an agent file, which are exactly dimension
+4's inputs. Under the rule above that round could not have trimmed at all.
 
 Two further caller-specific adjustments:
 
@@ -188,9 +221,25 @@ Keep a running table across rounds — it is the report and the PR body:
 For each finding also keep its identity (`path` + the one-line claim), its
 disposition (`fixable-in-tree` / `out-of-tree`), and its **origin** —
 `pre-existing` or `self-inflicted` (introduced by an earlier round of *this*
-loop; `git log -- <path>` on the branch settles it in one command). L4's guards
-compare identity across rounds, and the self-inflicted count is the number that
-tells you whether the loop is converging or chasing itself.
+loop). L4's guards compare identity across rounds, and the self-inflicted count
+is the number that tells you whether the loop is converging or chasing itself.
+
+**Compute the origin; never recall it.** `git log -- <path>` is too coarse to
+settle this — rounds routinely re-touch a file an earlier round touched, so
+path-level history says "we edited this" about findings that are genuinely
+pre-existing. Ask the question at the **line** the finding cites:
+
+```sh
+sha=$(git blame -L <line>,<line> --porcelain -- <path> | head -1 | cut -d' ' -f1)
+git merge-base --is-ancestor "$sha" origin/main && echo pre-existing || echo self-inflicted
+```
+
+If the line that carries the incoherence was written by a commit already on
+`origin/main`, the finding is `pre-existing` however much this loop has since
+edited around it; if it was written by one of this branch's own round commits, it
+is `self-inflicted`, and **L4 condition 5** is then arithmetic rather than a
+judgment call. Record the sha in the ledger row so a reviewer can re-run the same
+two lines.
 
 Keep a second, smaller ledger: the **claim log**. One row per factual assertion
 the round's own fixes wrote into prose, with the source that proves it (see
@@ -211,8 +260,28 @@ Apply the **minimal targeted** change each finding calls for:
 - **Every fix touching `plugins/steer/` gets its own `CHANGELOG.md` bullet** under
   the existing `## steer` → `### [Unreleased]` heading. Append; never recreate or
   rename the heading (`.gitattributes` `merge=union` depends on it being
-  persistent). Without the bullet, `check_changelog.py --base` fails the PR — a
-  self-inflicted finding.
+  persistent).
+
+  **Do not expect a gate to catch a missing bullet on this branch.**
+  `check_changelog.py --base` asks only whether `CHANGELOG.md` is *in the changed
+  set* — not whether a bullet was added, and not whether it describes this round.
+  It diffs `origin/main...HEAD`, i.e. the whole branch, so round 1 touching
+  `CHANGELOG.md` satisfies it permanently and it can never fire again for rounds
+  2+. `check_docs_impact.py --base` is coarse in exactly the same way ("any docs
+  change clears the gate", per its own docstring). What actually catches a missing
+  bullet is the **next round's dimension 1** — one full round later. The per-round
+  re-run in **L3.f** is what closes that window; the bullet is your job either way.
+
+- **Editing a bullet an earlier round wrote is not merge-safe — verify it after
+  any rebase or merge.** `CHANGELOG.md` is `merge=union`, and union resolves a
+  *conflicting* hunk by keeping **both** sides' lines. A round that deletes or
+  rewords a bullet an earlier round added is fine in isolation, but if a
+  concurrent PR has added bullets in the same region, the merge can silently
+  resurrect the wording you retracted — with no conflict marker and no gate
+  complaint. After any rebase or merge of this branch, `grep` the CHANGELOG for
+  the retracted phrasing. (`/release` Phase A dimension 1, run from `main` after
+  this PR merges, is the real safety net for this — which is one more reason
+  **L6** forbids skipping it.)
 - **Docs findings** — follow the `/plugin-docs` procedure
   (`.claude/skills/plugin-docs/SKILL.md`) rather than hand-editing; the generated
   pages under `docs/reference/` are reconciled from the plugin, not authored.
@@ -248,6 +317,19 @@ Apply the **minimal targeted** change each finding calls for:
   absent — and a fixable half that was real plugin incoherence: three skills
   enumerating a merge set that excluded a file their own helper had always
   handled.)
+- **The loop's own machinery is out of scope for in-round fixes.** Findings
+  against [`.claude/audit/**`](../../audit/) or against
+  `.claude/skills/{release,quick-release,audit-loop}/**` are **reported as
+  residue, never fixed in-round** — regardless of severity. Editing the procedure
+  while executing it means round N+1 runs under different rules than round N, so
+  the ledger stops comparing like with like and the convergence claim quietly
+  loses its meaning. (Round 2 of the run this guidance came from edited both
+  release skills mid-loop; every later round's coverage numbers are, strictly,
+  uncomparable to round 1's because of it.) Vet the finding, cite `path:line`, put
+  it in the residue as a named follow-up for its own PR, and leave the file alone.
+  These paths ship nothing, so nothing about a release is blocked by deferring
+  them.
+
 - **Stay on this branch's concern.** A finding that is below the `--severity`
   threshold *and* unrelated to what this convergence is about gets **reported,
   not folded in** — CLAUDE.md's one-PR-one-concern rule binds this skill like any
@@ -348,6 +430,28 @@ worth stating too.
   round 2 found the two that fixing them exposed, round 3 was clean.
 - Commits and pushes are **intentionally not pre-authorized** in the frontmatter —
   they prompt once per round, which is the human gate on a loop that edits code.
+- **Then re-run the two branch-diff gates against the *previous* round**, not
+  against `origin/main`. Capture the pre-round `HEAD` before you commit (call it
+  `$PREV`), and after committing run:
+
+  ```sh
+  uv run python scripts/check_changelog.py   --base "$PREV"
+  uv run python scripts/check_docs_impact.py --base "$PREV"
+  ```
+
+  Run against `origin/main` — which is what `mise run ci`'s `delivery-gates` does
+  — both gates are satisfied branch-wide by round 1 and say nothing about rounds
+  2+ (see **L3.d**). Re-based on `$PREV` they ask the question that actually
+  matters each round: *did this round's own fixes carry their own changelog bullet
+  and their own docs update?* A red gate here is a self-inflicted dimension-1 or
+  docs finding you would otherwise pay a full round to discover. Fix it inside
+  this round with `git commit --amend`, and re-run.
+
+  Both commands are already covered by the `Bash(uv run python scripts/*)` grant,
+  so this adds no prompt. Do not try to reach them through
+  `DELIVERY_GATES_BASE=… mise run delivery-gates`: a leading environment
+  assignment changes the command string the permission matcher sees, so that form
+  prompts where the direct calls do not.
 
 ---
 
@@ -355,9 +459,16 @@ worth stating too.
 
 Evaluate in order, before fixing:
 
-1. **Converged.** Zero actionable findings this round **and the round then makes
-   no edits**. Both halves are required, and the second is the one that gets
-   dropped: a round with zero *actionable* findings can still be sitting on a pile
+1. **Converged.** Zero actionable findings this round, **the round ran all six
+   dimensions untrimmed** (**L3.a**), **and the round then makes no edits**. All
+   three are required.
+
+   The first is the one people read as the whole condition; the other two are what
+   make it mean anything. A trimmed round that comes back clean has not converged —
+   it has come back quiet about whatever it didn't run — so run the skipped
+   dimensions and re-evaluate this condition on the result.
+
+   The no-edits half is the one that gets dropped: a round with zero *actionable* findings can still be sitting on a pile
    of below-threshold ones, and fixing those makes the tree you ship different
    from the tree that just came back clean. There is then no confirming pass —
    only an unaudited diff wearing a clean round's badge. (The run this guidance
@@ -381,20 +492,28 @@ Evaluate in order, before fixing:
    on *that* finding: report it, the fix that didn't take, and hand it to the
    human. (Finish the round's other fixes first — one recurring finding shouldn't
    strand the rest.)
-5. **Self-inflicted majority — narrow the next round instead of running it wide.**
-   Not a stop; a **forced change of mode**. When self-inflicted findings are at
-   least **half** of a round's actionable set, the loop is auditing itself, and
-   another full round buys nothing. The next round then:
-   - fixes the self-inflicted set by **deletion or narrowing** (**L3.d**), never by
-     a further rewording — a third attempt at the same sentence is the failure mode,
-     not the fix;
-   - writes **no new factual prose** beyond what a finding strictly requires; and
-   - **says so in the ledger** — "round N ran narrow: X of Y findings were ours".
+5. **Narrow prose mode — on by default from round 2.** Not a stop; a **mode**.
+   Every round after the first runs narrow unless a `[blocker]` requires
+   otherwise:
+   - a self-inflicted finding is fixed by **deletion or narrowing** (**L3.d**),
+     never by a further rewording — a third attempt at the same sentence is the
+     failure mode, not the fix;
+   - the round writes **no new factual prose** beyond what a finding strictly
+     requires. A `[blocker]` may earn new prose; nothing below it does; and
+   - the ledger **says so** — "round N ran narrow: X of Y findings were ours".
 
-   Report the self-inflicted count every round even when it is zero, so this
-   condition is evaluable rather than reconstructed at the end. The run this
-   guidance came from scored 6, 6, 3 — it hit this condition twice and had no rule
-   to name it, so rounds 2 and 3 each ran wide over prose the prior round wrote.
+   **Why the default, rather than a threshold.** This used to trigger only once
+   self-inflicted findings reached half of a round's actionable set — i.e. only
+   after the loop was already auditing itself, using data the triggering round
+   didn't have yet. The run this guidance came from shows why that is too late:
+   its round-2 commit message opens *"Five findings, **every one** a consequence
+   of a round-1 fix"*. A threshold evaluated at the start of round 2 had nothing
+   to fire on; the waste had already been committed. Round 2 is where the loop
+   first has its own prose in the tree, so round 2 is where the restraint starts.
+
+   Report the self-inflicted count every round even when it is zero — the count
+   is what tells you whether the loop is converging or chasing itself, and it must
+   be in the ledger as it goes rather than reconstructed at the end.
 6. **Out-of-tree only.** Every remaining finding is `out-of-tree` (a workflow to
    re-run, an upstream SHA to bump, a GitHub setting, a human decision). No number
    of rounds resolves these. → stop; list them as the human's checklist.
@@ -418,11 +537,16 @@ loop keeps going, narrower.
    - the **claim log** for every prose fix that asserted a fact, with the source
      each was verified against, so the reviewer checks claims instead of
      re-deriving them;
-   - the final-round statement: which dimensions were checked, which came back
-     clean, and **that the final round made no edits** — i.e. the tree in this PR
-     is exactly the tree that audited clean. Name every dimension the final round
-     **skipped** under L3.a, with the file-list evidence for each: a reader must
-     never have to infer coverage from silence.
+   - the final-round statement: **that the final round ran all six dimensions
+     untrimmed**, which came back clean, and **that the final round made no
+     edits** — i.e. the tree in this PR is exactly the tree that audited clean.
+     Under L4 condition 1 the converging round cannot have skipped a dimension, so
+     this is an affirmative claim to make, not a list of exceptions to disclose.
+     Name any dimension an *earlier* round skipped under L3.a, with its file-list
+     evidence: a reader must never have to infer coverage from silence;
+   - the **residue of findings against the loop's own machinery** (`.claude/audit/`,
+     the release-path skills) that L3.d held out of scope, so they are picked up in
+     their own PR rather than lost.
 3. **Report to the user:** rounds run, findings fixed by severity, residue, branch,
    PR URL, final gate result. State plainly that a clean final round is strong
    evidence — not a guarantee — that `/release` Phase A will pass in one pass.

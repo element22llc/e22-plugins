@@ -51,9 +51,29 @@ procedure just verifies it.
 Blocking, mechanical problems must surface before any human-judgment review, and
 before the version bump — not at the end where a red gate wastes the bump work.
 
-- **`mise run ci`** — the full CI-equivalent gate (lint, plugin-check, fixtures,
-  test, shell, hooktests, version-scan, docs:check, delivery-gates). Report a
-  per-gate pass/fail line.
+- **`mise run ci`** — the repo's full local gate. Report a per-gate pass/fail
+  line, reading the gate names off the run itself; `mise tasks` and `CLAUDE.md`
+  are the places that describe the set. **Do not restate the task list here** — a
+  list copied into prose goes stale the moment a task is added, and this one had
+  (it was missing `typecheck`, `actions` and `actions-security` for several
+  releases while claiming to be complete).
+- **`mise run ci` is not the whole of CI.** `plugin-quality.yml` also runs a
+  second job, `validator-compat`, which re-runs `claude plugin validate --strict`
+  against **latest** Claude Code. It is `continue-on-error: true` — correctly
+  non-blocking on a PR, since it tracks upstream, not the diff — and `mise run ci`
+  pins its own CLI, so nothing local covers it. At *release* time it matters, because
+  the release ships to consumers who are on latest:
+
+  ```sh
+  gh run list --workflow=plugin-quality.yml --branch main --limit 5
+  gh run view <id>   # read the validator-compat job specifically
+  ```
+
+  A failed `validator-compat` on `main` is **`[high]`**, not a blocker — the
+  pinned job stays authoritative — but it must appear in the report by name.
+  Shipping over a known upstream-schema break is a decision the user makes
+  deliberately, not one they make by not being told. If `gh` is unavailable, say
+  **`[warn] validator-compat not verified`**; never infer it from the pinned job.
 - **`mise run docs:build`** — the **strict** Zensical build (fails on broken
   links / nav). This is **not** part of `mise run ci`; it normally runs only in
   the `docs-deploy.yml` build job. Run it here because the GitHub Pages deploy
@@ -73,7 +93,8 @@ A failing deterministic check is a `[blocker]` by definition.
 Deterministic checks prove *structure*; they cannot judge *coherence* — a skill
 whose description no longer matches its body, a `[Unreleased]` bullet that
 overstates a change, a rule that contradicts a skill. Dispatch **read-only**
-review subagents (the `Task` tool, `subagent_type: general-purpose`), **one per
+review subagents (the `Agent` tool — named `Task` before Claude Code v2.1.63,
+which still works as an alias — with `subagent_type: general-purpose`), **one per
 dimension, in parallel**. Each subagent is told: *read-only; every finding must
 carry `path:line` evidence and a one-line statement of the incoherence; default
 to silence over speculation.* The dimensions:
@@ -82,9 +103,12 @@ to silence over speculation.* The dimensions:
    `git diff $LAST_RELEASE..HEAD -- plugins/steer/` and the `### [Unreleased]`
    bullets. Flag (a) any bullet with no corresponding change in the diff
    (overstated/phantom entry), and (b) any behavior-affecting change under
-   `plugins/steer/` with **no** bullet (`check_changelog.py --base` enforces this
-   per-PR, but the *accumulated* set can still have gaps). Note whether the
-   highest-impact bullet implies a larger bump than a naive reading.
+   `plugins/steer/` with **no** bullet. Do not assume `check_changelog.py --base`
+   has already covered (b): that gate asks only whether `CHANGELOG.md` is in the
+   PR's changed set, not whether a bullet was added or whether it describes the
+   change — so a PR that touches the file for any reason clears it. This
+   dimension is the only thing that reads bullets against the diff. Note whether
+   the highest-impact bullet implies a larger bump than a naive reading.
 2. **Version & manifest coherence.** The three version-bearing manifests
    (`plugins/steer/.claude-plugin/plugin.json`,
    `plugins/steer/.github/plugin/plugin.json`,
@@ -127,7 +151,7 @@ Cover both:
 
 ### 4a. Accuracy (judgment)
 
-Dispatch the **`documentation-reviewer`** subagent (`Task`,
+Dispatch the **`documentation-reviewer`** subagent (`Agent`,
 `subagent_type: documentation-reviewer`) to deep-review `docs/` against the
 plugin source of truth (skill frontmatter, `hooks.json`, rules) for staleness,
 coverage gaps, and claims that don't trace back to source. Fold its
@@ -189,3 +213,13 @@ count → top finding) followed by a severity-ordered list, each finding with
 
 State plainly when a dimension came back **clean** — silence must never be
 mistaken for "not checked."
+
+**A dimension that did not return usable output is not clean.** If a review
+subagent errors, returns empty, or comes back with something that isn't a
+findings list, **re-dispatch it once**. If the second attempt also fails, report
+that dimension as **`[warn] dimension N not verified`** and name it in the
+report, the caller's gate decision, and the PR body. It never counts toward a
+clean round, and for `/audit-loop` it means **L4 condition 1 cannot fire** — a
+round with an unverified dimension has not converged. Folding a failed dispatch
+into the clean count is the one way this procedure can report coverage it does
+not have.
