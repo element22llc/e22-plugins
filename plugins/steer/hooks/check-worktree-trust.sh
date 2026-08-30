@@ -61,9 +61,9 @@
 #   second registration stdout goes to the debug log and is not shown. The
 #   `mise trust -C` SIDE EFFECT — the reason that registration exists — works on
 #   both paths; what is lost mid-session are the notices below that ask the HUMAN
-#   to act. Surfacing them on `CwdChanged` is an open change, not an oversight —
-#   see the pre-release audit residue. Two documented channels exist for it, so do
-#   not assume one: `systemMessage` in JSON output (shown as a brief terminal
+#   to act. Surfacing them on `CwdChanged` is an open change, not an oversight,
+#   tracked in the plugin's known limitations. Two documented channels exist for
+#   it, so do not assume one: `systemMessage` in JSON output (shown as a brief terminal
 #   notification) and stderr on an `exit 2`. Until that lands, do not describe this
 #   hook's mid-session notices as reaching the user.
 #   (Upstream, verified verbatim:
@@ -80,8 +80,9 @@
 #   `gitdir:` pointer by steer_primary_worktree, no subprocess — so a plain checkout,
 #   the overwhelmingly common case, exits before `mise` is ever invoked and pays
 #   nothing. `mise trust --show` is the authority on both trust states (it prints one
-#   `<dir>: trusted|untrusted` line per config directory); this hook never inspects
-#   the trust store itself. Trust is applied with `mise trust -C <worktree>`, which
+#   `<dir>: trusted|untrusted` line per config directory, abbreviating the home
+#   directory to `~`); this hook never inspects the trust store itself. Trust is
+#   applied with `mise trust -C <worktree>`, which
 #   marks the DIRECTORY — covering `mise.toml` and any `mise.local.toml` carried in
 #   by `.worktreeinclude` — and is exactly what a human typing `mise trust` there
 #   would do.
@@ -116,14 +117,60 @@ command -v mise >/dev/null 2>&1 || exit 0
 # steer_trust_state <dir> — 'trusted' / 'untrusted' / '' (no config there).
 # `mise trust --show` lists the directory of every config on the path, ancestors
 # included, so the line must be matched on the EXACT directory.
+#
+# It ABBREVIATES the home directory to `~`, while the dir we are given is absolute
+# (steer_repo_root ends in `pwd -P`). Matching only the absolute form never fires
+# for a repo under home — which is where worktrees normally live — so the caller
+# read '', treated it as "no mise config here", and exited silently: trust was
+# never inherited.
+#
+# mise resolves that home from $HOME when it is set, falling back to the OS home
+# when it is not, and it substitutes $HOME LITERALLY — so a trailing slash yields
+# `~Documents/…` with no separator. Build both forms it could print (from $HOME as
+# given, and from $HOME with trailing slashes trimmed) and compare for EQUALITY
+# against either, or against the absolute path.
+#
+# Equality, never a suffix. Ancestors are listed too, and matching them loosely is
+# how an earlier attempt let an ancestor's state stand in for this directory's —
+# which at the PRIMARY call site (it branches on `!= trusted`) skipped the
+# "no mise config at all, ask the user" notice and CREATED trust, the one thing
+# this hook must never do. An ancestor's path can never equal ours, so equality
+# closes that by construction rather than by another heuristic.
+#
+# If $HOME is unset, no abbreviated form is built, nothing matches, and the caller
+# gets '' — the hook stays silent and changes nothing. That is the pre-fix
+# behaviour and it is the safe direction to fail in.
+steer_abbrev_home() { # <dir> <home> — the `~` form mise would print, else <dir>
+	[ -n "$2" ] || {
+		printf '%s' "$1"
+		return 0
+	}
+	case "$1" in
+	"$2") printf '~' ;;
+	"$2"/*) printf '~%s' "${1#"$2"}" ;;
+	"$2"*) printf '~%s' "${1#"$2"}" ;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
 steer_trust_state() {
+	_home="${HOME:-}"
+	_trim="${_home}"
+	while :; do
+		case "${_trim}" in
+		?*/) _trim="${_trim%/}" ;;
+		*) break ;;
+		esac
+	done
+	_abbrev="$(steer_abbrev_home "$1" "${_home}")"
+	_abbrev2="$(steer_abbrev_home "$1" "${_trim}")"
 	mise trust --show -C "$1" 2>/dev/null | while IFS= read -r _line; do
 		case "${_line}" in
-		"$1: trusted")
+		"$1: trusted" | "${_abbrev}: trusted" | "${_abbrev2}: trusted")
 			printf 'trusted'
 			break
 			;;
-		"$1: untrusted")
+		"$1: untrusted" | "${_abbrev}: untrusted" | "${_abbrev2}: untrusted")
 			printf 'untrusted'
 			break
 			;;

@@ -311,3 +311,42 @@ there is no automatic retry. Mitigation:
     installed `hooks/` and `scripts/` for CR before anything else and reports it
     as an install fault, with the repair. See
     [Windows setup → Line endings](../getting-started/windows-setup.md#line-endings).
+
+## The cross-tool `.agents/skills/` tree: shared-bundle links are not fetchable
+
+steer ships the real skill bodies to `.agents/skills/` so Copilot, Cursor, Gemini
+CLI and Codex read the same procedures Claude Code does. Three things are
+rewritten on the way out, because they do not travel (the full table is in
+[Copilot support](../concepts/copilot-support.md#skills-on-copilot)); one of them
+is **known to be incomplete**, and it is recorded here rather than left to be rediscovered.
+
+References to **shared** files — anything a skill points at outside its own
+directory — are rewritten to URLs on this public repo instead of being vendored
+into every consumer repo. Two defects in that rewrite are open:
+
+- The URLs point at GitHub's **HTML `blob/` view**, so fetching one returns a
+  rendered web page rather than the file's bytes. `raw.githubusercontent.com` is
+  the form that returns content — **except for a directory URL**, which has no
+  raw equivalent at all.
+- The rewrite is applied **unconditionally, including inside runnable command
+  lines**, so the generated tree contains `sh "https://…"` and `python3
+  "https://…"` invocations that cannot execute on any surface.
+
+**What this means in practice.** The rewrite is unconditional, so this is
+systemic rather than a short list of affected skills: **any step that depends on
+reading a shared file or running a shared script does not work on a non-Claude
+surface.** Some skills lose only a link; others lose their procedure, because
+fetching the file *is* the step — `steer-standards` is the extreme case: its one
+actionable step is a directory URL to read the rules from, and a directory URL has
+no `raw.` equivalent to fall back on. Treat the portable tree as reliable for
+*guidance* and unreliable for any instruction that reaches outside the skill's own
+directory.
+
+On Claude Code none of this applies: it reads the skills from the installed
+plugin, where every path resolves normally.
+
+Neither is fixed on this release. The first is a one-line change nobody has
+made; fixing the second is a design question — vendor the few helper scripts, fetch
+them to a temp file first, or drop those command blocks from the portable copy —
+so it is deliberately unpatched rather than guessed at. `scripts/gen_agent_skills.py`
+carries the same note in its module docstring.

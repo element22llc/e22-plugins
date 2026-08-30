@@ -71,7 +71,11 @@ Detected by the placeholders above. Follow the full procedure in
 scan + one-round interview → batch the edits for confirmation → pin the
 toolchain (the canonical procedure in `/steer-reference conventions`) → replace
 or remove the starter app → adapt the standard `mise` tasks → back-fill the
-newer scaffold artifacts (living-docs spine, `ARCHITECTURE.md`, PR template).
+newer scaffold artifacts (living-docs spine, `ARCHITECTURE.md`, PR template) →
+**walk the migration ledger, then stamp `spec/.version`**. The ledger comes
+first: a fork predates the version-keyed entries, and stamping before applying
+them makes `/steer-sync` skip them for good. The stamp is what makes the fork
+`managed` rather than `foreign`.
 Deliver per Commit autonomy — commit, push, open the PR; the merge review is
 what waits for the dev. If the scan finds no placeholders and a complete spine
 exists, setup already ran — confirm and move on, don't re-propose it.

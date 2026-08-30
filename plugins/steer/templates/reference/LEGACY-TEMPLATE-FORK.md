@@ -81,6 +81,28 @@ the old template lacked.
    drift-gate and living-docs checklists come in (additive — never drop sections
    the team added).
 
+8. **Walk the migration ledger, then stamp.** A fork of the old template predates
+   the plugin, so it predates the **version-keyed** entries in
+   `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md` too. Stamping first
+   would defeat them: `/steer:sync` skips every version-keyed entry at or below the
+   stamp, so writing today's version onto a repo that never received those
+   transforms silently retires them on exactly the repos furthest behind. So walk
+   the ledger **first** — test each entry's precondition against this repo and
+   apply the ones that match, oldest first — and only then write `/spec/.version`
+   with the current plugin version (resolve it from
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory), in the
+   same two-line form the plugin-driven path writes:
+
+   ```
+   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.
+   <plugin version>
+   ```
+
+   The stamp is what makes the repo **managed** rather than `foreign`: without it
+   the fork keeps every spine file but `/steer:setup` still routes it to
+   `/steer:adopt`, and the "already ran" guard below — which tests this stamp —
+   can never fire.
+
 **When the repo is already customized:** if the scan finds no placeholders
 **and** a complete spine exists (`spec/.version` plus the spine files), this
 setup has already run — do not re-propose it; confirm the repo is set up and

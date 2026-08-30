@@ -7,6 +7,108 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:build` never stamped the spine, so a PO-bootstrapped repo stayed
+  `foreign` forever.** `/steer:build` is a bootstrap front door in its own right —
+  it re-implements the `init` flow rather than calling it, because the PO never runs
+  `/steer:init` directly — but it was the one bootstrap path that never wrote
+  `spec/.version`. The spine it produces is complete, so the repo *looked* managed
+  and behaved as though it were not: `/steer:setup` kept routing it to
+  `/steer:adopt`, the unmanaged-repo hook warned every session, the write-nudge hook
+  kept suggesting adoption, and `/steer:sync` read it as `unstamped`. It now stamps
+  once the spine files are in place, in the same two-line form `/steer:init` and
+  `/steer:adopt` write.
+
+- **Fixed: the worktree trust lookup now matches on equality, not a suffix.**
+  `mise trust --show` abbreviates the home directory to `~`, so the lookup has to
+  compare an absolute path against a possibly-abbreviated line. It now builds the
+  abbreviated form from `$HOME` — both as given and with trailing slashes trimmed,
+  because mise substitutes `$HOME` literally and a trailing slash yields
+  `~Documents/…` with no separator — and compares for **equality** against that or
+  the absolute path. Nothing is matched by suffix any more, which closes the way an
+  *ancestor's* trust state could stand in for this directory's: mise lists ancestors
+  too, and at the primary-checkout call site (it branches on `!= trusted`) an
+  ancestor-derived `trusted` skipped the "no mise config at all, ask the user"
+  notice and created trust — the one thing the hook must never do. An ancestor's
+  path can never equal ours, so equality closes it by construction. With `$HOME`
+  unset nothing matches and the hook stays silent, which is the safe direction.
+  Three regression cases pin it: a home-relative worktree, an ancestor line that
+  must not mask the worktree, and a config-less primary with a trusted
+  suffix-colliding ancestor that must still ask the human.
+- **Added: `validate_docs.py` fails on a duplicated section heading.** A bad edit
+  can re-emit a whole block of a page; nothing caught it, because the copy is
+  valid Markdown, every link still resolves and the build is happy — so a page
+  could ship two versions of a section that contradict each other the moment one
+  is updated. Fenced code is skipped so a `##` comment inside a shell block is not
+  mistaken for a heading. (Docs tooling — it ships nothing to consumers.)
+
+- **Fixed: `/steer:init` Path A never stamped the spine.** The legacy-template-fork
+  path back-fills every spine artifact but never wrote `spec/.version`, so a
+  completed Path A run could not reach init's own stated end state: the repo stayed
+  `foreign`, `/steer:setup` kept routing it to `/steer:adopt`, and the procedure's
+  own "already ran" guard — which tests that stamp — could never fire. Path A now
+  walks the migration ledger and then stamps, in the same two-line form the
+  plugin-driven path writes. The ledger walk comes first on purpose: a fork of the
+  old template predates the version-keyed entries, and stamping before applying
+  them would make `/steer:sync` skip them permanently — retiring those transforms
+  on exactly the repos furthest behind.
+- **Fixed: the worktree trust lookup could read an *ancestor's* trust state.**
+  `mise trust --show` lists every config directory on the path, **ancestors first**,
+  so a repo under `~/work` with a worktree named `work` matched the `~/work` line
+  before the worktree's own. Taking the first match therefore returned the
+  ancestor's state — and an inherited `trusted` made the hook exit without
+  inheriting anything, silently restoring the bug it exists to fix. The deepest
+  match now wins. Both this and the retired-prompt-file drift check are pinned by
+  regression cases; the `mise` stub grew ancestor lines so the suite exercises the
+  ordering at all.
+- **Fixed: `/steer:adr`'s bootstrap carve-out missed `/steer:build`.** It named
+  `/steer:init` and `/steer:adopt`, but `/steer:build` is the third bootstrap front
+  door and also invokes `/steer:adr` before any stamp exists, so it still aborted.
+
+- **Fixed: `/steer:adr` refused to run for the skills that call it during
+  bootstrap.** Step 1 stops and routes to `/steer:init` / `/steer:adopt` when
+  `spec/.version` is absent — but a bootstrap writes that stamp *last*, while
+  invoking `/steer:adr` well before it. The gate therefore aborted the very
+  callers it exists to route to, and sent the agent back into the skill already running; the same
+  file's step 5 had meanwhile blessed the init step-4 call path outright, so `adr`
+  both required and forbade it. The stamp test now applies to a **direct**
+  invocation, and a bootstrap calling in proceeds.
+- **Fixed: a `.github/prompts/` the migration deliberately preserves no longer
+  reports permanent drift.** `scan-capabilities.sh` flagged the *directory*, while
+  the ledger entry retiring that surface tells the applier to delete only
+  `steer-*.prompt.md` and "leave the directory standing around" a prompt file the
+  team wrote themselves. A repo that followed the migration exactly was then wedged
+  at `agent-surface-current: mis-wired`, and the capability's repair — a verbatim
+  re-copy — can delete nothing, so nothing could clear it. The check now keys on
+  steer's own retired artifacts, matching both the scanner's own comment and the
+  ledger.
+
+- **Fixed: worktree `mise` trust inheritance never fired for a repo under `$HOME`.**
+  `mise trust --show` abbreviates the home directory to `~` in the
+  `<dir>: trusted|untrusted` lines it prints, but `check-worktree-trust.sh` matched
+  them against the absolute path it resolves with `pwd -P`. Neither arm matched, the
+  helper returned empty, and the caller read that as "no mise config here" and exited
+  silently — so in a repo under `$HOME` the hook inherited **nothing**, on both its
+  `SessionStart` and `CwdChanged` registrations. It now matches the abbreviated form
+  as well. The hook suite passed over this because its `mise` stub printed the
+  un-abbreviated path and its fixtures live outside `$HOME`; the stub now abbreviates
+  the way mise does, and a regression case pins the home-relative path. The match
+  is structural — exact directory, or a `~`-prefixed one whose remainder is a
+  suffix of the directory asked about — rather than reconstructed from `$HOME`,
+  which is unreliable in both directions: mise abbreviates even with `$HOME` unset
+  (falling back to the OS home), and a `$HOME` with a trailing slash yields
+  `~Documents/…` with no separator. Either would silently revert to the bug.
+- **Documented: the cross-tool `.agents/skills/` tree's shared-bundle links are not
+  fetchable, and some command lines in it cannot run.** The rewrite that turns shared
+  references into URLs points at GitHub's HTML `blob/` view rather than
+  `raw.githubusercontent.com`, and it is applied unconditionally — including inside
+  runnable command lines, which therefore ship as `sh "https://…"`. Both were known
+  and deliberately left unpatched (fixing the second is a design question), but they
+  were recorded only in `gen_agent_skills.py`'s own docstring, where no consumer
+  would find them. `docs/reference/known-limitations.md` now carries them, with what
+  it does and does not affect — including that for some skills the failing fetch
+  *is* the procedure — and Claude Code is unaffected because it reads the
+  installed plugin. No behaviour change.
+
 - **Fixed: `/steer:next` compared a comment against the plugin version.**
   `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
   `/steer:adopt` and `/steer:sync` all write that stamp as two lines with the
@@ -17,13 +119,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   passed over it; it now writes the real two-line stamp.
 
 - **Changed: `/steer:explain` and `/steer:status` now run in a forked subagent
-  (`context: fork`).** Both are pure renderers — the whole input is the argument
+  (`context: fork`, `background: false`).** Both are pure renderers — the whole input is the argument
   (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole output
   is a shareable page — so each was reading a dozen spine files and a tracker
   query into the *main* session's context to emit one summary. Forked, that read
   happens in a subagent and only the page comes back. Nothing is lost by cutting
   them off from the conversation: neither reads it, and neither asks the user
-  anything. The other read-only report skills are deliberately **not** forked —
+  anything — `/steer:explain`'s ambiguous-id step now lists the candidates and
+  stops rather than asking, because `AskUserQuestion` is removed from every
+  subagent. **`background: false`** is set deliberately: a *backgrounded* fork
+  runs with the narrower background-subagent tool set, and that set re-admits
+  `Bash`/`Edit`/`NotebookEdit`/`EnterWorktree` — the tools these two declare
+  disallowed — so backgrounding would have quietly widened a pair of read-only
+  renderers. Waiting also keeps the pre-publish heads-up ahead of the publish.
+  The key needs **Claude Code v2.1.218+**; an older CLI ignores it and
+  backgrounds the fork. Both skills' prose now states the read-only boundary as
+  one they keep rather than one the runtime guarantees — upstream documents
+  `disallowed-tools` against the invoking turn and is silent on whether it
+  reaches a fork. The other read-only report skills are deliberately **not** forked —
   `/steer:report` files a bug about what just happened in *this* conversation,
   and `/steer:roadmap` opens issues and drives `/steer:issues`.
 - **Documented: `disable-model-invocation` is off-limits on a steer skill**
@@ -146,8 +259,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Changed: the `copilot-surface-current` capability is now
   `agent-surface-current`.** It governs a tree Cursor, Gemini CLI and Codex read as
   much as Copilot does, so `/steer:sync` telling a Cursor user their "copilot
-  surface" is stale was misleading. It also now flags a leftover `.github/prompts/`
-  as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
+  surface" is stale was misleading. It also now flags leftover `steer-*.prompt.md`
+  files as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
   carries the consumer-side migration: install `.agents/skills/`, delete only the
   `steer-*` prompt files, leave any the team wrote themselves.
 

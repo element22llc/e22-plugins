@@ -51,6 +51,23 @@ holds it outside the repo — in the **macOS Keychain**, or
 included). There is no shell rc to edit and nothing to
 re-export per machine or per terminal. The token **never lives in the repo**.
 
+!!! warning "Upgrading from a `GITHUB_PAT` shell export"
+    Before this changed, the server read `Bearer ${GITHUB_PAT}` from whatever
+    shell launched Claude Code, and the scaffold README told every teammate to
+    export it from `~/.zshrc` / `~/.bashrc`. **That export stops being read on
+    update.** If `github` was working for you and now reports disconnected after
+    a `/plugin update`, this is why — the token has to be supplied to the *plugin*
+    once per machine:
+
+    ```sh
+    claude plugin install steer@e22-plugins --config github_pat=…
+    ```
+
+    No file edit restores access; a repo's `/steer:sync` rewrites the stale README
+    instruction, but the token itself is yours to re-supply. Removing the old
+    `export GITHUB_PAT` line is optional — nothing reads it any more, though a
+    same-named GitHub Actions secret is unrelated and must be left alone.
+
 The field is **optional**: skip the prompt and the `github` server simply reports
 disconnected, which every consumer of it already handles —
 [`/steer:tracker-sync`](skills.md) falls back to the `gh` CLI and then to a

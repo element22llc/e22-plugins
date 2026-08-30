@@ -223,12 +223,19 @@ else
 			$(find "$_src" -type f 2>/dev/null)
 		EOF
 	fi
-	# A retired artifact left behind is drift too: .github/prompts/ was the previous
-	# skill surface and must not linger alongside .agents/skills/. Written as an if
-	# rather than `&&` so the absent case doesn't leave a non-zero status behind.
-	if exists ".github/prompts"; then
+	# A retired artifact left behind is drift too: .github/prompts/steer-*.prompt.md
+	# was the previous skill surface and must not linger alongside .agents/skills/.
+	# Key this on STEER'S OWN files, not on the directory: the migration deliberately
+	# leaves a team-authored prompt file — and the directory around it — in place, so
+	# testing the directory reported permanent, unrepairable drift against a repo that
+	# had followed the migration exactly. Written as a loop with an existence test so
+	# an unmatched glob (which stays literal in POSIX sh) doesn't count as a hit, and
+	# so the absent case doesn't leave a non-zero status behind.
+	for _pf in "$ROOT"/.github/prompts/steer-*.prompt.md; do
+		[ -e "$_pf" ] || continue
 		_cp_drift=true
-	fi
+		break
+	done
 	if $_cp_drift; then
 		emit "agent-surface-current" "mis-wired" "$cp_files"
 	else

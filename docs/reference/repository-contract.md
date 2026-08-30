@@ -275,7 +275,7 @@ rewrites — `CLAUDE.md`, `spec/PRODUCT.md`, the PR template and `ci.yml`.
 Finally the migration logs itself as the directory's first entry, which both satisfies
 the living-docs rule for the migration PR and proves the new path works.
 
-The newest *released* entry, keyed **5.0.0**, narrows a feature's spec
+The entry keyed **5.0.0** narrows a feature's spec
 `> Status:` from five values to **`draft · approved · live`**. `implemented` and
 `validated` are retired — they were pure mirrors of the issue's `validate`/`done`,
 a derived value stored in a second file that nobody recomputed. The entry applies
@@ -291,6 +291,40 @@ pairing, not drift. The PO-acceptance checkboxes, including *PO validated the
 working demo*, are left alone — that record now carries the acceptance that
 `Status: validated` used to imply. In a polyrepo `spec/features/**` belongs to the
 **workspace**, so a member applies none of it locally.
+
+The two newest entries are both changes **reconciliation cannot complete on its
+own**. The first retires the Copilot **prompt-file** surface in
+favour of the cross-tool `.agents/skills/` tree: it copies
+`templates/agents/skills/` in verbatim (that tree is `Verbatim: yes` under
+`agent-surface-current`, so it is copied, never reconciled — the migration exists
+only to create it the first time, after which `/steer:sync` keeps it current),
+then deletes the `steer-*.prompt.md` files and the `.github/prompts/` directory
+**only if nothing else remains** — a prompt file the team wrote themselves is
+theirs and stays, directory and all. Two live pointers are rewritten because
+additive reconciliation cannot reach them: the comment above the Copilot toggles
+in `.vscode/settings.json` (the `chat.promptFiles` setting itself **stays on** —
+it governs any prompt files the team keeps, which this migration does not touch),
+and a `.agents/` line in `.gitignore` if an earlier cleanup added one, since the
+skill tree is committed rather than local state. A repo that never installed the
+Copilot surface is `n/a` and skips the entry, and it earns **no history entry** —
+a surface swap is not a repo-level event.
+
+The second rewrites the **GitHub PAT** instruction in `README.md`, and it is the
+one entry in this ledger whose completion is **not visible in the tree**. The
+bundled `github` MCP server used to authenticate from a shell-exported
+`GITHUB_PAT`; it now reads the plugin's own `github_pat` config value, so a
+materialized README still saying "export it from your shell rc" is instructing the
+reader to do the thing that stopped working on update. Three token rewrites apply,
+and **two of them sit outside the "GitHub MCP server" section** — the quickstart
+line and the GitHub-Actions paragraph — so re-taking that one section leaves the
+precondition firing forever; the plugin's own scaffold `README.md` already carries
+the post-change wording for all three. The precondition is **case-sensitive on
+purpose**, so the post-migration `github_pat` spelling cannot re-trigger it, and
+the guard leaves `GITHUB_PAT` alone in provenance prose and in any Actions
+workflow, where a same-named CI secret is untouched by this change. Applying it
+does **not** restore anyone's access: the human must supply the token to the
+plugin once per machine, and the entry says so explicitly rather than implying the
+file edit was the whole job.
 
 Ledger entries are keyed by the release that **introduced** them, and `/steer:sync` skips
 every entry at or below a repo's `spec/.version` stamp. An entry authored but not yet cut

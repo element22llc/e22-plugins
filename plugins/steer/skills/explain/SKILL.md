@@ -12,7 +12,16 @@ disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # conversation that invoked it (the feature-id is the whole input). Forking
 # keeps a full spec read out of the main session's context, which is the
 # point: the caller wanted the page, not the twelve files behind it.
+#
+# background: false — the fork still isolates the read, but the turn waits for
+# it. A BACKGROUNDED fork runs with the narrower background-subagent tool set,
+# which re-admits Bash/Edit/NotebookEdit/EnterWorktree — exactly the four this
+# skill declares disallowed — so backgrounding would quietly widen what it can
+# reach. Waiting also keeps the publish heads-up in front of the publish.
+# Needs Claude Code v2.1.218+; an older CLI ignores the key and backgrounds the
+# fork, so treat the read-only boundary there as instruction, not tooling.
 context: fork
+background: false
 ---
 
 # Explain a feature — a shareable, plain-language view
@@ -48,8 +57,12 @@ stale the moment the spec changes — regenerate to refresh.
   feature or on a schedule — that would create a second, drifting copy of every
   spec and couple the spine to claude.ai infra.
 - **Read-only over canonical sources.** `Bash`, `Edit`, `NotebookEdit`, and
-  `EnterWorktree` are **disallowed in frontmatter** — so, tool-enforced, this skill
-  cannot commit, branch, run shell, or edit an existing file in place. It never
+  `EnterWorktree` are **disallowed in frontmatter**, so this skill does not commit,
+  branch, run shell, or edit an existing file in place. Treat that as a boundary
+  this skill keeps, not one the runtime guarantees: upstream documents when
+  `disallowed-tools` applies to the invoking turn, but is silent on whether it
+  reaches a forked subagent, and `background: false` is what keeps the fork off
+  the wider background tool set. The prose is the binding constraint. It never
   touches the tracker. The **one** thing it writes is the artifact's HTML source
   (via `Write`, which is *not* disallowed) — so that write is bound not by the
   frontmatter but by a hard prose invariant: **only to a system temp directory,
@@ -79,8 +92,10 @@ stale the moment the spec changes — regenerate to refresh.
   `intent.md` as *"not specified in the spec"* — absent local intent is not "no
   intent" (`/steer:reference polyrepo`).
 - No feature id given, or it's ambiguous → list the features under
-  `spec/features/*/` (the workspace's, in a member) with their `Status:` and ask
-  which one. Don't guess.
+  `spec/features/*/` (the workspace's, in a member) with their `Status:` and stop
+  there, naming the ids so the caller can re-run with one. **Don't guess, and
+  don't try to ask:** this skill runs forked, and `AskUserQuestion` is removed
+  from every subagent, so a question here would return nothing and render no page.
 
 ### 2. Read the sources (the only inputs)
 
@@ -183,9 +198,12 @@ in `/steer:reference artifacts` — and do not restate it here. Two things are
 
 ## Updating a previously shared page
 
-Within the same session, re-running redeploys to the same artifact URL (the stable
-per-feature filename). Updating a page from a **different** session needs its URL
-from the user — steer does not store it. The full rule: `/steer:reference artifacts`
+The publish path is a stable per-feature filename, which is what lets a re-run
+redeploy in place rather than creating a second page. Do not promise that to the
+user as a guarantee: this skill runs forked, and whether a fork's publish is
+recognised as a redeploy of an earlier one is not something steer can verify. If
+the caller needs a specific page updated, take its URL from them. Updating a page
+from a **different** session needs that URL anyway — steer does not store it. The full rule: `/steer:reference artifacts`
 → "Updating a previously shared page".
 
 ## What this skill is *not*

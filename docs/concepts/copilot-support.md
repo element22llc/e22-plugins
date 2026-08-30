@@ -125,7 +125,8 @@ copilot plugin update steer       # CLI only: pull the new plugin version
 
 `/steer:sync` owns this because the refresh is a **capability repair**:
 `agent-surface-current` is wired only when every generated file is
-byte-identical to its plugin source, and the repair is a verbatim re-copy.
+byte-identical to its plugin source **and** no retired `steer-*.prompt.md`
+lingers under `.github/prompts/`, and the repair is a verbatim re-copy.
 **`/steer:init` is not the refresh path** — it installs the surface at bootstrap
 and then deliberately stops on an already-initialized repo, so re-running it does
 nothing.
@@ -168,7 +169,7 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Two differences from Claude Code remain on **both** Copilot surfaces:
@@ -290,8 +291,8 @@ from the always-on standards both surfaces read. It reaches a reader only on the
 **CLI**, which loads the real `reference` skill from the Copilot plugin manifest;
 that doc also states a push declined there must not be retried in the hope of a
 quieter second attempt. In VS Code the `reference` skill now ships too, as
-`.agents/skills/steer-reference/`, so the prose is reachable there via the pointer
-it carries — and nothing was lost meanwhile, since VS Code has no hooks and so
+`.agents/skills/steer-reference/`, so the topic routing travels — though the
+pointer it carries is subject to the fetch limitation below — and nothing was lost meanwhile, since VS Code has no hooks and so
 never raises the repeat-push decision the caveat is about.
 The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
@@ -317,6 +318,14 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 
 ## Known limitations
 
+- **The rewritten shared-file URLs are not fetchable.** The rewrite in the table
+  above points at GitHub's HTML `blob/` view rather than `raw.githubusercontent.com`,
+  and it is applied inside runnable command lines too, so those ship as
+  `sh "https://…"`. Because the rewrite is unconditional, any step that depends on
+  reading a shared file or running a shared script is affected — for some skills
+  that costs a link, for others the whole procedure. Detail, and what is
+  unaffected, in
+  [Known limitations](../reference/known-limitations.md#the-cross-tool-agentsskills-tree-shared-bundle-links-are-not-fetchable).
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot)
   — the bodies themselves port in full, but a skill that Claude Code restricts via
   `allowed-tools`/`disallowed-tools` carries that restriction here as an
