@@ -137,10 +137,29 @@ to silence over speculation.* The dimensions:
    does not-X; an `allowed-tools`/`disallowed-tools` boundary a skill's prose
    then violates).
 
+**A finding that rests on host-platform behaviour must quote it verbatim.** Tell
+the subagents: when a finding turns on what Claude Code *itself* does — a hook's
+decision control, a timeout budget, a settings or manifest field — quote the
+upstream reference **verbatim**, with its URL and line, so the caller re-checks it
+with one `grep` instead of re-deriving the question. A finding of this kind
+without a verbatim quote is unvetted by construction, and this is the class of
+finding that has been most expensive to get wrong here.
+
 **Vet before reporting.** Subagents over-report. Re-read the cited `path:line`
 for every candidate and drop false positives, intentional patterns with a
 why-comment, and cross-dimension duplicates. A finding that survives states the
 incoherence, the evidence, and why it's real.
+
+**Settle disagreements on raw bytes, never on another opinion.** When vetting
+contradicts a subagent, when two subagents contradict each other, or when either
+contradicts what a previous round recorded, resolve it by fetching the raw source
+document (`curl -sL <url>.md -o <file>`) or opening the file, and grepping for the
+disputed string. Do **not** dispatch a third subagent to break the tie: that adds
+an opinion, not evidence. Note especially that a *summarising* fetch can deny a
+sentence that is verbatim present — so a summariser's denial never outranks a
+reviewer's verbatim quote; go to the bytes. Whichever way it lands, record the
+command and its output, and correct the losing record rather than leaving two
+live versions of the same fact in circulation.
 
 ## Step 4 — documentation accuracy & deployed-site freshness
 
@@ -213,6 +232,18 @@ count → top finding) followed by a severity-ordered list, each finding with
 
 State plainly when a dimension came back **clean** — silence must never be
 mistaken for "not checked."
+
+**A dispatched reviewer is not a reported reviewer.** Wait for **every** subagent
+dispatched in Steps 3 and 4a to return before compiling the report — and do not
+begin the report, or (for `/audit-loop`) close the round, open the PR, or
+summarise to the user, while one is still running. Dispatch is not coverage: a
+reviewer that has not reported has told you nothing, and a report written without
+it makes a coverage claim you have not earned. If a reviewer lands *after* you
+have reported, the round it belongs to is **not** finished — fold its findings in,
+correct the report and the PR body, and say plainly that the earlier summary was
+premature. In the run this guidance came from, the last dimension-6 reviewer
+returned a genuine `[high]` against a shipped script after the PR had been opened
+and the run summarised as complete.
 
 **A dimension that did not return usable output is not clean.** If a review
 subagent errors, returns empty, or comes back with something that isn't a
