@@ -26,6 +26,7 @@ regardless — this matrix is for tight iteration on a single failure.
 | `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `plugin-check`'s `check_copilot_hooks.py`) | `sh plugins/steer/hooks/tests/run.sh`; if you added/removed/retimed a *ported* hook, `mise run gen:copilot` regenerates `copilot-hooks.json` (ported subset declared in `gen_copilot_hooks.py`'s `COPILOT_HOOKS`) |
 | `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` — regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
+| `plugins/steer/templates/reference/MIGRATIONS.md` | `plugin-check` (`check_migrations.py` for entry structure + the `[Unreleased]` deep pass; `check_plugin.py`'s `check_migration_versions` for the version key) | `uv run python scripts/check_migrations.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
 | any other `*.sh` — `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
