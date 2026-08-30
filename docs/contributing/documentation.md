@@ -34,9 +34,12 @@ flowchart LR
   **`documentation-reviewer`** subagent for a deeper accuracy pass against the
   code.
 - **`validate_docs.py`** (`mise run docs:check`, in `ci`) asserts: every shipped
-  skill appears in `reference/skills.md`; every `mkdocs.yml` nav entry resolves;
+  skill appears in `reference/skills.md`; every shipped subagent appears in
+  `reference/agents.md`; every `mkdocs.yml` nav entry resolves;
   no orphan pages; internal links resolve; `/steer:` refs
-  are valid and no stale `/e22-*` references remain.
+  are valid and no stale `/e22-*` references remain; and no page repeats a
+  `##`/`###` heading (a duplicated section is valid Markdown that every other
+  gate passes, so nothing else catches it).
 - **`check_docs_impact.py`** (PR-only, `--base`) fails a PR that changes
   `skills/`, `rules/`, `hooks/`, or `agents/` without touching `docs/`. Two paths are
   exempt: `/tests/` and `/hooks/lib/`. Note that `hooks/lib/` *is* documented (the

@@ -62,7 +62,8 @@
 #   `mise trust -C` SIDE EFFECT — the reason that registration exists — works on
 #   both paths; what is lost mid-session are the notices below that ask the HUMAN
 #   to act. Surfacing them on `CwdChanged` is an open change, not an oversight —
-#   see the pre-release audit residue. Two documented channels exist for it, so do
+#   an open change, tracked in the plugin's known limitations. Two documented
+#   channels exist for it, so do
 #   not assume one: `systemMessage` in JSON output (shown as a brief terminal
 #   notification) and stderr on an `exit 2`. Until that lands, do not describe this
 #   hook's mid-session notices as reaching the user.
@@ -158,7 +159,8 @@ steer_trust_state() {
 				# bug this function exists to fix. The longest tail is the deepest
 				# directory, which is $1 itself.
 				#
-				# KNOWN DEFECT, not yet fixed — see the pre-release audit residue.
+				# KNOWN DEFECT, not yet fixed. Recorded in the plugin's known
+				# limitations (docs: "Worktree `mise trust` inheritance").
 				# If $1 has no mise config of its own, mise prints no line for it and
 				# the longest matching ancestor tail wins instead of returning ''. At
 				# the WT call site that is harmless (the caller acts only on

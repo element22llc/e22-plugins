@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Known limitation: the worktree trust lookup can, in one narrow case, create
+  trust rather than inherit it.** `check-worktree-trust.sh` is built on an
+  invariant its header states — it copies a decision the human already made and
+  never makes one. The `~`-abbreviation matching added this cycle breaks that in a
+  narrow case: when the directory asked about has no mise config of its own, mise
+  prints no line for it and the longest matching *ancestor* line can win instead
+  of the lookup returning "no decision". At the primary-checkout call site, which
+  tests `!= trusted`, an ancestor-derived `trusted` then skips the "no mise config
+  at all — ask the user" notice and trusts the worktree. Reaching it needs a
+  worktree whose branch introduced a mise config, a primary with none, and an
+  ancestor that both has one and whose home-relative path is a suffix of the
+  primary's. **Not fixed:** closing it needs the home directory, which neither
+  `$HOME` nor mise's output reliably gives, and three heuristics each introduced a
+  different defect — so the exact-match arm is the only part relied on and the
+  case is documented instead. Recorded in `docs/reference/known-limitations.md`;
+  the shipped hook carries the same note at the line responsible. Still a strict
+  improvement on the prior release, where the lookup never matched at all for any
+  repo under the home directory and the hook inherited nothing.
+
 - **Added: `validate_docs.py` fails on a duplicated section heading.** A bad edit
   can re-emit a whole block of a page; nothing caught it, because the copy is
   valid Markdown, every link still resolves and the build is happy — so a page
