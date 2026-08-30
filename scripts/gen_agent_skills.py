@@ -62,7 +62,8 @@ directory (the spec requires it); ``when_to_use`` is folded into the body as a
 carrying them across risks a wrong grant, and per ``AUTHORING.md`` the read-only
 contract those fields express is a **prose invariant** in the body, which does
 travel. ``argument-hint`` and ``user-invocable`` are kept: both are purely
-declarative and VS Code reads them.
+declarative and VS Code reads them. ``context`` is dropped too — ``fork`` names a
+Claude Code execution mode no other agent implements.
 
 Run from the repo root::
 

@@ -152,7 +152,7 @@ Readiness is reported as `ready | incomplete | missing` — **never** `approved`
 
 2. **Specs are organized by user-facing feature, not by code layout.** Code lives in `/apps` and `/packages`, organized however the stack wants. A single feature may span several apps and packages. The link between a spec feature and its code is the optional pointer section in `contract.md` — at most a hint naming the owning app(s)/package(s), not a folder-mirroring rule or a maintained index. If it's stale or absent, find the code by searching the repo.
 
-3. **Spec and code change together.** A PR that changes behavior should also update the relevant `contract.md`. No CI enforces this — it is on the dev opening the PR and the dev reviewing it.
+3. **Spec and code change together.** A PR that changes behavior should also update the relevant `contract.md`. The scaffold's advisory `spec-drift` CI job flags the mismatch but never fails the build (rule `55-drift-gates`), so acting on it is still on the dev opening the PR and the dev reviewing it — and in solo trunk, where there is no reviewer, that job is the only backstop.
 
 4. **Specs describe behavior, not incidental implementation.**
 

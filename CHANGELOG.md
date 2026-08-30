@@ -104,7 +104,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   process the session spawned. The plugin manifest now declares a `userConfig`
   field `github_pat` (`sensitive: true`) and `.mcp.json` reads
   `${user_config.github_pat}`: Claude Code prompts for it once at install and
-  stores it in the **OS keychain**. The field is deliberately **not** `required`,
+  stores it in the **macOS Keychain**, or `~/.claude/.credentials.json` where no supported keychain exists. The field is deliberately **not** `required`,
   so the degraded path is unchanged — leave it blank and `github` reports
   disconnected, and `/steer:tracker-sync` falls back to the `gh` CLI and then to
   its manual floor, exactly as before. **Breaking for anyone who already had it
@@ -114,7 +114,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   instruction in an already-materialized repo's `README.md`, but no file edit can
   restore access — that half is the human's. Set or rotate it later with
   `claude plugin install steer --config github_pat=…`. The VS Code mirror
-  (`scaffold/vscode/mcp.json`) is **byte-identical** — Copilot has no notion of
+  (`scaffold/vscode/mcp.json`) keeps a **byte-identical servers block** — Copilot has no notion of
   Claude's plugin user config, so `gen_copilot_mcp.py` maps the new placeholder
   onto the same `${input:github_pat}` prompted input it always emitted.
 - **Changed: the non-Claude skill surface moves from Copilot prompt files to the
@@ -165,7 +165,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   ship as prompt files; it now names the `.agents/skills/` tree.
 
 - **Fixed: the `SessionEnd` teardown is documented as best-effort, because a
-  plugin cannot raise that event's 1.5s budget.** Six surfaces described the new
+  plugin cannot raise that event's 1.5s budget.** Several surfaces described the new
   worktree teardown as something that happens. `SessionEnd` hooks share a
   1.5-second budget, and — verbatim from the upstream hooks reference —
   "Timeouts set on plugin-provided hooks don't raise the budget", so the
@@ -239,6 +239,59 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   skill's own frontmatter both list.
 - **Fixed: a doubled article** in the scaffold's `.vscode/settings.json` comment,
   left by the prompt-files → `.agents/skills/` rename.
+
+- **Fixed: the `CwdChanged` registration claimed coverage it cannot have.** The
+  hook header and `docs/reference/hooks.md` both said a worktree entered
+  mid-session via `EnterWorktree`, a subagent's `isolation: worktree`, or a
+  background session "fires no `SessionStart`" and is therefore covered. Only the
+  first is supported: upstream says a subagent "starts in the main conversation's
+  current working directory" and merely runs its Bash commands inside the
+  worktree, so the session's cwd never moves and `CwdChanged` has no reason to
+  fire. The claim is scoped to the move that is real, with a note not to re-add
+  the others without a verbatim quote.
+- **Fixed: `AUTHORING.md` said a forked skill's "tools come from the agent type
+  rather than the caller's turn."** That conflates two upstream columns — "From
+  agent type" describes the **system prompt** — and it put `AUTHORING.md`,
+  `skills/status/SKILL.md` and `docs/concepts/authorization-model.md` in a
+  three-way disagreement. Upstream's own `context: fork` example declares `agent:`
+  and `allowed-tools:` together, so the grant still applies; the note now says so,
+  and records that a fork runs in the background unless it sets
+  `background: false`.
+- **Fixed: `adr` wrote into a spine it never checked for.** Rule
+  `31-decision-capture` requires `/steer:init` or `/steer:adopt` first on a repo
+  with no `/spec`; every neighbouring spine skill enforces that and `adr` did not,
+  so it would `mkdir -p spec/decisions` into an unmanaged repo.
+- **Fixed: `/steer:sync` mandated branch + PR unconditionally**, contradicting
+  rule `45-commit-autonomy`, which drops the per-change branch and PR in
+  solo trunk — `sync` was the only delivering skill that never read the
+  `steer:delivery-mode` marker `init` and `build` write.
+- **Fixed: `POLYREPO.md` said the system model belongs in the workspace
+  `ARCHITECTURE.md` "not any member's"**, contradicting its own artifact split
+  and rules `30`/`32`, which keep `ARCHITECTURE.md` per member. Each member
+  describes its own repo; the workspace holds the cross-member model.
+- **Fixed: the GitHub PAT is not stored "in the OS keychain, not to a file"** on
+  every platform — upstream stores sensitive values in the macOS Keychain "or to
+  `~/.claude/.credentials.json` on platforms where no supported keychain is
+  available", which includes the WSL2 setup the same scaffold README mandates for
+  Windows. Corrected on the three surfaces that overstated it; the migration
+  entry already said it correctly.
+- **Fixed: `claude plugin install steer --config …` now carries the
+  `@e22-plugins` marketplace qualifier** on all three shipped surfaces, matching
+  every other plugin-management invocation the repo ships.
+- **Fixed: `SPEC-FRAMEWORK.md` said "no CI enforces" spec↔code coupling** — the
+  scaffold ships an advisory `spec-drift` job (rule `55-drift-gates`), and in
+  solo trunk it is the only backstop there is.
+- **Fixed: assorted enumeration drift** — `AUTHORING.md`'s `hooks/lib` roster
+  omitted `worktree-lifecycle.sh`; `CLAUDE.md`'s layout omitted the three
+  lifecycle hook registrations; `INVOCATION.md`'s `tracker-sync` driver list
+  omitted `build` and `intake`; `docs/reference/skills.md`'s "not forked" list
+  omitted `/steer:audit` and `/steer:help`; `HOUSEKEEPING.md` dropped the
+  condition on the solo-trunk push gate; `sync/RECONCILE.md`'s permission-tier
+  example used a pattern the template ships in `allow`, not `ask`.
+- **Documented: `STEER_NO_WORKTREE_TEARDOWN`, `STEER_WORKTREE_OFFSET` and
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** in the configuration reference's
+  tooling knobs, and the `typescript-lsp` overlap in its LSP section — which the
+  CHANGELOG disclosed but the user-facing page still contradicted.
 
 ### 5.3.0
 

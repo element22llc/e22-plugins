@@ -52,8 +52,8 @@ re-export per machine or per terminal. The token **never lives in the repo**.
 The field is **optional**: skip the prompt and the `github` server simply reports
 disconnected, which every consumer of it already handles —
 [`/steer:tracker-sync`](skills.md) falls back to the `gh` CLI and then to a
-manual floor. To set or change it later, use `claude plugin install steer
---config github_pat=…`, or re-run the install prompt.
+manual floor. To set or change it later, use `claude plugin install
+steer@e22-plugins --config github_pat=…`, or re-run the install prompt.
 
 Full setup (the required fine-grained scopes) is in the scaffold `README.md` →
 "GitHub MCP server", reachable from any bootstrapped repo.

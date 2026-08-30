@@ -246,7 +246,7 @@ raises a prompt. Be honest about the tiers:
   state, and only ever inside a **linked worktree**: `SessionEnd` stops that
   worktree's services (volumes kept), `WorktreeRemove` runs the full
   `docker:clean` because the checkout is being deleted. A plain checkout is never
-  touched, and `STEER_NO_WORKTREE_TEARDOWN=1` turns both off. Neither can
+  touched, and setting `STEER_NO_WORKTREE_TEARDOWN` to any non-empty value turns both off. Neither can
   **block** — no decision control — and both discard their JSON output fields.
 - **The `SessionEnd` teardown is best-effort and will often not complete.**
   `SessionEnd` hooks share a **1.5-second** budget, and a timeout declared by a

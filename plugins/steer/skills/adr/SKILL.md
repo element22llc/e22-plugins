@@ -14,12 +14,15 @@ the product repo, from the bundled template.
 
 ## Steps
 
-1. Decide the next sequential number: list `spec/decisions/` and use the highest
+1. **Require a spine.** If `/spec` does not exist, stop and route to
+   `/steer:init` (greenfield) or `/steer:adopt` (existing code) — decision
+   capture presumes the spine those install (rule `31-decision-capture`).
+2. Decide the next sequential number: list `spec/decisions/` and use the highest
    existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
-2. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
-3. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
+3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).
+4. Ensure the dir exists (`mkdir -p spec/decisions`), then copy
    `${CLAUDE_PLUGIN_ROOT}/templates/spec/adr.md` → `spec/decisions/000N-[slug].md`.
-4. Fill in Context, Decision, Alternatives considered (with rejection reasons),
+5. Fill in Context, Decision, Alternatives considered (with rejection reasons),
    and Consequences (positive / negative / neutral). Set Status to `Proposed`
    until accepted; set Deciders. Leave the `> Ratified …` fields as-is —
    `accept` writes them. **One exception, `/steer:init` step 4:** when the dev
@@ -28,7 +31,7 @@ the product repo, from the bundled template.
    stamped (`> Ratified via: in-session`). That is a *create*, not a
    `Proposed → Accepted` transition — `accept` remains the single writer of the
    transition.
-5. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
+6. **Offer ratification** (below) rather than ending on a `Proposed` ADR the
    author has to go and hand-edit.
 
 ## Offer ratification — don't end on a dead `Proposed`

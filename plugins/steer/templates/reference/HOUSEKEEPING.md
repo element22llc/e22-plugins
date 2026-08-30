@@ -179,4 +179,5 @@ not recurring junk.
 8. **Commit the approved result without asking** (Commit autonomy). What needs a
    yes is each rename/move/delete in steps 5-6 — not the commit that records them.
    Never pause to ask "should I commit this?" — in branch-and-PR mode the merge is
-   the gate, and in solo trunk the first push of a session is.
+   the gate, and in solo trunk the first push of a session is — while a local
+   graduation signal stands; without one, a solo-trunk push is not gated at all.

@@ -73,9 +73,10 @@ specialized skills below as needed, so you rarely reach past this set.
     the dozen files it was derived from. The result arrives in the conversation
     when the fork completes.
 
-    The other read-only report skills are deliberately **not** forked:
+    The other Artifact-rendering skills are deliberately **not** forked:
     `/steer:report` files a bug about what just happened in *this* conversation,
-    and `/steer:roadmap` writes issues and drives other skills.
+    `/steer:roadmap` writes issues and drives other skills, and `/steer:audit`
+    and `/steer:help` stay in the session that asked.
 
 !!! note "`standards` and `reference` are a pair"
     Neither appears in the router's `Intent → skill` table — they are the two

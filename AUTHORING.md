@@ -91,8 +91,11 @@ be unique. The full field set actually used in this repo:
 
 > **`context: fork` is for pure renderers.** A forked skill runs as a subagent:
 > it gets the SKILL.md body as its prompt and **no access to the conversation
-> that invoked it**, and its tools come from the agent type rather than the
-> caller's turn. That is right for a skill whose whole input is its argument and
+> that invoked it**, and the agent type supplies its system prompt. Its
+> `allowed-tools` still applies — upstream's own `context: fork` example declares
+> `agent:` and `allowed-tools:` together — so keep the grants a forked skill
+> needs. Note a fork runs in the **background** unless it sets
+> `background: false`, which narrows it to the background-subagent tool set. That is right for a skill whose whole input is its argument and
 > whose whole output is a rendered page — `/steer:status` and `/steer:explain`,
 > which read a lot of spine to emit a little. It is wrong for a skill that reads
 > the conversation (`/steer:report` files a bug about what just happened), and
@@ -341,7 +344,8 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 - **POSIX `sh` only, no `jq`.** Reuse the helpers in `hooks/lib/*.sh`
   (`classify.sh`, `graduation.sh`, `json.sh`, `lifecycle.sh`, `repo-root.sh`,
-  `report-fault.sh`, `scope.sh`, `spine.sh`, `version-policy.sh`) rather than
+  `report-fault.sh`, `scope.sh`, `spine.sh`, `version-policy.sh`,
+  `worktree-lifecycle.sh`) rather than
   re-parsing.
 - `hooks.json` invokes each script with an explicit `sh` prefix, so the
   executable bit does not matter (marketplace install does not `chmod`). Keep the

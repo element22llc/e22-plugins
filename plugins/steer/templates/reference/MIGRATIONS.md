@@ -164,7 +164,7 @@ Name the file and say what to carry forward.
   | Old | New |
   |---|---|
   | `${GITHUB_PAT}` | `${user_config.github_pat}` |
-  | "export a `GITHUB_PAT`" / "Export it from your shell rc (`~/.zshrc` / `~/.bashrc`): `export GITHUB_PAT=…`" | "supply the steer plugin's `github_pat` config value" / "Give it to the plugin when Claude Code prompts at install, or set it later with `claude plugin install steer --config github_pat=…`" |
+  | "export a `GITHUB_PAT`" / "Export it from your shell rc (`~/.zshrc` / `~/.bashrc`): `export GITHUB_PAT=…`" | "supply the steer plugin's `github_pat` config value" / "Give it to the plugin when Claude Code prompts at install, or set it later with `claude plugin install steer@e22-plugins --config github_pat=…`" |
   | "does **not** consume … `GITHUB_PAT`" | "does **not** consume … its `github_pat` config value" |
 
   The current `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/README.md` carries the

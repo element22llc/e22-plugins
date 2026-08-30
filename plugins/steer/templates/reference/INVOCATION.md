@@ -64,7 +64,7 @@ Not a user's first move.
 
 | Skill | Role |
 |---|---|
-| `/steer:tracker-sync` | The low-level GitHub tracker gateway. Driven by `issues` and `work`, and also by `spec`, `roadmap`, `questions`, `next`, `audit`, `status`, and `init`/`adopt` (for `bootstrap-fields`). |
+| `/steer:tracker-sync` | The low-level GitHub tracker gateway. Driven by `issues` and `work`, and also by `spec`, `roadmap`, `questions`, `next`, `audit`, `status`, `build`, `intake`, and `init`/`adopt` (for `bootstrap-fields`). |
 | `/steer:spec-scaffold` | The spec-file creator. Called by `spec`, `build`, `init`, `adopt` and `intake`. |
 
 ## Drift detection & auto-repair (managed repos)

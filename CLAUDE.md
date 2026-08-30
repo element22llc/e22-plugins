@@ -36,6 +36,8 @@ plugins/steer/
 │                                   #   /steer:work --reviewed, and the /steer:loop workflow)
 ├── hooks/                          # SessionStart hooks → inject rules/*.md + orientation;
 │                                   #   PreToolUse/PostToolUse/Stop gates;
+│                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
+│                                   #   (worktree trust + Docker teardown);
 │                                   #   copilot-hooks.json (Copilot-CLI hook variant)
 ├── policy/                         # org policy data (branch-protection.yml, versions.yml)
 ├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} —

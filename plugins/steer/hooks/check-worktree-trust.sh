@@ -31,11 +31,17 @@
 #   command and changes nothing.
 #
 # WHY IT ALSO RUNS ON CwdChanged
-#   At SessionStart it can only cover a session that STARTED in a worktree. A
-#   worktree entered mid-session — `EnterWorktree`, a subagent's
-#   `isolation: worktree`, a background session — fires no SessionStart, so the
-#   trust step was silently skipped for exactly the worktrees the agent creates
-#   for itself. `CwdChanged` fires when the session moves into one.
+#   At SessionStart it can only cover a session that STARTED in a worktree. When
+#   the session MOVES into one mid-run — the `EnterWorktree` tool changes the
+#   session's working directory — no SessionStart fires, so the trust step was
+#   silently skipped there. `CwdChanged` fires on that move and closes the gap.
+#
+#   Scope this claim to the moves we can show. A subagent with
+#   `isolation: worktree` is NOT one of them: upstream says a subagent "starts in
+#   the main conversation's current working directory" and only runs its Bash
+#   commands inside the worktree, so the session's cwd never changes and there is
+#   no documented reason for CwdChanged to fire. Do not re-add that case, or a
+#   background session, without a verbatim upstream quote.
 #
 #   Not `WorktreeCreate`, which looks like the precise event and cannot do this
 #   job: it runs BEFORE the worktree exists on disk (its documented contract —
