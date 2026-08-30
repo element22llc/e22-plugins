@@ -42,7 +42,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   edit actually broke instead of inferring it from surrounding text, and gets
   jump-to-definition / find-references. This is the supported successor to a
   code-intelligence MCP server: declared in the manifest, nothing for the plugin
-  to pin or spawn. A server needs its binary on `PATH`: Claude Code skips one it
+  to pin or spawn. **Known overlap, unresolved:** a scaffolded repo also enables
+  `typescript-lsp@claude-plugins-official`, whose server declares the same name,
+  command and extensions — and when two enabled servers claim an extension "the
+  first server registered handles files with that extension and the others never
+  start", with a `/plugin` warning. So on a scaffolded repo one of the two is
+  inert and which one is not steer's to control. Which side gives way is a
+  decision still open at the time of this entry. A server needs its binary on `PATH`: Claude Code skips one it
   cannot launch and reports `Executable not found in $PATH` in the `/plugin`
   **Errors** tab — visible, not silent. `restartOnCrash: false` governs a
   different case, leaving a server that *crashes* stopped instead of restarting
@@ -166,9 +172,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `"timeout": 60` steer declares on that registration is **inert** and a
   `mise run … docker:down` will often be cancelled mid-run. `WorktreeRemove` is
   unaffected and remains the dependable half. `rules/24-worktrees`,
-  `rules/99-end-of-session`, both hook scripts, the shared lifecycle helper and
-  the two docs reference pages now say so, and name
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` as the user-side lever.
+  `rules/99-end-of-session`, `on-session-end.sh`, the shared lifecycle helper,
+  `CROSS-SURFACE.md` and the two docs reference pages now say so;
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is named as the user-side lever where
+  a reader would look for it — the hook's own header and the two docs pages.
 - **Fixed: "`SessionEnd` output and exit code are discarded" was wrong on five
   surfaces.** Only the *JSON output fields* are discarded; an `exit 2` shows
   stderr to the user ("SessionEnd | No | Shows stderr to user only"). The
@@ -202,6 +209,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the token from a shell rc, which stops working on update. The entry rewrites
   that section and tells the human the out-of-repo half no file edit can do:
   supply the token to the plugin once per machine.
+
+- **Fixed: `templates/reference/INVOCATION.md` still framed
+  `disable-model-invocation` as "not set **yet**"** and named `tracker-sync` and
+  `spec-scaffold` as "the safe first candidates" — contradicting the standing rule
+  recorded this cycle, and backwards on the substance. Those two are already
+  `user-invocable: false`, so they are hidden from the slash menu and reached only
+  when another skill routes to them; adding the flag would close the one remaining
+  door and strand them — invisible to the user *and* unreachable by the model.
+  Upstream is explicit that the flag means "Only you can invoke the skill."
+- **Fixed: `CwdChanged` does not discard its JSON output fields.** A surface
+  described the three lifecycle events as uniformly discarding JSON output; that
+  holds for `SessionEnd` and `WorktreeRemove` but not `CwdChanged`, which discards
+  only `continue` and honours `systemMessage`, showing it as a brief terminal
+  notification. `hooks.md` and `CROSS-SURFACE.md` now scope the claim, and the
+  trust hook's header records both channels available for surfacing its
+  mid-session notices rather than naming one.
+- **Fixed: `on-worktree-remove.sh` still said the harness discards its "output and
+  exit code."** Only its JSON output fields are discarded, and failures are logged
+  in debug mode only — which is what genuinely leaves it no user-facing channel,
+  unlike `SessionEnd`. Its `CONSTRAINTS` note and `check-worktree-trust.sh`'s stale
+  "cwd comes from the SessionStart payload" (it now has two registrations) are
+  corrected too.
+- **Fixed: the `GITHUB_PAT` migration entry's precondition is now executable and
+  case-sensitive**, so it cannot re-fire against the post-migration `github_pat`
+  spelling.
+- **Fixed: `/steer:status` was missing from the Artifact-rendering skills** in
+  `skills/reference/COVERAGE.md`, which `templates/reference/ARTIFACTS.md` and the
+  skill's own frontmatter both list.
+- **Fixed: a doubled article** in the scaffold's `.vscode/settings.json` comment,
+  left by the prompt-files → `.agents/skills/` rename.
 
 ### 5.3.0
 

@@ -258,11 +258,10 @@ raises a prompt. Be honest about the tiers:
   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` takes
   the ordinary command-hook timeout and is the dependable half.
 - **The `CwdChanged` trust notices do not reach you.** `check-worktree-trust.sh`
-  applies `mise trust` fine on that path, but it writes its two human-facing
-  notices to stdout, and `CwdChanged` stdout goes to the debug log rather than the
-  transcript. So a worktree entered mid-session whose primary checkout is itself
-  untrusted gets no visible prompt — you will see the `mise run …` trust error
-  instead.
+  applies `mise trust` fine on that path, but it writes its human-facing notices to
+  stdout, and `CwdChanged` stdout goes to the debug log rather than the transcript.
+  So a worktree entered mid-session whose primary checkout is itself untrusted gets
+  no visible prompt — you will see the `mise run …` trust error instead.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
   dimensions) is an **advisory nudge** that lets the write proceed. It is
   explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the

@@ -14,7 +14,7 @@
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
   // GitHub Copilot picks up the steer engineering standards from
-  // .github/copilot-instructions.md (+ path-scoped .github/instructions/*), the
+  // .github/copilot-instructions.md (+ path-scoped .github/instructions/*),
   // the cross-tool .agents/skills/ tree (/steer-<skill>), and the custom agents in
   // .github/agents/ (e.g. steer-reviewer). It also reads MCP servers from
   // .vscode/mcp.json. These are default-on in recent VS Code; the two toggles below

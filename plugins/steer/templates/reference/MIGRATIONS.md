@@ -151,8 +151,14 @@ Name the file and say what to carry forward.
   plugin. A materialized repo whose README still says "export it from your shell rc"
   is instructing the reader to do the thing that no longer works, which is what earns
   a ledger entry rather than just a changelog line.
-- **Precondition:** `README.md` mentions `GITHUB_PAT` (the pre-change wording). A
-  repo whose README never documented the GitHub MCP server is `n/a` and skips this.
+- **Precondition:** `README.md` still carries the pre-change wording. A repo whose
+  README never documented the GitHub MCP server is `n/a` and skips this. Once
+  applied, re-running is a no-op — the match is **case-sensitive on purpose**, so
+  the post-migration `github_pat` / `github_pat_…` spellings do not re-trigger it:
+
+  ```sh
+  grep -n 'GITHUB_PAT' README.md 2>/dev/null
+  ```
 - **Action — an in-file token rewrite,** read-then-propose, in `README.md` only:
 
   | Old | New |

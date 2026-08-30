@@ -219,8 +219,8 @@ It covers, in detail:
   Artifact tool is unavailable.
 
 This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
-(`/steer-explain`, `/steer-questions bundle`, `/steer-audit`, `/steer-roadmap`,
-`/steer-help`).
+(`/steer-explain`, `/steer-status`, `/steer-questions bundle`, `/steer-audit`,
+`/steer-roadmap`, `/steer-help`).
 
 ## gates
 

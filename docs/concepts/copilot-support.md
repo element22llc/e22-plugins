@@ -168,7 +168,7 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring ~262 KB (a 66 KB `MIGRATIONS.md` among it) into every consumer repo is not worth it, and the repo is public. |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Two differences from Claude Code remain on **both** Copilot surfaces:
