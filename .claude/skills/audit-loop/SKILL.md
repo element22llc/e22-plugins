@@ -102,6 +102,22 @@ There is a third effect, and it is **pure waste**:
    it. **A cautionary note about over-precise claims is not exempt from rule 4.**
    Neither is anything else you are about to write.
 
+Effect 3 has a **worse form**, and it earns its own name because it does not
+look like waste in the diff. A fix can take a surface that was **correct** and
+make it wrong. Inventing a false claim costs you the next round; replacing a true
+sentence with a false one costs that *plus* the correct documentation you
+destroyed — and it reads as progress, because a finding was closed. Round 1 of
+the run this guidance came from did exactly that to seven surfaces: the pre-loop
+docs were right about what a `WorktreeRemove` hook can do, and round 1 overwrote
+them from the plugin's own hook comment. Rounds 2–4 went on repairing it.
+
+Note where that false comment came from: it was **already on `main`**, and it is
+on `main` still — round 1 did not write it, it *believed* it. So the trap is not
+one round's carelessness that a later round cleaned up; it is a live sentence in
+the tree that will catch the next round to read it, too. **The authority ladder in
+L3.d is the specific defence**, and unlike narrow prose mode it binds round 1 —
+which is where this damage is actually done.
+
 Effects 1–2 are why the loop exists. Effect 3 is what the claim discipline in
 **L3.d**, the self-review in **L3.e**, and **L4 condition 5** exist to prevent:
 every round spent on effect 3 is a round that bought nothing. The pattern is
@@ -250,6 +266,25 @@ it.
 | Round | File:line written | Claim asserted | Verified against |
 | --- | --- | --- | --- |
 
+**The round's own commit message and ledger rows are claim surfaces too.** They
+are what a reviewer trusts and what the next round reads, and they fail exactly
+the way shipped prose fails. In the run this guidance came from, one round's
+commit message said it had *deleted* a clause it had in fact reworded, and
+another stated the **opposite** of what the source says because the verification
+behind it stopped a sentence short. Write both from the diff and the claim log,
+never from the intent you started the round with.
+
+A pushed commit message cannot be corrected. So when a later round refutes what
+an earlier round **recorded** — a refutation that was itself wrong, a message
+that overstates its own change — add a **correction row** to the ledger and carry
+it into the PR body under the round it belongs to:
+
+| Round | What it recorded | What is actually true | Settled by |
+| --- | --- | --- | --- |
+
+Superseding it silently leaves this branch's own audit trail asserting something
+you now know to be false — the one thing a reviewer has no way to check for you.
+
 ### c. Check the stop conditions (**L4**) *before* fixing anything.
 
 ### d. Fix the actionable findings.
@@ -289,6 +324,18 @@ Apply the **minimal targeted** change each finding calls for:
   `vscode/mcp.json`, `copilot-hooks.json`) — regenerate with
   `mise run gen:copilot` and commit the result. **Never hand-edit a generated
   file**; a hand-edit reappears as a finding the moment the generator runs.
+- **A contradiction finding does not tell you which side is wrong.** "Surface A
+  says X, surface B says not-X" reports a *disagreement*; it is not a verdict,
+  and the finding text will not contain one however confidently it is phrased.
+  The cheap resolution — edit whichever side is fewer files — is a coin flip.
+  Settle X at its authority (**the ladder below**), *then* fix whichever side is
+  wrong, which may turn out to be the code, a source comment, or several docs at
+  once. If you cannot reach the authority this round, the finding is
+  `deferred-for-human`. Propagating an unsettled X so the surfaces agree converts
+  a **visible** contradiction into an **invisible**, consistent falsehood on every
+  surface — strictly worse than what you started with, harder for the next round
+  to see, and precisely what round 1 of the run this guidance came from did
+  across every surface that described the behaviour.
 - **Never fix by weakening the check.** Deleting an assertion, loosening a
   validator, or dropping a doc claim to make it "true" is not convergence — it is
   hiding. If a finding is genuinely a false positive, say so with the evidence
@@ -387,6 +434,73 @@ Claim shapes that have actually gone wrong here, and what each one needs:
 | **Historical** — "shipped in vX.Y.Z", "since release N" | `git log`/`git tag` on the actual path, or the CHANGELOG heading that introduced it. |
 | **Quantitative** — "N bytes reclaimed", "−87/−167/−134 per rule", "11 sites" | The measurement, re-run in **this** round, on the exact range you cite. Then ask whether the number belongs in prose at all (rule 4 above): a per-item split is a claim per item, and a number restated in two surfaces goes stale in one of them the moment either changes. Prefer the aggregate, in one place. |
 | **Cross-surface routing** — "the manifest routes this through H" | Open the manifest *and* the helper; a route named in one is not a route implemented in the other. |
+| **Host-platform behaviour** — "a nonzero exit blocks this", "the declared timeout applies", "this field does Y" | The upstream Claude Code reference, fetched **raw** this round. See the ladder below — this is the row that has cost the most. |
+
+#### The authority ladder — which source is allowed to settle a claim
+
+Claim discipline asks *whether* you verified. This asks **against what**, and it
+is the half that failed hardest. Round 1 of the run this guidance came from
+verified diligently, logged its evidence, and was wrong anyway, because it
+verified against a source with no standing for the claim it was making.
+
+| The claim is about | The only source that settles it | Never authority for it |
+| --- | --- | --- |
+| **Host-platform behaviour** — what Claude Code does with a hook's exit code or stdout, a timeout budget, a settings or manifest field | The upstream reference, fetched raw **this round** | A comment in our own scripts; our own docs; a skill's prose; a subagent's summary; any previous round |
+| **This plugin's behaviour** | The script, `SKILL.md`, `hooks.json` or manifest itself | Any prose *about* it — ours included |
+| **What a gate enforces** | The gate script's own lines, plus a **positive control** when the claim is "it catches X": break X deliberately and watch it go red | A green exit code. Green proves nothing went wrong, not that anything was checked |
+
+**The top row is the one that bites, and it is counter-intuitive.** A comment in
+`plugins/steer/hooks/` sits next to the code and reads as documentation of it,
+but it is a statement *by us* *about the harness* — it carries exactly the
+authority of any other sentence we wrote, which for a runtime claim is none. That
+is the trap round 1 walked into: our hook comment asserted that a nonzero exit
+vetoes worktree removal, so round 1 believed it and rewrote the correct docs to
+match. The harness discards that hook's exit code entirely.
+
+The corollary matters as much as the rule: **when our own comment and the
+upstream reference disagree, the comment is the bug.** Fix it in the same change
+as the docs, or you have left the next round the identical trap, baited with your
+own round's freshly-confirmed prose.
+
+**This gates the edit, not just the report.** Before any change to a sentence
+whose subject is host-platform behaviour, its upstream citation must already be
+in the claim log. No citation, no edit — mark it `deferred-for-human` and move
+on. Narrow prose mode (**L4** condition 5) starts at round 2; this binds round 1
+too, because round 1 is when the tree still contains prose nobody in this loop
+has questioned yet.
+
+#### Verifying against an external document: raw bytes, then grep
+
+A summarising fetch is evidence **for** a sentence it quotes back to you, and
+**never** evidence **against** one it does not. `WebFetch` reads a long page
+through a summariser; on a reference of several thousand lines it can return a
+confident, specific denial that a sentence exists when the sentence is sitting
+there verbatim. In the run this guidance came from it did so **twice in the same
+round**, on the same sentence, and those two denials came within one step of
+discarding a real `[high]` that two independent reviewers had each quoted
+correctly. Only a raw `curl` and `grep` settled it — in the reviewers' favour.
+
+So for any claim that turns on an external document:
+
+1. **Fetch the raw document to a file and `grep` it** —
+   `curl -sL <url>.md -o <file>`, then grep for a distinctive phrase. Rendered
+   pages and summarised fetches are for orientation; only the raw bytes settle a
+   dispute.
+2. **Search for the entity by name across the whole document and read every
+   hit**, tables included. A general rule that appears to cover your entity is
+   *not* proof that no carve-out excludes it. Round 4 read the general per-hook
+   `timeout` row, concluded a declared 60 s was honoured, and stopped one sentence
+   short of the line stating that plugin-provided timeouts do not raise the budget
+   at all. **Verification that stops early is indistinguishable, from the inside,
+   from verification that succeeded** — which is why the search has to be
+   mechanical rather than "until it looks answered".
+3. **Log the grep command and the matched line** in the claim log — not "verified
+   against the docs". The next round then re-runs one line instead of
+   re-litigating the question from scratch, which is the whole point of the log.
+
+A negative conclusion — "the reference says nothing about X" — is reportable only
+if step 2 was exhaustive. Otherwise what you have is "I did not find it", which is
+a different and much weaker sentence, and it belongs in the ledger as that.
 
 ### e. Propagate each fix, then self-review the round's own diff.
 
@@ -460,8 +574,12 @@ worth stating too.
 Evaluate in order, before fixing:
 
 1. **Converged.** Zero actionable findings this round, **the round ran all six
-   dimensions untrimmed** (**L3.a**), **and the round then makes no edits**. All
+   dimensions untrimmed** (**L3.a**) **and every reviewer it dispatched has
+   reported** (procedure Step 5), **and the round then makes no edits**. All
    three are required.
+
+   "Ran" means *returned findings*, not *was dispatched*. A round still waiting on
+   a reviewer has a count that can only go up, so it cannot yet be zero.
 
    The first is the one people read as the whole condition; the other two are what
    make it mean anything. A trimmed round that comes back clean has not converged —
@@ -487,11 +605,25 @@ Evaluate in order, before fixing:
 3. **No progress.** The actionable count did not fall versus the previous round
    **and** no finding in it is new. The loop is churning. → stop; report the
    stalled set and why the fixes aren't landing.
-4. **Recurrence.** A finding you already fixed in an earlier round comes back with
-   the same identity. Fixing it again is a third guess at the same problem. → stop
-   on *that* finding: report it, the fix that didn't take, and hand it to the
-   human. (Finish the round's other fixes first — one recurring finding shouldn't
-   strand the rest.)
+4. **Recurrence — count by identity, *and* by subject.** A finding you already
+   fixed in an earlier round comes back with the same identity. Fixing it again is
+   a third guess at the same problem. → stop on *that* finding: report it, the fix
+   that didn't take, and hand it to the human. (Finish the round's other fixes
+   first — one recurring finding shouldn't strand the rest.)
+
+   **Identity alone is too narrow to catch the expensive case.** A claim family
+   can stay wrong for rounds while never repeating an identity: each round
+   surfaces a different file, a different sub-claim, a different severity, so the
+   identity check never fires and the loop keeps editing the same idea. Key a
+   second counter on the **claim subject** — the behaviour being asserted, not the
+   `path:line` asserting it — and on the **third** finding against one subject
+   across the loop, **quarantine the subject**: stop editing it entirely, write
+   down everything the loop has established about it with each source, and hand it
+   over. In the run this guidance came from, one subject (what the `SessionEnd`
+   and `WorktreeRemove` hooks can report and can block) was wrong in **three of
+   five rounds** under three different identities, and rounds 1 and 4 committed
+   flat contradictions of each other into shipped docs. The identity guard never
+   fired once.
 5. **Narrow prose mode — on by default from round 2.** Not a stop; a **mode**.
    Every round after the first runs narrow unless a `[blocker]` requires
    otherwise:
@@ -544,6 +676,10 @@ loop keeps going, narrower.
      this is an affirmative claim to make, not a list of exceptions to disclose.
      Name any dimension an *earlier* round skipped under L3.a, with its file-list
      evidence: a reader must never have to infer coverage from silence;
+   - the **correction rows** from **L3.b** — every place a later round refuted
+     what an earlier round recorded, including in a commit message that can no
+     longer be edited. A reader must not have to trust a message this loop already
+     knows to be wrong;
    - the **residue of findings against the loop's own machinery** (`.claude/audit/`,
      the release-path skills) that L3.d held out of scope, so they are picked up in
      their own PR rather than lost.
