@@ -405,9 +405,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed: `/steer:status` was missing from the Artifact-rendering skills** in
   `skills/reference/COVERAGE.md`, which `templates/reference/ARTIFACTS.md` and the
   skill's own frontmatter both list.
-- **Fixed: a doubled article** in the scaffold's `.vscode/settings.json` comment,
-  left by the prompt-files → `.agents/skills/` rename.
-
 - **Fixed: the `CwdChanged` registration claimed coverage it cannot have.** The
   hook header and `docs/reference/hooks.md` both said a worktree entered
   mid-session via `EnterWorktree`, a subagent's `isolation: worktree`, or a
@@ -501,10 +498,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   restriction that "applies for the whole invocation" with "no post-run step in
   which the restriction has cleared" — both false, and load-bearing because
   `/steer:audit` renders only *after* the user confirms in a fresh message, by
-  which point the restriction is gone. The rule stands on its true reason:
-  dropping `Write` blocks the render in-run while gating nothing afterwards.
-  `/steer:audit`'s read-only contract, `/steer:next`'s read-only note,
-  `/steer:report`'s temp-file rationale, the plugin README's convention entry, and
+  which point the restriction is gone. `/steer:audit`'s read-only contract,
+  `/steer:next`'s read-only note, `/steer:report`'s temp-file rationale, the plugin README's convention entry, and
   the `.agents/skills` restriction banner — which called the same limit
   "mechanical" — now agree.
 
