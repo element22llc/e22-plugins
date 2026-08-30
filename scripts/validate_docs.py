@@ -186,6 +186,39 @@ def check_namespace(errors: list[str], skills: set[str]) -> None:
                     errors.append(f"{md}:{i}: '/steer:{m.group(1)}' does not resolve to a skill")
 
 
+# --- check 6: no duplicated section headings --------------------------------
+
+
+def check_duplicate_headings(errors: list[str]) -> None:
+    """Flag a page that repeats an `##`/`###` heading.
+
+    A bad edit — a slice that re-emits a span, a botched merge — can duplicate a
+    whole block of a page. Nothing else catches it: the copy is valid Markdown,
+    every link still resolves, and the build is happy, so the page ships with two
+    versions of a section that will disagree the moment one is updated. That is
+    exactly how a stale, contradicting "Known limitations" block once survived two
+    audit rounds. Fenced code is skipped so a `##` comment inside a shell block is
+    not mistaken for a heading.
+    """
+    for md in _iter_docs():
+        seen: dict[str, int] = {}
+        in_fence = False
+        for i, line in enumerate(md.read_text(encoding="utf-8").splitlines(), 1):
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence or not line.startswith(("## ", "### ")):
+                continue
+            heading = line.strip()
+            if heading in seen:
+                errors.append(
+                    f"{md}:{i}: duplicate heading {heading!r} (first seen at line {seen[heading]}) "
+                    "— a section is repeated; delete the copy"
+                )
+            else:
+                seen[heading] = i
+
+
 def run_checks(errors: list[str]) -> None:
     skills = skill_names()
     if not skills:
@@ -196,6 +229,7 @@ def run_checks(errors: list[str]) -> None:
     check_nav(errors, nav_paths)
     check_links(errors)
     check_namespace(errors, skills)
+    check_duplicate_headings(errors)
 
 
 def main() -> int:

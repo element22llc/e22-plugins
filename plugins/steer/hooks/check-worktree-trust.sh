@@ -158,11 +158,21 @@ steer_trust_state() {
 				# bug this function exists to fix. The longest tail is the deepest
 				# directory, which is $1 itself.
 				#
-				# Known boundary: if $1 has no mise config of its own, mise prints no
-				# line for it and the longest ancestor tail wins instead of returning
-				# ''. Benign here — the caller acts only on `untrusted`, so an
-				# inherited `trusted` exits exactly as '' would, which is also what the
-				# pre-fix code did for that case.
+				# KNOWN DEFECT, not yet fixed — see the pre-release audit residue.
+				# If $1 has no mise config of its own, mise prints no line for it and
+				# the longest matching ancestor tail wins instead of returning ''. At
+				# the WT call site that is harmless (the caller acts only on
+				# `untrusted`). At the PRIMARY call site it is NOT: that branch tests
+				# `!= trusted`, so an ancestor-derived `trusted` skips the "primary has
+				# no mise config at all" notice and falls through to `mise trust -q -C`
+				# — CREATING trust, which the header above says this hook must never
+				# do. Reaching it needs a primary with no config of its own AND an
+				# ancestor config whose home-relative tail is also a suffix of the
+				# primary's path (`~/work` + a repo at `~/work/x/work`), so it is
+				# narrow — but it is a real hole, and closing it needs the home
+				# directory, which neither $HOME nor this output reliably gives. Do not
+				# paper over it with another heuristic; the exact-match arm above is
+				# the only part that is sound by construction.
 				if [ "${#_tail}" -gt "${#_best_tail}" ]; then
 					_best_tail="${_tail}"
 					_best_state="${_st}"

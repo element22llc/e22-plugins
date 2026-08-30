@@ -7,12 +7,23 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `validate_docs.py` fails on a duplicated section heading.** A bad edit
+  can re-emit a whole block of a page; nothing caught it, because the copy is
+  valid Markdown, every link still resolves and the build is happy — so a page
+  could ship two versions of a section that contradict each other the moment one
+  is updated. Fenced code is skipped so a `##` comment inside a shell block is not
+  mistaken for a heading. (Docs tooling — it ships nothing to consumers.)
+
 - **Fixed: `/steer:init` Path A never stamped the spine.** The legacy-template-fork
   path back-fills every spine artifact but never wrote `spec/.version`, so a
   completed Path A run could not reach init's own stated end state: the repo stayed
   `foreign`, `/steer:setup` kept routing it to `/steer:adopt`, and the procedure's
   own "already ran" guard — which tests that stamp — could never fire. Path A now
-  stamps it, as the plugin-driven path does at hand-off.
+  walks the migration ledger and then stamps, in the same two-line form the
+  plugin-driven path writes. The ledger walk comes first on purpose: a fork of the
+  old template predates the version-keyed entries, and stamping before applying
+  them would make `/steer:sync` skip them permanently — retiring those transforms
+  on exactly the repos furthest behind.
 - **Fixed: the worktree trust lookup could read an *ancestor's* trust state.**
   `mise trust --show` lists every config directory on the path, **ancestors first**,
   so a repo under `~/work` with a worktree named `work` matched the `~/work` line
@@ -26,12 +37,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:init` and `/steer:adopt`, but `/steer:build` is the third bootstrap front
   door and also invokes `/steer:adr` before any stamp exists, so it still aborted.
 
-- **Fixed: `/steer:adr` refused to run for the two skills that call it during
+- **Fixed: `/steer:adr` refused to run for the skills that call it during
   bootstrap.** Step 1 stops and routes to `/steer:init` / `/steer:adopt` when
-  `spec/.version` is absent — but both of those write that stamp *last* (init at
-  step 7, adopt in Phase 12) while invoking `/steer:adr` well before it (init step
-  4, adopt Phases 6 and 8). The gate therefore aborted the very callers it exists
-  to route to, and sent the agent back into the skill already running; the same
+  `spec/.version` is absent — but a bootstrap writes that stamp *last*, while
+  invoking `/steer:adr` well before it. The gate therefore aborted the very
+  callers it exists to route to, and sent the agent back into the skill already running; the same
   file's step 5 had meanwhile blessed the init step-4 call path outright, so `adr`
   both required and forbade it. The stamp test now applies to a **direct**
   invocation, and a bootstrap calling in proceeds.
@@ -68,9 +78,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and deliberately left unpatched (fixing the second is a design question), but they
   were recorded only in `gen_agent_skills.py`'s own docstring, where no consumer
   would find them. `docs/reference/known-limitations.md` now carries them, with what
-  it does and does not affect — including the two skills whose procedure *is* the
-  failing fetch — and Claude Code is unaffected because it reads the installed
-  plugin. No behaviour change.
+  it does and does not affect — including that for some skills the failing fetch
+  *is* the procedure — and Claude Code is unaffected because it reads the
+  installed plugin. No behaviour change.
 
 - **Fixed: `/steer:next` compared a comment against the plugin version.**
   `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
