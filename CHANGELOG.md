@@ -80,22 +80,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `STEER_NO_WORKTREE_TEARDOWN=1`. A plain checkout's stack is never touched.
 - **Added: `check-worktree-trust.sh` also runs on `CwdChanged`.** At
   `SessionStart` it could only cover a session that *started* in a worktree — a
-  worktree entered **mid-session** (`EnterWorktree`, a subagent's
-  `isolation: worktree`, a background session) fires no `SessionStart`, so the
+  session that **moves into** a worktree mid-run fires no `SessionStart`, so the
   trust step was silently skipped for exactly the worktrees an agent creates for
   itself, and every `mise run …` there failed on trust. Not `WorktreeCreate`,
   which looks like the precise event and cannot do the job: it runs *before* the
   worktree exists on disk, and `mise trust -C <dir>` refuses a directory that is
   not there yet. Re-running is free — the first `cd` in inherits the trust and
-  every later one exits before invoking `mise`; a plain checkout never reaches it.
+  every later one exits before changing anything; a plain checkout never reaches
+  `mise` at all.
 - **Changed: rules `24-worktrees` and `99-end-of-session` now state the hook
   boundary** instead of carrying the teardown command as an instruction — what
   stays the agent's job is stopping the dev servers and watchers it started, plus
   running `mise run docker:clean` by hand for a worktree removed outside a
   session, or on a surface where no hook fires. Both rules scope the claim to
   Claude Code and describe the `SessionEnd` half as best-effort — see the hook
-  budget entry below. Net effect on the always-on payload is a small reduction;
-  `check_context_budget.py` is where the number lives.
+  budget entry below. `check_context_budget.py` is where the payload number lives.
 
 - **Changed: the GitHub MCP server's token is now plugin user config, not a shell
   export.** `.mcp.json` authenticated with `Bearer ${GITHUB_PAT}`, resolved from
@@ -113,10 +112,11 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   migration ledger entry rewrites the stale "export it from your shell rc"
   instruction in an already-materialized repo's `README.md`, but no file edit can
   restore access — that half is the human's. Set or rotate it later with
-  `claude plugin install steer --config github_pat=…`. The VS Code mirror
-  (`scaffold/vscode/mcp.json`) keeps a **byte-identical servers block** — Copilot has no notion of
+  `claude plugin install steer@e22-plugins --config github_pat=…`. The VS Code mirror
+  (`scaffold/vscode/mcp.json`) mirrors the same servers and URLs, with
+  authentication as the one sanctioned difference — Copilot has no notion of
   Claude's plugin user config, so `gen_copilot_mcp.py` maps the new placeholder
-  onto the same `${input:github_pat}` prompted input it always emitted.
+  onto the `${input:github_pat}` prompted input it always emitted.
 - **Changed: the non-Claude skill surface moves from Copilot prompt files to the
   cross-tool `.agents/skills/` tree.** steer shipped skills to Copilot as
   `.github/prompts/steer-<skill>.prompt.md` — **intent capsules** carrying a
@@ -175,7 +175,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `rules/99-end-of-session`, `on-session-end.sh`, the shared lifecycle helper,
   `CROSS-SURFACE.md` and the two docs reference pages now say so;
   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` is named as the user-side lever where
-  a reader would look for it — the hook's own header and the two docs pages.
+  a reader would look for it.
 - **Fixed: "`SessionEnd` output and exit code are discarded" was wrong on five
   surfaces.** Only the *JSON output fields* are discarded; an `exit 2` shows
   stderr to the user ("SessionEnd | No | Shows stderr to user only"). The
@@ -261,10 +261,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `31-decision-capture` requires `/steer:init` or `/steer:adopt` first on a repo
   with no `/spec`; every neighbouring spine skill enforces that and `adr` did not,
   so it would `mkdir -p spec/decisions` into an unmanaged repo.
-- **Fixed: `/steer:sync` mandated branch + PR unconditionally**, contradicting
-  rule `45-commit-autonomy`, which drops the per-change branch and PR in
-  solo trunk — `sync` was the only delivering skill that never read the
-  `steer:delivery-mode` marker `init` and `build` write.
 - **Fixed: `POLYREPO.md` said the system model belongs in the workspace
   `ARCHITECTURE.md` "not any member's"**, contradicting its own artifact split
   and rules `30`/`32`, which keep `ARCHITECTURE.md` per member. Each member
@@ -276,8 +272,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   Windows. Corrected on the three surfaces that overstated it; the migration
   entry already said it correctly.
 - **Fixed: `claude plugin install steer --config …` now carries the
-  `@e22-plugins` marketplace qualifier** on all three shipped surfaces, matching
-  every other plugin-management invocation the repo ships.
+  `@e22-plugins` marketplace qualifier** everywhere the repo spells it, matching
+  every other plugin-management invocation.
 - **Fixed: `SPEC-FRAMEWORK.md` said "no CI enforces" spec↔code coupling** — the
   scaffold ships an advisory `spec-drift` job (rule `55-drift-gates`), and in
   solo trunk it is the only backstop there is.
@@ -288,10 +284,37 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   omitted `/steer:audit` and `/steer:help`; `HOUSEKEEPING.md` dropped the
   condition on the solo-trunk push gate; `sync/RECONCILE.md`'s permission-tier
   example used a pattern the template ships in `allow`, not `ask`.
-- **Documented: `STEER_NO_WORKTREE_TEARDOWN`, `STEER_WORKTREE_OFFSET` and
-  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** in the configuration reference's
-  tooling knobs, and the `typescript-lsp` overlap in its LSP section — which the
-  CHANGELOG disclosed but the user-facing page still contradicted.
+
+- **Fixed: `adr` tested for `spec/` where the spine marker is `spec/.version`.**
+  A bare `spec/` can be an empty folder or a foreign OpenAPI directory, which is
+  exactly why `hooks/lib/spine.sh` keys ownership on the stamp — so the guard
+  added for rule `31-decision-capture` passed on the very repos it exists to stop.
+- **Fixed: the `CwdChanged` trigger was described too narrowly.** It fires on any
+  move of the session's working directory — upstream's example is Claude running
+  `cd`; `EnterWorktree` is the worktree-specific form. The carve-out that a
+  subagent's `isolation: worktree` does **not** move the session's cwd is correct
+  and stays.
+- **Fixed: `AUTHORING.md` attached the background-subagent tool-set narrowing to
+  `background: false`,** inverting it. A fork runs in the background *by default*,
+  which is what narrows the tool set; `background: false` keeps the full set.
+- **Fixed: `templates/scaffold/worktreeinclude` had dropped a real uncovered
+  case** — a worktree created with `git worktree add` that the session has not
+  moved into gets no `CwdChanged`, so it still needs one `mise trust`.
+- **Fixed: the `github_pat` migration entry told the applier to prefer re-taking
+  one README section,** but two of its three transform rows target text outside
+  that section — following the advice left the precondition firing forever.
+- **Fixed: the `tracker-sync` gateway header and `INVOCATION.md` listed different
+  drivers** for the same routing.
+- **Fixed: assorted counts and enumerations deleted rather than re-derived** —
+  `CROSS-SURFACE.md`'s "only three things are rewritten" (the generator does
+  more), `docs/reference/skills.md`'s "the two user-invocable skills" (nine
+  qualify) and its not-forked list, which named a skill that renders no Artifact
+  and omitted one that does. The fork claim is now stated as the frontmatter fact
+  it can be checked against.
+- **Fixed: the GitHub PAT storage wording is now consistent on every surface.**
+  The previous cycle corrected three shipped files and left the docs site — the
+  page that mandates WSL2, the platform with no keychain — still saying "OS
+  keychain" flat.
 
 ### 5.3.0
 

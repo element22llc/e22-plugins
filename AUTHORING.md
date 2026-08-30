@@ -94,8 +94,11 @@ be unique. The full field set actually used in this repo:
 > that invoked it**, and the agent type supplies its system prompt. Its
 > `allowed-tools` still applies — upstream's own `context: fork` example declares
 > `agent:` and `allowed-tools:` together — so keep the grants a forked skill
-> needs. Note a fork runs in the **background** unless it sets
-> `background: false`, which narrows it to the background-subagent tool set. That is right for a skill whose whole input is its argument and
+> needs. A fork also runs in the **background** by default, which narrows it to
+> the background-subagent tool set; set `background: false` to keep the full set
+> if a step needs a tool outside it.
+>
+> Forking is right for a skill whose whole input is its argument and
 > whose whole output is a rendered page — `/steer:status` and `/steer:explain`,
 > which read a lot of spine to emit a little. It is wrong for a skill that reads
 > the conversation (`/steer:report` files a bug about what just happened), and

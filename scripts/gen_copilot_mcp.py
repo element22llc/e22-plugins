@@ -11,7 +11,8 @@ This script renders that mirror from the single source of truth (``.mcp.json``)
 so the two never diverge; ``check_copilot_mcp.py`` fails the build if the
 committed mirror drifts. The one sanctioned difference is authentication: Claude
 resolves the token from plugin user config (``${user_config.github_pat}``,
-prompted at install and held in the OS keychain) while VS Code uses its own
+prompted at install and held in the macOS Keychain or
+``~/.claude/.credentials.json``) while VS Code uses its own
 prompted input (``${input:github_pat}``) with a matching ``inputs`` block — two
 different secret stores, same "never in a repo file" property. That mapping
 lives in ``AUTH_INPUTS`` below — the MCP analog of ``gen_copilot_agents.py``'s

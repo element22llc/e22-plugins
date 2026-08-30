@@ -167,10 +167,11 @@ Name the file and say what to carry forward.
   | "export a `GITHUB_PAT`" / "Export it from your shell rc (`~/.zshrc` / `~/.bashrc`): `export GITHUB_PAT=…`" | "supply the steer plugin's `github_pat` config value" / "Give it to the plugin when Claude Code prompts at install, or set it later with `claude plugin install steer@e22-plugins --config github_pat=…`" |
   | "does **not** consume … `GITHUB_PAT`" | "does **not** consume … its `github_pat` config value" |
 
-  The current `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/README.md` carries the
-  post-change wording for the whole "GitHub MCP server" section — prefer re-taking
-  that bounded section over patching sentence by sentence, carrying forward any
-  product-specific text the team added inside it.
+  Apply all three rows: two of them sit **outside** the "GitHub MCP server"
+  section (the quickstart line and the GitHub-Actions paragraph), so re-taking
+  that section alone leaves the precondition firing. The current
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/README.md` carries the post-change
+  wording for every one of them.
 
   **Tell the human the out-of-repo half.** No file edit restores their access: they
   must supply the token to the plugin once per machine. Say so explicitly — this is

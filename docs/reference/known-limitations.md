@@ -84,7 +84,8 @@ takes out document conversion:
 
 - **`github`** authenticates with `Authorization: Bearer
   ${user_config.github_pat}`, resolved from the **plugin's user config** (prompted
-  at install, held in the OS keychain). Cowork reads neither the CLI `.mcp.json`
+  at install, held in the macOS Keychain or `~/.claude/.credentials.json`).
+  Cowork reads neither the CLI `.mcp.json`
   nor that config store, so the plugin's GitHub server appears to "try to connect
   like Claude Code" and fails to authenticate. **Do not rely on it in Cowork.**
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one

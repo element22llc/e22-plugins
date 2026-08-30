@@ -31,10 +31,11 @@
 #   command and changes nothing.
 #
 # WHY IT ALSO RUNS ON CwdChanged
-#   At SessionStart it can only cover a session that STARTED in a worktree. When
-#   the session MOVES into one mid-run — the `EnterWorktree` tool changes the
-#   session's working directory — no SessionStart fires, so the trust step was
-#   silently skipped there. `CwdChanged` fires on that move and closes the gap.
+#   At SessionStart it can only cover a session that STARTED in a worktree. Any
+#   move of the SESSION's working directory into one fires no SessionStart, so the
+#   trust step was silently skipped there. `CwdChanged` fires on that move and
+#   closes the gap: upstream's example is Claude running `cd`, and `EnterWorktree`
+#   is the worktree-specific form of the same move.
 #
 #   Scope this claim to the moves we can show. A subagent with
 #   `isolation: worktree` is NOT one of them: upstream says a subagent "starts in

@@ -63,11 +63,9 @@ spec-vs-tracker drift check (`/steer-audit spec`), and **not** a code-health aud
   reports, ADRs), and never the marketplace id `e22-plugins`.
 - **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
   `/spec/.version` — never from training-data memory.
-- **Deliver the way the repo delivers** (commit-autonomy rule): in **PR flow**,
-  branch + PR and never commit to `main` — the dev's merge review is the hard
-  gate, so push the branch and open the PR yourself, announced, and never merge
-  it. A **solo-trunk** repo (`<!-- steer:delivery-mode=solo-trunk -->` in
-  `CLAUDE.md`) has no per-change branch or PR: commit to the trunk and push.
+- **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
+  **merge review** is the hard gate; push the branch and open the PR yourself,
+  announced — never merge it.
 - **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
   dev invoked the sync from (captured in step 1), so the sync lands back onto the
   work it continues. Only when `BASE` is itself `main` does the PR target `main`.

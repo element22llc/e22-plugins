@@ -275,7 +275,7 @@ rewrites — `CLAUDE.md`, `spec/PRODUCT.md`, the PR template and `ci.yml`.
 Finally the migration logs itself as the directory's first entry, which both satisfies
 the living-docs rule for the migration PR and proves the new path works.
 
-The newest entry, keyed **5.0.0**, narrows a feature's spec
+The newest *released* entry, keyed **5.0.0**, narrows a feature's spec
 `> Status:` from five values to **`draft · approved · live`**. `implemented` and
 `validated` are retired — they were pure mirrors of the issue's `validate`/`done`,
 a derived value stored in a second file that nobody recomputed. The entry applies

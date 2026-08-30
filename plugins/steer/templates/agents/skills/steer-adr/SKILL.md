@@ -21,9 +21,11 @@ the product repo, from the bundled template.
 
 ## Steps
 
-1. **Require a spine.** If `/spec` does not exist, stop and route to
+1. **Require a spine.** If `spec/.version` is absent, stop and route to
    `/steer-init` (greenfield) or `/steer-adopt` (existing code) — decision
-   capture presumes the spine those install (rule `31-decision-capture`).
+   capture presumes the spine those install (rule `31-decision-capture`). Test
+   the stamp, not `spec/`: a bare directory can be an empty folder or a foreign
+   OpenAPI `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`.
 2. Decide the next sequential number: list `spec/decisions/` and use the highest
    existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).

@@ -73,15 +73,15 @@ specialized skills below as needed, so you rarely reach past this set.
     the dozen files it was derived from. The result arrives in the conversation
     when the fork completes.
 
-    The other Artifact-rendering skills are deliberately **not** forked:
-    `/steer:report` files a bug about what just happened in *this* conversation,
-    `/steer:roadmap` writes issues and drives other skills, and `/steer:audit`
-    and `/steer:help` stay in the session that asked.
+    `context: fork` is set on exactly these two skills; every other skill runs
+    in the session that invoked it. That is deliberate — a skill that reports on
+    *this* conversation (`/steer:report`) or drives other skills
+    (`/steer:roadmap`) needs the session it was called from.
 
 !!! note "`standards` and `reference` are a pair"
-    Neither appears in the router's `Intent → skill` table — they are the two
-    user-invocable skills rule `00-router` surfaces only in its below-table
-    prose, which is why `/steer:help` presents them together. They are split
+    Neither appears in the router's `Intent → skill` table — rule `00-router`
+    surfaces them only in its below-table prose, which is why `/steer:help`
+    presents them together. They are split
     across the two tables here by *how you reach them*: `/steer:standards` is
     invoked directly on surfaces where the SessionStart hook doesn't fire, while
     `/steer:reference` is usually routed to (by `/steer:standards` or the model)

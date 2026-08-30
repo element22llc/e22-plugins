@@ -21,8 +21,9 @@
 # checkout's trust automatically — at SessionStart for a session started in the
 # worktree, and on CwdChanged for one it enters mid-session — and it grants
 # nothing new: mise keys trust by path, not by content, so the primary already
-# trusts every future edit of that file. In a plain terminal, where no session is
-# watching, run `mise trust` there once.
+# trusts every future edit of that file. Where no session is watching, run
+# `mise trust` there once: a plain terminal, or a worktree you created with
+# `git worktree add` and have not moved into.
 
 # Local env / secrets the app needs to boot (mirrors .gitignore)
 .env
