@@ -41,8 +41,8 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   `allowed-tools` grants without restricting (every tool stays callable; permission
   settings govern the rest), and a `disallowed-tools` restriction clears at the
   user's next message. So never disallow `Write` on the theory that it gates a
-  confirmed write: it blocks the instructed write in-run and gates nothing once the
-  user replies. Writes the modes instruct (e.g. `/steer:audit spec`'s optional
-  `/spec/DRIFT-REPORT.md`) happen **in-run, post-confirmation**. Publication to
+  confirmed write: it buys no safety. Writes the modes instruct (e.g.
+  `/steer:audit spec`'s optional `/spec/DRIFT-REPORT.md`) happen **in-run,
+  post-confirmation**. Publication to
   the tracker is a genuinely separate step because it is a different skill:
   `/steer:issues publish-*`. See `/steer:reference artifacts`.

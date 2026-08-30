@@ -88,10 +88,8 @@ read-only over the canonical sources even in a skill that otherwise writes.
   writes nothing under the repo tree.
 - **Never disallow `Write` to make a render "safe".** `disallowed-tools` is scoped
   to the invoking turn — upstream states the restriction *clears when you send your
-  next message* — so dropping `Write` blocks the instructed render inside the run
-  while gating nothing once the user replies. It buys no safety and costs the
-  render. Bind the limit in prose instead: render in-run, post-confirmation, to the
-  temp path; the temp-only write is what keeps it read-only over the repo.
+  next message* — so dropping `Write` buys no safety. Bind the limit in prose
+  instead: render in-run, post-confirmation, to the temp path; the temp-only write is what keeps it read-only over the repo.
 
 ## Rendering mechanics — the CSP shapes everything
 

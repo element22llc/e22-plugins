@@ -24,7 +24,9 @@ argument-hint: '[optional constraints, e.g. ''only feature-x'', ''no tracker wri
 # Navigate the workspace to the single best next action (read-only)
 
 > Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
-> unavailable while this skill runs, so navigation cannot mutate the repo. This does
+> removed from the tool pool for the turn that invokes this skill, so navigation
+> cannot mutate the repo; across a multi-turn run that limit is one this skill
+> keeps in prose. This does
 > not make the repo immutable — shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
 > whatever you choose, as its own step.

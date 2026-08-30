@@ -503,9 +503,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:audit` renders only *after* the user confirms in a fresh message, by
   which point the restriction is gone. The rule stands on its true reason:
   dropping `Write` blocks the render in-run while gating nothing afterwards.
-  `/steer:audit`'s read-only contract, `/steer:report`'s temp-file rationale, the
-  plugin README's convention entry, and the `.agents/skills` restriction banner —
-  which called the same limit "mechanical" — now agree.
+  `/steer:audit`'s read-only contract, `/steer:next`'s read-only note,
+  `/steer:report`'s temp-file rationale, the plugin README's convention entry, and
+  the `.agents/skills` restriction banner — which called the same limit
+  "mechanical" — now agree.
 
 ### 5.3.0
 

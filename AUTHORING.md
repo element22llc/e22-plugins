@@ -202,9 +202,9 @@ matrix):
   temp path is the *only* write; `/steer:audit` is the exception, with a second
   post-confirmation write its modes instruct (`/spec/AUDIT-REPORT.md` /
   `DRIFT-REPORT.md`). That limit is a **prose invariant**, not a frontmatter one. **Never** disallow `Write` on the theory that
-  a mid-run confirmation lifts the restriction: tool grants apply for the whole
-  invocation, so dropping it makes the instructed render unreachable rather than
-  deferred (`/steer:reference artifacts`). Shell varies independently: `explain`
+  it gates a confirmed write: `disallowed-tools` is scoped to the invoking turn and
+  clears at the user's next message, so it buys no safety
+  (`/steer:reference artifacts`). Shell varies independently: `explain`
   also disallows `Bash` (it reads only local files); `status` keeps `Bash` because
   it reads the tracker through `/steer:tracker-sync` (the `gh` read fallback needs
   shell), but writes nothing back (no tracker-write grant; reads only).

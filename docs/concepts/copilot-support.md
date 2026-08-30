@@ -347,7 +347,8 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot)
   — the bodies themselves port in full, but a skill that Claude Code restricts via
   `allowed-tools`/`disallowed-tools` carries that restriction here as an
-  instruction rather than something the runtime enforces (the `steer-reviewer`
+  instruction with nothing removed from the pool at all — where Claude Code at
+  least removes them for the invoking turn (the `steer-reviewer`
   subagent does port as a [custom agent](#custom-agents-on-copilot)).
 - **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
   gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no

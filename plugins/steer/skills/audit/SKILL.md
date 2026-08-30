@@ -24,9 +24,8 @@ allowed-tools:
 # AUDIT-REPORT.md / DRIFT-REPORT.md — bound in prose by the read-only contract
 # below, exactly as /steer:status, /steer:explain, /steer:help and
 # /steer:questions bundle mode do. Do NOT disallow Write here: disallowed-tools is
-# scoped to the invoking turn and clears at the user's next message, so removing
-# Write would block the instructed render in-run while gating nothing afterwards.
-# The read-only contract below is the binding limit.
+# scoped to the invoking turn and clears at the user's next message, so it buys no
+# safety. The read-only contract below is the binding limit.
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 

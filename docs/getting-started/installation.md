@@ -25,11 +25,10 @@ enabled — a lean subset in non-code folders, since the scoped rules self-gate 
 Run `/plugin` and confirm **Steer — Engineering Standards** is listed and enabled.
 
 The rules arrive as context Claude can read, not as anything printed in the
-transcript, so there is nothing on screen to look for. Confirm them the way the
-[launch checklist](../team-rollout/launch-checklist.md) does — open a new session
-in a managed repo and ask something only the loaded standards can answer, such as
-"what branch name does `/steer:work` use by default?" (expect
-`issue/<number>-<slug>`), then check the reply matches.
+transcript, so there is nothing on screen to look for. Confirm them by asking: open a new
+session in a managed repo and ask something only the loaded standards can answer —
+"what is this repo's delivery mode?" (expect `pr-flow` or `solo-trunk`, per the
+`CLAUDE.md` marker) — then check the reply matches.
 
 !!! note "Prerequisites for the full workflow"
     `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);

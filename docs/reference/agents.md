@@ -39,8 +39,9 @@ vets, ranks, and routes what it returns.
   `steer-loop.yml` prompt — so the fan-out is deterministic rather than
   dependent on description matching.
 - **Read-only is enforced, not requested.** The `Read`/`Grep`/`Glob` allowlist
-  omits `Bash`, so there is no shell mutation path. This holds the fan-out to the
-  same read-only contract the calling skills declare via `disallowed-tools`. See
+  omits `Bash`, so there is no shell mutation path. This is a genuine filter, unlike the
+  turn-scoped `disallowed-tools` the calling skills declare; it holds the fan-out
+  to the same read-only contract by a stronger mechanism. See
   the [Authorization model](../concepts/authorization-model.md).
 - **Cost-gated.** In `/steer:audit`'s `code` and `spec` modes the fan-out is
   size-gated: below it, the skill reviews inline and the subagent is never

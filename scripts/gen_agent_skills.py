@@ -104,12 +104,12 @@ BANNER = (
     "     Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->"
 )
 
-# Claude Code enforces a read-only skill by removing tools from the pool via
-# `disallowed-tools`. Nothing enforces that here, and several bodies state the
-# restriction as a fact ("the in-place edit tools are unavailable while this skill
-# runs"). Leaving that unqualified would be a lie on this surface, so a skill that
-# was frontmatter-restricted upstream carries the restriction as a standing
-# instruction instead.
+# Claude Code removes a read-only skill's tools from the pool via
+# `disallowed-tools`, but only for the invoking turn. Nothing removes them here,
+# and several bodies state the restriction as a fact ("the in-place edit tools
+# are unavailable while this skill runs"). Leaving that unqualified would be a
+# lie on this surface, so a skill that was frontmatter-restricted upstream
+# carries the restriction as a standing instruction instead.
 # `context: fork` is dropped (see the module docstring), but the body of a forked
 # skill argues FROM that execution model — "this skill runs forked", "AskUserQuestion
 # is removed from every subagent", "only the final result comes back". On a surface
