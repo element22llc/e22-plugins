@@ -128,4 +128,4 @@ by name. Each is reached through the front door noted.
 | Skill | Purpose |
 | --- | --- |
 | `/steer:tracker-sync` | The single gateway for all GitHub tracker reads/writes (MCP-first, `gh` fallback, manual floor). Also reads/writes **native issue fields** (`field-get`/`field-set`/`bootstrap-fields` for Priority/Effort/dates) and records **native blocked-by relationships** (`link-blocked-by`). Its `close` operation is the **only** closure path when the tracker repo is not the code repo — GitHub closing keywords do not cross repositories (see [Work](../workflows/work.md#closing-refs-across-repositories)). |
-| `/steer:spec-scaffold` | Create a feature's spec (`intent.md` + `contract.md`) from the bundled templates (spine materialization is `/steer:init` / `/steer:adopt`'s job). |
+| `/steer:spec-scaffold` | Create a feature's spec (`intent.md` + `contract.md`) from the bundled templates, or additively reconcile an existing one without overwriting filled-in content (spine materialization is `/steer:init` / `/steer:adopt`'s job). |

@@ -1,6 +1,6 @@
 ---
 name: steer-doctor
-description: Detect the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), Docker — flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI steps handed over.
+description: Detect the local prerequisites a managed repo needs before init/build/dev — git, mise (and the pnpm/uv/node it manages), Docker — flagging shadowed runtimes; installs mise + runtimes on confirmation, GUI and `sudo`/host steps (git, Docker Desktop) handed over.
 ---
 
 <!-- Generated from the steer plugin's skills/doctor/SKILL.md — do not edit by hand.

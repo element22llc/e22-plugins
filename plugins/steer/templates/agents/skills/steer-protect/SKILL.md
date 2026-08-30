@@ -23,11 +23,15 @@ is **GitHub branch protection** on the default branch: a required PR, a required
 review, a green `ci` check, no admin bypass. That wall is only real if it is
 actually configured on the repo — this skill verifies it is, and helps set it up.
 
-**Protection is what defines the delivery mode** (Commit autonomy): a protected
-`main` is **pr-flow** (autonomous branch pushes + PRs; the merge review is the
-human gate), an unprotected `main` is **solo-trunk** (autonomous trunk delivery,
-appropriate pre-MVP) — there is no third mode. The `CLAUDE.md`
-`<!-- steer:delivery-mode=… -->` marker is the offline **cache** of that
+**The declared mode is what defines the delivery mode** (Commit autonomy): the
+`CLAUDE.md` `<!-- steer:delivery-mode=solo-trunk -->` marker is what makes a repo
+**solo-trunk** (autonomous trunk delivery, appropriate pre-MVP); anything else is
+**pr-flow** (autonomous branch pushes + PRs; the merge review is the human gate).
+Protection is what *enforces* pr-flow, not what declares it — a declared pr-flow
+repo whose `main` is unprotected is a **gap to close, not a third mode** (rule
+`45-commit-autonomy`), which is why this skill never flips such a repo to
+solo-trunk. The `CLAUDE.md`
+`<!-- steer:delivery-mode=… -->` marker is also the offline **cache** of the
 observed state (hooks read it without network); this skill is the owner of that
 cache — whenever verify or apply observes live protection that contradicts the
 marker, **say so**. Reconciling it is `apply`'s job: `verify` reports the stale

@@ -31,7 +31,9 @@ not substitution — and an `infra` repo may drop the paired
 Read the row, not this heading, when they disagree.
 Dotfiles are
 stored here **without their leading dot** (so they don't act on this plugin repo
-itself); rename on copy as mapped below. The Node project files and per-type
+itself); rename on copy as mapped below. The one carve-out is an empty directory
+marker (`spec/features/.gitkeep`, `spec/decisions/.gitkeep`), which is inert here
+and installs unchanged. The Node project files and per-type
 structure live in **profile overlays** (Layer 1 / Layer 2) — see below.
 
 | Bundled path | Install as | Notes |

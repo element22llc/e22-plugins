@@ -7,6 +7,30 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:protect` defined the delivery mode from observed protection.**
+  Its framing sentence said a protected `main` *is* pr-flow and an unprotected one
+  *is* solo-trunk, "there is no third mode" — which rule `45-commit-autonomy`
+  denies ("declared-but-unprotected PR flow is a gap, not a mode"), which
+  `hooks/lib/repo-root.sh` denies (it derives `solo-trunk` only from the
+  `CLAUDE.md` marker, never from live protection), and which the skill's own later
+  steps denied twice. The marker declares the mode; protection enforces it.
+
+- **Fixed: rule `24-worktrees` prescribed `mise install` for a checkout with no
+  `mise` config.** The carve-out now names the remedy the trust hook actually
+  names for each case — `mise trust && mise install` where the repo was never
+  trusted, `mise trust` alone where there is no config to install from.
+
+- **Fixed: `/steer:issues`' `argument-hint` omitted the optional arguments of four
+  modes** it defines and its own next-actions table recommends (`triage`, `epic`,
+  `publish-audit`, `publish-drift`).
+
+- **Fixed: `/steer:doctor`'s description said only GUI steps are handed over.**
+  `git` is handed over too, as a `sudo`/host command — which the body and the docs
+  page both already said.
+
+- **Fixed: the scaffold `MANIFEST.md` stated its no-leading-dot rule without the
+  two `.gitkeep` directory markers that are its only exceptions.**
+
 - **Fixed: four surfaces claimed `background: false` puts the Artifact heads-up
   ahead of the publish.** It does not. The heads-up is written *inside* the fork,
   and only a fork's final result reaches the main session, so the Artifact
@@ -83,7 +107,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `spec/.version`. The spine it produces is complete, so the repo *looked* managed
   and behaved as though it were not: `/steer:setup` kept routing it to
   `/steer:adopt`, the unmanaged-repo hook warned every session, the write-nudge hook
-  kept suggesting adoption, and `/steer:sync` read it as `unstamped`. It now stamps
+  kept suggesting adoption, and `/steer:sync` refused it outright — `foreign` is not
+  a sync case. It now stamps
   once the spine files are in place, in the same two-line form `/steer:init` and
   `/steer:adopt` write.
 
