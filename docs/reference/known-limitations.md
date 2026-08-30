@@ -331,18 +331,15 @@ into every consumer repo. Two defects in that rewrite are open:
   lines**, so the generated tree contains `sh "https://…"` and `python3
   "https://…"` invocations that cannot execute on any surface.
 
-**What this means in practice.** For most skills the body is self-contained and
-only a link or a helper-script invocation is affected. But three skills are
-**procedurally dependent** on a fetch that fails, so on a non-Claude surface they
-cannot do their job at all:
-
-- `steer-standards` — its entire body is "read every rule file from
-  `…/blob/main/plugins/steer/rules/`". That is a **directory** URL, so the
-  `raw.` remedy does not rescue it. This is the skill that loads the standards on
-  exactly the surfaces where no hook injects them.
-- `steer-help` — instructed to read `rules/00-router.md` and build the menu from
-  its rows, explicitly *not* to hardcode the list.
-- `steer-protect` — reads `policy/branch-protection.yml` as **data**.
+**What this means in practice.** The rewrite is unconditional, so this is
+systemic rather than a short list of affected skills: **any step that depends on
+reading a shared file or running a shared script does not work on a non-Claude
+surface.** Some skills lose only a link; others lose their procedure, because
+fetching the file *is* the step — `steer-standards` is the extreme case, its body
+being little more than a directory URL to read the rules from, and a directory URL
+has no `raw.` equivalent to fall back on. Treat the portable tree as reliable for
+*guidance* and unreliable for any instruction that reaches outside the skill's own
+directory.
 
 On Claude Code none of this applies: it reads the skills from the installed
 plugin, where every path resolves normally.

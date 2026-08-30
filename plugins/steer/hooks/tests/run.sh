@@ -1166,6 +1166,29 @@ printf 'with:\n  plugin_marketplaces: e22-plugins\n' >>"${CR2}/.github/workflows
 capscan "${CR2}"
 assert_eq "cap: claude.yml with marketplace -> present-wired" "$(capstatus "${out}" in-ci-plugin-loading)" "present-wired"
 
+# agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
+# The migration that retires .github/prompts/ deliberately leaves a team-authored
+# prompt file — and the directory around it — in place, so testing the directory
+# wedged such a repo at mis-wired with a verbatim-recopy repair that deletes nothing.
+CRP="${WORK}/capPrompts"
+mkdir -p "${CRP}/.github" "${CRP}/.agents"
+cp "${PLUGIN}/templates/github/copilot-instructions.md" "${CRP}/.github/"
+cp -R "${PLUGIN}/templates/github/agents" "${CRP}/.github/agents"
+cp -R "${PLUGIN}/templates/github/instructions" "${CRP}/.github/instructions"
+cp -R "${PLUGIN}/templates/agents/skills" "${CRP}/.agents/skills"
+capscan "${CRP}"
+assert_eq "cap: agent surface byte-identical -> present-wired" \
+	"$(capstatus "${out}" agent-surface-current)" "present-wired"
+mkdir -p "${CRP}/.github/prompts"
+printf 'ours\n' >"${CRP}/.github/prompts/our-own.prompt.md"
+capscan "${CRP}"
+assert_eq "cap: team-authored prompt file is NOT drift" \
+	"$(capstatus "${out}" agent-surface-current)" "present-wired"
+printf 'retired\n' >"${CRP}/.github/prompts/steer-work.prompt.md"
+capscan "${CRP}"
+assert_eq "cap: lingering steer-*.prompt.md IS drift" \
+	"$(capstatus "${out}" agent-surface-current)" "mis-wired"
+
 # version-pin-enforcement: policy + byte-identical scripts -> wired; drift -> mis-wired.
 CR3="${WORK}/cap3"
 mkdir -p "${CR3}/policy" "${CR3}/scripts"
@@ -2533,9 +2556,9 @@ mkdir -p "${WT_STUBS}"
 # It also ABBREVIATES the home dir to `~` on the way out, as real mise does —
 # printing the absolute path instead is what let a hook that matched only the
 # absolute form pass this suite while being inert on every real repo under home.
-# The stub keys that on $HOME because the test controls it; real mise resolves the
-# home dir from the OS, which is why the hook matches structurally rather than
-# reconstructing the abbreviation from $HOME. Case (i) is the regression that pins it.
+# The stub keys that on $HOME because the test controls it; real mise uses $HOME
+# when set and the OS home when not, which is why the hook matches structurally
+# rather than reconstructing the abbreviation. Case (i) is the regression that pins it.
 cat >"${WT_STUBS}/mise" <<'STUB'
 #!/bin/sh
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
@@ -2569,6 +2592,19 @@ case "${HOME:-}" in
 	"${HOME}"/*) _out="~${_dir#"${HOME}"}" ;;
 	esac ;;
 esac
+# Real mise lists every config directory on the path, ANCESTORS FIRST and the
+# queried directory last. MISE_STUB_ANCESTORS is a colon-delimited list of
+# already-abbreviated ancestor DIRS (no spaces — run_hook word-splits $ENV), each
+# emitted as `<dir>: trusted` before the target line, so a case can pin the
+# ordering the matcher has to survive.
+_anc="${MISE_STUB_ANCESTORS:-}"
+while [ -n "${_anc}" ]; do
+	_one="${_anc%%:*}"
+	_rest="${_anc#*:}"
+	[ -n "${_one}" ] && printf '%s: trusted\n' "${_one}"
+	[ "${_rest}" = "${_anc}" ] && break
+	_anc="${_rest}"
+done
 printf '%s: %s\n' "${_out}" "${_state}"
 exit 0
 STUB
@@ -2674,6 +2710,22 @@ mkdir -p "${WT_NOREPO}"
 out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG}" \
 	run_hook check-worktree-trust.sh "$(session_json "${WT_NOREPO}" wt7)")"
 assert_empty "worktree-trust: no repo silent" "${out}"
+
+# (j) REGRESSION: mise lists ancestors FIRST. An ancestor whose home-relative
+#     tail is also a suffix of the worktree path — a repo under `~/work` with a
+#     worktree named `work` — matched before the worktree's own line, so taking
+#     the first match returned the ANCESTOR's state and silently restored the
+#     original bug. The deepest (longest-tail) line must win.
+# shellcheck disable=SC2046
+set -- $(wt_pair wtTrustAnc)
+WTJ_P="$1"
+WTJ_W="$2"
+: >"${WT_LOG}"
+out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRUSTED=${WTJ_P} HOME=${WORK} MISE_STUB_ANCESTORS=~/feat-x" \
+	run_hook check-worktree-trust.sh "$(session_json "${WTJ_W}" wt9)")"
+assert_has "worktree-trust: ancestor line does not mask the worktree" "${out}" "inherited the primary checkout"
+grep -q "mise trust -q -C ${WTJ_W}" "${WT_LOG}" && ok ||
+	bad "worktree-trust: trust applied despite a matching ancestor line"
 
 # (h) the check is registered in the session-checks roster (it ships as part of
 #     the one SessionStart registration, not its own).

@@ -33,8 +33,9 @@ a real (or throwaway) repo, not against production work.
 - [ ] **Copilot surface verified (if the team uses Copilot).** Confirm
       `.github/copilot-instructions.md`, `.agents/skills/`,
       `.github/instructions/*.instructions.md`, `.github/agents/` and
-      `.vscode/mcp.json` landed, then in VS Code Copilot Chat run `/steer-help` and
-      confirm the reply reflects steer standards (proves the instructions loaded —
+      `.vscode/mcp.json` landed, then in VS Code Copilot Chat ask a question the
+      standards cover (e.g. "what branch should I work on?") and confirm the reply
+      reflects steer standards (proves the instructions loaded —
       Copilot has no SessionStart hook, so that static set *is* its whole standards
       surface). **Tell the team the refresh rule:** those files are generated and
       freeze at the plugin version that bootstrapped the repo, so someone runs

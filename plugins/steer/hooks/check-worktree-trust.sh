@@ -123,33 +123,55 @@ command -v mise >/dev/null 2>&1 || exit 0
 # where worktrees normally live — so the caller read '', treated it as "no mise
 # config here", and exited silently: trust was never inherited.
 #
-# Do NOT derive the abbreviated form from $HOME. mise resolves the home dir from
-# the OS, not the environment, so that is wrong twice: it still abbreviates with
-# $HOME unset, and a $HOME carrying a trailing slash yields `~Documents/…` with no
-# separator. Match structurally instead — exact directory, or a `~`-prefixed one
+# Do NOT reconstruct the abbreviated form from $HOME. mise uses $HOME when it is
+# set and falls back to the OS home when it is not, so neither source is reliable
+# here: it still abbreviates with $HOME unset, and a $HOME carrying a trailing
+# slash yields `~Documents/…` with no separator. Match structurally instead — exact directory, or a `~`-prefixed one
 # whose remainder is a suffix of the directory we asked about. The remainder must
 # be non-empty, or the bare `~` line (the home dir itself, always an ancestor of
 # such a repo) would match every path.
 steer_trust_state() {
-	mise trust --show -C "$1" 2>/dev/null | while IFS= read -r _line; do
-		_st="${_line##*: }"
-		_dir="${_line%": ${_st}"}"
-		[ "${_st}" = trusted ] || [ "${_st}" = untrusted ] || continue
-		case "${_dir}" in
-		"$1") ;;
-		"~"*)
-			_tail="${_dir#\~}"
-			[ -n "${_tail}" ] || continue
-			case "$1" in
-			*"${_tail}") ;;
-			*) continue ;;
+	mise trust --show -C "$1" 2>/dev/null | {
+		_best_tail=""
+		_best_state=""
+		while IFS= read -r _line; do
+			_st="${_line##*: }"
+			_dir="${_line%": ${_st}"}"
+			[ "${_st}" = trusted ] || [ "${_st}" = untrusted ] || continue
+			case "${_dir}" in
+			"$1")
+				# The exact directory is definitive; nothing outranks it.
+				_best_state="${_st}"
+				break
+				;;
+			"~"*)
+				_tail="${_dir#\~}"
+				[ -n "${_tail}" ] || continue
+				case "$1" in
+				*"${_tail}") ;;
+				*) continue ;;
+				esac
+				# Ancestors are listed too, shallowest first, so a SHORT ancestor tail
+				# can also be a suffix of $1 — a repo under `~/work` with a worktree
+				# named `work` matches `~/work` before its own line. Taking the first
+				# match therefore returned an ancestor's state and silently restored the
+				# bug this function exists to fix. The longest tail is the deepest
+				# directory, which is $1 itself.
+				#
+				# Known boundary: if $1 has no mise config of its own, mise prints no
+				# line for it and the longest ancestor tail wins instead of returning
+				# ''. Benign here — the caller acts only on `untrusted`, so an
+				# inherited `trusted` exits exactly as '' would, which is also what the
+				# pre-fix code did for that case.
+				if [ "${#_tail}" -gt "${#_best_tail}" ]; then
+					_best_tail="${_tail}"
+					_best_state="${_st}"
+				fi
+				;;
 			esac
-			;;
-		*) continue ;;
-		esac
-		printf '%s' "${_st}"
-		break
-	done
+		done
+		printf '%s' "${_best_state}"
+	}
 }
 
 WT_STATE="$(steer_trust_state "${ROOT}")"

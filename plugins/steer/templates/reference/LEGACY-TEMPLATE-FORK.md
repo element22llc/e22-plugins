@@ -81,6 +81,13 @@ the old template lacked.
    drift-gate and living-docs checklists come in (additive — never drop sections
    the team added).
 
+8. **Stamp the spine version.** Write `/spec/.version` with the current plugin
+   version (resolve it from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` —
+   never from memory), exactly as the plugin-driven path does at its hand-off. This
+   is what makes the repo **managed** rather than `foreign`: without it the fork
+   keeps every spine file but `/steer:setup` still routes it to `/steer:adopt`, and
+   the "already ran" guard below — which tests this stamp — can never fire.
+
 **When the repo is already customized:** if the scan finds no placeholders
 **and** a complete spine exists (`spec/.version` plus the spine files), this
 setup has already run — do not re-propose it; confirm the repo is set up and

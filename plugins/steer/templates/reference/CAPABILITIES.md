@@ -168,7 +168,8 @@ and **Repair**.
 - **Wired-when:** every generated file is **byte-identical** to its plugin source
   under `${CLAUDE_PLUGIN_ROOT}/templates/` — `agents/skills/` for the skill tree,
   `github/` for `copilot-instructions.md`, `agents/` and `instructions/` — **and**
-  the retired `.github/prompts/` is gone. These are generated artifacts, so
+  no retired `steer-*.prompt.md` remains under `.github/prompts/`. A prompt file
+  the team wrote themselves may stay, and the directory with it. These are generated artifacts, so
   byte-equality is the only meaningful test — any difference means the consumer is
   reading standards from an older plugin version.
 - **Repair:** **verbatim re-copy** of the differing files from the plugin source.

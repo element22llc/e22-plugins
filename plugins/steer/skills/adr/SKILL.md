@@ -21,12 +21,11 @@ the product repo, from the bundled template.
    empty folder or a foreign OpenAPI `spec/`, which is why `hooks/lib/spine.sh`
    keys on `spec/.version`.
 
-   **The exception is those two skills calling *in*.** Both write the stamp last —
-   `/steer:init` at its step 7, `/steer:adopt` in Phase 12 — but both invoke
-   `/steer:adr` well before that (init step 4; adopt Phases 6 and 8), so gating on
-   the stamp there would abort the very callers this step exists to route to, and
-   send the agent back into the skill already running. When `/steer:init` or
-   `/steer:adopt` is the caller, the spine is mid-install: proceed, and let the
+   **The exception is a bootstrap calling *in*.** `/steer:init`, `/steer:adopt`
+   and `/steer:build` all invoke `/steer:adr` while bootstrapping, *before* the
+   stamp is written, so gating on it there would abort the very callers this step
+   exists to route to, and send the agent back into the skill already running.
+   When any of them is the caller, the spine is mid-install: proceed, and let the
    bootstrap stamp it. Route only a **direct** invocation against an unmanaged
    repo.
 2. Decide the next sequential number: list `spec/decisions/` and use the highest

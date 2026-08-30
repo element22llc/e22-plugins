@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:init` Path A never stamped the spine.** The legacy-template-fork
+  path back-fills every spine artifact but never wrote `spec/.version`, so a
+  completed Path A run could not reach init's own stated end state: the repo stayed
+  `foreign`, `/steer:setup` kept routing it to `/steer:adopt`, and the procedure's
+  own "already ran" guard — which tests that stamp — could never fire. Path A now
+  stamps it, as the plugin-driven path does at hand-off.
+- **Fixed: the worktree trust lookup could read an *ancestor's* trust state.**
+  `mise trust --show` lists every config directory on the path, **ancestors first**,
+  so a repo under `~/work` with a worktree named `work` matched the `~/work` line
+  before the worktree's own. Taking the first match therefore returned the
+  ancestor's state — and an inherited `trusted` made the hook exit without
+  inheriting anything, silently restoring the bug it exists to fix. The deepest
+  match now wins. Both this and the retired-prompt-file drift check are pinned by
+  regression cases; the `mise` stub grew ancestor lines so the suite exercises the
+  ordering at all.
+- **Fixed: `/steer:adr`'s bootstrap carve-out missed `/steer:build`.** It named
+  `/steer:init` and `/steer:adopt`, but `/steer:build` is the third bootstrap front
+  door and also invokes `/steer:adr` before any stamp exists, so it still aborted.
+
 - **Fixed: `/steer:adr` refused to run for the two skills that call it during
   bootstrap.** Step 1 stops and routes to `/steer:init` / `/steer:adopt` when
   `spec/.version` is absent — but both of those write that stamp *last* (init at
@@ -37,10 +56,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   un-abbreviated path and its fixtures live outside `$HOME`; the stub now abbreviates
   the way mise does, and a regression case pins the home-relative path. The match
   is structural — exact directory, or a `~`-prefixed one whose remainder is a
-  suffix of the directory asked about — rather than derived from `$HOME`, because
-  mise resolves the home directory from the OS: it abbreviates even with `$HOME`
-  unset, and a `$HOME` with a trailing slash yields `~Documents/…` with no
-  separator. Both of those would otherwise have silently reverted to the bug.
+  suffix of the directory asked about — rather than reconstructed from `$HOME`,
+  which is unreliable in both directions: mise abbreviates even with `$HOME` unset
+  (falling back to the OS home), and a `$HOME` with a trailing slash yields
+  `~Documents/…` with no separator. Either would silently revert to the bug.
 - **Documented: the cross-tool `.agents/skills/` tree's shared-bundle links are not
   fetchable, and some command lines in it cannot run.** The rewrite that turns shared
   references into URLs points at GitHub's HTML `blob/` view rather than
@@ -49,8 +68,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and deliberately left unpatched (fixing the second is a design question), but they
   were recorded only in `gen_agent_skills.py`'s own docstring, where no consumer
   would find them. `docs/reference/known-limitations.md` now carries them, with what
-  it does and does not affect: skill *prose* is intact on every tool, and Claude Code
-  is unaffected because it reads the installed plugin. No behaviour change.
+  it does and does not affect — including the two skills whose procedure *is* the
+  failing fetch — and Claude Code is unaffected because it reads the installed
+  plugin. No behaviour change.
 
 - **Fixed: `/steer:next` compared a comment against the plugin version.**
   `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
@@ -191,8 +211,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Changed: the `copilot-surface-current` capability is now
   `agent-surface-current`.** It governs a tree Cursor, Gemini CLI and Codex read as
   much as Copilot does, so `/steer:sync` telling a Cursor user their "copilot
-  surface" is stale was misleading. It also now flags a leftover `.github/prompts/`
-  as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
+  surface" is stale was misleading. It also now flags leftover `steer-*.prompt.md`
+  files as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
   carries the consumer-side migration: install `.agents/skills/`, delete only the
   `steer-*` prompt files, leave any the team wrote themselves.
 
