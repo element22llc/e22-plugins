@@ -508,6 +508,18 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the `.agents/skills` restriction banner — which called the same limit
   "mechanical" — now agree.
 
+- **Fixed: `/steer:doctor` warned about a `template-reconcile.sh` failure mode the
+  script normalizes away.** It said a CRLF checkout could make the helper report
+  every anchor of a bundled template as a missing gap; the helper strips CR from
+  both sides before diffing and "never manufactures a phantom gap".
+
+- **Fixed: `ISSUE-SCHEMA.md` gave two opposite rules for an issue body with no
+  managed block.** The fail-closed rule listed it alongside malformed and
+  duplicate blocks (leave the body unchanged), while the human-created-issues
+  section and the normative `human-form-normalization` fixture both require the
+  block to be appended below the preserved body. A body with no block is the
+  first-touch case, not a fail-closed one.
+
 ### 5.3.0
 
 - **Fixed: the bundled repo README told consumers a confirmation prompt was the

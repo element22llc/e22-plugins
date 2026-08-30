@@ -52,8 +52,7 @@ session reading a Windows-side plugin directory hits it too). A CRLF shell
 script does not warn, it fails to **parse**, so every hook lib and scan script
 is dead and the symptom reaching the user is an opaque
 `syntax error near unexpected token $'{\r'` from whichever script sourced a lib
-first. Worse, `template-reconcile.sh` may still *run* and report every anchor of
-a bundled template as a missing gap.
+first.
 
 Report it as a **plugin-install fault, not a missing prerequisite**, and stop —
 none of the checks below are meaningful until it is fixed. The repair:
