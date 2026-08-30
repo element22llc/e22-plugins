@@ -63,6 +63,20 @@ specialized skills below as needed, so you rarely reach past this set.
 | `/steer:standards` | Load the always-on operating manual on demand — reads every `rules/*.md` in lexical order (no hand-maintained rule list to drift), for surfaces where the SessionStart hook doesn't fire. |
 | `/steer:report` | File a bug about the **steer plugin itself** upstream in `element22llc/e22-plugins` — gathers the defect (a recorded hook fault, a contradictory skill/rule, or a missing/broken template/script), scrubs it of secrets/paths/product-code, deduplicates by a stable fingerprint, and auto-files it via the GitHub MCP server when one is available, falling back to `gh` — no confirmation, with the scrub redacting or omitting anything unredactable (paste-URL fallback when offline or unauthenticated). For plugin defects, not product bugs. |
 
+!!! info "`/steer:explain` and `/steer:status` run in a forked subagent"
+    Both carry `context: fork`, so each runs in its own subagent rather than the
+    main session. They are pure renderers — the whole input is the argument
+    (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole
+    output is a page — so nothing is lost by cutting them off from the
+    conversation, while the spine and tracker reads behind the page stay out of
+    your session's context. That is the point: you asked for the report, not for
+    the dozen files it was derived from. The result arrives in the conversation
+    when the fork completes.
+
+    The other read-only report skills are deliberately **not** forked:
+    `/steer:report` files a bug about what just happened in *this* conversation,
+    and `/steer:roadmap` writes issues and drives other skills.
+
 !!! note "`standards` and `reference` are a pair"
     Neither appears in the router's `Intent → skill` table — they are the two
     user-invocable skills rule `00-router` surfaces only in its below-table

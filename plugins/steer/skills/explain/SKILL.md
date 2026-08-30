@@ -7,6 +7,12 @@ when_to_use: >-
   shareable summary for the PO".
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
+# Runs in a forked subagent: this skill is a pure renderer — it reads the
+# feature's /spec files and publishes a page, and needs nothing from the
+# conversation that invoked it (the feature-id is the whole input). Forking
+# keeps a full spec read out of the main session's context, which is the
+# point: the caller wanted the page, not the twelve files behind it.
+context: fork
 ---
 
 # Explain a feature — a shareable, plain-language view

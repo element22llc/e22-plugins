@@ -25,6 +25,11 @@ allowed-tools:
   - Bash(gh search issues:*)
   - Bash(gh auth status:*)
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
+# Runs in a forked subagent: same reason as /steer:explain — a report over the
+# whole spine reads a lot (spine scan + tracker) to emit a little, and the
+# window argument is the whole input. The MCP/gh read grants above still
+# describe what the skill may do; nothing here writes.
+context: fork
 ---
 <!-- steer:modes this-week,since,milestone -->
 
