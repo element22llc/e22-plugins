@@ -175,7 +175,9 @@ Code (`gen_agent_skills.py`):
 | `${CLAUDE_PLUGIN_ROOT}/templates/reference/…`, and relative `../../templates/…` links | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
-Three differences from Claude Code remain on **both** Copilot surfaces. Their
+Three differences from Claude Code remain on the Copilot surfaces — the first two
+on both, the third on VS Code only (the CLI does run steer's two `PreToolUse`
+hooks, per the table above). Their
 *mitigations* do not: both notes below are injected by the generator into the
 portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
 **Copilot CLI** loads the authored `skills/` directly, where `context: fork` and

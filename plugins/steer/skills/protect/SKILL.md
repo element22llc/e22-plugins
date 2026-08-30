@@ -30,12 +30,13 @@ actually configured on the repo — this skill verifies it is, and helps set it 
 Protection is what *enforces* pr-flow, not what declares it — a declared pr-flow
 repo whose `main` is unprotected is a **gap to close, not a third mode** (rule
 `45-commit-autonomy`), which is why this skill never flips such a repo to
-solo-trunk. The `CLAUDE.md`
-`<!-- steer:delivery-mode=… -->` marker is also the offline **cache** of the
-observed state (hooks read it without network); this skill is the owner of that
-cache — whenever verify or apply observes live protection that contradicts the
-marker, **say so**. Reconciling it is `apply`'s job: `verify` reports the stale
-marker and names `apply` as the fix, and writes nothing itself.
+solo-trunk. The marker is also what the hooks read offline (no network), and this
+skill owns it — whenever verify or apply observes live protection that
+contradicts the declaration, **say so**. Reconciling is `apply`'s job: `verify`
+reports the contradiction and names `apply` as the fix, writing nothing itself.
+Only one direction makes the *marker* wrong — solo-trunk declared but `main`
+already protected, i.e. an unrecorded graduation. The other direction leaves the
+marker correct and the wall missing.
 
 **Be honest in every report:** this configures the GitHub-side gate. It does not
 change anything about the local session and cannot prevent a local commit or push.

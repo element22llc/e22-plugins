@@ -300,7 +300,8 @@ a checklist item they reworded, shows up as "missing" when it isn't. It is a
 and confront the gaps, but you still apply the additive rules above with judgment.
 Splice in genuinely-new `##` sections and items; **never re-add a placeholder the
 dev already filled in**, and treat a reworded equivalent as already present. Empty
-output means the file is already current.
+output means the file is current as to headings and checklist items — not as to
+table rows, which the helper never emits (see above).
 
 This makes template additions **self-healing**: a repo touched under an older
 plugin version picks up newly added sections on its next run instead of silently

@@ -5,7 +5,8 @@
 #
 # WHY THIS EXISTS
 #   Rule `99-end-of-session` asks the agent to stop the dev servers and watchers
-#   it started, freeing their ports. Asking is all a
+#   it started, freeing their ports; the containers a worktree started are this
+#   helper's half of that. Asking is all a
 #   rule can do: it is prose in the always-on payload, it costs bytes every
 #   session, and the one moment it matters — the worktree going away — is the
 #   moment nobody is reading a checklist. `SessionEnd` and `WorktreeRemove` fire

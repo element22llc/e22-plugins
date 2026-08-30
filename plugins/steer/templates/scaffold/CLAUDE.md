@@ -34,10 +34,11 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
 
 <!-- steer:delivery-mode=pr-flow -->
 <!-- ^ machine-readable marker (steer hooks read this line; values: pr-flow | solo-trunk).
-     It caches the repo's delivery mode — which GitHub branch protection defines:
-     protected main = pr-flow, unprotected = solo-trunk. /steer:init sets it;
-     /steer:protect owns reconciling it with the observed protection and flips it
-     to pr-flow at graduation. Keep it in sync with the prose below. -->
+     This marker DECLARES the repo's delivery mode; branch protection enforces
+     pr-flow rather than defining it, so an unprotected main on a declared
+     pr-flow repo is a gap to close, not solo-trunk. /steer:init sets it;
+     /steer:protect flips it to pr-flow at graduation and reports a marker that
+     contradicts observed protection. Keep it in sync with the prose below. -->
 
 **`PR flow`** — work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
 `issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the

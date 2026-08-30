@@ -20,6 +20,10 @@ Checks:
    files.
 5. **Namespace hygiene** — every ``/steer:<skill>`` reference resolves to a real
    skill and no stale ``/e22-*`` reference survives.
+6. **Subagent inventory** — every agent under ``plugins/steer/agents/`` appears
+   in ``docs/reference/agents.md``.
+7. **No duplicated section headings** within a page (fenced code skipped), which
+   catches a bad edit re-emitting a whole block.
 
 Usage::
 
