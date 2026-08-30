@@ -311,3 +311,33 @@ there is no automatic retry. Mitigation:
     installed `hooks/` and `scripts/` for CR before anything else and reports it
     as an install fault, with the repair. See
     [Windows setup → Line endings](../getting-started/windows-setup.md#line-endings).
+
+## The cross-tool `.agents/skills/` tree: shared-bundle links are not fetchable
+
+steer ships the real skill bodies to `.agents/skills/` so Copilot, Cursor, Gemini
+CLI and Codex read the same procedures Claude Code does. Three things are
+rewritten on the way out, because they do not travel; one of them is **known to be
+incomplete**, and it is recorded here rather than left to be rediscovered.
+
+References to the **shared** bundle — the deep reference prose under
+`templates/reference/`, the spec templates, and the two helper scripts — are
+shared by many skills, so they are rewritten to URLs on this public repo instead
+of being vendored into every consumer repo. Two defects in that rewrite are open:
+
+- The URLs point at GitHub's **HTML `blob/` view**, so fetching one returns a
+  rendered web page rather than the file's bytes. `raw.githubusercontent.com` is
+  the form that returns content.
+- The rewrite is applied **unconditionally, including inside runnable command
+  lines**, so the generated tree contains `sh "https://…"` and
+  `python3 "https://…"` invocations that cannot execute on any surface.
+
+**What this means in practice:** the *prose* of every skill is intact and correct
+on every tool — that is the surface's whole purpose and it works. What does not
+work is following one of those links to a shared file, or pasting one of the
+affected command lines. On Claude Code nothing is affected: it reads the skills
+from the installed plugin, where the paths resolve normally.
+
+Fixing the second one is a design question — vendor the few helper scripts, fetch
+them to a temp file first, or drop those command blocks from the portable copy —
+so it is deliberately unpatched rather than guessed at. `scripts/gen_agent_skills.py`
+carries the same note at the point the rewrite happens.

@@ -80,8 +80,8 @@
 #   `gitdir:` pointer by steer_primary_worktree, no subprocess — so a plain checkout,
 #   the overwhelmingly common case, exits before `mise` is ever invoked and pays
 #   nothing. `mise trust --show` is the authority on both trust states (it prints one
-#   `<dir>: trusted|untrusted` line per config directory); this hook never inspects
-#   the trust store itself. Trust is applied with `mise trust -C <worktree>`, which
+#   `<dir>: trusted|untrusted` line per config directory, with a leading $HOME
+#   abbreviated to `~`); this hook never inspects the trust store itself. Trust is applied with `mise trust -C <worktree>`, which
 #   marks the DIRECTORY — covering `mise.toml` and any `mise.local.toml` carried in
 #   by `.worktreeinclude` — and is exactly what a human typing `mise trust` there
 #   would do.
@@ -116,14 +116,28 @@ command -v mise >/dev/null 2>&1 || exit 0
 # steer_trust_state <dir> — 'trusted' / 'untrusted' / '' (no config there).
 # `mise trust --show` lists the directory of every config on the path, ancestors
 # included, so the line must be matched on the EXACT directory.
+#
+# It ABBREVIATES a leading $HOME to `~` in those lines, while the dir we are given
+# is always absolute (steer_repo_root ends in `pwd -P`). Matching only the absolute
+# form therefore never fires for a repo under $HOME — which is where worktrees
+# normally live (`<repo>/.claude/worktrees/*`) — so the caller read '', treated it
+# as "no mise config here", and exited silently: trust was never inherited and
+# neither fallback notice was ever printed. Match both forms.
 steer_trust_state() {
+	_abbrev="$1"
+	if [ -n "${HOME:-}" ]; then
+		case "$1" in
+		"${HOME}") _abbrev="~" ;;
+		"${HOME}"/*) _abbrev="~${1#"${HOME}"}" ;;
+		esac
+	fi
 	mise trust --show -C "$1" 2>/dev/null | while IFS= read -r _line; do
 		case "${_line}" in
-		"$1: trusted")
+		"$1: trusted" | "${_abbrev}: trusted")
 			printf 'trusted'
 			break
 			;;
-		"$1: untrusted")
+		"$1: untrusted" | "${_abbrev}: untrusted")
 			printf 'untrusted'
 			break
 			;;

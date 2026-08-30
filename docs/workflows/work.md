@@ -20,7 +20,7 @@ never edits code).
     already-deployed system with real users/data **and** an active outage or
     regression (rule `62-hotfix`). "Urgent" feature work is not a hotfix. The lane
     relaxes *ceremony and ordering* — the issue may be filed after-the-fact on a
-    `hotfix/<n>` branch, one reviewer approval suffices — but keeps **every human
+    `hotfix/<n>-slug` branch, one reviewer approval suffices — but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). Once the fire is
     out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a

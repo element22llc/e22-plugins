@@ -2530,6 +2530,10 @@ mkdir -p "${WT_STUBS}"
 # holds a mise.toml is untrusted, and one with no config prints nothing (mise's
 # real behaviour: --show lists config directories only). `trust -q -C <dir>`
 # just logs, so a case can assert trust was or was not applied.
+# It also ABBREVIATES a leading $HOME to `~` on the way out, exactly as real mise
+# does — printing the absolute path instead is what let a hook that matched only
+# the absolute form pass this suite while being inert on every real repo under
+# $HOME. Case (i) is the regression that pins it.
 cat >"${WT_STUBS}/mise" <<'STUB'
 #!/bin/sh
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
@@ -2555,7 +2559,15 @@ while [ -n "${_rest}" ]; do
 	[ "${_one}" = "${_dir}" ] && _state=trusted
 	[ -z "${_rest}" ] && break
 done
-printf '%s: %s\n' "${_dir}" "${_state}"
+_out="${_dir}"
+case "${HOME:-}" in
+"") ;;
+*) case "${_dir}" in
+	"${HOME}") _out="~" ;;
+	"${HOME}"/*) _out="~${_dir#"${HOME}"}" ;;
+	esac ;;
+esac
+printf '%s: %s\n' "${_out}" "${_state}"
 exit 0
 STUB
 chmod +x "${WT_STUBS}/mise"
@@ -2665,6 +2677,21 @@ assert_empty "worktree-trust: no repo silent" "${out}"
 #     the one SessionStart registration, not its own).
 grep -q 'check-worktree-trust\.sh' "${HOOKS}/session-checks.sh" && ok ||
 	bad "worktree-trust: listed in the session-checks roster"
+
+# (i) REGRESSION: the repo lives under $HOME, so `mise trust --show` abbreviates
+#     both paths to `~/…`. Matching only the absolute path made the hook read ''
+#     for every such worktree — the normal layout — and exit silently, inheriting
+#     nothing and printing neither fallback notice. Same assertions as (a).
+# shellcheck disable=SC2046
+set -- $(wt_pair wtTrustHome)
+WTI_P="$1"
+WTI_W="$2"
+: >"${WT_LOG}"
+out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRUSTED=${WTI_P} HOME=${WORK}" \
+	run_hook check-worktree-trust.sh "$(session_json "${WTI_W}" wt8)")"
+assert_has "worktree-trust: inherits under \$HOME (~-abbreviated --show)" "${out}" "inherited the primary checkout"
+grep -q "mise trust -q -C ${WTI_W}" "${WT_LOG}" && ok ||
+	bad "worktree-trust: trust applied under \$HOME (log: $(cat "${WT_LOG}"))"
 unset ENV
 
 # ---------------------------------------------------------------------------

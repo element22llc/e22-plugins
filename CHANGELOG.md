@@ -7,6 +7,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: worktree `mise` trust inheritance never fired for a repo under `$HOME`.**
+  `mise trust --show` abbreviates a leading `$HOME` to `~` in the
+  `<dir>: trusted|untrusted` lines it prints, but `check-worktree-trust.sh` matched
+  them against the absolute path it resolves with `pwd -P`. Neither arm matched, the
+  helper returned empty, and the caller read that as "no mise config here" and exited
+  silently — so for every worktree in the normal `<repo>/.claude/worktrees/*` layout
+  the hook inherited **nothing** and printed **neither** fallback notice, on both its
+  `SessionStart` and `CwdChanged` registrations. It now matches the abbreviated form
+  as well. The hook suite passed over this because its `mise` stub printed the
+  un-abbreviated path and its fixtures live outside `$HOME`; the stub now abbreviates
+  the way mise does, and a regression case pins the home-relative path.
+- **Documented: the cross-tool `.agents/skills/` tree's shared-bundle links are not
+  fetchable, and some command lines in it cannot run.** The rewrite that turns shared
+  references into URLs points at GitHub's HTML `blob/` view rather than
+  `raw.githubusercontent.com`, and it is applied unconditionally — including inside
+  runnable command lines, which therefore ship as `sh "https://…"`. Both were known
+  and deliberately left unpatched (fixing the second is a design question), but they
+  were recorded only in `gen_agent_skills.py`'s own docstring, where no consumer
+  would find them. `docs/reference/known-limitations.md` now carries them, with what
+  it does and does not affect: skill *prose* is intact on every tool, and Claude Code
+  is unaffected because it reads the installed plugin. No behaviour change.
+
 - **Fixed: `/steer:next` compared a comment against the plugin version.**
   `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
   `/steer:adopt` and `/steer:sync` all write that stamp as two lines with the
