@@ -37,11 +37,12 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   needs shell), but writes nothing back. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).
-- **A skill's tool grants apply for the whole invocation.** There is no "post-run
-  step" in which a restriction has cleared, and a user confirmation mid-run does
-  not lift one — so never disallow `Write` on the theory that a confirmed write
-  happens afterwards; that makes the instructed write unreachable instead of
-  deferring it. Writes the modes instruct (e.g. `/steer:audit spec`'s optional
+- **A skill's frontmatter tool fields are scoped to the invoking turn.**
+  `allowed-tools` grants without restricting (every tool stays callable; permission
+  settings govern the rest), and a `disallowed-tools` restriction clears at the
+  user's next message. So never disallow `Write` on the theory that it gates a
+  confirmed write: it blocks the instructed write in-run and gates nothing once the
+  user replies. Writes the modes instruct (e.g. `/steer:audit spec`'s optional
   `/spec/DRIFT-REPORT.md`) happen **in-run, post-confirmation**. Publication to
   the tracker is a genuinely separate step because it is a different skill:
   `/steer:issues publish-*`. See `/steer:reference artifacts`.

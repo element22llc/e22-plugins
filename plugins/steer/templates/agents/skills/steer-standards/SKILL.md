@@ -12,11 +12,13 @@ description: Load the always-on operating manual on demand where the SessionStar
 **When to use.** Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
 
 > **Read-only on this surface — enforced by instruction, not by tooling.**
-> In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, so
-> the restriction below is mechanical. No other agent has that mechanism: here
-> it is a hard instruction. Treat those capabilities as unavailable for the
-> whole run, and read any claim below that they "are unavailable" as a rule
-> you must keep rather than a guarantee you can rely on.
+> In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
+> only for the turn that invokes it — upstream clears the restriction at the
+> user's next message — so even there it is a rule the skill keeps across a
+> multi-turn run rather than a guarantee the runtime holds. No other agent has
+> even that much: here it is a hard instruction. Treat those capabilities as
+> unavailable for the whole run, and read any claim below that they "are
+> unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
 # Operating manual — on-demand load
 

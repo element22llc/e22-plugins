@@ -28,8 +28,9 @@ allowed-tools:
 # EnterWorktree are disallowed so a defect report can never mutate a local file,
 # branch, or worktree. Write STAYS GRANTED for that temp file (see step "Write the
 # scrubbed body to a temp file"), bound in prose to the temp path — do NOT disallow
-# it, since tool grants apply for the whole invocation and dropping it makes the
-# instructed write unreachable.
+# it: disallowed-tools is scoped to the invoking turn and clears at the user's next
+# message, so dropping Write blocks the instructed write in-run while gating
+# nothing afterwards. The temp-path limit is held in prose.
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 

@@ -47,15 +47,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed: the scaffold `MANIFEST.md` stated its no-leading-dot rule without the
   two `.gitkeep` directory markers that are its only exceptions.**
 
-- **Fixed: four surfaces claimed `background: false` puts the Artifact heads-up
-  ahead of the publish.** It does not. The heads-up is written *inside* the fork,
-  and only a fork's final result reaches the main session, so the Artifact
-  permission prompt is the gate that actually holds — which is what
-  `templates/reference/ARTIFACTS.md` already said. `/steer:explain`,
-  `/steer:status`, the changelog entry that introduced the key, and the docs
-  reference page now agree with it. The tool-set rationale for `background: false`
-  is untouched and remains the reason it is set.
-
 - **Fixed: `agent-surface-current` had a `mis-wired` state its own repair could
   not clear.** The capability is `mis-wired` while a retired
   `.github/prompts/steer-*.prompt.md` lingers, but the documented repair on both
@@ -91,26 +82,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   lives in the shared reference, and `/steer:explain`'s own earlier line is
   hedged to match the one `/steer:status` already had.
 
-- **Fixed: `/steer:adr` routed around the canonical bootstrap front door, and
-  described an ordering `/steer:build` does not follow.** Step 1 sent an unmanaged
-  repo to `/steer:init` or `/steer:adopt`, asking the agent to make the
-  greenfield-vs-adopt call that `/steer:setup` owns and resolves deterministically;
-  it now routes to `/steer:setup`, as every other skill in that state does. Its
-  bootstrap carve-out also said all three front doors call in *before* stamping —
-  true for `init` and `adopt`, false for `build`, which stamps at step 2 and calls
-  `/steer:adr` at step 5. The carve-out is unchanged in effect; only its stated
-  reason was wrong.
-
-- **Fixed: the `spec/.version` header did not name `/steer:build`.** Since `build`
-  became a fourth stamping path, every PO-built repo carried a stamp file whose own
-  comment excluded the skill that wrote it. All five surfaces that author that
+- **Changed: the `spec/.version` header names `/steer:build`.** `build` becomes a
+  fourth stamping path in this release, so the stamp comment names it alongside
+  `init`, `adopt` and `sync`. All five surfaces that author that
   two-line form now name it, and so do the spine-framework reference's
   stamp-writer list and the three helpers that read the stamp back
   (`hooks/lib/spine.sh`, `scripts/workspace-snapshot.sh`, the workspace `ws.sh`).
-
-- **Fixed: `/steer:build` understated what `/steer:sync` does with an unstamped
-  repo.** It said sync "reads it as `unstamped`"; sync stops at step 1, because
-  `foreign` is not a sync case at all.
 
 - **Fixed: rule `24-worktrees` could send the agent to create first-time `mise`
   trust.** Its carve-out handed the decision to the user when "the repo itself was
@@ -132,22 +109,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   once the spine files are in place, in the same two-line form `/steer:init` and
   `/steer:adopt` write.
 
-- **Fixed: the worktree trust lookup now matches on equality, not a suffix.**
-  `mise trust --show` abbreviates the home directory to `~`, so the lookup has to
-  compare an absolute path against a possibly-abbreviated line. It now builds the
-  abbreviated form from `$HOME` — both as given and with trailing slashes trimmed,
-  because mise substitutes `$HOME` literally and a trailing slash yields
-  `~Documents/…` with no separator — and compares for **equality** against that or
-  the absolute path. Nothing is matched by suffix any more, which closes the way an
-  *ancestor's* trust state could stand in for this directory's: mise lists ancestors
-  too, and at the primary-checkout call site (it branches on `!= trusted`) an
-  ancestor-derived `trusted` skipped the "no mise config at all, ask the user"
-  notice and created trust — the one thing the hook must never do. An ancestor's
-  path can never equal ours, so equality closes it by construction. With `$HOME`
-  unset nothing matches and the hook stays silent, which is the safe direction.
-  Three regression cases pin it: a home-relative worktree, an ancestor line that
-  must not mask the worktree, and a config-less primary with a trusted
-  suffix-colliding ancestor that must still ask the human.
 - **Added: `validate_docs.py` fails on a duplicated section heading.** A bad edit
   can re-emit a whole block of a page; nothing caught it, because the copy is
   valid Markdown, every link still resolves and the build is happy — so a page
@@ -165,28 +126,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   old template predates the version-keyed entries, and stamping before applying
   them would make `/steer:sync` skip them permanently — retiring those transforms
   on exactly the repos furthest behind.
-- **Fixed: the worktree trust lookup could read an *ancestor's* trust state.**
-  `mise trust --show` lists every config directory on the path, **ancestors first**,
-  so a repo under `~/work` with a worktree named `work` matched the `~/work` line
-  before the worktree's own. Taking the first match therefore returned the
-  ancestor's state — and an inherited `trusted` made the hook exit without
-  inheriting anything, silently restoring the bug it exists to fix. Matching is
-  now by equality, so an ancestor's path can never match. Both this and the
-  retired-prompt-file drift check are pinned by
-  regression cases; the `mise` stub grew ancestor lines so the suite exercises the
-  ordering at all.
-- **Fixed: `/steer:adr`'s bootstrap carve-out missed `/steer:build`.** It named
-  `/steer:init` and `/steer:adopt`, but `/steer:build` is the third bootstrap front
-  door and also invokes `/steer:adr` before any stamp exists, so it still aborted.
-
-- **Fixed: `/steer:adr` refused to run for the skills that call it during
-  bootstrap.** Step 1 stops and routes to `/steer:init` / `/steer:adopt` when
-  `spec/.version` is absent — but a bootstrap writes that stamp *last*, while
-  invoking `/steer:adr` well before it. The gate therefore aborted the very
-  callers it exists to route to, and sent the agent back into the skill already running; the same
-  file's step 5 had meanwhile blessed the init step-4 call path outright, so `adr`
-  both required and forbade it. The stamp test now applies to a **direct**
-  invocation, and a bootstrap calling in proceeds.
 - **Fixed: a `.github/prompts/` the migration deliberately preserves no longer
   reports permanent drift.** `scan-capabilities.sh` flagged the *directory*, while
   the ledger entry retiring that surface tells the applier to delete only
@@ -244,13 +183,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   renderers. Waiting does *not* put the heads-up ahead of the publish — the
   heads-up is written inside the fork and only a fork's final result reaches the
   main session, so the Artifact permission prompt is the gate that holds.
-  The key needs **Claude Code v2.1.218+**; an older CLI ignores it and
-  backgrounds the fork. Both skills' prose now states the read-only boundary as
+  The key needs **Claude Code v2.1.218+**; before that release a forked skill
+  always blocked the invoking turn, which is the behaviour `background: false`
+  asks for, so an older CLI lands on the intended side. Both skills' prose now states the read-only boundary as
   one they keep rather than one the runtime guarantees — upstream documents
   `disallowed-tools` against the invoking turn and is silent on whether it
-  reaches a fork. The other read-only report skills are deliberately **not** forked —
-  `/steer:report` files a bug about what just happened in *this* conversation,
-  and `/steer:roadmap` opens issues and drives `/steer:issues`.
+  reaches a fork. `explain` and `status` are the only two skills that fork; every
+  other read-only renderer stays in the main session deliberately — `/steer:report`
+  files a bug about what just happened in *this* conversation, and `/steer:roadmap`
+  opens issues and drives `/steer:issues`.
 - **Documented: `disable-model-invocation` is off-limits on a steer skill**
   (`AUTHORING.md`). It looks like a free way to reclaim skill-listing budget —
   it drops a skill's description from the listing entirely — but it also makes
@@ -484,10 +425,17 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   and `allowed-tools:` together, so the grant still applies; the note now says so,
   and records that a fork runs in the background unless it sets
   `background: false`.
-- **Fixed: `adr` wrote into a spine it never checked for.** Rule
-  `31-decision-capture` requires `/steer:init` or `/steer:adopt` first on a repo
-  with no `/spec`; every neighbouring spine skill enforces that and `adr` did not,
-  so it would `mkdir -p spec/decisions` into an unmanaged repo.
+- **Fixed: `/steer:adr` wrote into a spine it never checked for.** Rule
+  `31-decision-capture` requires a bootstrap first on a repo with no `/spec`; every
+  neighbouring spine skill enforced that and `adr` did not, so it would
+  `mkdir -p spec/decisions` into an unmanaged repo. Step 1 now requires the
+  `spec/.version` stamp — not a bare `spec/`, which can be an empty folder or a
+  foreign OpenAPI directory, which is why `hooks/lib/spine.sh` keys ownership on
+  the stamp — and routes a **direct** invocation to `/steer:setup`, whose routing
+  table resolves greenfield-vs-adopt rather than leaving that call to the agent.
+  A bootstrap calling *in* is carved out: `/steer:init`, `/steer:adopt` and
+  `/steer:build` all invoke `/steer:adr` while bootstrapping, so gating on the
+  stamp would abort the very callers the step exists to route to.
 - **Fixed: `POLYREPO.md` said the system model belongs in the workspace
   `ARCHITECTURE.md` "not any member's"**, contradicting its own artifact split
   and rules `30`/`32`, which keep `ARCHITECTURE.md` per member. Each member
@@ -512,10 +460,6 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   condition on the solo-trunk push gate; `sync/RECONCILE.md`'s permission-tier
   example used a pattern the template ships in `allow`, not `ask`.
 
-- **Fixed: `adr` tested for `spec/` where the spine marker is `spec/.version`.**
-  A bare `spec/` can be an empty folder or a foreign OpenAPI directory, which is
-  exactly why `hooks/lib/spine.sh` keys ownership on the stamp — so the guard
-  added for rule `31-decision-capture` passed on the very repos it exists to stop.
 - **Fixed: the `CwdChanged` trigger was described too narrowly.** It fires on any
   move of the session's working directory — upstream's example is Claude running
   `cd`; `EnterWorktree` is the worktree-specific form. The carve-out that a
@@ -542,6 +486,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   The previous cycle corrected three shipped files and left the docs site — the
   page that mandates WSL2, the platform with no keychain — still saying "OS
   keychain" flat.
+
+- **Fixed: shipped surfaces described a skill's frontmatter tool fields as a
+  boundary those fields do not provide.** `allowed-tools` grants without
+  restricting — upstream: "It does not restrict which tools are available: every
+  tool remains callable, and your permission settings still govern tools that are
+  not listed" — so `/steer:audit`'s claim that it "cannot branch or commit" was
+  half wrong: `EnterWorktree` is genuinely disallowed, but no frontmatter field
+  withholds the git verbs, and the bundled scaffold pre-approves `git add`,
+  `git commit` and `git push origin`. Leaving the branch and the commit to the dev
+  is a boundary the skill keeps, and now says it keeps. Separately,
+  `disallowed-tools` is scoped to the invoking turn and "clears when you send your
+  next message", so `ARTIFACTS.md`'s rule against dropping `Write` rested on a
+  restriction that "applies for the whole invocation" with "no post-run step in
+  which the restriction has cleared" — both false, and load-bearing because
+  `/steer:audit` renders only *after* the user confirms in a fresh message, by
+  which point the restriction is gone. The rule stands on its true reason:
+  dropping `Write` blocks the render in-run while gating nothing afterwards.
+  `/steer:audit`'s read-only contract, `/steer:report`'s temp-file rationale, the
+  plugin README's convention entry, and the `.agents/skills` restriction banner —
+  which called the same limit "mechanical" — now agree.
 
 ### 5.3.0
 

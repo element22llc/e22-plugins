@@ -23,8 +23,13 @@ enabled — a lean subset in non-code folders, since the scoped rules self-gate 
 ### Verify it worked
 
 Run `/plugin` and confirm **Steer — Engineering Standards** is listed and enabled.
-Opening a new session in a managed repo then shows the injected version banner at
-the top of the standards block — that banner is your confirmation the rules loaded.
+
+The rules arrive as context Claude can read, not as anything printed in the
+transcript, so there is nothing on screen to look for. Confirm them the way the
+[launch checklist](../team-rollout/launch-checklist.md) does — open a new session
+in a managed repo and ask something only the loaded standards can answer, such as
+"what branch name does `/steer:work` use by default?" (expect
+`issue/<number>-<slug>`), then check the reply matches.
 
 !!! note "Prerequisites for the full workflow"
     `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);

@@ -13,11 +13,13 @@ argument-hint: '[this-week | since <date> | milestone [<name>]]'
 **When to use.** Use for a progress update to hand a client or Product Owner — "give me a status report", "what did we ship this week", "weekly status for the client", "where are we on <milestone>".
 
 > **Read-only on this surface — enforced by instruction, not by tooling.**
-> In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, so
-> the restriction below is mechanical. No other agent has that mechanism: here
-> it is a hard instruction. Treat those capabilities as unavailable for the
-> whole run, and read any claim below that they "are unavailable" as a rule
-> you must keep rather than a guarantee you can rely on.
+> In Claude Code this skill runs with `Edit`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
+> only for the turn that invokes it — upstream clears the restriction at the
+> user's next message — so even there it is a rule the skill keeps across a
+> multi-turn run rather than a guarantee the runtime holds. No other agent has
+> even that much: here it is a hard instruction. Treat those capabilities as
+> unavailable for the whole run, and read any claim below that they "are
+> unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
 > **Not forked on this surface.** In Claude Code this skill runs as a
 > conversation fork, and parts of the procedure below reason from that — that it

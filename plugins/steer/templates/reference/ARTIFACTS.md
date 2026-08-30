@@ -86,12 +86,12 @@ read-only over the canonical sources even in a skill that otherwise writes.
   scrubbed issue body. `/steer:questions bundle` lives in a
   write-capable skill and upholds the same limit as a **prose invariant**: bundle
   writes nothing under the repo tree.
-- **Never disallow `Write` to make a render "safe".** A skill's tool grants apply
-  for the **whole invocation**, so a user confirmation mid-run does not lift a
-  frontmatter restriction — dropping `Write` makes the instructed render
-  unreachable instead of deferring it. There is no "post-run step" in which the
-  restriction has cleared. Render in-run, post-confirmation, to the temp path; the
-  temp-only write is what keeps it read-only over the repo.
+- **Never disallow `Write` to make a render "safe".** `disallowed-tools` is scoped
+  to the invoking turn — upstream states the restriction *clears when you send your
+  next message* — so dropping `Write` blocks the instructed render inside the run
+  while gating nothing once the user replies. It buys no safety and costs the
+  render. Bind the limit in prose instead: render in-run, post-confirmation, to the
+  temp path; the temp-only write is what keeps it read-only over the repo.
 
 ## Rendering mechanics — the CSP shapes everything
 

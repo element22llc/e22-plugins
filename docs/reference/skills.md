@@ -82,8 +82,9 @@ specialized skills below as needed, so you rarely reach past this set.
     put the heads-up ahead of an Artifact publish: the heads-up is written inside
     the fork and only a fork's final result reaches the main session, so the
     Artifact permission prompt is the gate that holds. The key needs **Claude Code v2.1.218+**;
-    an older CLI ignores it and backgrounds the fork, where the read-only boundary
-    holds by instruction rather than by tooling.
+    before that release a forked skill always blocked the invoking turn, which is
+    the behaviour `background: false` asks for, so an older CLI lands on the
+    intended side.
 
     Note what the frontmatter does and does not buy you: `disallowed-tools` is
     documented against the turn that invokes a skill, and upstream does not say
