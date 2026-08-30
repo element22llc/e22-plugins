@@ -246,10 +246,8 @@ raises a prompt. Be honest about the tiers:
   state, and only ever inside a **linked worktree**: `SessionEnd` stops that
   worktree's services (volumes kept), `WorktreeRemove` runs the full
   `docker:clean` because the checkout is being deleted. A plain checkout is never
-  touched, and `STEER_NO_WORKTREE_TEARDOWN=1` turns both off. Neither reports
-  anything — the harness discards their output. `SessionEnd`'s exit code is
-  discarded too, so it cannot block; `WorktreeRemove` runs *before* the removal
-  and a nonzero exit would veto it, so steer's hook always exits `0`.
+  touched, and `STEER_NO_WORKTREE_TEARDOWN=1` turns both off. Their output and
+  exit code are discarded by Claude Code, so neither can report or block.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
   dimensions) is an **advisory nudge** that lets the write proceed. It is
   explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the

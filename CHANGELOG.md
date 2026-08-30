@@ -39,8 +39,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   (`on-worktree-remove.sh`) runs the full `docker:clean` (down + volumes +
   orphans), because the checkout is being deleted and its per-worktree volumes
   become unreachable regardless; it acts on the payload's `worktree_path`, not on
-  `cwd`, and always exits `0` since a nonzero exit there would veto the removal
-  the dev asked for. Both are scoped to a linked worktree with a compose file and
+  `cwd`, and always exits `0` — `WorktreeRemove` carries no decision control, so
+  the hook can neither report a problem nor stop the removal. Both are scoped
+  to a linked worktree with a compose file and
   a defined `docker:*` (or workspace `ws:docker:*`) task, and both are disabled by
   `STEER_NO_WORKTREE_TEARDOWN=1`. A plain checkout's stack is never touched.
 - **Added: `check-worktree-trust.sh` also runs on `CwdChanged`.** At

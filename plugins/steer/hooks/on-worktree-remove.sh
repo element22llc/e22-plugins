@@ -26,11 +26,11 @@
 #   NOT necessarily the session's cwd (a subagent's `isolation: worktree` tree, a
 #   background session's). Act on that path, never on cwd.
 #
-#   The hook runs BEFORE removal, and a nonzero exit VETOES it — which would
-#   strand the dev with a worktree they asked to delete. So this always exits 0,
-#   whatever happens: steer is not the gate (rule `95-not-the-gate`), and least of
-#   all the gate on someone else's cleanup. It also never removes the worktree
-#   itself; declining to do so is what leaves Claude Code's own git handling in
+#   WorktreeRemove carries no decision control: the harness discards this hook's
+#   output and exit code, so it can neither report a problem nor stop the removal.
+#   This exits 0 regardless: steer is not the gate (rule `95-not-the-gate`), and
+#   least of all the gate on someone else's cleanup. It also never removes the
+#   worktree itself; declining to do so is what leaves Claude Code's own git handling in
 #   charge.
 #
 # CONSTRAINTS (per repo CLAUDE.md)

@@ -2833,7 +2833,7 @@ assert_empty "worktree-remove: no worktree_path silent" "${out}"
 [ -s "${LC_LOG}" ] &&
 	bad "worktree-remove: no worktree_path must act on nothing" || ok
 
-# (k) WorktreeRemove vetoes removal on a nonzero exit, so the hook must exit 0
+# (k) WorktreeRemove has no decision control and cannot report, so the hook must exit 0
 #     even when everything around it is broken (no mise, no docker, junk stdin).
 out="$(ENV="PATH=/usr/bin:/bin" run_hook on-worktree-remove.sh "$(worktree_remove_json "${LCE_W}")")"
 assert_empty "worktree-remove: exits 0 with no mise on PATH" "${out}"
