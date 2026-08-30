@@ -4,8 +4,8 @@ How the `steer` skills are meant to be reached — by natural-language
 inference vs. explicit user intent vs. internal orchestration only. This is
 **guidance**, not an enforced gate: `user-invocable: false` only hides a skill
 from the slash menu; it does not stop the model from invoking it, and no skill
-sets `disable-model-invocation` today (see "Why `disable-model-invocation` is not
-set yet" below).
+sets `disable-model-invocation` — which is a standing rule here, not a state of
+play (see "Why `disable-model-invocation` is never set" below).
 
 Natural-language invocation is part of the plugin's mission, so the default is to
 let the model route to the right skill from intent. The tiers below say where to
@@ -64,7 +64,7 @@ Not a user's first move.
 
 | Skill | Role |
 |---|---|
-| `/steer:tracker-sync` | The low-level GitHub tracker gateway. Driven by `issues` and `work`, and also by `spec`, `roadmap`, `questions`, `next`, `audit`, `status`, and `init`/`adopt` (for `bootstrap-fields`). |
+| `/steer:tracker-sync` | The low-level GitHub tracker gateway. Driven by `issues` and `work`, and also by `spec`, `roadmap`, `questions`, `next`, `audit`, `status`, `build`, `intake`, and `init`/`adopt` (for `bootstrap-fields`). |
 | `/steer:spec-scaffold` | The spec-file creator. Called by `spec`, `build`, `init`, `adopt` and `intake`. |
 
 ## Drift detection & auto-repair (managed repos)
@@ -101,12 +101,23 @@ branch and surfaces the other two for the dev. The version-keyed one-shot for th
 detector is the standing every-sync backstop. Keep this class vocabulary in lockstep
 with `scripts/scan-invocations.sh`.
 
-## Why `disable-model-invocation` is not set yet
+## Why `disable-model-invocation` is never set
 
-Anthropic recommends manual-only invocation for side-effecting task skills. We
-deliberately do **not** flip `disable-model-invocation: true` broadly yet:
-natural-language routing is core to this plugin, and disabling it on the Tier-2
-workflows would make a PO unable to say "build me X" and have `build` engage.
-If we adopt it, the safe first candidates are the **Tier-3 internal helpers**
-(`tracker-sync`, `spec-scaffold`) — never the top-level workflows — and
-only after testing the behavior in Claude Code.
+Anthropic recommends manual-only invocation for side-effecting task skills, and
+the flag is tempting for a second reason: it drops a skill's description from the
+listing, which is a budget that runs close to full. steer sets it on **no skill**,
+and that is a rule rather than a not-yet.
+
+The flag makes a skill **user-only** — "Only you can invoke the skill" — so Claude
+cannot reach it through the Skill tool at all. Natural-language routing is core to
+this plugin: every skill in rule `00-router`'s intent table is a model-invocation
+target, including the ones that look manual (`setup`, `protect`, `help`).
+
+The **Tier-3 internal helpers are the worst candidates, not the safest ones.**
+`tracker-sync` and `spec-scaffold` are already `user-invocable: false`, so they are
+hidden from the slash menu and reached only when another skill routes to them.
+Adding `disable-model-invocation` would close the one remaining door and strand
+them: invisible to the user *and* unreachable by the model.
+
+Trim the listing budget at the source — shorter descriptions — never by hiding a
+skill from the model.

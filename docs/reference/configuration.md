@@ -93,6 +93,17 @@ the org stack defaults in rule `10-stack`:
 | `typescript` | `typescript-language-server --stdio` | `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` |
 | `python` | `pyright-langserver --stdio` | `.py` `.pyi` |
 
+!!! warning "On a scaffolded repo the `typescript` server may be the inert one"
+    The bundled scaffold also enables `typescript-lsp@claude-plugins-official`
+    (`.claude/settings.json`), whose server declares the **same** name, command
+    and extensions as steer's. When two enabled servers claim an extension, *"the
+    first server registered handles files with that extension and the others never
+    start"*, and the `/plugin` interface shows a warning naming the active one.
+    Registration order is not steer's to control, so on a scaffolded repo one of
+    the two is inert — TS diagnostics still work, but `restartOnCrash: false` may
+    not be the setting in force. Which side should give way is an open question,
+    not a resolved design.
+
 !!! info "A server activates only when its binary is on `PATH`"
     Claude Code starts each server by name, so a repo without
     `typescript-language-server` or `pyright-langserver` installed gets no
@@ -118,6 +129,13 @@ the org stack defaults in rule `10-stack`:
 - **`policy/branch-protection.yml`** — the branch-protection ruleset
   `/steer:protect` verifies the live GitHub settings against, and applies on
   explicit confirmation.
+- **`STEER_NO_WORKTREE_TEARDOWN`** — set to any non-empty value to stop the
+  `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack.
+- **`STEER_WORKTREE_OFFSET`** — pin one worktree's host-port offset when two
+  draw the same one (rule `24-worktrees`), instead of editing shared files.
+- **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** — Claude Code's own knob, not
+  steer's: raises the `SessionEnd` budget above its 1.5s default so the teardown
+  has time to finish (see [Hooks](hooks.md)).
 - **`STEER_CLAUDE_CODE_VERSION`** (in `mise.toml`) — the pinned Claude Code
   version CI installs, for reproducible `claude plugin validate --strict`.
   Both manifests are validated in strict mode, so warnings the runtime
@@ -172,8 +190,8 @@ that new headroom down to 7 bytes — leaving three factual corrections to alway
 rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
 root allowlist, a mis-cited rule heading) with nothing to spend. Then from 65,300
 to 66,500, to fund the worktree-trust step in rule `24-worktrees`: a worktree
-created with `git worktree add` **in a plain terminal** is the one case no hook can
-reach, so the instruction has to be always-on to exist when it is needed. (The
+created with `git worktree add` **in a plain terminal** is a case no hook can
+reach (as is any Copilot surface, which has no trust hook at all), so the instruction has to be always-on to exist when it is needed. (The
 `check-worktree-trust` check covers a session *started* in a worktree at
 `SessionStart`, and one *entered* mid-session on `CwdChanged` — see
 [Hooks → Lifecycle events](hooks.md#lifecycle-events).) That raise also

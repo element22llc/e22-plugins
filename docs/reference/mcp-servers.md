@@ -33,7 +33,7 @@ server-by-server content is reconciled by hand against the source of truth.
 
 | Server | Transport | Auth | Purpose |
 | --- | --- | --- | --- |
-| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (OS keychain) | Read issues, comment on PRs, inspect workflow runs. |
+| `github` | HTTP (`api.githubcopilot.com/mcp/`) | `${user_config.github_pat}` (keychain / `~/.claude/.credentials.json`) | Read issues, comment on PRs, inspect workflow runs. |
 | `context7` | HTTP (`mcp.context7.com/mcp`) | none (optional `CONTEXT7_API_KEY`) | Pull up-to-date, version-accurate library/API documentation on demand. |
 
 ## `github`
@@ -46,14 +46,16 @@ manual floor when no MCP tracker tool is present.
 The config references `${user_config.github_pat}`, a **plugin user-config**
 value declared in the plugin manifest's `userConfig` block and marked
 `sensitive`. Claude Code prompts for it once when the plugin is installed and
-holds it in your **OS keychain** — there is no shell rc to edit and nothing to
+holds it outside the repo — in the **macOS Keychain**, or
+`~/.claude/.credentials.json` where no supported keychain is available (WSL2
+included). There is no shell rc to edit and nothing to
 re-export per machine or per terminal. The token **never lives in the repo**.
 
 The field is **optional**: skip the prompt and the `github` server simply reports
 disconnected, which every consumer of it already handles —
 [`/steer:tracker-sync`](skills.md) falls back to the `gh` CLI and then to a
-manual floor. To set or change it later, use `claude plugin install steer
---config github_pat=…`, or re-run the install prompt.
+manual floor. To set or change it later, use `claude plugin install
+steer@e22-plugins --config github_pat=…`, or re-run the install prompt.
 
 Full setup (the required fine-grained scopes) is in the scaffold `README.md` →
 "GitHub MCP server", reachable from any bootstrapped repo.

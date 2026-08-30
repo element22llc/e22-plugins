@@ -8,8 +8,8 @@ argument-hint: "[<op> | pull | push] [#issue | feature-id]"
 # Internal gateway: driven by /steer:issues and /steer:work, and also by
 # /steer:spec (its optional file-the-intent exit), /steer:roadmap, /steer:questions,
 # /steer:next's read-only state reconstruction, the read flows of
-# /steer:audit and /steer:status, and /steer:init + /steer:adopt for
-# `bootstrap-fields`. Never a direct user entry point. Model-callable, hidden from
+# /steer:audit and /steer:status, /steer:build and /steer:intake, and
+# /steer:init + /steer:adopt for `bootstrap-fields`. Never a direct user entry point. Model-callable, hidden from
 # the slash menu, so it never competes with the orchestrators above it.
 user-invocable: false
 # Pre-approve the issue create + find-before-create dedup surface for a DIRECT

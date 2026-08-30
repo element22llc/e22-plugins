@@ -84,7 +84,8 @@ takes out document conversion:
 
 - **`github`** authenticates with `Authorization: Bearer
   ${user_config.github_pat}`, resolved from the **plugin's user config** (prompted
-  at install, held in the OS keychain). Cowork reads neither the CLI `.mcp.json`
+  at install, held in the macOS Keychain or `~/.claude/.credentials.json`).
+  Cowork reads neither the CLI `.mcp.json`
   nor that config store, so the plugin's GitHub server appears to "try to connect
   like Claude Code" and fails to authenticate. **Do not rely on it in Cowork.**
 - **`context7`** is a plain hosted HTTP endpoint with no token, so it is the one
@@ -246,8 +247,22 @@ raises a prompt. Be honest about the tiers:
   state, and only ever inside a **linked worktree**: `SessionEnd` stops that
   worktree's services (volumes kept), `WorktreeRemove` runs the full
   `docker:clean` because the checkout is being deleted. A plain checkout is never
-  touched, and `STEER_NO_WORKTREE_TEARDOWN=1` turns both off. Their output and
-  exit code are discarded by Claude Code, so neither can report or block.
+  touched, and setting `STEER_NO_WORKTREE_TEARDOWN` to any non-empty value turns both off. Neither can
+  **block** — no decision control — and both discard their JSON output fields.
+- **The `SessionEnd` teardown is best-effort and will often not complete.**
+  `SessionEnd` hooks share a **1.5-second** budget, and a timeout declared by a
+  *plugin* does not raise it — only one in your own settings file does. steer's
+  declared `"timeout": 60` is therefore inert, and `mise tasks ls` plus
+  `mise run … docker:down` frequently exceeds 1.5s, in which case the hook is
+  cancelled mid-run. **Do not rely on exiting a session to free a worktree's
+  ports.** Raise the budget yourself if you want it to fit:
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` takes
+  the ordinary command-hook timeout and is the dependable half.
+- **The `CwdChanged` trust notices do not reach you.** `check-worktree-trust.sh`
+  applies `mise trust` fine on that path, but it writes its human-facing notices to
+  stdout, and `CwdChanged` stdout goes to the debug log rather than the transcript.
+  So a worktree entered mid-session whose primary checkout is itself untrusted gets
+  no visible prompt — you will see the `mise run …` trust error instead.
 - **`PreToolUse` → `check-write-nudges.sh`** (the spec/scaffold + issue-first
   dimensions) is an **advisory nudge** that lets the write proceed. It is
   explicitly *"a nudge, not a gate,"* fails open on any ambiguity, and the

@@ -46,7 +46,7 @@ A production incident is high-risk *and* time-critical at once — the one case 
 the phases above genuinely conflict with the clock. [`/steer:work --hotfix`](../workflows/work.md)
 is the **only sanctioned speed lever** (rule `62-hotfix`): it opens only for a real
 incident on a deployed system, relaxes *ceremony and ordering* (issue filed
-after-the-fact on a `hotfix/<n>` branch, single-reviewer) while keeping every human
+after-the-fact on a `hotfix/<n>-slug` branch, single-reviewer) while keeping every human
 authority gate, and requires a **mandatory post-incident follow-up** — backfill the
 issue, write the spec/ADR, add a `/spec/history/` entry — so the phases skipped under
 fire are restored, not waived.

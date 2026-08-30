@@ -4,10 +4,20 @@
 `hooks.json`. They inject the always-on rules and gate risky actions. All hook
 commands are invoked with an explicit `sh` prefix, so the executable bit is
 irrelevant (marketplace install does not `chmod`). No `jq` dependency. Every hook
-declares an explicit `timeout` in `hooks.json` (10s for the rule injection,
-orientation, and `PreToolUse` hooks; 30s for the consolidated session checks, the
-`PostToolUse` formatter, and the `Stop` reconcile) so a slow hook can never stall
-a session.
+declares an explicit `timeout` in `hooks.json`, so a slow hook cannot stall a
+session — with one carve-out that is not steer's to set:
+
+!!! warning "A plugin cannot raise the `SessionEnd` budget"
+    `SessionEnd` hooks share a **1.5-second** budget, and *"Timeouts set on
+    plugin-provided hooks don't raise the budget"* — only a timeout in a user's
+    own settings file does, to at most 60s. The `"timeout": 60` steer declares on
+    its `SessionEnd` registration is therefore **inert**, and a hook cancelled at
+    the budget has its output discarded and its work unfinished. That makes the
+    `SessionEnd` teardown below **best-effort**, not a guarantee. A dev who wants
+    it to fit can raise the budget themselves:
+    `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`. `WorktreeRemove` is
+    unaffected — it takes the ordinary command-hook timeout, so its 60s is real.
+    ([upstream reference](https://docs.claude.com/en/docs/claude-code/hooks.md))
 
 !!! danger "Hook scripts must check out as LF — a CRLF copy breaks all of them at once"
     Every hook here is a POSIX `sh` script, and **a CRLF shell script does not
@@ -90,7 +100,7 @@ notice or nothing) and stays individually testable.
 | `check-unmanaged-repo.sh` | via `session-checks.sh` | On a repo whose spine is not yet `managed`, prints a compact plain-language **onboarding card** (a `foreign` spine gets a shorter adopt offer instead, and a `damaged` one a repair notice — so creating `/spec` swaps the message rather than clearing it; only a complete, version-stamped spine is silent): the user can just say what they want — think an idea through (`/steer:spec` **lite mode**, works with no bootstrap), build an app (`/steer:build`, non-technical owner), or set the repo up (`/steer:init` greenfield / `/steer:adopt` existing code, with `/steer:setup` picking between them). Feature *code* still requires the bootstrap first — spec-only work is the one sanctioned exception. Resolves the work-tree root from the session `cwd` in the hook payload, so it anchors correctly from a subdirectory. |
 | `surface-faults.sh` | via `session-checks.sh` | Raises any *unreported* steer self-faults recorded by other hooks (via `lib/report-fault.sh`) into session context, once each, so `/steer:report` can file them upstream. Silent when there are none and inside the plugin's own tree. |
 | `check-graduation.sh` | via `session-checks.sh` | Only in **solo-trunk** mode: when a local graduation signal is present (a `prod`/`production` branch, a deploy workflow, or an `infra/` tree — detected by the shared `lib/graduation.sh`, the same detector the `check-bash-actions.sh` trunk-push gate uses), nudges the owner to graduate to PR flow via `/steer:protect` and notes that trunk pushes are gated until then. Offline (the collaborator-count signal is left to `/steer:audit`/`/steer:protect`); silent in pr-flow, with no signal, or once graduated. |
-| `check-worktree-trust.sh` | via `session-checks.sh` | Only in a **linked worktree**: inherits the primary checkout's `mise trust` so `mise run …` works there immediately. `mise trust` is path-based, so a new worktree is untrusted and the whole scaffolded dev loop fails on *trust* rather than on the task — triggered by the scaffold's own `[env] _.source = "scripts/worktree-env.sh"`, which mise refuses to load untrusted. Inheriting grants nothing new: mise keys trust by **path**, not by content, so the primary checkout already trusts every future edit of that config. It never *creates* trust: an **untrusted** primary checkout means the repo was never set up (it names `mise trust && mise install`), and a primary checkout with **no mise config at all** means the worktree's branch introduced one, so no prior decision exists anywhere (it names `mise trust` here) — either way it changes nothing and leaves the call to the user. A third notice covers `mise trust` itself failing. Silent in a plain checkout (gated before `mise` is ever invoked), outside any work tree, without mise on `PATH`, when the worktree is already trusted, and when it has no mise config. |
+| `check-worktree-trust.sh` | via `session-checks.sh` | Only in a **linked worktree**: inherits the primary checkout's `mise trust` so `mise run …` works there immediately. `mise trust` is path-based, so a new worktree is untrusted and the whole scaffolded dev loop fails on *trust* rather than on the task — triggered by the scaffold's own `[env] _.source = "scripts/worktree-env.sh"`, which mise refuses to load untrusted. Inheriting grants nothing new: mise keys trust by **path**, not by content, so the primary checkout already trusts every future edit of that config. It never *creates* trust: an **untrusted** primary checkout means the repo was never set up (it names `mise trust && mise install`), and a primary checkout with **no mise config at all** means the worktree's branch introduced one, so no prior decision exists anywhere (it names `mise trust` here) — either way it changes nothing and leaves the call to the user. It also reports `mise trust` itself failing, and confirms when it did inherit the trust. Silent in a plain checkout (gated before `mise` is ever invoked), outside any work tree, without mise on `PATH`, when the worktree is already trusted, and when it has no mise config. |
 | `orient-session.sh` | `startup\|resume\|clear\|compact` | Two audiences. In a **non-code knowledge-work folder** (no git work tree) it emits a one-time, plain-language confirmation that the lean standards are loaded and that the user need not learn any `/steer:*` names — gated to `source: startup` so it does not re-greet after a `/clear`, resume or compaction. Otherwise, on a fully managed spine only: if an in-progress PO build exists (a `spec/BUILD-STATUS.md` with an open handoff gate), steers deterministically back into `/steer:build` to resume from its current step; once the build is handed off (every gate box checked) it falls back to reminding the model to surface the "describe what you want in plain language" affordance — so a non-technical user need not know skill names. Also emits a short **polyrepo topology note** in a repo carrying `spec/workspace.yml` (workspace host) or `spec/PRODUCT.md` (member), role-specific — this hook is the sole *automatic* delivery path for the topology, which is deliberately not an always-on rule (`/steer:reference polyrepo` is the on-demand path). The topology note is emitted **before** the PO-build branch, which exits early, so a workspace or member with an open handoff gate still receives it; and it carries the same `startup|resume|clear|compact` matcher as the ruleset it substitutes for, so a `/clear`, a resume or auto-compaction does not silently drop it. Silent on unmanaged/foreign/damaged spines (owned by `check-unmanaged-repo.sh`). |
 
 ## PreToolUse
@@ -117,21 +127,31 @@ notice or nothing) and stays individually testable.
 
 Three registrations that are not gates and not context injection: they run
 because the harness has told steer that something in the session's *environment*
-changed. `SessionEnd` and `WorktreeRemove` both have their **output and exit
-code discarded** by Claude Code — neither event carries decision control — so
-neither can report anything or block anything; each is a side effect or nothing
-at all.
+changed. **None of the three carries decision control**, so none of them can
+block what it observes — a session ending, a worktree being removed, a directory
+change. `SessionEnd` and `WorktreeRemove` discard their JSON output fields;
+`CwdChanged` does not — it discards only `continue`.
+
+What they can *report* differs:
+
+| Event | On `exit 2` | JSON output | So |
+| --- | --- | --- | --- |
+| `SessionEnd` | Shows stderr to the user | Discarded | A channel exists; a teardown is not worth interrupting a shutdown for, so steer exits `0` |
+| `WorktreeRemove` | Failures are logged in debug mode only | Discarded | Genuinely no user-facing channel |
+| `CwdChanged` | Shows stderr to the user | `systemMessage` is honoured — shown as a brief terminal notification **in interactive sessions**; it does not reach the SDK message stream | Channels exist; steer's notices go to **stdout**, which on this event goes to the debug log — see the trust-hook row below |
 
 | Hook | Event | Role |
 | --- | --- | --- |
-| `check-worktree-trust.sh` | `CwdChanged` | The same script the `SessionStart` roster runs, registered a second time. At `SessionStart` it can only cover a session that *started* in a worktree; a worktree entered **mid-session** — `EnterWorktree`, a subagent's `isolation: worktree`, a background session — fires no `SessionStart`, so the trust step was silently skipped for exactly the worktrees an agent makes for itself. Re-running is free: the first `cd` into a worktree inherits the trust and every later one finds it already trusted and exits before invoking `mise`; a plain checkout never reaches `mise` at all. Deliberately **not** `WorktreeCreate`, which looks like the precise event but runs *before* the worktree exists on disk — and `mise trust -C <dir>` refuses a directory that is not there yet. |
-| `on-session-end.sh` | `SessionEnd` (`logout\|prompt_input_exit\|other`) | Only in a **linked worktree**: runs that worktree's `docker:down` (`ws:docker:down` in a workspace root) so its containers stop and its ports are freed when the session really ends. **Volumes are kept** — a session ending is not the worktree ending, and the dev may still be in that checkout from a plain terminal. Never matches `clear` or `resume`: those continue the same working session, which is why the rules are re-injected for them. Silent in a plain checkout, without a compose file, without `mise`/`docker` on `PATH`, in a repo that pruned the `docker:*` tasks, and when `STEER_NO_WORKTREE_TEARDOWN` is set. |
+| `check-worktree-trust.sh` | `CwdChanged` | The same script the `SessionStart` roster runs, registered a second time. At `SessionStart` it can only cover a session that *started* in a worktree; any move of the session's working directory into a worktree fires no `SessionStart`, so the trust step was silently skipped there — upstream's example is Claude running `cd`, and the `EnterWorktree` tool is the worktree-specific form. (Scoped deliberately: a subagent with `isolation: worktree` does **not** move the *session's* cwd, so it is not covered by this registration.) Re-running is free: the first `cd` into a worktree inherits the trust and every later one finds it already trusted and exits before changing anything; a plain checkout never reaches `mise` at all. Deliberately **not** `WorktreeCreate`, which looks like the precise event but runs *before* the worktree exists on disk — and `mise trust -C <dir>` refuses a directory that is not there yet. **Caveat on this registration:** the `mise trust` side effect works on both paths, but the script writes its human-facing notices to **stdout**, and `CwdChanged` is not one of the four events whose stdout the harness surfaces — so mid-session they land in the debug log. Surfacing them is an open change, not shipped. |
+| `on-session-end.sh` | `SessionEnd` (`logout\|prompt_input_exit\|other`) | Only in a **linked worktree**: attempts that worktree's `docker:down` (`ws:docker:down` in a workspace root) to stop its containers and free its ports when the session really ends. **Best-effort — see the 1.5s budget above**: `mise tasks ls` plus `mise run … docker:down` will often not finish inside it, so do not rely on this to have stopped anything; `WorktreeRemove` is the dependable half. **Volumes are kept** — a session ending is not the worktree ending, and the dev may still be in that checkout from a plain terminal. Never matches `clear` or `resume`: those continue the same working session, which is why the rules are re-injected for them. Silent in a plain checkout, without a compose file, without `mise`/`docker` on `PATH`, in a repo that pruned the `docker:*` tasks, and when `STEER_NO_WORKTREE_TEARDOWN` is set to any non-empty value. |
 | `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown — `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) — because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. `WorktreeRemove` carries no decision control, so the hook cannot stop the removal or report a problem; it exits `0` whatever happens — steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
 
 The two teardown modes are the same distinction rules `24-worktrees` and
-`99-end-of-session` draw, now enforced rather than requested: stop what is
-running when a session ends, remove the data only when the thing that owned it
-is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`.
+`99-end-of-session` draw, now attempted automatically rather than requested: stop
+what is running when a session ends, remove the data only when the thing that
+owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Only the
+`WorktreeRemove` half is dependable; the `SessionEnd` half is opportunistic, so
+the rules still ask the agent to stop what it started.
 
 ## Shared input extraction (`lib/json.sh`)
 

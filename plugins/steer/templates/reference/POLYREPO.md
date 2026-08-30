@@ -143,8 +143,9 @@ Rule `55-drift-gates` and `/steer:audit spec` compare as-built against intended
 member's assumption is invisible to both. No gate catches this for you.
 
 When you change a shared contract, flag the drift class as usual **and name the
-affected sibling** in the PR description. The workspace `ARCHITECTURE.md` — not
-any member's — is where the system-level model belongs.
+affected sibling** in the PR description. Each member's `ARCHITECTURE.md`
+describes how *that repo* is built; the **cross-member** model — how the members
+fit together — belongs in the workspace's.
 
 CI is blind here too: the workspace repo cannot see member code without cloning
 it, which needs credentials for each private member. Treat cross-repo drift as an

@@ -168,7 +168,7 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring ~262 KB (a 66 KB `MIGRATIONS.md` among it) into every consumer repo is not worth it, and the repo is public. |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Two differences from Claude Code remain on **both** Copilot surfaces:
@@ -346,16 +346,28 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   to carry, so a Copilot session gets no topology note. Read
   `/steer:reference polyrepo` from Claude Code for the full topology.
 - **Worktree `mise trust` inheritance is Claude-only.** `check-worktree-trust.sh`
-  is a SessionStart check, so a Copilot session started in a linked worktree does
-  **not** inherit the primary checkout's trust and its first `mise run …` fails on
+  runs on two Claude-Code registrations — `SessionStart` and `CwdChanged` — so a
+  Copilot session started in *or* entered into a linked worktree does **not**
+  inherit the primary checkout's trust, and its first `mise run …` fails on
   *trust*, not on the task — the cost a polyrepo pays per member per feature. The
   standards carry the remedy instead of a hook: rule `24-worktrees` tells the agent
   to run `mise trust` in the worktree before its first `mise run …` and names the
   inheriting check as Claude-Code-only, so no Copilot surface is told trust it does
   not have. `mise trust` is idempotent, so the instruction is also free on Claude
-  Code where the check already ran. Everything *else* about worktree isolation is
-  surface-agnostic — the per-worktree `COMPOSE_PROJECT_NAME`/port offset comes from
-  the scaffold's `mise` config (`scripts/worktree-env.sh`), not from a hook.
+  Code where the check already ran.
+- **Worktree *teardown* is Claude-only too.** Stopping a worktree's Docker stack
+  is now done by two Claude-Code lifecycle hooks (`SessionEnd` → `docker:down`,
+  `WorktreeRemove` → `docker:clean`), and `copilot-hooks.json` registers only the
+  two `PreToolUse` gates — so Copilot gets neither. This is exactly the trap this
+  page exists to avoid: an unscoped rule asserting a safety net that is not there.
+  Rules `24-worktrees` and `99-end-of-session` therefore scope the hook claim to
+  Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
+  else. (On Claude Code only the `WorktreeRemove` half is dependable; the
+  `SessionEnd` half is best-effort — see
+  [Hooks → Lifecycle events](../reference/hooks.md#lifecycle-events).)
+  What *is* surface-agnostic is the per-worktree `COMPOSE_PROJECT_NAME`/port
+  offset: it comes from the scaffold's `mise` config
+  (`scripts/worktree-env.sh`), not from a hook.
 - **SessionStart *notices* never arrive, so the rules no longer promise them.**
   Beyond the worktree check above, three always-on rules used to tell the agent a
   SessionStart hook would flag a condition: a missing `/spec` spine (rule

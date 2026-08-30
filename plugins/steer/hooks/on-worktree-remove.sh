@@ -26,8 +26,11 @@
 #   NOT necessarily the session's cwd (a subagent's `isolation: worktree` tree, a
 #   background session's). Act on that path, never on cwd.
 #
-#   WorktreeRemove carries no decision control: the harness discards this hook's
-#   output and exit code, so it can neither report a problem nor stop the removal.
+#   WorktreeRemove carries no decision control, so this hook cannot stop the
+#   removal, and it has no user-facing channel to report on: the harness discards
+#   its JSON output fields and logs failures in debug mode only. (Contrast
+#   SessionEnd, whose stderr on an `exit 2` IS shown to the user — the two events
+#   are not the same on this point; see lib/worktree-lifecycle.sh.)
 #   This exits 0 regardless: steer is not the gate (rule `95-not-the-gate`), and
 #   least of all the gate on someone else's cleanup. It also never removes the
 #   worktree itself; declining to do so is what leaves Claude Code's own git handling in
@@ -35,7 +38,7 @@
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Invoked via an explicit `sh` prefix, so the executable bit
-#   does not matter. Output is discarded by the harness — silent throughout.
+#   does not matter. Nothing this hook prints reaches the user — silent throughout.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"

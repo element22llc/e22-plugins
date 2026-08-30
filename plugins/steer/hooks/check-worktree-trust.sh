@@ -31,11 +31,18 @@
 #   command and changes nothing.
 #
 # WHY IT ALSO RUNS ON CwdChanged
-#   At SessionStart it can only cover a session that STARTED in a worktree. A
-#   worktree entered mid-session — `EnterWorktree`, a subagent's
-#   `isolation: worktree`, a background session — fires no SessionStart, so the
-#   trust step was silently skipped for exactly the worktrees the agent creates
-#   for itself. `CwdChanged` fires when the session moves into one.
+#   At SessionStart it can only cover a session that STARTED in a worktree. Any
+#   move of the SESSION's working directory into one fires no SessionStart, so the
+#   trust step was silently skipped there. `CwdChanged` fires on that move and
+#   closes the gap: upstream's example is Claude running `cd`, and `EnterWorktree`
+#   is the worktree-specific form of the same move.
+#
+#   Scope this claim to the moves we can show. A subagent with
+#   `isolation: worktree` is NOT one of them: upstream says a subagent "starts in
+#   the main conversation's current working directory" and only runs its Bash
+#   commands inside the worktree, so the session's cwd never changes and there is
+#   no documented reason for CwdChanged to fire. Do not re-add that case, or a
+#   background session, without a verbatim upstream quote.
 #
 #   Not `WorktreeCreate`, which looks like the precise event and cannot do this
 #   job: it runs BEFORE the worktree exists on disk (its documented contract —
@@ -48,8 +55,28 @@
 #   A plain checkout — the overwhelmingly common case — never reaches `mise`.
 #
 # MECHANISM
-#   stdout becomes session `additionalContext` (same path as the other session
-#   checks). Runs only in a LINKED worktree — resolved from the `.git` FILE's
+#   stdout becomes session `additionalContext` — but ONLY on the SessionStart
+#   path, via session-checks.sh. `SessionStart` is one of the four events whose
+#   plain-text stdout the harness adds as context; `CwdChanged` is not, so on the
+#   second registration stdout goes to the debug log and is not shown. The
+#   `mise trust -C` SIDE EFFECT — the reason that registration exists — works on
+#   both paths; what is lost mid-session are the notices below that ask the HUMAN
+#   to act. Surfacing them on `CwdChanged` is an open change, not an oversight —
+#   see the pre-release audit residue. Two documented channels exist for it, so do
+#   not assume one: `systemMessage` in JSON output (shown as a brief terminal
+#   notification) and stderr on an `exit 2`. Until that lands, do not describe this
+#   hook's mid-session notices as reaching the user.
+#   (Upstream, verified verbatim:
+#   https://docs.claude.com/en/docs/claude-code/hooks.md — "For most events,
+#   Claude Code writes stdout to the debug log and doesn't show it in the
+#   transcript. The exceptions are `UserPromptSubmit`, `UserPromptExpansion`,
+#   `SessionStart`, and `PostModelSwitch`…"; the exit-code-2 row "CwdChanged | No |
+#   Shows stderr to user only"; and, for CwdChanged output, "Claude Code reads
+#   `watchPaths` and `systemMessage` from their JSON output and discards
+#   `continue`. In interactive sessions, it shows the `systemMessage` as a brief
+#   terminal notification.")
+#
+#   Runs only in a LINKED worktree — resolved from the `.git` FILE's
 #   `gitdir:` pointer by steer_primary_worktree, no subprocess — so a plain checkout,
 #   the overwhelmingly common case, exits before `mise` is ever invoked and pays
 #   nothing. `mise trust --show` is the authority on both trust states (it prints one
@@ -65,8 +92,9 @@
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Invoked via an explicit `sh` prefix, so the executable bit does
-#   not matter. cwd comes from the SessionStart payload and may be a subdir. Fail
-#   soft: any ambiguity → stay silent and change nothing.
+#   not matter. cwd comes from the hook payload — `SessionStart` on one
+#   registration, `CwdChanged` on the other — and may be a subdir. Fail soft: any
+#   ambiguity → stay silent and change nothing.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"

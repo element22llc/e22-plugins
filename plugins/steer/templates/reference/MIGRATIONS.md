@@ -137,6 +137,51 @@ Name the file and say what to carry forward.
   `spec/decisions/`, `spec/AUDIT-REPORT.md` — where the mention records what was
   true at the time.
 
+### [Unreleased] — `export GITHUB_PAT` → the plugin's `github_pat` config value
+
+- **What & why:** the bundled `github` MCP server authenticated with
+  `Bearer ${GITHUB_PAT}`, resolved from whatever shell launched Claude Code, so the
+  repo README told every teammate to `export GITHUB_PAT` from `~/.zshrc` /
+  `~/.bashrc` on every machine. The plugin now declares a `userConfig` field
+  `github_pat` (`sensitive: true`) and `.mcp.json` reads `${user_config.github_pat}`:
+  Claude Code prompts once at install and stores the value in the macOS Keychain, or
+  in `~/.claude/.credentials.json` where no supported keychain exists. **This is a
+  break for anyone who already had it working** — the shell export stops being read
+  on update, and `github` reports disconnected until the token is supplied to the
+  plugin. A materialized repo whose README still says "export it from your shell rc"
+  is instructing the reader to do the thing that no longer works, which is what earns
+  a ledger entry rather than just a changelog line.
+- **Precondition:** `README.md` still carries the pre-change wording. A repo whose
+  README never documented the GitHub MCP server is `n/a` and skips this. Once
+  applied, re-running is a no-op — the match is **case-sensitive on purpose**, so
+  the post-migration `github_pat` / `github_pat_…` spellings do not re-trigger it:
+
+  ```sh
+  grep -n 'GITHUB_PAT' README.md 2>/dev/null
+  ```
+- **Action — an in-file token rewrite,** read-then-propose, in `README.md` only:
+
+  | Old | New |
+  |---|---|
+  | `${GITHUB_PAT}` | `${user_config.github_pat}` |
+  | "export a `GITHUB_PAT`" / "Export it from your shell rc (`~/.zshrc` / `~/.bashrc`): `export GITHUB_PAT=…`" | "supply the steer plugin's `github_pat` config value" / "Give it to the plugin when Claude Code prompts at install, or set it later with `claude plugin install steer@e22-plugins --config github_pat=…`" |
+  | "does **not** consume … `GITHUB_PAT`" | "does **not** consume … its `github_pat` config value" |
+
+  Apply all three rows: two of them sit **outside** the "GitHub MCP server"
+  section (the quickstart line and the GitHub-Actions paragraph), so re-taking
+  that section alone leaves the precondition firing. The current
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/README.md` carries the post-change
+  wording for every one of them.
+
+  **Tell the human the out-of-repo half.** No file edit restores their access: they
+  must supply the token to the plugin once per machine. Say so explicitly — this is
+  the only migration in this ledger whose completion is not visible in the tree.
+
+  **False-positive guard:** leave `GITHUB_PAT` alone inside append-only or
+  provenance prose (`spec/history/`, ADRs under `spec/decisions/`,
+  `spec/AUDIT-REPORT.md`), and inside any GitHub Actions workflow — a repo may use a
+  same-named CI secret, which this change does not touch.
+
 ### v5.0.0 — `feature_status` narrows to `draft · approved · live`
 
 - **What & why:** a feature's spec `> Status:` used to carry five values

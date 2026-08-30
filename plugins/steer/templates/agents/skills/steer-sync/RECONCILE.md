@@ -39,7 +39,7 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    This is the **content**-level merge (permission lists, companion-plugin
    entries, config keys). For the `permissions` block it also **de-conflicts
    across precedence tiers** (deny > ask > allow): a pattern that would end up
-   in two tiers — e.g. a locally allow-listed `Bash(git push)` meeting the
+   in two tiers — e.g. a locally allow-listed `Bash(gh pr merge:*)` meeting the
    template's `ask` copy — is kept only in its most-restrictive tier, so the
    merge never leaves a contradictory `allow`+`ask` pair (a `-` line in the
    delta shows the dropped copy). The plugin-*enablement* wiring inside

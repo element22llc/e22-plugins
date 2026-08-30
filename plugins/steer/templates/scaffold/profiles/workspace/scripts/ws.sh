@@ -122,6 +122,15 @@ ws_local_count() {
 	ws_members | awk -F'\t' '$5 != "" { n++ } END { print n + 0 }'
 }
 
+# ws_spine_version <path-to-spec/.version> — the version, or `-` when absent.
+# The stamp is TWO lines — a managed-by comment, then the version (/steer:init,
+# /steer:adopt and /steer:sync all write it that way) — so a bare `cat` prints
+# the comment where a one-line field is expected. Extract the version itself,
+# exactly as /steer:sync and scripts/workspace-snapshot.sh read this same file.
+ws_spine_version() {
+	grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "$1" 2>/dev/null || printf -- '-'
+}
+
 # ws_slug <text> — lowercase, [a-z0-9-] only. Used for the generated filename.
 ws_slug() {
 	printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' |
@@ -241,10 +250,10 @@ cmd_status() {
 		fi
 		printf '  %-16s %-28s %s %s%s  spine=%s\n' "${name}" "${repo}" \
 			"${current}" "${state}" "${drift}" \
-			"$(cat "${path}/spec/.version" 2>/dev/null || printf -- '-')"
+			"$(ws_spine_version "${path}/spec/.version")"
 	done
 	ws_worktree_note
-	printf '\n# Workspace spine\n  spine=%s\n\n' "$(cat spec/.version 2>/dev/null || printf -- '-')"
+	printf '\n# Workspace spine\n  spine=%s\n\n' "$(ws_spine_version spec/.version)"
 	cmd_check
 }
 

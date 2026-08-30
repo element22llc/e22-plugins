@@ -9,8 +9,13 @@
 #   rule can do: it is prose in the always-on payload, it costs bytes every
 #   session, and the one moment it matters — the worktree going away — is the
 #   moment nobody is reading a checklist. `SessionEnd` and `WorktreeRemove` fire
-#   exactly there, so the teardown becomes something that HAPPENS rather than
-#   something that is requested.
+#   exactly there, so the teardown is attempted automatically rather than
+#   requested. How reliably differs by event, and the difference is not cosmetic:
+#   `WorktreeRemove` gets the ordinary command-hook timeout and its declared 60s
+#   is real, so the full `docker:clean` is dependable; `SessionEnd` hooks share a
+#   1.5-second budget that a PLUGIN-declared timeout cannot raise, so the
+#   `docker:down` pass there is best-effort and will often be cancelled before it
+#   finishes. Do not describe the SessionEnd half as a guarantee.
 #
 # THE TWO MODES ARE NOT THE SAME ACT
 #   stop   `docker:down` — stops this worktree's containers, KEEPS its volumes.
@@ -38,10 +43,18 @@
 #     their worktree stacks left alone.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
-#   POSIX sh, no jq. Silent and fail-soft throughout: both calling events discard
-#   stdout, stderr and exit code, so there is no channel to report a problem on
-#   and no value in failing loudly. Never blocks — neither event carries decision
-#   control, so a nonzero exit would stop nothing; the callers always exit 0.
+#   POSIX sh, no jq. Silent and fail-soft throughout. Never blocks — neither
+#   calling event carries decision control, so a nonzero exit would stop nothing;
+#   the callers always exit 0.
+#
+#   The two events differ in what they could report, which is why neither caller
+#   bothers: `WorktreeRemove` failures are logged in debug mode only, so there is
+#   genuinely no user-facing channel there; `SessionEnd` would show stderr to the
+#   user on an `exit 2`, but a teardown is not worth interrupting a shutdown for.
+#   Both discard their JSON output fields. (Upstream exit-code-2 table, verified
+#   verbatim: https://docs.claude.com/en/docs/claude-code/hooks.md — "SessionEnd |
+#   No | Shows stderr to user only", "WorktreeRemove | No | Failures are logged in
+#   debug mode only".)
 
 # steer_wt_is_linked <root> — true when <root> is a linked worktree, i.e. it has a
 # primary checkout that is not itself. Subprocess-free (reads the `.git` file).
