@@ -106,6 +106,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   carries the consumer-side migration: install `.agents/skills/`, delete only the
   `steer-*` prompt files, leave any the team wrote themselves.
 
+- **Fixed: `/steer:init` installs the cross-tool skill surface, and `/steer:sync`
+  refreshes the right file set.** Two shipped skills still described the retired
+  `.github/prompts/` surface after `.agents/skills/` replaced it. `/steer:init`
+  enumerated only the `.github/` Copilot artifacts, so a fresh bootstrap installed
+  **no** cross-tool skill surface at all — even though `/steer:adopt` already
+  installed it and `templates/scaffold/MANIFEST.md` says init does too.
+  `/steer:sync`'s `agent-surface-current` repair named `prompts/` and omitted
+  `.agents/skills/`, so the one capability that refreshes that surface described
+  the wrong files; it now matches what `scan-capabilities.sh` actually compares
+  (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`) and
+  states that a leftover `.github/prompts/` is repaired by **deleting** it — which
+  is what the scanner already flags as drift.
+
 ### 5.3.0
 
 - **Fixed: the bundled repo README told consumers a confirmation prompt was the

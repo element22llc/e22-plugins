@@ -707,10 +707,10 @@ The full engine: always-on rules injected every session, live gates at the momen
 <div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🐙 GitHub Copilot
-The same standards, **generated into Copilot's native formats** and committed under <code>.github/</code>:
+The same standards, **generated into the formats other agents read natively** and committed into the repo:
 
 - <code>copilot-instructions.md</code> — the full ruleset
-- <code>prompts/steer-*.prompt.md</code> — the workflows
+- <code>.agents/skills/steer-*/</code> — the workflows (cross-tool)
 - <code>agents/</code> — the reviewer agent
 
 <div class="opacity-60 mt-2">Regenerated from the same source on every release — parity by build, not by hand.</div>

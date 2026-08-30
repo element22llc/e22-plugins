@@ -129,7 +129,8 @@ same audit procedure, single-sourced in `.claude/audit/PRE-RELEASE-AUDIT.md`.
 never add a second copy under `templates/scaffold/`, and keep
 `templates/scaffold/MANIFEST.md` in sync when you add a file there. Some
 artifacts under `templates/github/` are **generated** (`copilot-instructions.md`,
-`prompts/`, `agents/`) — regenerate with `mise run gen:copilot` and commit the
+`agents/`, `instructions/`) — as is the cross-tool skill tree at
+`templates/agents/skills/`. Regenerate with `mise run gen:copilot` and commit the
 result; never hand-edit them.
 
 ## Gates

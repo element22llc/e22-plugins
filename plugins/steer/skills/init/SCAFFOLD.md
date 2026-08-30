@@ -33,7 +33,11 @@ GitHub-templates section maps the Issue Forms, workflows, PR template, and the
 full generated Copilot/VS Code surface — `copilot-instructions.md`,
 `agents/*.agent.md` (custom agents), and
 `instructions/*.instructions.md` (path-scoped standards) — into `.github/`;
-the opt-in `copilot-setup-steps.yml` is **not** auto-installed), and instantiate the
+the opt-in `copilot-setup-steps.yml` is **not** auto-installed), copy
+`${CLAUDE_PLUGIN_ROOT}/templates/agents/skills/` to `.agents/skills/`
+**verbatim** (the cross-tool skill surface — the real skill bodies Copilot,
+Cursor, Gemini CLI and Codex read natively as `/steer-<skill>`; steer-managed,
+overwrite on refresh, never hand-edit), and instantiate the
 spec spine from
 `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
 `vision.md`, `users.md`, `glossary.md`, plus the living-docs artifacts —

@@ -32,7 +32,7 @@ truth and how to install and refresh the Copilot side.
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
-Every Copilot artifact — instructions, per-skill prompts, custom agents, the
+Every Copilot artifact — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
 VS Code `mcp.json`, the CLI hook manifest, and the plugin + marketplace manifest
 versions — is generated from that one source and guarded by a build-time **drift
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
@@ -117,8 +117,8 @@ or skills change. Refresh them with **`/steer:sync`** from Claude Code:
 ```shell
 copilot plugin update steer       # CLI only: pull the new plugin version
 # then, from Claude Code in the repo:
-/steer:sync                       # re-copies copilot-instructions.md, prompts/,
-                                  # agents/, instructions/ from the new plugin
+/steer:sync                       # re-copies copilot-instructions.md,
+                                  # .agents/skills/, agents/, instructions/
 /steer:sync --check               # read-only: reports the surface as mis-wired
                                   # when it has fallen behind
 ```
@@ -317,9 +317,11 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 
 ## Known limitations
 
-- **Skill enforcement/invocation differs.** See [Skills on Copilot](#skills-on-copilot)
-  — tool-permission scoping is inert and skill bodies are intent capsules (though
-  the `steer-reviewer` subagent now ports as a [custom agent](#custom-agents-on-copilot)).
+- **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot)
+  — the bodies themselves port in full, but a skill that Claude Code restricts via
+  `allowed-tools`/`disallowed-tools` carries that restriction here as an
+  instruction rather than something the runtime enforces (the `steer-reviewer`
+  subagent does port as a [custom agent](#custom-agents-on-copilot)).
 - **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
   gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no
   hooks. The advisory nudges live in the standards text, not as hooks.
