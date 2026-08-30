@@ -17,6 +17,19 @@
       "Bash(git log*)",
       "Bash(git show*)",
       "Bash(git branch --list*)",
+      "Bash(git fetch*)",
+      "Bash(git describe*)",
+      "Bash(git rev-list*)",
+      "Bash(git rev-parse*)",
+      "Bash(git merge-base*)",
+      "Bash(git blame*)",
+      "Bash(git tag -l*)",
+      "Bash(git tag --list*)",
+      "Bash(git worktree list*)",
+      "Bash(git checkout -b *)",
+      "Bash(gh run list*)",
+      "Bash(gh run view*)",
+      "Bash(mise trust*)",
       "mcp__codegraph__codegraph_explore"
     ]
   }

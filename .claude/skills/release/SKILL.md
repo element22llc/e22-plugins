@@ -13,7 +13,7 @@ allowed-tools:
   - Edit
   - Glob
   - Grep
-  - Task
+  - Agent
   - WebFetch
   - Bash(git status*)
   - Bash(git diff*)
@@ -24,6 +24,7 @@ allowed-tools:
   - Bash(git rev-list*)
   - Bash(git describe*)
   - Bash(git worktree*)
+  - Bash(git checkout*)
   - Bash(grep*)
   - Bash(gh run list*)
   - Bash(gh run view*)
@@ -33,6 +34,7 @@ allowed-tools:
   - Bash(uv run python scripts/check_plugin.py*)
   - Bash(uv run python scripts/check_standards.py*)
   - Bash(uv run python scripts/validate_docs.py*)
+  - Bash(uv run python scripts/check_context_budget.py*)
   - Bash(sh plugins/steer/scripts/scan-version-pins.sh*)
   - Bash(sh plugins/steer/scripts/check-policy-freshness.sh*)
   - Bash(mise run ci)
@@ -94,7 +96,8 @@ The one-line index, for orientation only:
 - **Step 1 — base preconditions.** Clean tree, not behind `origin/main`,
   `[Unreleased]` populated, `$LAST_RELEASE` established as the diff anchor.
 - **Step 2 — deterministic gate.** `mise run ci` + the strict `mise run
-  docs:build`, up front and blocking.
+  docs:build`, up front and blocking, plus the `validator-compat` job's status on
+  `main` (`[high]`, not a blocker — it tracks upstream Claude Code, not the diff).
 - **Step 3 — judgment coherence fan-out.** Six read-only subagent dimensions
   (CHANGELOG ↔ diff, version/manifest, cross-reference, namespace/brand, payload,
   behavioral), then vet every candidate against the code it cites.
@@ -136,6 +139,18 @@ editing:
 
 When entries are mixed, the highest-impact one wins. State the proposed `X.Y.Z`
 and the one reason, and let the user override.
+
+**The `allowed-tools` grant does not survive the user's reply.** Per the Claude
+Code skills reference, a skill's `allowed-tools` grants permission *for the turn
+that invokes the skill*, and **the grant clears when the user sends their next
+message** — the skill body stays in context, the permissions do not. So every
+tool call after this confirmation is governed by the project's own permission
+settings alone. `.claude/settings.json` covers the common ones (`mise run *`,
+`uv run python scripts/*`, the read-only `git` verbs); anything outside it will
+prompt. That is not a failure — approve and continue — but do not read a prompt
+for a command this skill pre-authorized as a sign something is wrong, and do not
+abandon a step because it started prompting. Durable rules belong in
+`.claude/settings.json`, not in frontmatter.
 
 ### B2. Isolate, *then* branch — set up the working copy before editing any file.
 

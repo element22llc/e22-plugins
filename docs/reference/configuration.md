@@ -81,6 +81,32 @@ manual. They are injected into every managed session by `inject-standards.sh`
     not-the-gate, self-report, secrets, output, and artifacts rules carry no
     `inject-when` marker and so stay always-on.
 
+## Code intelligence (LSP)
+
+`plugin.json` declares two **language servers**, so Claude Code gets real
+compiler diagnostics after every edit — and jump-to-definition / find-references
+— instead of inferring what a change broke from the surrounding text. They match
+the org stack defaults in rule `10-stack`:
+
+| Server | Command | Files |
+| --- | --- | --- |
+| `typescript` | `typescript-language-server --stdio` | `.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs` `.cjs` |
+| `python` | `pyright-langserver --stdio` | `.py` `.pyi` |
+
+!!! info "A server activates only when its binary is on `PATH`"
+    Claude Code starts each server by name, so a repo without
+    `typescript-language-server` or `pyright-langserver` installed simply gets no
+    language server for those files — nothing else changes, and there is no
+    error to act on. Both carry `restartOnCrash: false` so a missing or unhappy
+    server fails once and stays quiet rather than thrashing. Install them
+    per-machine (`pnpm add -g typescript-language-server typescript`,
+    `pnpm add -g pyright`) or per-repo as devDependencies; steer does not install
+    them for you, and deliberately does not gate on them.
+
+    This is also the supported successor to a code-intelligence **MCP** server:
+    it is declared in the manifest, it is not a process the plugin has to pin,
+    and diagnostics arrive on the edit path rather than on request.
+
 ## Tooling knobs
 
 - **`policy/versions.yml`** — version floors; `check-version-pins.sh` blocks pins
