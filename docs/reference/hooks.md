@@ -117,15 +117,16 @@ notice or nothing) and stays individually testable.
 
 Three registrations that are not gates and not context injection: they run
 because the harness has told steer that something in the session's *environment*
-changed. `SessionEnd` and `WorktreeRemove` both have their **output and exit code
-discarded** by Claude Code, so neither can report anything or block anything —
-each is a side effect or nothing at all.
+changed. `SessionEnd` and `WorktreeRemove` both have their **output and exit
+code discarded** by Claude Code — neither event carries decision control — so
+neither can report anything or block anything; each is a side effect or nothing
+at all.
 
 | Hook | Event | Role |
 | --- | --- | --- |
 | `check-worktree-trust.sh` | `CwdChanged` | The same script the `SessionStart` roster runs, registered a second time. At `SessionStart` it can only cover a session that *started* in a worktree; a worktree entered **mid-session** — `EnterWorktree`, a subagent's `isolation: worktree`, a background session — fires no `SessionStart`, so the trust step was silently skipped for exactly the worktrees an agent makes for itself. Re-running is free: the first `cd` into a worktree inherits the trust and every later one finds it already trusted and exits before invoking `mise`; a plain checkout never reaches `mise` at all. Deliberately **not** `WorktreeCreate`, which looks like the precise event but runs *before* the worktree exists on disk — and `mise trust -C <dir>` refuses a directory that is not there yet. |
 | `on-session-end.sh` | `SessionEnd` (`logout\|prompt_input_exit\|other`) | Only in a **linked worktree**: runs that worktree's `docker:down` (`ws:docker:down` in a workspace root) so its containers stop and its ports are freed when the session really ends. **Volumes are kept** — a session ending is not the worktree ending, and the dev may still be in that checkout from a plain terminal. Never matches `clear` or `resume`: those continue the same working session, which is why the rules are re-injected for them. Silent in a plain checkout, without a compose file, without `mise`/`docker` on `PATH`, in a repo that pruned the `docker:*` tasks, and when `STEER_NO_WORKTREE_TEARDOWN` is set. |
-| `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown — `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) — because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. The hook fires *before* removal and a nonzero exit would **veto** it, so it always exits `0` whatever happens: steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
+| `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown — `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) — because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. `WorktreeRemove` carries no decision control, so the hook cannot stop the removal or report a problem; it exits `0` whatever happens — steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
 
 The two teardown modes are the same distinction rules `24-worktrees` and
 `99-end-of-session` draw, now enforced rather than requested: stop what is

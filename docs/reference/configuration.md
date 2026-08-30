@@ -95,10 +95,14 @@ the org stack defaults in rule `10-stack`:
 
 !!! info "A server activates only when its binary is on `PATH`"
     Claude Code starts each server by name, so a repo without
-    `typescript-language-server` or `pyright-langserver` installed simply gets no
-    language server for those files — nothing else changes, and there is no
-    error to act on. Both carry `restartOnCrash: false` so a missing or unhappy
-    server fails once and stays quiet rather than thrashing. Install them
+    `typescript-language-server` or `pyright-langserver` installed gets no
+    language server for those files — nothing else changes. A missing binary is
+    reported rather than silent: the server fails to start and Claude Code shows
+    `Executable not found in $PATH` in the `/plugin` **Errors** tab.
+    `restartOnCrash: false` covers a different case — a server that *crashes* is
+    left stopped instead of restarted. That key needs **Claude Code v2.1.205+**;
+    an older CLI drops a server that declares it silently, with the reason only
+    in `claude --debug` output. Install them
     per-machine (`pnpm add -g typescript-language-server typescript`,
     `pnpm add -g pyright`) or per-repo as devDependencies; steer does not install
     them for you, and deliberately does not gate on them.

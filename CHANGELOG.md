@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:next` compared a comment against the plugin version.**
+  `workspace-snapshot.sh` read `spec/.version` with `head -1`, but `/steer:init`,
+  `/steer:adopt` and `/steer:sync` all write that stamp as two lines with the
+  managed-by comment first — so every managed repo's snapshot reported the
+  comment where the version belongs, and the version-drift check never compared
+  two versions. It now extracts the version exactly as `/steer:sync` reads the
+  same file. The hook-test fixture wrote a bare version, which is why the suite
+  passed over it; it now writes the real two-line stamp.
+
 - **Changed: `/steer:explain` and `/steer:status` now run in a forked subagent
   (`context: fork`).** Both are pure renderers — the whole input is the argument
   (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole output
@@ -33,10 +42,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   edit actually broke instead of inferring it from surrounding text, and gets
   jump-to-definition / find-references. This is the supported successor to a
   code-intelligence MCP server: declared in the manifest, nothing for the plugin
-  to pin or spawn. A server activates **only when its binary is on `PATH`** — a
-  repo without them simply gets none, and both carry `restartOnCrash: false` so
-  a missing one fails once and stays quiet rather than thrashing. steer does not
-  install them and does not gate on them.
+  to pin or spawn. A server needs its binary on `PATH`: Claude Code skips one it
+  cannot launch and reports `Executable not found in $PATH` in the `/plugin`
+  **Errors** tab — visible, not silent. `restartOnCrash: false` governs a
+  different case, leaving a server that *crashes* stopped instead of restarting
+  it. That key needs **Claude Code v2.1.205+**; an older CLI skips a server that
+  declares it. steer does not install the binaries and does not gate on them.
 - **Added: `$schema` on both manifests** (`.claude-plugin/marketplace.json`,
   `plugins/steer/.claude-plugin/plugin.json`), pointing at the published
   SchemaStore definitions. One line each: editor validation now, and a future
@@ -56,8 +67,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   (`on-worktree-remove.sh`) runs the full `docker:clean` (down + volumes +
   orphans), because the checkout is being deleted and its per-worktree volumes
   become unreachable regardless; it acts on the payload's `worktree_path`, not on
-  `cwd`, and always exits `0` since a nonzero exit there would veto the removal
-  the dev asked for. Both are scoped to a linked worktree with a compose file and
+  `cwd`, and always exits `0` — `WorktreeRemove` carries no decision control, so
+  the hook can neither report a problem nor stop the removal. Both are scoped
+  to a linked worktree with a compose file and
   a defined `docker:*` (or workspace `ws:docker:*`) task, and both are disabled by
   `STEER_NO_WORKTREE_TEARDOWN=1`. A plain checkout's stack is never touched.
 - **Added: `check-worktree-trust.sh` also runs on `CwdChanged`.** At
@@ -124,6 +136,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   as drift, so the retired surface can't linger beside the new one. `MIGRATIONS.md`
   carries the consumer-side migration: install `.agents/skills/`, delete only the
   `steer-*` prompt files, leave any the team wrote themselves.
+
+- **Fixed: `/steer:init` installs the cross-tool skill surface, and `/steer:sync`
+  refreshes the right file set.** Two shipped skills still described the retired
+  `.github/prompts/` surface after `.agents/skills/` replaced it. `/steer:init`
+  enumerated only the `.github/` Copilot artifacts, so a fresh bootstrap installed
+  **no** cross-tool skill surface at all — even though `/steer:adopt` already
+  installed it and `templates/scaffold/MANIFEST.md` says init does too.
+  `/steer:sync`'s `agent-surface-current` repair named `prompts/` and omitted
+  `.agents/skills/`, so the one capability that refreshes that surface described
+  the wrong files; it now matches what `scan-capabilities.sh` actually compares
+  (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`). The
+  generated Copilot standards surface also still told VS Code users the skills
+  ship as prompt files; it now names the `.agents/skills/` tree.
 
 ### 5.3.0
 

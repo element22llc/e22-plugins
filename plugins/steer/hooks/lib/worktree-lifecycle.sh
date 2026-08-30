@@ -40,8 +40,8 @@
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Silent and fail-soft throughout: both calling events discard
 #   stdout, stderr and exit code, so there is no channel to report a problem on
-#   and no value in failing loudly. Never blocks — WorktreeCreate/WorktreeRemove
-#   treat a nonzero exit as a veto, so the callers always exit 0.
+#   and no value in failing loudly. Never blocks — neither event carries decision
+#   control, so a nonzero exit would stop nothing; the callers always exit 0.
 
 # steer_wt_is_linked <root> — true when <root> is a linked worktree, i.e. it has a
 # primary checkout that is not itself. Subprocess-free (reads the `.git` file).

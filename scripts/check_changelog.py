@@ -13,8 +13,9 @@ Two checks, so the same script serves local runs and the CI PR gate:
 
 2. **Behaviour-change gate** (only with ``--base <ref>``): if any plugin behaviour
    file changed versus the base ref, ``CHANGELOG.md`` must have changed too —
-   so a stream of PRs accumulates ``[Unreleased]`` entries. Test-only changes
-   under ``tests/`` are exempt.
+   so a stream of PRs accumulates ``[Unreleased]`` entries. Behaviour is
+   deny-by-default: everything under ``plugins/steer/`` counts, minus the
+   exemptions enumerated below, each with the reason it ships nothing.
 
 Usage::
 
@@ -36,25 +37,26 @@ from pathlib import Path
 PLUGIN_JSON = Path("plugins/steer/.claude-plugin/plugin.json")
 CHANGELOG = Path("CHANGELOG.md")
 
-# Behaviour paths: a change here requires a CHANGELOG.md entry (tests/ exempt).
-BEHAVIOUR_PREFIXES = (
-    "plugins/steer/skills/",
-    "plugins/steer/hooks/",
-    "plugins/steer/rules/",
-    "plugins/steer/templates/",
-    "plugins/steer/scripts/",
-    "plugins/steer/policy/",
+# Everything the plugin ships is behaviour. An allowlist of directory prefixes fails
+# open — the plugin format keeps gaining component types, and adopting a new one
+# would ship ungated until somebody remembered to widen the gate. So the
+# classifier is deny-by-default: anything under `plugins/steer/`
+# requires a CHANGELOG entry unless it is exempted below, and each exemption carries
+# the reason it ships nothing. The failure mode is a false positive a reviewer sees,
+# not a silent miss.
+PLUGIN_ROOT = "plugins/steer/"
+EXEMPT_SUBSTRINGS = ("/tests/",)  # test suites, wherever they sit under the plugin
+EXEMPT_PREFIXES = (
+    "plugins/steer/evals/",  # a dev gate like tests/ — inert at runtime
+    "plugins/steer/.claude/",  # local dev settings for this checkout
 )
-# The three version-bearing manifests. All are consumer-facing: the Claude plugin
-# manifest, the Copilot plugin manifest, and the Copilot marketplace entry that
-# carries steer's released version. `.github/plugin/marketplace.json` lives outside
-# `plugins/steer/`, so no prefix above reaches it — it needs the exact entry.
-BEHAVIOUR_EXACT = (
-    "plugins/steer/.claude-plugin/plugin.json",
-    "plugins/steer/.github/plugin/plugin.json",
-    ".github/plugin/marketplace.json",
+EXEMPT_EXACT = (
+    "plugins/steer/README.md",  # maintainer notes, deliberately not shipped
 )
-EXEMPT_SUBSTRINGS = ("/tests/",)
+# Consumer-facing behaviour that lives outside `plugins/steer/`: the Copilot
+# marketplace entry carrying steer's released version. The two plugin manifests are
+# already covered by the plugin-root rule above.
+BEHAVIOUR_EXACT = (".github/plugin/marketplace.json",)
 
 _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 _HEADING_RE = re.compile(r"^###\s+(.+?)\s*$")
@@ -168,9 +170,13 @@ def _changed_files(base: str) -> list[str] | None:
 
 
 def _is_behaviour(path: str) -> bool:
+    if path in BEHAVIOUR_EXACT:
+        return True
+    if not path.startswith(PLUGIN_ROOT):
+        return False
     if any(sub in path for sub in EXEMPT_SUBSTRINGS):
         return False
-    return path in BEHAVIOUR_EXACT or path.startswith(BEHAVIOUR_PREFIXES)
+    return not (path in EXEMPT_EXACT or path.startswith(EXEMPT_PREFIXES))
 
 
 def check_behaviour_gate(base: str, errors: list[str]) -> None:

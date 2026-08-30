@@ -92,8 +92,9 @@ HEADER = (
 INVOCATION_NOTE = (
     "> **Invoking a skill on this surface.** The standards below name skills in "
     "the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot "
-    "for VS Code** the same skills ship as prompt files invoked as "
-    "**`/steer-<skill>`** — type `/steer-` in Chat to list them. On the "
+    "for VS Code** the same skills ship in the cross-tool `.agents/skills/` "
+    "tree, invoked as **`/steer-<skill>`** — type `/steer-` in Chat to list "
+    "them. On the "
     "**Copilot CLI** they load from the plugin manifest. Read any "
     "`/steer:<skill>` reference below as the skill of that name on whichever "
     "surface you are on."

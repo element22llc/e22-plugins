@@ -211,7 +211,7 @@ def test_is_behaviour_classification():
     assert f("plugins/steer/skills/spec/SKILL.md")
     assert f("plugins/steer/rules/10-x.md")
     assert f("plugins/steer/scripts/scan-prereqs.sh")
-    # all three version-bearing manifests are exact entries
+    # all three version-bearing manifests count
     assert f("plugins/steer/.claude-plugin/plugin.json")
     assert f("plugins/steer/.github/plugin/plugin.json")
     assert f(".github/plugin/marketplace.json")
@@ -224,6 +224,44 @@ def test_is_behaviour_classification():
     assert not f(".github/pull_request_template.md")
     assert not f("CLAUDE.md")
     assert not f("docs/index.md")
+
+
+def test_is_behaviour_covers_the_two_allowlist_regressions():
+    """Both shipped surfaces an allowlist of directory prefixes used to miss."""
+    f = check_changelog._is_behaviour
+    # the MCP servers every consumer gets
+    assert f("plugins/steer/.mcp.json")
+    # the steer-reviewer subagent /steer:audit and /steer:work --reviewed invoke
+    assert f("plugins/steer/agents/steer-reviewer.md")
+
+
+def test_is_behaviour_is_deny_by_default_for_unknown_components():
+    """A plugin component that does not exist yet is gated the day it lands."""
+    f = check_changelog._is_behaviour
+    for path in (
+        "plugins/steer/monitors/build.json",
+        "plugins/steer/output-styles/terse.md",
+        "plugins/steer/bin/steer",
+        "plugins/steer/.lsp.json",
+    ):
+        assert f(path), path
+
+
+def test_exemptions_are_anchored_and_cannot_widen_to_the_plugin_root():
+    f = check_changelog._is_behaviour
+    # the exempt paths themselves
+    assert not f("plugins/steer/README.md")
+    assert not f("plugins/steer/evals/routing/case.yml")
+    assert not f("plugins/steer/.claude/settings.json")
+    # ...but no exemption leaks to a sibling that merely shares its prefix
+    assert f("plugins/steer/README-SHIPPED.md")
+    assert f("plugins/steer/evals-runtime/thing.md")
+    assert f("plugins/steer/.claude-plugin/plugin.json")
+    # a plugin-root file is behaviour, not swept up by an exemption
+    assert f("plugins/steer/.mcp.json")
+    # and the exemptions do not reach outside the plugin either
+    assert not f("evals/x.yml")
+    assert not f("README.md")
 
 
 # --- _changed_files + behaviour gate against real git repos -----------------------

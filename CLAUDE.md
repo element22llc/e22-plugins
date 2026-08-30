@@ -61,7 +61,11 @@ plugins/steer/
     ├── github/                     # GitHub templates — single source of truth (issue forms,
     │                               #   workflows/ ci.yml + claude.yml + dependabot-auto-merge.yml + …,
     │                               #   pull_request_template.md) + the GENERATED Copilot artifacts
-    │                               #   (copilot-instructions.md, prompts/ — via `mise run gen:copilot`)
+    │                               #   (copilot-instructions.md, agents/, instructions/ —
+    │                               #    via `mise run gen:copilot`)
+    ├── agents/skills/              # GENERATED cross-tool skill surface (all 26 skills in the
+    │                               #   open Agent Skills format) — consumers install it as
+    │                               #   .agents/skills/; via `mise run gen:copilot`
     └── scaffold/                   # bundled repo bootstrap (mise, compose, CI, PR template, …)
                                     #   — see its MANIFEST.md for the install map
 ```
