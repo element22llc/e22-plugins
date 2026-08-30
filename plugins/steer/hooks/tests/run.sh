@@ -2575,7 +2575,6 @@ while [ $# -gt 0 ]; do
 	shift
 done
 [ "${_show}" -eq 1 ] || exit 0
-[ -f "${_dir}/mise.toml" ] || exit 0
 _state=untrusted
 _rest="${MISE_STUB_TRUSTED:-}:"
 while [ -n "${_rest}" ]; do
@@ -2605,6 +2604,10 @@ while [ -n "${_anc}" ]; do
 	[ "${_rest}" = "${_anc}" ] && break
 	_anc="${_rest}"
 done
+# The queried directory gets a line ONLY if it holds a config — mise lists config
+# directories, and its ancestors are listed either way. That asymmetry is what a
+# loose matcher turned into "an ancestor's state stands in for this directory's".
+[ -f "${_dir}/mise.toml" ] || exit 0
 printf '%s: %s\n' "${_out}" "${_state}"
 exit 0
 STUB
@@ -2726,6 +2729,25 @@ out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRU
 assert_has "worktree-trust: ancestor line does not mask the worktree" "${out}" "inherited the primary checkout"
 grep -q "mise trust -q -C ${WTJ_W}" "${WT_LOG}" && ok ||
 	bad "worktree-trust: trust applied despite a matching ancestor line"
+
+# (k) REGRESSION: a config-less PRIMARY whose ANCESTOR is trusted must not be
+#     read as trusted. A matcher that accepted an ancestor's line here skipped the
+#     "primary has no mise config at all" notice and fell through to
+#     `mise trust -q -C`, CREATING trust — the one thing this hook must never do.
+#     The primary sits at ~/ancnest/ancnest so the ancestor ~/ancnest has tail
+#     `/ancnest`, which is also a SUFFIX of the primary's path — the exact shape
+#     that defeated the suffix matcher.
+# shellcheck disable=SC2046
+set -- $(wt_pair ancnest/ancnest)
+WTK_P="$1"
+WTK_W="$2"
+rm -f "${WTK_P}/mise.toml" # primary's config is new on the worktree's branch
+: >"${WT_LOG}"
+out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG} MISE_STUB_TRUSTED= HOME=${WORK} MISE_STUB_ANCESTORS=~/ancnest" \
+	run_hook check-worktree-trust.sh "$(session_json "${WTK_W}" wt10)")"
+assert_has "worktree-trust: config-less primary still asks the human" "${out}" "no mise config at all"
+grep -q 'trust -q' "${WT_LOG}" &&
+	bad "worktree-trust: must NOT create trust from an ancestor's state" || ok
 
 # (h) the check is registered in the session-checks roster (it ships as part of
 #     the one SessionStart registration, not its own).

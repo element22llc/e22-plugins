@@ -61,10 +61,9 @@
 #   second registration stdout goes to the debug log and is not shown. The
 #   `mise trust -C` SIDE EFFECT — the reason that registration exists — works on
 #   both paths; what is lost mid-session are the notices below that ask the HUMAN
-#   to act. Surfacing them on `CwdChanged` is an open change, not an oversight —
-#   an open change, tracked in the plugin's known limitations. Two documented
-#   channels exist for it, so do
-#   not assume one: `systemMessage` in JSON output (shown as a brief terminal
+#   to act. Surfacing them on `CwdChanged` is an open change, not an oversight,
+#   tracked in the plugin's known limitations. Two documented channels exist for
+#   it, so do not assume one: `systemMessage` in JSON output (shown as a brief terminal
 #   notification) and stderr on an `exit 2`. Until that lands, do not describe this
 #   hook's mid-session notices as reaching the user.
 #   (Upstream, verified verbatim:
@@ -119,71 +118,64 @@ command -v mise >/dev/null 2>&1 || exit 0
 # `mise trust --show` lists the directory of every config on the path, ancestors
 # included, so the line must be matched on the EXACT directory.
 #
-# It ABBREVIATES the home directory to `~`, while the dir we are given is absolute.
-# Matching only the absolute form never fires for a repo under home — which is
-# where worktrees normally live — so the caller read '', treated it as "no mise
-# config here", and exited silently: trust was never inherited.
+# It ABBREVIATES the home directory to `~`, while the dir we are given is absolute
+# (steer_repo_root ends in `pwd -P`). Matching only the absolute form never fires
+# for a repo under home — which is where worktrees normally live — so the caller
+# read '', treated it as "no mise config here", and exited silently: trust was
+# never inherited.
 #
-# Do NOT reconstruct the abbreviated form from $HOME. mise uses $HOME when it is
-# set and falls back to the OS home when it is not, so neither source is reliable
-# here: it still abbreviates with $HOME unset, and a $HOME carrying a trailing
-# slash yields `~Documents/…` with no separator. Match structurally instead — exact directory, or a `~`-prefixed one
-# whose remainder is a suffix of the directory we asked about. The remainder must
-# be non-empty, or the bare `~` line (the home dir itself, always an ancestor of
-# such a repo) would match every path.
-steer_trust_state() {
-	mise trust --show -C "$1" 2>/dev/null | {
-		_best_tail=""
-		_best_state=""
-		while IFS= read -r _line; do
-			_st="${_line##*: }"
-			_dir="${_line%": ${_st}"}"
-			[ "${_st}" = trusted ] || [ "${_st}" = untrusted ] || continue
-			case "${_dir}" in
-			"$1")
-				# The exact directory is definitive; nothing outranks it.
-				_best_state="${_st}"
-				break
-				;;
-			"~"*)
-				_tail="${_dir#\~}"
-				[ -n "${_tail}" ] || continue
-				case "$1" in
-				*"${_tail}") ;;
-				*) continue ;;
-				esac
-				# Ancestors are listed too, shallowest first, so a SHORT ancestor tail
-				# can also be a suffix of $1 — a repo under `~/work` with a worktree
-				# named `work` matches `~/work` before its own line. Taking the first
-				# match therefore returned an ancestor's state and silently restored the
-				# bug this function exists to fix. The longest tail is the deepest
-				# directory, which is $1 itself.
-				#
-				# KNOWN DEFECT, not yet fixed. Recorded in the plugin's known
-				# limitations (docs: "Worktree `mise trust` inheritance").
-				# If $1 has no mise config of its own, mise prints no line for it and
-				# the longest matching ancestor tail wins instead of returning ''. At
-				# the WT call site that is harmless (the caller acts only on
-				# `untrusted`). At the PRIMARY call site it is NOT: that branch tests
-				# `!= trusted`, so an ancestor-derived `trusted` skips the "primary has
-				# no mise config at all" notice and falls through to `mise trust -q -C`
-				# — CREATING trust, which the header above says this hook must never
-				# do. Reaching it needs a primary with no config of its own AND an
-				# ancestor config whose home-relative tail is also a suffix of the
-				# primary's path (`~/work` + a repo at `~/work/x/work`), so it is
-				# narrow — but it is a real hole, and closing it needs the home
-				# directory, which neither $HOME nor this output reliably gives. Do not
-				# paper over it with another heuristic; the exact-match arm above is
-				# the only part that is sound by construction.
-				if [ "${#_tail}" -gt "${#_best_tail}" ]; then
-					_best_tail="${_tail}"
-					_best_state="${_st}"
-				fi
-				;;
-			esac
-		done
-		printf '%s' "${_best_state}"
+# mise resolves that home from $HOME when it is set, falling back to the OS home
+# when it is not, and it substitutes $HOME LITERALLY — so a trailing slash yields
+# `~Documents/…` with no separator. Build both forms it could print (from $HOME as
+# given, and from $HOME with trailing slashes trimmed) and compare for EQUALITY
+# against either, or against the absolute path.
+#
+# Equality, never a suffix. Ancestors are listed too, and matching them loosely is
+# how an earlier attempt let an ancestor's state stand in for this directory's —
+# which at the PRIMARY call site (it branches on `!= trusted`) skipped the
+# "no mise config at all, ask the user" notice and CREATED trust, the one thing
+# this hook must never do. An ancestor's path can never equal ours, so equality
+# closes that by construction rather than by another heuristic.
+#
+# If $HOME is unset, no abbreviated form is built, nothing matches, and the caller
+# gets '' — the hook stays silent and changes nothing. That is the pre-fix
+# behaviour and it is the safe direction to fail in.
+steer_abbrev_home() { # <dir> <home> — the `~` form mise would print, else <dir>
+	[ -n "$2" ] || {
+		printf '%s' "$1"
+		return 0
 	}
+	case "$1" in
+	"$2") printf '~' ;;
+	"$2"/*) printf '~%s' "${1#"$2"}" ;;
+	"$2"*) printf '~%s' "${1#"$2"}" ;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
+steer_trust_state() {
+	_home="${HOME:-}"
+	_trim="${_home}"
+	while :; do
+		case "${_trim}" in
+		?*/) _trim="${_trim%/}" ;;
+		*) break ;;
+		esac
+	done
+	_abbrev="$(steer_abbrev_home "$1" "${_home}")"
+	_abbrev2="$(steer_abbrev_home "$1" "${_trim}")"
+	mise trust --show -C "$1" 2>/dev/null | while IFS= read -r _line; do
+		case "${_line}" in
+		"$1: trusted" | "${_abbrev}: trusted" | "${_abbrev2}: trusted")
+			printf 'trusted'
+			break
+			;;
+		"$1: untrusted" | "${_abbrev}: untrusted" | "${_abbrev2}: untrusted")
+			printf 'untrusted'
+			break
+			;;
+		esac
+	done
 }
 
 WT_STATE="$(steer_trust_state "${ROOT}")"

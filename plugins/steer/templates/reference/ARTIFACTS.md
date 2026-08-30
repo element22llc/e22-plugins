@@ -118,7 +118,11 @@ read-only over the canonical sources even in a skill that otherwise writes.
 5. **Give a one-line heads-up before publishing:** publishing sends the rendered
    content to claude.ai, where the page is **private to you until you choose to
    share it**. Let the `Artifact` tool's own permission prompt gate the publish — do
-   not pre-authorize it.
+   not pre-authorize it. **In a forked skill** (`/steer:explain`, `/steer:status`)
+   the heads-up travels with the fork's result rather than arriving ahead of it, so
+   the permission prompt — which does surface in the main session — is the gate
+   that actually holds. Write the heads-up anyway; it is what tells the reader what
+   was sent once they see the page.
 6. **Publish, then report** the URL, that it is private until shared, and that
    re-running in this same session redeploys the **same** page.
 

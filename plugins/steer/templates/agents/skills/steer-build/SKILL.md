@@ -129,6 +129,25 @@ These hold for the whole build, at every step.
    Design export, read it
    per `/steer-reference design-sources`. Create `/spec/BUILD-STATUS.md` from the bundled
    template now, and keep it current from here on.
+
+   **Stamp the spine version — this is what makes the repo `managed`.** Once
+   `vision.md`, `users.md`, `glossary.md` and `tracker.md` are in place, write
+   `/spec/.version` with the current plugin version (resolve it from
+   `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` — never from memory), in the
+   same two-line form `/steer-init` and `/steer-adopt` write:
+
+   ```
+   # Spec-spine version — managed by /steer-init, /steer-adopt, /steer-sync. Do not edit by hand.
+   <plugin version>
+   ```
+
+   Without it the repo stays `foreign` forever even though the spine is complete:
+   `/steer-setup` keeps routing it to `/steer-adopt`, the unmanaged-repo hook warns
+   every session, the write-nudge hook keeps suggesting adoption, and `/steer-sync`
+   reads it as `unstamped`. This step exists here because this skill bootstraps the
+   repo itself rather than calling `/steer-init` — the PO never runs `init`
+   directly — so nothing else will write it.
+
 3. **Draft feature intents.** For each capability the product clearly needs,
    run `/steer-spec-scaffold <id>` and fill `intent.md` from the conversation —
    including **Key concepts & data** and **Lifecycle expectations**: ask the

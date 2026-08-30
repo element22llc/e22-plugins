@@ -238,8 +238,7 @@ raises a prompt. Be honest about the tiers:
 - **`SessionStart` → `session-checks.sh`** is otherwise read-only, with **one**
   exception worth knowing: `check-worktree-trust.sh` runs `mise trust` in a linked
   worktree to inherit the primary checkout's decision, so a fresh worktree's `mise
-  run …` doesn't fail on trust rather than on the task. It is designed never to
-  *create* trust — one known defect breaks that in a narrow case, below —
+  run …` doesn't fail on trust rather than on the task. It never *creates* trust —
   an untrusted primary checkout leaves it untouched and says so, keeping that
   first decision yours. Everything else the roster does is report-only. The same
   script also runs on `CwdChanged`, so a worktree *entered* mid-session gets the
@@ -351,36 +350,3 @@ made; fixing the second is a design question — vendor the few helper scripts, 
 them to a temp file first, or drop those command blocks from the portable copy —
 so it is deliberately unpatched rather than guessed at. `scripts/gen_agent_skills.py`
 carries the same note in its module docstring.
-
-## Worktree `mise trust` inheritance
-
-**One known case lets the hook create trust rather than inherit it.**
-`check-worktree-trust.sh` is built on an invariant its own header states: it
-copies a trust decision the human already made for the primary checkout, and
-**never makes one**. There is a known case where it does.
-
-`mise trust --show` abbreviates the home directory to `~`, and the hook has to
-match those lines against an absolute path. It accepts an exact match, or a
-`~`-prefixed line whose remainder is a suffix of the directory asked about. When
-the directory asked about has **no mise config of its own**, mise prints no line
-for it, and the longest matching *ancestor* line can win instead of the lookup
-returning "no decision". At the primary-checkout call site that matters: the
-branch tests `!= trusted`, so an ancestor-derived `trusted` skips the "the
-primary checkout has no mise config at all — ask the user" notice and proceeds
-to trust the worktree.
-
-**Reaching it needs all of:** a linked worktree whose branch introduced a mise
-config, a primary checkout with none of its own, and an ancestor directory that
-both has a mise config and whose home-relative path is a suffix of the primary's
-(`~/work` with the repo at `~/work/x/work`). Rare, but real.
-
-**Why it is not simply fixed:** closing it needs the home directory, and neither
-`$HOME` (mise falls back to the OS home when it is unset, and honours a trailing
-slash) nor mise's own output reliably supplies it. Three attempts at a heuristic
-each introduced a different defect, so the exact-match arm — sound by
-construction — is the only part relied on, and this case is recorded rather than
-guessed at again.
-
-**Scope:** this affects only whether a *worktree* is trusted, on a machine where
-the human already trusts the ancestor directory. It cannot trust anything outside
-the repo, and a plain checkout never reaches the code at all.

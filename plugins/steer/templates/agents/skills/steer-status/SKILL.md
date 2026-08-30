@@ -50,11 +50,13 @@ the moment the spine or tracker changes; regenerate to refresh.
   or untracked source shows as *"not tracked"* or *"no items this period"*, never
   an invented number, date, or status.
 - **Read-only over canonical sources — never writes back.** `Edit`,
-  `NotebookEdit`, and `EnterWorktree` are **disallowed in frontmatter**, so —
-  tool-enforced — this skill cannot edit a repo file, create a branch, or open a
-  worktree. It writes **nothing** to `/spec`, `/apps`, `/packages`, or the
-  tracker: its `allowed-tools` pre-approve **only read verbs** (the MCP issue-read
-  tools and the scoped `gh issue list`/`view`/`search` reads `/steer-tracker-sync`
+  `NotebookEdit`, and `EnterWorktree` are **disallowed in frontmatter**, so this
+  skill does not edit a repo file, create a branch, or open a worktree. Treat that
+  as a boundary this skill keeps rather than one the runtime guarantees — upstream
+  is silent on whether `disallowed-tools` reaches a forked subagent, and
+  `background: false` is what keeps the fork off the wider background tool set.
+  It writes **nothing** to `/spec`, `/apps`, `/packages`, or the tracker: its
+  `allowed-tools` pre-approve **only read verbs** (the MCP issue-read tools and the scoped `gh issue list`/`view`/`search` reads `/steer-tracker-sync`
   uses), so no write is pre-approved — a tracker or repo write stays gated and is
   a hard prose violation besides. `Bash` is **not** blanket-disallowed — unlike
   `/steer-explain` (which reads only spec files), this skill reads the *tracker*
@@ -162,7 +164,8 @@ Milestone 2 82% complete"*), then the sections above as compact visual blocks �
 milestone progress meters, a shipped list grouped by feature, an "in progress"
 list, a "needs your input" callout with the open-question count, and a "what's
 next" list. Publish to the temp path `<tempdir>/steer-status-<period>.html` (stable
-per window so a same-session re-run redeploys to the same URL); publishing stays
+per window, so a re-run redeploys in place rather than making a second page);
+publishing stays
 human-gated. Where Artifacts are unavailable, print the **Markdown fallback**
 inline with the same section shape — never write it to a file under the repo.
 
@@ -172,9 +175,12 @@ jargon, or milestone-mechanics. Keep outcomes and dates; drop the plumbing.
 
 ## Updating a previously shared report
 
-Within the same session, re-running for the same window redeploys to the same
-Artifact URL. Updating a report shared from a **different** session needs its URL —
-steer does not store it (see the "Updating a previously shared page" note in
+The publish path is stable per window, which is what lets a re-run redeploy in
+place rather than creating a second page. Do not promise that as a guarantee: this
+skill runs forked, and whether a fork's publish is recognised as a redeploy of an
+earlier one is not something steer can verify. If the caller needs a specific
+report updated, take its URL from them — which a report shared from a **different**
+session needs anyway, since steer does not store it (see the "Updating a previously shared page" note in
 `/steer-reference artifacts`).
 
 ## What this skill is *not*

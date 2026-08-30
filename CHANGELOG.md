@@ -7,25 +7,33 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Known limitation: the worktree trust lookup can, in one narrow case, create
-  trust rather than inherit it.** `check-worktree-trust.sh` is built on an
-  invariant its header states — it copies a decision the human already made and
-  never makes one. The `~`-abbreviation matching added this cycle breaks that in a
-  narrow case: when the directory asked about has no mise config of its own, mise
-  prints no line for it and the longest matching *ancestor* line can win instead
-  of the lookup returning "no decision". At the primary-checkout call site, which
-  tests `!= trusted`, an ancestor-derived `trusted` then skips the "no mise config
-  at all — ask the user" notice and trusts the worktree. Reaching it needs a
-  worktree whose branch introduced a mise config, a primary with none, and an
-  ancestor that both has one and whose home-relative path is a suffix of the
-  primary's. **Not fixed:** closing it needs the home directory, which neither
-  `$HOME` nor mise's output reliably gives, and three heuristics each introduced a
-  different defect — so the exact-match arm is the only part relied on and the
-  case is documented instead. Recorded in `docs/reference/known-limitations.md`;
-  the shipped hook carries the same note at the line responsible. Still a strict
-  improvement on the prior release, where the lookup never matched at all for any
-  repo under the home directory and the hook inherited nothing.
+- **Fixed: `/steer:build` never stamped the spine, so a PO-bootstrapped repo stayed
+  `foreign` forever.** `/steer:build` is a bootstrap front door in its own right —
+  it re-implements the `init` flow rather than calling it, because the PO never runs
+  `/steer:init` directly — but it was the one bootstrap path that never wrote
+  `spec/.version`. The spine it produces is complete, so the repo *looked* managed
+  and behaved as though it were not: `/steer:setup` kept routing it to
+  `/steer:adopt`, the unmanaged-repo hook warned every session, the write-nudge hook
+  kept suggesting adoption, and `/steer:sync` read it as `unstamped`. It now stamps
+  once the spine files are in place, in the same two-line form `/steer:init` and
+  `/steer:adopt` write.
 
+- **Fixed: the worktree trust lookup now matches on equality, not a suffix.**
+  `mise trust --show` abbreviates the home directory to `~`, so the lookup has to
+  compare an absolute path against a possibly-abbreviated line. It now builds the
+  abbreviated form from `$HOME` — both as given and with trailing slashes trimmed,
+  because mise substitutes `$HOME` literally and a trailing slash yields
+  `~Documents/…` with no separator — and compares for **equality** against that or
+  the absolute path. Nothing is matched by suffix any more, which closes the way an
+  *ancestor's* trust state could stand in for this directory's: mise lists ancestors
+  too, and at the primary-checkout call site (it branches on `!= trusted`) an
+  ancestor-derived `trusted` skipped the "no mise config at all, ask the user"
+  notice and created trust — the one thing the hook must never do. An ancestor's
+  path can never equal ours, so equality closes it by construction. With `$HOME`
+  unset nothing matches and the hook stays silent, which is the safe direction.
+  Three regression cases pin it: a home-relative worktree, an ancestor line that
+  must not mask the worktree, and a config-less primary with a trusted
+  suffix-colliding ancestor that must still ask the human.
 - **Added: `validate_docs.py` fails on a duplicated section heading.** A bad edit
   can re-emit a whole block of a page; nothing caught it, because the copy is
   valid Markdown, every link still resolves and the build is happy — so a page
@@ -111,13 +119,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   passed over it; it now writes the real two-line stamp.
 
 - **Changed: `/steer:explain` and `/steer:status` now run in a forked subagent
-  (`context: fork`).** Both are pure renderers — the whole input is the argument
+  (`context: fork`, `background: false`).** Both are pure renderers — the whole input is the argument
   (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole output
   is a shareable page — so each was reading a dozen spine files and a tracker
   query into the *main* session's context to emit one summary. Forked, that read
   happens in a subagent and only the page comes back. Nothing is lost by cutting
   them off from the conversation: neither reads it, and neither asks the user
-  anything. The other read-only report skills are deliberately **not** forked —
+  anything — `/steer:explain`'s ambiguous-id step now lists the candidates and
+  stops rather than asking, because `AskUserQuestion` is removed from every
+  subagent. **`background: false`** is set deliberately: a *backgrounded* fork
+  runs with the narrower background-subagent tool set, and that set re-admits
+  `Bash`/`Edit`/`NotebookEdit`/`EnterWorktree` — the tools these two declare
+  disallowed — so backgrounding would have quietly widened a pair of read-only
+  renderers. Waiting also keeps the pre-publish heads-up ahead of the publish.
+  The key needs **Claude Code v2.1.218+**; an older CLI ignores it and
+  backgrounds the fork. Both skills' prose now states the read-only boundary as
+  one they keep rather than one the runtime guarantees — upstream documents
+  `disallowed-tools` against the invoking turn and is silent on whether it
+  reaches a fork. The other read-only report skills are deliberately **not** forked —
   `/steer:report` files a bug about what just happened in *this* conversation,
   and `/steer:roadmap` opens issues and drives `/steer:issues`.
 - **Documented: `disable-model-invocation` is off-limits on a steer skill**

@@ -70,8 +70,23 @@ specialized skills below as needed, so you rarely reach past this set.
     output is a page — so nothing is lost by cutting them off from the
     conversation, while the spine and tracker reads behind the page stay out of
     your session's context. That is the point: you asked for the report, not for
-    the dozen files it was derived from. The result arrives in the conversation
-    when the fork completes.
+    the dozen files it was derived from.
+
+    Both also set **`background: false`**, so the turn waits for the fork instead
+    of continuing while it runs. A *backgrounded* fork is given the narrower
+    background-subagent tool set, and that set re-admits `Bash`, `Edit`,
+    `NotebookEdit` and `EnterWorktree` — the very tools these two declare
+    disallowed — so backgrounding would quietly widen what a "read-only" renderer
+    can reach. Waiting also keeps the heads-up before an Artifact publish in front
+    of the publish rather than after it. The key needs **Claude Code v2.1.218+**;
+    an older CLI ignores it and backgrounds the fork, where the read-only boundary
+    holds by instruction rather than by tooling.
+
+    Note what the frontmatter does and does not buy you: `disallowed-tools` is
+    documented against the turn that invokes a skill, and upstream does not say
+    whether it reaches a forked subagent. These two skills are read-only because
+    their procedures are, and `background: false` keeps them off the wider tool
+    set — not because the runtime is guaranteed to enforce the list.
 
     `context: fork` is set on exactly these two skills; every other skill runs
     in the session that invoked it. That is deliberate — a skill that reports on
