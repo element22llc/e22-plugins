@@ -95,6 +95,13 @@ run = [
   # strict today, so this is a ratchet, not a migration.
   "claude plugin validate . --strict",
   "claude plugin validate plugins/steer --strict",
+  # The repo-local dev skills (/release, /quick-release, /audit-loop, /preflight,
+  # ...) drive the release path but ship nothing, so neither validate call above
+  # reaches them -- nothing checked their frontmatter at all. They pass --strict
+  # today, so this is a ratchet: a typo'd or unrecognized frontmatter key in the
+  # machinery that cuts releases now fails here instead of silently doing nothing
+  # at the moment it is relied on. Requires Claude Code v2.1.233+.
+  "claude plugin validate .claude/skills --strict",
 ]
 
 [tasks.fixtures]

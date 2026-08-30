@@ -26,6 +26,7 @@ allowed-tools:
   - Bash(git rev-list*)
   - Bash(git describe*)
   - Bash(git worktree*)
+  - Bash(git checkout*)
   - Bash(grep*)
   - Bash(gh run list*)
   - Bash(gh run view*)
@@ -35,6 +36,7 @@ allowed-tools:
   - Bash(uv run python scripts/check_plugin.py*)
   - Bash(uv run python scripts/check_standards.py*)
   - Bash(uv run python scripts/validate_docs.py*)
+  - Bash(uv run python scripts/check_context_budget.py*)
   - Bash(sh plugins/steer/scripts/scan-version-pins.sh*)
   - Bash(sh plugins/steer/scripts/check-policy-freshness.sh*)
   - Bash(mise run ci)
@@ -108,9 +110,10 @@ Identical to the procedure's Step 1:
 
 ### Q2. Deterministic gate — the machine checks, up front, blocking.
 
-- **`mise run ci`** — the full CI-equivalent gate (lint, plugin-check, fixtures,
-  test, shell, hooktests, version-scan, docs:check, delivery-gates). Report a
-  per-gate pass/fail line.
+- **`mise run ci`** — the repo's full local gate. Report a per-gate pass/fail
+  line, reading the gate names off the run itself rather than from a list copied
+  into prose here (`mise tasks` and `CLAUDE.md` describe the set; a copy goes
+  stale the moment a task is added, and this one had).
 - **`mise run docs:build`** — the **strict** Zensical build (fails on broken
   links / nav), which is *not* part of `mise run ci`. Run it because the
   GitHub Pages deploy happens post-merge from `main`; a red strict build would
