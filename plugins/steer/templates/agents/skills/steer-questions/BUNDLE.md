@@ -11,7 +11,7 @@ Owner can answer** as a shareable, fillable questionnaire — the **outbound**
 half of the PO clarification loop. The loop, the machine-keyed return document
 the page exports, and how `/steer-intake clarify` ingests the filled export are
 canonical in
-[`CLARIFICATION-LOOP.md`](../../templates/reference/CLARIFICATION-LOOP.md).
+[`CLARIFICATION-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md).
 **By default it bundles the whole spine — every feature at once** plus
 product-level questions; `bundle <feature-id>` narrows to one feature.
 
@@ -67,7 +67,7 @@ touches the tracker not at all — gathering uses read-only `Glob` / `Read` /
 
 4. **Render — Artifact when available.** Render by the **shared Artifact
    discipline** — rule `88-artifacts`, mechanics in `/steer-reference artifacts`
-   ([`ARTIFACTS.md`](../../templates/reference/ARTIFACTS.md)), including the
+   ([`ARTIFACTS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ARTIFACTS.md)), including the
    **copy-out floor** a fillable page must uphold and its
    progressive-enhancement copy/download controls — do not restate them here.
    The temp path is `<tempdir>/steer-questions-bundle[-<feature-id>].html`.
@@ -85,7 +85,7 @@ The copy-box, the "Download .md" export, and the Markdown fallback all emit the
 **same machine-keyed return document**; its exact shape, the
 `[<feature-id>] Q-NNN` key rules, and stale-key handling are the
 return-document contract in
-[`CLARIFICATION-LOOP.md`](../../templates/reference/CLARIFICATION-LOOP.md).
+[`CLARIFICATION-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md).
 
 ### Recommended next action
 

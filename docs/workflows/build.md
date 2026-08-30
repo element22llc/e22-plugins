@@ -114,6 +114,12 @@ resuming once the build is handed off — every box in its handoff gate checked.
 - `/steer:build` is the **build** path; [`/steer:spec`](spec.md) is its
   **no-build counterpart** — spec-only, ends at an approved intent without
   writing code.
+- `/steer:build` is a **bootstrap front door in its own right**. The PO never runs
+  [`/steer:init`](../reference/skills.md) directly, so `build` installs the spine
+  itself and stamps `spec/.version` once `vision.md`, `users.md`, `glossary.md` and
+  `tracker.md` are in place — that stamp is what makes the repo `managed`. Without
+  it the spine would be complete while every state check still read the repo as
+  `foreign`.
 - A build in progress tracks state in `/spec/BUILD-STATUS.md`, so `/steer:build`
   can resume an interrupted session.
 - Approval still records evidence and the hand-off stays **dev-gated** — Claude

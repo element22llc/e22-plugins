@@ -147,7 +147,7 @@ shared contract with `/steer-questions bundle` — the loop, the machine-keyed
 `[<feature-id>] Q-NNN` key and its stale/unknown-key handling, the segmentation
 rule, and the three-bucket worklist with each bucket's durability rules and
 the intake-routes / questions-folds ownership split — is canonical in
-[`CLARIFICATION-LOOP.md`](../../templates/reference/CLARIFICATION-LOOP.md);
+[`CLARIFICATION-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md);
 this section is only what intake itself does. Clarify reuses intake's shared
 front-end **verbatim** — step 1 (a clarification is its own `source-id`),
 step 2 (version, convert, commit, with the step-2.2 binary-hash guard), and

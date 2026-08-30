@@ -199,8 +199,8 @@ It covers, in detail:
   in the repo; on-demand only, never auto-generated per feature or on a schedule.
 - **The write-location invariant** — the page HTML is the only write, to a system
   temp dir (never under the repo tree), on a deterministic per-subject filename so a
-  same-session re-run redeploys the same URL; and how read-only and `Write`-disallowed
-  skills each uphold it.
+  same-session re-run redeploys the same URL (hedged for forked skills); and how
+  read-only and `Write`-disallowed skills each uphold it.
 - **Rendering mechanics** — load `artifact-design` first (and `dataviz` for charts);
   build everything inline because the Artifact CSP blocks all external hosts (no CDN
   scripts, remote fonts, or images); theme- and width-awareness; the

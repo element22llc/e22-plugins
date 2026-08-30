@@ -309,7 +309,8 @@ never from memory), so a later `/steer:sync` knows which structural
 migrations this repo already carries:
 
 ```
-# Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.
+# Spec-spine version — managed by /steer:init, /steer:adopt, /steer:build,
+# /steer:sync. Do not edit by hand.
 <plugin version>
 ```
 

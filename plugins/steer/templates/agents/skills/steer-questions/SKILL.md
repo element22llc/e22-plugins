@@ -46,7 +46,7 @@ There is **no `SPEC-QUESTIONS.md`** — questions live next to their context:
 - **Per feature** → each `spec/features/*/intent.md` → `## Open questions`
   (the structured `### Q-NNN` blocks — `status` / `impact` / `owner` /
   `required_before` / `created` / `tracker`; the canonical format is in
-  [`SPEC-FRAMEWORK.md`](../../templates/reference/SPEC-FRAMEWORK.md)).
+  [`SPEC-FRAMEWORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md)).
 - **Product-level** (anything not yet tied to one feature) → `spec/vision.md`
   → `## Open questions`.
 - If present, `spec/PRODUCTIONIZATION.md` → `## Open questions` (dev-facing
@@ -167,7 +167,7 @@ as "stale by that same test".
    - **Answer sourced from an ingested clarification doc** — a `Q-NNN` may
      carry a **`pending /steer-questions fold`** annotation from
      `/steer-intake clarify` (proposed answer + source-ref + quoted span — see
-     [`CLARIFICATION-LOOP.md`](../../templates/reference/CLARIFICATION-LOOP.md)).
+     [`CLARIFICATION-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/CLARIFICATION-LOOP.md)).
      The sweep surfaces it like any other open question; treat it as **the
      human's answer** under the **same tier gate above** — no lighter gate for
      arriving as a document. Intake records the annotation; only this skill

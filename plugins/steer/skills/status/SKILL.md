@@ -33,9 +33,11 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 # background: false — the fork still isolates the read, but the turn waits for
 # it. A BACKGROUNDED fork runs with the narrower background-subagent tool set,
 # which re-admits Edit/NotebookEdit/EnterWorktree — the three this skill declares
-# disallowed — so backgrounding would quietly widen what it can reach. Waiting
-# also keeps the publish heads-up in front of the publish. Needs Claude Code
-# v2.1.218+; an older CLI ignores the key and backgrounds the fork, so treat the
+# disallowed — so backgrounding would quietly widen what it can reach. It does
+# NOT put the publish heads-up ahead of the publish: the heads-up is written
+# inside the fork, and only a fork's final result reaches the main session, so
+# the Artifact permission prompt is the gate that holds — see
+# /steer:reference artifacts. Needs Claude Code v2.1.218+; an older CLI ignores the key and backgrounds the fork, so treat the
 # read-only boundary there as instruction, not tooling.
 context: fork
 background: false

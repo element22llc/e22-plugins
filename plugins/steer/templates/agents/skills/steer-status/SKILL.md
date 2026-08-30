@@ -19,6 +19,14 @@ argument-hint: '[this-week | since <date> | milestone [<name>]]'
 > whole run, and read any claim below that they "are unavailable" as a rule
 > you must keep rather than a guarantee you can rely on.
 
+> **Not forked on this surface.** In Claude Code this skill runs as a
+> conversation fork, and parts of the procedure below reason from that — that it
+> cannot ask you a question, that only its final result reaches the main
+> session. No other agent implements that mode: here the skill runs in your
+> session like any other. Read those passages as background on why the steps are
+> shaped this way, not as limits that apply to you — where a step says it cannot
+> ask, you may ask.
+
 <!-- steer:modes this-week,since,milestone -->
 
 # Status report — a shareable, plain-language progress update

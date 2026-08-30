@@ -31,7 +31,7 @@ the per-step notes call out the trunk-mode variant.
 present. The fork already ships a `/spec` skeleton and scaffolding; resolve the
 placeholders, swap the starter app, and back-fill the newer scaffold artifacts
 by following the full procedure in
-[`LEGACY-TEMPLATE-FORK.md`](../../templates/reference/LEGACY-TEMPLATE-FORK.md).
+[`LEGACY-TEMPLATE-FORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md).
 (New repos no longer start from that template — the plugin's bundled scaffold
 is the bootstrap source; this path exists only for forks that predate it.)
 
@@ -67,7 +67,7 @@ solo trunk mode — see step 1).
 ## Path A — legacy template fork
 
 Detected by the placeholders above. Follow the full procedure in
-[`LEGACY-TEMPLATE-FORK.md`](../../templates/reference/LEGACY-TEMPLATE-FORK.md):
+[`LEGACY-TEMPLATE-FORK.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/LEGACY-TEMPLATE-FORK.md):
 scan + one-round interview → batch the edits for confirmation → pin the
 toolchain (the canonical procedure in `/steer-reference conventions`) → replace
 or remove the starter app → adapt the standard `mise` tasks → back-fill the
@@ -212,7 +212,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    later `/steer-sync` knows which structural migrations this repo predates:
 
    ```
-   # Spec-spine version — managed by /steer-init, /steer-adopt, /steer-sync. Do not edit by hand.
+   # Spec-spine version — managed by /steer-init, /steer-adopt, /steer-build,
+   # /steer-sync. Do not edit by hand.
    <plugin version>
    ```
 

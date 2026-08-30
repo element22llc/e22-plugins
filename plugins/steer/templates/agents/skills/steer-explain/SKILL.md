@@ -19,6 +19,14 @@ argument-hint: '[feature-id]'
 > whole run, and read any claim below that they "are unavailable" as a rule
 > you must keep rather than a guarantee you can rely on.
 
+> **Not forked on this surface.** In Claude Code this skill runs as a
+> conversation fork, and parts of the procedure below reason from that — that it
+> cannot ask you a question, that only its final result reaches the main
+> session. No other agent implements that mode: here the skill runs in your
+> session like any other. Read those passages as background on why the steps are
+> shaped this way, not as limits that apply to you — where a step says it cannot
+> ask, you may ask.
+
 # Explain a feature — a shareable, plain-language view
 
 **Scope boundary:** this skill only *presents* what the spec already says.
@@ -182,8 +190,9 @@ Render **by the shared Artifact discipline** — rule `88-artifacts`, full mecha
 in `/steer-reference artifacts` — and do not restate it here. Two things are
 **specific to this skill**:
 
-- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — the stable,
-  per-feature name is what lets a same-session re-run redeploy to the *same* URL.
+- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — stable per
+  feature, so a re-run redeploys in place rather than making a second page (not a
+  guarantee from a fork — see "Updating a previously shared page" below).
   Write only there (a system temp dir), never under the repo tree.
 - **The Markdown fallback keeps this skill's at-a-glance shape** — status as an
   inline pipeline (`draft → **approved** → live`),

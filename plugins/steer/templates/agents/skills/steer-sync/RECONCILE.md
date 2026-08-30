@@ -113,6 +113,11 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      re-copy is the whole refresh path for that surface after a
      plugin update — those tools read the installed tree rather than the plugin,
      so without it the surface stays frozen at the bootstrapping version.
+     For `agent-surface-current` the re-copy is **not sufficient on its own**:
+     that capability is also `mis-wired` while a retired `steer-*.prompt.md`
+     lingers under `.github/prompts/`, and copying never deletes one. Delete
+     steer's own `steer-`-prefixed prompt files too — and the directory only if
+     nothing else remains — leaving any prompt file the team wrote themselves.
      For everything else, **additively splice** only the named wiring marker (the
      `steer@e22-plugins` entry, a CI step, a PR-template section), preserving every
      existing key/step — never clobber.

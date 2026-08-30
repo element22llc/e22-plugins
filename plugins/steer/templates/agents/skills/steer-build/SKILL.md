@@ -137,14 +137,16 @@ These hold for the whole build, at every step.
    same two-line form `/steer-init` and `/steer-adopt` write:
 
    ```
-   # Spec-spine version — managed by /steer-init, /steer-adopt, /steer-sync. Do not edit by hand.
+   # Spec-spine version — managed by /steer-init, /steer-adopt, /steer-build,
+   # /steer-sync. Do not edit by hand.
    <plugin version>
    ```
 
    Without it the repo stays `foreign` forever even though the spine is complete:
    `/steer-setup` keeps routing it to `/steer-adopt`, the unmanaged-repo hook warns
    every session, the write-nudge hook keeps suggesting adoption, and `/steer-sync`
-   reads it as `unstamped`. This step exists here because this skill bootstraps the
+   refuses it outright — `foreign` is not a sync case, so it stops and redirects.
+   This step exists here because this skill bootstraps the
    repo itself rather than calling `/steer-init` — the PO never runs `init`
    directly — so nothing else will write it.
 

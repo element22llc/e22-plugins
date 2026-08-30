@@ -9,7 +9,7 @@ gates plus a bounded fix loop, so the delivery is **vetted, not first-draft**.
 This is the review-gated path formerly carried by the standalone `deliver` skill; the execution
 itself is unchanged — the same claim, branch, implement, test, PR, and transition
 steps run, with gates added around them. Full protocol, rubric structure, and
-stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
+stopping rules: [`REVIEW-LOOP.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/REVIEW-LOOP.md).
 
 - **Triage first.** If the task is trivial (typo, one-liner, rename), run it
   without the gates and say they were skipped — honesty over ceremony. The gates

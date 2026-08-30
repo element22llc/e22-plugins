@@ -36,7 +36,10 @@ flowchart LR
    and nothing reports it. Author ledger entries as `### [Unreleased] — <what>`, the
    same convention the changelog uses; the release PR renames the heading alongside
    the manifest bump. `check_plugin.py` fails the build on any ledger heading ahead
-   of `plugin.json`, so a guess cannot reach `main`.
+   of `plugin.json`, and `check_migrations.py` (wired into `plugin-check`) enforces the
+rest of the ledger's shape — entry structure, the required fields, newest-first
+ordering, and a deep pass over `[Unreleased]` entries — so a guess cannot reach
+`main`.
 
 `check_changelog.py` also validates that `plugin.json`'s version equals the newest
 released heading and that released headings are in descending semver order.
@@ -68,7 +71,9 @@ gh workflow run release-publish.yml -f version=X.Y.Z
 Two other post-merge runs are worth watching: `docs-deploy.yml` publishes the
 documentation site from `main` (a red run leaves the live site stale), and the
 e2e suite is **local-only** — run `mise run e2e` before a substantive cut if you
-want the skill-level signal.
+want the skill-level signal. The model-graded routing evals are local-only for the
+same reason: `mise run evals` is deliberately outside `ci` and off the PR path, and
+the release path is where it is meant to run.
 
 Because the tag is created here, `git describe --tags` stays an accurate anchor
 for the next release's diff — nothing about tagging is manual.

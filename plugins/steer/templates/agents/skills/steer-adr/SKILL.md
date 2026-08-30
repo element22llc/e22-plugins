@@ -22,19 +22,19 @@ the product repo, from the bundled template.
 ## Steps
 
 1. **Require a spine — unless a bootstrap is installing one.** If `spec/.version`
-   is absent, stop and route to `/steer-init` (greenfield) or `/steer-adopt`
-   (existing code) — decision capture presumes the spine those install (rule
-   `31-decision-capture`). Test the stamp, not `spec/`: a bare directory can be an
-   empty folder or a foreign OpenAPI `spec/`, which is why `hooks/lib/spine.sh`
-   keys on `spec/.version`.
+   is absent, stop and route to **`/steer-setup`** — its routing table is the
+   canonical state→skill map, and it resolves greenfield-vs-adopt from
+   `scan-spine-state.sh` rather than leaving that call to you. Decision capture
+   presumes the spine a bootstrap installs (rule `31-decision-capture`). Test the
+   stamp, not `spec/`: a bare directory can be an empty folder or a foreign
+   OpenAPI `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`.
 
    **The exception is a bootstrap calling *in*.** `/steer-init`, `/steer-adopt`
-   and `/steer-build` all invoke `/steer-adr` while bootstrapping, *before* the
-   stamp is written, so gating on it there would abort the very callers this step
-   exists to route to, and send the agent back into the skill already running.
-   When any of them is the caller, the spine is mid-install: proceed, and let the
-   bootstrap stamp it. Route only a **direct** invocation against an unmanaged
-   repo.
+   and `/steer-build` all invoke `/steer-adr` while bootstrapping — `init` and
+   `adopt` before they stamp, `build` after — so gating on the stamp would abort
+   callers this step exists to route to, and send the agent back into the skill
+   already running. When any of them is the caller, proceed and let the bootstrap
+   own the stamp. Route only a **direct** invocation against an unmanaged repo.
 2. Decide the next sequential number: list `spec/decisions/` and use the highest
    existing `000N` + 1 (start at `0001`). **Never renumber** existing ADRs.
 3. Pick a short kebab-case `[slug]` (`use-postgres-for-search`).

@@ -30,7 +30,7 @@ handling & escape hatches · **6** testing · **7** toolchain & dependency healt
 (incl. the branch-protection / solo-trunk graduation check) · **8** design
 consistency *(UI repos only)* · **9** DX & docs. Skip any dimension that doesn't
 apply to the repo and say so. The full catalogue — what each dimension looks for
-— is [`AUDIT-DIMENSIONS.md`](../../../templates/reference/AUDIT-DIMENSIONS.md);
+— is [`AUDIT-DIMENSIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/AUDIT-DIMENSIONS.md);
 load it before fanning out reviewers.
 
 ## Phase 0 — Recon
@@ -165,5 +165,5 @@ when deterministic; judgment calls need a human yes), false positives stay
 closed, and each run's `audit-run` parent is immutable history. The canonical
 full lifecycle — both identities, the per-finding transition rules, `audit-id`
 immutability — lives in
-[`ISSUE-WORKFLOW.md`](../../../templates/reference/ISSUE-WORKFLOW.md) §"Audit &
+[`ISSUE-WORKFLOW.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/ISSUE-WORKFLOW.md) §"Audit &
 drift"; `/steer-issues publish-audit` implements it (markers: `ISSUE-SCHEMA.md`).

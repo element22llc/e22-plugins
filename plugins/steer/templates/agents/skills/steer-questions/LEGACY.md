@@ -11,7 +11,7 @@ standalone questions file. There is **no `SPEC-QUESTIONS.md`** in the current
 spine — questions live next to their context.
 
 Its heal is the **v1.25.0 migration entry** in
-[`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md), applied as a
+[`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md), applied as a
 **hard gate before gathering**: migrate the questions into the spine and
 **delete the file in the same step**. This is a move, not an answer — the
 deletion never waits on answers. Then sweep the migrated copies like any other
@@ -46,6 +46,6 @@ hit's section before touching it.
 In-scope legacy items are swept like any other question, and **converted into a
 `### Q-NNN` block as you resolve one** — this skill is the opportunistic
 converter the **v1.38.0** migration entry names
-([`MIGRATIONS.md`](../../templates/reference/MIGRATIONS.md)); never bulk-rewrite
+([`MIGRATIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md)); never bulk-rewrite
 a file just to convert. A legacy item you resolve this run must not be left as a
 checkbox.
