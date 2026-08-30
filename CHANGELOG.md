@@ -7,22 +7,35 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the spec-framework reference credited `template-reconcile.sh` with
+  diffing table rows.** Its extractor emits `##`/`###` headings and checklist items
+  only, so a bundled template that gained a **table row** produced an empty diff —
+  read as "already current", the exact staleness the reconciliation convention
+  exists to catch. The helper's documented failure mode was over-reporting; this
+  silent under-report was undocumented. Now stated, with table rows called out as
+  diff-by-eye.
+
+- **Fixed: two shipped scripts' own headers contradicted their code.**
+  `hooks/lib/worktree-lifecycle.sh` quoted rule `99-end-of-session` verbatim with a
+  phrase that rule does not contain, and `scripts/scan-capabilities.sh` documented
+  one fingerprint line while emitting two (`stack` and `profile` — which its
+  consumer already expected).
+
 - **Fixed: `/steer:protect` defined the delivery mode from observed protection.**
   Its framing sentence said a protected `main` *is* pr-flow and an unprotected one
   *is* solo-trunk, "there is no third mode" — which rule `45-commit-autonomy`
   denies ("declared-but-unprotected PR flow is a gap, not a mode"), which
   `hooks/lib/repo-root.sh` denies (it derives `solo-trunk` only from the
   `CLAUDE.md` marker, never from live protection), and which the skill's own later
-  steps denied twice. The marker declares the mode; protection enforces it.
+  steps denied twice. The marker declares the mode; protection enforces it. Rule
+  `45-commit-autonomy`, which is injected every session and carried the same
+  protection-keyed framing in its lead and both mode labels, now says so too, as do
+  `check-bash-actions.sh`'s header (its code already read the marker) and the
+  authorization-model concept page.
 
-- **Fixed: rule `24-worktrees` prescribed `mise install` for a checkout with no
-  `mise` config.** The carve-out now names the remedy the trust hook actually
-  names for each case — `mise trust && mise install` where the repo was never
-  trusted, `mise trust` alone where there is no config to install from.
-
-- **Fixed: `/steer:issues`' `argument-hint` omitted the optional arguments of four
-  modes** it defines and its own next-actions table recommends (`triage`, `epic`,
-  `publish-audit`, `publish-drift`).
+- **Fixed: `/steer:issues`' `argument-hint` omitted the optional arguments of five
+  modes it defines** (`triage`, `epic`, `board`, `publish-audit`, `publish-drift`);
+  its own next-actions table recommends two of them.
 
 - **Fixed: `/steer:doctor`'s description said only GUI steps are handed over.**
   `git` is handed over too, as a `sudo`/host command — which the body and the docs
@@ -88,7 +101,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 - **Fixed: the `spec/.version` header did not name `/steer:build`.** Since `build`
   became a fourth stamping path, every PO-built repo carried a stamp file whose own
   comment excluded the skill that wrote it. All five surfaces that author that
-  two-line form now name it.
+  two-line form now name it, and so does the spine-framework reference's
+  stamp-writer list.
 
 - **Fixed: `/steer:build` understated what `/steer:sync` does with an unstamped
   repo.** It said sync "reads it as `unstamped`"; sync stops at step 1, because
@@ -98,7 +112,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   trust.** Its carve-out handed the decision to the user when "the repo itself was
   never trusted", which does not cover the case the trust hook guards hardest — a
   primary checkout with no `mise` config at all, where creating trust is the one
-  thing the hook must never do. The carve-out now covers both.
+  thing the hook must never do. The carve-out now covers both, and names the remedy
+  the hook itself names for each — `mise trust && mise install` where the repo was
+  never trusted, `mise trust` alone where there is no config.
 
 - **Fixed: `/steer:build` never stamped the spine, so a PO-bootstrapped repo stayed
   `foreign` forever.** `/steer:build` is a bootstrap front door in its own right —

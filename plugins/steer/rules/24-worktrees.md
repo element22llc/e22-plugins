@@ -13,7 +13,7 @@ task. Run `mise trust` in the worktree first — it is idempotent, so it costs
 nothing when a steer check already inherited the primary checkout's trust (Claude
 Code only). That first decision is the user's, not yours: `mise trust && mise
 install` if the repo was never trusted, `mise trust` if it has no `mise` config
-at all (there is nothing to install yet).
+at all — a first-time trust decision is not yours to make.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
 sources `scripts/worktree-env.sh`, giving each worktree a unique

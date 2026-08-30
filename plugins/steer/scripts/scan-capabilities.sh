@@ -25,7 +25,8 @@
 #
 # OUTPUT (stdout)
 #   One TAB-separated line per capability:  <id>\t<status>\t<files>
-#   plus one fingerprint line:              stack\t<node|python|polyglot|none>\t-
+#   plus two fingerprint lines:             stack\t<node|python|polyglot|none>\t-
+#                                           profile\t<profile>\tCLAUDE.md
 #   status ∈ present-wired | absent | mis-wired | disabled | n/a
 #     present-wired  file(s) present AND the wired-when marker holds
 #     absent         a required file is missing

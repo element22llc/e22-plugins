@@ -21,13 +21,15 @@ flowchart TD
     class GATE gated
 ```
 
-Delivery runs in exactly **two modes**, keyed to GitHub branch protection
-(rule `45-commit-autonomy`): a **protected** `main` is **pr-flow** — the diagram
-above, with the server-enforced **merge review as the one human gate** — and an
-**unprotected** `main` is **solo-trunk** (pre-MVP by declared intent), where the
-trunk commit + push are the autonomous delivery and there is no PR. There is no
-third mode; `/steer:protect` moves a repo between them and reconciles the
-`CLAUDE.md` delivery-mode marker (an offline cache of the observed protection).
+Delivery runs in exactly **two modes**, keyed to what the repo **declares**
+(rule `45-commit-autonomy`): the `CLAUDE.md` `<!-- steer:delivery-mode=solo-trunk -->`
+marker makes a repo **solo-trunk** (pre-MVP by declared intent), where the trunk
+commit + push are the autonomous delivery and there is no PR; anything else,
+including an absent marker, is **pr-flow** — the diagram above, with the
+server-enforced **merge review as the one human gate**. Branch protection
+*enforces* pr-flow; it does not define the mode, so a declared-pr-flow repo whose
+`main` is unprotected is a **gap to close, not a third mode**. `/steer:protect`
+moves a repo between the two and reconciles the marker.
 
 ## What is autonomous
 

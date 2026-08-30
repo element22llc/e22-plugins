@@ -4,8 +4,8 @@
 # steer hook helper — tear down a linked worktree's local backing services.
 #
 # WHY THIS EXISTS
-#   Rule `99-end-of-session` asks the agent to tear down the services a worktree
-#   started ("no orphaned containers, volumes, or held ports"). Asking is all a
+#   Rule `99-end-of-session` asks the agent to stop the dev servers and watchers
+#   it started, freeing their ports. Asking is all a
 #   rule can do: it is prose in the always-on payload, it costs bytes every
 #   session, and the one moment it matters — the worktree going away — is the
 #   moment nobody is reading a checklist. `SessionEnd` and `WorktreeRemove` fire

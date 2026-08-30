@@ -175,15 +175,21 @@ Code (`gen_agent_skills.py`):
 | `${CLAUDE_PLUGIN_ROOT}/templates/reference/…`, and relative `../../templates/…` links | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
-Three differences from Claude Code remain on **both** Copilot surfaces:
+Three differences from Claude Code remain on **both** Copilot surfaces. Their
+*mitigations* do not: both notes below are injected by the generator into the
+portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
+**Copilot CLI** loads the authored `skills/` directly, where `context: fork` and
+`disallowed-tools` are present-but-unhonoured and no note appears — read the two
+bullets there as caveats you apply yourself.
 
 - **Forked skills are not forked here.** `context: fork` names a Claude Code
-  execution mode no other agent implements, so it is dropped — but the two skills
-  that use it (`/steer-explain`, `/steer-status`) argue *from* forked execution in
-  their bodies, including "don't ask, `AskUserQuestion` is unavailable". That
-  premise is false on this surface, and it would forbid a correct action. Both
-  generated copies therefore open with a note saying the fork passages describe
-  Claude Code, and that where a step says it cannot ask, you may.
+  execution mode no other agent implements, so the portable copy drops it — but the
+  two skills that use it (`/steer-explain`, `/steer-status`) argue *from* forked
+  execution in their bodies, including "don't ask, `AskUserQuestion` is
+  unavailable". That premise is false on this surface, and it would forbid a
+  correct action. Both **portable** copies therefore open with a note saying the
+  fork passages describe Claude Code, and that where a step says it cannot ask,
+  you may.
 - **Tool-permission scoping is inert.** No non-Claude agent honors steer's
   `allowed-tools` / `disallowed-tools`, and their values are Claude tool syntax
   anyway — so the portable copy **drops** both fields rather than shipping a grant

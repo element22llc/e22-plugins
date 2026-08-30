@@ -14,11 +14,12 @@
 #   the next raw create still nudges).
 #
 # CHECK 1 — TRUNK-PUSH GRADUATION GATE (Bash only)
-#   Under the two-state delivery model, delivery autonomy is keyed to branch
-#   protection: a protected repo delivers through autonomous branch pushes +
-#   PRs with the server-enforced merge review as the only human gate, and an
-#   unprotected solo-trunk repo delivers through autonomous trunk pushes with
-#   CI on push. The one repo that must NOT ride that autonomy is a solo-trunk
+#   Under the two-state delivery model, delivery autonomy is keyed to the repo's
+#   DECLARED delivery mode (the CLAUDE.md marker this check reads via
+#   steer_delivery_mode, never live protection): a pr-flow repo delivers through
+#   autonomous branch pushes + PRs with the server-enforced merge review as the
+#   only human gate, and a declared solo-trunk repo delivers through autonomous
+#   trunk pushes with CI on push. The one repo that must NOT ride that autonomy is a solo-trunk
 #   repo that has visibly outgrown pre-MVP — it ships somewhere (deploy
 #   workflow, infra/ tree) or has a promotion branch, yet main is still
 #   wall-less. This check makes the graduation signals BLOCKING instead of
