@@ -5,7 +5,7 @@ when_to_use: >-
   Use to manage the backlog without implementing now — drive a PO idea from
   capture to a draft spec to decomposed work without losing open questions or
   overwriting human content.
-argument-hint: "[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile [--all] | publish-audit | publish-drift | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]"
+argument-hint: "[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new \"<title>\"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]"
 allowed-tools:
   - Bash(git status *)
   - Bash(gh issue list *)

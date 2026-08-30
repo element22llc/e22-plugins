@@ -126,7 +126,10 @@ copilot plugin update steer       # CLI only: pull the new plugin version
 `/steer:sync` owns this because the refresh is a **capability repair**:
 `agent-surface-current` is wired only when every generated file is
 byte-identical to its plugin source **and** no retired `steer-*.prompt.md`
-lingers under `.github/prompts/`, and the repair is a verbatim re-copy.
+lingers under `.github/prompts/`. The repair is a verbatim re-copy **plus** the
+deletion of any lingering `steer-`-prefixed prompt file — a copy cannot remove
+one, so without that half the capability reports `mis-wired` after every repair.
+A prompt file the team wrote themselves is theirs and stays.
 **`/steer:init` is not the refresh path** — it installs the surface at bootstrap
 and then deliberately stops on an already-initialized repo, so re-running it does
 nothing.
@@ -169,11 +172,26 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…`, and relative `../../templates/…` links | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
-Two differences from Claude Code remain on **both** Copilot surfaces:
+Three differences from Claude Code remain on the Copilot surfaces — the first two
+on both, the third on VS Code only (the CLI does run steer's two `PreToolUse`
+hooks, per the table above). Their
+*mitigations* do not: both notes below are injected by the generator into the
+portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
+**Copilot CLI** loads the authored `skills/` directly, where `context: fork` and
+`disallowed-tools` are present-but-unhonoured and no note appears — read the two
+bullets there as caveats you apply yourself.
 
+- **Forked skills are not forked here.** `context: fork` names a Claude Code
+  execution mode no other agent implements, so the portable copy drops it — but the
+  two skills that use it (`/steer-explain`, `/steer-status`) argue *from* forked
+  execution in their bodies, including "don't ask, `AskUserQuestion` is
+  unavailable". That premise is false on this surface, and it would forbid a
+  correct action. Both **portable** copies therefore open with a note saying the
+  fork passages describe Claude Code, and that where a step says it cannot ask,
+  you may.
 - **Tool-permission scoping is inert.** No non-Claude agent honors steer's
   `allowed-tools` / `disallowed-tools`, and their values are Claude tool syntax
   anyway — so the portable copy **drops** both fields rather than shipping a grant

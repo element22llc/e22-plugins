@@ -110,6 +110,22 @@ BANNER = (
 # runs"). Leaving that unqualified would be a lie on this surface, so a skill that
 # was frontmatter-restricted upstream carries the restriction as a standing
 # instruction instead.
+# `context: fork` is dropped (see the module docstring), but the body of a forked
+# skill argues FROM that execution model — "this skill runs forked", "AskUserQuestion
+# is removed from every subagent", "only the final result comes back". On a surface
+# with no fork those premises are false, and one of them forbids a correct action:
+# asking the user IS available there. The tool-pool half is covered by
+# RESTRICTION_NOTE; this covers the execution-model half.
+FORK_NOTE = (
+    "> **Not forked on this surface.** In Claude Code this skill runs as a\n"
+    "> conversation fork, and parts of the procedure below reason from that — that it\n"
+    "> cannot ask you a question, that only its final result reaches the main\n"
+    "> session. No other agent implements that mode: here the skill runs in your\n"
+    "> session like any other. Read those passages as background on why the steps are\n"
+    "> shaped this way, not as limits that apply to you — where a step says it cannot\n"
+    "> ask, you may ask."
+)
+
 RESTRICTION_NOTE = (
     "> **Read-only on this surface — enforced by instruction, not by tooling.**\n"
     "> In Claude Code this skill runs with `{tools}` removed from the tool pool, so\n"
@@ -121,6 +137,12 @@ RESTRICTION_NOTE = (
 
 _PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}(/[A-Za-z0-9._/-]*)?")
 _STEER_REF = re.compile(r"/steer:([a-z][a-z0-9-]*)")
+# A relative link that climbs out of the skill directory into `templates/`
+# resolves in the authored tree and dangles in the portable one, which sits at a
+# different depth and, once installed as `.agents/skills/`, in a different repo
+# entirely. Same destination as a `${CLAUDE_PLUGIN_ROOT}` reference, so it gets
+# the same treatment.
+_REL_TEMPLATES = re.compile(r"\]\((?:\.\./)+templates/([A-Za-z0-9._/-]+)\)")
 
 
 def _split_frontmatter(text: str) -> tuple[dict, str]:
@@ -145,6 +167,7 @@ def rewrite_refs(text: str, skill: str) -> str:
         return f"{BLOB_BASE}/{path}" if path else BLOB_BASE
 
     text = _PLUGIN_ROOT.sub(plugin_root, text)
+    text = _REL_TEMPLATES.sub(rf"]({BLOB_BASE}/templates/\1)", text)
     return _STEER_REF.sub(rf"/{PREFIX}\1", text)
 
 
@@ -180,6 +203,8 @@ def render(skill_dir: Path) -> str:
         if isinstance(blocked, str):
             blocked = re.split(r"[,\s]+", blocked.strip())
         parts.append(RESTRICTION_NOTE.format(tools="`, `".join(t for t in blocked if t)))
+    if str(meta.get("context", "")).strip() == "fork":
+        parts.append(FORK_NOTE)
     parts.append(rewrite_refs(body, skill).strip())
     return "\n\n".join(parts) + "\n"
 

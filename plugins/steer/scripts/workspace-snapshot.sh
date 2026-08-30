@@ -68,8 +68,8 @@ printf -- '- state: %s\n' "$(steer_spine_state "${ROOT}")"
 # The role changes what the state MEANS — a member's spine is partial by design,
 # so `managed` there is not the same claim as `managed` in a single-repo product.
 printf -- '- polyrepo role: %s\n' "$(steer_polyrepo_role "${ROOT}" || printf 'none (single-repo product)')"
-# The stamp is TWO lines — a managed-by comment, then the version (init, sync
-# and adopt all write it that way), so `head -1` returns the comment. Extract the
+# The stamp is TWO lines — a managed-by comment, then the version (init, adopt,
+# build and sync all write it that way), so `head -1` returns the comment. Extract the
 # version itself, exactly as /steer:sync reads this same file.
 _spec_ver="$(grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "${ROOT}/spec/.version" \
 	2>/dev/null || printf 'none')"

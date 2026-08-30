@@ -60,7 +60,8 @@ section) — a *candidate* list (it over-reports). **Splice in** only the
 genuinely-new sections, `## Adoption progress` checkboxes, and `## Gap analysis`
 table rows, leaving them **unchecked / empty**; **preserve every value already
 there** — never re-add a placeholder the dev filled in, reorder, or delete a row.
-Empty output means the file is already current. Only then continue from the
+Empty output means the file is current as to headings and checklist items; the
+helper never emits **table rows**, so diff the `## Gap analysis` table by eye. Only then continue from the
 unchecked items. Full rules (anchor matching, over-reports handling) — the
 plugin-wide **Template reconciliation** convention:
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
@@ -309,7 +310,8 @@ never from memory), so a later `/steer-sync` knows which structural
 migrations this repo already carries:
 
 ```
-# Spec-spine version — managed by /steer-init, /steer-adopt, /steer-sync. Do not edit by hand.
+# Spec-spine version — managed by /steer-init, /steer-adopt, /steer-build,
+# /steer-sync. Do not edit by hand.
 <plugin version>
 ```
 

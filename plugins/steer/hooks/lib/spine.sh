@@ -4,7 +4,7 @@
 # A bare `spec/` directory is NOT proof of an spec spine: an empty folder, a
 # foreign OpenAPI `spec/`, or a half-migrated spine would all silence the
 # bootstrap nudges if we keyed off `[ -d spec ]`. The reliable ownership marker
-# is `spec/.version` (written by init / adopt). The required spine files
+# is `spec/.version` (written by init / adopt / build; sync re-stamps). The required spine files
 # mirror the bundled scaffold + init.
 #
 # Version-drift routing (a spine OLDER or NEWER than the installed plugin) is

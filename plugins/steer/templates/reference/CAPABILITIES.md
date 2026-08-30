@@ -178,6 +178,14 @@ and **Repair**.
   guidance belongs in a *separate* `*.instructions.md` the consumer owns, which this
   never touches. Show the file list before copying; never additively splice a
   generated file.
+
+  **A re-copy alone cannot clear this capability.** The Wired-when above also
+  requires that no retired `steer-*.prompt.md` remains, and copying files in never
+  removes one — so the repair must *also* delete any `steer-`-prefixed prompt file
+  under `.github/prompts/`, and the directory itself only if nothing else remains.
+  Delete **only** steer's own artifacts: a prompt file the team wrote is theirs.
+  Without this half, a repo carrying a leftover prompt file reports `mis-wired`
+  after every repair, which is the unrepairable state this check exists to avoid.
 - **Verbatim:** yes — re-copy, the never-clobber exception.
 - **Why it matters:** no non-Claude agent has a context-injecting SessionStart
   hook, so this static set *is* their entire standards surface. The

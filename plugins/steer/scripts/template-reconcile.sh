@@ -27,7 +27,9 @@
 #   Neither input is edited, and nothing is written outside stdout/stderr.
 #
 # EXIT CODES
-#   0  ran OK — read stdout: empty means the existing file is already current;
+#   0  ran OK — read stdout: empty means the existing file is current AS TO
+#      HEADINGS AND CHECKLIST ITEMS, the only anchors extracted — a template that
+#      gained a TABLE ROW yields empty output too, so diff tables by eye;
 #      any lines are candidate anchors to splice in. (Gaps-found is signaled via
 #      stdout, NOT a nonzero code, so skills running this through a tool's Bash
 #      wrapper don't see a normal "gaps found" run reported as a failure.)

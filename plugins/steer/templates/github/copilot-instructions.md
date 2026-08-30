@@ -288,9 +288,9 @@ scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
 new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
 task. Run `mise trust` in the worktree first — it is idempotent, so it costs
 nothing when a steer check already inherited the primary checkout's trust (Claude
-Code only). If the repo itself was never trusted, that first decision is the
-user's:
-`mise trust && mise install`.
+Code only). That first decision is the user's, not yours: `mise trust && mise
+install` if the repo was never trusted, `mise trust` if it has no `mise` config
+at all — a first-time trust decision is not yours to make.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
 sources `scripts/worktree-env.sh`, giving each worktree a unique
@@ -566,12 +566,13 @@ Commits are cheap and local — the reviewed **PR merge** is the gate (see "You
 are not the gate"), not each commit and not the push. Never pause work to ask
 "should I commit / push / open the PR?".
 
-Delivery runs in exactly **two modes**, keyed to GitHub branch protection. The
-product `CLAUDE.md` `## Delivery mode` marker caches which one applies
-(`<!-- steer:delivery-mode=pr-flow -->` vs `=solo-trunk`; absent → pr-flow);
-`/steer:protect` moves a repo between them, and there is no third mode.
+Delivery runs in exactly **two modes**, keyed to what the repo **declares**. The
+product `CLAUDE.md` `## Delivery mode` marker is the declaration
+(`<!-- steer:delivery-mode=solo-trunk -->` → solo trunk; anything else, absent
+included → pr-flow); branch protection *enforces* pr-flow rather than defining
+it. `/steer:protect` moves a repo between them, and there is no third mode.
 
-- **PR flow (protected `main` — the default).** Work on a branch off `main` —
+- **PR flow (the default — protection is the wall that enforces it).** Work on a branch off `main` —
   never commit or push to `main` directly. Use the repo's branch convention,
   else `feat/*` / `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`).
   On `main` with changes? Create the branch first, then commit. When the work
@@ -580,7 +581,7 @@ product `CLAUDE.md` `## Delivery mode` marker caches which one applies
   request permission. First push of a fresh branch:
   `git push -u origin <branch>`. **Merging the PR is the one step that waits
   for the dev; everything before it (branch, commit, push, open PR) does not.**
-- **Solo trunk mode (unprotected `main` — pre-MVP greenfield).** If the product
+- **Solo trunk mode (declared, pre-MVP greenfield).** If the product
   `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
   asking** — no `feat/*` branch, no per-feature PR. CI still runs on every
   push; the spine, tests, and Definition of Done are **unchanged** — only the

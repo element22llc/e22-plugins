@@ -17,8 +17,10 @@ disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
 # it. A BACKGROUNDED fork runs with the narrower background-subagent tool set,
 # which re-admits Bash/Edit/NotebookEdit/EnterWorktree — exactly the four this
 # skill declares disallowed — so backgrounding would quietly widen what it can
-# reach. Waiting also keeps the publish heads-up in front of the publish.
-# Needs Claude Code v2.1.218+; an older CLI ignores the key and backgrounds the
+# reach. It does NOT put the publish heads-up ahead of the publish: the heads-up
+# is written inside the fork, and only a fork's final result reaches the main
+# session, so the Artifact permission prompt is the gate that holds — see
+# /steer:reference artifacts. Needs Claude Code v2.1.218+; an older CLI ignores the key and backgrounds the
 # fork, so treat the read-only boundary there as instruction, not tooling.
 context: fork
 background: false
@@ -187,8 +189,9 @@ Render **by the shared Artifact discipline** — rule `88-artifacts`, full mecha
 in `/steer:reference artifacts` — and do not restate it here. Two things are
 **specific to this skill**:
 
-- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — the stable,
-  per-feature name is what lets a same-session re-run redeploy to the *same* URL.
+- **The temp filename is `<tempdir>/steer-explain-<feature-id>.html`** — stable per
+  feature, so a re-run redeploys in place rather than making a second page (not a
+  guarantee from a fork — see "Updating a previously shared page" below).
   Write only there (a system temp dir), never under the repo tree.
 - **The Markdown fallback keeps this skill's at-a-glance shape** — status as an
   inline pipeline (`draft → **approved** → live`),

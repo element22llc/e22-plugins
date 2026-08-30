@@ -11,7 +11,7 @@ mode's inline label creation.
     Use to manage the backlog: capture an idea, triage the inbox, brainstorm,
     materialize a spec, decompose into work, check status, or reconcile.
 
-**Argument hint:** `[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile [--all] | publish-audit | publish-drift | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]`
+**Argument hint:** `[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new "<title>"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]`
 
 ## Phases
 
@@ -29,9 +29,9 @@ flowchart LR
 | `decompose` | Break an approved spec into tracked work items (Feature → Tasks/Bugs). |
 | `epic` | Manage the tier **above** features: create an epic (`--new`) and link existing features under it (`#E --add #F1,#F2`) as native sub-issues, so a goal spanning several features is one `Epic → Feature → Task` hierarchy. `Type=Epic` is set only when the org enables it; otherwise the epic keeps `steer:kind=epic` with the Type unset. Milestones stay release grouping — an orthogonal axis. |
 | `status` | Report lifecycle state across issues; for an epic, a child-feature rollup. |
-| `board` | Read-only ranked, relationship-aware backlog overview (Ranked / Relationships / Dedup candidates / Hygiene). Never writes; defers cross-workflow "what's most critical" to `/steer:next`. |
+| `board [--all]` | Read-only ranked, relationship-aware backlog overview (Ranked / Relationships / Dedup candidates / Hygiene). Never writes; defers cross-workflow "what's most critical" to `/steer:next`. |
 | `reconcile [--all]` | Bounded re-sync of issues against the spine. `--all` widens the sweep to every open issue — the after-the-fact recovery path for issues created without a contract. |
-| `publish-audit` | File an `/steer:audit` finding set as an audit-run parent plus selected finding children. |
+| `publish-audit [<target>]` | File an `/steer:audit` finding set as an audit-run parent plus selected finding children. |
 | `publish-drift` | File an `/steer:audit spec` finding set as decision-checklist `spec-drift` issues; never auto-resolves. |
 | `publish-adoption` | Reconcile selected `spec/PRODUCTIONIZATION.md` gaps into `kind=finding` / `source:adoption` issues (stable `finding-key` per gap). |
 | `publish-findings` | File `kind=finding` issues from a `/code-review` or `/security-review` run (`--source code-review\|security-review`). |

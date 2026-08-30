@@ -7,6 +7,119 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the spec-framework reference credited `template-reconcile.sh` with
+  diffing table rows.** Its extractor emits `##`/`###` headings and checklist items
+  only, so a bundled template that gained a **table row** produced an empty diff —
+  read as "already current", the exact staleness the reconciliation convention
+  exists to catch. The helper's documented failure mode was over-reporting; this
+  silent under-report was undocumented. Now stated wherever the helper's output is
+  interpreted — the script's own exit-code contract, the framework reference, and
+  `/steer:adopt`'s step, which is the one call site whose stated payload includes
+  gap-analysis table rows — with table rows called out as diff-by-eye.
+
+- **Fixed: `scripts/scan-capabilities.sh` documented one fingerprint line while
+  emitting two** (`stack` and `profile` — which its consumer already expected).
+
+- **Fixed: `/steer:protect` defined the delivery mode from observed protection.**
+  Its framing sentence said a protected `main` *is* pr-flow and an unprotected one
+  *is* solo-trunk, "there is no third mode" — which rule `45-commit-autonomy`
+  denies ("declared-but-unprotected PR flow is a gap, not a mode"), which
+  `hooks/lib/repo-root.sh` denies (it derives `solo-trunk` only from the
+  `CLAUDE.md` marker, never from live protection), and which the skill's own later
+  steps denied twice. The marker declares the mode; protection enforces it. Rule
+  `45-commit-autonomy`, which is injected every session and carried the same
+  protection-keyed framing in its lead and both mode labels, now says so too, as do
+  `check-bash-actions.sh`'s header (its code already read the marker) and the
+  authorization-model concept page. Two more surfaces carried it where it did the
+  most damage: `check-graduation.sh`, whose stdout is injected into every
+  solo-trunk SessionStart, and the scaffold `CLAUDE.md` comment sitting directly
+  under the marker — the prose a consumer reads when deciding what the marker
+  means, and which `/steer:sync` splices into any repo missing it.
+
+- **Fixed: `/steer:issues`' `argument-hint` omitted the optional arguments of five
+  modes it defines** (`triage`, `epic`, `board`, `publish-audit`, `publish-drift`);
+  its own next-actions table recommends two of them.
+
+- **Fixed: `/steer:doctor`'s description said only GUI steps are handed over.**
+  `git` is handed over too, as a `sudo`/host command — which the body and the docs
+  page both already said.
+
+- **Fixed: the scaffold `MANIFEST.md` stated its no-leading-dot rule without the
+  two `.gitkeep` directory markers that are its only exceptions.**
+
+- **Fixed: four surfaces claimed `background: false` puts the Artifact heads-up
+  ahead of the publish.** It does not. The heads-up is written *inside* the fork,
+  and only a fork's final result reaches the main session, so the Artifact
+  permission prompt is the gate that actually holds — which is what
+  `templates/reference/ARTIFACTS.md` already said. `/steer:explain`,
+  `/steer:status`, the changelog entry that introduced the key, and the docs
+  reference page now agree with it. The tool-set rationale for `background: false`
+  is untouched and remains the reason it is set.
+
+- **Fixed: `agent-surface-current` had a `mis-wired` state its own repair could
+  not clear.** The capability is `mis-wired` while a retired
+  `.github/prompts/steer-*.prompt.md` lingers, but the documented repair on both
+  `CAPABILITIES.md` and `/steer:sync`'s `RECONCILE.md` was a verbatim re-copy —
+  and copying files in never removes one. A repo carrying a leftover prompt file
+  therefore reported `mis-wired` after every repair, the exact unrepairable state
+  the check was rewritten to avoid. Both surfaces now say the repair must also
+  delete steer's own `steer-`-prefixed prompt files (and the directory only if
+  nothing else remains), leaving any the team wrote themselves.
+
+- **Fixed: 13 links in the cross-tool `.agents/skills/` tree pointed at nothing.**
+  `gen_agent_skills.py` rewrote `${CLAUDE_PLUGIN_ROOT}` references but copied
+  plain relative links verbatim, so a `../../templates/reference/…` link that
+  resolves in the authored skill dangled in the portable tree — and dangled again,
+  differently, once installed into a consumer repo. Those links now get the same
+  `blob/main` rewrite the plugin-root form already got.
+
+- **Fixed: the portable skill tree carried fork-premised instructions to surfaces
+  with no fork.** `context: fork` is dropped on the way out, but the bodies of
+  `/steer:explain` and `/steer:status` argue *from* forked execution — including
+  "don't ask, `AskUserQuestion` is removed from every subagent", which forbids a
+  correct action on Copilot, Cursor, Gemini CLI and Codex, where asking is
+  available. The generated copies of those two skills now carry a note saying the
+  fork premises describe Claude Code and not the reader's surface. The existing
+  note covering `allowed-tools`/`disallowed-tools` was only ever the tool-pool
+  half of this.
+
+- **Fixed: the shared Artifact reference promised same-session redeploy without
+  the fork caveat the skills that cite it were already applying.**
+  `ARTIFACTS.md`'s step 6 and its "Updating a previously shared page" section
+  stated it flatly, while `/steer:explain` and `/steer:status` told the reader not
+  to promise it and pointed at that very section as the full rule. The caveat now
+  lives in the shared reference, and `/steer:explain`'s own earlier line is
+  hedged to match the one `/steer:status` already had.
+
+- **Fixed: `/steer:adr` routed around the canonical bootstrap front door, and
+  described an ordering `/steer:build` does not follow.** Step 1 sent an unmanaged
+  repo to `/steer:init` or `/steer:adopt`, asking the agent to make the
+  greenfield-vs-adopt call that `/steer:setup` owns and resolves deterministically;
+  it now routes to `/steer:setup`, as every other skill in that state does. Its
+  bootstrap carve-out also said all three front doors call in *before* stamping —
+  true for `init` and `adopt`, false for `build`, which stamps at step 2 and calls
+  `/steer:adr` at step 5. The carve-out is unchanged in effect; only its stated
+  reason was wrong.
+
+- **Fixed: the `spec/.version` header did not name `/steer:build`.** Since `build`
+  became a fourth stamping path, every PO-built repo carried a stamp file whose own
+  comment excluded the skill that wrote it. All five surfaces that author that
+  two-line form now name it, and so do the spine-framework reference's
+  stamp-writer list and the three helpers that read the stamp back
+  (`hooks/lib/spine.sh`, `scripts/workspace-snapshot.sh`, the workspace `ws.sh`).
+
+- **Fixed: `/steer:build` understated what `/steer:sync` does with an unstamped
+  repo.** It said sync "reads it as `unstamped`"; sync stops at step 1, because
+  `foreign` is not a sync case at all.
+
+- **Fixed: rule `24-worktrees` could send the agent to create first-time `mise`
+  trust.** Its carve-out handed the decision to the user when "the repo itself was
+  never trusted", which does not cover the case the trust hook guards hardest — a
+  primary checkout with no `mise` config at all, where creating trust is the one
+  thing the hook must never do. The carve-out now covers both, and names the remedy
+  the hook itself names for each — `mise trust && mise install` where the repo was
+  never trusted, `mise trust` alone where there is no config.
+
 - **Fixed: `/steer:build` never stamped the spine, so a PO-bootstrapped repo stayed
   `foreign` forever.** `/steer:build` is a bootstrap front door in its own right —
   it re-implements the `init` flow rather than calling it, because the PO never runs
@@ -14,7 +127,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `spec/.version`. The spine it produces is complete, so the repo *looked* managed
   and behaved as though it were not: `/steer:setup` kept routing it to
   `/steer:adopt`, the unmanaged-repo hook warned every session, the write-nudge hook
-  kept suggesting adoption, and `/steer:sync` read it as `unstamped`. It now stamps
+  kept suggesting adoption, and `/steer:sync` refused it outright — `foreign` is not
+  a sync case. It now stamps
   once the spine files are in place, in the same two-line form `/steer:init` and
   `/steer:adopt` write.
 
@@ -56,8 +170,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   so a repo under `~/work` with a worktree named `work` matched the `~/work` line
   before the worktree's own. Taking the first match therefore returned the
   ancestor's state — and an inherited `trusted` made the hook exit without
-  inheriting anything, silently restoring the bug it exists to fix. The deepest
-  match now wins. Both this and the retired-prompt-file drift check are pinned by
+  inheriting anything, silently restoring the bug it exists to fix. Matching is
+  now by equality, so an ancestor's path can never match. Both this and the
+  retired-prompt-file drift check are pinned by
   regression cases; the `mise` stub grew ancestor lines so the suite exercises the
   ordering at all.
 - **Fixed: `/steer:adr`'s bootstrap carve-out missed `/steer:build`.** It named
@@ -91,12 +206,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `SessionStart` and `CwdChanged` registrations. It now matches the abbreviated form
   as well. The hook suite passed over this because its `mise` stub printed the
   un-abbreviated path and its fixtures live outside `$HOME`; the stub now abbreviates
-  the way mise does, and a regression case pins the home-relative path. The match
-  is structural — exact directory, or a `~`-prefixed one whose remainder is a
-  suffix of the directory asked about — rather than reconstructed from `$HOME`,
-  which is unreliable in both directions: mise abbreviates even with `$HOME` unset
-  (falling back to the OS home), and a `$HOME` with a trailing slash yields
-  `~Documents/…` with no separator. Either would silently revert to the bug.
+  the way mise does, and a regression case pins the home-relative path.
 - **Documented: the cross-tool `.agents/skills/` tree's shared-bundle links are not
   fetchable, and some command lines in it cannot run.** The rewrite that turns shared
   references into URLs points at GitHub's HTML `blob/` view rather than
@@ -131,7 +241,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   runs with the narrower background-subagent tool set, and that set re-admits
   `Bash`/`Edit`/`NotebookEdit`/`EnterWorktree` — the tools these two declare
   disallowed — so backgrounding would have quietly widened a pair of read-only
-  renderers. Waiting also keeps the pre-publish heads-up ahead of the publish.
+  renderers. Waiting does *not* put the heads-up ahead of the publish — the
+  heads-up is written inside the fork and only a fork's final result reaches the
+  main session, so the Artifact permission prompt is the gate that holds.
   The key needs **Claude Code v2.1.218+**; an older CLI ignores it and
   backgrounds the fork. Both skills' prose now states the read-only boundary as
   one they keep rather than one the runtime guarantees — upstream documents
@@ -182,7 +294,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   (`on-session-end.sh`, matcher `logout|prompt_input_exit|other`) stops a **linked
   worktree's** containers and frees its ports, **keeping volumes** — a session
   ending is not the worktree ending, and `clear`/`resume` are excluded outright
-  because they continue the same working session. `WorktreeRemove`
+  because they continue the same working session. This half is **best-effort**:
+  `SessionEnd` shares a 1.5s budget a plugin cannot raise, so the teardown is
+  often cancelled mid-run — see the entry below. `WorktreeRemove`
   (`on-worktree-remove.sh`) runs the full `docker:clean` (down + volumes +
   orphans), because the checkout is being deleted and its per-worktree volumes
   become unreachable regardless; it acts on the payload's `worktree_path`, not on

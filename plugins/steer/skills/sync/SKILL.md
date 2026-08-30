@@ -237,7 +237,8 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
 
    ```
-   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.
+   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:build,
+   # /steer:sync. Do not edit by hand.
    <TARGET>
    ```
 

@@ -10,6 +10,11 @@ the plugin itself, decisions are captured in `CHANGELOG.md` and PRs.
 when undoing the choice later would mean changing work built on top of it — stack,
 database, auth, deployment, tenancy model — or when asked to record a decision.
 
+The skill needs the spine to exist first: called directly on a repo with no
+`spec/.version`, it stops and routes to [`/steer:setup`](../reference/skills.md)
+rather than writing an ADR with nowhere to put it. A bootstrap that invokes it
+mid-run is exempt — the spine is being installed around it.
+
 A **first-time pattern is not an ADR**. Used in one place it is a `contract.md`
 line; it earns an ADR when a third use makes it the house style. In a young
 codebase almost every pattern is new, so treating novelty as the trigger turns

@@ -124,7 +124,8 @@ read-only over the canonical sources even in a skill that otherwise writes.
    that actually holds. Write the heads-up anyway; it is what tells the reader what
    was sent once they see the page.
 6. **Publish, then report** the URL, that it is private until shared, and that
-   re-running in this same session redeploys the **same** page.
+   re-running in this same session redeploys the **same** page — hedged in a
+   forked skill, per the note below.
 
 ### Styling — the product's theme, or the house default
 
@@ -234,7 +235,11 @@ zero-data-retention org, or with no claude.ai login. When it is:
 ## Updating a previously shared page
 
 Within the **same session**, re-running a skill redeploys to the same Artifact URL
-(the deterministic temp filename is what makes this work). To update a page from a
+(the deterministic temp filename is what makes this work). **In a forked skill**
+(`/steer:explain`, `/steer:status`) do not promise this to the user: whether a
+fork's publish is recognised as a redeploy of an earlier one is not something
+steer can verify, so describe it as what the stable filename is *for*, not as a
+guarantee. To update a page from a
 **different** session, the user must hand you its claude.ai URL —
 without it, a fresh session mints a new page. steer does not store that URL (see
 [Derived view](#a-derived-view-never-a-source-of-truth)); treat each run as a fresh

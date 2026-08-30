@@ -282,8 +282,11 @@ prevent: the new gate isn't in the file, so it never gets noticed. To guarantee
 the comparison actually happens, **run a diff command and act on its output**
 instead of eyeballing — surface the headings/checklist items the bundled template
 has that the existing file lacks. The bundled helper
-`scripts/template-reconcile.sh` does exactly this (read-only; prints the
-candidate anchors to stdout). Pass the existing file and the current bundled
+`scripts/template-reconcile.sh` does this for **`##`/`###` headings and
+checklist items only** (read-only; prints the candidate anchors to stdout) —
+its extractor does not emit table rows, so a bundled template that gained a
+**table row** shows an empty diff. Diff table rows by eye; an empty helper
+diff is not evidence that a table is current. Pass the existing file and the current bundled
 template (substitute the real paths):
 
 ```sh
@@ -297,7 +300,8 @@ a checklist item they reworded, shows up as "missing" when it isn't. It is a
 and confront the gaps, but you still apply the additive rules above with judgment.
 Splice in genuinely-new `##` sections and items; **never re-add a placeholder the
 dev already filled in**, and treat a reworded equivalent as already present. Empty
-output means the file is already current.
+output means the file is current as to headings and checklist items — not as to
+table rows, which the helper never emits (see above).
 
 This makes template additions **self-healing**: a repo touched under an older
 plugin version picks up newly added sections on its next run instead of silently
@@ -325,8 +329,8 @@ migration is still pending, plus an action). To know which entries a repo
 predates, the spine carries a stamp:
 
 - **`/spec/.version`** records the plugin version the spine was last materialized
-  or synced at. `/steer:init` and `/steer:adopt` write it at hand-off; `/steer:sync`
-  reads it, applies pending migrations, and re-stamps. Resolve the current plugin
+  or synced at. `/steer:init`, `/steer:adopt` and `/steer:build` write it at
+  hand-off; `/steer:sync` reads it, applies pending migrations, and re-stamps. Resolve the current plugin
   version from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from
   memory.
 - The stamp is an **optimization, not the safety mechanism**: a consumer skips

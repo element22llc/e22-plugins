@@ -316,7 +316,9 @@ the unmarked always-on core.
     `check_docs_impact.py` does not flag changes under `hooks/lib/`, so the four
     `lib/*.sh` sections above (`json.sh`, `repo-root.sh`, `spine.sh`, `scope.sh`) are
     maintained by hand — a behavioural change to any of them will not be caught by a
-    gate. Update them in the same PR as the change; see
+    gate. The same applies to the libs this page does not section: `classify.sh`,
+    `version-policy.sh`, `graduation.sh`, `lifecycle.sh`, `report-fault.sh` and
+    `worktree-lifecycle.sh`. Update them in the same PR as the change; see
     [Documentation](../contributing/documentation.md).
 
 ## Surfaces without hooks

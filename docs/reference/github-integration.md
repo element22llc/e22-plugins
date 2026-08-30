@@ -2,9 +2,11 @@
 
 steer ships a few kinds of GitHub Actions integration. Two are installed by
 default — `claude.yml` (keeps CI Claude consistent with local sessions) and
-Dependabot (keeps dependencies patched, and manages the resulting PRs). Two more
-are opt-in: `steer-loop.yml`, the scheduled autonomous loop `/steer:loop`
-scaffolds on demand, and a `gh aw` recipe for unattended automation.
+Dependabot (keeps dependencies patched, and manages the resulting PRs). Three
+more are opt-in: `steer-loop.yml`, the scheduled autonomous loop `/steer:loop`
+scaffolds on demand; a `gh aw` recipe for unattended automation; and
+`copilot-setup-steps.yml`, which preinstalls the toolchain for GitHub's cloud
+coding agent (see [Copilot support](../concepts/copilot-support.md)).
 
 ## `claude.yml` — the `@claude` mention workflow (default)
 
@@ -153,7 +155,9 @@ steer ships **one example** workflow,
 `plugins/steer/templates/github/agentic/triage.md` (unattended issue triage that
 runs when an issue is opened/reopened and classifies it against the steer label
 taxonomy and Issue Types). It is **not** installed by `/steer:init` or
-`/steer:adopt` and is **not** in `MANIFEST.md` — you opt in deliberately.
+`/steer:adopt` and is deliberately absent from `MANIFEST.md`'s install map
+(the manifest names the directory only to say it does not ship) — you opt in
+deliberately.
 
 That label taxonomy is bootstrapped by the local `/steer:issues` lifecycle, which
 runs `gh label create --force` inline for repo-level label setup — the one

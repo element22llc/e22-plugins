@@ -1,7 +1,7 @@
 ---
 name: steer-issues
 description: GitHub Issues lifecycle for the /spec spine — capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, bounded reconcile, the publish-* family (audit/drift/adoption/findings), and bootstrap-labels. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer.
-argument-hint: '[capture | triage | brainstorm | materialize | decompose | epic | status | board | reconcile [--all] | publish-audit | publish-drift | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]'
+argument-hint: '[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new "<title>"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]'
 ---
 
 <!-- Generated from the steer plugin's skills/issues/SKILL.md — do not edit by hand.

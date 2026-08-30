@@ -225,7 +225,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    later `/steer:sync` knows which structural migrations this repo predates:
 
    ```
-   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.
+   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:build,
+   # /steer:sync. Do not edit by hand.
    <plugin version>
    ```
 

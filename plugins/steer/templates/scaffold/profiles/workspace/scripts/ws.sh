@@ -124,7 +124,7 @@ ws_local_count() {
 
 # ws_spine_version <path-to-spec/.version> — the version, or `-` when absent.
 # The stamp is TWO lines — a managed-by comment, then the version (/steer:init,
-# /steer:adopt and /steer:sync all write it that way) — so a bare `cat` prints
+# /steer:adopt, /steer:build and /steer:sync all write it that way) — so a bare `cat` prints
 # the comment where a one-line field is expected. Extract the version itself,
 # exactly as /steer:sync and scripts/workspace-snapshot.sh read this same file.
 ws_spine_version() {

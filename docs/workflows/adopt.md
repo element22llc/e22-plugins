@@ -19,21 +19,23 @@ flowchart TD
     STAMP --> PR[Propose a PR]
 ```
 
-1. Reads the existing code to capture **what is** — not what someone decided.
-2. Materializes the `/spec` spine from the bundled templates — including the
+1. Applies any pending structural migrations from the ledger **first**, before
+   deciding anything else.
+2. Reads the existing code to capture **what is** — not what someone decided.
+3. Materializes the `/spec` spine from the bundled templates — including the
    `design/` home (`README.md`, `source.md`, the living
    `architecture-diagram.md`) and `sources/README.md`.
-3. Reverse-engineers the root **`DESIGN.md`** from the app's real visual
+4. Reverse-engineers the root **`DESIGN.md`** from the app's real visual
    identity (tokens, type scale, component patterns) — as-built, not aspirational.
-4. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** — a Keep / Refactor
+5. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** — a Keep / Refactor
    / Rewrite / Reject verdict per area, with the reasoning, so the team inherits
    a ranked remediation plan rather than a verdict-free inventory.
-5. Installs the repo scaffold (toolchain, CI, PR template).
-6. If the tracker is GitHub Issues, bootstraps the label taxonomy
+6. Installs the repo scaffold (toolchain, CI, PR template).
+7. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:issues bootstrap-labels`) and verifies the org-level
    Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) —
    the same tracker setup `/steer:init` performs.
-7. Stamps `/spec/.version` with the plugin version.
+8. Stamps `/spec/.version` with the plugin version.
 
 ## Guardrails
 
