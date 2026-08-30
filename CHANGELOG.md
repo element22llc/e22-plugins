@@ -14,10 +14,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   edit actually broke instead of inferring it from surrounding text, and gets
   jump-to-definition / find-references. This is the supported successor to a
   code-intelligence MCP server: declared in the manifest, nothing for the plugin
-  to pin or spawn. A server activates **only when its binary is on `PATH`** — a
-  repo without them simply gets none, and both carry `restartOnCrash: false` so
-  a missing one fails once and stays quiet rather than thrashing. steer does not
-  install them and does not gate on them.
+  to pin or spawn. A server needs its binary on `PATH`: Claude Code skips one it
+  cannot launch and reports `Executable not found in $PATH` in the `/plugin`
+  **Errors** tab — visible, not silent. `restartOnCrash: false` governs a
+  different case, leaving a server that *crashes* stopped instead of restarting
+  it. That key needs **Claude Code v2.1.205+**; an older CLI skips a server that
+  declares it. steer does not install the binaries and does not gate on them.
 - **Added: `$schema` on both manifests** (`.claude-plugin/marketplace.json`,
   `plugins/steer/.claude-plugin/plugin.json`), pointing at the published
   SchemaStore definitions. One line each: editor validation now, and a future
@@ -115,9 +117,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:sync`'s `agent-surface-current` repair named `prompts/` and omitted
   `.agents/skills/`, so the one capability that refreshes that surface described
   the wrong files; it now matches what `scan-capabilities.sh` actually compares
-  (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`) and
-  points the leftover-`.github/prompts/` repair at the ledger migration that owns
-  it.
+  (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`). The
+  generated Copilot standards surface also still told VS Code users the skills
+  ship as prompt files; it now names the `.agents/skills/` tree.
 
 ### 5.3.0
 

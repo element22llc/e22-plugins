@@ -109,10 +109,8 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
      and the **generated agent surface** (`agent-surface-current` —
      `.github/copilot-instructions.md`, `.agents/skills/`, `.github/agents/`,
      `.github/instructions/`; repo-specific Copilot guidance lives in a *separate*
-     `*.instructions.md` the consumer owns, which the re-copy never touches). A
-     leftover `.github/prompts/` also counts as drift here; its repair is the
-     ledger migration in step 4, not a re-copy. This re-copy is the whole
-     refresh path for that surface after a
+     `*.instructions.md` the consumer owns, which the re-copy never touches). This
+     re-copy is the whole refresh path for that surface after a
      plugin update — those tools read the installed tree rather than the plugin,
      so without it the surface stays frozen at the bootstrapping version.
      For everything else, **additively splice** only the named wiring marker (the
