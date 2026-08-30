@@ -292,8 +292,8 @@ working demo*, are left alone — that record now carries the acceptance that
 `Status: validated` used to imply. In a polyrepo `spec/features/**` belongs to the
 **workspace**, so a member applies none of it locally.
 
-The two newest entries are both **surface swaps that reconciliation cannot
-complete on its own**. The first retires the Copilot **prompt-file** surface in
+The two newest entries are both changes **reconciliation cannot complete on its
+own**. The first retires the Copilot **prompt-file** surface in
 favour of the cross-tool `.agents/skills/` tree: it copies
 `templates/agents/skills/` in verbatim (that tree is `Verbatim: yes` under
 `agent-surface-current`, so it is copied, never reconciled — the migration exists

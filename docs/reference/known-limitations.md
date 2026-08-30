@@ -319,25 +319,35 @@ CLI and Codex read the same procedures Claude Code does. Three things are
 rewritten on the way out, because they do not travel; one of them is **known to be
 incomplete**, and it is recorded here rather than left to be rediscovered.
 
-References to the **shared** bundle — the deep reference prose under
-`templates/reference/`, the spec templates, and the two helper scripts — are
-shared by many skills, so they are rewritten to URLs on this public repo instead
-of being vendored into every consumer repo. Two defects in that rewrite are open:
+References to **shared** files — anything a skill points at outside its own
+directory — are rewritten to URLs on this public repo instead of being vendored
+into every consumer repo. Two defects in that rewrite are open:
 
 - The URLs point at GitHub's **HTML `blob/` view**, so fetching one returns a
   rendered web page rather than the file's bytes. `raw.githubusercontent.com` is
-  the form that returns content.
+  the form that returns content — **except for a directory URL**, which has no
+  raw equivalent at all.
 - The rewrite is applied **unconditionally, including inside runnable command
-  lines**, so the generated tree contains `sh "https://…"` and
-  `python3 "https://…"` invocations that cannot execute on any surface.
+  lines**, so the generated tree contains `sh "https://…"` and `python3
+  "https://…"` invocations that cannot execute on any surface.
 
-**What this means in practice:** the *prose* of every skill is intact and correct
-on every tool — that is the surface's whole purpose and it works. What does not
-work is following one of those links to a shared file, or pasting one of the
-affected command lines. On Claude Code nothing is affected: it reads the skills
-from the installed plugin, where the paths resolve normally.
+**What this means in practice.** For most skills the body is self-contained and
+only a link or a helper-script invocation is affected. But three skills are
+**procedurally dependent** on a fetch that fails, so on a non-Claude surface they
+cannot do their job at all:
+
+- `steer-standards` — its entire body is "read every rule file from
+  `…/blob/main/plugins/steer/rules/`". That is a **directory** URL, so the
+  `raw.` remedy does not rescue it. This is the skill that loads the standards on
+  exactly the surfaces where no hook injects them.
+- `steer-help` — instructed to read `rules/00-router.md` and build the menu from
+  its rows, explicitly *not* to hardcode the list.
+- `steer-protect` — reads `policy/branch-protection.yml` as **data**.
+
+On Claude Code none of this applies: it reads the skills from the installed
+plugin, where every path resolves normally.
 
 Fixing the second one is a design question — vendor the few helper scripts, fetch
 them to a temp file first, or drop those command blocks from the portable copy —
 so it is deliberately unpatched rather than guessed at. `scripts/gen_agent_skills.py`
-carries the same note at the point the rewrite happens.
+carries the same note in its module docstring.

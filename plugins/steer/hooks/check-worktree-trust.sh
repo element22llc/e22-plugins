@@ -80,8 +80,9 @@
 #   `gitdir:` pointer by steer_primary_worktree, no subprocess — so a plain checkout,
 #   the overwhelmingly common case, exits before `mise` is ever invoked and pays
 #   nothing. `mise trust --show` is the authority on both trust states (it prints one
-#   `<dir>: trusted|untrusted` line per config directory, with a leading $HOME
-#   abbreviated to `~`); this hook never inspects the trust store itself. Trust is applied with `mise trust -C <worktree>`, which
+#   `<dir>: trusted|untrusted` line per config directory, abbreviating the home
+#   directory to `~`); this hook never inspects the trust store itself. Trust is
+#   applied with `mise trust -C <worktree>`, which
 #   marks the DIRECTORY — covering `mise.toml` and any `mise.local.toml` carried in
 #   by `.worktreeinclude` — and is exactly what a human typing `mise trust` there
 #   would do.
@@ -117,31 +118,37 @@ command -v mise >/dev/null 2>&1 || exit 0
 # `mise trust --show` lists the directory of every config on the path, ancestors
 # included, so the line must be matched on the EXACT directory.
 #
-# It ABBREVIATES a leading $HOME to `~` in those lines, while the dir we are given
-# is always absolute (steer_repo_root ends in `pwd -P`). Matching only the absolute
-# form therefore never fires for a repo under $HOME — which is where worktrees
-# normally live (`<repo>/.claude/worktrees/*`) — so the caller read '', treated it
-# as "no mise config here", and exited silently: trust was never inherited and
-# neither fallback notice was ever printed. Match both forms.
+# It ABBREVIATES the home directory to `~`, while the dir we are given is absolute.
+# Matching only the absolute form never fires for a repo under home — which is
+# where worktrees normally live — so the caller read '', treated it as "no mise
+# config here", and exited silently: trust was never inherited.
+#
+# Do NOT derive the abbreviated form from $HOME. mise resolves the home dir from
+# the OS, not the environment, so that is wrong twice: it still abbreviates with
+# $HOME unset, and a $HOME carrying a trailing slash yields `~Documents/…` with no
+# separator. Match structurally instead — exact directory, or a `~`-prefixed one
+# whose remainder is a suffix of the directory we asked about. The remainder must
+# be non-empty, or the bare `~` line (the home dir itself, always an ancestor of
+# such a repo) would match every path.
 steer_trust_state() {
-	_abbrev="$1"
-	if [ -n "${HOME:-}" ]; then
-		case "$1" in
-		"${HOME}") _abbrev="~" ;;
-		"${HOME}"/*) _abbrev="~${1#"${HOME}"}" ;;
-		esac
-	fi
 	mise trust --show -C "$1" 2>/dev/null | while IFS= read -r _line; do
-		case "${_line}" in
-		"$1: trusted" | "${_abbrev}: trusted")
-			printf 'trusted'
-			break
+		_st="${_line##*: }"
+		_dir="${_line%": ${_st}"}"
+		[ "${_st}" = trusted ] || [ "${_st}" = untrusted ] || continue
+		case "${_dir}" in
+		"$1") ;;
+		"~"*)
+			_tail="${_dir#\~}"
+			[ -n "${_tail}" ] || continue
+			case "$1" in
+			*"${_tail}") ;;
+			*) continue ;;
+			esac
 			;;
-		"$1: untrusted" | "${_abbrev}: untrusted")
-			printf 'untrusted'
-			break
-			;;
+		*) continue ;;
 		esac
+		printf '%s' "${_st}"
+		break
 	done
 }
 

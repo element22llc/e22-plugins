@@ -168,7 +168,7 @@ Code (`gen_agent_skills.py`):
 | In the authored skill | In the portable copy | Why |
 |---|---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/<self>/modes/x.md` | `modes/x.md` | The file travels with the skill, which is exactly the spec's colocation convention. |
-| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. |
+| `${CLAUDE_PLUGIN_ROOT}/templates/reference/…` | a `blob/main` URL on this repo | Shared by many skills; vendoring several hundred KB — `MIGRATIONS.md` alone is the largest single file — into every consumer repo is not worth it, and the repo is public. **These URLs are not currently fetchable** — see [Known limitations](#known-limitations). |
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Two differences from Claude Code remain on **both** Copilot surfaces:
@@ -317,6 +317,14 @@ Code the version-pin and trunk-push policies live only as text in the standards.
 
 ## Known limitations
 
+- **The rewritten shared-file URLs are not fetchable.** The rewrite in the table
+  above points at GitHub's HTML `blob/` view rather than `raw.githubusercontent.com`,
+  and it is applied inside runnable command lines too, so those ship as
+  `sh "https://…"`. Most skills lose only a link, but `steer-standards`,
+  `steer-help` and `steer-protect` are *procedurally* dependent on the fetch and
+  cannot do their job here — and `steer-standards` reads a **directory** URL, which
+  has no raw equivalent. Full detail, and what is unaffected, in
+  [Known limitations → the `.agents/skills/` tree](../reference/known-limitations.md).
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot)
   — the bodies themselves port in full, but a skill that Claude Code restricts via
   `allowed-tools`/`disallowed-tools` carries that restriction here as an

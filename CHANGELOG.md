@@ -7,17 +7,40 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:adr` refused to run for the two skills that call it during
+  bootstrap.** Step 1 stops and routes to `/steer:init` / `/steer:adopt` when
+  `spec/.version` is absent — but both of those write that stamp *last* (init at
+  step 7, adopt in Phase 12) while invoking `/steer:adr` well before it (init step
+  4, adopt Phases 6 and 8). The gate therefore aborted the very callers it exists
+  to route to, and sent the agent back into the skill already running; the same
+  file's step 5 had meanwhile blessed the init step-4 call path outright, so `adr`
+  both required and forbade it. The stamp test now applies to a **direct**
+  invocation, and a bootstrap calling in proceeds.
+- **Fixed: a `.github/prompts/` the migration deliberately preserves no longer
+  reports permanent drift.** `scan-capabilities.sh` flagged the *directory*, while
+  the ledger entry retiring that surface tells the applier to delete only
+  `steer-*.prompt.md` and "leave the directory standing around" a prompt file the
+  team wrote themselves. A repo that followed the migration exactly was then wedged
+  at `agent-surface-current: mis-wired`, and the capability's repair — a verbatim
+  re-copy — can delete nothing, so nothing could clear it. The check now keys on
+  steer's own retired artifacts, matching both the scanner's own comment and the
+  ledger.
+
 - **Fixed: worktree `mise` trust inheritance never fired for a repo under `$HOME`.**
-  `mise trust --show` abbreviates a leading `$HOME` to `~` in the
+  `mise trust --show` abbreviates the home directory to `~` in the
   `<dir>: trusted|untrusted` lines it prints, but `check-worktree-trust.sh` matched
   them against the absolute path it resolves with `pwd -P`. Neither arm matched, the
   helper returned empty, and the caller read that as "no mise config here" and exited
-  silently — so for every worktree in the normal `<repo>/.claude/worktrees/*` layout
-  the hook inherited **nothing** and printed **neither** fallback notice, on both its
+  silently — so in a repo under `$HOME` the hook inherited **nothing**, on both its
   `SessionStart` and `CwdChanged` registrations. It now matches the abbreviated form
   as well. The hook suite passed over this because its `mise` stub printed the
   un-abbreviated path and its fixtures live outside `$HOME`; the stub now abbreviates
-  the way mise does, and a regression case pins the home-relative path.
+  the way mise does, and a regression case pins the home-relative path. The match
+  is structural — exact directory, or a `~`-prefixed one whose remainder is a
+  suffix of the directory asked about — rather than derived from `$HOME`, because
+  mise resolves the home directory from the OS: it abbreviates even with `$HOME`
+  unset, and a `$HOME` with a trailing slash yields `~Documents/…` with no
+  separator. Both of those would otherwise have silently reverted to the bug.
 - **Documented: the cross-tool `.agents/skills/` tree's shared-bundle links are not
   fetchable, and some command lines in it cannot run.** The rewrite that turns shared
   references into URLs points at GitHub's HTML `blob/` view rather than

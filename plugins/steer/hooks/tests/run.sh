@@ -2530,10 +2530,12 @@ mkdir -p "${WT_STUBS}"
 # holds a mise.toml is untrusted, and one with no config prints nothing (mise's
 # real behaviour: --show lists config directories only). `trust -q -C <dir>`
 # just logs, so a case can assert trust was or was not applied.
-# It also ABBREVIATES a leading $HOME to `~` on the way out, exactly as real mise
-# does — printing the absolute path instead is what let a hook that matched only
-# the absolute form pass this suite while being inert on every real repo under
-# $HOME. Case (i) is the regression that pins it.
+# It also ABBREVIATES the home dir to `~` on the way out, as real mise does —
+# printing the absolute path instead is what let a hook that matched only the
+# absolute form pass this suite while being inert on every real repo under home.
+# The stub keys that on $HOME because the test controls it; real mise resolves the
+# home dir from the OS, which is why the hook matches structurally rather than
+# reconstructing the abbreviation from $HOME. Case (i) is the regression that pins it.
 cat >"${WT_STUBS}/mise" <<'STUB'
 #!/bin/sh
 printf 'mise %s\n' "$*" >>"${MISE_STUB_LOG:?}"
