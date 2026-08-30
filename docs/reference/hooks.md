@@ -119,9 +119,9 @@ Three registrations that are not gates and not context injection: they run
 because the harness has told steer that something in the session's *environment*
 changed. `SessionEnd` has its **output and exit code discarded** by Claude Code,
 so it can report nothing and block nothing — everything it does is a side effect
-or nothing at all. `WorktreeRemove` is the opposite case: it runs *before* the
-removal and a nonzero exit would **veto** it, so steer's hook always exits `0` by
-choice rather than by constraint.
+or nothing at all. `WorktreeRemove`'s output is discarded too, but its **exit
+code is not**: it runs *before* the removal and a nonzero exit would **veto** it,
+so steer's hook always exits `0` by choice rather than by constraint.
 
 | Hook | Event | Role |
 | --- | --- | --- |

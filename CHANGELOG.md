@@ -116,8 +116,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `.agents/skills/`, so the one capability that refreshes that surface described
   the wrong files; it now matches what `scan-capabilities.sh` actually compares
   (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`) and
-  states that a leftover `.github/prompts/` is repaired by **deleting** it — which
-  is what the scanner already flags as drift.
+  points the leftover-`.github/prompts/` repair at the ledger migration that owns
+  it.
 
 ### 5.3.0
 

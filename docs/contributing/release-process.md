@@ -14,12 +14,13 @@ flowchart LR
     REPEAT -->|cut release| RELEASE["Release PR:<br/>rename [Unreleased] → X.Y.Z<br/>bump plugin.json version"]
 ```
 
-1. **Every behavior change** under `plugins/steer/` (skills, rules, hooks,
-   templates, scripts, policy) — or to any of the **three version-bearing
-   manifests**, including the root `.github/plugin/marketplace.json`, which sits
-   outside `plugins/steer/` so no prefix reaches it — needs a `CHANGELOG.md` entry
-   under `## steer` → `### [Unreleased]`. `check_changelog.py --base` enforces this
-   on PRs; `tests/` are exempt.
+1. **Every change** under `plugins/steer/` — or to the root
+   `.github/plugin/marketplace.json`, the one version-bearing manifest that sits
+   outside it — needs a `CHANGELOG.md` entry under `## steer` →
+   `### [Unreleased]`. `check_changelog.py --base` enforces this on PRs, and it is
+   **deny-by-default**: everything the plugin ships counts, and the exemptions are
+   enumerated in the script with a reason each (`tests/` anywhere, `evals/`, the
+   plugin's maintainer `README.md`, and `plugins/steer/.claude/`).
 2. **Implementation PRs do not bump** `plugins/steer/.claude-plugin/plugin.json`.
    The `version` bump happens **once**, in the release PR that renames
    `[Unreleased]` to the new `X.Y.Z` — so a stream of PRs cuts one coherent

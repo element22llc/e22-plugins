@@ -13,8 +13,9 @@ Two checks, so the same script serves local runs and the CI PR gate:
 
 2. **Behaviour-change gate** (only with ``--base <ref>``): if any plugin behaviour
    file changed versus the base ref, ``CHANGELOG.md`` must have changed too —
-   so a stream of PRs accumulates ``[Unreleased]`` entries. Test-only changes
-   under ``tests/`` are exempt.
+   so a stream of PRs accumulates ``[Unreleased]`` entries. Behaviour is
+   deny-by-default: everything under ``plugins/steer/`` counts, minus the
+   exemptions enumerated below, each with the reason it ships nothing.
 
 Usage::
 
