@@ -48,8 +48,25 @@
 #   A plain checkout — the overwhelmingly common case — never reaches `mise`.
 #
 # MECHANISM
-#   stdout becomes session `additionalContext` (same path as the other session
-#   checks). Runs only in a LINKED worktree — resolved from the `.git` FILE's
+#   stdout becomes session `additionalContext` — but ONLY on the SessionStart
+#   path, via session-checks.sh. `SessionStart` is one of the four events whose
+#   plain-text stdout the harness adds as context; `CwdChanged` is not, so on the
+#   second registration stdout goes to the debug log and is not shown. The
+#   `mise trust -C` SIDE EFFECT — the reason that registration exists — works on
+#   both paths; what is lost mid-session is the two notices below that ask the
+#   HUMAN to act (primary checkout has no mise config / is untrusted too). An
+#   `exit 2` would surface stderr to the user on `CwdChanged`; routing those two
+#   paths that way is a deliberate open question, not an oversight — see the
+#   pre-release audit residue. Do not describe this hook's mid-session notices as
+#   reaching the user until that lands.
+#   (Upstream, verified verbatim:
+#   https://docs.claude.com/en/docs/claude-code/hooks.md — "For most events,
+#   Claude Code writes stdout to the debug log and doesn't show it in the
+#   transcript. The exceptions are `UserPromptSubmit`, `UserPromptExpansion`,
+#   `SessionStart`, and `PostModelSwitch`…", and the exit-code-2 row
+#   "CwdChanged | No | Shows stderr to user only".)
+#
+#   Runs only in a LINKED worktree — resolved from the `.git` FILE's
 #   `gitdir:` pointer by steer_primary_worktree, no subprocess — so a plain checkout,
 #   the overwhelmingly common case, exits before `mise` is ever invoked and pays
 #   nothing. `mise trust --show` is the authority on both trust states (it prints one

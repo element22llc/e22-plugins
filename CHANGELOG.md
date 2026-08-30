@@ -86,8 +86,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   boundary** instead of carrying the teardown command as an instruction — what
   stays the agent's job is stopping the dev servers and watchers it started, plus
   running `mise run docker:clean` by hand for a worktree removed outside a
-  session, where no hook fires. Net effect on the always-on payload: −208 bytes on
-  disk, −60 tokens at the `code-max` ceiling.
+  session, or on a surface where no hook fires. Both rules scope the claim to
+  Claude Code and describe the `SessionEnd` half as best-effort — see the hook
+  budget entry below. Net effect on the always-on payload is a small reduction;
+  `check_context_budget.py` is where the number lives.
 
 - **Changed: the GitHub MCP server's token is now plugin user config, not a shell
   export.** `.mcp.json` authenticated with `Bearer ${GITHUB_PAT}`, resolved from
@@ -99,7 +101,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   stores it in the **OS keychain**. The field is deliberately **not** `required`,
   so the degraded path is unchanged — leave it blank and `github` reports
   disconnected, and `/steer:tracker-sync` falls back to the `gh` CLI and then to
-  its manual floor, exactly as before. Set or rotate it later with
+  its manual floor, exactly as before. **Breaking for anyone who already had it
+  working:** the shell export stops being read on update, so `github` goes
+  disconnected until the token is supplied to the plugin once per machine. A
+  migration ledger entry rewrites the stale "export it from your shell rc"
+  instruction in an already-materialized repo's `README.md`, but no file edit can
+  restore access — that half is the human's. Set or rotate it later with
   `claude plugin install steer --config github_pat=…`. The VS Code mirror
   (`scaffold/vscode/mcp.json`) is **byte-identical** — Copilot has no notion of
   Claude's plugin user config, so `gen_copilot_mcp.py` maps the new placeholder
@@ -119,7 +126,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `gen_agent_skills.py` rewrites the three things that don't travel: intra-skill
   asset paths become relative (the files travel alongside, per the spec's
   colocation convention), shared-bundle paths become URLs into this public repo
-  (vendoring ~262 KB of reference prose into every consumer repo isn't worth it),
+  (vendoring the whole shared reference bundle into every consumer repo isn't
+  worth it),
   and `/steer:<skill>` becomes `/steer-<skill>` — the same names the prompt files
   exposed, so nothing a teammate types changes. Claude tool grants
   (`allowed-tools` / `disallowed-tools`) are **dropped** rather than mistranslated;
@@ -149,6 +157,51 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   (`copilot-instructions.md`, `.agents/skills/`, `agents/`, `instructions/`). The
   generated Copilot standards surface also still told VS Code users the skills
   ship as prompt files; it now names the `.agents/skills/` tree.
+
+- **Fixed: the `SessionEnd` teardown is documented as best-effort, because a
+  plugin cannot raise that event's 1.5s budget.** Six surfaces described the new
+  worktree teardown as something that happens. `SessionEnd` hooks share a
+  1.5-second budget, and — verbatim from the upstream hooks reference —
+  "Timeouts set on plugin-provided hooks don't raise the budget", so the
+  `"timeout": 60` steer declares on that registration is **inert** and a
+  `mise run … docker:down` will often be cancelled mid-run. `WorktreeRemove` is
+  unaffected and remains the dependable half. `rules/24-worktrees`,
+  `rules/99-end-of-session`, both hook scripts, the shared lifecycle helper and
+  the two docs reference pages now say so, and name
+  `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` as the user-side lever.
+- **Fixed: "`SessionEnd` output and exit code are discarded" was wrong on five
+  surfaces.** Only the *JSON output fields* are discarded; an `exit 2` shows
+  stderr to the user ("SessionEnd | No | Shows stderr to user only"). The
+  "cannot block" half was always right, and `WorktreeRemove` genuinely has no
+  user-facing channel ("Failures are logged in debug mode only") — so the two
+  events are no longer described as if they were the same. steer still exits `0`
+  from both; that is now stated as a choice rather than a constraint.
+- **Fixed: rules `24-worktrees` and `99-end-of-session` promised a safety net
+  that does not exist off Claude Code.** Both asserted the teardown hooks
+  unscoped, and `gen_copilot_instructions.py` ships rule prose verbatim — so the
+  Copilot standards surface claimed hooks that `copilot-hooks.json` does not
+  register. Both now scope the claim to Claude Code, the same way rule 24 already
+  qualified its trust-inheritance sentence.
+- **Fixed: rule `24-worktrees` still said trust inheritance covered only a
+  session *started* in a worktree.** The `CwdChanged` registration added this
+  cycle covers a worktree entered mid-session too.
+- **Fixed: `ws.sh` printed the spec-spine stamp's comment line instead of its
+  version** — the same two-line-stamp bug fixed in `workspace-snapshot.sh` this
+  cycle, in the one remaining reader that still used a bare `cat`. `mise run
+  ws:status` showed `spine=# Spec-spine version — managed by …` for every member.
+  Extraction now goes through one `ws_spine_version` helper.
+- **Documented: the `CwdChanged` trust notices do not reach the user.**
+  `check-worktree-trust.sh` claimed its stdout becomes `additionalContext`; that
+  holds on the `SessionStart` path only. `CwdChanged` is not one of the four
+  events whose stdout the harness surfaces, so mid-session the two
+  human-facing notices land in the debug log. The `mise trust` side effect — the
+  reason the registration exists — is unaffected. Recorded in the script and in
+  `known-limitations`; routing them to stderr is a separate, open change.
+- **Added: a migration-ledger entry for the `GITHUB_PAT` → `github_pat` break.**
+  An already-bootstrapped repo's `README.md` still instructs the reader to export
+  the token from a shell rc, which stops working on update. The entry rewrites
+  that section and tells the human the out-of-repo half no file edit can do:
+  supply the token to the plugin once per machine.
 
 ### 5.3.0
 

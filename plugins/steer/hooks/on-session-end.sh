@@ -6,8 +6,9 @@
 #   started. A rule can only ask, it costs always-on bytes every session, and the
 #   moment it matters is the moment the session is over. SessionEnd is that
 #   moment, and it is a real event — so the port-freeing half of that checklist
-#   item is now enforced instead of requested (the volume-destroying half belongs
-#   to WorktreeRemove; see hooks/lib/worktree-lifecycle.sh for why they differ).
+#   item is now attempted automatically instead of requested (best-effort: see
+#   the 1.5s budget below). The volume-destroying half belongs to WorktreeRemove;
+#   see hooks/lib/worktree-lifecycle.sh for why they differ.
 #
 # WHAT IT WILL NOT DO
 #   * Never touches a plain checkout. A dev's main stack is theirs; only a LINKED
@@ -23,9 +24,31 @@
 #   `STEER_NO_WORKTREE_TEARDOWN=1` disables it entirely.
 #
 # MECHANISM
-#   SessionEnd output and exit code are discarded by the harness (only
-#   `terminalSequence` is honored), so this hook prints nothing, reports nothing,
-#   and always exits 0. Everything it does is a side effect or nothing at all.
+#   SessionEnd carries no decision control — it cannot block session termination —
+#   and the harness discards its JSON output fields (`systemMessage` and the rest).
+#   An `exit 2` would surface stderr to the user, but a teardown has nothing worth
+#   interrupting a shutdown for, so this hook stays silent and always exits 0.
+#   Everything it does is a side effect or nothing at all.
+#
+# BEST-EFFORT, NOT GUARANTEED — THE 1.5s BUDGET
+#   SessionEnd hooks share a 1.5-second budget, and a timeout declared by a
+#   PLUGIN does not raise it: the `"timeout": 60` on this registration in
+#   hooks.json is inert, because only a timeout in a user's own settings file
+#   raises the budget (to at most 60s). A hook cancelled at the budget has its
+#   output discarded and its work left unfinished. `mise tasks ls` plus
+#   `mise run -C … docker:down` will often not finish inside 1.5s, so treat this
+#   hook as an opportunistic port-freeing pass, NOT a guarantee that containers
+#   stopped. `WorktreeRemove` is the reliable half — it takes the ordinary
+#   command-hook timeout, so the 60s there is real.
+#
+#   A dev who wants the full teardown to fit can raise the budget themselves:
+#   `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000 claude`.
+#
+#   (Upstream contract, verified verbatim:
+#   https://docs.claude.com/en/docs/claude-code/hooks.md — "SessionEnd hooks have
+#   a default timeout of 1.5 seconds. … Timeouts set on plugin-provided hooks
+#   don't raise the budget." and the exit-code-2 table row "SessionEnd | No |
+#   Shows stderr to user only".)
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq. Invoked via an explicit `sh` prefix, so the executable bit

@@ -26,9 +26,21 @@ copied in alongside ``SKILL.md``, which is exactly the spec's ``references/``/
 **2. Shared-bundle references become URLs into the public plugin repo.** The
 deep reference prose (``templates/reference/*``), spec templates
 (``templates/spec/*``) and the two helper scripts live outside any one skill and
-are shared by many. Vendoring them would put ~262 KB — a 66 KB ``MIGRATIONS.md``
-among it — into every consumer repo, so they are rewritten to
-``blob/main`` URLs on the public marketplace repo and fetched on demand.
+are shared by many. Vendoring them would put several hundred KB — ``MIGRATIONS.md``
+alone is the largest single file — into every consumer repo, so they are rewritten
+to ``blob/main`` URLs on the public marketplace repo and fetched on demand.
+
+.. warning::
+
+   Two known defects in this rewrite are open, not fixed — see the pre-release
+   audit residue. (a) ``BLOB_BASE`` points at GitHub's HTML ``blob/`` view, so a
+   fetch returns a rendered page rather than file content; ``raw.githubusercontent
+   .com`` is the form that returns bytes. (b) The rewrite is applied
+   unconditionally, including inside runnable command lines, so the generated tree
+   contains ``sh "https://…"`` invocations that cannot execute on any surface.
+   Fixing (b) is a design question — vendor the few helper scripts, fetch them to a
+   temp file first, or drop those command blocks from the portable copy — so it is
+   deliberately not patched here.
 
 *Why ``main`` and not the released tag:* pinning would rewrite all 26 skills on
 every version bump, adding a regeneration step to each release for prose that is

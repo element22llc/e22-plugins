@@ -10,10 +10,9 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 - **`defaultEnabled` is intentionally omitted — do not add `defaultEnabled: false`.**
   steer is an org-wide standards plugin; its value is that *every* product session picks
   it up automatically. Claude Code's default for an installed plugin is already enabled,
-  so omitting the field gives the behavior we want. (The explicit `defaultEnabled` field
-  also requires Claude Code ≥ 2.1.154, newer than our validation pin
-  `STEER_CLAUDE_CODE_VERSION`, so we do not rely on it.) Generic "make plugins opt-in"
-  advice does not apply here.
+  so omitting the field gives the behavior we want, and it does so on every CLI version
+  rather than only on those new enough to read `defaultEnabled` (≥ 2.1.154). Generic
+  "make plugins opt-in" advice does not apply here.
 - **`displayName`** ("Steer — Engineering Standards") is the human label in the `/plugin`
   picker; the kebab `name: steer` stays the invocation prefix (`/steer:*`). Requires
   Claude Code ≥ 2.1.143 (satisfied by the current pin).

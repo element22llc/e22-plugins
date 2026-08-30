@@ -10,9 +10,9 @@ scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
 **Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
 new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
 task. Run `mise trust` in the worktree first — it is idempotent, so it costs
-nothing when a session-start check already inherited the primary checkout's trust
-(Claude Code only, and only for a session *started* in the worktree). If the repo
-itself was never trusted, that first decision is the user's:
+nothing when a steer check already inherited the primary checkout's trust (Claude
+Code only). If the repo itself was never trusted, that first decision is the
+user's:
 `mise trust && mise install`.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
@@ -31,8 +31,9 @@ defaults). So:
   `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing shared
   files.
 
-**Clean up before the worktree closes.** steer's `SessionEnd` /
-`WorktreeRemove` hooks tear down this worktree's Docker stack, scoped to its
-`COMPOSE_PROJECT_NAME`. Yours: stop the dev servers and watchers you launched,
-freeing their ports — and run `mise run docker:clean` yourself when removing a
-worktree by hand, outside a session, where no hook fires.
+**Clean up before the worktree closes.** On Claude Code, steer's `WorktreeRemove`
+hook tears down this worktree's Docker stack, scoped to its
+`COMPOSE_PROJECT_NAME`; the `SessionEnd` one attempts the same but is often cut
+short, so never count on it. Yours regardless: stop the dev servers and watchers
+you launched, freeing their ports — and run `mise run docker:clean` yourself when
+removing a worktree by hand or on any other surface, where no hook fires.
