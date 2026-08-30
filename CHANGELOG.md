@@ -7,6 +7,25 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed: `/steer:explain` and `/steer:status` now run in a forked subagent
+  (`context: fork`).** Both are pure renderers — the whole input is the argument
+  (`[feature-id]`, `[this-week | since <date> | milestone]`) and the whole output
+  is a shareable page — so each was reading a dozen spine files and a tracker
+  query into the *main* session's context to emit one summary. Forked, that read
+  happens in a subagent and only the page comes back. Nothing is lost by cutting
+  them off from the conversation: neither reads it, and neither asks the user
+  anything. The other read-only report skills are deliberately **not** forked —
+  `/steer:report` files a bug about what just happened in *this* conversation,
+  and `/steer:roadmap` opens issues and drives `/steer:issues`.
+- **Documented: `disable-model-invocation` is off-limits on a steer skill**
+  (`AUTHORING.md`). It looks like a free way to reclaim skill-listing budget —
+  it drops a skill's description from the listing entirely — but it also makes
+  the skill **user-only**, so Claude cannot invoke it through the Skill tool at
+  all. Every skill in rule `00-router`'s intent table is a model-invocation
+  target, the ones that look manual (`setup`, `protect`, `help`) included, and
+  `/steer:standards` is worse still: it exists for the surfaces where no hook
+  injects the rules, so its listing description is the only thing that tells the
+  model to load it there. The listing budget gets trimmed at the source instead.
 - **Added: `lspServers` in `plugin.json` — real compiler diagnostics on the edit
   path.** Two language servers matching the stack defaults in rule `10-stack`:
   `typescript-language-server` (`.ts` `.tsx` `.mts` `.cts` `.js` `.jsx` `.mjs`
