@@ -328,7 +328,7 @@ multi-turn run it is a limit the skill keeps in prose:
   Docker Desktop are *handed over* as commands for you to run, never executed.
 - **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
   and open the PR — but never merge it or commit to `main` outside solo-trunk —
-  e.g. `work`, `tidy`.
+  e.g. `work`, `init`, `issues`.
 
 A skill's tier is not a separate label — it is readable straight from its
 frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,

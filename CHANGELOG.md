@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the retracted "fresh invocation" framing survived in the one reference
+  with the widest reach.** `templates/reference/NEXT-ACTIONS.md` — which
+  `/steer:next` names canonical ("Read it first") and seventeen skills defer to,
+  and which the portable tree exposes to off-Claude agents — still said a bounded
+  auto-continue runs as "a fresh invocation of the skill that owns it, never
+  executed inside the emitting skill, whose tier may forbid the writes involved".
+  A `disallowed-tools` boundary is turn-scoped, so a continuation *inside the
+  emitting turn* keeps that restriction and hands over at its first writing step.
+  The reference now says so, matching the skill. Two smaller residues of the same
+  correction went with it: `/steer:next`'s opening blockquote no longer implies the
+  human triggers the continuation, and `/steer:sync`'s cross-reference now names a
+  heading that exists (`Guardrails`, not "Operating rules").
+
 - **Fixed: `/steer:sync` cited the commit-autonomy rule as its authority for
   "never commit to `main`".** That rule says the opposite for a declared
   **solo-trunk** repo — straight to trunk, no branch, no PR — so the citation

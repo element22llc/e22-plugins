@@ -29,7 +29,7 @@ argument-hint: '[optional constraints, e.g. ''only feature-x'', ''no tracker wri
 > keeps in prose. This does
 > not make the repo immutable — shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
-> whatever you choose, as its own step.
+> the action.
 
 `/steer-next` reconstructs the **entire workspace state** as it stands right now —
 independent of session memory — and arbitrates the **one action that matters

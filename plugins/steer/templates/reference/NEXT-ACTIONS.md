@@ -219,7 +219,9 @@ system (it is either pre-launch or live), so at most one appears.
   the owning workflow performs those under its own autonomy and gating rules.
   Emitting it is not necessarily the end of the turn, though: rule `00-router`'s
   **bounded auto-continue** then applies, so an unambiguous, non-gated
-  `Suggested command` is announced and run as a **fresh invocation of the skill that
-  owns it** — never executed inside the emitting skill, whose tier may forbid the
-  writes involved. A gated step, a command-less human action, and a genuinely close
-  arbitration all wait for the human instead.
+  `Suggested command` is announced and continued into. A `disallowed-tools`
+  boundary is **turn-scoped**, though — it clears only when the user sends their
+  next message — so a continuation *within the emitting turn* still runs without
+  the tools the emitting skill removed: continuing into a **writing** skill reaches
+  its first writing step and hands over there. A gated step, a command-less human
+  action, and a genuinely close arbitration all wait for the human instead.
