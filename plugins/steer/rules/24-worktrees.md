@@ -32,8 +32,9 @@ defaults). So:
   files.
 
 **Clean up before the worktree closes.** On Claude Code, steer's `WorktreeRemove`
-hook tears down this worktree's Docker stack, scoped to its
-`COMPOSE_PROJECT_NAME`; the `SessionEnd` one attempts the same but is often cut
-short, so never count on it. Yours regardless: stop the dev servers and watchers
+hook runs `docker:clean` on this worktree's stack — containers, **volumes** and
+orphans, scoped to its `COMPOSE_PROJECT_NAME`, so its data goes with it. The
+`SessionEnd` hook does the lesser `docker:down`: containers stopped, **volumes
+kept**, and often cut short, so never count on it. Yours regardless: stop the dev servers and watchers
 you launched, freeing their ports — and run `mise run docker:clean` yourself when
 removing a worktree by hand or on any other surface, where no hook fires.

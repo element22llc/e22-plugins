@@ -7,15 +7,65 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the retracted "fresh invocation" framing survived in the one reference
+  with the widest reach.** `templates/reference/NEXT-ACTIONS.md` — which
+  `/steer:next` names canonical ("Read it first") and many skills defer to, and
+  which the portable tree links out to for off-Claude agents — still said a bounded
+  auto-continue runs as "a fresh invocation of the skill that owns it, never
+  executed inside the emitting skill, whose tier may forbid the writes involved".
+  A `disallowed-tools` boundary is turn-scoped, so a continuation *inside the
+  emitting turn* keeps that restriction and hands over at its first writing step.
+  The reference now says so, matching the skill. Two smaller residues of the same
+  correction went with it: `/steer:next`'s opening blockquote no longer implies the
+  human triggers the continuation, and `/steer:sync`'s cross-reference now names a
+  heading that exists (`Guardrails`, not "Operating rules").
+
+- **Fixed: `/steer:sync` cited the commit-autonomy rule as its authority for
+  "never commit to `main`".** That rule says the opposite for a declared
+  **solo-trunk** repo — straight to trunk, no branch, no PR — so the citation
+  argued against itself on exactly the repos it was meant to govern. The
+  `feat/sync` branch is a **deliberate exception**: plugin maintenance is
+  structural, not feature work (rule `36-issue-first`, the same carve-out both
+  issue-first hooks already exempt `feat/sync` under). The skill now names it as
+  an exception that holds in *both* delivery modes, instead of resting on a rule
+  that contradicts it.
+
+- **Fixed: `/steer:next` claimed a same-turn auto-continue escapes its own
+  read-only boundary.** It said the work "then happens under the owning skill's
+  tier and autonomy rules rather than a navigator's" — but `disallowed-tools` is
+  turn-scoped and clears only when the user sends their next message, so a skill
+  continued into *within the same turn* still has no `Edit`/`Write`/
+  `NotebookEdit`/`EnterWorktree`. It now says the continuation reaches the first
+  writing step and hands over there.
+
+- **Fixed: rules `24-worktrees` and `99-end-of-session` described the two Docker
+  teardowns as the same act.** `WorktreeRemove` runs `docker:clean` — containers,
+  **volumes** and orphans — while `SessionEnd` runs the lesser `docker:down`,
+  which keeps volumes. The always-on rules both overstated what `SessionEnd`
+  does and hid that `WorktreeRemove` destroys the worktree's data, which is the
+  half a dev needs to know before removing one.
+
+- **Fixed: rule `05-roles` made the mere existence of `spec/BUILD-STATUS.md` the
+  trigger to auto-start `/steer:build`.** The SessionStart hook it credits keys
+  on an **open handoff gate** and deliberately goes quiet once every box is
+  checked, so a handed-off build — whose status file stays committed forever —
+  read as one to resume.
+
+- **Fixed: `hooks/lib/worktree-lifecycle.sh`'s gating contract listed four
+  conditions where the code enforces five** — `docker` on `PATH` was absent from
+  the list its own header calls exhaustive.
+
+- **Fixed: `hooks/lib/json.sh` scoped `steer_field` to "the exact `PreToolUse`
+  hook-input shapes"** while it also serves the lifecycle events — a stale
+  enumeration in the file every hook sources, now stated without one.
+
 - **Fixed: the spec-framework reference credited `template-reconcile.sh` with
   diffing table rows.** Its extractor emits `##`/`###` headings and checklist items
   only, so a bundled template that gained a **table row** produced an empty diff —
   read as "already current", the exact staleness the reconciliation convention
   exists to catch. The helper's documented failure mode was over-reporting; this
   silent under-report was undocumented. Now stated wherever the helper's output is
-  interpreted — the script's own exit-code contract, the framework reference, and
-  `/steer:adopt`'s step, which is the one call site whose stated payload includes
-  gap-analysis table rows — with table rows called out as diff-by-eye.
+  interpreted, with table rows called out as diff-by-eye.
 
 - **Fixed: `scripts/scan-capabilities.sh` documented one fingerprint line while
   emitting two** (`stack` and `profile` — which its consumer already expected).

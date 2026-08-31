@@ -29,7 +29,7 @@ argument-hint: '[optional constraints, e.g. ''only feature-x'', ''no tracker wri
 > keeps in prose. This does
 > not make the repo immutable — shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
-> whatever you choose, as its own step.
+> the action.
 
 `/steer-next` reconstructs the **entire workspace state** as it stands right now —
 independent of session memory — and arbitrates the **one action that matters
@@ -63,10 +63,13 @@ does not reconcile it here.
 
 If the single best action is itself running a skill, **announce it and continue into
 that skill** when the action is unambiguous and non-gated: rule `00-router`'s bounded
-auto-continue binds this skill like any other. The continuation is a **fresh
-invocation** of the owning skill, which is what keeps this one read-only — nothing
-inside `/steer-next`'s own run edits, and the work then happens under the owning
-skill's tier and autonomy rules rather than a navigator's. Stop at a
+auto-continue binds this skill like any other. Nothing inside `/steer-next`'s own
+run edits. But the tool removal above is **turn-scoped** — it clears only when you
+send your next message — so a skill continued into *within this same turn* still
+has no `Edit`/`Write`/`NotebookEdit`/`EnterWorktree`. Continuing into a **writing**
+skill therefore reaches its first writing step and stops: announce the handover
+there, and your next message is what puts the owning skill under its own tier and
+autonomy rules. Stop at a
 `Suggested command` and wait when the arbitration was genuinely close (that choice is
 the human's), when the action is gated, or when no real command performs it.
 
@@ -246,8 +249,7 @@ Read-only coda: `/steer-next` itself never edits, commits, publishes, merges, or
 advances any workflow's state — including a gate it reports as answerable: it
 **routes** to the owning skill, which runs the prompt and writes the transition.
 `/steer-next` never runs a ratification prompt itself. Auto-continuing into the
-recommended action does not weaken that — the continuation *is* the owning skill,
-running under its own rules.
+recommended action does not weaken that.
 
 End the readout with one line inviting correction: if this recommendation (or a
 recent routing) missed the mark, saying so gets it reported upstream via

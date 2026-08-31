@@ -322,20 +322,17 @@ multi-turn run it is a limit the skill keeps in prose:
 - **Tier 1 (read-only)** skills do not modify a file that already exists in the
   repo: they all set `disallowed-tools: Edit, NotebookEdit, EnterWorktree` — e.g.
   `audit`, `next`, `standards`. Read-only is scoped to **tracked repo content**, not
-  to side effects generally: `/steer:doctor` is Tier 1 with the strictest frontmatter
-  of the set and still offers, on an explicit yes, to **install toolchain software on
-  the machine** (`brew install mise`, then the runtimes mise manages) — the largest
+  to side effects generally: `/steer:doctor` is Tier 1 and still offers, on an
+  explicit yes, to **install toolchain software on the machine** (`brew install mise`, then the runtimes mise manages) — the largest
   real-world side effect any Tier-1 skill has. Its boundary stops there: `git` and
   Docker Desktop are *handed over* as commands for you to run, never executed.
 - **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
-  and open the PR — but never merge it or commit to `main` outside solo-trunk —
-  e.g. `sync`, `work`, `tidy`.
+  and open the PR — but never merge it or commit to `main` outside solo-trunk.
 
 A skill's tier is not a separate label — it is readable straight from its
 frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,
 EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
-`reference`, `report`, `status`), a Tier 2 skill grants the write and git verbs it
-needs. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
+`reference`, `report`, `status`), a Tier 2 skill carries no such line. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
 `doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
 `status` and `report` keep it for writes bound in prose — a temp path in every
 case except `audit`, which may additionally write a confirmed
