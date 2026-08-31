@@ -32,7 +32,7 @@ truth and how to install and refresh the Copilot side.
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
-Every Copilot artifact — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
+Every generated artifact — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
 VS Code `mcp.json`, the CLI hook manifest, and the plugin + marketplace manifest
 versions — is generated from that one source and guarded by a build-time **drift
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
@@ -44,7 +44,7 @@ cross-tool `.agents/skills/` tree): every `gen_*.py` in either is wired into
 no task runs, or a gate no task invokes, fails the build. It asserts *wiring*, not
 generator↔gate pairing: `gen_copilot_manifests.py` has no `check_copilot_manifests.py`
 counterpart, because the manifest versions are gated by `check_plugin.py`'s
-version-sync check instead. No Copilot artifact is hand-maintained.
+version-sync check instead. None of them is hand-maintained.
 
 ## Why the surfaces differ
 
@@ -168,7 +168,7 @@ surfaces differently:
 The build renders one `.agents/skills/steer-<skill>/` directory per skill —
 including the two `user-invocable: false` gateways, which the model can reach even
 though no one can type them — carrying the **real skill body** and its supporting
-mode files, not a summary. These rewrites make a body work off Claude
+mode files, not a summary. A body has to be rewritten to work off Claude
 Code (`gen_agent_skills.py`):
 
 | In the authored skill | In the portable copy | Why |

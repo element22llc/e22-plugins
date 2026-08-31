@@ -13,7 +13,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   argued against itself on exactly the repos it was meant to govern. The
   `feat/sync` branch is a **deliberate exception**: plugin maintenance is
   structural, not feature work (rule `36-issue-first`, the same carve-out both
-  write-path hooks already exempt `feat/sync` under). The skill now names it as
+  issue-first hooks already exempt `feat/sync` under). The skill now names it as
   an exception that holds in *both* delivery modes, instead of resting on a rule
   that contradicts it.
 
@@ -43,13 +43,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the list its own header calls exhaustive.
 
 - **Fixed: `hooks/lib/json.sh` scoped `steer_field` to "the exact `PreToolUse`
-  hook-input shapes"** while also serving `SessionStart`, `SessionEnd`, `Stop`
-  and `WorktreeRemove` — a stale enumeration in the file every hook sources.
-
-- **Fixed: `/steer:sync`'s reconciliation step framed table rows in its payload
-  without the `template-reconcile.sh` caveat.** The helper reports `##`/`###`
-  headings and checklist items only, so a template that gained a table row shows
-  an empty diff; the step now says to compare tables by eye.
+  hook-input shapes"** while it also serves the lifecycle events — a stale
+  enumeration in the file every hook sources, now stated without one.
 
 - **Fixed: the spec-framework reference credited `template-reconcile.sh` with
   diffing table rows.** Its extractor emits `##`/`###` headings and checklist items
@@ -57,9 +52,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   read as "already current", the exact staleness the reconciliation convention
   exists to catch. The helper's documented failure mode was over-reporting; this
   silent under-report was undocumented. Now stated wherever the helper's output is
-  interpreted — the script's own exit-code contract, the framework reference, and
-  `/steer:adopt`'s step, which is the one call site whose stated payload includes
-  gap-analysis table rows — with table rows called out as diff-by-eye.
+  interpreted, with table rows called out as diff-by-eye.
 
 - **Fixed: `scripts/scan-capabilities.sh` documented one fingerprint line while
   emitting two** (`stack` and `profile` — which its consumer already expected).

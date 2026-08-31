@@ -249,8 +249,7 @@ Read-only coda: `/steer-next` itself never edits, commits, publishes, merges, or
 advances any workflow's state — including a gate it reports as answerable: it
 **routes** to the owning skill, which runs the prompt and writes the transition.
 `/steer-next` never runs a ratification prompt itself. Auto-continuing into the
-recommended action does not weaken that — the continuation *is* the owning skill,
-running under its own rules.
+recommended action does not weaken that.
 
 End the readout with one line inviting correction: if this recommendation (or a
 recent routing) missed the mark, saying so gets it reported upstream via
