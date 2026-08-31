@@ -37,8 +37,10 @@ VS Code `mcp.json`, the CLI hook manifest, and the plugin + marketplace manifest
 versions — is generated from that one source and guarded by a build-time **drift
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
 committed artifact drifts. A **symmetry meta-gate** (`check_copilot_symmetry.py`,
-part of `plugin-check`) further asserts every `gen_copilot_*.py` is wired into
-`gen:copilot` and every `check_copilot_*.py` into `plugin-check` — so a generator
+part of `plugin-check`) further asserts the same wiring across **both** generated
+families — `*_copilot_*` (the Copilot-only artifacts) and `*_agent_*` (the
+cross-tool `.agents/skills/` tree): every `gen_*.py` in either is wired into
+`gen:copilot`, and every `check_*.py` into `plugin-check` — so a generator
 no task runs, or a gate no task invokes, fails the build. It asserts *wiring*, not
 generator↔gate pairing: `gen_copilot_manifests.py` has no `check_copilot_manifests.py`
 counterpart, because the manifest versions are gated by `check_plugin.py`'s
@@ -166,7 +168,7 @@ surfaces differently:
 The build renders one `.agents/skills/steer-<skill>/` directory per skill —
 including the two `user-invocable: false` gateways, which the model can reach even
 though no one can type them — carrying the **real skill body** and its supporting
-mode files, not a summary. Three things are rewritten so a body works off Claude
+mode files, not a summary. These rewrites make a body work off Claude
 Code (`gen_agent_skills.py`):
 
 | In the authored skill | In the portable copy | Why |
@@ -187,9 +189,9 @@ bullets there as caveats you apply yourself.
 - **Forked skills are not forked here.** `context: fork` names a Claude Code
   execution mode no other agent implements, so the portable copy drops it — but the
   two skills that use it (`/steer-explain`, `/steer-status`) argue *from* forked
-  execution in their bodies, including "don't ask, `AskUserQuestion` is
-  unavailable". That premise is false on this surface, and it would forbid a
-  correct action. Both **portable** copies therefore open with a note saying the
+  execution in their bodies — `/steer-explain` most sharply, telling the reader
+  "this skill runs forked, and `AskUserQuestion` is removed from every subagent".
+  That premise is false on this surface, and it would forbid a correct action. Both **portable** copies therefore open with a note saying the
   fork passages describe Claude Code, and that where a step says it cannot ask,
   you may.
 - **Tool-permission scoping is inert.** No non-Claude agent honors steer's

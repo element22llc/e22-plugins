@@ -13,7 +13,9 @@ update the plugin, read the stamp, apply ledger migrations) and steps 7–9
    `tracker.md`, `app/README.md`, and the scaffold files
    (`.github/workflows/ci.yml`, PR template, `mise.toml` tasks, …): for each, run
    that convention's diff command and splice in only what's missing, additive-only
-   (never overwrite, reorder, or delete a dev/PO-added row). Reference prose
+   (never overwrite, reorder, or delete a dev/PO-added row). The helper reports
+   `##`/`###` headings and checklist items only, so a template that gained a
+   **table row** shows an empty diff — compare tables by eye. Reference prose
    (`templates/reference/*`) and ADRs are exempt — do not reconcile them (they're
    read in place / immutable).
    For the scaffold, follow the **copy-and-adapt, never clobber** discipline from

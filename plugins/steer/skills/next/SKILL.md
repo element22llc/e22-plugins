@@ -67,10 +67,13 @@ does not reconcile it here.
 
 If the single best action is itself running a skill, **announce it and continue into
 that skill** when the action is unambiguous and non-gated: rule `00-router`'s bounded
-auto-continue binds this skill like any other. The continuation is a **fresh
-invocation** of the owning skill, which is what keeps this one read-only — nothing
-inside `/steer:next`'s own run edits, and the work then happens under the owning
-skill's tier and autonomy rules rather than a navigator's. Stop at a
+auto-continue binds this skill like any other. Nothing inside `/steer:next`'s own
+run edits. But the tool removal above is **turn-scoped** — it clears only when you
+send your next message — so a skill continued into *within this same turn* still
+has no `Edit`/`Write`/`NotebookEdit`/`EnterWorktree`. Continuing into a **writing**
+skill therefore reaches its first writing step and stops: announce the handover
+there, and your next message is what puts the owning skill under its own tier and
+autonomy rules. Stop at a
 `Suggested command` and wait when the arbitration was genuinely close (that choice is
 the human's), when the action is gated, or when no real command performs it.
 

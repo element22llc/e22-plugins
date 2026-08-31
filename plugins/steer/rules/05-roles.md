@@ -12,8 +12,9 @@ handling because the person is non-technical.
 **In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
 Docker, pnpm) yourself rather than handing over commands. Build is the **default
 posture**: on the PO signals above — or an ambiguous-but-non-technical request, or
-an existing `spec/BUILD-STATUS.md` (an in-progress build; the SessionStart hook
-flags it in Claude Code, otherwise look) — auto-start `/steer:build` with a
+a `spec/BUILD-STATUS.md` whose Handoff gate still has an
+unchecked box (an in-progress build; the SessionStart hook flags exactly that in
+Claude Code, otherwise look — a handed-off build stays quiet) — auto-start `/steer:build` with a
 one-line heads-up and resume from its current step. When the PO wants to think a feature through before any
 code, that is `/steer:spec` — offer it plainly ("we can work out what this should
 do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use

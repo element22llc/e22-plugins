@@ -7,6 +7,50 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:sync` cited the commit-autonomy rule as its authority for
+  "never commit to `main`".** That rule says the opposite for a declared
+  **solo-trunk** repo — straight to trunk, no branch, no PR — so the citation
+  argued against itself on exactly the repos it was meant to govern. The
+  `feat/sync` branch is a **deliberate exception**: plugin maintenance is
+  structural, not feature work (rule `36-issue-first`, the same carve-out both
+  write-path hooks already exempt `feat/sync` under). The skill now names it as
+  an exception that holds in *both* delivery modes, instead of resting on a rule
+  that contradicts it.
+
+- **Fixed: `/steer:next` claimed a same-turn auto-continue escapes its own
+  read-only boundary.** It said the work "then happens under the owning skill's
+  tier and autonomy rules rather than a navigator's" — but `disallowed-tools` is
+  turn-scoped and clears only when the user sends their next message, so a skill
+  continued into *within the same turn* still has no `Edit`/`Write`/
+  `NotebookEdit`/`EnterWorktree`. It now says the continuation reaches the first
+  writing step and hands over there.
+
+- **Fixed: rules `24-worktrees` and `99-end-of-session` described the two Docker
+  teardowns as the same act.** `WorktreeRemove` runs `docker:clean` — containers,
+  **volumes** and orphans — while `SessionEnd` runs the lesser `docker:down`,
+  which keeps volumes. The always-on rules both overstated what `SessionEnd`
+  does and hid that `WorktreeRemove` destroys the worktree's data, which is the
+  half a dev needs to know before removing one.
+
+- **Fixed: rule `05-roles` made the mere existence of `spec/BUILD-STATUS.md` the
+  trigger to auto-start `/steer:build`.** The SessionStart hook it credits keys
+  on an **open handoff gate** and deliberately goes quiet once every box is
+  checked, so a handed-off build — whose status file stays committed forever —
+  read as one to resume.
+
+- **Fixed: `hooks/lib/worktree-lifecycle.sh`'s gating contract listed four
+  conditions where the code enforces five** — `docker` on `PATH` was absent from
+  the list its own header calls exhaustive.
+
+- **Fixed: `hooks/lib/json.sh` scoped `steer_field` to "the exact `PreToolUse`
+  hook-input shapes"** while also serving `SessionStart`, `SessionEnd`, `Stop`
+  and `WorktreeRemove` — a stale enumeration in the file every hook sources.
+
+- **Fixed: `/steer:sync`'s reconciliation step framed table rows in its payload
+  without the `template-reconcile.sh` caveat.** The helper reports `##`/`###`
+  headings and checklist items only, so a template that gained a table row shows
+  an empty diff; the step now says to compare tables by eye.
+
 - **Fixed: the spec-framework reference credited `template-reconcile.sh` with
   diffing table rows.** Its extractor emits `##`/`###` headings and checklist items
   only, so a bundled template that gained a **table row** produced an empty diff —

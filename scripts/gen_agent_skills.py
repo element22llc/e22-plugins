@@ -32,10 +32,11 @@ to ``blob/main`` URLs on the public marketplace repo and fetched on demand.
 
 .. warning::
 
-   Two known defects in this rewrite are open, not fixed — see the pre-release
-   audit residue. (a) ``BLOB_BASE`` points at GitHub's HTML ``blob/`` view, so a
-   fetch returns a rendered page rather than file content; ``raw.githubusercontent
-   .com`` is the form that returns bytes. (b) The rewrite is applied
+   Two known defects in this rewrite are open, not fixed — recorded for consumers
+   in ``docs/reference/known-limitations.md`` under the cross-tool skill tree.
+   (a) ``BLOB_BASE`` points at GitHub's HTML ``blob/`` view, so a fetch returns a
+   rendered page rather than file content; ``raw.githubusercontent.com`` is the
+   form that returns bytes. (b) The rewrite is applied
    unconditionally, including inside runnable command lines, so the generated tree
    contains ``sh "https://…"`` invocations that cannot execute on any surface.
    Fixing (b) is a design question — vendor the few helper scripts, fetch them to a

@@ -35,6 +35,7 @@
 # GATING — every one of these must hold before anything runs:
 #   * a LINKED worktree (a plain checkout's stack is the dev's main stack and is
 #     never touched — the same boundary check-worktree-trust.sh draws);
+#   * `docker` on PATH (a repo whose stack is never run pays nothing);
 #   * `mise` on PATH, and the task actually defined in that worktree's task set
 #     (`docker:clean` in a normal repo, `ws:docker:clean` in a workspace root —
 #     the scaffold's `ws:` prefixing invariant, see profiles/workspace/mise.toml);

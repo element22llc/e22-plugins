@@ -63,7 +63,11 @@ spec-vs-tracker drift check (`/steer-audit spec`), and **not** a code-health aud
   reports, ADRs), and never the marketplace id `e22-plugins`.
 - **Verify versions from disk.** `TARGET` comes from `plugin.json`, `FROM` from
   `/spec/.version` — never from training-data memory.
-- **Branch + PR; never commit to `main`** (commit-autonomy rule). The dev's PR
+- **Branch + PR; never commit to `main` — in *both* delivery modes.** Plugin
+  maintenance is structural, not feature work (rule `36-issue-first`), so a sync
+  lands on its own `feat/sync` branch even in a declared **solo-trunk** repo,
+  where feature work goes straight to trunk (rule `45-commit-autonomy`). This is
+  the deliberate exception to that rule, not an application of it. The dev's PR
   **merge review** is the hard gate; push the branch and open the PR yourself,
   announced — never merge it.
 - **The PR targets `BASE`, never `main` by default.** `BASE` is the branch the
@@ -118,7 +122,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
    **Otherwise (the full, writing flow):**
    branch a `feat/sync` off `BASE` and work there — never commit to `main` or
-   to `BASE` directly (commit-autonomy rule). If `BASE` *is* `main` (the dev ran
+   to `BASE` directly, solo-trunk included (see Operating rules). If `BASE` *is* `main` (the dev ran
    sync from a clean trunk), that's the one case the PR targets `main`. Commit,
    push, and open the PR autonomously as step 8 says — only the **merge** waits
    for the dev (commit-autonomy rule; never pause to ask whether to commit).

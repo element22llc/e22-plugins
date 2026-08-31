@@ -5,7 +5,9 @@
 #
 # NOT a general JSON parser, and it does not claim arbitrary-JSON correctness.
 # It extracts a small set of *known top-level / tool_input fields* from the exact
-# PreToolUse hook-input shapes the plugin's hooks use, with two strategies:
+# hook-input shapes the plugin's hooks use — `PreToolUse`/`PostToolUse`
+# `tool_input`, plus top-level fields on `SessionStart`, `SessionEnd`, `Stop` and
+# `WorktreeRemove` — with two strategies:
 #
 #   1. `jq` when present (authoritative).
 #   2. otherwise a narrow grep/sed extractor for those exact shapes.

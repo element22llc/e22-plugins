@@ -100,8 +100,9 @@ handling because the person is non-technical.
 **In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
 Docker, pnpm) yourself rather than handing over commands. Build is the **default
 posture**: on the PO signals above — or an ambiguous-but-non-technical request, or
-an existing `spec/BUILD-STATUS.md` (an in-progress build; the SessionStart hook
-flags it in Claude Code, otherwise look) — auto-start `/steer:build` with a
+a `spec/BUILD-STATUS.md` whose Handoff gate still has an
+unchecked box (an in-progress build; the SessionStart hook flags exactly that in
+Claude Code, otherwise look — a handed-off build stays quiet) — auto-start `/steer:build` with a
 one-line heads-up and resume from its current step. When the PO wants to think a feature through before any
 code, that is `/steer:spec` — offer it plainly ("we can work out what this should
 do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
@@ -309,9 +310,10 @@ defaults). So:
   files.
 
 **Clean up before the worktree closes.** On Claude Code, steer's `WorktreeRemove`
-hook tears down this worktree's Docker stack, scoped to its
-`COMPOSE_PROJECT_NAME`; the `SessionEnd` one attempts the same but is often cut
-short, so never count on it. Yours regardless: stop the dev servers and watchers
+hook runs `docker:clean` on this worktree's stack — containers, **volumes** and
+orphans, scoped to its `COMPOSE_PROJECT_NAME`, so its data goes with it. The
+`SessionEnd` hook does the lesser `docker:down`: containers stopped, **volumes
+kept**, and often cut short, so never count on it. Yours regardless: stop the dev servers and watchers
 you launched, freeing their ports — and run `mise run docker:clean` yourself when
 removing a worktree by hand or on any other surface, where no hook fires.
 
@@ -1074,7 +1076,7 @@ dropped:
 
 - [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree closing → dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook tears its Docker stack down, and `SessionEnd` tries to; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` — Parallel worktrees.)
+- [ ] Worktree closing → dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook runs `docker:clean`, volumes included; `SessionEnd` only stops containers, keeps volumes, and often does not finish; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` — Parallel worktrees.)
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?
