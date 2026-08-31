@@ -23,8 +23,12 @@ enabled — a lean subset in non-code folders, since the scoped rules self-gate 
 ### Verify it worked
 
 Run `/plugin` and confirm **Steer — Engineering Standards** is listed and enabled.
-Opening a new session in a managed repo then shows the injected version banner at
-the top of the standards block — that banner is your confirmation the rules loaded.
+
+The rules arrive as context Claude can read, not as anything printed in the
+transcript, so there is nothing on screen to look for. Confirm them by asking: open a new
+session in a managed repo and ask something only the loaded standards can answer —
+"what is this repo's delivery mode?" (expect `pr-flow` or `solo-trunk`, per the
+`CLAUDE.md` marker) — then check the reply matches.
 
 !!! note "Prerequisites for the full workflow"
     `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);

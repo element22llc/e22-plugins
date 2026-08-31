@@ -91,9 +91,11 @@ of dimension.
    `/spec`) so silence never reads as "clean." Offer to also write it to
    `/spec/AUDIT-REPORT.md` **only if the dev wants it tracked** — it's a
    point-in-time artifact, not part of the durable spine. Write it to the working
-   tree only: this skill cannot branch or commit (no git write verb is granted and
-   `EnterWorktree` is disallowed), so say plainly that committing it is the dev's
-   next step.
+   tree only, and say plainly that committing it is the dev's next step.
+   `EnterWorktree` is disallowed so this skill cannot open a worktree, but the git
+   verbs are not blocked by the frontmatter — `allowed-tools` grants without
+   restricting — so leaving the branch and the commit to the dev is a boundary
+   this skill keeps, not one the tooling enforces.
 
    **Optionally publish it as a shareable dashboard** — where the `Artifact` tool
    is available, **offer** a dimension-tiled findings dashboard (a Claude

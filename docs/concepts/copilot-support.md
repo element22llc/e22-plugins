@@ -345,10 +345,12 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   unaffected, in
   [Known limitations](../reference/known-limitations.md#the-cross-tool-agentsskills-tree-shared-bundle-links-are-not-fetchable).
 - **Tool-permission scoping is inert.** See [Skills on Copilot](#skills-on-copilot)
-  — the bodies themselves port in full, but a skill that Claude Code restricts via
-  `allowed-tools`/`disallowed-tools` carries that restriction here as an
-  instruction rather than something the runtime enforces (the `steer-reviewer`
-  subagent does port as a [custom agent](#custom-agents-on-copilot)).
+  — the bodies themselves port in full, but neither frontmatter tool field does
+  anything here. `disallowed-tools` removes nothing from the pool, where Claude Code
+  at least removes those tools for the invoking turn; `allowed-tools` pre-approves
+  nothing, though it grants without restricting in Claude Code either. Both limits
+  port as instructions only. (The `steer-reviewer` subagent does port as a
+  [custom agent](#custom-agents-on-copilot).)
 - **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
   gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no
   hooks. The advisory nudges live in the standards text, not as hooks.

@@ -194,7 +194,9 @@ matrix):
 - **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
   `doctor`, `explain`, `status`, `help`, `report`): never edit code/spec/tracker.
   What defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree` —
-  the skill cannot mutate an existing repo file, branch, or worktree. `Write`
+  for the invoking turn the skill has no in-place edit tool and cannot open a
+  worktree. Branching and committing are Bash, which the frontmatter does not
+  withhold. `Write`
   splits the tier: add it to `disallowed-tools` for a skill that writes nothing at
   all (`reference`, `standards`, `next`, `doctor`), and **keep it granted** for the
   five that write a temp-dir path (`audit`, `explain`, `help`, `status` for the
@@ -202,9 +204,9 @@ matrix):
   temp path is the *only* write; `/steer:audit` is the exception, with a second
   post-confirmation write its modes instruct (`/spec/AUDIT-REPORT.md` /
   `DRIFT-REPORT.md`). That limit is a **prose invariant**, not a frontmatter one. **Never** disallow `Write` on the theory that
-  a mid-run confirmation lifts the restriction: tool grants apply for the whole
-  invocation, so dropping it makes the instructed render unreachable rather than
-  deferred (`/steer:reference artifacts`). Shell varies independently: `explain`
+  it gates a confirmed write: `disallowed-tools` is scoped to the invoking turn and
+  clears at the user's next message, so it buys no safety
+  (`/steer:reference artifacts`). Shell varies independently: `explain`
   also disallows `Bash` (it reads only local files); `status` keeps `Bash` because
   it reads the tracker through `/steer:tracker-sync` (the `gh` read fallback needs
   shell), but writes nothing back (no tracker-write grant; reads only).

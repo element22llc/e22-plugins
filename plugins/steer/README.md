@@ -21,8 +21,9 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 - Nine read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
   `explain`, `status`, `help`, `report` — never edit code, spec or tracker. What
-  defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree`: the
-  skill cannot mutate an existing repo file, branch, or worktree. `Write` splits
+  defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree`: for
+  the invoking turn the skill has no in-place edit tool and cannot open a worktree.
+  Branching and committing are Bash, which the frontmatter does not withhold. `Write` splits
   the tier. `standards`, `next`, `doctor` and `reference` disallow it too. The
   five temp-writing skills — `audit`, `explain`, `help`, `status`, `report` —
   deliberately **keep** `Write`: the artifact HTML for the four render skills
@@ -37,11 +38,12 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
   needs shell), but writes nothing back. This does **not** make the repo
   immutable — Bash mutations remain governed by permissions/hooks. If preventive shell
   enforcement is ever needed, add a `PreToolUse` hook, not a Stop hook (Stop is detective).
-- **A skill's tool grants apply for the whole invocation.** There is no "post-run
-  step" in which a restriction has cleared, and a user confirmation mid-run does
-  not lift one — so never disallow `Write` on the theory that a confirmed write
-  happens afterwards; that makes the instructed write unreachable instead of
-  deferring it. Writes the modes instruct (e.g. `/steer:audit spec`'s optional
-  `/spec/DRIFT-REPORT.md`) happen **in-run, post-confirmation**. Publication to
+- **A skill's frontmatter tool fields are scoped to the invoking turn.**
+  `allowed-tools` grants without restricting (every tool stays callable; permission
+  settings govern the rest), and a `disallowed-tools` restriction clears at the
+  user's next message. So never disallow `Write` on the theory that it gates a
+  confirmed write: it buys no safety. Writes the modes instruct (e.g.
+  `/steer:audit spec`'s optional `/spec/DRIFT-REPORT.md`) happen **in-run,
+  post-confirmation**. Publication to
   the tracker is a genuinely separate step because it is a different skill:
   `/steer:issues publish-*`. See `/steer:reference artifacts`.

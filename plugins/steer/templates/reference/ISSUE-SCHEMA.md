@@ -91,7 +91,7 @@ The update is therefore a guarded read-modify-write, never a blind overwrite:
 
 ### Malformed or duplicate blocks fail closed
 
-If the body has **no** managed block, a malformed block, or **more than one**
+If the body has a malformed block or **more than one**
 `steer:managed:start`/`end` pair: do not guess which block is authoritative, do
 not auto-delete either, **leave the body unchanged**, and report the schema
 conflict with a *proposed* repaired body for a human to accept. Unknown but

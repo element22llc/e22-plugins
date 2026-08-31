@@ -94,10 +94,11 @@ moves a repo between the two and reconciles the marker.
     *host-permission gate, not a missing issue* — confirm with the user or run
     `!gh issue create` under their identity, rather than looping.
 
-!!! warning "A per-skill grant only applies while that skill is the invoked one"
-    A skill's `allowed-tools` grant pre-approves those tools **only while that
-    skill is the invoked one** — it does not carry into a skill that merely
-    *delegates* to it in prose. The tracker write verbs live in
+!!! warning "A per-skill grant only applies for the turn that invokes that skill"
+    A skill's `allowed-tools` grant pre-approves those tools **only for the turn
+    that invokes that skill**, and clears at your next message. It grants without
+    restricting — every other tool stays callable under your permission settings —
+    and it does not carry into a skill that merely *delegates* to it in prose. The tracker write verbs live in
     `/steer:tracker-sync`'s `allowed-tools`, but the lifecycle reaches that gateway
     **transitively**: a PO runs `/steer:issues capture` (or `/steer:work`,
     `/steer:issues materialize`), which routes through tracker-sync *by description*,
@@ -314,9 +315,11 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 
 ## Why this matters for the plugin's own skills
 
-The skill frontmatter encodes the same boundary:
+The skill frontmatter carries the same boundary for the turn that invokes the
+skill — upstream clears `disallowed-tools` at your next message, so across a
+multi-turn run it is a limit the skill keeps in prose:
 
-- **Tier 1 (read-only)** skills never modify a file that already exists in the
+- **Tier 1 (read-only)** skills do not modify a file that already exists in the
   repo: they all set `disallowed-tools: Edit, NotebookEdit, EnterWorktree` — e.g.
   `audit`, `next`, `standards`. Read-only is scoped to **tracked repo content**, not
   to side effects generally: `/steer:doctor` is Tier 1 with the strictest frontmatter
@@ -340,8 +343,9 @@ case except `audit`, which may additionally write a confirmed
 
 Where `Write` is kept it is bound *in prose* instead — to a temp-dir Artifact
 page, the scrubbed issue body `report` builds, or an explicitly confirmed report
-file. None of those skills may **modify** existing repo content, because `Edit` is
-still disallowed; the one deletion any of them performs is `report` clearing its
+file. None of those skills modifies existing repo content — `Edit` is disallowed for the
+invoking turn, and the boundary across the run is one the skill keeps; the one
+deletion any of them performs is `report` clearing its
 own git-ignored `.claude/steer-faults.*` scratch, so the real boundary is nothing
 **tracked**. `explain` additionally disallows `Bash`. See the
 [Skills reference](../reference/skills.md) for the skill inventory and

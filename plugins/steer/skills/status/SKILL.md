@@ -13,7 +13,8 @@ argument-hint: "[this-week | since <date> | milestone [<name>]]"
 # means the MCP-first → gh read path works without a per-call prompt, including
 # headless). No write verb is granted — a tracker or repo write is not
 # pre-approved and stays gated. Edit/NotebookEdit/EnterWorktree are disallowed so
-# the skill cannot mutate a repo file, branch, or worktree; Write stays for the
+# the skill has no in-place edit tool and cannot open a worktree; branching and
+# committing are Bash, which the frontmatter does not withhold. Write stays for the
 # temp-dir artifact only.
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
@@ -37,8 +38,12 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 # NOT put the publish heads-up ahead of the publish: the heads-up is written
 # inside the fork, and only a fork's final result reaches the main session, so
 # the Artifact permission prompt is the gate that holds — see
-# /steer:reference artifacts. Needs Claude Code v2.1.218+; an older CLI ignores the key and backgrounds the fork, so treat the
-# read-only boundary there as instruction, not tooling.
+# /steer:reference artifacts. `background` needs Claude Code v2.1.218+; before
+# that release a forked skill always blocked the invoking turn, which is what
+# background: false asks for, so an older CLI lands on the intended side. Treat
+# the read-only boundary as one this skill keeps, not one the runtime guarantees:
+# upstream scopes disallowed-tools to the invoking turn and clears it at your
+# next message.
 context: fork
 background: false
 ---

@@ -13,16 +13,20 @@ argument-hint: '[optional constraints, e.g. ''only feature-x'', ''no tracker wri
 **When to use.** Use when picking a repo up cold or mid-stream and asking "what should I do next?", "where do I start?", or "I'm lost" — when work spans workflows and you need the one action that matters most.
 
 > **Read-only on this surface — enforced by instruction, not by tooling.**
-> In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, so
-> the restriction below is mechanical. No other agent has that mechanism: here
-> it is a hard instruction. Treat those capabilities as unavailable for the
-> whole run, and read any claim below that they "are unavailable" as a rule
-> you must keep rather than a guarantee you can rely on.
+> In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
+> only for the turn that invokes it — upstream clears the restriction at the
+> user's next message — so even there it is a rule the skill keeps across a
+> multi-turn run rather than a guarantee the runtime holds. No other agent has
+> even that much: here it is a hard instruction. Treat those capabilities as
+> unavailable for the whole run, and read any claim below that they "are
+> unavailable" as a rule you must keep rather than a guarantee you can rely on.
 
 # Navigate the workspace to the single best next action (read-only)
 
 > Native file-edit tools (`Edit`/`Write`/`NotebookEdit`) and worktree creation are
-> unavailable while this skill runs, so navigation cannot mutate the repo. This does
+> removed from the tool pool for the turn that invokes this skill, so navigation
+> cannot mutate the repo; across a multi-turn run that limit is one this skill
+> keeps in prose. This does
 > not make the repo immutable — shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
 > whatever you choose, as its own step.

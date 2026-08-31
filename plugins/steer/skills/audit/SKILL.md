@@ -18,14 +18,15 @@ allowed-tools:
   - Bash(gh search issues *)
   - Write
 # Read-only by construction, with one deliberate exception. Edit/NotebookEdit/
-# EnterWorktree are disallowed so the skill cannot mutate existing repo files,
-# branch, or worktree. Write STAYS GRANTED for the two post-confirmation outputs
+# EnterWorktree are disallowed, so for the invoking turn the skill has no in-place
+# edit tool and cannot open a worktree. Branching and committing are Bash, which the
+# frontmatter does not withhold. Write STAYS GRANTED for the two post-confirmation outputs
 # this skill's modes instruct — the temp-dir Artifact dashboard and the optional
 # AUDIT-REPORT.md / DRIFT-REPORT.md — bound in prose by the read-only contract
 # below, exactly as /steer:status, /steer:explain, /steer:help and
-# /steer:questions bundle mode do. Do NOT disallow Write here on the theory that
-# a user confirmation ends the restriction: a skill's tool grants apply for the
-# whole invocation, so removing it makes the instructed write unreachable.
+# /steer:questions bundle mode do. Do NOT disallow Write here: disallowed-tools is
+# scoped to the invoking turn and clears at the user's next message, so it buys no
+# safety. The read-only contract below is the binding limit.
 disallowed-tools: Edit, NotebookEdit, EnterWorktree
 ---
 
@@ -35,10 +36,13 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 
 ## Read-only contract — both modes, whole run
 
-> The in-place edit tools (`Edit`/`NotebookEdit`) and worktree creation are
-> unavailable while this skill runs, so neither audit can modify existing code or
-> spec. This does not make the repo immutable — shell mutations stay governed by
-> your permission settings and hooks. `Write` **is** granted, and is bound here
+> The in-place edit tools (`Edit`/`NotebookEdit`) and worktree creation are removed
+> from the tool pool for the turn that invokes this skill, so neither audit can
+> modify existing code or spec. Upstream scopes `disallowed-tools` that way and
+> clears it at your next message, so across a multi-turn run the read-only limit is
+> one this skill keeps in prose, not one the frontmatter enforces end to end. It
+> does not make the repo immutable either — shell mutations stay governed by your
+> permission settings and hooks. `Write` **is** granted, and is bound here
 > rather than by the frontmatter: use it for **nothing except** the two outputs
 > this skill's modes instruct, and only **after** the user confirms them in a
 > fresh message — the optional reports (`AUDIT-REPORT.md` / `DRIFT-REPORT.md`)

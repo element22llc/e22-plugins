@@ -104,12 +104,12 @@ BANNER = (
     "     Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->"
 )
 
-# Claude Code enforces a read-only skill by removing tools from the pool via
-# `disallowed-tools`. Nothing enforces that here, and several bodies state the
-# restriction as a fact ("the in-place edit tools are unavailable while this skill
-# runs"). Leaving that unqualified would be a lie on this surface, so a skill that
-# was frontmatter-restricted upstream carries the restriction as a standing
-# instruction instead.
+# Claude Code removes a read-only skill's tools from the pool via
+# `disallowed-tools`, but only for the invoking turn. Nothing removes them here,
+# and several bodies state the restriction as a fact ("the in-place edit tools
+# are unavailable while this skill runs"). Leaving that unqualified would be a
+# lie on this surface, so a skill that was frontmatter-restricted upstream
+# carries the restriction as a standing instruction instead.
 # `context: fork` is dropped (see the module docstring), but the body of a forked
 # skill argues FROM that execution model — "this skill runs forked", "AskUserQuestion
 # is removed from every subagent", "only the final result comes back". On a surface
@@ -128,11 +128,13 @@ FORK_NOTE = (
 
 RESTRICTION_NOTE = (
     "> **Read-only on this surface — enforced by instruction, not by tooling.**\n"
-    "> In Claude Code this skill runs with `{tools}` removed from the tool pool, so\n"
-    "> the restriction below is mechanical. No other agent has that mechanism: here\n"
-    "> it is a hard instruction. Treat those capabilities as unavailable for the\n"
-    '> whole run, and read any claim below that they "are unavailable" as a rule\n'
-    "> you must keep rather than a guarantee you can rely on."
+    "> In Claude Code this skill runs with `{tools}` removed from the tool pool, but\n"
+    "> only for the turn that invokes it — upstream clears the restriction at the\n"
+    "> user's next message — so even there it is a rule the skill keeps across a\n"
+    "> multi-turn run rather than a guarantee the runtime holds. No other agent has\n"
+    "> even that much: here it is a hard instruction. Treat those capabilities as\n"
+    '> unavailable for the whole run, and read any claim below that they "are\n'
+    '> unavailable" as a rule you must keep rather than a guarantee you can rely on.'
 )
 
 _PLUGIN_ROOT = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}(/[A-Za-z0-9._/-]*)?")
