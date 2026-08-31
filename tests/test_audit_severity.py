@@ -44,7 +44,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
         # Repo tooling ships nothing but can blind a gate.
         ("scripts/check_changelog.py", "repo-tooling", "medium"),
         ("mise.toml", "repo-tooling", "medium"),
-        (".github/workflows/ci.yml", "repo-tooling", "medium"),
+        (".github/workflows/plugin-quality.yml", "repo-tooling", "medium"),
         # Non-shipping: real findings, never a reason to hold a release.
         ("docs/reference/hooks.md", "non-shipping", "low"),
         ("docs/concepts/copilot-support.md", "non-shipping", "low"),
