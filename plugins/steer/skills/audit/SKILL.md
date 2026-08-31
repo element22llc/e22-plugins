@@ -18,8 +18,9 @@ allowed-tools:
   - Bash(gh search issues *)
   - Write
 # Read-only by construction, with one deliberate exception. Edit/NotebookEdit/
-# EnterWorktree are disallowed so the skill cannot mutate existing repo files,
-# branch, or worktree. Write STAYS GRANTED for the two post-confirmation outputs
+# EnterWorktree are disallowed, so for the invoking turn the skill has no in-place
+# edit tool and cannot open a worktree. Branching and committing are Bash, which the
+# frontmatter does not withhold. Write STAYS GRANTED for the two post-confirmation outputs
 # this skill's modes instruct — the temp-dir Artifact dashboard and the optional
 # AUDIT-REPORT.md / DRIFT-REPORT.md — bound in prose by the read-only contract
 # below, exactly as /steer:status, /steer:explain, /steer:help and

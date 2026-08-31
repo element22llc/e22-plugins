@@ -94,7 +94,7 @@ moves a repo between the two and reconciles the marker.
     *host-permission gate, not a missing issue* — confirm with the user or run
     `!gh issue create` under their identity, rather than looping.
 
-!!! warning "A per-skill grant only applies while that skill is the invoked one"
+!!! warning "A per-skill grant only applies for the turn that invokes that skill"
     A skill's `allowed-tools` grant pre-approves those tools **only for the turn
     that invokes that skill**, and clears at your next message. It grants without
     restricting — every other tool stays callable under your permission settings —

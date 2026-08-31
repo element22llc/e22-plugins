@@ -21,8 +21,9 @@ are maintainer notes, not shipped context. Ship context to consumers via skills.
 
 - Nine read-only skills — `reference`, `audit`, `standards`, `next`, `doctor`,
   `explain`, `status`, `help`, `report` — never edit code, spec or tracker. What
-  defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree`: the
-  skill cannot mutate an existing repo file, branch, or worktree. `Write` splits
+  defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree`: for
+  the invoking turn the skill has no in-place edit tool and cannot open a worktree.
+  Branching and committing are Bash, which the frontmatter does not withhold. `Write` splits
   the tier. `standards`, `next`, `doctor` and `reference` disallow it too. The
   five temp-writing skills — `audit`, `explain`, `help`, `status`, `report` —
   deliberately **keep** `Write`: the artifact HTML for the four render skills

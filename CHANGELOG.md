@@ -498,8 +498,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   restriction that "applies for the whole invocation" with "no post-run step in
   which the restriction has cleared" — both false, and load-bearing because
   `/steer:audit` renders only *after* the user confirms in a fresh message, by
-  which point the restriction is gone. `/steer:audit`'s read-only contract,
-  `/steer:next`'s read-only note, `/steer:report`'s temp-file rationale, the plugin README's convention entry, and
+  which point the restriction is gone. The tier definition carried the same error:
+  `disallowed-tools` was said to mean a Tier-1 skill "cannot mutate an existing repo
+  file, branch, or worktree", when it withholds the in-place edit tools and worktree
+  creation for the invoking turn and says nothing about the git verbs, which are
+  Bash and which the bundled scaffold pre-approves. Corrected on `/steer:audit`'s,
+  `/steer:status`'s and `/steer:report`'s frontmatter rationale — on `report` it also
+  contradicted that comment's own note that it deletes its git-ignored scratch files
+  — and on the plugin README's and `AUTHORING.md`'s tier definitions.
+  `/steer:audit`'s read-only contract, `/steer:next`'s read-only note,
+  `/steer:report`'s temp-file rationale, the plugin README's convention entry, and
   the `.agents/skills` restriction banner — which called the same limit
   "mechanical" — now agree.
 

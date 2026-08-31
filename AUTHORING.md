@@ -194,7 +194,9 @@ matrix):
 - **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
   `doctor`, `explain`, `status`, `help`, `report`): never edit code/spec/tracker.
   What defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree` —
-  the skill cannot mutate an existing repo file, branch, or worktree. `Write`
+  for the invoking turn the skill has no in-place edit tool and cannot open a
+  worktree. Branching and committing are Bash, which the frontmatter does not
+  withhold. `Write`
   splits the tier: add it to `disallowed-tools` for a skill that writes nothing at
   all (`reference`, `standards`, `next`, `doctor`), and **keep it granted** for the
   five that write a temp-dir path (`audit`, `explain`, `help`, `status` for the

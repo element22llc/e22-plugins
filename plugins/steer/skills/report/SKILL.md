@@ -25,8 +25,9 @@ allowed-tools:
 # upstream issue, the scrubbed temp file it is built from, and (in aftercare) it
 # deletes the git-ignored `.claude/steer-faults.*` scratch files once their faults
 # are filed. Nothing tracked, nothing committed. Edit/NotebookEdit/
-# EnterWorktree are disallowed so a defect report can never mutate a local file,
-# branch, or worktree. Write STAYS GRANTED for that temp file (see step "Write the
+# EnterWorktree are disallowed so a defect report has no in-place edit tool and
+# cannot open a worktree; branching and committing are Bash, which the frontmatter
+# does not withhold. Write STAYS GRANTED for that temp file (see step "Write the
 # scrubbed body to a temp file"), bound in prose to the temp path — do NOT disallow
 # it: disallowed-tools is scoped to the invoking turn and clears at the user's next
 # message, so dropping Write blocks the instructed write in-run while gating

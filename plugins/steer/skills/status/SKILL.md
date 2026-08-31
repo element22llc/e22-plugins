@@ -13,7 +13,8 @@ argument-hint: "[this-week | since <date> | milestone [<name>]]"
 # means the MCP-first → gh read path works without a per-call prompt, including
 # headless). No write verb is granted — a tracker or repo write is not
 # pre-approved and stays gated. Edit/NotebookEdit/EnterWorktree are disallowed so
-# the skill cannot mutate a repo file, branch, or worktree; Write stays for the
+# the skill has no in-place edit tool and cannot open a worktree; branching and
+# committing are Bash, which the frontmatter does not withhold. Write stays for the
 # temp-dir artifact only.
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
