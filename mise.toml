@@ -105,6 +105,17 @@ run = [
   # machinery that cuts releases now fails here instead of silently doing nothing
   # at the moment it is relied on. Requires Claude Code v2.1.233+.
   "claude plugin validate .claude/skills --strict",
+  # Manifest coherence, deterministically. `plugin.json` and the enclosing
+  # marketplace entry must agree on the version -- which was audit dimension 2, a
+  # judgment subagent re-deriving what a CLI call settles in 200ms. `--dry-run`
+  # creates nothing; `--force` waives only the dirty-tree and tag-exists checks,
+  # so what remains is purely the manifest-agreement assertion. Verified by
+  # positive control: drift the marketplace version and this exits 1.
+  # The Copilot pair is covered by check_plugin.check_copilot_version_sync.
+  "claude plugin tag --dry-run --force plugins/steer",
+  # Untriaged blockers in the persistent findings ledger. Cheap, and it keeps the
+  # ledger honest between releases rather than only at cut time.
+  "uv run python scripts/audit_ledger.py gate",
 ]
 
 [tasks.fixtures]
@@ -157,6 +168,14 @@ run = [
 [tasks.hooktests]
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = ["sh plugins/steer/hooks/tests/run.sh"]
+
+[tasks."audit:status"]
+description = "Summarise the persistent pre-release findings ledger"
+run = ["uv run python scripts/audit_ledger.py status"]
+
+[tasks."audit:severity"]
+description = "Show the severity ceiling for each path changed since a ref (default: last release tag)"
+run = ["sh scripts/audit-severity-delta.sh"]
 
 [tasks.version-scan]
 description = "Scan the repo for version pins that violate policy/versions.yml"

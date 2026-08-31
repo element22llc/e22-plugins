@@ -98,24 +98,42 @@ The one-line index, for orientation only:
 - **Step 2 — deterministic gate.** `mise run ci` + the strict `mise run
   docs:build`, up front and blocking, plus the `validator-compat` job's status on
   `main` (`[high]`, not a blocker — it tracks upstream Claude Code, not the diff).
-- **Step 3 — judgment coherence fan-out.** Six read-only subagent dimensions
-  (CHANGELOG ↔ diff, version/manifest, cross-reference, namespace/brand, payload,
-  behavioral), then vet every candidate against the code it cites.
+- **Step 3 — judgment coherence fan-out.** Five read-only subagent dimensions
+  (CHANGELOG ↔ diff, cross-reference, namespace/brand, payload, behavioral),
+  each **scoped to `git diff $LAST_RELEASE..HEAD`**, then vet every candidate
+  against the code it cites. Dimension 2 (version/manifest) is retired — it is
+  covered deterministically in Step 2 by `claude plugin tag --dry-run --force`
+  and `check_plugin.check_copilot_version_sync`.
 - **Step 4 — docs accuracy + deployed-site freshness.** `documentation-reviewer`
   deep review, plus the `docs-deploy.yml` run-status freshness check.
-- **Step 5 — compile, rank, classify.** Severity (`[blocker]` … `[low]`) and
-  disposition (`fixable-in-tree` / `out-of-tree`) on every finding.
+- **Step 5 — compile, rank, classify.** Severity is **computed** from the path by
+  `scripts/audit_severity.py` (never judged, never escalated); disposition
+  (`fixable-in-tree` / `out-of-tree`) on every finding; everything recorded in
+  `.claude/audit/findings.jsonl`.
 
 ### A6. Audit gate — decide.
 
-- **If any `[blocker]` exists, STOP.** Do not branch, do not bump. Report the
-  blockers and the fix each needs, and tell the user to resolve them and re-run
-  `/release`. When several blockers are fixable in-tree, **point them at
-  `/audit-loop`** — it fixes and re-audits until a round comes back clean, which
-  is what turns a five-attempt release into a one-attempt one.
-- **`[high]` / `[medium]` / `[low]`** do not by themselves halt the release.
-  Surface them so the user can decide to fold a quick fix in or ship and file the
-  rest.
+The gate is **mechanical**. Severity comes from `scripts/audit_severity.py`, which
+computes a ceiling from the finding's `path` (procedure Step 5); you do not grade
+findings by how serious the prose sounds, and you may not escalate one above its
+ceiling. Escalation discretion is what made this gate non-deterministic — the
+6.0.0 cut was halted by a judgment escalation on a docs-site page that ships to no
+consumer.
+
+- **If any `[blocker]` exists, STOP.** After capping, that means exactly one of:
+  a red deterministic check from Step 2, or a finding on a release-critical
+  manifest (`CHANGELOG.md`, the three version-bearing manifests,
+  `.claude-plugin/marketplace.json`). Both mis-publish the release itself, and
+  neither is a matter of opinion. Do not branch, do not bump.
+- **`[high]` / `[medium]` / `[low]` never halt the release.** Report them, record
+  them in the ledger, and let the user decide whether to fold a quick fix in.
+  Do **not** ask the user to "defer a blocker" — if it is not release-critical it
+  was never a blocker, and framing it as one is how a routine cut turns into a
+  judgment call the user has to overrule.
+- **Record the round before deciding.** Write the vetted findings to a JSON list
+  and run `uv run python scripts/audit_ledger.py record --candidates <file>`, so
+  the next release does not rediscover them. Report only what
+  `audit_ledger.py new` calls new.
 
 Only when there are **zero blockers** proceed to Phase B.
 

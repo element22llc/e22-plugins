@@ -9,8 +9,8 @@ subagents, compile a ranked report. It never edits, branches, or commits — the
 
 | Caller | Runs | Then |
 | --- | --- | --- |
-| `/release` Phase A | Steps 1–5, once | Blocks the cut on any `[blocker]`; the human fixes and re-runs. |
-| `/audit-loop` | Steps 1–5, once per round | Fixes the findings in-tree and re-audits until a round comes back clean. |
+| `/release` Phase A | Steps 1–5, once | Blocks the cut on any `[blocker]` — which, after Step 5 capping, means a red gate or release-critical manifest drift only. |
+| `/audit-loop` | Steps 1–5, once per round | Fixes the in-scope findings in-tree and re-audits; capped at 2 rounds, and it never edits `non-shipping` paths. |
 | `/quick-release` Phase A | Steps 1, 2, 4b, 5 only | Skips the judgment fan-out (Step 3) and the docs deep-review (Step 4a) by design. |
 
 If this file and a caller ever disagree about *what the audit checks*, **this
@@ -86,14 +86,59 @@ before the version bump — not at the end where a red gate wastes the bump work
     docs build not verified`** so the user runs `mise run docs:build` themselves
     before merging.
 
+- **`claude plugin tag --dry-run --force plugins/steer`** — first-party manifest
+  coherence. It asserts that `plugin.json` and the enclosing marketplace entry
+  agree on the version, which is what audit dimension 2 used to ask a judgment
+  subagent to re-derive. `--dry-run` creates nothing and `--force` waives only
+  the dirty-tree and tag-exists checks, so what remains is purely the agreement
+  assertion. It runs inside `mise run ci` (via `plugin-check`), so Step 2 already
+  covers it — named here because it is *why* dimension 2 is no longer dispatched.
+  The Copilot manifest pair is covered by
+  `check_plugin.check_copilot_version_sync` in the same task.
+- **`uv run python scripts/audit_ledger.py gate`** — no untriaged blocker is
+  sitting in the persistent findings ledger. Also inside `mise run ci`.
+
 A failing deterministic check is a `[blocker]` by definition.
+
+**A piped exit status is not an exit status.** Run gates unpiped, or capture
+`${PIPESTATUS[0]}` / `$?` before any `| tail`. A `mise run ci` reported green off
+the tail of its own log is the status of `tail`, and this has already happened on
+the release path.
 
 ## Step 3 — judgment-based coherence audit: fan out, then vet
 
 Deterministic checks prove *structure*; they cannot judge *coherence* — a skill
 whose description no longer matches its body, a `[Unreleased]` bullet that
-overstates a change, a rule that contradicts a skill. Dispatch **read-only**
-review subagents (the `Agent` tool — named `Task` before Claude Code v2.1.63,
+overstates a change, a rule that contradicts a skill.
+
+**Scope every dimension to the release delta.** Each subagent reviews only paths
+in `git diff $LAST_RELEASE..HEAD`, not the whole tree. This is the single change
+that makes the audit terminate. Unscoped, the reviewers sample ~250 markdown
+files that mostly have not changed in years: they always find *something*, each
+round finds a *different* something, and the "audit until a round is clean" stop
+condition becomes a geometric wait on a stochastic sampler. That is not a
+hypothesis — between v5.3.0 and v6.0.0 six audit loops ran (five of them the full
+four rounds, ~160 reviewer dispatches, 257 markdown edits against 44 code edits)
+and the release still blocked. Scoped to the delta the surface is finite and
+shrinks as it is repaired, so a clean round means "this release introduced
+nothing incoherent" — a claim that is both achievable and the one a release
+actually needs. Pre-existing incoherence outside the delta is real, and it belongs
+in the ledger (Step 5), not in the release gate.
+
+Give each subagent the delta file list explicitly. A finding whose `path` is not
+in the delta is **out of scope for the gate**: record it in the ledger and move
+on. Do not widen a dimension because a nearby file looks suspect.
+
+**Dimension 2 is no longer dispatched.** Version and manifest coherence is fully
+covered deterministically — `claude plugin tag --dry-run --force`,
+`check_plugin.check_copilot_version_sync`, `check_changelog.py`'s release
+validator, `scan-version-pins.sh` and `check-policy-freshness.sh` — and every one
+of those runs inside `mise run ci`. A subagent re-deriving them costs a reviewer
+slot per round to reproduce a result Step 2 already proved; in the 6.0.0 audit it
+returned clean, as it must. The number 2 is retained (rather than renumbering 3–6)
+so every existing cross-reference to a dimension number stays valid.
+
+Dispatch **read-only** review subagents (the `Agent` tool — named `Task` before Claude Code v2.1.63,
 which still works as an alias — with `subagent_type: general-purpose`), **one per
 dimension, in parallel**. Each subagent is told: *read-only; every finding must
 carry `path:line` evidence and a one-line statement of the incoherence; default
@@ -109,7 +154,8 @@ to silence over speculation.* The dimensions:
    change — so a PR that touches the file for any reason clears it. This
    dimension is the only thing that reads bullets against the diff. Note whether
    the highest-impact bullet implies a larger bump than a naive reading.
-2. **Version & manifest coherence.** The three version-bearing manifests
+2. **Version & manifest coherence — RETIRED, now deterministic (Step 2).** Do
+   not dispatch this dimension. For the record, it covered: the three version-bearing manifests
    (`plugins/steer/.claude-plugin/plugin.json`,
    `plugins/steer/.github/plugin/plugin.json`,
    `.github/plugin/marketplace.json` steer entry) must currently all equal the
@@ -213,13 +259,59 @@ Print a **release-readiness report**: a short summary table (dimension → findi
 count → top finding) followed by a severity-ordered list, each finding with
 `path:line` evidence and the one-line incoherence.
 
-**Severity:**
+**Severity is computed, never judged.** A finding's severity ceiling is a pure
+function of its `path`, produced by `scripts/audit_severity.py`. A reviewer may
+rank a finding **below** its ceiling; nobody — reviewer, vetter, or caller — may
+rank one **above** it. There is no escalation discretion, because escalation
+discretion is exactly what made this gate non-deterministic: in the 6.0.0 audit a
+`[high]` on `docs/reference/hooks.md` was escalated to `[blocker]` by judgment and
+halted the release, on a docs-site page that ships to no consumer.
 
-- **`[blocker]`** — must be fixed before any release: a red gate, version/manifest
-  drift, missing-or-phantom changelog coverage, stale deployed docs, a doc claim
-  that contradicts the code.
-- **`[high]` / `[medium]` / `[low]`** — real, but do not by themselves halt a
-  release.
+```sh
+uv run python scripts/audit_severity.py --explain <path>...
+mise run audit:severity          # ceilings for the whole release delta
+```
+
+| Tier | Ceiling | What it covers |
+| --- | --- | --- |
+| `release-critical` | `[blocker]` | The version-bearing manifests and `CHANGELOG.md`. Drift here mis-publishes the release itself. |
+| `shipped-code` | `[high]` | Executable content the plugin ships: hooks, plugin scripts, `hooks.json`, `.mcp.json`. Misbehaves in a consumer session. |
+| `shipped-prose` | `[medium]` | `rules/`, `skills/`, `agents/`, `templates/`, `policy/`. Misleads a reader; does not misexecute. |
+| `repo-tooling` | `[medium]` | `scripts/`, `mise.toml`, workflows. Ships nothing, but a broken gate hides what does. |
+| `non-shipping` | `[low]` | `docs/`, `CLAUDE.md`, `CROSS-SURFACE.md`, `.claude/`, `tests/`, `evals/`, the maintainer README. Real findings; never a reason to hold a release. |
+
+The shipping boundary is imported from `check_changelog._is_behaviour` — the same
+deny-by-default classifier that decides whether a change needs a CHANGELOG entry —
+so "ships to consumers" has one definition in this repo and the two gates cannot
+drift apart.
+
+**Only `[blocker]` halts a release**, and after capping the only paths that can
+reach `[blocker]` are the release-critical manifests plus a red deterministic
+gate. `[high]` / `[medium]` / `[low]` are real and reported; they never stop a cut.
+
+**Record every finding in the ledger.** Write the round's vetted findings to a
+JSON list and run:
+
+```sh
+uv run python scripts/audit_ledger.py new    --candidates <file>   # report only what is unseen
+uv run python scripts/audit_ledger.py record --candidates <file>   # persist them
+```
+
+`.claude/audit/findings.jsonl` is the repo's memory of what has already been
+triaged. Report the **new** findings; carry the rest silently. A finding a human
+has marked `accepted` (with a reason) never resurfaces and never gates — that is
+what stops each release from re-litigating the previous release's backlog.
+Between v5.3.0 and v6.0.0, with no ledger, `docs/concepts/copilot-support.md` was
+edited in fourteen separate round commits and `docs/reference/hooks.md` in eight,
+and `hooks.md` still produced the finding that blocked the cut.
+
+Triage is a human act, not a loop's:
+
+```sh
+uv run python scripts/audit_ledger.py accept <id> --reason "ships nothing; tracked in #492"
+uv run python scripts/audit_ledger.py resolve <id>
+uv run python scripts/audit_ledger.py status
+```
 
 **Disposition** — tag every finding, because it decides who can act on it:
 

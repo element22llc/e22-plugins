@@ -74,7 +74,7 @@ Two **legitimate** effects, not flakiness:
    `$LAST_RELEASE..HEAD`; a fix adds commits and CHANGELOG bullets, so the next
    audit legitimately evaluates a different tree. Fixing a rule can also newly
    contradict a skill (dimension 6) that was consistent before.
-2. **The judgment dimensions sample.** Six subagents reading a large surface do
+2. **The judgment dimensions sample.** Five subagents reading the delta do
    not enumerate identically twice. A second pass over a repaired tree finds what
    the first pass didn't reach.
 
@@ -86,7 +86,7 @@ There is a third effect, and it is **pure waste**:
 3. **The loop's own fixes manufacture findings.** A fix to a *doc*, *rule*, or
    *skill* is prose, and prose asserts facts about the plugin. Assert one that
    isn't true and the next round finds it — you have spent a full round (a `ci`,
-   a docs build, seven subagents) auditing your own invention. In the run this
+   a docs build, six subagents) auditing your own invention. In the run this
    guidance came from, **most of rounds 2 and 3 was correcting prose the previous
    round had written**: round 1's replacement text claimed `/steer:sync` does not
    deliver the scaffold `.gitattributes` — it does, and has for many releases, via
@@ -131,11 +131,12 @@ re-derives and contradicts. `L3.d` rule 4 is the specific defence.
 
 | Flag | Default | Meaning |
 | --- | --- | --- |
-| `--max-rounds N` | `5` | Hard cap. Hitting it is an **escalation**, not a success. |
+| `--max-rounds N` | `2` | Hard cap. Round 1 fixes; round 2 confirms round 1 broke nothing. Hitting it is an **escalation**, not a success. |
 | `--severity blocker\|high\|all` | `high` | What gets fixed: `blocker` = blockers only; `high` = blockers + high (default); `all` = also medium/low. Everything below the threshold is still **reported**. |
 | `--dry-run` | off | Audit once and report. No branch, no edits — equivalent to `/release` Phase A on its own. |
 
-Each round costs a full `mise run ci`, a strict docs build, and seven subagents.
+Each round costs a full `mise run ci`, a strict docs build, and six subagents
+(five coherence dimensions + `documentation-reviewer`).
 State the parameters up front so the user knows what they authorized.
 
 **The `allowed-tools` grant does not survive the user's reply.** Per the Claude
@@ -149,6 +150,39 @@ prompt. That is not a failure — approve and continue — but do not read a pro
 for a command this skill pre-authorized as a sign something is wrong, and do not
 abandon a step because it started prompting. Durable rules belong in
 `.claude/settings.json`, not in frontmatter.
+
+## L1b. Two rounds, and no non-shipping prose.
+
+Two structural limits, both from measurement rather than taste.
+
+**The cap is 2.** Between v5.3.0 and v6.0.0 six loops ran, five of them the full
+four rounds. Rounds 3 and 4 changed **2 to 24 lines each** — for a full `mise run
+ci`, a strict docs build and six subagents apiece — and the release blocked
+anyway. Those rounds were not buying safety; they were paying a round's cost to
+proofread the previous round's prose. Round 1 fixes what the audit found. Round 2
+audits round 1's own diff and confirms it introduced nothing. Anything still open
+after that goes to the ledger as a named follow-up and **does not** hold the
+release — because after the Step 5 capping it cannot be a blocker unless it sits
+on a release-critical manifest, and that is not the kind of finding that survives
+two rounds.
+
+**Do not edit non-shipping prose.** A finding whose path classifies as
+`non-shipping` (`scripts/audit_severity.py` — `docs/`, `CLAUDE.md`,
+`CROSS-SURFACE.md`, `.claude/`, `tests/`, `evals/`, the maintainer README) is
+**recorded in the ledger, never fixed in-round**, regardless of how the reviewer
+graded it.
+
+This is not a quality judgement about docs. It is where the loop's cost actually
+went: across those six loops the rounds produced **257 markdown file-edits against
+44 code edits**, and the single most-edited file was
+`docs/concepts/copilot-support.md` at fourteen round commits. Docs changes need no
+CHANGELOG entry and reach no consumer, so they were never part of the release
+contract — yet they consumed most of every loop and generated the self-inflicted
+findings that L3.d, L3.e and L4 condition 5 exist to contain. Removing them from
+the loop removes the cause instead of managing the symptom.
+
+Docs findings are cleared by **`/plugin-docs`** in its own PR, on its own
+schedule, blocking nothing. Say in the ledger how many findings you routed there.
 
 ## L2. Pre-flight, then isolate and branch — *before* the first round.
 
@@ -573,10 +607,17 @@ worth stating too.
 
 Evaluate in order, before fixing:
 
-1. **Converged.** Zero actionable findings this round, **the round ran all six
-   dimensions untrimmed** (**L3.a**) **and every reviewer it dispatched has
-   reported** (procedure Step 5), **and the round then makes no edits**. All
-   three are required.
+1. **Converged.** Zero actionable findings this round, **the round ran all five
+   live dimensions untrimmed** (**L3.a** — dimension 2 is retired to the
+   deterministic tier, so five is the full set) **and every reviewer it
+   dispatched has reported** (procedure Step 5), **and the round then makes no
+   edits**. All three are required.
+
+   "Actionable" is now a much smaller set than it used to be: severity is
+   computed from the path (procedure Step 5), findings outside
+   `git diff $LAST_RELEASE..HEAD` are out of scope for the gate, and
+   `non-shipping` paths are never fixed in-round (**L1b**). A round that finds
+   only ledger material *is* a clean round.
 
    "Ran" means *returned findings*, not *was dispatched*. A round still waiting on
    a reviewer has a count that can only go up, so it cannot yet be zero.
