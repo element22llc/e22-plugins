@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] — Copilot prompt files → the cross-tool `.agents/skills/` tree
+### v6.0.0 — Copilot prompt files → the cross-tool `.agents/skills/` tree
 
 - **What & why:** the non-Claude skill surface was
   `.github/prompts/steer-<skill>.prompt.md` — one **intent capsule** per skill,
@@ -137,7 +137,7 @@ Name the file and say what to carry forward.
   `spec/decisions/`, `spec/AUDIT-REPORT.md` — where the mention records what was
   true at the time.
 
-### [Unreleased] — `export GITHUB_PAT` → the plugin's `github_pat` config value
+### v6.0.0 — `export GITHUB_PAT` → the plugin's `github_pat` config value
 
 - **What & why:** the bundled `github` MCP server authenticated with
   `Bearer ${GITHUB_PAT}`, resolved from whatever shell launched Claude Code, so the

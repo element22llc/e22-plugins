@@ -1,7 +1,7 @@
 {
   "name": "steer",
   "description": "Engineering standards for GitHub Copilot (CLI and VS Code). On the Copilot CLI this manifest loads steer's skills and a Copilot-native hook set; in both surfaces the always-on rules are delivered as .github/copilot-instructions.md and the skills as a cross-tool .agents/skills/ tree in the open Agent Skills format (installed by /steer:init), since Copilot has no context-injecting SessionStart hook.",
-  "version": "5.3.0",
+  "version": "6.0.0",
   "skills": "skills/",
   "hooks": "hooks/copilot-hooks.json"
 }

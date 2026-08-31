@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 6.0.0
+
 - **Fixed: the retracted "fresh invocation" framing survived in the one reference
   with the widest reach.** `templates/reference/NEXT-ACTIONS.md` — which
   `/steer:next` names canonical ("Read it first") and many skills defer to, and
