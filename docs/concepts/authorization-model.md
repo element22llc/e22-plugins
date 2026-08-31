@@ -327,14 +327,12 @@ multi-turn run it is a limit the skill keeps in prose:
   real-world side effect any Tier-1 skill has. Its boundary stops there: `git` and
   Docker Desktop are *handed over* as commands for you to run, never executed.
 - **Tier 2 (side-effecting)** skills may edit, commit, push their work branch,
-  and open the PR — but never merge it or commit to `main` outside solo-trunk —
-  e.g. `work`, `init`, `issues`.
+  and open the PR — but never merge it or commit to `main` outside solo-trunk.
 
 A skill's tier is not a separate label — it is readable straight from its
 frontmatter: a Tier 1 skill carries `disallowed-tools: Edit, NotebookEdit,
 EnterWorktree` (`audit`, `next`, `standards`, `doctor`, `explain`, `help`,
-`reference`, `report`, `status`), a Tier 2 skill grants the write and git verbs it
-needs. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
+`reference`, `report`, `status`), a Tier 2 skill carries no such line. `Write` splits Tier 1 rather than defining it: `next`, `standards`,
 `doctor` and `reference` disallow it too, while `audit`, `explain`, `help`,
 `status` and `report` keep it for writes bound in prose — a temp path in every
 case except `audit`, which may additionally write a confirmed

@@ -9,8 +9,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 - **Fixed: the retracted "fresh invocation" framing survived in the one reference
   with the widest reach.** `templates/reference/NEXT-ACTIONS.md` — which
-  `/steer:next` names canonical ("Read it first") and seventeen skills defer to,
-  and which the portable tree exposes to off-Claude agents — still said a bounded
+  `/steer:next` names canonical ("Read it first") and many skills defer to, and
+  which the portable tree links out to for off-Claude agents — still said a bounded
   auto-continue runs as "a fresh invocation of the skill that owns it, never
   executed inside the emitting skill, whose tier may forbid the writes involved".
   A `disallowed-tools` boundary is turn-scoped, so a continuation *inside the

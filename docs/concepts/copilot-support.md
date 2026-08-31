@@ -32,7 +32,7 @@ truth and how to install and refresh the Copilot side.
 | Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
-Every generated artifact — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
+Every one of those artifacts — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
 VS Code `mcp.json`, the CLI hook manifest, and the plugin + marketplace manifest
 versions — is generated from that one source and guarded by a build-time **drift
 gate** (see [below](#why-the-surfaces-differ)) that fails the build the moment a
