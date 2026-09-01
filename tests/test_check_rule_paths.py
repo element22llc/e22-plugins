@@ -108,13 +108,28 @@ def test_report_states_the_combined_peak_not_just_the_deferred_tier():
     text = crp.report(REAL_RULES)
     assert "COMBINED PEAK" in text
     assert "Always-on core:" in text
-    assert "Session ceiling:" in text
+    assert "Single-process attachment maximum:" in text
 
     core = crp.core_chars()
     assert core is not None, "the core payload must be measurable from the repo root"
     rules = crp.load_rules(REAL_RULES)
     worst = max(crp.injected_for(c, rules)[1] for c in crp.CORPUS)
     assert f"{core + worst:,}" in text
+
+
+def test_report_scopes_the_maximum_to_one_process():
+    """The maximum bounds one process, not a resumed conversation.
+
+    Measured: a `-p --continue` turn that reads a matching file re-attaches the
+    rules it matches, and those copies accumulate in the replayed history
+    (~2.3x the rule's characters per such turn, O(N^2) over N turns). Calling
+    that a "session ceiling" was wrong, and the wrong word is the whole risk
+    here — it invites someone to treat a scripted loop's cost as bounded.
+    """
+    text = crp.report(REAL_RULES)
+    assert "Single-process attachment maximum" in text
+    assert "NOT a conversation resumed across processes" in text
+    assert "Session ceiling" not in text
 
 
 def test_budgets_are_documented_as_deliberate_not_derived():
@@ -124,3 +139,5 @@ def test_budgets_are_documented_as_deliberate_not_derived():
     doc = (Path(crp.__file__).read_text(encoding="utf-8")).upper()
     assert "DELIBERATE BUDGETS, NOT A RATCHET" in doc
     assert "RECORDED DECISION" in doc or "RECORDED REASON" in doc
+    # And that the module is explicit about what the budget does NOT bound.
+    assert "BOUNDS **ONE INJECTION**" in doc or "BOUNDS ONE INJECTION" in doc

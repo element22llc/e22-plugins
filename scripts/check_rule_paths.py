@@ -18,24 +18,39 @@ it never actually delivered). But it is a real context cost that grows silently:
 every new ``paths: "**"`` rule lands on every file open in every managed repo, and
 nothing in a PR shows that. Hence a gate.
 
-Injection is once per session, not once per read
-------------------------------------------------
-The budgets below are only meaningful because a matching rule is injected
-**once per session**, not re-appended on every read. Verified on Claude Code
-2.1.252 by counting attachment records in the session transcript:
+Once per process — NOT once per resumed conversation
+----------------------------------------------------
+Within **one process** a matching rule is injected once, however many matching
+files are read. Across **process restarts** (``-p --continue`` / ``-p --resume``)
+it is re-attached, and those copies **accumulate in the replayed history**.
+Measured on Claude Code 2.1.252 over 12 pinned-session turns, tracking effective
+input tokens (``input + cache_creation + cache_read``), with a 4,266-byte rule:
 
-* one long-lived process, three reads of three different matching files →
-  **one** injection (``{"occurrences": 1}`` when the model is asked to count);
-* ``-p --continue``, three turns of one read each → three injections, because
-  each ``-p`` invocation is a **fresh process** replaying the transcript and
-  re-attaching what it matches.
+======================================  =====================
+arm                                     growth per turn
+======================================  =====================
+rule present, reads a match every turn  **+4,100 tokens**
+no rule, reads a file every turn         +1,666 tokens (baseline history)
+rule present, reads nothing                +109 tokens (flat)
+======================================  =====================
 
-So the interactive and SDK cases — the ones that matter — pay each rule once,
-and the session ceiling is the union of every rule matched, not a per-read
-multiple. Scripted per-turn ``-p --continue`` loops pay per restart; that is a
-bounded, self-inflicted cost, not the common path. **If this ever changes, these
-budgets are meaningless and the deferred tier needs redesigning** — which is why
-it is written down here rather than assumed.
+So a resumed turn that reads a matching file costs roughly **+2,400 tokens**
+attributable to the rule — about 2.3x the rule's own character count, consistent
+with the attachment carrying both ``content`` and ``rawContent``. Total cost over
+N such turns is therefore **O(N^2)**, not O(N). Turns that read nothing add
+nothing (+109/turn is ordinary message history), so resumption alone is not the
+trigger: **a matching read after a restart is.**
+
+What this means for the budgets below
+-------------------------------------
+``WORST_CASE_MAX_CHARS`` bounds **one injection**. It does not bound, and cannot
+bound, the cumulative context of a conversation resumed across many processes.
+Anything driving a scripted per-turn loop should either stay in **one process**
+(the SDK's streaming input, or an interactive session), where the cost is paid
+once, or use **an independent session per work item**, which is O(N) rather than
+O(N^2). A long ``-p --continue`` chain that reads files every turn is the one
+shape to avoid. steer's own ``/steer:loop`` runs one process per scheduled run,
+so it is not exposed to this.
 
 Two budgets, both in **characters** — the same unit as ``check_context_budget.py``
 and the runtime cap, deliberately, so no surface here mixes units:
@@ -199,7 +214,9 @@ def run_checks(rules_dir: Path = RULES_DIR) -> list[str]:
             f"{rules_dir}: opening `{worst_path}` injects {worst_n} of {len(rules)} rules, "
             f"{worst_chars:,} characters — over the {WORST_CASE_MAX_CHARS:,}-character "
             f"worst-case budget. The deferred tier has no hook cap, but it still costs "
-            f"context, and this lands on the first file a session touches. This is a "
+            f"context, and this lands on the first file a session touches. NOTE this "
+            f"budget bounds ONE injection, not the cumulative context of a conversation "
+            f"resumed across processes, where each matching read re-attaches. It is a "
             f"DELIBERATE budget, not a harness limit: raising it needs a reviewer's "
             f"agreement and a recorded reason. Trim a rule's rationale into "
             f"templates/reference/* and keep the imperative; do NOT narrow a glob to a path "
@@ -249,9 +266,13 @@ def report(rules_dir: Path = RULES_DIR) -> str:
             f"Always-on core: {core:,} chars.",
             f"COMBINED PEAK: {peak:,} chars (~{peak // 4:,} tokens) — the core plus the "
             f"worst single file open. This is the figure to quote.",
-            f"Session ceiling: {core + total:,} chars (~{(core + total) // 4:,} tokens) if a "
-            f"session eventually touches files matching every rule. Each rule is injected "
-            f"ONCE per session, so this is a true ceiling, not a per-read cost.",
+            f"Single-process attachment maximum: {core + total:,} chars "
+            f"(~{(core + total) // 4:,} tokens) if one process touches files matching every "
+            f"rule. This bounds ONE process, NOT a conversation resumed across processes: "
+            f"each `-p --continue`/`--resume` turn that reads a matching file re-attaches "
+            f"the rules it matches, and those copies accumulate (measured ~2.3x the rule's "
+            f"characters per such turn, O(N^2) over N turns). Stay in one process, or use "
+            f"one session per work item.",
         ]
     return "\n".join(lines)
 

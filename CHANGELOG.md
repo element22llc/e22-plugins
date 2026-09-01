@@ -52,23 +52,31 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   subcategories: **universal** (`paths: "**"`, 18 rules — action-scoped, fires on
   the first file touched) and **path-scoped** (a real glob, 12 rules). Calling
   the whole tier "path-scoped" overstated what scoping buys.
-- **Verified injection is once per session, not once per read.** Counted
-  attachment records in the session transcript on 2.1.252: one long-lived
-  process reading three matching files injects each rule once. `-p --continue`
-  re-injects per turn because each invocation is a fresh process replaying the
-  transcript — bounded, and specific to scripted per-turn loops. The budgets
-  below only mean anything because of this, so it is written down and tested
-  rather than assumed.
+- **Measured injection behaviour: once per PROCESS, and resumed conversations
+  accumulate.** Within one process a matching rule is injected once however many
+  matching files are read. Across `-p --continue` / `-p --resume` restarts it is
+  re-attached and the copies accumulate in replayed history. Measured on 2.1.252
+  over 12 pinned-session turns by effective input tokens: **+4,100 tok/turn**
+  with a rule that matches every turn's read, vs **+1,666** with no rule (baseline
+  history) and **+109** when nothing is read. That is ~2,400 tok/turn
+  attributable to the rule — ~2.3x its character count, consistent with the
+  attachment carrying both `content` and `rawContent` — and **O(N²)** over N
+  turns. Resumption alone is not the trigger; a matching read after a restart is.
+  For scripted loops: stay in one process, or use one session per work item.
+  `/steer:loop` runs one process per scheduled run, so it is not exposed.
 - **Bounded the deferred-tier context cost.** Escaping the hook cap does not escape the
   context window: 18 of the 30 rules are action-scoped (`paths: "**"`), so
   opening one file injects 19-22 rules, ~46,900 characters. The figure to quote
   is the **combined peak — 55,342 characters / ~13,835 tokens**: the always-on
-  core plus the worst single file open. (Session ceiling, if every rule
-  eventually matches: ~72,700 chars / ~18,200 tokens.) New
+  core plus the worst single file open. (Single-process attachment maximum, if
+  one process matches every rule: ~72,700 chars / ~18,200 tokens — that bounds
+  one process, **not** a conversation resumed across processes.) New
   `scripts/check_rule_paths.py` gates the worst-case single open (50,000) and the
   universal `**` floor (41,500) — **deliberate budgets, not harness limits**, so
   raising either needs a reviewer's agreement and a recorded reason, precisely so
-  they do not become another ratchet. with tests for overlapping globs so a new action-scoped
+  they do not become another ratchet. Both bound **one injection**; nothing gates
+  cumulative continued-session context, which is a property of how a conversation
+  is driven rather than of the ruleset. with tests for overlapping globs so a new action-scoped
   rule cannot quietly land on every file open in every managed repo.
 - **Drift detection for the repo-bound half.** New
   `scripts/scan-rule-drift.sh` classifies every installed rule as

@@ -117,16 +117,36 @@ injection, not a decision the model makes.
     gates both numbers — the worst-case single open and the universal floor —
     and `--report` prints the per-path table.
 
-!!! info "Each rule is injected once per session, not once per read"
-    Verified on Claude Code 2.1.252 by counting attachment records in the session
-    transcript: one long-lived process reading three different matching files
-    injects the rule **once**. The combined peak below is therefore a genuine
-    ceiling, not a per-read multiple.
+!!! danger "Injection is once per **process** — resumed conversations accumulate"
+    Within one process a matching rule is injected once, however many matching
+    files are read. Across process restarts (`claude -p --continue` /
+    `-p --resume`) it is re-attached, and those copies accumulate in the replayed
+    history.
 
-    The exception is `claude -p --continue`, where each turn is a fresh process
-    that replays the transcript and re-attaches what it matches — three such
-    turns produced three copies. That is a bounded cost specific to scripted
-    per-turn loops, not to interactive or SDK sessions.
+    Measured on Claude Code 2.1.252 over 12 pinned-session turns, tracking
+    effective input tokens (`input + cache_creation + cache_read`) with a
+    4,266-byte rule:
+
+    | arm | growth per turn |
+    | --- | ---: |
+    | rule present, reads a match every turn | **+4,100 tok** |
+    | no rule, reads a file every turn | +1,666 tok (baseline history) |
+    | rule present, reads nothing | +109 tok (flat) |
+
+    A resumed turn that reads a matching file therefore costs roughly **+2,400
+    tokens** attributable to the rule — about **2.3×** its own character count,
+    consistent with the attachment carrying both `content` and `rawContent`.
+    Cost over N such turns is **O(N²)**, not O(N).
+
+    Resumption alone is not the trigger — turns that read nothing add nothing.
+    **A matching read after a restart is.**
+
+    **For scripted loops:** stay in **one process** (the SDK's streaming input,
+    or an interactive session), where the cost is paid once; or use **one
+    independent session per work item**, which is O(N). A long `-p --continue`
+    chain that reads files every turn is the shape to avoid. steer's own
+    `/steer:loop` runs one process per scheduled run, so it is not exposed to
+    this.
 
 !!! abstract "The combined peak — the figure to quote"
     | | chars | ~tokens |
@@ -134,10 +154,16 @@ injection, not a decision the model makes.
     | Always-on core (every session) | 8,409 | 2,100 |
     | Worst single file open (deferred) | 46,933 | 11,733 |
     | **Combined peak** | **55,342** | **13,835** |
-    | Session ceiling (all 30 rules matched) | 72,742 | 18,185 |
+    | Single-process attachment maximum (all 30 matched) | 72,742 | 18,185 |
 
-    Quoting the deferred figure alone understates the real cost by the whole
-    core. `uv run python scripts/check_rule_paths.py --report` prints this live.
+    Quoting the deferred figure alone understates the cost by the whole core.
+    The last row bounds **one process**, not a conversation resumed across
+    processes — see the warning above. `uv run python
+    scripts/check_rule_paths.py --report` prints this live.
+
+    The 50,000-character gate limits **one injection**. Nothing gates cumulative
+    continued-session context; that is a property of how the conversation is
+    driven, not of the ruleset.
 
     The lever for reducing it is prose, not globs: trim a rule's rationale into
     `templates/reference/*` and keep the imperative, as `87-output-discipline`
