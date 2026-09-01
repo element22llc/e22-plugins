@@ -36,6 +36,10 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   cap, and appends an in-band `RULESET INCOMPLETE` notice naming them; the full
   list goes to stderr, which costs a session nothing. The footer reserve is
   conditional, so nothing is held back when no notice is needed.
+- **`/steer:standards` reads both tiers.** It loaded only `rules/`, which after
+  the split is the core alone — leaving chat surfaces (and the cap-guard's own
+  "run `/steer:standards`" fallback) short of the 24 path-scoped rules. It now
+  reads `templates/scaffold/claude/rules/` too.
 - **`check_context_budget.py` now gates the real ceiling.** The old
   8,200/19,700-*token* policy ratchets were 6-20x above the actual limit and had
   never once fired. The gate now fails when the hook has to drop any rule, for
