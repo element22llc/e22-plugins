@@ -98,15 +98,16 @@ def test_a_rule_with_no_paths_never_fires(tmp_path: Path):
     assert crp.injected_for("anything.md", rules) == (0, 0)
 
 
-def test_report_states_the_combined_peak_not_just_the_deferred_tier():
+def test_report_states_the_combined_load_not_just_the_deferred_tier():
     """Quoting the deferred figure alone understates the cost by the whole core.
 
-    The peak a session actually carries is the always-on core (delivered every
-    session) plus the worst single file open, and that is the number a reader
-    needs. Pinned so the report cannot regress to the partial figure.
+    Two distinct numbers have to stay distinct: the worst SINGLE-FILE load (core
+    + one open, a first-touch cost) and the single-process maximum (core + every
+    rule matched, where a session touching diverse paths ends up). Calling the
+    first a "peak" invited planning against a number a real session exceeds.
     """
     text = crp.report(REAL_RULES)
-    assert "COMBINED PEAK" in text
+    assert "WORST SINGLE-FILE LOAD" in text
     assert "Always-on core:" in text
     assert "Single-process attachment maximum:" in text
 
@@ -115,6 +116,13 @@ def test_report_states_the_combined_peak_not_just_the_deferred_tier():
     rules = crp.load_rules(REAL_RULES)
     worst = max(crp.injected_for(c, rules)[1] for c in crp.CORPUS)
     assert f"{core + worst:,}" in text
+
+
+def test_report_does_not_present_the_single_file_load_as_a_session_peak():
+    """The first-touch cost must not read as the ceiling."""
+    text = crp.report(REAL_RULES)
+    assert "first-touch cost, not a session peak" in text
+    assert "COMBINED PEAK" not in text, "the 'peak' label overstated a first-touch cost"
 
 
 def test_report_scopes_the_maximum_to_one_process():

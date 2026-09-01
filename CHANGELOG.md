@@ -62,15 +62,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   attributable to the rule — ~2.3x its character count, consistent with the
   attachment carrying both `content` and `rawContent` — and **O(N²)** over N
   turns. Resumption alone is not the trigger; a matching read after a restart is.
-  For scripted loops: stay in one process, or use one session per work item.
+  For scripted loops: stay in one process, where each matching rule is attached
+  at most once per long-lived process (further reads can activate *additional*
+  rules, never a second copy of one already attached); or use one independent
+  session per work item.
   `/steer:loop` runs one process per scheduled run, so it is not exposed.
 - **Bounded the deferred-tier context cost.** Escaping the hook cap does not escape the
   context window: 18 of the 30 rules are action-scoped (`paths: "**"`), so
   opening one file injects 19-22 rules, ~46,900 characters. The figure to quote
-  is the **combined peak — 55,342 characters / ~13,835 tokens**: the always-on
-  core plus the worst single file open. (Single-process attachment maximum, if
-  one process matches every rule: ~72,700 chars / ~18,200 tokens — that bounds
-  one process, **not** a conversation resumed across processes.) New
+  is **55,342 characters / ~13,835 tokens** for the worst single-file load (the
+  always-on core plus the most any one file open pulls in) — a **first-touch**
+  cost, not a session peak. A session touching diverse paths activates further
+  rules and climbs toward the **single-process maximum of ~72,700 chars /
+  ~18,200 tokens**, which is the number to plan capacity against; that bounds one
+  process, **not** a conversation resumed across processes. New
   `scripts/check_rule_paths.py` gates the worst-case single open (50,000) and the
   universal `**` floor (41,500) — **deliberate budgets, not harness limits**, so
   raising either needs a reviewer's agreement and a recorded reason, precisely so

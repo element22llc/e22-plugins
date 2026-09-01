@@ -142,24 +142,31 @@ injection, not a decision the model makes.
     **A matching read after a restart is.**
 
     **For scripted loops:** stay in **one process** (the SDK's streaming input,
-    or an interactive session), where the cost is paid once; or use **one
-    independent session per work item**, which is O(N). A long `-p --continue`
-    chain that reads files every turn is the shape to avoid. steer's own
-    `/steer:loop` runs one process per scheduled run, so it is not exposed to
-    this.
+    or an interactive session), where **each matching rule is attached at most
+    once per long-lived process** — reading further files can still activate
+    *additional* rules, but never a second copy of one already attached. Or use
+    **one independent session per work item**, which is O(N). A long
+    `-p --continue` chain that reads files every turn is the shape to avoid.
+    steer's own `/steer:loop` runs one process per scheduled run, so it is not
+    exposed to this.
 
-!!! abstract "The combined peak — the figure to quote"
-    | | chars | ~tokens |
-    | --- | ---: | ---: |
-    | Always-on core (every session) | 8,409 | 2,100 |
-    | Worst single file open (deferred) | 46,933 | 11,733 |
-    | **Combined peak** | **55,342** | **13,835** |
-    | Single-process attachment maximum (all 30 matched) | 72,742 | 18,185 |
+!!! abstract "What a session actually carries"
+    | | chars | ~tokens | what it is |
+    | --- | ---: | ---: | --- |
+    | Always-on core | 8,409 | 2,100 | every session, from session start |
+    | Worst single file open (deferred) | 46,933 | 11,733 | one file, worst case |
+    | **Worst single-file load** | **55,342** | **13,835** | core + that one open — a **first-touch** cost |
+    | **Single-process maximum** | **72,742** | **18,185** | core + all 30 rules matched — where a session touching diverse paths ends up |
 
-    Quoting the deferred figure alone understates the cost by the whole core.
-    The last row bounds **one process**, not a conversation resumed across
-    processes — see the warning above. `uv run python
-    scripts/check_rule_paths.py --report` prints this live.
+    The 55,342 figure is **not** a session peak. It is what the first matching
+    file costs. A session that goes on to read a spec file, a test, a Terraform
+    file and a `.tsx` activates further rules and climbs toward 72,742 — which is
+    the number to plan capacity against.
+
+    Quoting the deferred figure alone understates either by the whole core. The
+    last row bounds **one process**, not a conversation resumed across processes
+    — see the warning above. `uv run python scripts/check_rule_paths.py --report`
+    prints both live.
 
     The 50,000-character gate limits **one injection**. Nothing gates cumulative
     continued-session context; that is a property of how the conversation is

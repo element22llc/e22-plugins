@@ -57,7 +57,9 @@ and the runtime cap, deliberately, so no surface here mixes units:
 
 ``WORST_CASE_MAX_CHARS``
     The most any single file open can inject, measured across a corpus of
-    representative repo paths. This is the number that matters.
+    representative repo paths. A **first-touch** cost: a session that later reads
+    files matching other globs activates further rules and climbs toward the
+    single-process maximum, so this is not a session peak.
 
 ``UNIVERSAL_MAX_CHARS``
     The subtotal of rules matching ``**`` — the floor *every* file open pays,
@@ -264,8 +266,10 @@ def report(rules_dir: Path = RULES_DIR) -> str:
         peak = core + worst[2]
         lines += [
             f"Always-on core: {core:,} chars.",
-            f"COMBINED PEAK: {peak:,} chars (~{peak // 4:,} tokens) — the core plus the "
-            f"worst single file open. This is the figure to quote.",
+            f"WORST SINGLE-FILE LOAD: {peak:,} chars (~{peak // 4:,} tokens) — the core "
+            f"plus the most any ONE file open pulls in. This is a first-touch cost, not a "
+            f"session peak: a session that goes on to touch other paths activates further "
+            f"rules and climbs toward the single-process maximum below.",
             f"Single-process attachment maximum: {core + total:,} chars "
             f"(~{(core + total) // 4:,} tokens) if one process touches files matching every "
             f"rule. This bounds ONE process, NOT a conversation resumed across processes: "
