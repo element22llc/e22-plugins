@@ -15,13 +15,10 @@ from conftest import REPO_ROOT
 REAL_PLUGIN = REPO_ROOT / "plugins" / "steer"
 
 
-# Since the injected-payload re-base the gate measures the payload the SessionStart hook emits, so a
-# synthetic plugin needs a hook to measure. This stub concatenates rules/*.md
-# unconditionally — it is standing in for delivery, not for scope.sh, so every
-# profile sees the same bytes and the profile ceilings can be exercised directly.
-# The real hook (and therefore the real scope predicates) is exercised by the
-# tests that run against REAL_PLUGIN.
-_STUB_HOOK = '#!/usr/bin/env sh\ncat "$(dirname "$0")"/../rules/*.md\n'
+# The gate measures what the SessionStart hook emits, so a synthetic plugin needs
+# a hook. It gets the REAL one (hooks/ copied wholesale, libs included): the
+# behaviour under test is the 10,000-character cap guard and the scope
+# predicates, and a stub that reimplemented either would be testing the stub.
 
 
 def _make_plugin(
@@ -34,8 +31,11 @@ def _make_plugin(
     root = tmp_path / "plugin"
     (root / "rules").mkdir(parents=True)
     (root / "rules" / "00-demo.md").write_text("r" * rules_bytes, encoding="utf-8")
-    (root / "hooks").mkdir(parents=True)
-    (root / "hooks" / "inject-standards.sh").write_text(_STUB_HOOK, encoding="utf-8")
+    shutil.copytree(REAL_PLUGIN / "hooks", root / "hooks")
+    (root / ".claude-plugin").mkdir(parents=True)
+    (root / ".claude-plugin" / "plugin.json").write_text(
+        '{"name":"steer","version":"0.0.0-test"}', encoding="utf-8"
+    )
     skill_dir = root / "skills" / "demo-skill"
     skill_dir.mkdir(parents=True)
     (skill_dir / "SKILL.md").write_text(
@@ -68,26 +68,42 @@ def test_minimal_plugin_is_clean(tmp_path: Path):
 # --- injected-payload profiles ----------------------------------------
 
 
-def test_scoping_is_measured_knowledge_is_materially_leaner():
-    """The whole reason for the re-base: inject-when scoping must show up.
+def test_scoping_is_measured(tmp_path: Path):
+    """inject-when scoping must still show up in the measured payload.
 
-    Under the retired on-disk ratchet these two profiles were the same number.
+    Driven by a fixture rather than the real plugin: after the 10,000-character
+    split, every Tier 1 rule is unconditional (Tier 2 scopes itself with `paths:`
+    frontmatter instead), so the real plugin no longer exercises this. The
+    predicates in lib/scope.sh are still live code and still gated here.
     """
-    injected = ccb.measure(REAL_PLUGIN)["injected"]
-    assert injected["knowledge"]["tokens"] < injected["code"]["tokens"]
-    assert injected["code"]["tokens"] <= injected["code-max"]["tokens"]
-    # Not a rounding difference — scoping reclaims a large majority of the payload
-    # for a non-code folder. Loose bound so ordinary rule edits don't trip it.
-    assert injected["knowledge"]["tokens"] < injected["code-max"]["tokens"] * 0.6
+    root = _make_plugin(tmp_path)
+    (root / "rules" / "50-scoped.md").write_text(
+        "<!-- steer:inject-when=code-project -->\n# Scoped\n" + "s" * 400, encoding="utf-8"
+    )
+    injected = ccb.measure(root)["injected"]
+    assert injected["knowledge"]["chars"] < injected["code"]["chars"]
+    assert injected["code"]["chars"] <= injected["code-max"]["chars"]
 
 
-def test_real_plugin_is_inside_every_gated_ceiling():
+def test_real_plugin_delivers_every_core_rule_in_every_profile():
+    """The property that actually matters: nothing is silently left undelivered."""
     for name, got in ccb.measure(REAL_PLUGIN)["injected"].items():
-        if got["max_tokens"] is None:
-            continue
-        assert got["tokens"] <= got["max_tokens"], (
-            f"profile {name}: {got['tokens']:,} tok over {got['max_tokens']:,}"
+        assert got["dropped"] == [], f"profile {name} drops {got['dropped']}"
+        assert got["chars"] <= ccb.INJECTED_CAP_CHARS, (
+            f"profile {name}: {got['chars']:,} chars over the "
+            f"{ccb.INJECTED_CAP_CHARS:,}-character runtime cap"
         )
+
+
+def test_real_plugin_keeps_headroom_under_the_cap():
+    """A ceiling with no margin dictates the wording of the next fix.
+
+    This file's sibling gate has a long history of exactly that failure; the cap
+    itself cannot move, so the margin is the only defence.
+    """
+    for name, got in ccb.measure(REAL_PLUGIN)["injected"].items():
+        spare = ccb.INJECTED_CAP_CHARS - got["chars"]
+        assert spare >= 500, f"profile {name} has only {spare} characters spare"
 
 
 def test_unscoping_a_rule_is_caught_by_the_knowledge_profile(tmp_path: Path):
@@ -98,11 +114,11 @@ def test_unscoping_a_rule_is_caught_by_the_knowledge_profile(tmp_path: Path):
     identical. Runs against a copy of the REAL plugin so the real scope.sh
     predicates decide, not a stub.
     """
-    root = tmp_path / "steer"
-    shutil.copytree(REAL_PLUGIN, root)
-
-    # Pick a real scoped rule and confirm the marker is the only thing changing.
-    victim = root / "rules" / "99-end-of-session.md"
+    root = _make_plugin(tmp_path)
+    victim = root / "rules" / "50-scoped.md"
+    victim.write_text(
+        "<!-- steer:inject-when=code-project -->\n# Scoped\n" + "s" * 400, encoding="utf-8"
+    )
     original = victim.read_text(encoding="utf-8")
     marker, _, rest = original.partition("\n")
     assert marker.startswith("<!-- steer:inject-when="), marker
@@ -119,11 +135,15 @@ def test_unscoping_a_rule_is_caught_by_the_knowledge_profile(tmp_path: Path):
     )
 
 
-def test_profile_over_ceiling_fails(tmp_path: Path):
-    over = int(ccb.INJECTED_PROFILES["knowledge"]["max_tokens"] * ccb.BYTES_PER_TOKEN) + 100
-    errors = ccb.run_checks(_make_plugin(tmp_path, rules_bytes=over))
+def test_profile_over_the_runtime_cap_fails(tmp_path: Path):
+    """One rule bigger than the cap: the hook drops it, the gate must fail."""
+    root = _make_plugin(tmp_path, rules_bytes=100)
+    (root / "rules" / "50-huge.md").write_text("h" * ccb.INJECTED_CAP_CHARS, encoding="utf-8")
+    errors = ccb.run_checks(root)
     assert [e for e in errors if "'knowledge' profile" in e], errors
-    assert "inject-when" in " ".join(errors)
+    joined = " ".join(errors)
+    assert "50-huge.md" in joined, joined
+    assert "cannot be raised" in joined, joined
 
 
 def test_gate_fails_closed_when_it_cannot_measure(tmp_path: Path):
@@ -211,8 +231,7 @@ def test_report_renders_table(tmp_path: Path):
 
 
 def test_main_gate_and_report_exit_codes(tmp_path: Path, capsys):
-    over = int(ccb.INJECTED_PROFILES["knowledge"]["max_tokens"] * ccb.BYTES_PER_TOKEN) + 100
-    root = _make_plugin(tmp_path, rules_bytes=over)
+    root = _make_plugin(tmp_path, rules_bytes=ccb.INJECTED_CAP_CHARS + 100)
     assert ccb.main(["--plugin-root", str(root)]) == 1
     assert "problem(s) found" in capsys.readouterr().err
     # --report never gates, even over budget (it is the visibility surface).
