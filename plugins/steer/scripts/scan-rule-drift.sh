@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# scan-rule-drift.sh — read-only drift detector for the Tier 2 (path-scoped) rules.
+# scan-rule-drift.sh — read-only drift detector for the deferred repository rules.
 #
 # WHY THIS EXISTS
 #   Claude Code caps a SessionStart hook's stdout at 10,000 characters, so steer

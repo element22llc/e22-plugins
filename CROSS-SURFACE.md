@@ -85,11 +85,11 @@ two CLI-only gates above. See
 
 `steer` is built and tested for the **Claude Code engine**. Support tiers:
 
-- **Tier 1 — Targeted (developed & tested against).** **Claude Code** — the
+- **the always-on core — Targeted (developed & tested against).** **Claude Code** — the
   **CLI** and the **IDE extensions (VS Code, JetBrains)** (the extensions delegate
   to the CLI). Full engine: hooks, always-on rules, gates, skills, and MCP all
   work. Regressions here are **bugs we fix**.
-- **Tier 2 — Intended (supported, not gated per release).** The Claude Desktop
+- **Deferred repository rules — Intended (supported, not gated per release).** The Claude Desktop
   **Code tab** ("Claude Code Desktop"). It is full Claude Code (shared engine), so
   hooks / rules / gates / skills / MCP all work — we just don't run it in the
   per-release test matrix. Regressions here we fix; we just don't pre-verify each
@@ -209,14 +209,14 @@ This is documented authoritatively in
 
 ## 5. Recommendations per surface
 
-### Claude Code — CLI & IDE extensions (Tier 1)
+### Claude Code — CLI & IDE extensions (the always-on core)
 Full engine; `steer` works as-is. The IDE extensions delegate to the CLI, so hooks,
 rules, gates, skills, and MCP all apply. No adaptation needed — this is the
 reference experience.
 
-### Claude Desktop Code tab (Tier 2)
+### Claude Desktop Code tab (the deferred tier)
 The **Code tab** ("Claude Code Desktop") is full Claude Code — it shares CLI
-settings, so install/enable once and the whole engine applies; we keep it at Tier 2
+settings, so install/enable once and the whole engine applies; we keep it at the deferred tier
 only because it sits outside the per-release test matrix.
 
 ### Cowork — PO/knowledge-work only (Tier 3)

@@ -1,4 +1,4 @@
-"""Tests for scripts/check_rule_paths.py — the Tier 2 context-cost budgets."""
+"""Tests for scripts/check_rule_paths.py — the the deferred tier context-cost budgets."""
 
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ def test_universal_budget_is_separate_from_worst_case(tmp_path: Path):
 
 def test_report_names_the_worst_path():
     text = crp.report(REAL_RULES)
-    assert "Worst case:" in text
+    assert "Worst case (deferred only):" in text
     assert "Universal (`**`" in text
 
 
@@ -96,3 +96,31 @@ def test_a_rule_with_no_paths_never_fires(tmp_path: Path):
     (d / "steer-01-a.md").write_text("---\nfoo: bar\n---\nbody", encoding="utf-8")
     rules = crp.load_rules(d)
     assert crp.injected_for("anything.md", rules) == (0, 0)
+
+
+def test_report_states_the_combined_peak_not_just_the_deferred_tier():
+    """Quoting the deferred figure alone understates the cost by the whole core.
+
+    The peak a session actually carries is the always-on core (delivered every
+    session) plus the worst single file open, and that is the number a reader
+    needs. Pinned so the report cannot regress to the partial figure.
+    """
+    text = crp.report(REAL_RULES)
+    assert "COMBINED PEAK" in text
+    assert "Always-on core:" in text
+    assert "Session ceiling:" in text
+
+    core = crp.core_chars()
+    assert core is not None, "the core payload must be measurable from the repo root"
+    rules = crp.load_rules(REAL_RULES)
+    worst = max(crp.injected_for(c, rules)[1] for c in crp.CORPUS)
+    assert f"{core + worst:,}" in text
+
+
+def test_budgets_are_documented_as_deliberate_not_derived():
+    """These ceilings are chosen, not harness-imposed — the class of number this
+    repo has watched drift upward seven times. The module must say so, so nobody
+    raises one to turn a gate green without a recorded reason."""
+    doc = (Path(crp.__file__).read_text(encoding="utf-8")).upper()
+    assert "DELIBERATE BUDGETS, NOT A RATCHET" in doc
+    assert "RECORDED DECISION" in doc or "RECORDED REASON" in doc

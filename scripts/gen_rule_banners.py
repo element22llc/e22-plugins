@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Stamp (and verify) the provenance banner on every Tier 2 rule template.
+"""Stamp (and verify) the provenance banner on every deferred repository rule template.
 
-Tier 2 rules ship in the plugin and are *copied into* a managed repo as
+deferred repository rules ship in the plugin and are *copied into* a managed repo as
 ``.claude/rules/steer-*.md``. Once copied they are two files that can diverge in
 two very different ways, and a repair step has to tell them apart:
 

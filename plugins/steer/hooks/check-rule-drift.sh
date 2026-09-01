@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer SessionStart check — the Tier 2 ruleset is present and current.
+# steer SessionStart check — the deferred repository ruleset is present and current.
 #
 # WHY THIS EXISTS
 #   Claude Code caps a hook's stdout at 10,000 characters, so steer's

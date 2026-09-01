@@ -17,7 +17,28 @@ in Claude Code.
     `inject-standards.sh` refuses to overrun: it drops whole rules from the tail
     and says so in-band rather than letting the runtime truncate silently.
 
-## Tier 1 — the always-on core
+## The two tiers
+
+| Tier | Where it lives | How it arrives | Size |
+| --- | --- | --- | --- |
+| **Always-on core** | `plugins/steer/rules/` | SessionStart hook, every session | 5 rules, ~8.5 K chars |
+| **Deferred repository rules** | the managed repo's `.claude/rules/steer-*.md` | Claude Code injects each one when it reads a file that rule matches | 30 rules, ~64 K chars |
+
+The deferred tier has two subcategories, and the difference matters when
+budgeting:
+
+- **Universal** (`paths: "**"`) — 18 rules, ~38.4 K chars. Action-scoped:
+  committing, ending a session, answering a gate, deleting a file. No glob
+  predicts an *action*, so these fire on the first file a session touches. They
+  are **deferred always-on**, not scoped, and only trimming prose reduces them.
+- **Path-scoped** (a real glob) — 12 rules, ~26 K chars. Genuinely bounded to the
+  files they govern: `spec/**` for the spec workflow, test globs for testing, UI
+  globs for design sources.
+
+Calling the whole tier "path-scoped" overstates what scoping buys, which is why
+it is not called that.
+
+## The always-on core
 
 Five rules under `plugins/steer/rules/`, injected into every managed session by
 `inject-standards.sh` ([Hooks](hooks.md)), concatenated in lexical order. They
@@ -36,7 +57,7 @@ These five are the standards that must govern **before** Claude touches
 anything: who the counterpart is, what is dangerous, what never gets committed,
 and who decides. Everything else can wait until the work is in view.
 
-## Tier 2 — path-scoped rules in the consumer repo
+## Deferred repository rules
 
 The remaining 30 rules ship as `.claude/rules/steer-*.md`, installed into the
 managed repo by `/steer:init` / `/steer:adopt` and repaired by `/steer:sync`
@@ -77,7 +98,7 @@ injection, not a decision the model makes.
 | `steer-97-self-report.md` | File steer's own defects upstream with `/steer:report`. | `**` |
 | `steer-99-end-of-session.md` | End-of-session checklist. | `**` |
 
-!!! warning "Most of Tier 2 is *deferred* always-on, not scoped"
+!!! warning "Most of the deferred tier is *deferred* always-on, not scoped"
     18 of the 30 rules govern an **action** — committing, ending a session,
     answering a gate, deleting a file — not a file type, and no glob predicts an
     action. They carry `paths: "**"` and fire on the first file Claude touches.
@@ -96,14 +117,36 @@ injection, not a decision the model makes.
     gates both numbers — the worst-case single open and the universal floor —
     and `--report` prints the per-path table.
 
+!!! info "Each rule is injected once per session, not once per read"
+    Verified on Claude Code 2.1.252 by counting attachment records in the session
+    transcript: one long-lived process reading three different matching files
+    injects the rule **once**. The combined peak below is therefore a genuine
+    ceiling, not a per-read multiple.
+
+    The exception is `claude -p --continue`, where each turn is a fresh process
+    that replays the transcript and re-attaches what it matches — three such
+    turns produced three copies. That is a bounded cost specific to scripted
+    per-turn loops, not to interactive or SDK sessions.
+
+!!! abstract "The combined peak — the figure to quote"
+    | | chars | ~tokens |
+    | --- | ---: | ---: |
+    | Always-on core (every session) | 8,409 | 2,100 |
+    | Worst single file open (deferred) | 46,933 | 11,733 |
+    | **Combined peak** | **55,342** | **13,835** |
+    | Session ceiling (all 30 rules matched) | 72,742 | 18,185 |
+
+    Quoting the deferred figure alone understates the real cost by the whole
+    core. `uv run python scripts/check_rule_paths.py --report` prints this live.
+
     The lever for reducing it is prose, not globs: trim a rule's rationale into
     `templates/reference/*` and keep the imperative, as `87-output-discipline`
     did. **Never** narrow a glob to a path that does not really bound the rule —
     a rule that fails to load where it applies is the defect this whole split
     exists to fix.
 
-!!! warning "Tier 2 is repo-bound, not plugin-bound"
-    A `/plugin update` refreshes Tier 1 immediately. Tier 2 lives in each managed
+!!! warning "the deferred tier is repo-bound, not plugin-bound"
+    A `/plugin update` refreshes the always-on core immediately. the deferred tier lives in each managed
     repo, so a rule change reaches it only after `/steer:sync`. `/steer:sync`
     counts the installed files against the plugin's set and repairs a partial or
     missing install; a repo that never adopted them runs without those standards
@@ -119,7 +162,7 @@ prohibitions.
 !!! warning "Demotion to reference prose is a change of authority, not of address"
     The other six — `22-housekeeping`, `26-context-hygiene`, `32-living-docs`,
     `85-practices`, `88-artifacts`, `90-design-sources` — were promoted back to
-    Tier 2 once audited. Each carried prohibitions rather than guidance: the
+    the deferred tier once audited. Each carried prohibitions rather than guidance: the
     deletion gate, "never guess an answer into the spec", "all data access
     through a parameterized query layer" (injection prevention), "never carrying
     secrets", "never fabricate a status, date, count, or finding", an ADR-gated
@@ -134,17 +177,17 @@ prohibitions.
     Prefixes are spaced (e.g. `20` → `22` → `30`) so new rules can slot between
     existing ones. Gaps are headroom — files are never renumbered to make the
     sequence contiguous. The gaps are now wider still, since a rule that moved to
-    Tier 2 or to reference prose left its number free in `rules/`.
+    the deferred tier or to reference prose left its number free in `rules/`.
 
-!!! note "Conditional injection (Tier 1 only)"
-    A Tier 1 rule may carry a first-line `<!-- steer:inject-when=… -->` marker and
+!!! note "Conditional injection (the always-on core only)"
+    A always-on core rule may carry a first-line `<!-- steer:inject-when=… -->` marker and
     then injects only where its scope holds (see
     [`inject-standards.sh`](hooks.md)). None of the five current core rules uses
     one — they are all unconditional — but the mechanism remains for a future
     core rule, and `lib/scope.sh` is still covered by the hook test suite.
     In **knowledge-work mode** (a confidently non-code folder, e.g. a Claude
     Cowork product-owner workspace) every marked rule is skipped and a banner says
-    so. Tier 2 scoping is expressed by `paths:` instead, which is why the
+    so. deferred-tier scoping is expressed by `paths:` instead, which is why the
     `code-project` / `has-iac` / `tracker-github` markers left with the rules that
     carried them.
 

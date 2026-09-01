@@ -47,11 +47,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the split is the core alone — leaving chat surfaces (and the cap-guard's own
   "run `/steer:standards`" fallback) short of the 24 path-scoped rules. It now
   reads `templates/scaffold/claude/rules/` too.
-- **Bounded the Tier 2 context cost.** Escaping the hook cap does not escape the
+- **Renamed the tiers.** "the always-on core" / "the deferred tier" are now the
+  **always-on core** and **deferred repository rules**, the latter with two
+  subcategories: **universal** (`paths: "**"`, 18 rules — action-scoped, fires on
+  the first file touched) and **path-scoped** (a real glob, 12 rules). Calling
+  the whole tier "path-scoped" overstated what scoping buys.
+- **Verified injection is once per session, not once per read.** Counted
+  attachment records in the session transcript on 2.1.252: one long-lived
+  process reading three matching files injects each rule once. `-p --continue`
+  re-injects per turn because each invocation is a fresh process replaying the
+  transcript — bounded, and specific to scripted per-turn loops. The budgets
+  below only mean anything because of this, so it is written down and tested
+  rather than assumed.
+- **Bounded the deferred-tier context cost.** Escaping the hook cap does not escape the
   context window: 18 of the 30 rules are action-scoped (`paths: "**"`), so
-  opening one file injects 19-22 rules, ~39-47k characters. New
-  `scripts/check_rule_paths.py` gates the worst-case single open and the
-  universal `**` floor, with tests for overlapping globs so a new action-scoped
+  opening one file injects 19-22 rules, ~46,900 characters. The figure to quote
+  is the **combined peak — 55,342 characters / ~13,835 tokens**: the always-on
+  core plus the worst single file open. (Session ceiling, if every rule
+  eventually matches: ~72,700 chars / ~18,200 tokens.) New
+  `scripts/check_rule_paths.py` gates the worst-case single open (50,000) and the
+  universal `**` floor (41,500) — **deliberate budgets, not harness limits**, so
+  raising either needs a reviewer's agreement and a recorded reason, precisely so
+  they do not become another ratchet. with tests for overlapping globs so a new action-scoped
   rule cannot quietly land on every file open in every managed repo.
 - **Drift detection for the repo-bound half.** New
   `scripts/scan-rule-drift.sh` classifies every installed rule as
@@ -729,7 +746,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   non-gated**, and stops at a `Suggested command` when the arbitration was genuinely
   close, the step is gated, or no real command performs it. The mechanism is stated
   where it was previously ambiguous: the continuation is a **fresh invocation of the
-  owning skill**, so a Tier 1 navigator never performs Tier 2 writes inside its own
+  owning skill**, so a the always-on core navigator never performs the deferred tier writes inside its own
   run and `/steer:next` stays read-only in the sense its frontmatter enforces. The
   same clarification lands in `NEXT-ACTIONS.md`, which is canonical for the block
   and shared by `/steer:init`, `/steer:adopt` and `/steer:build` — so the rule now
@@ -2640,7 +2657,7 @@ actually ran say so explicitly.*
   body has a non-clobbering reconcile branch that `/steer:spec` depends on. All
   paid for inside the skill-listing ratchet by trimming redundancy in the same
   descriptions — **no ceiling raise**.
-- **Fixed:** `plugins/steer/README.md` said the five temp-writing Tier 1 skills
+- **Fixed:** `plugins/steer/README.md` said the five temp-writing the always-on core skills
   each have "a single temp-dir path" as their one permitted write, then conceded
   12 lines later that `/steer:audit` may also write `/spec/AUDIT-REPORT.md` and
   `/spec/DRIFT-REPORT.md`. Now states the exception where the claim is made.
@@ -2681,19 +2698,19 @@ actually ran say so explicitly.*
   invocation; there is no post-run window. The paragraph is replaced by that
   invariant, and publication is described as a separate step because it is a
   separate *skill* (`/steer:issues publish-*`), not a later phase of this one.
-- **Fixed:** `README.md` and `AUTHORING.md` both claimed the Tier 1 skills set
+- **Fixed:** `README.md` and `AUTHORING.md` both claimed the the always-on core skills set
   `disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree` with **two** render
   variants keeping `Write`; four kept it (`audit`, `explain`, `help`, `status`).
   `AUTHORING.md` is the contract new skills are authored against, so it was
-  actively instructing the next Tier 1 render skill into the exact trap
+  actively instructing the next the always-on core render skill into the exact trap
   `audit/SKILL.md` warns about. Both now define the tier by
   `Edit`/`NotebookEdit`/`EnterWorktree` and describe `Write` as splitting it.
-- **Fixed:** `/steer:report` was documented as Tier 1 but **tool-enforced as
-  nothing** — it set no `disallowed-tools` at all, making it the one Tier 1 skill
+- **Fixed:** `/steer:report` was documented as the always-on core but **tool-enforced as
+  nothing** — it set no `disallowed-tools` at all, making it the one the always-on core skill
   with no frontmatter floor, and the one that posts to a shared upstream repo
   unprompted. It now carries `disallowed-tools: Edit, NotebookEdit, EnterWorktree`
   (keeping `Write` for the scrubbed temp file it builds the issue from), and the
-  three hand-maintained Tier 1 rosters that omitted it now list it.
+  three hand-maintained the always-on core rosters that omitted it now list it.
 - **Fixed:** `/steer:audit`'s `Write` contract enumerated the permitted writes
   exhaustively ("never … any other file") while its `spec` mode offers
   `/steer:tracker-sync pull`, which materializes one markdown file per issue. The
@@ -2803,7 +2820,7 @@ actually ran say so explicitly.*
 - **Fixed:** three surfaces stated an authorization or routing fact the code
   contradicts — the class the pre-release audit exists to catch, and two of the
   three were introduced by the *previous* audit-fix pass. (1) The authorization
-  model page claimed Tier 1 skills set `disallowed-tools: Edit, Write, …` and named
+  model page claimed the always-on core skills set `disallowed-tools: Edit, Write, …` and named
   eight; `audit`, `status`, `help` and `explain` all retain `Write` (bound in prose
   to a temp-dir Artifact or a confirmed report), and `explain` also disallows
   `Bash`. The tier is now defined by `Edit`/`NotebookEdit`/`EnterWorktree`, with
@@ -2864,7 +2881,7 @@ actually ran say so explicitly.*
   detectors no longer disagree on their surface list.
 - **Fixed:** a batch of smaller cross-surface inaccuracies — bare `/loop` in two
   places colliding with the real `/steer:loop`; `INVOCATION.md`'s `explain` row
-  describing a different skill, its Tier 1 header omitting that `report` auto-files
+  describing a different skill, its the always-on core header omitting that `report` auto-files
   and `audit` may write, and its gateway caller sets understating both; `status`
   contradicting itself on whether `Bash` is disallowed; `doctor` reading as though
   it edits the dev's shell rc; the scaffold `CLAUDE.md` naming only `feat/*` when
@@ -3252,7 +3269,7 @@ actually ran say so explicitly.*
   `spec/design/architecture.md` to **`spec/design/architecture-diagram.md`**. It
   shared a basename with the root `ARCHITECTURE.md` that links to it, differing
   only by case and path — two files called "architecture" at two altitudes read
-  as a duplicate or a half-finished move — and it collided with the Tier 2
+  as a duplicate or a half-finished move — and it collided with the the deferred tier
   LikeC4 *model folder* `spec/design/architecture/` sitting beside it. The three
   artifacts are now legible by name: model folder `architecture/` → rendered
   diagram `architecture-diagram.md` → narrative `ARCHITECTURE.md`. The
@@ -4279,9 +4296,9 @@ actually ran say so explicitly.*
 - **Added:** opt-in architecture-diagram support. A new bootstrap file
   `spec/design/architecture.md` gives every repo a canonical home for a **living,
   global architecture diagram** that `ARCHITECTURE.md` links to (preserving the
-  "narrative + tables, link don't inline" contract). **Tier 1 (default):** hand-authored
+  "narrative + tables, link don't inline" contract). **the always-on core (default):** hand-authored
   Mermaid (`flowchart` + `sequenceDiagram`) that renders in GitHub and the docs site
-  with no toolchain. **Tier 2 (opt-in):** a LikeC4 C4 model, activated by adding a
+  with no toolchain. **the deferred tier (opt-in):** a LikeC4 C4 model, activated by adding a
   `*.likec4` source and uncommenting the inert `diagrams:render` task in the scaffold
   `mise.toml` (exports Mermaid back into `architecture.md`, so the tiers compose). New
   `/steer:reference architecture-diagrams` topic documents both tiers, tool trade-offs,

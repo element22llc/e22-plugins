@@ -72,7 +72,7 @@ def test_scoping_is_measured(tmp_path: Path):
     """inject-when scoping must still show up in the measured payload.
 
     Driven by a fixture rather than the real plugin: after the 10,000-character
-    split, every Tier 1 rule is unconditional (Tier 2 scopes itself with `paths:`
+    split, every always-on core rule is unconditional (the deferred tier scopes itself with `paths:`
     frontmatter instead), so the real plugin no longer exercises this. The
     predicates in lib/scope.sh are still live code and still gated here.
     """

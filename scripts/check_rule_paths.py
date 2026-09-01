@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Bound what a single file open costs in Tier 2 rule injection.
+"""Bound what a single file open costs in deferred repository rule injection.
 
-Tier 2 rules escape the SessionStart hook's 10,000-character cap, but they do
+deferred repository rules escape the SessionStart hook's 10,000-character cap, but they do
 **not** escape the context window. Claude Code injects every rule whose ``paths:``
 frontmatter matches a file it reads, so the real question is not "how big is the
 ruleset" but **"how much of it arrives when one file is opened?"**
@@ -17,6 +17,25 @@ session at all, and the pre-split design *intended* ~17,500 always-on characters
 it never actually delivered). But it is a real context cost that grows silently:
 every new ``paths: "**"`` rule lands on every file open in every managed repo, and
 nothing in a PR shows that. Hence a gate.
+
+Injection is once per session, not once per read
+------------------------------------------------
+The budgets below are only meaningful because a matching rule is injected
+**once per session**, not re-appended on every read. Verified on Claude Code
+2.1.252 by counting attachment records in the session transcript:
+
+* one long-lived process, three reads of three different matching files →
+  **one** injection (``{"occurrences": 1}`` when the model is asked to count);
+* ``-p --continue``, three turns of one read each → three injections, because
+  each ``-p`` invocation is a **fresh process** replaying the transcript and
+  re-attaching what it matches.
+
+So the interactive and SDK cases — the ones that matter — pay each rule once,
+and the session ceiling is the union of every rule matched, not a per-read
+multiple. Scripted per-turn ``-p --continue`` loops pay per restart; that is a
+bounded, self-inflicted cost, not the common path. **If this ever changes, these
+budgets are meaningless and the deferred tier needs redesigning** — which is why
+it is written down here rather than assumed.
 
 Two budgets, both in **characters** — the same unit as ``check_context_budget.py``
 and the runtime cap, deliberately, so no surface here mixes units:
@@ -51,10 +70,35 @@ import yaml
 
 RULES_DIR = Path("plugins/steer/templates/scaffold/claude/rules")
 
+# The number a reader actually wants is not either tier alone but what a session
+# is carrying at its worst moment: the always-on core (delivered at session
+# start, every session) PLUS the deferred rules a single file open pulls in.
+# Quoting only the deferred figure understates the real peak by the whole core.
+CORE_PROFILE = "code"
+
 # Sized at the measured worst case plus ~7%, which buys roughly one more
 # average rule (~2,150 chars) before the ceiling is load-bearing. Same basis as
 # check_context_budget.py: a margin too thin to absorb an ordinary edit makes the
 # ceiling dictate the wording of the next correctness fix.
+# DELIBERATE BUDGETS, NOT A RATCHET.
+#
+# These are chosen ceilings on a cost this repo has decided is acceptable — they
+# are NOT derived from any harness limit, unlike INJECTED_CAP_CHARS (a real
+# 10,000-character runtime cap) or SKILL_BODY_MAX_BYTES (a real re-attach cap).
+# That makes them exactly the kind of number this repo has watched drift upward
+# seven times before: see the retired-ratchet history in check_context_budget.py,
+# which is preserved specifically as evidence of how that happens.
+#
+# So: **raising either value requires an explicit, recorded decision** — a
+# reviewer agreeing in the PR that the new cost is worth it, and a note here
+# saying what bought the increase. "The gate went red and I needed it green" is
+# the failure mode, not a reason. The default response to a breach is to trim a
+# rule's rationale into templates/reference/*, never to move the line.
+#
+# Sized at the measured worst case plus ~7%, which buys roughly one more average
+# rule (~2,150 chars) — enough that an ordinary correctness fix to a rule never
+# has its wording dictated by the ceiling, which is the specific failure the
+# ratchet history records.
 WORST_CASE_MAX_CHARS = 50_000
 UNIVERSAL_MAX_CHARS = 41_500
 
@@ -83,7 +127,7 @@ CORPUS = [
 
 
 def load_rules(rules_dir: Path = RULES_DIR) -> list[tuple[str, int, list[str]]]:
-    """(name, characters, globs) for every Tier 2 rule."""
+    """(name, characters, globs) for every deferred repository rule."""
     out: list[tuple[str, int, list[str]]] = []
     for path in sorted(rules_dir.glob("steer-*.md")):
         text = path.read_text(encoding="utf-8")
@@ -120,9 +164,24 @@ def universal_chars(rules) -> tuple[int, int]:
     return len(hit), sum(r[1] for r in hit)
 
 
+def core_chars() -> int | None:
+    """Characters the SessionStart hook delivers, or None if unmeasurable here.
+
+    Imported lazily and failure-tolerantly: this gate must still work on a
+    rules directory passed with --rules-dir, where no plugin hook exists to run.
+    """
+    try:
+        import check_context_budget as ccb
+
+        payload, _ = ccb.measure_injected(Path("plugins/steer"), CORE_PROFILE)
+        return len(payload)
+    except Exception:
+        return None
+
+
 def run_checks(rules_dir: Path = RULES_DIR) -> list[str]:
     if not rules_dir.is_dir():
-        return [f"{rules_dir}: Tier 2 rules directory not found"]
+        return [f"{rules_dir}: deferred repository rules directory not found"]
     rules = load_rules(rules_dir)
     if not rules:
         return [f"{rules_dir}: no steer-*.md rules found"]
@@ -139,8 +198,10 @@ def run_checks(rules_dir: Path = RULES_DIR) -> list[str]:
         errors.append(
             f"{rules_dir}: opening `{worst_path}` injects {worst_n} of {len(rules)} rules, "
             f"{worst_chars:,} characters — over the {WORST_CASE_MAX_CHARS:,}-character "
-            f"worst-case budget. Tier 2 has no hook cap, but it still costs context, and "
-            f"this lands on the first file a session touches. Trim a rule's rationale into "
+            f"worst-case budget. The deferred tier has no hook cap, but it still costs "
+            f"context, and this lands on the first file a session touches. This is a "
+            f"DELIBERATE budget, not a harness limit: raising it needs a reviewer's "
+            f"agreement and a recorded reason. Trim a rule's rationale into "
             f"templates/reference/* and keep the imperative; do NOT narrow a glob to a path "
             f"that does not really bound the rule."
         )
@@ -153,7 +214,8 @@ def run_checks(rules_dir: Path = RULES_DIR) -> list[str]:
             f"budget for the universal set. This is the floor every session pays as soon as "
             f'it reads anything, including a bare README. A new `paths: "**"` rule is an '
             f"always-on rule in everything but name — give it a real scope, or trim prose to "
-            f"pay for it."
+            f"pay for it. This budget is a deliberate choice, not a harness limit: raising it "
+            f"needs a reviewer's agreement and a recorded reason here."
         )
     _ = total
     return errors
@@ -164,7 +226,7 @@ def report(rules_dir: Path = RULES_DIR) -> str:
     uni_n, uni_chars = universal_chars(rules)
     total = sum(r[1] for r in rules)
     lines = [
-        f"Tier 2: {len(rules)} rules, {total:,} characters total.",
+        f"Deferred repository rules: {len(rules)} rules, {total:,} characters total.",
         f"Universal (`**`, fires on any file): {uni_n} rules, {uni_chars:,} chars "
         f"(budget {UNIVERSAL_MAX_CHARS:,}).",
         "",
@@ -177,9 +239,20 @@ def report(rules_dir: Path = RULES_DIR) -> str:
     worst = rows[0]
     lines += [
         "",
-        f"Worst case: `{worst[0]}` → {worst[1]}/{len(rules)} rules, {worst[2]:,} chars "
-        f"(budget {WORST_CASE_MAX_CHARS:,}).",
+        f"Worst case (deferred only): `{worst[0]}` → {worst[1]}/{len(rules)} rules, "
+        f"{worst[2]:,} chars (budget {WORST_CASE_MAX_CHARS:,}).",
     ]
+    core = core_chars()
+    if core is not None:
+        peak = core + worst[2]
+        lines += [
+            f"Always-on core: {core:,} chars.",
+            f"COMBINED PEAK: {peak:,} chars (~{peak // 4:,} tokens) — the core plus the "
+            f"worst single file open. This is the figure to quote.",
+            f"Session ceiling: {core + total:,} chars (~{(core + total) // 4:,} tokens) if a "
+            f"session eventually touches files matching every rule. Each rule is injected "
+            f"ONCE per session, so this is a true ceiling, not a per-read cost.",
+        ]
     return "\n".join(lines)
 
 

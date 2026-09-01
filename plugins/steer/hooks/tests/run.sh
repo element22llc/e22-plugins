@@ -174,7 +174,7 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	# Action history is a DIRECTORY of per-entry files (the current shape).
 	mkdir -p "$1/spec/history"
 	printf 'x\n' >"$1/spec/history/README.md"
-	# The Tier 2 path-scoped ruleset is part of a managed repo now: the hook can
+	# The the deferred tier path-scoped ruleset is part of a managed repo now: the hook can
 	# only deliver the five always-on core rules (Claude Code caps hook stdout at
 	# 10,000 characters), so a repo without .claude/rules/steer-*.md is running on
 	# a fraction of the standards and check-rule-drift.sh says so. A fixture that
@@ -3077,7 +3077,7 @@ printf '%s' "${out}" | grep -q "Treat the standards" && ok ||
 	bad "inject cap: notice must carry the terminator the gate parses"
 
 # ---------------------------------------------------------------------------
-# scan-rule-drift.sh + check-rule-drift.sh — Tier 2 ruleset drift.
+# scan-rule-drift.sh + check-rule-drift.sh — deferred repository ruleset drift.
 #
 # The 24 path-scoped rules live in the CONSUMER repo, so `/plugin update` never
 # refreshes them and nothing in a session notices they are stale. These cases
