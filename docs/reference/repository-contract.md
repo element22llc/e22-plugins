@@ -96,21 +96,38 @@ repo may drop the paired `scripts/worktree-env.sh` (and its `mise.toml`
 `worktree-port-isolation` reports `n/a` only when the stack is `none`. The **installed** repo layout is unchanged by this organization;
 only the plugin's bundle and the init/adopt composition differ.
 
-Always-on **rules** do not read the marker — they self-gate on filesystem
-**traits** via the `inject-when` mechanism, so the injected rule context always
-matches what is on disk. Only four expressions actually gate a
-shipped rule: `code-project` (the code-loop rules, enumerated in
-[Configuration & rules](configuration.md#the-ruleset)), `has-iac` (`12-stack-infra`),
-`tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
-(`52-deployment`) — so `has-apps` appears only inside that composite.
-`lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,
-`has-workspace-manifest` and `has-product-pointer`, all of which are
-**available but carry no rule today** — the polyrepo topology is deliberately
-delivered by a SessionStart note rather than an always-on rule, so the existence
-of the `polyrepo` token is not evidence that a `21-polyrepo` rule exists. A monorepo that *also* has a nested `/infra` dir stays profile `app` and
-still gets the infra-stack rule automatically because `/infra` exists. The
-deployment rule reaches it either way: it gates on `has-iac` **or** `has-apps`,
-since any app/service repo deploys — with or without an `/infra` dir. The
+**Rules** do not read the profile marker — they self-gate on filesystem
+**traits**, so the rule context a session gets always matches what is on disk.
+Since the ruleset was split to fit the SessionStart hook's 10,000-character cap
+(see [Configuration & rules](configuration.md#the-two-tiers)) that self-gating
+happens in two different places:
+
+- the **always-on core** still supports a first-line
+  `<!-- steer:inject-when=… -->` marker resolved by `lib/scope.sh`. **No current
+  core rule uses one** — all five are unconditional — but the mechanism and its
+  predicates remain, and the hook suite still covers them against fixtures.
+- the **deferred repository rules** express the same idea as `paths:`
+  frontmatter, which Claude Code resolves when it reads a matching file:
+  `spec/**` for the spec workflow, `infra/**` and `*.tf` for the infra stack,
+  test globs for testing. 18 of the 30 carry `paths: "**"` because they gate an
+  *action* (committing, deleting, answering a gate) that no path predicts.
+
+So the `code-project` / `has-iac` / `tracker-github` / `has-iac|has-apps`
+expressions that used to gate `10-stack`, `12-stack-infra`, `36-issue-first` and
+`52-deployment` left with those rules when they moved to the deferred tier.
+`lib/scope.sh` still defines `has-compose`, `has-infra`, `polyrepo`,
+`has-workspace-manifest` and `has-product-pointer` too — all **available but
+carrying no rule today**. The polyrepo topology is deliberately delivered by a
+SessionStart note rather than a rule, so the existence of the `polyrepo` token
+is not evidence that a `21-polyrepo` rule exists. `steer_work_mode` (knowledge
+vs code) is the one scope predicate still doing live work, deciding whether the
+hook emits its knowledge-work banner.
+
+A monorepo that *also* has a nested `/infra` dir stays profile `app` and still
+gets the infra-stack rule, now because `infra/**` matches when Terraform is
+read. The deployment rule reaches it either way — its globs cover `infra/**`,
+`apps/**` and workflows, since any app/service repo deploys, with or without an
+`/infra` dir. The
 profile is read by `/steer:sync` and `scripts/scan-capabilities.sh`
 (an informational `profile` fingerprint) for reporting and overlay decisions.
 
