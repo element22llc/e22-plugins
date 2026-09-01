@@ -226,11 +226,13 @@ and **Repair**.
     - `stale` → the plugin changed the rule and the repo's copy is untouched
       since install (its body still matches its own banner stamp). Replace it
       wholesale.
-    - `edited` → the body no longer matches the stamp steer wrote, so a human
-      changed it. **Never overwrite.** Show the diff against the current plugin
-      text and let the user choose: keep theirs, take the plugin's, or merge. If
-      they keep theirs, say plainly that the local edit does not propagate to any
-      other repo and will be re-flagged every session.
+    - `edited` → the body no longer matches the stamp steer wrote, so it changed
+      after installation. The stamp is drift metadata only: it does not say who
+      or what changed it, and it is not an authenticity check. **Never
+      overwrite.** Show the diff against the current plugin text and let the user
+      choose: keep it, take the plugin's, or merge. If they keep it, say plainly
+      that the change does not propagate to any other repo and will be re-flagged
+      every session.
     - `orphan` → a `steer-*.md` this plugin version no longer ships (a retired or
       renamed rule). Propose removal; do not delete unprompted.
 - **Verbatim:** yes for `absent`/`stale`; **never** for `edited`.

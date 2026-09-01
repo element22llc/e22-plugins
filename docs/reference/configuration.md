@@ -77,12 +77,30 @@ injection, not a decision the model makes.
 | `steer-97-self-report.md` | File steer's own defects upstream with `/steer:report`. | `**` |
 | `steer-99-end-of-session.md` | End-of-session checklist. | `**` |
 
-!!! note "`paths: \"**\"` is the honest answer for action-scoped rules"
-    Several rules govern an **action** (committing, ending a session, answering a
-    gate), not a file type, so no glob predicts them. `**` loads them on the first
-    file Claude touches — later than always-on, but in every session that does
-    real work, and vastly better than the status quo it replaced, where they
-    reached no session at all.
+!!! warning "Most of Tier 2 is *deferred* always-on, not scoped"
+    18 of the 30 rules govern an **action** — committing, ending a session,
+    answering a gate, deleting a file — not a file type, and no glob predicts an
+    action. They carry `paths: "**"` and fire on the first file Claude touches.
+
+    So "path-scoped" oversells what scoping buys. Measured against a corpus of
+    representative repo paths, **opening one file injects 19-22 of the 30 rules,
+    39,000-47,000 characters (~10-12k tokens)**; the `**` subset alone is ~38,400
+    characters that every session pays as soon as it reads anything, including a
+    bare `README.md`.
+
+    That is still less than the pre-split design *intended* to spend (~17,500
+    always-on characters, which it never actually delivered), and it arrives
+    correctly rather than not at all. But it is a real context cost, and it grows
+    silently: a new `paths: "**"` rule is an always-on rule in everything but
+    name, and nothing in a PR diff shows that. `scripts/check_rule_paths.py`
+    gates both numbers — the worst-case single open and the universal floor —
+    and `--report` prints the per-path table.
+
+    The lever for reducing it is prose, not globs: trim a rule's rationale into
+    `templates/reference/*` and keep the imperative, as `87-output-discipline`
+    did. **Never** narrow a glob to a path that does not really bound the rule —
+    a rule that fails to load where it applies is the defect this whole split
+    exists to fix.
 
 !!! warning "Tier 2 is repo-bound, not plugin-bound"
     A `/plugin update` refreshes Tier 1 immediately. Tier 2 lives in each managed
@@ -106,8 +124,11 @@ prohibitions.
     through a parameterized query layer" (injection prevention), "never carrying
     secrets", "never fabricate a status, date, count, or finding", an ADR-gated
     exception. A rule reachable only by lookup is a rule that does not apply, so
-    a prohibition can never be advisory. Apply that test before demoting anything
-    else.
+    **a prohibition protecting security, authorization, data integrity,
+    correctness, or a required workflow cannot be advisory.** Prohibitions
+    outside those classes — a house style rule, a naming preference — can be,
+    and `20-layout` is where that line fell. Apply that test before demoting
+    anything else.
 
 !!! note "Numbering has intentional gaps"
     Prefixes are spaced (e.g. `20` → `22` → `30`) so new rules can slot between

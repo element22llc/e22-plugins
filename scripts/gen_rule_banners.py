@@ -6,7 +6,7 @@ Tier 2 rules ship in the plugin and are *copied into* a managed repo as
 two very different ways, and a repair step has to tell them apart:
 
 * the **plugin** moved on — the repo's copy is stale and should be replaced;
-* the **user** edited the repo's copy — replacing it would destroy their work.
+* the repo's copy **changed after installation** — replacing it may destroy work.
 
 Content comparison alone cannot distinguish those: both show up as "differs from
 what the plugin ships". So each installed file records what steer wrote::
@@ -19,21 +19,34 @@ is as much a local edit as editing prose). At scan time
 ``scan-rule-drift.sh`` recomputes it:
 
 ===========================  ==========================================
-recomputed == banner stamp   the file is untouched since install, so a
+recomputed == banner stamp   the body is unchanged since install, so a
                              difference from the plugin is the plugin's →
                              **stale**
-recomputed != banner stamp   somebody edited it after install →
+recomputed != banner stamp   the body changed after installation →
                              **edited**, never overwritten silently
 ===========================  ==========================================
 
+What the stamp does and does not tell you
+-----------------------------------------
+It is **drift metadata, not an authenticity or security boundary.** All it
+establishes is that the body differs from what was recorded at install time. It
+attributes nothing: it cannot tell you *who* or *what* changed the file — a
+person, a formatter, a merge, a script, or a partial write all look identical.
+Anything that can edit the file can also edit the stamp, and a CRC is trivial to
+forge besides. Never treat a matching stamp as evidence a file is trustworthy;
+its only job is to route a repair (replace vs. show a diff).
+
 Why ``cksum`` and not sha256
 ----------------------------
-``cksum`` is POSIX-mandated, so it exists on every host the hooks run on with no
-dependency to install, and its CRC is specified exactly — GNU and BSD agree
-(verified against the POSIX reference value for ``123456789``: 930766865). A
-sha256 would mean ``shasum`` on macOS and ``sha256sum`` on Linux, i.e. two
-digests that never compare equal across a repo shared between them. The stamp is
-detecting accidental drift, not resisting a forger, so a CRC is the right tool.
+Purely **availability and portability of the tool**, not of the digest — a
+SHA-256 digest is identical on every platform; what differs is that macOS ships
+``shasum`` and Linux ``sha256sum``, with different argument and output
+conventions, and neither is guaranteed present. ``cksum`` is POSIX-mandated, so
+it exists on every host these hooks run on with no dependency to install and no
+per-platform command branching, and its CRC is specified exactly (verified
+against the POSIX reference value for ``123456789``: 930766865). Since the stamp
+is drift metadata and explicitly not a security control, the weaker checksum
+costs nothing that matters here.
 
 The stamp is generated, therefore it can go stale in the plugin's own tree the
 moment anybody edits a rule. ``--check`` is wired into ``mise run check`` so it

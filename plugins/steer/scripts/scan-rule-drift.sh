@@ -19,11 +19,17 @@
 #                      (default: $CLAUDE_PLUGIN_ROOT, else this script's parent)
 #
 # HOW IT CLASSIFIES (the point of the script)
-#   Content comparison alone cannot separate "the plugin moved on" from "a human
-#   edited this" — both merely differ from what the plugin ships, and the two
-#   demand opposite responses (replace vs. never silently replace). So each
-#   installed file carries a banner recording a POSIX `cksum` of its own body as
-#   steer wrote it (see scripts/gen_rule_banners.py):
+#   Content comparison alone cannot separate "the plugin moved on" from "this
+#   copy changed after installation" — both merely differ from what the plugin
+#   ships, and the two demand opposite responses (replace vs. never silently
+#   replace). So each installed file carries a banner recording a POSIX `cksum`
+#   of its own body as steer wrote it (see scripts/gen_rule_banners.py).
+#
+#   THE STAMP IS DRIFT METADATA, NOT A SECURITY OR AUTHENTICITY BOUNDARY. It
+#   establishes only that the body changed since install — never who or what
+#   changed it (a person, a formatter, a merge, a script and a partial write are
+#   indistinguishable), and anything that can edit the file can edit the stamp.
+#   Its only job is to route a repair.
 #
 #     current   body is byte-identical to the plugin's        → nothing to do
 #     absent    no such file in the repo                      → install it
@@ -31,13 +37,14 @@
 #               matches its own banner stamp, so nobody has
 #               touched it since install: the plugin changed
 #     edited    body no longer matches its own banner stamp   → NEVER overwrite;
-#               → a human changed it after install               show a diff
+#               i.e. it changed after installation               show a diff
 #     orphan    a steer-*.md the plugin no longer ships       → propose removal
 #
 #   Comparing whole bytes rather than a digest is deliberate where it is
 #   possible: the plugin source is on the same machine, so there is no reason to
 #   compare digests of the content when the content itself is right there. The
-#   stamp is used only for the one question bytes cannot answer — who changed it.
+#   stamp answers only the question bytes cannot: whether this copy has changed
+#   since steer wrote it.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. Reads the repo + plugin source, writes status lines to stdout. A gap is
@@ -86,7 +93,7 @@ body_of() { grep -v '^<!-- steer:managed ' "$1"; }
 body_cksum() { body_of "$1" | cksum | cut -d' ' -f1; }
 # The cksum the banner claims. Empty when there is no banner (a hand-made file,
 # or one predating the stamp) — treated as `edited`, the conservative side:
-# never overwrite something whose provenance cannot be established.
+# never overwrite something whose recorded state cannot be established.
 banner_cksum() {
 	sed -n 's/^<!-- steer:managed .* body-cksum:\([0-9][0-9]*\) .*/\1/p' "$1" | head -n 1
 }
@@ -120,7 +127,7 @@ for src in "${SRC}"/steer-*.md; do
 		emit "${name}" "stale" "plugin changed this rule; repo copy untouched since install"
 		n_stale=$((n_stale + 1))
 	else
-		emit "${name}" "edited" "locally modified after install — do not overwrite"
+		emit "${name}" "edited" "changed after install — do not overwrite"
 		n_edited=$((n_edited + 1))
 	fi
 done

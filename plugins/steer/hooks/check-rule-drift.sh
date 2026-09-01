@@ -87,7 +87,7 @@ if [ "${n_stale}" -gt 0 ]; then
 	[ "${n_stale}" -gt 8 ] && printf '    - …and %s more\n' "$((n_stale - 8))"
 fi
 if [ "${n_edited}" -gt 0 ]; then
-	printf -- '- **%s locally edited** — kept as-is; sync will show a diff and never overwrite:\n' "${n_edited}"
+	printf -- '- **%s changed since install** — kept as-is; sync shows a diff, never overwrites:\n' "${n_edited}"
 	printf '%s\n' "${OUT}" | grep '	edited	' | cut -f1 | sed 's/^/    - `/;s/$/`/' | head -n 8
 	[ "${n_edited}" -gt 8 ] && printf '    - …and %s more\n' "$((n_edited - 8))"
 fi

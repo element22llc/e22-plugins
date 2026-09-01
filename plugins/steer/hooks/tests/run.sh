@@ -3158,7 +3158,7 @@ printf '\nOur team also requires a staging soak before merge.\n' \
 assert_eq "rule-drift: a local edit is detected" \
 	"$(rd_state "${RD_EDIT}" steer-45-commit-autonomy.md)" "edited"
 out="$(run_hook check-rule-drift.sh "$(session_json "${RD_EDIT}" rd_edit)")"
-assert_has "rule-drift: an edited rule is reported as preserved" "${out}" 'locally edited'
+assert_has "rule-drift: an edited rule is reported as preserved" "${out}" 'changed since install'
 assert_has "rule-drift: the warning promises not to overwrite" "${out}" 'never overwrite'
 # A file with no banner at all cannot have its provenance established, so it must
 # fall on the conservative side rather than being silently replaced.

@@ -35,7 +35,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   prevention), `88-artifacts` ("never carrying secrets", "never fabricate a
   status"), `90-design-sources` (an ADR-gated exception), `26-context-hygiene`.
   A rule reachable only by lookup is a rule that does not apply, so a
-  prohibition can never be advisory.
+  prohibition protecting security, authorization, data integrity, correctness,
+  or a required workflow cannot be advisory. Prohibitions outside those classes
+  still can be — that line is why `20-layout` stayed demoted.
 - **`inject-standards.sh` can no longer overrun silently.** It assembles the
   payload to a buffer, drops whole rules from the tail if it would exceed the
   cap, and appends an in-band `RULESET INCOMPLETE` notice naming them; the full
@@ -45,15 +47,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the split is the core alone — leaving chat surfaces (and the cap-guard's own
   "run `/steer:standards`" fallback) short of the 24 path-scoped rules. It now
   reads `templates/scaffold/claude/rules/` too.
+- **Bounded the Tier 2 context cost.** Escaping the hook cap does not escape the
+  context window: 18 of the 30 rules are action-scoped (`paths: "**"`), so
+  opening one file injects 19-22 rules, ~39-47k characters. New
+  `scripts/check_rule_paths.py` gates the worst-case single open and the
+  universal `**` floor, with tests for overlapping globs so a new action-scoped
+  rule cannot quietly land on every file open in every managed repo.
 - **Drift detection for the repo-bound half.** New
   `scripts/scan-rule-drift.sh` classifies every installed rule as
   `current` / `absent` / `stale` / `edited` / `orphan`. It compares whole bytes
   against the plugin source, and uses a POSIX-`cksum` stamp in each file's banner
-  for the one question bytes cannot answer — *who* changed it. A stale copy is
+  for the one question bytes cannot answer: whether this copy changed since steer
+  wrote it. The stamp is **drift metadata, not an authenticity or security
+  boundary** — it attributes nothing, and anything that can edit the file can
+  edit the stamp. `cksum` over SHA-256 purely for tool availability (POSIX
+  guarantees it; `shasum`/`sha256sum` differ per platform in name and output, not
+  in digest). A stale copy is
   replaced; an **`edited` copy is never overwritten**, only diffed. A file count
   cannot see either state, which is why it is not used.
 - **An always-on stale-install warning.** New `check-rule-drift.sh` runs in the
-  SessionStart check chain and names what is missing, stale, or locally edited,
+  SessionStart check chain and names what is missing, stale, or changed since install,
   with `/steer:sync` as the repair. A stale install is worst exactly when nobody
   thinks to run sync, so this does not wait to be asked. Hook output caps are
   per-hook, not per-event (verified), so it costs the ruleset payload nothing.

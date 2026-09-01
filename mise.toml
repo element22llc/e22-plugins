@@ -77,6 +77,9 @@ run = [
   # stale copy from a locally-edited one. A rule edited without re-stamping
   # would make every consumer read as `edited` and block its own repair.
   "uv run python scripts/gen_rule_banners.py --check",
+  # Tier 2 escapes the hook cap but not the context window: bound what a single
+  # file open injects, and the `**` floor every file open pays.
+  "uv run python scripts/check_rule_paths.py",
   # The committed Copilot instructions artifact (+ path-scoped instruction
   # files) must stay in sync with rules/.
   "uv run python scripts/check_copilot_instructions.py",
