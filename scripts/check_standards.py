@@ -733,7 +733,11 @@ def check_authorization(errors: list[str]) -> None:
     import json
 
     # 1. Rule 45 states the model: commit + push + PR-open autonomous, merge gated.
-    rule = PLUGIN_ROOT / "rules/45-commit-autonomy.md"
+    #    It moved out of the always-on hook payload when the ruleset was split to
+    #    fit Claude Code's 10,000-character cap on hook stdout; it now ships as a
+    #    path-scoped `.claude/rules/steer-*.md`. The invariants below are about the
+    #    PROSE, so they follow the file rather than the delivery mechanism.
+    rule = PLUGIN_ROOT / "templates/scaffold/claude/rules/steer-45-commit-autonomy.md"
     if not rule.is_file():
         errors.append(f"{rule}: commit-autonomy rule is missing")
     else:

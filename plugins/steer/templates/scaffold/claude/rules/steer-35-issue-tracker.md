@@ -1,4 +1,10 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "spec/tracker.md"
+  - ".github/ISSUE_TEMPLATE/**"
+---
+<!-- steer:managed 35-issue-tracker — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Issue tracker integration (client-agnostic)
 
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,

@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 55-drift-gates — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Drift gates — surface before merge
 
 Drift — any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔ app

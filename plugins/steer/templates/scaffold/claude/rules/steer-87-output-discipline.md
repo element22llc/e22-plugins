@@ -1,3 +1,11 @@
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 87-output-discipline — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here.
+     The one-line imperative ("Be concise by default") stays always-on in the core
+     router; this is the elaboration, which binds once you touch a file. -->
+
 ## Output discipline — earn every line
 
 Default to less. Every line — chat, code, or committed prose — must carry

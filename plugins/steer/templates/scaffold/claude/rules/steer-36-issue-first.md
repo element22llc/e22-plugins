@@ -1,4 +1,9 @@
-<!-- steer:inject-when=tracker-github -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 36-issue-first — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Issue-first (GitHub-adopted repos)
 
 When `/spec/tracker.md` declares `system: github` — in a polyrepo member

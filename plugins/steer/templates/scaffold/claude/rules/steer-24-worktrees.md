@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 24-worktrees — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Parallel worktrees — isolate runtime, clean up after
 
 You may be one of several agents working the same repo at once, each in its own

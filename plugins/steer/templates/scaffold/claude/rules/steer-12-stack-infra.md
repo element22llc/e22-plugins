@@ -1,4 +1,13 @@
-<!-- steer:inject-when=has-iac -->
+---
+paths:
+  - "infra/**"
+  - "**/*.tf"
+  - "**/*.tfvars"
+  - "**/playbook*.yml"
+  - "**/inventory/**"
+---
+<!-- steer:managed 12-stack-infra — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Stack — infrastructure / IaC
 
 This repo does infrastructure-as-code. The universal core still applies (mise

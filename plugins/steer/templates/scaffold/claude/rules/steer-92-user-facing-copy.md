@@ -1,4 +1,14 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**/*.md"
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.vue"
+  - "**/*.html"
+  - "**/locales/**"
+---
+<!-- steer:managed 92-user-facing-copy — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Internal ids stay out of end-user surfaces
 
 ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths are

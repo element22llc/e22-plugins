@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 99-end-of-session — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## End-of-session checklist
 
 Before wrapping up a working session, run this checklist and **report** its

@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 53-autonomous-loops — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Autonomous loops — automate the navigation, never the authority
 
 An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)

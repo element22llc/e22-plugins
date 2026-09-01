@@ -109,6 +109,13 @@ printf '{"session_id":"rules-preview","cwd":"%s","hook_event_name":"SessionStart
 }
 INJECTED_BYTES="$(wc -c <"${BUNDLE}" | tr -d ' ')"
 
+# Rules the hook's cap guard had to leave out. Scope eligibility and *delivery*
+# are two different questions now: a rule can pass every scope predicate and
+# still never reach the session because the payload hit the runtime's
+# character cap. Parse the hook's own in-band notice rather than re-deriving the
+# budget, on the same reuse-not-reimplementation basis as the bundle above.
+CAPPED="$(sed -n 's/.*NOT injected: \(.*\)\. Treat the standards.*/\1/p' "${BUNDLE}")"
+
 # --- the per-rule table: call the real predicates -----------------------------
 
 # shellcheck source=/dev/null
@@ -135,6 +142,12 @@ printf '%-28s  %-7s  %8s  %s\n' '----' '------' '-----' '-----'
 KEPT=0
 DROPPED=0
 DROPPED_BYTES=0
+CAPPED_N=0
+CAPPED_BYTES=0
+
+# The runtime cap, read out of the gate so the two can never disagree.
+CAP_CHARS="$(sed -n 's/^INJECTED_CAP_CHARS[[:space:]]*=[[:space:]]*\([0-9_]*\).*/\1/p' \
+	"${BUDGET_PY}" 2>/dev/null | tr -d '_' | head -n 1)"
 
 for f in "${RULES_DIR}"/*.md; do
 	[ -e "${f}" ] || continue
@@ -165,12 +178,31 @@ for f in "${RULES_DIR}"/*.md; do
 		;;
 	esac
 
+	# A scope-eligible rule that the cap guard dropped never reaches the session.
+	# Report it as CAPPED, not "inject" — conflating the two is what let a
+	# 61 KB payload read as fully delivered.
 	if [ "${status}" = inject ]; then
+		case " ${CAPPED} " in
+		*" ${name} "*)
+			status="CAPPED"
+			scope="${scope} — over the ${CAP_CHARS:-10000}-char cap, NOT delivered"
+			;;
+		esac
+	fi
+
+	case "${status}" in
+	inject)
 		KEPT=$((KEPT + 1))
-	else
+		;;
+	CAPPED)
+		CAPPED_N=$((CAPPED_N + 1))
+		CAPPED_BYTES=$((CAPPED_BYTES + bytes))
+		;;
+	*)
 		DROPPED=$((DROPPED + 1))
 		DROPPED_BYTES=$((DROPPED_BYTES + bytes))
-	fi
+		;;
+	esac
 	printf '%-28s  %-7s  %8s  %s\n' "${name}" "${status}" "${bytes}" "${scope}"
 done
 
@@ -183,24 +215,24 @@ done
 #
 # `sed` pulls each gated profile's `max_tokens:` from INJECTED_PROFILES. Order in
 # that dict is knowledge, code (ungated, no max_tokens line), code-max.
-CEILINGS="$(sed -n 's/^[[:space:]]*"max_tokens":[[:space:]]*\([0-9_]*\),.*/\1/p' \
-	"${BUDGET_PY}" 2>/dev/null | tr -d '_')"
-CEIL_KNOWLEDGE="$(printf '%s\n' "${CEILINGS}" | sed -n '1p')"
-CEIL_MAX="$(printf '%s\n' "${CEILINGS}" | sed -n '2p')"
-
 # Same pessimistic 3.5 B/token the gate documents; integer arithmetic in sh.
 INJECTED_TOKENS=$((INJECTED_BYTES * 10 / 35))
 
-printf '\n%s injected, %s skipped (%s B reclaimed)\n' \
+printf '\n%s delivered, %s out of scope (%s B reclaimed)\n' \
 	"${KEPT}" "${DROPPED}" "${DROPPED_BYTES}"
 printf 'injected payload: %s B  (~%s tokens @3.5 B/tok)\n' \
 	"${INJECTED_BYTES}" "${INJECTED_TOKENS}"
 
-if [ -n "${CEIL_KNOWLEDGE}" ] && [ -n "${CEIL_MAX}" ]; then
-	printf 'gated ceilings:   knowledge %s tok · code-max %s tok\n' \
-		"${CEIL_KNOWLEDGE}" "${CEIL_MAX}"
-	printf 'note: this repo is one point between those two profiles; the gate bounds\n'
-	printf '      the lean end (knowledge) and the worst case (code-max).\n'
+if [ -n "${CAP_CHARS}" ]; then
+	printf 'runtime cap:      %s characters of hook stdout (Claude Code; not a policy number)\n' \
+		"${CAP_CHARS}"
+fi
+if [ "${CAPPED_N}" -gt 0 ]; then
+	printf '\n!! %s rule(s) (%s B) are in scope for this repo but did NOT fit the cap.\n' \
+		"${CAPPED_N}" "${CAPPED_BYTES}"
+	printf '   A session here never receives them. They need another delivery route\n'
+	printf '   (path-scoped .claude/rules/*.md, or on-demand reference prose) —\n'
+	printf '   making the payload smaller is the only way to deliver more of it.\n'
 fi
 
 if [ "${FULL}" -eq 1 ]; then

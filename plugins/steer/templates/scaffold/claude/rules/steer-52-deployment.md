@@ -1,4 +1,13 @@
-<!-- steer:inject-when=has-iac|has-apps -->
+---
+paths:
+  - "infra/**"
+  - "apps/**"
+  - ".github/workflows/**"
+  - "compose.yaml"
+  - "**/Dockerfile*"
+---
+<!-- steer:managed 52-deployment — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk

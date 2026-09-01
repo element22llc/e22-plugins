@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 80-change-size — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Change-size model
 
 Match the workflow to the change. When uncertain, size **up**. **This rule sets

@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 51-verify-loop — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Verify loop — iterate against the harness, don't flail
 
 Before writing code, turn the task into a **verifiable end state** — name the

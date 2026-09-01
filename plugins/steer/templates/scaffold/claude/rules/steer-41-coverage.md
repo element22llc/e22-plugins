@@ -1,4 +1,13 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/*test*"
+  - "**/*_test.*"
+  - "**/*.spec.*"
+---
+<!-- steer:managed 41-coverage — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Coverage rules
 
 - Coverage is a **signal to find untested behavior, not a target to hit** — never

@@ -99,6 +99,15 @@ assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (
 assert_eq() { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
 assert_rc() { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
 
+# Build a fixture plugin root: real hooks/libs, a rules dir we control.
+inject_fixture() { # <name> -> prints fixture plugin root
+	_ifr="${WORK}/$1"
+	mkdir -p "${_ifr}/.claude-plugin" "${_ifr}/rules"
+	ln -sf "${HOOKS}" "${_ifr}/hooks"
+	printf '{"name":"steer","version":"0.0.0-test"}' >"${_ifr}/.claude-plugin/plugin.json"
+	printf '%s' "${_ifr}"
+}
+
 new_repo() {
 	_r="${WORK}/$1"
 	mkdir -p "${_r}"
@@ -1351,21 +1360,21 @@ IR0="${WORK}/inv0"
 mkdir -p "${IR0}/.github" "${IR0}/spec"
 {
 	printf '# Manual\n'
-	printf 'Adopted via /e22-adopt in the past.\n'          # legacy-e22 -> /steer:adopt
-	printf 'Full prose: /steer:conventions here.\n'          # reference-mode
-	printf 'New spec: /steer:spec-scaffold <id>.\n'          # noncallable-gateway
-	printf 'Try /steer:bogus for nothing.\n'                 # unknown
-	printf 'Run /steer:sync to update.\n'                    # valid -> no emit
-	printf 'Correct: /steer:reference conventions.\n'        # valid -> no emit
-	printf 'Marketplace element22llc/e22-plugins stays.\n'   # not flagged
-	printf 'Bootstrap: /e22-standards:e22-init once.\n'      # compound legacy (pair 1) -> /steer:init
-	printf 'Then /e22-standards:doctor to verify.\n'          # compound legacy (pair 2) -> /steer:doctor
+	printf 'Adopted via /e22-adopt in the past.\n'                  # legacy-e22 -> /steer:adopt
+	printf 'Full prose: /steer:conventions here.\n'                 # reference-mode
+	printf 'New spec: /steer:spec-scaffold <id>.\n'                 # noncallable-gateway
+	printf 'Try /steer:bogus for nothing.\n'                        # unknown
+	printf 'Run /steer:sync to update.\n'                           # valid -> no emit
+	printf 'Correct: /steer:reference conventions.\n'               # valid -> no emit
+	printf 'Marketplace element22llc/e22-plugins stays.\n'          # not flagged
+	printf 'Bootstrap: /e22-standards:e22-init once.\n'             # compound legacy (pair 1) -> /steer:init
+	printf 'Then /e22-standards:doctor to verify.\n'                # compound legacy (pair 2) -> /steer:doctor
 	printf 'Legacy scaffold: /e22-standards:e22-spec-scaffold x.\n' # legacy -> noncallable-gateway, NO fix
-	printf 'Legacy prose: /e22-conventions covers it.\n'     # legacy -> reference-mode
+	printf 'Legacy prose: /e22-conventions covers it.\n'            # legacy -> reference-mode
 } >"${IR0}/CLAUDE.md"
-printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md"       # reference-mode
+printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md" # reference-mode
 printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
-printf '2026-06-08: reverse-engineered by /e22-adopt.\n' >"${IR0}/spec/HISTORY.md"  # provenance, NOT scanned
+printf '2026-06-08: reverse-engineered by /e22-adopt.\n' >"${IR0}/spec/HISTORY.md" # provenance, NOT scanned
 
 invscan "${IR0}"
 assert_eq "inv: /e22-adopt -> legacy-e22" "$(invclass "${out}" /e22-adopt)" "legacy-e22"
@@ -1685,66 +1694,101 @@ assert_has "inject: missing rules dir emits fallback banner (consumer repo)" "${
 assert_rc "inject: missing-rules fail-soft exits 0 (consumer repo)" "$(last_rc)" 0
 grep -q 'rules directory missing' "${NR2}/.claude/steer-faults.log" 2>/dev/null &&
 	ok || bad "inject: missing rules dir records a self-fault in the consumer repo"
-
 # ----- inject-standards.sh: conditional (inject-when) rule scoping -----
-# 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-iac|has-apps.
-# A scoped rule is injected only when its predicate holds; always-on rules
-# (e.g. 00-router) appear regardless; the marker line never leaks into output.
+# These cases drive a FIXTURE rules dir, not the shipped ruleset. They used to
+# assert on real rules (`36-issue-first`, `52-deployment`, the infra-stack
+# fragment), which coupled coverage of the scope predicates to which rules
+# happen to be delivered by the hook — so when the ruleset was split to fit the
+# 10,000-character cap and those rules moved to `.claude/rules/*.md`, seven
+# assertions failed for a reason that had nothing to do with scoping. The
+# predicates in lib/scope.sh are what these cases exist to test; the fixture
+# pins them without that coupling.
+SCOPE_PLUGIN="$(inject_fixture scope-plugin)"
+scope_rule() { # <file> <inject-when token|-> <marker text>
+	if [ "$2" = "-" ]; then
+		printf '# %s\n\n%s\n' "$3" "$3" >"${SCOPE_PLUGIN}/rules/$1"
+	else
+		printf '<!-- steer:inject-when=%s -->\n# %s\n\n%s\n' "$2" "$3" "$3" \
+			>"${SCOPE_PLUGIN}/rules/$1"
+	fi
+}
+scope_rule 00-always.md - "ALWAYS-ON-MARK"
+scope_rule 36-gh.md tracker-github "TRACKER-GITHUB-MARK"
+scope_rule 52-deploy.md 'has-iac|has-apps' "DEPLOY-MARK"
+scope_rule 12-iac.md has-iac "IAC-MARK"
 
-# GitHub tracker -> issue-first injected, its marker stripped.
+scope_out() { # <repo> -> hook stdout with the fixture rules
+	printf '{"session_id":"scope","hook_event_name":"SessionStart","cwd":"%s"}' "$1" |
+		env CLAUDE_PLUGIN_ROOT="${SCOPE_PLUGIN}" sh "${HOOKS}/inject-standards.sh" 2>/dev/null
+}
+
+# GitHub tracker -> the tracker-github rule injects, its marker line stripped.
 CRI_GH="$(new_repo cri_gh)"
 mkdir -p "${CRI_GH}/spec"
 printf 'system: github\n' >"${CRI_GH}/spec/tracker.md"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_GH}" cri_gh)")"
-oq_grep "inject: github repo includes issue-first rule" 'Issue-first (GitHub-adopted repos)' "${out}"
-oq_grep "inject: always-on router present (github repo)" 'You are the router' "${out}"
+out="$(scope_out "${CRI_GH}")"
+assert_has "inject: github repo includes tracker-github rule" "${out}" 'TRACKER-GITHUB-MARK'
+assert_has "inject: always-on rule present (github repo)" "${out}" 'ALWAYS-ON-MARK'
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped from output" || ok
 
-# Non-GitHub tracker -> issue-first skipped.
+# Non-GitHub tracker -> skipped.
 CRI_JIRA="$(new_repo cri_jira)"
 mkdir -p "${CRI_JIRA}/spec"
 printf 'system: jira\n' >"${CRI_JIRA}/spec/tracker.md"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_JIRA}" cri_jira)")"
-printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
-	bad "inject: non-github repo must omit issue-first rule" || ok
-oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
+out="$(scope_out "${CRI_JIRA}")"
+printf '%s' "${out}" | grep -q 'TRACKER-GITHUB-MARK' &&
+	bad "inject: non-github repo must omit the tracker-github rule" || ok
+assert_has "inject: always-on rule present (jira repo)" "${out}" 'ALWAYS-ON-MARK'
 
-# /infra present -> deployment AND infra-stack fragment injected (has-infra + has-iac).
+# /infra present -> both has-iac arms fire.
 CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_INFRA}" cri_infra)")"
-oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
-oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
+out="$(scope_out "${CRI_INFRA}")"
+assert_has "inject: repo with /infra includes has-iac|has-apps rule" "${out}" 'DEPLOY-MARK'
+assert_has "inject: repo with /infra includes has-iac rule" "${out}" 'IAC-MARK'
 
-# Root-level IaC (Ansible site.yml, no /infra dir) -> infra-stack fragment injected
-# via has-iac. This is the case steer used to skip entirely.
+# Root-level IaC (Ansible site.yml, no /infra dir) -> has-iac still fires.
 CRI_ANSIBLE="$(new_repo cri_ansible)"
 printf -- '- hosts: all\n' >"${CRI_ANSIBLE}/site.yml"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_ANSIBLE}" cri_ansible)")"
-oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
+out="$(scope_out "${CRI_ANSIBLE}")"
+assert_has "inject: root-level Ansible repo includes has-iac rule" "${out}" 'IAC-MARK'
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
 
-# App repo (package.json, no /infra, no IaC) -> deployment rule injected via the
-# has-apps arm of has-iac|has-apps, but NOT the infra-stack fragment (has-iac only).
+# App repo -> the has-apps arm fires, has-iac alone does not.
 CRI_APP="$(new_repo cri_app)"
 printf '{}\n' >"${CRI_APP}/package.json"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_APP}" cri_app)")"
-oq_grep "inject: app repo (no /infra) includes deployment rule" 'auto-deploys non-prod' "${out}"
-printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
-	bad "inject: app repo without IaC must omit infra-stack fragment" || ok
+out="$(scope_out "${CRI_APP}")"
+assert_has "inject: app repo (no /infra) includes has-iac|has-apps rule" "${out}" 'DEPLOY-MARK'
+printf '%s' "${out}" | grep -q 'IAC-MARK' &&
+	bad "inject: app repo without IaC must omit the has-iac rule" || ok
 
-# No /infra, no IaC, no GitHub tracker -> all scoped rules skipped.
+# Nothing set -> every scoped rule skipped, always-on survives.
 CRI_BARE="$(new_repo cri_bare)"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_BARE}" cri_bare)")"
-printf '%s' "${out}" | grep -q 'auto-deploys non-prod' &&
-	bad "inject: repo without /infra must omit deployment rule" || ok
-printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
-	bad "inject: repo without IaC must omit infra-stack fragment" || ok
-printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
-	bad "inject: repo without github tracker must omit issue-first rule" || ok
-oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${out}"
+out="$(scope_out "${CRI_BARE}")"
+printf '%s' "${out}" | grep -q 'DEPLOY-MARK' &&
+	bad "inject: bare repo must omit the has-iac|has-apps rule" || ok
+printf '%s' "${out}" | grep -q 'IAC-MARK' &&
+	bad "inject: bare repo must omit the has-iac rule" || ok
+printf '%s' "${out}" | grep -q 'TRACKER-GITHUB-MARK' &&
+	bad "inject: bare repo must omit the tracker-github rule" || ok
+assert_has "inject: always-on rule present (bare repo)" "${out}" 'ALWAYS-ON-MARK'
+
+# ----- inject-standards.sh: the shipped core actually ships -----
+# The split left six always-on rules in the plugin. Assert the delivered payload
+# still carries each one, so a future trim cannot quietly drop a core rule the
+# way the cap did.
+CORE_REPO="$(new_repo core_repo)"
+out="$(run_hook inject-standards.sh "$(session_json "${CORE_REPO}" core_repo)")"
+for _pair in 'router:You are the router' 'roles:Who you are working with' \
+	'high-risk:High-risk areas' 'secrets:Secrets handling' \
+	'not-the-gate:You are not the gate'; do
+	printf '%s' "${out}" | grep -qi "${_pair#*:}" && ok ||
+		bad "inject: core rule '${_pair%%:*}' missing from the delivered payload"
+done
+printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' &&
+	bad "inject: the shipped core must fit the cap with no rule dropped" || ok
 
 # ----- inject-standards.sh + orient-session.sh: knowledge-work mode -----
 # A non-git folder with no code/config markers (the typical Claude Cowork
@@ -1757,7 +1801,6 @@ printf '# my notes\n' >"${KW}/notes.md"
 out="$(run_hook inject-standards.sh "$(session_json "${KW}" kw_plain)")"
 oq_grep "inject(kw): knowledge-mode banner present" 'knowledge-work mode' "${out}"
 oq_grep "inject(kw): always-on router present" 'You are the router' "${out}"
-oq_grep "inject(kw): spec-workflow rule present" 'Spec workflow' "${out}"
 oq_grep "inject(kw): secrets rule present" 'Secrets handling' "${out}"
 printf '%s' "${out}" | grep -q '## Stack' &&
 	bad "inject(kw): code-only stack rule must be omitted in knowledge mode" || ok
@@ -1793,7 +1836,10 @@ KWC="${WORK}/kw_pkg"
 mkdir -p "${KWC}"
 printf '{}\n' >"${KWC}/package.json"
 out="$(run_hook inject-standards.sh "$(session_json "${KWC}" kw_pkg)")"
-oq_grep "inject(kw-pkg): code-mode includes stack rule" '## Stack' "${out}"
+# Code mode is asserted by the ABSENCE of the knowledge banner: every rule that
+# used to prove it (the stack rule) now ships as a path-scoped .claude/rule.
+printf '%s' "${out}" | grep -q 'You are the router' && ok ||
+	bad "inject(kw-pkg): code-mode folder still receives the core ruleset"
 printf '%s' "${out}" | grep -q 'knowledge-work mode' &&
 	bad "inject(kw-pkg): non-git folder with package.json must be code mode" || ok
 out="$(run_hook orient-session.sh "$(session_json "${KWC}" kw_pkg)")"
@@ -2965,6 +3011,63 @@ for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.s
 		bad "hooks.json: $1 registered"
 	grep -q "$2" "${HOOKS}/hooks.json" && ok || bad "hooks.json: $2 wired"
 done
+
+# ---------------------------------------------------------------------------
+# inject-standards.sh — the 10,000-character cap on hook stdout.
+#
+# Claude Code persists a longer payload to a file and gives the session a ~2 KB
+# preview instead, while the hook still exits 0. That failure is invisible from
+# inside the hook, so the guard is the only thing standing between a growing
+# ruleset and a session running on a fraction of it. These cases pin the two
+# halves of the guard: it never overruns, and when it has to drop rules it says
+# so in-band naming them.
+# ---------------------------------------------------------------------------
+
+# (a) A ruleset that comfortably fits is delivered whole, with no notice.
+IF_SMALL="$(inject_fixture inject-small)"
+printf '# Rule A\n\nBe brief.\n' >"${IF_SMALL}/rules/10-a.md"
+printf '# Rule B\n\nBe correct.\n' >"${IF_SMALL}/rules/20-b.md"
+IF_REPO="$(new_repo inject-small-repo)"
+out="$(printf '%s' "$(session_json "${IF_REPO}" inj)" |
+	env CLAUDE_PLUGIN_ROOT="${IF_SMALL}" sh "${HOOKS}/inject-standards.sh" 2>/dev/null)"
+assert_has "inject cap: small ruleset delivers rule A" "${out}" "Be brief."
+assert_has "inject cap: small ruleset delivers rule B" "${out}" "Be correct."
+printf '%s' "${out}" | grep -q "RULESET INCOMPLETE" &&
+	bad "inject cap: a fitting ruleset must not carry the incomplete notice" || ok
+
+# (b) A ruleset well over the cap is truncated at a rule boundary, stays under
+#     the cap, and names every rule it dropped.
+IF_BIG="$(inject_fixture inject-big)"
+i=1
+while [ "${i}" -le 12 ]; do
+	{
+		printf '# Rule %02d\n\n' "${i}"
+		j=0
+		while [ "${j}" -lt 30 ]; do
+			printf 'Padding line %02d for rule %02d, long enough to consume budget.\n' "${j}" "${i}"
+			j=$((j + 1))
+		done
+	} >"${IF_BIG}/rules/$(printf '%02d' "${i}")-big.md"
+	i=$((i + 1))
+done
+IF_BREPO="$(new_repo inject-big-repo)"
+out="$(printf '%s' "$(session_json "${IF_BREPO}" inj)" |
+	env CLAUDE_PLUGIN_ROOT="${IF_BIG}" sh "${HOOKS}/inject-standards.sh" 2>/dev/null)"
+inj_len="$(printf '%s' "${out}" | wc -c | tr -d ' ')"
+[ "${inj_len}" -le 10000 ] && ok ||
+	bad "inject cap: payload must stay within 10000 chars (got ${inj_len})"
+assert_has "inject cap: over-cap payload carries the notice" "${out}" "RULESET INCOMPLETE"
+assert_has "inject cap: notice names the first dropped rule" "${out}" "-big.md"
+assert_has "inject cap: notice reports the dropped count" "${out}" "rule(s) were NOT injected"
+# The first rule must survive — a guard that drops everything is not a guard.
+assert_has "inject cap: earliest rule still delivered" "${out}" "# Rule 01"
+
+# (c) The notice is machine-readable in the shape check_context_budget.py parses,
+#     so the gate and the hook cannot drift apart.
+printf '%s' "${out}" | grep -q "NOT injected: " && ok ||
+	bad "inject cap: notice must carry the 'NOT injected: ' list the gate parses"
+printf '%s' "${out}" | grep -q "Treat the standards" && ok ||
+	bad "inject cap: notice must carry the terminator the gate parses"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

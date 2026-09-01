@@ -7,6 +7,41 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the ruleset was never reaching sessions.** Claude Code caps a hook's
+  stdout at **10,000 characters** and silently persists the overflow to a file,
+  handing the session a ~2 KB preview instead. `inject-standards.sh` was emitting
+  **61,421 B**, so a session received the banner and part of `00-router.md` —
+  **35 of 36 rules were delivered to nobody**, while the hook exited 0 and the
+  context-budget gate passed. Measured on Claude Code 2.1.252 (9,990 chars arrive
+  whole; 10,010 arrive as a preview).
+- **Split the ruleset to fit.** Five always-on rules stay in the plugin's
+  SessionStart payload (`00-router`, `05-roles`, `60-high-risk`, `70-secrets`,
+  `95-not-the-gate`), now delivered whole at ~8.4 K characters with ~1,500
+  characters of headroom. `87-output-discipline` went path-scoped: its one-line
+  imperative ("Be concise by default") stays always-on in the router, the
+  elaboration binds once you touch a file. `00-router` lost its
+  intent→skill table, which restated the skill listing Claude Code already loads.
+- **24 rules now ship as path-scoped `.claude/rules/steer-*.md`**, installed by
+  `/steer:init` / `/steer:adopt` and repaired by `/steer:sync` under the new
+  `path-scoped-rules` capability. Each carries `paths:` frontmatter and loads
+  when Claude reads a file it governs; the action-scoped ones (commit autonomy,
+  end-of-session, gate prompts) use `paths: "**"` and load on first file touch.
+  Verified: path-scoped rules inject deterministically and have no size cap.
+- **7 advisory rules folded into `templates/reference/*`** (`20-layout`,
+  `22-housekeeping`, `26-context-hygiene`, `32-living-docs`, `85-practices`,
+  `88-artifacts`, `90-design-sources`) — reachable via `/steer:reference`, no
+  longer auto-injected.
+- **`inject-standards.sh` can no longer overrun silently.** It assembles the
+  payload to a buffer, drops whole rules from the tail if it would exceed the
+  cap, and appends an in-band `RULESET INCOMPLETE` notice naming them; the full
+  list goes to stderr, which costs a session nothing. The footer reserve is
+  conditional, so nothing is held back when no notice is needed.
+- **`check_context_budget.py` now gates the real ceiling.** The old
+  8,200/19,700-*token* policy ratchets were 6-20x above the actual limit and had
+  never once fired. The gate now fails when the hook has to drop any rule, for
+  every profile including `code` (previously ungated). `mise run rules:preview`
+  reports capped rules as `CAPPED`, not `inject`.
+
 ### 6.0.0
 
 - **Fixed: the retracted "fresh invocation" framing survived in the one reference

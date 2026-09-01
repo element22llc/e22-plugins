@@ -136,6 +136,33 @@ def _fixture_code_max(d: Path) -> None:
     (d / "spec" / "tracker.md").write_text("system: github\n", encoding="utf-8")  # tracker-github
 
 
+# --- The runtime ceiling (hard, not a ratchet) -------------------------------
+# Claude Code caps a hook's stdout — and `additionalContext` — at 10,000
+# CHARACTERS. Past that the payload is persisted to a file and replaced in
+# context with a ~2 KB preview, and the hook still exits 0, so nothing anywhere
+# reports a problem: the session simply runs on a fraction of the ruleset.
+#
+# Measured on Claude Code 2.1.252 by bisecting a synthetic SessionStart hook: a
+# 9,990-character payload arrives whole; a 10,010-character payload arrives as a
+# preview. Reproduced against the shipped hook — steer's own 61,421-byte payload
+# reached the model as its first ~2 KB, dying partway through `00-router.md`, so
+# 35 of 36 rules were never delivered to any session.
+#
+# This constant is therefore in the same class as SKILL_BODY_MAX_BYTES below: it
+# is derived from harness behaviour, NOT policy. It does not move down as the
+# ruleset shrinks and it must never be raised to fit new prose. The ratchet
+# history preserved further down this file is about a *policy* number; none of
+# it applies here.
+INJECTED_CAP_CHARS = 10_000
+
+# How the gate actually detects a breach: hooks/inject-standards.sh now enforces
+# the cap itself, dropping whole rules from the tail and appending an in-band
+# RULESET INCOMPLETE notice naming them. That makes raw output length useless as
+# a signal — the hook can no longer exceed the cap. So the gate asserts the
+# stronger property: **the guard never fires**. Every rule eligible for a
+# profile must fit, and a dropped rule fails the build with its name.
+INCOMPLETE_MARKER = "RULESET INCOMPLETE"
+
 # Ceilings are sized to buy roughly ONE whole additional rule (the mean rule is
 # ~1,875 B ≈ 536 tokens), on the same basis LISTING_TOTAL_MAX_CHARS states below:
 # the smallest headroom under which "trade prose out first" stays a real policy
@@ -143,33 +170,28 @@ def _fixture_code_max(d: Path) -> None:
 # retired-ratchet history below is that a 5-to-32-byte margin makes the ceiling
 # dictate the *wording* of correctness fixes instead of bounding their cost.
 #
-# Only two profiles are GATED. `code` sits strictly between them — un-scoping a
-# rule grows `knowledge`, and new prose grows `code-max` — so gating it too would
-# add a third ceiling to bump without catching anything the other two miss. It is
-# measured and reported because it is the number to quote for a typical consumer.
+# EVERY profile is now gated, and against the same number. The old arrangement —
+# two policy ceilings with `code` left ungated because it sat "strictly between"
+# them — made sense while the ceilings were per-profile ratchets. They are not
+# any more: there is one hard runtime cap and each profile either fits under it
+# or silently loses rules, so each one has to be checked on its own.
 INJECTED_PROFILES: dict[str, dict] = {
     # The leanness lane, and the un-scoping detector: an always-on rule added
     # without an `inject-when` marker lands here first and hardest.
     "knowledge": {
         "builder": _fixture_knowledge,
-        "max_tokens": 8_200,
-        "target_tokens": 7_100,
         "gated": True,
         "blurb": "non-code folder (Cowork PO lane)",
     },
-    # Reported, not gated — bounded by the two above. See the note above.
+    # The number to quote for a typical consumer.
     "code": {
         "builder": _fixture_code,
-        "max_tokens": None,
-        "target_tokens": 16_100,
-        "gated": False,
+        "gated": True,
         "blurb": "typical product repo",
     },
     # The absolute worst case any consumer pays: every scope predicate true.
     "code-max": {
         "builder": _fixture_code_max,
-        "max_tokens": 19_700,
-        "target_tokens": 17_700,
         "gated": True,
         "blurb": "every scope predicate satisfied",
     },
@@ -184,8 +206,8 @@ def _git_init(d: Path) -> None:
     )
 
 
-def measure_injected(root: Path, profile: str) -> int:
-    """Bytes the shipped SessionStart hook emits for one consumer profile.
+def measure_injected(root: Path, profile: str) -> tuple[str, str]:
+    """(stdout, stderr) the shipped SessionStart hook emits for one profile.
 
     Raises RuntimeError rather than guessing: a budget gate that cannot measure
     must fail loudly, never fail open.
@@ -213,7 +235,32 @@ def measure_injected(root: Path, profile: str) -> int:
         )
     if proc.returncode != 0:
         raise RuntimeError(f"inject-standards.sh failed for profile '{profile}': {proc.stderr}")
-    return len(proc.stdout.encode("utf-8"))
+    return proc.stdout, proc.stderr
+
+
+def dropped_rules(stdout: str, stderr: str) -> list[str]:
+    """Rule files the hook's own cap guard had to leave out, in emission order.
+
+    Read from the hook's STDERR line, not the in-band notice: stdout is context
+    and therefore rationed, so the notice lists only the first few names and
+    then a count. stderr costs a session nothing, so the hook writes the full
+    list there for exactly this caller. Parsing the hook's own output rather
+    than re-deriving the budget keeps the hook the single source of truth, on
+    the same basis as `measure_injected` running the real hook.
+
+    `stdout` still gates the lookup: no notice means nothing was dropped, and a
+    stderr line without one would be a bug worth not papering over.
+    """
+    if INCOMPLETE_MARKER not in stdout:
+        return []
+    for line in stderr.splitlines():
+        if line.startswith("steer-inject: dropped("):
+            return [n for n in line.split(":", 2)[-1].split() if n.endswith(".md")]
+    # Notice present but no stderr line: fall back to the truncated in-band list
+    # rather than reporting "nothing dropped", which would be the wrong answer.
+    tail = stdout[stdout.find(INCOMPLETE_MARKER) :]
+    listing = tail.split("NOT injected: ", 1)[-1].split("Treat the standards", 1)[0]
+    return [name.rstrip(".,") for name in listing.split() if ".md" in name]
 
 
 def tokens(byte_count: int) -> int:
@@ -521,12 +568,14 @@ def measure(root: Path) -> dict:
 
     injected: dict[str, dict] = {}
     for name, spec in INJECTED_PROFILES.items():
-        payload_bytes = measure_injected(root, name)
+        payload, hook_stderr = measure_injected(root, name)
+        # Characters is the unit the runtime counts in; bytes is reported beside
+        # it because the hook budgets in bytes (the conservative direction).
         injected[name] = {
-            "bytes": payload_bytes,
-            "tokens": tokens(payload_bytes),
-            "max_tokens": spec["max_tokens"],
-            "target_tokens": spec["target_tokens"],
+            "chars": len(payload),
+            "bytes": len(payload.encode("utf-8")),
+            "tokens": tokens(len(payload.encode("utf-8"))),
+            "dropped": dropped_rules(payload, hook_stderr),
             "gated": spec["gated"],
             "blurb": spec["blurb"],
         }
@@ -552,8 +601,7 @@ def run_checks(root: Path) -> list[str]:
         return [f"could not measure the injected payload: {exc}"]
 
     for name, got in stats["injected"].items():
-        ceiling = got["max_tokens"]
-        if ceiling is None or got["tokens"] <= ceiling:
+        if not got["gated"] or not got["dropped"]:
             continue
         hint = (
             "an always-on rule (one with no `inject-when` marker) is the usual cause — "
@@ -563,14 +611,15 @@ def run_checks(root: Path) -> list[str]:
             "and keep rules imperative"
         )
         errors.append(
-            f"{root / 'rules'}: the '{name}' profile ({got['blurb']}) receives "
-            f"~{got['tokens']:,} tokens ({got['bytes']:,} B), over its "
-            f"{ceiling:,}-token ceiling. This is the payload a session actually gets "
-            f"from inject-standards.sh, not the on-disk total — {hint}. Run "
-            f"`mise run rules:preview` to see which rules inject and why. Do not "
-            f"raise the ceiling to fit new prose; if a raise is genuinely right, "
-            f"record the reason beside the constant (see the retired-ratchet history "
-            f"in this file for what happens when that discipline slips)."
+            f"{root / 'rules'}: the '{name}' profile ({got['blurb']}) does not fit the "
+            f"{INJECTED_CAP_CHARS:,}-character cap Claude Code puts on hook output. "
+            f"inject-standards.sh emitted {got['chars']:,} chars and had to DROP "
+            f"{len(got['dropped'])} rule(s): {', '.join(got['dropped'])}. A session in "
+            f"that profile never receives them — {hint}. Run `mise run rules:preview` "
+            f"to see which rules inject and why. This ceiling is Claude Code "
+            f"behaviour, not policy: it cannot be raised. The fix is to deliver the "
+            f"overflow another way (path-scoped `.claude/rules/*.md` in the consumer "
+            f"repo, or on-demand reference prose), never to make the payload bigger."
         )
     if stats["listing_chars"] > LISTING_TOTAL_MAX_CHARS:
         errors.append(
@@ -600,15 +649,19 @@ def report(root: Path) -> str:
     """Markdown budget table — paste into release PRs (PLAN.md Phase 4)."""
     stats = measure(root)
     lines = [
-        "| Always-on surface | Current | Ceiling (gate) | Target (plan) |",
+        "| Always-on surface | Current | Ceiling | Status/target |",
         "| --- | --- | --- | --- |",
     ]
     for name, got in stats["injected"].items():
-        ceiling = f"{got['max_tokens']:,} tok" if got["max_tokens"] is not None else "— (not gated)"
+        status = (
+            f"DROPS {len(got['dropped'])} rule(s)"
+            if got["dropped"]
+            else f"fits, {INJECTED_CAP_CHARS - got['chars']:,} ch spare"
+        )
         lines.append(
             f"| injected payload — {name} ({got['blurb']}) "
-            f"| {got['tokens']:,} tok / {got['bytes']:,} B | {ceiling} "
-            f"| {got['target_tokens']:,} tok |"
+            f"| {got['chars']:,} ch / {got['tokens']:,} tok "
+            f"| {INJECTED_CAP_CHARS:,} ch (runtime) | {status} |"
         )
     lines += [
         (

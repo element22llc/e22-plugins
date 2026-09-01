@@ -1,3 +1,9 @@
+---
+paths:
+  - "spec/**"
+---
+<!-- steer:managed 30-spec-workflow — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Spec workflow
 
 Create the artifact when the trigger fires — don't defer it:

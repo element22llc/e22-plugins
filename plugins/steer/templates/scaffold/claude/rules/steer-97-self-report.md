@@ -1,3 +1,9 @@
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 97-self-report — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## When steer itself misbehaves, report it upstream
 
 steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's

@@ -1,3 +1,9 @@
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 61-gate-prompts — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Answering a human gate in-session
 
 A gate needs the deciding **human's** answer — not a particular channel. When that

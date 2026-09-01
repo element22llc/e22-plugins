@@ -213,6 +213,26 @@ and **Repair**.
 - **Why it matters:** without it, neither the interactive hook nor CI catches a
   major pinned below the supported floor.
 
+### path-scoped-rules — the delivered half of the org ruleset
+- **Files:** `.claude/rules/steer-*.md` (24 files)
+- **Conditional:** always
+- **Wired-when:** every `steer-*.md` the plugin ships is present. The scan counts
+  them (`have/want`) rather than checking the directory, because a partial
+  install — an interrupted adopt, or a rule deleted by hand — is the likely
+  failure and looks identical to a complete one at directory level.
+- **Repair:** copy the missing files from
+  `templates/scaffold/claude/rules/`. They are plugin-managed and safe to
+  overwrite wholesale; the `steer-` prefix keeps a consumer's own
+  `.claude/rules/*.md` out of scope.
+- **Verbatim:** yes — hand-edits belong in the plugin, not the consumer repo.
+- **Why it matters:** Claude Code caps a hook's stdout at **10,000 characters**,
+  so steer's SessionStart injection carries only the six always-on core rules.
+  Everything else — the spec workflow, commit autonomy, testing, Definition of
+  Done, issue-first, deployment, the gates — reaches a session **only** through
+  these files, loaded when Claude touches a path the rule's `paths:` frontmatter
+  matches. A repo missing them is not "slightly out of date": it is running with
+  most of the standards absent, and nothing in-session says so.
+
 ### drift-gate — CI hygiene check + PR drift checklists
 - **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`
 - **Conditional:** always (GitHub-hosted repos)

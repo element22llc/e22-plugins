@@ -1,4 +1,17 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "package.json"
+  - "**/package.json"
+  - "pyproject.toml"
+  - "**/pyproject.toml"
+  - "mise.toml"
+  - "**/mise.toml"
+  - "**/Dockerfile*"
+  - "compose.yaml"
+  - "**/*.tf"
+---
+<!-- steer:managed 10-stack — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Stack
 
 **Default biases**, not mandates — when intent clearly warrants a different

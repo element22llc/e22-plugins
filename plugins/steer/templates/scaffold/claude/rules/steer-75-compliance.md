@@ -1,4 +1,9 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**"
+---
+<!-- steer:managed 75-compliance — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Audit-aligned delivery (SOC 2 / ISO 27001)
 
 The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations —

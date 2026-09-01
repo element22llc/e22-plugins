@@ -1,4 +1,13 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "mise.toml"
+  - "**/mise.toml"
+  - ".github/workflows/**"
+  - "compose.yaml"
+  - "Makefile"
+---
+<!-- steer:managed 15-commands — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Useful commands
 
 - **First-time setup:** `mise trust && mise install` (full mise setup in the

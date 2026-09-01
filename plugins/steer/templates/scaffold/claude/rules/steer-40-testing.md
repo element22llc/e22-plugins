@@ -1,4 +1,14 @@
-<!-- steer:inject-when=code-project -->
+---
+paths:
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/*test*"
+  - "**/*_test.*"
+  - "**/*.spec.*"
+  - "**/conftest.py"
+---
+<!-- steer:managed 40-testing — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+
 ## Testing rules
 
 - Every feature change **includes or updates automated tests** in the same PR — never "later."
