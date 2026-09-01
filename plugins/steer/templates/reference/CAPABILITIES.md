@@ -213,7 +213,12 @@ and **Repair**.
 - **Why it matters:** without it, neither the interactive hook nor CI catches a
   major pinned below the supported floor.
 
-### path-scoped-rules — the delivered half of the org ruleset
+### path-scoped-rules — the deferred repository rules
+<!-- The capability ID stays `path-scoped-rules`: it is a machine identifier
+     shared with scan-capabilities.sh, and the hook suite asserts the two in
+     lockstep. The TIER it repairs is the *deferred repository rules* — 18 of
+     which are universal (`paths: "**"`) rather than path-scoped, which is why
+     the tier is no longer named after the narrower subcategory. -->
 - **Files:** `.claude/rules/steer-*.md` (30 files)
 - **Conditional:** always
 - **Wired-when:** every rule the plugin ships is installed **and** byte-identical
