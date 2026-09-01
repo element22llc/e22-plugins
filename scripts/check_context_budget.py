@@ -155,6 +155,28 @@ def _fixture_code_max(d: Path) -> None:
 # it applies here.
 INJECTED_CAP_CHARS = 10_000
 
+# When headroom gets tight, what gives — and what never does.
+#
+# The cap cannot move, so the only lever is the core's own size. The order is
+# decided in advance, here, rather than under pressure in the PR that needs the
+# room, because the whole retired-ratchet history below is what happens when a
+# tight ceiling gets to pick:
+#
+#   1. `05-roles` is the first candidate. Role prose is the most compressible
+#      thing in the core — it describes a working relationship, and the parts a
+#      session actually acts on are a few sentences. Trim it, or move its
+#      elaboration to a path-scoped rule the way `87-output-discipline` went
+#      (one-line imperative stays in the router, detail binds on first file
+#      touch).
+#   2. The router's non-routing prose next.
+#
+# UNTOUCHABLE, in any budget conversation: `60-high-risk`, `70-secrets`,
+# `95-not-the-gate`, and the router's minimal routing + gate-authority text.
+# Those are the rules that must govern BEFORE Claude touches anything, and a
+# session that reaches a dangerous action without them has already failed. They
+# are why the core exists; shrinking them to fund something else inverts the
+# whole point of the tier.
+
 # How the gate actually detects a breach: hooks/inject-standards.sh now enforces
 # the cap itself, dropping whole rules from the tail and appending an in-band
 # RULESET INCOMPLETE notice naming them. That makes raw output length useless as

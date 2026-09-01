@@ -25,7 +25,8 @@
 #     exits 0 and the gate still passes, while the session receives a fraction
 #     of the ruleset. Measured on 2.1.252: a 9,990-char payload arrives whole, a
 #     10,010-char payload arrives as a preview. So the payload is assembled to a
-#     buffer and capped here; if it does not fit, we truncate at a rule boundary
+#     buffer and capped here (in CHARACTERS, the runtime's own unit); if it does
+#     not fit, we truncate at a rule boundary
 #     and say so in-band rather than let the runtime drop rules quietly.
 #     scripts/check_context_budget.py gates the same number pre-merge.
 
@@ -84,10 +85,14 @@ if [ "${WORK_MODE}" = "knowledge" ]; then
 fi
 
 if [ -d "${RULES_DIR}" ]; then
-	# Budget tracked in BYTES against a cap the runtime counts in CHARACTERS. For
-	# UTF-8 bytes >= characters, so this errs strictly toward emitting less — the
-	# safe direction for a ceiling whose overrun is silent.
-	_used="$(wc -c <"${BUF:-/dev/null}" 2>/dev/null | tr -d ' ')"
+	# Budget tracked in the SAME UNIT the runtime caps on: CHARACTERS, via
+	# `wc -m`. Under a UTF-8 locale that matches the runtime's own count exactly
+	# (verified against Python's len() on the real payload: 8,406 either way);
+	# under LC_ALL=C it degrades to bytes, which for UTF-8 is >= characters and so
+	# errs toward emitting less — safe, never over. Counting bytes unconditionally
+	# would under-fill by ~90 characters on this ruleset and, worse, leave the hook
+	# and scripts/check_context_budget.py measuring two different things.
+	_used="$(wc -m <"${BUF:-/dev/null}" 2>/dev/null | tr -d ' ')"
 	[ -n "${_used}" ] || _used=0
 
 	# Pass 1 — which rules are in scope for this consumer, and how big are they.
@@ -116,9 +121,9 @@ if [ -d "${RULES_DIR}" ]; then
 			;;
 		esac
 		if [ "${_skip}" -eq 1 ]; then
-			_size=$(($(tail -n +2 "${f}" | wc -c | tr -d ' ') + 2))
+			_size=$(($(tail -n +2 "${f}" | wc -m | tr -d ' ') + 2))
 		else
-			_size=$(($(wc -c <"${f}" | tr -d ' ') + 2))
+			_size=$(($(wc -m <"${f}" | tr -d ' ') + 2))
 		fi
 		_total=$((_total + _size))
 		_eligible="${_eligible}${_skip} ${_size} ${f}

@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 75-compliance — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 75-compliance v6.0.0 body-cksum:1987822770 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Audit-aligned delivery (SOC 2 / ISO 27001)
 

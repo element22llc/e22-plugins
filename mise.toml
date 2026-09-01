@@ -73,6 +73,10 @@ run = [
   # routing-vocabulary regression net — the PLAN.md Phase 0 ratchet gates.
   "uv run python scripts/check_context_budget.py",
   "uv run python scripts/check_routing_fixtures.py",
+  # Tier 2 rule banners carry the cksum that lets scan-rule-drift.sh tell a
+  # stale copy from a locally-edited one. A rule edited without re-stamping
+  # would make every consumer read as `edited` and block its own repair.
+  "uv run python scripts/gen_rule_banners.py --check",
   # The committed Copilot instructions artifact (+ path-scoped instruction
   # files) must stay in sync with rules/.
   "uv run python scripts/check_copilot_instructions.py",
@@ -188,6 +192,10 @@ description = "Show the always-on ruleset a real session receives (which rules i
 # a session actually gets. `mise run rules:preview -- --knowledge` / `--repo
 # <path>` / `--full`.
 run = ["sh scripts/rules-preview.sh"]
+
+[tasks."gen:rule-banners"]
+description = "Re-stamp the Tier 2 rule provenance banners (body cksum + plugin version) after editing any templates/scaffold/claude/rules/*.md"
+run = ["uv run python scripts/gen_rule_banners.py --write"]
 
 [tasks."gen:copilot"]
 description = "Regenerate the non-Claude surface artifacts: Copilot instructions + path-scoped instructions (from rules/), the cross-tool .agents/skills tree (from skills/), Copilot custom agents (from agents/), the VS Code MCP mirror (from .mcp.json), the hook manifest (from hooks.json), and the manifest versions (from plugin.json)"

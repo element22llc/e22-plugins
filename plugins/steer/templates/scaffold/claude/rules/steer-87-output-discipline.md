@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 87-output-discipline — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here.
+<!-- steer:managed 87-output-discipline v6.0.0 body-cksum:2380296109 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
      The one-line imperative ("Be concise by default") stays always-on in the core
      router; this is the elaboration, which binds once you touch a file. -->
 

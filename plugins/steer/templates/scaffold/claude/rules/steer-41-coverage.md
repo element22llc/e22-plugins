@@ -6,7 +6,7 @@ paths:
   - "**/*_test.*"
   - "**/*.spec.*"
 ---
-<!-- steer:managed 41-coverage — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 41-coverage v6.0.0 body-cksum:4095727724 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Coverage rules
 

@@ -52,6 +52,12 @@ spec-vs-tracker drift check (`/steer-audit spec`), and **not** a code-health aud
   contractually identical (after showing the diff); otherwise splice the named
   marker / propose, never clobber. Don't broaden into app code (`/steer-audit`)
   or spec↔tracker drift (`/steer-audit spec`).
+- **The path-scoped ruleset is repaired per file, by drift state.** Run
+  `sh https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scan-rule-drift.sh <repo> https://github.com/element22llc/e22-plugins/blob/main/plugins/steer`
+  and follow the per-state repair in `CAPABILITIES.md` →
+  `path-scoped-rules`. `absent`/`stale` are safe to write; **`edited` is never
+  overwritten** — diff it and let the user choose. This is the half of the
+  ruleset `/plugin update` cannot refresh, so sync is the only thing that moves it.
 - **Read-then-propose, never clobber.** Diff and ask before touching any file
   that exists; reconcile scaffold into it rather than replacing it; preserve
   every filled-in value. Never touch working app code.

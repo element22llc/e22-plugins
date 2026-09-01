@@ -174,6 +174,13 @@ managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	# Action history is a DIRECTORY of per-entry files (the current shape).
 	mkdir -p "$1/spec/history"
 	printf 'x\n' >"$1/spec/history/README.md"
+	# The Tier 2 path-scoped ruleset is part of a managed repo now: the hook can
+	# only deliver the five always-on core rules (Claude Code caps hook stdout at
+	# 10,000 characters), so a repo without .claude/rules/steer-*.md is running on
+	# a fraction of the standards and check-rule-drift.sh says so. A fixture that
+	# omitted them would not be "healthy".
+	mkdir -p "$1/.claude/rules"
+	cp "${PLUGIN}"/templates/scaffold/claude/rules/steer-*.md "$1/.claude/rules/" 2>/dev/null || :
 }
 
 # Fully bootstrapped state (managed spine + declared tracker + root mise.toml)
@@ -3068,6 +3075,123 @@ printf '%s' "${out}" | grep -q "NOT injected: " && ok ||
 	bad "inject cap: notice must carry the 'NOT injected: ' list the gate parses"
 printf '%s' "${out}" | grep -q "Treat the standards" && ok ||
 	bad "inject cap: notice must carry the terminator the gate parses"
+
+# ---------------------------------------------------------------------------
+# scan-rule-drift.sh + check-rule-drift.sh — Tier 2 ruleset drift.
+#
+# The 24 path-scoped rules live in the CONSUMER repo, so `/plugin update` never
+# refreshes them and nothing in a session notices they are stale. These cases
+# pin the four states a repo can be in, and that the session warning fires.
+# ---------------------------------------------------------------------------
+RD_SCAN="${PLUGIN}/scripts/scan-rule-drift.sh"
+RD_SRC="${PLUGIN}/templates/scaffold/claude/rules"
+
+rd_repo() { # <name> [install?] -> prints repo path with a managed-looking spine
+	_r="${WORK}/$1"
+	mkdir -p "${_r}/.claude/rules" "${_r}/spec"
+	printf '' >"${_r}/.git"
+	printf '6.0.0\n' >"${_r}/spec/.version"
+	[ "${2:-yes}" = "yes" ] && cp "${RD_SRC}"/steer-*.md "${_r}/.claude/rules/"
+	printf '%s' "${_r}"
+}
+rd_state() { # <repo> <file> -> the scanner's verdict for one file
+	sh "${RD_SCAN}" "$1" "${PLUGIN}" 2>/dev/null | grep "^$2	" | cut -f2
+}
+rd_summary() { sh "${RD_SCAN}" "$1" "${PLUGIN}" 2>/dev/null | grep '^SUMMARY	' | cut -f3; }
+
+# (a) A fully installed repo is clean, and the session check stays silent.
+RD_OK="$(rd_repo rd_ok)"
+assert_eq "rule-drift: fresh install is all current" "$(rd_summary "${RD_OK}")" \
+	"0 absent, 0 stale, 0 edited, 0 orphan"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_OK}" rd_ok)")"
+assert_empty "rule-drift: current ruleset warns about nothing" "${out}"
+
+# (b) An existing repo that never synced: everything absent, and the session
+#     says so unprompted. This is the rollout case — a repo adopted before the
+#     ruleset was split has none of these files and no other signal.
+RD_NONE="$(rd_repo rd_none no)"
+assert_eq "rule-drift: never-synced repo reports every rule absent" \
+	"$(sh "${RD_SCAN}" "${RD_NONE}" "${PLUGIN}" 2>/dev/null | grep -c '	absent	')" \
+	"$(find "${RD_SRC}" -name 'steer-*.md' | wc -l | tr -d ' ')"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_NONE}" rd_none)")"
+assert_has "rule-drift: never-synced repo is warned at session start" "${out}" 'out of date'
+assert_has "rule-drift: warning names the repair" "${out}" '/steer:sync'
+assert_has "rule-drift: warning says the standards are not in force" "${out}" 'not installed'
+
+# (c) One file removed -> named exactly, and only that one.
+RD_GONE="$(rd_repo rd_gone)"
+rm -f "${RD_GONE}/.claude/rules/steer-40-testing.md"
+assert_eq "rule-drift: a removed rule is absent" \
+	"$(rd_state "${RD_GONE}" steer-40-testing.md)" "absent"
+assert_eq "rule-drift: removing one rule affects only that rule" \
+	"$(rd_summary "${RD_GONE}")" "1 absent, 0 stale, 0 edited, 0 orphan"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_GONE}" rd_gone)")"
+assert_has "rule-drift: the warning names the missing file" "${out}" 'steer-40-testing.md'
+
+# (d) Right file count, one STALE: the plugin changed the rule and the repo copy
+#     is untouched since install (body still matches its own banner stamp). A
+#     count-based check cannot see this at all.
+RD_STALE="$(rd_repo rd_stale)"
+_victim="${RD_STALE}/.claude/rules/steer-50-definition-of-done.md"
+{
+	grep '^<!-- steer:managed ' "$_victim"
+	printf 'AN OLDER RELEASE SAID THIS.\n'
+} >"${WORK}/.stale-tmp"
+grep -v '^<!-- steer:managed ' "$_victim" >>"${WORK}/.stale-tmp"
+# Re-stamp the banner to match the modified body: that is what "untouched since
+# install" looks like on disk — steer itself wrote this content, at an older version.
+_newck="$(grep -v '^<!-- steer:managed ' "${WORK}/.stale-tmp" | cksum | cut -d' ' -f1)"
+sed "s/body-cksum:[0-9][0-9]*/body-cksum:${_newck}/" "${WORK}/.stale-tmp" >"$_victim"
+assert_eq "rule-drift: file count is unchanged by staleness" \
+	"$(find "${RD_STALE}/.claude/rules" -name 'steer-*.md' | wc -l | tr -d ' ')" \
+	"$(find "${RD_SRC}" -name 'steer-*.md' | wc -l | tr -d ' ')"
+assert_eq "rule-drift: content drift with an intact stamp is stale" \
+	"$(rd_state "${RD_STALE}" steer-50-definition-of-done.md)" "stale"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_STALE}" rd_stale)")"
+assert_has "rule-drift: stale rules are surfaced in-session" "${out}" 'stale'
+
+# (e) Locally edited: body no longer matches the stamp steer wrote. Must be
+#     classified `edited`, never `stale` — the two get opposite repairs.
+RD_EDIT="$(rd_repo rd_edit)"
+printf '\nOur team also requires a staging soak before merge.\n' \
+	>>"${RD_EDIT}/.claude/rules/steer-45-commit-autonomy.md"
+assert_eq "rule-drift: a local edit is detected" \
+	"$(rd_state "${RD_EDIT}" steer-45-commit-autonomy.md)" "edited"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_EDIT}" rd_edit)")"
+assert_has "rule-drift: an edited rule is reported as preserved" "${out}" 'locally edited'
+assert_has "rule-drift: the warning promises not to overwrite" "${out}" 'never overwrite'
+# A file with no banner at all cannot have its provenance established, so it must
+# fall on the conservative side rather than being silently replaced.
+printf '# hand-made\n' >"${RD_EDIT}/.claude/rules/steer-40-testing.md"
+assert_eq "rule-drift: an unstamped file is treated as edited, not stale" \
+	"$(rd_state "${RD_EDIT}" steer-40-testing.md)" "edited"
+
+# (f) Orphan: a steer-*.md this plugin version no longer ships.
+RD_ORPH="$(rd_repo rd_orph)"
+printf -- '---\npaths:\n  - "**"\n---\n# retired\n' \
+	>"${RD_ORPH}/.claude/rules/steer-88-retired.md"
+assert_eq "rule-drift: an unshipped rule file is an orphan" \
+	"$(rd_state "${RD_ORPH}" steer-88-retired.md)" "orphan"
+
+# (g) The scanner is read-only and never fails the caller, even on a junk repo.
+RD_JUNK="$(rd_repo rd_junk no)"
+_before="$(find "${RD_JUNK}" -type f | sort)"
+run_sh "${RD_SCAN}" "${RD_JUNK}" "${PLUGIN}"
+assert_rc "rule-drift: scanner exits 0 when drift is found" "$(last_rc)" 0
+assert_eq "rule-drift: scanner writes nothing to the repo" \
+	"$(find "${RD_JUNK}" -type f | sort)" "${_before}"
+
+# (h) The plugin's own tree and unmanaged repos must stay silent — the first is
+#     not a consumer, the second already gets the onboarding card.
+RD_SELF="$(rd_repo rd_self no)"
+mkdir -p "${RD_SELF}/.claude-plugin"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_SELF}" rd_self)")"
+assert_empty "rule-drift: silent inside the plugin's own tree" "${out}"
+RD_UNM="${WORK}/rd_unmanaged"
+mkdir -p "${RD_UNM}"
+printf '' >"${RD_UNM}/.git"
+out="$(run_hook check-rule-drift.sh "$(session_json "${RD_UNM}" rd_unm)")"
+assert_empty "rule-drift: silent on an unmanaged repo" "${out}"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

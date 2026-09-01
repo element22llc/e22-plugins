@@ -7,7 +7,7 @@ paths:
   - "**/*.html"
   - "**/locales/**"
 ---
-<!-- steer:managed 92-user-facing-copy — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 92-user-facing-copy v6.0.0 body-cksum:140084627 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Internal ids stay out of end-user surfaces
 

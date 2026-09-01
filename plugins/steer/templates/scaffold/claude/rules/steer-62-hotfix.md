@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 62-hotfix — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 62-hotfix v6.0.0 body-cksum:1949663156 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Hotfix / incident fast-path
 

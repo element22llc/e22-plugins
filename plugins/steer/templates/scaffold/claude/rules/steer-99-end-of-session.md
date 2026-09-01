@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 99-end-of-session — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 99-end-of-session v6.0.0 body-cksum:2789236008 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## End-of-session checklist
 

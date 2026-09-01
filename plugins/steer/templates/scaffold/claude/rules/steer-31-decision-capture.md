@@ -3,7 +3,7 @@ paths:
   - "spec/**"
   - "docs/decisions/**"
 ---
-<!-- steer:managed 31-decision-capture — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 31-decision-capture v6.0.0 body-cksum:2821756600 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Durable decisions land in the spine, not in side-channels
 

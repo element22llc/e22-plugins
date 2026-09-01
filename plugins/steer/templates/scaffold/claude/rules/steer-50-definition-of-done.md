@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 50-definition-of-done — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 50-definition-of-done v6.0.0 body-cksum:3194653202 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Definition of Done
 

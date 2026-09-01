@@ -94,7 +94,8 @@ def test_session_subchecks_parses_the_orchestrator_roster():
     assert "check-worktree-trust.sh" in subs
     # The orchestrator itself is not one of its own children.
     assert "session-checks.sh" not in subs
-    assert len(subs) == 6  # bump when a session sub-check is added/removed
+    assert "check-rule-drift.sh" in subs
+    assert len(subs) == 7  # bump when a session sub-check is added/removed
 
 
 def test_live_subcheck_roster_is_in_cross_surface():

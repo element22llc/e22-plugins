@@ -38,7 +38,7 @@ and who decides. Everything else can wait until the work is in view.
 
 ## Tier 2 — path-scoped rules in the consumer repo
 
-The remaining 24 rules ship as `.claude/rules/steer-*.md`, installed into the
+The remaining 30 rules ship as `.claude/rules/steer-*.md`, installed into the
 managed repo by `/steer:init` / `/steer:adopt` and repaired by `/steer:sync`
 (capability `path-scoped-rules`). Each carries `paths:` frontmatter and is
 injected **automatically when Claude reads a file it governs** — deterministic
@@ -67,6 +67,12 @@ injection, not a decision the model makes.
 | `steer-75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). | `**` |
 | `steer-80-change-size.md` | Change-size model — authoritative for per-change ceremony. | `**` |
 | `steer-87-output-discipline.md` | Earn every line. (The one-line imperative stays always-on in the router.) | `**` |
+| `steer-22-housekeeping.md` | Keep the repo tidy — **the deletion gate: never automatic, always waits for a yes**. | `**` |
+| `steer-26-context-hygiene.md` | Delegate heavy runs; route each fact to its canonical home, not private session memory. | `**` |
+| `steer-32-living-docs.md` | Document in parallel — **never guess an answer into the spec**. | `**` |
+| `steer-85-practices.md` | Baseline patterns — **all data access through a parameterized query layer**. | source globs |
+| `steer-88-artifacts.md` | Artifacts are derived views — **never carry secrets, never fabricate a status**. | `**` |
+| `steer-90-design-sources.md` | Design sources & UI — the ADR-gated, kill-dated exception. | UI globs, `spec/design/**` |
 | `steer-92-user-facing-copy.md` | Internal ids stay out of end-user surfaces. | source + docs globs |
 | `steer-97-self-report.md` | File steer's own defects upstream with `/steer:report`. | `**` |
 | `steer-99-end-of-session.md` | End-of-session checklist. | `**` |
@@ -85,14 +91,23 @@ injection, not a decision the model makes.
     missing install; a repo that never adopted them runs without those standards
     and nothing in-session says so.
 
-## Rules folded into reference prose
+## The one rule folded into reference prose
 
-Seven advisory rules were retired from always-on delivery into
-`templates/reference/*`, reachable on demand via `/steer:reference`:
-`20-layout`, `22-housekeeping` and `26-context-hygiene` (→ `HOUSEKEEPING`,
-`CONTEXT-HYGIENE`), `32-living-docs` and `85-practices` (→ `CONVENTIONS`),
-`88-artifacts` (→ `ARTIFACTS`), `90-design-sources` (→ `DESIGN-SOURCES`). They
-are guidance a session can look up, not standards that must bind unread.
+`20-layout` — a description of where directories live — moved into
+`templates/reference/CONVENTIONS.md`, reachable via `/steer:reference`. It is the
+only one of the seven originally demoted that survived an audit for hidden
+prohibitions.
+
+!!! warning "Demotion to reference prose is a change of authority, not of address"
+    The other six — `22-housekeeping`, `26-context-hygiene`, `32-living-docs`,
+    `85-practices`, `88-artifacts`, `90-design-sources` — were promoted back to
+    Tier 2 once audited. Each carried prohibitions rather than guidance: the
+    deletion gate, "never guess an answer into the spec", "all data access
+    through a parameterized query layer" (injection prevention), "never carrying
+    secrets", "never fabricate a status, date, count, or finding", an ADR-gated
+    exception. A rule reachable only by lookup is a rule that does not apply, so
+    a prohibition can never be advisory. Apply that test before demoting anything
+    else.
 
 !!! note "Numbering has intentional gaps"
     Prefixes are spaced (e.g. `20` → `22` → `30`) so new rules can slot between

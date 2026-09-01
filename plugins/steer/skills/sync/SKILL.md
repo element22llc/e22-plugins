@@ -23,6 +23,7 @@ allowed-tools:
   - Bash(gh pr create *)
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(sh *scripts/scan-capabilities.sh*)
+  - Bash(sh *scripts/scan-rule-drift.sh*)
   - Bash(sh *scripts/scan-invocations.sh*)
   - Bash(sh *scripts/template-reconcile.sh*)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
@@ -68,6 +69,12 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
   contractually identical (after showing the diff); otherwise splice the named
   marker / propose, never clobber. Don't broaden into app code (`/steer:audit`)
   or spec↔tracker drift (`/steer:audit spec`).
+- **The path-scoped ruleset is repaired per file, by drift state.** Run
+  `sh ${CLAUDE_PLUGIN_ROOT}/scripts/scan-rule-drift.sh <repo> ${CLAUDE_PLUGIN_ROOT}`
+  and follow the per-state repair in `CAPABILITIES.md` →
+  `path-scoped-rules`. `absent`/`stale` are safe to write; **`edited` is never
+  overwritten** — diff it and let the user choose. This is the half of the
+  ruleset `/plugin update` cannot refresh, so sync is the only thing that moves it.
 - **Read-then-propose, never clobber.** Diff and ask before touching any file
   that exists; reconcile scaffold into it rather than replacing it; preserve
   every filled-in value. Never touch working app code.

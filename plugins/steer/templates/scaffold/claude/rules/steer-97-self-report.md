@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 97-self-report — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 97-self-report v6.0.0 body-cksum:509389326 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## When steer itself misbehaves, report it upstream
 

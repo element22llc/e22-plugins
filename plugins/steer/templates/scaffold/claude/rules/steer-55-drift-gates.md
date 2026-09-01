@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 55-drift-gates — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 55-drift-gates v6.0.0 body-cksum:1526543328 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Drift gates — surface before merge
 

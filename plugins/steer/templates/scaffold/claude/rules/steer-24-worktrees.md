@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 24-worktrees — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 24-worktrees v6.0.0 body-cksum:1309786579 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Parallel worktrees — isolate runtime, clean up after
 

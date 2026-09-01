@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 51-verify-loop — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 51-verify-loop v6.0.0 body-cksum:435223844 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Verify loop — iterate against the harness, don't flail
 

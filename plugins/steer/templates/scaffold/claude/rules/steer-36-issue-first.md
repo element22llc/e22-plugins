@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 36-issue-first — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 36-issue-first v6.0.0 body-cksum:1559203682 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Issue-first (GitHub-adopted repos)
 

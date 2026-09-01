@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 53-autonomous-loops — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 53-autonomous-loops v6.0.0 body-cksum:1555269533 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Autonomous loops — automate the navigation, never the authority
 

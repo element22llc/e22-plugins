@@ -49,6 +49,7 @@ for _check in \
 	check-template-drift.sh \
 	check-open-questions.sh \
 	check-unmanaged-repo.sh \
+	check-rule-drift.sh \
 	surface-faults.sh \
 	check-graduation.sh \
 	check-worktree-trust.sh; do

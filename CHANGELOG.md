@@ -21,16 +21,21 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   imperative ("Be concise by default") stays always-on in the router, the
   elaboration binds once you touch a file. `00-router` lost its
   intent→skill table, which restated the skill listing Claude Code already loads.
-- **24 rules now ship as path-scoped `.claude/rules/steer-*.md`**, installed by
+- **30 rules now ship as path-scoped `.claude/rules/steer-*.md`**, installed by
   `/steer:init` / `/steer:adopt` and repaired by `/steer:sync` under the new
   `path-scoped-rules` capability. Each carries `paths:` frontmatter and loads
   when Claude reads a file it governs; the action-scoped ones (commit autonomy,
   end-of-session, gate prompts) use `paths: "**"` and load on first file touch.
   Verified: path-scoped rules inject deterministically and have no size cap.
-- **7 advisory rules folded into `templates/reference/*`** (`20-layout`,
-  `22-housekeeping`, `26-context-hygiene`, `32-living-docs`, `85-practices`,
-  `88-artifacts`, `90-design-sources`) — reachable via `/steer:reference`, no
-  longer auto-injected.
+- **One rule folded into `templates/reference/*`** — `20-layout`, a description
+  of where directories live. Six others were demoted with it and then **promoted
+  back** after an audit for hidden prohibitions: `22-housekeeping` (the deletion
+  gate), `32-living-docs` ("never guess an answer into the spec"), `85-practices`
+  ("all data access through a parameterized query layer" — injection
+  prevention), `88-artifacts` ("never carrying secrets", "never fabricate a
+  status"), `90-design-sources` (an ADR-gated exception), `26-context-hygiene`.
+  A rule reachable only by lookup is a rule that does not apply, so a
+  prohibition can never be advisory.
 - **`inject-standards.sh` can no longer overrun silently.** It assembles the
   payload to a buffer, drops whole rules from the tail if it would exceed the
   cap, and appends an in-band `RULESET INCOMPLETE` notice naming them; the full
@@ -40,9 +45,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the split is the core alone — leaving chat surfaces (and the cap-guard's own
   "run `/steer:standards`" fallback) short of the 24 path-scoped rules. It now
   reads `templates/scaffold/claude/rules/` too.
+- **Drift detection for the repo-bound half.** New
+  `scripts/scan-rule-drift.sh` classifies every installed rule as
+  `current` / `absent` / `stale` / `edited` / `orphan`. It compares whole bytes
+  against the plugin source, and uses a POSIX-`cksum` stamp in each file's banner
+  for the one question bytes cannot answer — *who* changed it. A stale copy is
+  replaced; an **`edited` copy is never overwritten**, only diffed. A file count
+  cannot see either state, which is why it is not used.
+- **An always-on stale-install warning.** New `check-rule-drift.sh` runs in the
+  SessionStart check chain and names what is missing, stale, or locally edited,
+  with `/steer:sync` as the repair. A stale install is worst exactly when nobody
+  thinks to run sync, so this does not wait to be asked. Hook output caps are
+  per-hook, not per-event (verified), so it costs the ruleset payload nothing.
+- **`gen_rule_banners.py` + `mise run gen:rule-banners`** stamp the banners, and
+  `--check` is wired into `mise run check` so a rule edited without re-stamping
+  cannot ship — it would make every consumer read as `edited` and block its own
+  repair.
 - **`check_context_budget.py` now gates the real ceiling.** The old
   8,200/19,700-*token* policy ratchets were 6-20x above the actual limit and had
-  never once fired. The gate now fails when the hook has to drop any rule, for
+  never once fired. The gate and the hook now both measure **characters**, the
+  runtime's own unit — the hook budgeted in bytes, which under-filled by ~90
+  characters and, worse, left the two measuring different things. The gate now fails when the hook has to drop any rule, for
   every profile including `code` (previously ungated). `mise run rules:preview`
   reports capped rules as `CAPPED`, not `inject`.
 

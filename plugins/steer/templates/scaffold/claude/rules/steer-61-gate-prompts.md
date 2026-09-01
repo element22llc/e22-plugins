@@ -2,7 +2,7 @@
 paths:
   - "**"
 ---
-<!-- steer:managed 61-gate-prompts — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 61-gate-prompts v6.0.0 body-cksum:1454070831 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Answering a human gate in-session
 

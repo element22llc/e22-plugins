@@ -245,30 +245,35 @@ else
 fi
 
 # --- path-scoped-rules — the delivered half of the org ruleset ---
-# Only six always-on rules fit steer's SessionStart injection (Claude Code caps
-# hook stdout at 10,000 characters); the rest ship as .claude/rules/steer-*.md
-# with `paths:` frontmatter. A repo missing them is silently running on a
-# fraction of the standards, which is exactly the class of gap this scan exists
-# to catch. Counted, not just presence-checked: a partial install is the likely
-# failure (an interrupted adopt, or a rule deleted by hand), and it looks
-# identical to a complete one at the directory level.
-RD="$ROOT/.claude/rules"
-psr_have=0
-if [ -d "$RD" ]; then
-	psr_have=$(find "$RD" -maxdepth 1 -name 'steer-*.md' 2>/dev/null | wc -l | tr -d ' ')
-fi
-psr_want=0
-if [ -d "${PLUGIN}/templates/scaffold/claude/rules" ]; then
-	psr_want=$(find "${PLUGIN}/templates/scaffold/claude/rules" -maxdepth 1 -name 'steer-*.md' 2>/dev/null | wc -l | tr -d ' ')
-fi
-if [ "$psr_want" -eq 0 ]; then
+# Delegates to scan-rule-drift.sh rather than counting files: a stale copy and a
+# locally-edited copy both keep the count correct while meaning opposite things
+# (replace it / never replace it), and counting cannot see either. `mis-wired`
+# covers both drift states here; the per-file verdict, which is what sync acts
+# on, comes from running that scanner directly.
+_rd="${PLUGIN}/scripts/scan-rule-drift.sh"
+if [ ! -f "$_rd" ]; then
 	emit "path-scoped-rules" "n/a" ".claude/rules/"
-elif [ "$psr_have" -eq 0 ]; then
-	emit "path-scoped-rules" "absent" ".claude/rules/"
-elif [ "$psr_have" -lt "$psr_want" ]; then
-	emit "path-scoped-rules" "mis-wired" ".claude/rules/ (${psr_have}/${psr_want})"
 else
-	emit "path-scoped-rules" "present-wired" ".claude/rules/ (${psr_have}/${psr_want})"
+	_rdout="$(sh "$_rd" "$ROOT" "$PLUGIN" 2>/dev/null)" || _rdout=""
+	_rdsum="$(printf '%s\n' "$_rdout" | grep '^SUMMARY	' | head -n 1)"
+	if [ -z "$_rdsum" ]; then
+		emit "path-scoped-rules" "n/a" ".claude/rules/"
+	else
+		_rdcount="$(printf '%s' "$_rdsum" | cut -f2)"
+		_rddetail="$(printf '%s' "$_rdsum" | cut -f3)"
+		case "$_rddetail" in
+		"0 absent, 0 stale, 0 edited, 0 orphan")
+			emit "path-scoped-rules" "present-wired" ".claude/rules/ ($_rdcount)"
+			;;
+		*)
+			if printf '%s' "$_rdcount" | grep -q '^0/'; then
+				emit "path-scoped-rules" "absent" ".claude/rules/ ($_rddetail)"
+			else
+				emit "path-scoped-rules" "mis-wired" ".claude/rules/ ($_rdcount; $_rddetail)"
+			fi
+			;;
+		esac
+	fi
 fi
 
 # --- drift-gate — CI hygiene job + PR-template checklists ---

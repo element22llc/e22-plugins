@@ -95,6 +95,48 @@ def test_real_plugin_delivers_every_core_rule_in_every_profile():
         )
 
 
+def test_the_gate_measures_characters_of_the_exact_serialized_payload():
+    """Unit discipline: the cap is in CHARACTERS, so the gate must be too.
+
+    Non-ASCII prose (em dashes, arrows) makes bytes and characters differ by ~90
+    on this ruleset. Measuring bytes where the runtime measures characters is not
+    merely imprecise, it is a silent disagreement between the hook that enforces
+    the cap and the gate that verifies it — the exact class of drift that let the
+    original defect through. This pins that `chars` is `len()` of the identical
+    string the hook emitted, not a byte count and not a re-read of the files.
+    """
+    payload, _ = ccb.measure_injected(REAL_PLUGIN, "code")
+    got = ccb.measure(REAL_PLUGIN)["injected"]["code"]
+
+    assert got["chars"] == len(payload)
+    assert got["bytes"] == len(payload.encode("utf-8"))
+    # If these were equal the test would prove nothing about the unit.
+    assert got["bytes"] > got["chars"], "expected non-ASCII prose in the ruleset"
+    # The gated comparison is the character count against the character cap.
+    assert got["chars"] <= ccb.INJECTED_CAP_CHARS
+
+
+def test_hook_and_gate_agree_on_the_measured_size():
+    """The hook budgets itself; the gate checks it. They must count the same way.
+
+    The hook counts with `wc -m`, the gate with Python `len()`. Under a UTF-8
+    locale those agree exactly; under LC_ALL=C `wc -m` falls back to bytes, which
+    is >= characters and therefore still safe. Either way the hook must never
+    believe it has MORE room than the gate does.
+    """
+    import subprocess
+
+    payload, _ = ccb.measure_injected(REAL_PLUGIN, "code")
+    wc = subprocess.run(
+        ["wc", "-m"], input=payload.encode("utf-8"), capture_output=True, check=True
+    )
+    hook_unit = int(wc.stdout.split()[0])
+    assert hook_unit >= len(payload), (
+        f"the hook's unit ({hook_unit}) under-counts against the runtime's "
+        f"({len(payload)}) — it would over-fill the payload"
+    )
+
+
 def test_real_plugin_keeps_headroom_under_the_cap():
     """A ceiling with no margin dictates the wording of the next fix.
 

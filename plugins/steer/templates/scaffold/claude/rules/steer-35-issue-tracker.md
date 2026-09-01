@@ -3,7 +3,7 @@ paths:
   - "spec/tracker.md"
   - ".github/ISSUE_TEMPLATE/**"
 ---
-<!-- steer:managed 35-issue-tracker — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here. -->
+<!-- steer:managed 35-issue-tracker v6.0.0 body-cksum:947239857 — installed by /steer:init / /steer:adopt and reconciled by /steer:sync. Edit the rule in the steer plugin, not here: a local edit is detected and preserved, but it will not reach any other repo. -->
 
 ## Issue tracker integration (client-agnostic)
 
