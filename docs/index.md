@@ -19,7 +19,7 @@ flowchart LR
       FD["frontend-design<br/>(re-listed, pinned SHA)"]
     end
     DEV["Developer / PO<br/>in Claude Code"] -->|installs| MP
-    STEER -->|SessionStart hook injects<br/>always-on rules| SESSION["Product session"]
+    STEER -->|SessionStart hook injects<br/>the always-on core| SESSION["Product session"]
     STEER -->|/steer:setup<br/>install scaffold + spec spine| REPO["Product repo"]
     SESSION -->|/steer:&lt;skill&gt; on demand| REPO
     REPO -->|/steer:setup after a release| STEER

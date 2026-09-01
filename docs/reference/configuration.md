@@ -1,85 +1,121 @@
 # Configuration & rules
 
-The always-on **rules** under `plugins/steer/rules/` are the plugin's operating
-manual. They are injected into every managed session by `inject-standards.sh`
-([Hooks](hooks.md)) and concatenate in **lexical order** by numeric prefix.
+The **rules** are the plugin's operating manual. They reach a session by two
+different routes, and the split is not cosmetic — it is forced by a hard limit
+in Claude Code.
+
+!!! danger "Claude Code caps hook output at 10,000 characters"
+    A `SessionStart` hook's stdout is capped at **10,000 characters**. Anything
+    longer is written to a file and replaced in context with a ~2 KB preview —
+    and the hook still exits 0, so nothing reports a problem. Measured on Claude
+    Code 2.1.252: a 9,990-character payload arrives whole, a 10,010-character one
+    arrives as a preview.
+
+    steer used to emit its entire 61 KB ruleset through that hook, so sessions
+    received the banner and part of `00-router.md` and nothing else. The ruleset
+    is now split so the always-on core fits the cap whole, and
+    `inject-standards.sh` refuses to overrun: it drops whole rules from the tail
+    and says so in-band rather than letting the runtime truncate silently.
+
+## Tier 1 — the always-on core
+
+Five rules under `plugins/steer/rules/`, injected into every managed session by
+`inject-standards.sh` ([Hooks](hooks.md)), concatenated in lexical order. They
+are sized as a set to fit the cap with headroom (currently ~8.4 K characters
+used of 10,000).
+
+| Rule | Topic |
+| --- | --- |
+| `00-router.md` | Operating-manual entry point: routing policy, gate authority, bootstrap precedence. |
+| `05-roles.md` | Who you are working with. |
+| `60-high-risk.md` | High-risk areas. |
+| `70-secrets.md` | Secrets handling. |
+| `95-not-the-gate.md` | You are not the gate — the dev is. |
+
+These five are the standards that must govern **before** Claude touches
+anything: who the counterpart is, what is dangerous, what never gets committed,
+and who decides. Everything else can wait until the work is in view.
+
+## Tier 2 — path-scoped rules in the consumer repo
+
+The remaining 24 rules ship as `.claude/rules/steer-*.md`, installed into the
+managed repo by `/steer:init` / `/steer:adopt` and repaired by `/steer:sync`
+(capability `path-scoped-rules`). Each carries `paths:` frontmatter and is
+injected **automatically when Claude reads a file it governs** — deterministic
+injection, not a decision the model makes.
+
+| Rule | Topic | `paths:` |
+| --- | --- | --- |
+| `steer-10-stack.md` | Stack defaults. | manifests, Dockerfiles, `mise.toml` |
+| `steer-12-stack-infra.md` | Stack — infrastructure / IaC. | `infra/**`, `*.tf`, playbooks |
+| `steer-15-commands.md` | Useful commands. | `mise.toml`, workflows, `compose.yaml` |
+| `steer-24-worktrees.md` | Parallel worktrees — isolate runtime, clean up after. | `**` |
+| `steer-30-spec-workflow.md` | Spec workflow. | `spec/**` |
+| `steer-31-decision-capture.md` | Durable decisions land in the spine. | `spec/**`, `docs/decisions/**` |
+| `steer-35-issue-tracker.md` | Issue-tracker integration. | `spec/tracker.md`, issue templates |
+| `steer-36-issue-first.md` | Issue-first. | `**` |
+| `steer-40-testing.md` | Testing rules. | test globs |
+| `steer-41-coverage.md` | Coverage as a signal. | test globs |
+| `steer-45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). | `**` |
+| `steer-50-definition-of-done.md` | Definition of Done. | `**` |
+| `steer-51-verify-loop.md` | Verify loop — bounded iteration to a verifiable end state. | `**` |
+| `steer-52-deployment.md` | Deployment & environments (see [Deployment](../concepts/deployment.md)). | `infra/**`, `apps/**`, workflows |
+| `steer-53-autonomous-loops.md` | Automate the navigation, never the authority. | `**` |
+| `steer-55-drift-gates.md` | Surface drift before merge. | `**` |
+| `steer-61-gate-prompts.md` | Answering a human gate in-session. | `**` |
+| `steer-62-hotfix.md` | Hotfix / incident fast-path. | `**` |
+| `steer-75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). | `**` |
+| `steer-80-change-size.md` | Change-size model — authoritative for per-change ceremony. | `**` |
+| `steer-87-output-discipline.md` | Earn every line. (The one-line imperative stays always-on in the router.) | `**` |
+| `steer-92-user-facing-copy.md` | Internal ids stay out of end-user surfaces. | source + docs globs |
+| `steer-97-self-report.md` | File steer's own defects upstream with `/steer:report`. | `**` |
+| `steer-99-end-of-session.md` | End-of-session checklist. | `**` |
+
+!!! note "`paths: \"**\"` is the honest answer for action-scoped rules"
+    Several rules govern an **action** (committing, ending a session, answering a
+    gate), not a file type, so no glob predicts them. `**` loads them on the first
+    file Claude touches — later than always-on, but in every session that does
+    real work, and vastly better than the status quo it replaced, where they
+    reached no session at all.
+
+!!! warning "Tier 2 is repo-bound, not plugin-bound"
+    A `/plugin update` refreshes Tier 1 immediately. Tier 2 lives in each managed
+    repo, so a rule change reaches it only after `/steer:sync`. `/steer:sync`
+    counts the installed files against the plugin's set and repairs a partial or
+    missing install; a repo that never adopted them runs without those standards
+    and nothing in-session says so.
+
+## Rules folded into reference prose
+
+Seven advisory rules were retired from always-on delivery into
+`templates/reference/*`, reachable on demand via `/steer:reference`:
+`20-layout`, `22-housekeeping` and `26-context-hygiene` (→ `HOUSEKEEPING`,
+`CONTEXT-HYGIENE`), `32-living-docs` and `85-practices` (→ `CONVENTIONS`),
+`88-artifacts` (→ `ARTIFACTS`), `90-design-sources` (→ `DESIGN-SOURCES`). They
+are guidance a session can look up, not standards that must bind unread.
 
 !!! note "Numbering has intentional gaps"
     Prefixes are spaced (e.g. `20` → `22` → `30`) so new rules can slot between
     existing ones. Gaps are headroom — files are never renumbered to make the
-    sequence contiguous.
+    sequence contiguous. The gaps are now wider still, since a rule that moved to
+    Tier 2 or to reference prose left its number free in `rules/`.
 
-## The ruleset
+!!! note "Conditional injection (Tier 1 only)"
+    A Tier 1 rule may carry a first-line `<!-- steer:inject-when=… -->` marker and
+    then injects only where its scope holds (see
+    [`inject-standards.sh`](hooks.md)). None of the five current core rules uses
+    one — they are all unconditional — but the mechanism remains for a future
+    core rule, and `lib/scope.sh` is still covered by the hook test suite.
+    In **knowledge-work mode** (a confidently non-code folder, e.g. a Claude
+    Cowork product-owner workspace) every marked rule is skipped and a banner says
+    so. Tier 2 scoping is expressed by `paths:` instead, which is why the
+    `code-project` / `has-iac` / `tracker-github` markers left with the rules that
+    carried them.
 
-| Rule | Topic |
-| --- | --- |
-| `00-router.md` | Operating-manual entry point. |
-| `05-roles.md` | Who you are working with. |
-| `10-stack.md` | Stack defaults (app / service profile). |
-| `12-stack-infra.md` | Stack — infrastructure / IaC (injected when the repo does IaC). |
-| `15-commands.md` | Useful commands. |
-| `20-layout.md` | Where things live. |
-| `22-housekeeping.md` | Keep the repo tidy. |
-| `24-worktrees.md` | Parallel worktrees — isolate runtime, clean up after. |
-| `26-context-hygiene.md` | Context hygiene — delegate heavy runs, keep state in files. |
-| `30-spec-workflow.md` | Spec workflow. |
-| `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
-| `32-living-docs.md` | Document in parallel, not after. |
-| `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
-| `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
-| `40-testing.md` | Testing rules. |
-| `41-coverage.md` | Coverage as a signal — cover what you touch; no vanity threshold. |
-| `45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). |
-| `50-definition-of-done.md` | Definition of Done. |
-| `51-verify-loop.md` | Verify loop — turn a task into a verifiable end state, iterate against the harness until green with a bounded loop, stop-and-report when blocked, never loop on uncheckable/long-compute work. |
-| `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
-| `53-autonomous-loops.md` | Autonomous loops — automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |
-| `55-drift-gates.md` | Surface drift before merge. |
-| `60-high-risk.md` | High-risk areas. |
-| `61-gate-prompts.md` | Answering a human gate in-session — a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed → Accepted`, intent `draft → approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
-| `62-hotfix.md` | Hotfix / incident fast-path — the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
-| `70-secrets.md` | Secrets handling. |
-| `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
-| `80-change-size.md` | Change-size model — **authoritative for per-change ceremony**; Issue-first and Definition of Done take their thresholds from it. Tiny (≈<20 lines, no behavior change) needs no issue, spec, ADR, or plan; any behavior change is Small at minimum; a high-risk area is Risky at any line count; an arguable class takes the larger one. |
-| `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII in code and values. |
-| `87-output-discipline.md` | Earn every line — tight responses, comments the exception, least code that does the job, lean durable prose. |
-| `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
-| `90-design-sources.md` | Design sources & UI. |
-| `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces — ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
-| `95-not-the-gate.md` | You are not the gate — the dev is. |
-| `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping — no confirmation step. |
-| `99-end-of-session.md` | End-of-session checklist. |
-
-!!! note "Conditional injection"
-    Some rules carry a first-line `<!-- steer:inject-when=… -->` marker and are
-    injected only when their scope applies (see
-    [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
-    `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
-    `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
-    `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
-    `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
-    `92-user-facing-copy`, `99-end-of-session` — are marked
-    `code-project`, so they are **skipped in knowledge-work mode** (a confidently
-    non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
-    `36-issue-first`, and `52-deployment` are likewise scoped — respectively to
-    repos that do IaC (`has-iac`), use GitHub as the tracker (`tracker-github`), and
-    those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
-    an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` — so
-    `52-deployment` injects in any Node repo, not only one that deploys today).
-    Polyrepo topology is deliberately **not** an
-    always-on rule. (The original reason — that the ruleset was capped on its
-    on-disk total, so a scoped rule cost every consumer in full — no longer
-    holds: since the injected-payload re-base the budget gate measures the *injected* payload, and
-    scoping now earns full credit. The delivery choice stands on its own merits;
-    only the budget argument for it has lapsed.) It is delivered instead by a
-    `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside
-    `orient-session.sh` — the hook itself speaks in every managed repo; only the
-    topology block is marker-gated. That block is registered on the same
-    `startup|resume|clear|compact` matcher as the ruleset, so it survives a
-    `/clear`, a resume and auto-compaction. The router, context-hygiene, spec-workflow,
-    decision-capture, living-docs, roles, **gate-prompts (`61`)**, high-risk,
-    not-the-gate, self-report, secrets, output, and artifacts rules carry no
-    `inject-when` marker and so stay always-on.
+    Polyrepo topology is deliberately **not** a rule at all. It is delivered by a
+    `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside `orient-session.sh`,
+    registered on the same `startup|resume|clear|compact` matcher as the ruleset,
+    so it survives a `/clear`, a resume and auto-compaction.
 
 ## Code intelligence (LSP)
 

@@ -115,7 +115,7 @@ it maps everyday intents to the skill that handles them.
 
 ## What does Claude do automatically?
 
-- **Injects the always-on rules** every session via the `SessionStart` hook
+- **Injects the always-on core rules** every session via the `SessionStart` hook (the rest arrive as path-scoped `.claude/rules/` in the managed repo — see [Configuration & rules](../reference/configuration.md))
   (where hooks fire) — this is what makes Claude follow the standards.
 - **Reminds itself at the point of action** via `PreToolUse` hooks: a one-per-
   session nudge if it's about to write code before a spec exists, and another if

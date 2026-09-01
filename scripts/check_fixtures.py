@@ -43,6 +43,7 @@ REFERENCE = PLUGIN_ROOT / "templates" / "reference"
 SPEC_TEMPLATES = PLUGIN_ROOT / "templates" / "spec"
 SKILLS = PLUGIN_ROOT / "skills"
 RULES = PLUGIN_ROOT / "rules"
+SCAFFOLD_RULES = PLUGIN_ROOT / "templates/scaffold/claude/rules"
 HOOKS = PLUGIN_ROOT / "hooks"
 REPO_FIXTURES = Path("tests/fixtures")
 
@@ -341,7 +342,11 @@ def check_workflow_authority(errors: list[str]) -> None:
             )
 
     # 3. Issue-first contract uses the scoped "implementation-affecting mutation".
-    for path in (RULES / "36-issue-first.md", REFERENCE / "ISSUE-WORKFLOW.md"):
+    #    The rule moved out of the always-on payload when the ruleset was split to
+    #    fit Claude Code's 10,000-character cap on hook stdout; it ships as a
+    #    path-scoped consumer rule now. The contract phrasing is what this checks,
+    #    so it follows the file.
+    for path in (SCAFFOLD_RULES / "steer-36-issue-first.md", REFERENCE / "ISSUE-WORKFLOW.md"):
         if not path.is_file():
             errors.append(f"{path}: issue-first source is missing")
         elif "implementation-affecting mutation" not in _read(path):
