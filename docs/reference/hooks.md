@@ -188,7 +188,8 @@ describes the wrong repository.
 instead, falling back to `cwd`'s root when there is none:
 
 - editor writes pass `tool_input.file_path` / `.notebook_path`
-  (`check-write-nudges`, `check-version-pins`, `format-on-write`);
+  (`check-write-nudges`, `check-version-pins`, `format-on-write`,
+  `check-comment-density`);
 - the trunk-push gate passes the `-C <dir>` target of the git command
   (`steer_git_c_target`, used by `check-bash-actions`).
 

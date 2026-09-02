@@ -1032,6 +1032,10 @@ _PAYLOAD_DIRS = [
     # Instantiated per deployable app by /steer:build and /steer:adopt, so it
     # lands in consumer repos like the rest — gate it identically.
     "templates/docker",
+    # Generated cross-tool skill surface, installed verbatim as `.agents/skills/`
+    # (scaffold MANIFEST.md) — so a brand string in a `skills/` source regenerates
+    # straight into the client repo.
+    "templates/agents",
 ]
 _BRAND_RE = re.compile(r"element[\s-]22", re.IGNORECASE)
 

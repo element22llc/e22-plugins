@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 6.1.0
+
+- **Fixed: rule `10-stack` no longer tells sessions the version-pin `deny` is
+  absent in VS Code.** It is not: Copilot Chat in VS Code runs the plugin's
+  `hooks/hooks.json`, so `check-version-pins.sh` hard-denies there exactly as in
+  Claude Code — the same finding that drove this release's Copilot work. The
+  clause now names the one real exception (an `ask` on the Copilot CLI) and is
+  shorter than what it replaced; `docs/reference/configuration.md`, which quoted
+  it, follows.
+- **Fixed: `CONVENTIONS.md` no longer contradicts the new comment rule.** Its
+  "Comments carry weight" bullet still said to *match the file's existing comment
+  density* — the exact clause rule `08-code-comments.md` was written to replace —
+  so the always-on rule and the reference prose it points readers at gave
+  opposite instructions in a comment-heavy file. It now carries rule 08's "a
+  dense file is not a licence" test instead.
+- **Fixed: the shipped `branch-protection.yml` no longer trips steer's own
+  comment-noise gate.** The `solo` profile arrived with a six-line inline essay,
+  putting the file at 41% comment lines — above the one-third threshold rule 08
+  states and `check-comment-density.sh` enforces — so a consumer editing the
+  policy steer had just installed got flagged by steer. Trimmed to 30% with no
+  semantic change (the parsed YAML is identical); the plugin copy and the
+  scaffold copy stay byte-for-byte.
+- **Fixed: the installed cross-tool skill surface is client-agnostic again.**
+  `/steer:doctor`'s Windows link put an `element-22` host into
+  `templates/agents/skills/`, which the scaffold installs verbatim into consumer
+  repos as `.agents/skills/` — the debranding gate (`check_standards.py` check
+  11) covered `templates/{scaffold,spec,github,reference,docker}` but not
+  `templates/agents`, so it shipped ungated. The link now points at the docs page
+  in the marketplace repo, and `templates/agents` is in the gate's payload dirs
+  so the whole generated surface can't leak a brand string again.
 - **Added: `/steer:protect waive` — a recorded graduation waiver for repos that
   stay single-dev on trunk.** The solo-trunk graduation signals (an `infra/`
   tree, a deploy workflow, a `prod` branch) had no answer other than graduating:
@@ -37,7 +67,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   mechanical: GitHub will not let a PR's author approve it, so with the default
   1-approval rule a sole dev who graduated could never merge, which made "stay on
   trunk forever" the only workable option. `/steer:protect apply --solo` / `apply
-  team` selects the profile in the repo's own policy copy (creating it from the
+  --team` selects the profile in the repo's own policy copy (creating it from the
   plugin default when absent) and applies; `verify` treats a `solo` repo whose
   live protection requires 0 approvals as compliant, offers `solo` when a
   graduating solo-trunk repo has exactly one collaborator, and flags `solo` with
@@ -48,7 +78,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   merge alone) or `waive` (stay on trunk) — instead of a wall they could not use;
   rule 50's "a dev approved the PR" item, the scaffold README and `MANIFEST.md`
   carry the profile. The scaffold policy copy is updated byte-for-byte.
-- **Added: a `Responses` rule, third in the payload, and the two contract
+- **Added: a `Responses` rule, second in the payload, and the two contract
   blocks that padded every turn are now compact by definition.** Chat in a steer
   session ran long for four reasons: the "keep responses tight" bullet sat 30th
   of 35 in `87-output-discipline`; every workflow skill ends with a
@@ -127,7 +157,9 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `init/INTERVIEW.md`, `/steer:work`'s next-action mapping →
   `work/NEXT-ACTION.md`, and `/steer:sync`'s profile + polyrepo-role rules into
   the existing `sync/RECONCILE.md` (now read at step 3, not step 5). All five
-  bodies now sit at 80–85% of the cap.
+  bodies came back inside the cap with headroom — `sync`, `next`, `init` and
+  `work` at 81–86%, and `protect` at 93% after the `solo`-profile work later in
+  this same release added to it again.
 
 - **Changed: `/steer:tracker-sync`'s operation catalogue is split by domain, so a
   caller reads only the ops it performs.** `OPERATIONS.md` was a flat 13.5 KB

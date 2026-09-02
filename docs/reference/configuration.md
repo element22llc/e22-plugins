@@ -56,8 +56,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 !!! note "Conditional injection"
     Some rules carry a first-line `<!-- steer:inject-when=… -->` marker and are
     injected only when their scope applies (see
-    [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
-    `15-commands`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
+    [`inject-standards.sh`](hooks.md)). The code-loop rules — `08-code-comments`,
+    `10-stack`, `15-commands`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
     `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
     `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
@@ -80,7 +80,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     topology block is marker-gated. That block is registered on the same
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
     `/clear`, a resume, auto-compaction and a forked session. The router, context-hygiene, spec-workflow,
-    decision-capture, living-docs, roles, **gate-prompts (`61`)**, high-risk,
+    decision-capture, living-docs, responses (`03`), roles,
+    **gate-prompts (`61`)**, high-risk,
     not-the-gate, self-report, secrets, output, and artifacts rules carry no
     `inject-when` marker and so stay always-on.
 
@@ -210,7 +211,7 @@ previous raise inevitable. Then from 66,500 to 67,300, to fund six
 **surface-scoping corrections**: rules 00, 05 and 97 told the agent a SessionStart
 hook would flag a condition, which is true in Claude Code but not on Copilot
 (whose `sessionStart` discards the raw text those notices emit), and rule 10 promised a hard `deny` that is
-only an `ask` on the Copilot CLI and absent in VS Code — in each case a rule
+only an `ask` on the Copilot CLI — in each case a rule
 asserting a safety net that would not be there. Rules 24 and 99 named
 `docker:up`/`docker:clean`, which the workspace profile renamed to `ws:*`, so the
 cleanup command those rules mandate did not exist in a spine host. Rule 15 now

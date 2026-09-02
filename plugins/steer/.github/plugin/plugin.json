@@ -1,7 +1,7 @@
 {
   "name": "steer",
   "description": "Engineering standards for GitHub Copilot (CLI and VS Code). On the Copilot CLI this manifest loads steer's skills and a Copilot-native hook set whose sessionStart hook injects the live always-on rules into every session; Copilot Chat in VS Code runs the plugin's Claude hooks.json for the same result. .github/copilot-instructions.md (installed by /steer:init) remains as the fallback for the Copilot cloud agent and code review, which load no plugins, alongside the cross-tool .agents/skills/ tree in the open Agent Skills format.",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "skills": "skills/",
   "hooks": "hooks/copilot-hooks.json"
 }
