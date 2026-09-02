@@ -1,26 +1,8 @@
 #!/usr/bin/env sh
-# ws.sh — polyrepo member driver for a workspace repo.
-#
-# Reads spec/workspace.yml (the member manifest) and does the mechanical
-# multi-repo work the mise `ws:*` tasks expose: clone the members, fast-forward
-# them, report their state, generate the VS Code multi-root workspace, and check
-# the manifest against compose.yaml / .gitignore for drift.
-#
-# WHY IT SHIPS INTO THE REPO (not the plugin): `mise run ws:clone` has to work
-# for a teammate with no Claude Code and no plugin checkout — the same reason
-# scripts/scan-version-pins.sh is a committed copy.
-#
-# THE MANIFEST IS THE ONE SOURCE OF TRUTH. Nothing here invents a repo, a branch
-# or a path, and nothing here rewrites a member's history: `sync` is
-# fetch + fast-forward only and refuses a dirty tree, a detached HEAD, a branch
-# other than the declared one, or a divergence. A member is yours to rebase, not
-# this script's.
-#
-# spec/workspace.yml is a fixed-shape YAML the plugin ships (2-space `- name:`
-# member items, 4-space scalar fields), so the awk parse below is reliable. It is
-# NOT a general YAML parser — keep the manifest in the shipped shape.
-#
+# ws.sh — polyrepo member driver behind the mise `ws:*` tasks; spec/workspace.yml is the one source of truth.
 # Usage: sh scripts/ws.sh <list|clone|sync|status|code|check|preflight>
+# Ships into the repo (not the plugin) so `mise run ws:clone` works with no Claude Code and no plugin checkout.
+# Rationale: /steer:reference polyrepo.
 set -eu
 
 MANIFEST="spec/workspace.yml"
@@ -31,24 +13,14 @@ die() {
 	exit 1
 }
 
-# ws_in_linked_worktree — true inside a linked worktree of THIS repo.
-#
-# WHY EVERY SUBCOMMAND CARES: member checkouts are git-IGNORED clones, so they
-# exist only in the checkout you cloned them into. A worktree is populated from
-# git refs, which means a worktree of the workspace repo is a spine host with
-# ZERO members — `ws:status` says NOT CLONED for every one of them and
-# `mise run ws:dev` cannot boot anything. That is expected, not a broken manifest,
-# and the report has to say so or it reads as drift.
+# Member clones are git-ignored, so a linked worktree has none of them — expected, not drift.
 ws_in_linked_worktree() {
 	_wd=$(git rev-parse --git-dir 2>/dev/null) || return 1
 	_wc=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
 	[ -n "${_wd}" ] && [ -n "${_wc}" ] && [ "${_wd}" != "${_wc}" ]
 }
 
-# ws_worktree_note — the one explanation of the state above, printed by the
-# subcommands that would otherwise report an absent member as drift. At most once
-# per run: `status` calls it beside its own member list and then delegates to
-# `check`, which calls it too.
+# At most once per run: `status` calls it, then delegates to `check`, which calls it too.
 WS_NOTE_SHOWN=0
 ws_worktree_note() {
 	ws_in_linked_worktree || return 0
@@ -65,9 +37,8 @@ ws_worktree_note() {
 RECORDS=$(mktemp)
 trap 'rm -f "${RECORDS}"' EXIT HUP INT TERM
 
-# --- Manifest parsing -------------------------------------------------------
+# --- Manifest parsing (fixed-shape YAML the plugin ships — not a general parser) ---
 
-# ws_product_name — the `product.name` scalar (empty while still a placeholder).
 ws_product_name() {
 	awk '
     /^product:[[:space:]]*(#.*)?$/ { inp = 1; next }
@@ -84,11 +55,8 @@ ws_product_name() {
   ' "${MANIFEST}"
 }
 
-# ws_members — one TAB-separated record per member:
-#   name <TAB> repository <TAB> branch <TAB> profile <TAB> path
-# Unset fields come through empty. A placeholder member (no name AND no
-# repository — the state /steer:init leaves when the dev doesn't know the members
-# yet) is dropped, so an unresolved manifest yields no work rather than errors.
+# ws_members — one TAB-separated record per member: name repository branch profile path (unset fields empty).
+# A placeholder member (no name AND no repository — what /steer:init leaves unresolved) is dropped, not errored.
 ws_members() {
 	awk '
     function clean(line, key) {
@@ -117,28 +85,20 @@ ws_members() {
   ' "${MANIFEST}"
 }
 
-# ws_local_count — how many members declare a local `path:`.
 ws_local_count() {
 	ws_members | awk -F'\t' '$5 != "" { n++ } END { print n + 0 }'
 }
 
-# ws_spine_version <path-to-spec/.version> — the version, or `-` when absent.
-# The stamp is TWO lines — a managed-by comment, then the version (/steer:init,
-# /steer:adopt, /steer:build and /steer:sync all write it that way) — so a bare `cat` prints
-# the comment where a one-line field is expected. Extract the version itself,
-# exactly as /steer:sync and scripts/workspace-snapshot.sh read this same file.
+# spec/.version is TWO lines (managed-by comment, then the version): extract the version, exactly as /steer:sync reads it.
 ws_spine_version() {
 	grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "$1" 2>/dev/null || printf -- '-'
 }
 
-# ws_slug <text> — lowercase, [a-z0-9-] only. Used for the generated filename.
 ws_slug() {
 	printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' |
 		sed 's/-\{1,\}/-/g;s/^-//;s/-$//'
 }
 
-# ws_remote <repository> — clone URL. A bare owner/repo becomes a GitHub HTTPS
-# URL; anything already shaped like a URL or an scp-style remote is used verbatim.
 ws_remote() {
 	case "$1" in
 	*://* | *@*:*) printf '%s' "$1" ;;
@@ -158,10 +118,7 @@ cmd_list() {
 	ws_members
 }
 
-# Both mutating subcommands read the member list from a temp FILE rather than a
-# pipeline, so the loop runs in this shell and a per-member failure can be
-# recorded and still let the remaining members be processed. One unreachable
-# remote must never abort the rest of the sweep.
+# clone/sync read members from a temp FILE, not a pipeline: the loop must run in this shell so one failed member never aborts the sweep.
 cmd_clone() {
 	ws_require_members
 	ws_members >"${RECORDS}"
@@ -198,6 +155,7 @@ cmd_clone() {
 	[ "${failed}" = 0 ] || die 'one or more members could not be cloned'
 }
 
+# Fetch + fast-forward only; never rewrites a member's history.
 cmd_sync() {
 	ws_require_members
 	ws_members >"${RECORDS}"
@@ -257,9 +215,6 @@ cmd_status() {
 	cmd_check
 }
 
-# cmd_code — generate the VS Code multi-root workspace from the manifest. The
-# file is GENERATED and git-ignored (`*.code-workspace`): edit the manifest, not
-# the output. A member with no `path:` is omitted — there is nothing local to open.
 cmd_code() {
 	ws_require_members
 	slug=$(ws_slug "$(ws_product_name)")
@@ -280,10 +235,7 @@ cmd_code() {
 	printf 'wrote %s\n' "${out}"
 }
 
-# cmd_check — the manifest against the two files that must agree with it:
-# compose.yaml `include:` (so `mise run ws:dev` boots the members' services) and
-# .gitignore (so a member's code never lands in the workspace's history).
-# Advisory — it prints drift and exits 0. The manifest is the source of truth.
+# Advisory: prints manifest-vs-compose.yaml/.gitignore drift and exits 0.
 cmd_check() {
 	printf '# Manifest consistency\n'
 	if [ "$(ws_local_count)" = 0 ]; then
@@ -292,19 +244,13 @@ cmd_check() {
 	fi
 	ws_members | while IFS="${TAB}" read -r name _repo _branch _profile path; do
 		[ -n "${path}" ] || continue
-		# The .gitignore assertion is answered by the manifest alone, so it holds
-		# whether or not the member is cloned in THIS checkout.
 		if grep -qE "^/?${path}/?$" .gitignore 2>/dev/null; then
 			printf '  ok      %-16s git-ignored\n' "${name}"
 		else
 			printf '  MISSING %-16s %s is NOT in .gitignore — its code would be committed here\n' \
 				"${name}" "${path}"
 		fi
-		# The compose assertion needs the checkout — "does this member run services?"
-		# is a question about its files. Say the check could not RUN rather than
-		# passing over it in silence: a skipped line reads as a pass, and in a
-		# worktree (which has no member cloned at all) that hid real
-		# manifest-vs-compose drift for every member at once.
+		# Say the compose check could not RUN rather than skip it silently — a skipped line reads as a pass.
 		if [ ! -d "${path}" ]; then
 			printf '  absent  %-16s not cloned at %s — compose-include check not run\n' \
 				"${name}" "${path}"
@@ -323,15 +269,7 @@ cmd_check() {
 	return 0
 }
 
-# cmd_preflight — can the aggregated stack actually boot from HERE? Exits non-zero
-# with the real reason and the real next step.
-#
-# WHY IT EXISTS: `ws:docker:up` used to guard on `docker compose config` alone, which
-# fails identically for two unrelated causes and blamed the wrong one — it reported
-# that compose.yaml had no resolved `include:` list even when every include was
-# correct and the member checkout was simply absent, sending you to edit a file
-# that was already right. Diagnose the manifest and the checkouts first; fall
-# through to compose only once those hold.
+# Diagnose the manifest and the checkouts BEFORE `docker compose config`, which fails identically for an absent checkout and a bad include:.
 cmd_preflight() {
 	ws_require_members
 	if [ "$(ws_local_count)" = 0 ]; then

@@ -4,8 +4,8 @@ Org-wide standards, injected every session by the **steer** plugin and
 maintained centrally in `element22llc/e22-plugins` — never copy them into a
 product's `CLAUDE.md`, which holds only product-specific context.
 
-**Be concise by default** — in chat, in code, and in every artifact you write
-(see Output discipline).
+**Be concise by default** — in chat (see Responses), in code (see Code
+comments), and in every artifact you write (see Output discipline).
 
 ## You are the router
 

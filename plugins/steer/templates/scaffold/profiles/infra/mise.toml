@@ -1,44 +1,16 @@
-# mise — ROOT toolchain for an INFRASTRUCTURE / IaC repo (the `infra` profile).
-#
-# This is the infra-profile replacement for the core root `mise.toml`:
-# /steer:init installs THIS as the repo-root `mise.toml` when the profile is
-# `infra`, and does NOT install the Node project files (package.json /
-# pnpm-workspace.yaml / biome.json / configs / packages — an infra repo has no
-# Node/web layer). It DOES still pin the `node` runtime (agent tooling needs it)
-# and ships the core `compose.yaml` + `scripts/worktree-env.sh` — delete those if
-# this repo genuinely runs no local backing services. The universal core is
-# unchanged — mise pinning, the /spec spine, and CI hygiene apply here exactly as
-# they do to an app repo.
-#
-# Distinct from templates/scaffold/infra/mise.toml: THAT one pins tools for a
-# NESTED /infra dir inside an app monorepo (so non-infra contributors skip them).
-# THIS one is the whole repo's root toolchain.
-#
-# Version strategy (same as every steer mise.toml):
-#   - Tools resolve to `latest`; the committed `mise.lock` is the REAL pin. mise
-#     only writes the lock if the file already exists, so create it on first run:
-#     `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`
-#     (add other platforms your team uses; linux-x64 is mandatory — CI runs there).
-#   - Infra is a high-risk area: bump intentionally with `mise upgrade` and
-#     VALIDATE IN NON-PROD before prod. Run /steer:reference conventions for the rationale.
+# Root toolchain for an INFRASTRUCTURE repo (`infra` profile; replaces the core mise.toml,
+# not the nested infra/mise.toml of an app repo). Rationale: /steer:reference conventions -> "Toolchain".
 
 [settings]
 lockfile = true
-# Unlocks the `[deps]` auto-install providers (e.g. ansible-galaxy below). A
-# deliberate org default; blast radius is bounded by the committed mise.lock.
 experimental = true
 
 [env]
-# Per-worktree COMPOSE_PROJECT_NAME + host-port offset, so parallel Claude Code
-# worktrees don't collide on Docker/ports when running the core `compose.yaml`.
-# Sourced here because worktree-env.sh ships in the universal core for every
-# profile. Remove this and the script if the repo runs no local services.
+# Per-worktree Compose isolation; remove with compose.yaml if the repo runs no local services.
 _.source = "scripts/worktree-env.sh"
 
 [tools]
-# --- Baseline: always installed. node/uv/python back agent tooling (npx/uvx),
-# ansible-lint, and yamllint; gh drives PRs/releases; shellcheck + actionlint are
-# CI gates. `node` is the runtime for agent tooling, NOT a Node project layer.
+# Baseline — always installed. `node` is the agent-tooling runtime, not a Node project layer.
 node = "latest"
 python = "latest"
 uv = "latest"
@@ -46,35 +18,17 @@ github-cli = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
 
-# --- IaC engine: keep what matches this repo, delete the rest (/steer:init
-# enables the detected engine and comments out the others).
-opentofu = "latest"                                              # Terraform/OpenTofu repos
-terragrunt = "latest"                                            # OpenTofu/Terraform orchestration (DRY)
-"aqua:aws/aws-cli" = { version = "latest", symlink_bins = true } # AWS provider/CLI
-# "pipx:ansible-core" = "latest"                                 # Ansible repos — uncomment
-# pulumi = "latest"                                              # Pulumi repos (ADR) — uncomment
-
-# Secrets do NOT belong in mise config. Use a git-ignored .env / .env.local for
-# local values, and the cloud secret store (SSM Parameter Store SecureString /
-# Secrets Manager) or Ansible Vault for deployed environments.
-
-# --- Tasks. `mise run dev:setup` must, from a fresh clone after `mise install`,
-# leave a working local environment (the universal convention). Prune the tasks
-# of the engine you don't use.
+# IaC engine: keep what matches this repo (/steer:init enables the detected one).
+opentofu = "latest"
+terragrunt = "latest"
+"aqua:aws/aws-cli" = { version = "latest", symlink_bins = true }
+# "pipx:ansible-core" = "latest"                                 # Ansible
 
 [tasks."dev:setup"]
 description = "One-command local setup: install IaC deps (provider/module init or Ansible roles)"
-# Terraform/OpenTofu path (live default — matches the opentofu/terragrunt tools
-# pinned above). `terragrunt run --all init` is idempotent: safe to rerun.
 run = "terragrunt run --all init"
 
-# Ansible path: delete the run above and let the [deps.ansible-galaxy] provider
-# below own role install instead — it auto-runs on `mise run`, only when stale.
-
-# --- Ansible role install as an auto-install provider (uncomment for Ansible) ---
-# Demonstrates the declared-dependency + freshness model: `depends` orders it
-# after uv, `sources`/`outputs` skip it when requirements.yml is unchanged, and
-# `auto` runs it before any `mise run` / `mise x`.
+# Ansible: delete dev:setup's `run` and let this provider own role install (skipped while requirements.yml is unchanged).
 # [deps.ansible-galaxy]
 # auto = true
 # depends = ["uv"]
@@ -82,12 +36,6 @@ run = "terragrunt run --all init"
 # sources = ["requirements.yml"]
 # outputs = [".galaxy-installed"]
 
-# --- Local backing services. This profile keeps the core `compose.yaml` and
-# `scripts/worktree-env.sh`, and the always-on worktree/end-of-session rules
-# mandate `mise run docker:clean` before removing a worktree — so these tasks must
-# exist here too, not only in the core mise.toml this file replaces. Definitions
-# are identical to the core ones (scoped to this worktree's COMPOSE_PROJECT_NAME).
-# Delete this block only if you also deleted `compose.yaml`.
 [tasks."docker:up"]
 description = "Start local backing services (compose.yaml) and wait until healthy"
 run = "docker compose up -d --wait"
@@ -100,7 +48,6 @@ run = "docker compose down"
 description = "Tear down this worktree's services AND volumes (run before removing a worktree)"
 run = "docker compose down --volumes --remove-orphans"
 
-# --- Terraform / OpenTofu tasks (delete for an Ansible-only repo) ---
 [tasks."infra:fmt"]
 description = "Check IaC formatting (tofu fmt + terragrunt hclfmt)"
 run = "tofu fmt -recursive -check -diff"
@@ -113,11 +60,7 @@ run = "terragrunt run --all validate"
 description = "Plan changes across all units (read-only; never auto-applies)"
 run = "terragrunt run --all plan"
 
-# --- Ansible tasks (uncomment for an Ansible repo; delete the tofu tasks above) ---
+# Ansible repo: uncomment this and delete the infra:* tasks above.
 # [tasks."ansible:lint"]
 # description = "Lint playbooks and roles (ansible-lint + yamllint)"
 # run = ["uvx yamllint .", "uvx ansible-lint"]
-#
-# [tasks."ansible:check"]
-# description = "Syntax-check the main playbook without applying"
-# run = "uvx --from ansible-core ansible-playbook --syntax-check site.yml"

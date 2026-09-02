@@ -15,50 +15,31 @@ build/
 out/
 *.tsbuildinfo
 
-# Environment
-# Store local config in .env / .env.local — never committed. Document required
-# var NAMES (not values) in the committed .env.example, and keep deployed
-# secrets in SSM Parameter Store (SecureString) / Secrets Manager. The secrets
-# standard is injected by the steer plugin (run /steer:reference conventions).
+# Environment — var NAMES go in the committed .env.example, values never
 .env
 .env.local
 .env.*.local
-# (.env.example is committed — it is not matched by the patterns above)
 
 # mise local overrides
-# Committed: mise.toml, mise.lock (the real version pins — must be committed)
-# Gitignored: local machine overrides
 .mise.local.toml
 
 # Claude Code local settings
-# Committed: .claude/settings.json (shared plugins/permissions)
-# Gitignored: per-user allowlists and personal overrides
 .claude/settings.local.json
 
-# steer self-fault log — when the steer plugin's own hooks misbehave they record
-# it here for `/steer:report` to file upstream. Local diagnostic state, per-
-# machine, never committed (the .log is also caught by *.log below).
+# steer self-fault log (read by /steer:report)
 .claude/steer-faults.log
 .claude/steer-faults.surfaced
 
-# Claude Code worktrees — `claude --worktree` creates linked working trees
-# here; they are separate checkouts, not content to track. (.worktreeinclude
-# at the repo root controls which git-ignored locals get copied into them.)
+# Claude Code worktrees (linked checkouts; .worktreeinclude picks what gets copied in)
 .claude/worktrees/
 
-# Local work markers — /steer:work records the claimed issue (and the Claude
-# Code session breadcrumbs) for a branch here so the Stop-hook reconciliation
-# recognizes it. Per-developer, per-machine execution state, never committed.
+# /steer:work claim markers
 spec/.work/
 
-# IDE
-# Share the workspace's recommended extensions + Biome formatter defaults;
-# keep per-user overrides (settings.local.json, launch/tasks) out of git.
+# IDE — shared VS Code config stays; mcp.json is shared because Copilot does not read .mcp.json
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-# mcp.json is how Copilot/VS Code teammates get the plugin's MCP servers (Copilot
-# does not read the Claude-only .mcp.json), so it is shared, not per-user.
 !.vscode/mcp.json
 .idea/
 *.swp
@@ -75,14 +56,10 @@ yarn-error.log*
 coverage/
 .nyc_output/
 
-# Terraform
+# Terraform — never ignore .terraform.lock.hcl (committed provider pins)
 *.tfstate
 *.tfstate.*
 .terraform/
-
-# Important:
-# Do not ignore .terraform.lock.hcl.
-# It should usually be committed to pin provider versions.
 
 # OS
 Thumbs.db

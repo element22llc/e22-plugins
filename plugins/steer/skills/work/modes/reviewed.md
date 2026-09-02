@@ -49,9 +49,9 @@ stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
 - **Bounded fix loop.** Apply fixes for confirmed findings, then re-review.
   **Cap at 2 rounds**; exit as soon as a round surfaces no high-severity findings.
   If you stop at the cap with findings still open, say what was left and why.
-- **Report.** Summarize what each gate checked, which findings were resolved, and
-  any residual risk, folded into the `## Recommended next actions` block in
-  `SKILL.md`.
+- **Report.** One line per gate — what it checked and its verdict — plus any
+  residual risk, then the `## Recommended next actions` block from `SKILL.md`.
+  Resolved findings are not re-listed; the diff carries them.
 
 In **prototype/local mode** there is no tracker and therefore no `/steer:work` to
 run — apply the same `REVIEW-LOOP.md` protocol directly around `/steer:build`'s

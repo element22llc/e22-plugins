@@ -1,7 +1,4 @@
-# Instantiated as the repo-root `.dockerignore` (stored here without the leading
-# dot, like the other scaffold dotfiles). The build context is the repo root, so
-# this keeps the image small and avoids leaking local secrets/caches into layers.
-# Adapt on fork to the app's stack (drop the Python or Node lines as appropriate).
+# Repo-root `.dockerignore` (stored without the dot). Drop the Node or Python block on fork.
 
 .git
 .github
@@ -27,7 +24,6 @@ node_modules
 .mise.local.toml
 .claude
 
-# Test + coverage output
 **/coverage
 **/.pytest_cache
 **/*.log

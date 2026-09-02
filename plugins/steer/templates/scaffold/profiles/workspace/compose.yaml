@@ -1,48 +1,7 @@
-# Local runtime for the WHOLE product — workspace (polyrepo spine host) flavor.
-#
-# This repo owns no services of its own. It composes the members' Compose files
-# with `include:`, so one `mise run ws:dev` at the workspace boots every member's
-# backing services (the dev-server half needs monorepo mode + per-member depends), while
-# each member's compose.yaml stays valid standalone.
-#
-# ============================================================================
-# TEMPLATE — every entry below is commented out on purpose. `/steer:init` (or
-# `/steer:adopt`) resolves the list from spec/workspace.yml: one entry per member
-# that declares a `path:` AND has a compose.yaml. Until at least one member is
-# resolved this file has no active keys and `docker compose` will refuse it — if
-# no member runs local services, DELETE this file together with the `ws:docker:*`
-# and `ws:dev` tasks in mise.toml. `mise run ws:status` reports members whose
-# include entry is missing.
-# ============================================================================
-#
-# LONG SYNTAX, always. `project_directory` defaults to the included file's own
-# directory, which is what keeps relative paths (build contexts, bind mounts,
-# env_file) resolving the same way they do when the member is run on its own.
-#
+# Workspace spine: no services here — each member carries its own compose.yaml.
+# `/steer:init` resolves one `include:` entry per member from spec/workspace.yml
+# (long syntax, so the member's relative paths resolve as they do standalone):
 # include:
 #   - path: frontend/compose.yaml
 #     project_directory: frontend
 #     env_file: frontend/.env
-#   - path: backend/compose.yaml
-#     project_directory: backend
-#     env_file: backend/.env
-#
-# TWO CONSTRAINTS THAT BITE:
-#
-# 1. `include` does NOT merge on a name collision — it warns and takes one side.
-#    Two members that each define a service called `postgres` (the scaffold
-#    default) do not become two databases; you get a warning and one of them.
-#    Namespace the service names in each MEMBER's compose.yaml
-#    (`frontend-postgres`, `backend-postgres`) — not here. The same applies to
-#    volume and network names.
-#
-# 2. Host ports still collide. Every member's scaffold publishes
-#    `${POSTGRES_PORT:-5432}`, so two members with a database cannot both bind the
-#    default. Give each member a distinct base port in its own `.env` (the var
-#    names are in its `.env.example`) and mirror it in that member's
-#    `DATABASE_URL`. The workspace's own Compose PROJECT name is already distinct
-#    (mise sources scripts/worktree-env.sh), so containers, volumes and networks
-#    never clash with a member's standalone stack — only host ports do.
-#
-# Do NOT declare services here. A service in the workspace is code in the
-# workspace, and this repo holds the spine, not the product.

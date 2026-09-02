@@ -11,7 +11,7 @@ security to `/security-review`, mechanical cleanup to `/simplify` (name the
 skill; don't run it here). A cluttered repo root is handed to `/steer-tidy`, not
 reported stray-by-stray. **If there is no `/spec` spine yet,** the spec-coverage
 dimension can't run — note that, redirect to `/steer-adopt` for the spec, and
-run the code-health dimensions (2–9) without it.
+run the code-health dimensions (2–10) without it.
 
 ## When to run
 
@@ -22,13 +22,14 @@ run the code-health dimensions (2–9) without it.
 
 ## Audit dimensions
 
-Nine standards dimensions, anchored to the baseline (`rules/85-practices.md`,
+Ten standards dimensions, anchored to the baseline (`rules/85-practices.md`,
 Definition of Done, the high-risk rule) — **not** a generic checklist:
 **1** spec conformance & coverage *(needs `/spec`)* · **2** architecture &
 boundaries · **3** data layer · **4** input validation & config · **5** error
 handling & escape hatches · **6** testing · **7** toolchain & dependency health
 (incl. the branch-protection / solo-trunk graduation check) · **8** design
-consistency *(UI repos only)* · **9** DX & docs. Skip any dimension that doesn't
+consistency *(UI repos only)* · **9** DX & docs · **10** comment noise (the
+Code comments rule). Skip any dimension that doesn't
 apply to the repo and say so. The full catalogue — what each dimension looks for
 — is [`AUDIT-DIMENSIONS.md`](https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/AUDIT-DIMENSIONS.md);
 load it before fanning out reviewers.

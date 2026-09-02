@@ -39,9 +39,8 @@ def test_render_translates_github_pat(tmp_path: Path):
     # additively and drop unused servers. So the header must say the consumer owns it
     # and must NOT claim a refresh path — asserted here so it cannot regress to the
     # "do not edit by hand" / "refresh with /steer:sync" wording it carried before.
-    assert "starting point" in out
-    assert "you own" in out
-    assert "agent-surface-current capability does NOT cover" in out
+    assert "You own this copy" in out
+    assert "/steer:sync never rewrites .vscode/" in out
     assert "do not edit by hand" not in out
     # The dotted user-config placeholder becomes a prompted input, with a matching
     # inputs block. VS Code has no notion of Claude's plugin userConfig, so the
