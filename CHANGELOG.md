@@ -7,6 +7,15 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **One front door for bootstrap, everywhere.** `/steer:next`, `/steer:explain`
+  and `/steer:roadmap` redirected an unmanaged repo straight to `/steer:init` or
+  `/steer:adopt`, asking the user to pick, while the router, `intake`, `status`
+  and `adr` sent them to `/steer:setup`, which detects the state itself. All
+  no-spine redirects now name `/steer:setup`; the unmanaged-repo SessionStart
+  card leads with it too instead of mentioning it as an afterthought.
+  `init`'s and `adopt`'s `when_to_use` say they are normally reached via
+  `setup`, so auto-routing no longer bypasses the front door on "set up this
+  repo". `/steer:doctor` links the Windows setup page it told users to find.
 - **The live ruleset now reaches GitHub Copilot — CLI and VS Code — through the
   SessionStart hook, so `/steer:sync` is no longer what keeps Copilot teammates
   on current rules.** The plugin, its docs and the scaffold manifest all said
