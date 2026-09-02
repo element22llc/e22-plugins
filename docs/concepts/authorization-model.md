@@ -130,7 +130,12 @@ moves a repo between the two and reconciles the marker.
     workflow, an `infra/` tree, a `prod` branch), the trunk-push gate
     (`check-bash-actions.sh`) stops silent trunk pushes — the first `git push`
     each session surfaces for a human yes (repeats carry a non-blocking
-    reminder) until the repo graduates.
+    reminder) until the repo graduates — **or** until the dev records a
+    **graduation waiver** (`/steer:protect waive`): a repo that will stay
+    single-dev on trunk, with its infra or deploy target as part of the plan,
+    records that decision once (a `CLAUDE.md` marker plus a `/spec/history/`
+    entry) and both the nudge and the push gate fall silent. The waiver is a
+    decision, not a third mode; a second collaborator voids it.
 
 ## What is silent — read-only inspection
 
@@ -273,7 +278,8 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 - **Trunk pushes in a solo-trunk repo that has outgrown pre-MVP** — the
   trunk-push gate (`check-bash-actions.sh`) surfaces the first `git push` each
   session for a human yes once a local graduation signal stands, until
-  `/steer:protect` graduates the repo.
+  `/steer:protect` graduates the repo or `/steer:protect waive` records that
+  staying single-dev on trunk is deliberate.
 - **Product and architecture decisions** — ratifying a `Proposed` ADR, approving
   a feature intent, signing off a `--reviewed` plan. Claude proposes; the named
   human decides. Unlike the three above, these are **answerable in-session** (see
