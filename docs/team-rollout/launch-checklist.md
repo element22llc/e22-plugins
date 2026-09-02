@@ -37,9 +37,10 @@ a real (or throwaway) repo, not against production work.
       the instructions file can answer — "what branch name does `/steer:work` use
       by default?" (expect `issue/<number>-<slug>`) or "what is this repo's
       delivery mode?" (expect `pr-flow` or `solo-trunk`, per the `CLAUDE.md`
-      marker) — and confirm the reply matches (proves the instructions loaded —
-      Copilot has no SessionStart hook, so that static set *is* its whole standards
-      surface). **Tell the team the refresh rule:** those files are generated and
+      marker) — and confirm the reply matches (proves the standards loaded; in VS
+      Code and the Copilot CLI the plugin's SessionStart hook injects the live
+      rules, while the static file is the whole standards surface for the Copilot
+      cloud agent and code review). **Tell the team the refresh rule:** those files are generated and
       freeze at the plugin version that bootstrapped the repo, so someone runs
       **`/steer:sync`** after a plugin update — it re-copies them via the
       `agent-surface-current` capability, and `/steer:sync --check` reports the

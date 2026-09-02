@@ -2,8 +2,10 @@
 name: init
 description: "One-time setup for a new managed repo — bootstrap the /spec spine + scaffolding, pin the toolchain, leave it working spec-first, and resolve placeholders in a legacy template fork. Offers PR flow or solo-trunk mode."
 when_to_use: >-
-  Use on a new repo with no /spec spine ("set up this new repo"), or when
-  template placeholders ([Replace …], [Product Name], @github-handle) remain.
+  Normally reached via /steer:setup, which detects the repo state. Invoke
+  directly only when you already know the repo is greenfield (no /spec spine,
+  no substantial code), or when template placeholders ([Replace …],
+  [Product Name], @github-handle) remain.
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)

@@ -82,8 +82,8 @@ stale the moment the spec changes — regenerate to refresh.
 
 ### 1. Locate the spine and the feature
 
-- No `/spec` spine in the repo → redirect to `/steer:init` (greenfield) or
-  `/steer:adopt` (existing code) and **stop**; there is nothing to render yet.
+- No `/spec` spine in the repo → redirect to `/steer:setup` (it picks `init` or
+  `adopt` from the repo state) and **stop**; there is nothing to render yet.
 - **In a polyrepo member** (`spec/PRODUCT.md` present), `spec/features/**` is
   absent **by design** — it lives once in the workspace. Resolve the workspace
   first by the two-test ladder in `/steer:reference polyrepo` § "Resolving the

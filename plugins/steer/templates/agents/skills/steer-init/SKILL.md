@@ -9,7 +9,7 @@ description: One-time setup for a new managed repo — bootstrap the /spec spine
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use on a new repo with no /spec spine ("set up this new repo"), or when template placeholders ([Replace …], [Product Name], @github-handle) remain.
+**When to use.** Normally reached via /steer-setup, which detects the repo state. Invoke directly only when you already know the repo is greenfield (no /spec spine, no substantial code), or when template placeholders ([Replace …], [Product Name], @github-handle) remain.
 
 # First-run setup for a new repo
 

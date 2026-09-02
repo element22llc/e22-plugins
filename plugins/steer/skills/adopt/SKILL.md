@@ -1,7 +1,7 @@
 ---
 name: adopt
 description: Adopt an existing repo that never went through bootstrap (a "vibe-coded" app) into the standards — reverse-engineer the /spec from the code, triage productionization (Keep/Refactor/Rewrite/Reject per area), author a root DESIGN.md, and sync the plugin's bundled scaffolding without clobbering working code.
-when_to_use: Use when a repo has working code but no /spec spine and no mise.toml, or when asked to adopt or onboard an existing app onto the standards.
+when_to_use: Normally reached via /steer:setup, which detects the repo state. Invoke directly only when you already know the repo has substantial working code but no /spec spine and no mise.toml (a "vibe-coded" app to bring onto the standards).
 allowed-tools:
   - Bash(git status *)
   - Bash(git switch *)

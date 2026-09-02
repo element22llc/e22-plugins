@@ -47,8 +47,8 @@ confirmation.
 1. **Read `/spec/tracker.md`.** Confirm `system: github`. On a non-GitHub tracker,
    say so and stop — there is no GitHub roadmap path; the manual flows in
    `/steer-tracker-sync` apply. Never fabricate tracker state.
-2. **Locate the spine.** If there is no `/spec`, redirect to `/steer-init`
-   (greenfield) or `/steer-adopt` (existing code) and stop — there is no work-set
+2. **Locate the spine.** If there is no `/spec`, redirect to `/steer-setup` (it
+   picks `init` or `adopt` from the repo state) and stop — there is no work-set
    to lay out yet.
 3. **Detect capability via `/steer-tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues/milestones were touched.

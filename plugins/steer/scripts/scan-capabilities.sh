@@ -139,7 +139,8 @@ else
 fi
 
 # --- app-knowledge-docs — the app guide (how to use/operate the product) ---
-# `rules/20-layout.md`, `32-living-docs.md`, `50-definition-of-done.md`, the PR
+# The layout reference (CONVENTIONS.md), `rules/32-living-docs.md`,
+# `50-definition-of-done.md`, the PR
 # template, and the scaffold `ARCHITECTURE.md` all reference `/spec/app/`
 # UNCONDITIONALLY, but the guide is instantiated from a spec template
 # (`templates/spec/app-docs.md`), not copied as a static scaffold file — so a

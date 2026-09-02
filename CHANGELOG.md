@@ -39,6 +39,94 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `OPERATIONS-PLANNING.md` (types, milestones, issue fields) and
   `OPERATIONS-LINKS.md` (parent/related/blocked-by) read **only** when one of
   their ops is actually invoked. The boundary binds all three files.
+- **One front door for bootstrap, everywhere.** `/steer:next`, `/steer:explain`
+  and `/steer:roadmap` redirected an unmanaged repo straight to `/steer:init` or
+  `/steer:adopt`, asking the user to pick, while the router, `intake`, `status`
+  and `adr` sent them to `/steer:setup`, which detects the state itself. All
+  no-spine redirects now name `/steer:setup`; the unmanaged-repo SessionStart
+  card leads with it too instead of mentioning it as an afterthought.
+  `init`'s and `adopt`'s `when_to_use` say they are normally reached via
+  `setup`, so auto-routing no longer bypasses the front door on "set up this
+  repo". `/steer:doctor` links the Windows setup page it told users to find.
+- **The live ruleset now reaches GitHub Copilot — CLI and VS Code — through the
+  SessionStart hook, so `/steer:sync` is no longer what keeps Copilot teammates
+  on current rules.** The plugin, its docs and the scaffold manifest all said
+  Copilot "has no context-injecting SessionStart hook" and VS Code "no hook
+  mechanism at all". Both are stale: verified 2026-09-02 against the current
+  GitHub and VS Code docs and by spike (Copilot CLI 1.0.82, VS Code 1.135),
+  Copilot's SessionStart injects context from a **JSON object** on stdout — the
+  CLI reads a top-level `additionalContext`, Copilot Chat in VS Code reads
+  `hookSpecificOutput.additionalContext`, and both discard raw text as
+  "non-JSON output". There is no practical size cap there (120 K characters
+  arrived whole; 10 MiB documented), but the **last** hook returning context
+  wins, so the parted Claude delivery must not be mirrored. `inject-standards.sh`
+  is now host-aware (`steer_hook_host` in `lib/json.sh`): under
+  `STEER_HOOK_TARGET=copilot`, or on the payload shape VS Code Copilot Chat sends
+  (snake_case SessionStart with `model` and `timestamp` and no
+  `permission_mode`), part 1 emits the **whole eligible ruleset as one JSON
+  object carrying both keys** (`steer_json_string`, a lossless POSIX-awk
+  encoder) and every other part stays silent; a Claude Code payload
+  (`permission_mode`) and any unknown shape keep today's raw parted output, so
+  a mis-read can only ever fall back to current behaviour. Scope (`inject-when`),
+  knowledge-work mode and the missing-rules fallback banner all ride inside the
+  envelope. `gen_copilot_hooks.py` ports the injector into `copilot-hooks.json`
+  once, under the camelCase `sessionStart` event the CLI honours a top-level
+  `additionalContext` for, with no matcher and no part arguments; VS Code needs
+  nothing in that manifest because it detects steer as a Claude-format plugin
+  and already runs `hooks/hooks.json` — which also means the `PreToolUse` gates
+  have been live in VS Code all along. `.github/copilot-instructions.md` stays,
+  as the fallback for the Copilot cloud agent and code review, which load no
+  plugins. Docs, the scaffold `MANIFEST.md`, the Copilot plugin and marketplace
+  descriptions and the generator docstring say the same. (#513)
+- **Fixed: the always-on ruleset was never reaching sessions.** Claude Code caps
+  one hook command's stdout at **10,000 characters** and silently replaces a
+  longer payload with an "Output too large … saved to" pointer while the hook
+  still exits 0. `inject-standards.sh` emitted the whole ruleset (some 60 K
+  characters) in one command, so every session received a fraction of it — the
+  knowledge-work (Cowork PO) payload was over the cap too — and no gate noticed,
+  because the context-budget ceilings were 6–20× above the real limit and counted
+  bytes on disk. Measured on Claude Code 2.1.258 against synthetic hooks and
+  confirmed against the shipped one.
+- **The ruleset is now delivered in parts, each under the cap.** The cap is per
+  hook **command**, not per event (seven 9,500-character SessionStart commands
+  arrived whole, about 66 K in total, while one 12,000-character command was
+  replaced by the pointer). `hooks.json` registers `inject-standards.sh` nine
+  times as `<k> <N>`; every invocation computes the same deterministic partition
+  of the eligible rules — lexical order, greedy fill, whole rules only, each part
+  filled to 9,500 characters — and emits only its part. Parts land as separate
+  SessionStart blocks in any order; each carries a header saying so, and the
+  numeric rule prefixes give the sequence. An unused part emits nothing, so spare
+  parts cost no context. Scope (`inject-when`), knowledge-work mode and the
+  missing-rules fallback behave exactly as before; the rules stay
+  **plugin-owned**, so `/plugin update` remains the whole upgrade path and no
+  product repo changes. Sizes are counted in characters, locale-independently
+  (`LC_ALL=C tr -d '\200-\277' | wc -c`), so a GUI-launched session with no
+  `LANG` budgets the same as a terminal one.
+- **The hook can no longer overrun silently.** If the eligible rules do not fit
+  the registered parts, whole rules are dropped from the tail and the last part
+  appends an in-band `RULESET INCOMPLETE` notice naming them, with the full list
+  on stderr (which costs a session nothing). The notice is sized from the data —
+  rules are popped off the last part until header + rules + notice fit — so the
+  guard itself can never bust the cap.
+- **`check_context_budget.py` now gates the real ceiling.** It runs every
+  registered part of the real hook for three fixture profiles (`knowledge`,
+  `code`, `code-max` — all gated, `code` previously was not), in characters, and
+  fails when any rule is dropped or any part exceeds the cap; it reads the part
+  count from `hooks.json` and fails closed on a non-contiguous registration. A
+  test pins the hook's and the gate's cap constants equal. `mise run
+  rules:preview` runs every part, shows the part each rule lands in, the capacity
+  of the registered parts and anything that did not fit.
+- **`00-router` trimmed.** Its intent→skill table restated the skill listing
+  Claude Code already loads for routing and is gone; the routing rules, the
+  `work` vs `issues` split, the `--hotfix` door, the front-door hand-offs and the
+  chat-surface fallback stay. `/steer:help` now builds its menu from the live
+  `skills/*/SKILL.md` frontmatter — the same source the router routes from —
+  instead of that table.
+- **`20-layout` folded into reference prose.** A description of where directories
+  live is not an imperative that has to be in context every session; it now
+  lives in `templates/reference/CONVENTIONS.md` § Where things live
+  (`/steer:reference conventions`). The rules that cited it point there.
+
 
 ### 6.0.0
 

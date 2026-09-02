@@ -1,6 +1,6 @@
 ---
 name: steer-help
-description: Human-facing capabilities menu — renders the router's intent-to-skill table in plain language, the six essentials first and the rest grouped by journey. Read-only; every line comes from the live router table, and a completeness check proves no front-door row was dropped. Optionally renders an Artifact menu.
+description: Human-facing capabilities menu — renders the shipped skill set in plain language, the six essentials first and the rest grouped by journey. Read-only; every line comes from the live skill frontmatter, and a completeness check proves no user-invocable skill was dropped. Optionally renders an Artifact menu.
 argument-hint: '[optional: a skill or area to zoom into]'
 ---
 
@@ -29,37 +29,40 @@ describing a goal in plain language and letting the router pick the skill (see
 `00-router.md`) — you never *have* to know a skill name. This skill is for the
 person who wants to look at the map anyway: it prints the menu.
 
-It changes nothing. It reads the router table and re-presents it; it never edits,
+It changes nothing. It reads the skill set and re-presents it; it never edits,
 commits, routes, or runs another skill. If the user then picks something, that's
 a separate turn.
 
-## Single source of truth — render the router table, don't retype it
+## Single source of truth — render the skill listing, don't retype it
 
-The authoritative capability list is the **`## Intent → skill` front-door table**
-in `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/rules/00-router.md`. Read that file now and build the
-menu from its rows. **Do not hardcode the list here** — if you transcribe it, the
-menu drifts the moment a skill is added or a front door changes. Every row you
-show must come from that table as it stands this session, so a new front door
-appears in the menu automatically.
+The authoritative capability list is the set of skills shipped under
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/skills/*/SKILL.md` — the same files whose frontmatter the
+router routes from. Read their frontmatter now and build the menu from it.
+**Do not hardcode the list here** — if you transcribe it, the menu drifts the
+moment a skill is added or renamed. Every entry you show must come from a
+`SKILL.md` as it stands this session, so a new skill appears in the menu
+automatically.
 
-Include the **front doors** (the `Intent → skill` table) plus the two
-user-invocable skills the router surfaces only in its below-table prose —
-`/steer-standards` and `/steer-reference` (take their one-line purpose from that
-prose). Do not surface the internal gateways (`user-invocable: false` —
-`tracker-sync`, `spec-scaffold`); they are never a user's entry point. You may
-mention that each front door auto-routes to specialized skills, but don't
-enumerate those unless the user asks to zoom in.
+Skip any skill whose frontmatter says `user-invocable: false` (the internal
+gateways — `tracker-sync`, `spec-scaffold`); they are never a user's entry
+point. You may mention that a front door auto-routes to specialized skills
+(`setup` → `init` / `adopt` / `sync`; `audit` → `tidy`; `issues` / `spec` →
+`questions`; `issues` → `roadmap`), but don't enumerate those unless the user
+asks to zoom in.
 
-## Phase 1 — Read the router
+## Phase 1 — Read the listing
 
-Read `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/rules/00-router.md`. Take the front-door rows from the
-`## Intent → skill` table: each row's "trying to…" phrase and its target skill.
+`Glob` `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/skills/*/SKILL.md` and, for each file, read only
+the frontmatter: `name`, `description`, `when_to_use`, `user-invocable`. The
+plain-language goal for an entry is the first clause of `description` (what it
+does), sharpened by the first quoted trigger phrase in `when_to_use` if there is
+one. Drop everything else — mechanics belong in the zoom-in, not the menu.
 
 ## Phase 2 — Render: the essentials first, everything else behind a fold
 
 The menu is **tiered** so a new user sees six lines, not twenty (progressive
-disclosure). Still build every line from the live router table — the tiers
-change presentation order only, never the source.
+disclosure). Still build every line from the live frontmatter — the tiers change
+presentation order only, never the source.
 
 **Tier 1 — The essentials.** Lead with these, one compact line each, in this
 order — the handful that covers a whole working life with steer:
@@ -71,34 +74,34 @@ order — the handful that covers a whole working life with steer:
 5. `next` — "what should I do next?"
 6. `status` — a client-ready progress report
 
-**Tier 2 — "More, by journey."** After the essentials, add the remaining
-front-door rows under one explicit *"More (you can also just describe any of
-these):"* fold, grouped by journey in this order — map each remaining router
-row to its group; omit an empty group:
+**Tier 2 — "More, by journey."** After the essentials, add every remaining
+user-invocable skill under one explicit *"More (you can also just describe any
+of these):"* fold, grouped by journey in this order — map each remaining skill
+to its group; omit an empty group:
 
-- **Start** — the specialized bootstrap doors (`protect`; note that `setup`
-  dispatches to `init` / `adopt` / `sync`).
+- **Start** — the specialized bootstrap doors (`init`, `adopt`, `sync`,
+  `doctor`, `protect`; note that `setup` dispatches to the first three).
 - **Spec & backlog** — absorb a PO document, capture/sequence the backlog,
-  record decisions (`intake`, `issues`, `adr`).
+  sweep open questions, record decisions (`intake`, `issues`, `roadmap`,
+  `questions`, `adr`).
 - **Ship & respond** — the emergency door: `/steer-work --hotfix` for a
-  production incident on a deployed system.
-- **Track & automate** — repo health and drift, the scheduled loop (`audit`,
-  `loop`).
+  production incident on a deployed system (from `work`'s `argument-hint`).
+- **Track & automate** — repo health and drift, tidy-up, the scheduled loop
+  (`audit`, `tidy`, `loop`).
 - **Report** — a shareable page of one feature (`explain`).
 - **Govern & plumbing** — report a steer defect (`report`); load the manual or
-  reference prose on chat-only surfaces (`standards`, `reference` — the two
-  below-table entries).
+  reference prose on chat-only surfaces (`standards`, `reference`).
 
 **Completeness check before you render.** The groups above are placement
-guidance, not the source of truth: the router table is. After grouping, confirm
-every front-door row you read in Phase 1 appears exactly once in the output
-(`/steer-help` itself is the one fair omission — the user is already in it). If a
-row matches no group, put it under **Govern & plumbing** rather than dropping it;
-a row silently missing from this menu is the failure mode this check exists to
-prevent.
+guidance, not the source of truth: the skill listing is. After grouping, confirm
+every user-invocable skill you read in Phase 1 appears exactly once in the
+output (`/steer-help` itself is the one fair omission — the user is already in
+it). If a skill matches no group, put it under **Govern & plumbing** rather than
+dropping it; a skill silently missing from this menu is the failure mode this
+check exists to prevent.
 
 For each entry render one compact line: the **plain-language goal** first (from
-the router's "trying to…" column), then the invocation in backticks —
+the frontmatter, in your words), then the invocation in backticks —
 e.g. `- Think a feature through without building it — /steer-spec`. Lead with the
 goal, not the skill name; the whole point is that the user recognizes their
 intent, not that they memorize a command.
@@ -112,10 +115,10 @@ should I do *now*" in a specific repo, which this menu deliberately does not.
 The inline menu above is the fast, always-available render — where the `Artifact`
 tool is unavailable it already *is* the **Markdown fallback**, so say that rather
 than treating it as a missing feature. When the tool **is** available, additionally
-**offer** a shareable visual version: the same front-door areas as a browsable card
+**offer** a shareable visual version: the same journey groups as a browsable card
 grid a user can hand to a teammate who is new to steer — an offer only, never
 auto-published; a curious user often just wants the inline list. The cards are
-still **derived from the live `00-router.md` table** (Phase 1), never a hardcoded
+still **derived from the live skill frontmatter** (Phase 1), never a hardcoded
 or invented capability. Render by the shared discipline — rule `88-artifacts`,
 mechanics in `/steer-reference artifacts` — with the temp path
 `<tempdir>/steer-help-menu.html`.
@@ -129,8 +132,9 @@ routing fixtures grow.
 
 If the user named a skill or area (`$ARGUMENTS`), skip the full menu and expand
 just that one: read the target skill's `SKILL.md` frontmatter (`description` +
-`when_to_use`) and summarize what it does, when to use it, and which front door
-reaches it (per `00-router.md`). Still read-only — describe it; don't run it.
+`when_to_use` + `argument-hint`) and summarize what it does, when to use it, and
+which front door reaches it (per the hand-off list above). Still read-only —
+describe it; don't run it.
 
 ## What this skill is not
 
