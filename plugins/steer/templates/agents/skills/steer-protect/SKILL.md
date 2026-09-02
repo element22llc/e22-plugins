@@ -1,7 +1,7 @@
 ---
 name: steer-protect
-description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry. Verify by default.
-argument-hint: '[verify | apply]'
+description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `waive` records that a single-dev repo stays on trunk deliberately, silencing the graduation nudge and push gate. Verify by default.
+argument-hint: '[verify | apply | waive]'
 ---
 
 <!-- Generated from the steer plugin's skills/protect/SKILL.md — do not edit by hand.
@@ -10,9 +10,9 @@ argument-hint: '[verify | apply]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, or as init/adopt's last step.
+**When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, stop the solo-trunk graduation nag / push prompt, or as init/adopt's last step.
 
-<!-- steer:modes verify,apply -->
+<!-- steer:modes verify,apply,waive -->
 
 # Make GitHub branch protection reliable
 
@@ -51,6 +51,17 @@ steer hooks resume the per-feature branch/PR flow (the mode is over — the serv
 now enforces it) — and write a graduation entry under `/spec/history/`. **In a
 member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
 graduation entry goes to the workspace's ledger per rule `32-living-docs`.
+
+**Graduation is not the only answer to the signals.** A repo that will keep a
+*single* contributor on trunk — with the `infra/` tree or deploy target the local
+signals flag — can instead record a **graduation waiver**: `/steer-protect waive`
+writes `<!-- steer:graduation=waived -->` under the delivery-mode marker plus a
+`/spec/history/` entry, and the SessionStart nudge and the trunk-push ask fall
+silent together (the hooks' shared detector honours the marker). It is a
+recorded decision, not a third mode — the repo stays solo-trunk, and a second
+collaborator still voids it (verify / `/steer-audit` say so). Procedure:
+[`WAIVE.md`](WAIVE.md), read only when the
+dev asks for it. `apply` removes the marker at a real graduation.
 
 ## Authorization (what invoking this grants)
 
@@ -167,10 +178,16 @@ branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, sa
 so plainly and recommend graduating now — and note that while the local signals
 stand, the trunk-push hook surfaces the session's **first** `git push` for a human
 yes (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
-repeat is a silent allow), so graduating also restores silent delivery; when none holds, note
+repeat is a silent allow), so graduating also restores silent delivery — **or**,
+when only local signals hold and the dev intends to stay single-dev on trunk,
+name `waive` as the other way to restore it; when none holds, note
 that staying on solo-trunk is fine for now. (The SessionStart
 `check-graduation.sh` hook surfaces
-the local signals each session; this is the networked, on-demand check.)
+the local signals each session; this is the networked, on-demand check.) If a
+**waiver is recorded** (`<!-- steer:graduation=waived -->`), report it as the
+standing decision: the local signals are expected and the hooks are silent by
+design. The one thing that voids it is a **second collaborator** — when the
+collaborator count is > 1, say the waiver no longer holds and recommend `apply`.
 
 ## Apply (only on confirmation)
 

@@ -43,22 +43,27 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 
 # Signal detection is shared with the trunk-push PreToolUse gate (in
 # check-bash-actions.sh)
-# (lib/graduation.sh) so the nudge and the gate can never disagree.
+# (lib/graduation.sh) so the nudge and the gate can never disagree. A recorded
+# graduation waiver (`/steer:protect waive`) makes the detector report nothing,
+# so a deliberately single-dev trunk repo gets zero noise here too.
 SIGNALS="$(steer_graduation_signals "${ROOT}")"
 
 [ -n "${SIGNALS}" ] || exit 0
 
 printf '<!-- steer: solo-trunk graduation signal -->\n'
-printf '# This repo has outgrown solo-trunk — graduate it\n\n'
+printf '# This repo has outgrown solo-trunk — graduate it, or record that trunk is deliberate\n\n'
 printf 'This repo is in **solo-trunk** mode (direct-to-`main`, no PR, branch '
 printf 'protection off) — appropriate pre-MVP, but these signals say it has '
 printf 'outgrown that:\n'
 printf '%s\n' "${SIGNALS}"
 printf '\nWhile these signals stand, autonomous trunk pushes are gated (the '
 printf 'trunk-push gate in check-bash-actions.sh surfaces the first `git push` '
-printf 'each session for confirmation). '
-printf 'Recommend the user run `/steer:protect` to review branch protection '
-printf 'and, on confirmation, raise the PR wall that enforces pr-flow — '
-printf 'applying it flips the delivery-mode marker to pr-flow and '
-printf 'logs the graduation as a /spec/history/ entry. This notice (and the push '
-printf 'gate) clears once graduated.\n'
+printf 'each session for confirmation). Two ways to clear this, both the dev'"'"'s call: '
+printf '(1) **graduate** — `/steer:protect` reviews branch protection and, on '
+printf 'confirmation, raises the PR wall that enforces pr-flow, flipping the '
+printf 'delivery-mode marker and logging a /spec/history/ entry; or (2) **waive** — '
+printf 'if this repo will stay single-contributor on trunk and these signals are '
+printf 'expected (an infra/ tree or deploy target is part of the plan), '
+printf '`/steer:protect waive` records that decision (marker + /spec/history/ entry) '
+printf 'and silences this notice and the push gate for good. Recommend whichever '
+printf 'fits; do not re-raise this every session once the dev has answered.\n'

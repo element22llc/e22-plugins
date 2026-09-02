@@ -154,9 +154,13 @@ non-blocking reminder (on the Copilot CLI the repeat is instead a **silent allow
 that envelope has no non-blocking channel) — and `check-bash-actions.sh` surfaces
 that first push as a PreToolUse **`ask`**, deliberately never a deny. A yes there
 **does** authorize that push; the gate clears for good by graduating
-(`/steer:protect`). Because the Copilot CLI has no non-blocking channel, a push
-declined there must not be retried in the hope of a quieter second attempt —
-graduate instead. So it is answerable — but it is not one of the three gates in
+(`/steer:protect`) — or by recording a **graduation waiver** (`/steer:protect
+waive`) when the repo deliberately stays single-dev on trunk and the local
+signals are expected; the waiver is a recorded decision the shared detector
+honours, not a way to skip the prompt for one push. Because the Copilot CLI has
+no non-blocking channel, a push declined there must not be retried in the hope
+of a quieter second attempt — graduate or waive instead. So it is answerable —
+but it is not one of the three gates in
 §2 either: it is a push-time permission decision the harness raises once, with no
 `/spec` field to record and no three-option prompt.
 

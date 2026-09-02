@@ -150,7 +150,7 @@ of dimension.
    | Architectural / cross-cutting call | Propose an ADR via `/steer-adr` |
    | Spec coverage / conformance gap | `/steer-questions` |
    | Suspected spec-vs-build drift | Run `/steer-audit spec` |
-   | `main` unprotected / branch-protection drift (GitHub) — unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation | `/steer-protect` |
+   | `main` unprotected / branch-protection drift (GitHub) — unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation (and settled for good by a recorded graduation waiver, unless a second collaborator has joined) | `/steer-protect` |
    | Mechanical cleanup only | `/simplify` |
    | Nothing actionable | Complete |
 

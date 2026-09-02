@@ -30,7 +30,10 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   works, you first deploy, or a second contributor joins, whichever comes first.
   Until then a standing **local** graduation signal (a deploy target or a `prod`
   branch) stops trunk pushes being silent: the session's **first** one waits for
-  a human yes (`/steer:reference gates`).
+  a human yes (`/steer:reference gates`) — unless the dev has recorded a
+  **graduation waiver** (`/steer:protect waive`: a single-dev repo staying on
+  trunk deliberately, `<!-- steer:graduation=waived -->`), which silences that
+  gate and the session nudge; a second contributor voids it.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
   applies unchanged — you still never merge — but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record

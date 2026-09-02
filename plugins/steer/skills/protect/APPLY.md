@@ -43,6 +43,12 @@ When rules are drifted or absent:
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
 4. After applying, re-run the verify diff and report the new state.
+5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
+   `SKILL.md` describes): if the `## Delivery mode` section also carries a
+   graduation waiver — `<!-- steer:graduation=waived -->` — **delete that line**
+   and its waiver prose in the same edit, and let the graduation entry say the
+   waiver ended here. A waiver left behind is inert in pr-flow but reads as a
+   contradiction.
 
 **Insufficient permissions (`403`/admin required):** you cannot set protection
 without admin on the repo. Do not retry blindly — print the equivalent manual

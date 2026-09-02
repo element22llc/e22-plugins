@@ -7,6 +7,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `/steer:protect waive` — a recorded graduation waiver for repos that
+  stay single-dev on trunk.** The solo-trunk graduation signals (an `infra/`
+  tree, a deploy workflow, a `prod` branch) had no answer other than graduating:
+  a solo dev whose repo legitimately carries infra got the "this repo has
+  outgrown solo-trunk" notice on every session start and a permission prompt on
+  every session's first `git push`, indefinitely — and graduating installed a
+  one-review, admin-enforced wall they could not merge through alone. `waive`
+  records the decision once — `<!-- steer:graduation=waived -->` under the
+  delivery-mode marker plus a `/spec/history/` entry — and the hooks' shared
+  detector (`lib/graduation.sh`, via `steer_graduation_waived` in
+  `lib/repo-root.sh`) reports no signals for a waived repo, so the SessionStart
+  nudge and the trunk-push ask fall silent together. It is a decision, not a
+  third delivery mode: the repo stays solo-trunk, a second collaborator voids it
+  (`verify` and `/steer:audit` say so), `apply` removes it at a real graduation,
+  and it is inert in pr-flow. The nudge and the ask now name the waiver as the
+  alternative to graduating; rule 45, rule 99's checklist, the gates reference,
+  the scaffold `CLAUDE.md`, and the init / adopt / audit / sync next-action rows
+  say when the waiver, not `/steer:protect apply`, is the right answer (adopt's
+  "protect `main`" row previously fired in solo-trunk unconditionally, unlike
+  init's). Hook tests cover the waived-silent path on both harness targets and
+  the anchored matcher (a prose mention does not waive).
 - **Fixed: forked sessions now receive the ruleset.** Since Claude Code 2.1.214 a
   session created with `--fork-session`, `/fork` or `/branch` reports the
   SessionStart source `fork` (it used to report `resume`), and every one of

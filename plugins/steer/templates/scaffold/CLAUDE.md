@@ -38,7 +38,11 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
      pr-flow rather than defining it, so an unprotected main on a declared
      pr-flow repo is a gap to close, not solo-trunk. /steer:init sets it;
      /steer:protect flips it to pr-flow at graduation and reports a marker that
-     contradicts observed protection. Keep it in sync with the prose below. -->
+     contradicts observed protection. Keep it in sync with the prose below.
+     A solo-trunk repo that stays single-dev on trunk deliberately may carry a
+     second line here, `<!-- steer:graduation=waived -->`, written by
+     /steer:protect waive — it silences the graduation nudge and the trunk-push
+     prompt; /steer:protect apply removes it at graduation. -->
 
 **`PR flow`** — work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
 `issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the
@@ -58,7 +62,10 @@ works, you first deploy, or a second contributor joins, whichever comes first
 (once you deploy or add a `prod` branch, the steer trunk-push hook stops silent
 trunk pushes until you graduate; a new contributor is caught on demand by
 `/steer:protect`/`/steer:audit`, not at push time); then
-set this marker and the prose to `PR flow`.
+set this marker and the prose to `PR flow`. If instead this repo will **stay
+single-dev on trunk** with its infra or deploy target as part of the plan, record
+that once with `/steer:protect waive` — the graduation nudge and push prompt stop,
+and only a second contributor reopens the question.
 
 ## Profile
 
