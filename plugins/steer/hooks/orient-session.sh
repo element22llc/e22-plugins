@@ -41,13 +41,13 @@ CWD="$(steer_field cwd)"
 # goal.
 #
 # This is a ONE-TIME greeting, so it is gated to `source: startup`. The hook as a
-# whole is registered on `startup|resume|clear|compact` (hooks.json) because the
+# whole is registered on `startup|resume|clear|compact|fork` (hooks.json) because the
 # polyrepo topology note below MUST survive a /clear or compaction — but re-greeting
 # the same user after every compaction is noise. Unknown/absent source → fail open
 # and greet, so a payload without the field behaves as it did before.
 # inject-standards.sh handles the lean rule injection for this same mode.
 case "$(steer_field source)" in
-	resume | clear | compact) _steer_greet=0 ;;
+	resume | clear | compact | fork) _steer_greet=0 ;;
 	*) _steer_greet=1 ;;
 esac
 

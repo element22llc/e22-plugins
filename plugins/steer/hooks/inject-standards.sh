@@ -5,7 +5,7 @@
 #
 # Everything this script writes to stdout becomes `additionalContext` for the
 # session — i.e. the always-on engineering operating rules. hooks.json registers
-# it PARTS times for `startup | resume | clear | compact`, once per part, and
+# it PARTS times for `startup | resume | clear | compact | fork`, once per part, and
 # there is no once-per-session guard: `compact` can fire repeatedly within one
 # session, and re-injecting then is the point — a compaction can drop the rules
 # from context, so the hook has to put them back.
