@@ -126,7 +126,10 @@ moves a repo between the two and reconciles the marker.
     behind it. CI still runs on every push, and the spine, tests, and Definition of
     Done are unchanged. The mode ends at **graduation** — run `/steer:protect apply`,
     which raises the server-side PR wall — once the MVP works, you first deploy, or a
-    second contributor joins. Once any of those signals is *visible locally* (a deploy
+    second contributor joins. A dev who is still alone graduates with
+    `/steer:protect apply --solo`: the policy's `solo` profile keeps the PR and the
+    `ci` check required but needs no approval, since an author cannot approve their
+    own PR and would otherwise be locked out of merging. Once any of those signals is *visible locally* (a deploy
     workflow, an `infra/` tree, a `prod` branch), the trunk-push gate
     (`check-bash-actions.sh`) stops silent trunk pushes — the first `git push`
     each session surfaces for a human yes (repeats carry a non-blocking

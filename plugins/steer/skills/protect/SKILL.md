@@ -1,11 +1,11 @@
 ---
 name: protect
-description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `waive` records that a single-dev repo stays on trunk deliberately, silencing the graduation nudge and push gate. Verify by default."
+description: "Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` uses the one-person profile (PR + CI, no approval); `waive` keeps a single-dev repo on trunk and silences the graduation nudge and push gate. Verify by default."
 when_to_use: >-
   Use when asked to protect main or a prod branch, check merge rules, graduate
-  solo trunk to PR flow, stop the solo-trunk graduation nag / push prompt, or as
+  solo trunk to PR flow, stop the graduation nag / push prompt, or as
   init/adopt's last step.
-argument-hint: "[verify | apply | waive]"
+argument-hint: "[verify | apply [--solo | --team] | waive]"
 allowed-tools:
   - Bash(gh auth status *)
   - Bash(gh api repos/*)
@@ -52,6 +52,16 @@ steer hooks resume the per-feature branch/PR flow (the mode is over — the serv
 now enforces it) — and write a graduation entry under `/spec/history/`. **In a
 member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
 graduation entry goes to the workspace's ledger per rule `32-living-docs`.
+
+**A one-person repo graduates with the `solo` profile.** GitHub will not let a
+PR's author approve it, so the policy's default 1-approval rule would leave a
+sole dev unable to merge at all. When the collaborator count is 1, offer
+`apply --solo`: it selects `profile: solo` in the repo's policy copy (PR and green
+CI still required on every protected branch, approvals 0 — see the policy's
+`profiles` block) and graduates with that. Name the trade plainly: the dev's own
+read of the PR is the review. `apply --team` (or plain `apply` on a `team` policy)
+is the default; a `solo` policy on a repo that has grown a second collaborator is
+**drift to tighten** — verify says so and recommends `apply --team`.
 
 **Graduation is not the only answer to the signals.** A repo that will keep a
 *single* contributor on trunk — with the `infra/` tree or deploy target the local
@@ -115,6 +125,14 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   environments" rule). Resolve each entry's literal `name` and its CI context the
   same way. Treat the whole set — default branch **plus** every declared branch —
   as the desired state; the steps below apply to each.
+- **Profile.** Read `profile:` (schema 3 — `team` when absent, as in older
+  policies). For any profile other than `team`, overlay that profile's map from
+  `profiles:` onto **every** branch in scope before diffing — under `solo`,
+  `required_approving_review_count` becomes 0 on the default branch and on
+  `prod` alike. The overlaid values *are* the desired state: a `solo` repo whose
+  live protection requires 0 approvals is **compliant**, not drifted. An
+  `apply --solo` / `apply --team` argument selects the profile first (writing it to
+  the repo's policy copy — `APPLY.md`), then resolves as above.
 
 ## Verify (default mode)
 
@@ -189,6 +207,9 @@ the local signals each session; this is the networked, on-demand check.) If a
 standing decision: the local signals are expected and the hooks are silent by
 design. The one thing that voids it is a **second collaborator** — when the
 collaborator count is > 1, say the waiver no longer holds and recommend `apply`.
+The same count decides the **profile** finding: `profile: solo` with > 1
+collaborator is drift to tighten (recommend `apply --team`); a graduating
+solo-trunk repo with exactly 1 is where to offer `apply --solo`.
 
 ## Apply (only on confirmation)
 

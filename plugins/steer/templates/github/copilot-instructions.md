@@ -565,7 +565,7 @@ needs only a PR.
 - [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
+- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate, and under the `solo` protection profile, where the sole dev's read-and-merge is the review (see Commit autonomy).
 
 **Hotfix exception (see Hotfix / incident fast-path):** under a declared production
 hotfix, items above may be **deferred** to the mandatory post-incident follow-up —

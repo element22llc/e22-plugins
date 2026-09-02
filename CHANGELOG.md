@@ -12,8 +12,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   tree, a deploy workflow, a `prod` branch) had no answer other than graduating:
   a solo dev whose repo legitimately carries infra got the "this repo has
   outgrown solo-trunk" notice on every session start and a permission prompt on
-  every session's first `git push`, indefinitely — and graduating installed a
-  one-review, admin-enforced wall they could not merge through alone. `waive`
+  every session's first `git push`, indefinitely. `waive`
   records the decision once — `<!-- steer:graduation=waived -->` under the
   delivery-mode marker plus a `/spec/history/` entry — and the hooks' shared
   detector (`lib/graduation.sh`, via `steer_graduation_waived` in
@@ -28,6 +27,27 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   "protect `main`" row previously fired in solo-trunk unconditionally, unlike
   init's). Hook tests cover the waived-silent path on both harness targets and
   the anchored matcher (a prose mention does not waive).
+- **Added: a `solo` branch-protection profile, so a one-person repo can graduate
+  off trunk and still merge.** `policy/branch-protection.yml` (schema 3, additive;
+  v1/v2 files stay valid) gains `profile: team | solo` and a `profiles:` block of
+  per-profile field overrides `/steer:protect` overlays on every branch in scope.
+  `solo` changes one thing — `required_approving_review_count: 0` on the default
+  branch and `prod` alike — and keeps the rest of the wall: a PR before anything
+  lands, the required `ci` check, linear history, admins bound. The reason is
+  mechanical: GitHub will not let a PR's author approve it, so with the default
+  1-approval rule a sole dev who graduated could never merge, which made "stay on
+  trunk forever" the only workable option. `/steer:protect apply --solo` / `apply
+  team` selects the profile in the repo's own policy copy (creating it from the
+  plugin default when absent) and applies; `verify` treats a `solo` repo whose
+  live protection requires 0 approvals as compliant, offers `solo` when a
+  graduating solo-trunk repo has exactly one collaborator, and flags `solo` with
+  a second collaborator as drift to tighten back to `team`. The graduation
+  history entry names the profile, which is the record the policy's "tighten,
+  don't loosen" note asks for. The graduation nudge, the trunk-push ask, and
+  `WAIVE.md` now present the real choice for a solo dev — `apply --solo` (PR flow,
+  merge alone) or `waive` (stay on trunk) — instead of a wall they could not use;
+  rule 50's "a dev approved the PR" item, the scaffold README and `MANIFEST.md`
+  carry the profile. The scaffold policy copy is updated byte-for-byte.
 - **Fixed: forked sessions now receive the ruleset.** Since Claude Code 2.1.214 a
   session created with `--fork-session`, `/fork` or `/branch` reports the
   SessionStart source `fork` (it used to report `resume`), and every one of

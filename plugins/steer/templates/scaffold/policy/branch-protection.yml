@@ -17,9 +17,24 @@
 # A repo MAY override this by shipping its own policy/branch-protection.yml
 # (resolved consumer-first, then this plugin-bundled default — same precedence as
 # policy/versions.yml). Tighten, don't quietly loosen: a weaker per-repo policy
-# should be backed by an ADR.
+# should be backed by an ADR. Selecting the plugin-defined `solo` profile below is
+# NOT such a loosening — it is the sanctioned shape for a one-person repo, and the
+# graduation entry /steer:protect writes under /spec/history/ records the choice.
 
-schema: 2          # v1 files (no `protected_branches`) remain valid — it is additive.
+schema: 3          # v1 (no `protected_branches`) and v2 (no `profile`/`profiles`)
+                   # files remain valid — each version is additive.
+
+# Which profile /steer:protect applies: `team` (everything below as written) or
+# `solo` (the overrides under `profiles.solo`). GitHub will not let a PR's author
+# approve it, so on a repo with exactly ONE contributor the 1-approval rule below
+# leaves the sole dev unable to merge at all — the PR wall becomes a locked door,
+# and the only "fix" is to stay on trunk forever. `solo` keeps the wall (a PR is
+# still required, so nothing lands on main by push; CI is still required; history
+# stays linear; admins stay bound) and drops only the approval count to 0 on
+# every protected branch. /steer:protect offers `solo` when it graduates a
+# solo-trunk repo whose collaborator count is 1, and flags a `solo` policy whose
+# repo has grown a second collaborator as drift to tighten back to `team`.
+profile: team
 
 # Which branch to protect. "default" resolves to the repo's default branch.
 branch: default
@@ -45,6 +60,19 @@ enforce_admins: true
 
 # Keep history linear (squash/rebase merges only).
 required_linear_history: true
+
+# ── Profiles ──────────────────────────────────────────────────────────────────
+# Each profile is a flat map of classic-protection field overrides that
+# /steer:protect applies on top of the values above to EVERY branch in scope —
+# the default branch and each `protected_branches` entry alike. `team` has no
+# overrides (it is the file as written). Only the fields listed here change;
+# everything else, including the repo-level security settings, is unchanged.
+profiles:
+  solo:
+    # One contributor: a PR and green CI are still required before anything
+    # lands, but no approval — the author cannot approve their own PR, and there
+    # is nobody else. The dev's own review before merging is the review.
+    required_approving_review_count: 0
 
 # ── Additional protected branches (optional) ─────────────────────────────────
 # Present when the product uses a branch-based production gate (see the

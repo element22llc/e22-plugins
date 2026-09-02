@@ -23,6 +23,14 @@ Definition of Done). It covers **only the local signals**. A second collaborator
 is the one condition a solo waiver cannot cover: `verify` and `/steer-audit`
 treat a collaborator count > 1 as voiding it and recommend `apply`.
 
+**Waive vs `apply --solo`.** Both fit a one-person repo; they answer different
+wants. `waive` keeps trunk delivery — no branches, no PRs, CI on push. `apply
+solo` graduates to PR flow with the policy's `solo` profile (a PR and green CI
+required before anything lands, approvals 0 so the dev can merge alone). Offer
+the second when the dev wants the PR as a reading checkpoint or a deploy-from-merge
+model; offer the waiver when the PR would be ceremony. Say which you recommend
+and why, in one line.
+
 ## Preconditions
 
 1. The product `CLAUDE.md` declares **solo-trunk**
