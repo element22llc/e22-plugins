@@ -31,15 +31,30 @@ PLUGIN = REPO_ROOT / "plugins" / "steer"
 HOOKS = PLUGIN / "hooks"
 
 DEFAULT_BUDGET_MS = 2000
-# Every SessionStart hook registered in hooks.json for the `startup` source,
-# in registration order. test_chain_matches_hooks_json pins this list to the
-# manifest so a newly registered hook cannot dodge the budget. session-checks.sh
-# is the consolidated orchestrator — timing it times all five checks it runs.
+# Every SessionStart hook SCRIPT registered in hooks.json for the `startup`
+# source, in first-registration order. test_chain_matches_hooks_json pins this
+# list to the manifest so a newly registered hook cannot dodge the budget.
+# session-checks.sh is the consolidated orchestrator — timing it times every
+# check it runs. inject-standards.sh is registered several times (once per part
+# of the ruleset, `<k> <N>`); the budget runs every registered command, so the
+# parts are paid for as the runtime pays for them — sequentially here, which is
+# the pessimistic case (the runtime starts them in parallel).
 STARTUP_CHAIN = [
     "inject-standards.sh",
     "session-checks.sh",
     "orient-session.sh",
 ]
+
+
+def _registered_commands() -> list[tuple[str, list[str]]]:
+    """(script name, args) for every SessionStart command in hooks.json, in order."""
+    manifest = json.loads((HOOKS / "hooks.json").read_text(encoding="utf-8"))
+    commands: list[tuple[str, list[str]]] = []
+    for matcher_block in manifest["hooks"]["SessionStart"]:
+        for hook in matcher_block["hooks"]:
+            _, path, rest = hook["command"].split('"', 2)
+            commands.append((Path(path).name, rest.split()))
+    return commands
 
 
 def _budget_ms() -> int:
@@ -66,11 +81,7 @@ def _session_stdin(repo: Path) -> str:
 
 def test_chain_matches_hooks_json():
     """The budgeted chain must cover every registered SessionStart hook."""
-    manifest = json.loads((HOOKS / "hooks.json").read_text(encoding="utf-8"))
-    registered = []
-    for matcher_block in manifest["hooks"]["SessionStart"]:
-        for hook in matcher_block["hooks"]:
-            registered.append(Path(hook["command"].split('"')[1]).name)
+    registered = list(dict.fromkeys(name for name, _ in _registered_commands()))
     assert registered == STARTUP_CHAIN, (
         "hooks.json SessionStart chain changed — update STARTUP_CHAIN so the "
         "latency budget keeps covering every registered hook."
@@ -85,10 +96,10 @@ def test_session_start_chain_within_budget(tmp_path: Path):
 
     timings = []
     start = time.monotonic()
-    for name in STARTUP_CHAIN:
+    for name, args in _registered_commands():
         t0 = time.monotonic()
         proc = subprocess.run(
-            ["sh", str(HOOKS / name)],
+            ["sh", str(HOOKS / name), *args],
             input=stdin,
             capture_output=True,
             text=True,
@@ -100,6 +111,7 @@ def test_session_start_chain_within_budget(tmp_path: Path):
     total_ms = (time.monotonic() - start) * 1000
 
     breakdown = ", ".join(f"{n}={ms:.0f}ms(rc{rc})" for n, ms, rc in timings)
+    assert all(rc == 0 for _, _, rc in timings), breakdown
     budget = _budget_ms()
     assert total_ms <= budget, (
         f"SessionStart chain took {total_ms:.0f} ms, over the {budget} ms budget "

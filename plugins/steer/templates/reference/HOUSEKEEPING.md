@@ -43,7 +43,7 @@ These belong at the root. Never propose moving them:
 - **Root config:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `biome.json`, `compose.yaml`, `mise.toml`, `mise.lock`, `tsconfig*.json`.
 - **Root docs:** `CLAUDE.md`, `README.md`, `DESIGN.md`, `ARCHITECTURE.md`
-  (rules `20-layout` / `32-living-docs` require the last at the root — never
+  (rule `32-living-docs` and the layout reference — `/steer:reference conventions` § Where things live — require the last at the root — never
   propose relocating it to `/spec/design/`).
 - **Dotfiles:** `.gitignore`, `.github/`, `.mise/`, etc.
 

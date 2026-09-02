@@ -82,8 +82,8 @@ be unique. The full field set actually used in this repo:
 > skill **user-only**, so Claude cannot invoke it through the Skill tool *at
 > all*. steer's entire premise is that the model is the router and the user never
 > has to know a skill name (rule `00-router`, "map their plain-language goal to
-> the owning skill and **invoke it yourself**") — so every skill named in that
-> table, including the ones that look manual (`setup`, `protect`, `help`), is a
+> the owning skill and **invoke it yourself**") — so every skill in the
+> listing, including the ones that look manual (`setup`, `protect`, `help`), is a
 > model-invocation target and would silently stop being reachable. `standards` is
 > worse still: it exists for the surfaces where no hook injects the rules, so its
 > listing description is the *only* thing that tells the model to load it there.
@@ -272,10 +272,11 @@ exemplars it cites (`/steer:audit` → the `steer-reviewer` agent;
 
 ### Skill vs. mode — hold the line on surface area
 
-The user-facing menu is the handful of **front doors** in `rules/00-router.md`'s
-intent table (`setup`, `build`, `spec`, `intake`, `work`, `issues`, `audit`,
-`adr`, `next`, `explain`, `help`, `protect`, `report` — re-derive from the table,
-which is the source of truth). Every new skill widens the set of things a user must choose
+The user-facing menu is the handful of **front doors** — `setup`, `build`, `spec`,
+`intake`, `work`, `issues`, `audit`, `adr`, `next`, `explain`, `help`, `protect`,
+`report` — that `rules/00-router.md` names and that hand off to the specialized
+skills (the router routes from the skill listing itself; there is no separate
+intent table to keep in sync). Every new skill widens the set of things a user must choose
 between, so the bar for a *new, visible* skill is high. Before adding one, justify
 why it is **not**:
 
@@ -283,7 +284,7 @@ why it is **not**:
    area (e.g. `audit [code|spec]`, `work [--reviewed]`), declared via
    `argument-hint` + a `<!-- steer:modes … -->` marker; or
 2. **a specialized skill reached through a front door** — directly invocable but
-   kept out of the router intent table, with a front door that auto-routes to it
+   not a front door itself, but reached through one that auto-routes to it
    (add the hand-off prose to the parent and a routing line to `00-router.md`).
    Mark it `user-invocable: false` only if it is a true *internal gateway* a parent
    always drives with context the user can't supply (`tracker-sync`,
@@ -297,7 +298,15 @@ when the intent is genuinely top-level and maps to no existing owner.
 ## Rule numbering
 
 Rules live at `plugins/steer/rules/NN-<slug>.md` and are concatenated in **lexical
-order** by their numeric prefix into the always-on session context.
+order** by their numeric prefix into the always-on session context. They are
+delivered in **parts**: Claude Code caps one hook command's stdout at 10,000
+characters and silently replaces a longer payload with an "Output too large"
+pointer, so `hooks/hooks.json` registers `inject-standards.sh` N times
+(`<k> <N>`), each invocation emitting one slice of the same deterministic
+partition. You never assign a rule to a part — the hook fills parts in lexical
+order — but the ruleset as a whole has to fit the registered parts, and
+`check_context_budget.py` (in `mise run check`) fails the build when any profile
+drops a rule or any part exceeds the cap.
 
 - Prefixes run `00`–`99` with **intentional gaps** (e.g. `20` → `22` → `30`,
   `35` → `36`) — headroom so a new rule can slot between two existing ones.
@@ -307,7 +316,14 @@ order** by their numeric prefix into the always-on session context.
   (`/new-rule` lists the taken prefixes and proposes a slot).
 - Keep `rules/*.md` **lean and imperative** — it costs context every session.
   Push explanation, rationale, and examples into
-  `plugins/steer/templates/reference/*` and point to them.
+  `plugins/steer/templates/reference/*` and point to them. A rule is
+  always-on only when it has to govern before Claude touches anything (a
+  prohibition, a gate, a workflow step); a description of where things live or
+  how something is laid out is reference prose, reached via `/steer:reference`.
+- When the gate says the ruleset no longer fits: trade prose out first, then
+  scope the rule with an `inject-when` marker, and only as a deliberate,
+  reviewed last resort register one more part in `hooks/hooks.json` (every part
+  is one more SessionStart process and up to 9,500 more always-on characters).
 - Never put first-run-only content (placeholder resolution) in a rule — it would
   re-fire each session; that lives in the `init` skill.
 
@@ -315,10 +331,11 @@ order** by their numeric prefix into the always-on session context.
 
 A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
 marker, so the injected payload **differs per consumer repo** — and a
-knowledge-work folder drops every marked rule. Since the injected-payload re-base the budget gate
-measures this same payload (for two fixture profiles, `knowledge` and
-`code-max`), so the gate and this preview finally report the same variable — but
-the gate only ever sees those two synthetic shapes. To see what *your* repo gets:
+knowledge-work folder drops every marked rule. The budget gate measures this
+same payload — every registered part, in characters — for three fixture
+profiles (`knowledge`, `code`, `code-max`), so the gate and this preview report
+the same variable; but the gate only ever sees those synthetic shapes. To see
+what *your* repo gets:
 
 ```bash
 mise run rules:preview                        # what this repo gets
@@ -327,9 +344,11 @@ mise run rules:preview -- --knowledge         # a non-code (PO) folder
 mise run rules:preview -- --full              # also dump the injected text
 ```
 
-It prints a per-rule inject/skip table with the scope token that decided each
-one, the bytes reclaimed by the skips, and the payload total. Use it after
-adding or re-scoping a rule to confirm the marker fires where you expect.
+It prints a per-rule inject/skip table with the part each rule lands in and the
+scope token that decided it, the characters reclaimed by the skips, the payload
+total against the registered parts' capacity, and — if anything did not fit —
+the rules that were dropped. Use it after adding or re-scoping a rule to confirm
+the marker fires where you expect and the ruleset still fits.
 
 **Never copy an absolute byte/char total into prose** — not into a rule, a
 skill, `CHANGELOG.md`, or the docs site. Any correctness fix to a rule or skill

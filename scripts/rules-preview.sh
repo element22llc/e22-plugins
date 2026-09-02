@@ -14,7 +14,8 @@
 #     sh scripts/rules-preview.sh --full          # also dump the injected text
 #
 # Reuse, not reimplementation — the two halves both run shipped code:
-#   * the BUNDLE is the real hooks/inject-standards.sh, run on a synthetic
+#   * the BUNDLE is the real hooks/inject-standards.sh — every part hooks.json
+#     registers, concatenated — run on a synthetic
 #     SessionStart payload, so the byte total is what a session truly pays;
 #   * the PER-RULE table calls the real lib/scope.sh predicates
 #     (steer_work_mode, steer_inject_when_ok), so kept/dropped can't drift from
@@ -27,7 +28,6 @@ set -u
 ROOT="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 PLUGIN="${ROOT}/plugins/steer"
 RULES_DIR="${PLUGIN}/rules"
-BUDGET_PY="${ROOT}/scripts/check_context_budget.py"
 
 TARGET="."
 FULL=0
@@ -102,12 +102,65 @@ TARGET="$(CDPATH='' cd -- "${TARGET}" && pwd)"
 
 export CLAUDE_PLUGIN_ROOT="${PLUGIN}"
 BUNDLE="${WORK}/bundle.md"
-printf '{"session_id":"rules-preview","cwd":"%s","hook_event_name":"SessionStart"}' \
-	"${TARGET}" | sh "${PLUGIN}/hooks/inject-standards.sh" >"${BUNDLE}" || {
-	printf 'rules-preview: inject-standards.sh failed\n' >&2
-	exit 1
-}
+HOOK_ERR="${WORK}/hook.err"
+PAYLOAD="$(printf '{"session_id":"rules-preview","cwd":"%s","hook_event_name":"SessionStart"}' "${TARGET}")"
+
+# How many parts hooks.json registers — the same manifest the runtime reads.
+# (Backslashes stripped first: the JSON escapes the quotes around the path.)
+PARTS="$(tr -d '\\' <"${PLUGIN}/hooks/hooks.json" 2>/dev/null | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"' | tr -d ' ')"
+[ "${PARTS:-0}" -ge 1 ] || PARTS=1
+
+# Run every part, keep each one (to attribute rules to parts below), and
+# concatenate them into the bundle.
+: >"${BUNDLE}"
+: >"${HOOK_ERR}"
+PARTS_USED=0
+LARGEST_PART=0
+k=1
+while [ "${k}" -le "${PARTS}" ]; do
+	printf '%s' "${PAYLOAD}" |
+		sh "${PLUGIN}/hooks/inject-standards.sh" "${k}" "${PARTS}" >"${WORK}/part-${k}.md" 2>>"${HOOK_ERR}" || {
+		printf 'rules-preview: inject-standards.sh part %s/%s failed\n' "${k}" "${PARTS}" >&2
+		exit 1
+	}
+	_pc="$(LC_ALL=C tr -d '\200-\277' <"${WORK}/part-${k}.md" | wc -c | tr -d ' ')"
+	[ "${_pc}" -gt 0 ] && PARTS_USED=$((PARTS_USED + 1))
+	[ "${_pc}" -gt "${LARGEST_PART}" ] && LARGEST_PART="${_pc}"
+	cat "${WORK}/part-${k}.md" >>"${BUNDLE}"
+	k=$((k + 1))
+done
+INJECTED_CHARS="$(LC_ALL=C tr -d '\200-\277' <"${BUNDLE}" | wc -c | tr -d ' ')"
 INJECTED_BYTES="$(wc -c <"${BUNDLE}" | tr -d ' ')"
+
+# Rules the hook's cap guard had to leave out. Scope eligibility and *delivery*
+# are two different questions: a rule can pass every scope predicate and still
+# never reach the session because the registered parts were full. Read the
+# hook's own stderr list (complete, unlike the in-band notice, which names a
+# few and then counts) rather than re-deriving the budget.
+CAPPED="$(sed -n 's/^steer-inject: dropped([0-9]*)://p' "${HOOK_ERR}" | head -n 1)"
+
+# Which part a rule landed in: the first line of its body (after any marker) is
+# looked up in each part file. Prints the part number, or '-' if not found.
+part_of() { # <rule-file> <skip-marker?>
+	if [ "$2" -eq 1 ]; then
+		_line="$(sed -n '2p' "$1")"
+	else
+		_line="$(sed -n '1p' "$1")"
+	fi
+	[ -n "${_line}" ] || {
+		printf -- '-'
+		return
+	}
+	_k=1
+	while [ "${_k}" -le "${PARTS}" ]; do
+		if grep -qxF -- "${_line}" "${WORK}/part-${_k}.md" 2>/dev/null; then
+			printf '%s' "${_k}"
+			return
+		fi
+		_k=$((_k + 1))
+	done
+	printf -- '-'
+}
 
 # --- the per-rule table: call the real predicates -----------------------------
 
@@ -129,12 +182,19 @@ else
 		"${CONSUMER_ROOT:-<none — every scope predicate fails open>}"
 fi
 
-printf '%-28s  %-7s  %8s  %s\n' 'RULE' 'STATUS' 'BYTES' 'SCOPE'
-printf '%-28s  %-7s  %8s  %s\n' '----' '------' '-----' '-----'
+printf '%-28s  %-7s  %5s  %6s  %s\n' 'RULE' 'STATUS' 'PART' 'CHARS' 'SCOPE'
+printf '%-28s  %-7s  %5s  %6s  %s\n' '----' '------' '----' '-----' '-----'
 
 KEPT=0
 DROPPED=0
 DROPPED_BYTES=0
+CAPPED_N=0
+CAPPED_BYTES=0
+
+# The runtime cap and the per-part budget, read out of the hook (the enforcing
+# side) so this preview can never disagree with it.
+CAP_CHARS="$(sed -n 's/^STEER_INJECT_CAP=\([0-9]*\)$/\1/p' "${PLUGIN}/hooks/inject-standards.sh" | head -n 1)"
+PART_BUDGET="$(sed -n 's/^STEER_INJECT_PART_BUDGET=\([0-9]*\)$/\1/p' "${PLUGIN}/hooks/inject-standards.sh" | head -n 1)"
 
 for f in "${RULES_DIR}"/*.md; do
 	[ -e "${f}" ] || continue
@@ -146,7 +206,8 @@ for f in "${RULES_DIR}"/*.md; do
 		token="${first#<!-- steer:inject-when=}"
 		token="${token% -->}"
 		# The marker line is stripped by the hook, so it costs nothing.
-		bytes="$(($(tail -n +2 "${f}" | wc -c | tr -d ' ') + 2))"
+		bytes="$(($(tail -n +2 "${f}" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' ') + 2))"
+		skip=1
 		if [ "${MODE}" = knowledge ]; then
 			status="skip"
 			scope="${token} (knowledge mode)"
@@ -159,48 +220,64 @@ for f in "${RULES_DIR}"/*.md; do
 		fi
 		;;
 	*)
-		bytes="$(($(wc -c <"${f}" | tr -d ' ') + 2))"
+		bytes="$(($(LC_ALL=C tr -d '\200-\277' <"${f}" | wc -c | tr -d ' ') + 2))"
 		status="inject"
 		scope="always-on"
+		skip=0
 		;;
 	esac
 
+	# A scope-eligible rule that the cap guard dropped never reaches the session.
+	# Report it as CAPPED, not "inject" — conflating the two is what let a
+	# 61 KB payload read as fully delivered.
+	part="-"
 	if [ "${status}" = inject ]; then
+		case " ${CAPPED} " in
+		*" ${name} "*)
+			status="CAPPED"
+			scope="${scope} — did not fit the ${PARTS} registered part(s), NOT delivered"
+			;;
+		*)
+			part="$(part_of "${f}" "${skip}")"
+			;;
+		esac
+	fi
+
+	case "${status}" in
+	inject)
 		KEPT=$((KEPT + 1))
-	else
+		;;
+	CAPPED)
+		CAPPED_N=$((CAPPED_N + 1))
+		CAPPED_BYTES=$((CAPPED_BYTES + bytes))
+		;;
+	*)
 		DROPPED=$((DROPPED + 1))
 		DROPPED_BYTES=$((DROPPED_BYTES + bytes))
-	fi
-	printf '%-28s  %-7s  %8s  %s\n' "${name}" "${status}" "${bytes}" "${scope}"
+		;;
+	esac
+	printf '%-28s  %-7s  %5s  %6s  %s\n' "${name}" "${status}" "${part}" "${bytes}" "${scope}"
 done
 
-# --- totals vs the ratchet ----------------------------------------------------
-
-# Read the ceilings out of the gate so the two can never disagree. Since the injected-payload re-base the
-# gate measures THIS number — the injected payload — for two fixture profiles, so
-# the preview and the gate are finally reporting the same variable. Missing or
-# unparseable → report the payload without a verdict rather than invent a bar.
-#
-# `sed` pulls each gated profile's `max_tokens:` from INJECTED_PROFILES. Order in
-# that dict is knowledge, code (ungated, no max_tokens line), code-max.
-CEILINGS="$(sed -n 's/^[[:space:]]*"max_tokens":[[:space:]]*\([0-9_]*\),.*/\1/p' \
-	"${BUDGET_PY}" 2>/dev/null | tr -d '_')"
-CEIL_KNOWLEDGE="$(printf '%s\n' "${CEILINGS}" | sed -n '1p')"
-CEIL_MAX="$(printf '%s\n' "${CEILINGS}" | sed -n '2p')"
+# --- totals vs the cap --------------------------------------------------------
 
 # Same pessimistic 3.5 B/token the gate documents; integer arithmetic in sh.
 INJECTED_TOKENS=$((INJECTED_BYTES * 10 / 35))
 
-printf '\n%s injected, %s skipped (%s B reclaimed)\n' \
+printf '\n%s delivered, %s out of scope (%s chars reclaimed)\n' \
 	"${KEPT}" "${DROPPED}" "${DROPPED_BYTES}"
-printf 'injected payload: %s B  (~%s tokens @3.5 B/tok)\n' \
-	"${INJECTED_BYTES}" "${INJECTED_TOKENS}"
-
-if [ -n "${CEIL_KNOWLEDGE}" ] && [ -n "${CEIL_MAX}" ]; then
-	printf 'gated ceilings:   knowledge %s tok · code-max %s tok\n' \
-		"${CEIL_KNOWLEDGE}" "${CEIL_MAX}"
-	printf 'note: this repo is one point between those two profiles; the gate bounds\n'
-	printf '      the lean end (knowledge) and the worst case (code-max).\n'
+printf 'injected payload: %s chars (%s B, ~%s tokens @3.5 B/tok) in %s of %s registered part(s); largest part %s chars\n' \
+	"${INJECTED_CHARS}" "${INJECTED_BYTES}" "${INJECTED_TOKENS}" "${PARTS_USED}" "${PARTS}" "${LARGEST_PART}"
+if [ -n "${CAP_CHARS}" ] && [ -n "${PART_BUDGET}" ]; then
+	printf 'runtime cap:      %s characters per hook command (Claude Code; not a policy number) — each part is filled to %s; capacity %s chars, %s spare\n' \
+		"${CAP_CHARS}" "${PART_BUDGET}" "$((PARTS * PART_BUDGET))" "$((PARTS * PART_BUDGET - INJECTED_CHARS))"
+fi
+if [ "${CAPPED_N}" -gt 0 ]; then
+	printf '\n!! %s rule(s) (%s chars) are in scope for this repo but did NOT fit the registered parts.\n' \
+		"${CAPPED_N}" "${CAPPED_BYTES}"
+	printf '   A session here never receives them. Trade prose out to templates/reference/*,\n'
+	printf '   scope the rule with an inject-when marker, or — deliberately — register one\n'
+	printf '   more part in hooks/hooks.json (scripts/check_context_budget.py gates this).\n'
 fi
 
 if [ "${FULL}" -eq 1 ]; then

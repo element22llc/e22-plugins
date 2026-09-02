@@ -38,14 +38,15 @@ When a session opens a folder that is **confidently not a code project** — no 
 work tree and no code/config markers nearby — steer injects a **lean,
 PO-relevant** ruleset instead of the full engineering manual. This is the typical
 **Claude Cowork** case: a product owner opens a connected folder of specs/docs.
-In that mode 13 of the 36 rules inject — the router, roles, context-hygiene,
+In that mode only the unmarked rules inject — the router, roles, context-hygiene,
 spec-workflow, decision-capture, living-docs, high-risk, gate-prompts, secrets,
-output-discipline, artifacts, not-the-gate and self-report rules — while the 23
-marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack, commands, layout,
-testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
-end-of-session, …) are **intentionally omitted** to reclaim context budget and cut
-noise. That reclaims ~40 kB, and `orient-session` confirms in plain language that
-the standards are active.
+output-discipline, artifacts, not-the-gate and self-report rules — while every
+rule marked `code-project` / `has-iac` / `has-apps` / `tracker-github` (stack,
+commands, testing, coverage, worktrees, commit-autonomy, deployment, drift-gates,
+end-of-session, …) is **intentionally omitted** to reclaim context budget and cut
+noise (`mise run rules:preview -- --knowledge` shows the exact set and what it
+reclaims), and `orient-session` confirms in plain language that the standards are
+active.
 
 Two of the injected rules read as code-specific and are always-on anyway, by
 design: **high-risk areas** (rule 60) and **not the gate** (rule 95) name paths
