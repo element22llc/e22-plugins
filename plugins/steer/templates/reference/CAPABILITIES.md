@@ -120,8 +120,8 @@ and **Repair**.
   whatever fidelity; a stub is valid, like an empty `decisions/`).
 - **Wired-when:** `spec/app/README.md` exists. It is the index for the app
   knowledge docs — usage, workflows, roles & permissions, configuration, known
-  limitations, troubleshooting, release notes. `rules/20-layout.md`,
-  `32-living-docs.md`, `50-definition-of-done.md`, the PR template, and the
+  limitations, troubleshooting, release notes. The layout reference
+  (`CONVENTIONS.md` § Where things live), `rules/32-living-docs.md`, `50-definition-of-done.md`, the PR template, and the
   scaffold `ARCHITECTURE.md` all reference `/spec/app/` **unconditionally**, so a
   repo missing it carries dangling links. Absent → the file is missing.
 - **Repair:** **create** `spec/app/README.md` from

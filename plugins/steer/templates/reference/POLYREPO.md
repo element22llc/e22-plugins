@@ -69,8 +69,8 @@ workspace; anything that only describes *this* codebase stays here. A spine
 directory absent from both lists above follows that same test — and `/steer:tidy`
 must not create a product-level one locally in a member.
 
-Feature specs live in the workspace because that is the whole point. Rule
-`20-layout` already lets a feature span apps and packages; in a polyrepo it spans
+Feature specs live in the workspace because that is the whole point. The
+layout conventions already let a feature span apps and packages; in a polyrepo it spans
 *repos*, and an `intent.md` can only live in one of them. Put it above the repos
 and a cross-repo feature has exactly one intent. Put it in a member and every
 sibling working that feature has no intent to load — which is the split-brain

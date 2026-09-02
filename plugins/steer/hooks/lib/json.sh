@@ -131,3 +131,71 @@ steer_mutation_content() {
 steer_json_safe() {
 	printf '%s' "$1" | tr -d '"\\' | tr '\n\t\r' '   '
 }
+
+# steer_json_string — stdin → one JSON string literal (quotes included), lossless.
+# The counterpart of steer_json_safe for payloads that must survive intact: the
+# whole ruleset the Copilot surfaces receive as `additionalContext`. Backslash
+# and double quote are escaped, tab / CR / newline become their escapes, and the
+# remaining C0 control bytes (which cannot appear in JSON text and have no
+# business in Markdown) are dropped. Runs under LC_ALL=C so multibyte UTF-8
+# passes through as bytes — JSON allows raw UTF-8 in strings. One awk pass;
+# ~7 ms for 60 K characters. The input's final newline, if any, is not emitted.
+steer_json_string() {
+	LC_ALL=C awk '
+	BEGIN { ORS = ""; printf "\"" }
+	{
+		s = $0
+		gsub(/\\/, "\\\\", s)
+		gsub(/"/, "\\\"", s)
+		gsub(/\t/, "\\t", s)
+		gsub(/\r/, "\\r", s)
+		gsub(/[\001-\010\013\014\016-\037]/, "", s)
+		if (NR > 1) printf "\\n"
+		printf "%s", s
+	}
+	END { printf "\"" }'
+}
+
+# steer_hook_host — which harness is running this hook: `claude` or `copilot`.
+# The two want different SessionStart stdout (Claude Code: raw text; the Copilot
+# surfaces: a JSON envelope), and VS Code's Copilot Chat runs the plugin's Claude
+# hooks.json as-is, so the script — not the manifest — has to tell them apart.
+#   1. STEER_HOOK_TARGET=copilot, set by the generated Copilot CLI manifest
+#      (copilot-hooks.json)                                          → copilot
+#   2. the payload carries "permission_mode" — a documented Claude Code common
+#      input field that neither Copilot surface sends                → claude
+#   3. the payload has "hook_event_name", "model" and "timestamp" but no
+#      "permission_mode" — the shape Copilot Chat in VS Code sends
+#      (observed on VS Code 1.135; the CLI's PascalCase form has no "model") → copilot
+#   4. anything else                                                 → claude
+# The default is deliberately Claude: mis-reading Claude Code as Copilot would
+# swap its parted raw delivery for one oversized JSON command and lose the
+# ruleset, whereas mis-reading a Copilot surface as Claude only keeps today's
+# behaviour (raw stdout, discarded there). Reads $STEER_INPUT like steer_field.
+steer_hook_host() {
+	if [ "${STEER_HOOK_TARGET:-claude}" = "copilot" ]; then
+		printf 'copilot'
+		return
+	fi
+	case "${STEER_INPUT}" in
+	*'"permission_mode"'*)
+		printf 'claude'
+		return
+		;;
+	esac
+	case "${STEER_INPUT}" in
+	*'"hook_event_name"'*)
+		case "${STEER_INPUT}" in
+		*'"model"'*)
+			case "${STEER_INPUT}" in
+			*'"timestamp"'*)
+				printf 'copilot'
+				return
+				;;
+			esac
+			;;
+		esac
+		;;
+	esac
+	printf 'claude'
+}

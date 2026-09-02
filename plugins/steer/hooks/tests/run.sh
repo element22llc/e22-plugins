@@ -53,6 +53,20 @@ run_hook() { # <hook-file> <stdin>   (env via $ENV)
 	printf '%s' "$?" >"${RC_FILE}"
 }
 
+run_inject() { # <stdin> -> every registered part of inject-standards.sh, concatenated
+	# The ruleset ships in N parts (hooks.json registers the hook N times as
+	# `<k> <N>`); a single argument-less invocation is one part and would fail
+	# any assertion about a rule that landed in another. Backslashes are stripped
+	# first: the JSON escapes the quotes around the path.
+	_n="$(tr -d '\\' <"${HOOKS}/hooks.json" | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"')"
+	[ "${_n}" -ge 1 ] || _n=1
+	_k=1
+	while [ "${_k}" -le "${_n}" ]; do
+		printf '%s' "$1" | sh "${HOOKS}/inject-standards.sh" "${_k}" "${_n}" 2>/dev/null
+		_k=$((_k + 1))
+	done
+}
+
 last_rc() { cat "${RC_FILE}" 2>/dev/null || printf '0'; }
 
 # Direct-sh runner for the non-hook helper scripts (template-reconcile /
@@ -98,6 +112,19 @@ assert_block() { printf '%s' "$2" | grep -q '"decision":"block"' && ok || bad "$
 assert_no_block() { printf '%s' "$2" | grep -q '"decision":"block"' && bad "$1 (unexpected block: $2)" || ok; }
 assert_eq() { [ "$2" = "$3" ] && ok || bad "$1 (want '$3', got '$2')"; }
 assert_rc() { [ "$2" -eq "$3" ] && ok || bad "$1 (want rc $3, got $2)"; }
+
+inject_fixture() { # <name> -> prints a fixture plugin root (real hook libs, own rules/)
+	_ifr="${WORK}/$1"
+	mkdir -p "${_ifr}/.claude-plugin" "${_ifr}/rules"
+	ln -sf "${HOOKS}" "${_ifr}/hooks"
+	printf '{"name":"steer","version":"0.0.0-test"}' >"${_ifr}/.claude-plugin/plugin.json"
+	printf '%s' "${_ifr}"
+}
+inject_part() { # <plugin-root> <repo> <part> <parts> -> stdout of one part (stderr to $INJ_ERR)
+	printf '%s' "$(session_json "$2" inj)" |
+		env CLAUDE_PLUGIN_ROOT="$1" sh "${HOOKS}/inject-standards.sh" "$3" "$4" 2>>"${INJ_ERR}"
+}
+inject_chars() { printf '%s' "$1" | LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' '; }
 
 new_repo() {
 	_r="${WORK}/$1"
@@ -1695,7 +1722,7 @@ grep -q 'rules directory missing' "${NR2}/.claude/steer-faults.log" 2>/dev/null 
 CRI_GH="$(new_repo cri_gh)"
 mkdir -p "${CRI_GH}/spec"
 printf 'system: github\n' >"${CRI_GH}/spec/tracker.md"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_GH}" cri_gh)")"
+out="$(run_inject "$(session_json "${CRI_GH}" cri_gh)")"
 oq_grep "inject: github repo includes issue-first rule" 'Issue-first (GitHub-adopted repos)' "${out}"
 oq_grep "inject: always-on router present (github repo)" 'You are the router' "${out}"
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
@@ -1705,7 +1732,7 @@ printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 CRI_JIRA="$(new_repo cri_jira)"
 mkdir -p "${CRI_JIRA}/spec"
 printf 'system: jira\n' >"${CRI_JIRA}/spec/tracker.md"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_JIRA}" cri_jira)")"
+out="$(run_inject "$(session_json "${CRI_JIRA}" cri_jira)")"
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: non-github repo must omit issue-first rule" || ok
 oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
@@ -1713,7 +1740,7 @@ oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${o
 # /infra present -> deployment AND infra-stack fragment injected (has-infra + has-iac).
 CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_INFRA}" cri_infra)")"
+out="$(run_inject "$(session_json "${CRI_INFRA}" cri_infra)")"
 oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
 oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
 
@@ -1721,7 +1748,7 @@ oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack — infr
 # via has-iac. This is the case steer used to skip entirely.
 CRI_ANSIBLE="$(new_repo cri_ansible)"
 printf -- '- hosts: all\n' >"${CRI_ANSIBLE}/site.yml"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_ANSIBLE}" cri_ansible)")"
+out="$(run_inject "$(session_json "${CRI_ANSIBLE}" cri_ansible)")"
 oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
@@ -1730,14 +1757,14 @@ printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 # has-apps arm of has-iac|has-apps, but NOT the infra-stack fragment (has-iac only).
 CRI_APP="$(new_repo cri_app)"
 printf '{}\n' >"${CRI_APP}/package.json"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_APP}" cri_app)")"
+out="$(run_inject "$(session_json "${CRI_APP}" cri_app)")"
 oq_grep "inject: app repo (no /infra) includes deployment rule" 'auto-deploys non-prod' "${out}"
 printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
 	bad "inject: app repo without IaC must omit infra-stack fragment" || ok
 
 # No /infra, no IaC, no GitHub tracker -> all scoped rules skipped.
 CRI_BARE="$(new_repo cri_bare)"
-out="$(run_hook inject-standards.sh "$(session_json "${CRI_BARE}" cri_bare)")"
+out="$(run_inject "$(session_json "${CRI_BARE}" cri_bare)")"
 printf '%s' "${out}" | grep -q 'auto-deploys non-prod' &&
 	bad "inject: repo without /infra must omit deployment rule" || ok
 printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
@@ -1754,7 +1781,7 @@ oq_grep "inject: always-on router present (bare repo)" 'You are the router' "${o
 KW="${WORK}/kw_plain"
 mkdir -p "${KW}"
 printf '# my notes\n' >"${KW}/notes.md"
-out="$(run_hook inject-standards.sh "$(session_json "${KW}" kw_plain)")"
+out="$(run_inject "$(session_json "${KW}" kw_plain)")"
 oq_grep "inject(kw): knowledge-mode banner present" 'knowledge-work mode' "${out}"
 oq_grep "inject(kw): always-on router present" 'You are the router' "${out}"
 oq_grep "inject(kw): spec-workflow rule present" 'Spec workflow' "${out}"
@@ -1792,7 +1819,7 @@ oq_grep "orient(kw): absent source fails open and greets" 'knowledge-work folder
 KWC="${WORK}/kw_pkg"
 mkdir -p "${KWC}"
 printf '{}\n' >"${KWC}/package.json"
-out="$(run_hook inject-standards.sh "$(session_json "${KWC}" kw_pkg)")"
+out="$(run_inject "$(session_json "${KWC}" kw_pkg)")"
 oq_grep "inject(kw-pkg): code-mode includes stack rule" '## Stack' "${out}"
 printf '%s' "${out}" | grep -q 'knowledge-work mode' &&
 	bad "inject(kw-pkg): non-git folder with package.json must be code mode" || ok
@@ -2965,6 +2992,268 @@ for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.s
 		bad "hooks.json: $1 registered"
 	grep -q "$2" "${HOOKS}/hooks.json" && ok || bad "hooks.json: $2 wired"
 done
+
+# ---------------------------------------------------------------------------
+# inject-standards.sh — parts under the 10,000-character cap on hook stdout.
+#
+# Claude Code persists a longer hook output to a file and gives the session a
+# short "Output too large" pointer instead, while the hook still exits 0. The
+# cap is per hook COMMAND, so the ruleset is registered as PARTS commands, each
+# emitting one slice of a deterministic partition. These cases pin: the
+# partition is ordered and complete, every part stays under budget, an empty
+# part is silent, a ruleset that does not fit says so in-band on the last part
+# (and the notice itself never busts the budget), and hooks.json registers the
+# parts contiguously.
+# ---------------------------------------------------------------------------
+INJ_ERR="${WORK}/inject.err"
+
+# (a) A small ruleset fits in part 1; the later parts are silent.
+IF_SMALL="$(inject_fixture inject-small)"
+printf '# Rule A\n\nBe brief.\n' >"${IF_SMALL}/rules/10-a.md"
+printf '# Rule B\n\nBe correct.\n' >"${IF_SMALL}/rules/20-b.md"
+IF_REPO="$(new_repo inject-small-repo)"
+: >"${INJ_ERR}"
+out="$(inject_part "${IF_SMALL}" "${IF_REPO}" 1 3)"
+assert_has "inject parts: part 1 delivers rule A" "${out}" "Be brief."
+assert_has "inject parts: part 1 delivers rule B" "${out}" "Be correct."
+assert_has "inject parts: part 1 header names its position" "${out}" "part 1/3"
+printf '%s' "${out}" | grep -q "RULESET INCOMPLETE" &&
+	bad "inject parts: a fitting ruleset must not carry the incomplete notice" || ok
+out="$(inject_part "${IF_SMALL}" "${IF_REPO}" 2 3)"
+assert_empty "inject parts: an unused part emits nothing" "${out}"
+out="$(inject_part "${IF_SMALL}" "${IF_REPO}" 3 3)"
+assert_empty "inject parts: the last unused part emits nothing" "${out}"
+[ -s "${INJ_ERR}" ] && bad "inject parts: a fitting ruleset writes nothing to stderr" || ok
+
+# (b) Twelve ~1.9 KB rules across 3 parts: every rule arrives exactly once, in
+#     order, no part over budget, no notice.
+IF_BIG="$(inject_fixture inject-big)"
+i=1
+while [ "${i}" -le 12 ]; do
+	{
+		printf '# Rule %02d\n\n' "${i}"
+		j=0
+		while [ "${j}" -lt 30 ]; do
+			printf 'Padding line %02d for rule %02d, long enough to consume budget.\n' "${j}" "${i}"
+			j=$((j + 1))
+		done
+	} >"${IF_BIG}/rules/$(printf '%02d' "${i}")-big.md"
+	i=$((i + 1))
+done
+IF_BREPO="$(new_repo inject-big-repo)"
+: >"${INJ_ERR}"
+all=""
+k=1
+prev_last=0
+while [ "${k}" -le 3 ]; do
+	out="$(inject_part "${IF_BIG}" "${IF_BREPO}" "${k}" 3)"
+	n="$(inject_chars "${out}")"
+	[ "${n}" -le 9500 ] && ok || bad "inject parts: part ${k} must stay within the 9500-char budget (got ${n})"
+	[ "${n}" -gt 0 ] && ok || bad "inject parts: part ${k} of a 12-rule set must not be empty"
+	# Rules inside a part, and across parts, keep lexical order.
+	first="$(printf '%s' "${out}" | sed -n 's/^# Rule \([0-9]*\)$/\1/p' | sed -n '1p')"
+	[ "${first:-0}" -gt "${prev_last}" ] && ok || bad "inject parts: part ${k} starts at rule ${first}, not after ${prev_last}"
+	prev_last="$(printf '%s' "${out}" | sed -n 's/^# Rule \([0-9]*\)$/\1/p' | tail -n 1)"
+	all="${all}${out}"
+	k=$((k + 1))
+done
+i=1
+while [ "${i}" -le 12 ]; do
+	c="$(printf '%s' "${all}" | grep -c "^# Rule $(printf '%02d' "${i}")\$")"
+	[ "${c}" -eq 1 ] && ok || bad "inject parts: rule ${i} must appear exactly once across parts (got ${c})"
+	i=$((i + 1))
+done
+printf '%s' "${all}" | grep -q "RULESET INCOMPLETE" &&
+	bad "inject parts: a ruleset that fits its parts carries no notice" || ok
+[ -s "${INJ_ERR}" ] && bad "inject parts: nothing dropped means nothing on stderr" || ok
+
+# (c) The same twelve rules in ONE part: a clean prefix is delivered, the part
+#     stays under budget, the notice names the first dropped rules and counts
+#     the rest, and stderr carries the full list for the gate.
+: >"${INJ_ERR}"
+out="$(inject_part "${IF_BIG}" "${IF_BREPO}" 1 1)"
+n="$(inject_chars "${out}")"
+[ "${n}" -le 9500 ] && ok || bad "inject cap: single part must stay within the budget (got ${n})"
+assert_has "inject cap: over-cap payload carries the notice" "${out}" "RULESET INCOMPLETE"
+assert_has "inject cap: notice names the first dropped rule" "${out}" "-big.md"
+assert_has "inject cap: notice reports the dropped count" "${out}" "rule(s) were NOT injected"
+assert_has "inject cap: notice summarises beyond the name limit" "${out}" " more."
+assert_has "inject cap: earliest rule still delivered" "${out}" "# Rule 01"
+grep -q '^steer-inject: dropped([0-9]*):' "${INJ_ERR}" && ok ||
+	bad "inject cap: stderr must carry the machine-readable dropped list"
+# The stderr list is complete: every rule not in stdout is named there.
+i=1
+while [ "${i}" -le 12 ]; do
+	rn="$(printf '%02d' "${i}")-big.md"
+	if printf '%s' "${out}" | grep -q "^# Rule $(printf '%02d' "${i}")\$"; then
+		grep -q " ${rn}" "${INJ_ERR}" && bad "inject cap: delivered ${rn} must not be listed as dropped" || ok
+	else
+		grep -q " ${rn}" "${INJ_ERR}" && ok || bad "inject cap: dropped ${rn} must be listed on stderr"
+	fi
+	i=$((i + 1))
+done
+
+# (d) The notice is sized from the data: fill the only part to within a few
+#     characters of the budget, then drop eight long-named rules. The guard must
+#     pop rules to make room rather than overrun (the old fixed 300-char reserve
+#     was smaller than the notice and busted the cap).
+IF_EDGE="$(inject_fixture inject-edge)"
+IF_EREPO="$(new_repo inject-edge-repo)"
+: >"${INJ_ERR}"
+hdr="$(inject_chars "$(inject_part "${IF_EDGE}" "${IF_EREPO}" 1 1)")"
+fill=$((9500 - hdr - 10 - 7 - 3))
+{
+	printf '# fill\n'
+	i=0
+	while [ "${i}" -lt "${fill}" ]; do
+		printf 'x'
+		i=$((i + 1))
+	done
+	printf '\n'
+} >"${IF_EDGE}/rules/10-fill.md"
+i=0
+while [ "${i}" -lt 8 ]; do
+	printf '# tail %s\ny\n' "${i}" >"${IF_EDGE}/rules/2${i}-a-very-long-rule-name-to-make-the-notice-big-${i}.md"
+	i=$((i + 1))
+done
+: >"${INJ_ERR}"
+out="$(inject_part "${IF_EDGE}" "${IF_EREPO}" 1 1)"
+n="$(inject_chars "${out}")"
+[ "${n}" -le 9500 ] && ok || bad "inject cap: notice must never push a part over budget (got ${n})"
+assert_has "inject cap: edge case still carries the notice" "${out}" "RULESET INCOMPLETE"
+assert_has "inject cap: popped rules are counted as dropped" "${out}" " more."
+
+# (e) Malformed part arguments fall back to a single part rather than silence.
+out="$(inject_part "${IF_SMALL}" "${IF_REPO}" x 3)"
+assert_has "inject parts: malformed part argument falls back to one part" "${out}" "Be correct."
+out="$(inject_part "${IF_SMALL}" "${IF_REPO}" 5 3)"
+assert_has "inject parts: part beyond PARTS falls back to one part" "${out}" "Be correct."
+
+# (f) Missing rules dir: part 1 carries the fallback banner, other parts are silent.
+IF_NORULES="$(inject_fixture inject-norules)"
+rmdir "${IF_NORULES}/rules"
+out="$(inject_part "${IF_NORULES}" "${IF_REPO}" 1 3)"
+assert_has "inject parts: missing rules dir — part 1 emits the fallback banner" "${out}" "rules directory was not found"
+out="$(inject_part "${IF_NORULES}" "${IF_REPO}" 2 3)"
+assert_empty "inject parts: missing rules dir — part 2 is silent" "${out}"
+
+# (g) hooks.json registers the parts contiguously as `k N`, all with the same N.
+HOOKS_JSON_FLAT="$(tr -d '\\' <"${HOOKS}/hooks.json")"
+n_parts="$(printf '%s' "${HOOKS_JSON_FLAT}" | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"')"
+[ "${n_parts}" -ge 2 ] && ok || bad "hooks.json: inject-standards.sh must be registered as several parts (got ${n_parts})"
+k=1
+while [ "${k}" -le "${n_parts}" ]; do
+	printf '%s' "${HOOKS_JSON_FLAT}" | grep -q "inject-standards\.sh\" ${k} ${n_parts}\"" && ok ||
+		bad "hooks.json: inject-standards.sh part ${k}/${n_parts} not registered"
+	k=$((k + 1))
+done
+# (h) The real ruleset arrives whole in the code-max shape (every predicate true).
+IF_MAXREPO="$(new_repo inject-real-max)"
+mkdir -p "${IF_MAXREPO}/infra" "${IF_MAXREPO}/apps" "${IF_MAXREPO}/spec"
+printf 'system: github\n' >"${IF_MAXREPO}/spec/tracker.md"
+: >"${INJ_ERR}"
+k=1
+all=""
+while [ "${k}" -le "${n_parts}" ]; do
+	out="$(inject_part "${PLUGIN}" "${IF_MAXREPO}" "${k}" "${n_parts}")"
+	n="$(inject_chars "${out}")"
+	[ "${n}" -le 9500 ] && ok || bad "inject real: part ${k} over budget (${n})"
+	all="${all}${out}"
+	k=$((k + 1))
+done
+printf '%s' "${all}" | grep -q "RULESET INCOMPLETE" &&
+	bad "inject real: the shipped ruleset must fit its registered parts" || ok
+for rf in "${PLUGIN}"/rules/*.md; do
+	rl="$(sed -n '/^#/{p;q;}' "${rf}")"
+	printf '%s' "${all}" | grep -qxF -- "${rl}" && ok ||
+		bad "inject real: $(basename "${rf}") heading not delivered: ${rl}"
+done
+
+# ----- inject-standards.sh: the Copilot surfaces get ONE JSON envelope (#513) -----
+# Copilot's SessionStart injects context only from a JSON object on stdout — the
+# CLI reads a top-level `additionalContext`, VS Code `hookSpecificOutput.…` —
+# and the LAST hook returning context wins, so the parted Claude delivery must
+# not be mirrored: part 1 carries the whole eligible ruleset, every other part
+# stays silent. The CLI arrives via STEER_HOOK_TARGET=copilot (copilot-hooks.json);
+# VS Code Copilot Chat runs the Claude hooks.json as-is and is recognised from its
+# payload shape (snake_case SessionStart with "model" + "timestamp" and no
+# "permission_mode"). A Claude payload keeps the raw parted output.
+CP_REPO="$(new_repo inject-copilot)"
+mkdir -p "${CP_REPO}/infra" "${CP_REPO}/apps" "${CP_REPO}/spec"
+printf 'system: github\n' >"${CP_REPO}/spec/tracker.md"
+cp_vscode_json() { # <cwd>  -> the payload VS Code Copilot Chat sends (observed 1.135)
+	printf '{"timestamp":"2026-09-02T16:03:56.200Z","hook_event_name":"SessionStart","session_id":"s","transcript_path":"/t","source":"new","model":"auto","cwd":"%s"}' "$1"
+}
+cp_cli_json() { # <cwd>  -> the Copilot CLI's camelCase payload
+	printf '{"sessionId":"s","timestamp":1788363641659,"cwd":"%s","source":"new"}' "$1"
+}
+cp_claude_json() { # <cwd>  -> a Claude Code payload (carries permission_mode)
+	printf '{"session_id":"s","transcript_path":"/t","cwd":"%s","permission_mode":"default","hook_event_name":"SessionStart","source":"startup"}' "$1"
+}
+# JSON envelope shape: exactly one object opening with the top-level key and
+# carrying the nested VS Code key; a strict parser confirms it where one exists.
+assert_envelope() { # <label> <out>
+	case "$2" in
+	'{"additionalContext":"'*'"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"'*'"}}') ok ;;
+	*) bad "$1 (expected the two-key envelope, got: $(printf '%s' "$2" | head -c 160))" ;;
+	esac
+	if command -v python3 >/dev/null 2>&1; then
+		printf '%s' "$2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["additionalContext"]==d["hookSpecificOutput"]["additionalContext"]' 2>/dev/null &&
+			ok || bad "$1 (envelope is not valid JSON with equal halves)"
+	fi
+}
+# (a) Copilot CLI target: one envelope, whole ruleset, no part arguments needed.
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+assert_rc "inject copilot: CLI target exits 0" "$(last_rc)" 0
+assert_envelope "inject copilot: CLI target emits the JSON envelope" "${out}"
+assert_has "inject copilot: CLI envelope carries the first rule" "${out}" 'You are the router'
+assert_has "inject copilot: CLI envelope carries the last rule" "${out}" 'End-of-session checklist'
+assert_has "inject copilot: CLI envelope carries the scoped issue-first rule" "${out}" 'Issue-first (GitHub-adopted repos)'
+assert_has "inject copilot: refresh hint names the Copilot update path" "${out}" 'copilot plugin update steer'
+printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
+printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
+# (b) Under the copilot target, every part but 1 is silent — even when hooks.json's
+# `k N` arguments are passed through (VS Code runs all nine registrations).
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 9 2>/dev/null)"
+assert_empty "inject copilot: part 2 of 9 is silent on a Copilot surface" "${out2}"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 9 9 2>/dev/null)"
+assert_empty "inject copilot: part 9 of 9 is silent on a Copilot surface" "${out2}"
+# (c) VS Code Copilot Chat payload, no target variable: recognised from its shape,
+# part 1 of 9 emits the same envelope the CLI gets.
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+assert_envelope "inject copilot: VS Code payload is recognised without STEER_HOOK_TARGET" "${out2}"
+assert_eq "inject copilot: VS Code and CLI envelopes are byte-identical" "${out2}" "${out}"
+# (d) Fail-safe: a Claude payload (permission_mode) stays raw and parted; so does a
+# payload of unknown shape (the CLI's camelCase form without the target variable).
+out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: Claude payload must stay raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
+assert_has "inject copilot: Claude payload keeps the parted header" "${out}" 'part 1/9'
+assert_has "inject copilot: Claude payload keeps the Claude refresh hint" "${out}" '/plugin update steer@e22-plugins'
+out="$(run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: unknown payload shape must default to Claude raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
+# (e) Knowledge-work folder on a Copilot surface: still the envelope, still lean.
+CP_KNOW="${WORK}/inject-copilot-know"
+mkdir -p "${CP_KNOW}"
+printf 'notes\n' >"${CP_KNOW}/README.md"
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_KNOW}")")"
+assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out}"
+assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
+printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
+# (f) Missing rules dir on a Copilot surface: the fallback banner is still delivered
+# — inside the envelope, so it is not discarded as non-JSON.
+out="$(ENV="STEER_HOOK_TARGET=copilot CLAUDE_PLUGIN_ROOT=${IF_NORULES}" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+assert_envelope "inject copilot: missing rules dir — banner arrives in the envelope" "${out}"
+assert_has "inject copilot: missing rules dir — banner text present" "${out}" 'rules directory was not found'
+# (g) The generated Copilot manifest registers the injector once, under the
+# camelCase event, with no part arguments and the copilot target.
+CP_MANIFEST="$(tr -d '\\' <"${HOOKS}/copilot-hooks.json")"
+printf '%s' "${CP_MANIFEST}" | grep -q '"sessionStart"' && ok || bad "copilot-hooks.json: injector must be registered under camelCase sessionStart"
+[ "$(printf '%s' "${CP_MANIFEST}" | grep -o 'inject-standards.sh"' | wc -l | tr -d ' ')" -eq 2 ] && ok ||
+	bad "copilot-hooks.json: injector must appear exactly once (guard + invocation)"
+printf '%s' "${CP_MANIFEST}" | grep -q 'inject-standards.sh" [0-9]' && bad "copilot-hooks.json: injector must carry no part arguments" || ok
+printf '%s' "${CP_MANIFEST}" | grep -q 'STEER_HOOK_TARGET=copilot sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh"' && ok ||
+	bad "copilot-hooks.json: injector must run under STEER_HOOK_TARGET=copilot"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

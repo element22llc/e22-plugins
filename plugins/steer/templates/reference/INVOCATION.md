@@ -110,8 +110,8 @@ and that is a rule rather than a not-yet.
 
 The flag makes a skill **user-only** — "Only you can invoke the skill" — so Claude
 cannot reach it through the Skill tool at all. Natural-language routing is core to
-this plugin: every skill in rule `00-router`'s intent table is a model-invocation
-target, including the ones that look manual (`setup`, `protect`, `help`).
+this plugin: every user-invocable skill is a model-invocation target (rule
+`00-router` routes from the skill listing), including the ones that look manual (`setup`, `protect`, `help`).
 
 The **Tier-3 internal helpers are the worst candidates, not the safest ones.**
 `tracker-sync` and `spec-scaffold` are already `user-invocable: false`, so they are
