@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 import check_copilot_hooks
@@ -18,12 +19,30 @@ import gen_copilot_hooks
 
 
 def _claude_hooks(*scripts: str) -> str:
-    """A hooks.json wiring each script under PreToolUse (bash-actions gets the
-    broader Claude matcher so the generator's override is exercised)."""
-    entries = []
+    """A hooks.json wiring each script the way the real manifest does: the
+    injector under SessionStart, registered once per part as ``<k> <N>``; every
+    other script under PreToolUse (bash-actions gets the broader Claude matcher
+    so the generator's override is exercised)."""
+    pre: list[dict] = []
+    session: list[dict] = []
     for s in scripts:
+        if s == "inject-standards.sh":
+            session.append(
+                {
+                    "matcher": "startup|resume|clear|compact",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": f'sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{s}" {k} 3',
+                            "timeout": 10,
+                        }
+                        for k in (1, 2, 3)
+                    ],
+                }
+            )
+            continue
         matcher = "Bash|mcp__.*[Ii]ssue.*" if "bash-actions" in s else "Write|Edit"
-        entries.append(
+        pre.append(
             {
                 "matcher": matcher,
                 "hooks": [
@@ -35,10 +54,19 @@ def _claude_hooks(*scripts: str) -> str:
                 ],
             }
         )
-    return json.dumps({"hooks": {"PreToolUse": entries}})
+    hooks: dict = {}
+    if session:
+        hooks["SessionStart"] = session
+    if pre:
+        hooks["PreToolUse"] = pre
+    return json.dumps({"hooks": hooks})
 
 
-PORTED = ["check-version-pins.sh", "check-bash-actions.sh"]
+PORTED = ["inject-standards.sh", "check-version-pins.sh", "check-bash-actions.sh"]
+
+
+def _all_hooks(doc: dict) -> list[dict]:
+    return [h for hooks in doc["hooks"].values() for h in hooks]
 
 
 def _point(monkeypatch, tmp_path: Path, claude: str, scripts: list[str]) -> Path:
@@ -58,12 +86,20 @@ def test_render_shapes_copilot_manifest(tmp_path: Path):
     src.write_text(_claude_hooks(*PORTED))
     doc = json.loads(gen_copilot_hooks.render(src))
     assert doc["version"] == 1
+    assert list(doc["hooks"]) == ["sessionStart", "PreToolUse"]
     hooks = doc["hooks"]["PreToolUse"]
     assert len(hooks) == 2
     pins, bash = hooks
     assert pins["matcher"] == "Write|Edit"  # no override
     assert bash["matcher"] == "Bash"  # override applied
-    for h in hooks:
+    # The injector: registered ONCE (Copilot keeps the last hook's context, so the
+    # Claude parts must not be mirrored), under the camelCase event the CLI honours
+    # a top-level additionalContext for, with no matcher and no part arguments.
+    (inject,) = doc["hooks"]["sessionStart"]
+    assert "matcher" not in inject
+    assert 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh" || true' in inject["bash"]
+    assert not re.search(r'inject-standards\.sh"\s+\d', inject["bash"])
+    for h in _all_hooks(doc):
         # Guarded on the resolved script path (an unset CLAUDE_PLUGIN_ROOT must
         # report the skip, not silently no-op), still carrying the target flag and
         # still fail-open on the invocation itself.
@@ -123,7 +159,7 @@ def test_ported_command_guards_unresolved_plugin_root():
     from conftest import REPO_ROOT
 
     doc = json.loads(gen_copilot_hooks.render(REPO_ROOT / gen_copilot_hooks.HOOKS_JSON))
-    hooks = doc["hooks"]["PreToolUse"]
+    hooks = _all_hooks(doc)
     assert len(hooks) == len(gen_copilot_hooks.COPILOT_HOOKS)
     for hook in hooks:
         bash = hook["bash"]
@@ -142,7 +178,7 @@ def test_ported_command_is_fail_open_when_root_unset(tmp_path: Path):
 
     doc = json.loads(gen_copilot_hooks.render(REPO_ROOT / gen_copilot_hooks.HOOKS_JSON))
     env = {k: v for k, v in os.environ.items() if k != "CLAUDE_PLUGIN_ROOT"}
-    for hook in doc["hooks"]["PreToolUse"]:
+    for hook in _all_hooks(doc):
         proc = subprocess.run(
             ["sh", "-c", hook["bash"]],
             input='{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}',

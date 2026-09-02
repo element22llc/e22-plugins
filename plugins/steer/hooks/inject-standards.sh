@@ -26,6 +26,19 @@
 # to stderr, which costs a session nothing). scripts/check_context_budget.py
 # runs every part of every profile pre-merge and fails on any drop.
 #
+# THE COPILOT SURFACES take a different shape of the same payload. GitHub
+# Copilot's SessionStart hook injects context too, but only from a JSON object
+# on stdout — the Copilot CLI reads a top-level `additionalContext`, Copilot Chat
+# in VS Code reads `hookSpecificOutput.additionalContext`, and both discard raw
+# text ("returned non-JSON output"). There is no 10k cap there (120 K characters
+# measured whole; 10 MiB documented) but the LAST hook returning context wins,
+# so the parts must not be mirrored: when steer_hook_host says `copilot`, part 1
+# emits the WHOLE eligible ruleset as one JSON object carrying both keys and
+# every other part stays silent. The CLI reaches this path through the generated
+# copilot-hooks.json (STEER_HOOK_TARGET=copilot); VS Code reaches it by running
+# this plugin's Claude hooks.json as-is — which is why the host is detected here
+# rather than declared by a manifest (lib/json.sh, steer_hook_host).
+#
 # Design notes:
 #   - cwd is the CONSUMER repo, not the plugin, so paths use ${CLAUDE_PLUGIN_ROOT}.
 #   - rules/*.md concatenate in lexical order (hence the numeric file prefixes).
@@ -80,6 +93,34 @@ CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 CONSUMER_ROOT="$(steer_repo_root "${CWD}" 2>/dev/null)" || CONSUMER_ROOT=""
 
+# ---- Host. Claude Code gets the parted raw-text delivery; a Copilot surface
+# gets one JSON object from part 1 and silence from every other part (see the
+# header). The budget is lifted rather than removed: 2 M characters is far above
+# any ruleset and far below Copilot's 10 MiB stdout bound, so the partition
+# logic below runs unchanged and simply never splits or drops.
+HOST="$(steer_hook_host)"
+if [ "${HOST}" = "copilot" ]; then
+	[ "${PART}" -eq 1 ] || exit 0
+	PARTS=1
+	STEER_INJECT_PART_BUDGET=2000000
+	STEER_INJECT_CAP=2000000
+fi
+
+# emit_context — stdin is the context text; on Claude it is the hook's stdout as
+# is, on a Copilot surface it is wrapped in the envelope both surfaces read (the
+# CLI takes the top-level key, VS Code the nested one; each ignores the other).
+# Empty context emits nothing rather than an envelope around "".
+emit_context() {
+	if [ "${HOST}" = "copilot" ]; then
+		_ctx="$(steer_json_string)"
+		[ "${_ctx}" != '""' ] || return 0
+		printf '{"additionalContext":%s,"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":%s}}\n' \
+			"${_ctx}" "${_ctx}"
+	else
+		cat
+	fi
+}
+
 # Best-effort version read (no jq dependency): grab the first "version" string.
 VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${PLUGIN_JSON}" 2>/dev/null | head -n 1)"
 [ -z "${VERSION}" ] && VERSION="unknown"
@@ -91,12 +132,20 @@ steer_chars() {
 
 # Header text for part N. Part 1 carries the banner every session used to get;
 # the others say which part they are and that order is not meaningful.
+refresh_hint() {
+	if [ "${HOST}" = "copilot" ]; then
+		printf 'Run `copilot plugin update steer` (Copilot CLI) or update the plugin from the Extensions view (VS Code) to refresh.'
+	else
+		printf 'Run `/plugin update steer@e22-plugins` to refresh.'
+	fi
+}
+
 part_header() {
 	if [ "$1" -eq 1 ]; then
 		if [ "${PARTS}" -eq 1 ]; then
-			printf '<!-- Engineering standards — steer plugin v%s. Run `/plugin update steer@e22-plugins` to refresh. -->\n' "${VERSION}"
+			printf '<!-- Engineering standards — steer plugin v%s. %s -->\n' "${VERSION}" "$(refresh_hint)"
 		else
-			printf '<!-- Engineering standards — steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. Run `/plugin update steer@e22-plugins` to refresh. -->\n' "${VERSION}" "${PARTS}"
+			printf '<!-- Engineering standards — steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. %s -->\n' "${VERSION}" "${PARTS}" "$(refresh_hint)"
 		fi
 		if [ "${WORK_MODE}" = "knowledge" ]; then
 			printf '\n<!-- steer: knowledge-work mode — this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The spec-workflow, decision-capture, living-docs, roles and output rules still apply. -->\n'
@@ -117,7 +166,7 @@ WORK_MODE="$(steer_work_mode "${CWD}")"
 if [ ! -d "${RULES_DIR}" ]; then
 	# Only part 1 speaks for a missing rules dir — one notice, not PARTS copies.
 	if [ "${PART}" -eq 1 ]; then
-		printf '# Engineering standards\n\nThe steer rules directory was not found at %s. Reinstall or update the plugin (`/plugin`).\n' "${RULES_DIR}"
+		printf '# Engineering standards\n\nThe steer rules directory was not found at %s. Reinstall or update the plugin (`/plugin`).\n' "${RULES_DIR}" | emit_context
 		# A vanished rules dir is a steer install defect, not a user error — record it
 		# (path-free, stable signature) so surface-faults.sh can offer `/steer:report`.
 		# Guarded with `if` (never a bare `&&` chain at branch end): SessionStart
@@ -273,45 +322,51 @@ if [ "${_dropped_n}" -gt 0 ]; then
 fi
 
 # ---- Emit this part. A part past the last used one has nothing to say and
-# stays silent (empty stdout adds no context). Part 1 always speaks.
+# stays silent (empty stdout adds no context). Part 1 always speaks. The text is
+# produced by emit_part and shaped for the host by emit_context (raw on Claude,
+# the JSON envelope on a Copilot surface).
 _has_rows=0
 case "${NL}${_assign}" in *"${NL}${PART} "*) _has_rows=1 ;; esac
 if [ "${PART}" -ne 1 ] && [ "${_has_rows}" -eq 0 ] && { [ -z "${NOTICE}" ] || [ "${PART}" -ne "${_shard}" ]; }; then
 	exit 0
 fi
 
-part_header "${PART}"
-printf '\n'
-IFS="${NL}"
-for _row in ${_assign}; do
-	IFS="${_oifs}"
-	case "${_row}" in
-	"${PART} "*) ;;
-	*)
-		IFS="${NL}"
-		continue
-		;;
-	esac
-	_rest="${_row#* }"
-	_skip="${_rest%% *}"
-	_rest="${_rest#* }"
-	f="${_rest#* }"
-	if [ "${_skip}" -eq 1 ]; then
-		tail -n +2 "${f}"
-	else
-		cat "${f}"
-	fi
-	printf '\n\n'
+emit_part() {
+	part_header "${PART}"
+	printf '\n'
 	IFS="${NL}"
-done
-IFS="${_oifs}"
+	for _row in ${_assign}; do
+		IFS="${_oifs}"
+		case "${_row}" in
+		"${PART} "*) ;;
+		*)
+			IFS="${NL}"
+			continue
+			;;
+		esac
+		_rest="${_row#* }"
+		_skip="${_rest%% *}"
+		_rest="${_rest#* }"
+		f="${_rest#* }"
+		if [ "${_skip}" -eq 1 ]; then
+			tail -n +2 "${f}"
+		else
+			cat "${f}"
+		fi
+		printf '\n\n'
+		IFS="${NL}"
+	done
+	IFS="${_oifs}"
 
-if [ -n "${NOTICE}" ] && [ "${PART}" -eq "${_shard}" ]; then
-	printf '%s\n' "${NOTICE}"
-	# stdout is context and therefore rationed; stderr is not. The gate and
-	# scripts/rules-preview.sh read the untruncated list from here, so neither
-	# has to re-derive the budget the hook just applied.
-	printf 'steer-inject: dropped(%s):%s\n' "${_dropped_n}" "${_dropped_all}" >&2
-fi
+	if [ -n "${NOTICE}" ] && [ "${PART}" -eq "${_shard}" ]; then
+		printf '%s\n' "${NOTICE}"
+		# stdout is context and therefore rationed; stderr is not. The gate and
+		# scripts/rules-preview.sh read the untruncated list from here, so neither
+		# has to re-derive the budget the hook just applied.
+		printf 'steer-inject: dropped(%s):%s\n' "${_dropped_n}" "${_dropped_all}" >&2
+	fi
+}
+
+emit_part | emit_context
 
 exit 0

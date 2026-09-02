@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **The live ruleset now reaches GitHub Copilot — CLI and VS Code — through the
+  SessionStart hook, so `/steer:sync` is no longer what keeps Copilot teammates
+  on current rules.** The plugin, its docs and the scaffold manifest all said
+  Copilot "has no context-injecting SessionStart hook" and VS Code "no hook
+  mechanism at all". Both are stale: verified 2026-09-02 against the current
+  GitHub and VS Code docs and by spike (Copilot CLI 1.0.82, VS Code 1.135),
+  Copilot's SessionStart injects context from a **JSON object** on stdout — the
+  CLI reads a top-level `additionalContext`, Copilot Chat in VS Code reads
+  `hookSpecificOutput.additionalContext`, and both discard raw text as
+  "non-JSON output". There is no practical size cap there (120 K characters
+  arrived whole; 10 MiB documented), but the **last** hook returning context
+  wins, so the parted Claude delivery must not be mirrored. `inject-standards.sh`
+  is now host-aware (`steer_hook_host` in `lib/json.sh`): under
+  `STEER_HOOK_TARGET=copilot`, or on the payload shape VS Code Copilot Chat sends
+  (snake_case SessionStart with `model` and `timestamp` and no
+  `permission_mode`), part 1 emits the **whole eligible ruleset as one JSON
+  object carrying both keys** (`steer_json_string`, a lossless POSIX-awk
+  encoder) and every other part stays silent; a Claude Code payload
+  (`permission_mode`) and any unknown shape keep today's raw parted output, so
+  a mis-read can only ever fall back to current behaviour. Scope (`inject-when`),
+  knowledge-work mode and the missing-rules fallback banner all ride inside the
+  envelope. `gen_copilot_hooks.py` ports the injector into `copilot-hooks.json`
+  once, under the camelCase `sessionStart` event the CLI honours a top-level
+  `additionalContext` for, with no matcher and no part arguments; VS Code needs
+  nothing in that manifest because it detects steer as a Claude-format plugin
+  and already runs `hooks/hooks.json` — which also means the `PreToolUse` gates
+  have been live in VS Code all along. `.github/copilot-instructions.md` stays,
+  as the fallback for the Copilot cloud agent and code review, which load no
+  plugins. Docs, the scaffold `MANIFEST.md`, the Copilot plugin and marketplace
+  descriptions and the generator docstring say the same. (#513)
 - **Fixed: the always-on ruleset was never reaching sessions.** Claude Code caps
   one hook command's stdout at **10,000 characters** and silently replaces a
   longer payload with an "Output too large … saved to" pointer while the hook

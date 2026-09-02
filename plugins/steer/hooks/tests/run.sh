@@ -3169,5 +3169,91 @@ for rf in "${PLUGIN}"/rules/*.md; do
 		bad "inject real: $(basename "${rf}") heading not delivered: ${rl}"
 done
 
+# ----- inject-standards.sh: the Copilot surfaces get ONE JSON envelope (#513) -----
+# Copilot's SessionStart injects context only from a JSON object on stdout — the
+# CLI reads a top-level `additionalContext`, VS Code `hookSpecificOutput.…` —
+# and the LAST hook returning context wins, so the parted Claude delivery must
+# not be mirrored: part 1 carries the whole eligible ruleset, every other part
+# stays silent. The CLI arrives via STEER_HOOK_TARGET=copilot (copilot-hooks.json);
+# VS Code Copilot Chat runs the Claude hooks.json as-is and is recognised from its
+# payload shape (snake_case SessionStart with "model" + "timestamp" and no
+# "permission_mode"). A Claude payload keeps the raw parted output.
+CP_REPO="$(new_repo inject-copilot)"
+mkdir -p "${CP_REPO}/infra" "${CP_REPO}/apps" "${CP_REPO}/spec"
+printf 'system: github\n' >"${CP_REPO}/spec/tracker.md"
+cp_vscode_json() { # <cwd>  -> the payload VS Code Copilot Chat sends (observed 1.135)
+	printf '{"timestamp":"2026-09-02T16:03:56.200Z","hook_event_name":"SessionStart","session_id":"s","transcript_path":"/t","source":"new","model":"auto","cwd":"%s"}' "$1"
+}
+cp_cli_json() { # <cwd>  -> the Copilot CLI's camelCase payload
+	printf '{"sessionId":"s","timestamp":1788363641659,"cwd":"%s","source":"new"}' "$1"
+}
+cp_claude_json() { # <cwd>  -> a Claude Code payload (carries permission_mode)
+	printf '{"session_id":"s","transcript_path":"/t","cwd":"%s","permission_mode":"default","hook_event_name":"SessionStart","source":"startup"}' "$1"
+}
+# JSON envelope shape: exactly one object opening with the top-level key and
+# carrying the nested VS Code key; a strict parser confirms it where one exists.
+assert_envelope() { # <label> <out>
+	case "$2" in
+	'{"additionalContext":"'*'"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"'*'"}}') ok ;;
+	*) bad "$1 (expected the two-key envelope, got: $(printf '%s' "$2" | head -c 160))" ;;
+	esac
+	if command -v python3 >/dev/null 2>&1; then
+		printf '%s' "$2" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["additionalContext"]==d["hookSpecificOutput"]["additionalContext"]' 2>/dev/null &&
+			ok || bad "$1 (envelope is not valid JSON with equal halves)"
+	fi
+}
+# (a) Copilot CLI target: one envelope, whole ruleset, no part arguments needed.
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+assert_rc "inject copilot: CLI target exits 0" "$(last_rc)" 0
+assert_envelope "inject copilot: CLI target emits the JSON envelope" "${out}"
+assert_has "inject copilot: CLI envelope carries the first rule" "${out}" 'You are the router'
+assert_has "inject copilot: CLI envelope carries the last rule" "${out}" 'End-of-session checklist'
+assert_has "inject copilot: CLI envelope carries the scoped issue-first rule" "${out}" 'Issue-first (GitHub-adopted repos)'
+assert_has "inject copilot: refresh hint names the Copilot update path" "${out}" 'copilot plugin update steer'
+printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
+printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
+# (b) Under the copilot target, every part but 1 is silent — even when hooks.json's
+# `k N` arguments are passed through (VS Code runs all nine registrations).
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 9 2>/dev/null)"
+assert_empty "inject copilot: part 2 of 9 is silent on a Copilot surface" "${out2}"
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 9 9 2>/dev/null)"
+assert_empty "inject copilot: part 9 of 9 is silent on a Copilot surface" "${out2}"
+# (c) VS Code Copilot Chat payload, no target variable: recognised from its shape,
+# part 1 of 9 emits the same envelope the CLI gets.
+out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+assert_envelope "inject copilot: VS Code payload is recognised without STEER_HOOK_TARGET" "${out2}"
+assert_eq "inject copilot: VS Code and CLI envelopes are byte-identical" "${out2}" "${out}"
+# (d) Fail-safe: a Claude payload (permission_mode) stays raw and parted; so does a
+# payload of unknown shape (the CLI's camelCase form without the target variable).
+out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: Claude payload must stay raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
+assert_has "inject copilot: Claude payload keeps the parted header" "${out}" 'part 1/9'
+assert_has "inject copilot: Claude payload keeps the Claude refresh hint" "${out}" '/plugin update steer@e22-plugins'
+out="$(run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: unknown payload shape must default to Claude raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
+# (e) Knowledge-work folder on a Copilot surface: still the envelope, still lean.
+CP_KNOW="${WORK}/inject-copilot-know"
+mkdir -p "${CP_KNOW}"
+printf 'notes\n' >"${CP_KNOW}/README.md"
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_KNOW}")")"
+assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out}"
+assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
+printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
+# (f) Missing rules dir on a Copilot surface: the fallback banner is still delivered
+# — inside the envelope, so it is not discarded as non-JSON.
+out="$(ENV="STEER_HOOK_TARGET=copilot CLAUDE_PLUGIN_ROOT=${IF_NORULES}" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+assert_envelope "inject copilot: missing rules dir — banner arrives in the envelope" "${out}"
+assert_has "inject copilot: missing rules dir — banner text present" "${out}" 'rules directory was not found'
+# (g) The generated Copilot manifest registers the injector once, under the
+# camelCase event, with no part arguments and the copilot target.
+CP_MANIFEST="$(tr -d '\\' <"${HOOKS}/copilot-hooks.json")"
+printf '%s' "${CP_MANIFEST}" | grep -q '"sessionStart"' && ok || bad "copilot-hooks.json: injector must be registered under camelCase sessionStart"
+[ "$(printf '%s' "${CP_MANIFEST}" | grep -o 'inject-standards.sh"' | wc -l | tr -d ' ')" -eq 2 ] && ok ||
+	bad "copilot-hooks.json: injector must appear exactly once (guard + invocation)"
+printf '%s' "${CP_MANIFEST}" | grep -q 'inject-standards.sh" [0-9]' && bad "copilot-hooks.json: injector must carry no part arguments" || ok
+printf '%s' "${CP_MANIFEST}" | grep -q 'STEER_HOOK_TARGET=copilot sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh"' && ok ||
+	bad "copilot-hooks.json: injector must run under STEER_HOOK_TARGET=copilot"
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

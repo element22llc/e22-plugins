@@ -1,6 +1,13 @@
 {
   "version": 1,
   "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 inject-standards.sh gate skipped\" >&2; fi",
+        "timeoutSec": 10
+      }
+    ],
     "PreToolUse": [
       {
         "type": "command",
