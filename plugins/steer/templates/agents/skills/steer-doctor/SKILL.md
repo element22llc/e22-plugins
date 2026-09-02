@@ -164,7 +164,8 @@ commands).
     **CLI / IDE** development, WSL2 is the recommended alternative: in elevated
     PowerShell run `wsl --install`, reboot, then re-run everything *inside* WSL2.
     Both are GUI/host steps — hand them over, don't automate. Full matrix: the
-    Windows setup page in the docs.
+    Windows setup page in the docs
+    (<https://ai.element-22.com/getting-started/windows-setup/>).
 
 ## 4. Re-scan and confirm
 

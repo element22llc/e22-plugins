@@ -87,8 +87,9 @@ the human's), when the action is gated, or when no real command performs it.
 ## Phase 0 — Locate the spine
 
 If there is no `/spec` spine, there is nothing to reconstruct: the single
-recommended action is to **bootstrap** — `/steer:init` (greenfield) or `/steer:adopt`
-(existing "vibe-coded" code). Say which and stop. Don't run the rest.
+recommended action is to **bootstrap** — `/steer:setup`, which detects whether
+this is greenfield (`init`) or existing "vibe-coded" code (`adopt`) and routes.
+Say so and stop. Don't run the rest.
 
 **Polyrepo.** Phase 1's snapshot helper reports `- polyrepo role:` next to the
 spine state; read the two together. In a **member**, the spine is partial by design — resolve the product spine
