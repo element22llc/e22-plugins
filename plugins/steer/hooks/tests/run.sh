@@ -3264,5 +3264,96 @@ printf '%s' "${CP_MANIFEST}" | grep -q 'inject-standards.sh" [0-9]' && bad "copi
 printf '%s' "${CP_MANIFEST}" | grep -q 'STEER_HOOK_TARGET=copilot sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh"' && ok ||
 	bad "copilot-hooks.json: injector must run under STEER_HOOK_TARGET=copilot"
 
+# ---------------------------------------------------------------------------
+# check-comment-density.sh (PostToolUse) — flags a just-written source/config
+# file whose comment lines exceed a third of its non-blank lines, once per file
+# per session. Reads the file from disk; additionalContext only, never blocks.
+# ---------------------------------------------------------------------------
+RCD="$(new_repo repoCommentDensity)"
+mkdir -p "${RCD}/src"
+gen_lines() { # <count> <printf-format>  -> <count> lines, %s = index
+	_i=0
+	while [ "${_i}" -lt "$1" ]; do
+		# shellcheck disable=SC2059  # the format string is the point
+		printf "$2\n" "${_i}"
+		_i=$((_i + 1))
+	done
+}
+# (a) 16 comment + 8 code lines -> notice carrying the ratio, on PostToolUse.
+{
+	gen_lines 16 '// step %s'
+	gen_lines 8 'const v%s = %s;'
+} >"${RCD}/src/dense.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
+assert_ctx "comment-density: dense ts write flagged" "${out}"
+assert_has "comment-density: notice carries the ratio" "${out}" '66% comment lines (16 of 24'
+assert_has "comment-density: notice is PostToolUse" "${out}" '"hookEventName":"PostToolUse"'
+assert_rc "comment-density: never blocks" "$(last_rc)" 0
+# (b) same file, same session -> silent (once per file per session).
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
+assert_empty "comment-density: repeat write same session silent" "${out}"
+# (c) a new session re-flags the same file.
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD2 src/dense.ts 'x')")"
+assert_ctx "comment-density: new session re-flags" "${out}"
+# (d) exactly a third is not "more than a third" -> silent.
+{
+	gen_lines 8 '// note %s'
+	gen_lines 16 'const w%s = %s;'
+} >"${RCD}/src/third.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD3 src/third.ts 'x')")"
+assert_empty "comment-density: one third exactly silent" "${out}"
+# (e) block-comment bodies (`/*`, ` *`) count as comment lines.
+{
+	printf '/**\n'
+	gen_lines 14 ' * line %s'
+	printf ' */\n'
+	gen_lines 6 'let b%s = %s;'
+} >"${RCD}/src/block.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD4 src/block.ts 'x')")"
+assert_ctx "comment-density: block comment counted" "${out}"
+# (f) under 20 non-blank lines is exempt, even when all comments.
+gen_lines 19 '# only %s' >"${RCD}/src/short.py"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD5 src/short.py 'x')")"
+assert_empty "comment-density: short file exempt" "${out}"
+# (g) hash style: a `#` inside a string is not a comment.
+gen_lines 24 'tag%s = "# not a comment"' >"${RCD}/src/strings.py"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD6 src/strings.py 'x')")"
+assert_empty "comment-density: hash inside string not counted" "${out}"
+{
+	gen_lines 14 '# note %s'
+	gen_lines 7 'x%s = %s'
+} >"${RCD}/src/dense.py"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD6 src/dense.py 'x')")"
+assert_has "comment-density: python leading hash counted" "${out}" '(14 of 21'
+# (h) config counts too: a mise.toml essay is flagged like source.
+{
+	gen_lines 20 '# rationale %s'
+	printf '[tools]\n'
+	gen_lines 5 'tool%s = "latest"'
+} >"${RCD}/mise.toml"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD7 mise.toml 'x')")"
+assert_ctx "comment-density: toml config flagged" "${out}"
+# (i) prose is out of scope even when every line starts with `#`.
+gen_lines 30 '# heading %s' >"${RCD}/NOTES.md"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD8 NOTES.md 'x')")"
+assert_empty "comment-density: markdown skipped" "${out}"
+# (i2) dependabot.yml is exempt: its per-stack blocks are commented code by design.
+mkdir -p "${RCD}/.github"
+cp "${RCD}/mise.toml" "${RCD}/.github/dependabot.yml"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD8 .github/dependabot.yml 'x')")"
+assert_empty "comment-density: dependabot.yml exempt" "${out}"
+# (j) the plugin's own source repo is exempt.
+RCDP="$(new_repo repoCommentDensityPlugin)"
+mkdir -p "${RCDP}/.claude-plugin" "${RCDP}/hooks"
+cp "${RCD}/src/dense.py" "${RCDP}/hooks/x.py"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCDP}" sCD9 hooks/x.py 'x')")"
+assert_empty "comment-density: plugin repo exempt" "${out}"
+# (k) target missing on disk (a failed write) -> silent.
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD10 src/nope.ts 'x')")"
+assert_empty "comment-density: missing file silent" "${out}"
+# (l) hooks.json registers it under PostToolUse with the sh prefix.
+tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh"' && ok ||
+	bad "hooks.json: check-comment-density.sh must be registered with the sh prefix"
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

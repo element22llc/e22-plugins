@@ -1,68 +1,31 @@
-# On-demand Dockerfile reference — NOT installed at bootstrap. It is instantiated
-# into `apps/<app>/Dockerfile` when the first deployable app is created
-# (`/steer:build` step 5, `/steer:adopt` Phase 10) and then adapted to that app.
-# From that point the content is the product's to own and evolve, exactly like
-# `compose.yaml`. This file is the starting point, not a managed artifact.
-#
-# Baseline: a Next.js app in a pnpm workspace, built with the repo ROOT as the
-# build context (`docker build -f apps/<app>/Dockerfile .`) so the lockfile and
-# workspace packages are in scope. Requires `output: "standalone"` and
-# `outputFileTracingRoot` (the repo root) in the app's next.config — without it
-# the runtime COPY of `.next/standalone` below has nothing to copy.
-#
-# Adapt on fork, in this order:
-#   1. Set APP to the app's directory under apps/ (the runtime CMD derives its
-#      path from APP via the ENV below — no CMD edit needed).
-#   2. Drop the `public/` COPY if the app has no `public/` dir.
-#   3. pnpm is provided by corepack, driven by the `packageManager` field the
-#      scaffold ships in the repo-root package.json — verify its placeholder was
-#      resolved to the mise-pinned pnpm (done by /steer:init or /steer:adopt) so
-#      the image uses the same pnpm major that wrote `pnpm-lock.yaml`.
-#
-# The base-image major must satisfy `policy/versions.yml` (node >= 22) — the
-# version-pin scanner and hook enforce it. Keep it in sync with `mise.toml`'s node
-# pin; a deliberately older pin needs an ADR plus `# steer:allow-pin <reason>` on
-# the FROM line.
+# Next.js (pnpm workspace) image, built from the repo ROOT: `docker build -f apps/<app>/Dockerfile .`
+# Needs `output: "standalone"` + `outputFileTracingRoot` in next.config; set APP on
+# instantiation. Docs: templates/docker/README.md (base-image pinning rules included).
 
 ARG APP=web
 
-# ---- build: fetch deps (cached on the lockfile), install, compile the app ----
-# Major-only tag; confirm current stable major on adoption (must stay >= the
-# policy/versions.yml node floor).
 FROM node:24-slim AS build
 ARG APP
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH
 RUN corepack enable
 WORKDIR /repo
-# Fetch to the pnpm store from the lockfile ALONE, so this layer stays cached
-# until dependencies change — not on every source edit. Needs no package.json
-# or workspace manifests, so it is robust whether or not the repo has packages/.
+# Lockfile alone first, so the store layer stays cached until dependencies change.
 COPY pnpm-lock.yaml ./
 RUN pnpm fetch
-# Now bring in the full workspace; install resolves offline from the store.
 COPY . .
 RUN pnpm install --frozen-lockfile --offline
 RUN pnpm --filter "./apps/${APP}" build
 
-# ---- runtime: slim, non-root, Next.js standalone server ----
-# Major-only tag; confirm current stable major on adoption (keep in sync with
-# the build stage above).
 FROM node:24-slim AS runtime
 ARG APP
-# Persist APP into the runtime env: ARG is build-time only, and the CMD below
-# resolves ${APP} when the container starts.
 ENV APP=${APP}
 ENV NODE_ENV=production
 WORKDIR /app
-# `output: "standalone"` bundles a minimal server + the traced node_modules.
 COPY --from=build /repo/apps/${APP}/.next/standalone ./
 COPY --from=build /repo/apps/${APP}/.next/static ./apps/${APP}/.next/static
 # Drop the next line if the app has no public/ directory.
 COPY --from=build /repo/apps/${APP}/public ./apps/${APP}/public
 USER node
 EXPOSE 3000
-# The monorepo standalone server is launched by path, derived from APP so an
-# instantiated copy launches the right app without editing this line. `exec`
-# replaces the shell with node as PID 1, so SIGTERM still reaches node directly
-# (graceful shutdown on ECS).
+# `exec` makes node PID 1 so SIGTERM reaches it (graceful shutdown on ECS).
 CMD ["sh", "-c", "exec node \"apps/${APP}/server.js\""]

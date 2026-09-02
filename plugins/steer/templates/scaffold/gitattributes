@@ -1,14 +1,5 @@
-# LINE ENDINGS — this repo is LF, on every contributor's platform.
-#
-# Without this, `core.autocrlf=true` (the Git for Windows default) checks the
-# repo out with CRLF. A CRLF shell script does not warn, it fails to PARSE
-# (`syntax error near unexpected token $'{\r'`), which takes out
-# `scripts/*.sh` and every CI step that runs them; CRLF also makes a Docker
-# image's entrypoint unrunnable and shows every line of a file as changed the
-# first time a Linux contributor touches it.
-#
-# `text=auto eol=lf` normalizes to LF in the index AND on checkout, regardless
-# of the contributor's core.autocrlf setting.
+# LF everywhere, regardless of core.autocrlf — CRLF breaks sh scripts and Docker entrypoints.
+# Rationale: /steer:reference conventions -> "Windows: use WSL".
 * text=auto eol=lf
 
 *.sh   text eol=lf
@@ -19,7 +10,7 @@
 *.toml text eol=lf
 *.json text eol=lf
 
-# Binaries must never be newline-normalized.
+# Binaries — never newline-normalized
 *.png binary
 *.jpg binary
 *.gif binary
@@ -28,13 +19,10 @@
 *.woff  binary
 *.woff2 binary
 
-# Lockfiles are generated artifacts — keep them out of diffs.
+# Lockfiles — generated; keep out of diffs
 pnpm-lock.yaml -diff
 uv.lock        -diff
 mise.lock      -diff
 
-# CHANGELOG is append-only: every PR adds bullets under `### [Unreleased]`, so
-# concurrent PRs touch the same lines and collide. The built-in `union` merge
-# driver resolves this by keeping BOTH sides' added lines instead of writing
-# conflict markers — honored by local merge/rebase and by GitHub's merge button.
+# Concurrent PRs all append under `### [Unreleased]`; union keeps both sides instead of conflict markers
 CHANGELOG.md merge=union

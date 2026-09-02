@@ -53,6 +53,13 @@ so in the report.
    against the profile, not the core list. Do **not** flag a missing `test` or `lint`
    task: per the Stack rule those live in `package.json` (Node) or the Python
    toolchain, and a `mise` task only ever delegates to them.
+10. **Comment noise** — comments that restate the code or narrate steps; banner
+    and divider comments; commented-out code; task or history narration; doc
+    comments on internals; rationale essays inline in `mise.toml`, `compose.yaml`,
+    Dockerfiles or CI instead of the reference prose / `ARCHITECTURE.md`. Cite
+    the densest files (comment lines above a third of the file — the write-time
+    hook's threshold), not every line; the fix is `/simplify`-class cleanup, so
+    route it there rather than listing lines.
 
 **Out of scope of every dimension** — correctness bugs, security
 vulnerabilities, and mechanical cleanup are delegated, never re-run by the

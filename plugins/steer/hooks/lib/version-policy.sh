@@ -1,12 +1,7 @@
 # shellcheck shell=sh
-# steer helper — read + apply the deterministic version-pin policy
-# (policy/versions.yml). Shared by the interactive hook (check-version-pins.sh)
-# and the CI scanner (scan-version-pins.sh) so both enforce ONE source of truth,
-# identically, with no network call and no jq dependency.
-#
-# The policy file is intentionally a tiny, fixed-shape YAML (2-space product
-# blocks, 4-space scalar fields) so a POSIX awk parse is reliable — this is NOT a
-# general YAML parser.
+# steer helper — read + apply the version-pin policy (policy/versions.yml); sourced by the hook and the CI scanner.
+# Not a general YAML parser: the policy file is fixed-shape (2-space product blocks, 4-space scalar fields).
+# Rationale: /steer:reference conventions -> "Enforcement: the version-pin floor".
 
 # steer_ver_num <maj[.min]> — comparable integer (major*1000 + minor).
 steer_ver_num() {
@@ -23,13 +18,12 @@ steer_ver_num() {
 	printf '%d' "$((_maj * 1000 + _min))"
 }
 
-# steer_policy_has <file> <product> — true if the product has a policy block.
+# steer_policy_has <file> <product>
 steer_policy_has() {
 	grep -qE "^  ${2}:[[:space:]]*(#.*)?$" "$1" 2>/dev/null
 }
 
-# steer_policy_field <file> <product> <field> — scalar field value (quotes, spaces,
-# and trailing comments stripped). Empty if absent.
+# steer_policy_field <file> <product> <field> — scalar value; empty if absent.
 steer_policy_field() {
 	awk -v p="$2" -v k="$3" '
     $0 ~ "^  " p ":[ \t]*(#.*)?$" { inp = 1; next }
@@ -46,19 +40,12 @@ steer_policy_field() {
   ' "$1" 2>/dev/null
 }
 
-# steer_policy_denied <file> <product> — space-separated denied majors (may be empty).
+# steer_policy_denied <file> <product> — space-separated denied majors.
 steer_policy_denied() {
 	steer_policy_field "$1" "$2" denied | tr -d '[]' | tr ',' ' '
 }
 
-# steer_policy_verdict <file> <product> <version> — prints one line:
-#   unknown                      product not in policy → not enforced
-#   ok                           at/above the EOL floor and not explicitly denied
-#   deny <detail>               below minimum_supported or explicitly denied
-#
-# This is a FLOOR, not a chooser: there is no advisory tier. What to pin (current
-# stable) is decided live, in-session, per the versioning rule — this only blocks
-# dead majors.
+# steer_policy_verdict <file> <product> <version> — prints `unknown` | `ok` | `deny <detail>`. A floor, not a chooser.
 steer_policy_verdict() {
 	_f="$1"
 	_p="$2"
@@ -82,9 +69,7 @@ steer_policy_verdict() {
 	printf 'ok'
 }
 
-# steer_policy_resolve <repo_root> — the policy file to use: the repo-local
-# policy/versions.yml if present (consumers may extend), else the plugin-bundled
-# default. Empty if neither exists.
+# steer_policy_resolve <repo_root> — repo-local policy/versions.yml if present, else the plugin-bundled one; empty if neither.
 steer_policy_resolve() {
 	if [ -n "$1" ] && [ -f "$1/policy/versions.yml" ]; then
 		printf '%s' "$1/policy/versions.yml"

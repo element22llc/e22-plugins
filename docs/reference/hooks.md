@@ -70,6 +70,7 @@ flowchart TD
     end
     subgraph PostToolUse
       fmt[format-on-write.sh<br/>format the just-written file]
+      cd[check-comment-density.sh<br/>comment-density notice]
     end
     subgraph Stop
       reconcile[reconcile-issue-first.sh]
@@ -116,6 +117,7 @@ notice or nothing) and stays individually testable.
 | Hook | Matcher | Role |
 | --- | --- | --- |
 | `format-on-write.sh` | `Write\|Edit\|MultiEdit` | Formats the **single file** a write just touched with the repo's **own** formatter, removing the formatting-only CI round-trip. Strictly opt-in: it runs only when the repo has declared a formatter this hook knows — a root `biome.json`/`biome.jsonc` (biome, for `.ts`/`.tsx`/`.js`/`.jsx`/`.mjs`/`.cjs`/`.json`/`.jsonc`/`.css`) or a root `pyproject.toml` (ruff, for `.py`) — and the formatter binary is already on `PATH`. No config, an unknown extension, or a missing binary → silent no-op; it never installs a tool, introduces a formatter, or sweeps the tree. Best-effort and always exits `0` (a formatter error on mid-refactor, unparseable code never fails the hook), and the write has already happened, so there is no decision to influence. Exempt in the plugin's own source repo, whose pre-commit owns formatting. Not ported to Copilot — Copilot ports only the blocking `PreToolUse` gates. |
+| `check-comment-density.sh` | `Write\|Edit\|MultiEdit` | Makes the **Code comments** rule (`08-code-comments.md`) visible at the moment it is broken: reads the just-written file from disk and, when comment lines exceed **a third** of its non-blank lines (files under 20 non-blank lines are exempt), injects an `additionalContext` notice carrying the ratio and asking for the noise to be trimmed in the touched code. Counts only a line's leading marker — `#` for shell/Python/TOML/YAML/Dockerfile/HCL, `//` and block-comment bodies for the C-family and TypeScript/JavaScript, `--` for SQL/Lua — so a `#` inside a string never counts; Markdown, JSON, HTML and unknown types are skipped, and so is `dependabot.yml`, whose per-stack blocks are commented-out code by necessity. Fires **once per file per session** (marker in `TMPDIR`), never blocks, exempt in the plugin's own source repo. Not ported to Copilot. |
 
 ## Stop
 

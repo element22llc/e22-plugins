@@ -70,23 +70,10 @@ _PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_.]*)\}")
 # consumer to merge it additively and drop unused servers. So the header must not
 # promise a refresh path, and must not forbid the hand-editing the install expects.
 HEADER_COMMENT = [
-    "// Generated from the steer plugin's .mcp.json. This copy is a starting point",
-    "// you own: merge additively into an existing file and remove servers you do",
-    "// not use. /steer:sync's agent-surface-current capability does NOT cover",
-    "// .vscode/, so nothing re-copies this file over your edits (a one-shot ledger",
-    "// migration may still amend it -- e.g. removing a retired server).",
-    "// In the plugin repo, regenerate the template with mise run gen:copilot.",
-    "//",
-    "// Model Context Protocol servers for GitHub Copilot in VS Code (Chat + Agent",
-    "// mode) and Visual Studio. Mirrors the servers the steer plugin wires into",
-    "// Claude Code (plugins/steer/.mcp.json) so a Copilot teammate gets the same",
-    "// tooling: the GitHub MCP server that /steer:tracker-sync is built around,",
-    '// and context7 for up-to-date library docs. VS Code uses the "servers" key',
-    '// (not "mcpServers"). Office-document conversion is not a server here — it',
-    "// runs on demand via the mise task: mise run convert:doc <file>.",
-    "//",
-    "// The GitHub server authenticates with a fine-grained PAT prompted once and",
-    "// stored by VS Code's secret storage. Remove any server you do not use.",
+    "// Generated from the steer plugin's .mcp.json: the MCP servers Claude Code gets,",
+    "// mirrored for Copilot in VS Code. You own this copy: merge it additively and",
+    "// drop servers you do not use; /steer:sync never rewrites .vscode/.",
+    "// Plugin repo: regenerate with `mise run gen:copilot`.",
 ]
 
 

@@ -1,137 +1,39 @@
-# mise — polyglot tool version manager
-# Install: https://mise.jdx.dev/getting-started.html
-# Activate: add `eval "$(mise activate bash)"` or equivalent to your shell rc
-#
-# Version strategy (no hand-maintained numbers in this template):
-#   - Tools below resolve to `latest`, so the template never carries stale pins.
-#   - `lockfile = true` + the committed `mise.lock` make `mise install` write the
-#     exact resolved versions into the lock. The populated lockfile is the REAL
-#     pin; CI and every machine install from it, so they always agree.
-#   - The scaffold ships NO `mise.lock` — never commit an empty placeholder (an
-#     empty/placeholder lock breaks `mise install --locked` in consumer CI). mise
-#     only writes the lock if the file already exists, so `/steer:init` /
-#     `/steer:adopt` CREATE and commit it on first run:
-#     `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`
-#     (and `cd infra && …` for each directory with a lock). `mise install` only
-#     records asset URLs for the host platform, so a lock pinned on macOS has no
-#     `linux-x64` entries and CI's `mise install --locked` fails ("No lockfile URL
-#     found … on platform linux-x64"); the `mise lock --platform` step backfills
-#     them. Add `macos-x64`/`linux-arm64`/`windows-x64` for any other platform the
-#     team uses; `linux-x64` is mandatory because CI runs there. Verify each
-#     `mise.lock` holds `[tools.<tool>."platforms.linux-x64"]` url + checksum
-#     blocks (not just versions), then commit them. Until the lock exists CI
-#     installs unlocked.
-#   - Bump intentionally later with `mise upgrade` (updates the lock); review the
-#     bump like any other change. Run /steer:reference conventions for the full rationale.
+# Toolchain pins + dev-loop tasks. Rationale: /steer:reference conventions ->
+# "Toolchain", "Standard mise tasks". No mise.lock ships; /steer:init creates it.
 
 [settings]
 lockfile = true
-# `experimental` unlocks the `[deps]` auto-install providers below (mise gates
-# them as experimental). It is a deliberate org default: the payoff is
-# lockfile-aware auto-install of workspace deps, and the blast radius is bounded
-# because the toolchain — including mise itself — is pinned via mise.lock.
-experimental = true
+experimental = true # gates the [deps] providers below
 
-# --- Auto-install workspace dependencies before any `mise run` / `mise x`.
-# Each provider is content-hashed against its lockfile and runs ONLY when stale,
-# and is active ONLY when both configured here AND its lockfile exists — so a
-# Node-only repo's [deps.uv] simply no-ops until a uv.lock appears, and vice
-# versa. This replaces a hand-rolled `install` task: you never run `pnpm install`
-# / `uv sync` by hand. Escape hatch for a single command: `mise run --no-deps …`.
 [deps.pnpm]
-auto = true # runs `pnpm install` when pnpm-lock.yaml changes (no-op without it)
+auto = true
 [deps.uv]
-auto = true # runs `uv sync` when uv.lock changes (no-op without it)
+auto = true
 
 [tools]
-# `latest` + the lockfile means you never edit versions here by hand.
-# Backends must be cross-platform: pick one whose binaries exist for BOTH macOS
-# and Linux. The mise registry default is not always safe — e.g. plain `pnpm`
-# maps to `aqua:pnpm/pnpm`, which has no valid macOS asset, so we pin `npm:pnpm`
-# explicitly. When adding a tool, verify `mise install` works on macOS and Linux
-# (CI runs Linux) before committing.
-#
-# Two groups below: an agent-runtime baseline every repo keeps, and stack-specific
-# tools you prune to match the product.
-
-# --- Agent-runtime baseline: ALWAYS installed, never delete — even in a
-# single-language product. AI agent tooling runs packages on demand through these
-# runtimes: `npx <pkg>` (Node) and `uvx <pkg>` (Python) — e.g. the `convert:doc`
-# task below runs `uvx markitdown`, and `diagrams:render` runs via `npx`.
-# Pruning them breaks document conversion and any npx/uvx-based agent tool.
+# Agent-runtime baseline (npx/uvx tooling, convert:doc): never prune, even in a single-language repo.
 node = "latest"
 python = "latest"
-uv = "latest"                   # also the default Python package/project manager
-github-cli = "latest"           # gh — PRs, releases, CI workflow runs from the terminal
+uv = "latest"
+github-cli = "latest"
 
-# --- Stack-specific: keep what matches the product, delete the rest.
-"npm:pnpm" = "latest"                 # npm backend on purpose — aqua:pnpm/pnpm lacks macOS assets
-biome = "latest"                      # default Node linter + formatter (https://biomejs.dev)
-"aqua:koalaman/shellcheck" = "latest" # shell lint (CI gate)
-"aqua:rhysd/actionlint" = "latest"    # GitHub Actions workflow lint (CI gate)
-# ruff = "latest"               # default Python linter + formatter (https://docs.astral.sh/ruff) — uncomment for Python products
-# Coverage tooling is a project dependency, not pinned here: add pytest-cov
-# (Python) / @vitest/coverage-v8 (Node) to the app. CI reports coverage and gates
-# changed lines via `uvx diff-cover` (uv is already pinned above). Run
-# /steer:reference conventions for the coverage conventions.
+# Stack-specific: keep what matches the product, delete the rest (IaC pins live in /infra/mise.toml).
+"npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm — it has no macOS asset
+biome = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"aqua:rhysd/actionlint" = "latest"
+# ruff = "latest"   # Python products
 # go = "latest"
 # rust = "latest"
 # awscli = "latest"
 
-# Infrastructure tooling (OpenTofu + Terragrunt) is intentionally NOT pinned at
-# the repo root — it's pinned in /infra/mise.toml so only contributors who work
-# under /infra need it installed. See /infra/README.md.
-
 [env]
-# Per-worktree runtime isolation: derive a stable host-port offset + a unique
-# COMPOSE_PROJECT_NAME so parallel Claude Code worktrees of this repo don't
-# collide on Docker containers/volumes or host ports (Postgres, the dev server).
-# The primary checkout gets offset 0 (ports unchanged), so single-checkout dev
-# is unaffected. Sourced on every `mise run …`; see scripts/worktree-env.sh.
+# Per-worktree COMPOSE_PROJECT_NAME + host-port offset; non-secret project vars only.
 _.source = "scripts/worktree-env.sh"
-
-# Project-specific non-secret environment variables may go here.
-# Secrets do NOT belong in this file.
-# Use a git-ignored .env / .env.local for local secrets and SSM Parameter Store (SecureString) / Secrets Manager for deployed environments.
 
 [tasks."dev:setup"]
 description = "One-command local env: services up, schema migrated, data seeded (idempotent)"
-# The standard entry point for local dev (`mise run dev:setup`). Tasks live
-# here — not in package.json — because they orchestrate tooling outside the Node
-# workspace (Docker, DB) and must work identically for Python (uv) products.
-#
-# Baseline wired to the default stack (Postgres via compose.yaml + Drizzle).
-# Adapt on fork (/steer:init): Python products swap the pnpm calls below for
-# `uv run …`. An `infra`/`library`/`cli` repo that runs NO local backing services at
-# all may delete `compose.yaml` — and only then may it prune `docker:*`/`db:*`, since
-# the always-on worktree rules mandate `mise run docker:clean`. A repo that keeps
-# compose but has no database drops only the `db:*` tasks.
-#
-# Ordering is DECLARED, not a manual command list: `dev:setup` depends on
-# `db:seed`, which depends on `db:migrate`, which depends on `docker:up` — so the
-# whole chain runs in order (and fails fast). Never reintroduce a
-# `run = ["mise run a", "mise run b"]` chain; declare `depends` instead.
-# No-database products repoint this at `docker:up` (or drop dev:setup).
 depends = ["db:seed"]
-
-# Polyglot dev orchestration — UNCOMMENT only if this repo grows a non-Node app
-# (e.g. a Python `apps/api`, the sanctioned API split recorded as an ADR). A
-# Node-only app needs none of this: run the web app with `pnpm dev` (rule 15);
-# its `dev` script lives in apps/web/package.json, not here.
-#
-# When you DO have a second runtime, mise is the single, polyglot entry point:
-# each long-running server is its own task, and `dev` fans out over `dev:*` in
-# parallel (mise runs `depends` concurrently; add `--jobs N` for >4 servers).
-# The Python backend runs `uv run` HERE — never as a root package.json script,
-# and never duplicated across both files (rule 10-stack; run
-# /steer:reference conventions).
-# [tasks."dev:web"]
-# run = "pnpm --filter web dev"            # delegates to apps/web/package.json
-# [tasks."dev:api"]
-# run = "uv run uvicorn app.main:app --reload --port ${API_PORT:-8000}"
-# [tasks.dev]
-# description = "Run the full app locally (web + api)"
-# depends = ["dev:*"]                       # both servers in parallel
 
 [tasks."docker:up"]
 description = "Start local backing services (compose.yaml) and wait until healthy"
@@ -139,53 +41,28 @@ run = "docker compose up -d --wait"
 
 [tasks."docker:down"]
 description = "Stop this worktree's backing services (data volumes are kept)"
-# Scoped to COMPOSE_PROJECT_NAME (set per worktree by scripts/worktree-env.sh),
-# so it only stops the containers this checkout started.
 run = "docker compose down"
 
 [tasks."docker:clean"]
 description = "Tear down this worktree's services AND volumes (run before removing a worktree)"
-# Full teardown for end-of-worktree cleanup: removes this worktree's containers,
-# named volumes, and orphans — leaving no leaked Docker resources behind. Scoped
-# to this worktree's COMPOSE_PROJECT_NAME, so a sibling worktree's stack is
-# untouched. Stop any background dev server (the WEB_PORT process) separately.
 run = "docker compose down --volumes --remove-orphans"
 
 [tasks."db:migrate"]
 description = "Apply DB migrations in every workspace package that defines db:migrate"
-depends = ["docker:up"] # the database must be up before migrating
-# --if-present → no-ops until an app/package defines a db:migrate script
-# (e.g. drizzle-kit migrate). The starter app has none, so a fresh clone passes.
+depends = ["docker:up"]
 run = "pnpm --recursive --if-present run db:migrate"
 
 [tasks."db:seed"]
 description = "Seed local dev data in every workspace package that defines db:seed"
-depends = ["db:migrate"] # seed only after the schema is migrated
+depends = ["db:migrate"]
 run = "pnpm --recursive --if-present run db:seed"
 
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake. Usage: mise run convert:doc <file>"
-# Deterministic, committable conversion path for /steer:intake. Runs Microsoft
-# markitdown through the pinned `uv` (no extra tool to install — `uvx` resolves it
-# on demand). `[all]` pulls the per-format extras (mammoth/python-pptx/openpyxl/
-# pdfminer); the bare package ships none of them, so without it conversion raises
-# MissingDependency on every format above. This task is the ONLY converter steer
-# ships — the `markitdown-mcp` server it once bundled was retired (a plugin MCP
-# server starts in every session, including the vast majority that never convert
-# a document), so nothing here depends on an MCP server being present. Its output
-# gets committed as the diffable `extracted.md`. Redirect stdout to
-# capture: `mise run convert:doc spec/sources/<id>/versions/<v>/original.docx >
-# .../extracted.md`.
+# `[all]` pulls the per-format extras; without it every format raises MissingDependency.
 run = "uvx --from 'markitdown[all]' markitdown"
 
-# Opt-in (Tier 2): generate Mermaid + PNG from a LikeC4 architecture model.
-# Commented out on purpose — most repos hand-author Mermaid in
-# spec/design/architecture-diagram.md (Tier 1, no toolchain). Uncomment only once you add a
-# model under spec/design/architecture/ (*.likec4 / *.c4); LikeC4 runs on demand via
-# `pnpm dlx` (Node is already pinned), so there's no permanent dependency. `gen
-# mermaid` writes a Markdown file of Mermaid views into spec/design/ — fold it into
-# spec/design/architecture-diagram.md, the file ARCHITECTURE.md links to. See
-# `/steer:reference architecture-diagrams`.
+# Opt-in diagram renderers (LikeC4 model, D2 topology) — see /steer:reference architecture-diagrams.
 # [tasks."diagrams:render"]
 # description = "Generate Mermaid + PNG from the LikeC4 model (spec/design/architecture/)"
 # run = [
@@ -193,16 +70,6 @@ run = "uvx --from 'markitdown[all]' markitdown"
 #   "pnpm dlx likec4 export png spec/design/architecture -o spec/design",
 # ]
 
-# Opt-in (infra/service): render a D2 network/infra topology to SVG. This is a
-# SEPARATE artifact from the architecture picture above — reach for it only when you
-# need the literal deployed topology (VPCs, subnets, AZs, load balancers, gateways)
-# with cloud-vendor icons, e.g. a client-facing deployment diagram. Runs on demand via
-# `mise x` (exec, not `mise use`), so nothing is pinned in [tools] — the same
-# no-permanent-pin pattern as `diagrams:render`'s pnpm dlx and `convert:doc`'s uvx. SVG
-# is the default (PNG/PDF would pull in a headless browser). Full rationale, the .d2
-# authoring guide, and the `/infra/mise.toml` pin alternative are in
-# `/steer:reference architecture-diagrams`.
 # [tasks."diagrams:infra"]
 # description = "Render the D2 network/infra topology to SVG (spec/design/infrastructure.d2)"
 # run = "mise x d2@latest -- d2 --layout=elk spec/design/infrastructure.d2 spec/design/infrastructure.svg"
-

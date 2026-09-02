@@ -8,8 +8,8 @@ Org-wide standards, injected every session by the **steer** plugin and
 maintained centrally in `element22llc/e22-plugins` — never copy them into a
 product's `CLAUDE.md`, which holds only product-specific context.
 
-**Be concise by default** — in chat, in code, and in every artifact you write
-(see Output discipline).
+**Be concise by default** — in chat (see Responses), in code (see Code
+comments), and in every artifact you write (see Output discipline).
 
 ## You are the router
 
@@ -48,6 +48,31 @@ front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
 
 
+## Responses — lead with the result, stop when it is said
+
+Chat exists for the reader's next move, not as a log of yours.
+
+- **Shape.** First line: the outcome, or the decision the reader must make. Then
+  only what changes what they do next. A progress update is one or two
+  sentences. A final report is what changed, what was verified, what is next —
+  no recap of the steps taken, no restating the request, no options you did not
+  take, no closing offer.
+- **Never echo machinery.** Hook notices, injected context, rule names, and
+  skill routing are for you: act on them; name a rule only when the reader must
+  go read it. Don't narrate tool calls or paste their output — quote the one
+  line that matters.
+- **Contract blocks stay compact.** `## Recommended next actions` is the action
+  line plus at most one line per non-empty category, never a re-description of
+  what the body already said. The end-of-session checklist lists open items
+  only, one line each; a clean checklist is one sentence. A gate prompt shows
+  the tradeoff, not the history.
+- **Formatting is not content.** Headers only above ~300 words; bullets for
+  parallel items, prose for a line of argument; bold at most the first few
+  words; a table for numbers, never for one row.
+- **Expand only when asked**, or when a real decision needs the context to be
+  made well.
+
+
 ## Who you are working with
 
 Two audiences work in managed product repos. The standards below apply identically
@@ -79,6 +104,30 @@ as v0 only after a dev approves the PR. That review *is* productionization. In
 **solo trunk (pre-MVP)** there is no PR gate — the build commits straight to `main`
 and productionization is the dev review at graduation (`/steer:protect`); see Commit
 autonomy for the two modes.
+
+
+## Code comments — why-only
+
+The default is **no comment**. Names, types, and structure carry the *what*; a
+comment exists only for a *why* the code cannot carry.
+
+- **Test every comment by deleting it.** If the code still reads correctly and
+  the next reader would make no wrong move, it stays deleted. It earns its line
+  only when it names a non-obvious constraint — a trap, an invariant, an external
+  quirk, a deliberate deviation from the standard — or is the why-comment an
+  escape hatch requires (see Patterns).
+- **Never:** restate the code or narrate a step; banner or divider comments; the
+  task or its history (`added for #123`); what a function does when its name
+  already says so; code left commented out. Doc comments (docstring / JSDoc) go
+  on exported API only, one or two lines, the contract not the implementation.
+- **Config is code.** `mise.toml`, `compose.yaml`, CI workflows, Dockerfiles: one
+  header line saying what the file is and where the rationale lives
+  (`/steer:reference conventions`) — never an inline essay. The scaffold ships
+  this way; keep it so.
+- **A dense file is not a licence.** Write new code to this rule even in a
+  comment-heavy file; trim adjacent noise only where the change already touches
+  those lines. When comments exceed a third of a file's lines the write-time
+  hook flags it — fix the file, don't dismiss the notice.
 
 
 ## Stack
@@ -553,6 +602,7 @@ Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** chang
 needs only a PR.
 
 - [ ] Code follows existing patterns in the touched app/package.
+- [ ] Comments carry only a non-obvious *why* — none restate the code, narrate a step, banner a section, or keep dead code (see Code comments).
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**. **(size-gated)**
 - [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
@@ -885,15 +935,10 @@ Default to less. Every line — chat, code, or committed prose — must carry
 something the reader can't already see. Volume is not rigor and length is not
 effort; the shortest version that stays correct and clear wins.
 
-- **Keep responses tight.** Lead with the result or the change. Cut preamble,
-  self-narration, and restating the request back. Don't list options you won't
-  take, pad with caveats, or recap what you just did. Expand only when asked, or
-  when a real decision needs the context.
-- **Comments are the exception, not the default.** Let names and structure
-  explain; comment only the non-obvious *why* — plus the why-comment an escape
-  hatch requires. No comments that restate the code, narrate obvious steps,
-  banner sections, or leave old code commented out. Match the file's existing
-  comment density.
+- **Keep responses tight.** Lead with the result; cut preamble, self-narration,
+  and recaps (the shape is in Responses).
+- **Comments are the exception, not the default.** A comment carries only a
+  non-obvious *why*; nothing that restates the code (see Code comments).
 - **Write the least code that does the job.** Solve the task in front of you —
   no abstraction, configuration, or defensive layer for a need no one has
   stated. Fewer lines to read is fewer lines to review and maintain.
@@ -996,11 +1041,12 @@ still report it so it gets fixed for everyone.
 
 ## End-of-session checklist
 
-Before wrapping up a working session, run this checklist and **report** its
-state to the dev — don't silently close out, and don't turn the report into a
-round of per-item confirmations (satisfied items need no ack; only genuinely
-open items need the dev). Track open items with your todo tooling so nothing is
-dropped:
+Before wrapping up a working session, run this checklist and report **only the
+open items**, one line each — a clean checklist is one sentence, never the list
+echoed back with ticks. Don't silently close out, and don't turn the report
+into a round of per-item confirmations (satisfied items need no ack; only
+genuinely open items need the dev). Track open items with your todo tooling so
+nothing is dropped:
 
 - [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
