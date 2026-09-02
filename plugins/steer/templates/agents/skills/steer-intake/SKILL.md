@@ -43,13 +43,11 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
 
 1. **Require a `/spec` spine.** If `spec/` does not exist, stop and route the
    user to `/steer-setup`. Intake operates on a spine; it does not create one.
-   **A polyrepo member is not a spine** — `spec/` exists there only to hold
+   **A member is not a spine** — `spec/` exists there only to hold
    `spec/PRODUCT.md`, so the presence check alone would pass and then route
-   product-level content into the member. If `spec/PRODUCT.md` is present,
-   resolve the workspace (`workspace.path`, else the GitHub gateway) and land
-   `spec/sources/` and every product-level change **there**; if it is
-   unreachable, say so and stop rather than writing locally
-   (`/steer-reference polyrepo`).
+   product-level content into the member. When `spec/PRODUCT.md` is present,
+   resolve the workspace by the ladder in `/steer-reference polyrepo` and land
+   `spec/sources/` and every product-level change **there**.
 2. **Detect the converter and report which path you take** — silence is not
    success; name how the extraction was produced:
    - **`mise run convert:doc <file>`** — the scaffold-declared CLI task

@@ -218,7 +218,7 @@ narrow slice**, each for a different transport:
   serves, and the limit is prose-enforced:** `allowed-tools` matches a command-string
   prefix, so it cannot distinguish a field query from `mergePullRequest` or
   `createBranchProtectionRule`, which GraphQL expresses just as well. The gateway issues
-  only the operations its `OPERATIONS.md` enumerates, and nothing checks that
+  only the operations its `OPERATIONS*.md` catalogue files enumerate, and nothing checks that
   mechanically. **Nor does anything stop the grant itself from being widened.**
   `check_standards.py` does ban `Bash(gh api:*)` — but only in the scaffold's
   `.claude/settings.json` (the forbidden-form loop runs inside the block scoped to that

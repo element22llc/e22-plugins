@@ -27,7 +27,8 @@ user-invocable: false
 # reads/writes and native blocked-by edges have no `gh issue` subcommand, so GraphQL is
 # the transport to reach for on `field-get`, `field-set`, `link-blocked-by` and
 # `bootstrap-fields` — all four squarely inside this gateway's declared
-# tracker-metadata boundary (OPERATIONS.md). The fallbacks those ops document are real
+# tracker-metadata boundary (OPERATIONS-PLANNING/-LINKS.md). The fallbacks those ops
+# document are real
 # but neither substitutes cleanly: the REST endpoints sit outside every granted prefix
 # (so they prompt), and the MCP github tools are granted but expose issue fields only
 # where the org enabled them. Withholding GraphQL made `field-get` prompt on a direct
@@ -38,7 +39,7 @@ user-invocable: false
 # tool-enforced: allowed-tools matches a command-string prefix, so it cannot
 # distinguish a Projects field query from `mergePullRequest` or
 # `createBranchProtectionRule`, which GraphQL can also express. This gateway
-# therefore issues ONLY the queries and mutations OPERATIONS.md enumerates; a
+# therefore issues ONLY the queries and mutations the OPERATIONS files enumerate; a
 # delivery-surface mutation is out of bounds here even though the grant would match
 # it, and belongs to /steer:work or /steer:protect under their own gating. Never
 # widen this to `Bash(gh api:*)`. check_standards.py bans that form in the SCAFFOLD's
@@ -129,8 +130,8 @@ shell escaping. Detect capability **in this order, every run**:
    on its absence and never create a local copy. Issues are filed against the
    tracker's declared `repository:`, which in a member is not this repo — so the
    cross-repo closing-ref rule in `OPERATIONS.md` applies (`Refs owner/repo#N`
-   plus an explicit `close`). If the workspace is unreachable by either route,
-   say the spine is unreachable and stop (`/steer:reference polyrepo`).
+   plus an explicit `close`). Resolve it by the ladder in
+   `/steer:reference polyrepo`.
 2. **Probe for GitHub MCP tools** (e.g. an issues list/get/create tool exposed by
    the github MCP server). If present → **MCP path**.
 3. **Else probe `gh auth status`.** If authenticated → **`gh` CLI path**
@@ -161,13 +162,17 @@ to `/steer:work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 Each operation is MCP-first → `gh` → manual, and reports which path it took. The
-full catalogue — `search`, `get`, `find-or-create`, `create`, `update`,
-`comment`, `set-type`, `label`, `set-milestone`, `milestone-ensure`,
-`field-get`/`field-set`, `bootstrap-fields`, `transition`, `assign`,
-`link-parent`, `link-related`, `link-pr`, `link-blocked-by`, `close`/`reopen`,
-and the cross-repo closing-ref rule — is in
-[`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md).
-**Read it before performing any operation.**
+catalogue is **split by domain, so a caller reads only the ops it performs**:
+
+| Operations | Read |
+|---|---|
+| the core lifecycle — `search`, `get`, `find-or-create`, `create`, `update`, `comment`, `label`, `transition`, `assign`, `link-pr`, `close`/`reopen` — plus the API boundary and the cross-repo closing-ref rule | [`OPERATIONS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS.md) |
+| `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields` | [`OPERATIONS-PLANNING.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS-PLANNING.md) |
+| `link-parent`, `link-related`, `link-blocked-by` | [`OPERATIONS-LINKS.md`](${CLAUDE_PLUGIN_ROOT}/skills/tracker-sync/OPERATIONS-LINKS.md) |
+
+**Read `OPERATIONS.md` before your first operation** — it carries the boundary
+that binds all three files. Read a companion **only when** you are about to
+perform an op it lists; never all three by default.
 
 ## Modes
 

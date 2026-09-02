@@ -86,17 +86,14 @@ stale the moment the spec changes — regenerate to refresh.
   `adopt` from the repo state) and **stop**; there is nothing to render yet.
 - **In a polyrepo member** (`spec/PRODUCT.md` present), `spec/features/**` is
   absent **by design** — it lives once in the workspace. Resolve the workspace
-  first: read `workspace.path` from `spec/PRODUCT.md`, resolve it against this
-  repo's **primary checkout** (not a linked worktree), and read the feature from
-  **there** — saying which repo you rendered — only if `spec/workspace.yml` is
-  present at that path. Test for that manifest, not for a directory: `..`, the
-  recommended value, resolves inside a worktree to a real but empty
-  `.claude/worktrees`, and accepting it renders every feature as unspecified.
-  `Bash` is disallowed here, so the GitHub-gateway route is not available to this
-  skill: if `workspace.path` is unset, or no manifest is there, say the product
-  spine is unreachable and **stop**. Never render an absent local
-  `intent.md` as *"not specified in the spec"* — absent local intent is not "no
-  intent" (`/steer:reference polyrepo`).
+  first by the two-test ladder in `/steer:reference polyrepo` § "Resolving the
+  spine from a member", and read the feature from **there**, saying which repo
+  you rendered. **`Bash` is disallowed here, so this skill has only that
+  ladder's step 1** — the local `workspace.path` + `spec/workspace.yml` test; the
+  GitHub-gateway route in step 2 is unavailable. If `workspace.path` is unset or
+  no manifest is there, say the product spine is unreachable and **stop**. Never
+  render an absent local `intent.md` as *"not specified in the spec"* — absent
+  local intent is not "no intent".
 - No feature id given, or it's ambiguous → list the features under
   `spec/features/*/` (the workspace's, in a member) with their `Status:` and stop
   there, naming the ids so the caller can re-run with one. **Don't guess, and

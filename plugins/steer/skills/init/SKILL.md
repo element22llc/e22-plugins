@@ -150,48 +150,18 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    [`SCAFFOLD.md`](${CLAUDE_PLUGIN_ROOT}/skills/init/SCAFFOLD.md) — read it
    before writing anything. Copy-and-adapt, never clobber.
 
-3. **Interview to fill the spine.** Ask the dev (or PO) the minimum to populate
-   `vision.md`, `users.md`, `glossary.md`, the README placeholders, **and
-   `/spec/tracker.md`** (which issue tracker does this product use — Jira,
-   GitHub Issues, Linear, Azure DevOps, other, none yet — and its
-   project/reference format). **Ask, don't invent**; route product-level
-   ambiguity to `vision.md` → `## Open questions` rather than guessing.
-   Confirm or override the stack defaults (the always-on Stack rules). A
-   PO-driven idea→app flow runs through `/steer:build` instead.
-   - **In a polyrepo member** (step 2 resolved the role): `vision.md`,
-     `users.md`, `glossary.md` and `/spec/tracker.md` are the **workspace's** —
-     step 2 skipped creating them, so do not interview for them and never write
-     them locally. Fill only the README placeholders and confirm the stack
-     defaults; product-level ambiguity goes to the workspace's `vision.md`.
-   - **If the tracker is GitHub Issues**, run `/steer:issues bootstrap-labels` to
-     create the `source:*` / `needs:*` / `risk:*` taxonomy (GitHub silently drops
-     a form label that doesn't exist), then `/steer:tracker-sync bootstrap-fields`
-     to verify the native **Priority/Effort/date** issue fields are available (it
-     reports a capability gap or option mismatch; it never fabricates org config).
-     **In a member, skip both** — the tracker is declared once in the workspace,
-     which bootstraps it against the tracker repo.
-4. **Record the initial stack as the first ADR.** The stack choice is usually
-   the first decision worth an ADR — run `/steer:adr`. **Any deviation from the
-   defaults** (e.g. a standalone Python/Typer CLI instead of Next.js/TS, or
-   Python + FastAPI instead of the in-Next backend) **must** get one either way.
-   **Status follows who decided.** When the dev *explicitly* chooses the stack in
-   this interactive setup, that is a real forward decision: author the ADR as
-   **`Accepted`** with the dev as the named **Decider** and today's date — and
-   stamp the ratification fields the template carries, `> Ratified by:` (the dev),
-   `> Ratified at:` (today) and `> Ratified via: in-session`. Every `Accepted` ADR
-   carries them (rule `61-gate-prompts`; `/steer:next` reports one that doesn't as
-   incomplete), and the channel stamp is what makes an in-session decision
-   auditable. When
-   Claude merely *recommended* a default and the dev made no explicit choice,
-   leave it **`Proposed`** until a named decider accepts it — generic
-   bootstrap-PR approval does **not** ratify a `Proposed` ADR. (Contrast
-   **`/steer:adopt`**, which only *observes* existing code and so always
-   authors `Proposed` ADRs.) Now that the stack is decided, **fill
-   `ARCHITECTURE.md`** — the stack table from `package.json` / `mise.toml` /
-   `compose.yaml`, the apps/packages map from the scaffold layout, and the
-   cross-cutting concerns from the ADRs just authored. Don't leave the
-   placeholders; a stub `ARCHITECTURE.md` is the same drift the app guide
-   suffers when it's left unfilled.
+3. **Interview to fill the spine.** Populate `vision.md`, `users.md`,
+   `glossary.md`, the README placeholders and `/spec/tracker.md` from a minimum
+   interview — **ask, don't invent**. The question set, the member-repo skips and
+   the GitHub tracker bootstraps are in
+   [`INTERVIEW.md`](${CLAUDE_PLUGIN_ROOT}/skills/init/INTERVIEW.md) — **read it
+   here and follow it**. A PO-driven idea→app flow runs through `/steer:build`
+   instead.
+4. **Record the initial stack as the first ADR** — run `/steer:adr`, then fill
+   `ARCHITECTURE.md`. Whether that ADR is `Accepted` (the dev explicitly chose,
+   with the `61-gate-prompts` ratification stamps) or `Proposed` (Claude merely
+   recommended a default) follows who decided — the rule, and the
+   `ARCHITECTURE.md` fields to fill, are in `INTERVIEW.md` step 4.
 5. **Pin the toolchain and lock the workspace — for every CI/dev platform.** If
    `mise` (or Docker) isn't installed yet, run **`/steer:doctor`** first. Run
    the canonical pin procedure — `/steer:reference conventions` → "Toolchain:
@@ -216,11 +186,8 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
 7. **Hand off.** Seed the first `/spec/history/` entry — one file,
    `YYYY-MM-DD-HHMM-repo-bootstrapped.md`, from `templates/spec/history-entry.md`
    (what, why,
-   who asked, the bootstrap PR) — **except in a polyrepo member**, where
-   the action history is the workspace's: write the entry **there** if
-   `workspace.path` resolves, and otherwise record the bootstrap in the PR
-   description and say the workspace ledger still needs the entry. Never create a
-   local `spec/history/` in a member (`/steer:reference polyrepo`).
+   who asked, the bootstrap PR) — in a member, to the workspace's ledger per
+   rule `32-living-docs`.
    **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory) so a

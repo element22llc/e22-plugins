@@ -389,7 +389,8 @@ update (or propose) the owning artifact **in the same change as the code**:
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
 and `/spec/history/` are the **workspace's** — write them there via
-`workspace.path`, else note it in the PR description; never a local copy.
+`workspace.path`; if it does not resolve, record the event in the PR description
+**and say the workspace ledger still needs the entry**. Never a local copy.
 `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
 
 PO-facing artifacts (intent, vision, app guide) stay plain-language;

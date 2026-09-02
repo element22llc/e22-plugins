@@ -7,6 +7,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed: polyrepo boilerplate collapsed to the always-on rules that already
+  carry it.** Twenty-one sites across eighteen files in seventeen skills
+  re-stated invariants the injected rules already deliver — the member-repo
+  history-entry fallback (`32-living-docs`), the spine-resolution ladder
+  (`30-spec-workflow`), the workspace tracker (`35-issue-tracker`), the
+  no-local-spine-dir rule (`22-housekeeping`) — each in its own paraphrase, so
+  changing one rule meant hunting eighteen files and every paraphrase was a
+  drift risk. Each site now
+  keeps only its own skill-specific consequence and names the rule or the
+  `/steer:reference polyrepo` section that owns the procedure. Rule
+  `32-living-docs` absorbed the one clause the copies added that it lacked (say
+  the workspace ledger still needs the entry), so nothing was dropped.
+
+- **Changed: five oversized skill bodies moved their conditional procedure into
+  just-in-time sibling files.** `sync`, `protect`, `next`, `init` and `work` all
+  sat at 94–95% of the compaction re-attach cap, where any further edit silently
+  drops the tail of the file exactly when a long run needs it. Following the
+  pattern the cap documents: `/steer:protect`'s write path → `protect/APPLY.md`
+  (read only once the dev confirms), `/steer:next`'s Phase 2 tables →
+  `next/CLASSIFY.md`, `/steer:init`'s spine interview + first-ADR rule →
+  `init/INTERVIEW.md`, `/steer:work`'s next-action mapping →
+  `work/NEXT-ACTION.md`, and `/steer:sync`'s profile + polyrepo-role rules into
+  the existing `sync/RECONCILE.md` (now read at step 3, not step 5). All five
+  bodies now sit at 80–85% of the cap.
+
+- **Changed: `/steer:tracker-sync`'s operation catalogue is split by domain, so a
+  caller reads only the ops it performs.** `OPERATIONS.md` was a flat 13.5 KB
+  read that every tracker-touching skill took in full before a single `get`. It
+  now carries the API boundary plus the core lifecycle ops (7.4 KB), with
+  `OPERATIONS-PLANNING.md` (types, milestones, issue fields) and
+  `OPERATIONS-LINKS.md` (parent/related/blocked-by) read **only** when one of
+  their ops is actually invoked. The boundary binds all three files.
 - **One front door for bootstrap, everywhere.** `/steer:next`, `/steer:explain`
   and `/steer:roadmap` redirected an unmanaged repo straight to `/steer:init` or
   `/steer:adopt`, asking the user to pick, while the router, `intake`, `status`

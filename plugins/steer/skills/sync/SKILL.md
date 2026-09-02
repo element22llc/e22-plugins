@@ -168,41 +168,14 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    template drift) — say so rather than going silent. The stamp is an
    **optimization, not the safety mechanism**; the precondition is.
 
-   **Establish the repo profile.** Read the `CLAUDE.md` `## Profile` marker
-   (`<!-- steer:profile=… -->`); **absent → `app`** (back-compat). The back-fill
-   migration in the ledger writes `=app` when the marker is missing (idempotent —
-   it fires only while absent). The profile selects which scaffold overlay
-   steps 5–6 reconcile against (an `infra` repo reconciles the root infra
-   `mise.toml` + infra CI, never `package.json`; `compose.yaml` is core for every
-   profile, so it still reconciles unless the repo has deleted it). If the marker
-   was changed since the last sync, **offer the newly-matching overlay
-   additively** — never remove the prior profile's files (clobber-free).
-
-   **Establish the polyrepo role** from step 1's `scan-spine-state.sh` output
-   (`- polyrepo role:`) before reconciling anything under `/spec`. In a **member** (`spec/PRODUCT.md`),
-   the product-level artifacts — `vision.md`, `users.md`, `glossary.md`,
-   `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, `spec/sources/`,
-   `spec/reference/` — are absent
-   **by design**; they live once in the workspace repo (rule `22-housekeeping`). **Never reinstall them
-   here.** Reconcile only the member's own surface (scaffold, CI, `mise.toml`,
-   `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp `/spec/.version` as usual.
-   Treating a member as a damaged spine and "repairing" it recreates exactly the
-   split-brain the topology removes. In a **workspace**, reconcile the spine
-   normally but skip the app-code surface (`package.json`, `apps/`) — it owns
-   none — and reconcile the **workspace flavor** of the rest: the
-   `profiles/workspace/` `mise.toml` (member `ws:*` tasks), `compose.yaml` (an
-   `include:` list, no services of its own), the `.gitignore` member lines, and
-   `scripts/ws.sh`. A workspace bootstrapped before those shipped is *missing*
-   them, not opted out — propose them. Never regenerate the resolved
-   `include:` list, member `.gitignore` lines, or `[monorepo].config_roots` from
-   the template: they are derived from `spec/workspace.yml`, which the team owns.
-   Detail: `/steer:reference polyrepo`.
-
-   **Members sync independently.** There is no workspace mode that syncs every
-   member in one pass; run `/steer:sync` in each repo. Because the plugin version
-   is stamped per repo, members can settle on different versions — when syncing a
-   member, say which version the workspace is on if you can read it, so the drift
-   is visible rather than silent.
+   **Establish the repo profile and the polyrepo role** before anything is
+   reconciled — the `CLAUDE.md` `## Profile` marker (`<!-- steer:profile=… -->`;
+   absent → `app`) and step 1's `- polyrepo role:`. Together they select which
+   scaffold overlay steps 5–6 compare against and which `/spec` paths are
+   off-limits, so resolve them here and carry them forward. **Open
+   [`RECONCILE.md`](${CLAUDE_PLUGIN_ROOT}/skills/sync/RECONCILE.md) now** — its
+   §"What steps 4–6 may touch" carries the per-profile and per-role rules, and
+   steps 5–6 are in the same file.
 
 4. **Apply pending structural migrations.** Open the ledger at
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md`. Walk its entries
@@ -248,12 +221,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
 8. **Record and hand off.** Write a `/spec/history/` entry (what synced —
    `FROM → TARGET`, which migrations applied, which templates reconciled, which
-   capability gaps repaired — why, who asked, refs). **In a polyrepo member the
-   action history is the workspace's** (`/steer:reference polyrepo`) — write the entry
-   **there** if `workspace.path` resolves, and otherwise record the sync in the PR
-   description and say the workspace ledger still needs the entry. Never create a local
-   `spec/history/` in a member; its `/spec/.version` stamp is the durable local
-   record. Commit on `feat/sync`, then
+   capability gaps repaired — why, who asked, refs) — in a member, to the
+   workspace's ledger per rule `32-living-docs`; the member's own durable record
+   is its `/spec/.version` stamp. Commit on `feat/sync`, then
    push and open the PR
    **against `BASE`** (the branch captured in step 1) without asking, announcing
    it (Commit autonomy) — the dev's merge review of that PR is the gate. The PR base
