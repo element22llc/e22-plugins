@@ -9,6 +9,7 @@ description: >-
   /release blocks on blockers); it never bumps a version or cuts a release.
   Repo-local dev helper for e22-plugins; does not ship.
 argument-hint: "[--max-rounds N] [--severity blocker|high|all] [--dry-run]"
+disable-model-invocation: true
 allowed-tools:
   - Read
   - Write
@@ -16,6 +17,7 @@ allowed-tools:
   - Glob
   - Grep
   - Agent
+  - Workflow
   - WebFetch
   - Bash(git status*)
   - Bash(git diff*)
@@ -65,6 +67,23 @@ convergence ships as **one** PR.
 **It does not release.** No version bump, no changelog heading rename, no release
 PR. When it converges, merge its PR and run `/release` — whose Phase A should
 then pass in a single round, which is the entire point.
+
+**User-invoked only** (`disable-model-invocation: true`): a loop that edits and
+commits is started by a human, never because the model judged the tree ready.
+
+## Computed preconditions — fresh at invocation
+
+Produced by `scripts/release_preflight.py` when you invoke this skill (procedure
+Step 1 plus the CI-status and docs-freshness checks). `--caller audit-loop` means
+a branch *ahead* of `main` is `[ok]` and an empty `[Unreleased]` is `[info]`, both
+legitimate here. Re-run the same command at the top of every later round.
+
+```!
+uv run python scripts/release_preflight.py --report --caller audit-loop
+```
+
+If the block is missing or aborted, run the command yourself before round 1.
+`LAST_RELEASE=` is the anchor every round's delta is scoped to.
 
 ## Why the findings keep coming back (and why looping is the fix)
 
@@ -135,8 +154,9 @@ re-derives and contradicts. `L3.d` rule 4 is the specific defence.
 | `--severity blocker\|high\|all` | `high` | What gets fixed: `blocker` = blockers only; `high` = blockers + high (default); `all` = also medium/low. Everything below the threshold is still **reported**. |
 | `--dry-run` | off | Audit once and report. No branch, no edits — equivalent to `/release` Phase A on its own. |
 
-Each round costs a full `mise run ci`, a strict docs build, and six subagents
-(five coherence dimensions + `documentation-reviewer`).
+Each round costs a full `mise run ci`, a strict docs build, and one
+`pre-release-audit` workflow run (five coherence reviewers +
+`documentation-reviewer`, then one verifier per finding).
 State the parameters up front so the user knows what they authorized.
 
 **The `allowed-tools` grant does not survive the user's reply.** Per the Claude
@@ -190,8 +210,9 @@ Unlike `/release`, this skill mutates from round 1, so the working copy is set u
 first (an edit to a shared checkout in a background session is rejected by the
 isolation guard — do this before the first `Edit`, never after a rejection).
 
-- Verify the procedure's Step 1 base contract against **`main`**: clean tree, not
-  behind `origin/main` (`git fetch origin main` first).
+- Verify the procedure's Step 1 base contract against **`main`** from the
+  computed block above: `tree-clean` and `base-current` must be `[ok]`, and the
+  `ledger` line must not be a blocker.
 - **Background / isolated session:** create a worktree with the **EnterWorktree**
   tool, then rename its branch — `git branch -m fix/pre-release-audit`. Run
   `mise trust` once in a fresh worktree before the first gate, and re-`Read` any
@@ -213,9 +234,16 @@ Repeat until a stop condition in **L4** fires.
 ### a. Audit.
 
 Execute [`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md)
-**Steps 1–5 in full** — all six coherence dimensions and both halves of Step 4.
-Never trim the dimension set to save a round on a hunch; a dimension you skipped
-because it *felt* unaffected is a finding `/release` hands back to you later.
+**Steps 1–5 in full** — all five live coherence dimensions and both halves of
+Step 4. Steps 3 and 4a are one call: run the saved **`pre-release-audit`**
+workflow (Workflow tool, `name: "pre-release-audit"`, no args in a full round).
+It scouts the delta from `$LAST_RELEASE`, dispatches every dimension in parallel,
+retries a failed dispatch once, dedupes across dimensions, verifies each in-delta
+finding against its cited line, and returns `candidates`, `coverage`, `refuted`,
+`unverified` and `outOfDelta`. A dimension whose `coverage` is `unverified` means
+the round is **not** clean, whatever else it returned. Never trim the dimension
+set to save a round on a hunch; a dimension you skipped because it *felt*
+unaffected is a finding `/release` hands back to you later.
 
 **Never trim the round that declares convergence.** A trim is a bet that a
 dimension had nothing to say; the confirming round is the one whose coverage claim
@@ -237,6 +265,11 @@ makes a gap visible, this forbids the gap.
 3. you **state the skip and this justification** in the round's ledger entry, the
    report, and the PR body. An unstated skip is a coverage claim you did not earn.
 
+A trimmed round passes the surviving dimensions to the workflow explicitly —
+`args: { dimensions: ["changelog-coherence", ...] }` by `ruleId` — and the
+workflow marks its result `trimmed: true`, so the trim is recorded by the
+machinery rather than remembered by you.
+
 | Dimension | Its inputs | Skippable in practice? |
 | --- | --- | --- |
 | 1. CHANGELOG ↔ change | `CHANGELOG.md` + every `plugins/steer/**` path | **Never** — every round touches both by construction |
@@ -253,9 +286,11 @@ the round had edited shipped skills and an agent file, which are exactly dimensi
 
 Two further caller-specific adjustments:
 
-- **Step 1 base rule, rounds 2+:** the tree must still be **clean** (the previous
-  round's fixes are committed) but is now legitimately **ahead of** `main`. Being
-  ahead is expected; being *behind* `origin/main` or *dirty* still aborts.
+- **Step 1 base rule, rounds 2+:** re-run `uv run python
+  scripts/release_preflight.py --report --caller audit-loop`. The tree must still
+  be **clean** (the previous round's fixes are committed) but is now legitimately
+  **ahead of** `main` — `--caller audit-loop` reports that as `[ok]`. Being
+  *behind* `origin/main` or *dirty* still aborts.
 - **Step 2 cost, rounds 2+:** `mise run ci` runs every round, always. The strict
   `mise run docs:build` may be skipped in a round whose fixes touched neither
   `docs/` nor `mkdocs.yml` — but it **must** run once more in **L5** before the
@@ -699,8 +734,8 @@ loop keeps going, narrower.
 ## L5. Converged — prove it, then open the one PR.
 
 1. **Final full gate on the final tree:** `mise run ci` **and**
-   `mise run docs:build` (the strict build, even if L3b let a round skip it).
-   Both green, or you have not converged.
+   `mise run docs:build` (the strict build, even if L3b let a round skip it),
+   both run **unpiped**. Both green, or you have not converged.
 2. **Push and open one PR**, titled `Pre-release audit convergence (N rounds)`,
    body containing:
    - the **round ledger** table from L3b;
@@ -710,9 +745,10 @@ loop keeps going, narrower.
    - the **claim log** for every prose fix that asserted a fact, with the source
      each was verified against, so the reviewer checks claims instead of
      re-deriving them;
-   - the final-round statement: **that the final round ran all six dimensions
-     untrimmed**, which came back clean, and **that the final round made no
-     edits** — i.e. the tree in this PR is exactly the tree that audited clean.
+   - the final-round statement: **that the final round ran all five live
+     dimensions plus the docs review untrimmed** (the workflow result shows
+     `trimmed: false` and every `coverage` entry `reported`), which came back
+     clean, and **that the final round made no edits** — i.e. the tree in this PR is exactly the tree that audited clean.
      Under L4 condition 1 the converging round cannot have skipped a dimension, so
      this is an affirmative claim to make, not a list of exceptions to disclose.
      Name any dimension an *earlier* round skipped under L3.a, with its file-list

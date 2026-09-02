@@ -30,6 +30,17 @@
       "Bash(gh run list*)",
       "Bash(gh run view*)",
       "Bash(mise trust*)",
+      "Bash(git tag*)",
+      "Bash(git branch -m *)",
+      "Bash(git worktree*)",
+      "Bash(git ls-remote*)",
+      "Bash(gh release view*)",
+      "Bash(gh release list*)",
+      "Bash(gh api *)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr checks*)",
+      "Bash(python3 scripts/*)",
+      "Workflow(pre-release-audit)",
       "mcp__codegraph__codegraph_explore"
     ]
   }

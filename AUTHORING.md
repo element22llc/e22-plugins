@@ -11,7 +11,10 @@ already enforce — it does **not** introduce new policy.
 > and `/preflight` (defined under `.claude/skills/`, not shipped). Read the
 > relevant section below to understand what they generate. At release time,
 > `/audit-loop` drives the pre-release audit to convergence and `/release` /
-> `/quick-release` cut the release.
+> `/quick-release` cut the release; all three are user-invoked only, compute
+> their preconditions with `scripts/release_preflight.py`, run the judgment
+> review as the saved `pre-release-audit` workflow, and cut with
+> `scripts/release_cut.py`.
 
 ## What I touched → what to run
 
@@ -33,6 +36,8 @@ regardless — this matrix is for tight iteration on a single failure.
 | `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
 | `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** — reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
 | `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
+| `scripts/release_cut.py`, `scripts/release_preflight.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `… release_preflight.py --report --offline --no-fetch` against the real tree |
+| `.claude/skills/{release,quick-release,audit-loop}/**`, `.claude/audit/**`, `.claude/workflows/**` | `plugin-check` (`claude plugin validate .claude/skills --strict`); the workflow has no gate | `claude plugin validate .claude/skills --strict`; for the workflow, `node -e` a syntax parse or run `/pre-release-audit` on a small delta |
 | `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
 | `CLAUDE.md`, `.claude/` | nothing ships | — (no changelog entry) |
 
