@@ -8,12 +8,13 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 ### [Unreleased]
 
 - **Changed: polyrepo boilerplate collapsed to the always-on rules that already
-  carry it.** Eighteen sites across seventeen skill files re-stated invariants
-  the injected rules already deliver — the member-repo history-entry fallback
-  (`32-living-docs`), the spine-resolution ladder (`30-spec-workflow`), the
-  workspace tracker (`35-issue-tracker`), the no-local-spine-dir rule
-  (`22-housekeeping`) — each in its own paraphrase, so changing the rule meant
-  hunting seventeen copies and every paraphrase was a drift risk. Each site now
+  carry it.** Twenty-one sites across eighteen files in seventeen skills
+  re-stated invariants the injected rules already deliver — the member-repo
+  history-entry fallback (`32-living-docs`), the spine-resolution ladder
+  (`30-spec-workflow`), the workspace tracker (`35-issue-tracker`), the
+  no-local-spine-dir rule (`22-housekeeping`) — each in its own paraphrase, so
+  changing one rule meant hunting eighteen files and every paraphrase was a
+  drift risk. Each site now
   keeps only its own skill-specific consequence and names the rule or the
   `/steer:reference polyrepo` section that owns the procedure. Rule
   `32-living-docs` absorbed the one clause the copies added that it lacked (say
