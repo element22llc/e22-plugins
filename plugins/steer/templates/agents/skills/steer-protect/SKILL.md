@@ -1,7 +1,7 @@
 ---
 name: steer-protect
-description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot alerts). Graduation also writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry. Verify by default.
-argument-hint: '[verify | apply]'
+description: Make GitHub branch protection reliable — diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` uses the one-person profile (PR + CI, no approval); `waive` keeps a single-dev repo on trunk and silences the graduation nudge and push gate. Verify by default.
+argument-hint: '[verify | apply [--solo | --team] | waive]'
 ---
 
 <!-- Generated from the steer plugin's skills/protect/SKILL.md — do not edit by hand.
@@ -10,9 +10,9 @@ argument-hint: '[verify | apply]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, or as init/adopt's last step.
+**When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, stop the graduation nag / push prompt, or as init/adopt's last step.
 
-<!-- steer:modes verify,apply -->
+<!-- steer:modes verify,apply,waive -->
 
 # Make GitHub branch protection reliable
 
@@ -51,6 +51,27 @@ steer hooks resume the per-feature branch/PR flow (the mode is over — the serv
 now enforces it) — and write a graduation entry under `/spec/history/`. **In a
 member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
 graduation entry goes to the workspace's ledger per rule `32-living-docs`.
+
+**A one-person repo graduates with the `solo` profile.** GitHub will not let a
+PR's author approve it, so the policy's default 1-approval rule would leave a
+sole dev unable to merge at all. When the collaborator count is 1, offer
+`apply --solo`: it selects `profile: solo` in the repo's policy copy (PR and green
+CI still required on every protected branch, approvals 0 — see the policy's
+`profiles` block) and graduates with that. Name the trade plainly: the dev's own
+read of the PR is the review. `apply --team` (or plain `apply` on a `team` policy)
+is the default; a `solo` policy on a repo that has grown a second collaborator is
+**drift to tighten** — verify says so and recommends `apply --team`.
+
+**Graduation is not the only answer to the signals.** A repo that will keep a
+*single* contributor on trunk — with the `infra/` tree or deploy target the local
+signals flag — can instead record a **graduation waiver**: `/steer-protect waive`
+writes `<!-- steer:graduation=waived -->` under the delivery-mode marker plus a
+`/spec/history/` entry, and the SessionStart nudge and the trunk-push ask fall
+silent together (the hooks' shared detector honours the marker). It is a
+recorded decision, not a third mode — the repo stays solo-trunk, and a second
+collaborator still voids it (verify / `/steer-audit` say so). Procedure:
+[`WAIVE.md`](WAIVE.md), read only when the
+dev asks for it. `apply` removes the marker at a real graduation.
 
 ## Authorization (what invoking this grants)
 
@@ -103,6 +124,14 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   environments" rule). Resolve each entry's literal `name` and its CI context the
   same way. Treat the whole set — default branch **plus** every declared branch —
   as the desired state; the steps below apply to each.
+- **Profile.** Read `profile:` (schema 3 — `team` when absent, as in older
+  policies). For any profile other than `team`, overlay that profile's map from
+  `profiles:` onto **every** branch in scope before diffing — under `solo`,
+  `required_approving_review_count` becomes 0 on the default branch and on
+  `prod` alike. The overlaid values *are* the desired state: a `solo` repo whose
+  live protection requires 0 approvals is **compliant**, not drifted. An
+  `apply --solo` / `apply --team` argument selects the profile first (writing it to
+  the repo's policy copy — `APPLY.md`), then resolves as above.
 
 ## Verify (default mode)
 
@@ -167,10 +196,19 @@ branch, or a deploy target (deploy workflow / `infra/` tree). When any holds, sa
 so plainly and recommend graduating now — and note that while the local signals
 stand, the trunk-push hook surfaces the session's **first** `git push` for a human
 yes (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
-repeat is a silent allow), so graduating also restores silent delivery; when none holds, note
+repeat is a silent allow), so graduating also restores silent delivery — **or**,
+when only local signals hold and the dev intends to stay single-dev on trunk,
+name `waive` as the other way to restore it; when none holds, note
 that staying on solo-trunk is fine for now. (The SessionStart
 `check-graduation.sh` hook surfaces
-the local signals each session; this is the networked, on-demand check.)
+the local signals each session; this is the networked, on-demand check.) If a
+**waiver is recorded** (`<!-- steer:graduation=waived -->`), report it as the
+standing decision: the local signals are expected and the hooks are silent by
+design. The one thing that voids it is a **second collaborator** — when the
+collaborator count is > 1, say the waiver no longer holds and recommend `apply`.
+The same count decides the **profile** finding: `profile: solo` with > 1
+collaborator is drift to tighten (recommend `apply --team`); a graduating
+solo-trunk repo with exactly 1 is where to offer `apply --solo`.
 
 ## Apply (only on confirmation)
 

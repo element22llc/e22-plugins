@@ -99,8 +99,8 @@ commit, push, and open/update the PR — the full delivery loop up to the merge
 > the human, and tracker I/O still routes through `/steer:tracker-sync`. In an
 > ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
 > session's first `git push` for confirmation while graduation signals stand
-> (rule 45; repeats carry a non-blocking reminder, and on the Copilot CLI the
-> repeat is a silent allow).
+> and no graduation waiver is recorded (rule 45; repeats carry a non-blocking
+> reminder, and on the Copilot CLI the repeat is a silent allow).
 
 ## Delivery mode
 
@@ -121,8 +121,9 @@ skill's steps:
   close when the tracker repo differs — see Closing ref). Wherever a step below says *branch*,
   *marker*, or *PR*, skip it and substitute the trunk commit — everything else
   (validation, managed-block progress, closure-reason semantics) is identical.
-  While a local graduation signal stands, the trunk-push hook surfaces the
-  session's first push for a human yes (rule 45).
+  While a local graduation signal stands and no waiver is recorded, the
+  trunk-push hook surfaces the session's first push for a human yes (rule 45);
+  a waived repo pushes silently, and deciding either is `/steer:protect`'s job.
 
 ## Subcommands (distinct, idempotent)
 

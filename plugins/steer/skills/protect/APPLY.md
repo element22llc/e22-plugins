@@ -9,6 +9,15 @@ file is only the write procedure and its failure paths.
 
 When rules are drifted or absent:
 
+0. **Profile selection** (`apply --solo` / `apply --team` only). Set `profile:` in
+   the repo's **own** `policy/branch-protection.yml` to the requested value — the
+   scaffold seeds that copy, so edit the existing line; if the repo has no copy,
+   create it from `${CLAUDE_PLUGIN_ROOT}/policy/branch-protection.yml` first
+   (verbatim, then set the line), because the plugin default is read-only and
+   consumer-first resolution needs the choice to live in the repo. Then
+   re-resolve the desired state with the profile overlaid (`SKILL.md` →
+   "Resolve desired state") before continuing. Never write `solo` when the
+   collaborator count is known to be > 1 — say so and keep `team`.
 1. Show the **exact** request you will run — the full classic-protection body that
    closes the gap. Pipe the JSON from `echo` into `--input -` rather than using a
    heredoc: a heredoc's closing delimiter must sit at column 0, but these examples
@@ -26,7 +35,8 @@ When rules are drifted or absent:
    its *current* values only as an illustration. Read each field from the policy for
    the branch in scope (`strict`, `contexts`, the review counts, `enforce_admins`,
    `required_linear_history`) exactly as you already resolve the `ci` context name
-   from the workflow. Emitting a value this example hardcodes while the policy says
+   from the workflow — with the selected **profile** overlaid (under `solo` the
+   review count is `0`, on `prod` too). Emitting a value this example hardcodes while the policy says
    otherwise makes the step-4 re-verify report permanent drift on a branch you just
    "fixed". When you emit the concrete command for a dev, substitute the resolved
    `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
@@ -43,6 +53,14 @@ When rules are drifted or absent:
    - Dependabot **alerts** via `gh api -X PUT
      "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
 4. After applying, re-run the verify diff and report the new state.
+5. **Graduating a solo-trunk repo** (the marker flip + `/spec/history/` entry
+   `SKILL.md` describes): if the `## Delivery mode` section also carries a
+   graduation waiver — `<!-- steer:graduation=waived -->` — **delete that line**
+   and its waiver prose in the same edit, and let the graduation entry say the
+   waiver ended here. A waiver left behind is inert in pr-flow but reads as a
+   contradiction. The graduation entry also names the **profile** applied
+   (`solo` or `team`) — for `solo`, that entry is the record of the choice the
+   policy's "tighten, don't loosen" note asks for; no separate ADR is needed.
 
 **Insufficient permissions (`403`/admin required):** you cannot set protection
 without admin on the repo. Do not retry blindly — print the equivalent manual

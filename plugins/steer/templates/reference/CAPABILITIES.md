@@ -107,7 +107,9 @@ and **Repair**.
   is a solo PO+dev with no MVP/deploy yet (rule `45-commit-autonomy`). Additive
   only: never edit or overwrite an existing `## Delivery mode` section. To adopt
   solo-trunk on an existing repo the dev flips the marker; `/steer:protect`
-  graduates it back to `pr-flow`.
+  graduates it back to `pr-flow`, or records a graduation waiver
+  (`/steer:protect waive`, a second `<!-- steer:graduation=waived -->` line) when
+  the repo deliberately stays single-dev on trunk.
 - **Verbatim:** no
 - **Why it matters:** a repo bootstrapped before solo-trunk existed (≤ 2.11.0)
   silently runs `pr-flow` forever — the solo-trunk offer lives only in `init`'s

@@ -175,6 +175,13 @@ claude_md_mode() { # <repo_root> <solo-trunk|pr-flow>
 	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n\nProse names solo trunk (pre-MVP) and PR flow both.\n' "$2" >"$1/CLAUDE.md"
 }
 
+# Same, plus the recorded graduation waiver marker (/steer:protect waive) on the
+# line after the mode marker — and prose that mentions the waiver, so the tests
+# prove the waiver matcher is anchored to its comment line too.
+claude_md_mode_waived() { # <repo_root> <solo-trunk|pr-flow>
+	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n<!-- steer:graduation=waived -->\n\nProse names solo trunk (pre-MVP), PR flow, and the graduation waiver.\n' "$2" >"$1/CLAUDE.md"
+}
+
 json_notebook() { # <cwd> <session> <notebook_path>
 	printf '{"session_id":"%s","cwd":"%s","tool_name":"NotebookEdit","tool_input":{"notebook_path":"%s","new_source":"x"}}' \
 		"$2" "$1" "$3"
@@ -2243,6 +2250,33 @@ claude_md_mode "${GRAD_NONE}" solo-trunk
 out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NONE}" sg4)")"
 assert_empty "graduation: solo-trunk + no signal silent" "${out}"
 
+# solo-trunk + every local signal + a recorded graduation waiver -> silent: the
+# dev has answered (single-dev trunk is deliberate), so the notice must not
+# re-fire every session.
+GRAD_WAIVED="$(git_repo grad_waived main)"
+git -C "${GRAD_WAIVED}" branch prod >/dev/null 2>&1
+mkdir -p "${GRAD_WAIVED}/infra" "${GRAD_WAIVED}/.github/workflows"
+printf 'name: deploy\n' >"${GRAD_WAIVED}/.github/workflows/deploy.yml"
+claude_md_mode_waived "${GRAD_WAIVED}" solo-trunk
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_WAIVED}" sg4w)")"
+assert_empty "graduation: solo-trunk + signals + waiver silent" "${out}"
+
+# The waiver matcher is anchored to its comment line: prose mentioning the
+# waiver (no marker) does NOT waive — the nudge still fires.
+GRAD_WAIVEPROSE="$(new_repo grad_waiveprose)"
+mkdir -p "${GRAD_WAIVEPROSE}/infra"
+printf '## Delivery mode\n\n<!-- steer:delivery-mode=solo-trunk -->\n\nRun /steer:protect waive to set steer:graduation=waived if trunk is deliberate.\n' >"${GRAD_WAIVEPROSE}/CLAUDE.md"
+out="$(run_hook check-graduation.sh "$(session_json "${GRAD_WAIVEPROSE}" sg4p)")"
+assert_has "graduation: waiver named in prose only still nudges" "${out}" "graduate"
+assert_has "graduation: nudge names the waiver path" "${out}" "/steer:protect waive"
+
+# lib/repo-root.sh: steer_graduation_waived — fail-closed (no CLAUDE.md / no
+# marker -> not waived), true only on the anchored marker line.
+steer_graduation_waived "${GRAD_WAIVED}" && ok || bad "waived: marker line -> waived"
+steer_graduation_waived "${GRAD_WAIVEPROSE}" && bad "waived: prose mention must not waive" || ok
+steer_graduation_waived "${GRAD_NONE}" && bad "waived: no marker -> not waived" || ok
+steer_graduation_waived "${WORK}/grad_nowhere" && bad "waived: no CLAUDE.md -> not waived" || ok
+
 # pr-flow with a signal -> silent (already graduated; mode gate wins).
 GRAD_PRFLOW="$(new_repo grad_prflow)"
 mkdir -p "${GRAD_PRFLOW}/infra"
@@ -2321,6 +2355,22 @@ TP_FRESH="$(new_repo tp_fresh)"
 claude_md_mode "${TP_FRESH}" solo-trunk
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_FRESH}" tp8 'git push origin main')")"
 assert_empty "trunk-push: solo-trunk no signal silent" "${out}"
+
+# solo-trunk + signal + a recorded graduation waiver -> silent (the waiver is
+# honoured in the shared detector, so the gate and the nudge agree).
+TP_WAIVED="$(new_repo tp_waived)"
+mkdir -p "${TP_WAIVED}/infra"
+claude_md_mode_waived "${TP_WAIVED}" solo-trunk
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_WAIVED}" tp8w 'git push origin main')")"
+assert_empty "trunk-push: solo-trunk + signal + waiver silent" "${out}"
+ENV="STEER_HOOK_TARGET=copilot"
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_WAIVED}" tp8wc 'git push')")"
+ENV=""
+assert_empty "trunk-push: waived repo silent under copilot too" "${out}"
+
+# Unwaived hot repo: the ask names the waiver as the alternative to graduating.
+out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp8x 'git push origin main')")"
+assert_has "trunk-push: ask names the waiver path" "${out}" "/steer:protect waive"
 
 # pr-flow + signal -> silent (branch pushes; the server wall owns the merge gate).
 TP_PR="$(new_repo tp_pr)"

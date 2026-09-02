@@ -2,7 +2,16 @@
 # against live settings and applies it. Fields map 1:1 to the classic protection API.
 # Rationale: /steer:reference conventions -> "Deployment & environments".
 
-schema: 2          # v1 files (no `protected_branches`) remain valid — it is additive.
+schema: 3          # v1 (no `protected_branches`) and v2 (no `profile`/`profiles`)
+                   # files remain valid — each version is additive.
+
+# Which profile /steer:protect applies: `team` (everything below as written) or
+# `solo` (`profiles.solo` layered on top). GitHub blocks a PR's author from
+# approving it, so on a one-contributor repo the 1-approval rule below would leave
+# the sole dev unable to merge at all. /steer:protect offers `solo` when it
+# graduates such a repo, and flags a `solo` policy that has since grown a second
+# collaborator as drift to tighten back to `team`.
+profile: team
 
 branch: default
 
@@ -19,6 +28,14 @@ required_status_checks:
 enforce_admins: true
 
 required_linear_history: true
+
+# Field overrides /steer:protect layers onto EVERY branch in scope — the default
+# branch and each `protected_branches` entry alike. `team` has no overrides.
+profiles:
+  solo:
+    # PR and green CI still required; only the approval drops, because there is
+    # nobody but the author left to give it.
+    required_approving_review_count: 0
 
 # Optional. `prod` is the branch-based production gate (environment approvals are
 # Enterprise-only); a branch not yet created is reported, never forced.

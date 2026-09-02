@@ -206,6 +206,26 @@ steer_delivery_mode() {
 	printf 'pr-flow'
 }
 
+# steer_graduation_waived <repo_root> — returns 0 when the product CLAUDE.md
+# carries a recorded graduation waiver on its `## Delivery mode` section:
+#   <!-- steer:graduation=waived -->
+#
+# A waiver is a DECISION, not a third delivery mode: the repo stays solo-trunk,
+# and the dev has recorded (via /steer:protect waive, with a /spec/history/
+# entry) that the local graduation signals — an infra/ tree, a deploy workflow,
+# a prod branch — are expected on a repo that keeps a single contributor on
+# trunk. lib/graduation.sh honours it by reporting no signals, which silences the
+# SessionStart graduation nudge and the trunk-push ask together. Inert in pr-flow
+# (nothing reads signals there); /steer:protect apply removes it at a real
+# graduation. Fail-closed: no CLAUDE.md, no marker → 1 (not waived), so the
+# pre-waiver behaviour is exactly preserved. Anchored to the comment line like
+# steer_delivery_mode, so prose that merely mentions a waiver never matches.
+steer_graduation_waived() {
+	_cm="${1:-.}/CLAUDE.md"
+	[ -f "${_cm}" ] || return 1
+	grep -Eiq '^[[:space:]]*<!--[[:space:]]*steer:graduation=waived[[:space:]]*-->' "${_cm}" 2>/dev/null
+}
+
 # steer_repo_profile <repo_root> — prints the repo's declared profile, read from
 # the machine-readable marker on the product CLAUDE.md's `## Profile` section:
 #   <!-- steer:profile=infra -->   (or =app / =service / =library / =cli / =workspace)

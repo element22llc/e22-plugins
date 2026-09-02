@@ -570,7 +570,10 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   works, you first deploy, or a second contributor joins, whichever comes first.
   Until then a standing **local** graduation signal (a deploy target or a `prod`
   branch) stops trunk pushes being silent: the session's **first** one waits for
-  a human yes (`/steer:reference gates`).
+  a human yes (`/steer:reference gates`) — unless the dev has recorded a
+  **graduation waiver** (`/steer:protect waive`: a single-dev repo staying on
+  trunk deliberately, `<!-- steer:graduation=waived -->`), which silences that
+  gate and the session nudge; a second contributor voids it.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
   applies unchanged — you still never merge — but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
@@ -612,7 +615,7 @@ needs only a PR.
 - [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate (see Commit autonomy).
+- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate, and under the `solo` protection profile, where the sole dev's read-and-merge is the review (see Commit autonomy).
 
 **Hotfix exception (see Hotfix / incident fast-path):** under a declared production
 hotfix, items above may be **deferred** to the mandatory post-incident follow-up —
@@ -1054,7 +1057,7 @@ nothing is dropped:
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
 - [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?
-- [ ] Solo trunk mode and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)?
+- [ ] Solo trunk mode without a recorded graduation waiver, and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)? (A waived repo asks this only when a second contributor joined.)
 
 If any item can't be satisfied, say so plainly rather than implying the work is
 complete.

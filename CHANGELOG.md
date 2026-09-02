@@ -7,6 +7,47 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: `/steer:protect waive` — a recorded graduation waiver for repos that
+  stay single-dev on trunk.** The solo-trunk graduation signals (an `infra/`
+  tree, a deploy workflow, a `prod` branch) had no answer other than graduating:
+  a solo dev whose repo legitimately carries infra got the "this repo has
+  outgrown solo-trunk" notice on every session start and a permission prompt on
+  every session's first `git push`, indefinitely. `waive`
+  records the decision once — `<!-- steer:graduation=waived -->` under the
+  delivery-mode marker plus a `/spec/history/` entry — and the hooks' shared
+  detector (`lib/graduation.sh`, via `steer_graduation_waived` in
+  `lib/repo-root.sh`) reports no signals for a waived repo, so the SessionStart
+  nudge and the trunk-push ask fall silent together. It is a decision, not a
+  third delivery mode: the repo stays solo-trunk, a second collaborator voids it
+  (`verify` and `/steer:audit` say so), `apply` removes it at a real graduation,
+  and it is inert in pr-flow. The nudge and the ask now name the waiver as the
+  alternative to graduating; rule 45, rule 99's checklist, the gates reference,
+  the scaffold `CLAUDE.md`, and the init / adopt / audit / sync next-action rows
+  say when the waiver, not `/steer:protect apply`, is the right answer (adopt's
+  "protect `main`" row previously fired in solo-trunk unconditionally, unlike
+  init's). Hook tests cover the waived-silent path on both harness targets and
+  the anchored matcher (a prose mention does not waive).
+- **Added: a `solo` branch-protection profile, so a one-person repo can graduate
+  off trunk and still merge.** `policy/branch-protection.yml` (schema 3, additive;
+  v1/v2 files stay valid) gains `profile: team | solo` and a `profiles:` block of
+  per-profile field overrides `/steer:protect` overlays on every branch in scope.
+  `solo` changes one thing — `required_approving_review_count: 0` on the default
+  branch and `prod` alike — and keeps the rest of the wall: a PR before anything
+  lands, the required `ci` check, linear history, admins bound. The reason is
+  mechanical: GitHub will not let a PR's author approve it, so with the default
+  1-approval rule a sole dev who graduated could never merge, which made "stay on
+  trunk forever" the only workable option. `/steer:protect apply --solo` / `apply
+  team` selects the profile in the repo's own policy copy (creating it from the
+  plugin default when absent) and applies; `verify` treats a `solo` repo whose
+  live protection requires 0 approvals as compliant, offers `solo` when a
+  graduating solo-trunk repo has exactly one collaborator, and flags `solo` with
+  a second collaborator as drift to tighten back to `team`. The graduation
+  history entry names the profile, which is the record the policy's "tighten,
+  don't loosen" note asks for. The graduation nudge, the trunk-push ask, and
+  `WAIVE.md` now present the real choice for a solo dev — `apply --solo` (PR flow,
+  merge alone) or `waive` (stay on trunk) — instead of a wall they could not use;
+  rule 50's "a dev approved the PR" item, the scaffold README and `MANIFEST.md`
+  carry the profile. The scaffold policy copy is updated byte-for-byte.
 - **Added: a `Responses` rule, third in the payload, and the two contract
   blocks that padded every turn are now compact by definition.** Chat in a steer
   session ran long for four reasons: the "keep responses tight" bullet sat 30th

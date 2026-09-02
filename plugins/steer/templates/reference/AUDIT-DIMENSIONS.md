@@ -37,8 +37,13 @@ so in the report.
    workflow / `infra/` tree). If any holds, **escalate** from "recommend later" to
    "graduation conditions met — run `/steer:protect apply` now to raise the PR
    wall"; if none, report solo-trunk as expected and note graduation is optional
-   until the MVP works. (The SessionStart `check-graduation.sh` hook nudges on the
-   local signals; this is the networked, on-demand confirmation.)
+   until the MVP works. **A recorded graduation waiver**
+   (`<!-- steer:graduation=waived -->` in `CLAUDE.md`, written by
+   `/steer:protect waive`) answers the *local* signals: report them as expected
+   and do not escalate on them. The second-collaborator check still applies —
+   a count > 1 voids the waiver, and that is the finding to escalate. (The
+   SessionStart `check-graduation.sh` hook nudges on the local signals and is
+   silent when waived; this is the networked, on-demand confirmation.)
 8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).

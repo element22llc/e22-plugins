@@ -10,12 +10,23 @@
 # available) ref inspection; the networked signal (a second collaborator) stays
 # with /steer:audit and /steer:protect, which already use gh.
 #
+# A recorded graduation WAIVER (`<!-- steer:graduation=waived -->` on the product
+# CLAUDE.md, written by /steer:protect waive — see steer_graduation_waived in
+# lib/repo-root.sh, which callers must have sourced) is honoured HERE, not in the
+# consumers: a single dev who keeps a repo on trunk deliberately — with the
+# infra/ tree or deploy workflow the signals would otherwise flag — records the
+# decision once, and both the nudge and the push ask fall silent together. The
+# waiver covers only these local signals; the networked one (a second
+# collaborator) still voids it in /steer:audit and /steer:protect verify.
+#
 # steer_graduation_signals <repo_root> — prints one markdown bullet per detected
-# signal (empty output = no signal) and returns 0. Fail-soft: any ambiguity or a
-# missing tool just skips that signal.
+# signal (empty output = no signal, including when waived) and returns 0.
+# Fail-soft: any ambiguity or a missing tool just skips that signal.
 steer_graduation_signals() {
 	_gr_root="$1"
 	_gr_out=""
+
+	steer_graduation_waived "${_gr_root}" && return 0
 
 	# Signal 1 — a prod/production promotion branch exists (local or
 	# remote-tracking). Its required-PR-review is the production approval gate, so
