@@ -11,18 +11,32 @@ subagents, compile a ranked report. It never edits, branches, or commits — the
 | --- | --- | --- |
 | `/release` Phase A | Steps 1–5, once | Blocks the cut on any `[blocker]` — which, after Step 5 capping, means a red gate or release-critical manifest drift only. |
 | `/audit-loop` | Steps 1–5, once per round | Fixes the in-scope findings in-tree and re-audits; capped at 2 rounds, and it never edits `non-shipping` paths. |
-| `/quick-release` Phase A | Steps 1, 2, 4b, 5 only | Skips the judgment fan-out (Step 3) and the docs deep-review (Step 4a) by design. |
+| `/quick-release` Phase A | Steps 1, 2, 4b, 5 only | Skips the judgment review (Steps 3 + 4a) by design. |
 
 If this file and a caller ever disagree about *what the audit checks*, **this
 file is authoritative**. Callers own only the pre/post-conditions around it
 (which base is legal to audit, what to do with the findings).
+
+**Two pieces of this procedure are machinery, not prose.** Steps 1, the CI-status
+half of Step 2, and Step 4b are computed by `scripts/release_preflight.py`, which
+every caller injects at invocation and re-runs per round (`--caller` sets which
+base is legal). Steps 3 and 4a are the saved `pre-release-audit` workflow
+(`.claude/workflows/pre-release-audit.js`), which owns the dispatch, the
+retry-once rule, cross-dimension dedupe and per-finding verification. The prose
+below says *what* each step checks and *why*; when it names a check the script or
+workflow already performs, the machinery is the implementation and this file is
+its specification.
 
 ---
 
 ## Step 1 — base preconditions
 
 The caller states which base is legal before invoking the procedure; the
-procedure just verifies it.
+procedure just verifies it. **Computed** by
+`uv run python scripts/release_preflight.py --report --caller <release|quick-release|audit-loop>`
+— every line below corresponds to one `[ok]/[blocker]/[high]/[warn]` marker in
+its output, and `LAST_RELEASE=` is the anchor. Read the markers; do not re-derive
+them by hand.
 
 - `git status --porcelain` must be empty. An audit of a dirty tree audits
   something no reviewer will ever see. **Always required, every caller, every
@@ -44,7 +58,12 @@ procedure just verifies it.
   commit via the `vX.Y.Z` git tag if one exists (`git describe --tags --match
   'v*' --abbrev=0`), else the most recent commit whose subject starts
   `chore(release):`. Call it `$LAST_RELEASE`. If neither exists, fall back to the
-  start of history and say so (the coherence pass just reviews more).
+  start of history and say so (the coherence pass just reviews more). The
+  preflight reports **`[high] last-release`** when the current `plugin.json`
+  version has no `vX.Y.Z` tag — `release-publish.yml` did not fire for the last
+  cut, and every delta-scoped check below would be anchored one release too far
+  back. Re-run it (`gh workflow run release-publish.yml -f version=X.Y.Z`) before
+  trusting the delta.
 
 ## Step 2 — deterministic gate, up front
 
@@ -64,15 +83,12 @@ before the version bump — not at the end where a red gate wastes the bump work
   pins its own CLI, so nothing local covers it. At *release* time it matters, because
   the release ships to consumers who are on latest:
 
-  ```sh
-  gh run list --workflow=plugin-quality.yml --branch main --limit 5
-  gh run view <id>   # read the validator-compat job specifically
-  ```
-
-  A failed `validator-compat` on `main` is **`[high]`**, not a blocker — the
-  pinned job stays authoritative — but it must appear in the report by name.
-  Shipping over a known upstream-schema break is a decision the user makes
-  deliberately, not one they make by not being told. If `gh` is unavailable, say
+  The preflight's `validator-compat` line computes this (latest
+  `plugin-quality.yml` run on `main` → that job's conclusion). A failed
+  `validator-compat` on `main` is **`[high]`**, not a blocker — the pinned job
+  stays authoritative — but it must appear in the report by name. Shipping over a
+  known upstream-schema break is a decision the user makes deliberately, not one
+  they make by not being told. When `gh` is unavailable the line reads
   **`[warn] validator-compat not verified`**; never infer it from the pinned job.
 - **`mise run docs:build`** — the **strict** Zensical build (fails on broken
   links / nav). This is **not** part of `mise run ci`; it normally runs only in
@@ -138,11 +154,21 @@ slot per round to reproduce a result Step 2 already proved; in the 6.0.0 audit i
 returned clean, as it must. The number 2 is retained (rather than renumbering 3–6)
 so every existing cross-reference to a dimension number stays valid.
 
-Dispatch **read-only** review subagents (the `Agent` tool — named `Task` before Claude Code v2.1.63,
-which still works as an alias — with `subagent_type: general-purpose`), **one per
-dimension, in parallel**. Each subagent is told: *read-only; every finding must
-carry `path:line` evidence and a one-line statement of the incoherence; default
-to silence over speculation.* The dimensions:
+**Run the saved `pre-release-audit` workflow** (Workflow tool,
+`name: "pre-release-audit"`; the permission rule `Workflow(pre-release-audit)` in
+`.claude/settings.json` pre-approves it). It is the implementation of this step
+and of Step 4a: a scout stage derives `$LAST_RELEASE` and the delta list (or
+takes them from `args`), one read-only reviewer per dimension runs **in
+parallel** against a findings schema (so a finding cannot arrive as prose), a
+reviewer that returns nothing usable is **re-dispatched exactly once** and
+otherwise recorded as `unverified`, findings are deduplicated across dimensions
+by `path` + claim slug (the ledger's identity), and every in-delta finding is
+then handed to a **verifier** that re-reads the cited line and may only lower
+the severity. The result carries `candidates` (ledger-ready), `coverage` per
+dimension, `refuted`, `unverified`, `outOfDelta`, and `clean`. Each reviewer is
+told: *read-only; every finding must carry `path:line` evidence and a one-line
+statement of the incoherence; default to silence over speculation.* The
+dimensions, as the workflow encodes them:
 
 1. **CHANGELOG ↔ change coherence (both directions).** Diff
    `git diff $LAST_RELEASE..HEAD -- plugins/steer/` and the `### [Unreleased]`
@@ -191,9 +217,12 @@ with one `grep` instead of re-deriving the question. A finding of this kind
 without a verbatim quote is unvetted by construction, and this is the class of
 finding that has been most expensive to get wrong here.
 
-**Vet before reporting.** Subagents over-report. Re-read the cited `path:line`
-for every candidate and drop false positives, intentional patterns with a
-why-comment, and cross-dimension duplicates. A finding that survives states the
+**Vet before reporting.** Subagents over-report. The workflow's Verify phase does
+the first pass structurally — one verifier per candidate re-reads the cited
+`path:line`, refutes false positives and intentional patterns with a why-comment,
+and cross-dimension duplicates are collapsed before it runs. Read the `refuted`
+list anyway: a refutation is itself a claim, and a reviewer's verbatim quote
+outranks a verifier's paraphrase. A finding that survives states the
 incoherence, the evidence, and why it's real.
 
 **Settle disagreements on raw bytes, never on another opinion.** When vetting
@@ -216,34 +245,38 @@ Cover both:
 
 ### 4a. Accuracy (judgment)
 
-Dispatch the **`documentation-reviewer`** subagent (`Agent`,
-`subagent_type: documentation-reviewer`) to deep-review `docs/` against the
-plugin source of truth (skill frontmatter, `hooks.json`, rules) for staleness,
-coverage gaps, and claims that don't trace back to source. Fold its
-blocker/high findings into the report. (This is exactly the review the
+The `pre-release-audit` workflow dispatches the **`documentation-reviewer`**
+agent (`agentType: documentation-reviewer`, `ruleId: docs-accuracy`) alongside
+the Step 3 dimensions to deep-review the `docs/` pages that describe the changed
+plugin surfaces, plus every `docs/` file in the delta, against the plugin source
+of truth (skill frontmatter, `hooks.json`, rules) for staleness, coverage gaps,
+and claims that don't trace back to source. Its findings go through the same
+verifier and land in the same `candidates` list. (This is the review the
 `/plugin-docs` skill drives; running it here makes "docs are current" a release
-gate, not an afterthought.)
+gate, not an afterthought — though after Step 5 capping a docs page is `[low]`,
+so it informs, it never halts.)
 
 ### 4b. Deployed-site freshness (deterministic)
 
 The site is published to GitHub Pages from `main` by `docs-deploy.yml`, only when
 `docs/**` or `mkdocs.yml` change. Rather than fetching the public site (subject
 to CDN cache lag, so a fetch can disagree with `main` for minutes after a
-deploy), use the deploy **run status** as the source of truth:
+deploy), use the deploy **run status** as the source of truth. The preflight's
+`docs-deploy` line computes exactly this:
 
-- `gh run list --workflow=docs-deploy.yml --branch main --limit 5` — confirm the
-  most recent run **succeeded**. A failed/cancelled latest run means the live
-  site is stale relative to `main` → **`[blocker] deployed docs stale: last
-  docs-deploy on main did not succeed`**; tell the user to re-run it (`gh run
-  rerun <id>` or the Actions UI) and let it go green before releasing.
-- Confirm no merged-but-undeployed docs change is sitting on `main`: if the
-  latest commit touching `docs/`/`mkdocs.yml` on `origin/main` is **newer** than
-  the head commit of the latest successful docs-deploy run, the live site lags
-  `main` → same blocker.
-- If `gh` is unavailable or unauthenticated in this environment, **fail open**
-  but loudly: report **`[warn] deployed-docs freshness not verified — run gh
-  run list --workflow=docs-deploy.yml --branch main`** so the human closes the
-  loop. Do not pretend it passed.
+- The most recent `docs-deploy.yml` run on `main` must have **succeeded**. A
+  failed/cancelled latest run means the live site is stale relative to `main` →
+  **`[blocker] deployed docs stale`**; tell the user to re-run it (`gh run rerun
+  <id>` or the Actions UI) and let it go green before releasing. A run still in
+  progress is `[warn]` — wait for it.
+- No merged-but-undeployed docs change may be sitting on `main`: the latest
+  commit touching `docs/`/`mkdocs.yml` on `origin/main` must be an ancestor of
+  the head commit of the latest successful docs-deploy run, else the live site
+  lags `main` → same blocker.
+- If `gh` is unavailable or unauthenticated in this environment, the line **fails
+  open but loudly**: **`[warn] deployed-docs freshness not verified — run gh run
+  list --workflow=docs-deploy.yml --branch main`**, so the human closes the loop.
+  Do not pretend it passed.
 - As a courtesy only, you may `WebFetch` the live URL to confirm it is reachable
   (a 302 to Access is expected and fine) — never treat its body as the freshness
   signal.
@@ -289,8 +322,9 @@ drift apart.
 reach `[blocker]` are the release-critical manifests plus a red deterministic
 gate. `[high]` / `[medium]` / `[low]` are real and reported; they never stop a cut.
 
-**Record every finding in the ledger.** Write the round's vetted findings to a
-JSON list and run:
+**Record every finding in the ledger.** Write the workflow's `candidates` list
+(plus, conservatively, its `unverified` list — an unverified finding is not a
+refuted one) to a JSON file and run:
 
 ```sh
 uv run python scripts/audit_ledger.py new    --candidates <file>   # report only what is unseen
@@ -337,11 +371,12 @@ premature. In the run this guidance came from, the last dimension-6 reviewer
 returned a genuine `[high]` against a shipped script after the PR had been opened
 and the run summarised as complete.
 
-**A dimension that did not return usable output is not clean.** If a review
-subagent errors, returns empty, or comes back with something that isn't a
-findings list, **re-dispatch it once**. If the second attempt also fails, report
-that dimension as **`[warn] dimension N not verified`** and name it in the
-report, the caller's gate decision, and the PR body. It never counts toward a
+**A dimension that did not return usable output is not clean.** The workflow
+re-dispatches a reviewer that errors, returns empty, or returns something that
+isn't a findings list **exactly once**; if the second attempt also fails it marks
+that dimension `unverified` in `coverage` and sets `clean: false`. Report it as
+**`[warn] dimension N not verified`** and name it in the report, the caller's
+gate decision, and the PR body. It never counts toward a
 clean round, and for `/audit-loop` it means **L4 condition 1 cannot fire** — a
 round with an unverified dimension has not converged. Folding a failed dispatch
 into the clean count is the one way this procedure can report coverage it does

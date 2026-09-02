@@ -53,20 +53,50 @@ audit in a loop — audit, fix in-tree, re-gate, re-audit — until a round come
 clean, accumulating every round as a commit on one branch and one PR. Merge that
 PR, then cut the release; its audit should pass in a single pass.
 
+The audit's mechanical parts are machinery, not prose, so they cannot be
+misremembered:
+
+- `scripts/release_preflight.py` computes the preconditions — clean tree, base
+  current with `origin/main`, `[Unreleased]` bullets present, manifests in
+  agreement, the `vX.Y.Z` anchor tag for the last release, deployed-docs
+  freshness, and the upstream `validator-compat` job — and prints
+  `[ok]/[blocker]/[high]/[warn]` markers. The skills inject its output at
+  invocation via dynamic context, so the facts arrive with the skill body.
+- The saved `pre-release-audit` workflow (`.claude/workflows/`) runs the judgment
+  review: one read-only reviewer per coherence dimension plus the documentation
+  reviewer, scoped to the release delta, with a failed dispatch retried once,
+  cross-dimension dedupe, and one verifier per finding before anything becomes a
+  ledger candidate.
+- `scripts/release_cut.py` performs the cut itself: it renames the changelog
+  heading and re-seeds `[Unreleased]`, renames migration-ledger entries inside
+  `## Entries` (never the authoring stub), bumps the three version-bearing
+  manifests, and re-validates the release invariant — refusing to start when a
+  precondition does not hold.
+
+All three release skills are user-invoked only (`disable-model-invocation`), so a
+release is always a human's timing decision.
+
 ## Publication is automatic
 
 Cutting the release PR is the last manual step. When a release PR (the
 `plugin.json` version bump) merges to `main`,
-`.github/workflows/release-publish.yml` fires — gated on the version bump — and
+`.github/workflows/release-publish.yml` fires — it triggers only on pushes that
+touch `plugin.json` and acts only when the parsed `version` field changed — and
 creates the `vX.Y.Z` git tag plus the GitHub Release. The body is that version's
 CHANGELOG bullets, extracted by `scripts/changelog_release_notes.py`, followed by
 GitHub's auto-generated "What's Changed" (merged-PR list, contributors, compare
-link) via `--generate-notes`. It is idempotent and re-runnable through
+link) via `--generate-notes`. Runs are serialised under one concurrency group and
+never cancelled, a pre-existing tag that points at a different commit fails the
+run instead of being reused, and every publish ends by asserting that the tag
+resolves to the intended commit. It is idempotent and re-runnable through
 `workflow_dispatch`, so a failed run can simply be re-run:
 
 ```bash
 gh workflow run release-publish.yml -f version=X.Y.Z
 ```
+
+Re-publishing an **older** version this way tags the commit that introduced that
+version on `main`, not today's head, and does not take the "Latest" badge.
 
 Two other post-merge runs are worth watching: `docs-deploy.yml` publishes the
 documentation site from `main` (a red run leaves the live site stale), and the
