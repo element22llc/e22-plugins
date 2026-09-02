@@ -1,16 +1,11 @@
-# Branch-protection policy — the real PR gate lives on GitHub; /steer:protect diffs this
-# against live settings and applies it. Fields map 1:1 to the classic protection API.
-# Rationale: /steer:reference conventions -> "Deployment & environments".
+# Branch-protection policy /steer:protect diffs against live GitHub settings and applies.
+# Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
 
-schema: 3          # v1 (no `protected_branches`) and v2 (no `profile`/`profiles`)
-                   # files remain valid — each version is additive.
+schema: 3          # additive — v1 (no `protected_branches`) and v2 (no profiles) stay valid.
 
-# Which profile /steer:protect applies: `team` (everything below as written) or
-# `solo` (`profiles.solo` layered on top). GitHub blocks a PR's author from
-# approving it, so on a one-contributor repo the 1-approval rule below would leave
-# the sole dev unable to merge at all. /steer:protect offers `solo` when it
-# graduates such a repo, and flags a `solo` policy that has since grown a second
-# collaborator as drift to tighten back to `team`.
+# `team` applies everything below as written; `solo` layers `profiles.solo` on top.
+# GitHub blocks a PR's author from approving it, so on a one-contributor repo the
+# 1-approval rule below would leave the sole dev unable to merge at all.
 profile: team
 
 branch: default
@@ -29,12 +24,9 @@ enforce_admins: true
 
 required_linear_history: true
 
-# Field overrides /steer:protect layers onto EVERY branch in scope — the default
-# branch and each `protected_branches` entry alike. `team` has no overrides.
+# Overrides layered onto EVERY branch in scope. `team` has none.
 profiles:
   solo:
-    # PR and green CI still required; only the approval drops, because there is
-    # nobody but the author left to give it.
     required_approving_review_count: 0
 
 # Optional. `prod` is the branch-based production gate (environment approvals are

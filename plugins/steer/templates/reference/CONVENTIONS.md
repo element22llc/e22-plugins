@@ -630,8 +630,9 @@ Patterns:
 - **`async/await` with no floating promises** — handle or `await` every promise.
 - **Comments carry weight or don't exist.** Code is self-documenting through
   names and structure; reserve comments for the non-obvious *why* (plus the
-  why-comment an escape hatch requires). Match the file's existing comment density
-  rather than adding narration on top of it.
+  why-comment an escape hatch requires). A dense file is not a licence: write new
+  code to this rule regardless, and trim adjacent noise only where the change
+  already touches those lines.
 - **ASCII in code, identifiers, and values.** Non-ASCII "typographic" characters
   — em/en dashes, arrows, smart quotes, ellipsis, non-breaking spaces — belong in
   prose and docs, not in code, identifiers, config keys/values, or any string
