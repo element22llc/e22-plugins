@@ -40,18 +40,14 @@ These hold for the whole run, in every mode.
 
 ## Preconditions
 
-0. **Polyrepo member? Resolve the spine first.** If this repo has
-   `spec/PRODUCT.md` (a polyrepo member), its spine is **partial by design**: the
-   tracker and every feature's `intent.md` / `contract.md` live in the workspace
-   repo, not here. Resolve the workspace before step 1 — `workspace.path` when
-   `spec/workspace.yml` is present there (resolved against the **primary
-   checkout**, since `..` from a linked worktree lands on an empty
-   `.claude/worktrees`), else the GitHub gateway — and read the tracker and the
-   linked specs from **there**. A missing local `intent.md` means the workspace has not
-   been read yet, never that the feature is unspecified, so **never** author
-   product-level spec files here to fill the gap. If neither route reaches the
-   workspace, say the spine is unreachable and stop. Procedure:
-   `/steer-reference polyrepo`.
+0. **Member (`spec/PRODUCT.md`)? Resolve the spine first.** Its spine is
+   **partial by design**: the tracker and every feature's `intent.md` /
+   `contract.md` live in the workspace. Resolve it before step 1 by the two-test
+   ladder in `/steer-reference polyrepo` § "Resolving the spine from a member",
+   and read the tracker and linked specs from **there**. A missing local
+   `intent.md` means the workspace has not been read yet, never that the feature
+   is unspecified — **never** author product-level spec files here to fill the
+   gap.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
    this is the **workspace's** `spec/tracker.md` resolved in step 0 — a member
@@ -237,27 +233,10 @@ the separate work only when the current issue requires it.
 ## Recommend the next action
 
 End every invocation with a `## Recommended next actions` block per
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`. Per the **locality
-rule**, consider only this issue, its branch, PR, criteria, validation, and any
-blocker directly hit — not the wider workspace. Map execution state to actions
-without redefining the subcommands above:
-
-| State | Category | Action / suggested command |
-|---|---|---|
-| Acceptance criteria not yet met | Blocking now (next transition) | Continue — `/steer-work resume #N` |
-| Required validation failing | Blocking now | Fix failures, then `/steer-work finish #N` |
-| Implemented, PR not opened | Blocking now (next transition) | `/steer-work finish #N` |
-| PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
-| PR open, CI red | Blocking now | Fix the failure, re-push, re-watch |
-| PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
-| PR merged but issue still `validate` (stale) | Human decision required | **Propose** `done` once acceptance is confirmed — a merged PR is necessary, not sufficient (`/steer-work resume #N`) |
-| Issue `done` | Complete | Optional: start another ready issue — `/steer-work start #N`, else `No action is currently required.` |
-
-Choose one `Current recommended action` by precedence. The block recommends only
-— it never merges, deploys, or auto-advances state.
-
-In **solo-trunk**, read the PR rows as the trunk commit: "PR not opened" → "change
-not yet committed to `main`"; "PR open, CI running/red" → the same, watched via
-`gh run watch` on the trunk push; there is **no awaiting-review row** — a green
-trunk commit that closes the issue with acceptance accepted is `done` (deploy
-still excluded).
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, obeying its
+**locality rule** — only this issue, its branch, PR, criteria, validation, and
+any blocker directly hit, never the wider workspace. This skill's execution
+state → action mapping (and how it reads in solo-trunk) is in
+[`NEXT-ACTION.md`](NEXT-ACTION.md) — **read it
+when you get here.** The block recommends only; it never merges, deploys, or
+auto-advances state.

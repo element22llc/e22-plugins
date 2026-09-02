@@ -1,9 +1,52 @@
-# `/steer-sync` — steps 5, 6 & 6.5: template reconciliation, capability repair, invocation hygiene
+# `/steer-sync` — what steps 4–6 may touch, then steps 5, 6 & 6.5: template reconciliation, capability repair, invocation hygiene
 
-Read this file when you reach step 5 of `/steer-sync`. Steps 1–4 (confirm,
-update the plugin, read the stamp, apply ledger migrations) and steps 7–9
-(re-stamp, record, recommend) stay in `SKILL.md`, as do the guardrails. Under
-`--check` these two steps **detect and report only** — nothing is written.
+Read this file when you reach **step 3** of `/steer-sync` — its first section
+governs what steps 4–6 may touch at all, so it is needed before the migrations
+run, not after. Steps 1–2 (confirm, update the plugin), the stamp read in step
+3, and steps 7–9 (re-stamp, record, recommend) stay in `SKILL.md`, as do the
+guardrails. Under `--check` steps 5–6 **detect and report only** — nothing is
+written.
+
+## What steps 4–6 may touch — profile and polyrepo role
+
+Establish both before reconciling anything: they select which overlay is
+compared and which paths are off-limits. `/steer-sync` step 3 tells you to
+resolve them; the rules are here.
+
+**Establish the repo profile.** Read the `CLAUDE.md` `## Profile` marker
+(`<!-- steer:profile=… -->`); **absent → `app`** (back-compat). The back-fill
+migration in the ledger writes `=app` when the marker is missing (idempotent —
+it fires only while absent). The profile selects which scaffold overlay
+steps 5–6 reconcile against (an `infra` repo reconciles the root infra
+`mise.toml` + infra CI, never `package.json`; `compose.yaml` is core for every
+profile, so it still reconciles unless the repo has deleted it). If the marker
+was changed since the last sync, **offer the newly-matching overlay
+additively** — never remove the prior profile's files (clobber-free).
+
+**Establish the polyrepo role** from step 1's `scan-spine-state.sh` output
+(`- polyrepo role:`) before reconciling anything under `/spec` — the
+product-level artifacts a **member** lacks are absent by design, not damaged
+(`/steer-reference polyrepo` § "Where each artifact lives" enumerates them).
+In a member, **never reinstall them here**: reconcile only its own surface
+(scaffold, CI, `mise.toml`, `spec/decisions/`, `spec/PRODUCT.md`) and re-stamp
+`/spec/.version` as usual. "Repairing" a member as a damaged spine recreates
+exactly the split-brain the topology removes. In a **workspace**, reconcile
+the spine normally but skip the app-code surface (`package.json`, `apps/`) —
+it owns none — and reconcile the **workspace flavor** of the rest: the
+`profiles/workspace/` `mise.toml` (member `ws:*` tasks), `compose.yaml` (an
+`include:` list, no services of its own), the `.gitignore` member lines, and
+`scripts/ws.sh`. A workspace bootstrapped before those shipped is *missing*
+them, not opted out — propose them. Never regenerate the resolved
+`include:` list, member `.gitignore` lines, or `[monorepo].config_roots` from
+the template: they are derived from `spec/workspace.yml`, which the team owns.
+
+**Members sync independently.** There is no workspace mode that syncs every
+member in one pass; run `/steer-sync` in each repo. Because the plugin version
+is stamped per repo, members can settle on different versions — when syncing a
+member, say which version the workspace is on if you can read it, so the drift
+is visible rather than silent.
+
+---
 
 5. **Reconcile the materialized templates (additive).** After structural
    migrations, run the standard **Template reconciliation** convention

@@ -48,7 +48,8 @@ confirmation.
    which path you took, so the user knows whether issues/milestones were touched.
 4. **Polyrepo? Milestones cannot carry the plan.** With `spec/workspace.yml` or
    `spec/PRODUCT.md` present, run from the **workspace** (a member has no
-   product-level spine to lay out — resolve it per `/steer:reference polyrepo`) and
+   product-level spine to lay out — resolve it per `/steer:reference polyrepo`,
+   whose "Reporting across members" also governs the scope line) and
    switch the release axis: **a GitHub Milestone is per-repository and cannot span
    members**, so grouping member issues by milestone would silently split the plan
    N ways. Projects v2 *is* cross-repo, so group releases by a Project

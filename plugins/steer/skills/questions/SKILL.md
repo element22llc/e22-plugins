@@ -102,12 +102,11 @@ as "stale by that same test".
    [`LEGACY.md`](${CLAUDE_PLUGIN_ROOT}/skills/questions/LEGACY.md) §2 before
    touching them.
 
-   **In a polyrepo member** (`spec/PRODUCT.md` present) all three of those paths
-   are absent by design, so the grep returns nothing — that is **not** a clean
-   sweep. Resolve the workspace (`workspace.path`, else the GitHub gateway) and
-   run the sweep against its spine, reporting which repo you covered; if it is
-   unreachable, say the spine is unreachable rather than reporting zero open
-   questions (`/steer:reference polyrepo`).
+   **In a member** all three of those paths are absent by design, so the grep
+   returns nothing — that is **not** a clean sweep. Resolve the workspace by the
+   ladder in `/steer:reference polyrepo`, sweep its spine instead, and report
+   which repo you covered; an unreachable spine is reported as unreachable,
+   never as zero open questions.
 
 3. **Present a worklist.** Print a consolidated table — **product-level
    (`vision.md`) first**, then per feature — with the source file and the

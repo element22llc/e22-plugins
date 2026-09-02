@@ -23,14 +23,11 @@ feature, using the canonical templates bundled with this plugin.
 1. Determine the feature `[id]` — a short kebab-case slug (`user-login`,
    `export-csv`). Ask the dev if it isn't obvious.
 2. Create the folder `spec/features/[id]/` **in the repo that owns the product
-   spine**. Normally that is this repo — but in a polyrepo **member**
-   (`spec/PRODUCT.md` present) all of `spec/features/**` belongs to the
-   **workspace**: resolve it via `workspace.path`, else the GitHub gateway, and
-   create the feature there. **Never** create `spec/features/**` in a member; if
-   the workspace is unreachable by either route, say so and stop rather than
-   writing locally (`/steer-reference polyrepo`). **If the folder already
-   exists**, this `[id]` was scaffolded before — do not clobber it; go to step 3's
-   reconcile branch.
+   spine**. Normally that is this repo — but in a **member** `spec/features/**`
+   belongs to the workspace (rule `30-spec-workflow`): resolve it by the ladder
+   in `/steer-reference polyrepo` and create the feature there, never here. **If
+   the folder already exists**, this `[id]` was scaffolded before — do not
+   clobber it; go to step 3's reconcile branch.
 3. Instantiate the two spec files from the bundled templates:
    - `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/feature-intent.md` → `spec/features/[id]/intent.md`
    - `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/feature-contract.md` → `spec/features/[id]/contract.md`

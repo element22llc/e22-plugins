@@ -49,11 +49,8 @@ ends trunk mode. After applying in that case, also update the product `CLAUDE.md
 marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so the
 steer hooks resume the per-feature branch/PR flow (the mode is over — the server wall
 now enforces it) — and write a graduation entry under `/spec/history/`. **In a
-polyrepo member** (`spec/PRODUCT.md`), the `CLAUDE.md` marker is this repo's own and
-is flipped here, but the action history is the workspace's — write the entry there if
-`workspace.path` resolves, and otherwise record the graduation in the PR description
-and say the workspace ledger still needs it. Never create a local `spec/history/` in a
-member (`/steer:reference polyrepo`).
+member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
+graduation entry goes to the workspace's ledger per rule `32-living-docs`.
 
 ## Authorization (what invoking this grants)
 
@@ -75,9 +72,8 @@ to put the path first. (Same discipline, inverted, as `/steer:report` keeping
 ## Preconditions
 
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
-   tracker is something else, say so and stop. In a **polyrepo member**
-   (`spec/PRODUCT.md`) there is no local tracker — read the workspace's
-   (`/steer:reference polyrepo`); the protection target is still *this* repo.
+   tracker is something else, say so and stop. In a **member** the tracker is the
+   workspace's (rule `35-issue-tracker`); the protection target is still *this* repo.
 2. **`gh auth status`** must succeed. If not, tell the dev to run `gh auth login`
    themselves (never run auth on their behalf) and stop.
 3. **Resolve `owner/repo`** from `git remote get-url origin` (or `gh repo view`).
@@ -149,8 +145,7 @@ the fix; the marker flip itself is `apply`'s job:
   graduated (someone applied protection outside this skill). Report that the
   marker is stale and recommend `/steer:protect apply`, which flips it to
   `<!-- steer:delivery-mode=pr-flow -->`, updates the section prose, and appends
-  the graduation entry under `/spec/history/` (in a polyrepo member, to the
-  workspace's ledger — never a local copy). Do not edit those files from
+  the graduation entry under `/spec/history/`. Do not edit those files from
   `verify`: a mode documented as read-only must stay read-only, and a stale
   marker is a finding to report, not a side effect to apply unasked.
 - Marker says **pr-flow** (or is absent) but `main` has **no protection** → the
@@ -179,55 +174,13 @@ the local signals each session; this is the networked, on-demand check.)
 
 ## Apply (only on confirmation)
 
-When rules are drifted or absent:
-
-1. Show the **exact** request you will run — the full classic-protection body that
-   closes the gap. Pipe the JSON from `echo` into `--input -` rather than using a
-   heredoc: a heredoc's closing delimiter must sit at column 0, but these examples
-   are indented inside a list, so a copy-pasted heredoc hangs at the `heredoc>`
-   prompt. The piped form below has no terminator and pastes safely at any
-   indentation (single-quote the JSON so the shell does not expand `$`):
-   ```sh
-   echo '{"required_status_checks":{"strict":false,"contexts":["<resolved-ci-context>"]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1,"dismiss_stale_reviews":true},"required_linear_history":true,"restrictions":null}' \
-     | gh api -X PUT "repos/${OWNER}/${REPO}/branches/${BRANCH}/protection" --input -
-   ```
-   **Every *policy* value in that body comes from the policy file, not from this
-   example** (`restrictions: null` is the one exception — the API requires the field
-   and the policy does not carry it) —
-   `policy/branch-protection.yml` is the source of truth, and the body above shows
-   its *current* values only as an illustration. Read each field from the policy for
-   the branch in scope (`strict`, `contexts`, the review counts, `enforce_admins`,
-   `required_linear_history`) exactly as you already resolve the `ci` context name
-   from the workflow. Emitting a value this example hardcodes while the policy says
-   otherwise makes the step-4 re-verify report permanent drift on a branch you just
-   "fixed". When you emit the concrete command for a dev, substitute the resolved
-   `OWNER`/`REPO`/`BRANCH` and the real CI context inline — do not leave `${...}`
-   placeholders or a heredoc in the command you hand them to run. Run this PUT
-   **once per branch in scope** (default branch, then each declared branch that
-   exists), substituting that branch's `BRANCH` and resolved fields each time.
-2. **Wait for the dev's explicit confirmation.** Do not apply without it.
-3. Apply the repo-level settings as **separate** calls — once for the repo, not
-   per branch — surfaced and confirmed
-   the same way as the protection PUT:
-   - secret scanning + push protection **and** Dependabot security updates in one
-     `gh api -X PATCH "repos/${OWNER}/${REPO}"` with the `security_and_analysis`
-     block;
-   - Dependabot **alerts** via `gh api -X PUT
-     "repos/${OWNER}/${REPO}/vulnerability-alerts"` (no body; its own endpoint).
-4. After applying, re-run the verify diff and report the new state.
-
-**Insufficient permissions (`403`/admin required):** you cannot set protection
-without admin on the repo. Do not retry blindly — print the equivalent manual
-steps (**Settings → Branches → Add branch ruleset**, or **Settings → Rules**)
-mapped to each policy field, and let the dev (or an org admin) apply them.
-
-**Protection unavailable (plan limit):** on some GitHub plans branch protection
-cannot be enabled on private repos at all (the API returns `403` with an
-upgrade message). The two-state model still applies — the repo runs pr-flow on
-the honor system: same branch + PR + never-merge flow (rule 45), just without
-the server wall. Recommend recording that exception as an ADR (run
-`/steer:adr`) so the gap is a documented decision `verify` and `/steer:audit`
-keep visible, not an oversight.
+When rules are drifted or absent, the write procedure — the exact protection
+`PUT` (every *policy* value read from `policy/branch-protection.yml`, never from
+an example), the repo-level security calls, the post-apply re-verify, and the
+`403`/plan-limit failure paths — is in
+[`APPLY.md`](${CLAUDE_PLUGIN_ROOT}/skills/protect/APPLY.md). **Read it when the
+dev has confirmed, and follow it there.** Nothing is written before that
+confirmation.
 
 ## Notes
 

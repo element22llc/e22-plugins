@@ -87,13 +87,13 @@ recommended action is to **bootstrap** — `/steer-init` (greenfield) or `/steer
 (existing "vibe-coded" code). Say which and stop. Don't run the rest.
 
 **Polyrepo.** Phase 1's snapshot helper reports `- polyrepo role:` next to the
-spine state; read the two together. In a **member**, the spine is partial by design — resolve the product spine
-from `spec/PRODUCT.md` (local `workspace.path`, else the GitHub gateway) before
+spine state; read the two together. In a **member** the spine is partial by
+design — resolve it by the ladder in `/steer-reference polyrepo` before
 concluding anything is missing; a member with only a pointer is `managed`, not
 broken. From the **workspace**, the arbitration below covers the members you can
-actually read. Name them, and name any member you could reach neither way as
-**uncovered** — a next action chosen from a fraction of the product, presented as
-the whole, is worse than admitting the gap. Detail: `/steer-reference polyrepo`.
+actually read: scope the report per that reference's "Reporting across members"
+— a next action chosen from a fraction of the product, presented as the whole,
+is worse than admitting the gap.
 
 ## Phase 1 — Reconstruct workspace state (read-only)
 
@@ -169,33 +169,12 @@ reads as "nothing there."
 
 ## Phase 2 — Classify each observed state
 
-Map every reconstructed state to exactly one of the categories using this
-workspace-level table — `/steer-next`'s own domain (cross-workflow arbitration),
-keyed by reconstruction dimension, derived from the same vocabulary. The
-parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
-
-| Reconstructed state | Category (safety level) | Routes to |
-|---|---|---|
-| Committed secret / destructive-risk exposure observed | Blocking now (L1) | Rotate & invalidate; then `/security-review` (no command rotates it) |
-| Live, deployed feature actively exposing data / breaching users / losing integrity | Urgent live-system remediation (L1) | Remediate the live system now; then `/security-review` (no command remediates it) |
-| Open `impact: blocking` question gating its `required_before` gate | Blocking now (L2) | `/steer-questions` |
-| Proposed ADR awaiting ratification | Human decision required (L3) | The Deciders ratify/reject — answerable in-session via `/steer-adr` |
-| Intent `draft`, drafted but not PO-approved | Human decision required (L3) | PO approves — answerable in-session via `/steer-spec` |
-| PR open, awaiting review / in `validate` | Human decision required (L3) | A reviewer reviews (no command — **never** promptable) |
-| Claimed issue mid-lifecycle (`in-progress` + branch), not yet at a PR | Blocking now — next transition (L4) | `/steer-work resume #N` |
-| PR merged but issue still `validate` (stale tracker) | Human decision required (L3) — `validate → done` is propose-only, and a merged PR is necessary but not sufficient | `/steer-work resume #N` proposes `done` once acceptance is confirmed |
-| Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now — next transition (L4) | owning skill |
-| Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer-questions` |
-| Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer-questions` |
-| `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/steer-work start #N`, `/steer-issues …`, `/steer-sync` |
-| Every workflow settled across all dimensions | Complete — no action required (L7) | — |
-
-When the same state could plausibly fit two categories, the **derivation rule**
-decides: a question's `impact:` and `required_before:` separate *Blocking now*
-from the release-timing categories, and the feature's `Status` (live vs not)
-chooses between *Required before initial production* and *Required before next
-production release*; an unmerged PR is *Human decision required*, never
-*Complete*.
+Turn Phase 1's raw snapshot into typed, comparable states before arbitrating —
+the per-dimension classification tables, the state vocabulary they reuse, and
+the "absent by design vs missing" calls are in
+[`CLASSIFY.md`](CLASSIFY.md). **Read it here,
+with the snapshot in hand, and classify from it** — do not classify from memory
+of the vocabulary.
 
 ## Phase 3 — Arbitrate to one action
 

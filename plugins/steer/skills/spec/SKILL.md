@@ -56,17 +56,13 @@ step, never a precondition for the spec work itself.
 
 ## Steps
 
-0. **Resolve the spine first.** If this repo carries `spec/PRODUCT.md` (a polyrepo
-   member), its spine is **partial by design**: every feature's `intent.md` /
-   `contract.md` lives in the **workspace** repo, not here. Resolve the workspace
-   before step 1 — `workspace.path` when `spec/workspace.yml` is present there
-   (resolved against the **primary checkout**, since `..` from a linked worktree
-   lands on an empty `.claude/worktrees`), else the GitHub gateway — and author the
-   feature spec **there**. A missing local `intent.md`
-   means the workspace has not been read yet, never that the feature is
-   unspecified, so **never** author product-level spec files here to fill the gap.
-   If neither route reaches the workspace, say the spine is unreachable and stop.
-   Procedure: `/steer:reference polyrepo`.
+0. **Resolve the spine first.** In a member (`spec/PRODUCT.md`) every feature's
+   `intent.md` / `contract.md` lives in the **workspace**, not here. Resolve it
+   before step 1 by the two-test ladder in `/steer:reference polyrepo` §
+   "Resolving the spine from a member", and author the feature spec **there**. A
+   missing local `intent.md` means the workspace has not been read yet, never
+   that the feature is unspecified — **never** author product-level spec files
+   here to fill the gap.
 1. **Identify the feature.** Ask for a short kebab-case `[id]` (e.g.
    `export-csv`, `user-login`). If `spec/features/[id]/` already exists,
    **resume** it — never clobber filled-in content; merge into it.

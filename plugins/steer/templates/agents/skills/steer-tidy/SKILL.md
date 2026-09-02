@@ -22,12 +22,10 @@ Key points (read the file for the full detail):
 - The repo **root** holds scaffolding + config only. Everything on the **root
   allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
   scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
-- **Polyrepo member (`spec/PRODUCT.md` present): never create a product-level
-  spine dir locally.** `spec/reference/`, `spec/sources/`, `spec/features/` and
-  `spec/app/` belong to the **workspace** — so a stray whose home is one of them
-  does not get that dir created here. Report the stray and name the workspace as
-  its destination instead; `spec/design/` and `spec/decisions/` *are* the
-  member's own and are handled normally. See `/steer-reference polyrepo`.
+- **Member: never create a product-level spine dir locally** (rule
+  `22-housekeeping`) — a stray whose home is one of them is reported with the
+  workspace named as its destination, not filed here. `spec/design/` and
+  `spec/decisions/` *are* the member's own and are handled normally.
 - Loose **source/research materials** (spreadsheets, inventories, vendor
   metadata, schema/DDL dumps, discovery docs, PII/CMDB files, and
   **spec/requirements documents** — `.pdf`/`.docx`/decks) → `/spec/reference/`.

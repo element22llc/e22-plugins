@@ -80,8 +80,8 @@ shell escaping. Detect capability **in this order, every run**:
    on its absence and never create a local copy. Issues are filed against the
    tracker's declared `repository:`, which in a member is not this repo — so the
    cross-repo closing-ref rule in `OPERATIONS.md` applies (`Refs owner/repo#N`
-   plus an explicit `close`). If the workspace is unreachable by either route,
-   say the spine is unreachable and stop (`/steer-reference polyrepo`).
+   plus an explicit `close`). Resolve it by the ladder in
+   `/steer-reference polyrepo`.
 2. **Probe for GitHub MCP tools** (e.g. an issues list/get/create tool exposed by
    the github MCP server). If present → **MCP path**.
 3. **Else probe `gh auth status`.** If authenticated → **`gh` CLI path**
@@ -112,13 +112,17 @@ to `/steer-work` under the repo's execution/autonomy rules (otherwise `git push`
 would violate the boundary).
 
 Each operation is MCP-first → `gh` → manual, and reports which path it took. The
-full catalogue — `search`, `get`, `find-or-create`, `create`, `update`,
-`comment`, `set-type`, `label`, `set-milestone`, `milestone-ensure`,
-`field-get`/`field-set`, `bootstrap-fields`, `transition`, `assign`,
-`link-parent`, `link-related`, `link-pr`, `link-blocked-by`, `close`/`reopen`,
-and the cross-repo closing-ref rule — is in
-[`OPERATIONS.md`](OPERATIONS.md).
-**Read it before performing any operation.**
+catalogue is **split by domain, so a caller reads only the ops it performs**:
+
+| Operations | Read |
+|---|---|
+| the core lifecycle — `search`, `get`, `find-or-create`, `create`, `update`, `comment`, `label`, `transition`, `assign`, `link-pr`, `close`/`reopen` — plus the API boundary and the cross-repo closing-ref rule | [`OPERATIONS.md`](OPERATIONS.md) |
+| `set-type`, `set-milestone`, `milestone-ensure`, `field-get`/`field-set`, `bootstrap-fields` | [`OPERATIONS-PLANNING.md`](OPERATIONS-PLANNING.md) |
+| `link-parent`, `link-related`, `link-blocked-by` | [`OPERATIONS-LINKS.md`](OPERATIONS-LINKS.md) |
+
+**Read `OPERATIONS.md` before your first operation** — it carries the boundary
+that binds all three files. Read a companion **only when** you are about to
+perform an op it lists; never all three by default.
 
 ## Modes
 
