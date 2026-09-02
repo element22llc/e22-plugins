@@ -1,38 +1,13 @@
 #!/usr/bin/env sh
-# steer — repository version-pin scanner (the CI hard gate).
-#
-# The interactive hook (hooks/check-version-pins.sh) only sees the content a tool
-# writes, and skips Bash command text. THIS scanner is the committed-state
-# backstop: it walks a repo's infra/config/script files for pinned major versions
-# and fails when a pin violates policy/versions.yml. Same policy file, same
-# verdicts as the hook — deterministic, no network, no jq.
-#
-# SCOPE — a CONSERVATIVE LITERAL-PIN scanner, not a semantic analyzer. It matches
-# literal `<product>:<version>` tokens (and `FROM <product>:<version>`) in:
-#   compose.yaml/.yml, docker-compose.yaml/.yml, Dockerfile[.*], mise.toml/.mise.toml,
-#   *.tf, *.sh, *.bash, *.yml, *.yaml
-# It does NOT evaluate Terraform locals/vars/interpolation, shell variables, or
-# templated values — a pin hidden behind `${VAR}` is NOT resolved and NOT flagged
-# (reported as out of scope by omission, never false-positived). Unknown products
-# are not enforced.
-#
-# SUPPRESS a deliberate pin: append `# steer:allow-pin <reason>` (legacy
-# `# pin-ok: <reason>`) on the same line, and record an ADR (versioning policy).
-#
-# SECURITY: read-only; never executes repo content; no network; does not follow
-# symlinks (POSIX find default); skips .git, dependency trees, build output;
-# diagnostics print the matched token + location, never surrounding file content.
-#
-# USAGE: scan-version-pins.sh [repo-root]   (default: .)
-# EXIT:  0 clean · 1 denied pin found · 2 config error (no/empty policy file)
-# POSIX sh; no jq, no network.
+# steer — CI version-pin scanner: fails on literal `<product>:<version>` pins that violate policy/versions.yml.
+# Usage: scan-version-pins.sh [repo-root]   Exit: 0 clean · 1 denied pin · 2 config error (no/empty policy)
+# Suppress a deliberate pin with `# steer:allow-pin <reason>` (legacy `# pin-ok: <reason>`) + an ADR.
+# Rationale: /steer:reference conventions -> "Enforcement: the version-pin floor".
 
 ROOT="${1:-.}"
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
-# Locate the shared policy lib. In the plugin it lives at ../hooks/lib/; in a
-# consumer repo the scaffold ships a verbatim copy alongside this script (kept
-# byte-identical — enforced by check_standards.py).
+# Plugin layout keeps the lib at ../hooks/lib/; the consumer scaffold ships a byte-identical copy beside this script.
 for _cand in \
 	"${HERE}/../hooks/lib/version-policy.sh" \
 	"${HERE}/version-policy.sh" \
@@ -48,7 +23,6 @@ if ! command -v steer_policy_verdict >/dev/null 2>&1; then
 	exit 2
 fi
 
-# Resolve the policy file: explicit override → repo-local → plugin-bundled.
 if [ -n "${STEER_POLICY_FILE:-}" ]; then
 	POLICY="${STEER_POLICY_FILE}"
 elif [ -f "${ROOT}/policy/versions.yml" ]; then
@@ -67,7 +41,6 @@ fi
 PRODUCTS='postgres|node|python|redis|valkey|nginx|mysql|mariadb|mongo'
 PAT="(${PRODUCTS}):[0-9]+(\.[0-9]+)?"
 
-# scan_file <path> — print "path:line: <detail>" for each DENIED pin.
 scan_file() {
 	_f="$1"
 	grep -nE "${PAT}" "${_f}" 2>/dev/null | while IFS= read -r _m; do
@@ -85,11 +58,7 @@ scan_file() {
 }
 
 VIOLATIONS="$(
-	# `.claude/worktrees` holds linked worktrees — full checkouts of this same repo
-	# (and, in a polyrepo, of its members). Without pruning it, every scanned file
-	# is reported once per live worktree, and a violation on another branch is
-	# reported against the branch you are on. Pruned by PATH, not by -name, so a
-	# `worktrees/` directory that is genuinely part of the repo still gets scanned.
+	# Prune .claude/worktrees by PATH (not -name): linked worktrees are full checkouts, so each file would be reported once per worktree.
 	find "${ROOT}" \
 		\( -path '*/.claude/worktrees' -o -name .git -o -name node_modules \
 		-o -name .venv -o -name venv \

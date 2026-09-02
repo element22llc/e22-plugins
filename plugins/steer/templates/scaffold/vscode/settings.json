@@ -1,7 +1,5 @@
 {
-  // Shared workspace defaults. Wires Biome (the repo's lint+format tool) in as
-  // the formatter so format-on-save matches `pnpm format` / CI. Per-user
-  // overrides belong in .vscode/settings.local.json (gitignored), not here.
+  // Shared VS Code defaults (Biome = format-on-save, matching `pnpm format` / CI). Per-user overrides: .vscode/settings.local.json (gitignored).
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "biomejs.biome",
   "editor.codeActionsOnSave": {
@@ -13,13 +11,7 @@
   },
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
-  // GitHub Copilot picks up the steer engineering standards from
-  // .github/copilot-instructions.md (+ path-scoped .github/instructions/*),
-  // the cross-tool .agents/skills/ tree (/steer-<skill>), and the custom agents in
-  // .github/agents/ (e.g. steer-reviewer). It also reads MCP servers from
-  // .vscode/mcp.json. These are default-on in recent VS Code; the two toggles below
-  // set the instruction-file + prompt-file behaviours explicitly so the standards
-  // load regardless of a teammate's defaults. Remove if Copilot is unused.
+  // Copilot: load the steer standards (.github/copilot-instructions.md, .agents/skills/) regardless of a teammate's defaults. Remove if Copilot is unused.
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "chat.promptFiles": true
 }

@@ -2,33 +2,14 @@ name: CI
 
 on:
   pull_request:
-    # `prod` is here because `policy/branch-protection.yml` makes `ci` a REQUIRED
-    # status check on the `prod` promotion branch. Without this trigger the check
-    # never reports on a main -> prod PR and the production gate blocks forever.
+    # `prod` too: branch-protection makes `ci` a required check on the main -> prod promotion PR.
     branches: [main, prod]
   push:
     branches: [main]
 
-# The `ci` job is the single required status check on `main` (and on `prod`, where
-# it gates the promotion PR alongside the required review). It ALWAYS runs
-# stack-AGNOSTIC hygiene (actionlint, shellcheck, the version-pin scan), then
-# runs the checks for whatever stack it DETECTS in the repo:
-#   - Node/TS   when package.json or pnpm-workspace.yaml is present
-#   - Python    when a pyproject.toml is present
-# A detected stack with NO test contract FAILS the build — so a green `ci` is
-# never a false "tests ran". Note this bites from the first commit on any profile
-# that ships a root package.json: the Node phase activates as soon as that file
-# exists, so `ci` stays red until some package defines a real `test` script (a
-# pass-through `--if-present` fan-out does not count). Only when NO stack is
-# detected at all do the stack steps skip and the job report that application
-# validation is not yet active. See README.md#branch-protection.
-#
-# Note on testing: there is deliberately NO test-file-name gate (a filename check
-# can't tell a real test from an empty one). Test presence is enforced by the
-# plugin-injected steer rules (Definition of Done), human review, and the "stack
-# detected but no test script -> fail" guards below. Coverage is a SIGNAL, not a
-# target: the Coverage step reports it and gates only the lines a PR changes (no
-# global %). Full conventions: run /steer:reference conventions -> Coverage.
+# The single required status check: stack-agnostic hygiene always, then the checks for each
+# DETECTED stack. A detected stack with no test contract FAILS — green must mean tests ran.
+# Rationale: README.md#branch-protection; /steer:reference conventions -> Testing / Coverage.
 
 jobs:
   ci:
@@ -37,36 +18,24 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # Full history so the coverage step can diff changed lines against the
-          # PR base branch (diff-cover). Cheap; harmless on push builds.
+          # Full history: the coverage step diffs changed lines against the base branch.
           fetch-depth: 0
 
-      # Install all tools defined in mise.toml — Node, Python, OpenTofu,
-      # shellcheck, actionlint, etc. Nested mise.toml files (e.g. /infra/mise.toml)
-      # are picked up automatically. mise-action auto-adds `--locked` whenever a
-      # `mise.lock` exists, so a committed (populated) lock installs the exact
-      # pins and fails LOUDLY if it is malformed — never silently degrading to
-      # `latest`. Before /steer:init|adopt pins the toolchain there is no lock
-      # at all, so this runs a plain unlocked install instead of failing. The
-      # template ships no placeholder lock; /steer:init|adopt creates and commits
-      # a populated one (see /steer:reference conventions).
+      # mise-action adds `--locked` whenever mise.lock exists; before /steer:init|adopt commits
+      # one, this is a plain unlocked install rather than a failure.
       - name: Setup mise
         uses: jdx/mise-action@v4
         with:
           install: true
           cache: true
 
-      # ────────────────────────────────────────────────────────────────────
-      # ACTIVE — stack-agnostic hygiene. Always runs; makes the required `ci`
-      # check do real work regardless of the product's stack.
-      # ────────────────────────────────────────────────────────────────────
+      # Stack-agnostic hygiene — always runs.
 
       - name: Lint GitHub Actions workflows (actionlint)
         run: actionlint -color
 
       - name: Lint shell scripts (shellcheck)
         run: |
-          # Lint every tracked shell script. Passes cleanly when there are none.
           mapfile -t scripts < <(git ls-files '*.sh' '*.bash')
           if [ ${#scripts[@]} -eq 0 ]; then
             echo "No shell scripts found — nothing to lint."
@@ -75,19 +44,12 @@ jobs:
             shellcheck "${scripts[@]}"
           fi
 
-      # Version-pin policy: the committed-state backstop for the interactive
-      # version-pin hook. Fails on an image/tool major pinned below
-      # policy/versions.yml. Deterministic — no network, no jq.
+      # Committed-state backstop for the interactive version-pin hook (policy/versions.yml floors).
       - name: Version-pin policy scan
         run: sh scripts/scan-version-pins.sh .
 
-      # Secret scanning: enable GitHub-native secret scanning + push protection in
-      # repo Settings → Code security. It runs outside Actions and is the canonical
-      # secret-scan mechanism — see README.md#branch-protection. No CI step needed.
+      # Secret scanning is GitHub-native (Settings -> Code security), not a CI step.
 
-      # ────────────────────────────────────────────────────────────────────
-      # Stack detection — which stacks are actually present in this repo.
-      # ────────────────────────────────────────────────────────────────────
       - name: Detect stack
         id: detect
         run: |
@@ -98,11 +60,7 @@ jobs:
           pulumi=false
           if [ -f package.json ] || [ -f pnpm-workspace.yaml ]; then node=true; fi
           if [ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .; then python=true; fi
-          # Infra / IaC. Keep these signals in lockstep with steer_repo_does_iac
-          # in plugins/steer/hooks/lib/scope.sh (the rule-injection predicate):
-          # Ansible needs ansible.cfg, a site playbook, or roles/ AND playbooks/
-          # together — a bare roles/ dir (RBAC/IAM roles, a roles/ package) is NOT
-          # Ansible and must not trip the lint.
+          # Keep in lockstep with steer_repo_does_iac (plugin hooks/lib/scope.sh); a bare roles/ dir is NOT Ansible.
           if git ls-files '*.tf' '*.hcl' | grep -q .; then tf=true; fi
           if [ -f ansible.cfg ] || [ -f site.yml ] || [ -f site.yaml ] || { [ -d roles ] && [ -d playbooks ]; }; then ansible=true; fi
           if [ -f Pulumi.yaml ] || [ -f Pulumi.yml ]; then pulumi=true; fi
@@ -117,14 +75,9 @@ jobs:
             echo "::notice::No application or infra stack detected (no package.json / pyproject.toml / *.tf / Ansible / Pulumi layout). Stack-agnostic hygiene ran; stack validation is not yet active."
           fi
 
-      # ────────────────────────────────────────────────────────────────────
-      # Node/TS — runs only when a Node workspace is detected. pnpm + Biome are
-      # installed by mise. Root scripts fan out across apps/* + packages/*.
-      # ────────────────────────────────────────────────────────────────────
       - name: Install dependencies (Node)
         if: steps.detect.outputs.node == 'true'
-        # Freeze only once a lockfile exists (a fresh fork has none until
-        # /steer:init generates it); self-tightening thereafter.
+        # Freeze only once a lockfile exists (a fresh fork has none until /steer:init generates it).
         run: |
           if [ -f pnpm-lock.yaml ]; then
             pnpm install --frozen-lockfile
@@ -143,34 +96,21 @@ jobs:
 
       - name: Test (Node/TS)
         if: steps.detect.outputs.node == 'true'
-        # A detected stack with no test script would let `pnpm run test`
-        # (--if-present) no-op to green. Fail instead — green must mean tests ran.
+        # The root `--if-present` fan-out is not a test contract — green must mean tests ran.
         run: |
-          # The root package.json ships a `--recursive --if-present` fan-out, which is
-          # NOT a test contract — matching it would make this guard self-satisfying on a
-          # freshly scaffolded repo. Require at least one `test` script that is not a
-          # pass-through fan-out.
           if ! git ls-files '*package.json' \
                | xargs grep -hE '"test"[[:space:]]*:' 2>/dev/null \
                | grep -qv -- '--if-present'; then
             echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
             exit 1
           fi
-          # Emit coverage when a Vitest coverage provider is wired; otherwise run
-          # tests plain. The root fan-out forwards the flags into each package, so
-          # vitest writes a PER-PACKAGE <package>/coverage/lcov.info. The
-          # changed-line gate below stays fail-open when no report is produced.
-          # Run /steer:reference conventions -> Coverage.
+          # Per-package lcov.info only when @vitest/coverage is wired; the gate below is fail-open without it.
           if git ls-files '*package.json' | xargs grep -lq '@vitest/coverage' 2>/dev/null; then
             pnpm run test -- --coverage --coverage.reporter=lcov
           else
             pnpm run test
           fi
 
-      # ────────────────────────────────────────────────────────────────────
-      # Python — runs only when a pyproject.toml is detected. Uncomment
-      # python/uv/ruff in mise.toml so they install above.
-      # ────────────────────────────────────────────────────────────────────
       - name: Lint + format check (Ruff — Python)
         if: steps.detect.outputs.python == 'true'
         run: |
@@ -179,12 +119,8 @@ jobs:
 
       - name: Test (Python)
         if: steps.detect.outputs.python == 'true'
-        # pytest exit 5 = no tests collected; treat a detected-but-untested project
-        # as a failure rather than a false green.
+        # pytest exit 5 = no tests collected: fail rather than report a false green.
         run: |
-          # Emit coverage (coverage.xml) when pytest-cov is available; otherwise
-          # run tests plain. The changed-line gate below stays fail-open when no
-          # report is produced. Run /steer:reference conventions -> Coverage.
           cov_args=""
           if uv run python -c "import pytest_cov" >/dev/null 2>&1; then
             cov_args="--cov --cov-report=xml --cov-report=term-missing"
@@ -198,20 +134,9 @@ jobs:
           fi
           exit "$rc"
 
-      # ────────────────────────────────────────────────────────────────────
-      # Infra / IaC — runs only when Terraform/OpenTofu (*.tf/*.hcl) or an
-      # Ansible layout is detected. Tools install from mise (opentofu, uv); these
-      # checks need no cloud credentials (format + lint only, no init/plan/apply).
-      # ────────────────────────────────────────────────────────────────────
       - name: Format check (OpenTofu/Terraform)
         if: steps.detect.outputs.tf == 'true'
-        # `*.tf`/`*.hcl` is detected repo-wide, but `tofu` is only on PATH when the
-        # ROOT toolchain pins it — i.e. an infra-profile repo. An app-profile
-        # monorepo keeps its IaC tools in `infra/mise.toml` (not the root), so
-        # `tofu` is absent here: skip with a notice rather than failing the
-        # required `ci` check with `tofu: command not found`. That repo's infra is
-        # validated from its own toolchain. Format only — no `init`/`validate`,
-        # which would need a backend and creds.
+        # `tofu` is on PATH only when the ROOT toolchain pins it (app-profile repos keep IaC under infra/): skip, don't fail.
         run: |
           if ! command -v tofu >/dev/null 2>&1; then
             echo "::notice::*.tf/*.hcl present but 'tofu' is not on PATH at the repo root (an app-profile repo pins IaC tools under infra/, not root). Skipping the root format check."
@@ -221,44 +146,24 @@ jobs:
 
       - name: Lint Ansible (ansible-lint)
         if: steps.detect.outputs.ansible == 'true'
-        # ansible-lint auto-discovers playbooks/roles and is well-targeted. Run via
-        # uvx (uv is pinned by the infra mise.toml). yamllint runs too, but only
-        # when the repo opts in with a .yamllint config (avoids flagging unrelated
-        # YAML like workflow files).
-        #
-        # Both are version-pinned (`uvx <tool>@<version>`): an unpinned uvx
-        # resolves to whatever is latest on PyPI at run time, so a lint release
-        # with a new rule turns a green CI red on an unrelated PR, and every run
-        # executes code nobody reviewed. Bump these deliberately — Dependabot does
-        # not see tool versions embedded in a `run:` block.
+        # Pin uvx tools: unpinned takes today's PyPI latest, and Dependabot cannot see versions inside run: blocks.
         run: |
           if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
             uvx yamllint@1.38.0 .
           fi
           uvx ansible-lint@26.6.0
 
-      # ────────────────────────────────────────────────────────────────────
-      # Container image — build every apps/*/Dockerfile (and a root Dockerfile,
-      # if present) to prove it still builds (no rot). Build-only: no registry
-      # push, no cloud credentials. Skipped with a notice when there is no
-      # Dockerfile yet — so before a deployable app exists this is a no-op and a
-      # green `ci` never falsely implies an image built. Docker is preinstalled on
-      # the runner. Instantiate a Dockerfile from the plugin's templates/docker/
-      # when the app is created (see /steer:build, /steer:adopt). Pushing/deploying
-      # the image is a per-app concern and lives outside this stack-agnostic CI.
-      # ────────────────────────────────────────────────────────────────────
+      # Build-only (no push, no creds); a notice-and-skip until a Dockerfile exists (see templates/docker/).
       - name: Build container image(s)
         run: |
-          # Build context is the repo root so pnpm workspace deps + the lockfile
-          # are in scope for an apps/<app>/Dockerfile.
+          # Build context is the repo root so workspace deps + the lockfile are in scope.
           mapfile -t dockerfiles < <(git ls-files 'apps/*/Dockerfile' 'Dockerfile')
           if [ ${#dockerfiles[@]} -eq 0 ]; then
             echo "::notice::No Dockerfile found (apps/*/Dockerfile or ./Dockerfile) — skipping image build. Add one when a deployable app exists (see the plugin's templates/docker/)."
             exit 0
           fi
           for df in "${dockerfiles[@]}"; do
-            # For apps/<app>/Dockerfile, pass APP=<app> so CI is authoritative
-            # about which app is built regardless of the Dockerfile's ARG default.
+            # APP=<app> makes CI authoritative over the Dockerfile's ARG default.
             build_args=()
             case "$df" in
               apps/*/Dockerfile) build_args+=(--build-arg "APP=$(basename "$(dirname "$df")")") ;;
@@ -268,18 +173,8 @@ jobs:
             echo "::endgroup::"
           done
 
-      # Coverage is a SIGNAL, not a target: we report it and gate only the lines
-      # a change touches ("cover what you touch") — never a global percentage.
-      # On a PR, the floor runs against the PR base branch. On push to `main` it
-      # is the **solo-trunk Definition-of-Done floor**: solo-trunk has no PR, so
-      # this push-time run is its only changed-line gate — it enforces ONLY in
-      # solo-trunk (in pr-flow the PR already gated these lines; re-gating a
-      # post-merge push would wedge `main`) and diffs against the previous commit.
-      # Fail-open when no coverage report was produced, the base can't be
-      # resolved, or it is the first push, so this never blocks a repo that hasn't
-      # wired coverage yet. Tune the floor with the COVERAGE_DIFF_MIN env var.
-      # See rules 41-coverage / 50 (Definition of Done); run /steer:reference
-      # conventions -> Coverage for the full conventions.
+      # Gates only the lines a change touches — never a global %; fail-open without a report.
+      # Rationale: rule 41-coverage; /steer:reference conventions -> Coverage.
       - name: Coverage (changed-line gate)
         if: >-
           (github.event_name == 'pull_request' || github.event_name == 'push') &&
@@ -291,11 +186,7 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           ZERO=0000000000000000000000000000000000000000
-          # Collect every report produced. The root-script fan-out
-          # (`pnpm --recursive run test -- --coverage`) writes a PER-PACKAGE
-          # <package>/coverage/lcov.info — not a root one — so glob apps/* and
-          # packages/* alongside the root paths (root pytest / single-package
-          # repos). diff-cover accepts multiple report arguments and merges them.
+          # The root fan-out writes PER-PACKAGE reports, so glob apps/* and packages/* alongside the root paths.
           reports=()
           for f in coverage/lcov.info apps/*/coverage/lcov.info packages/*/coverage/lcov.info \
                    coverage.xml apps/*/coverage.xml packages/*/coverage.xml; do
@@ -324,12 +215,7 @@ jobs:
             base="$BEFORE"
           fi
           echo "## Coverage (changed lines vs $base)" >> "$GITHUB_STEP_SUMMARY"
-          # Version-pinned like the lint tools above — an unpinned uvx would take
-          # whatever is latest on PyPI, and this gate can FAIL a PR, so a silent
-          # upstream change must not be able to move the bar. Note
-          # `--markdown-report` still works on 10.4.1 but no longer appears in
-          # `--help`; if a future bump drops it, switch to
-          # `--format markdown:coverage-diff.md`.
+          # Pinned — this gate can FAIL a PR. If a bump drops --markdown-report, use --format markdown:coverage-diff.md.
           uvx diff-cover@10.4.1 "${reports[@]}" \
             --compare-branch "$base" \
             --fail-under "$COVERAGE_DIFF_MIN" \
@@ -339,19 +225,12 @@ jobs:
                exit 1; }
           cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"
 
-      # ────────────────────────────────────────────────────────────────────
-      # EXAMPLES — uncomment when they apply to your stack.
-      # ────────────────────────────────────────────────────────────────────
-      # Build: add a `build` script per app (Next.js, tsup, …); the root `build`
-      # script fans out with --if-present.
+      # Opt-in: a build step (add a `build` script per app; the root script fans out with --if-present).
       # - name: Build
       #   if: steps.detect.outputs.node == 'true'
       #   run: pnpm run build
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # ADVISORY — runs the design.md linter when any DESIGN.md changes. NOT a
-  # required check; remove `continue-on-error` to make it block.
-  # ──────────────────────────────────────────────────────────────────────────
+  # Advisory — remove `continue-on-error` to make it block.
   design-lint:
     name: design.md lint (advisory)
     runs-on: ubuntu-latest
@@ -385,17 +264,8 @@ jobs:
             npx --yes @google/design.md@0.3.0 lint "$f"
           done <<< "$CHANGED_FILES"
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # ADVISORY — spec-drift gate. Warns (never blocks) when a change touches
-  # application behavior without updating a feature `contract.md` / `intent.md`
-  # or a `spec/history/` entry. Pure shell + git: no stack, no Python — runs for every
-  # repo. Resolve a warning by updating the spec in the same change, or confirm
-  # via the PR template's "Spec sync" checkbox that there is no behavior change.
-  # This is the machine surface of rule 55 (drift gates). Runs on PR and on push
-  # to main (the latter is the only enforcer in solo-trunk, which has no PR).
-  # Remove `continue-on-error` and switch `::warning::` → `::error::` + a final
-  # `exit 1` to make it block.
-  # ──────────────────────────────────────────────────────────────────────────
+  # Rule 55's machine surface, advisory; on push it is solo-trunk's only enforcer.
+  # To block: drop `continue-on-error`, turn ::warning:: into ::error:: + exit 1.
   spec-drift:
     name: spec-drift (advisory)
     runs-on: ubuntu-latest
@@ -424,22 +294,12 @@ jobs:
           fi
           changed=$(git diff --name-only "$range" || true)
           [ -n "$changed" ] || exit 0
-          # Behavior surfaces (coarse, stack-agnostic); exempt tests.
           behavior=$(printf '%s\n' "$changed" \
             | grep -E '^(apps|packages|src|services|lib|app)/' \
             | grep -Ev '(^|/)(tests?|__tests__|e2e|fixtures)/|\.(test|spec)\.[A-Za-z0-9]+$' \
             || true)
-          # Any feature contract/intent or action-history touch clears the gate.
-          # The history is a directory of per-entry files (spec/history/<date>-<slug>.md).
-          # Entry names start with the date, so the directory's own format doc
-          # (spec/history/README.md) does NOT clear the gate — editing the format
-          # doc is not writing an entry.
-          # The legacy single-file archive path is still accepted (third alternation
-          # below) so a repo mid-migration is not flagged. It is spelled ONLY inside
-          # the regex, never in this prose: the migration ledger's precondition greps
-          # this file for a bare mention of the old path to decide whether the
-          # migration is still pending, and a comment naming it would make that
-          # check never converge.
+          # Date-prefixed entries only (not the dir's README). The legacy single-file path lives ONLY in the
+          # regex — naming it in prose breaks the migration ledger's grep of this file.
           spec=$(printf '%s\n' "$changed" \
             | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/history/[0-9][^/]*\.md$|^spec/HISTORY\.md$' \
             || true)
@@ -461,17 +321,7 @@ jobs:
             done
           fi
 
-  # `ai-slop` is ADVISORY — scans for low-quality patterns agents leave behind
-  # (undeclared/hallucinated imports, decorative/restating comments, …) and
-  # publishes them to the Security tab as code-scanning annotations. NOT a
-  # required check: `continue-on-error` + the SARIF path mean it never blocks a
-  # PR. Its differentiated value is the `ai-slop/*` rules; the security and
-  # complexity rules overlap with checks the `ci` job already runs (ruff/bandit,
-  # Biome), so `.aislop/config.yml` turns those duplicates down (see that file).
-  # Pinned to an exact version for reproducibility (pre-1.0 tool — bump
-  # deliberately). Promote to a blocking gate only once it has earned trust:
-  # swap `scan` for `aislop ci` (exits non-zero below `ci.failBelow`) and drop
-  # `continue-on-error`. PR-only to keep cost and noise down.
+  # Advisory; .aislop/config.yml turns down rules that duplicate ruff/Biome. Promote with `aislop ci` once trusted.
   ai-slop:
     name: ai-slop (advisory)
     if: github.event_name == 'pull_request'

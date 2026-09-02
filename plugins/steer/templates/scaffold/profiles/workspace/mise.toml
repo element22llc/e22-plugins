@@ -1,78 +1,11 @@
-# mise — workspace (polyrepo spine host) flavor. REPLACES the core mise.toml.
-#
-# This repo holds the product `/spec` and the `spec/workspace.yml` member
-# manifest; the code lives in the member repos. So the tasks here are about the
-# members as a set — clone them, fast-forward them, report on them, boot the
-# whole product — not about building anything locally.
-#
-# EVERY TASK HERE IS `ws:`-PREFIXED, and that is a load-bearing invariant, not a
-# style choice. Members are cloned INSIDE this workspace at the `path:` each
-# declares, and mise loads every ANCESTOR config — so this file is loaded in every
-# member and every member worktree (`cd backend && mise config ls` lists it). That
-# is plain config-hierarchy behaviour, not monorepo mode. For a task name the
-# member also defines, the nearest config wins and the member's own runs; the bite
-# is names the member does NOT define, which fall through to THIS file. An
-# unprefixed `dev` here meant `mise run dev` in a member — the most natural command
-# in the repo — booted the whole product's aggregated Compose stack, and an
-# unprefixed `docker:clean` in a member that ships no compose.yaml tore down every
-# member's volumes. `ws:`-prefixing makes that unreachable by construction: nothing
-# this file defines can shadow a member's task, because no member scaffold defines
-# a `ws:*` name.
-#
-# The one exception is `convert:doc`, whose `run` command is identical to the core
-# scaffold's — falling through to it is a no-op, so it stays unprefixed to keep one
-# vocabulary for /steer:intake. (Only `run` has to match; the descriptions differ,
-# and a check_standards.py guard asserts the commands stay in lockstep.)
-#
-# The corollary: `ws:*` tasks ARE reachable from inside a member, by design. mise
-# runs a task in its config_root, so `cd backend && mise run ws:status` operates on
-# the workspace it lives in — which is correct. Cross-boundary `depends` must use
-# the `ws:` names for the same reason: a bare `depends = ["docker:up"]` resolves by
-# name in the CALLER's task set, so from inside a member it would bind to the
-# member's `docker:up`, not this file's.
-#
-# Version strategy is identical to the core scaffold: tools resolve to `latest`,
-# `lockfile = true` + the committed `mise.lock` are the REAL pin, and the
-# scaffold ships NO lock (`/steer:init` creates it —
-# `touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`).
-# Run /steer:reference conventions for the full rationale.
+# Workspace (polyrepo spine host) mise.toml — REPLACES the core one. Every task is
+# `ws:`-prefixed: this file is an ancestor config in every member, so an unprefixed
+# name would shadow a member's. Rationale: /steer:reference polyrepo -> "Every workspace task is ws:-prefixed".
 
-# --- Monorepo task addressing across the members. UNCOMMENT once at least one
-# member is cloned locally (a `path:` in spec/workspace.yml + `mise run ws:clone`).
-# With it on, each member's own mise.toml becomes a config_root and you get
-# `mise //backend:test`, `mise '//...:lint'`, cross-project `depends`
-# (`"//backend:build"`), shared `[task_templates]`, and trust propagation from this
-# root down to the members (NOT to a linked worktree, whose root is a new path and
-# is trusted separately — steer's SessionStart check inherits that one).
-#
-# `monorepo_root` is a TOP-LEVEL key, NOT a `[settings]` entry. Nested under
-# `[settings]` mise reports `unknown field: settings.monorepo_root` and monorepo
-# mode silently never turns on — the warning is the only signal.
-#
-# List the member dirs EXPLICITLY: filesystem auto-discovery of subdirectory
-# configs is deprecated upstream in favour of `config_roots`. Keep this list in
-# step with spec/workspace.yml — `mise run ws:status` reports drift.
-#
-# Monorepo mode also SEALS bare-name inheritance: with it on, `mise run dev` inside
-# `backend` resolves as `//backend:dev` instead of falling through to this file, and
-# this file's own tasks are addressed `mise run //:ws:dev`. The `ws:` prefixes above
-# do not depend on that — they hold before any member is cloned, and a workspace
-# that never enables monorepo mode is just as sealed.
-#
-# `[monorepo].lockfile` is deliberately NOT set: it decides whether tool locks live
-# at this root or stay per-member, and upstream is mid-rollout — the current release
-# rejects the key outright (`unknown field: monorepo.?.lockfile`, warned on every
-# mise invocation). Per-member locks are what a polyrepo wants (a member repo must
-# stay buildable standalone) and are today's default; set `lockfile = false`
-# explicitly only once your mise release accepts it, and never `true`.
-#
-# Both lines below are commented, and WHERE they sit matters: a bare TOML key
-# belongs to the table above it, so `monorepo_root` has to stay ABOVE `[settings]`
-# — which is why this block leads the file rather than sitting with the other
-# task-addressing prose. Uncomment in place; do not move it down.
-#
+# Monorepo mode — uncomment once a member is cloned. `monorepo_root` is a TOP-LEVEL key:
+# it must stay ABOVE [settings]; uncomment in place. Leave `[monorepo].lockfile` unset.
 # monorepo_root = true
-#
+
 # [monorepo]
 # config_roots = [
 #   "frontend",
@@ -81,39 +14,20 @@
 
 [settings]
 lockfile = true
-# `experimental` unlocks the `[deps]` providers; kept for parity with the core
-# scaffold even though this repo has no workspace deps of its own.
 experimental = true
 
 [tools]
-# No Node/Python project lives here, but the agent-runtime baseline stays: agent
-# tooling runs packages through `npx`/`uvx` (e.g. the `convert:doc` task below
-# runs `uvx markitdown`), and `/steer:intake` converts PO documents here, at the
-# spine host. Never prune these.
+# Agent-runtime baseline — never prune; /steer:intake converts PO documents here, at the spine host.
 node = "latest"
 python = "latest"
 uv = "latest"
-github-cli = "latest"           # gh — the tracker for the whole product lives here
-"aqua:koalaman/shellcheck" = "latest" # shell lint (CI gate — scripts/ws.sh)
-"aqua:rhysd/actionlint" = "latest"    # GitHub Actions workflow lint (CI gate)
-
-# Deliberately absent: pnpm/biome/ruff. Linters belong to the member that owns
-# the code — a workspace repo that lints nothing needs none of them. Add one only
-# if this repo ever grows code, which is a sign it should not be the spine host.
+github-cli = "latest"
+"aqua:koalaman/shellcheck" = "latest"
+"aqua:rhysd/actionlint" = "latest"
+# No pnpm/biome/ruff: linters belong to the member that owns the code.
 
 [env]
-# The workspace boots every member's services through compose.yaml `include:`,
-# so it needs its own Compose identity — otherwise `mise run ws:dev` here and a
-# member's standalone `mise run docker:up` fight over the same project name.
-# worktree-env.sh derives COMPOSE_PROJECT_NAME from this checkout's directory
-# name, which differs from every member's, so the two stacks stay separate. In a
-# linked worktree it is `<repo>-<worktree>` — the repo prefix is what keeps this
-# workspace's `feat-x` worktree out of a member's `feat-x` worktree, which shared
-# one Compose project when the name was the worktree basename alone.
-#
-# HOST PORTS still collide: this stack and a member's standalone stack both
-# default to 5432. Run the product from here OR a member standalone, not both —
-# or give one side an offset (`STEER_WORKTREE_OFFSET=<n>`).
+# Own Compose identity (<repo>[-<worktree>]) so this stack and a member's standalone stack stay separate; host ports still collide.
 _.source = "scripts/worktree-env.sh"
 
 [tasks."ws:clone"]
@@ -138,12 +52,7 @@ run = "sh scripts/ws.sh list"
 
 [tasks."ws:docker:up"]
 description = "Start every member's backing services (compose.yaml include:) and wait until healthy"
-# Guard first: `docker compose` alone fails with a parse error that says nothing
-# about what to do, and it fails IDENTICALLY for two unrelated causes — an
-# unresolved `include:` list (the scaffold ships every entry commented out) and an
-# absent member checkout (always the case in a linked worktree, where the clones
-# are git-ignored and so were never carried in). ws.sh preflight separates them and
-# names the actual next step.
+# preflight tells an unresolved `include:` list apart from an absent member checkout; bare compose fails identically for both.
 run = [
   "sh scripts/ws.sh preflight",
   "docker compose up -d --wait",
@@ -151,39 +60,18 @@ run = [
 
 [tasks."ws:docker:down"]
 description = "Stop this workspace's services (data volumes are kept)"
-# Scoped to COMPOSE_PROJECT_NAME, so a member's standalone stack is untouched.
 run = "docker compose down"
 
 [tasks."ws:docker:clean"]
 description = "Tear down this workspace's services AND volumes"
-# `ws:`-prefixed for the reason at the top of this file, and this is the task that
-# made the invariant non-negotiable: unprefixed, a member that ships no compose.yaml
-# (a library or cli member, which the core scaffold lets you strip) fell through to
-# THIS task, and `mise run docker:clean` there — the cleanup rule 24-worktrees tells
-# every agent to run before removing a worktree — destroyed every member's volumes
-# instead of that member's.
 run = "docker compose down --volumes --remove-orphans"
 
 [tasks."ws:dev"]
 description = "Boot the product's backing services; add per-member depends (monorepo mode) for the dev servers"
-# The services half works as soon as compose.yaml lists the members' compose
-# files. The app half needs mise monorepo mode (uncomment the [monorepo] block
-# above) and one `depends` entry per member that has a `dev` task:
-#   depends = ["ws:docker:up", "//frontend:dev", "//backend:dev"]
-# mise runs `depends` in parallel, so the servers come up together (add
-# `--jobs N` for more than 4). /steer:init resolves this from the manifest.
-#
-# `ws:docker:up`, not `docker:up`: `depends` resolves by name in the CALLER's task
-# set, so a bare `docker:up` here binds to the MEMBER's task whenever this one is
-# invoked from inside a member — booting that member's services and calling it the
-# whole product. The `ws:` name is unique across the tree, so it always means this.
+# `depends` resolves in the CALLER's task set, so use `ws:` names here (a bare `docker:up` binds to a member's). Dev servers: add "//<member>:dev" entries.
 depends = ["ws:docker:up"]
 
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake"
-# Kept from the core scaffold: PO documents land in THIS repo (spec/sources/),
-# because the spine is here. Same pinned-uv path as every other managed repo.
-# The ONE unprefixed task here, and safe because its `run` command is identical to
-# the core scaffold's: a member falling through to it converts the same way it
-# would itself. (The `description` differs; only `run` is load-bearing.)
+# The one unprefixed task: its `run` must stay identical to the core scaffold's (check_standards.py asserts it).
 run = "uvx --from 'markitdown[all]' markitdown"

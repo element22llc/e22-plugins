@@ -7,6 +7,36 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: a `Code comments — why-only` rule, gated three ways.** Generated
+  code in managed repos was comment-heavy, and the one bullet in
+  `87-output-discipline` that forbade it sat near the end of the always-on
+  payload with nothing enforcing it. New rule `08-code-comments.md`
+  (code-project scope) states the test — delete the comment; keep it only if
+  the next reader would otherwise make a wrong move — and names the noise
+  classes (restating, banners, narration, dead code, doc comments on
+  internals). Its "match the file's existing comment density" clause is gone:
+  it told the model to reproduce the density of whatever it was handed. The
+  rule is now enforced at write time by a new `PostToolUse` hook
+  (`check-comment-density.sh`: a source or config file whose comment lines
+  exceed a third of its non-blank lines gets an `additionalContext` notice with
+  the ratio, once per file per session; prose, JSON, files under 20 lines and
+  `dependabot.yml` — whose per-stack blocks are commented-out code by
+  necessity — are exempt), in review by a new Definition of Done item, and in
+  `/steer:audit code` by a tenth dimension, **comment noise**. `87` keeps a
+  one-line pointer.
+- **Changed: the scaffold and the consumer GitHub templates no longer ship as
+  comment essays.** `mise.toml` was 71% comment lines, the workspace
+  `compose.yaml` 100%, `Dockerfile.node` 63%, `env.example` 83%,
+  `branch-protection.yml` 65%, `dependabot.yml` 78%; every managed repo starts
+  from these files and Claude reproduces what it sees. Each file now carries
+  one short header naming what it is and where the rationale lives
+  (`/steer:reference conventions`, `POLYREPO.md`, the Docker README), plus
+  one-line whys only where a non-obvious constraint needs one. No non-comment
+  line changed; `steer:` markers, shellcheck directives, opt-in commented-out
+  code and the `# vX.Y.Z` annotations on SHA-pinned actions are kept. The
+  plugin-side copies of the policy files and version scripts changed in
+  lockstep (the byte-identical gate holds). Rationale that lived only inline
+  moved into `CONVENTIONS.md`.
 - **Fixed: forked sessions now receive the ruleset.** Since Claude Code 2.1.214 a
   session created with `--fork-session`, `/fork` or `/branch` reports the
   SessionStart source `fork` (it used to report `resume`), and every one of

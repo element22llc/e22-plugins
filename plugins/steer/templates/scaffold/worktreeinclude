@@ -1,31 +1,8 @@
-# .worktreeinclude — git-ignored local files Claude Code copies into each
-# `claude --worktree`. Worktrees start from git refs only, so anything not
-# committed (your local .env, per-user config) is absent unless listed here.
-# Patterns use .gitignore syntax and must match files that ARE git-ignored.
-# Keep this to boot-critical local config; regenerable caches, virtualenvs,
-# and build output should NOT be listed (they rebuild in the worktree).
-# See the steer rules "Secrets handling" and "Parallel worktrees".
-#
-# Note: committed files (e.g. scripts/worktree-env.sh) already arrive via the
-# git refs — only git-IGNORED local files need listing here. The copied .env
-# below keeps its fixed POSTGRES_PORT, but mise re-derives a per-worktree port
-# on top of it (scripts/worktree-env.sh), so the copy does not cause a clash.
-# Before removing a worktree, run `mise run docker:clean` so its containers and
-# volumes don't leak (`ws:docker:clean` in a workspace repo, where every task the
-# spine host defines is ws:-prefixed).
-#
-# mise trust is PATH-based, so a new worktree starts untrusted and every
-# `mise run …` in it fails with a trust error until someone trusts it — the
-# trigger being this repo's own `[env] _.source = "scripts/worktree-env.sh"`,
-# which mise will not load untrusted. A Claude Code session inherits the primary
-# checkout's trust automatically — at SessionStart for a session started in the
-# worktree, and on CwdChanged for one it enters mid-session — and it grants
-# nothing new: mise keys trust by path, not by content, so the primary already
-# trusts every future edit of that file. Where no session is watching, run
-# `mise trust` there once: a plain terminal, or a worktree you created with
-# `git worktree add` and have not moved into.
+# Git-ignored local files Claude Code copies into each `claude --worktree` (gitignore syntax).
+# Boot-critical config only — never caches, virtualenvs, or build output; they rebuild there.
+# Rationale: steer rules "Secrets handling" and "Parallel worktrees".
 
-# Local env / secrets the app needs to boot (mirrors .gitignore)
+# Local env / secrets (mirrors .gitignore)
 .env
 .env.local
 .env.*.local

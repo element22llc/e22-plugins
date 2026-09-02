@@ -1,62 +1,27 @@
-# steer — branch-protection policy (the real gate lives on GitHub, not in the session)
-#
-# steer is deliberately ADVISORY in the local session (see rule 95, "You are not
-# the gate — the DEV is"). The hard wall against direct-push-to-main is GitHub
-# branch protection on the default branch. This file is the single, machine-readable
-# source of truth for what that protection must require; /steer:protect reads it,
-# diffs it against the repo's live settings, and — only on the dev's confirmation —
-# applies it via `gh api`. The prose in the scaffold README points HERE; it does
-# not restate these values.
-#
-# Fields map 1:1 to the GitHub classic branch-protection API
-#   (PUT /repos/{owner}/{repo}/branches/{branch}/protection)
-# so /steer:protect can diff and apply directly. Repository rulesets are a modern
-# alternative with the same intent; this policy is API-agnostic enough to back a
-# rulesets path later without changing the values.
-#
-# A repo MAY override this by shipping its own policy/branch-protection.yml
-# (resolved consumer-first, then this plugin-bundled default — same precedence as
-# policy/versions.yml). Tighten, don't quietly loosen: a weaker per-repo policy
-# should be backed by an ADR.
+# Branch-protection policy — the real PR gate lives on GitHub; /steer:protect diffs this
+# against live settings and applies it. Fields map 1:1 to the classic protection API.
+# Rationale: /steer:reference conventions -> "Deployment & environments".
 
 schema: 2          # v1 files (no `protected_branches`) remain valid — it is additive.
 
-# Which branch to protect. "default" resolves to the repo's default branch.
 branch: default
 
-# A PR — reviewed and approving — before anything lands.
 required_pull_request_reviews:
   required_approving_review_count: 1
-  dismiss_stale_reviews: true          # new commits invalidate stale approvals
+  dismiss_stale_reviews: true
 
-# The `ci` gate must be green before merge. `strict: false` deliberately does NOT
-# require the branch to be up to date first: on an active repo that forces a
-# rebase-and-rerun on every intervening merge to main, which serializes delivery
-# without catching much CI does not already catch on the merge commit.
-# context is the check-run name; /steer:protect resolves the real name from
-# .github/workflows/ci.yml rather than trusting this string blindly.
+# `strict: false` on purpose: requiring up-to-date branches serializes delivery for little gain.
 required_status_checks:
   strict: false
   contexts:
     - ci
 
-# No bypassing — even for admins — unless the team explicitly decides otherwise.
 enforce_admins: true
 
-# Keep history linear (squash/rebase merges only).
 required_linear_history: true
 
-# ── Additional protected branches (optional) ─────────────────────────────────
-# Present when the product uses a branch-based production gate (see the
-# "Deployment & environments" rule). Each entry is protected with the same
-# classic-protection fields as the default branch above. The canonical case is a
-# long-lived `prod` branch: GitHub Enterprise deployment-environment approvals
-# aren't available, so the required PR review on `prod` IS the production approval
-# gate — a reviewed PR from `main` into `prod` is the only way commits reach prod,
-# and merging it triggers the prod deploy. /steer:protect applies protection to
-# each branch listed here; a branch that does not exist on the repo yet is
-# reported as "not created" (informational), never forced. Delete this block, or
-# the `prod` entry, for a product that has no such branch.
+# Optional. `prod` is the branch-based production gate (environment approvals are
+# Enterprise-only); a branch not yet created is reported, never forced.
 protected_branches:
   - name: prod
     required_pull_request_reviews:
@@ -69,35 +34,13 @@ protected_branches:
     enforce_admins: true
     required_linear_history: true
 
-# Repo-level security, applied via a SEPARATE settings API by /steer:protect.
+# Repo-level settings, applied via separate settings APIs by /steer:protect.
 secret_scanning: true
 secret_scanning_push_protection: true
 
-# Dependabot — keep dependencies patched. Alerts + automated security updates are
-# repo-level settings /steer:protect enables alongside secret scanning (each via
-# its own endpoint). NOTE: GitHub's repo-wide `allow_auto_merge` is deliberately
-# NOT enabled — that switch exposes the auto-merge button to EVERY PR. Auto-merge
-# is scoped to Dependabot by the workflow itself (see the exception below), so no
-# repo-wide setting is needed.
 dependabot_alerts: true
 dependabot_security_updates: true
 
-# ── Documented exception to required_pull_request_reviews ─────────────────────
-# The human-review requirement above (1 approval) is the gate for PRs that touch
-# application logic. Dependabot version bumps do not, so steer waives the *human*
-# review for the low-risk subset and lets those PRs auto-merge:
-#   - SCOPE: patch + minor updates only (where most security fixes land). MAJOR
-#     bumps are EXCLUDED — they can carry breaking changes and may need a
-#     policy/versions.yml floor decision, so they stay human-reviewed.
-#   - STILL ENFORCED: the `ci` required check. Auto-merge only completes once CI
-#     is green, so a bump that breaks tests, lint, or
-#     the version-pin scan never lands. (Being up to date with the base is NOT
-#     required — see `strict: false` above.) CI — not a human — guarantees the bump is
-#     safe; only the review is waived, never the tests.
-#   - ENACTED BY: .github/workflows/dependabot-auto-merge.yml (installed via the
-#     scaffold / /steer:sync), NOT by /steer:protect. That workflow waits for the
-#     required `ci` check, then merges the single Dependabot PR directly — no
-#     repo-wide auto-merge setting is involved. protect configures repo settings;
-#     it never opens PRs or merges.
-# If a repo wants ZERO automated merges, delete that workflow — the human gate
-# then applies to Dependabot too.
+# Review-gate exception: Dependabot patch/minor bumps auto-merge via
+# .github/workflows/dependabot-auto-merge.yml once `ci` is green (majors stay human-reviewed).
+# Repo-wide `allow_auto_merge` stays OFF — it would expose the button to every PR.

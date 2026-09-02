@@ -36,8 +36,8 @@ In a pnpm monorepo each `apps/<app>/` is independently deployable, so:
 
 | Template | Stack | Notes |
 |---|---|---|
-| `Dockerfile.node` | Node / Next.js (the default) | Multi-stage; requires `output: "standalone"` + `outputFileTracingRoot` set to the repo root in `next.config`. Set the `APP` build arg to the app dir. |
-| `Dockerfile.python` | Python / FastAPI + uv | Multi-stage `uv sync --frozen`; point the CMD at the app's ASGI entry point. |
+| `Dockerfile.node` | Node / Next.js (the default) | Multi-stage; requires `output: "standalone"` + `outputFileTracingRoot` set to the repo root in `next.config`. Set the `APP` build arg to the app dir. The build stage runs `pnpm fetch` from the lockfile **alone** (no `package.json` or workspace manifests) so the store layer caches until dependencies change and works whether or not `packages/` exists. pnpm comes from corepack via the root `packageManager` field, which must resolve to the mise-pinned pnpm major that wrote `pnpm-lock.yaml`. Drop the `public/` COPY if the app has no `public/`. |
+| `Dockerfile.python` | Python / FastAPI + uv | Multi-stage `uv sync --frozen`; point the CMD at the app's ASGI entry point. The image copies only `apps/<app>/`; a service that imports shared workspace packages needs extra `COPY` lines (and a uv workspace) before `uv sync`. |
 
 ## Base-image pinning
 

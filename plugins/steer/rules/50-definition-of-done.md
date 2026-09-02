@@ -10,6 +10,7 @@ Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** chang
 needs only a PR.
 
 - [ ] Code follows existing patterns in the touched app/package.
+- [ ] Comments carry only a non-obvious *why* — none restate the code, narrate a step, banner a section, or keep dead code (see Code comments).
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**. **(size-gated)**
 - [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).

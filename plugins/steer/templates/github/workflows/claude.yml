@@ -1,17 +1,6 @@
-# The `@claude` mention workflow. It loads the **steer** plugin from the
-# org marketplace so the in-CI agent runs under the SAME engineering standards
-# as a local Claude Code session (steer's SessionStart hook injects rules/* once
-# the plugin is installed) — CI Claude and local Claude stay consistent.
-#
-# One repo-level prerequisite (see README.md#github-actions-secrets):
-#   ANTHROPIC_API_KEY — Anthropic API auth (below). The org marketplace repo
-#   (element22llc/e22-plugins) is PUBLIC, so the `plugin_marketplaces` fetch
-#   below clones it anonymously — no marketplace credential or GitHub App needed.
-#
-# NOTE: do NOT try to load steer via a settings.json `enabledPlugins` /
-# `extraKnownMarketplaces` block — those are gated behind an interactive trust
-# dialog that headless/CI mode skips, so they load nothing and fail silently.
-# The action's `plugins` / `plugin_marketplaces` inputs are the only CI path.
+# `@claude` mention workflow. Loads the steer plugin so CI Claude runs under the same ruleset
+# as a local session. Prerequisite: the ANTHROPIC_API_KEY secret (README.md#github-actions-secrets).
+# Load steer ONLY via the action's plugin inputs — settings.json enabledPlugins is trust-dialog gated, no-ops in CI.
 name: Claude Code
 
 on:
@@ -50,33 +39,10 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
-          # Load the org standards plugin so the in-CI agent runs under the SAME
-          # steer ruleset as a local session (steer's SessionStart hook injects
-          # rules/* once installed). plugin_marketplaces takes Git URLs; plugins
-          # takes name@marketplace. The marketplace repo is public, so the clone
-          # is anonymous — no credential needed (see the header note).
+          # The marketplace repo is public: anonymous clone, no credential needed.
           plugin_marketplaces: |
             https://github.com/element22llc/e22-plugins.git
           plugins: |
             steer@e22-plugins
-
-          # Optional: Customize the trigger phrase (default: @claude)
-          # trigger_phrase: "/claude"
-
-          # Optional: Trigger when specific user is assigned to an issue
-          # assignee_trigger: "claude-bot"
-
-          # Optional: Configure Claude's behavior with CLI arguments
-          # claude_args: |
-          #   --model claude-opus-4-8
-          #   --max-turns 10
-          #   --allowedTools "Bash(npm install),Bash(npm run build),Bash(npm run test:*),Bash(npm run lint:*)"
-          #   --system-prompt "Follow our coding standards. Ensure all new code has tests. Use TypeScript for new files."
-
-          # Optional: Advanced settings configuration
-          # settings: |
-          #   {
-          #     "env": {
-          #       "NODE_ENV": "test"
-          #     }
-          #   }
+          # Optional inputs (trigger_phrase, assignee_trigger, claude_args, settings):
+          # see the anthropics/claude-code-action README.

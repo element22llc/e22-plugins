@@ -1,26 +1,6 @@
-# Local backing services — committed so local matches deployed (org standard:
-# never substitute a different engine for local dev, e.g. SQLite for Postgres).
-# Start everything with `mise run dev:setup` (or just services: `mise run docker:up`).
-#
-# Baseline matches the default stack: PostgreSQL only. Adapt on fork
-# (/steer:init): add the services the product needs (Redis, MinIO, …) or delete
-# this file — and the docker:*/db:* tasks in mise.toml — if the product has no
-# backing services.
-#
-# Credentials below are local-only by design; deployed credentials live in SSM
-# Parameter Store (SecureString) / Secrets Manager. Matching local app config (git-ignored .env):
-#   DATABASE_URL=postgresql://app:app@localhost:5432/app
-#
-# Running several products locally? Each binds 5432 by default and they
-# collide. Set POSTGRES_PORT in this repo's .env (docker compose reads it
-# automatically) and mirror it in DATABASE_URL — both vars are in .env.example.
-#
-# Parallel Claude Code worktrees of THIS repo are handled automatically: mise
-# sources scripts/worktree-env.sh, which gives each worktree a distinct
-# POSTGRES_PORT and a unique COMPOSE_PROJECT_NAME — so two agents can each run
-# `mise run docker:up` without clashing, and `mise run docker:clean` tears down
-# only the worktree it's run from. Don't hardcode container_name or a fixed
-# host port here; that would defeat the per-worktree isolation.
+# Local backing services — committed so local matches deployed. Rationale:
+# /steer:reference conventions -> "Local services". No container_name or fixed
+# host port here: scripts/worktree-env.sh isolates parallel worktrees via env.
 
 services:
   postgres:
@@ -33,7 +13,7 @@ services:
       POSTGRES_DB: app
     volumes:
       - pgdata:/var/lib/postgresql # postgres:18+ mounts the parent dir, not …/data
-    healthcheck: # lets `docker compose up --wait` block until the DB accepts connections
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d app"]
       interval: 2s
       timeout: 3s

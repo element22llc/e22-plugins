@@ -181,6 +181,9 @@ acme-workspace/
 └── frontend/ backend/     git-ignored clones — NOT submodules
 ```
 
+Member ignore lines are anchored with a leading slash (`/frontend/`) so a member
+named `docs` does not also ignore an `apps/docs` inside another member.
+
 | Task | What it does |
 | --- | --- |
 | `mise run ws:clone` | Clone every member that declares a `path:`, at its manifest branch. Idempotent. |

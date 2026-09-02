@@ -17,6 +17,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | --- | --- |
 | `00-router.md` | Operating-manual entry point. |
 | `05-roles.md` | Who you are working with. |
+| `08-code-comments.md` | Code comments are why-only — the default is no comment; test each one by deleting it; never restate the code, banner, narrate the task, or keep dead code; config gets one header line pointing at the reference prose; a dense file is not a licence to add more. Enforced at write time by `check-comment-density.sh`, in review by the Definition of Done, and in `/steer:audit` by the comment-noise dimension. |
 | `10-stack.md` | Stack defaults (app / service profile). |
 | `12-stack-infra.md` | Stack — infrastructure / IaC (injected when the repo does IaC). |
 | `15-commands.md` | Useful commands. |
@@ -43,7 +44,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
 | `80-change-size.md` | Change-size model — **authoritative for per-change ceremony**; Issue-first and Definition of Done take their thresholds from it. Tiny (≈<20 lines, no behavior change) needs no issue, spec, ADR, or plan; any behavior change is Small at minimum; a high-risk area is Risky at any line count; an arguable class takes the larger one. |
 | `85-practices.md` | Baseline patterns — typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII in code and values. |
-| `87-output-discipline.md` | Earn every line — tight responses, comments the exception, least code that does the job, lean durable prose. |
+| `87-output-discipline.md` | Earn every line — tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
 | `88-artifacts.md` | Shareable views → Claude Artifacts — a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
 | `90-design-sources.md` | Design sources & UI. |
 | `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces — ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
