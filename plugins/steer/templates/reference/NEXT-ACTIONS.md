@@ -193,10 +193,29 @@ Omit every category section that is empty — a typical block shows only one or 
 of these. The two release-timing sections are mutually exclusive for a given
 system (it is either pre-launch or live), so at most one appears.
 
+**Compact by default.** The block is a handoff, not a report: the body of the
+skill's output already said what happened, so the block never re-describes it.
+One line per item, no explanatory prose under a heading, and in the common case
+the whole block is four lines:
+
+```markdown
+## Recommended next actions
+
+### Human decision required
+- PR #42 awaits review; merge is the dev's call.
+
+### Current recommended action
+Review and merge PR #42. Suggested command: `gh pr checks 42 --watch`
+```
+
 ### Rules
 
 - **Omit empty category sections.** Only `Current recommended action` is always
   present.
+- **One line per item, none of it a recap.** A category section is a bullet
+  per action, each a single line naming the action and its object. State the
+  body already reported (what was built, what was checked, which gate ran) is
+  not repeated here; the reader scrolled past it a moment ago.
 - **`Current recommended action` is the canonical field — an *action*, not a
   command.** It names exactly one concrete next step, chosen by precedence (§2),
   or the literal sentence `No action is currently required.`

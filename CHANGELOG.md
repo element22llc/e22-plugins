@@ -7,6 +7,22 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: a `Responses` rule, third in the payload, and the two contract
+  blocks that padded every turn are now compact by definition.** Chat in a steer
+  session ran long for four reasons: the "keep responses tight" bullet sat 30th
+  of 35 in `87-output-discipline`; every workflow skill ends with a
+  `## Recommended next actions` block whose format invited a paragraph per
+  category; rule `99-end-of-session` said to *report the checklist's state*, so
+  the seven items came back echoed with ticks; and hook notices were routinely
+  repeated to the user. New always-on rule `03-responses.md` gives the shape
+  (first line the outcome; a progress update is one or two sentences; a final
+  report is what changed / what was verified / what is next; never echo hook
+  notices, injected context or routing; formatting is not content). The
+  next-actions contract (`NEXT-ACTIONS.md` §5) now mandates one line per item
+  and shows the four-line common case; rule `99` reports open items only, a
+  clean checklist being one sentence; `/steer:work --reviewed`'s report is one
+  line per gate. `87` keeps a pointer; the router's opening line names all
+  three concision rules.
 - **Added: a `Code comments — why-only` rule, gated three ways.** Generated
   code in managed repos was comment-heavy, and the one bullet in
   `87-output-discipline` that forbade it sat near the end of the always-on

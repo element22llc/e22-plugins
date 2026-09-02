@@ -1,11 +1,12 @@
 <!-- steer:inject-when=code-project -->
 ## End-of-session checklist
 
-Before wrapping up a working session, run this checklist and **report** its
-state to the dev — don't silently close out, and don't turn the report into a
-round of per-item confirmations (satisfied items need no ack; only genuinely
-open items need the dev). Track open items with your todo tooling so nothing is
-dropped:
+Before wrapping up a working session, run this checklist and report **only the
+open items**, one line each — a clean checklist is one sentence, never the list
+echoed back with ticks. Don't silently close out, and don't turn the report
+into a round of per-item confirmations (satisfied items need no ack; only
+genuinely open items need the dev). Track open items with your todo tooling so
+nothing is dropped:
 
 - [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
