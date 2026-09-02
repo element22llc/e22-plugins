@@ -199,7 +199,7 @@ rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
 root allowlist, a mis-cited rule heading) with nothing to spend. Then from 65,300
 to 66,500, to fund the worktree-trust step in rule `24-worktrees`: a worktree
 created with `git worktree add` **in a plain terminal** is a case no hook can
-reach (as is any Copilot surface, which has no trust hook at all), so the instruction has to be always-on to exist when it is needed. (The
+reach (as is the Copilot CLI, whose manifest ports no trust hook), so the instruction has to be always-on to exist when it is needed. (The
 `check-worktree-trust` check covers a session *started* in a worktree at
 `SessionStart`, and one *entered* mid-session on `CwdChanged` — see
 [Hooks → Lifecycle events](hooks.md#lifecycle-events).) That raise also
@@ -207,7 +207,7 @@ re-armed at measured + ~1% rather than the 5-to-7-byte margins that had made eac
 previous raise inevitable. Then from 66,500 to 67,300, to fund six
 **surface-scoping corrections**: rules 00, 05 and 97 told the agent a SessionStart
 hook would flag a condition, which is true in Claude Code but not on Copilot
-(whose `sessionStart` ignores stdout), and rule 10 promised a hard `deny` that is
+(whose `sessionStart` discards the raw text those notices emit), and rule 10 promised a hard `deny` that is
 only an `ask` on the Copilot CLI and absent in VS Code — in each case a rule
 asserting a safety net that would not be there. Rules 24 and 99 named
 `docker:up`/`docker:clean`, which the workspace profile renamed to `ws:*`, so the

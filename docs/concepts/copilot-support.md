@@ -23,13 +23,13 @@ truth and how to install and refresh the Copilot side.
 
 | Capability | Claude Code | Copilot CLI | Copilot in VS Code |
 |---|---|---|---|
-| Always-on standards | SessionStart hook → `additionalContext` | `.github/copilot-instructions.md` | `.github/copilot-instructions.md` (read natively) |
+| Always-on standards | SessionStart hook → raw stdout, in parts | `sessionStart` hook (`copilot-hooks.json`) → one JSON `additionalContext`; `.github/copilot-instructions.md` as fallback | `SessionStart` hook (the plugin's `hooks/hooks.json`, run by VS Code) → `hookSpecificOutput.additionalContext`; `.github/copilot-instructions.md` as fallback |
 | Path-scoped standards | rule `inject-when` traits | **not delivered** — emitted only to `.github/instructions/` (see below) | `.github/instructions/*.instructions.md` (`applyTo` glob) |
 | Skills | plugin `skills/` (`/steer:<skill>`) | plugin `skills/` via Copilot manifest | `.agents/skills/steer-*/` (`/steer-<skill>`) |
 | Subagents | plugin `agents/` | **not declared** — the Copilot manifest carries `skills` + `hooks` only | `.github/agents/*.agent.md` (agent picker) |
 | MCP servers | plugin `.mcp.json` | **not declared** — the Copilot manifest has no `mcpServers` key | `.vscode/mcp.json` |
 | Cloud coding agent | — (Claude `@claude` workflow) | — | `.github/workflows/copilot-setup-steps.yml` (opt-in) |
-| Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | none (no hook mechanism) |
+| Gate hooks | `hooks/hooks.json` (`deny` on version pins, `ask` on the trunk-push gate) | `hooks/copilot-hooks.json` (softened to `ask`) | `hooks/hooks.json` as-is — VS Code runs the Claude-format hooks (hard `deny` on version pins) |
 | Source of truth | `rules/*.md` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` | the **same** `rules/` + `skills/` + `agents/` |
 
 Every one of those artifacts — instructions, the cross-tool `.agents/skills/` tree, custom agents, the
@@ -48,15 +48,44 @@ version-sync check instead. None of them is hand-maintained.
 
 ## Why the surfaces differ
 
-On Claude Code, steer's rules reach every session through a **SessionStart hook**
-(`inject-standards.sh`) whose stdout becomes the session's context. GitHub
-Copilot has no equivalent: its `sessionStart` hook **ignores stdout**, so it
-cannot inject context that way. Copilot's always-on context instead comes from a
-static **custom-instructions file**, `.github/copilot-instructions.md`, which both
-the Copilot CLI and Copilot in VS Code read.
+On every surface, steer's rules reach the session through the **SessionStart
+hook** (`inject-standards.sh`) — but the three harnesses want its stdout in
+three shapes, and the script tells them apart (`steer_hook_host` in
+`hooks/lib/json.sh`):
 
-A build-time generator (`mise run gen:copilot`) concatenates the rules into that
-committed artifact, and a sync gate (`check_copilot_instructions.py`, part of
+- **Claude Code** takes raw text and caps one hook command's stdout at 10,000
+  characters, so the ruleset arrives in parts (nine registrations of the script
+  in `hooks/hooks.json`).
+- **Copilot CLI** injects context only from a **JSON object** on stdout — a
+  top-level `additionalContext` under the camelCase `sessionStart` event — and
+  discards raw text. There is no practical size cap (120 K characters measured
+  whole; 10 MiB documented) but the **last** hook returning context wins, so the
+  generated `hooks/copilot-hooks.json` registers the injector **once**, under
+  `STEER_HOOK_TARGET=copilot`, and the script emits the whole eligible ruleset as
+  one object.
+- **Copilot Chat in VS Code** does not read the Copilot manifest at all: it
+  detects steer as a Claude-format plugin (`.claude-plugin/plugin.json`) and runs
+  `hooks/hooks.json` as-is. It injects only from
+  `hookSpecificOutput.additionalContext` and logs everything else as "returned
+  non-JSON output". The script recognises VS Code's payload (snake_case
+  `SessionStart` carrying `model` and `timestamp`, and no `permission_mode` — the
+  documented Claude Code field) and emits the same envelope from part 1, staying
+  silent on the other eight registrations.
+
+One JSON object carries **both** keys, so a single code path serves both Copilot
+surfaces: the CLI reads the top-level key and ignores the nested one, VS Code the
+reverse. A Claude Code payload, or any shape the script does not recognise, keeps
+the raw parted output — a mis-read can only ever fall back to today's behaviour,
+never lose the ruleset on Claude. The `inject-when` scoping, knowledge-work mode
+and the missing-rules fallback banner all ride inside the envelope.
+
+The static **custom-instructions file**, `.github/copilot-instructions.md`, stays
+as the **fallback**: the Copilot **cloud coding agent** and **Copilot code review**
+load no plugins (the cloud agent runs hooks only from a repo's own
+`.github/hooks/*.json`), so for them the committed file is the whole standards
+surface, and it also covers a session where the hook cannot run. A build-time
+generator (`mise run gen:copilot`) concatenates the rules into that committed
+artifact, and a sync gate (`check_copilot_instructions.py`, part of
 `plugin-check`) fails the build if the artifact ever drifts from the rules. The
 same generator step also renders the cross-tool skill tree (below), with its own
 drift gate (`check_agent_skills.py`).
@@ -113,8 +142,13 @@ standards load regardless of a teammate's VS Code defaults.
 
 ## Refreshing after a steer update
 
-The Copilot files are a **static snapshot**, so they go stale when steer's rules
-or skills change. Refresh them with **`/steer:sync`** from Claude Code:
+The always-on rules themselves no longer need a refresh on the Copilot CLI or in
+VS Code: the SessionStart hook reads them from the installed plugin, so a plugin
+update is the whole upgrade path there (`copilot plugin update steer`, or the
+Extensions view in VS Code). The **committed** Copilot files — the instructions
+fallback, the cross-tool skill tree, custom agents, path-scoped instructions —
+are a **static snapshot**, so they go stale when steer's rules or skills change.
+Refresh them with **`/steer:sync`** from Claude Code:
 
 ```shell
 copilot plugin update steer       # CLI only: pull the new plugin version
@@ -136,12 +170,13 @@ A prompt file the team wrote themselves is theirs and stays.
 and then deliberately stops on an already-initialized repo, so re-running it does
 nothing.
 
-Because Copilot has no context-injecting SessionStart hook, this static set *is*
-its entire standards surface — so a repo that never refreshes leaves Copilot
-teammates working against the rules of whatever plugin version bootstrapped it,
-while their Claude Code colleagues are current. Put the refresh on whoever owns
-plugin updates; the [launch checklist](../team-rollout/launch-checklist.md) carries
-it as a rollout item.
+For the Copilot **cloud coding agent** and **code review**, which load no
+plugins, this static set *is* the entire standards surface — so a repo that never
+refreshes leaves those surfaces working against the rules of whatever plugin
+version bootstrapped it, while Copilot CLI, VS Code and Claude Code sessions are
+current. Put the refresh on whoever owns plugin updates; the
+[launch checklist](../team-rollout/launch-checklist.md) carries it as a rollout
+item.
 
 The files are **fully steer-managed** — overwritten on refresh and never
 hand-edited. Repo-specific Copilot guidance belongs in a separate
@@ -312,8 +347,9 @@ from the always-on standards both surfaces read. It reaches a reader only on the
 that doc also states a push declined there must not be retried in the hope of a
 quieter second attempt. In VS Code the `reference` skill now ships too, as
 `.agents/skills/steer-reference/`, so the topic routing travels — though the
-pointer it carries is subject to the fetch limitation below — and nothing was lost meanwhile, since VS Code has no hooks and so
-never raises the repeat-push decision the caveat is about.
+pointer it carries is subject to the fetch limitation below. In VS Code the
+trunk-push gate runs from the Claude `hooks.json` with Claude's envelope, so the
+repeat push there gets Claude's non-blocking reminder, not the CLI's silent allow.
 The advisory spec-first / issue-first
 nudges — and the issue-create contract guard that also lives in
 `check-bash-actions.sh` — are **not** ported as hooks (Copilot's `preToolUse`
@@ -333,8 +369,15 @@ exists on disk. Renaming, dropping, or retiming a hook script on the Claude side
 then fails the build until you regenerate, instead of silently leaving the Copilot
 manifest pointing at a dead path.
 
-**VS Code has no hook mechanism at all** — the gates are Copilot-CLI-only. In VS
-Code the version-pin and trunk-push policies live only as text in the standards.
+**VS Code does not read `copilot-hooks.json`.** Copilot Chat in VS Code detects
+steer as a Claude-format plugin and runs `hooks/hooks.json` directly, with
+Claude's envelope and matcher syntax (matchers are ignored there, so every hook
+runs on every matching event). The `PreToolUse` gates therefore fire in VS Code
+too — as Claude's hard **`deny`** on version pins, not the CLI's softened `ask` —
+and the SessionStart and Stop hooks run as well: the ruleset injector emits the
+VS Code envelope (see [Why the surfaces differ](#why-the-surfaces-differ)), while
+the advisory notices (`session-checks.sh`, `orient-session.sh`) still emit raw
+text that VS Code discards.
 
 ## Known limitations
 
@@ -353,9 +396,12 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   nothing, though it grants without restricting in Claude Code either. Both limits
   port as instructions only. (The `steer-reviewer` subagent does port as a
   [custom agent](#custom-agents-on-copilot).)
-- **Two gates, soft, CLI-only.** Only the version-pin and trunk-push graduation
-  gates are ported, as `ask`s, and only on the Copilot CLI. VS Code gets no
-  hooks. The advisory nudges live in the standards text, not as hooks.
+- **Two gates ported to the CLI, as `ask`s; VS Code runs the Claude hooks
+  unsoftened.** Only the version-pin and trunk-push graduation gates are ported
+  to `copilot-hooks.json`, as `ask`s. VS Code runs `hooks/hooks.json` as-is, so
+  it gets Claude's hard `deny` on version pins. The advisory nudges live in the
+  standards text, not as hooks, and the advisory SessionStart notices are
+  discarded in VS Code until they emit the JSON envelope the injector uses.
 - **Invocation form differs by surface, and the instructions file is shared.**
   `.github/copilot-instructions.md` carries the rules verbatim, so every skill
   cross-reference in them reads `/steer:<skill>`. In VS Code the invocable form is
@@ -372,8 +418,9 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   unresolved root is diagnosable instead of an invisible no-op. Standards delivery
   never depended on hooks, so this bounds enforcement, not the standards.
 - **Polyrepo topology is Claude-only.** Workspace/member role detection is emitted
-  by the `orient-session.sh` SessionStart hook, and Copilot has no SessionStart
-  equivalent. There is deliberately no always-on polyrepo *rule* for the generator
+  by the `orient-session.sh` SessionStart hook as raw text, which the Copilot
+  surfaces discard (only the ruleset injector emits their JSON envelope so far).
+  There is deliberately no always-on polyrepo *rule* for the generator
   to carry, so a Copilot session gets no topology note. Read
   `/steer:reference polyrepo` from Claude Code for the full topology.
 - **Worktree `mise trust` inheritance is Claude-only.** `check-worktree-trust.sh`
@@ -410,9 +457,9 @@ Code the version-pin and trunk-push policies live only as text in the standards.
   (rules `00-router` and `05-roles`), says to do that instead; rule `97-self-report`
   only scopes, because recorded hook faults exist on no other surface.
   Likewise rule `10-stack` no longer claims a hook **denies** stale image-major
-  pins without qualification: the ported gate only *asks* on the Copilot CLI, and
-  VS Code has no hook mechanism, so the rule now says to keep the pins current
-  yourself.
+  pins without qualification: the ported gate only *asks* on the Copilot CLI (VS
+  Code, which runs the Claude hooks as-is, does deny), so the rule now says to
+  keep the pins current yourself.
 - **One further rule scoped, two whose detail moved out, plus one skill.** The same
   sweep, finished. Rule `90-design-sources` pointed at the `frontend-design`
   plugin, which the Copilot marketplace does not list, so it is scoped to Claude
