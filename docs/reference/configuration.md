@@ -76,8 +76,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `spec/workspace.yml` / `spec/PRODUCT.md`-gated note inside
     `orient-session.sh` — the hook itself speaks in every managed repo; only the
     topology block is marker-gated. That block is registered on the same
-    `startup|resume|clear|compact` matcher as the ruleset, so it survives a
-    `/clear`, a resume and auto-compaction. The router, context-hygiene, spec-workflow,
+    `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
+    `/clear`, a resume, auto-compaction and a forked session. The router, context-hygiene, spec-workflow,
     decision-capture, living-docs, roles, **gate-prompts (`61`)**, high-risk,
     not-the-gate, self-report, secrets, output, and artifacts rules carry no
     `inject-when` marker and so stay always-on.

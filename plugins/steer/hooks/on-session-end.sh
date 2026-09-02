@@ -18,7 +18,7 @@
 #     terminal.
 #   * Never acts on `reason=clear` or `reason=resume`. Those are continuations of
 #     the same working session (`/clear`, a resume) — the rules are re-injected
-#     by the SessionStart `compact|clear|resume` matcher precisely because work
+#     by the SessionStart `compact|clear|resume|fork` matcher precisely because work
 #     goes on. Tearing services down there would break the session that follows.
 #
 #   `STEER_NO_WORKTREE_TEARDOWN=1` disables it entirely.

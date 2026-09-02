@@ -162,7 +162,7 @@ session_json() { # <cwd> <session>
 	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart"}' "$2" "$1"
 }
 
-# Same, but carrying the SessionStart `source` (startup|resume|clear|compact).
+# Same, but carrying the SessionStart `source` (startup|resume|clear|compact|fork).
 # orient-session.sh gates its one-time knowledge-work greeting on this.
 session_json_src() { # <cwd> <session> <source>
 	printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","source":"%s"}' "$2" "$1" "$3"
@@ -985,9 +985,9 @@ oq_ngrep "orient: member note is not the workspace note" 'is the \*\*workspace\*
 oq_grep "orient: member note is additive" 'need to know skill names' "${out}"
 
 # The topology note is precisely why the hook is registered on
-# startup|resume|clear|compact: it must survive a /clear or compaction, unlike the
+# startup|resume|clear|compact|fork: it must survive a /clear, a compaction or a fork, unlike the
 # one-time knowledge-work greeting, which is gated to `startup`.
-for src in startup resume clear compact; do
+for src in startup resume clear compact fork; do
 	out="$(run_hook orient-session.sh "$(session_json_src "${OR1M}" or1m "${src}")")"
 	oq_grep "orient: member topology note survives source=${src}" 'is a \*\*member\*\*' "${out}"
 done
@@ -1800,12 +1800,12 @@ out="$(run_hook orient-session.sh "$(session_json "${KW}" kw_plain)")"
 oq_grep "orient(kw): knowledge-work confirmation emitted" 'knowledge-work folder' "${out}"
 
 # The greeting is a ONE-TIME orientation, so it is gated to `source: startup`.
-# The hook is registered on startup|resume|clear|compact (the polyrepo topology
+# The hook is registered on startup|resume|clear|compact|fork (the polyrepo topology
 # note must survive a /clear), which would otherwise re-greet the same user after
 # every compaction.
 out="$(run_hook orient-session.sh "$(session_json_src "${KW}" kw_plain startup)")"
 oq_grep "orient(kw): source=startup greets" 'knowledge-work folder' "${out}"
-for src in resume clear compact; do
+for src in resume clear compact fork; do
 	out="$(run_hook orient-session.sh "$(session_json_src "${KW}" kw_plain "${src}")")"
 	printf '%s' "${out}" | grep -q 'knowledge-work folder' &&
 		bad "orient(kw): source=${src} must not re-greet" || ok
@@ -2410,12 +2410,21 @@ out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1c)")"
 assert_eq "session-checks: rc 0 with notices" "$(last_rc)" "0"
 
 # (d) hooks.json registers the orchestrator (not each check individually)
-#     for startup|resume|clear — the consolidation this section exists to pin.
+#     for startup|resume|clear|fork — the consolidation this section exists to pin.
 _hj="${HOOKS}/hooks.json"
 grep -q 'session-checks\.sh' "${_hj}" && ok || bad "session-checks: registered in hooks.json"
 for _solo in check-template-drift check-open-questions check-unmanaged-repo surface-faults check-graduation; do
 	grep -q "${_solo}\.sh" "${_hj}" && bad "session-checks: ${_solo}.sh must not be registered directly" || ok
 done
+
+# (e) every SessionStart matcher carries `fork`. Since Claude Code 2.1.214 a
+#     session created with --fork-session, /fork or /branch reports
+#     source="fork" (it used to report "resume"), so a matcher without it skips
+#     the ruleset, the session checks and the orientation card on every fork.
+_ss_total="$(grep -c '"matcher": "startup|' "${_hj}")"
+_ss_fork="$(grep -c '"matcher": "startup|[a-z|]*fork"' "${_hj}")"
+[ "${_ss_total}" -ge 3 ] && ok || bad "hooks.json: expected >=3 SessionStart matchers, found ${_ss_total}"
+assert_eq "hooks.json: every SessionStart matcher carries fork" "${_ss_fork}" "${_ss_total}"
 
 # ---------------------------------------------------------------------------
 # workspace-snapshot.sh — one-shot read-only local reconstruction for

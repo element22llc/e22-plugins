@@ -29,7 +29,7 @@ def _claude_hooks(*scripts: str) -> str:
         if s == "inject-standards.sh":
             session.append(
                 {
-                    "matcher": "startup|resume|clear|compact",
+                    "matcher": "startup|resume|clear|compact|fork",
                     "hooks": [
                         {
                             "type": "command",

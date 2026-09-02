@@ -7,6 +7,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: forked sessions now receive the ruleset.** Since Claude Code 2.1.214 a
+  session created with `--fork-session`, `/fork` or `/branch` reports the
+  SessionStart source `fork` (it used to report `resume`), and every one of
+  steer's SessionStart matchers listed only `startup|resume|clear|compact` — so a
+  fork skipped the always-on rules, the session checks and the orientation card,
+  leaving it with whatever the parent's transcript happened to carry. All three
+  matchers now include `fork`; the one-time knowledge-work greeting stays gated
+  to `startup`, so a fork is not re-greeted. Verified against the current hooks
+  reference (source table and the `fork` value's 2.1.214 note); the hook suite
+  pins the matcher.
 - **Changed: polyrepo boilerplate collapsed to the always-on rules that already
   carry it.** Twenty-one sites across eighteen files in seventeen skills
   re-stated invariants the injected rules already deliver — the member-repo

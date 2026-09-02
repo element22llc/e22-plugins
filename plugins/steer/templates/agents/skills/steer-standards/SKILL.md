@@ -23,7 +23,7 @@ description: Load the always-on operating manual on demand where the SessionStar
 # Operating manual — on-demand load
 
 The standards are normally injected by the `steer` SessionStart hook, which runs
-on `startup`, `resume`, `clear` **and** `compact` — the last so a compaction that
+on `startup`, `resume`, `clear`, `compact` **and** `fork` — `compact` so a compaction that
 drops the rules from context gets them back. That hook **does not fire on the
 Claude Desktop *Chat* tab or
 claude.ai web chat** — those surfaces install plugins (so skills and MCP work) but
