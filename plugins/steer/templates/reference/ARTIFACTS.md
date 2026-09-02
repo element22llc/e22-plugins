@@ -252,7 +252,7 @@ render unless the user supplies a URL to update.
 | `/steer:audit` | Findings dashboard — dimension summary tiles, leverage-ranked findings, optionally fillable as a **triage form** returning through `/steer:issues publish-audit` (code); drift coverage board with verdict chips, read-only (spec) | the audit's own vetted findings |
 | `/steer:roadmap` | Release timeline — milestones with per-issue bars, dependency ordering | the milestoned work-set (a preview of the Projects v2 view) |
 | `/steer:status` | Client-facing period report — shipped / in-progress / needs-input / next | the whole spine over the reporting window |
-| `/steer:help` | Capability menu — front doors grouped by workflow area | the `00-router.md` intent→skill table |
+| `/steer:help` | Capability menu — skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
 
 The lean always-on version of this is rule `88-artifacts`; this reference is its
 full rationale and how-to.
