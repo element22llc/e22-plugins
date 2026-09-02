@@ -2,7 +2,9 @@
 
 The always-on **rules** under `plugins/steer/rules/` are the plugin's operating
 manual. They are injected into every managed session by `inject-standards.sh`
-([Hooks](hooks.md)) and concatenate in **lexical order** by numeric prefix.
+([Hooks](hooks.md)) and concatenate in **lexical order** by numeric prefix —
+delivered in several SessionStart parts, because Claude Code caps one hook
+command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 
 !!! note "Numbering has intentional gaps"
     Prefixes are spaced (e.g. `20` → `22` → `30`) so new rules can slot between
@@ -18,7 +20,6 @@ manual. They are injected into every managed session by `inject-standards.sh`
 | `10-stack.md` | Stack defaults (app / service profile). |
 | `12-stack-infra.md` | Stack — infrastructure / IaC (injected when the repo does IaC). |
 | `15-commands.md` | Useful commands. |
-| `20-layout.md` | Where things live. |
 | `22-housekeeping.md` | Keep the repo tidy. |
 | `24-worktrees.md` | Parallel worktrees — isolate runtime, clean up after. |
 | `26-context-hygiene.md` | Context hygiene — delegate heavy runs, keep state in files. |
@@ -54,7 +55,7 @@ manual. They are injected into every managed session by `inject-standards.sh`
     Some rules carry a first-line `<!-- steer:inject-when=… -->` marker and are
     injected only when their scope applies (see
     [`inject-standards.sh`](hooks.md)). The code-loop rules — `10-stack`,
-    `15-commands`, `20-layout`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
+    `15-commands`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
     `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
     `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
@@ -144,27 +145,34 @@ the org stack defaults in rule `10-stack`:
 Rules are kept lean and imperative on purpose. Long-form prose lives in
 `plugins/steer/templates/reference/` and is surfaced through a skill, never
 added to `rules/`. That leanness is **enforced, not aspirational**: CI's
-`check_context_budget.py` gate holds hard ceilings over three context surfaces.
-Two are always-on and ratcheted — the **injected rules payload** and the total
-skill-listing `description` + `when_to_use` characters — re-armed at each
-reduction, so always-on weight normally only shrinks or holds.
+`check_context_budget.py` gate holds hard ceilings over three context surfaces:
+the **injected rules payload**, the total skill-listing `description` +
+`when_to_use` characters (ratcheted — re-armed at each reduction, so it normally
+only shrinks or holds), and the per-skill `SKILL.md` body size.
 
-**The rules ceiling was re-based** and now measures what a session
-actually receives, in tokens, rather than the `rules/*.md` total on disk. Two
-consumer profiles are gated: `knowledge` (a non-code folder, which drops every
-marked rule) and `code-max` (every scope predicate satisfied — the worst case any
-consumer pays). A typical product repo sits between them and is reported, not
-gated. Two things follow. Scoping a rule now *reduces* the gated number, where
-under the on-disk sum it changed nothing — so `inject-when` is a real budget
-lever, not just a runtime one. And dropping a rule's marker, which quietly pushes
-it onto every knowledge-work session, is now caught by the `knowledge` ceiling; the
-on-disk sum could never see it, because the bytes never moved. The history below
-describes the retired on-disk ratchet and is kept as the record of why it changed.
+**The rules gate measures what a session actually receives**, in characters —
+the runtime's own unit — by running every registered part of the real
+`inject-standards.sh` against three fixture profiles: `knowledge` (a non-code
+folder, which drops every marked rule), `code` (a typical product repo) and
+`code-max` (every scope predicate satisfied — the worst case any consumer pays).
+All three are gated, against the same two harness facts: no single part may
+exceed the 10,000-character cap Claude Code puts on one hook command's output
+(the hook fills each part to 9,500 and the slack is never spent on rules), and
+no eligible rule may be dropped for lack of parts. A rule that does not fit
+fails the build with its name. Scoping a rule with an `inject-when` marker
+*reduces* the gated payload for the repos it does not apply to, so it is a real
+budget lever; dropping a rule's marker, which quietly pushes it onto every
+knowledge-work session, shows up as growth in the `knowledge` profile. The
+history below describes the retired on-disk ratchet and is kept as the record of
+why it changed.
 
 The default answer to "this rule doesn't fit" is therefore
 **trade prose out first**: relocate rationale into
-`plugins/steer/templates/reference/`, or deliver a scoped rule through a hook
-instead of `rules/` (the polyrepo precedent above).
+`plugins/steer/templates/reference/`, scope the rule with an `inject-when`
+marker, or deliver a scoped rule through a hook instead of `rules/` (the polyrepo
+precedent above). Registering one more part in `hooks/hooks.json` is the last
+resort and a deliberate, reviewed change — one more SessionStart process and up
+to 9,500 more always-on characters in every session.
 
 These two are **policy numbers, not harness limits**, so they *can* be raised —
 which is why each raise carries a recorded reason in the gate script rather than
