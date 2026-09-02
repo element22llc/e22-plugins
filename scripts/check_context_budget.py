@@ -15,9 +15,11 @@ fail the gate — lowering the ceilings toward them is deliberate, per-PR work.
 
 Budgets enforced:
 
-- ``INJECTED_PROFILES`` — the **injected payload**, in tokens, for each shape of
-  consumer repo. Measured by running the shipped ``inject-standards.sh`` against
-  a throwaway fixture, so it is what a session truly receives (see below);
+- ``INJECTED_PROFILES`` — the **injected payload** for each shape of consumer
+  repo, measured by running every registered part of the shipped
+  ``inject-standards.sh`` against a throwaway fixture, so it is what a session
+  truly receives (see below). Gated in CHARACTERS against the runtime's cap on
+  hook output — per part, and on whole rules dropped;
 - ``LISTING_TOTAL_MAX_CHARS`` — total ``description`` + ``when_to_use``
   characters across all skills (the always-on routing surface). The *per-skill*
   1536-char cap lives in ``check_plugin.py``; this is the cross-skill sum.
@@ -95,7 +97,9 @@ Exit status is 0 when within budget, 1 when any ceiling is exceeded.
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -136,6 +140,95 @@ def _fixture_code_max(d: Path) -> None:
     (d / "spec" / "tracker.md").write_text("system: github\n", encoding="utf-8")  # tracker-github
 
 
+# --- The runtime ceiling (hard, not a ratchet) -------------------------------
+# Claude Code caps ONE hook command's stdout at 10,000 CHARACTERS. Past that the
+# payload is persisted to a file and replaced in context with a short "Output
+# too large" pointer, and the hook still exits 0, so nothing anywhere reports a
+# problem: the session simply runs on a fraction of the ruleset. That is how the
+# whole ~61 KB ruleset went undelivered for a release cycle (#509).
+#
+# The cap is per hook COMMAND, not per event: measured on Claude Code 2.1.258,
+# seven 9,500-character SessionStart commands all arrived whole (~66 K in total)
+# while one 12,000-character command was replaced by the pointer. So the hook is
+# registered PARTS times in hooks.json, each invocation emitting one part of a
+# deterministic partition, and every part has to stay under the cap on its own.
+#
+# These constants are in the same class as SKILL_BODY_MAX_BYTES below: derived
+# from harness behaviour, NOT policy. They do not move down as the ruleset
+# shrinks and must never be raised to fit new prose. The hook carries the same
+# two numbers (STEER_INJECT_CAP / STEER_INJECT_PART_BUDGET); a test pins them
+# equal so the two cannot drift apart. The ratchet history preserved further
+# down this file is about a *policy* number; none of it applies here.
+INJECTED_CAP_CHARS = 10_000
+# What the hook fills a part to. The slack under the cap absorbs any small
+# disagreement between our character count and the runtime's (a trailing
+# separator, a multibyte-heavy part) and is never spent on rules.
+INJECTED_PART_BUDGET_CHARS = 9_500
+
+# When the ruleset outgrows PARTS parts, what gives — and what never does.
+#
+# The cap cannot move; the levers are the ruleset's size and the number of parts
+# registered in hooks.json. Adding a part is a deliberate, reviewed change (it is
+# one more SessionStart process and ~9.5 K more always-on characters), not a
+# ratchet turned in the PR that needs the room. Before that: trade prose out —
+# rationale and examples to templates/reference/* (surfaced via
+# /steer:reference), leaving the rule imperative — or scope the rule with an
+# `inject-when` marker so only the repos it applies to pay for it.
+#
+# UNTOUCHABLE, in any budget conversation: `60-high-risk`, `70-secrets`,
+# `95-not-the-gate`, and the router's routing + gate-authority text. Those are
+# the rules that must govern BEFORE Claude touches anything.
+
+# How the gate actually detects a breach: hooks/inject-standards.sh enforces the
+# cap itself, dropping whole rules from the tail and appending an in-band
+# RULESET INCOMPLETE notice naming them. So the gate asserts the stronger
+# property: **the guard never fires** — every rule eligible for a profile fits
+# in the registered parts, and a dropped rule fails the build with its name. It
+# ALSO asserts every part's raw length against the cap, so a hook bug that
+# overran could not hide behind a missing notice.
+INCOMPLETE_MARKER = "RULESET INCOMPLETE"
+_INJECT_COMMAND_RE = re.compile(r'inject-standards\.sh"?\s+(\d+)\s+(\d+)\s*$')
+
+
+def hook_parts(root: Path) -> int:
+    """How many parts hooks.json registers for inject-standards.sh.
+
+    Reads the SAME manifest the runtime does, so the gate measures exactly the
+    commands a session runs. Raises RuntimeError on anything but a contiguous
+    ``1 N`` … ``N N`` registration: a missing part is a silently undelivered
+    slice of the ruleset, which is the failure this whole gate exists to catch.
+    """
+    manifest = root / "hooks" / "hooks.json"
+    if not manifest.is_file():
+        raise RuntimeError(f"{manifest}: hooks manifest not found")
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    seen: list[tuple[int, int]] = []
+    bare = 0
+    for group in data.get("hooks", {}).get("SessionStart", []):
+        for hook in group.get("hooks", []):
+            cmd = hook.get("command", "")
+            if "inject-standards.sh" not in cmd:
+                continue
+            m = _INJECT_COMMAND_RE.search(cmd)
+            if not m:
+                bare += 1
+                continue
+            seen.append((int(m.group(1)), int(m.group(2))))
+    if not seen:
+        if bare:
+            return 1  # legacy single registration without arguments
+        raise RuntimeError(f"{manifest}: inject-standards.sh is not registered on SessionStart")
+    totals = {n for _, n in seen}
+    contiguous = sorted(k for k, _ in seen) == list(range(1, next(iter(totals)) + 1))
+    if bare or len(totals) != 1 or not contiguous:
+        raise RuntimeError(
+            f"{manifest}: inject-standards.sh parts must be registered exactly once each as "
+            f"`<k> <N>` for k = 1..N; found {sorted(seen)}"
+            + (f" plus {bare} argument-less entr{'y' if bare == 1 else 'ies'}" if bare else "")
+        )
+    return next(iter(totals))
+
+
 # Ceilings are sized to buy roughly ONE whole additional rule (the mean rule is
 # ~1,875 B ≈ 536 tokens), on the same basis LISTING_TOTAL_MAX_CHARS states below:
 # the smallest headroom under which "trade prose out first" stays a real policy
@@ -143,33 +236,28 @@ def _fixture_code_max(d: Path) -> None:
 # retired-ratchet history below is that a 5-to-32-byte margin makes the ceiling
 # dictate the *wording* of correctness fixes instead of bounding their cost.
 #
-# Only two profiles are GATED. `code` sits strictly between them — un-scoping a
-# rule grows `knowledge`, and new prose grows `code-max` — so gating it too would
-# add a third ceiling to bump without catching anything the other two miss. It is
-# measured and reported because it is the number to quote for a typical consumer.
+# EVERY profile is now gated, and against the same number. The old arrangement —
+# two policy ceilings with `code` left ungated because it sat "strictly between"
+# them — made sense while the ceilings were per-profile ratchets. They are not
+# any more: there is one hard runtime cap and each profile either fits under it
+# or silently loses rules, so each one has to be checked on its own.
 INJECTED_PROFILES: dict[str, dict] = {
     # The leanness lane, and the un-scoping detector: an always-on rule added
     # without an `inject-when` marker lands here first and hardest.
     "knowledge": {
         "builder": _fixture_knowledge,
-        "max_tokens": 8_200,
-        "target_tokens": 7_100,
         "gated": True,
         "blurb": "non-code folder (Cowork PO lane)",
     },
-    # Reported, not gated — bounded by the two above. See the note above.
+    # The number to quote for a typical consumer.
     "code": {
         "builder": _fixture_code,
-        "max_tokens": None,
-        "target_tokens": 16_100,
-        "gated": False,
+        "gated": True,
         "blurb": "typical product repo",
     },
     # The absolute worst case any consumer pays: every scope predicate true.
     "code-max": {
         "builder": _fixture_code_max,
-        "max_tokens": 19_700,
-        "target_tokens": 17_700,
         "gated": True,
         "blurb": "every scope predicate satisfied",
     },
@@ -184,8 +272,9 @@ def _git_init(d: Path) -> None:
     )
 
 
-def measure_injected(root: Path, profile: str) -> int:
-    """Bytes the shipped SessionStart hook emits for one consumer profile.
+def measure_injected(root: Path, profile: str) -> list[tuple[str, str]]:
+    """(stdout, stderr) of EVERY registered part of the SessionStart hook, in
+    part order, for one profile.
 
     Raises RuntimeError rather than guessing: a budget gate that cannot measure
     must fail loudly, never fail open.
@@ -195,25 +284,60 @@ def measure_injected(root: Path, profile: str) -> int:
         raise RuntimeError(f"{hook}: injection hook not found")
     if shutil.which("git") is None:
         raise RuntimeError("git not on PATH — cannot build the fixture repos this gate measures")
+    parts = hook_parts(root)
 
+    results: list[tuple[str, str]] = []
     with tempfile.TemporaryDirectory(prefix="steer-budget-") as tmp:
         fixture = Path(tmp) / profile
         fixture.mkdir()
         INJECTED_PROFILES[profile]["builder"](fixture)
-        payload = (
-            f'{{"session_id":"budget-gate","cwd":"{fixture}","hook_event_name":"SessionStart"}}'
+        payload = json.dumps(
+            {"session_id": "budget-gate", "cwd": str(fixture), "hook_event_name": "SessionStart"}
         )
         env = {**os.environ, "CLAUDE_PLUGIN_ROOT": str(root.resolve())}
-        proc = subprocess.run(
-            ["sh", str(hook)],
-            input=payload,
-            capture_output=True,
-            text=True,
-            env=env,
-        )
-    if proc.returncode != 0:
-        raise RuntimeError(f"inject-standards.sh failed for profile '{profile}': {proc.stderr}")
-    return len(proc.stdout.encode("utf-8"))
+        for k in range(1, parts + 1):
+            proc = subprocess.run(
+                ["sh", str(hook), str(k), str(parts)],
+                input=payload,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                env=env,
+            )
+            if proc.returncode != 0:
+                raise RuntimeError(
+                    f"inject-standards.sh part {k}/{parts} failed for profile '{profile}': "
+                    f"{proc.stderr}"
+                )
+            results.append((proc.stdout, proc.stderr))
+    return results
+
+
+def dropped_rules(parts: list[tuple[str, str]]) -> list[str]:
+    """Rule files the hook's own cap guard had to leave out, in emission order.
+
+    Read from the hook's STDERR line, not the in-band notice: stdout is context
+    and therefore rationed, so the notice lists only the first few names and
+    then a count. stderr costs a session nothing, so the hook writes the full
+    list there for exactly this caller. Parsing the hook's own output rather
+    than re-deriving the budget keeps the hook the single source of truth, on
+    the same basis as `measure_injected` running the real hook.
+
+    `stdout` still gates the lookup: no notice means nothing was dropped, and a
+    stderr line without one would be a bug worth not papering over.
+    """
+    stdout = "".join(out for out, _ in parts)
+    stderr = "\n".join(err for _, err in parts)
+    if INCOMPLETE_MARKER not in stdout:
+        return []
+    for line in stderr.splitlines():
+        if line.startswith("steer-inject: dropped("):
+            return [n for n in line.split(":", 2)[-1].split() if n.endswith(".md")]
+    # Notice present but no stderr line: fall back to the truncated in-band list
+    # rather than reporting "nothing dropped", which would be the wrong answer.
+    tail = stdout[stdout.find(INCOMPLETE_MARKER) :]
+    listing = tail.split("NOT injected:", 1)[-1].split("Treat the standards", 1)[0]
+    return [name.rstrip(".,") for name in listing.split() if ".md" in name]
 
 
 def tokens(byte_count: int) -> int:
@@ -520,13 +644,22 @@ def measure(root: Path) -> dict:
             bodies.append((skill_dir.name, skill_md.stat().st_size))
 
     injected: dict[str, dict] = {}
+    parts_registered = hook_parts(root)
     for name, spec in INJECTED_PROFILES.items():
-        payload_bytes = measure_injected(root, name)
+        parts = measure_injected(root, name)
+        payload = "".join(out for out, _ in parts)
+        part_chars = [len(out) for out, _ in parts]
+        # Characters is the unit the runtime counts in; bytes is reported beside
+        # it for the token estimate.
         injected[name] = {
-            "bytes": payload_bytes,
-            "tokens": tokens(payload_bytes),
-            "max_tokens": spec["max_tokens"],
-            "target_tokens": spec["target_tokens"],
+            "chars": len(payload),
+            "bytes": len(payload.encode("utf-8")),
+            "tokens": tokens(len(payload.encode("utf-8"))),
+            "parts": parts_registered,
+            "part_chars": part_chars,
+            "parts_used": sum(1 for c in part_chars if c),
+            "largest_part": max(part_chars, default=0),
+            "dropped": dropped_rules(parts),
             "gated": spec["gated"],
             "blurb": spec["blurb"],
         }
@@ -552,25 +685,35 @@ def run_checks(root: Path) -> list[str]:
         return [f"could not measure the injected payload: {exc}"]
 
     for name, got in stats["injected"].items():
-        ceiling = got["max_tokens"]
-        if ceiling is None or got["tokens"] <= ceiling:
+        if not got["gated"]:
             continue
-        hint = (
-            "an always-on rule (one with no `inject-when` marker) is the usual cause — "
-            "scope it to the repos that need it, or trade prose out"
-            if name == "knowledge"
-            else "move prose to templates/reference/* (surfaced via /steer:reference) "
-            "and keep rules imperative"
-        )
+        over = [
+            f"part {i}: {c:,}" for i, c in enumerate(got["part_chars"], 1) if c > INJECTED_CAP_CHARS
+        ]
+        if over:
+            errors.append(
+                f"{root / 'hooks' / 'inject-standards.sh'}: in the '{name}' profile "
+                f"({got['blurb']}) a part exceeds the {INJECTED_CAP_CHARS:,}-character cap Claude "
+                f"Code puts on one hook command's output ({'; '.join(over)} chars). The runtime "
+                f"replaces such a part with an 'Output too large' pointer, silently. The hook's "
+                f"own guard should make this impossible — this is a hook bug, not a content "
+                f"problem; fix the partition, do not touch the constants."
+            )
+        if not got["dropped"]:
+            continue
         errors.append(
-            f"{root / 'rules'}: the '{name}' profile ({got['blurb']}) receives "
-            f"~{got['tokens']:,} tokens ({got['bytes']:,} B), over its "
-            f"{ceiling:,}-token ceiling. This is the payload a session actually gets "
-            f"from inject-standards.sh, not the on-disk total — {hint}. Run "
-            f"`mise run rules:preview` to see which rules inject and why. Do not "
-            f"raise the ceiling to fit new prose; if a raise is genuinely right, "
-            f"record the reason beside the constant (see the retired-ratchet history "
-            f"in this file for what happens when that discipline slips)."
+            f"{root / 'rules'}: the '{name}' profile ({got['blurb']}) does not fit the "
+            f"{got['parts']} SessionStart part(s) registered in hooks/hooks.json "
+            f"({got['parts']} x {INJECTED_PART_BUDGET_CHARS:,} chars; Claude Code caps one hook "
+            f"command's output at {INJECTED_CAP_CHARS:,} characters). inject-standards.sh had "
+            f"to DROP {len(got['dropped'])} rule(s): {', '.join(got['dropped'])}. A session in "
+            f"that profile never receives them. Run `mise run rules:preview` to see every "
+            f"rule's size and part. Fix, in this order: trade prose out to "
+            f"templates/reference/* (surfaced via /steer:reference) and keep the rule "
+            f"imperative; scope the rule with an `inject-when` marker so only repos it applies "
+            f"to pay for it; or — a deliberate, reviewed change — register one more part in "
+            f"hooks.json. The per-part cap is Claude Code behaviour, not policy: it cannot be "
+            f"raised."
         )
     if stats["listing_chars"] > LISTING_TOTAL_MAX_CHARS:
         errors.append(
@@ -600,15 +743,24 @@ def report(root: Path) -> str:
     """Markdown budget table — paste into release PRs (PLAN.md Phase 4)."""
     stats = measure(root)
     lines = [
-        "| Always-on surface | Current | Ceiling (gate) | Target (plan) |",
+        "| Always-on surface | Current | Ceiling | Status/target |",
         "| --- | --- | --- | --- |",
     ]
     for name, got in stats["injected"].items():
-        ceiling = f"{got['max_tokens']:,} tok" if got["max_tokens"] is not None else "— (not gated)"
+        capacity = got["parts"] * INJECTED_PART_BUDGET_CHARS
+        status = (
+            f"DROPS {len(got['dropped'])} rule(s)"
+            if got["dropped"]
+            else (
+                f"fits in {got['parts_used']}/{got['parts']} parts, "
+                f"{capacity - got['chars']:,} ch spare, largest part {got['largest_part']:,} ch"
+            )
+        )
         lines.append(
             f"| injected payload — {name} ({got['blurb']}) "
-            f"| {got['tokens']:,} tok / {got['bytes']:,} B | {ceiling} "
-            f"| {got['target_tokens']:,} tok |"
+            f"| {got['chars']:,} ch / {got['tokens']:,} tok "
+            f"| {got['parts']} parts x {INJECTED_PART_BUDGET_CHARS:,} ch "
+            f"({INJECTED_CAP_CHARS:,} ch runtime cap per part) | {status} |"
         )
     lines += [
         (
