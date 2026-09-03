@@ -6,6 +6,7 @@ export const meta = {
     'Invoked by /release Phase A and by /audit-loop each round for PRE-RELEASE-AUDIT.md Steps 3 and 4a. Pass { lastRelease } to skip the scout. Pass { dimensions: [...] } only for a non-final /audit-loop round that is allowed to trim.',
   phases: [
     { title: 'Scout', detail: 'resolve $LAST_RELEASE and the delta file list' },
+    { title: 'Reconcile', detail: 'one verifier per open ledger row whose file changed since it was confirmed; a refuted row is returned for the ledger to close' },
     { title: 'Review', detail: 'one read-only reviewer per dimension, scoped to the delta; a failed dispatch is retried once' },
     { title: 'Verify', detail: 'one verifier per deduplicated finding re-reads the cited line and may only lower severity' },
   ],
@@ -37,6 +38,36 @@ const SCOUT_SCHEMA = {
     files: { type: 'array', items: { type: 'string' }, description: 'git diff --name-only <lastRelease>..HEAD' },
     unreleased: { type: 'string', description: 'the ### [Unreleased] bullets under ## steer in CHANGELOG.md, verbatim' },
     pluginVersion: { type: 'string' },
+  },
+}
+
+const LEDGER_OPEN_SCHEMA = {
+  type: 'object',
+  required: ['rows'],
+  properties: {
+    rows: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'ruleId', 'path', 'line', 'claim'],
+        properties: {
+          id: { type: 'string' },
+          ruleId: { type: 'string' },
+          path: { type: 'string' },
+          line: { type: ['integer', 'null'] },
+          claim: { type: 'string' },
+        },
+      },
+    },
+  },
+}
+
+const RECONCILE_SCHEMA = {
+  type: 'object',
+  required: ['holds', 'reason'],
+  properties: {
+    holds: { type: 'boolean', description: 'true only if the cited file, read this round, still demonstrates the claim as stated' },
+    reason: { type: 'string', description: 'one line: what the file says now, with the line you read' },
   },
 }
 
@@ -194,6 +225,15 @@ Open the cited path at the cited line THIS round and read the surrounding contex
 You may LOWER the severity (a typo in a hook script is not automatically high); never raise it. Return only the structured verdict.`
 }
 
+function reconcilePrompt(row) {
+  return `You are a READ-ONLY verifier re-checking one finding already recorded in the pre-release audit ledger. The file it cites has changed since the finding was last confirmed; decide whether the claim STILL holds.
+Finding ${row.id} (dimension ${row.ruleId}):
+  path: ${row.path}${row.line ? ':' + row.line : ''}  (the line number is from an earlier tree and may have drifted -- search the file for the subject of the claim)
+  claim: ${row.claim}
+
+Open the cited path THIS round. holds=true ONLY if what the file says now still demonstrates the claim as stated. holds=false when the passage was corrected, removed, or reworded so the contradiction no longer exists, or the file no longer contains the subject of the claim at all. Do not judge whether the finding matters; judge only whether it is still true. If you cannot tell, holds=true (an open row costs nothing; a wrongly closed one hides a defect). Return only the structured verdict.`
+}
+
 // ---------------------------------------------------------------------------
 
 const wanted = Array.isArray(args && args.dimensions) && args.dimensions.length
@@ -220,6 +260,30 @@ if (args && args.lastRelease && Array.isArray(args.files) && args.unreleased !==
   if (!ctx) throw new Error('scout returned nothing; cannot bound the audit to the release delta')
 }
 log(`auditing ${ctx.files.length} changed paths since ${ctx.lastRelease}`)
+
+// The ledger is only as true as the tree its rows were read against. Rows whose
+// file has changed since they were confirmed are re-verified here, so a finding
+// the tree has already repaired is closed by the machinery instead of sitting
+// `open` until a human notices. Bounded by construction: `open --touched` skips
+// every row whose file is byte-identical to its recorded tree sha.
+phase('Reconcile')
+const ledgerOpen = await agent(
+  `From the repository root run exactly: uv run python scripts/audit_ledger.py open --touched --json
+Return its JSON output structured (no commentary). If the command fails, return { "rows": [] }.`,
+  { label: 'scout:ledger', phase: 'Reconcile', schema: LEDGER_OPEN_SCHEMA, effort: 'low' },
+)
+const stale = ledgerOpen && Array.isArray(ledgerOpen.rows) ? ledgerOpen.rows : []
+log(`${stale.length} open ledger row(s) whose file changed since confirmation -- re-verifying`)
+const rechecked = await pipeline(stale, (row) =>
+  agent(reconcilePrompt(row), { label: `reconcile:${row.id}`, phase: 'Reconcile', schema: RECONCILE_SCHEMA }).then((v) => ({ row, verdict: v })),
+)
+const reconcile = []
+const reconcileUnverified = []
+for (const item of rechecked.filter(Boolean)) {
+  if (!item.verdict) reconcileUnverified.push(item.row.id)
+  else reconcile.push({ id: item.row.id, holds: item.verdict.holds, reason: item.verdict.reason })
+}
+log(`reconcile: ${reconcile.filter((v) => !v.holds).length} no longer hold, ${reconcile.filter((v) => v.holds).length} still hold, ${reconcileUnverified.length} unverified (left open)`)
 
 // Barrier is deliberate: cross-dimension dedupe needs every reviewer's list.
 const reviews = (await parallel(wanted.map((d) => () => review(d, ctx)))).filter(Boolean)
@@ -301,8 +365,11 @@ return {
   unverified,
   refuted,
   outOfDelta,
+  reconcile,
+  reconcileUnverified,
   next: [
-    'Write `candidates` (plus `unverified`, conservatively) to a JSON file and run: uv run python scripts/audit_ledger.py new --candidates <file>, then record.',
+    'Write `reconcile` to a JSON file and run: uv run python scripts/audit_ledger.py reconcile --verdicts <file> -- this closes the open rows the tree has already repaired. Do it BEFORE `new`, so a candidate that matches a just-closed row surfaces as a recurrence rather than being carried.',
+    'Write `candidates` (plus `unverified`, conservatively) to a JSON file and run: uv run python scripts/audit_ledger.py new --candidates <file>, then record. `new` lists recurrences (a previously fixed row reported again) separately; report them as regressions.',
     'Severity is capped by path when recorded; only release-critical manifests can reach [blocker].',
     'A dimension marked unverified means the round is NOT clean; say so in the report.',
   ],

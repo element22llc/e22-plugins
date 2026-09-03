@@ -66,7 +66,9 @@ misremembered:
   review: one read-only reviewer per coherence dimension plus the documentation
   reviewer, scoped to the release delta, with a failed dispatch retried once,
   cross-dimension dedupe, and one verifier per finding before anything becomes a
-  ledger candidate.
+  ledger candidate. It also re-verifies every open ledger row whose file has
+  changed since the row was confirmed, so a finding the tree already repaired is
+  closed by `scripts/audit_ledger.py reconcile` instead of lingering as open.
 - `scripts/release_cut.py` performs the cut itself: it renames the changelog
   heading and re-seeds `[Unreleased]`, renames migration-ledger entries inside
   `## Entries` (never the authoring stub), bumps the three version-bearing

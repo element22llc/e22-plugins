@@ -122,11 +122,12 @@ The one-line index, for orientation only:
   above (`[high]`, not a blocker — it tracks upstream Claude Code, not the diff).
 - **Step 3 + 4a — judgment review.** Run the saved **`pre-release-audit`**
   workflow (Workflow tool, `name: "pre-release-audit"`, no args). It scouts the
-  delta, dispatches the five coherence dimensions and the `documentation-reviewer`
-  in parallel, retries a failed dispatch once, dedupes, and verifies every
-  in-delta finding against its cited line. It returns ledger-ready `candidates`
-  plus a `coverage` map — a dimension marked `unverified` means the round is not
-  clean.
+  delta, re-verifies every open ledger row whose file changed since it was
+  confirmed, dispatches the five coherence dimensions and the
+  `documentation-reviewer` in parallel, retries a failed dispatch once, dedupes,
+  and verifies every in-delta finding against its cited line. It returns
+  ledger-ready `candidates`, `reconcile` verdicts for the ledger, and a
+  `coverage` map — a dimension marked `unverified` means the round is not clean.
 - **Step 4b — deployed-site freshness.** Computed above.
 - **Step 5 — compile, rank, classify.** Severity is **capped** from the path by
   `scripts/audit_severity.py` when the candidates are recorded (never judged,
@@ -151,10 +152,14 @@ consumer.
   Do **not** ask the user to "defer a blocker" — if it is not release-critical it
   was never a blocker, and framing it as one is how a routine cut turns into a
   judgment call the user has to overrule.
-- **Record the round before deciding.** Write the workflow's `candidates` (and,
-  conservatively, its `unverified` list) to a JSON file and run
+- **Reconcile, then record the round, before deciding.** Write the workflow's
+  `reconcile` list to a JSON file and run
+  `uv run python scripts/audit_ledger.py reconcile --verdicts <file>` so rows the
+  tree already repaired are closed; then write its `candidates` (and,
+  conservatively, its `unverified` list) and run
   `uv run python scripts/audit_ledger.py new --candidates <file>` then `record`,
-  so the next release does not rediscover them. Report only what `new` calls new.
+  so the next release does not rediscover them. Report what `new` calls new, and
+  any recurrence it lists (a fixed row reported again is a regression).
 
 Only when there are **zero blockers** proceed to Phase B.
 
