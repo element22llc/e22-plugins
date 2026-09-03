@@ -237,10 +237,13 @@ Execute [`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md)
 **Steps 1–5 in full** — all five live coherence dimensions and both halves of
 Step 4. Steps 3 and 4a are one call: run the saved **`pre-release-audit`**
 workflow (Workflow tool, `name: "pre-release-audit"`, no args in a full round).
-It scouts the delta from `$LAST_RELEASE`, dispatches every dimension in parallel,
-retries a failed dispatch once, dedupes across dimensions, verifies each in-delta
-finding against its cited line, and returns `candidates`, `coverage`, `refuted`,
-`unverified` and `outOfDelta`. A dimension whose `coverage` is `unverified` means
+It scouts the delta from `$LAST_RELEASE`, re-verifies every open ledger row
+whose file changed since it was confirmed, dispatches every dimension in
+parallel, retries a failed dispatch once, dedupes across dimensions, verifies
+each in-delta finding against its cited line, and returns `candidates`,
+`coverage`, `refuted`, `unverified`, `outOfDelta` and `reconcile`. Apply
+`reconcile` to the findings ledger (`audit_ledger.py reconcile --verdicts`)
+before `new`/`record`, per the procedure's Step 5. A dimension whose `coverage` is `unverified` means
 the round is **not** clean, whatever else it returned. Never trim the dimension
 set to save a round on a hunch; a dimension you skipped because it *felt*
 unaffected is a finding `/release` hands back to you later.

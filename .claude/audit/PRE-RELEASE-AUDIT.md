@@ -158,14 +158,17 @@ so every existing cross-reference to a dimension number stays valid.
 `name: "pre-release-audit"`; the permission rule `Workflow(pre-release-audit)` in
 `.claude/settings.json` pre-approves it). It is the implementation of this step
 and of Step 4a: a scout stage derives `$LAST_RELEASE` and the delta list (or
-takes them from `args`), one read-only reviewer per dimension runs **in
-parallel** against a findings schema (so a finding cannot arrive as prose), a
+takes them from `args`), a **reconcile** stage re-verifies every `open` ledger
+row whose file has changed since the row was confirmed (`audit_ledger.py open
+--touched`) and returns a `holds` verdict per row, one read-only reviewer per
+dimension runs **in parallel** against a findings schema (so a finding cannot arrive as prose), a
 reviewer that returns nothing usable is **re-dispatched exactly once** and
 otherwise recorded as `unverified`, findings are deduplicated across dimensions
 by `path` + claim slug (the ledger's identity), and every in-delta finding is
 then handed to a **verifier** that re-reads the cited line and may only lower
 the severity. The result carries `candidates` (ledger-ready), `coverage` per
-dimension, `refuted`, `unverified`, `outOfDelta`, and `clean`. Each reviewer is
+dimension, `refuted`, `unverified`, `outOfDelta`, `reconcile` (verdicts on the
+re-verified ledger rows), and `clean`. Each reviewer is
 told: *read-only; every finding must carry `path:line` evidence and a one-line
 statement of the incoherence; default to silence over speculation.* The
 dimensions, as the workflow encodes them:
@@ -322,19 +325,29 @@ drift apart.
 reach `[blocker]` are the release-critical manifests plus a red deterministic
 gate. `[high]` / `[medium]` / `[low]` are real and reported; they never stop a cut.
 
-**Record every finding in the ledger.** Write the workflow's `candidates` list
-(plus, conservatively, its `unverified` list — an unverified finding is not a
-refuted one) to a JSON file and run:
+**Reconcile first, then record.** Write the workflow's `reconcile` list to a
+JSON file and apply it, *then* write its `candidates` list (plus, conservatively,
+its `unverified` list — an unverified finding is not a refuted one) and record:
 
 ```sh
+uv run python scripts/audit_ledger.py reconcile --verdicts <file>  # close rows the tree already repaired
 uv run python scripts/audit_ledger.py new    --candidates <file>   # report only what is unseen
 uv run python scripts/audit_ledger.py record --candidates <file>   # persist them
 ```
 
 `.claude/audit/findings.jsonl` is the repo's memory of what has already been
-triaged. Report the **new** findings; carry the rest silently. A finding a human
-has marked `accepted` (with a reason) never resurfaces and never gates — that is
-what stops each release from re-litigating the previous release's backlog.
+triaged. Report the **new** findings and any **recurrence** (`new` lists a
+previously `fixed` row that a reviewer reported again — that is a regression,
+not a carry); carry the rest silently. A finding a human has marked `accepted`
+(with a reason) never resurfaces and never gates — that is what stops each
+release from re-litigating the previous release's backlog.
+
+The order matters. An `open` row is a claim about the tree it was read against,
+and nothing else closes it: without reconciliation the ledger only grows, `open`
+stops meaning anything, and a real regression of a `fixed` row would be carried
+silently under the same identity. `reconcile` is bounded — it touches only rows
+whose file changed since the row's recorded tree sha — and it never overrides a
+human's `accepted` or `fixed`; a verifier's verdict applies to `open` rows only.
 Between v5.3.0 and v6.0.0, with no ledger, `docs/concepts/copilot-support.md` was
 edited in fourteen separate round commits and `docs/reference/hooks.md` in eight,
 and `hooks.md` still produced the finding that blocked the cut.

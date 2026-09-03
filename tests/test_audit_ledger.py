@@ -121,7 +121,7 @@ def test_record_then_new_reports_nothing_twice(tmp_path: Path, ledger: Path, cap
     )
     audit_ledger.main(["--ledger", str(ledger), "new", "--candidates", str(again)])
     out = capsys.readouterr().out
-    assert "0 new, 1 already in the ledger" in out
+    assert "0 new, 0 recurrence, 1 already in the ledger" in out
 
 
 def test_accept_requires_a_reason_and_stops_the_finding(
@@ -224,3 +224,157 @@ def test_repo_ledger_is_wellformed_and_capped() -> None:
         assert row["severity"] == audit_ledger.cap(row["path"], row["proposed"])
         if row["state"] == "accepted":
             assert row["reason"], f"{row['id']}: accepted without a reason"
+
+
+# --- reconciliation ---------------------------------------------------------
+
+
+def test_reconcile_closes_rows_whose_path_is_gone(
+    tmp_path: Path, ledger: Path, capsys, monkeypatch
+) -> None:
+    """An open row on a deleted file cannot still hold; no verifier is needed."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "kept.md").write_text("x", encoding="utf-8")
+    cands = write_candidates(
+        tmp_path,
+        [
+            {"ruleId": "r", "path": "docs/kept.md", "claim": "still here"},
+            {"ruleId": "r", "path": "docs/removed.md", "claim": "file was deleted"},
+        ],
+    )
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    audit_ledger.main(["--ledger", str(ledger), "reconcile"])
+    capsys.readouterr()
+    by_path = {r["path"]: r for r in audit_ledger.load(ledger).values()}
+    assert by_path["docs/removed.md"]["state"] == "fixed"
+    assert "path no longer exists" in by_path["docs/removed.md"]["reason"]
+    assert by_path["docs/kept.md"]["state"] == "open"
+
+
+def test_reconcile_applies_verifier_verdicts(
+    tmp_path: Path, ledger: Path, capsys, monkeypatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    for name in ("a.md", "b.md"):
+        (tmp_path / "docs" / name).write_text("x", encoding="utf-8")
+    cands = write_candidates(
+        tmp_path,
+        [
+            {"ruleId": "r", "path": "docs/a.md", "claim": "claim that got fixed"},
+            {"ruleId": "r", "path": "docs/b.md", "claim": "claim that still holds"},
+        ],
+    )
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    rows = audit_ledger.load(ledger)
+    a = next(r["id"] for r in rows.values() if r["path"] == "docs/a.md")
+    b = next(r["id"] for r in rows.values() if r["path"] == "docs/b.md")
+    verdicts = tmp_path / "verdicts.json"
+    verdicts.write_text(
+        json.dumps(
+            {
+                "reconcile": [
+                    {"id": a, "holds": False, "reason": "line 12 now lists both hooks"},
+                    {"id": b, "holds": True, "reason": "still contradicts"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    audit_ledger.main(["--ledger", str(ledger), "reconcile", "--verdicts", str(verdicts)])
+    out = capsys.readouterr().out
+    assert "1 fixed" in out and "1 still hold" in out
+    rows = audit_ledger.load(ledger)
+    assert rows[a]["state"] == "fixed"
+    assert rows[a]["reason"] == "reconciled: line 12 now lists both hooks"
+    assert rows[b]["state"] == "open"
+    assert audit_ledger.main(["--ledger", str(ledger), "gate"]) == 0
+
+
+def test_reconcile_never_overrides_human_triage(
+    tmp_path: Path, ledger: Path, capsys, monkeypatch
+) -> None:
+    """A verifier saying 'fixed' about an accepted row is noise; the human's call stands."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "a.md").write_text("x", encoding="utf-8")
+    cands = write_candidates(tmp_path, [{"ruleId": "r", "path": "docs/a.md", "claim": "c"}])
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    fid = next(iter(audit_ledger.load(ledger)))
+    audit_ledger.main(["--ledger", str(ledger), "accept", fid, "--reason", "by design"])
+    verdicts = tmp_path / "verdicts.json"
+    verdicts.write_text(json.dumps([{"id": fid, "holds": False}]), encoding="utf-8")
+    audit_ledger.main(["--ledger", str(ledger), "reconcile", "--verdicts", str(verdicts)])
+    capsys.readouterr()
+    row = audit_ledger.load(ledger)[fid]
+    assert row["state"] == "accepted" and row["reason"] == "by design"
+
+
+def test_reconcile_rejects_malformed_verdicts(tmp_path: Path, ledger: Path) -> None:
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    ledger.write_text("", encoding="utf-8")
+    bad = tmp_path / "verdicts.json"
+    bad.write_text(json.dumps([{"id": "abc", "holds": "yes"}]), encoding="utf-8")
+    with pytest.raises(SystemExit, match="boolean 'holds'"):
+        audit_ledger.main(["--ledger", str(ledger), "reconcile", "--verdicts", str(bad)])
+
+
+def test_open_touched_filters_to_changed_files(
+    tmp_path: Path, ledger: Path, capsys, monkeypatch
+) -> None:
+    cands = write_candidates(
+        tmp_path,
+        [
+            {"ruleId": "r", "path": "docs/changed.md", "claim": "edited since confirmed"},
+            {"ruleId": "r", "path": "docs/same.md", "claim": "untouched since confirmed"},
+        ],
+    )
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    capsys.readouterr()
+    monkeypatch.setattr(audit_ledger, "path_touched", lambda row: row["path"] == "docs/changed.md")
+    audit_ledger.main(["--ledger", str(ledger), "open", "--touched", "--json"])
+    rows = json.loads(capsys.readouterr().out)["rows"]
+    assert [r["path"] for r in rows] == ["docs/changed.md"]
+    assert set(rows[0]) >= {"id", "path", "line", "claim", "ruleId"}
+
+
+# --- recurrence -------------------------------------------------------------
+
+
+def test_fixed_finding_reported_again_is_a_recurrence_not_carried(
+    tmp_path: Path, ledger: Path, capsys
+) -> None:
+    """The tombstone has to talk: a regression of a fixed row must be reported, then reopened."""
+    cands = write_candidates(
+        tmp_path, [{"ruleId": "r", "path": "plugins/steer/rules/24-worktrees.md", "claim": "c"}]
+    )
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    fid = next(iter(audit_ledger.load(ledger)))
+    audit_ledger.main(["--ledger", str(ledger), "resolve", fid])
+    capsys.readouterr()
+
+    audit_ledger.main(["--ledger", str(ledger), "new", "--candidates", str(cands)])
+    out = capsys.readouterr().out
+    assert "0 new, 1 recurrence, 0 already in the ledger" in out
+    assert "regression" in out
+
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    out = capsys.readouterr().out
+    assert "reopened 1 recurrence" in out
+    row = audit_ledger.load(ledger)[fid]
+    assert row["state"] == "open"
+    assert row["reason"].startswith("recurrence")
+
+
+def test_accepted_finding_reported_again_stays_carried(
+    tmp_path: Path, ledger: Path, capsys
+) -> None:
+    cands = write_candidates(tmp_path, [{"ruleId": "r", "path": "docs/a.md", "claim": "c"}])
+    audit_ledger.main(["--ledger", str(ledger), "record", "--candidates", str(cands)])
+    fid = next(iter(audit_ledger.load(ledger)))
+    audit_ledger.main(["--ledger", str(ledger), "accept", fid, "--reason", "by design"])
+    capsys.readouterr()
+    audit_ledger.main(["--ledger", str(ledger), "new", "--candidates", str(cands)])
+    assert "0 new, 0 recurrence, 1 already in the ledger" in capsys.readouterr().out
+    assert audit_ledger.load(ledger)[fid]["state"] == "accepted"
