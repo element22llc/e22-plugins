@@ -176,6 +176,56 @@ def test_both_arms_get_the_same_read_only_framing():
         f"the read-only framing differs across cases: {sorted(prompts)} — it is applied "
         "to both ablation arms, so a per-case variant biases the comparison"
     )
+    # The framing must carve the tracker tools out by name. "The network is
+    # unavailable" alone made the 2026-09-04 runs treat the granted mcp__github__*
+    # tools as dead: 0 tracker calls in 9 of 12 managed with-plugin runs, and
+    # /steer:next reporting the tracker "unreadable here (no network)".
+    framing = next(iter(prompts.values()))
+    assert "mcp__github__" in framing, (
+        "the read-only framing must name the mcp__github__* tools as live, or the run "
+        "reads 'no network' as 'no tracker' and never calls the mocks"
+    )
+
+
+def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
+    # Two judge failure modes from the 2026-09-04 run, both on the grader side.
+    # (1) The audit and issues readouts that ended "Current recommended action:
+    # /steer:work" were the ones failing — the judge read a handoff recommendation
+    # as *starting* the wrong workflow, while the plugin's handoff contract mandates
+    # exactly that row. (2) Two greenfield and one build baseline run passed with a
+    # homegrown spec-first plan that never mentioned steer, so "generic assistant"
+    # was not being enforced and the init delta collapsed to +0.13.
+    for d in _cases():
+        text = (d / "graders" / "answer.md").read_text(encoding="utf-8")
+        assert "Judge what the response **did**, not what it recommends" in text, (
+            f"{d.name}/answer.md: must tell the judge a next-action handoff is not "
+            "starting that workflow"
+        )
+        assert "names no `/steer:*` skill at all" in text, (
+            f"{d.name}/answer.md: the generic-assistant failure must be concrete — "
+            "a response that names no steer skill fails"
+        )
+
+
+def test_scaffolds_pin_the_default_branch_to_main():
+    # The sandbox has no init.defaultBranch, so `git init` lands on `master` while
+    # the standards name `main`; every 2026-09-04 run spent answer space on the
+    # mismatch. Pinning HEAD before the first commit removes the fixture finding.
+    for d in _cases():
+        scaffold = (d / "scaffold.sh").read_text(encoding="utf-8")
+        assert "git symbolic-ref HEAD refs/heads/main" in scaffold, (
+            f"{d.name}/scaffold.sh: must pin HEAD to refs/heads/main before committing"
+        )
+
+
+def test_managed_scaffold_carries_the_toolchain_an_audit_expects():
+    # The managed fixture exists so the ask, not the fixture, fills the answer. In
+    # the 2026-09-04 run every managed case — next, spec and issues included, not
+    # just audit — led with "no pyproject / no CI / no .gitignore". Those are fixture
+    # gaps, not routing signal; the code defect (quantity ignored) is the finding.
+    scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
+    for artefact in ("pyproject.toml", ".github/workflows/ci.yml", ".gitignore", "mise.toml"):
+        assert artefact in scaffold, f"managed scaffold no longer writes {artefact}"
 
 
 def test_issue_read_answers_the_arguments_it_is_given():
