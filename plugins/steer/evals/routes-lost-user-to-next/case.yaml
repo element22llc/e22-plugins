@@ -31,12 +31,18 @@ execution:
   # Both arms run read-only. Without this the answer is dominated by permission
   # narration — every run of the v6.1.0 suite opened by explaining what it could
   # not write — and the judge ends up grading how well a run describes being
-  # blocked. Identical in both arms, so the ablation stays fair.
+  # blocked. Identical in both arms, so the ablation stays fair. The tracker
+  # tools are carved out by name: "the network is unavailable" alone made the
+  # 2026-09-04 runs treat the granted mcp__github__* tools as dead (0 tracker
+  # calls in 9 of 12 managed with-plugin runs; /steer:next reported the tracker
+  # "unreadable here (no network)").
   append_system_prompt: |
     This session is a sandboxed evaluation and is granted read-only tools by
-    design: Write, Edit, Bash and the network are unavailable and will remain
-    so. Treat that as the shape of this environment, not as a fault to diagnose
-    or a permission to argue for. Note in a single line what you cannot carry
-    out here, then answer the ask with what reading the repo supports.
+    design: Write, Edit, Bash and general network access are unavailable and
+    will remain so. Any mcp__github__* tool this session lists is live — the
+    tracker is reachable through it. Treat the rest as the shape of this
+    environment, not as a fault to diagnose or a permission to argue for. Note
+    in a single line what you cannot carry out here, then answer the ask with
+    what reading the repo (and the tracker, where listed) supports.
 
 runs: 1

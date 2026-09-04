@@ -12,6 +12,9 @@
 set -eu
 
 git init -q .
+# The sandbox has no init.defaultBranch, so HEAD would be `master` while the
+# standards name `main` — and every 2026-09-04 run spent answer space on that.
+git symbolic-ref HEAD refs/heads/main
 git config user.email eval@example.com
 git config user.name "eval"
 

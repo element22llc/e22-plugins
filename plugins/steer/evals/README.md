@@ -54,12 +54,36 @@ front door the correct route: "front doors detect context and hand off … so yo
 rarely route to a specialized skill directly." Discriminating init from adopt is
 the `answer` grader's job, and its criteria name the wrong workflow explicitly.
 
+**The `answer` grader judges what the run did, not what it recommends.** Every
+readout ends with a handoff naming the *next* skill (`## Recommended next actions
+— /steer:<skill>`, `Suggested command: /steer:…`), and rule `00-router` mandates
+it. In the 2026-09-04 run the two `audit` and two `issues` responses the judge
+failed were exactly the ones ending "Current recommended action: `/steer:work`" —
+read as *starting* the wrong workflow — while the responses that passed skipped
+the line. The criteria now say so in as many words. The same run had two
+greenfield and one build **baseline** response pass with a homegrown spec-first
+plan that never mentioned steer, so the "generic assistant" failure is now
+concrete: a response that names no `/steer:*` skill fails, however good it reads.
+Neither the JSON nor `report.html` carries the judge's rationale — only its
+votes — so a judge failure is diagnosed by comparing the passing and failing
+`last_message`s, which is how both of these were found.
+
 **Every run is read-only, and each case says so** via an identical
 `append_system_prompt`. Without it the answer is dominated by permission
 narration — every run of the v6.1.0 suite opened by explaining what it could not
 write — and the judge grades how well a run describes being blocked. The framing
 is byte-identical across cases and applied to both arms, so it cannot bias the
-comparison; `tests/test_eval_suite.py` enforces that.
+comparison; `tests/test_eval_suite.py` enforces that. It carves the tracker tools
+out **by name**: the first framing said "the network is unavailable" and granted
+`mcp__github__*` in the same case, and the runs resolved the contradiction by
+treating the tracker as dead — 0 tracker calls in 9 of 12 managed with-plugin
+runs, `/steer:next` reporting it "unreadable here (no network)", and one
+`fix issue #123` run guessing the bug from the code rather than reading the
+issue. The framing does **not** tell the run to enter a skill: that would coach
+the arm the suite exists to measure. A write-capable skill that is named in prose
+and then done by hand in a read-only session is the routing defect the
+2026-09-04 run surfaced (15 of 24 with-plugin runs, 12 of them naming the right
+skill first), and the fix for it belongs in rule `00-router`, not here.
 
 ## Ablation is the point
 
@@ -147,6 +171,17 @@ The other known scoring bug here — the bootstrap nudge naming `/steer:setup`
 while the case grepped for `steer:init`, so a run that answered `/steer:setup`
 and stopped was routing correctly and scoring zero — is fixed: `routed` now
 accepts the front door on both bootstrap cases.
+
+**The fixture must not out-shout the ask.** Every scaffold pins `HEAD` to
+`refs/heads/main` before its first commit (the sandbox has no
+`init.defaultBranch`, so `git init` landed on `master` and every 2026-09-04 run
+flagged the mismatch with the standards' `main`), and the managed variant carries
+a `pyproject.toml`, a CI workflow and a `.gitignore` alongside `mise.toml` — in
+that run every managed case, `next`, `spec` and `issues` included, led with "no
+manifest / no CI / no .gitignore" before reaching the ask. The one finding the
+managed fixture is *meant* to offer is the code defect (`total()` ignores
+`quantity`), which is also what issue #123 describes. Silence from
+`session-checks.sh` is still the contract; re-check it after any scaffold edit.
 
 ## Running
 
