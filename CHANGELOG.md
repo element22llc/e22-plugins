@@ -26,6 +26,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   know any skill names here" onto the tail. A user who wants to flag a misroute
   says so; rule 97 files it then. Rule 03 now states plainly that "no closing
   offer" binds a skill too.
+- **Fixed: `/steer:adopt` reads the repo before it reads the plugin.** The
+  procedure front-loaded `templates/**` — the migrations ledger at Phase 2, the
+  scaffold `MANIFEST.md`, the spec templates — before Phase 3's survey, so the
+  first thing a user saw was the skill reading its own bundle "so the artifacts
+  match the bundled shapes". Nothing is written until Phase 4, so none of that
+  had to happen yet, and it cost the turns and context the survey needs: in the
+  v6.1.0 eval run all three adopt sessions exhausted their budget still reading
+  templates, having said nothing about the repo, while the no-plugin baseline
+  produced a full adoption plan (including a live SQL injection) in fewer turns.
+  Phases 1 and 3 are now repo-only and each states its output; Phase 2 settles
+  fresh-vs-resume with one existence check and skips the ledger entirely on a
+  fresh adoption; the scaffold bundle is read at Phase 10 where it is used. A new
+  guardrail states the rule so a future phase cannot quietly re-front-load.
 
 ### 6.1.0
 

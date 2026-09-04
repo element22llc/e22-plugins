@@ -10,7 +10,33 @@ context:
 execution:
   prompt: |
     fix issue #123
-  max_turns: 6
-  allowed_tools: [Read, Glob, Grep, Skill]
+  # Sized from a real run, not guessed: a run killed with "Reached maximum number
+  # of turns" is scored on a truncated message, which says nothing about routing.
+  # 6 was far too tight; 12 still exhausted the adopt case 3 runs out of 3 and the
+  # triage case once. Raise a case's budget when its runs error, and record why.
+  max_turns: 12
+  # The tracker is GitHub (spec/tracker.md), so the read path to it belongs in the
+  # case: without it the run spends its turns narrating an unreachable tracker
+  # instead of routing. Served by evals/mocks/github/, granted by `mise run evals`.
+  allowed_tools:
+    [
+      Read,
+      Glob,
+      Grep,
+      Skill,
+      mcp__github__issue_read,
+      mcp__github__list_issues,
+      mcp__github__search_issues,
+    ]
+  # Both arms run read-only. Without this the answer is dominated by permission
+  # narration — every run of the v6.1.0 suite opened by explaining what it could
+  # not write — and the judge ends up grading how well a run describes being
+  # blocked. Identical in both arms, so the ablation stays fair.
+  append_system_prompt: |
+    This session is a sandboxed evaluation and is granted read-only tools by
+    design: Write, Edit, Bash and the network are unavailable and will remain
+    so. Treat that as the shape of this environment, not as a fault to diagnose
+    or a permission to argue for. Note in a single line what you cannot carry
+    out here, then answer the ask with what reading the repo supports.
 
 runs: 1
