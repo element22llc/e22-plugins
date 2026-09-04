@@ -133,3 +133,11 @@ site/
 .terragrunt-cache/
 *.tfstate
 *.tfstate.*
+
+# ---------------------------------------------------------------------------
+# `claude plugin eval` scratch at the repo root. The suite lives at
+# plugins/steer/evals/ (its own .gitignore drops results/); a run invoked
+# without --eval-dir falls back to ./evals/ and drops a report + an `init`
+# scaffold there. Run output and ad-hoc probes are not repo content.
+# ---------------------------------------------------------------------------
+/evals/

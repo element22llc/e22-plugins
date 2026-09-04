@@ -16,7 +16,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | Rule | Topic |
 | --- | --- |
 | `00-router.md` | Operating-manual entry point. |
-| `03-responses.md` | Responses lead with the result and stop when it is said — a progress update is one or two sentences, a final report is what changed / what was verified / what is next; hook notices and injected context are never echoed; the next-actions block and the end-of-session checklist stay compact (open items only). |
+| `03-responses.md` | Responses lead with the result and stop when it is said — a progress update is one or two sentences, a final report is what changed / what was verified / what is next, with no closing offer (which binds a skill too: none of them ends by inviting feedback); hook notices and injected context are never echoed, the one exception being the skill's own name, which the handoff heading carries so you can see what ran; the next-actions block and the end-of-session checklist stay compact (open items only). |
 | `05-roles.md` | Who you are working with. |
 | `08-code-comments.md` | Code comments are why-only — the default is no comment; test each one by deleting it; never restate the code, banner, narrate the task, or keep dead code; config gets one header line pointing at the reference prose; a dense file is not a licence to add more. Enforced at write time by `check-comment-density.sh`, in review by the Definition of Done, and in `/steer:audit` by the comment-noise dimension. |
 | `10-stack.md` | Stack defaults (app / service profile). |

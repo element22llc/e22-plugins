@@ -1,19 +1,27 @@
 ---
-type: regex
-target: last_message
-pattern: "steer:build\\b"
-match: contains
+type: tool_used
+tool: Skill
+input_match: 'steer:build\b'
+arm: both
 weight: 3
 ---
 
-The response must reach the `build` skill for this ask — by invoking it, or by
-naming it as the owner of the ask when a decision is needed from the user first.
+The run must actually **enter** `build` — asserted on the `Skill` tool call, not
+on the prose.
 
-This is the assertion `check_routing_fixtures.py` cannot make. That gate proves the
-signal vocabulary for this ask still appears in the always-on routing surface; it
-cannot prove the ask *arrives*. The no-plugin baseline arm has no steer skills at
-all, so a pass here is attributable to the plugin, not to a lucky guess.
+`last_message` was the wrong surface for this claim. `rules/00-router.md` says
+"announce, then act": the announcement lands in the *first* message and the
+finished skill's report names the skills that come *next*, so a run that routed
+perfectly usually does not repeat the skill's own name at the end. In the v6.1.0
+run 15 of 24 with-plugin runs failed this grader while the `answer` judge passed
+them unanimously, and the one run that scored full marks did so because it was
+killed right after its announce line. That measured message shape, not routing.
 
-Graded on `last_message`, never the trace: `rules/00-router.md` is injected into
-every session and names every skill, so any skill matches somewhere in a trace.
-Grading the trace would measure whether the rules loaded, not where the ask went.
+A tool call is not the same mistake as grading the trace. The objection to
+`target: trace` is that the always-on ruleset names every skill, so any skill
+matches somewhere in the injected text — but an invocation is an **action** the
+run took, and it is absent from the no-plugin arm by construction. `arm: both`
+therefore keeps this grader scored in both arms: the baseline has no steer
+skills to invoke, so the delta stays attributable to the plugin.
+
+Whether the response *reads* as correctly routed is the `answer` grader's job.

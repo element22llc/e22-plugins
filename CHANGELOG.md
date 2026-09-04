@@ -19,6 +19,38 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the `/steer:work` row exists at `Blocking now`, and the mode states plainly
   that filing is never the current action while a confirmed blocker is open —
   `publish-audit` tracks the remainder.
+- **Fixed: rules `00-router` and `03-responses` no longer contradict each other
+  about naming the skill that ran.** Rule 00 says "announce, then act"; rule 03
+  said skill routing "is for you", so the announcement landed in the *first*
+  message and the finished skill's report named only the skills that came *next*.
+  A reader could not tell what had just run — which is what makes a misroute
+  reportable under rule `97-self-report` at all. The handoff heading now carries
+  it (`## Recommended next actions — /steer:audit code`, contract §5), rule 03
+  carves that one attribution out of "never echo machinery", and
+  `check_fixtures.py` pins the form so the two rules cannot drift apart again.
+  Found by the v6.1.0 routing eval run, where 15 of 24 with-plugin runs looked
+  unrouted for this reason alone.
+- **Fixed: `/steer:next` and `/steer:help` no longer end every readout with a
+  standing invitation to report a misroute.** Both skills mandated a closing line
+  offering `/steer:report`, which rule `03-responses` already forbids ("no
+  closing offer") — and in the eval run the one `/steer:next` response that
+  failed its judge was the one that stacked that line plus "you don't need to
+  know any skill names here" onto the tail. A user who wants to flag a misroute
+  says so; rule 97 files it then. Rule 03 now states plainly that "no closing
+  offer" binds a skill too.
+- **Fixed: `/steer:adopt` reads the repo before it reads the plugin.** The
+  procedure front-loaded `templates/**` — the migrations ledger at Phase 2, the
+  scaffold `MANIFEST.md`, the spec templates — before Phase 3's survey, so the
+  first thing a user saw was the skill reading its own bundle "so the artifacts
+  match the bundled shapes". Nothing is written until Phase 4, so none of that
+  had to happen yet, and it cost the turns and context the survey needs: in the
+  v6.1.0 eval run all three adopt sessions exhausted their budget still reading
+  templates, having said nothing about the repo, while the no-plugin baseline
+  produced a full adoption plan (including a live SQL injection) in fewer turns.
+  Phases 1 and 3 are now repo-only and each states its output; Phase 2 settles
+  fresh-vs-resume with one existence check and skips the ledger entirely on a
+  fresh adoption; the scaffold bundle is read at Phase 10 where it is used. A new
+  guardrail states the rule so a future phase cannot quietly re-front-load.
 
 ### 6.1.0
 

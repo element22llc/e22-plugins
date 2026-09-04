@@ -30,6 +30,17 @@ change to an already-adopted repo, use the normal spec workflow
 These govern **every** phase and outrank any procedural detail. If a step in the
 runbook seems to conflict with one of these, the guardrail wins.
 
+- **Read the repo before the plugin.** Phases 1 and 3 are survey work and are
+  answered from the repo alone — the stack, the profile, the entry points, the
+  features. Every `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/**` and
+  `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/**` file is read **at the phase that
+  instantiates it**, never up front and never "so the artifacts match the
+  bundled shapes": the scaffold `MANIFEST.md` at Phase 10, the spec templates at
+  Phases 5 and 8, the migrations ledger only on a resume (Phase 2). Front-loading
+  them buys nothing — no artifact is written until Phase 4 — and it costs the
+  turns and the context the survey needs. In the v6.1.0 eval run it cost the
+  whole run: three of three sessions exhausted their budget still reading
+  templates, having said nothing about the repo.
 - **Decisions are recorded, never inferred — no fabricated ADRs.** As-built
   architectural choices are captured as **facts + evidence + conformance
   disposition + decision candidate** in `PRODUCTIONIZATION.md`, **not** as
@@ -122,7 +133,9 @@ phase you are on there before executing it.
    fork; detect the stack; branch `feat/adopt`. → PROCEDURE Phase 1
 2. **Reconcile the adoption checklist (resume safety)** — apply pending structural
    migrations from the ledger, then run the template-reconcile diff and splice in
-   new sections. **Do this FIRST on a resume.** → PROCEDURE Phase 2
+   new sections. **Do this FIRST on a resume** — and on a *fresh* adoption the
+   whole phase is a no-op the existence check settles in one call, ledger
+   included. → PROCEDURE Phase 2
 3. **Survey the codebase** — map apps, routes, handlers, data models, services,
    auth, env vars; list the user-facing features. → PROCEDURE Phase 3
 4. **Reverse-engineer the product spec** — fill `vision.md` / `users.md` /

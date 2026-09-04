@@ -38,7 +38,7 @@ A customer record: name, email, created date.
 - status: open
 - impact: non-blocking
 
-## Recommended next actions
+## Recommended next actions — /steer:spec
 
 ### Human decision required
 

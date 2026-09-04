@@ -231,9 +231,13 @@ advances any workflow's state — including a gate it reports as answerable: it
 `/steer-next` never runs a ratification prompt itself. Auto-continuing into the
 recommended action does not weaken that.
 
-End the readout with one line inviting correction: if this recommendation (or a
-recent routing) missed the mark, saying so gets it reported upstream via
-`/steer-report` — real misroutes are how the routing fixtures grow.
+End the readout with the handoff block and nothing after it — no invitation to
+correct the recommendation, no offer to file a report, no reassurance that the
+user need not know a skill name (rule `03-responses`: no closing offer). The
+block's heading already names this skill, which is what a user needs to say "that
+was the wrong route"; when they do, rule `97-self-report` files it with
+`/steer-report`. A standing invitation on every readout buys nothing and it
+crowded out the recommendation in the v6.1.0 eval run.
 
 ## Golden fixtures
 
