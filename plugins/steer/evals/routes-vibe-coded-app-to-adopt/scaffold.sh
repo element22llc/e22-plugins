@@ -1,55 +1,115 @@
 #!/bin/sh
-# Build a minimal steer-managed repo for a routing case to run against.
+# Build a VIBE-CODED repo — real code, no spec spine, no toolchain — for the
+# adopt routing case.
 #
-# Without this, cases run in an empty temp dir whose git root is $HOME, and the
-# correct answer to most asks becomes "there is nothing here" — which measures the
-# sandbox, not the routing. Referenced by every case's context.scaffold_script and
-# run only under `claude plugin eval --scaffold` (author-supplied bash, off by
-# default; `mise run evals` passes the flag).
+# The ask says "no spec, no toolchain; adopt it", so the fixture must carry
+# neither: a mise.toml or a spec/ directory would contradict the prompt, and the
+# volume of unspecified code is what distinguishes adopt from a greenfield init.
+#
+# Referenced by context.scaffold_script and run only under
+# `claude plugin eval --scaffold` (author-supplied bash, off by default;
+# `mise run evals` passes the flag).
 set -eu
 
 git init -q .
 git config user.email eval@example.com
 git config user.name "eval"
 
-cat >CLAUDE.md <<'EOF'
-# Acme Checkout — product context
+cat >README.md <<'EOF'
+# snippet-box
 
-Payments service. Org engineering standards arrive from the steer plugin; this
-file holds product-specific context only.
+Paste snippets, get a link back. Built over a weekend.
 EOF
 
-cat >mise.toml <<'EOF'
-[tools]
-python = "3.14"
+mkdir -p static
+
+cat >app.py <<'EOF'
+import sqlite3
+import uuid
+
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+DB = "snippets.db"
+
+
+def db():
+    c = sqlite3.connect(DB)
+    c.execute("create table if not exists snippets (id text, body text, lang text)")
+    return c
+
+
+@app.route("/api/snippets", methods=["POST"])
+def create():
+    body = request.json.get("body")
+    lang = request.json.get("lang", "text")
+    sid = uuid.uuid4().hex[:8]
+    c = db()
+    c.execute("insert into snippets values (?, ?, ?)", (sid, body, lang))
+    c.commit()
+    return jsonify({"id": sid})
+
+
+@app.route("/api/snippets/<sid>")
+def read(sid):
+    c = db()
+    row = c.execute("select body, lang from snippets where id = '" + sid + "'").fetchone()
+    if not row:
+        return jsonify({"error": "not found"}), 404
+    return jsonify({"body": row[0], "lang": row[1]})
+
+
+@app.route("/api/snippets/<sid>", methods=["DELETE"])
+def delete(sid):
+    c = db()
+    c.execute("delete from snippets where id = ?", (sid,))
+    c.commit()
+    return "", 204
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 EOF
 
-mkdir -p spec/features/checkout
+cat >highlight.py <<'EOF'
+LANGS = ["python", "js", "sh", "sql", "text"]
 
-cat >spec/vision.md <<'EOF'
-# Vision — Acme Checkout
-One-page checkout for the Acme storefront.
+
+def guess(body):
+    if "def " in body or "import " in body:
+        return "python"
+    if "function " in body or "=>" in body:
+        return "js"
+    if body.startswith("#!"):
+        return "sh"
+    if "select " in body.lower():
+        return "sql"
+    return "text"
+
+
+def render(body, lang):
+    if lang not in LANGS:
+        lang = guess(body)
+    return '<pre class="lang-' + lang + '">' + body.replace("<", "&lt;") + "</pre>"
 EOF
 
-cat >spec/tracker.md <<'EOF'
----
-system: github
-repository: acme/checkout
----
-# Tracker
-Issues live in GitHub.
+cat >static/app.js <<'EOF'
+async function save() {
+  const body = document.querySelector("#editor").value;
+  const r = await fetch("/api/snippets", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ body }),
+  });
+  const { id } = await r.json();
+  location.hash = id;
+}
+document.querySelector("#save").addEventListener("click", save);
 EOF
 
-cat >spec/features/checkout/intent.md <<'EOF'
----
-feature_status: approved
----
-> Tracker: acme/checkout#123
-# Intent — one-page checkout
-Shoppers complete a purchase without leaving the cart page.
+cat >requirements.txt <<'EOF'
+flask
 EOF
-
-printf 'def total(items):\n    return sum(i["price"] for i in items)\n' >checkout.py
 
 git add -A
-git commit -qm "Initial commit"
+git commit -qm "it works"

@@ -8,11 +8,38 @@ and that the per-case scaffolds have not drifted apart.
 
 from __future__ import annotations
 
+import json
+import re
+
 import yaml
 from conftest import REPO_ROOT
 
 EVALS = REPO_ROOT / "plugins/steer/evals"
+MOCKS = EVALS / "mocks"
 ASKS = REPO_ROOT / "tests/fixtures/routing/asks.yml"
+PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
+
+# Which repo state each case's ask presumes. One scaffold cannot serve all three:
+# a managed spine silences the bootstrap nudge that the init/build/adopt cases exist
+# to measure, and an unmanaged tree makes every session-start check fire an adopt
+# offer that competes with the ask in the five cases that presume a managed repo.
+# Byte-equality is enforced WITHIN a variant, not across the suite.
+SCAFFOLD_VARIANTS = {
+    "managed": {
+        "routes-fix-issue-to-work",
+        "routes-lost-user-to-next",
+        "routes-repo-health-to-audit",
+        "routes-think-feature-through-to-spec",
+        "routes-triage-backlog-to-issues",
+    },
+    "greenfield": {
+        "routes-greenfield-bootstrap-to-init",
+        "routes-po-idea-to-build",
+    },
+    "legacy": {
+        "routes-vibe-coded-app-to-adopt",
+    },
+}
 
 
 def _cases():
@@ -31,13 +58,62 @@ def test_every_case_is_well_formed():
         assert graders == ["answer.md", "routed.md"], f"{d.name}: unexpected graders {graders}"
 
 
-def test_scaffolds_are_byte_identical():
+def test_every_case_declares_a_scaffold_variant():
+    declared = set().union(*SCAFFOLD_VARIANTS.values())
+    present = {d.name for d in _cases()}
+    assert declared == present, (
+        "SCAFFOLD_VARIANTS and the case directories disagree: "
+        f"only declared {sorted(declared - present)}, only present {sorted(present - declared)}"
+    )
+
+
+def test_scaffolds_are_byte_identical_within_each_variant():
     # The tool requires scaffold_script to name a file inside the case directory, so
-    # a single shared copy is impossible. Byte-equality is the contract instead.
-    scaffolds = {d.name: (d / "scaffold.sh").read_bytes() for d in _cases()}
-    assert len(set(scaffolds.values())) == 1, (
-        "case scaffolds have drifted apart: "
-        f"{sorted(scaffolds)} — edit one and propagate to the rest"
+    # a single shared copy is impossible. Byte-equality per variant is the contract.
+    seen = {}
+    for variant, names in SCAFFOLD_VARIANTS.items():
+        blobs = {n: (EVALS / n / "scaffold.sh").read_bytes() for n in sorted(names)}
+        assert len(set(blobs.values())) == 1, (
+            f"{variant} scaffolds have drifted apart: "
+            f"{sorted(blobs)} — edit one and propagate to the rest of the variant"
+        )
+        seen[variant] = next(iter(blobs.values()))
+    assert len(set(seen.values())) == len(seen), (
+        "two variants ship the same scaffold — they exist to build different repo "
+        f"states: {sorted(seen)}"
+    )
+
+
+def test_managed_scaffold_stamps_the_current_plugin_version():
+    # A spine stamped at a version other than the plugin's own reads as version
+    # drift to /steer:next, which injects a sync nudge into every run of the five
+    # managed cases — one more notice competing with the ask. The release bump
+    # therefore has to re-stamp this fixture, and this test is the reminder.
+    version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
+    scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
+    stamped = re.findall(r"^(\d+\.\d+\.\d+)$", scaffold, flags=re.MULTILINE)
+    assert stamped == [version], (
+        f"the managed scaffold stamps spec/.version as {stamped}, but the plugin is "
+        f"at {version} — re-stamp it (and propagate to the whole managed variant)"
+    )
+
+
+def test_mock_responders_name_tools_the_plugin_actually_calls():
+    # A responder named after a tool no skill calls is dead weight the run still
+    # validates and serves; a tool the skills DO call with no responder falls back
+    # to the real server, which is what the credential-failure noise came from.
+    served = {p.stem for p in (MOCKS / "github").glob("*.md")}
+    assert served, "the github mock has no responders"
+    skills = (REPO_ROOT / "plugins/steer/skills").rglob("*.md")
+    called = set()
+    for f in skills:
+        called |= set(re.findall(r"mcp__github__([a-z_]+)", f.read_text(encoding="utf-8")))
+    assert served <= called, f"mock responders name tools no skill calls: {sorted(served - called)}"
+    tools_json = json.loads((MOCKS / "github" / "_tools.json").read_text(encoding="utf-8"))
+    advertised = {t["name"] for t in tools_json["tools"]}
+    assert advertised == served, (
+        "_tools.json and the responder files disagree: advertised-only "
+        f"{sorted(advertised - served)}, responder-only {sorted(served - advertised)}"
     )
 
 

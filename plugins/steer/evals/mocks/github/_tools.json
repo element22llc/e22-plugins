@@ -1,0 +1,47 @@
+{
+  "tools": [
+    {
+      "name": "issue_read",
+      "description": "Read a GitHub issue, its comments, labels, or sub-issues.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "method": { "type": "string" },
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "issue_number": { "type": "number" }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "list_issues",
+      "description": "List issues in a GitHub repository.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "state": { "type": "string" },
+          "labels": { "type": "array", "items": { "type": "string" } },
+          "perPage": { "type": "number" }
+        },
+        "additionalProperties": true
+      }
+    },
+    {
+      "name": "search_issues",
+      "description": "Search issues across GitHub with a query string.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "owner": { "type": "string" },
+          "repo": { "type": "string" },
+          "perPage": { "type": "number" }
+        },
+        "additionalProperties": true
+      }
+    }
+  ]
+}

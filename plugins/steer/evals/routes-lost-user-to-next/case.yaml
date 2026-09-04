@@ -10,7 +10,22 @@ context:
 execution:
   prompt: |
     I'm lost — where do I even start in this repo?
-  max_turns: 6
-  allowed_tools: [Read, Glob, Grep, Skill]
+  # 6 was too tight: a run that spends its budget reading the repo is killed with
+  # "Reached maximum number of turns" BEFORE it writes an answer, and the graders
+  # then score a truncated message — a zero that says nothing about routing.
+  max_turns: 12
+  # The tracker is GitHub (spec/tracker.md), so the read path to it belongs in the
+  # case: without it the run spends its turns narrating an unreachable tracker
+  # instead of routing. Served by evals/mocks/github/, granted by `mise run evals`.
+  allowed_tools:
+    [
+      Read,
+      Glob,
+      Grep,
+      Skill,
+      mcp__github__issue_read,
+      mcp__github__list_issues,
+      mcp__github__search_issues,
+    ]
 
 runs: 1

@@ -38,29 +38,94 @@ baseline arm**, and the reported number is the delta. A case that scores well in
 arms proves nothing about steer — the model would have got there anyway. What counts
 is Δ.
 
-## The scaffold
+## The scaffolds
 
-Each case carries an **identical** `scaffold.sh` that builds a minimal managed repo
-(git history, `CLAUDE.md`, a `/spec` spine with an approved feature and a GitHub
-tracker). Without it the cases run in an empty temp dir rooted at `$HOME`, where the
-correct answer to most asks is "there is nothing here" — measuring the sandbox, not
-the routing.
+Each case builds its own repo from its own `scaffold.sh`. There are **three
+variants**, because one fixture cannot serve every ask:
 
-The copies are byte-identical by contract (`tests/test_eval_suite.py` enforces it);
-the tool requires `scaffold_script` to name a file **inside** the case directory, so
-a single shared copy is not possible. Edit one, run the test, propagate.
+| Variant | Cases | Repo state | Why |
+|---|---|---|---|
+| `managed` | work, next, audit, spec, issues | complete, version-stamped spine + toolchain + code + tests | These asks presume a bootstrapped repo. Every session-start check is **silent** against it. |
+| `greenfield` | init, build | `git init` + a README, nothing else | Their asks say "brand-new empty repo" / "build an app from my idea". |
+| `legacy` | adopt | a Flask app, no spec, no toolchain, no tests | Its ask says "no spec, no toolchain". Unspecified code volume is what separates adopt from init. |
+
+**Silence is the contract for `managed`.** A `foreign` spine (a `spec/` with no
+`spec/.version`) makes `check-unmanaged-repo.sh` inject an adopt offer into every
+run, and template gaps make `check-template-drift.sh` inject a reconciliation
+notice — both then compete with the ask for the answer, and the case measures the
+fixture instead of the routing. That was a real bug: before the variants existed,
+all eight cases shared one `foreign` scaffold and every run of "fix issue #123"
+spent its answer on `/steer:adopt`. Check any change to the managed scaffold with
+
+```shell
+printf '{"cwd":"<scaffolded repo>"}' | sh plugins/steer/hooks/session-checks.sh
+```
+
+and expect **no output**. The two bootstrap variants are the opposite: the nudge
+*should* fire there, because it names the very routes those cases assert.
+
+The copies within a variant are byte-identical by contract
+(`tests/test_eval_suite.py` enforces it, per variant); the tool requires
+`scaffold_script` to name a file **inside** the case directory, so a single shared
+copy is not possible. Edit one, run the test, propagate to that variant.
+
+The managed scaffold stamps `spec/.version` with the plugin's **current** version
+— a mismatch reads as version drift to `/steer:next` and injects a sync nudge.
+`test_managed_scaffold_stamps_the_current_plugin_version` pins the two together,
+so the release bump has to re-stamp the fixture.
+
+## The tracker stand-in
+
+`spec/tracker.md` declares GitHub, so the managed cases need a read path to it.
+`mocks/github/` provides canned stand-ins for the three read-only tools the skills
+call — `issue_read`, `list_issues`, `search_issues` — named after the server
+segment of the tool name (`mcp__github__issue_read` → `mocks/github/issue_read.md`),
+with `_tools.json` as the saved `tools/list` response and each `<tool>.md` body as
+the canned result. `--mocks` defaults to `record`, which serves a stand-in wherever
+one exists.
+
+Without them the plugin's bundled `github` server fails to connect (no
+`github_pat` in the sandbox) and **every** run narrates
+`400: Authorization header is badly formatted` instead of routing — the second
+half of the same bug. `mise run evals` passes `--allow-tools` for the three read
+tools; writes are deliberately never granted, since a routing case has no reason
+to land a change.
+
+Two things this deliberately does not fix, both worth knowing when you read a
+number:
+
+- **The baseline arm has no tracker at all.** The `github` server is the plugin's,
+  so the no-plugin arm cannot read an issue however well it routes. `routed` is
+  immune (its pattern can only match plugin output), but the `answer` grader's Δ
+  partly reflects capability, not just routing.
+- **The bootstrap nudge names `/steer:setup` as the front door** for "set this
+  repo up properly", while `routes-greenfield-bootstrap-to-init` greps for
+  `steer:init`. Both are named in the notice, so the case can pass — but a run
+  that answers `/steer:setup` and stops is routing correctly and scoring zero.
 
 ## Running
 
 ```shell
-mise run evals              # whole suite, with the no-plugin baseline arm
+mise run evals                                   # whole suite, both arms
 mise run evals -- --case 'routes-fix-issue-to-work'
+mise run evals -- --runs 3                       # plugin health: see below
 ```
 
-`--scaffold` is required and the task passes it: it runs author-supplied bash as you,
-so the flag is opt-in by design. Deliberately **not** in `mise run ci` — the suite
-spends real tokens (~$0.55 per case at `runs: 1`, both arms), the same reason the
-`e2e` suite sits off the PR path.
+`--scaffold` and `--allow-tools` are required and the task passes both.
+
+**For a health number, always pass `--runs 3` or more.** The per-case default is
+`runs: 1` so an ad-hoc single-case run stays cheap, and at one run the result is
+noise: the same case has scored 0.6 / 0 / 0.6 / 0 / 0.6 across five identical
+runs, and the LLM grader's majority-of-three judge vote flips on borderline
+prose. Read `aggregates.meanDelta` in `results/<ts>/aggregate-result.json`, not a
+single case's `passed`.
+
+Deliberately **not** in `mise run ci` — the suite spends real tokens, the same
+reason the `e2e` suite sits off the PR path. Budget roughly **$1.00–1.30 per case
+per run** across both arms (measured at `max_turns: 12`; the with-plugin arm costs
+~3× the baseline, which has no rules to read), so ~$8–10 for the suite at
+`runs: 1` and ~$25–30 at `runs: 3`. Cap a run you are unsure about with
+`--max-cost-usd`; it aborts and reports partial results rather than overrunning.
 
 ## Availability
 
