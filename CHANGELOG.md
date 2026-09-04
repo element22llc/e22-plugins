@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: rules `00-router` and `03-responses` no longer contradict each other
+  about naming the skill that ran.** Rule 00 says "announce, then act"; rule 03
+  said skill routing "is for you", so the announcement landed in the *first*
+  message and the finished skill's report named only the skills that came *next*.
+  A reader could not tell what had just run — which is what makes a misroute
+  reportable under rule `97-self-report` at all. The handoff heading now carries
+  it (`## Recommended next actions — /steer:audit code`, contract §5), rule 03
+  carves that one attribution out of "never echo machinery", and
+  `check_fixtures.py` pins the form so the two rules cannot drift apart again.
+  Found by the v6.1.0 routing eval run, where 15 of 24 with-plugin runs looked
+  unrouted for this reason alone.
+- **Fixed: `/steer:next` and `/steer:help` no longer end every readout with a
+  standing invitation to report a misroute.** Both skills mandated a closing line
+  offering `/steer:report`, which rule `03-responses` already forbids ("no
+  closing offer") — and in the eval run the one `/steer:next` response that
+  failed its judge was the one that stacked that line plus "you don't need to
+  know any skill names here" onto the tail. A user who wants to flag a misroute
+  says so; rule 97 files it then. Rule 03 now states plainly that "no closing
+  offer" binds a skill too.
+
 ### 6.1.0
 
 - **Fixed: rule `10-stack` no longer tells sessions the version-pin `deny` is

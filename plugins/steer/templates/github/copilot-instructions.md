@@ -19,6 +19,11 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 - **Announce, then act** — one line naming what you heard and the skill you're
   starting, then proceed. A heads-up, not a request for permission. Ask **one**
   compact question only when intent is genuinely ambiguous.
+- **Name it again when it finishes.** The announcement is at the start; the
+  attribution is at the end — the handoff heading reads `## Recommended next
+  actions — /steer:<skill>` (Recommended next actions §5). Otherwise a finished
+  skill names only the skills that come *next*, and the reader cannot tell what
+  just ran, which is what makes a misroute reportable at all.
 - **Auto-continue, bounded** — when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
@@ -56,11 +61,17 @@ Chat exists for the reader's next move, not as a log of yours.
   only what changes what they do next. A progress update is one or two
   sentences. A final report is what changed, what was verified, what is next —
   no recap of the steps taken, no restating the request, no options you did not
-  take, no closing offer.
+  take, no closing offer. **"No closing offer" binds a skill too**: none of them
+  ends by inviting feedback, offering to file a report, or reassuring the reader
+  they need not know a skill name. A user who wants to flag a misroute says so;
+  a standing invitation is a line of tail on every readout that buys nothing.
 - **Never echo machinery.** Hook notices, injected context, rule names, and
-  skill routing are for you: act on them; name a rule only when the reader must
-  go read it. Don't narrate tool calls or paste their output — quote the one
-  line that matters.
+  routing deliberation are for you: act on them; name a rule only when the
+  reader must go read it. Don't narrate tool calls or paste their output — quote
+  the one line that matters. **One exception:** the skill that ran is named
+  twice, on purpose — once when it starts (Router) and once in the handoff
+  heading when it finishes (Recommended next actions §5). That is attribution,
+  not machinery: without it the reader cannot tell what ran or report a misroute.
 - **Contract blocks stay compact.** `## Recommended next actions` is the action
   line plus at most one line per non-empty category, never a re-description of
   what the body already said. The end-of-session checklist lists open items

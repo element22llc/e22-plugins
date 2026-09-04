@@ -160,8 +160,16 @@ silently becoming a partial `/steer:next`.
 Emit this block, in this order, as the workflow's final output. Omit any category
 section that is empty.
 
+**The heading names the skill that produced the block** — `## Recommended next
+actions — /steer:<skill>`, with the mode where the skill has one
+(`/steer:audit code`). This is the only place a finished skill names itself, and
+it is deliberate: the body already named the skills that come *next*, so without
+the attribution the reader cannot tell what just ran, and a misroute is not
+reportable. It is one heading suffix, not a status line — do not expand it into a
+summary of what the skill did.
+
 ```markdown
-## Recommended next actions
+## Recommended next actions — /steer:<skill>
 
 ### Blocking now
 [Only actions preventing the current workflow from safely advancing.]
@@ -199,7 +207,7 @@ One line per item, no explanatory prose under a heading, and in the common case
 the whole block is four lines:
 
 ```markdown
-## Recommended next actions
+## Recommended next actions — /steer:work
 
 ### Human decision required
 - PR #42 awaits review; merge is the dev's call.
@@ -212,6 +220,8 @@ Review and merge PR #42. Suggested command: `gh pr checks 42 --watch`
 
 - **Omit empty category sections.** Only `Current recommended action` is always
   present.
+- **The heading carries the skill, and nothing else does.** No "ran by" line, no
+  restatement in the body, no sign-off after the block.
 - **One line per item, none of it a recap.** A category section is a bullet
   per action, each a single line naming the action and its object. State the
   body already reported (what was built, what was checked, which gate ran) is
