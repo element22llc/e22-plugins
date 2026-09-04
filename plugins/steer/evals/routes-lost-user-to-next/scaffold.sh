@@ -15,6 +15,9 @@
 set -eu
 
 git init -q .
+# The sandbox has no init.defaultBranch, so HEAD would be `master` while the
+# standards name `main` — and every 2026-09-04 run spent answer space on that.
+git symbolic-ref HEAD refs/heads/main
 git config user.email eval@example.com
 git config user.name "eval"
 
@@ -28,18 +31,63 @@ the steer plugin; this file holds product-specific context only.
 - `checkout.total()` is the only public entry point today.
 EOF
 
+# Toolchain, manifest, CI and .gitignore are all present so that an audit finds
+# the code defect, not the fixture: without them every 2026-09-04 run (next,
+# spec, issues included) spent its answer on "no pyproject / no CI / no
+# .gitignore" before reaching the ask.
 cat >mise.toml <<'EOF'
 [tools]
 python = "3.14"
+uv = "latest"
 
 [tasks.check]
-run = ["ruff check .", "ruff format --check ."]
+run = ["uv run ruff check .", "uv run ruff format --check ."]
 
 [tasks.test]
-run = ["pytest -q"]
+run = ["uv run pytest -q"]
 
 [tasks.ci]
 depends = ["check", "test"]
+EOF
+
+cat >pyproject.toml <<'EOF'
+[project]
+name = "acme-checkout"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.12"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+EOF
+
+cat >.gitignore <<'EOF'
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.env
+EOF
+
+mkdir -p .github/workflows
+cat >.github/workflows/ci.yml <<'EOF'
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise run ci
 EOF
 
 mkdir -p spec/features/checkout spec/decisions spec/history tests
