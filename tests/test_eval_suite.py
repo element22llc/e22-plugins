@@ -117,17 +117,85 @@ def test_mock_responders_name_tools_the_plugin_actually_calls():
     )
 
 
-def test_graders_score_the_response_not_the_trace():
+def test_prose_graders_score_the_response_not_the_trace():
     # rules/00-router.md is injected every session and names every skill, so any
-    # skill matches somewhere in a trace. Grading the trace would measure whether
-    # the rules loaded, not where the ask went. This pins the fix for that bug.
+    # skill matches somewhere in a trace. A grader reading *text* must therefore
+    # read the answer, never the trace, or it measures whether the rules loaded.
     for d in _cases():
         for grader in (d / "graders").glob("*.md"):
             front = yaml.safe_load(grader.read_text(encoding="utf-8").split("---")[1])
+            if front["type"] not in {"regex", "llm", "baseline"}:
+                continue
             target = front.get("target", front.get("focus"))
             assert target == "last_message", (
-                f"{d.name}/{grader.name}: graders must target last_message, got {target!r}"
+                f"{d.name}/{grader.name}: text graders must target last_message, got {target!r}"
             )
+
+
+def test_routing_is_asserted_on_the_invocation_not_the_prose():
+    # The claim "this ask reached its skill" is about an action, so it is graded on
+    # the Skill call. It was graded on last_message until the v6.1.0 run showed the
+    # surface was wrong: rules/00-router.md puts the announcement in the FIRST
+    # message and a finished skill's report names what comes next, so 15 of 24
+    # with-plugin runs failed `routed` while the `answer` judge passed them
+    # unanimously. A tool call is not the trace-grading mistake either — an
+    # invocation is absent from the no-plugin arm by construction, which is why
+    # `arm: both` can keep it scored in both arms.
+    for d in _cases():
+        text = (d / "graders" / "routed.md").read_text(encoding="utf-8")
+        front = yaml.safe_load(text.split("---")[1])
+        assert front["type"] == "tool_used", (
+            f"{d.name}/routed.md: routing is asserted on the Skill call, got {front['type']!r}"
+        )
+        assert front["tool"] == "Skill", f"{d.name}/routed.md: must watch the Skill tool"
+        assert front["arm"] == "both", (
+            f"{d.name}/routed.md: needs `arm: both` — a bare `tool_used: Skill` is "
+            "auto-demoted to a with-only indicator and drops out of the score"
+        )
+        # The pattern has to name the skill the case is about, so a copy-paste
+        # cannot leave a case asserting somebody else's route.
+        owner = d.name.rsplit("-to-", 1)[1]
+        assert re.search(rf"\b{re.escape(owner)}\b", front["input_match"]), (
+            f"{d.name}/routed.md: input_match {front['input_match']!r} does not name "
+            f"the owning skill '{owner}'"
+        )
+
+
+def test_both_arms_get_the_same_read_only_framing():
+    # Every run is read-only, and without saying so the answer is dominated by
+    # permission narration (the whole v6.1.0 suite opened that way), which the
+    # judge then grades instead of the routing. It has to be byte-identical across
+    # cases: an append that differs per case is a per-case bias on the LLM grader.
+    prompts = {}
+    for d in _cases():
+        case = yaml.safe_load((d / "case.yaml").read_text(encoding="utf-8"))
+        framing = case["execution"].get("append_system_prompt")
+        assert framing, f"{d.name}: needs the read-only framing in append_system_prompt"
+        prompts[d.name] = framing
+    assert len(set(prompts.values())) == 1, (
+        f"the read-only framing differs across cases: {sorted(prompts)} — it is applied "
+        "to both ablation arms, so a per-case variant biases the comparison"
+    )
+
+
+def test_issue_read_answers_the_arguments_it_is_given():
+    # A fixed <tool>.md serves one canned body to every call. For issue_read that
+    # made every issue_number return #123: runs burned turns probing it and then
+    # reported "a defect in steer's bundled MCP server". Per-argument answers need
+    # an agent responder, so pin the responder kind, not just the file's presence.
+    front = yaml.safe_load(
+        (MOCKS / "github" / "issue_read.md").read_text(encoding="utf-8").split("---")[1]
+    )
+    assert front.get("type") == "agent", (
+        "mocks/github/issue_read.md must be an agent responder: issue_read takes an "
+        "issue_number and a method, and a fixed body ignores both"
+    )
+    body = (MOCKS / "github" / "issue_read.md").read_text(encoding="utf-8")
+    for number in ("#101", "#109", "#117", "#118", "#123"):
+        assert number in body, (
+            f"the issue_read responder does not describe {number}, but list_issues "
+            "advertises it — a skill that reads it back gets a not-found"
+        )
 
 
 def test_every_case_ask_comes_from_the_routing_fixtures():

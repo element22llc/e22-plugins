@@ -19,17 +19,47 @@ measuring the same claim at different strengths.
 
 ## What a case asserts
 
-Each case runs the ask against a scaffolded steer-managed repo and scores two graders:
+Each case runs the ask against a repo built by its own scaffold and scores two
+graders:
 
 | Grader | Type | Weight | Asserts |
 |---|---|---|---|
-| `routed` | `regex` on `last_message` | 3 | the response reaches the owning skill — invoking it, or naming it as the owner when a decision is needed from the user first |
+| `routed` | `tool_used` on the `Skill` call | 3 | the run **enters** the owning skill (or the front door that hands off to it) |
 | `answer` | `llm` on `last_message` | 2 | it routes the way the standards route it, and does **not** start the named wrong workflow |
 
-**Both grade `last_message`, never `trace`.** `rules/00-router.md` is injected into
-every session and names every skill, so *any* skill matches somewhere in a trace —
-grading the trace would measure whether the rules loaded, not where the ask went.
-An early draft made exactly that mistake and passed cases it should have failed.
+**Routing is asserted on the invocation; the answer is graded on
+`last_message`.** Those are two different claims and they need two different
+surfaces.
+
+`routed` used to be a regex on `last_message`, and that was the wrong surface for
+it. `rules/00-router.md` says "announce, then act", so the announcement lands in
+the run's **first** message, and a finished skill's report names the skills that
+come *next* — not itself. In the v6.1.0 run **15 of 24** with-plugin runs failed
+`routed` while the `answer` judge passed them unanimously, and the single run that
+scored full marks did so because it was killed immediately after its announce
+line. The grader was measuring message shape.
+
+Watching the `Skill` call is **not** the trace-grading mistake. The objection to
+`target: trace` stands: the always-on ruleset names every skill, so any skill
+matches somewhere in the injected text, and an early draft that graded the trace
+passed cases it should have failed. But an invocation is an **action the run
+took**, and the no-plugin arm has no steer skills to invoke — which is why
+`routed` carries `arm: both` and stays scored in both arms. A bare
+`tool_used: Skill` is auto-demoted to a with-only *indicator* and drops out of the
+score, so the `arm: both` is load-bearing.
+
+Two cases accept their **front door** as well as the specialized skill
+(`steer:(init|setup)`, `steer:(adopt|setup)`), because rule `00-router` makes the
+front door the correct route: "front doors detect context and hand off … so you
+rarely route to a specialized skill directly." Discriminating init from adopt is
+the `answer` grader's job, and its criteria name the wrong workflow explicitly.
+
+**Every run is read-only, and each case says so** via an identical
+`append_system_prompt`. Without it the answer is dominated by permission
+narration — every run of the v6.1.0 suite opened by explaining what it could not
+write — and the judge grades how well a run describes being blocked. The framing
+is byte-identical across cases and applied to both arms, so it cannot bias the
+comparison; `tests/test_eval_suite.py` enforces that.
 
 ## Ablation is the point
 
@@ -77,12 +107,27 @@ so the release bump has to re-stamp the fixture.
 ## The tracker stand-in
 
 `spec/tracker.md` declares GitHub, so the managed cases need a read path to it.
-`mocks/github/` provides canned stand-ins for the three read-only tools the skills
-call — `issue_read`, `list_issues`, `search_issues` — named after the server
-segment of the tool name (`mcp__github__issue_read` → `mocks/github/issue_read.md`),
-with `_tools.json` as the saved `tools/list` response and each `<tool>.md` body as
-the canned result. `--mocks` defaults to `record`, which serves a stand-in wherever
-one exists.
+`mocks/github/` provides stand-ins for the three read-only tools the skills call —
+`issue_read`, `list_issues`, `search_issues` — named after the server segment of
+the tool name (`mcp__github__issue_read` → `mocks/github/issue_read.md`), with
+`_tools.json` as the saved `tools/list` response. `--mocks` defaults to `record`,
+which serves a stand-in wherever one exists.
+
+**`list_issues` and `search_issues` are fixed responders** — the file body *is*
+the canned result, which is cheap and perfectly deterministic for a call that
+takes no discriminating argument.
+
+**`issue_read` is an `type: agent` responder**, because it takes an
+`issue_number` **and** a `method` and a fixed body ignores both. As a fixed
+responder it returned issue #123 for every call, and the v6.1.0 runs noticed:
+they spent turns probing `#117` / `#118` / `#101` / `sub_issues` / `comments`,
+concluded "a defect in steer's bundled MCP server", and offered to file it with
+`/steer:report` — a fixture bug that rule `97-self-report` faithfully converted
+into a false upstream report. The responder body now describes the whole backlog
+plus the `comments` / `sub_issues` / `labels` projections, so a wrong number gets
+a real not-found and the empty sub-issue lists stay the reason the triage case
+recommends decomposition. It costs one model call per `issue_read`, which is the
+price of a mock that answers its arguments.
 
 Without them the plugin's bundled `github` server fails to connect (no
 `github_pat` in the sandbox) and **every** run narrates
@@ -91,17 +136,17 @@ half of the same bug. `mise run evals` passes `--allow-tools` for the three read
 tools; writes are deliberately never granted, since a routing case has no reason
 to land a change.
 
-Two things this deliberately does not fix, both worth knowing when you read a
-number:
+One thing this deliberately does not fix, worth knowing when you read a number:
 
 - **The baseline arm has no tracker at all.** The `github` server is the plugin's,
   so the no-plugin arm cannot read an issue however well it routes. `routed` is
-  immune (its pattern can only match plugin output), but the `answer` grader's Δ
-  partly reflects capability, not just routing.
-- **The bootstrap nudge names `/steer:setup` as the front door** for "set this
-  repo up properly", while `routes-greenfield-bootstrap-to-init` greps for
-  `steer:init`. Both are named in the notice, so the case can pass — but a run
-  that answers `/steer:setup` and stops is routing correctly and scoring zero.
+  immune (there is no steer skill for it to invoke either way), but the `answer`
+  grader's Δ partly reflects capability, not just routing.
+
+The other known scoring bug here — the bootstrap nudge naming `/steer:setup`
+while the case grepped for `steer:init`, so a run that answered `/steer:setup`
+and stopped was routing correctly and scoring zero — is fixed: `routed` now
+accepts the front door on both bootstrap cases.
 
 ## Running
 
@@ -126,6 +171,16 @@ per run** across both arms (measured at `max_turns: 12`; the with-plugin arm cos
 ~3× the baseline, which has no rules to read), so ~$8–10 for the suite at
 `runs: 1` and ~$25–30 at `runs: 3`. Cap a run you are unsure about with
 `--max-cost-usd`; it aborts and reports partial results rather than overrunning.
+
+**`max_turns` is sized from real runs, per case, and the comment says why.** A
+run killed with `Reached maximum number of turns` is scored on a truncated
+message, which says nothing about routing — that is a zero the report cannot
+distinguish from a misroute. 6 was far too tight; at 12, `adopt` still exhausted
+its budget 3 runs out of 3 and `issues` once, so those two are higher (20 and
+16). Raise a case's budget when its runs error, and record what you observed —
+but check first whether the *skill* is the thing spending the turns: the adopt
+overrun was a real plugin defect (template reads before the survey), not a
+too-small budget.
 
 ## Availability
 
