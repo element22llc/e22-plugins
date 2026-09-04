@@ -7,6 +7,19 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: `/steer:audit code`'s handoff table now carries a category per row,
+  so its `Current recommended action` is derivable.** The table listed actions
+  with no category — unlike `audit spec`, `intake` and `roadmap`, which all carry
+  one — and it had **no row at all** for the commonest audit outcome: a confirmed
+  defect with a written rule to build against. So `/steer:issues publish-audit`
+  was the closest matching row, and the pick came down to taste: across three
+  v6.1.0 eval runs on the same repo with the same findings, two invented the
+  missing `/steer:work` row and one recommended filing the backlog while
+  demoting a confirmed money defect to a bullet. Rows now name their category,
+  the `/steer:work` row exists at `Blocking now`, and the mode states plainly
+  that filing is never the current action while a confirmed blocker is open —
+  `publish-audit` tracks the remainder.
+
 ### 6.1.0
 
 - **Fixed: rule `10-stack` no longer tells sessions the version-pin `deny` is

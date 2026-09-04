@@ -142,21 +142,35 @@ of dimension.
    concerns to the specialist that confirms them; only a *confirmed* exposure is a
    stop.
 
-   | Audit observation | Action |
-   |---|---|
-   | Confirmed exposed secret found during inspection | Stop & rotate the value; then `/security-review` |
-   | Potential security concern needing validation | Run `/security-review` |
-   | Potential correctness defect needing diff analysis | Run `/code-review` |
-   | Vetted code-health findings ready for tracking | `/steer-issues publish-audit` |
-   | Architectural / cross-cutting call | Propose an ADR via `/steer-adr` |
-   | Spec coverage / conformance gap | `/steer-questions` |
-   | Suspected spec-vs-build drift | Run `/steer-audit spec` |
-   | `main` unprotected / branch-protection drift (GitHub) — unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation (and settled for good by a recorded graduation waiver, unless a second collaborator has joined) | `/steer-protect` |
-   | Mechanical cleanup only | `/simplify` |
-   | Nothing actionable | Complete |
+   Every row carries its **category**, because that is what makes the pick
+   derivable rather than a matter of taste — the categories map onto the shared
+   safety precedence in NEXT-ACTIONS.md §2, and the highest level present wins.
+
+   | Audit observation | Category | Action |
+   |---|---|---|
+   | Confirmed exposed secret found during inspection | Blocking now | Stop & rotate the value; then `/security-review` |
+   | **Confirmed** defect with a written rule to build against — a contract, an acceptance criterion, a standard — and a bounded fix | Blocking now | Fix it — `/steer-work` (it find-or-creates the issue) |
+   | Potential security concern needing validation | Human decision required | Run `/security-review` |
+   | Potential correctness defect needing diff analysis | Human decision required | Run `/code-review` |
+   | Architectural / cross-cutting call | Human decision required | Propose an ADR via `/steer-adr` |
+   | Spec coverage / conformance gap | Required before next production release | `/steer-questions` |
+   | Suspected spec-vs-build drift | Required before next production release | Run `/steer-audit spec` |
+   | `main` unprotected / branch-protection drift (GitHub) — unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation (and settled for good by a recorded graduation waiver, unless a second collaborator has joined) | Recommended | `/steer-protect` |
+   | Vetted code-health findings ready for tracking | Recommended | `/steer-issues publish-audit` |
+   | Mechanical cleanup only | Recommended | `/simplify` |
+   | Nothing actionable | Complete | `No action is currently required.` |
 
    Choose one `Current recommended action` by precedence; the block recommends
    and never edits.
+
+   **Filing the backlog is never the current action while a confirmed blocker is
+   open.** `publish-audit` is `Recommended` — it *tracks* findings, it does not
+   resolve one — so a confirmed money, correctness, or security defect outranks
+   it every time, and `publish-audit` then covers the **remainder**. Two of three
+   v6.1.0 eval runs got this right by inventing the `/steer-work` row that was
+   missing from this table; the third fell back to `publish-audit` as the current
+   action and demoted the confirmed defect to a bullet. Same repo, same findings,
+   different answer — which is a defect in this table, not in the runs.
 
 ## Reconciliation across runs — audits are reconciling, not additive
 
