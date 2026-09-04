@@ -7,6 +7,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: rule `00-router` now says the `Skill` call is the act, and that the
+  route does not depend on what the session can do.** "Announce, then act" was
+  being read as announce-then-do-it-yourself: in the 2026-09-04 routing eval run,
+  15 of 24 with-plugin runs never invoked a skill, and 12 of those named the
+  correct one in prose first ("Routing to `/steer:spec`", "Route: `/steer:setup`
+  → `/steer:init`") before hand-rolling its job. The split was by skill kind —
+  read-only skills (`next`, `audit`, `adopt`) were entered 9 times out of 9,
+  write-capable ones (`work`, `init`, `build`, `spec`, `issues`) 2 out of 15 —
+  and the runs said why: "that skill needs repo mutations, and this session has
+  neither." A read-only or plan-mode session is exactly where the user still
+  wants `/steer:work`'s diagnosis and plan rather than a freelance fix that skips
+  the issue read; one such run never read issue #123 at all. The rule now states
+  that naming a skill in prose is a misroute, that plan mode / restricted
+  permissions / a smaller tool set never move the route (every skill has a
+  read-only front), and that "ask one compact question" applies only when two
+  skills are candidates — a question inside one skill's scope ("which
+  feature?") is the skill's to ask, after entry; all three `spec` runs had asked
+  it instead of entering.
 - **Fixed: `/steer:audit code`'s handoff table now carries a category per row,
   so its `Current recommended action` is derivable.** The table listed actions
   with no category — unlike `audit spec`, `intake` and `roadmap`, which all carry
