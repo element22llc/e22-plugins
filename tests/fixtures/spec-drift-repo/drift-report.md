@@ -7,7 +7,7 @@ Read-only comparison of the as-built `/spec` against the tracker-exported intent
 - The code exports an extra `phone` column the tracker intent does not mention.
 - The tracker intent requires CSV; the code also emits XLSX (undocumented).
 
-## Recommended next actions
+## Recommended next actions — /steer:audit spec
 
 ### Human decision required
 

@@ -143,7 +143,15 @@ def check_next_actions_contract(errors: list[str]) -> None:
         errors.append(f"{doc}: NEXT-ACTIONS contract doc is missing")
         return
     text = _read(doc)
-    for token in ("## Recommended next actions", "### Current recommended action"):
+    for token in (
+        "## Recommended next actions",
+        "### Current recommended action",
+        # The heading is the ONE place a finished skill names itself. Rule
+        # 03-responses otherwise forbids echoing skill routing, so if this form
+        # falls out of the contract the two rules go back to contradicting each
+        # other and no readout says what ran.
+        "## Recommended next actions — /steer:",
+    ):
         if token not in text:
             errors.append(f"{doc}: contract no longer documents '{token}'")
     for category in sorted(VALID_CATEGORIES):

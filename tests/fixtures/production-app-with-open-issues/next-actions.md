@@ -8,7 +8,7 @@ mislabelled as a release blocker.
 <!-- steer:kind=task -->
 <!-- steer:state=in-progress -->
 
-## Recommended next actions
+## Recommended next actions — /steer:work
 
 ### Recommended
 
