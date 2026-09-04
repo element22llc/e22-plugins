@@ -9,9 +9,11 @@ For the full per-command catalog (including internal helpers), see the
     The always-on router rule makes Claude the dispatcher: **describe what you
     want in plain language** ("I have an app idea", "fix #123", "what should I do
     next?") and Claude routes to the matching skill itself, announcing the choice
-    in one line. The `/steer:*` forms below are the explicit way to invoke a
-    workflow — handy when you already know the one you want — not something you
-    must memorize. Decision gates (creating issues, approving a spec, merging,
+    in one line. You can always see which one ran: the `Recommended next actions`
+    heading that closes a workflow names it (`## Recommended next actions —
+    /steer:audit code`), so a wrong route is easy to spot and say so about. The
+    `/steer:*` forms below are the explicit way to invoke a workflow — handy when
+    you already know the one you want — not something you must memorize. Decision gates (creating issues, approving a spec, merging,
     deploying) still pause for a human regardless of how the skill was
     reached — pushing the branch and opening the PR are autonomous.
 
