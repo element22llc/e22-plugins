@@ -241,12 +241,24 @@ depends = [
 ]
 
 # Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
-# spends real tokens (~$0.55 per case at runs: 1, both ablation arms), so it is
-# deliberately NOT in `ci`'s depends and stays off the PR path — run it on the
-# release path or when the routing surface changes.
+# spends real tokens (~$1.00-1.30 per case per run across both ablation arms), so
+# it is deliberately NOT in `ci`'s depends and stays off the PR path — run it on
+# the release path or when the routing surface changes. Pass --runs 3 for a health
+# number: at the per-case default of 1 the result is noise (the same case has
+# scored 0.6/0/0.6/0/0.6 across five identical runs).
 #
-# --scaffold is required: each case builds a managed repo from its own scaffold.sh,
-# which is author-supplied bash the tool will not run unless asked.
+# --scaffold is required: each case builds its repo from its own scaffold.sh, which
+# is author-supplied bash the tool will not run unless asked. There are three
+# scaffold variants (managed / greenfield / legacy) because one fixture cannot
+# serve both "route this ask in a bootstrapped repo" and "route this ask in a repo
+# that still needs bootstrapping" — see evals/README.md.
+#
+# --allow-tools grants the three read-only tracker tools the managed cases list.
+# They are served by the canned stand-ins in evals/mocks/github/ (--mocks defaults
+# to record, which serves a mock where one exists), never by the real API: with no
+# stand-in the plugin's bundled github server fails to connect and every run
+# narrates the credential fault instead of routing. Writes are deliberately NOT
+# granted — a routing case never needs to land a change.
 #
 # `claude plugin eval` is EARLY ACCESS, enabled per organization. On a machine the
 # rollout has not reached it prints "currently in early access" and exits. For
@@ -256,7 +268,9 @@ depends = [
 # .claude/settings.json (a committed value normally leaves the command gated off).
 [tasks."evals"]
 description = "Run the model-graded routing evals against the plugin (slow, costs tokens; needs plugin-eval early access)"
-run = ["claude plugin eval plugins/steer --scaffold --ablation with-without"]
+run = [
+  "claude plugin eval plugins/steer --scaffold --ablation with-without --allow-tools mcp__github__issue_read mcp__github__list_issues mcp__github__search_issues",
+]
 
 # Headless end-to-end skill suite — drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends
