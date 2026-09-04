@@ -8,7 +8,9 @@ links to its full reference.
     you want in plain language ("set up this repo", "capture this idea", "let's
     build it") and the router rule has Claude pick and run the right skill,
     announcing each step. The explicit commands are shown so you can see what's
-    happening — and reach for one directly when you already know it.
+    happening — and reach for one directly when you already know it. A plan-mode
+    or read-only session routes to the same skill as any other; it just stops at
+    the first step that would write.
 
 ```mermaid
 flowchart LR
