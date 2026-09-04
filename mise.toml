@@ -243,9 +243,9 @@ depends = [
 # Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
 # spends real tokens (~$1.00-1.30 per case per run across both ablation arms), so
 # it is deliberately NOT in `ci`'s depends and stays off the PR path — run it on
-# the release path or when the routing surface changes. Pass --runs 3 for a health
-# number: at the per-case default of 1 the result is noise (the same case has
-# scored 0.6/0/0.6/0/0.6 across five identical runs).
+# the release path or when the routing surface changes. The task runs the whole
+# suite at the health settings; every flag below is load-bearing, and a bare
+# `claude plugin eval` does not exercise this suite.
 #
 # --scaffold is required: each case builds its repo from its own scaffold.sh, which
 # is author-supplied bash the tool will not run unless asked. There are three
@@ -260,17 +260,59 @@ depends = [
 # narrates the credential fault instead of routing. Writes are deliberately NOT
 # granted — a routing case never needs to land a change.
 #
-# `claude plugin eval` is EARLY ACCESS, enabled per organization. On a machine the
-# rollout has not reached it prints "currently in early access" and exits. For
-# machines that cannot receive it (CI runners, gateways, telemetry-disabled
-# clients) there is an enablement env var — obtain it from your Anthropic contact
-# and set it in your shell or ~/.claude/settings.json `env`, not in this repo's
-# .claude/settings.json (a committed value normally leaves the command gated off).
+# --runs 3 is the difference between a health number and noise. The per-case
+# default is `runs: 1` to keep an ad-hoc single-case run cheap, and at one run the
+# result is noise — the same case has scored 0.6/0/0.6/0/0.6 across five identical
+# runs. Forward `-- --runs 1` for the cheap authoring loop.
+#
+# --judge-model sonnet: the `answer` grader reads prose for "did the ask reach the
+# skill that owns it". The default judge (haiku) flips on exactly the borderline
+# prose this suite is made of.
+#
+# --threshold 0.6 makes the exit code mean something: exit 1 if any case scores
+# below it. The default is 1.0, which fails on any imperfect case. 0.6 is exactly
+# the weight of each case's `routed` grader (3 of 3+2) — "the run entered the right
+# skill even if the prose judge docked it". Read `aggregates.meanDelta` in the
+# results JSON for the actual health signal; this is a floor, not the number.
+#
+# --max-cost-usd 45 is a runaway guard, not a budget: the suite measures at $25-30
+# at --runs 3, so the ceiling has to sit clear of a healthy sweep or it aborts one
+# (exit 2, partial results). Re-measure it when case count or max_turns changes.
+#
+# --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
+# default wherever the account supports it, and a task run on every routing change
+# should not push a report outward each time — forward `-- --publish-report` when
+# you want the link.
+#
+# No --json: every run already writes that same payload as `aggregate-result.json`
+# next to `report.html` in plugins/steer/evals/results/<timestamp>/, which is
+# gitignored. `--json <path>` only relocates it.
+#
+# Forwarded args override these defaults (the CLI takes the last occurrence of an
+# option), so `mise run evals -- --case routes-fix-issue-to-work --runs 1` narrows
+# and cheapens a run without editing the task. --allow-tools stays off the end of
+# the command line for that reason: it is variadic, and it would swallow them.
+#
+# `claude plugin eval` is EARLY ACCESS, enabled per organization: on a machine the
+# rollout has not reached, or one that cannot receive it (CI runners, gateways,
+# telemetry-disabled clients), it prints "currently in early access" and exits.
+# CLAUDE_CODE_WALNUT_SPIRE=1 is the enablement flag, set here so the task works
+# unchanged on any machine. It only lifts the preview gate — it is not a credential
+# and grants nothing; drop it once the feature ships generally.
 [tasks."evals"]
-description = "Run the model-graded routing evals against the plugin (slow, costs tokens; needs plugin-eval early access)"
-run = [
-  "claude plugin eval plugins/steer --scaffold --ablation with-without --allow-tools mcp__github__issue_read mcp__github__list_issues mcp__github__search_issues",
-]
+description = "Run the model-graded routing evals against the plugin (slow, ~$25-30; needs plugin-eval early access)"
+env = { CLAUDE_CODE_WALNUT_SPIRE = "1" }
+run = """
+claude plugin eval plugins/steer \
+  --scaffold \
+  --ablation with-without \
+  --allow-tools mcp__github__issue_read mcp__github__list_issues mcp__github__search_issues \
+  --runs 3 \
+  --judge-model sonnet \
+  --threshold 0.6 \
+  --max-cost-usd 45 \
+  --no-publish
+"""
 
 # Headless end-to-end skill suite — drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends

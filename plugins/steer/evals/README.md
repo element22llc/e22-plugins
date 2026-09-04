@@ -151,26 +151,41 @@ accepts the front door on both bootstrap cases.
 ## Running
 
 ```shell
-mise run evals                                   # whole suite, both arms
-mise run evals -- --case 'routes-fix-issue-to-work'
-mise run evals -- --runs 3                       # plugin health: see below
+mise run evals                                           # whole suite, health settings
+mise run evals -- --case 'routes-fix-issue-to-work'      # one case, still 3 runs
+mise run evals -- --runs 1 --judge-model haiku           # cheap authoring loop
 ```
 
-`--scaffold` and `--allow-tools` are required and the task passes both.
+**Run it through `mise`, not bare.** `claude plugin eval` on its own does not
+exercise this suite: the task carries the flags that make a run mean something,
+each commented in `mise.toml`.
 
-**For a health number, always pass `--runs 3` or more.** The per-case default is
-`runs: 1` so an ad-hoc single-case run stays cheap, and at one run the result is
-noise: the same case has scored 0.6 / 0 / 0.6 / 0 / 0.6 across five identical
-runs, and the LLM grader's majority-of-three judge vote flips on borderline
-prose. Read `aggregates.meanDelta` in `results/<ts>/aggregate-result.json`, not a
-single case's `passed`.
+| Flag | Why the suite needs it |
+|---|---|
+| `--scaffold` | runs each case's `scaffold.sh` (author-supplied bash, so opt-in). Without it a case measures an empty sandbox |
+| `--ablation with-without` | adds the no-plugin baseline arm — the Δ is the whole point |
+| `--allow-tools` (3 read tools) | the tracker stand-ins above; without the grant every managed run narrates a credential fault instead of routing |
+| `--runs 3` | the per-case default is `runs: 1` so an ad-hoc run stays cheap, and at one run the result is noise: the same case has scored 0.6 / 0 / 0.6 / 0 / 0.6 across five identical runs, and the judge's majority-of-three vote flips on borderline prose |
+| `--judge-model sonnet` | the `answer` grader reads exactly that borderline prose; the default `haiku` judge is too coarse for it |
+| `--threshold 0.6` | gives the exit code meaning: exit 1 if any case scores below it. Default is `1.0`, which fails any imperfect case; `0.6` is exactly the `routed` grader's weight — "entered the right skill even if the prose judge docked it" |
+| `--max-cost-usd 45` | runaway guard, sitting clear of the $25–30 a healthy sweep costs, so it aborts a runaway (exit 2, partial results) rather than a good run |
+| `--no-publish` | keeps the HTML report local instead of publishing it to claude.ai (the CLI default where the account supports it). Forward `-- --publish-report` for the link |
+
+Forwarded args override the task's defaults — the CLI takes the last occurrence of
+an option — which is what the `--` forms above rely on.
+
+**Read `aggregates.meanDelta`, not a single case's `passed`.** Every run writes
+`report.html` + `aggregate-result.json` to `results/<ts>/` (gitignored); that JSON
+is the same payload `--json <path>` writes, so there is no need to pass `--json`.
+`--threshold` is a floor on the worst case, not the health number.
 
 Deliberately **not** in `mise run ci` — the suite spends real tokens, the same
 reason the `e2e` suite sits off the PR path. Budget roughly **$1.00–1.30 per case
 per run** across both arms (measured at `max_turns: 12`; the with-plugin arm costs
 ~3× the baseline, which has no rules to read), so ~$8–10 for the suite at
-`runs: 1` and ~$25–30 at `runs: 3`. Cap a run you are unsure about with
-`--max-cost-usd`; it aborts and reports partial results rather than overrunning.
+`runs: 1` and ~$25–30 at the task's `runs: 3`. The task's `--max-cost-usd 45` is
+sized against that: a ceiling near the expected spend aborts a healthy sweep, so
+re-measure it whenever case count or a `max_turns` changes.
 
 **`max_turns` is sized from real runs, per case, and the comment says why.** A
 run killed with `Reached maximum number of turns` is scored on a truncated
@@ -186,6 +201,9 @@ too-small budget.
 
 `claude plugin eval` is in **early access, enabled per organization**. Where the
 rollout has not reached a machine it prints `plugin eval is currently in early
-access` and exits. `mise.toml`'s `evals` task documents the enablement variable for
-machines outside the rollout (CI runners, gateways, telemetry-disabled clients);
-obtain it from your Anthropic contact rather than guessing.
+access` and exits. `mise.toml`'s `evals` task sets the enablement flag
+(`CLAUDE_CODE_WALNUT_SPIRE=1`) itself, so the task works unchanged on machines
+outside the rollout too (CI runners, gateways, telemetry-disabled clients).
+Invoking the CLI directly needs that variable in your own environment. It only
+lifts the preview gate — not a credential, and it grants nothing — and comes out
+once the feature ships generally.
