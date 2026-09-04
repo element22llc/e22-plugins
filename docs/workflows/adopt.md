@@ -19,8 +19,12 @@ flowchart TD
     STAMP --> PR[Propose a PR]
 ```
 
-1. Applies any pending structural migrations from the ledger **first**, before
-   deciding anything else.
+1. Surveys the repo — stack, profile, entry points, features — and reports what
+   it found before anything else. On a **resumed** adoption (a
+   `spec/PRODUCTIONIZATION.md` already on disk) it first applies any pending
+   structural migrations from the ledger and reconciles that checklist against
+   the current template; on a fresh adoption that step is a no-op it settles with
+   one existence check.
 2. Reads the existing code to capture **what is** — not what someone decided.
 3. Materializes the `/spec` spine from the bundled templates — including the
    `design/` home (`README.md`, `source.md`, the living
@@ -41,6 +45,11 @@ flowchart TD
 
 - **Read-then-propose.** Adopt never clobbers human content and lands changes via
   a PR, never a direct push to `main`.
+- **Read the repo before the plugin.** The survey is answered from your codebase
+  alone; each bundled template is read at the step that instantiates it (the
+  scaffold manifest when the scaffold is installed, the migrations ledger only on
+  a resume). So the first thing you see is what adopt found in your repo, not
+  adopt reading its own bundle.
 - **No ADR from inference.** Adopt must never infer a *ratified* ADR from code.
   The as-built spine records what exists; a decision that was never explicitly
   made is not an ADR. See [Product spine](../concepts/product-spine.md).
