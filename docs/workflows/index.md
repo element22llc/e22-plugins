@@ -17,6 +17,17 @@ For the full per-command catalog (including internal helpers), see the
     deploying) still pause for a human regardless of how the skill was
     reached — pushing the branch and opening the PR are autonomous.
 
+    Announcing the route and *running* it are the same step: a reply that names
+    the skill and then answers by hand is a misroute, not a route. Two things
+    follow. **A restricted session still routes the same way** — plan mode, a
+    read-only or reduced-permission session, or a client with fewer tools never
+    changes which skill owns the request; every workflow has a read-only front
+    (survey, diagnose, interview, plan), so Claude enters it and the skill
+    reports what it could not carry out. And **the follow-up questions come from
+    inside the workflow** — "which feature?", "which issue?" are asked after it
+    starts, so at most one question precedes a route, and only when two skills
+    are genuinely candidates.
+
 ```mermaid
 flowchart LR
     subgraph Setup

@@ -17,8 +17,17 @@ comments), and in every artifact you write (see Output discipline).
 the owning skill, using the skill listing, and **invoke it yourself**.
 
 - **Announce, then act** — one line naming what you heard and the skill you're
-  starting, then proceed. A heads-up, not a request for permission. Ask **one**
-  compact question only when intent is genuinely ambiguous.
+  starting, then **call the skill**. The `Skill` call *is* the act: naming the
+  skill in prose and then doing its job by hand is a misroute, however good the
+  answer. A heads-up, not a request for permission.
+- **The route does not depend on what the session can do.** Plan mode, a
+  read-only or restricted-permission session, a client with fewer tools — none
+  of these change the owning skill. Every skill has a read-only front (survey,
+  diagnose, interview, plan): enter it, and let the skill report what it could
+  not carry out.
+- **Questions belong to the skill.** Ask **one** compact question *before*
+  routing only when two skills are candidates. A question inside one skill's
+  scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes.** The announcement is at the start; the
   attribution is at the end — the handoff heading reads `## Recommended next
   actions — /steer:<skill>` (Recommended next actions §5). Otherwise a finished
