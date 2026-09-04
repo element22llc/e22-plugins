@@ -8,9 +8,15 @@ runbook and a guardrail seem to conflict, the guardrail wins.
 
 ## Phase 1 — Confirm it's an adoption case
 
-There's no `/spec` spine, no `mise.toml`/standard layout, and the repo was not forked
-from the template. If it *was* forked (placeholders, existing `/spec`), redirect
-to `/steer:init` and stop. Detect the stack from the repo itself
+**Say what you are doing first** — one line naming the route (`/steer:adopt`,
+whole-repo brownfield adoption) before the survey, per rule `00-router`'s
+"announce, then act". It is the only thing the reader has until Phase 12, and a
+run that is interrupted has at least said where it was going.
+
+Then answer this phase **from the repo alone** (guardrail: read the repo before
+the plugin). There's no `/spec` spine, no `mise.toml`/standard layout, and the
+repo was not forked from the template. If it *was* forked (placeholders, existing
+`/spec`), redirect to `/steer:init` and stop. Detect the stack from the repo itself
 (`package.json` / `pyproject.toml`, frameworks, database, auth). **Also infer the
 repo profile** from the same survey and **confirm it with the dev**: `infra`
 (`*.tf`/`*.hcl`, `ansible.cfg`/`site.yml`/`roles/`, `Pulumi.yaml`/`terragrunt.hcl`),
@@ -28,20 +34,27 @@ autonomy).
 
 ## Phase 2 — Reconcile the adoption checklist (resume safety) — do this FIRST on a resume
 
+**Fresh or resume? Settle that first — it is one existence check.** Look for
+`/spec/PRODUCTIONIZATION.md` and its pre-v1.22.0 name
+`/spec/PRODUCTION-READINESS.md`. If **neither** is present this is a fresh
+adoption and **the whole phase is a no-op: skip to Phase 3 without opening the
+migrations ledger.** Nothing in the ledger can fire on a repo that has no spine
+to migrate, and the checklist is created from the current bundled template in
+Phase 8. This ordering is deliberate — the ledger is a large read, and paying for
+it on every fresh adoption is what starved the survey.
+
+Everything below runs **only** when one of those two files exists.
+
 **Apply pending structural migrations before deciding anything else.** The
 non-additive transforms (renames/moves) live in the ledger at
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/MIGRATIONS.md` — that ledger is the
 source of truth, not this skill. Walk it by precondition and apply each entry
 that still fires. The one that gates this step is the v1.22.0 rename: if
-`/spec/PRODUCTION-READINESS.md` exists, run
-`git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` **now** — before
-the fresh-vs-resume check below, so the old name on disk can't be mistaken for a
-fresh adoption. (On an already-bootstrapped repo, `/steer:sync`
+`/spec/PRODUCTION-READINESS.md` is the name you found, run
+`git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` **now**, before
+reading anything out of it. (On an already-bootstrapped repo, `/steer:sync`
 applies these; here we apply them inline so a resumed adoption isn't blocked.)
 
-Then check: if **neither** `/spec/PRODUCTIONIZATION.md` nor (pre-migration)
-`/spec/PRODUCTION-READINESS.md` existed, this is a fresh adoption — skip ahead;
-the file is created from the current bundled template in Phase 8. Otherwise
 `/spec/PRODUCTIONIZATION.md` now exists (either already, or from the `git mv`
 above), you are resuming, and it may have been written by an *older* plugin
 version whose template lacked sections this version adds — **before reading its
@@ -73,6 +86,13 @@ Map the apps and entry points, routes/pages, handlers, data models, external
 services, auth, and the env vars the code actually reads. From the routes and
 screens, list the **user-facing features** the app already has. This list drives
 Phases 5–6.
+
+**Still repo-only, and report it before moving on.** No plugin template is
+needed to read code, and none is read here. Close the phase with the survey in a
+few lines — what the app is, its surface, and anything that changes the plan
+(dead code, a committed secret, a defect you can point at). Phases 4–5 ask a
+human questions that depend on this, so it has to exist as *stated* output, not
+just as something you looked at.
 
 ## Phase 4 — Reverse-engineer the product spec
 
@@ -198,6 +218,9 @@ tests green — propose, don't force, and never bump majors silently in the
 adoption branch.
 
 ## Phase 10 — Sync the bundled scaffolding
+
+**This is where the scaffold bundle gets read — not earlier.** Phases 1–9 need
+none of it, and reading it up front is the front-loading the guardrails forbid.
 
 The plugin carries the full repo scaffold at
 `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/` — read its `MANIFEST.md` and bring in
