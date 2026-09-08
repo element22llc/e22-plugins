@@ -178,8 +178,10 @@ only:
   (never the stub), bumps all three manifests, and validates. If it refuses, the
   refusal is the finding.
 - **B4 — Validate the release invariant:** `uv run python scripts/check_changelog.py`.
-- **B5 — Re-gate after the bump:** `mise run check`, unpiped. Do not proceed past
-  a red gate.
+- **B5 — Re-gate after the bump:** `mise run ci` — the full gate, not `mise run
+  check` — unpiped. `check` excludes `test`, and the suite asserts things about
+  the version just bumped (the managed eval scaffolds' `spec/.version` stamp), so
+  a green `check` does not cover the bump. Do not proceed past a red gate.
 - **B6 — Commit, push, open the PR** (intentionally **not** pre-authorized — these
   prompt, preserving the human gate on outbound actions). Commit as
   `chore(release): steer X.Y.Z`; body from `uv run python scripts/release_cut.py
