@@ -82,7 +82,7 @@ runs, `/steer:next` reporting it "unreadable here (no network)", and one
 issue. The framing does **not** tell the run to enter a skill: that would coach
 the arm the suite exists to measure. A write-capable skill that is named in prose
 and then done by hand in a read-only session is the routing defect the
-2026-09-04 run surfaced (15 of 24 with-plugin runs, 12 of them naming the right
+2026-09-04 run surfaced (13 of 24 with-plugin runs, 12 of them naming the right
 skill first), and the fix for it belongs in rule `00-router`, not here.
 
 ## Ablation is the point
