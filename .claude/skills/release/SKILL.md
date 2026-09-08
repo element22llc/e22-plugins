@@ -253,16 +253,23 @@ headings descend.
 
 ### B5. Re-gate after the bump.
 
-Phase A's `mise run ci` ran on the **pre-bump** tree. The only files Phase B
-changed are `CHANGELOG.md`, possibly `MIGRATIONS.md`, and the three manifests —
-exactly what the version-sync, migration and changelog gates police — so re-run
-**`mise run check`** to prove the edits didn't regress those gates. Run it
-**unpiped** (a `| tail` reports `tail`'s exit status, not the gate's). Report a
+Phase A's gate ran on the **pre-bump** tree, so re-run **`mise run ci`** — the
+full gate, not `mise run check`. Run it **unpiped** (a `| tail` reports `tail`'s
+exit status, not the gate's; under zsh `${PIPESTATUS[0]}` is empty — the array is
+`pipestatus` and 1-indexed, so a piped run reports nothing at all). Report a
 per-gate result; do not proceed past a red gate.
 
-(The heavier suites — fixtures/test/shell/hooktests/docs build — already passed
-in Phase A on a tree the version edits don't touch; re-running the full `ci` is
-optional. If in any doubt, run `mise run ci`.)
+**`check` is not sufficient here, and the reason is specific.** It excludes
+`test`, and the suite asserts things *about the version that was just bumped*:
+the five managed routing-eval scaffolds stamp `spec/.version` into their fixture
+repos, and `test_managed_scaffold_stamps_the_current_plugin_version` fails until
+the bump is propagated to all of them. A green `check` says nothing about that.
+The version edits are **not** inert to the heavier suites — assuming they were is
+what pushed a red CI on the 6.1.1 cut, after a green `check` had been reported as
+the re-gate.
+
+A fixture the bump invalidated is part of the cut, not a follow-up: re-stamp it,
+re-run `ci`, and fold the fix into the release branch before opening the PR.
 
 ### B6. Commit, push, open the PR.
 
