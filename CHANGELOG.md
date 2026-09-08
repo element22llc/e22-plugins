@@ -7,10 +7,12 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 6.1.1
+
 - **Fixed: rule `00-router` now says the `Skill` call is the act, and that the
   route does not depend on what the session can do.** "Announce, then act" was
   being read as announce-then-do-it-yourself: in the 2026-09-04 routing eval run,
-  15 of 24 with-plugin runs never invoked a skill, and 12 of those named the
+  13 of 24 with-plugin runs never invoked a skill, and 12 of those named the
   correct one in prose first ("Routing to `/steer:spec`", "Route: `/steer:setup`
   → `/steer:init`") before hand-rolling its job. The split was by skill kind —
   read-only skills (`next`, `audit`, `adopt`) were entered 9 times out of 9,
