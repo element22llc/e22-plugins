@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: the scaffolded `ai-slop` CI job now uploads its SARIF instead of dying
+  twice.** `aislop scan` exits 1 on any error-severity finding or a score below
+  `ci.failBelow` (default 70) — the scan step under `bash -e` therefore failed the
+  moment the tool had something to report, which is the job's whole purpose. The
+  step now tolerates that exit and asserts the report is non-empty, which is what
+  separates findings from a crashed scan (both exit 1, only one writes SARIF), so
+  the upload no longer needs `if: always()` and can never push an empty file.
+  `upload-sarif` also resolves its analysis key through the workflow-run API, so
+  the job now grants `actions: read` — without it a private repo fails with
+  `Resource not accessible by integration`. The `.aislop/config.yml` comment and
+  its `MANIFEST.md` row claimed the gate only becomes blocking by switching to
+  `aislop ci`; `scan` applies the same exit rule, so both now say the job is
+  advisory because the *workflow* tolerates the exit.
+
 ### 6.1.1
 
 - **Fixed: rule `00-router` now says the `Skill` call is the act, and that the
