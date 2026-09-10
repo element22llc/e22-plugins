@@ -375,10 +375,13 @@ jobs:
             def esc: gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A");
             def prop: esc | gsub(","; "%2C") | gsub(":"; "%3A");
             def pos: if (. // 0) < 1 then 1 else . end;
-            def level: if .severity == "error" then "error"
-                       elif .severity == "warning" then "warning"
-                       else "notice" end;
-            ["error", "warning", "notice"][] as $level
-            | [.diagnostics[] | select(level == $level)][:10][]
-            | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.rule | prop)::\(.message | esc)"
+            # An advisory job must not mark the diff red, so every severity drops one level and the
+            # reported one moves into the title. Two levels also keep 20 annotation slots, not 10.
+            def level: if .severity == "error" then "warning" else "notice" end;
+            # One annotation per rule before any rule gets a second slot, so a single noisy rule
+            # cannot spend the whole budget on itself.
+            def spread: (group_by(.rule) | map(.[0])) as $first | $first + (. - $first);
+            ["warning", "notice"][] as $level
+            | [.diagnostics[] | select(level == $level)] | spread | .[:10][]
+            | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.severity | prop) · \(.rule | prop)::\(.message | esc)"
           ' aislop.json
