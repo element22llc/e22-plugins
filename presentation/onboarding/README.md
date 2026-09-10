@@ -104,7 +104,7 @@ local preview at the root, run `mise run dev` (or `mise run build` with no
 ## Pinned versions
 
 Deps are exact-pinned in [`package.json`](package.json) for reproducible builds:
-Slidev `52.18.0`, theme-seriph `0.25.0`, Vue `3.5.40`. Toolchain exact-pinned in
+Slidev `52.19.0`, theme-seriph `0.25.0`, Vue `3.5.41`. Toolchain exact-pinned in
 [`mise.toml`](mise.toml) / [`mise.lock`](mise.lock): node `24.16.0`, pnpm `11.5.2`.
 Deps auto-install via the scaffold-native `[deps.pnpm] auto` (mise ≥ 2026.6.14).
 
@@ -114,3 +114,9 @@ approves `playwright-chromium`'s browser-download build script (used by the opti
 so slidev's transitive `@vue/*` deps can't drift from the direct dep. When
 bumping either, pick a release already past pnpm's `minimumReleaseAge`
 supply-chain cooldown rather than adding a `minimumReleaseAgeExclude` bypass.
+
+> **A Vue bump is two files.** The `overrides` block outranks `package.json`, so
+> a Dependabot PR — it only edits `package.json` — resolves back to the version
+> listed in `pnpm-workspace.yaml` and the declared pin becomes a fiction. Mirror
+> every `vue` bump into the overrides block (and the version list above) in the
+> same commit.

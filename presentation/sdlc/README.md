@@ -91,8 +91,10 @@ must match the serving sub-path and begin and end with `/`.
 ## Pinned versions
 
 Deps are exact-pinned in [`package.json`](package.json) for reproducible builds:
-Slidev `52.18.0`, theme-seriph `0.25.0`, Vue `3.5.40`. Toolchain exact-pinned in
+Slidev `52.19.0`, theme-seriph `0.25.0`, Vue `3.5.41`. Toolchain exact-pinned in
 [`mise.toml`](mise.toml) / [`mise.lock`](mise.lock): node `24.16.0`, pnpm
 `11.5.2`. [`pnpm-workspace.yaml`](pnpm-workspace.yaml) approves
 `playwright-chromium`'s browser download (for the optional export) and pins the
-Vue family via `overrides` — all mirrored from the onboarding deck.
+Vue family via `overrides` — all mirrored from the onboarding deck, including
+its rule that a `vue` bump must land in `package.json` **and** the `overrides`
+block together (the override otherwise silently reverts the bump).
