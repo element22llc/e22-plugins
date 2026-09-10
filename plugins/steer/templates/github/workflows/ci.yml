@@ -323,6 +323,8 @@ jobs:
 
   # Advisory; .aislop/config.yml turns down rules that duplicate ruff/Biome. Make it blocking by dropping
   # `continue-on-error` and the `|| true` below — `scan` already exits 1 on findings or score < ci.failBelow.
+  # Findings land as PR annotations + a step summary, which cost nothing; code scanning is a paid feature on
+  # private repos. On a repo with GitHub Code Security, `--sarif` + `github/codeql-action/upload-sarif` works too.
   ai-slop:
     name: ai-slop (advisory)
     if: github.event_name == 'pull_request'
@@ -330,9 +332,6 @@ jobs:
     continue-on-error: true
     permissions:
       contents: read
-      security-events: write
-      # upload-sarif resolves the analysis key via the workflow-run API; private repos need this.
-      actions: read
     steps:
       - uses: actions/checkout@v7
 
@@ -340,15 +339,46 @@ jobs:
         with:
           node-version: 24
 
-      - name: Scan for AI slop (SARIF)
+      - name: Scan for AI slop
         # Exit 1 means findings or score < ci.failBelow — that is the report, not a failure. A crashed
-        # scan exits 1 too but writes nothing, so an empty file is what separates the two.
+        # scan exits 1 too but writes no report, which is what the jq probe separates.
         run: |
-          npx --yes aislop@0.14.0 scan . --sarif > aislop.sarif || true
-          test -s aislop.sarif
+          npx --yes aislop@0.14.0 scan . --json > aislop.json || true
+          jq -e .schemaVersion aislop.json > /dev/null
 
-      - name: Upload results to code scanning
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: aislop.sarif
-          category: ai-slop
+      - name: Report findings
+        run: |
+          jq -r '
+            def cell: gsub("\\|"; "\\|") | gsub("\n"; " ");
+            def count(f): (f // 0);
+            "## ai-slop (advisory)",
+            "",
+            (if .scoreable then "**Score \(.score) — \(.label)**" else "**Not scored**" end)
+              + " · \(count(.summary.errors)) error(s)"
+              + " · \(count(.summary.warnings)) warning(s)"
+              + " · \(count(.summary.fixable)) fixable"
+              + " · \(count(.summary.files)) file(s) scanned",
+            "",
+            (if (.diagnostics | length) == 0 then "No findings."
+             else
+               (["| Severity | Rule | Location | Message |", "| --- | --- | --- | --- |"]
+                + ([.diagnostics[]
+                    | "| \(.severity) | `\(.rule)` | `\(.filePath):\(.line)` | \(.message | cell) |"][:200])
+                + (if (.diagnostics | length) > 200
+                   then ["", "_First 200 of \(.diagnostics | length) findings. Run `npx aislop scan .` locally for the rest._"]
+                   else [] end))[]
+             end)
+          ' aislop.json >> "$GITHUB_STEP_SUMMARY"
+          # Workflow commands need their own escaping, and GitHub renders at most 10 annotations
+          # per level per step — the step summary above is the complete list.
+          jq -r '
+            def esc: gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A");
+            def prop: esc | gsub(","; "%2C") | gsub(":"; "%3A");
+            def pos: if (. // 0) < 1 then 1 else . end;
+            def level: if .severity == "error" then "error"
+                       elif .severity == "warning" then "warning"
+                       else "notice" end;
+            ["error", "warning", "notice"][] as $level
+            | [.diagnostics[] | select(level == $level)][:10][]
+            | "::\($level) file=\(.filePath | prop),line=\(.line | pos),col=\(.column | pos),title=\(.rule | prop)::\(.message | esc)"
+          ' aislop.json
