@@ -10,6 +10,8 @@ rules:
   # Covered by Dependabot / `pnpm audit`.
   security/vulnerable-dependency: "off"
 
-# Blocking gate: switch the job to `aislop ci` (.github/workflows/ci.yml) and uncomment.
+# `scan` already exits 1 on any error-severity finding or a score below `ci.failBelow` (default 70) —
+# the CI job is advisory only because it tolerates that exit. Tune the threshold here; make the gate
+# blocking in .github/workflows/ci.yml (drop `continue-on-error` and the scan step's `|| true`).
 # ci:
 #   failBelow: 70
