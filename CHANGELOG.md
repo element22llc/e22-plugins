@@ -7,19 +7,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
-- **Fixed: the scaffolded `ai-slop` CI job now uploads its SARIF instead of dying
-  twice.** `aislop scan` exits 1 on any error-severity finding or a score below
-  `ci.failBelow` (default 70) — the scan step under `bash -e` therefore failed the
-  moment the tool had something to report, which is the job's whole purpose. The
-  step now tolerates that exit and asserts the report is non-empty, which is what
-  separates findings from a crashed scan (both exit 1, only one writes SARIF), so
-  the upload no longer needs `if: always()` and can never push an empty file.
-  `upload-sarif` also resolves its analysis key through the workflow-run API, so
-  the job now grants `actions: read` — without it a private repo fails with
-  `Resource not accessible by integration`. The `.aislop/config.yml` comment and
-  its `MANIFEST.md` row claimed the gate only becomes blocking by switching to
-  `aislop ci`; `scan` applies the same exit rule, so both now say the job is
-  advisory because the *workflow* tolerates the exit.
+- **Fixed: the scaffolded `ai-slop` CI job reports its findings instead of
+  failing twice.** Both of its steps failed on a real consumer repo, neither
+  because of the scanned code. The scan step: `aislop scan` applies the same
+  exit rule as `aislop ci` — 1 on any error-severity finding or a score below
+  `ci.failBelow` (default 70) — so under `bash -e` it died the moment the tool
+  had something to report, which is the job's whole purpose. The upload step:
+  code scanning is a **paid feature on private repos**, so `upload-sarif` ended
+  at `Advanced Security must be enabled for this repository`. The job now writes
+  `--json` and renders it as a step-summary table plus inline PR annotations —
+  free on every repo, visible on the diff rather than in a Security tab, and
+  working on fork PRs. The SARIF upload and the `security-events` /
+  `actions` permissions it needed are gone; a repo with GitHub Code Security can
+  swap them back in, per a comment on the job. The scan step tolerates exit 1
+  and probes the report with `jq -e`, which is what separates findings from a
+  crashed scan — both exit 1, only one writes a report. Annotation output is
+  capped at GitHub's 10-per-level limit and the table at 200 rows, with the
+  summary named as the complete list.
+- **Fixed: `.aislop/config.yml` and its `MANIFEST.md` row no longer claim the
+  gate becomes blocking by switching to `aislop ci`.** `scan` gates identically;
+  the job is advisory because the *workflow* tolerates the exit, so promoting it
+  is a workflow edit (drop `continue-on-error` and the scan step's `|| true`),
+  not a config one. `failBelow` tunes the threshold either way.
 
 ### 6.1.1
 
