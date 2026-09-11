@@ -28,6 +28,14 @@ For the full per-command catalog (including internal helpers), see the
     starts, so at most one question precedes a route, and only when two skills
     are genuinely candidates.
 
+    That closing block is **derived from what the run actually found**, not a
+    fixed sign-off. A workflow that swept its domain and found nothing to do —
+    no open question, no failing prerequisite, no unfinished transition — closes
+    with `No action is currently required.` rather than inventing a follow-up:
+    an optional next step is only offered where the run observed something
+    genuinely unfinished. So an empty block is the honest answer, and a
+    recommendation you receive means state was found to act on.
+
 ```mermaid
 flowchart LR
     subgraph Setup
