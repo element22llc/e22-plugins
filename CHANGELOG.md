@@ -21,9 +21,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `actions` permissions it needed are gone; a repo with GitHub Code Security can
   swap them back in, per a comment on the job. The scan step tolerates exit 1
   and probes the report with `jq -e`, which is what separates findings from a
-  crashed scan — both exit 1, only one writes a report. Annotation output is
-  capped at GitHub's 10-per-level limit and the table at 200 rows, with the
-  summary named as the complete list.
+  crashed scan — both exit 1, only one writes a report. Annotations render one
+  level below the severity aislop reports — its errors as `::warning`, everything
+  else as `::notice` — because an advisory job has no business marking the diff
+  red; the reported severity moves into the annotation title, and the step
+  summary table keeps it verbatim. Output is capped at GitHub's 10-per-level
+  limit (two levels, so 20 slots) and the table at 200 rows, with the summary
+  named as the complete list. The per-level cap fills one annotation per rule
+  before any rule takes a second slot, so a single noisy rule cannot spend the
+  whole budget on itself — a first run on a real repo returned ten identical
+  `swallowed-exception` lines.
 - **Fixed: `.aislop/config.yml` and its `MANIFEST.md` row no longer claim the
   gate becomes blocking by switching to `aislop ci`.** `scan` gates identically;
   the job is advisory because the *workflow* tolerates the exit, so promoting it
