@@ -31,10 +31,10 @@ For the full per-command catalog (including internal helpers), see the
     That closing block is **derived from what the run actually found**, not a
     fixed sign-off. A workflow that swept its domain and found nothing to do —
     no open question, no failing prerequisite, no unfinished transition — closes
-    with `No action is currently required.` rather than inventing a follow-up:
-    an optional next step is only offered where the run observed something
-    genuinely unfinished. So an empty block is the honest answer, and a
-    recommendation you receive means state was found to act on.
+    with `No action is currently required.`, at most naming an *optional*
+    continuation. What it never does is prescribe work over state the run did
+    not touch, so a recommendation you are handed means something genuinely
+    unfinished was observed.
 
 ```mermaid
 flowchart LR

@@ -13,8 +13,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   `/steer:spec validate`) and "Only non-blocking deferrals remain" (`Complete`).
   `Recommended` is level 6 in the shared safety precedence and `Complete` is
   level 7, so the follow-up won every time and `Complete` was unreachable: a
-  sweep that found 42 resolved questions, nothing open, and wrote nothing still
-  closed by prescribing a gate re-check over an untouched spine — a
+  sweep that found every question already resolved, nothing open, and wrote
+  nothing still closed by prescribing a gate re-check over an untouched spine — a
   recommendation that contradicted the body directly above it. The two rows are
   now disjoint: the `/steer:spec validate` row fires only when the run actually
   wrote to the spine (and names the feature it touched, or `--all`), and a sweep
