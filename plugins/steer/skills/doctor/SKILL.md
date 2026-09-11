@@ -186,8 +186,8 @@ final scan.
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan — or WSL2 for CLI/IDE dev |
 | A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (§3) — not a hard blocker, but the wrong, un-pinned version is in use |
 | All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up — `/steer:init` (dev) or `/steer:build` (PO) |
-| All green, repo already set up | Recommended | `mise run dev:setup`, then start work |
-| All green, nothing else pending | Complete | `No action is currently required.` |
+| All green, repo already set up, and this run installed or repaired a tool | Recommended | Install the project's deps against the toolchain just fixed — `mise run dev:setup`, then start work |
+| All green, repo already set up, and this run installed or repaired nothing | Complete | `No action is currently required.` — optionally `mise run dev:setup` if the project's deps aren't installed yet |
 
 Pick one `Current recommended action` by precedence. Read-only on the repo — it
 detects and (with consent) installs host tools; it never edits repo files or

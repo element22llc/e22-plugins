@@ -133,6 +133,16 @@ than inventing a parallel one:
 If the relevant state is genuinely empty, the honest recommendation is
 `No action is currently required.` — do not manufacture busywork.
 
+**A skill's domain table has to keep that outcome reachable.** Every
+`Recommended` row names state the workflow observed as *unfinished*. A row that
+is *also* satisfied by the clean, nothing-to-do state makes `Complete`
+structurally unreachable: `Recommended` sits at level 6 and `Complete` at level
+7, so the optional follow-up wins the precedence every time and the block ends
+up prescribing work the body just reported wasn't needed. The usual form is a
+row that re-runs a read-only check over state this run never touched — condition
+such a row on the run having actually written something, and let the no-op path
+fall through to `Complete`.
+
 ---
 
 ## 4. Locality rule

@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Fixed: a clean `/steer:questions` sweep no longer recommends busywork.**
+  Its next-action table carried two rows that both matched a spine with nothing
+  open — "All blocking questions resolved" (`Recommended`, re-run
+  `/steer:spec validate`) and "Only non-blocking deferrals remain" (`Complete`).
+  `Recommended` is level 6 in the shared safety precedence and `Complete` is
+  level 7, so the follow-up won every time and `Complete` was unreachable: a
+  sweep that found 42 resolved questions, nothing open, and wrote nothing still
+  closed by prescribing a gate re-check over an untouched spine — a
+  recommendation that contradicted the body directly above it. The two rows are
+  now disjoint: the `/steer:spec validate` row fires only when the run actually
+  wrote to the spine (and names the feature it touched, or `--all`), and a sweep
+  that found no `open`/`investigating` question ends at `No action is currently
+  required.` `/steer:doctor` had the same shape — "All green, repo already set
+  up" prescribed `mise run dev:setup` unconditionally and buried its own
+  `Complete` row; it is now conditioned on the run having installed or repaired
+  something, with `dev:setup` kept as an optional continuation under `Complete`.
+  `NEXT-ACTIONS.md` §3 states the underlying rule, so the next domain table
+  doesn't reintroduce it: a `Recommended` row must name state observed as
+  unfinished, never state that is also true when there is nothing to do.
+
 - **Fixed: the scaffolded `ai-slop` CI job reports its findings instead of
   failing twice.** Both of its steps failed on a real consumer repo, neither
   because of the scanned code. The scan step: `aislop scan` applies the same
