@@ -240,10 +240,15 @@ questions just swept (locality rule).
 | Blocking question stale (open >14d), not promoted | Blocking now | Promote it — `/steer:issues` opens a `spec-question` issue assigned to its `owner` via the tracker.md map |
 | Open question still `impact: blocking` | Blocking now | Route to its `owner` (product/dev/design/security) for a decision (no command) |
 | Genuine unmade product/architecture decision left open | Human decision required | The owning human decides (no command) |
-| All blocking questions resolved | Recommended | Re-check the spec gate — `/steer:spec validate` |
-| Only non-blocking deferrals remain | Complete | `No action is currently required.` |
+| Non-blocking question left open — the human couldn't answer it, or grounding it cost more than the answer was worth (step 4) | Recommended | Route it to its `owner`; it stays in the SessionStart count until answered or explicitly `deferred` (no command) |
+| This run wrote to the spine — a question resolved, promoted, or deferred | Recommended | Re-check the spec gate over what changed — `/steer:spec validate <feature-id>` (`--all` when the run touched several features) |
+| The sweep wrote nothing — no `open`/`investigating` question was found (none at all, or only `resolved`/`deferred`/`cancelled` blocks) | Complete | `No action is currently required.` |
 
-Pick one `Current recommended action` by precedence.
+Pick one `Current recommended action` by precedence. **A sweep that found
+nothing open ends at `Complete`** — `/steer:spec validate` re-checks the gate
+against *edits this run made*, so recommending it over an untouched spine
+contradicts the body's own "nothing to resolve" finding and manufactures
+busywork the block must not invent (`NEXT-ACTIONS.md` §3).
 
 ## Bundle mode (`bundle`)
 
