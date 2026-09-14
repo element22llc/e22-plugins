@@ -66,6 +66,17 @@ the old template lacked.
    The contract (run `/steer:reference conventions` for the prose):
    `mise run dev:setup` is idempotent and, from a fresh clone after
    `mise install`, must produce a working local environment.
+
+   Once the adapted `mise.toml` carries a `pre-commit` task, **wire the commit
+   gate** — `mise generate git-pre-commit --task=pre-commit --write`, under the
+   same guard the plugin-driven path and `/steer:adopt` use: check the hook
+   directory first (`git rev-parse --git-path hooks`, which honours
+   `core.hooksPath`), and if the fork already has a `pre-commit` hook (or sets
+   `core.hooksPath`), **report the collision and leave it alone**. A fork that
+   predates the bundled scaffold is the likeliest repo to carry a commit gate of
+   its own, and that is a decision, not a gap. The hook is per-clone state —
+   `.git/hooks/` is not versioned, so there is nothing to commit and the team's
+   other clones get it from `/steer:sync`.
 7. **Back-fill the newer scaffold artifacts.** A fork of the old template
    predates the plugin-bundled scaffold, so it lacks the living-docs spine —
    instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:

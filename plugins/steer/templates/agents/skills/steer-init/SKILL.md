@@ -168,7 +168,17 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    per-clone, not a committed file — say so when you announce it, and point the
    team's other clones at `/steer-sync`, which re-establishes it. Linked
    worktrees share the primary checkout's hooks, so `claude --worktree` needs
-   nothing further.
+   nothing further. Check the hook directory first (`git rev-parse --git-path
+   hooks` — it honours `core.hooksPath` and resolves a linked worktree to the
+   primary checkout): if the repo already has a `pre-commit` hook (or sets
+   `core.hooksPath`), **report the collision and leave it alone** — a repo with
+   its own commit gate is a decision, not a gap, the same guard `/steer-adopt`
+   applies and the `n/a`-not-`mis-wired` reading `CAPABILITIES.md` gives the
+   `commit-gate` capability. The generator will not stop you: it renames the
+   existing hook to `pre-commit.old` and takes its place, and it writes into
+   `core.hooksPath` when one is set — so on a repo pointing that at a *tracked*
+   directory, running it blind both disables the team's gate and leaves the
+   swap staged as a versioned change.
 6. **Proceed spec-first.** From here, every user-facing feature gets its
    `/spec/features/[id]/intent.md` + `contract.md` via **`/steer-spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before
