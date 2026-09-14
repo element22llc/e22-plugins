@@ -94,6 +94,54 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — the `ci` job's inlined steps → `mise run ci:*` tasks
+
+- **What & why:** the body of the required `ci` check lived only inside
+  `.github/workflows/ci.yml` — stack detection, the test contract, pytest's exit-5
+  handling, the changed-line coverage gate — so it was reachable **only** by a
+  GitHub runner. A contributor could not run the gate that decides their PR, and an
+  org that exhausts its Actions minutes loses the ability to validate a repo at all.
+  The logic now lives in `scripts/ci-*.sh`, invoked by `ci:*` tasks in `mise.toml`;
+  the workflow calls those same tasks. One definition, two entry points — `mise run
+  check` (fast) and `mise run ci` (the whole required check) reproduce CI exactly
+  rather than approximating it. This is a **section re-take**: the steps are
+  replaced wholesale, because no set of old→new token pairs describes turning
+  ~200 lines of inlined bash into eight task invocations.
+- **Precondition:** `.github/workflows/ci.yml` exists **and**
+  `grep -q 'steps\.detect\.outputs' .github/workflows/ci.yml` fires (the old
+  inlined body). A repo whose `ci.yml` already calls `mise run ci:` is done and
+  skips. A repo with no `ci.yml` is `n/a` — creating one is
+  `drift-gate`'s repair path in [`CAPABILITIES.md`](CAPABILITIES.md), not this entry.
+- **Action:** read-then-propose, show the diff first. The three parts land
+  **together** — a `ci.yml` calling tasks that do not exist fails every PR.
+  1. **Install the stage scripts.** Copy the nine
+     `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/scripts/ci-*.sh` files to `scripts/`.
+     `ci-lib.sh` is verbatim; the eight stage scripts are the product's to adapt
+     afterwards.
+  2. **Add the tasks.** Splice the `ci:*`, `check` and `ci` task blocks from
+     `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/mise.toml` into the repo's
+     `mise.toml` — additive, and skip any task name the repo already defines
+     (a product that already had its own `check` keeps it; report the collision
+     rather than overwriting a task the team wrote).
+  3. **Re-take the `ci` job's steps.** The bounded region runs from the
+     `- name: Setup mise` step to the end of the `ci` job (the line before the first
+     advisory job, `design-lint`). Replace it with the current template's version.
+     Everything outside that region is untouched — the `on:` triggers, the three
+     advisory jobs, and any job the product added.
+
+     **Carry forward:** any product-specific step inside the region that is not one
+     of the replaced stock steps (a deploy preflight, an extra linter, a secret
+     fetch). Re-add it after the matching `mise run ci:*` step, or better, fold it
+     into the corresponding `scripts/ci-*.sh` so the local gate runs it too — name
+     that choice in the proposal rather than deciding silently.
+  4. **No history entry is earned.** This is scaffolding `/steer:sync` carries
+     forward, not a product-level event.
+
+  **False-positive guard:** do not rewrite `steps.detect.outputs` mentions in
+  append-only or provenance prose — `spec/history/` entries, ADRs under
+  `spec/decisions/`, `spec/AUDIT-REPORT.md` — where the mention records what was
+  true at the time.
+
 ### v6.0.0 — Copilot prompt files → the cross-tool `.agents/skills/` tree
 
 - **What & why:** the non-Claude skill surface was

@@ -176,6 +176,21 @@ describes the code-bearing profiles:
   these fan out with `pnpm --recursive --if-present run …`, so each app/package
   owns its own `db:migrate`/`db:seed` script and packages without one are
   skipped; Python repos call `uv run …` instead.
+- **`mise run check`** — the fast gate: hygiene (actionlint, shellcheck,
+  version-pin policy), lint/format, typecheck. No containers, no coverage. Run
+  it before every commit.
+- **`mise run ci`** — the full gate: everything the required `ci` status check
+  runs (`check` plus tests, IaC checks, the image build, and the changed-line
+  coverage gate). Run it before push / PR.
+
+  These two are **not a re-implementation of CI** — `.github/workflows/ci.yml`
+  invokes the very same `ci:*` tasks, whose logic lives in `scripts/ci-*.sh`, so
+  the gate is defined once and cannot drift between a laptop and a runner. That
+  is also what makes a repo verifiable when no runner is available at all (an
+  org out of Actions minutes, an air-gapped checkout): `mise run ci` is the
+  whole check, not an approximation of it. Each leaf task detects its own stack
+  and no-ops with a notice when it is absent, so pruning this file to the
+  product's stack never leaves a `depends` pointing at a task you deleted.
 
 mise is the single task **entry surface**, not the single home. The split:
 

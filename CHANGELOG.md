@@ -7,6 +7,26 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: the required `ci` check now runs as `mise run ci:*` tasks, so it runs
+  on a laptop too.** The body of the shipped `.github/workflows/ci.yml` — stack
+  detection, the "a detected stack with no test contract FAILS" rule, pytest's
+  exit-5 handling, the changed-line coverage gate — lived only inside the YAML,
+  reachable only by a GitHub runner. A contributor could not run the gate that
+  decided their PR, and an org that exhausts its Actions minutes lost the ability
+  to validate a managed repo at all. The logic moves to nine shipped
+  `scripts/ci-*.sh` stage scripts (POSIX sh, shellcheck-gated, each self-detecting
+  its stack and no-opping with a `::notice::` when absent), invoked by new `ci:*`
+  tasks in the scaffold `mise.toml`; the workflow's steps are now one `mise run`
+  each. One definition, two entry points: `mise run check` (hygiene + lint +
+  typecheck) is the fast pre-commit tier and `mise run ci` is the whole required
+  check — a reproduction of CI rather than an approximation, which is what makes
+  it a usable substitute when no runner is available. `build/SKILL.md` already
+  allow-listed `mise run check` / `mise run ci`; the tasks behind that vocabulary
+  now exist. Documented in `CONVENTIONS.md` -> "Standard mise tasks"; the
+  `drift-gate` capability grows the scripts and the task wiring so `/steer:sync`
+  repairs a half-installed gate; a `MIGRATIONS.md` entry re-takes the `ci` job's
+  step region in already-adopted repos, carrying product-specific steps forward.
+
 - **Fixed: a clean `/steer:questions` sweep no longer recommends busywork.**
   Its next-action table carried two rows that both matched a spine with nothing
   open — "All blocking questions resolved" (`Recommended`, re-run

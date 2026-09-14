@@ -9,6 +9,10 @@ on:
 
 # The single required status check: stack-agnostic hygiene always, then the checks for each
 # DETECTED stack. A detected stack with no test contract FAILS — green must mean tests ran.
+#
+# Every step delegates to a `mise run ci:*` task (mise.toml -> "Verification tasks"), whose
+# logic lives in scripts/ci-*.sh. CI and the local gate therefore run the SAME code: reproduce
+# any failure here with `mise run ci`, and validate a change with no CI run at all.
 # Rationale: README.md#branch-protection; /steer:reference conventions -> Testing / Coverage.
 
 jobs:
@@ -29,205 +33,41 @@ jobs:
           install: true
           cache: true
 
-      # Stack-agnostic hygiene — always runs.
-
-      - name: Lint GitHub Actions workflows (actionlint)
-        run: actionlint -color
-
-      - name: Lint shell scripts (shellcheck)
-        run: |
-          mapfile -t scripts < <(git ls-files '*.sh' '*.bash')
-          if [ ${#scripts[@]} -eq 0 ]; then
-            echo "No shell scripts found — nothing to lint."
-          else
-            printf '%s\n' "${scripts[@]}"
-            shellcheck "${scripts[@]}"
-          fi
-
-      # Committed-state backstop for the interactive version-pin hook (policy/versions.yml floors).
-      - name: Version-pin policy scan
-        run: sh scripts/scan-version-pins.sh .
-
+      # Every check below is a `mise run` task defined in mise.toml, so the SAME command
+      # validates on a laptop: `mise run check` (fast) / `mise run ci` (everything here).
+      # The logic lives in scripts/ci-*.sh — shellcheck-gated, and never duplicated between
+      # this file and the local gate. Rationale: mise.toml -> "Verification tasks".
       # Secret scanning is GitHub-native (Settings -> Code security), not a CI step.
 
-      - name: Detect stack
-        id: detect
-        run: |
-          node=false
-          python=false
-          tf=false
-          ansible=false
-          pulumi=false
-          if [ -f package.json ] || [ -f pnpm-workspace.yaml ]; then node=true; fi
-          if [ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .; then python=true; fi
-          # Keep in lockstep with steer_repo_does_iac (plugin hooks/lib/scope.sh); a bare roles/ dir is NOT Ansible.
-          if git ls-files '*.tf' '*.hcl' | grep -q .; then tf=true; fi
-          if [ -f ansible.cfg ] || [ -f site.yml ] || [ -f site.yaml ] || { [ -d roles ] && [ -d playbooks ]; }; then ansible=true; fi
-          if [ -f Pulumi.yaml ] || [ -f Pulumi.yml ]; then pulumi=true; fi
-          {
-            echo "node=$node"
-            echo "python=$python"
-            echo "tf=$tf"
-            echo "ansible=$ansible"
-            echo "pulumi=$pulumi"
-          } >> "$GITHUB_OUTPUT"
-          if [ "$node" = false ] && [ "$python" = false ] && [ "$tf" = false ] && [ "$ansible" = false ] && [ "$pulumi" = false ]; then
-            echo "::notice::No application or infra stack detected (no package.json / pyproject.toml / *.tf / Ansible / Pulumi layout). Stack-agnostic hygiene ran; stack validation is not yet active."
-          fi
+      - name: Hygiene (actionlint, shellcheck, version-pin policy)
+        run: mise run ci:hygiene
 
-      - name: Install dependencies (Node)
-        if: steps.detect.outputs.node == 'true'
-        # Freeze only once a lockfile exists (a fresh fork has none until /steer:init generates it).
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo "No pnpm-lock.yaml yet — installing without frozen lockfile."
-            pnpm install --no-frozen-lockfile
-          fi
-
-      - name: Lint + format check (Biome — Node/TS)
-        if: steps.detect.outputs.node == 'true'
-        run: biome ci .
+      - name: Lint + format check (Biome / Ruff)
+        run: mise run ci:lint
 
       - name: Type check (Node/TS)
-        if: steps.detect.outputs.node == 'true'
-        run: pnpm run typecheck
+        run: mise run ci:typecheck
 
-      - name: Test (Node/TS)
-        if: steps.detect.outputs.node == 'true'
-        # The root `--if-present` fan-out is not a test contract — green must mean tests ran.
-        run: |
-          if ! git ls-files '*package.json' \
-               | xargs grep -hE '"test"[[:space:]]*:' 2>/dev/null \
-               | grep -qv -- '--if-present'; then
-            echo "::error::Node workspace detected but no package defines a \"test\" script — a green CI would not mean tests ran. Add tests (Definition of Done)."
-            exit 1
-          fi
-          # Per-package lcov.info only when @vitest/coverage is wired; the gate below is fail-open without it.
-          if git ls-files '*package.json' | xargs grep -lq '@vitest/coverage' 2>/dev/null; then
-            pnpm run test -- --coverage --coverage.reporter=lcov
-          else
-            pnpm run test
-          fi
+      # A detected stack with no test contract FAILS — green must mean tests ran.
+      - name: Test
+        run: mise run ci:test
 
-      - name: Lint + format check (Ruff — Python)
-        if: steps.detect.outputs.python == 'true'
-        run: |
-          ruff check .
-          ruff format --check .
+      - name: IaC checks (OpenTofu/Terraform fmt, Ansible lint)
+        run: mise run ci:iac
 
-      - name: Test (Python)
-        if: steps.detect.outputs.python == 'true'
-        # pytest exit 5 = no tests collected: fail rather than report a false green.
-        run: |
-          cov_args=""
-          if uv run python -c "import pytest_cov" >/dev/null 2>&1; then
-            cov_args="--cov --cov-report=xml --cov-report=term-missing"
-          fi
-          rc=0
-          # shellcheck disable=SC2086
-          uv run pytest $cov_args || rc=$?
-          if [ "$rc" -eq 5 ]; then
-            echo "::error::Python project detected but pytest collected no tests. Add tests (Definition of Done)."
-            exit 1
-          fi
-          exit "$rc"
-
-      - name: Format check (OpenTofu/Terraform)
-        if: steps.detect.outputs.tf == 'true'
-        # `tofu` is on PATH only when the ROOT toolchain pins it (app-profile repos keep IaC under infra/): skip, don't fail.
-        run: |
-          if ! command -v tofu >/dev/null 2>&1; then
-            echo "::notice::*.tf/*.hcl present but 'tofu' is not on PATH at the repo root (an app-profile repo pins IaC tools under infra/, not root). Skipping the root format check."
-            exit 0
-          fi
-          tofu fmt -check -recursive -diff
-
-      - name: Lint Ansible (ansible-lint)
-        if: steps.detect.outputs.ansible == 'true'
-        # Pin uvx tools: unpinned takes today's PyPI latest, and Dependabot cannot see versions inside run: blocks.
-        run: |
-          if ls .yamllint .yamllint.yml .yamllint.yaml >/dev/null 2>&1; then
-            uvx yamllint@1.38.0 .
-          fi
-          uvx ansible-lint@26.6.0
-
-      # Build-only (no push, no creds); a notice-and-skip until a Dockerfile exists (see templates/docker/).
       - name: Build container image(s)
-        run: |
-          # Build context is the repo root so workspace deps + the lockfile are in scope.
-          mapfile -t dockerfiles < <(git ls-files 'apps/*/Dockerfile' 'Dockerfile')
-          if [ ${#dockerfiles[@]} -eq 0 ]; then
-            echo "::notice::No Dockerfile found (apps/*/Dockerfile or ./Dockerfile) — skipping image build. Add one when a deployable app exists (see the plugin's templates/docker/)."
-            exit 0
-          fi
-          for df in "${dockerfiles[@]}"; do
-            # APP=<app> makes CI authoritative over the Dockerfile's ARG default.
-            build_args=()
-            case "$df" in
-              apps/*/Dockerfile) build_args+=(--build-arg "APP=$(basename "$(dirname "$df")")") ;;
-            esac
-            echo "::group::docker build -f $df ${build_args[*]} ."
-            docker build -f "$df" "${build_args[@]}" .
-            echo "::endgroup::"
-          done
+        run: mise run ci:image
 
-      # Gates only the lines a change touches — never a global %; fail-open without a report.
-      # Rationale: rule 41-coverage; /steer:reference conventions -> Coverage.
+      # The workflow context the gate needs; locally the script falls back to origin/main.
       - name: Coverage (changed-line gate)
-        if: >-
-          (github.event_name == 'pull_request' || github.event_name == 'push') &&
-          (steps.detect.outputs.node == 'true' || steps.detect.outputs.python == 'true')
         env:
-          COVERAGE_DIFF_MIN: "80"
-          EVENT: ${{ github.event_name }}
-          BASE_REF: ${{ github.base_ref }}
-          BEFORE: ${{ github.event.before }}
-        run: |
-          ZERO=0000000000000000000000000000000000000000
-          # The root fan-out writes PER-PACKAGE reports, so glob apps/* and packages/* alongside the root paths.
-          reports=()
-          for f in coverage/lcov.info apps/*/coverage/lcov.info packages/*/coverage/lcov.info \
-                   coverage.xml apps/*/coverage.xml packages/*/coverage.xml; do
-            if [ -f "$f" ]; then reports+=("$f"); fi
-          done
-          if [ ${#reports[@]} -eq 0 ]; then
-            echo "::notice::No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (run /steer:reference conventions -> Coverage). Skipping changed-line gate."
-            exit 0
-          fi
-          if [ "$EVENT" = "pull_request" ]; then
-            base="origin/${BASE_REF}"
-            if ! git fetch --no-tags --quiet origin "$BASE_REF" 2>/dev/null; then
-              echo "::notice::Could not fetch base branch '$BASE_REF' — skipping changed-line coverage (fail-open)."
-              exit 0
-            fi
-          else
-            # push to main: the solo-trunk DoD floor (pr-flow already gated via PR).
-            if ! grep -Eiq '^[[:space:]]*<!--[[:space:]]*steer:delivery-mode=solo-trunk[[:space:]]*-->' CLAUDE.md 2>/dev/null; then
-              echo "::notice::push to main in pr-flow — the PR already gated coverage; skipping push-time floor."
-              exit 0
-            fi
-            if [ -z "${BEFORE:-}" ] || [ "$BEFORE" = "$ZERO" ]; then
-              echo "::notice::No prior commit to diff against (first push) — skipping changed-line coverage (fail-open)."
-              exit 0
-            fi
-            base="$BEFORE"
-          fi
-          echo "## Coverage (changed lines vs $base)" >> "$GITHUB_STEP_SUMMARY"
-          # Pinned — this gate can FAIL a PR. If a bump drops --markdown-report, use --format markdown:coverage-diff.md.
-          uvx diff-cover@10.4.1 "${reports[@]}" \
-            --compare-branch "$base" \
-            --fail-under "$COVERAGE_DIFF_MIN" \
-            --markdown-report coverage-diff.md \
-          || { cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"; \
-               echo "::error::Changed lines are under ${COVERAGE_DIFF_MIN}% covered — cover the code you touched (rule 41-coverage)."; \
-               exit 1; }
-          cat coverage-diff.md >> "$GITHUB_STEP_SUMMARY"
+          STEER_CI_EVENT: ${{ github.event_name }}
+          STEER_CI_BASE_REF: ${{ github.base_ref }}
+          STEER_CI_BEFORE: ${{ github.event.before }}
+        run: mise run ci:coverage
 
       # Opt-in: a build step (add a `build` script per app; the root script fans out with --if-present).
       # - name: Build
-      #   if: steps.detect.outputs.node == 'true'
       #   run: pnpm run build
 
   # Advisory — remove `continue-on-error` to make it block.
