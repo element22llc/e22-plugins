@@ -250,9 +250,11 @@ and **Repair**.
   `/steer:sync` re-establishes it. That is the point — a commit gate nobody but the
   bootstrapper has is not a gate. Never propose committing the hook or setting
   `core.hooksPath` to a tracked directory to dodge this; both are repo-wide
-  decisions a sync must not make. If a **foreign** `pre-commit` hook is already
-  present, or `core.hooksPath` is set, **report and stop** — the repo has its own
-  commit gate, which is a decision, not a gap.
+  decisions a sync must not make. A repo that owns its own commit gate — a foreign
+  `pre-commit` hook, or `core.hooksPath` aimed elsewhere — scans as **`n/a`**, not
+  `mis-wired`: that is a decision, not a gap, and proposing the same repair on every
+  sync is exactly the nagging this vocabulary exists to avoid. Mention it once and
+  move on.
 - **Verbatim:** n/a (generated, never copied)
 - **Why it matters:** it is the cheapest place to catch a lint or format failure —
   before it costs a CI run, which matters most exactly when CI capacity is scarce.
