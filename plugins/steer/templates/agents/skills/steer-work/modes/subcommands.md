@@ -34,8 +34,14 @@ branch naming, concurrency rules, and the recommended-next-actions block stay in
   spec readiness, and outstanding validation. Mutates nothing.
 - **`finish #N`** — run the required validation; update progress (managed block +
   comment); commit, push, and open-or-update the PR (autonomous — Commit
-  autonomy; merge is not yours); **then watch CI
-  to conclusion** (`gh pr checks --watch`) before transitioning. The first push of
+  autonomy; merge is not yours); **mark the PR ready for review** (`gh pr ready`) if it
+  is still a draft, **then watch CI
+  to conclusion** (`gh pr checks --watch`) before transitioning. The order matters and is
+  not cosmetic: the shipped `ci.yml` skips every job on a draft PR, and a **skipped** check
+  reads as green to `gh pr checks`. Watching first would let `finish` reach `validate` with
+  no test having run — the exact false `done` this mode forbids. So: ready, *then* watch. If
+  a check reports `skipped` after that, treat it as a red flag and find out why, never as a
+  pass. The first push of
   the new `issue/<n>` branch sets the upstream — `git push -u origin <branch>` —
   or it fails with `no upstream branch`; later pushes are a plain `git push`. **In solo-trunk,
   there is no PR: commit straight to `main` with a `Closes #N` trailer (see

@@ -25,6 +25,7 @@ allowed-tools:
   - Bash(git push origin *)
   - Bash(gh pr create *)
   - Bash(gh pr edit *)
+  - Bash(gh pr ready *)
   - Bash(gh repo view *)
   - Bash(gh pr checks *)
   - Bash(gh run view *)
@@ -132,7 +133,7 @@ skill's steps:
 | **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened. |
+| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened — and never on a *skipped* check. |
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent — re-running a

@@ -94,6 +94,47 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — CI skips draft PRs and supersedes its own in-flight runs
+
+- **What & why:** the shipped `ci.yml` ran every job on every push to every PR,
+  draft or not, and never cancelled a superseded run. On an agent-driven branch
+  that pushes several commits a minute, that is the single largest consumer of a
+  repo's Actions minutes, and almost all of it is spent on work that is not
+  finished being written. CI now skips while a PR is a draft and starts on
+  `ready_for_review`, and a PR's own in-flight run is cancelled when it is pushed
+  again. `main` is deliberately excluded from the cancellation — every trunk
+  commit keeps its own conclusive run.
+- **Precondition:** `.github/workflows/ci.yml` exists **and**
+  `grep -q 'ready_for_review' .github/workflows/ci.yml` does **not** fire.
+  A repo with no `ci.yml` is `n/a`.
+- **Action:** read-then-propose, show the diff first. Four edits to `ci.yml`:
+  1. **`on.pull_request` gains a `types:` list** — `[opened, synchronize,
+     reopened, ready_for_review]`. All four are required: naming `types` at all
+     *replaces* the defaults, so omitting the first three would stop CI running on
+     pushes. If the repo already declares `types`, union it with these rather than
+     replacing the product's own entries.
+  2. **A top-level `concurrency:` block** keyed on the workflow + ref, with
+     `cancel-in-progress` true only for `pull_request`. If the repo already has a
+     `concurrency:` block, **leave it alone and say so** — that is a product
+     decision about its own runs.
+  3. **Each job gains a draft guard** — `github.event_name != 'pull_request' ||
+     github.event.pull_request.draft == false`. A job that already has an `if:`
+     gets the clause **&&-ed onto its existing condition**, never replaced.
+  4. Leave any product-added job's `if:` untouched unless the team asks.
+
+  **Do not add `paths-ignore` while here**, however tempting as a further saving:
+  a workflow that never fires leaves the required check **absent**, which — unlike
+  `skipped` — never satisfies branch protection, and the PR is unmergeable with no
+  visible cause.
+
+  **Pair it with the skill side.** A repo on an older plugin whose `/steer:work`
+  does not run `gh pr ready` before watching CI will see `finish` read a *skipped*
+  check as green. The plugin ships both halves together, so a repo that takes this
+  workflow edit from a current plugin already has the matching skill; call it out
+  if you are applying the edit by hand against an older one.
+
+  **No history entry is earned** — CI scaffolding `/steer:sync` carries forward.
+
 ### [Unreleased] — the `ci` job's inlined steps → `mise run ci:*` tasks
 
 - **What & why:** the body of the required `ci` check lived only inside

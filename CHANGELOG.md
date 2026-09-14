@@ -7,6 +7,24 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Changed: CI skips draft PRs and cancels superseded runs; `/steer:work finish`
+  marks the PR ready before watching.** The shipped `ci.yml` ran every job on every
+  push to every PR, draft or not, and never cancelled a run its own next push had
+  superseded — on an agent-driven branch that is where most of a repo's Actions
+  minutes go, almost all of it on work still being written. `on.pull_request` now
+  carries `types: [opened, synchronize, reopened, ready_for_review]`, every job
+  (including the three advisory ones) carries a draft guard, and a `concurrency:`
+  block cancels a PR's in-flight run on re-push — never on `main`, where each trunk
+  commit keeps its own conclusive run. This is safe against branch protection
+  because a *skipped* job satisfies a required check where an absent one does not,
+  which is also why no `paths-ignore` is used. The trap it opens is on the skill
+  side: a skipped check reads as green to `gh pr checks`, so `finish` could have
+  reached `validate` with no test having run — it now runs `gh pr ready` **before**
+  the watch, and treats a `skipped` check as a red flag rather than a pass.
+  `/steer:work` gains the `gh pr ready` grant; a `MIGRATIONS.md` entry applies the
+  four workflow edits to already-adopted repos, &&-ing the draft guard onto a job's
+  existing condition rather than replacing it.
+
 - **Added: a sub-second `mise run pre-commit` gate, wired to `.git/hooks/pre-commit`
   at bootstrap.** The scaffold had no commit-time gate at all, so the cheapest
   failures — a lint or format error — were only ever caught by a CI run. The new
