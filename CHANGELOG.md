@@ -7,6 +7,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+### 6.2.0
+
 - **Security: the five shipped workflow templates are hardened, and the zizmor
   tier over them is now a hard gate (closes #492).** They referenced actions by
   tag, declared no `permissions:` in `ci.yml`, persisted the checkout credential
@@ -57,8 +59,8 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   which needs no `.pre-commit-config.yaml` and no Python in a Node-only repo.
   `.git/hooks/` is not versioned, so the hook is per-clone state, not a committed
   file — a new `commit-gate` capability makes `/steer:sync` re-establish it for
-  every teammate, and both skills report-and-stop on a repo that already has its
-  own `pre-commit` hook or sets `core.hooksPath`. Linked worktrees share the
+  every teammate, and `/steer:adopt` reports-and-stops on a repo that already
+  has its own `pre-commit` hook or sets `core.hooksPath`. Linked worktrees share the
   primary checkout's hooks, so `claude --worktree` needs nothing extra.
 
 - **Added: the required `ci` check now runs as `mise run ci:*` tasks, so it runs
@@ -67,14 +69,16 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   exit-5 handling, the changed-line coverage gate — lived only inside the YAML,
   reachable only by a GitHub runner. A contributor could not run the gate that
   decided their PR, and an org that exhausts its Actions minutes lost the ability
-  to validate a managed repo at all. The logic moves to nine shipped
+  to validate a managed repo at all. The logic moves to eight shipped
   `scripts/ci-*.sh` stage scripts (POSIX sh, shellcheck-gated, each self-detecting
   its stack and no-opping with a `::notice::` when absent), invoked by new `ci:*`
-  tasks in the scaffold `mise.toml`; the workflow's steps are now one `mise run`
+  tasks in the scaffold `mise.toml` and all sourcing a ninth, `scripts/ci-lib.sh`,
+  that no task runs directly; the workflow's steps are now one `mise run`
   each. One definition, two entry points: `mise run check` (hygiene + lint +
-  typecheck) is the fast pre-commit tier and `mise run ci` is the whole required
-  check — a reproduction of CI rather than an approximation, which is what makes
-  it a usable substitute when no runner is available. `build/SKILL.md` already
+  typecheck) is the fast local tier above the narrower `pre-commit` hook task, and
+  `mise run ci` is the whole required check — a reproduction of CI rather than an
+  approximation, which is what makes it a usable substitute when no runner is
+  available. `build/SKILL.md` already
   allow-listed `mise run check` / `mise run ci`; the tasks behind that vocabulary
   now exist. Documented in `CONVENTIONS.md` -> "Standard mise tasks"; the
   `drift-gate` capability grows the scripts and the task wiring so `/steer:sync`

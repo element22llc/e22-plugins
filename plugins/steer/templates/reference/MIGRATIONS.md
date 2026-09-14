@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] — the shipped workflows are hardened (SHA pins, least privilege)
+### v6.2.0 — the shipped workflows are hardened (SHA pins, least privilege)
 
 - **What & why:** the five shipped workflow templates referenced actions by tag
   (`@v7`, `@v1`), declared no `permissions:` in `ci.yml`, left the checkout
@@ -138,7 +138,7 @@ Name the file and say what to carry forward.
   `package-ecosystem: github-actions` at `directory: /`, which covers
   `.github/workflows/`. Nothing further is needed per repo.
 
-### [Unreleased] — CI skips draft PRs and supersedes its own in-flight runs
+### v6.2.0 — CI skips draft PRs and supersedes its own in-flight runs
 
 - **What & why:** the shipped `ci.yml` ran every job on every push to every PR,
   draft or not, and never cancelled a superseded run. On an agent-driven branch
@@ -179,7 +179,7 @@ Name the file and say what to carry forward.
 
   **No history entry is earned** — CI scaffolding `/steer:sync` carries forward.
 
-### [Unreleased] — the `ci` job's inlined steps → `mise run ci:*` tasks
+### v6.2.0 — the `ci` job's inlined steps → `mise run ci:*` tasks
 
 - **What & why:** the body of the required `ci` check lived only inside
   `.github/workflows/ci.yml` — stack detection, the test contract, pytest's exit-5
