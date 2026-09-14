@@ -29,13 +29,17 @@ jobs:
       actions: read # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        # `persist-credentials: false` would harden this, but claude-code-action carries no
+        # checkout of its own — it commits and pushes in the workspace THIS step created, so
+        # dropping the credential can break the action's own delivery. The scope is bounded by
+        # the `permissions:` block above. Revisit if the action gains its own token-based clone.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] — v7.0.1
         with:
           fetch-depth: 1
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@9cdae7f0d995e3ba7c33f226087fdf82a59cd520 # v1.0.223
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 

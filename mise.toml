@@ -54,14 +54,15 @@ description = "Static SECURITY analysis of GitHub Actions workflows (zizmor)"
 run = [
   # HARD gate on this repo's own workflows. Clean today, so this is a ratchet.
   "uv run zizmor --no-online-audits .github/workflows/",
-  # ADVISORY on the SHIPPED workflow templates, which are copied into every
-  # managed repo -- so one flaw there multiplies across the org, and that is
-  # precisely why they get reported rather than ignored. They are NOT clean
-  # today (unpinned action refs, missing `permissions:` blocks), and hardening
-  # consumer-facing CI is a change that deserves its own review rather than
-  # riding along with the linter that found it -- so this tier reports and never
-  # fails, exactly like shfmt's grandfathered tier below. See issue #492.
-  "uv run zizmor --no-online-audits plugins/steer/templates/github/workflows/*.yml || true",
+  # HARD on the SHIPPED workflow templates too, since issue #492 hardened them:
+  # they are copied into every managed repo, so one flaw there multiplies across
+  # the org -- which is why they were audited rather than excluded even while the
+  # tier was advisory. Clean today (SHA-pinned `uses:`, least-privilege
+  # `permissions:`, no credential persistence bar two documented exceptions), so
+  # this is a ratchet: a regression now fails here instead of being reported and
+  # scrolled past. The two `# zizmor: ignore[artipacked]` lines in claude.yml and
+  # steer-loop.yml each carry their reason inline.
+  "uv run zizmor --no-online-audits plugins/steer/templates/github/workflows/*.yml",
 ]
 
 [tasks.plugin-check]

@@ -13,6 +13,12 @@ on:
 # Supersede a PR's own in-flight run when it is pushed again — the biggest saver of
 # Actions minutes on an agent-driven branch, which pushes often. Never on `main`:
 # every trunk commit gets its own conclusive run.
+# Least privilege for every job: all four only read the tree and write annotations /
+# the step summary, neither of which needs a token scope. A job that later needs more
+# (a PR comment, a SARIF upload) declares it on that job, never here.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -36,15 +42,18 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Full history: the coverage step diffs changed lines against the base branch.
           fetch-depth: 0
+          # Nothing here pushes; leaving the token in .git/config would carry it into
+          # any artifact or nested action that reads the checkout.
+          persist-credentials: false
 
       # mise-action adds `--locked` whenever mise.lock exists; before /steer:init|adopt commits
       # one, this is a plain unlocked install rather than a failure.
       - name: Setup mise
-        uses: jdx/mise-action@v4
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
           install: true
           cache: true
@@ -93,9 +102,10 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Find changed DESIGN.md files
         id: changed
@@ -129,9 +139,10 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Detect undocumented behavior change
         env:
@@ -191,9 +202,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 

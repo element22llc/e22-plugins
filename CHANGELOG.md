@@ -7,6 +7,28 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Security: the five shipped workflow templates are hardened, and the zizmor
+  tier over them is now a hard gate (closes #492).** They referenced actions by
+  tag, declared no `permissions:` in `ci.yml`, persisted the checkout credential
+  in every job, and gated Dependabot auto-merge on `github.actor` — which names
+  the *last* actor to touch the context rather than the PR author, so a crafted
+  HEAD commit can make it read `dependabot[bot]` while the rest of the branch is
+  the attacker's. A tag is a moving pointer its owner can repoint at any commit,
+  so every managed repo was running whatever that tag meant that day. All 25
+  findings are resolved: every `uses:` is SHA-pinned with a `# vX.Y.Z` comment
+  (resolved live via the API, cross-checked against this repo's own pins),
+  `ci.yml` declares `permissions: contents: read`, read-only checkouts set
+  `persist-credentials: false`, the auto-merge gate is
+  `github.event.pull_request.user.login`, and `update-type` moves out of the
+  `run:` body into `env:`. The two remaining `artipacked` findings carry
+  `# zizmor: ignore[...]` with their reason: `claude-code-action` has no checkout
+  of its own and writes through the workspace the step creates, so dropping the
+  credential could break delivery in every managed repo. The `|| true` is gone
+  from `mise run actions-security`, so a regression now fails the gate instead of
+  being reported and scrolled past. A `MIGRATIONS.md` entry applies the same
+  hardening to already-adopted repos — resolving SHAs live rather than copying
+  them, and never moving a pin backwards past one Dependabot has already advanced.
+
 - **Changed: CI skips draft PRs and cancels superseded runs; `/steer:work finish`
   marks the PR ready before watching.** The shipped `ci.yml` ran every job on every
   push to every PR, draft or not, and never cancelled a run its own next push had
