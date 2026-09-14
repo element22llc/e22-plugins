@@ -240,7 +240,9 @@ artifacts from `https://github.com/element22llc/e22-plugins/blob/main/plugins/st
 `.git/hooks/pre-commit`, which is **not** versioned — so it is per-clone, nothing
 to commit, and the team's other clones get it from `/steer-sync`. Say that when
 you announce it. Linked worktrees share the primary checkout's hooks, so
-`claude --worktree` needs nothing further. If the repo already has a
+`claude --worktree` needs nothing further. Check the hook directory first
+(`git rev-parse --git-path hooks` — it honours `core.hooksPath` and resolves a
+linked worktree to the primary checkout): if the repo already has a
 `pre-commit` hook (or sets `core.hooksPath`), **report the collision and leave it
 alone** — a repo with its own commit gate is a decision, not a gap.
 
