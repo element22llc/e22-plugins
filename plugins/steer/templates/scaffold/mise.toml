@@ -105,6 +105,19 @@ description = "Changed-line coverage gate (diff-cover) — needs ci:test's repor
 depends = ["ci:test"]
 run = "sh scripts/ci-coverage.sh"
 
+[tasks.pre-commit]
+description = "Sub-second commit gate: hygiene + lint. Wired to .git/hooks/pre-commit by /steer:init."
+# The tier that must stay FAST — it runs on every commit. Deliberately no
+# typecheck (needs an installed workspace) and no tests: those are `check` and
+# `ci`. Its job is to stop a lint/format failure before it costs a CI run, not
+# to be a second `ci`.
+#
+# Install per clone: `mise generate git-pre-commit --task=pre-commit --write`.
+# .git/hooks/ is not versioned, so every clone runs it once — but linked
+# worktrees share the primary checkout's hooks, so `claude --worktree` needs
+# nothing extra. `git commit --no-verify` bypasses it; CI does not.
+depends = ["ci:hygiene", "ci:lint"]
+
 [tasks.check]
 description = "Fast gate: hygiene + lint + typecheck. Run before every commit."
 depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]

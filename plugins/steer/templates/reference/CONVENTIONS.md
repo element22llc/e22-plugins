@@ -176,6 +176,15 @@ describes the code-bearing profiles:
   these fan out with `pnpm --recursive --if-present run …`, so each app/package
   owns its own `db:migrate`/`db:seed` script and packages without one are
   skipped; Python repos call `uv run …` instead.
+- **`mise run pre-commit`** — the sub-second commit gate: hygiene + lint, no
+  typecheck and no tests. `/steer:init` and `/steer:adopt` wire it to
+  `.git/hooks/pre-commit` with `mise generate git-pre-commit
+  --task=pre-commit --write`. `.git/hooks/` is **not versioned**, so this is
+  per-clone state, not a committed file: a teammate's fresh clone has no hook
+  until they run that command or `/steer:sync`. Linked worktrees share the
+  primary checkout's hooks, so `claude --worktree` needs nothing extra. It stays
+  deliberately thin — its job is to stop a lint failure before it costs a CI
+  run, not to be a second `ci`. `git commit --no-verify` bypasses it; CI does not.
 - **`mise run check`** — the fast gate: hygiene (actionlint, shellcheck,
   version-pin policy), lint/format, typecheck. No containers, no coverage. Run
   it before every commit.

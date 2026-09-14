@@ -22,6 +22,7 @@ allowed-tools:
   - Bash(gh pr create *)
   - Bash(mise install *)
   - Bash(mise lock *)
+  - Bash(mise generate git-pre-commit *)
   - Bash(npm view *)
   - Bash(python3 *scripts/scaffold_reconcile.py*)
 ---
@@ -177,6 +178,13 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    every dependency change. Make `mise run dev:setup` real and idempotent for
    this product (Python: `uv run …` task commands; drop `compose.yaml` +
    docker/db tasks if there are no backing services).
+
+   Then **wire the commit gate**: `mise generate git-pre-commit
+   --task=pre-commit --write`. `.git/hooks/` is not versioned, so this is
+   per-clone, not a committed file — say so when you announce it, and point the
+   team's other clones at `/steer:sync`, which re-establishes it. Linked
+   worktrees share the primary checkout's hooks, so `claude --worktree` needs
+   nothing further.
 6. **Proceed spec-first.** From here, every user-facing feature gets its
    `/spec/features/[id]/intent.md` + `contract.md` via **`/steer:spec-scaffold`**
    *before or alongside* its code — not after. Get PO approval on intent before

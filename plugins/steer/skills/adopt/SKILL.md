@@ -19,6 +19,7 @@ allowed-tools:
   - Bash(gh pr create *)
   - Bash(mise install *)
   - Bash(mise lock *)
+  - Bash(mise generate git-pre-commit *)
   - Bash(npm view *)
   # Phase 7 authors a root DESIGN.md against the @google/design.md schema and
   # lints it; scoped to that one package rather than a blanket `npx *`.

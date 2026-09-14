@@ -238,6 +238,25 @@ and **Repair**.
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.
 
+### commit-gate — the pre-commit hook wired to `mise run pre-commit`
+- **Files:** `.git/hooks/pre-commit` (**not versioned** — per-clone local state),
+  backed by the `pre-commit` task in `mise.toml`
+- **Conditional:** repos whose `mise.toml` defines a `pre-commit` task
+- **Wired-when:** `mise.toml` defines `pre-commit` **and** `.git/hooks/pre-commit`
+  exists and invokes `mise run pre-commit`.
+- **Repair:** run `mise generate git-pre-commit --task=pre-commit --write`. This is
+  the one capability whose repair is expected to fire **repeatedly** on a healthy
+  repo: `.git/hooks/` is not carried by a clone, so every teammate's first
+  `/steer:sync` re-establishes it. That is the point — a commit gate nobody but the
+  bootstrapper has is not a gate. Never propose committing the hook or setting
+  `core.hooksPath` to a tracked directory to dodge this; both are repo-wide
+  decisions a sync must not make. If a **foreign** `pre-commit` hook is already
+  present, or `core.hooksPath` is set, **report and stop** — the repo has its own
+  commit gate, which is a decision, not a gap.
+- **Verbatim:** n/a (generated, never copied)
+- **Why it matters:** it is the cheapest place to catch a lint or format failure —
+  before it costs a CI run, which matters most exactly when CI capacity is scarce.
+
 ### branch-protection-policy — machine-readable PR gate description
 - **Files:** `policy/branch-protection.yml`
 - **Conditional:** always

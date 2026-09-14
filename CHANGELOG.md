@@ -7,6 +7,20 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
 
 ### [Unreleased]
 
+- **Added: a sub-second `mise run pre-commit` gate, wired to `.git/hooks/pre-commit`
+  at bootstrap.** The scaffold had no commit-time gate at all, so the cheapest
+  failures — a lint or format error — were only ever caught by a CI run. The new
+  `pre-commit` task is `ci:hygiene` + `ci:lint` and deliberately nothing else: no
+  typecheck (it needs an installed workspace) and no tests, because a tier that
+  runs on every commit has to stay fast or it gets bypassed. `/steer:init` and
+  `/steer:adopt` now run `mise generate git-pre-commit --task=pre-commit --write`,
+  which needs no `.pre-commit-config.yaml` and no Python in a Node-only repo.
+  `.git/hooks/` is not versioned, so the hook is per-clone state, not a committed
+  file — a new `commit-gate` capability makes `/steer:sync` re-establish it for
+  every teammate, and both skills report-and-stop on a repo that already has its
+  own `pre-commit` hook or sets `core.hooksPath`. Linked worktrees share the
+  primary checkout's hooks, so `claude --worktree` needs nothing extra.
+
 - **Added: the required `ci` check now runs as `mise run ci:*` tasks, so it runs
   on a laptop too.** The body of the shipped `.github/workflows/ci.yml` — stack
   detection, the "a detected stack with no test contract FAILS" rule, pytest's
