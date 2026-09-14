@@ -57,6 +57,62 @@ description = "Seed local dev data in every workspace package that defines db:se
 depends = ["db:migrate"]
 run = "pnpm --recursive --if-present run db:seed"
 
+# ---------------------------------------------------------------------------
+# Verification tasks. `.github/workflows/ci.yml` runs these same tasks, so the
+# checks cannot drift between your laptop and CI — and a repo whose org is out
+# of Actions minutes still has the full gate locally.
+#
+# Two tiers: `check` is the fast pre-push/pre-commit gate (no containers, no
+# coverage); `ci` is everything the required `ci` status check runs.
+#
+# Every leaf task DETECTS its stack and no-ops with a notice when absent, so
+# pruning this file to your product's stack never leaves a `depends` pointing at
+# a task that no longer exists.
+# ---------------------------------------------------------------------------
+
+[tasks."ci:hygiene"]
+description = "Stack-agnostic hygiene: actionlint, shellcheck, version-pin policy"
+run = "sh scripts/ci-hygiene.sh"
+
+[tasks."ci:deps"]
+description = "Install workspace dependencies (Node) for the checks that need them"
+run = "sh scripts/ci-deps.sh"
+
+[tasks."ci:lint"]
+description = "Lint + format check every detected stack (Biome / Ruff)"
+run = "sh scripts/ci-lint.sh"
+
+[tasks."ci:typecheck"]
+description = "Static type check (Node/TS)"
+depends = ["ci:deps"]
+run = "sh scripts/ci-typecheck.sh"
+
+[tasks."ci:test"]
+description = "Run the test suite for every detected stack (a detected stack with no tests FAILS)"
+depends = ["ci:deps"]
+run = "sh scripts/ci-test.sh"
+
+[tasks."ci:iac"]
+description = "IaC checks: OpenTofu/Terraform fmt, Ansible lint"
+run = "sh scripts/ci-iac.sh"
+
+[tasks."ci:image"]
+description = "Build-only container image check (no push, no credentials)"
+run = "sh scripts/ci-image.sh"
+
+[tasks."ci:coverage"]
+description = "Changed-line coverage gate (diff-cover) — needs ci:test's reports"
+depends = ["ci:test"]
+run = "sh scripts/ci-coverage.sh"
+
+[tasks.check]
+description = "Fast gate: hygiene + lint + typecheck. Run before every commit."
+depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]
+
+[tasks.ci]
+description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
+depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage"]
+
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake. Usage: mise run convert:doc <file>"
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.

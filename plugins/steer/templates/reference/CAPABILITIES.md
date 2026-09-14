@@ -216,14 +216,25 @@ and **Repair**.
   major pinned below the supported floor.
 
 ### drift-gate — CI hygiene check + PR drift checklists
-- **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`
+- **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
+  `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
+  `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
+  `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
-- **Wired-when:** `ci.yml` invokes `scan-version-pins.sh` (the steer hygiene job)
-  **and** the PR template is present (it carries the spec-sync, drift-gate, and
-  living-docs checklists).
-- **Repair:** additively splice the missing job/step or PR-template section; never
-  clobber product-specific CI steps. Sources under `templates/github/`.
-- **Verbatim:** no
+- **Wired-when:** `ci.yml` reaches the hygiene stage — now via `mise run ci:hygiene`,
+  which runs `scan-version-pins.sh` — **and** `mise.toml` defines the `check` + `ci`
+  tasks **and** every `scripts/ci-*.sh` the tasks invoke is present **and** the PR
+  template is present (it carries the spec-sync, drift-gate, and living-docs
+  checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
+  such tasks is the one broken state this capability exists to catch: the required
+  check fails on every PR.
+- **Repair:** additively splice the missing job/step, the missing `ci:*`/`check`/`ci`
+  tasks, or the PR-template section; copy any missing `scripts/ci-*.sh` from the
+  scaffold. Never clobber product-specific CI steps or a product's adapted stage
+  script. Sources under `templates/github/` and `templates/scaffold/`.
+- **Verbatim:** `scripts/ci-lib.sh` yes — its stack predicates must stay in lockstep
+  with the plugin's `hooks/lib/scope.sh`; the stage scripts and `ci.yml` no (a
+  product adapts them to its toolchain).
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.
 
