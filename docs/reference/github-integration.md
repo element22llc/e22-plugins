@@ -89,8 +89,12 @@ declared in `policy/branch-protection.yml` and the scaffold `README.md`
 branch-protection section.
 
 !!! note "Auto-merge is scoped to Dependabot — no repo-wide switch"
-    The merge is gated by the workflow's `if: github.actor == 'dependabot[bot]'`
-    guard and uses a direct single-PR merge. It deliberately does **not** enable
+    The merge is gated by the workflow's
+    `if: github.event.pull_request.user.login == 'dependabot[bot]'` guard and uses a
+    direct single-PR merge. The guard reads the PR's **author**, deliberately not
+    `github.actor` — that names the last actor to touch the context, so a crafted
+    HEAD commit can make it report `dependabot[bot]` while the rest of the branch is
+    the attacker's. It deliberately does **not** enable
     GitHub's repo-wide `allow_auto_merge` setting, which would expose an auto-merge
     button to every PR. `gh pr checks --watch --required` watches only required
     checks, so the job never deadlocks on its own non-required run.

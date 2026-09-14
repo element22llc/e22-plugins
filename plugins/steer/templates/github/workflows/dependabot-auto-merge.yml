@@ -15,11 +15,15 @@ jobs:
   dependabot-auto-merge:
     name: dependabot-auto-merge
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    # `github.actor` is the LAST actor to touch the context, not the one that opened the
+    # PR — an attacker can land a HEAD commit that makes it read `dependabot[bot]` while the
+    # rest of the branch is theirs. `pull_request.user.login` is the PR's author and cannot be
+    # moved that way. (This workflow is `on: pull_request`, never `pull_request_target`.)
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v3
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -30,9 +34,13 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Through `env:`, not interpolated into the script: a `${{ }}` expansion inside a
+          # `run:` block is substituted before the shell sees it, so a value carrying shell
+          # metacharacters would execute rather than print.
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
         run: |
           gh pr review --approve "$PR_URL" \
-            --body "Auto-approved by steer: ${{ steps.metadata.outputs.update-type }} dependency update. CI is the hard gate (see .github/workflows/dependabot-auto-merge.yml)."
+            --body "Auto-approved by steer: ${UPDATE_TYPE} dependency update. CI is the hard gate (see .github/workflows/dependabot-auto-merge.yml)."
           # --required watches only required checks, so this non-required job cannot deadlock on itself.
           gh pr checks "$PR_URL" --watch --required --fail-fast
           # Direct merge, no repo-wide allow_auto_merge; if strict protection refuses it, update the branch for a later run.

@@ -94,6 +94,50 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — the shipped workflows are hardened (SHA pins, least privilege)
+
+- **What & why:** the five shipped workflow templates referenced actions by tag
+  (`@v7`, `@v1`), declared no `permissions:` in `ci.yml`, left the checkout
+  credential persisted in every job, and gated Dependabot auto-merge on
+  `github.actor` — which names the *last* actor to touch the context, not the PR
+  author, so a crafted HEAD commit can make it read `dependabot[bot]` while the
+  rest of the branch is the attacker's. A tag is a moving pointer the upstream
+  owner can repoint at any commit, so every managed repo was executing whatever
+  that tag meant on the day CI ran. These are copied into every managed repo, so
+  one flaw multiplies across the org. Tracked as issue #492.
+- **Precondition:** any steer-shipped workflow still references an action by tag —
+  `grep -nE 'uses: [^@]+@v[0-9]' .github/workflows/{ci,claude,copilot-setup-steps,dependabot-auto-merge,steer-loop}.yml`
+  — **or** `dependabot-auto-merge.yml` still contains `github.actor ==`. A repo
+  with none of those files is `n/a`.
+- **Action:** read-then-propose, show the diff. **Only** the five steer-shipped
+  files above; a workflow the product wrote is theirs, and hardening it is a
+  suggestion to make in the PR description, never an edit.
+  1. **Pin each `uses:` to a commit SHA with a `# vX.Y.Z` trailing comment.**
+     Resolve the SHA **live** (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`,
+     dereferencing an annotated tag via `git/tags/<sha>`) — never copy a SHA from
+     this entry or from memory, which is how a stale or wrong pin spreads. **Never
+     move a pin backwards:** a repo whose Dependabot has already advanced an action
+     past the template's version keeps its newer pin. Unpinned refs only.
+  2. **`ci.yml` gains a top-level `permissions: contents: read`** if it declares
+     none. A job that already declares its own keeps it.
+  3. **Add `persist-credentials: false`** to each `actions/checkout` in `ci.yml`
+     and `copilot-setup-steps.yml`. **Not** in `claude.yml` or `steer-loop.yml` —
+     `claude-code-action` carries no checkout of its own and writes through the
+     workspace that step creates, so dropping the credential can break its
+     delivery; those two keep a `# zizmor: ignore[artipacked]` with the reason
+     inline. If a product added a checkout to a job that pushes, leave it and say so.
+  4. **`dependabot-auto-merge.yml`:** replace `github.actor == 'dependabot[bot]'`
+     with `github.event.pull_request.user.login == 'dependabot[bot]'`, and move
+     `${{ steps.metadata.outputs.update-type }}` out of the `run:` body into an
+     `env:` entry referenced as `$UPDATE_TYPE` (a `${{ }}` inside `run:` is
+     substituted before the shell sees it).
+  5. **No history entry is earned** — CI scaffolding `/steer:sync` carries forward.
+
+  **Maintenance note to pass on:** once these land in a repo, its **own**
+  Dependabot keeps the pins current — the shipped `dependabot.yml` has
+  `package-ecosystem: github-actions` at `directory: /`, which covers
+  `.github/workflows/`. Nothing further is needed per repo.
+
 ### [Unreleased] — CI skips draft PRs and supersedes its own in-flight runs
 
 - **What & why:** the shipped `ci.yml` ran every job on every push to every PR,
