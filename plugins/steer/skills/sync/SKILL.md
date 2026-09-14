@@ -21,6 +21,7 @@ allowed-tools:
   - Bash(git push -u origin *)
   - Bash(git push origin *)
   - Bash(gh pr create *)
+  - Bash(mise generate git-pre-commit *)
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(sh *scripts/scan-capabilities.sh*)
   - Bash(sh *scripts/scan-invocations.sh*)

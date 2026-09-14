@@ -235,6 +235,15 @@ if no one uses Copilot), `/configs`, `.env.example`, and `.claude/settings.json`
 leading dot — rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/`.
 
+**Wire the commit gate** once `mise.toml` carries the `pre-commit` task: run
+`mise generate git-pre-commit --task=pre-commit --write`. It writes
+`.git/hooks/pre-commit`, which is **not** versioned — so it is per-clone, nothing
+to commit, and the team's other clones get it from `/steer-sync`. Say that when
+you announce it. Linked worktrees share the primary checkout's hooks, so
+`claude --worktree` needs nothing further. If the repo already has a
+`pre-commit` hook (or sets `core.hooksPath`), **report the collision and leave it
+alone** — a repo with its own commit gate is a decision, not a gap.
+
 **In a polyrepo member, install `spec/PRODUCT.md` (from
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/product.md`) and skip every product-level
 artifact in this list** — `/spec/tracker.md` (and with it both tracker

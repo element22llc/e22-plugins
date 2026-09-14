@@ -388,4 +388,28 @@ else
 	emit "worktree-port-isolation" "mis-wired" "$wt_files"
 fi
 
+# --- commit-gate — the pre-commit hook wired to `mise run pre-commit` ---
+# Per-clone LOCAL state, not a committed file: .git/hooks/ is not carried by a
+# clone, so `absent` here is the normal reading on a teammate's fresh checkout
+# and the repair is expected to fire repeatedly. `git rev-parse --git-path hooks`
+# (not $ROOT/.git/hooks) because a linked worktree's .git is a file pointing at
+# the shared common dir — and because it honours core.hooksPath.
+# A repo that owns its own commit gate — a foreign pre-commit hook, or
+# core.hooksPath aimed at a tracked directory — reports n/a: that is a decision,
+# not a gap, and proposing a repair every sync is the failure mode to avoid.
+CG_MT="mise.toml"
+cg_files="$CG_MT,.git/hooks/pre-commit"
+cg_hooks="$(git -C "$ROOT" rev-parse --path-format=absolute --git-path hooks 2>/dev/null || true)"
+if ! has "$CG_MT" "tasks.pre-commit"; then
+	emit "commit-gate" "n/a" "$cg_files"
+elif [ -z "$cg_hooks" ] || [ ! -d "$cg_hooks" ]; then
+	emit "commit-gate" "n/a" "$cg_files"
+elif [ ! -f "$cg_hooks/pre-commit" ]; then
+	emit "commit-gate" "absent" "$cg_files"
+elif grep -q "mise run pre-commit" "$cg_hooks/pre-commit" 2>/dev/null; then
+	emit "commit-gate" "present-wired" "$cg_files"
+else
+	emit "commit-gate" "n/a" "$cg_files"
+fi
+
 exit 0
