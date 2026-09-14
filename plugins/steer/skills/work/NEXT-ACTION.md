@@ -19,6 +19,7 @@ without redefining the subcommands above:
 | Acceptance criteria not yet met | Blocking now (next transition) | Continue — `/steer:work resume #N` |
 | Required validation failing | Blocking now | Fix failures, then `/steer:work finish #N` |
 | Implemented, PR not opened | Blocking now (next transition) | `/steer:work finish #N` |
+| PR open but still a **draft** | Blocking now (next transition) | `gh pr ready` first — the shipped `ci.yml` skips every job on a draft, and a skipped check reads as green |
 | PR open, CI running | Blocking now (next transition) | Watch to conclusion — `gh pr checks --watch` (detached: the harness `/loop` over `gh pr checks`) |
 | PR open, CI red | Blocking now | Fix the failure, re-push, re-watch |
 | PR open, CI green, in `validate`, awaiting review | Human decision required | A reviewer reviews the PR (no command) |
