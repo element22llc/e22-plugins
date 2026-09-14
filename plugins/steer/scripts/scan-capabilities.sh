@@ -245,13 +245,30 @@ else
 	fi
 fi
 
-# --- drift-gate — CI hygiene job + PR-template checklists ---
+# --- drift-gate — CI hygiene stage + the mise tasks behind it + PR-template checklists ---
+# Two wired spellings, both valid. CURRENT: ci.yml delegates each step to a
+# `mise run ci:*` task, so the hygiene stage (and the version-pin scanner it
+# runs) lives in scripts/ci-hygiene.sh — the workflow no longer names the
+# scanner at all, and the tasks + scripts must be present or every PR fails.
+# LEGACY: a repo that predates that still carries the inlined scanner step; it
+# is wired, not broken, and the MIGRATIONS ledger moves it forward.
 F=".github/workflows/ci.yml"
 PRT=".github/pull_request_template.md"
-dg_files="$F,$PRT"
+MT="mise.toml"
+CIH="scripts/ci-hygiene.sh"
+CIL="scripts/ci-lib.sh"
+dg_files="$F,$PRT,$MT,$CIH,$CIL"
 if ! exists "$F"; then
 	emit "drift-gate" "absent" "$dg_files"
-elif has "$F" "scan-version-pins.sh" && exists "$PRT"; then
+elif ! exists "$PRT"; then
+	emit "drift-gate" "mis-wired" "$dg_files"
+elif has "$F" "mise run ci:hygiene"; then
+	if has "$MT" "ci:hygiene" && exists "$CIH" && exists "$CIL"; then
+		emit "drift-gate" "present-wired" "$dg_files"
+	else
+		emit "drift-gate" "mis-wired" "$dg_files"
+	fi
+elif has "$F" "scan-version-pins.sh"; then
 	emit "drift-gate" "present-wired" "$dg_files"
 else
 	emit "drift-gate" "mis-wired" "$dg_files"
