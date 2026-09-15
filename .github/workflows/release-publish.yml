@@ -112,8 +112,12 @@ jobs:
           if [ ! -f "$notes_file" ]; then
             echo "::error::no changelog version file ${notes_file} for ${version}"; exit 1
           fi
-          # Drop the leading `## X.Y.Z` heading -- the Release title carries it.
-          sed '1{/^## /d;}' "$notes_file" | sed '1{/^$/d;}' >release-notes.md
+          # A Release body is rendered in COMMENT mode, where every newline becomes
+          # a <br> -- so the changelog's 80-column authoring wraps landed
+          # mid-sentence on the published page (v6.3.0 carried 45 of them). Reflow
+          # to one line per block and let the reader's width do the wrapping; the
+          # same pass drops the `## X.Y.Z` heading the Release title carries.
+          python3 scripts/reflow_release_notes.py "$notes_file" >release-notes.md
           {
             echo "version=${version}"
             echo "tag=v${version}"
