@@ -20,6 +20,9 @@ local runs and the CI PR gate:
    under ``.changes/unreleased/`` — so a stream of PRs accumulates entries.
    Behaviour is deny-by-default: everything under ``plugins/steer/`` counts,
    minus the exemptions enumerated below, each with the reason it ships nothing.
+   A **release cut** satisfies the gate with an added ``.changes/vX.Y.Z.md``
+   instead: it folds the pending fragments into that file and empties
+   ``unreleased/``, so it can never add one.
 
 Usage::
 
@@ -210,7 +213,17 @@ def check_behaviour_gate(base: str, errors: list[str]) -> None:
     # Only an ADDED fragment counts: editing an existing one is amending somebody
     # else's pending entry, not recording this change.
     added = [p for st, p in changed if st.startswith("A") and p.startswith(f"{UNRELEASED_DIR}/")]
-    if behaviour and not added:
+    # A release cut is the one behaviour-changing PR that can never add a fragment:
+    # `changie batch` folds every pending fragment into `.changes/vX.Y.Z.md` and
+    # empties `unreleased/`, so the added version file *is* this PR's record.
+    cut = [
+        p
+        for st, p in changed
+        if st.startswith("A")
+        and Path(p).parent == CHANGES_DIR
+        and _VERSION_FILE_RE.match(Path(p).name)
+    ]
+    if behaviour and not added and not cut:
         errors.append(
             "A changelog fragment must be added when plugin behaviour changes. Run "
             "`mise run changelog:new` (or write .changes/unreleased/<kind>-<stamp>-<slug>.yaml). "
