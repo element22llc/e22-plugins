@@ -3,7 +3,7 @@ name: new-rule
 description: >-
   Scaffold a new always-on rule under plugins/steer/rules/ — list taken
   numeric prefixes, propose the next free gap slot, create a lean imperative
-  NN-slug.md stub, and add a CHANGELOG [Unreleased] entry. Repo-local dev
+  NN-slug.md stub, and add a changelog fragment. Repo-local dev
   helper for e22-plugins; does not ship.
 allowed-tools:
   - Read
@@ -40,8 +40,11 @@ the rules it follows.
    `plugins/steer/templates/reference/` and have the rule point to it rather than
    inlining it.
 
-5. **Add a CHANGELOG stub:** under `## steer` → `### [Unreleased]` in
-   `CHANGELOG.md`, add `- Add rule NN-<slug> (<one-line>).`
+5. **Add a changelog fragment:** write
+   `.changes/unreleased/added-<YYYYMMDD>-<HHMM>-rule-<slug>.yaml` with
+   `kind: Added`, `custom.Slug: rule-<slug>`, and a `body: |` block holding
+   `- **Added: rule NN-<slug>.** <one-line>.` Never touch `CHANGELOG.md` — it is
+   generated at release.
 
 6. **Validate and report:** run `mise run plugin-check`, report pass/fail, and
    remind the user to keep the rule lean and run `mise run check` before

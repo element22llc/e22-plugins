@@ -2,7 +2,7 @@
 name: new-skill
 description: >-
   Scaffold a new steer plugin skill with correct frontmatter for its
-  invocation tier, plus a CHANGELOG [Unreleased] stub. Repo-local dev helper
+  invocation tier, plus a changelog fragment stub. Repo-local dev helper
   for e22-plugins; does not ship. Use when adding a skill under
   plugins/steer/skills/.
 allowed-tools:
@@ -59,9 +59,11 @@ See `AUTHORING.md` → "Skill frontmatter schema" for the full rules.
    per `AUTHORING.md` → "capture gotchas"). Do **not** leave literal
    `TODO`/`FIXME`/`[Replace` tokens — `check_plugin.py` rejects them in skills.
 
-4. **Add a CHANGELOG stub:** under `## steer` → `### [Unreleased]` in
-   `CHANGELOG.md`, add a bullet like `- Add /steer:<name> skill (<one-line>).`
-   Create the `### [Unreleased]` heading if absent (above the newest version).
+4. **Add a changelog fragment:** write
+   `.changes/unreleased/added-<YYYYMMDD>-<HHMM>-<slug>.yaml` with
+   `kind: Added`, `custom.Slug: <slug>`, and a `body: |` block holding
+   `- **Added: /steer:<name>.** <one-line>.` Never touch `CHANGELOG.md` — it is
+   generated at release. Shape: `AUTHORING.md` → "CHANGELOG & versioning".
 
 5. **Validate and report:** run `mise run plugin-check` (or
    `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py`).

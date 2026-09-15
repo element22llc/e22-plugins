@@ -55,7 +55,7 @@ See rule `61-gate-prompts` and `/steer:reference gates`.
 
 ADRs are an artifact of the **`/spec` spine in a managed product repo**. The
 `e22-plugins` repo itself keeps **no ADR log**: changes to the plugin's own
-behavior are recorded in `CHANGELOG.md` under `## steer` → `### [Unreleased]`,
+behavior are recorded as a changelog fragment under `.changes/unreleased/`,
 with the rationale — alternatives, consequences, what was rejected — in the PR
 description. See [Release process](../contributing/release-process.md).
 

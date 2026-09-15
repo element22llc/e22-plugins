@@ -102,22 +102,26 @@ capture. Read it before your first PR here. The essentials, condensed:
   which carries steer's released version and *is* plugin behavior;
   `plugins/steer/templates/github/` is what **consumer repos** get (plugin
   behavior — changelog entry required).
-- Any change to plugin behavior needs a `CHANGELOG.md` entry. Accumulate entries
-  under `## steer` → `### [Unreleased]`; implementation PRs do **not**
-  bump `plugins/steer/.claude-plugin/plugin.json`. The `version` bump
-  happens **once**, in the release PR that renames `[Unreleased]` to the new
-  version — so a stream of PRs cuts one coherent release instead of a bump each.
-  `CHANGELOG.md` is marked `merge=union` in `.gitattributes`, so concurrent PRs
-  appending bullets under `### [Unreleased]` **never conflict** — git keeps both
-  sides. This relies on the `### [Unreleased]` heading being **persistent** (the
-  release skill re-seeds an empty one after each cut); add each change as its own
-  bullet and don't recreate the heading. See `AUTHORING.md` → "CHANGELOG &
-  versioning".
+- Any change to plugin behavior needs a **changelog fragment** — one YAML file
+  per change under `.changes/unreleased/`, written by hand (`mise run
+  changelog:new`, or the file directly for multi-line prose). Because each
+  change is its own path, concurrent PRs **never conflict** — which is what
+  retired the old `CHANGELOG.md merge=union` driver; union is line-based, and
+  the multi-line entries this repo writes are the shape it splices together
+  wrongly. **`CHANGELOG.md` itself is generated** — `changie merge` assembles it
+  from `.changes/`, so never edit it by hand (`check_changelog.py` fails when it
+  drifts). Between releases it shows only *released* versions; pending entries
+  live unassembled in `.changes/unreleased/`, and running `changie merge -u` in
+  a feature PR would reintroduce the conflict. Implementation PRs do **not**
+  bump `plugins/steer/.claude-plugin/plugin.json`: the `version` bump happens
+  **once**, at release, written by `changie merge` across all three manifests —
+  so a stream of PRs cuts one coherent release instead of a bump each. See
+  `AUTHORING.md` → "CHANGELOG & versioning".
 - **Releases publish themselves.** When a release PR (the `plugin.json` version
   bump) merges to `main`, `.github/workflows/release-publish.yml` fires — gated
   on the version bump — and cuts the `vX.Y.Z` git tag + GitHub
-  Release with that version's CHANGELOG bullets as the body (extracted by
-  `scripts/changelog_release_notes.py`), followed by GitHub's auto-generated
+  Release with that version's entries as the body (served straight from
+  `.changes/vX.Y.Z.md`), followed by GitHub's auto-generated
   "What's Changed" (merged-PR list + contributors + compare link) via
   `--generate-notes`. It is idempotent and re-runnable via
   `workflow_dispatch`. History predating the workflow was backfilled once (a
@@ -167,7 +171,7 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   `fixtures`, `test`, `hooktests`, `version-scan`, and `delivery-gates` on top
   of `check`, which already carries `shell` and `docs:check`). `delivery-gates` runs the two PR-only
   branch-diff checks (`check_changelog.py --base` and `check_docs_impact.py
-  --base`) against `origin/main`, so a missing CHANGELOG or docs update is caught
+  --base`) against `origin/main`, so a missing fragment or docs update is caught
   here instead of failing CI after you push. It fail-opens when `origin/main`
   isn't fetched; CI's sha-based steps remain authoritative there.
 - **Docs site:** the Zensical site under `docs/` (config: `mkdocs.yml`, which
@@ -195,8 +199,8 @@ The dev loop is driven by `mise` (run `mise tasks` to list everything):
   helpers `/new-skill`, `/new-rule`, and `/preflight` scaffold and verify for you.
 - **Behaviour changes are gated twice:** a change **anywhere under
   `plugins/steer/`** — or to the root `.github/plugin/marketplace.json`, the one
-  version-bearing manifest outside it — needs a `CHANGELOG.md`
-  `## steer` → `### [Unreleased]` entry, enforced on PRs by
+  version-bearing manifest outside it — needs a fragment under
+  `.changes/unreleased/`, enforced on PRs by
   `check_changelog.py --base`. The gate is **deny-by-default**: everything the
   plugin ships counts, and the exemptions are enumerated in that script with a
   reason each (`tests/` anywhere, `evals/`, the plugin's maintainer `README.md`,

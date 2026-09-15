@@ -71,6 +71,7 @@ jobs:
           REPORT: ${{ steps.refresh.outputs.report }}
         run: |
           python3 - <<'PY'
+          import datetime
           import os
           import pathlib
 
@@ -88,25 +89,30 @@ jobs:
               parts.append(f"{prod.strip()} {ver}")
           summary = ", ".join(parts) if parts else "EOL floors raised"
 
-          entry = (
+          body = (
               "- **Changed:** version-pin policy floors raised to track upstream "
               "end-of-life (automated by `version-policy-refresh.yml`): "
               f"{summary}. EOL floors only — what to pin (current stable) is still "
-              "chosen live per the versioning rule; this just stops dead majors.\n"
+              "chosen live per the versioning rule; this just stops dead majors."
           )
 
-          cl = pathlib.Path("CHANGELOG.md")
-          text = cl.read_text(encoding="utf-8")
-          marker = "### [Unreleased]\n"
-          idx = text.find(marker)
-          if idx == -1:
-              raise SystemExit("CHANGELOG.md: no '### [Unreleased]' section found")
-          insert_at = idx + len(marker)
-          rest = text[insert_at:]
-          lead = ""
-          if rest.startswith("\n"):  # keep the blank line after the heading
-              lead, rest = "\n", rest[1:]
-          cl.write_text(text[:insert_at] + lead + entry + rest, encoding="utf-8")
+          # One fragment per change, exactly as a human would write it: the
+          # unreleased directory is the only thing a PR touches, so this bot can
+          # never collide with a concurrent PR's entry.
+          stamp = datetime.datetime.now().astimezone()
+          frag = pathlib.Path(
+              ".changes/unreleased/"
+              f"changed-{stamp:%Y%m%d-%H%M}-version-policy-eol-floors.yaml"
+          )
+          frag.parent.mkdir(parents=True, exist_ok=True)
+          frag.write_text(
+              "kind: Changed\n"
+              f"time: {stamp.isoformat()}\n"
+              "custom:\n  Slug: version-policy-eol-floors\n"
+              f"body: |\n  {body}\n",
+              encoding="utf-8",
+          )
+          print(f"wrote {frag}")
           PY
 
       - name: Open or update the refresh PR
@@ -124,7 +130,7 @@ jobs:
           git add \
             plugins/steer/policy/versions.yml \
             plugins/steer/templates/scaffold/policy/versions.yml \
-            CHANGELOG.md
+            .changes/unreleased
           git commit -m "chore(version-policy): raise EOL floors to track upstream"
           git push --force origin "${branch}"
           body="$(printf '%s\n\n%s\n' \
