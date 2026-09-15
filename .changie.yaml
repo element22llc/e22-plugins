@@ -1,0 +1,74 @@
+# Changelog assembly for the steer plugin.
+#
+# Entries are CURATED, never derived from commit subjects -- the standard this
+# repo ships to consumer repos (templates/reference/CONVENTIONS.md -> "Commit
+# messages" -> Deliberately not adopted). changie automates only assembly and
+# the version bump: the prose is written by whoever made the change.
+#
+# One file per change under .changes/unreleased/, so concurrent PRs never touch
+# the same path -- the same reason spec/history/ is a directory rather than one
+# appended file. That is what retired `CHANGELOG.md merge=union`.
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+
+# Headings stay bare digits (`## 6.2.0`) to match every archived version file.
+# VersionNoPrefix, not Version: `batch auto` derives a `v`-prefixed value.
+versionFormat: "## {{.VersionNoPrefix}}"
+
+# The body carries its own `- ` bullet and `**Fixed: ...**` lead-in, exactly as
+# entries have always been written, so the 787 archived bullets survive
+# byte-for-byte and authoring does not change. `kind` is metadata: it drives the
+# semver bump and the grouping order, and is not rendered.
+kindFormat: ""
+changeFormat: "{{.Body}}"
+
+# Blank lines matching the changelog's existing shape: one after the header
+# prose, one under each version heading, one between versions on merge.
+newlines:
+  afterChangelogHeader: 0
+  afterVersion: 1
+  beforeChangelogVersion: 1
+  endOfVersion: 1
+
+# Slug is required, so a fragment's filename names the change and two changes in
+# the same minute cannot collide. `changie new` stamps filenames to the second
+# with no collision handling -- four concurrent calls in one second leave one
+# file -- and a required slug removes that failure mode.
+fragmentFileFormat: "{{.Kind | lower}}-{{.Time.Format \"20060102-1504\"}}-{{.Custom.Slug}}"
+
+custom:
+  - key: Slug
+    type: string
+    label: Slug (3-6 kebab-case words naming the change)
+    minLength: 3
+
+kinds:
+  - label: Added
+    auto: minor
+  - label: Changed
+    auto: minor
+  - label: Fixed
+    auto: patch
+  - label: Security
+    auto: patch
+  - label: Docs
+    auto: patch
+
+# `changie merge` is the only thing that writes the plugin version, so the
+# release PR no longer hand-edits plugin.json and the two can never disagree.
+replacements:
+  - path: plugins/steer/.claude-plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
+  - path: plugins/steer/.github/plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
+  # Six-space indent + trailing comma matches the steer ENTRY only. The
+  # marketplace's own `metadata.version` sits at four spaces with no comma and
+  # must never move with a plugin release.
+  - path: .github/plugin/marketplace.json
+    find: '^      "version": ".*",$'
+    replace: '      "version": "{{.VersionNoPrefix}}",'

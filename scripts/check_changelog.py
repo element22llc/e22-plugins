@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 """Changelog + release-integrity checks for the steer plugin.
 
-Two checks, so the same script serves local runs and the CI PR gate:
+Entries live as one curated fragment per change under ``.changes/unreleased/``;
+``changie`` assembles them into a version file at release and merges every
+version file into ``CHANGELOG.md``. Three checks, so the same script serves
+local runs and the CI PR gate:
 
-1. **Release validator** (always — no git needed): the version in
-   ``plugin.json`` equals the newest *released* heading under ``## steer``
-   in ``CHANGELOG.md``, released headings are in strictly descending semver order,
-   and a ``### [Unreleased]`` section (optional) is allowed above them. During
-   normal development plugin.json is NOT bumped, so it equals the last release;
-   the release PR renames ``[Unreleased]`` to the new version and bumps
-   plugin.json to match — both keep this invariant.
+1. **Release validator** (always — no git, no changie needed): the version in
+   ``plugin.json`` equals the newest ``.changes/vX.Y.Z.md``, and the assembled
+   ``CHANGELOG.md`` carries exactly those versions in strictly descending
+   order. A hand-edited or stale ``CHANGELOG.md`` fails here rather than
+   shipping.
 
-2. **Behaviour-change gate** (only with ``--base <ref>``): if any plugin behaviour
-   file changed versus the base ref, ``CHANGELOG.md`` must have changed too —
-   so a stream of PRs accumulates ``[Unreleased]`` entries. Behaviour is
-   deny-by-default: everything under ``plugins/steer/`` counts, minus the
-   exemptions enumerated below, each with the reason it ships nothing.
+2. **Fragment validator** (always): every pending fragment parses, names a kind
+   the config declares, and carries a body and a slug.
+
+3. **Behaviour-change gate** (only with ``--base <ref>``): if any plugin
+   behaviour file changed versus the base ref, a fragment must have been *added*
+   under ``.changes/unreleased/`` — so a stream of PRs accumulates entries.
+   Behaviour is deny-by-default: everything under ``plugins/steer/`` counts,
+   minus the exemptions enumerated below, each with the reason it ships nothing.
 
 Usage::
 
-    uv run python scripts/check_changelog.py                 # release validator only
+    uv run python scripts/check_changelog.py                 # validators only
     uv run python scripts/check_changelog.py --base origin/main   # + behaviour gate
 
 Exit status is 0 when clean, 1 when any check fails.
@@ -34,14 +38,19 @@ import subprocess
 import sys
 from pathlib import Path
 
+import yaml
+
 PLUGIN_JSON = Path("plugins/steer/.claude-plugin/plugin.json")
 CHANGELOG = Path("CHANGELOG.md")
+CHANGIE_CONFIG = Path(".changie.yaml")
+CHANGES_DIR = Path(".changes")
+UNRELEASED_DIR = CHANGES_DIR / "unreleased"
 
 # Everything the plugin ships is behaviour. An allowlist of directory prefixes fails
 # open — the plugin format keeps gaining component types, and adopting a new one
 # would ship ungated until somebody remembered to widen the gate. So the
 # classifier is deny-by-default: anything under `plugins/steer/`
-# requires a CHANGELOG entry unless it is exempted below, and each exemption carries
+# requires a changelog fragment unless it is exempted below, and each exemption carries
 # the reason it ships nothing. The failure mode is a false positive a reviewer sees,
 # not a silent miss.
 PLUGIN_ROOT = "plugins/steer/"
@@ -59,7 +68,8 @@ EXEMPT_EXACT = (
 BEHAVIOUR_EXACT = (".github/plugin/marketplace.json",)
 
 _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
-_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$")
+_VERSION_FILE_RE = re.compile(r"^v(\d+\.\d+\.\d+)\.md$")
+_HEADING_RE = re.compile(r"^##\s+(\d+\.\d+\.\d+)\s*$")
 
 
 def _semver(s: str) -> tuple[int, int, int]:
@@ -67,54 +77,34 @@ def _semver(s: str) -> tuple[int, int, int]:
     return int(a), int(b), int(c)
 
 
-def heading_sequence() -> list[str]:
-    """All '### ' heading texts under '## steer', in document order.
+def declared_kinds() -> list[str]:
+    """Kind labels from .changie.yaml, so this gate can't drift from the config."""
+    if not CHANGIE_CONFIG.is_file():
+        return []
+    try:
+        cfg = yaml.safe_load(CHANGIE_CONFIG.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return []
+    return [k.get("label", "") for k in cfg.get("kinds", []) if isinstance(k, dict)]
 
-    Matches heading lines only, so an inline ``### [Unreleased]`` mentioned in
-    prose (the changelog's own house-rules bullet) is not counted.
-    """
+
+def version_files() -> list[str]:
+    """Released versions from `.changes/vX.Y.Z.md`, newest first."""
+    if not CHANGES_DIR.is_dir():
+        return []
+    found = [m.group(1) for p in CHANGES_DIR.glob("v*.md") if (m := _VERSION_FILE_RE.match(p.name))]
+    return sorted(found, key=_semver, reverse=True)
+
+
+def changelog_headings() -> list[str]:
+    """Version headings in the assembled CHANGELOG.md, in document order."""
     if not CHANGELOG.is_file():
         return []
-    out: list[str] = []
-    in_section = False
-    for line in CHANGELOG.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            in_section = line.strip() == "## steer"
-            continue
-        if not in_section:
-            continue
-        m = _HEADING_RE.match(line)
-        if m:
-            out.append(m.group(1))
-    return out
-
-
-def released_headings() -> list[str]:
-    """Released (semver) ### headings under '## steer', in document order."""
-    return [h for h in heading_sequence() if _SEMVER_RE.match(h)]
-
-
-def check_unreleased(errors: list[str]) -> None:
-    """Guard the persistent '### [Unreleased]' heading.
-
-    It must appear at most once and before every released heading. A duplicated
-    heading is the signature of a ``merge=union`` collision on ``CHANGELOG.md``
-    (see ``.gitattributes``): union keeps both sides' added lines, which is what
-    stops merge conflicts on concurrent entry additions, but it would silently
-    duplicate the heading if two branches ever recreated it. Catch that loudly
-    here instead of shipping a malformed changelog.
-    """
-    seq = heading_sequence()
-    count = sum(1 for h in seq if h == "[Unreleased]")
-    if count > 1:
-        errors.append(
-            f"{CHANGELOG}: '### [Unreleased]' appears {count} times under '## steer' — "
-            "merge=union likely duplicated it; collapse to a single heading."
-        )
-    if count == 1 and seq and seq[0] != "[Unreleased]":
-        errors.append(
-            f"{CHANGELOG}: '### [Unreleased]' must be the first heading under '## steer'."
-        )
+    return [
+        m.group(1)
+        for line in CHANGELOG.read_text(encoding="utf-8").splitlines()
+        if (m := _HEADING_RE.match(line))
+    ]
 
 
 def check_release(errors: list[str]) -> None:
@@ -130,43 +120,75 @@ def check_release(errors: list[str]) -> None:
         errors.append(f"{PLUGIN_JSON}: missing version")
         return
 
-    rel = released_headings()
-    if not rel:
-        errors.append(f"{CHANGELOG}: no released '### X.Y.Z' heading under '## steer'")
+    versions = version_files()
+    if not versions:
+        errors.append(f"{CHANGES_DIR}: no released 'vX.Y.Z.md' version file")
         return
-    if rel[0] != version:
+    if versions[0] != version:
         errors.append(
-            f"{PLUGIN_JSON}: version {version} != newest released CHANGELOG heading {rel[0]}"
+            f"{PLUGIN_JSON}: version {version} != newest version file {versions[0]} "
+            "(`changie merge` rewrites plugin.json — run it rather than editing by hand)"
         )
-    # Strictly descending semver order.
-    for newer, older in zip(rel, rel[1:], strict=False):
+
+    # The committed CHANGELOG.md is generated. If it disagrees with the version
+    # files, someone edited it directly and the next `changie merge` would silently
+    # revert them.
+    headings = changelog_headings()
+    if headings != versions:
+        missing = [v for v in versions if v not in headings]
+        extra = [h for h in headings if h not in versions]
+        detail = []
+        if missing:
+            detail.append(f"missing from CHANGELOG.md: {missing[:5]}")
+        if extra:
+            detail.append(f"not backed by a version file: {extra[:5]}")
+        if not detail:
+            detail.append("same versions, wrong order")
+        errors.append(
+            f"{CHANGELOG} is out of sync with {CHANGES_DIR} ({'; '.join(detail)}) "
+            "— run `mise run changelog:merge`"
+        )
+
+
+def check_fragments(errors: list[str]) -> None:
+    """Every pending fragment must be well-formed before it can be batched."""
+    if not UNRELEASED_DIR.is_dir():
+        return
+    kinds = declared_kinds()
+    for frag in sorted(UNRELEASED_DIR.glob("*.yaml")):
         try:
-            if _semver(newer) <= _semver(older):
-                errors.append(f"{CHANGELOG}: releases not in descending order ({newer} <= {older})")
-        except ValueError:
-            errors.append(f"{CHANGELOG}: non-semver release heading near {newer!r}")
+            data = yaml.safe_load(frag.read_text(encoding="utf-8"))
+        except yaml.YAMLError as exc:
+            errors.append(f"{frag}: invalid YAML ({exc})")
+            continue
+        if not isinstance(data, dict):
+            errors.append(f"{frag}: expected a mapping")
+            continue
+        kind = data.get("kind")
+        if kinds and kind not in kinds:
+            errors.append(f"{frag}: kind {kind!r} is not one of {kinds}")
+        if not str(data.get("body") or "").strip():
+            errors.append(f"{frag}: empty body")
+        if not str((data.get("custom") or {}).get("Slug") or "").strip():
+            errors.append(f"{frag}: missing custom.Slug")
 
 
-def _changed_files(base: str) -> list[str] | None:
-    try:
-        out = subprocess.run(
-            ["git", "diff", "--name-only", f"{base}...HEAD"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        # Fall back to a two-dot diff (e.g. shallow clone without merge base).
+def _changed_files(base: str) -> list[tuple[str, str]] | None:
+    """(status, path) pairs versus ``base``; None when the diff is unavailable."""
+    for args in (["--name-status", f"{base}...HEAD"], ["--name-status", base, "HEAD"]):
         try:
             out = subprocess.run(
-                ["git", "diff", "--name-only", base, "HEAD"],
-                capture_output=True,
-                text=True,
-                check=True,
+                ["git", "diff", *args], capture_output=True, text=True, check=True
             ).stdout
         except (subprocess.CalledProcessError, FileNotFoundError):
-            return None
-    return [p for p in out.splitlines() if p.strip()]
+            continue
+        pairs = []
+        for line in out.splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                pairs.append((parts[0], parts[-1]))
+        return pairs
+    return None
 
 
 def _is_behaviour(path: str) -> bool:
@@ -184,11 +206,15 @@ def check_behaviour_gate(base: str, errors: list[str]) -> None:
     if changed is None:
         print(f"check_changelog: could not diff against {base!r}; skipping behaviour gate.")
         return
-    behaviour = [p for p in changed if _is_behaviour(p)]
-    if behaviour and "CHANGELOG.md" not in changed:
+    behaviour = [p for _, p in changed if _is_behaviour(p)]
+    # Only an ADDED fragment counts: editing an existing one is amending somebody
+    # else's pending entry, not recording this change.
+    added = [p for st, p in changed if st.startswith("A") and p.startswith(f"{UNRELEASED_DIR}/")]
+    if behaviour and not added:
         errors.append(
-            "CHANGELOG.md must change when plugin behaviour changes. Add an entry under "
-            f"'## steer' → '### [Unreleased]'. Behaviour files changed: {behaviour[:8]}"
+            "A changelog fragment must be added when plugin behaviour changes. Run "
+            "`mise run changelog:new` (or write .changes/unreleased/<kind>-<stamp>-<slug>.yaml). "
+            f"Behaviour files changed: {behaviour[:8]}"
         )
 
 
@@ -199,7 +225,7 @@ def main(argv: list[str] | None = None) -> int:
 
     errors: list[str] = []
     check_release(errors)
-    check_unreleased(errors)
+    check_fragments(errors)
     if args.base:
         check_behaviour_gate(args.base, errors)
 

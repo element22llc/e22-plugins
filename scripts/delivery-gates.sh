@@ -3,7 +3,7 @@
 #
 # WHY THIS EXISTS
 #   CI's plugin-quality job runs two gates that diff the PR against its base:
-#   check_changelog.py --base (a plugins/steer change needs a CHANGELOG entry)
+#   check_changelog.py --base (a plugins/steer change needs a changelog fragment)
 #   and check_docs_impact.py --base (a documented-surface change needs a docs/
 #   update). They need a base ref, so they were CI-only — which meant the local
 #   `mise run ci` passed, you pushed, and only THEN did CI fail. This script runs
