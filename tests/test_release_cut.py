@@ -260,3 +260,28 @@ def test_release_notes_strips_the_version_heading(repo):
     notes = rc.release_notes("6.1.0")
     assert not notes.startswith("##")
     assert notes.startswith("- **Added:** a new skill.")
+
+
+def test_release_notes_reflows_the_entries(repo):
+    """The PR body renders in the same comment mode as a Release body.
+
+    Entries are authored wrapped at 80 columns, and every newline there becomes a
+    `<br>` -- so `pr-body` has to hand over one line per block, exactly as the
+    publish workflow does.
+    """
+    (repo / ".changes/v6.1.0.md").write_text(
+        "## 6.1.0\n\n- **Added:** a skill whose description\n  wrapped onto a second line.\n",
+        encoding="utf-8",
+    )
+    assert rc.release_notes("6.1.0") == (
+        "- **Added:** a skill whose description wrapped onto a second line."
+    )
+
+
+def test_pr_body_carries_the_reflowed_entries(repo):
+    (repo / ".changes/v6.1.0.md").write_text(
+        "## 6.1.0\n\n- **Fixed:** a bug whose explanation\n  needed two lines.\n",
+        encoding="utf-8",
+    )
+    body = rc.pr_body("6.1.0", "release", None)
+    assert "- **Fixed:** a bug whose explanation needed two lines." in body

@@ -131,6 +131,41 @@ def test_joins_a_continuation_that_merely_starts_with_a_pipe():
     )
 
 
+def test_joins_a_continuation_that_opens_with_a_parenthetical_number():
+    """v6.1.0: ``(… check`` wraps onto ``11) covered …``, which is not a list.
+
+    The adjacency sweep cannot see this one -- ``11)`` *looks* like a valid block
+    starter -- and the damage is worse than a stray break: indented two spaces
+    under a bullet, the renderer makes it a nested ordered list and the sentence
+    never closes. CommonMark is the arbiter: only a marker starting at ``1`` may
+    interrupt a running paragraph.
+    """
+    source = (
+        "- **Fixed: a thing.** The debranding gate (`check_standards.py` check\n"
+        "  11) covered `templates/{scaffold,spec}` but not `templates/agents`.\n"
+    )
+    assert rr.reflow(source) == (
+        "- **Fixed: a thing.** The debranding gate (`check_standards.py` check 11) "
+        "covered `templates/{scaffold,spec}` but not `templates/agents`."
+    )
+
+
+def test_advances_a_genuine_ordered_list():
+    source = "1. First step, which wraps\n   onto a second line.\n2. Second step.\n"
+    assert rr.reflow(source) == "1. First step, which wraps onto a second line.\n2. Second step."
+
+
+@pytest.mark.parametrize("path", VERSION_FILES, ids=lambda p: p.name)
+def test_no_reflowed_line_opens_with_a_stray_ordered_marker(path):
+    """No archived entry uses an ordered list, so any such line is a false positive.
+
+    If a future entry ships a real numbered list, this assertion is the thing to
+    relax -- deliberately, having checked it renders as intended.
+    """
+    body = rr.release_body(path.read_text(encoding="utf-8"))
+    assert [line for line in body.splitlines() if rr._ORDERED.match(line)] == []
+
+
 def test_passes_a_real_table_through_verbatim():
     source = "| Gate | When |\n| --- | --- |\n| `ci` | PR |\n| `pre-commit` | commit |\n"
     assert rr.reflow(source) == source.rstrip("\n")

@@ -17,6 +17,12 @@ link-reference definition, a blockquote, a fence, a thematic break -- begins its
 own output line, so nesting and bullet structure survive. Fenced code and GFM
 tables pass through verbatim.
 
+Indentation is preserved verbatim, which is what keeps a sub-list nested: a
+``  - `` under a ``- `` parent sits exactly at the parent's content offset. That
+also means the reflow cannot rescue a sub-list the *source* under-indents -- it
+renders as a sibling either way, which is an authoring question, not this
+script's.
+
 Two deliberate non-goals:
 
 - **Indented code blocks are not detected.** Separating a 4-space code block
@@ -41,7 +47,8 @@ import sys
 from pathlib import Path
 
 _FENCE = re.compile(r"^\s{0,3}(?:`{3,}|~{3,})")
-_LIST = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
+_BULLET = re.compile(r"^\s*[-*+]\s+")
+_ORDERED = re.compile(r"^(\s*)(\d+)[.)]\s+")
 _HEADING = re.compile(r"^\s{0,3}#{1,6}(?:\s|$)")
 _LINK_DEF = re.compile(r"^\s*\[[^\]]+\]:\s")
 _QUOTE = re.compile(r"^\s*>")
@@ -79,14 +86,31 @@ def _table_lines(lines: list[str]) -> set[int]:
     return marked
 
 
-def _starts_block(line: str) -> bool:
-    return bool(
-        _LIST.match(line)
-        or _HEADING.match(line)
+def _starts_block(line: str, in_paragraph: bool = False, ordered_indent: int | None = None) -> bool:
+    """Whether ``line`` opens a new block rather than continuing the one above.
+
+    Ordered markers follow CommonMark's interruption rule: a list can only break
+    into a running paragraph when it starts at **1**. Without that, the wrapped
+    prose in v6.1.0 -- ``(check_standards.py check`` / ``11) covered …`` -- reads
+    as an ordered item, and since it is indented two spaces under a bullet the
+    renderer nests it as a sub-list instead of finishing the sentence.
+    ``ordered_indent`` carries the indent of the item just emitted, so a genuine
+    ``1.`` / ``2.`` / ``3.`` list still advances.
+    """
+    if (
+        _HEADING.match(line)
         or _LINK_DEF.match(line)
         or _QUOTE.match(line)
         or _RULE.match(line)
-    )
+        or _BULLET.match(line)
+    ):
+        return True
+    ordered = _ORDERED.match(line)
+    if not ordered:
+        return False
+    if not in_paragraph or ordered.group(2) == "1":
+        return True
+    return len(ordered.group(1)) == ordered_indent
 
 
 def reflow(text: str) -> str:
@@ -96,6 +120,7 @@ def reflow(text: str) -> str:
     out: list[str] = []
     joinable = False
     in_fence = False
+    ordered_indent: int | None = None
 
     for index, line in enumerate(lines):
         if in_fence:
@@ -107,20 +132,24 @@ def reflow(text: str) -> str:
             in_fence = True
             out.append(line)
             joinable = False
+            ordered_indent = None
             continue
         if index in tables:
             out.append(line.rstrip())
             joinable = False
+            ordered_indent = None
             continue
         if not line.strip():
             out.append("")
             joinable = False
             continue
-        if joinable and not _starts_block(line):
+        if joinable and not _starts_block(line, True, ordered_indent):
             out[-1] = out[-1] + " " + line.strip()
             continue
         out.append(line.rstrip())
         joinable = True
+        ordered = _ORDERED.match(line)
+        ordered_indent = len(ordered.group(1)) if ordered else None
 
     return "\n".join(out).strip("\n")
 
