@@ -43,6 +43,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from reflow_release_notes import release_body
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CHANGELOG = REPO_ROOT / "CHANGELOG.md"
 UNRELEASED_DIR = REPO_ROOT / ".changes/unreleased"
@@ -287,14 +289,16 @@ def _run(cmd: list[str]) -> str:
 
 
 def release_notes(version: str) -> str:
-    """The version's entries, without its `## X.Y.Z` heading."""
+    """The version's entries, reflowed and without their `## X.Y.Z` heading.
+
+    A PR description renders in the same comment mode as a Release body, so it
+    needs the same reflow -- shared with the publish workflow rather than copied,
+    so the PR and the Release can never disagree about the entries.
+    """
     path = CHANGES_DIR / f"v{version}.md"
     if not path.is_file():
         raise CutError(f"{path.relative_to(REPO_ROOT)}: missing")
-    lines = path.read_text(encoding="utf-8").splitlines()
-    if lines and lines[0].startswith("## "):
-        lines = lines[1:]
-    return "\n".join(lines).strip()
+    return release_body(path.read_text(encoding="utf-8")).strip()
 
 
 def pr_body(version: str, via: str, audit_file: Path | None) -> str:

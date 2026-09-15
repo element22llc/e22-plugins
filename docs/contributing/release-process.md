@@ -89,7 +89,10 @@ Cutting the release PR is the last manual step. When a release PR (the
 `.github/workflows/release-publish.yml` fires — it triggers only on pushes that
 touch `plugin.json` and acts only when the parsed `version` field changed — and
 creates the `vX.Y.Z` git tag plus the GitHub Release. The body is that version's
-changelog entries, served straight from `.changes/vX.Y.Z.md`, followed by
+changelog entries from `.changes/vX.Y.Z.md` — reflowed by
+`scripts/reflow_release_notes.py`, because a Release body renders in the same
+comment mode as a PR comment, where every newline becomes a `<br>` and the
+changelog's 80-column authoring wraps would land mid-sentence — followed by
 GitHub's auto-generated "What's Changed" (merged-PR list, contributors, compare
 link) via `--generate-notes`. Runs are serialised under one concurrency group and
 never cancelled, a pre-existing tag that points at a different commit fails the

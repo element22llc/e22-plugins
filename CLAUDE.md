@@ -120,8 +120,10 @@ capture. Read it before your first PR here. The essentials, condensed:
 - **Releases publish themselves.** When a release PR (the `plugin.json` version
   bump) merges to `main`, `.github/workflows/release-publish.yml` fires — gated
   on the version bump — and cuts the `vX.Y.Z` git tag + GitHub
-  Release with that version's entries as the body (served straight from
-  `.changes/vX.Y.Z.md`), followed by GitHub's auto-generated
+  Release with that version's entries as the body (from `.changes/vX.Y.Z.md`,
+  reflowed by `scripts/reflow_release_notes.py` — a Release body renders in
+  comment mode, where the changelog's 80-column wraps would become `<br>`s),
+  followed by GitHub's auto-generated
   "What's Changed" (merged-PR list + contributors + compare link) via
   `--generate-notes`. It is idempotent and re-runnable via
   `workflow_dispatch`. History predating the workflow was backfilled once (a
