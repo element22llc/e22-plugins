@@ -1,0 +1,25 @@
+kind: Added
+time: 2026-09-15T15:00:00.000000-04:00
+custom:
+  Slug: consumer-changelog
+body: |
+  - **Added: every managed repo gets an automated, curated `CHANGELOG.md`.** The
+    standard already promised one — rule `45-commit-autonomy` says "commit
+    messages are not the release changelog — that stays the curated
+    `CHANGELOG.md`", `CONVENTIONS.md` says it is "not derived by parsing commit
+    types", and the scaffold shipped a `CHANGELOG.md merge=union` driver for it —
+    but nothing ever installed the file, so the promise was unkept in every
+    consumer repo. The scaffold now carries `.changie.yaml` plus a `.changes/`
+    tree, and entries are written as **one YAML fragment per change** under
+    `.changes/unreleased/`; `changie merge` assembles `CHANGELOG.md` at release.
+    Entries stay hand-written — changie automates assembly and the version bump,
+    never the prose — so this *implements* the existing standard rather than
+    reversing it to commit-derived generation. One file per change also means
+    concurrent PRs never collide, which retires the scaffold's `merge=union` row:
+    union is line-based and splices multi-line entries together wrongly, the same
+    reason `spec/history/` is a directory. A new `ci:changelog` gate fails a PR
+    that changes shipping code without a fragment, `/steer:sync` repairs the
+    wiring in already-adopted repos, and `/steer:work` writes the fragment as part
+    of finishing a unit of work. `library`/`cli` repos cut with `changie batch
+    auto` (semver from each fragment's kind); `app`/`service` repos cut a CalVer
+    date at the `prod` promotion.

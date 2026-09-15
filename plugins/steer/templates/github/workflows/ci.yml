@@ -83,6 +83,14 @@ jobs:
       - name: Build container image(s)
         run: mise run ci:image
 
+      # Same workflow context as coverage; locally the script falls back to origin/main.
+      - name: Changelog fragment (shipping changes only)
+        env:
+          STEER_CI_EVENT: ${{ github.event_name }}
+          STEER_CI_BASE_REF: ${{ github.base_ref }}
+          STEER_CI_BEFORE: ${{ github.event.before }}
+        run: mise run ci:changelog
+
       # The workflow context the gate needs; locally the script falls back to origin/main.
       - name: Coverage (changed-line gate)
         env:

@@ -46,7 +46,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
   `type(scope): summary`, imperative mood; mark breaking changes with `!` or a
   `BREAKING CHANGE:` footer. Commit messages are **not** the release
-  changelog — that stays the curated `CHANGELOG.md`. Full detail:
+  changelog: a shipping change also adds a **changelog fragment** —
+  `mise run changelog:new`, one file under `.changes/unreleased/`.
+  `CHANGELOG.md` is generated from those; never edit it by hand. Full detail:
   `/steer:reference conventions`.
 - **After pushing, watch CI to conclusion and fix a red build before treating
   the work as complete** — don't hand the dev a running or red PR and stop.

@@ -184,6 +184,7 @@ is visible rather than silent.
    | drift-gate | .github/workflows/ci.yml, PR template | present-wired | none |
    | branch-protection-policy | policy/branch-protection.yml | absent | create (proposed); apply via /steer-protect (solo-trunk: at graduation — not an action while the mode stands or a waiver is recorded) |
    | line-ending-normalization | .gitattributes | absent | create from scaffold (proposed, needs a yes); future writes only, no renormalize |
+   | changelog-fragments | .changie.yaml, .changes/unreleased/ | absent | create from scaffold (proposed); an existing hand-written CHANGELOG.md is renamed to CHANGELOG-archive.md, never parsed |
    | github-issue-forms | .github/ISSUE_TEMPLATE/* | n/a | none (tracker ≠ github) |
    ```
 

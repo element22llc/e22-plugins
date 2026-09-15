@@ -363,6 +363,33 @@ and **Repair**.
   allow-list — verified by this capability — is the real backstop for that
   orchestrated path.
 
+### changelog-fragments — every shipped change is recorded
+- **Files:** `.changie.yaml`, `.changes/unreleased/`
+- **Conditional:** always (every managed repo ships something to someone, and
+  the always-on Commit-autonomy rule promises a curated `CHANGELOG.md`).
+- **Wired-when:** `.changie.yaml` **exists** and `.changes/unreleased/` is a
+  directory. Presence-only, like `line-ending-normalization`: whether the config
+  still matches the plugin default is the product's business — `kinds` and
+  `replacements` are explicitly theirs to tune — so a customized `.changie.yaml`
+  is `present-wired`, not a gap. What this entry closes is the **create-missing**
+  hole: a repo adopted before this shipped has no route to a changelog at all.
+- **Repair:** copy `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/changie.yaml` to
+  `.changie.yaml` (the scaffold stores dotfiles without the leading dot) and
+  create `.changes/unreleased/.gitkeep` + `.changes/header.tpl.md`. Also wire
+  `ci:changelog` into `mise.toml` and `.github/workflows/ci.yml` if absent.
+  **If the repo already has a hand-written `CHANGELOG.md`, do not parse or split
+  it** — rename it to `CHANGELOG-archive.md`, say so in the header template, and
+  start fragments from empty. Its shape is unknown and a bad split loses history.
+- **Verbatim:** no — seeded once, then the product's. Reconcile additively;
+  never overwrite a `.changie.yaml` a repo has tuned.
+- **Why it matters:** the standard promised this file and never delivered it.
+  Rule `45-commit-autonomy` tells every session "commit messages are **not** the
+  release changelog — that stays the curated `CHANGELOG.md`", `CONVENTIONS.md`
+  records the decision not to derive it from commit types, and the scaffold even
+  shipped a `CHANGELOG.md merge=union` driver for a file nothing installed. So
+  every consumer repo carried the rule and the merge driver without the
+  changelog — the agent was told to keep something that did not exist.
+
 ### line-ending-normalization — LF pinned for every checkout
 - **Files:** `.gitattributes`
 - **Conditional:** always (every managed repo carries shell scripts, CI, or a

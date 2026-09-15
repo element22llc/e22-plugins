@@ -350,6 +350,23 @@ else
 	emit "github-issue-permissions" "mis-wired" "$F"
 fi
 
+# --- changelog-fragments — every shipped change is recorded ---
+# Presence-only, like line-ending-normalization: `.changie.yaml` is the product's
+# to tune (kinds, replacements), so a customized one is wired, not a gap. What is
+# detected is the create-missing hole — a repo adopted before this shipped has no
+# changelog at all. The unreleased dir must exist too: `changie new` writes into
+# it, and git does not carry an empty directory.
+F=".changie.yaml"
+if exists "$F"; then
+	if [ -d ".changes/unreleased" ]; then
+		emit "changelog-fragments" "present-wired" "$F"
+	else
+		emit "changelog-fragments" "mis-wired" "$F"
+	fi
+else
+	emit "changelog-fragments" "absent" "$F"
+fi
+
 # --- line-ending-normalization — LF pinned for every checkout ---
 # Presence-only: whether the file's CONTENT carries the current pins is step 5's
 # additive reconcile, not a capability gap. This entry exists solely to close the
