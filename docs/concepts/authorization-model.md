@@ -41,7 +41,9 @@ moves a repo between the two and reconciles the marker.
   follow [Conventional Commits](https://www.conventionalcommits.org/)
   (`type(scope): summary`, with `feat!:` / a `BREAKING CHANGE:` footer for
   breaking changes) — guidance only, not a lint gate; see `/steer:reference
-  conventions` for the full type list and rationale.
+  conventions` for the full type list and rationale. A commit subject is **not**
+  the release changelog: a change that ships also records a changelog fragment
+  under `.changes/unreleased/`, and that one *is* gated by CI.
 - **Creating or reusing the tracking issue** on an explicit implement/capture
   request, in a GitHub-adopted repo (issue-first, rule `36-issue-first.md`). The
   issue and the bounded action set behind it do not need a second confirmation.

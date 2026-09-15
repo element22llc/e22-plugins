@@ -620,8 +620,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
 
 A change is done when **all** of these hold. Reviewers check most of them; CI
 enforces only a thin floor — in **solo-trunk**, where there is no reviewer, that
-floor (the changed-line coverage gate, rule 41; the advisory spec-drift warning,
-rule 55) is the *only* automated backstop. The rest is still on you.
+floor (the changed-line coverage gate, rule 41; the changelog-fragment gate,
+which is delivery-mode-blind and so fires on a trunk push too; the advisory
+spec-drift warning, rule 55) is the *only* automated backstop. The rest is still on you.
 
 Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** change
 needs only a PR.

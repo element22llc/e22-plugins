@@ -139,4 +139,9 @@ stay in the git-ignored marker and never reach the tracker.
   step stays gated. If you have stepped away, the in-turn watch blocks the turn;
   re-enter monitoring by re-running `gh pr checks` on a loop (steer ships no
   background poller). Merge and deploy remain a human's call.
+- **A change that ships brings a changelog fragment** — `mise run
+  changelog:new`, one file under `.changes/unreleased/`. `mise run ci` and the
+  required check both fail without one (`ci:changelog`), and editing someone
+  else's pending fragment does not count — the gate wants a file *added*.
+  `CHANGELOG.md` itself is generated at release and never hand-edited.
 - All tracker-metadata I/O routes through `/steer:tracker-sync`.

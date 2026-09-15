@@ -37,6 +37,12 @@ flowchart LR
   the trigger; there is no separate "deploy to staging" step.
 - **Prod is gated by a reviewed PR from `main` into a long-lived `prod` branch.**
   Merging that PR auto-deploys production. **Never push directly to `prod`.**
+- **The `prod` promotion is also the release moment.** An app or service deploys
+  continuously and has no artifact version, so its changelog is cut here, from the
+  fragments accumulated since the last promotion — `changie batch $(date
+  +%Y.%-m.%-d)` then `changie merge` (a CalVer ship date; `library`/`cli` repos cut
+  semver with `changie batch auto` instead). See
+  [Repository contract](../reference/repository-contract.md#what-a-managed-repo-carries).
 - **The branch-protection approval on `prod` *is* the production gate.** It stands
   in for the deployment-environment approvals that GitHub Enterprise would
   otherwise provide, which is why `policy/branch-protection.yml` carries a `prod`

@@ -12,6 +12,13 @@
 #   A fragment ADDED under .changes/unreleased/. Editing an existing fragment is
 #   amending somebody else's pending entry, not recording yours.
 #
+# DELIVERY MODE
+#   Deliberately mode-blind, unlike the coverage gate. In pr-flow the PR is
+#   already gated, and the post-merge push re-checks the same diff and passes.
+#   In solo-trunk there is no PR at all, so this is the only thing standing
+#   between a trunk push and an unrecorded shipped change — exactly where the
+#   Definition-of-Done floor is supposed to bite.
+#
 # BASE RESOLUTION
 #   steer_ci_base() in ci-lib.sh. No base means the gate cannot see the change,
 #   so it skips (fail-open) — same convention as the coverage gate.

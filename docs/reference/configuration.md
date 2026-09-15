@@ -32,8 +32,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing rules. |
 | `41-coverage.md` | Coverage as a signal — cover what you touch; no vanity threshold. |
-| `45-commit-autonomy.md` | Commit autonomy (see [Authorization model](../concepts/authorization-model.md)). |
-| `50-definition-of-done.md` | Definition of Done. |
+| `45-commit-autonomy.md` | Commit autonomy — Conventional Commit subjects, and a changelog fragment for anything that ships (see [Authorization model](../concepts/authorization-model.md)). |
+| `50-definition-of-done.md` | Definition of Done — includes a changelog fragment for a change that ships. |
 | `51-verify-loop.md` | Verify loop — turn a task into a verifiable end state, iterate against the harness until green with a bounded loop, stop-and-report when blocked, never loop on uncheckable/long-compute work. |
 | `52-deployment.md` | Deployment & environments — branch-driven promotion, review apps, observability baseline, rollback (see [Deployment & environments](../concepts/deployment.md)). |
 | `53-autonomous-loops.md` | Autonomous loops — automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |

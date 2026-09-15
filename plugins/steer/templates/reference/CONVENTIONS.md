@@ -392,8 +392,9 @@ Deliberately **not** adopted:
 
 ## Changelog
 
-Every repo carries a `CHANGELOG.md`. **It is generated** — `changie merge`
-assembles it from `.changes/`, so never edit it by hand. What you write is a
+Every repo carries a **changelog**: `.changes/` holds the entries and
+`CHANGELOG.md` is **generated** from them by `changie merge`, so never edit it by
+hand — it does not even exist until the first cut. What you write is a
 **fragment**: one YAML file per change under `.changes/unreleased/`.
 
 ```sh
