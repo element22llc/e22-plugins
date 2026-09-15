@@ -94,6 +94,40 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — every repo gets a real `CHANGELOG.md` (changie fragments)
+
+- **What & why:** the standard has always said the release changelog is the
+  curated `CHANGELOG.md` — rule `45-commit-autonomy` says it to every session,
+  `CONVENTIONS.md` records the decision not to derive it from commit types, and
+  the scaffold even shipped a `CHANGELOG.md merge=union` driver for it. Nothing
+  ever installed the file. So every managed repo carried the rule and the merge
+  driver for a changelog that did not exist. Entries now live as **one fragment
+  per change** under `.changes/unreleased/` and `changie merge` assembles
+  `CHANGELOG.md`; one file per change is also what removes the merge conflict the
+  union driver was there to paper over — union is line-based and splices
+  multi-line entries together wrongly.
+- **Precondition:** `.changie.yaml` is absent. A repo that already has one is
+  `n/a` — the config is the product's to tune, and is never re-copied over.
+- **Action:** read-then-propose, show the diff.
+  1. **Install** `changie.yaml` → `.changie.yaml`, `changes/header.tpl.md` →
+     `.changes/header.tpl.md`, and `changes/unreleased/.gitkeep` from the
+     scaffold (dotfiles ship without the leading dot — rename on copy).
+  2. **An existing hand-written `CHANGELOG.md` is history the repo wants.** Do
+     **not** parse, split, or import it — its shape is unknown and a bad split
+     loses content silently. Rename it to `CHANGELOG-archive.md`, add a line to
+     `.changes/header.tpl.md` pointing at it, and start fragments from empty.
+     Say plainly in the PR that older entries live in the archive.
+  3. **Wire the gate:** add `changie = "1.26.0"` to `[tools]`, the
+     `changelog:new` / `changelog:merge` tasks and the `ci:changelog` task to
+     `mise.toml` (adding `ci:changelog` to the `ci` task's `depends`), copy
+     `scripts/ci-changelog.sh`, and add the `Changelog fragment` step to
+     `.github/workflows/ci.yml`. `scripts/ci-lib.sh` gains `steer_ci_base()` —
+     splice it in additively if the file already exists.
+  4. **Drop `CHANGELOG.md merge=union`** from `.gitattributes` if present. It is
+     dead under fragments, and leaving it invites the splice it used to cause.
+  5. **No history entry is earned** — repo scaffolding `/steer:sync` carries
+     forward. The changelog's own first fragment is the record.
+
 ### v6.2.0 — the shipped workflows are hardened (SHA pins, least privilege)
 
 - **What & why:** the five shipped workflow templates referenced actions by tag

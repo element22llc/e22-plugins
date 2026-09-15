@@ -41,3 +41,34 @@ steer_ci_group() {
 steer_ci_endgroup() {
 	printf '::endgroup::\n'
 }
+
+# Resolve the git ref a changed-files gate should diff against, echoing it on
+# stdout. Echoes nothing and returns 1 when no base is resolvable — every caller
+# must then FAIL OPEN (skip the gate), never fail the build: a gate that cannot
+# see the diff has learned nothing, and blocking on that punishes shallow clones
+# and first pushes rather than catching a real defect.
+#
+# `ci-coverage.sh` predates this helper and still inlines its own resolution,
+# because its `push` branch carries coverage-specific policy (the solo-trunk DoD
+# floor). Converge it here the next time that gate is touched.
+steer_ci_base() {
+	case "${STEER_CI_EVENT:-local}" in
+	pull_request)
+		[ -n "${STEER_CI_BASE_REF:-}" ] || return 1
+		git fetch --no-tags --quiet origin "${STEER_CI_BASE_REF}" 2>/dev/null || return 1
+		printf 'origin/%s\n' "${STEER_CI_BASE_REF}"
+		;;
+	push)
+		# 0000... is git's "no prior commit" sentinel (branch creation / first push).
+		case "${STEER_CI_BEFORE:-}" in
+		"" | 0000000000000000000000000000000000000000) return 1 ;;
+		esac
+		printf '%s\n' "${STEER_CI_BEFORE}"
+		;;
+	*)
+		base="${STEER_CI_BASE:-origin/main}"
+		git rev-parse --verify --quiet "${base}" >/dev/null 2>&1 || return 1
+		printf '%s\n' "${base}"
+		;;
+	esac
+}

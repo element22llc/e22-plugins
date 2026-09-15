@@ -16,6 +16,9 @@ node = "latest"
 python = "latest"
 uv = "latest"
 github-cli = "latest"
+# Pinned, unlike the rest: changie assembles CHANGELOG.md and picks the release
+# version, so a silent upgrade would change released output.
+changie = "1.26.0"
 
 # Stack-specific: keep what matches the product, delete the rest (IaC pins live in /infra/mise.toml).
 "npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm — it has no macOS asset
@@ -70,6 +73,18 @@ run = "pnpm --recursive --if-present run db:seed"
 # a task that no longer exists.
 # ---------------------------------------------------------------------------
 
+[tasks."changelog:new"]
+description = "Record a changelog entry (KIND=Fixed SLUG=short-name BODY='- **Fixed: ...**')"
+run = """
+changie new -k "${KIND:?set KIND=Added|Changed|Fixed|Security|Docs}" \
+  -m "Slug=${SLUG:?set SLUG to 3-6 kebab-case words}" \
+  -b "${BODY:?set BODY to the entry text}"
+"""
+
+[tasks."changelog:merge"]
+description = "Reassemble CHANGELOG.md from .changes/ (run after a release cut)"
+run = "changie merge"
+
 [tasks."ci:hygiene"]
 description = "Stack-agnostic hygiene: actionlint, shellcheck, version-pin policy"
 run = "sh scripts/ci-hygiene.sh"
@@ -100,6 +115,10 @@ run = "sh scripts/ci-iac.sh"
 description = "Build-only container image check (no push, no credentials)"
 run = "sh scripts/ci-image.sh"
 
+[tasks."ci:changelog"]
+description = "A change that ships must bring a changelog fragment (PR-scoped; fail-open)"
+run = "sh scripts/ci-changelog.sh"
+
 [tasks."ci:coverage"]
 description = "Changed-line coverage gate (diff-cover) — needs ci:test's reports"
 depends = ["ci:test"]
@@ -124,7 +143,7 @@ depends = ["ci:hygiene", "ci:lint", "ci:typecheck"]
 
 [tasks.ci]
 description = "Full gate: everything the required `ci` status check runs. Run before push / PR."
-depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage"]
+depends = ["check", "ci:test", "ci:iac", "ci:image", "ci:coverage", "ci:changelog"]
 
 [tasks."convert:doc"]
 description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake. Usage: mise run convert:doc <file>"

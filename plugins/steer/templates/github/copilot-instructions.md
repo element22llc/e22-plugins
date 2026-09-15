@@ -606,7 +606,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
   `type(scope): summary`, imperative mood; mark breaking changes with `!` or a
   `BREAKING CHANGE:` footer. Commit messages are **not** the release
-  changelog — that stays the curated `CHANGELOG.md`. Full detail:
+  changelog: a shipping change also adds a **changelog fragment** —
+  `mise run changelog:new`, one file under `.changes/unreleased/`.
+  `CHANGELOG.md` is generated from those; never edit it by hand. Full detail:
   `/steer:reference conventions`.
 - **After pushing, watch CI to conclusion and fix a red build before treating
   the work as complete** — don't hand the dev a running or red PR and stop.
@@ -618,8 +620,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
 
 A change is done when **all** of these hold. Reviewers check most of them; CI
 enforces only a thin floor — in **solo-trunk**, where there is no reviewer, that
-floor (the changed-line coverage gate, rule 41; the advisory spec-drift warning,
-rule 55) is the *only* automated backstop. The rest is still on you.
+floor (the changed-line coverage gate, rule 41; the changelog-fragment gate,
+which is delivery-mode-blind and so fires on a trunk push too; the advisory
+spec-drift warning, rule 55) is the *only* automated backstop. The rest is still on you.
 
 Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** change
 needs only a PR.
@@ -631,6 +634,7 @@ needs only a PR.
 - [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
 - [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
 - [ ] Living docs in sync — app guide, `ARCHITECTURE.md`, and a `/spec/history/` entry each updated when their trigger fired (see Living documentation).
+- [ ] Changelog fragment added under `.changes/unreleased/` if the change ships (see Commit autonomy); `CHANGELOG.md` itself left alone — it is generated.
 - [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
 - [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
 - [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).

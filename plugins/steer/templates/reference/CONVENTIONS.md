@@ -385,10 +385,69 @@ Deliberately **not** adopted:
   so a per-commit linter would gate the wrong thing and drag a Node/commit-lint
   dependency into every product repo. The convention is guidance, enforced by
   habit and review.
-- **Commits are not the changelog.** The release changelog is the **curated**
-  `CHANGELOG.md`, written deliberately per change — not derived by parsing commit
+- **Commits are not the changelog.** The release changelog is **curated** — one
+  fragment written deliberately per change, never derived by parsing commit
   types. Conventional Commits here buy readable history, not automated release
-  notes.
+  notes. See Changelog below.
+
+## Changelog
+
+Every repo carries a **changelog**: `.changes/` holds the entries and
+`CHANGELOG.md` is **generated** from them by `changie merge`, so never edit it by
+hand — it does not even exist until the first cut. What you write is a
+**fragment**: one YAML file per change under `.changes/unreleased/`.
+
+```sh
+KIND=Fixed SLUG=vendor-search-timeout \
+  BODY='- **Fixed: vendor search no longer times out on large tenants.** ...' \
+  mise run changelog:new
+```
+
+For an entry longer than a shell variable comfortably carries, write the file
+directly as `.changes/unreleased/<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml` with a
+`body: |` block. The body carries its own `- ` bullet and `**Kind: …**`
+lead-in, so it reads identically in the fragment and in `CHANGELOG.md`; `kind`
+is metadata driving the version bump and grouping, and is not rendered.
+
+- **Why fragments rather than one appended file.** Two PRs write two different
+  paths, so a changelog merge conflict cannot happen. `spec/history/` is a
+  directory for exactly this reason, and its README explains why the obvious
+  alternative — git's `union` merge driver — is unsafe: union is *line*-based
+  and splices multi-line entries together, silently dropping content with no
+  conflict marker.
+- **Why curated rather than generated from commits.** A commit subject is
+  written for a reviewer reading a diff; a changelog entry is written for
+  someone deciding whether to care. Deriving one from the other gives you neither.
+  changie automates assembly and the version bump — never the prose.
+- **Cutting a release.** `library` / `cli`: `changie batch auto`, which reads
+  each kind's `auto:` level and picks the semver bump. `app` / `service`: these
+  deploy continuously and have no artifact version, so the release moment is the
+  **`prod` promotion** (see Deployment & environments) and the version is the
+  ship date — `changie batch $(date +%Y.%-m.%-d)`. Use `%-m`/`%-d`: changie
+  normalizes `2026.09.15` to a `2026.9.15` heading while naming the file
+  `2026.09.15.md`, and the two then disagree permanently. Follow either with
+  `changie merge`.
+- **CI enforces it.** `ci:changelog` fails a PR that changes shipping code
+  without *adding* a fragment. Editing an existing fragment is amending someone
+  else's pending entry, not recording yours. Paths that ship nothing — `spec/`,
+  `docs/`, `.github/`, tests, and Markdown anywhere — are exempt;
+  `scripts/ci-changelog.sh` is the authoritative list.
+
+### Changelog vs. the other two logs
+
+Three logs, three audiences — keep them distinct and none of them will rot:
+
+| | Audience | Trigger | Answers |
+|---|---|---|---|
+| `CHANGELOG.md` | developers, integrators | every shipping change | *what changed* |
+| `/spec/app/` → Release notes | the PO and end users | a change a user would notice | *what it means for me* |
+| `/spec/history/` | auditors, future maintainers | a ratified decision or notable event | *why we chose this* |
+
+So: every behaviour change gets a **fragment**; a change a user would notice
+*also* gets a plain-language line in the app guide. Most changes get one, not
+both — a refactor is changelog-only, a copy change may be release-notes-only.
+`/spec/history/` overlaps neither: an ordinary merged change writes no entry
+there at all.
 
 ## Backend placement
 

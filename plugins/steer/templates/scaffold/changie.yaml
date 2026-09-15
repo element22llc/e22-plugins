@@ -1,0 +1,70 @@
+# Changelog assembly. Rationale: /steer:reference conventions -> "Changelog".
+#
+# Entries are CURATED, never derived from commit subjects: you write the prose,
+# changie assembles it and picks the version. One file per change under
+# .changes/unreleased/, so two PRs never touch the same path and a changelog
+# merge conflict cannot happen -- the same reason spec/history/ is a directory.
+#
+# CHANGELOG.md is GENERATED. Never edit it by hand; run `mise run changelog:merge`.
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+
+# Headings are bare digits: `## 1.4.0`, `## 2026.9.15`.
+versionFormat: "## {{.VersionNoPrefix}}"
+
+# The body carries its own `- ` bullet and `**Kind: ...**` lead-in, so an entry
+# reads the same in the fragment and in CHANGELOG.md. `kind` is metadata: it
+# drives the version bump and the grouping order, and is not rendered.
+kindFormat: ""
+changeFormat: "{{.Body}}"
+
+newlines:
+  afterVersion: 1
+  beforeChangelogVersion: 1
+  endOfVersion: 1
+
+# Slug is required, so a fragment's filename names the change. Without it
+# `changie new` stamps filenames only to the second and two changes recorded in
+# the same second silently overwrite each other.
+fragmentFileFormat: "{{.Kind | lower}}-{{.Time.Format \"20060102-1504\"}}-{{.Custom.Slug}}"
+
+custom:
+  - key: Slug
+    type: string
+    label: Slug (3-6 kebab-case words naming the change)
+    minLength: 3
+
+# `auto:` is the semver level each kind implies. `library`/`cli` repos release
+# with `changie batch auto`, which reads these. `app`/`service` repos pass a
+# CalVer date instead (see below) and do not consult them -- keep them anyway:
+# they make "what is pending, and how big is it" reviewable in either scheme.
+kinds:
+  - label: Added
+    auto: minor
+  - label: Changed
+    auto: minor
+  - label: Fixed
+    auto: patch
+  - label: Security
+    auto: patch
+  - label: Docs
+    auto: patch
+
+# Cutting a release:
+#   library / cli  -- `changie batch auto` (semver, derived from the kinds above)
+#   app / service  -- `changie batch $(date +%Y.%-m.%-d)` at the `prod` promotion;
+#                     a continuously deployed app has no artifact version, so the
+#                     ship date is the honest one. Use %-m/%-d, NOT %m/%d: changie
+#                     normalizes "2026.09.15" to a "2026.9.15" heading while naming
+#                     the file "2026.09.15.md", and the two then disagree forever.
+# Then `changie merge` to reassemble CHANGELOG.md.
+#
+# Publishing a version string into a manifest (package.json, pyproject.toml) is
+# opt-in -- uncomment and point `path` at the file that carries the version.
+# replacements:
+#   - path: package.json
+#     find: '^  "version": ".*",$'
+#     replace: '  "version": "{{.VersionNoPrefix}}",'
