@@ -116,7 +116,7 @@ description = "Build-only container image check (no push, no credentials)"
 run = "sh scripts/ci-image.sh"
 
 [tasks."ci:changelog"]
-description = "A change that ships must bring a changelog fragment (PR-scoped; fail-open)"
+description = "A change that ships must bring a changelog fragment (any push or PR; fail-open)"
 run = "sh scripts/ci-changelog.sh"
 
 [tasks."ci:coverage"]

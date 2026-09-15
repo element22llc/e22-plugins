@@ -140,7 +140,7 @@ const DIMENSIONS = [
 Dimension 1 -- CHANGELOG <-> change coherence, both directions.
 Compare the pending fragments with the delta under plugins/steer/ (run git diff ${ctx.lastRelease}..HEAD -- plugins/steer/ as needed).
 Flag (a) a fragment with no corresponding change in the diff (phantom or overstated entry) and (b) a behaviour-affecting change under plugins/steer/ with no fragment. Do not assume check_changelog.py covered (b): it only asks whether SOME fragment was added.
-Also state, in the claim of a single low-severity finding on the offending fragment if and only if it applies, whether its content implies a LARGER semver bump than its declared `kind` (e.g. a renamed skill filed under `Changed`) -- the kind is what drives `changie batch auto`.
+Also state, in the claim of a single low-severity finding on the offending fragment if and only if it applies, whether its content implies a LARGER semver bump than its declared "kind" (e.g. a renamed skill filed under "Changed") -- the kind is what drives "changie batch auto".
 ${context(ctx)}`,
   },
   {

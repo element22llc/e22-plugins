@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] — every repo gets a real `CHANGELOG.md` (changie fragments)
+### v6.3.0 — every repo gets a real `CHANGELOG.md` (changie fragments)
 
 - **What & why:** the standard has always said the release changelog is the
   curated `CHANGELOG.md` — rule `45-commit-autonomy` says it to every session,
