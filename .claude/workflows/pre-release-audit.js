@@ -36,7 +36,7 @@ const SCOUT_SCHEMA = {
   properties: {
     lastRelease: { type: 'string', description: "output of git describe --tags --match 'v*' --abbrev=0" },
     files: { type: 'array', items: { type: 'string' }, description: 'git diff --name-only <lastRelease>..HEAD' },
-    unreleased: { type: 'string', description: 'the ### [Unreleased] bullets under ## steer in CHANGELOG.md, verbatim' },
+    unreleased: { type: 'string', description: 'every pending changelog fragment under .changes/unreleased/, verbatim' },
     pluginVersion: { type: 'string' },
   },
 }
@@ -125,7 +125,7 @@ Last release anchor: ${ctx.lastRelease} (plugin.json version ${ctx.pluginVersion
 Delta (${ctx.files.length} paths, git diff --name-only ${ctx.lastRelease}..HEAD):
 ${ctx.files.map((f) => '- ' + f).join('\n')}
 
-### [Unreleased] bullets:
+Pending changelog fragments (.changes/unreleased/):
 ${ctx.unreleased}
 `
 }
@@ -138,9 +138,9 @@ const DIMENSIONS = [
     number: 1,
     prompt: (ctx) => `${COMMON_RULES}
 Dimension 1 -- CHANGELOG <-> change coherence, both directions.
-Compare the [Unreleased] bullets with the delta under plugins/steer/ (run git diff ${ctx.lastRelease}..HEAD -- plugins/steer/ as needed).
-Flag (a) a bullet with no corresponding change in the diff (phantom or overstated entry) and (b) a behaviour-affecting change under plugins/steer/ with no bullet. Do not assume check_changelog.py covered (b): it only asks whether CHANGELOG.md is in the changed set.
-Also state, in the claim of a single low-severity finding on CHANGELOG.md if and only if it applies, whether the highest-impact bullet implies a LARGER semver bump than a naive reading (e.g. a renamed skill hidden in a "Changed" bullet).
+Compare the pending fragments with the delta under plugins/steer/ (run git diff ${ctx.lastRelease}..HEAD -- plugins/steer/ as needed).
+Flag (a) a fragment with no corresponding change in the diff (phantom or overstated entry) and (b) a behaviour-affecting change under plugins/steer/ with no fragment. Do not assume check_changelog.py covered (b): it only asks whether SOME fragment was added.
+Also state, in the claim of a single low-severity finding on the offending fragment if and only if it applies, whether its content implies a LARGER semver bump than its declared `kind` (e.g. a renamed skill filed under `Changed`) -- the kind is what drives `changie batch auto`.
 ${context(ctx)}`,
   },
   {
@@ -253,7 +253,7 @@ if (args && args.lastRelease && Array.isArray(args.files) && args.unreleased !==
     `From the repository root, gather these facts and return them structured (no commentary):
 1. lastRelease: the output of: git describe --tags --match 'v*' --abbrev=0   (if that fails, the SHA of the newest commit whose subject starts with "chore(release):")
 2. files: every path from: git diff --name-only <lastRelease>..HEAD
-3. unreleased: the bullet lines under the FIRST "### [Unreleased]" heading beneath "## steer" in CHANGELOG.md, verbatim, up to the next "### " heading
+3. unreleased: the full contents of every .changes/unreleased/*.yaml file, verbatim, each preceded by its filename
 4. pluginVersion: the "version" field of plugins/steer/.claude-plugin/plugin.json`,
     { label: 'scout:delta', phase: 'Scout', schema: SCOUT_SCHEMA, effort: 'low' },
   )

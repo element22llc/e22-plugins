@@ -48,9 +48,8 @@ them by hand.
   - `/audit-loop` permits a fix branch **ahead of** `main` from round 2 on;
     that is the tree it has been repairing, and it is the tree the release will
     be cut from once the branch merges.
-- `CHANGELOG.md` must have a `### [Unreleased]` section under `## steer`.
-  Release callers additionally require **at least one bullet** — with none there
-  is nothing to release. `/audit-loop` does not require a bullet up front (it
+- `.changes/unreleased/` must exist. Release callers additionally require
+  **at least one pending fragment** — with none there is nothing to release. `/audit-loop` does not require a bullet up front (it
   may be auditing a tree whose changes have already been released) but every fix
   it lands must add one.
 - Establish the **last-release ref** for the diff-based checks: the newest
@@ -124,7 +123,7 @@ the release path.
 ## Step 3 — judgment-based coherence audit: fan out, then vet
 
 Deterministic checks prove *structure*; they cannot judge *coherence* — a skill
-whose description no longer matches its body, a `[Unreleased]` bullet that
+whose description no longer matches its body, a pending fragment that
 overstates a change, a rule that contradicts a skill.
 
 **Scope every dimension to the release delta.** Each subagent reviews only paths
@@ -174,8 +173,8 @@ statement of the incoherence; default to silence over speculation.* The
 dimensions, as the workflow encodes them:
 
 1. **CHANGELOG ↔ change coherence (both directions).** Diff
-   `git diff $LAST_RELEASE..HEAD -- plugins/steer/` and the `### [Unreleased]`
-   bullets. Flag (a) any bullet with no corresponding change in the diff
+   `git diff $LAST_RELEASE..HEAD -- plugins/steer/` and the pending fragments
+   under `.changes/unreleased/`. Flag (a) any fragment with no corresponding change in the diff
    (overstated/phantom entry), and (b) any behavior-affecting change under
    `plugins/steer/` with **no** bullet. Do not assume `check_changelog.py --base`
    has already covered (b): that gate asks only whether `CHANGELOG.md` is in the

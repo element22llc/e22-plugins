@@ -51,7 +51,7 @@ that a machine can check still runs and still blocks.
 
 **When to use which.** Reach for `/quick-release` for a small, well-understood
 cut: a single bug-fix patch, a one-feature minor, a hotfix you need out now,
-where the set of `### [Unreleased]` bullets is short and you already know the
+where the set of pending fragments is short and you already know the
 changes cohere. Reach for the full **`/release`** for a substantive or
 multi-feature cut, anything touching rules ↔ skills ↔ templates interplay, or
 any release where prose/coherence drift across the accumulated changes is
@@ -126,7 +126,7 @@ tagged — re-run `release-publish.yml` for it before cutting on top.
   runs it before merging.
 
 **Do not proceed past a red gate.** A failing deterministic check is a blocker by
-definition — fix it on its own fix PR (which adds a `### [Unreleased]` entry) and
+definition — fix it on its own fix PR (which adds a changelog fragment) and
 re-run.
 
 ### Q3. Deployed-docs freshness and validator-compat — computed.
@@ -173,10 +173,11 @@ only:
   **EnterWorktree** then `git branch -m chore/release-X.Y.Z` and `mise trust`;
   interactive clean checkout, `git checkout -b chore/release-X.Y.Z`.
 - **B3 — Cut:** `uv run python scripts/release_cut.py cut X.Y.Z --dry-run`, read
-  the diff, then run it without `--dry-run`. It renames the changelog heading and
-  re-seeds `[Unreleased]`, renames migration-ledger entries inside `## Entries`
-  (never the stub), bumps all three manifests, and validates. If it refuses, the
-  refusal is the finding.
+  the plan (the version file changie would write, the manifest transitions, and
+  the migration-ledger diff), then run it without `--dry-run`. It batches the
+  pending fragments into `.changes/vX.Y.Z.md`, reassembles `CHANGELOG.md`, bumps
+  all three manifests, renames migration-ledger entries inside `## Entries`
+  (never the stub), and validates. If it refuses, the refusal is the finding.
 - **B4 — Validate the release invariant:** `uv run python scripts/check_changelog.py`.
 - **B5 — Re-gate after the bump:** `mise run ci` — the full gate, not `mise run
   check` — unpiped. `check` excludes `test`, and the suite asserts things about

@@ -1,6 +1,6 @@
 """Tests for scripts/check_changelog.py — the release invariant + behaviour gate.
 
-The parsing/release checks run against hermetic CHANGELOG/plugin.json fixtures
+The release/fragment validators run against hermetic `.changes/` fixtures
 (monkeypatched module paths); the ``--base`` behaviour gate runs against real
 throwaway git repos so the three-dot diff, the two-dot fallback, and the
 fail-open path are exercised for real.
@@ -25,42 +25,56 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # --- fixtures ---------------------------------------------------------------
 
-GOOD_CHANGELOG = """\
-# Changelog
+CHANGIE_CONFIG = """\
+kinds:
+  - label: Added
+    auto: minor
+  - label: Fixed
+    auto: patch
+"""
 
-House rule: keep the `### [Unreleased]` heading persistent.
-
-## steer
-
-### [Unreleased]
-
-- pending change
-
-### 3.12.0
-
-- released change
-
-### 3.11.2
-
-- older change
-
-## other-plugin
-
-### 9.9.9
-
-- unrelated section is never counted
+FRAGMENT = """\
+kind: Fixed
+time: 2026-01-01T00:00:00.000000-05:00
+custom:
+  Slug: a-pending-change
+body: '- **Fixed: a pending change.** detail.'
 """
 
 
-def _write_fixture(monkeypatch, tmp_path: Path, changelog: str, version: str | None = "3.12.0"):
-    """Point the module's CHANGELOG/PLUGIN_JSON at tmp fixtures."""
-    changelog_path = tmp_path / "CHANGELOG.md"
-    changelog_path.write_text(changelog, encoding="utf-8")
+def _changes_tree(root: Path, versions: dict[str, str], fragments: dict[str, str] | None = None):
+    """Lay out `.changes/` + the assembled CHANGELOG.md for `versions`."""
+    changes = root / ".changes"
+    (changes / "unreleased").mkdir(parents=True, exist_ok=True)
+    for version, body in versions.items():
+        (changes / f"v{version}.md").write_text(f"## {version}\n\n{body}\n", encoding="utf-8")
+    for name, text in (fragments or {}).items():
+        (changes / "unreleased" / name).write_text(text, encoding="utf-8")
+    ordered = sorted(versions, key=check_changelog._semver, reverse=True)
+    assembled = "# Changelog\n\n" + "\n".join(f"## {v}\n\n{versions[v]}\n" for v in ordered)
+    (root / "CHANGELOG.md").write_text(assembled, encoding="utf-8")
+    return changes
+
+
+def _write_fixture(
+    monkeypatch,
+    tmp_path: Path,
+    versions: dict[str, str],
+    version: str | None = "3.12.0",
+    fragments: dict[str, str] | None = None,
+):
+    """Point the module's paths at tmp fixtures."""
+    changes = _changes_tree(tmp_path, versions, fragments)
     plugin_json = tmp_path / "plugin.json"
     if version is not None:
         plugin_json.write_text(json.dumps({"name": "steer", "version": version}), encoding="utf-8")
-    monkeypatch.setattr(check_changelog, "CHANGELOG", changelog_path)
+    config = tmp_path / ".changie.yaml"
+    config.write_text(CHANGIE_CONFIG, encoding="utf-8")
+    monkeypatch.setattr(check_changelog, "CHANGELOG", tmp_path / "CHANGELOG.md")
     monkeypatch.setattr(check_changelog, "PLUGIN_JSON", plugin_json)
+    monkeypatch.setattr(check_changelog, "CHANGES_DIR", changes)
+    monkeypatch.setattr(check_changelog, "UNRELEASED_DIR", changes / "unreleased")
+    monkeypatch.setattr(check_changelog, "CHANGIE_CONFIG", config)
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -75,7 +89,7 @@ def git_repo(tmp_path: Path, monkeypatch) -> Path:
     _git(repo, "init", "-q", "-b", "main")
     _git(repo, "config", "user.email", "t@example.com")
     _git(repo, "config", "user.name", "t")
-    (repo / "CHANGELOG.md").write_text(GOOD_CHANGELOG, encoding="utf-8")
+    _changes_tree(repo, {"3.12.0": "- released change"})
     plugin_json = repo / "plugins/steer/.claude-plugin/plugin.json"
     plugin_json.parent.mkdir(parents=True)
     plugin_json.write_text(json.dumps({"name": "steer", "version": "3.12.0"}), encoding="utf-8")
@@ -96,111 +110,110 @@ def test_real_repo_passes(monkeypatch):
     assert check_changelog.main([]) == 0
 
 
-# --- heading parsing ----------------------------------------------------------
+# --- release validator -------------------------------------------------------
 
 
-def test_heading_sequence_scoped_to_steer_section(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
-    assert check_changelog.heading_sequence() == ["[Unreleased]", "3.12.0", "3.11.2"]
-
-
-def test_heading_sequence_ignores_inline_prose_mention(monkeypatch, tmp_path: Path):
-    # The house-rules bullet mentions `### [Unreleased]` inline — not a heading.
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
-    assert check_changelog.heading_sequence().count("[Unreleased]") == 1
-
-
-def test_heading_sequence_missing_changelog(monkeypatch, tmp_path: Path):
-    monkeypatch.setattr(check_changelog, "CHANGELOG", tmp_path / "nope.md")
-    assert check_changelog.heading_sequence() == []
-
-
-def test_released_headings_filters_semver(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
-    assert check_changelog.released_headings() == ["3.12.0", "3.11.2"]
-
-
-# --- check_unreleased ----------------------------------------------------------
-
-
-def test_unreleased_single_first_is_clean(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
-    errors: list[str] = []
-    check_changelog.check_unreleased(errors)
-    assert errors == []
-
-
-def test_unreleased_duplicated_flagged(monkeypatch, tmp_path: Path):
-    dup = GOOD_CHANGELOG.replace("### 3.11.2", "### [Unreleased]\n\n### 3.11.2")
-    _write_fixture(monkeypatch, tmp_path, dup)
-    errors: list[str] = []
-    check_changelog.check_unreleased(errors)
-    assert len(errors) == 1
-    assert "appears 2 times" in errors[0]
-
-
-def test_unreleased_not_first_flagged(monkeypatch, tmp_path: Path):
-    swapped = GOOD_CHANGELOG.replace("### [Unreleased]\n\n- pending change\n\n", "")
-    swapped = swapped.replace("### 3.11.2", "### [Unreleased]")
-    _write_fixture(monkeypatch, tmp_path, swapped)
-    errors: list[str] = []
-    check_changelog.check_unreleased(errors)
-    assert errors and "must be the first heading" in errors[0]
-
-
-# --- check_release ---------------------------------------------------------------
+def test_version_files_are_sorted_by_semver_not_lexically(monkeypatch, tmp_path: Path):
+    _write_fixture(
+        monkeypatch, tmp_path, {"3.9.0": "- a", "3.16.0": "- b", "3.24.0": "- c"}, version="3.24.0"
+    )
+    assert check_changelog.version_files() == ["3.24.0", "3.16.0", "3.9.0"]
 
 
 def test_release_version_matches(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG, version="3.12.0")
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a", "3.11.2": "- b"})
     errors: list[str] = []
     check_changelog.check_release(errors)
     assert errors == []
 
 
 def test_release_version_mismatch(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG, version="3.13.0")
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"}, version="3.13.0")
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert errors and "3.13.0 != newest released CHANGELOG heading 3.12.0" in errors[0]
+    assert any("!= newest version file" in e for e in errors)
 
 
 def test_release_missing_plugin_json(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG, version=None)
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"}, version=None)
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert errors and "missing" in errors[0]
+    assert any("missing" in e for e in errors)
 
 
 def test_release_invalid_plugin_json(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"})
     check_changelog.PLUGIN_JSON.write_text("{not json", encoding="utf-8")
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert errors and "invalid JSON" in errors[0]
+    assert any("invalid JSON" in e for e in errors)
 
 
 def test_release_missing_version_key(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, GOOD_CHANGELOG)
-    check_changelog.PLUGIN_JSON.write_text('{"name": "steer"}', encoding="utf-8")
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"})
+    check_changelog.PLUGIN_JSON.write_text(json.dumps({"name": "steer"}), encoding="utf-8")
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert errors and "missing version" in errors[0]
+    assert any("missing version" in e for e in errors)
 
 
-def test_release_no_released_heading(monkeypatch, tmp_path: Path):
-    _write_fixture(monkeypatch, tmp_path, "# Changelog\n\n## steer\n\n### [Unreleased]\n")
+def test_release_no_version_files(monkeypatch, tmp_path: Path):
+    _write_fixture(monkeypatch, tmp_path, {})
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert errors and "no released" in errors[0]
+    assert any("no released" in e for e in errors)
 
 
-def test_release_non_descending_order(monkeypatch, tmp_path: Path):
-    bad = GOOD_CHANGELOG.replace("### 3.11.2", "### 3.12.1")
-    _write_fixture(monkeypatch, tmp_path, bad)
+def test_hand_edited_changelog_is_flagged(monkeypatch, tmp_path: Path):
+    """CHANGELOG.md is generated: drift means the next merge would revert it."""
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a", "3.11.2": "- b"})
+    changelog = check_changelog.CHANGELOG
+    changelog.write_text(
+        changelog.read_text(encoding="utf-8").replace("## 3.11.2", "## 3.11.3"), encoding="utf-8"
+    )
     errors: list[str] = []
     check_changelog.check_release(errors)
-    assert any("not in descending order" in e for e in errors)
+    assert any("out of sync" in e for e in errors)
+
+
+# --- fragment validator ------------------------------------------------------
+
+
+def test_valid_fragment_passes(monkeypatch, tmp_path: Path):
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"}, fragments={"fixed-x.yaml": FRAGMENT})
+    errors: list[str] = []
+    check_changelog.check_fragments(errors)
+    assert errors == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected"),
+    [
+        ("kind: Nope\n", "is not one of"),
+        ("body: ''\n", "empty body"),
+        ("no-slug", "missing custom.Slug"),
+    ],
+)
+def test_malformed_fragment_is_flagged(monkeypatch, tmp_path: Path, mutation: str, expected: str):
+    if mutation == "no-slug":
+        text = FRAGMENT.replace("custom:\n  Slug: a-pending-change\n", "")
+    elif mutation.startswith("kind:"):
+        text = FRAGMENT.replace("kind: Fixed\n", mutation)
+    else:
+        text = FRAGMENT.replace("body: '- **Fixed: a pending change.** detail.'\n", mutation)
+    _write_fixture(monkeypatch, tmp_path, {"3.12.0": "- a"}, fragments={"bad.yaml": text})
+    errors: list[str] = []
+    check_changelog.check_fragments(errors)
+    assert any(expected in e for e in errors), errors
+
+
+def test_unparseable_fragment_is_flagged(monkeypatch, tmp_path: Path):
+    _write_fixture(
+        monkeypatch, tmp_path, {"3.12.0": "- a"}, fragments={"bad.yaml": "kind: [unclosed\n"}
+    )
+    errors: list[str] = []
+    check_changelog.check_fragments(errors)
+    assert any("invalid YAML" in e for e in errors)
 
 
 # --- behaviour path classification -----------------------------------------------
@@ -267,12 +280,17 @@ def test_exemptions_are_anchored_and_cannot_widen_to_the_plugin_root():
 # --- _changed_files + behaviour gate against real git repos -----------------------
 
 
+def _paths(changed) -> list[str]:
+    return [p for _, p in changed]
+
+
 def test_changed_files_three_dot(git_repo: Path):
     _git(git_repo, "checkout", "-q", "-b", "feat/x")
     (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
     _git(git_repo, "commit", "-qam", "change skill")
     changed = check_changelog._changed_files("main")
-    assert changed == ["plugins/steer/skills/demo/SKILL.md"]
+    assert _paths(changed) == ["plugins/steer/skills/demo/SKILL.md"]
+    assert changed[0][0].startswith("M")
 
 
 def test_changed_files_two_dot_fallback_without_merge_base(git_repo: Path):
@@ -284,36 +302,51 @@ def test_changed_files_two_dot_fallback_without_merge_base(git_repo: Path):
     _git(git_repo, "commit", "-qm", "orphan")
     changed = check_changelog._changed_files("main")
     assert changed is not None
-    assert "plugins/steer/skills/demo/SKILL.md" in changed
+    assert "plugins/steer/skills/demo/SKILL.md" in _paths(changed)
 
 
 def test_changed_files_fail_open_on_bad_ref(git_repo: Path):
     assert check_changelog._changed_files("no-such-ref") is None
 
 
-def test_behaviour_gate_requires_changelog(git_repo: Path):
+def test_behaviour_gate_requires_a_fragment(git_repo: Path):
     _git(git_repo, "checkout", "-q", "-b", "feat/x")
     (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
-    _git(git_repo, "commit", "-qam", "change skill without changelog")
+    _git(git_repo, "commit", "-qam", "change skill without a fragment")
     errors: list[str] = []
     check_changelog.check_behaviour_gate("main", errors)
     assert len(errors) == 1
-    assert "CHANGELOG.md must change" in errors[0]
+    assert "changelog fragment must be added" in errors[0]
     assert "plugins/steer/skills/demo/SKILL.md" in errors[0]
 
 
-def test_behaviour_gate_satisfied_by_changelog_entry(git_repo: Path):
+def test_behaviour_gate_satisfied_by_an_added_fragment(git_repo: Path):
     _git(git_repo, "checkout", "-q", "-b", "feat/x")
     (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
-    changelog = git_repo / "CHANGELOG.md"
-    text = changelog.read_text(encoding="utf-8")
-    changelog.write_text(
-        text.replace("- pending change", "- pending change\n- new"), encoding="utf-8"
+    (git_repo / ".changes/unreleased/fixed-20260101-0000-demo.yaml").write_text(
+        FRAGMENT, encoding="utf-8"
     )
-    _git(git_repo, "commit", "-qam", "change skill + changelog")
+    _git(git_repo, "add", "-A")
+    _git(git_repo, "commit", "-qm", "change skill + fragment")
     errors: list[str] = []
     check_changelog.check_behaviour_gate("main", errors)
     assert errors == []
+
+
+def test_behaviour_gate_rejects_editing_someone_elses_pending_fragment(git_repo: Path):
+    """Amending an existing fragment is not recording THIS change."""
+    frag = git_repo / ".changes/unreleased/fixed-20260101-0000-demo.yaml"
+    frag.write_text(FRAGMENT, encoding="utf-8")
+    _git(git_repo, "add", "-A")
+    _git(git_repo, "commit", "-qm", "pre-existing fragment")
+    _git(git_repo, "checkout", "-q", "-b", "feat/x")
+    (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
+    frag.write_text(FRAGMENT.replace("detail.", "edited detail."), encoding="utf-8")
+    _git(git_repo, "commit", "-qam", "change skill + edit an existing fragment")
+    errors: list[str] = []
+    check_changelog.check_behaviour_gate("main", errors)
+    assert len(errors) == 1
+    assert "changelog fragment must be added" in errors[0]
 
 
 def test_behaviour_gate_tests_exempt(git_repo: Path):

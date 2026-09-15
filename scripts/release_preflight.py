@@ -39,6 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 CHANGELOG = REPO_ROOT / "CHANGELOG.md"
+UNRELEASED_DIR = REPO_ROOT / ".changes/unreleased"
 PLUGIN_JSON = REPO_ROOT / "plugins/steer/.claude-plugin/plugin.json"
 COPILOT_PLUGIN_JSON = REPO_ROOT / "plugins/steer/.github/plugin/plugin.json"
 COPILOT_MARKETPLACE = REPO_ROOT / ".github/plugin/marketplace.json"
@@ -86,29 +87,15 @@ def _gh_json(args: list[str]) -> list | dict | None:
 # --- pure helpers (unit-tested) ---------------------------------------------
 
 
-def count_unreleased_bullets(changelog: str) -> int | None:
-    """Top-level bullets under the ``### [Unreleased]`` heading of ``## steer``.
+def count_pending_fragments(unreleased_dir: Path) -> int | None:
+    """Pending changelog fragments under ``.changes/unreleased/``.
 
-    ``None`` when the heading is missing -- a malformed changelog, distinct from
-    an empty one.
+    ``None`` when the directory is missing -- a broken checkout, distinct from
+    an empty one (nothing pending, so nothing to release).
     """
-    in_steer = in_block = False
-    found = False
-    n = 0
-    for line in changelog.splitlines():
-        if line.startswith("## "):
-            in_steer = line.strip() == "## steer"
-            in_block = False
-            continue
-        if not in_steer:
-            continue
-        if line.startswith("### "):
-            in_block = line.strip() == "### [Unreleased]"
-            found = found or in_block
-            continue
-        if in_block and line.startswith("- "):
-            n += 1
-    return n if found else None
+    if not unreleased_dir.is_dir():
+        return None
+    return len(list(unreleased_dir.glob("*.yaml")))
 
 
 def docs_freshness(runs: list[dict], docs_head: str | None, is_ancestor) -> Check:
@@ -218,15 +205,13 @@ def check_base(fetch: bool, caller: str) -> Check:
 
 
 def check_unreleased(caller: str) -> Check:
-    n = count_unreleased_bullets(CHANGELOG.read_text(encoding="utf-8"))
+    n = count_pending_fragments(UNRELEASED_DIR)
     if n is None:
-        return Check(
-            "unreleased", "blocker", "CHANGELOG.md has no '### [Unreleased]' under '## steer'"
-        )
+        return Check("unreleased", "blocker", ".changes/unreleased/ is missing")
     if n == 0:
         status = "info" if caller == "audit-loop" else "blocker"
-        return Check("unreleased", status, "no [Unreleased] bullets -- nothing to release")
-    return Check("unreleased", "ok", f"{n} [Unreleased] bullet(s)")
+        return Check("unreleased", status, "no pending fragments -- nothing to release")
+    return Check("unreleased", "ok", f"{n} pending fragment(s)")
 
 
 def check_manifests() -> Check:

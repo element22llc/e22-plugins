@@ -11,39 +11,21 @@ from __future__ import annotations
 
 import release_preflight as rp
 
-CHANGELOG = """\
-# Changelog
 
-## steer
-
-### [Unreleased]
-
-- **Added:** one.
-  continuation line, not a bullet
-- **Fixed:** two.
-
-### 6.0.0
-
-- released bullet
-
-## other
-
-### [Unreleased]
-
-- not steer's
-"""
+def test_count_pending_fragments_counts_yaml_only(tmp_path):
+    unreleased = tmp_path / "unreleased"
+    unreleased.mkdir()
+    (unreleased / "fixed-20260101-0000-a.yaml").write_text("kind: Fixed\n", encoding="utf-8")
+    (unreleased / "added-20260101-0001-b.yaml").write_text("kind: Added\n", encoding="utf-8")
+    (unreleased / ".gitkeep").write_text("", encoding="utf-8")
+    assert rp.count_pending_fragments(unreleased) == 2
 
 
-def test_count_unreleased_bullets_counts_only_steer_top_level_bullets():
-    assert rp.count_unreleased_bullets(CHANGELOG) == 2
-
-
-def test_count_unreleased_bullets_is_zero_when_empty_and_none_when_missing():
-    empty = CHANGELOG.replace("- **Added:** one.\n  continuation line, not a bullet\n", "").replace(
-        "- **Fixed:** two.\n", ""
-    )
-    assert rp.count_unreleased_bullets(empty) == 0
-    assert rp.count_unreleased_bullets("## steer\n\n### 6.0.0\n\n- x\n") is None
+def test_count_pending_fragments_is_zero_when_empty_and_none_when_missing(tmp_path):
+    empty = tmp_path / "unreleased"
+    empty.mkdir()
+    assert rp.count_pending_fragments(empty) == 0
+    assert rp.count_pending_fragments(tmp_path / "nope") is None
 
 
 def _run(conclusion="success", status="completed", sha="deploy0000", rid=1):

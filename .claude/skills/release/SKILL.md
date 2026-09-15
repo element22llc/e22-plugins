@@ -56,11 +56,11 @@ phases:
 - **Phase B — cut the release.** Only once Phase A is clean: confirm the bump,
   run `scripts/release_cut.py`, re-gate, and open the release PR. The version
   bump happens **once**, here, in a dedicated release PR; implementation PRs only
-  accumulate `### [Unreleased]` entries.
+  accumulate fragments under `.changes/unreleased/`.
 
 The invariant `check_changelog.py` enforces (and this skill upholds): the
-`version` in `plugin.json` equals the newest *released* `### X.Y.Z` heading under
-`## steer`, and released headings descend in strict semver order.
+`version` in `plugin.json` equals the newest `.changes/vX.Y.Z.md`, and the
+generated `CHANGELOG.md` carries exactly those versions in descending order.
 
 This skill is read-only until Step B2. Phase A only reads, runs gates, and
 dispatches read-only reviewers — it never edits, branches, or commits. That is
@@ -77,8 +77,8 @@ tree "looks ready".
 
 The block below is produced by `scripts/release_preflight.py` **when you invoke
 this skill**, not recalled from prose. It is procedure Step 1, the CI-status half
-of Step 2, and Step 4b, computed: tree cleanliness, base currency, `[Unreleased]`
-bullet count, manifest agreement, the `$LAST_RELEASE` anchor, the delta's worst
+of Step 2, and Step 4b, computed: tree cleanliness, base currency, pending
+fragment count, manifest agreement, the `$LAST_RELEASE` anchor, the delta's worst
 severity ceiling, the ledger gate, deployed-docs freshness, and the upstream
 `validator-compat` job. Read the markers, not the prose around them.
 
@@ -170,9 +170,10 @@ Only when there are **zero blockers** proceed to Phase B.
 ### B1. Determine the new version.
 
 Run `uv run python scripts/release_cut.py propose`. It prints the current
-version, the `[Unreleased]` bullet count, the bump its vocabulary heuristic
-suggests, and the candidate `X.Y.Z` for each level. It is a **suggestion**: read
-the bullets (and the dimension-1 bump note from Phase A) and decide by nature:
+version, every pending fragment as `<kind> <slug>`, the bump those kinds imply
+(each kind declares its level in `.changie.yaml`), and the candidate `X.Y.Z` for
+each level. It is a **suggestion**: read the fragments (and the dimension-1 bump
+note from Phase A) and decide by nature:
 
 - **major** — a breaking change to plugin behavior (renamed/removed skill, rule,
   hook, or template; changed invocation; anything a consuming repo must react to).
@@ -219,11 +220,11 @@ uv run python scripts/release_cut.py cut X.Y.Z             # apply + validate
 
 The script performs the whole cut and refuses to start if a precondition fails:
 
-- `CHANGELOG.md`: renames the **heading** `### [Unreleased]` to `### X.Y.Z` and
-  re-seeds an empty `### [Unreleased]` above it (the heading must always exist —
-  it is what lets `merge=union` resolve concurrent bullet additions). It matches
-  heading lines only, so the prose mention of `### [Unreleased]` in the
-  changelog's house-rules bullet is never touched.
+- The changelog, via `changie`: `batch` folds every pending fragment into
+  `.changes/vX.Y.Z.md` and empties `.changes/unreleased/`; `merge` reassembles
+  `CHANGELOG.md` from the version files. `merge` is also what rewrites the three
+  manifests, so skipping it would leave the release unpublishable —
+  `release-publish.yml` fires on the `plugin.json` version diff.
 - `plugins/steer/templates/reference/MIGRATIONS.md`: renames every
   `### [Unreleased] — <what>` **inside `## Entries`** to `### vX.Y.Z — <what>` and
   never touches the authoring stub in the trailing `<!-- Template for a new entry
@@ -235,12 +236,14 @@ The script performs the whole cut and refuses to start if a precondition fails:
   edit each: `plugins/steer/.claude-plugin/plugin.json` (source of truth),
   `plugins/steer/.github/plugin/plugin.json`, and the `steer` entry in
   `.github/plugin/marketplace.json` — leaving that file's `metadata.version` (the
-  marketplace's own) alone. If the old version appears on more than one
-  `"version"` line of a file, the script stops rather than guess.
-- Afterwards it asserts the release invariant (all manifests equal `X.Y.Z`, the
-  newest released heading is `X.Y.Z`, the re-seeded `[Unreleased]` is empty, no
-  `[Unreleased]` entry survived in the ledger, the stub was not stamped) and exits
-  non-zero if any fails.
+  marketplace's own) alone. `.changie.yaml`'s `replacements` do this on `merge`,
+  anchored on each line's indentation, which is what keeps the marketplace's two
+  `"version"` keys apart; `validate_cut` re-asserts it afterwards.
+- Afterwards it asserts the release invariant (all manifests equal `X.Y.Z`,
+  `metadata.version` did not move, `.changes/vX.Y.Z.md` exists, no fragment
+  survived the cut, `CHANGELOG.md` carries the new heading, no `[Unreleased]`
+  entry survived in the ledger, the stub was not stamped) and exits non-zero if
+  any fails.
 
 Do not hand-edit around the script. If it refuses, the refusal is the finding:
 fix the cause (or stop), then re-run.
@@ -315,5 +318,5 @@ re-gate result.
   unavailable, re-publish with `gh workflow run release-publish.yml -f
   version=X.Y.Z` (an older version is tagged on the commit that introduced it and
   is not marked Latest), or, as a last resort, `gh release create vX.Y.Z --target
-  <merge-sha> --title "steer X.Y.Z" --generate-notes --notes-file <(python3
-  scripts/changelog_release_notes.py notes X.Y.Z)`.
+  <merge-sha> --title "steer X.Y.Z" --generate-notes --notes-file <(sed '1{/^## /d;}'
+  .changes/vX.Y.Z.md)`.

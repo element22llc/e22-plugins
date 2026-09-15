@@ -91,21 +91,26 @@ Any change to plugin behavior — anything under
 `plugins/steer/{skills,rules,hooks,templates,scripts,policy}/`, or any of the three
 version-bearing manifests (`plugins/steer/.claude-plugin/plugin.json`,
 `plugins/steer/.github/plugin/plugin.json`, `.github/plugin/marketplace.json`) —
-needs an entry. `BEHAVIOUR_PREFIXES` / `BEHAVIOUR_EXACT` in
-`scripts/check_changelog.py` are the authoritative list; this sentence mirrors them. `tests/` is exempt,
+needs a **changelog fragment**. The deny-by-default classifier in
+`scripts/check_changelog.py` is the authoritative list; this sentence mirrors it. `tests/` is exempt,
 and changes confined to `CLAUDE.md`, `docs/`, `.claude/`, or root Markdown ship
 nothing and need none. `check_changelog.py --base` enforces this on every PR.
 
-- Add **your own bullet** under `## steer` → `### [Unreleased]`. Don't edit a
-  neighbor's bullet in the same PR.
-- **Leave the `### [Unreleased]` heading alone** — never recreate it, never
-  rename it outside a release. `CHANGELOG.md` is `merge=union` in
-  `.gitattributes`, so concurrent PRs appending bullets under a *persistent*
-  heading never conflict; recreating the heading duplicates it and breaks the
-  gate.
-- **Do not bump the version.** `plugin.json`'s `version` moves **once**, in the
-  release PR that renames `[Unreleased]` to `X.Y.Z` — so a stream of PRs cuts one
-  coherent release instead of a bump each. Details:
+- Add **your own fragment** under `.changes/unreleased/` — one YAML file per
+  change, named `<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml`. `mise run changelog:new`
+  writes one for a short entry; for the multi-line prose this repo usually
+  writes, create the file directly with a `body: |` block. Shape and kinds:
+  [`AUTHORING.md`](AUTHORING.md) → "CHANGELOG & versioning".
+- **Never edit `CHANGELOG.md`.** It is generated — `changie merge` assembles it
+  from `.changes/` at release — so a hand edit is reverted by the next merge and
+  fails `check_changelog.py` meanwhile. Between releases it shows only released
+  versions; your pending entry lives in its fragment until the cut. Don't run
+  `changie merge -u` in a feature PR.
+- **Don't edit a neighbour's pending fragment.** Yours is a new file; amending
+  theirs neither records your change nor satisfies the gate.
+- **Do not bump the version.** `plugin.json`'s `version` moves **once**, at
+  release, written by `changie merge` across all three manifests — so a stream of
+  PRs cuts one coherent release instead of a bump each. Details:
   [`AUTHORING.md`](AUTHORING.md) → "CHANGELOG & versioning" and
   `docs/contributing/release-process.md`.
 

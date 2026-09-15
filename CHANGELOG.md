@@ -3,32 +3,7 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
-## steer
-
-### [Unreleased]
-
-- **Fixed: `/steer:init` no longer clobbers a repo's own `pre-commit` hook, and a
-  legacy template fork now gets a commit gate at all.** 6.2.0 wired the gate from
-  both setup skills, but only `/steer:adopt` carried the collision guard —
-  `/steer:init`'s step 5 ran `mise generate git-pre-commit --write`
-  unconditionally, and the generator does not refuse a collision — it renames the
-  existing hook to `pre-commit.old` and takes its place, and it writes into
-  `core.hooksPath` when one is set. So a repo that already owned a commit gate
-  (husky, a hand-rolled hook) had it displaced by bootstrap, and one pointing
-  `core.hooksPath` at a *tracked* directory had that swap land as a versioned
-  change on top. Init now applies the same guard as adopt: report the
-  collision and leave it alone, because a repo with its own commit gate is a
-  decision, not a gap — the same reading `/steer:sync` already gives the
-  `commit-gate` capability, where a foreign hook scans `n/a` rather than
-  `mis-wired`. Both skills now name the detection command (`git rev-parse
-  --git-path hooks`, which honours `core.hooksPath` and resolves a linked worktree
-  to the primary checkout) instead of leaving it implied. Init **Path A** (a
-  legacy fork of the old `repository-template`) wired no gate at all —
-  `LEGACY-TEMPLATE-FORK.md` never mentioned it — so the fork path now wires it
-  after the `mise` tasks are adapted, under the same guard; a fork predating the
-  bundled scaffold is the repo most likely to carry a commit gate of its own.
-
-### 6.2.0
+## 6.2.0
 
 - **Security: the five shipped workflow templates are hardened, and the zizmor
   tier over them is now a hard gate (closes #492).** They referenced actions by
@@ -156,7 +131,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   is a workflow edit (drop `continue-on-error` and the scan step's `|| true`),
   not a config one. `failBelow` tunes the threshold either way.
 
-### 6.1.1
+## 6.1.1
 
 - **Fixed: rule `00-router` now says the `Skill` call is the act, and that the
   route does not depend on what the session can do.** "Announce, then act" was
@@ -221,7 +196,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   fresh adoption; the scaffold bundle is read at Phase 10 where it is used. A new
   guardrail states the rule so a future phase cannot quietly re-front-load.
 
-### 6.1.0
+## 6.1.0
 
 - **Fixed: rule `10-stack` no longer tells sessions the version-pin `deny` is
   absent in VS Code.** It is not: Copilot Chat in VS Code runs the plugin's
@@ -470,8 +445,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   lives in `templates/reference/CONVENTIONS.md` § Where things live
   (`/steer:reference conventions`). The rules that cited it point there.
 
-
-### 6.0.0
+## 6.0.0
 
 - **Fixed: the retracted "fresh invocation" framing survived in the one reference
   with the widest reach.** `templates/reference/NEXT-ACTIONS.md` — which
@@ -1039,7 +1013,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   block to be appended below the preserved body. A body with no block is the
   first-touch case, not a fail-closed one.
 
-### 5.3.0
+## 5.3.0
 
 - **Fixed: the bundled repo README told consumers a confirmation prompt was the
   merge gate.** `templates/scaffold/README.md` read "`gh pr merge` stays behind a
@@ -1077,7 +1051,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   the always-on text itself. Wording only — the ban, its two surfaces, and the
   dev-facing runbook exception are unchanged.
 
-### 5.2.0
+## 5.2.0
 
 - **The onboarding front door prompted on its very first action, and had since
   `v3.0.0`.** `/steer:setup`'s detection step was a five-line snippet that
@@ -1371,7 +1345,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   is presence-only by design — content pins remain step 5's additive reconcile.
   (#447)
 
-### 5.1.0
+## 5.1.0
 
 - **Fixed: bundled scripts no longer ship with CRLF line endings on a Windows
   install.** With no line-ending attributes set — the repo's `.gitattributes`
@@ -1436,7 +1410,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   The trailing claim that `artifact-design` "already reads them" is also dropped:
   that skill supplies the house default, it does not read a product's token file.
 
-### 5.0.0
+## 5.0.0
 
 - **Changed:** the ADR threshold is now **reversal cost, not novelty**, and a first-time
   pattern no longer triggers one. Rule `30` asked for an ADR on "a new cross-cutting
@@ -1600,7 +1574,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   "architectural" as a sufficient trigger, the same formulation the reversal-cost
   reframe deleted from rule `99`.
 
-### 4.0.0
+## 4.0.0
 
 - **Fixed:** the action-history migration's second precondition can now detect every
   surface its own action table rewrites. It grepped a single pattern, `/?spec/HISTORY\.md`,
@@ -1705,7 +1679,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   wrong sentence in the hook set, and a `service` or `library` bootstrap driven off it
   skipped files it should have had.
 
-### 3.24.0
+## 3.24.0
 
 - **Fixed:** the commit-approval clause survived a second time, in the file `/steer:tidy`
   actually executes. `templates/reference/HOUSEKEEPING.md` said "**Don't commit** until the
@@ -2980,7 +2954,7 @@ in its own `.claude-plugin/plugin.json`; this file records what changed and when
   of going quiet, and prints the worktree state once per run. `POLYREPO.md`
   documents the topology.
 
-### 3.23.0
+## 3.23.0
 
 *This was a long cycle with a large internal sweep, so many **Fixed** entries
 below refer to defects introduced **and** resolved between releases — no
@@ -3839,7 +3813,7 @@ actually ran say so explicitly.*
   bar. Dependabot cannot see versions embedded in a `run:` block, so these are
   bumped deliberately.
 
-### 3.22.0
+## 3.22.0
 
 - **Plan-mode gate for Medium+ changes.** `rules/80-change-size` now instructs
   starting Medium and larger changes in plan mode (or presenting the plan for
@@ -3869,7 +3843,7 @@ actually ran say so explicitly.*
   exempt in the plugin's own source repo. Claude-only: Copilot ports only
   blocking PreToolUse gates, and this hook has no decision to influence.
 
-### 3.21.0
+## 3.21.0
 
 - **Copilot parity: generate the last two hand-maintained mirrors.** Closes the
   generate-vs-gate asymmetry from the previous change — the MCP and hook mirrors
@@ -3930,7 +3904,7 @@ actually ran say so explicitly.*
   ask, reported upstream via `/steer:report` so the routing-eval fixtures grow
   from real failures (PLAN.md Phase 4 close-out).
 
-### 3.20.0
+## 3.20.0
 
 - **Spec rigor (Phase 3).** Three additions adopted from the Spec Kit
   comparison:
@@ -4001,7 +3975,7 @@ actually ran say so explicitly.*
   separately, batched with minimal output. Falls back to the manual sweep if
   the helper is unavailable.
 
-### 3.19.0
+## 3.19.0
 
 - **GitHub Copilot parity: custom agents, path-scoped instructions, VS Code MCP,
   and cloud coding-agent setup.** Brings the Copilot/VS Code surface up to the
@@ -4046,7 +4020,7 @@ actually ran say so explicitly.*
   conventions reference's own fenced code examples (arrows and em-dashes in TOML
   comments) so those examples model the rule. (#373)
 
-### 3.18.0
+## 3.18.0
 
 - **New `/steer:status` front door renders a client-facing progress report.**
   Answers "what's the status?" / "what did we ship this week?" with a
@@ -4074,7 +4048,7 @@ actually ran say so explicitly.*
   blocking questions and routes the client to `/steer:questions bundle` to
   answer them.
 
-### 3.17.0
+## 3.17.0
 
 - **The PO clarification loop's shared contract now lives in one reference.**
   The outbound→inbound contract `/steer:questions bundle` and `/steer:intake
@@ -4212,7 +4186,7 @@ actually ran say so explicitly.*
   read-only: each drift finding needs a per-finding human decision (its
   decision-checklist issue), not a bulk selection.
 
-### 3.16.0
+## 3.16.0
 
 - Corrected an over-broad claim about the `check-trunk-push` graduation gate:
   rule 45, the `work` skill, and the scaffold `CLAUDE.md` said the trunk-push
@@ -4314,7 +4288,7 @@ actually ran say so explicitly.*
   is preserved in the committed source, so it waits for a yes like every delete)
   rather than moved to `/spec/reference/`, which would just duplicate the source.
 
-### 3.15.0
+## 3.15.0
 
 - `/steer:questions` gains a **`bundle`** mode: the outbound counterpart to
   `/steer:intake clarify`. It renders the **PO-answerable** open questions across
@@ -4352,7 +4326,7 @@ actually ran say so explicitly.*
   `tracker-sync` frontmatter comment that wrongly promised prompt-free writes in
   non-scaffolded repos through an orchestrator.
 
-### 3.14.0
+## 3.14.0
 
 - **Reconciled the two canonical `/spec` layout definitions so all three
   source-material homes are listed in both.** The `SPEC-FRAMEWORK.md` structure
@@ -4379,7 +4353,7 @@ actually ran say so explicitly.*
   not the root). Same living-docs drift rule (`32`): edit the `.d2`, regenerate the
   SVG, commit both.
 
-### 3.13.0
+## 3.13.0
 
 - **`/steer:adopt` now stamps the Node `packageManager` placeholder, and the
   additive JSON reconcile refuses to inject unresolved placeholders.** The
@@ -4538,7 +4512,7 @@ actually ran say so explicitly.*
   Dockerfile, CI `setup-node`, and the `@types/node` catalog entry, with
   "confirm current stable major on adoption" comments.
 
-### 3.12.0
+## 3.12.0
 
 - **Added a clarification-document pipeline to `/steer:intake` (new `clarify`
   mode).** A client clarification doc that answers open questions and/or
@@ -4605,7 +4579,7 @@ actually ran say so explicitly.*
   now treats `.gitattributes` as a line-based file alongside `.gitignore` /
   `.worktreeinclude`.
 
-### 3.11.0
+## 3.11.0
 
 - **Subagent model-selection guidance in `CONTEXT-HYGIENE.md`.** Added a "Which
   model" split to the delegation section: read/search/summarize fan-out runs on a
@@ -4650,7 +4624,7 @@ actually ran say so explicitly.*
   area. Discovery stays distinct from navigation (`/steer:next`) and dispatch
   (`/steer:setup`).
 
-### 3.10.0
+## 3.10.0
 
 - **Fixed:** the bundled scaffold `.claude/settings.json` shipped over-broad
   `allow` entries that a consumer repo's automated security review flagged as
@@ -4730,7 +4704,7 @@ actually ran say so explicitly.*
   return silently. Scoped to the plugin-script family (the one command family
   whose mention is unambiguously an execution); runs in `mise run check`.
 
-### 3.9.0
+## 3.9.0
 
 - **Fixed:** `build`'s PO guardrail no longer names a `pnpm deploy:*` task that
   rule 15 retired (promotion is merge-triggered) — the "never deploy" instruction
@@ -4890,7 +4864,7 @@ actually ran say so explicitly.*
   official v1.0.0 → v1.1.0 refinement of the design-guidance skill). Referenced,
   not vendored — content is never copied here.
 
-### 3.8.0
+## 3.8.0
 
 - **Changed:** agent-authored GitHub issues now render **clickable references**
   for POs. Every spec/code file path in an issue body (`Spec references`,
@@ -4947,7 +4921,7 @@ actually ran say so explicitly.*
   headings carrying `<!-- steer:placeholder -->`, mirroring `check-open-questions.sh`,
   which already ignores the same marker. Resolves #231.
 
-### 3.7.0
+## 3.7.0
 
 - **Added:** a **solo-trunk enforcement floor + graduation nudge** (#242). A new
   SessionStart hook `check-graduation.sh` fires only in solo-trunk and only when a
@@ -5049,7 +5023,7 @@ actually ran say so explicitly.*
   run inspection commands as separate invocations; this is the most common reason a
   repo that looks allowlisted still asks for approval.
 
-### 3.6.0
+## 3.6.0
 
 - **Fixed:** `/steer:tracker-sync`'s native-issue-field recipes described a stale
   GraphQL shape that no longer matches GitHub's now-public-preview issue fields, so
@@ -5106,7 +5080,7 @@ actually ran say so explicitly.*
   copies the correct shape instead of inventing a root-`package.json`
   `concurrently` script.
 
-### 3.5.0
+## 3.5.0
 
 - **Fixed:** `/steer:build` (the non-technical PO flow) silently defaulted a solo
   PO with no developer into `pr-flow` on a `feat/*` branch, never offering
@@ -5247,7 +5221,7 @@ actually ran say so explicitly.*
   escalate-only floor. Closes a discoverability gap in PR #186, not a missing
   capability.
 
-### 3.4.0
+## 3.4.0
 
 - **Added:** an Epic tier above features. A new `steer:kind=epic` parent tracking
   issue groups child features (and, transitively, their tasks/bugs) via native
@@ -5278,7 +5252,7 @@ actually ran say so explicitly.*
   reports them with a retrofit action, so a raw create that bypassed the
   point-of-action guard is still recoverable after the fact.
 
-### 3.3.0
+## 3.3.0
 
 - **Changed:** the bundled scaffold `mise.toml` now declares task ordering with
   `depends` instead of a `run = ["mise run …"]` chain — `dev:setup` → `db:seed`
@@ -5345,7 +5319,7 @@ actually ran say so explicitly.*
   hook-test coverage for both hooks (the suite previously never exercised
   `check-unmanaged-repo.sh`).
 
-### 3.2.0
+## 3.2.0
 
 - **Fixed:** rule `52-deployment.md` was gated `inject-when=has-iac`, so an
   app/service repo that deploys via GitHub Actions but has no `/infra` dir never
@@ -5388,7 +5362,7 @@ actually ran say so explicitly.*
   `99-end-of-session` checklist cue and `36`'s prototype sentence are kept
   self-contained by design (acted on in isolation). No behavior change.
 
-### 3.1.0
+## 3.1.0
 
 - **Fixed:** the `/steer:reference` topic menu omitted `context-hygiene` (the
   topic added this release) from four hand-maintained surfaces — the always-on
@@ -5478,7 +5452,7 @@ actually ran say so explicitly.*
   about the boundary: a plugin/model cannot see context usage, trigger `/compact`, or
   start a session — only the user can. AUTHORING gains a matching skill-authoring note.
 
-### 3.0.1
+## 3.0.1
 
 - **Fixed:** `hooks/lib/spine.sh` `steer_spine_state` misclassified a fully
   managed repo as `damaged` under zsh. The required-files loop relied on
@@ -5489,7 +5463,7 @@ actually ran say so explicitly.*
   the repair/sync path. Replaced the loop with shell-agnostic parameter
   expansion that behaves identically in sh, bash, and zsh.
 
-### 3.0.0
+## 3.0.0
 
 - **Changed (breaking):** Merged the three reference-prose loader skills
   (`conventions`, `traceability`, `design-sources`) into one topic-driven
@@ -5602,7 +5576,7 @@ actually ran say so explicitly.*
   blocked create is a host gate, not a skipped step. `check_standards.py` locks the
   new allow-list entries.
 
-### 2.14.0
+## 2.14.0
 
 - **Added:** `/steer:roadmap` — generates a release-milestone timeline for the
   `/spec` spine, viewable as a GitHub Projects v2 roadmap. It turns
@@ -5696,7 +5670,7 @@ actually ran say so explicitly.*
   hooks (`check-issue-before-mutation`, `reconcile-issue-first`).
 - **Added:** test **coverage** as a first-class standard, complementing the existing test-presence rules. New always-on rule `41-coverage` frames coverage as a *signal to find untested behavior, not a target* — cover the code you touch (critical paths, branches, error handling), keep it measured and visible, and treat a coverage drop on changed code as drift for human review; deliberately **no** global vanity threshold (ties to `95-not-the-gate`). `CONVENTIONS.md` gains a Coverage subsection with per-stack tooling (Vitest `--coverage` / `@vitest/coverage-v8`, `pytest-cov`, language-agnostic `diff-cover` for changed-line regression), replacing the dangling "coverage expectations are in the Testing rules" reference. The scaffold `ci.yml` now emits coverage when the tooling is wired and gates only the **changed lines** against the PR base via `uvx diff-cover` (fail-open when no report or base branch is available; floor tunable via `COVERAGE_DIFF_MIN`); `mise.toml` documents the coverage deps. Coverage lines added to the Definition of Done (`50`), the scaffold PR template, and the `productionization` gap-analysis table.
 
-### 2.13.0
+## 2.13.0
 
 - **Fixed:** solo-trunk delivery mode no longer collides with issue-first. A managed repo can be solo-trunk **and** GitHub-adopted at once (`/steer:init` recommends solo trunk for solo greenfield *and* can configure a GitHub tracker), but rule 36, the Definition of Done, and the two issue-first hooks were blind to delivery mode — so a declared-trunk repo got every-session advisories telling it to open a PR / create an `issue/<N>` branch that solo-trunk explicitly relaxes, and the DoD required a PR that does not exist. Resolved by a single source of truth: a machine-readable marker (`<!-- steer:delivery-mode=solo-trunk|pr-flow -->`) on the product `CLAUDE.md` `## Delivery mode` section. `/steer:init` writes it, `/steer:protect` flips it to `pr-flow` at graduation, and a new `steer_delivery_mode` hook helper reads it (fail-open to `pr-flow`). In solo-trunk, issue-first **still holds** (the issue stays the audit-evidence anchor) — only the branch/PR ceremony relaxes: the PreToolUse and Stop issue-first hooks now keep requiring the issue but tell you to close it from the trunk commit (`Closes #N`) instead of opening a PR or an issue branch. Rules `36-issue-first`, `50-definition-of-done`, `45-commit-autonomy`, `30-spec-workflow`, and `00-router` reworded to match; calling work a "prototype" no longer purports to waive the per-feature issue — declaring solo-trunk mode is the only durable opt-out, and it drops the PR/branch, not the issue.
 - **Fixed:** `/steer:work` and `/steer:build` are now delivery-mode aware, completing the solo-trunk thread that previously reached only the rules, hooks, `/steer:init`, `/steer:protect`, and `/steer:audit`. The router sends all "implement now" work to `/steer:work`, but `work` was unconditionally pr-flow — create an `issue/<N>` branch, write a `spec/.work` marker, open a PR — directly contradicting rules `36-issue-first`/`45-commit-autonomy`, which say a declared solo-trunk repo commits straight to `main` with no branch and no PR. `work` now reads the `## Delivery mode` marker once and, in solo-trunk, skips the branch/marker/PR and closes the issue from the trunk commit (`Closes #N`) while keeping issue-first, validation, managed-block progress, and the Definition of Done intact; completion semantics and the next-action recommendations read the trunk commit in place of the PR. `/steer:build`'s governed-mode delegation to `/steer:work` no longer presumes a per-slice PR. Deploy stays human-gated in both modes, and graduation to the PR flow remains `/steer:protect`'s job.
@@ -5720,7 +5694,7 @@ actually ran say so explicitly.*
   sync that violated its "structure only, never app code" contract. Rule
   `36-issue-first` documents the carve-out.
 
-### 2.12.0
+## 2.12.0
 
 - **Added:** solo **trunk mode** for greenfield. `/steer:init` now offers it when one person is both PO and dev with no MVP yet — commit directly to `main` (no `feat/*` branch, no per-feature PR) until graduation, declared in the product `CLAUDE.md` `## Delivery mode` section. The scaffold, spine, tests, Definition of Done, and CI-on-push are unchanged; only the branch/PR ceremony relaxes (there is no second reviewer yet, so the PR gate has nothing behind it). **Graduate** to the normal `feat/*` + PR flow by running `/steer:protect` — which raises the server-side PR wall and ends the mode — the moment the MVP works, you first deploy, or a second contributor joins. `/steer:protect` (verify) and `/steer:audit` treat a declared-trunk unprotected `main` as intentional, not drift.
 - **Added:** new always-on rule `31-decision-capture` — durable design decisions (stack, auth, data model, a locked MVP scope) belong in `/spec` (intent/contract/ADR), the single source of truth a teammate inherits; conversation and assistant memory are working notes, never the record. On a repo with no `/spec` spine, bootstrap (`/steer:init` / `/steer:adopt`) **before** persisting a decision, so it lands traceable in the bootstrap PR rather than memory- or chat-only.
@@ -5744,7 +5718,7 @@ actually ran say so explicitly.*
   deriver + mise wiring in already-adopted repos (applicable when the repo has a
   compose.yaml or a Node/Python stack).
 
-### 2.11.0
+## 2.11.0
 
 - **Changed:** version-pin policy floors raised to track upstream end-of-life (automated by `version-policy-refresh.yml`): mongo 6→7, node 20→22, nginx 1.26→1.30. EOL floors only — what to pin (current stable) is still chosen live per the versioning rule; this just stops dead majors.
 - **Added:** the **`context7`** MCP server now ships with the plugin
@@ -5784,7 +5758,7 @@ actually ran say so explicitly.*
   convention and the issue-first `issue/<number>-<slug>` default instead of
   asserting `feat/*` / `fix/*` flatly.
 
-### 2.10.0
+## 2.10.0
 
 - **Added:** documented **VS Code as the default editor** and the
   extension-driven workflow for adjacent activities (database browsing/queries,
@@ -5855,7 +5829,7 @@ actually ran say so explicitly.*
   installed. `rules/15-commands.md` and the scaffold README dev quickstart now
   point at it.
 
-### 2.9.0
+## 2.9.0
 
 - **Changed:** hardened greenfield bootstrap precedence so a **prototype** can no
   longer be read as an escape hatch from the bundled scaffold and `/spec` spine.
@@ -5937,7 +5911,7 @@ actually ran say so explicitly.*
   case (user stepped away) is documented as an opt-in `/loop` over `gh pr checks`;
   steer ships no background poller.
 
-### 2.8.1
+## 2.8.1
 
 - **Fixed:** `/steer:build` referenced the spec-framework reference with a
   lowercase filename (`templates/reference/spec-framework.md`); the file on disk
@@ -5975,7 +5949,7 @@ actually ran say so explicitly.*
   `.shellcheckrc` or a severity downgrade that would weaken the gate. Synced
   byte-identically into the scaffold copy.
 
-### 2.8.0
+## 2.8.0
 
 - **Fixed:** low-severity audit nits. The no-jq `steer_field` fallback in
   `hooks/lib/json.sh` now mirrors jq's precedence — it searches the post-`tool_input`
@@ -6062,7 +6036,7 @@ actually ran say so explicitly.*
   and the plugin default could silently drift. Added it to the check; no behaviour
   change for consumers, the two files are identical today.
 
-### 2.7.0
+## 2.7.0
 
 - **Scaffolded repos now ship Dependabot, and steer manages the PRs.** New
   `.github/dependabot.yml` (`github-actions` live; `npm`/`pip`/`docker` blocks
@@ -6085,7 +6059,7 @@ actually ran say so explicitly.*
   capability lets `/steer:sync` wire and repair both files. protect configures
   settings only; it never opens PRs or merges.
 
-### 2.6.0
+## 2.6.0
 
 - **`/steer:work start` now self-assigns the issue to you.** Claiming an issue
   assigns the invoking GitHub user (self-assign) alongside the existing
@@ -6096,7 +6070,7 @@ actually ran say so explicitly.*
   and it **adds** rather than replaces assignees — an existing assignee is
   preserved and a conflicting claim is still reported, never auto-overridden.
 
-### 2.5.0
+## 2.5.0
 
 - **steer now reports its OWN defects upstream.** New `/steer:report` skill files
   a bug about the plugin itself in `element22llc/e22-plugins` — it gathers the
@@ -6170,7 +6144,7 @@ actually ran say so explicitly.*
   `CAPABILITIES.md` that the dead settings key is removed by this migration (not by
   the additive `plugin-enabled-local` repair).
 
-### 2.4.0
+## 2.4.0
 
 - **`/steer:protect` now emits a copy-paste-safe branch-protection command.** The
   apply example used a quoted heredoc (`<<'JSON'`) whose closing delimiter is
@@ -6257,7 +6231,7 @@ actually ran say so explicitly.*
   box after `mise install` rather than degrading to a disconnected server.
   Documented in the scaffold README next to the GitHub MCP section.
 
-### 2.3.0
+## 2.3.0
 
 - **Make GitHub branch protection — the real PR gate — reliable instead of a
   manual README step.** steer stays advisory in the local session (rule 95, "you
@@ -6277,7 +6251,7 @@ actually ran say so explicitly.*
   missing/drifted-protection finding to it, and the scaffold README §Branch
   protection now points at the policy + skill rather than restating the values.
 
-### 2.2.0
+## 2.2.0
 
 - **The router is now an intent dispatcher, not a menu the user has to read.**
   `rules/00-router.md` was rewritten from a paragraph-per-condition list framed at
@@ -6308,7 +6282,7 @@ actually ran say so explicitly.*
   "what should I do next?", so the cross-workflow navigator is reachable by a lost
   user's own words.
 
-### 2.1.0
+## 2.1.0
 
 - **Prescribed, auto-maintained home for tech-stack + architecture docs — root
   `ARCHITECTURE.md`.** New scaffold template
@@ -6404,7 +6378,7 @@ actually ran say so explicitly.*
   interactive validation showed it never fired in practice; the precedence rule
   above is what was kept.)
 
-### 2.0.1
+## 2.0.1
 
 - **Scaffold de-branded (client-agnostic).** The bundled
   `.github/ISSUE_TEMPLATE/config.yml` no longer ships a hardcoded
@@ -6424,7 +6398,7 @@ actually ran say so explicitly.*
   3-segment pin (e.g. `node:18.20.1`) ignored its justification marker; the
   boundary now excludes only digits while still blocking partial-major matches.
 
-### 2.0.0
+## 2.0.0
 
 **Client-agnostic rebrand — `e22-standards` → `steer` (breaking).** The plugin is
 renamed and de-branded so it can be used by any org without "Element 22"/"e22"
@@ -6459,7 +6433,7 @@ change.
 
 This is a **breaking** change, released as the `2.0.0` major.
 
-### 1.52.0
+## 1.52.0
 
 Workflow + authorization coherence — one git-authorization model and one
 implementation-execution owner.
@@ -6620,7 +6594,7 @@ Marketplace + release integrity.
   internal-only, with the rationale for **not** broadly setting
   `disable-model-invocation` yet.
 
-### 1.51.2
+## 1.51.2
 
 - `sync`: the sync PR now targets the branch the dev invoked the sync from
   (`BASE`, captured before branching), not the repo's default `main`. The skill
@@ -6629,7 +6603,7 @@ Marketplace + release integrity.
   Only when the dev runs sync from `main` does the PR target `main`. The skill no
   longer asks the dev which base to use.
 
-### 1.51.1
+## 1.51.1
 
 - `adr`: ensure `spec/decisions/` exists (`mkdir -p`) before copying the ADR
   template, so the skill no longer fails in a repo where the dir was never
@@ -6638,7 +6612,7 @@ Marketplace + release integrity.
   track `POSTGRES_PORT`; `MANIFEST.md` notes that the per-feature and
   per-decision spec templates are instantiated on demand, not at bootstrap.
 
-### 1.51.0
+## 1.51.0
 
 Pre-pilot coherence and safety hardening — makes five workflow guarantees
 consistent and executable before other developers rely on the plugin. No
@@ -6683,7 +6657,7 @@ lifecycle enum, tracker marker, or managed-block contract changes.
   wording drifts, or the Stop reconciliation hook loses its registration or loop
   guard — protecting lifecycle *behavior*, not just vocabulary and file shape.
 
-### 1.50.0
+## 1.50.0
 
 Audit-mitigation series tail — closes the two residual findings left after
 rev. 2, plus an `build` onboarding-accuracy fix and a small reconciliation-
@@ -6712,7 +6686,7 @@ tooling refactor. No change to hook behavior.
   are tracker issues. Removes the tension between "routes results into /spec" and
   "never edits spec."
 
-### 1.49.0
+## 1.49.0
 
 Audit-mitigation series (rev. 2) — corrects the spec/issue state model, removes
 the legacy command shims, adds a canonical enum registry plus a standards
@@ -6830,7 +6804,7 @@ authorization authority, and hardens the point-of-action hooks.
     into `mise run ci` as the new `hooktests` task, and the `shell` lint gate now
     also covers `hooks/lib` and `hooks/tests`.
 
-### 1.48.0
+## 1.48.0
 
 - **New `/steer:next` — read-only workspace navigator.** Delivers the cross-workflow
   arbitrator that 1.47.0 deferred. Where each workflow skill's
@@ -6859,7 +6833,7 @@ authorization authority, and hardens the point-of-action hooks.
     command; the 1.47.0 "not yet built" forward-reference in `NEXT-ACTIONS.md` now
     points at the shipped navigator.
 
-### 1.47.0
+## 1.47.0
 
 - **Standardized "Recommended next actions" handoff.** Every major workflow now
   ends with a deterministic, read-only `## Recommended next actions` block that
@@ -6886,7 +6860,7 @@ authorization authority, and hardens the point-of-action hooks.
   - A repo-wide `/steer:next` navigator that arbitrates across unrelated workspace
     state is intentionally **deferred** to a later release.
 
-### 1.46.0
+## 1.46.0
 
 - **Backlog producers — findings flow into the backlog.** Closes the loop so the
   backlog is fed from every source, not just PO capture.
@@ -6908,7 +6882,7 @@ authorization authority, and hardens the point-of-action hooks.
   - (Implementation-discovered work and the closed `steer:kind`×`source` taxonomy
     were already established in 1.44.0 / 1.43.0.)
 
-### 1.45.0
+## 1.45.0
 
 - **Repository bootstrap for the issue-first backlog.** Makes a GitHub-adopted
   repo actually carry the contract: real Issue Types, an existing label
@@ -6933,7 +6907,7 @@ authorization authority, and hardens the point-of-action hooks.
     at runtime, add the issue if absent, mirror `steer:state` → `Status`, report
     missing/renamed fields, and degrade when the `project` scope is missing.
 
-### 1.44.0
+## 1.44.0
 
 - **Local execution workflow — issue-first routing and the `/steer:work` skill.**
   Builds on the issue contract (1.43.0) to make the local, issue-first model
@@ -6975,7 +6949,7 @@ authorization authority, and hardens the point-of-action hooks.
     source-code write in a `system: github` repo. Primary enforcement stays in
     routing + skills.
 
-### 1.43.0
+## 1.43.0
 
 - **Issue contract v2 — the schema groundwork for an issue-first, local-first
   backlog.** This is the normative-contract PR; no rule or skill behavior depends
@@ -7022,7 +6996,7 @@ authorization authority, and hardens the point-of-action hooks.
     test runner). Fixed the stale `../github/issue-forms/` link to the real
     `../scaffold/github/ISSUE_TEMPLATE/` path.
 
-### 1.42.0
+## 1.42.0
 
 - **`/steer:adopt` no longer manufactures ADRs from inference.** Adoption used to
   reverse-engineer an `Accepted` ADR for each hard-to-reverse as-built choice —
@@ -7045,7 +7019,7 @@ authorization authority, and hardens the point-of-action hooks.
     new section). `audit` remains the defense-in-depth net that later flags
     architectural choices still lacking an ADR.
 
-### 1.41.0
+## 1.41.0
 
 - **Skill discovery metadata.** Frontmatter housekeeping across all skills — no
   workflow-body changes.
@@ -7060,7 +7034,7 @@ authorization authority, and hardens the point-of-action hooks.
     skills (`build`, `spec`, `spec-scaffold`, `issues`,
     `tracker-sync`) using their actual accepted argument values.
 
-### 1.40.0
+## 1.40.0
 
 - **GitHub Issues lifecycle — Phase 3: reconciliation and Projects.** Completes
   the integration on top of Phases 1–2 (v1.38.0, v1.39.0).
@@ -7089,7 +7063,7 @@ authorization authority, and hardens the point-of-action hooks.
     sub-issue links when available, else `Parent: #N` + `<!-- steer:parent-issue=N -->`
     and a generated checklist.
 
-### 1.39.0
+## 1.39.0
 
 - **GitHub Issues lifecycle — Phase 2: the `/steer:issues` orchestrator + safe local
   lifecycle.** Builds on the Phase 1 contracts (v1.38.0).
@@ -7119,7 +7093,7 @@ authorization authority, and hardens the point-of-action hooks.
     test, keeps the structured `Q-NNN` and sets its `tracker:` field on promotion;
     `/steer:spec` gates approval on `validate`. The router lists `/steer:issues`.
 
-### 1.38.0
+## 1.38.0
 
 - **GitHub Issues lifecycle — Phase 1: contracts and scaffold.** Lays the
   machine-readable foundation for an issue-driven product lifecycle, ahead of the
@@ -7157,7 +7131,7 @@ authorization authority, and hardens the point-of-action hooks.
     and a `MIGRATIONS` ledger entry cover the form swap + frontmatter splice for
     existing repos via `/steer:sync`.
 
-### 1.37.1
+## 1.37.1
 
 - **Docs: de-dup open-questions placement between reference files.** The
   `intent.md`-vs-`vision.md` placement rule for `## Open questions` was stated in
@@ -7166,7 +7140,7 @@ authorization authority, and hardens the point-of-action hooks.
   `spec-framework.md` instead of restating the split, keeping a single source of
   truth. No behavior change.
 
-### 1.37.0
+## 1.37.0
 
 - **New skill `/steer:spec` — brainstorm a feature spec without building it.** The
   no-build counterpart to `/steer:build`: it scaffolds the feature spine, drives
@@ -7193,7 +7167,7 @@ authorization authority, and hardens the point-of-action hooks.
   question-promotion to `push`; rule `35-issue-tracker` notes the accelerator;
   the router (`00-router`) lists both new skills. Both ship `/slash` aliases.
 
-### 1.36.0
+## 1.36.0
 
 - **`/steer:questions` resolves settled answers in the same change instead of
   asking per item.** The skill folded *every* answer back into the spec only on
@@ -7214,7 +7188,7 @@ authorization authority, and hardens the point-of-action hooks.
   filled-in content. The read-only audits (`/steer:drift`, `/steer:audit`) and the
   anti-clobber sweeps (`/steer:sync`, `/steer:tidy`) are unchanged.
 
-### 1.35.1
+## 1.35.1
 
 - **`/steer:questions` now reliably retires a legacy `SPEC-QUESTIONS.md`.** The
   skill already intended to migrate the retired standalone file into the spine
@@ -7227,7 +7201,7 @@ authorization authority, and hardens the point-of-action hooks.
   explicitly forbidden. Added a "Done when" backstop: a run that leaves the
   legacy file behind is not done.
 
-### 1.35.0
+## 1.35.0
 
 - **New `/steer:sync` skill — carry an already-bootstrapped repo forward to the
   current plugin.** `/plugin update` refreshes the plugin, but the `/spec` spine
@@ -7253,7 +7227,7 @@ authorization authority, and hardens the point-of-action hooks.
   spec-framework reconciliation convention documents the additive-vs-structural
   split and the stamp.
 
-### 1.34.0
+## 1.34.0
 
 - **The plugin replaces `repository-template` as the bootstrap source.** The
   full repo scaffold is now **bundled** at `templates/scaffold/` (mise.toml +
@@ -7317,7 +7291,7 @@ authorization authority, and hardens the point-of-action hooks.
   build to `/spec/HISTORY.md`. `check-unmanaged-repo.sh`'s nudge names the
   bundled scaffold and the living-docs spine.
 
-### 1.33.0
+## 1.33.0
 
 - **New `/steer:audit` skill — a repeatable, read-only, whole-repo health audit.**
   Until now the standards had a one-time onboarding triage (`/steer:adopt`), a
@@ -7337,7 +7311,7 @@ authorization authority, and hardens the point-of-action hooks.
   `/simplify` rather than re-implementing them. Invokable as `/steer:audit` (command
   alias) or the `audit` skill.
 
-### 1.32.0
+## 1.32.0
 
 - **UI craft now comes from Anthropic's `frontend-design`, re-listed not
   re-authored.** Until now nothing in the standards guided *aesthetic* UI
@@ -7364,7 +7338,7 @@ authorization authority, and hardens the point-of-action hooks.
   the reference's new "Building UI without a (full) export" section spell out the
   workflow.
 
-### 1.31.0
+## 1.31.0
 
 - **`/steer:adopt` now captures the as-built design, not just the spec.** Adoption
   reverse-engineered `/spec`, ADRs, and a productionization brief from a
@@ -7386,7 +7360,7 @@ authorization authority, and hardens the point-of-action hooks.
   (Brownfield `/steer:adopt`) — so the file is no longer presented as something
   that only exists when a design export does.
 
-### 1.30.0
+## 1.30.0
 
 - **`/steer:questions` no longer balloons into a costly codebase sweep.** The skill
   was cheap by design (grep the `## Open questions` sections, ask a human), but it
@@ -7414,7 +7388,7 @@ authorization authority, and hardens the point-of-action hooks.
   longer reads as "never look at the code."
 - Updated `skills/questions/SKILL.md`.
 
-### 1.29.1
+## 1.29.1
 
 - **Fix: `/steer:drift` skill frontmatter failed to parse, breaking the whole
   plugin.** The `drift` `SKILL.md` description was an unquoted YAML plain
@@ -7426,7 +7400,7 @@ authorization authority, and hardens the point-of-action hooks.
   containing `:` (colon-space), `#`, leading `[`/`{`/`*`/`&`, or a leading
   quote must be quoted.
 
-### 1.29.0
+## 1.29.0
 
 - **`/steer:questions` now auto-heals a retired `SPEC-QUESTIONS.md`.** The
   standalone file was retired in 1.25.0 (questions moved into `## Open questions`
@@ -7452,7 +7426,7 @@ authorization authority, and hardens the point-of-action hooks.
   `vision.md`, so new forks no longer ship it.
 - Updated `skills/questions/SKILL.md` and `hooks/check-open-questions.sh`.
 
-### 1.28.0
+## 1.28.0
 
 - **`/steer:drift` verdicts are now status-aware, and `🟠 Partial` is a first-class
   verdict.** A drift run against a tracker whose work is mostly open would
@@ -7477,7 +7451,7 @@ authorization authority, and hardens the point-of-action hooks.
     differently from Backlog-but-Missing at a glance.
   - Updated `skills/drift/SKILL.md` only (no `commands/` alias change).
 
-### 1.27.0
+## 1.27.0
 
 - **`/steer:drift` is now a spec-vs-spec diff that *consumes* `/steer:adopt`, not its
   inverse.** 1.24.0 framed drift as "the inverse of `/steer:adopt`" — a spec
@@ -7513,7 +7487,7 @@ authorization authority, and hardens the point-of-action hooks.
     router (`rules/00-router.md`). The 1.24.0 entry below is left intact as a
     record of what shipped then; this entry supersedes its framing.
 
-### 1.26.0
+## 1.26.0
 
 - **Detect greenfield repos that have no spec spine — push the bootstrap.** A
   brand-new repo with the plugin enabled but no `/spec` (code written from
@@ -7551,7 +7525,7 @@ authorization authority, and hardens the point-of-action hooks.
   `/steer:adopt`. Updated the skill description, the `commands/init.md` alias,
   and the router (`rules/00-router.md`) accordingly.
 
-### 1.25.0
+## 1.25.0
 
 - **New `/steer:questions` skill — stop open questions from rotting.** Open
   questions were written down once, gated at PO acceptance, then forgotten,
@@ -7577,7 +7551,7 @@ authorization authority, and hardens the point-of-action hooks.
   `productionization.md` template, and the `spec-scaffold`, `design-sources`,
   `drift`, `build`, and `adopt` skills.
 
-### 1.24.1
+## 1.24.1
 
 - **Fix documentation drift in the `steer` loader skill.** The on-demand
   loader (`skills/steer/SKILL.md`, used on Cowork/desktop where the
@@ -7588,7 +7562,7 @@ authorization authority, and hardens the point-of-action hooks.
   drift again — the real version is still read from `plugin.json` at runtime. No
   behavior change.
 
-### 1.24.0
+## 1.24.0
 
 - **New `/steer:drift` skill — audit the built app against its specs.** A manual,
   read-only conformance audit for the inverse of `/steer:adopt`: a spec exists and
@@ -7603,7 +7577,7 @@ authorization authority, and hardens the point-of-action hooks.
   makes no code or spec edits and does not commit.** Discoverable via the router
   in `rules/00-router.md` and the `/steer:drift` command alias.
 
-### 1.23.1
+## 1.23.1
 
 - **`/steer:adopt` resume migration: close the gap inside the skill, not just the
   command.** 1.23.0 fixed the command's resume *routing* but left the actual
@@ -7620,7 +7594,7 @@ authorization authority, and hardens the point-of-action hooks.
   the literal `git mv spec/PRODUCTION-READINESS.md spec/PRODUCTIONIZATION.md` so
   migration no longer depends on the agent fully entering the skill.
 
-### 1.23.0
+## 1.23.0
 
 - **`/steer:adopt` now actually migrates the old filename on resume.** The
   always-injected `commands/adopt.md` recognized only the new
@@ -7635,7 +7609,7 @@ authorization authority, and hardens the point-of-action hooks.
   rather than inlining a competing shortcut — closing the gap for every repo
   adopted before 1.22.0.
 
-### 1.22.0
+## 1.22.0
 
 - **One readiness concept, named for what it is.** `PRODUCTION-READINESS.md` is
   renamed to **`PRODUCTIONIZATION.md`** — it's the dev's standing list of
@@ -7659,7 +7633,7 @@ authorization authority, and hardens the point-of-action hooks.
   in `BUILD-STATUS.md`, matching the reference and ending the "two readinesses"
   ambiguity.
 
-### 1.21.0
+## 1.21.0
 
 - **Repo housekeeping: a `housekeeping` rule + the `/steer:tidy` skill.** A PO
   building from the template tends to commit a pile of source material at the
@@ -7690,7 +7664,7 @@ authorization authority, and hardens the point-of-action hooks.
     (broad, tree-wide, only if absent) so it can't be re-committed and
     re-introduced later.
 
-### 1.20.0
+## 1.20.0
 
 - **`practices` rule rephrased principle-first so it applies beyond the default
   stack.** The always-on patterns read as Next.js/Drizzle/Zod-only, which made
@@ -7701,7 +7675,7 @@ authorization authority, and hardens the point-of-action hooks.
   stating the rule any stack must satisfy. No change to what is required; only
   how it is framed.
 
-### 1.19.0
+## 1.19.0
 
 - **`/steer:adopt` stops waving raw SQL and missing schemas through as "clean."**
   A run was observed declaring a repo's data layer "verified clean" because its
@@ -7722,7 +7696,7 @@ authorization authority, and hardens the point-of-action hooks.
     regardless of injection safety, and "no schema defined at all" is called out
     alongside ad-hoc schema edits.
 
-### 1.18.0
+## 1.18.0
 
 - **Cowork fallback: load the standards on demand where hooks don't fire.** Some
   POs work in Claude Cowork (the desktop app) instead of Claude Code. Plugins are
@@ -7738,7 +7712,7 @@ authorization authority, and hardens the point-of-action hooks.
 
 [anthropics/claude-code#40495]: https://github.com/anthropics/claude-code/issues/40495
 
-### 1.17.0
+## 1.17.0
 
 - **Host port bindings must be overridable, so concurrent products don't
   collide.** POs and devs routinely run several products at once; any repo
@@ -7754,7 +7728,7 @@ authorization authority, and hardens the point-of-action hooks.
   `compose.yaml` already follows the pattern for Postgres; a paired template
   change adds the `.env.example` documenting `POSTGRES_PORT` and `DATABASE_URL`.
 
-### 1.16.0
+## 1.16.0
 
 - **Plugin freshness check at session start.** The always-on standards only help
   if the consumer is running a current copy, but nothing nudged anyone to
@@ -7776,7 +7750,7 @@ authorization authority, and hardens the point-of-action hooks.
   - Self-clearing: the notice disappears once `/plugin update` lands, the same
     self-healing shape as the template-drift hook.
 
-### 1.15.0
+## 1.15.0
 
 - **Design exports are a spec to realize, not code to ship.** The design-sources
   standard previously told the model to *read* an export and treat it as
@@ -7798,7 +7772,7 @@ authorization authority, and hardens the point-of-action hooks.
     mechanical agent task with the prototype as the pixel-diff oracle.
   - The `design-sources` skill summary gains a matching key-point bullet.
 
-### 1.14.0
+## 1.14.0
 
 - **Template reconciliation is now enforced by a hook, not skill prose.** 1.12.0
   shipped the reconcile logic and 1.13.0 added a forcing-command + resume gate, but
@@ -7818,7 +7792,7 @@ authorization authority, and hardens the point-of-action hooks.
     positives). The skills' in-prose reconcile steps (1.13.0) remain as the
     how-to-splice guidance the notice points the model toward.
 
-### 1.13.0
+## 1.13.0
 
 - **Self-healing reconciliation now actually fires on resume.** 1.12.0 shipped the
   reconcile logic but buried it mid-list, so the model resumed "from the checklist"
@@ -7839,7 +7813,7 @@ authorization authority, and hardens the point-of-action hooks.
   - **`/steer:build`** and **`/steer:spec-scaffold`** — their resume/reconcile branches
     now carry the concrete diff command too.
 
-### 1.12.0
+## 1.12.0
 
 - **Template self-healing, standardized plugin-wide.** Skills that copy a bundled
   template into the product repo now reconcile it against the current template on
@@ -7862,7 +7836,7 @@ authorization authority, and hardens the point-of-action hooks.
     update`) and **ADRs** (immutable point-in-time records — supersede, never
     retrofit a newer template into an accepted ADR).
 
-### 1.11.0
+## 1.11.0
 
 - **`/steer:adopt` now flags outdated deps and bad practices.** Vibe-coded apps
   pin to whatever versions the generating model knew at *its* training cutoff —
@@ -7875,7 +7849,7 @@ authorization authority, and hardens the point-of-action hooks.
   gap-analysis row in the `production-readiness.md` template; the dev owns the
   upgrade on a clean branch with tests green (propose, don't force).
 
-### 1.10.0
+## 1.10.0
 
 - **New: adopt an existing non-template repo — `/steer:adopt`.** Until now the
   plugin assumed every repo was forked from `repository-template` (`/steer:init`
@@ -7900,7 +7874,7 @@ authorization authority, and hardens the point-of-action hooks.
   distinct from a per-feature Brownfield change. (`rules/00-router.md`,
   `rules/30-spec-workflow.md`)
 
-### 1.9.0
+## 1.9.0
 
 - **PO demo-validation gate before handoff.** `/steer:build` no longer proposes
   the handoff PR on its own judgment that the app is done — the Definition of
@@ -7924,7 +7898,7 @@ authorization authority, and hardens the point-of-action hooks.
   with the 1.8.0 pre-production relaxation (was still "high-risk areas
   stubbed and flagged").
 
-### 1.8.0
+## 1.8.0
 
 - **Pre-production relaxation of the high-risk gates.** The gates exist to
   protect real systems and real data; while a product is **pre-production**
@@ -7949,7 +7923,7 @@ authorization authority, and hardens the point-of-action hooks.
   when drafted pre-production. `/steer:build` now interviews for deletion
   semantics explicitly (recoverable? how long? related items?).
 
-### 1.7.0
+## 1.7.0
 
 - **Token slim: the always-on ruleset shrinks ~27%** (~20.4 KB → ~14.9 KB
   injected per session — roughly 1.4k tokens saved in *every* session of
@@ -7977,7 +7951,7 @@ authorization authority, and hardens the point-of-action hooks.
   (loaded every session) cut to one-line what-it-does + when-to-use; the
   `/steer:conventions` summary now lists the new reference sections.
 
-### 1.6.0
+## 1.6.0
 
 - **New: PO path — `/steer:build` skill + command.** Non-technical product
   owners can now go idea → auto-drafted spec → intent validation → working
@@ -8016,7 +7990,7 @@ authorization authority, and hardens the point-of-action hooks.
   the exact pins once `/steer:init` commits populated locks. Both fixes are
   self-correcting at lock adoption.
 
-### 1.5.0
+## 1.5.0
 
 - **New: enforced version-pin verification.** The "default to current stable /
   don't trust training-data memory" rule was advisory only, and the failure
@@ -8041,7 +8015,7 @@ authorization authority, and hardens the point-of-action hooks.
   does not chmod, so a missing `+x` could previously leave a session with no
   org standards injected at all.
 
-### 1.4.0
+## 1.4.0
 
 - **Fix: toolchain pinning silently produced no lock.** mise only writes
   `mise.lock` when the file already exists, so the documented
@@ -8064,7 +8038,7 @@ authorization authority, and hardens the point-of-action hooks.
   no `pnpm-lock.yaml` on purpose (the starter's would go stale); generate and
   commit it (or `uv.lock`) once the real workspace exists.
 
-### 1.3.0
+## 1.3.0
 
 - New org standard: **standard mise tasks**. Every repo exposes
   `mise run dev:setup` — the idempotent one-command local environment (Compose
@@ -8086,7 +8060,7 @@ authorization authority, and hardens the point-of-action hooks.
   block in `mise.toml` and a Postgres `compose.yaml` (host port overridable via
   `POSTGRES_PORT` so parallel products don't collide on 5432).
 
-### 1.2.0
+## 1.2.0
 
 - New always-on rule **Commit autonomy** (`rules/45-commit-autonomy.md`): on a
   `feat/*`/`fix/*` branch, commit coherent units of work without asking the dev
@@ -8097,7 +8071,7 @@ authorization authority, and hardens the point-of-action hooks.
 - End-of-session checklist gains a matching item: all finished work committed,
   PR proposed if the change is complete.
 
-### 1.1.0
+## 1.1.0
 
 - Local-dev `.env` bootstrap: the Stack and Secrets rules now require that when
   setting up or running an app locally, `.env` is created and populated with
@@ -8106,7 +8080,7 @@ authorization authority, and hardens the point-of-action hooks.
   secret, API tokens) — instead of leaving the dev to hand-assemble it from the
   README. Deployed/production secret values must never be copied into it.
 
-### 1.0.0
+## 1.0.0
 
 - Initial release. Fresh start: replaces the earlier experimental 7-plugin
   three-zone marketplace (removed — preserved in git history) with a single

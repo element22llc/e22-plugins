@@ -35,7 +35,7 @@ regardless — this matrix is for tight iteration on a single failure.
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
 | `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
 | `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** — reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
-| `CHANGELOG.md` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
+| `.changes/` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
 | `scripts/release_cut.py`, `scripts/release_preflight.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `… release_preflight.py --report --offline --no-fetch` against the real tree |
 | `.claude/skills/{release,quick-release,audit-loop}/**`, `.claude/audit/**`, `.claude/workflows/**` | `plugin-check` (`claude plugin validate .claude/skills --strict`); the workflow has no gate | `claude plugin validate .claude/skills --strict`; for the workflow, `node -e` a syntax parse or run `/pre-release-audit` on a small delta |
 | `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
@@ -385,36 +385,66 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 ## CHANGELOG & versioning
 
-- Accumulate entries under `## steer` → `### [Unreleased]`. Implementation PRs do
-  **not** bump `plugins/steer/.claude-plugin/plugin.json` — the version bump
-  happens **once**, in the release PR that renames `[Unreleased]` to the new
-  version. A stream of PRs thus cuts one coherent release.
-- **No merge conflicts on `CHANGELOG.md`.** Every PR adds bullets under the same
-  `### [Unreleased]` heading, so concurrent PRs would normally collide there.
-  `.gitattributes` marks the file `merge=union`: git's built-in union driver
-  keeps **both** sides' added lines instead of writing conflict markers, and
-  GitHub's merge button honors it too (it's a built-in driver, not a per-clone
-  custom one). For this to stay safe the `### [Unreleased]` heading must be
-  **persistent** — always present so PRs only add bullets under it and never
-  recreate (and duplicate) the heading. The release skill re-seeds an empty
-  `### [Unreleased]` after each cut, and `check_changelog.py` fails the build if
-  the heading is duplicated or not first. Practical notes: add each entry as its
-  **own bullet** (union merges cleanly at line granularity — avoid editing a
-  neighbor's bullet in the same PR), and union does not de-duplicate, so a real
-  semantic clash still needs a human glance at release time.
-- **Behaviour gate:** `check_changelog.py --base <ref>` requires a `CHANGELOG.md`
-  edit when any behaviour file changes. Behaviour prefixes are
-  `plugins/steer/{skills,hooks,rules,templates,scripts,policy}/` plus all three
-  version-bearing manifests as exact paths —
-  `plugins/steer/.claude-plugin/plugin.json`,
-  `plugins/steer/.github/plugin/plugin.json`, and
-  `.github/plugin/marketplace.json` (which sits outside `plugins/steer/`, so no
-  prefix reaches it). Anything matching `tests/` is
-  exempt. Changes confined to `CLAUDE.md`, `docs/`, or `.claude/` are not
-  behaviour files and need no entry.
-- `check_changelog.py` also validates (always, no git needed) that `plugin.json`'s
-  version equals the newest semver heading and that released headings descend in
-  strict semver order.
+- **One fragment per change, under `.changes/unreleased/`.** `CHANGELOG.md` is
+  **generated** — `changie merge` assembles it from `.changes/` — so never edit
+  it by hand; `check_changelog.py` fails when it drifts from the version files.
+  Between releases the committed `CHANGELOG.md` shows only *released* versions:
+  pending entries sit unassembled as fragments, and running `changie merge -u`
+  in a feature PR would splice them in and reintroduce the very conflict this
+  design removes.
+- **Writing a fragment.** For a one-liner:
+
+  ```sh
+  KIND=Fixed SLUG=init-commit-gate-guard \
+    BODY='- **Fixed: the thing.** why it mattered.' mise run changelog:new
+  ```
+
+  Entries here are usually 10–20 lines of prose, which does not survive a shell
+  variable — so write the file directly. Its name is
+  `<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml` (the same shape as `spec/history/`), and
+  a `body: |` block scalar keeps the prose intact:
+
+  ```yaml
+  kind: Fixed
+  time: 2026-09-15T12:00:00.000000-04:00
+  custom:
+    Slug: init-commit-gate-guard
+  body: |
+    - **Fixed: `/steer:init` no longer clobbers a repo's own `pre-commit` hook.**
+      6.2.0 wired the gate from both setup skills, but only `/steer:adopt`
+      carried the collision guard — so a repo that already owned a commit gate
+      had it displaced by bootstrap.
+  ```
+
+  The body carries its own `- ` bullet and `**Kind: …**` lead-in, exactly as
+  entries have always been written; `kind` is metadata that drives the version
+  bump and the grouping order, and is not rendered. Kinds are `Added`, `Changed`,
+  `Fixed`, `Security`, `Docs` (declared in `.changie.yaml` with their `auto:`
+  bump level).
+- **No merge conflicts, by construction.** Two PRs write two different paths, so
+  git never has to resolve anything. That is what retired the old
+  `CHANGELOG.md merge=union` driver — union is *line*-based, and a multi-line
+  entry is exactly the shape it splices together wrongly, the same reason
+  `spec/history/` is a directory rather than one appended file. Do not write a
+  fragment filename that already exists; the required slug makes a collision
+  essentially impossible (`changie new` alone stamps only to the second, and
+  concurrent calls in one second silently overwrite each other).
+- **Implementation PRs do not bump the version.** `plugins/steer/.claude-plugin/plugin.json`
+  moves **once**, at release: `changie merge` rewrites it and the two other
+  version-bearing manifests through `.changie.yaml`'s `replacements`. A stream of
+  PRs thus cuts one coherent release.
+- **Behaviour gate:** `check_changelog.py --base <ref>` requires a fragment to be
+  **added** under `.changes/unreleased/` when any behaviour file changes — editing
+  an existing fragment is amending somebody else's pending entry, not recording
+  yours, and does not satisfy the gate. Behaviour is deny-by-default: everything
+  under `plugins/steer/`, plus `.github/plugin/marketplace.json` (which sits
+  outside it), minus the exemptions enumerated in the script — `tests/` anywhere,
+  `evals/`, the plugin's maintainer `README.md`, and `plugins/steer/.claude/`.
+  Changes confined to `CLAUDE.md`, `docs/`, or `.claude/` need no fragment.
+- `check_changelog.py` also validates (always, no git or changie needed) that
+  `plugin.json`'s version equals the newest `.changes/vX.Y.Z.md`, that every
+  pending fragment is well-formed, and that the assembled `CHANGELOG.md` carries
+  exactly those versions in descending order.
 - **Never write a next-version number anywhere in an implementation PR** — not in
   prose, not in a code comment, and above all not as a
   `templates/reference/MIGRATIONS.md` entry heading. Your PR merges *before* the

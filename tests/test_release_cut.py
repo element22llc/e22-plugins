@@ -1,39 +1,65 @@
 """Tests for the deterministic release cut (``scripts/release_cut.py``).
 
-The cut used to be four hand edits in a skill body, each with a known trap: the
-non-unique ``### [Unreleased]`` text, the migration-ledger authoring stub that
-must never be stamped, and the Copilot marketplace's second ``version`` key.
-These tests pin each trap so the script can never regress into it.
+``changie`` owns the changelog and the manifest bump, so these run the real
+binary against a hermetic fixture repo: the assertions are about what actually
+lands on disk, not about a reimplementation of changie's behaviour. What is
+pinned here is every trap the cut has to avoid -- the migration-ledger authoring
+stub that must never be stamped, the Copilot marketplace's second ``version``
+key, and the preconditions changie itself has no opinion on.
 """
 
 from __future__ import annotations
 
 import json
+import shutil
 
 import pytest
 import release_cut as rc
 
-CHANGELOG = """\
-# Changelog
+pytestmark = pytest.mark.skipif(
+    shutil.which("changie") is None, reason="changie not on PATH (run via `mise run test`)"
+)
 
-## steer
-
-### [Unreleased]
-
-- **Added:** a new skill.
-- **Fixed:** an old bug.
-
-### 6.0.0
-
-- **Changed:** the big one.
-- house rule: add bullets under `### [Unreleased]`, never recreate the heading.
-
-## other
-
-### 1.0.0
-
-- nope
+CHANGIE_CONFIG = """\
+changesDir: .changes
+unreleasedDir: unreleased
+headerPath: header.tpl.md
+changelogPath: CHANGELOG.md
+versionExt: md
+versionFormat: "## {{.VersionNoPrefix}}"
+kindFormat: ""
+changeFormat: "{{.Body}}"
+newlines:
+  afterVersion: 1
+  beforeChangelogVersion: 1
+  endOfVersion: 1
+kinds:
+  - label: Added
+    auto: minor
+  - label: Fixed
+    auto: patch
+replacements:
+  - path: plugins/steer/.claude-plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
+  - path: plugins/steer/.github/plugin/plugin.json
+    find: '^  "version": ".*",$'
+    replace: '  "version": "{{.VersionNoPrefix}}",'
+  - path: .github/plugin/marketplace.json
+    find: '^      "version": ".*",$'
+    replace: '      "version": "{{.VersionNoPrefix}}",'
 """
+
+FRAGMENTS = {
+    "added-20260101-0000-a-new-skill.yaml": (
+        "kind: Added\ntime: 2026-01-01T00:00:00.000000-05:00\n"
+        "custom:\n  Slug: a-new-skill\nbody: '- **Added:** a new skill.'\n"
+    ),
+    "fixed-20260101-0001-an-old-bug.yaml": (
+        "kind: Fixed\ntime: 2026-01-01T00:01:00.000000-05:00\n"
+        "custom:\n  Slug: an-old-bug\nbody: '- **Fixed:** an old bug.'\n"
+    ),
+}
 
 MIGRATIONS = """\
 # Migrations
@@ -65,6 +91,15 @@ def repo(tmp_path, monkeypatch):
     (tmp_path / "plugins/steer/.github/plugin").mkdir(parents=True)
     (tmp_path / "plugins/steer/templates/reference").mkdir(parents=True)
     (tmp_path / ".github/plugin").mkdir(parents=True)
+    (tmp_path / ".changes/unreleased").mkdir(parents=True)
+
+    (tmp_path / ".changie.yaml").write_text(CHANGIE_CONFIG, encoding="utf-8")
+    (tmp_path / ".changes/header.tpl.md").write_text("# Changelog\n", encoding="utf-8")
+    (tmp_path / ".changes/v6.0.0.md").write_text(
+        "## 6.0.0\n\n- **Changed:** the big one.\n", encoding="utf-8"
+    )
+    for name, text in FRAGMENTS.items():
+        (tmp_path / ".changes/unreleased" / name).write_text(text, encoding="utf-8")
 
     files = {
         "CHANGELOG": tmp_path / "CHANGELOG.md",
@@ -72,11 +107,15 @@ def repo(tmp_path, monkeypatch):
         "PLUGIN_JSON": tmp_path / "plugins/steer/.claude-plugin/plugin.json",
         "COPILOT_PLUGIN_JSON": tmp_path / "plugins/steer/.github/plugin/plugin.json",
         "COPILOT_MARKETPLACE": tmp_path / ".github/plugin/marketplace.json",
+        "CHANGES_DIR": tmp_path / ".changes",
+        "UNRELEASED_DIR": tmp_path / ".changes/unreleased",
     }
-    files["CHANGELOG"].write_text(CHANGELOG, encoding="utf-8")
+    files["CHANGELOG"].write_text(
+        "# Changelog\n\n## 6.0.0\n\n- **Changed:** the big one.\n", encoding="utf-8"
+    )
     files["MIGRATIONS"].write_text(MIGRATIONS, encoding="utf-8")
     files["PLUGIN_JSON"].write_text(
-        '{\n  "name": "steer",\n  "displayName": "Steer — x",\n  "version": "6.0.0"\n}\n',
+        '{\n  "name": "steer",\n  "version": "6.0.0",\n  "displayName": "Steer"\n}\n',
         encoding="utf-8",
     )
     files["COPILOT_PLUGIN_JSON"].write_text(
@@ -87,7 +126,8 @@ def repo(tmp_path, monkeypatch):
         "{\n"
         '  "name": "e22-plugins",\n'
         '  "metadata": {\n    "version": "1.0.0"\n  },\n'
-        '  "plugins": [\n    {\n      "name": "steer",\n      "version": "6.0.0"\n    }\n  ]\n'
+        '  "plugins": [\n    {\n      "name": "steer",\n      "version": "6.0.0",\n'
+        '      "source": "./plugins/steer"\n    }\n  ]\n'
         "}\n",
         encoding="utf-8",
     )
@@ -97,101 +137,126 @@ def repo(tmp_path, monkeypatch):
     return tmp_path
 
 
-def test_cut_renames_heading_and_reseeds_empty_unreleased(repo):
-    assert rc.main(["cut", "6.1.0"]) == 0
-    text = rc.CHANGELOG.read_text(encoding="utf-8")
-    heads = [ln for ln in text.splitlines() if ln.startswith("### ")]
-    assert heads[:3] == ["### [Unreleased]", "### 6.1.0", "### 6.0.0"]
-    idx, bullets = rc.unreleased_block(text)
-    assert bullets == []
-    # The prose mention of the heading in the house-rules bullet is untouched.
-    assert "under `### [Unreleased]`, never recreate" in text
-    assert rc.released_versions(text) == ["6.1.0", "6.0.0"]
-
-
-def test_cut_renames_ledger_entries_but_never_the_stub(repo):
-    assert rc.main(["cut", "6.1.0"]) == 0
-    text = rc.MIGRATIONS.read_text(encoding="utf-8")
-    assert "### v6.1.0 — `foo` → `bar`" in text
-    assert "### v6.0.0 — earlier thing" in text
-    # The authoring stub inside the HTML comment keeps its [Unreleased] heading.
-    stub = text.split("<!-- Template for a new entry")[1]
-    assert "### [Unreleased] — <one-line what>" in stub
-    assert "v6.1.0" not in stub
+def test_cut_batches_fragments_and_empties_unreleased(repo):
+    rc.apply_cut("6.1.0")
+    version_file = (repo / ".changes/v6.1.0.md").read_text(encoding="utf-8")
+    assert version_file.startswith("## 6.1.0")
+    assert "- **Added:** a new skill." in version_file
+    assert "- **Fixed:** an old bug." in version_file
+    assert list((repo / ".changes/unreleased").glob("*.yaml")) == []
+    # ...and the assembled changelog carries the new version above the old one.
+    changelog = (repo / "CHANGELOG.md").read_text(encoding="utf-8")
+    assert changelog.index("## 6.1.0") < changelog.index("## 6.0.0")
 
 
 def test_cut_bumps_all_three_manifests_and_leaves_marketplace_metadata_alone(repo):
-    assert rc.main(["cut", "6.1.0"]) == 0
+    """release-publish.yml fires on the plugin.json version diff, so the merge
+    step is what makes the release publishable at all."""
+    rc.apply_cut("6.1.0")
     assert json.loads(rc.PLUGIN_JSON.read_text())["version"] == "6.1.0"
     assert json.loads(rc.COPILOT_PLUGIN_JSON.read_text())["version"] == "6.1.0"
-    market = json.loads(rc.COPILOT_MARKETPLACE.read_text())
-    assert market["plugins"][0]["version"] == "6.1.0"
-    assert market["metadata"]["version"] == "1.0.0"
-    # Textual edit: formatting (including the em dash) survives byte-for-byte.
-    assert '"displayName": "Steer — x"' in rc.PLUGIN_JSON.read_text(encoding="utf-8")
+    marketplace = json.loads(rc.COPILOT_MARKETPLACE.read_text())
+    assert marketplace["plugins"][0]["version"] == "6.1.0"
+    assert marketplace["metadata"]["version"] == "1.0.0"
+    assert rc.validate_cut("6.1.0") == []
 
 
-def test_dry_run_writes_nothing_and_prints_a_diff(repo, capsys):
-    before = {p: p.read_text() for p in (rc.CHANGELOG, rc.MIGRATIONS, rc.PLUGIN_JSON)}
-    assert rc.main(["cut", "6.1.0", "--dry-run"]) == 0
-    out = capsys.readouterr().out
-    assert "+### 6.1.0" in out and "+### v6.1.0" in out
-    for p, text in before.items():
-        assert p.read_text() == text
+def test_cut_renames_ledger_entries_but_never_the_stub(repo):
+    rc.apply_cut("6.1.0")
+    text = rc.MIGRATIONS.read_text(encoding="utf-8")
+    assert "### v6.1.0 — `foo` → `bar`" in text
+    # the authoring stub keeps its placeholder heading
+    assert text.count("### [Unreleased] — <one-line what>") == 1
+    assert "### v6.1.0 — <one-line what>" not in text
 
 
-def test_cut_refuses_without_bullets(repo, capsys):
-    rc.CHANGELOG.write_text(
-        CHANGELOG.replace("- **Added:** a new skill.\n- **Fixed:** an old bug.\n", ""),
-        encoding="utf-8",
+def test_dry_run_writes_nothing_and_prints_the_plan(repo, capsys):
+    before = {p: p.read_text(encoding="utf-8") for p in repo.rglob("*") if p.is_file()}
+    out = rc.preview_cut("6.1.0")
+    assert "- **Added:** a new skill." in out
+    assert "6.0.0 -> 6.1.0" in out
+    assert "metadata.version is left alone" in out
+    assert "### v6.1.0 — `foo` → `bar`" in out  # the migrations diff
+    after = {p: p.read_text(encoding="utf-8") for p in repo.rglob("*") if p.is_file()}
+    assert before == after
+
+
+def test_cut_refuses_with_no_pending_fragments(repo):
+    for frag in (repo / ".changes/unreleased").glob("*.yaml"):
+        frag.unlink()
+    with pytest.raises(rc.CutError, match="empty"):
+        rc.apply_cut("6.1.0")
+
+
+@pytest.mark.parametrize("version", ["6.0.0", "5.9.0", "not-a-version"])
+def test_cut_refuses_non_ascending_or_malformed_version(repo, version):
+    with pytest.raises(rc.CutError):
+        rc.apply_cut(version)
+
+
+def test_cut_refuses_when_manifests_already_disagree(repo):
+    rc.COPILOT_PLUGIN_JSON.write_text(
+        '{\n  "name": "steer",\n  "version": "5.0.0",\n  "skills": "skills/"\n}\n', encoding="utf-8"
     )
-    assert rc.main(["cut", "6.1.0"]) == 1
-    assert "nothing to release" in capsys.readouterr().err
+    with pytest.raises(rc.CutError, match="disagree"):
+        rc.apply_cut("6.1.0")
 
 
-@pytest.mark.parametrize("version", ["6.0.0", "5.9.9", "6.1"])
-def test_cut_refuses_non_ascending_or_malformed_version(repo, version, capsys):
-    assert rc.main(["cut", version]) == 1
-    assert rc.CHANGELOG.read_text() == CHANGELOG  # untouched
-
-
-def test_cut_refuses_when_manifests_already_disagree(repo, capsys):
-    rc.COPILOT_PLUGIN_JSON.write_text('{\n  "version": "5.9.0"\n}\n', encoding="utf-8")
-    assert rc.main(["cut", "6.1.0"]) == 1
-    assert "disagree" in capsys.readouterr().err
-
-
-def test_bump_manifest_refuses_an_ambiguous_version_line(repo):
-    text = '{\n  "metadata": {\n    "version": "6.0.0"\n  },\n  "version": "6.0.0"\n}\n'
-    with pytest.raises(rc.CutError, match="exactly one"):
-        rc.bump_manifest(text, rc.COPILOT_MARKETPLACE, "6.0.0", "6.1.0")
+def test_cut_refuses_to_overwrite_an_existing_version_file(repo):
+    (repo / ".changes/v6.1.0.md").write_text("## 6.1.0\n\n- already cut\n", encoding="utf-8")
+    with pytest.raises(rc.CutError, match="already exists"):
+        rc.apply_cut("6.1.0")
 
 
 def test_no_ledger_entries_is_a_silent_noop(repo):
     rc.MIGRATIONS.write_text(
-        MIGRATIONS.replace("### [Unreleased] — `foo` → `bar`\n\n- **What & why:** rename.\n\n", ""),
-        encoding="utf-8",
+        "# Migrations\n\n## Entries\n\n> Newest first.\n\n### v6.0.0 — earlier\n", encoding="utf-8"
     )
-    before = rc.MIGRATIONS.read_text()
-    assert rc.main(["cut", "6.1.0"]) == 0
-    assert rc.MIGRATIONS.read_text() == before
+    rc.apply_cut("6.1.0")
+    assert rc.validate_cut("6.1.0") == []
 
 
-def test_propose_reads_bump_from_bullet_vocabulary(repo):
-    info = rc.propose(rc.CHANGELOG.read_text())
-    assert info["suggested"] == "minor"
+def test_propose_reads_the_bump_from_fragment_kinds(repo):
+    """An `Added` fragment maps to `auto: minor` -- declared data, not a guess
+    at what a bullet's wording implied."""
+    info = rc.propose()
+    assert info["current"] == "6.0.0"
+    assert info["suggested"] == "6.1.0"
     assert info["candidates"] == {"major": "7.0.0", "minor": "6.1.0", "patch": "6.0.1"}
-    text = CHANGELOG.replace("- **Added:** a new skill.", "- **Removed:** the old skill.")
-    assert rc.propose(text)["suggested"] == "major"
-    text = CHANGELOG.replace("- **Added:** a new skill.", "- **Fixed:** wording.")
-    assert rc.propose(text)["suggested"] == "patch"
+    assert [(k, s) for k, s, _ in info["fragments"]] == [
+        ("Added", "a-new-skill"),
+        ("Fixed", "an-old-bug"),
+    ]
+
+
+def test_propose_refuses_when_nothing_is_pending(repo):
+    for frag in (repo / ".changes/unreleased").glob("*.yaml"):
+        frag.unlink()
+    with pytest.raises(rc.CutError, match="empty"):
+        rc.propose()
 
 
 def test_validate_cut_flags_a_stamped_stub(repo):
-    assert rc.main(["cut", "6.1.0"]) == 0
-    text = rc.MIGRATIONS.read_text().replace(
-        "### [Unreleased] — <one-line what>", "### v6.1.0 — <one-line what>"
+    rc.apply_cut("6.1.0")
+    text = rc.MIGRATIONS.read_text(encoding="utf-8")
+    rc.MIGRATIONS.write_text(
+        text.replace("### [Unreleased] — <one-line what>", "### v6.1.0 — <one-line what>"),
+        encoding="utf-8",
     )
-    rc.MIGRATIONS.write_text(text, encoding="utf-8")
-    errors = rc.validate_cut("6.1.0")
-    assert any("authoring stub was stamped" in e for e in errors)
+    assert any("authoring stub" in e for e in rc.validate_cut("6.1.0"))
+
+
+def test_validate_cut_flags_a_bumped_marketplace_metadata_version(repo):
+    rc.apply_cut("6.1.0")
+    text = rc.COPILOT_MARKETPLACE.read_text(encoding="utf-8")
+    rc.COPILOT_MARKETPLACE.write_text(
+        text.replace('"version": "1.0.0"', '"version": "6.1.0"'), encoding="utf-8"
+    )
+    assert any("metadata.version was bumped" in e for e in rc.validate_cut("6.1.0"))
+
+
+def test_release_notes_strips_the_version_heading(repo):
+    rc.apply_cut("6.1.0")
+    notes = rc.release_notes("6.1.0")
+    assert not notes.startswith("##")
+    assert notes.startswith("- **Added:** a new skill.")

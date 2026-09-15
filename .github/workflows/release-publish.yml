@@ -74,10 +74,10 @@ jobs:
           fi
 
       # Version source of truth is plugin.json; a manual dispatch may override it
-      # to re-publish an older release. Notes come from the matching CHANGELOG
-      # section -- a bump with no `### X.Y.Z` heading is a release-integrity bug,
-      # so fail loudly rather than cut an empty Release. Pure-stdlib script runs
-      # on the runner's system python3 (no mise/uv provisioning needed).
+      # to re-publish an older release. Notes come from that version's changie
+      # file (`.changes/vX.Y.Z.md`) -- a bump with no version file is a
+      # release-integrity bug, so fail loudly rather than cut an empty Release.
+      # Reading the file directly keeps changie off the runner: no provisioning.
       - name: Resolve version, target commit and notes
         if: steps.gate.outputs.run == 'true'
         id: meta
@@ -86,7 +86,7 @@ jobs:
           HEAD_SHA: ${{ github.sha }}
         run: |
           manifest="plugins/steer/.claude-plugin/plugin.json"
-          current=$(python3 scripts/changelog_release_notes.py current-version)
+          current=$(python3 -c 'import json;print(json.load(open("plugins/steer/.claude-plugin/plugin.json"))["version"])')
           version="${INPUT_VERSION:-$current}"
           case "$version" in
             *[!0-9.]*|"") echo "::error::not a semver version: '${version}'"; exit 1 ;;
@@ -108,7 +108,12 @@ jobs:
             latest="false"
           fi
           echo "Publishing steer ${version} at ${target} (latest=${latest})"
-          python3 scripts/changelog_release_notes.py notes "$version" >release-notes.md
+          notes_file=".changes/v${version}.md"
+          if [ ! -f "$notes_file" ]; then
+            echo "::error::no changelog version file ${notes_file} for ${version}"; exit 1
+          fi
+          # Drop the leading `## X.Y.Z` heading -- the Release title carries it.
+          sed '1{/^## /d;}' "$notes_file" | sed '1{/^$/d;}' >release-notes.md
           {
             echo "version=${version}"
             echo "tag=v${version}"

@@ -4,6 +4,9 @@ uv = "0.11"
 shellcheck = "latest"
 shfmt = "latest"
 actionlint = "latest"
+# Pinned, not "latest": changie assembles CHANGELOG.md and bumps plugin.json at
+# release, so a silent upgrade would change released output.
+changie = "1.26.0"
 # Local-only dev tools (node + the codegraph MCP code-intelligence server) are
 # NOT listed here: they are not used by CI (Claude Code is installed via
 # install.sh and Python via `uv sync`), and `codegraph@latest` cannot be pinned
@@ -169,6 +172,18 @@ run = [
 [tasks.hooktests]
 description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = ["sh plugins/steer/hooks/tests/run.sh"]
+
+[tasks."changelog:new"]
+description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=… BODY=…)"
+run = """
+changie new -k "${KIND:?set KIND=Added|Changed|Fixed|Security|Docs}" \
+  -m "Slug=${SLUG:?set SLUG to 3-6 kebab-case words}" \
+  -b "${BODY:?set BODY to the entry text, starting with '- **Kind: …**'}"
+"""
+
+[tasks."changelog:merge"]
+description = "Reassemble CHANGELOG.md from .changes/ (also syncs plugin.json's version)"
+run = "changie merge"
 
 [tasks."audit:status"]
 description = "Summarise the persistent pre-release findings ledger"
