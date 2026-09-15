@@ -333,6 +333,40 @@ def test_behaviour_gate_satisfied_by_an_added_fragment(git_repo: Path):
     assert errors == []
 
 
+def test_behaviour_gate_satisfied_by_a_release_cut(git_repo: Path):
+    """A release cut empties `unreleased/`, so the version file is its record."""
+    frag = git_repo / ".changes/unreleased/fixed-20260101-0000-demo.yaml"
+    frag.write_text(FRAGMENT, encoding="utf-8")
+    _git(git_repo, "add", "-A")
+    _git(git_repo, "commit", "-qm", "pending fragment")
+    _git(git_repo, "checkout", "-q", "-b", "chore/release-9.9.9")
+    # What `changie batch` + `merge` leave behind: the fragment is gone, a version
+    # file is added, and the version-bearing manifests moved.
+    frag.unlink()
+    (git_repo / ".changes/v9.9.9.md").write_text("## 9.9.9\n\n- entry\n", encoding="utf-8")
+    (git_repo / "plugins/steer/.claude-plugin/plugin.json").write_text(
+        '{"name": "steer", "version": "9.9.9"}\n', encoding="utf-8"
+    )
+    _git(git_repo, "add", "-A")
+    _git(git_repo, "commit", "-qm", "chore(release): steer 9.9.9")
+    errors: list[str] = []
+    check_changelog.check_behaviour_gate("main", errors)
+    assert errors == []
+
+
+def test_behaviour_gate_ignores_a_non_version_file_under_changes(git_repo: Path):
+    """Only a `vX.Y.Z.md` counts as a cut — not any file dropped in `.changes/`."""
+    _git(git_repo, "checkout", "-q", "-b", "feat/x")
+    (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
+    (git_repo / ".changes/notes.md").write_text("scratch\n", encoding="utf-8")
+    _git(git_repo, "add", "-A")
+    _git(git_repo, "commit", "-qm", "change skill + a stray .changes file")
+    errors: list[str] = []
+    check_changelog.check_behaviour_gate("main", errors)
+    assert len(errors) == 1
+    assert "changelog fragment must be added" in errors[0]
+
+
 def test_behaviour_gate_rejects_editing_someone_elses_pending_fragment(git_repo: Path):
     """Amending an existing fragment is not recording THIS change."""
     frag = git_repo / ".changes/unreleased/fixed-20260101-0000-demo.yaml"
