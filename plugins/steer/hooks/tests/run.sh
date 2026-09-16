@@ -1068,6 +1068,14 @@ printf '%s' "${out}" | grep -q 'not set up on the org standards yet' &&
 	bad "unmanaged: openspec repo must not get the greenfield bootstrap card" || ok
 oq_grep "unmanaged: openspec-setup names the namespaced ADR path" 'openspec/steer/decisions/' "${out}"
 oq_grep "unmanaged: openspec-setup names the namespaced tracker path" 'openspec/steer/tracker.md' "${out}"
+# It must NOT send the session to the bootstrap skills: init/adopt write a
+# spec/ spine from the templates, which is the competing spine rule 33 forbids.
+# They may only appear inside the explicit "do not run" sentence.
+printf '%s' "${out}" | grep -q 'Do \*\*not\*\* run `/steer:init`' ||
+	bad "unmanaged: openspec-setup must explicitly warn off /steer:init and /steer:adopt"
+printf '%s' "${out}" | grep -q 'Run \*\*`/steer:setup`\*\* to add them' &&
+	bad "unmanaged: openspec-setup must not route artifact creation to /steer:setup" || ok
+oq_grep "unmanaged: openspec-setup points at the bundled tracker template" 'templates/spec/tracker.md' "${out}"
 
 # Complete OpenSpec spine (steer's tracker under openspec/steer/) -> silent.
 UM5="$(new_repo unmanaged5)"

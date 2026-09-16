@@ -519,8 +519,13 @@ body still says `spec/decisions/` or `spec/tracker.md` — read it as
 out of the namespace the `openspec` CLI regenerates. If you find them at the old
 `spec/` paths, the repo predates the move: run **`/steer:sync`**.
 
-Toolchain and CI scaffolding are still steer's: run **`/steer:setup`** for the
-bundled scaffold. It will not fight the `openspec/` spine.
+Toolchain and CI scaffolding are still steer's — the bundled scaffold (mise,
+compose, CI, PR template) applies here unchanged. Reach it via **`/steer:setup`**
+*only when that scaffold is missing*, and do not let it route into
+`/steer:init` / `/steer:adopt`: those write a `spec/` spine from the templates
+and stamp `spec/.version`, which is the competing spine this rule exists to
+prevent. Missing `openspec/steer/tracker.md`? Instantiate
+`templates/spec/tracker.md` there directly — it is one file, not a bootstrap.
 
 
 ## Issue tracker integration (client-agnostic)

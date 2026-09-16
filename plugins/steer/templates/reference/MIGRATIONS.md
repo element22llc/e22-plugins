@@ -143,6 +143,13 @@ Name the file and say what to carry forward.
   migration's. Idempotent: once the old paths are gone the precondition is
   false, so re-running is a no-op.
 
+  **On the version stamp:** an OpenSpec repo that never had a `spec/` has no
+  `spec/.version` for `/steer:sync` step 3 to read, so it reports `unstamped` and
+  walks the ledger from the beginning. That is safe, not a bug — every
+  native-spine entry above no-ops on its own precondition, which tests for files
+  such a repo does not have. Giving the OpenSpec shape a stamp of its own is
+  follow-up work, not part of this move.
+
 ### v6.3.0 — every repo gets a real `CHANGELOG.md` (changie fragments)
 
 - **What & why:** the standard has always said the release changelog is the
