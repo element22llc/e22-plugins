@@ -37,7 +37,6 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
-. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # Resolve the work-tree root from the payload cwd (which may be a SUBDIRECTORY
 # of the repo). Not a git work tree → not a project we manage.
@@ -57,24 +56,44 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 STATE="$(steer_spine_state "${ROOT}")"
 [ "${STATE}" = "managed" ] && exit 0
 
-# An OpenSpec repo HAS a spine — it just is not steer's, so every message below
-# is wrong here: the greenfield card would demand a bootstrap that must not
-# happen, and the `foreign` adopt offer would fire on exactly the `spec/`
-# (decisions + tracker) that rule 33-spec-workflow-openspec tells this repo to
-# keep. Say the one thing that is still true and stop.
-#
-# `damaged` is excluded deliberately: a version-stamped steer spine missing
-# required files needs repair whatever the spec backend is — on an OpenSpec repo
-# that spine is where the ADRs and the tracker declaration live.
-if [ "${STATE}" != "damaged" ] && steer_has_openspec "${ROOT}"; then
-	printf '<!-- steer: openspec spine -->\n'
+# An OpenSpec repo has a spine — it just is not steer's. Both OpenSpec states
+# speak here rather than falling through to the greenfield card, which would
+# demand a bootstrap that lays a second, competing spine.
+if [ "${STATE}" = "openspec" ]; then
+	# Complete. Say so only if there is migration residue to clear; otherwise the
+	# repo is correctly set up and this hook has nothing to add.
+	if steer_openspec_migration_pending "${ROOT}"; then
+		printf '<!-- steer: openspec spine, pre-fold artifacts present -->\n'
+		printf '⚠ **This OpenSpec repo still carries steer artifacts at their old '
+		printf 'location** (`spec/tracker.md` and/or `spec/decisions/`). They now '
+		printf 'live under `openspec/steer/`. Run **`/steer:sync`** to apply the '
+		printf 'migration — until then the tracker declaration being read may not '
+		printf 'be the one you are editing.\n'
+	fi
+	exit 0
+fi
+
+if [ "${STATE}" = "openspec-setup" ]; then
+	# DO NOT route this to /steer:setup. Its init/adopt paths write
+	# spec/vision.md + spec/tracker.md from templates/spec/ and stamp
+	# spec/.version — precisely the competing spine rule 33 forbids here, and
+	# its routing table has no row for this state. The honest instruction is the
+	# direct one: instantiate the single template that is missing.
+	printf '<!-- steer: openspec spine without steer artifacts -->\n'
 	printf '**This repo uses OpenSpec for its spec spine** (`openspec/`). '
-	printf 'Spec work goes through the `/opsx:*` commands — not `/steer:init` or '
-	printf '`/steer:adopt`, which would lay down a competing `spec/features/**` '
-	printf 'spine. steer still supplies the org standards, ADRs '
-	printf '(**`/steer:adr`** → `spec/decisions/`) and the tracker declaration '
-	printf '(`spec/tracker.md`). Run **`/steer:setup`** only if the toolchain/CI '
-	printf 'scaffold is missing.\n'
+	printf 'Spec work goes through the `/opsx:*` commands.\n\n'
+	printf 'steer still owns two artifacts OpenSpec does not model, and **neither '
+	printf 'exists yet**:\n\n'
+	printf -- '- **Tracker declaration** → create `openspec/steer/tracker.md` from '
+	printf '`${CLAUDE_PLUGIN_ROOT}/templates/spec/tracker.md` and resolve its '
+	printf 'placeholders. Issue-first enforcement reads this file; until it '
+	printf 'declares `system: github`, the issue gates stay off.\n'
+	printf -- '- **ADRs** → `openspec/steer/decisions/`, written by '
+	printf '**`/steer:adr`** when the first hard-to-reverse choice comes up. '
+	printf 'Nothing to create up front.\n\n'
+	printf 'Do **not** run `/steer:init` or `/steer:adopt` to get these — they '
+	printf 'lay a competing `spec/features/**` spine. `/steer:setup` is for the '
+	printf 'toolchain/CI scaffold only, and only if that is missing.\n'
 	exit 0
 fi
 

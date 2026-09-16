@@ -504,16 +504,31 @@ bootstrap routes would lay a second, competing spine.
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Two artifacts stay steer's, because OpenSpec has no equivalent:**
+**Two artifacts are steer's, because OpenSpec has no equivalent — and on this
+repo they live under `openspec/steer/`, NOT in `spec/`:**
 
-- **ADRs** remain at `spec/decisions/000N-<slug>.md` (**`/steer:adr`**). A
+- **ADRs** → `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
   change's `design.md` is per-change and is archived with it; a hard-to-reverse
   choice has to outlive the change that made it.
-- **`spec/tracker.md`** remains — it declares the issue tracker and is what
-  issue-first enforcement reads. OpenSpec models no tracker.
+- **Tracker declaration** → `openspec/steer/tracker.md`. It declares the issue
+  tracker and is what issue-first enforcement reads. OpenSpec models no tracker.
+- **App guide** → `openspec/steer/app/`. Living documentation (how to use and
+  operate the product), not a spec artifact — Living docs applies unchanged,
+  only the path moves.
 
-Toolchain and CI scaffolding are still steer's: run **`/steer:setup`** for the
-bundled scaffold. It will not fight the `openspec/` spine.
+**This overrides every skill and rule that names a `spec/` path for these
+three.** A skill body still says `spec/decisions/`, `spec/tracker.md` or
+`spec/app/` — read it as `openspec/steer/…` here. The `steer/` segment keeps steer's durable artifacts
+out of the namespace the `openspec` CLI regenerates. If you find them at the old
+`spec/` paths, the repo predates the move: run **`/steer:sync`**.
+
+Toolchain and CI scaffolding are still steer's — the bundled scaffold (mise,
+compose, CI, PR template) applies here unchanged. Reach it via **`/steer:setup`**
+*only when that scaffold is missing*, and do not let it route into
+`/steer:init` / `/steer:adopt`: those write a `spec/` spine from the templates
+and stamp `spec/.version`, which is the competing spine this rule exists to
+prevent. Missing `openspec/steer/tracker.md`? Instantiate
+`templates/spec/tracker.md` there directly — it is one file, not a bootstrap.
 
 
 ## Issue tracker integration (client-agnostic)

@@ -28,7 +28,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `30-spec-workflow.md` | Spec workflow. |
 | `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
 | `32-living-docs.md` | Document in parallel, not after. |
-| `33-spec-workflow-openspec.md` | Spec workflow — OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs and `spec/tracker.md` stay steer's. |
+| `33-spec-workflow-openspec.md` | Spec workflow — OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs and the tracker declaration stay steer's, under `openspec/steer/`. |
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing rules. |

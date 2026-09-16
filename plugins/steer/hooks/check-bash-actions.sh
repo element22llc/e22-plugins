@@ -227,6 +227,9 @@ CWD="$(steer_field cwd)"
 ROOT="$(steer_repo_root "${CWD}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 steer_tracker_is_github "${ROOT}" || exit 0
+# Name the tracker this repo actually has (openspec/steer/tracker.md on an
+# OpenSpec repo) rather than hard-coding the native path into the message.
+steer_tracker_rel "${ROOT}"
 
 # --- Fire at most once per session+repo (keyed by resolved root). ---
 CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
@@ -234,7 +237,7 @@ MARK="${TMPDIR:-/tmp}/steer-issuecreate-guard.${SID:-nosid}.${CWD_KEY:-0}"
 [ -f "${MARK}" ] && exit 0
 : >"${MARK}" 2>/dev/null || true
 
-CTX="Issue-create contract check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to open an issue with a raw create (gh issue create / gh api / an MCP create-issue tool). Route issue creation through /steer:tracker-sync create instead, so the machine-readable contract is applied — steer markers (steer:kind / steer:source / managed block), the derived source:* label, the GitHub Issue Type, and native relationship edges — with find-before-create dedup. A contract-less issue is invisible to marker-based dedup, triage, board, and /steer:issues reconcile. If you are already running /steer:tracker-sync create (its rendered body carries those markers), disregard this. This nudge does not block the create and fires once per session."
+CTX="Issue-create contract check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to open an issue with a raw create (gh issue create / gh api / an MCP create-issue tool). Route issue creation through /steer:tracker-sync create instead, so the machine-readable contract is applied — steer markers (steer:kind / steer:source / managed block), the derived source:* label, the GitHub Issue Type, and native relationship edges — with find-before-create dedup. A contract-less issue is invisible to marker-based dedup, triage, board, and /steer:issues reconcile. If you are already running /steer:tracker-sync create (its rendered body carries those markers), disregard this. This nudge does not block the create and fires once per session."
 
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 exit 0

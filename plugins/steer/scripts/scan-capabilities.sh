@@ -71,6 +71,22 @@ PLUGIN="${2:-${CLAUDE_PLUGIN_ROOT:-${HERE%/scripts}}}"
 	exit 3
 }
 
+# Tracker path resolution is shared with the hooks — an OpenSpec repo keeps the
+# declaration at openspec/steer/tracker.md. Sourced rather than re-tested here so
+# this script and steer_tracker_is_github can never disagree about which file
+# decides "GitHub-Issues tracker". Missing lib (a partial install) degrades to
+# the native path rather than aborting the scan.
+if [ -r "${PLUGIN}/hooks/lib/scope.sh" ]; then
+	# shellcheck source=/dev/null
+	. "${PLUGIN}/hooks/lib/scope.sh"
+	steer_tracker_file "$ROOT"
+	steer_app_docs_dir "$ROOT"
+	STEER_APP_DOCS_REL="${STEER_APP_DOCS_DIR#"$ROOT"/}"
+else
+	STEER_TRACKER_FILE="$ROOT/spec/tracker.md"
+	STEER_APP_DOCS_REL="spec/app"
+fi
+
 emit() { printf '%s\t%s\t%s\n' "$1" "$2" "$3"; }
 
 # Literal marker present in a file? (read-only; missing file -> false)
@@ -149,7 +165,10 @@ fi
 # can never repair (it only splices into files that already exist). Presence of
 # the index IS the capability; the sync repair creates it from the app-docs
 # template. Always applies — a stub is valid, like an empty `decisions/`.
-F="spec/app/README.md"
+# On an OpenSpec repo the guide lives at openspec/steer/app/ — reported from the
+# resolved path, because sync REPAIRS an `absent` capability by creating the
+# file and would otherwise recreate a stray spec/ there.
+F="${STEER_APP_DOCS_REL}/README.md"
 if exists "$F"; then
 	emit "app-knowledge-docs" "present-wired" "$F"
 else
@@ -322,7 +341,7 @@ fi
 
 # --- github-issue-forms — PO-friendly Issue Forms (GitHub-Issues tracker) ---
 F=".github/ISSUE_TEMPLATE"
-if grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$ROOT/spec/tracker.md" 2>/dev/null; then
+if grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$STEER_TRACKER_FILE" 2>/dev/null; then
 	if exists "$F/config.yml"; then
 		emit "github-issue-forms" "present-wired" "$F"
 	else
@@ -340,7 +359,7 @@ fi
 # A repo scaffolded before these allow entries (or never onboarded) silently
 # denies every tracker write. GitHub-Issues tracker only; others n/a.
 F=".claude/settings.json"
-if ! grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$ROOT/spec/tracker.md" 2>/dev/null; then
+if ! grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$STEER_TRACKER_FILE" 2>/dev/null; then
 	emit "github-issue-permissions" "n/a" "$F"
 elif ! exists "$F"; then
 	emit "github-issue-permissions" "absent" "$F"

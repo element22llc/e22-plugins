@@ -47,6 +47,7 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/lifecycle.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # SessionStart payload carries cwd (may be a subdir); anchor spec lookups at the
 # work-tree root. Not a git repo → fall back to cwd (a spec/ may still be
@@ -56,6 +57,9 @@ STEER_INPUT="$(cat 2>/dev/null)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
+# The promotion notice names the tracker — resolve it, so an OpenSpec repo is
+# pointed at openspec/steer/tracker.md rather than a path it does not have.
+steer_tracker_rel "${ROOT}"
 
 RB_ORDER="$(steer_required_before_order)"
 
@@ -317,7 +321,7 @@ if [ "${TOTAL}" -gt 0 ] 2>/dev/null; then
 	if [ "${STALE_COUNT}" -gt 0 ] 2>/dev/null; then
 		printf '\n🚨 **%s blocking question(s) have rotted (open >%sd, not yet promoted)** — escalate now:\n' "${STALE_COUNT}" "${STEER_QUESTION_STALE_DAYS}"
 		printf '%s\n' "${STALE_REPORT}"
-		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `spec/tracker.md`.\n'
+		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `%s`.\n' "${STEER_TRACKER_REL}"
 	fi
 	printf '\nRun **/steer:questions** to sweep them and drive each to an answer '
 	printf '(or an explicit deferral). This notice clears itself once they are resolved.\n'

@@ -144,8 +144,11 @@ def _fixture_code_max(d: Path) -> None:
     (d / "infra").mkdir()  # has-iac, has-infra
     (d / "apps").mkdir()  # has-apps
     (d / "openspec" / "changes").mkdir(parents=True)  # has-openspec
+    (d / "openspec" / "steer").mkdir()
     (d / "spec").mkdir()
-    (d / "spec" / "tracker.md").write_text("system: github\n", encoding="utf-8")  # tracker-github
+    # openspec/ is present, so the tracker that decides tracker-github is the
+    # namespaced one; spec/tracker.md would leave the predicate false here.
+    (d / "openspec" / "steer" / "tracker.md").write_text("system: github\n", encoding="utf-8")
 
 
 # --- The runtime ceiling (hard, not a ratchet) -------------------------------

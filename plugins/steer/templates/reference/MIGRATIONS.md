@@ -94,6 +94,64 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — OpenSpec repos: steer's ADRs + tracker move under `openspec/steer/`
+
+- **What & why:** a repo whose spec spine is OpenSpec keeps two artifacts
+  OpenSpec does not model — the ADR log and the tracker declaration. The first
+  release to support that backend parked them in a thin `spec/` beside
+  `openspec/`, which left a repo with two spine directories and no way to tell
+  which was truth. They now live in **one** place, namespaced under
+  `openspec/steer/` so the `openspec` CLI (which regenerates
+  `openspec/AGENTS.md` wholesale and relocates whole change directories on
+  archive) cannot claim the path. **Native repos are untouched** — `spec/` stays
+  exactly as it was; this entry fires only where `openspec/` exists.
+- **Precondition:** an OpenSpec repo still carrying any of the three at the old
+  path — this fires:
+
+  ```sh
+  { test -f openspec/project.md || test -d openspec/specs || test -d openspec/changes; } &&
+    { test -f spec/tracker.md || test -d spec/decisions || test -d spec/app; } && echo pending
+  ```
+
+  No `openspec/` ⇒ no-op, and this is the common case. If **both** locations
+  hold a `tracker.md`, do **not** merge: surface the conflict and let the dev
+  pick which is current — the hooks read the `openspec/steer/` one.
+- **Action:** `git mv` each artifact that exists (never copy+delete — history
+  follows the file), creating `openspec/steer/` first:
+
+  ```sh
+  mkdir -p openspec/steer
+  git mv spec/tracker.md   openspec/steer/tracker.md     # if present
+  git mv spec/decisions    openspec/steer/decisions      # if present
+  git mv spec/app          openspec/steer/app            # if present
+  ```
+
+  Then an **in-file token rewrite** across the repo's tracked text files for
+  exactly these pairs — never a broader match, and never inside `CHANGELOG.md`
+  or `spec/HISTORY.md` / `spec/history/`, whose entries are historical record:
+
+  | Old | New |
+  |---|---|
+  | `spec/tracker.md` | `openspec/steer/tracker.md` |
+  | `spec/decisions/` | `openspec/steer/decisions/` |
+  | `spec/app/` | `openspec/steer/app/` |
+
+  Typical hit sites: `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, the PR
+  template, and any ADR cross-references inside the moved files themselves.
+  Show the diff before applying.
+
+  Finally, if `spec/` is now empty of everything but an unused `.version` stamp,
+  leave it — removing the last of a repo's `spec/` is the dev's call, not a
+  migration's. Idempotent: once the old paths are gone the precondition is
+  false, so re-running is a no-op.
+
+  **On the version stamp:** an OpenSpec repo that never had a `spec/` has no
+  `spec/.version` for `/steer:sync` step 3 to read, so it reports `unstamped` and
+  walks the ledger from the beginning. That is safe, not a bug — every
+  native-spine entry above no-ops on its own precondition, which tests for files
+  such a repo does not have. Giving the OpenSpec shape a stamp of its own is
+  follow-up work, not part of this move.
+
 ### v6.3.0 — every repo gets a real `CHANGELOG.md` (changie fragments)
 
 - **What & why:** the standard has always said the release changelog is the
