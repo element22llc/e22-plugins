@@ -482,6 +482,12 @@ This rule overrides the *paths and commands* in Spec workflow. Every other rule
 — stack, testing, coverage, Definition of Done, issue-first, drift gates,
 secrets, compliance, change size — applies unchanged.
 
+**`openspec/` IS this repo's spine**, so the router's bootstrap precedence and
+Durable decisions' "no `/spec` spine yet?" check are already satisfied: do not
+announce `/steer:setup`, `/steer:init` or `/steer:adopt` as the first move here,
+and do not read the absent `spec/features/**` as an unbootstrapped repo. Those
+bootstrap routes would lay a second, competing spine.
+
 - **New or changed behavior** → an OpenSpec change, not `spec/features/<id>/`:
   **`/opsx:propose`** writes `openspec/changes/<id>/` with `proposal.md`,
   `specs/`, `design.md`, `tasks.md`. Shape it with **`/opsx:explore`** first
@@ -493,7 +499,8 @@ secrets, compliance, change size — applies unchanged.
 - **Implement** from `tasks.md` (**`/opsx:apply`**), then **`/opsx:archive`** at
   merge — that archive is this repo's action history.
 - **Behavior changed** → update the owning requirement in the same PR, exactly
-  as the contract rule demands. `openspec validate --strict` is a pre-merge
+  as the contract rule demands. Where the expanded profile is enabled,
+  **`/opsx:verify`** (implementation vs. the change's artifacts) is a pre-merge
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
