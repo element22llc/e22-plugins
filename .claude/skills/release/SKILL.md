@@ -318,5 +318,12 @@ re-gate result.
   unavailable, re-publish with `gh workflow run release-publish.yml -f
   version=X.Y.Z` (an older version is tagged on the commit that introduced it and
   is not marked Latest), or, as a last resort, `gh release create vX.Y.Z --target
-  <merge-sha> --title "steer X.Y.Z" --generate-notes --notes-file <(sed '1{/^## /d;}'
-  .changes/vX.Y.Z.md)`.
+  <merge-sha> --title "steer X.Y.Z" --generate-notes --notes-file <(python3
+  scripts/reflow_release_notes.py .changes/vX.Y.Z.md)` — the reflow is not
+  optional dressing: a Release body renders in comment mode, so publishing the
+  80-column source verbatim breaks a line mid-sentence on nearly every line.
+- A dispatch **publishes** a missing Release; it never **rewrites** an existing
+  one (it exits at `Release already exists -> skipping`). Repairing a body that
+  was published wrong is therefore a `gh release edit --notes-file` — and the
+  file has to carry the `## What's Changed` tail from the current body, or the
+  `--generate-notes` section is lost.
