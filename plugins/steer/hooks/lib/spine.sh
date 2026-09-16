@@ -29,13 +29,60 @@ STEER_SPINE_REQUIRED="vision.md users.md glossary.md tracker.md"
 # dependency surface (repo-root.sh only) and stays usable on the hook hot path.
 STEER_SPINE_REQUIRED_MEMBER="PRODUCT.md"
 
+# steer_openspec_spine <repo_root> — true when OpenSpec owns this repo's spec
+# artifacts. Inlined as bare file tests rather than sourcing lib/scope.sh's
+# steer_has_openspec, for the same reason PRODUCT.md is inlined above: this file
+# keeps a dependency surface of repo-root.sh only and stays usable on the hook
+# hot path. The two definitions must agree — keep them in step.
+steer_openspec_spine() {
+	_r="${1:-.}"
+	[ -f "${_r}/openspec/project.md" ] ||
+		[ -d "${_r}/openspec/specs" ] ||
+		[ -d "${_r}/openspec/changes" ]
+}
+
+# steer_openspec_migration_pending <repo_root> — true when an OpenSpec repo still
+# carries steer's artifacts at their PRE-fold location. Those repos exist: the
+# interim shape shipped one release before the fold told them to keep a thin
+# `spec/` beside `openspec/`. /steer:sync's MIGRATIONS ledger moves them; this
+# predicate is what lets the session say so instead of silently reading an empty
+# openspec/steer/.
+steer_openspec_migration_pending() {
+	_r="${1:-.}"
+	[ -f "${_r}/spec/tracker.md" ] || [ -d "${_r}/spec/decisions" ]
+}
+
 # steer_spine_state <repo_root> — prints exactly one of:
+#   openspec       OpenSpec owns the spec artifacts; steer's two live under
+#                  openspec/steer/                          → silent
+#   openspec-setup an openspec/ spine, but steer's side is not laid down yet
+#                                                           → /steer:setup
 #   unmanaged  no spec/ dir                                → bootstrap (init/adopt)
 #   foreign    spec/ exists but no spec/.version           → not an spec spine
 #   damaged    spec/.version present but a required file is missing → repair/sync
 #   managed    spec/.version + every required file present  → silent
+#
+# THE OPENSPEC STATES ARE TESTED FIRST, and deliberately so. After the fold an
+# OpenSpec repo may have no `spec/` directory at all, which the ladder below
+# would read as `unmanaged` — the full greenfield bootstrap card, pushing an
+# init that would lay a second, competing spine. Making it a STATE rather than a
+# bypass in front of one caller is what keeps /steer:doctor, /steer:sync and
+# /steer:audit honest: they ask the same question and get the same answer.
+#
+# `damaged` no longer needs an OpenSpec carve-out. It had one while the interim
+# shape kept the ADRs and the tracker in `spec/` — that spine was still load-
+# bearing. Now those artifacts live under openspec/steer/, so leftovers in
+# `spec/` are migration residue, reported by steer_openspec_migration_pending.
 steer_spine_state() {
 	_root="${1:-.}"
+	if steer_openspec_spine "${_root}"; then
+		if [ -f "${_root}/openspec/steer/tracker.md" ]; then
+			printf 'openspec'
+		else
+			printf 'openspec-setup'
+		fi
+		return 0
+	fi
 	[ -d "${_root}/spec" ] || {
 		printf 'unmanaged'
 		return 0

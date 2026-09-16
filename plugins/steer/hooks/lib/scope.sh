@@ -27,7 +27,10 @@
 # needless nudge is recoverable, a silently-absent gate is not.
 steer_tracker_is_github() {
 	_root="${1:-.}"
-	_tracker="${_root}/spec/tracker.md"
+	# An OpenSpec repo keeps the tracker at openspec/steer/tracker.md; everywhere
+	# else it is the native spine path (steer_tracker_file, below).
+	steer_tracker_file "${_root}"
+	_tracker="${STEER_TRACKER_FILE}"
 	if [ ! -f "${_tracker}" ]; then
 		# Not a member either → genuinely no tracker declared (single-repo case,
 		# unchanged): the rule is provably out of scope.
@@ -96,7 +99,8 @@ steer_workspace_root() {
 # value from spec/tracker.md ("owner/name" for GitHub), or nothing when absent,
 # empty, or still the unresolved "[owner/repository]" placeholder.
 steer_tracker_repo() {
-	_tr="${1:-.}/spec/tracker.md"
+	steer_tracker_file "${1:-.}"
+	_tr="${STEER_TRACKER_FILE}"
 	[ -f "${_tr}" ] || return 1
 	_v="$(sed -n 's/^[[:space:]]*repository:[[:space:]]*//p' "${_tr}" 2>/dev/null | head -n 1)"
 	# Strip a trailing inline comment and surrounding quotes/whitespace.
@@ -197,6 +201,45 @@ steer_has_openspec() {
 	[ -f "${_r}/openspec/project.md" ] ||
 		[ -d "${_r}/openspec/specs" ] ||
 		[ -d "${_r}/openspec/changes" ]
+}
+
+# steer_tracker_file <repo-root> / steer_decisions_dir <repo-root> — where THIS
+# repo keeps the two artifacts OpenSpec does not model. On an OpenSpec repo they
+# live under `openspec/steer/`; everywhere else, in the native spine.
+#
+# The `steer/` segment is not decoration. `openspec/` is written by a third-party
+# CLI — `openspec update` regenerates `openspec/AGENTS.md` wholesale and
+# `openspec archive` relocates whole change directories — so steer's durable
+# artifacts sit in a namespaced subtree that upstream will not claim. A flat
+# `openspec/decisions/` would be one OpenSpec release away from a collision.
+#
+# Resolved from disk via steer_has_openspec, never from a marker file: this file
+# already refuses to let a declared value and the filesystem disagree (see
+# steer_polyrepo_role), and a repo cannot be half-migrated in the reader's view.
+#
+# These ASSIGN (STEER_TRACKER_FILE / STEER_DECISIONS_DIR) rather than print. Both
+# are reached from the PreToolUse hot path via steer_tracker_is_github, where a
+# command substitution would fork a subshell on every single tool call — the cost
+# this file's header warns about. Assignment keeps them the one definition of
+# each path without paying for it.
+steer_tracker_file() {
+	_r="${1:-.}"
+	if steer_has_openspec "${_r}"; then
+		STEER_TRACKER_FILE="${_r}/openspec/steer/tracker.md"
+	else
+		STEER_TRACKER_FILE="${_r}/spec/tracker.md"
+	fi
+}
+
+# shellcheck disable=SC2034  # STEER_DECISIONS_DIR is read by callers that source
+# this file (scripts/workspace-snapshot.sh), not within it.
+steer_decisions_dir() {
+	_r="${1:-.}"
+	if steer_has_openspec "${_r}"; then
+		STEER_DECISIONS_DIR="${_r}/openspec/steer/decisions"
+	else
+		STEER_DECISIONS_DIR="${_r}/spec/decisions"
+	fi
 }
 
 # steer_inject_when_one <token> <repo-root> — true / false for a SINGLE

@@ -28,13 +28,20 @@ bootstrap routes would lay a second, competing spine.
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Two artifacts stay steer's, because OpenSpec has no equivalent:**
+**Two artifacts are steer's, because OpenSpec has no equivalent — and on this
+repo they live under `openspec/steer/`, NOT in `spec/`:**
 
-- **ADRs** remain at `spec/decisions/000N-<slug>.md` (**`/steer:adr`**). A
+- **ADRs** → `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
   change's `design.md` is per-change and is archived with it; a hard-to-reverse
   choice has to outlive the change that made it.
-- **`spec/tracker.md`** remains — it declares the issue tracker and is what
-  issue-first enforcement reads. OpenSpec models no tracker.
+- **Tracker declaration** → `openspec/steer/tracker.md`. It declares the issue
+  tracker and is what issue-first enforcement reads. OpenSpec models no tracker.
+
+**This overrides every skill that names a `spec/` path for these two.** A skill
+body still says `spec/decisions/` or `spec/tracker.md` — read it as
+`openspec/steer/…` here. The `steer/` segment keeps steer's durable artifacts
+out of the namespace the `openspec` CLI regenerates. If you find them at the old
+`spec/` paths, the repo predates the move: run **`/steer:sync`**.
 
 Toolchain and CI scaffolding are still steer's: run **`/steer:setup`** for the
 bundled scaffold. It will not fight the `openspec/` spine.

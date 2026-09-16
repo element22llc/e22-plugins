@@ -238,16 +238,41 @@ usable on the hook hot path.
 | `damaged` | `spec/.version` present, a required artifact missing | nudge toward repair / `/steer:sync` |
 | `managed` | `spec/.version` + every required artifact present | silent |
 
-An **OpenSpec repo short-circuits this table.** When `steer_has_openspec` holds
-(`openspec/project.md`, `openspec/specs/` or `openspec/changes/` — a bare
-`openspec/` directory is not enough), `check-unmanaged-repo.sh` prints a short
-OpenSpec orientation instead of the `unmanaged` card or the `foreign` adopt
-offer: both would push a bootstrap that lays a competing `spec/features/**`
-spine beside `openspec/`, and `foreign` would fire on exactly the `spec/`
-(`decisions/` + `tracker.md`) that rule `33-spec-workflow-openspec` tells such a
-repo to keep. `damaged` is deliberately **not** short-circuited — on an OpenSpec
-repo that version-stamped spine is where the ADRs and the tracker declaration
-live, so it still needs repair.
+Two further states cover an **OpenSpec repo**, and they are tested **first**,
+before the `spec/` ladder above — such a repo may have no `spec/` directory at
+all, which the ladder would read as `unmanaged` and answer with the greenfield
+bootstrap card, pushing an init that would lay a competing `spec/features/**`
+spine beside `openspec/`:
+
+| State | Means | Consequence |
+| --- | --- | --- |
+| `openspec` | an `openspec/` spine **and** `openspec/steer/tracker.md` | silent — unless pre-fold artifacts linger in `spec/`, which points at `/steer:sync` |
+| `openspec-setup` | an `openspec/` spine, steer's side not laid down yet | short OpenSpec orientation naming `/steer:setup`; never the greenfield card or the `foreign` adopt offer |
+
+The OpenSpec test is `openspec/project.md`, `openspec/specs/` or
+`openspec/changes/` — a bare `openspec/` directory is not enough, mirroring this
+helper's refusal to read a bare `spec/` as a spine. Making these **states**
+rather than a bypass in front of one caller is what keeps `/steer:doctor`,
+`/steer:sync` and `/steer:audit` answering the same question the same way.
+
+### Where the two steer artifacts live
+
+OpenSpec models neither an ADR log nor a tracker, so steer keeps both — on an
+OpenSpec repo, under `openspec/steer/`:
+
+| Artifact | Native repo | OpenSpec repo |
+| --- | --- | --- |
+| ADRs | `spec/decisions/` | `openspec/steer/decisions/` |
+| Tracker declaration | `spec/tracker.md` | `openspec/steer/tracker.md` |
+
+The `steer/` segment is deliberate: `openspec/` is written by a third-party CLI
+(`openspec update` regenerates `openspec/AGENTS.md` wholesale; `archive`
+relocates whole change directories), so a flat `openspec/decisions/` would be one
+upstream release away from a collision. Both paths resolve through
+`steer_tracker_file` / `steer_decisions_dir` in `hooks/lib/scope.sh` — the single
+definition every hook and script reads, so nothing can disagree about which file
+declares the tracker. Repos on the pre-fold shape are carried across by the
+`MIGRATIONS.md` ledger entry that `/steer:sync` applies.
 
 Two things about that classification are load-bearing:
 

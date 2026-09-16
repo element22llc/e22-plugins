@@ -71,6 +71,19 @@ PLUGIN="${2:-${CLAUDE_PLUGIN_ROOT:-${HERE%/scripts}}}"
 	exit 3
 }
 
+# Tracker path resolution is shared with the hooks — an OpenSpec repo keeps the
+# declaration at openspec/steer/tracker.md. Sourced rather than re-tested here so
+# this script and steer_tracker_is_github can never disagree about which file
+# decides "GitHub-Issues tracker". Missing lib (a partial install) degrades to
+# the native path rather than aborting the scan.
+if [ -r "${PLUGIN}/hooks/lib/scope.sh" ]; then
+	# shellcheck source=/dev/null
+	. "${PLUGIN}/hooks/lib/scope.sh"
+	steer_tracker_file "$ROOT"
+else
+	STEER_TRACKER_FILE="$ROOT/spec/tracker.md"
+fi
+
 emit() { printf '%s\t%s\t%s\n' "$1" "$2" "$3"; }
 
 # Literal marker present in a file? (read-only; missing file -> false)
@@ -322,7 +335,7 @@ fi
 
 # --- github-issue-forms — PO-friendly Issue Forms (GitHub-Issues tracker) ---
 F=".github/ISSUE_TEMPLATE"
-if grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$ROOT/spec/tracker.md" 2>/dev/null; then
+if grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$STEER_TRACKER_FILE" 2>/dev/null; then
 	if exists "$F/config.yml"; then
 		emit "github-issue-forms" "present-wired" "$F"
 	else
@@ -340,7 +353,7 @@ fi
 # A repo scaffolded before these allow entries (or never onboarded) silently
 # denies every tracker write. GitHub-Issues tracker only; others n/a.
 F=".claude/settings.json"
-if ! grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$ROOT/spec/tracker.md" 2>/dev/null; then
+if ! grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$STEER_TRACKER_FILE" 2>/dev/null; then
 	emit "github-issue-permissions" "n/a" "$F"
 elif ! exists "$F"; then
 	emit "github-issue-permissions" "absent" "$F"

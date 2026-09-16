@@ -1057,34 +1057,45 @@ mkdir -p "${UM3}/apps/web"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM3}/apps/web" um3)")"
 oq_grep "unmanaged: payload subdir cwd still resolves the repo root" '/steer:init' "${out}"
 
-# OpenSpec spine -> the greenfield card must NOT fire: it would demand a
-# bootstrap that lays a competing spec/features/** spine next to openspec/.
+# OpenSpec spine, steer's side not laid down -> `openspec-setup`. The greenfield
+# card must NOT fire: it would demand a bootstrap laying a competing
+# spec/features/** spine next to openspec/.
 UM4="$(new_repo unmanaged4)"
 mkdir -p "${UM4}/openspec/changes"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM4}" um4)")"
 oq_grep "unmanaged: openspec repo gets the OpenSpec notice" 'uses OpenSpec for its spec spine' "${out}"
 printf '%s' "${out}" | grep -q 'not set up on the org standards yet' &&
 	bad "unmanaged: openspec repo must not get the greenfield bootstrap card" || ok
-oq_grep "unmanaged: openspec notice keeps ADRs with steer" '/steer:adr' "${out}"
+oq_grep "unmanaged: openspec-setup names the namespaced ADR path" 'openspec/steer/decisions/' "${out}"
+oq_grep "unmanaged: openspec-setup names the namespaced tracker path" 'openspec/steer/tracker.md' "${out}"
 
-# OpenSpec alongside the spec/decisions + spec/tracker.md that rule 33 tells an
-# OpenSpec repo to keep -> reads as `foreign`, but the adopt offer must not fire
-# on exactly the spine the rule prescribes.
+# Complete OpenSpec spine (steer's tracker under openspec/steer/) -> silent.
 UM5="$(new_repo unmanaged5)"
-mkdir -p "${UM5}/openspec/changes" "${UM5}/spec/decisions"
-printf 'system: github\n' >"${UM5}/spec/tracker.md"
+mkdir -p "${UM5}/openspec/changes" "${UM5}/openspec/steer"
+printf 'system: github\n' >"${UM5}/openspec/steer/tracker.md"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM5}" um5)")"
-oq_grep "unmanaged: openspec + partial spec/ still gets the OpenSpec notice" 'uses OpenSpec for its spec spine' "${out}"
-printf '%s' "${out}" | grep -q 'no spec-spine marker' &&
-	bad "unmanaged: openspec repo keeping spec/decisions must not get the adopt offer" || ok
+assert_empty "unmanaged: complete openspec spine is silent" "${out}"
 
-# A DAMAGED steer spine still needs repair on an OpenSpec repo — that spine is
-# where the ADRs and the tracker declaration live.
+# Pre-fold residue: artifacts still at the OLD spec/ paths -> point at /steer:sync
+# rather than staying silent, since the tracker being READ is the openspec/ one.
 UM6="$(new_repo unmanaged6)"
-mkdir -p "${UM6}/openspec/changes" "${UM6}/spec"
-printf '1.0.0\n' >"${UM6}/spec/.version"
+mkdir -p "${UM6}/openspec/changes" "${UM6}/openspec/steer" "${UM6}/spec/decisions"
+printf 'system: github\n' >"${UM6}/openspec/steer/tracker.md"
+printf 'system: github\n' >"${UM6}/spec/tracker.md"
 out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM6}" um6)")"
-oq_grep "unmanaged: damaged spine still reported on an openspec repo" '/steer:sync' "${out}"
+oq_grep "unmanaged: pre-fold residue points at /steer:sync" '/steer:sync' "${out}"
+oq_grep "unmanaged: pre-fold residue names the old location" 'old location' "${out}"
+
+# A repo bootstrapped under the INTERIM shape (openspec/ + spec/ artifacts, no
+# openspec/steer/) reads as openspec-setup and must still be told to migrate
+# rather than offered /steer:adopt for its `foreign` spec/.
+UM7="$(new_repo unmanaged7)"
+mkdir -p "${UM7}/openspec/changes" "${UM7}/spec/decisions"
+printf 'system: github\n' >"${UM7}/spec/tracker.md"
+out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM7}" um7)")"
+printf '%s' "${out}" | grep -q 'no spec-spine marker' &&
+	bad "unmanaged: interim-shape openspec repo must not get the adopt offer" || ok
+oq_grep "unmanaged: interim-shape openspec repo gets the OpenSpec notice" 'uses OpenSpec for its spec spine' "${out}"
 
 # ---------------------------------------------------------------------------
 # scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
@@ -1831,6 +1842,35 @@ mkdir -p "${CRI_OSBARE}/openspec"
 out="$(run_inject "$(session_json "${CRI_OSBARE}" cri_osbare)")"
 printf '%s' "${out}" | grep -q 'OpenSpec backend' &&
 	bad "inject: bare openspec/ dir must not trigger the OpenSpec rule" || ok
+
+# ----- the tracker-path resolver (steer_tracker_file) -----
+# Proven through rule 36-issue-first, which injects only when the resolved
+# tracker declares `system: github`. This is the whole point of the fold: on an
+# OpenSpec repo the declaration that counts is openspec/steer/tracker.md, and the
+# pre-fold spec/tracker.md must no longer decide anything.
+
+# Tracker at the NAMESPACED path -> issue-first injects.
+CRI_OSTRK="$(new_repo cri_ostrk)"
+mkdir -p "${CRI_OSTRK}/openspec/changes" "${CRI_OSTRK}/openspec/steer"
+printf 'system: github\n' >"${CRI_OSTRK}/openspec/steer/tracker.md"
+out="$(run_inject "$(session_json "${CRI_OSTRK}" cri_ostrk)")"
+oq_grep "resolver: openspec/steer/tracker.md drives issue-first" 'Issue-first (GitHub-adopted repos)' "${out}"
+
+# Tracker only at the OLD path on an OpenSpec repo -> it no longer decides, so
+# issue-first stays out. (The session is told to migrate by check-unmanaged-repo.)
+CRI_OSOLD="$(new_repo cri_osold)"
+mkdir -p "${CRI_OSOLD}/openspec/changes" "${CRI_OSOLD}/spec"
+printf 'system: github\n' >"${CRI_OSOLD}/spec/tracker.md"
+out="$(run_inject "$(session_json "${CRI_OSOLD}" cri_osold)")"
+printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
+	bad "resolver: pre-fold spec/tracker.md must not drive issue-first on an openspec repo" || ok
+
+# A NATIVE repo is untouched by the fold: spec/tracker.md still decides.
+CRI_NATTRK="$(new_repo cri_nattrk)"
+mkdir -p "${CRI_NATTRK}/spec"
+printf 'system: github\n' >"${CRI_NATTRK}/spec/tracker.md"
+out="$(run_inject "$(session_json "${CRI_NATTRK}" cri_nattrk)")"
+oq_grep "resolver: native repo still resolves spec/tracker.md" 'Issue-first (GitHub-adopted repos)' "${out}"
 
 # ----- inject-standards.sh + orient-session.sh: knowledge-work mode -----
 # A non-git folder with no code/config markers (the typical Claude Cowork
@@ -3261,8 +3301,11 @@ done
 # (h) The real ruleset arrives whole in the code-max shape (every predicate true).
 IF_MAXREPO="$(new_repo inject-real-max)"
 mkdir -p "${IF_MAXREPO}/infra" "${IF_MAXREPO}/apps" "${IF_MAXREPO}/spec" \
-	"${IF_MAXREPO}/openspec/changes"
-printf 'system: github\n' >"${IF_MAXREPO}/spec/tracker.md"
+	"${IF_MAXREPO}/openspec/changes" "${IF_MAXREPO}/openspec/steer"
+# The fixture carries openspec/, so the tracker that DECIDES sits at the
+# namespaced path — writing it to spec/tracker.md would leave tracker-github
+# false and silently drop 36-issue-first from this "every predicate" shape.
+printf 'system: github\n' >"${IF_MAXREPO}/openspec/steer/tracker.md"
 : >"${INJ_ERR}"
 k=1
 all=""

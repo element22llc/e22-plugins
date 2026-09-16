@@ -114,9 +114,10 @@ done
 [ "${_qfound}" -eq 1 ] || printf -- '- none\n'
 
 # --- decisions ----------------------------------------------------------------
-printf '\n### Decisions (spec/decisions/)\n'
+steer_decisions_dir "${ROOT}"
+printf '\n### Decisions (%s/)\n' "${STEER_DECISIONS_DIR#"${ROOT}"/}"
 _dfound=0
-for _adr in "${ROOT}"/spec/decisions/[0-9]*.md; do
+for _adr in "${STEER_DECISIONS_DIR}"/[0-9]*.md; do
 	[ -f "${_adr}" ] || continue
 	_dfound=1
 	# Accept BOTH header forms: the bundled adr.md template writes a blockquote
@@ -162,7 +163,8 @@ fi
 
 # --- tracker (declared system only — never live state) -------------------------
 printf '\n### Tracker\n'
-_tsys="$(sed -n 's/^system: *//p' "${ROOT}/spec/tracker.md" 2>/dev/null | head -1)"
+steer_tracker_file "${ROOT}"
+_tsys="$(sed -n 's/^system: *//p' "${STEER_TRACKER_FILE}" 2>/dev/null | head -1)"
 printf -- '- system: %s (live issue state via /steer:tracker-sync, not this script)\n' \
 	"${_tsys:-none declared}"
 
