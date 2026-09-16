@@ -179,6 +179,26 @@ steer_polyrepo_role() {
 	return 1
 }
 
+# steer_has_openspec <repo-root> — true when this repo drives its spec spine with
+# OpenSpec (Fission-AI) rather than steer's own `spec/features/**` layout.
+#
+# A bare `openspec/` directory is NOT proof, for the same reason spine.sh refuses
+# to read a bare `spec/` as a spine: an empty folder, or an unrelated directory of
+# that name, would swap the whole spec-workflow ruleset to a backend the repo does
+# not actually use. Require a STRUCTURAL marker `openspec init` writes — the
+# generated project brief, or one of the two working directories.
+#
+# The fail direction matches the has-* predicates beside it rather than this
+# file's inject-everything default: no marker → false → the OpenSpec rule is
+# skipped and steer's native rule 30 governs. That is the safe outcome on an
+# unclassifiable repo, because 30 is the rule that ships today.
+steer_has_openspec() {
+	_r="${1:-.}"
+	[ -f "${_r}/openspec/project.md" ] ||
+		[ -d "${_r}/openspec/specs" ] ||
+		[ -d "${_r}/openspec/changes" ]
+}
+
 # steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
 # inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
@@ -189,6 +209,7 @@ steer_inject_when_one() {
 	has-iac) steer_repo_does_iac "$2" ;;
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
+	has-openspec) steer_has_openspec "$2" ;;
 	# polyrepo — true in EITHER role (workspace host or member); a single-repo
 	# product matches neither and pays nothing. NOTE: no rule currently carries
 	# `inject-when=polyrepo`, so this arm is not reachable from the inject loop.

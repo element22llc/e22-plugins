@@ -238,6 +238,17 @@ usable on the hook hot path.
 | `damaged` | `spec/.version` present, a required artifact missing | nudge toward repair / `/steer:sync` |
 | `managed` | `spec/.version` + every required artifact present | silent |
 
+An **OpenSpec repo short-circuits this table.** When `steer_has_openspec` holds
+(`openspec/project.md`, `openspec/specs/` or `openspec/changes/` — a bare
+`openspec/` directory is not enough), `check-unmanaged-repo.sh` prints a short
+OpenSpec orientation instead of the `unmanaged` card or the `foreign` adopt
+offer: both would push a bootstrap that lays a competing `spec/features/**`
+spine beside `openspec/`, and `foreign` would fire on exactly the `spec/`
+(`decisions/` + `tracker.md`) that rule `33-spec-workflow-openspec` tells such a
+repo to keep. `damaged` is deliberately **not** short-circuited — on an OpenSpec
+repo that version-stamped spine is where the ADRs and the tracker declaration
+live, so it still needs repair.
+
 Two things about that classification are load-bearing:
 
 - **`spec/.version`, not `spec/`, is the ownership marker.** A bare `spec/`
