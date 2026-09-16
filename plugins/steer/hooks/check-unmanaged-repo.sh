@@ -37,6 +37,7 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
+. "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # Resolve the work-tree root from the payload cwd (which may be a SUBDIRECTORY
 # of the repo). Not a git work tree → not a project we manage.
@@ -55,6 +56,27 @@ ROOT="$(steer_repo_root "${CWD}")" || exit 0
 # only a complete, version-stamped spine (spec/.version + spine files) does.
 STATE="$(steer_spine_state "${ROOT}")"
 [ "${STATE}" = "managed" ] && exit 0
+
+# An OpenSpec repo HAS a spine — it just is not steer's, so every message below
+# is wrong here: the greenfield card would demand a bootstrap that must not
+# happen, and the `foreign` adopt offer would fire on exactly the `spec/`
+# (decisions + tracker) that rule 33-spec-workflow-openspec tells this repo to
+# keep. Say the one thing that is still true and stop.
+#
+# `damaged` is excluded deliberately: a version-stamped steer spine missing
+# required files needs repair whatever the spec backend is — on an OpenSpec repo
+# that spine is where the ADRs and the tracker declaration live.
+if [ "${STATE}" != "damaged" ] && steer_has_openspec "${ROOT}"; then
+	printf '<!-- steer: openspec spine -->\n'
+	printf '**This repo uses OpenSpec for its spec spine** (`openspec/`). '
+	printf 'Spec work goes through the `/opsx:*` commands — not `/steer:init` or '
+	printf '`/steer:adopt`, which would lay down a competing `spec/features/**` '
+	printf 'spine. steer still supplies the org standards, ADRs '
+	printf '(**`/steer:adr`** → `spec/decisions/`) and the tracker declaration '
+	printf '(`spec/tracker.md`). Run **`/steer:setup`** only if the toolchain/CI '
+	printf 'scaffold is missing.\n'
+	exit 0
+fi
 
 # A spec/ exists but carries no ownership marker — do not assume it is managed. Offer
 # adoption once, softly, rather than the full greenfield bootstrap.

@@ -131,11 +131,19 @@ def _fixture_code(d: Path) -> None:
     _git_init(d)
 
 
+def _fixture_openspec(d: Path) -> None:
+    """A repo whose spec spine is OpenSpec: rule 33 injects on top of the native
+    spec-workflow rule (30 is unmarked by design, so both are delivered)."""
+    _git_init(d)
+    (d / "openspec" / "changes").mkdir(parents=True)  # has-openspec
+
+
 def _fixture_code_max(d: Path) -> None:
     """The heaviest consumer: every scope predicate satisfied, so every rule injects."""
     _git_init(d)
     (d / "infra").mkdir()  # has-iac, has-infra
     (d / "apps").mkdir()  # has-apps
+    (d / "openspec" / "changes").mkdir(parents=True)  # has-openspec
     (d / "spec").mkdir()
     (d / "spec" / "tracker.md").write_text("system: github\n", encoding="utf-8")  # tracker-github
 
@@ -254,6 +262,12 @@ INJECTED_PROFILES: dict[str, dict] = {
         "builder": _fixture_code,
         "gated": True,
         "blurb": "typical product repo",
+    },
+    # The OpenSpec lane: a repo whose spec artifacts live in openspec/.
+    "openspec": {
+        "builder": _fixture_openspec,
+        "gated": True,
+        "blurb": "spec spine driven by OpenSpec",
     },
     # The absolute worst case any consumer pays: every scope predicate true.
     "code-max": {
