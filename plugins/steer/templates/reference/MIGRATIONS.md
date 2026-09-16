@@ -105,12 +105,12 @@ Name the file and say what to carry forward.
   `openspec/AGENTS.md` wholesale and relocates whole change directories on
   archive) cannot claim the path. **Native repos are untouched** — `spec/` stays
   exactly as it was; this entry fires only where `openspec/` exists.
-- **Precondition:** an OpenSpec repo still carrying either artifact at the old
+- **Precondition:** an OpenSpec repo still carrying any of the three at the old
   path — this fires:
 
   ```sh
   { test -f openspec/project.md || test -d openspec/specs || test -d openspec/changes; } &&
-    { test -f spec/tracker.md || test -d spec/decisions; } && echo pending
+    { test -f spec/tracker.md || test -d spec/decisions || test -d spec/app; } && echo pending
   ```
 
   No `openspec/` ⇒ no-op, and this is the common case. If **both** locations
@@ -123,6 +123,7 @@ Name the file and say what to carry forward.
   mkdir -p openspec/steer
   git mv spec/tracker.md   openspec/steer/tracker.md     # if present
   git mv spec/decisions    openspec/steer/decisions      # if present
+  git mv spec/app          openspec/steer/app            # if present
   ```
 
   Then an **in-file token rewrite** across the repo's tracked text files for
@@ -133,6 +134,7 @@ Name the file and say what to carry forward.
   |---|---|
   | `spec/tracker.md` | `openspec/steer/tracker.md` |
   | `spec/decisions/` | `openspec/steer/decisions/` |
+  | `spec/app/` | `openspec/steer/app/` |
 
   Typical hit sites: `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, the PR
   template, and any ADR cross-references inside the moved files themselves.

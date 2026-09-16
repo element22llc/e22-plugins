@@ -107,9 +107,14 @@ if [ "${STATE}" != "managed" ]; then
 	MARK_BASE="${TMPDIR:-/tmp}/steer-gf-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 
 	# --- Spine dimension: fire AT MOST ONCE per session+repo. ---
+	# `openspec` is a COMPLETE spine, just not steer's — it is excluded here for
+	# the same reason `managed` is. Without this the nudge told an OpenSpec repo
+	# it had "no /spec spine" and pushed /steer:init at write time, which is the
+	# competing-spine bootstrap rule 33 exists to prevent — past session start,
+	# where check-unmanaged-repo.sh could no longer speak.
 	SPINE_MARK="${MARK_BASE}.spine"
 	SPINE_DUE=""
-	if [ ! -f "${SPINE_MARK}" ]; then
+	if [ "${STATE}" != "openspec" ] && [ ! -f "${SPINE_MARK}" ]; then
 		SPINE_DUE="yes"
 		: >"${SPINE_MARK}" 2>/dev/null || true
 	fi
@@ -144,6 +149,9 @@ if [ "${STATE}" != "managed" ]; then
 		damaged)
 			SPINE_NOTE="this repo has an incomplete spec spine (spec/.version is present but spine files are missing) — run /steer:sync to repair it"
 			;;
+		openspec-setup)
+			SPINE_NOTE="this repo's spec spine is OpenSpec (openspec/) — do NOT run /steer:init or /steer:adopt, which would lay a competing spec/features/** spine; what is missing is steer's tracker declaration, so create openspec/steer/tracker.md from the bundled templates/spec/tracker.md and resolve its placeholders"
+			;;
 		*)
 			SPINE_NOTE="this repo has no /spec spine — if you are starting this product from scratch, bootstrap first with /steer:init (greenfield path); if you are reverse-engineering pre-existing code, run /steer:adopt"
 			;;
@@ -152,7 +160,16 @@ if [ "${STATE}" != "managed" ]; then
 		# Build the message from whichever dimensions are due. The scaffold
 		# clause leads when present: it is the product-independent, re-asserting
 		# part.
-		SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml — proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core — mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene — applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs — not just app monorepos. Run /steer:init: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile — app, service, library or cli — not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit — pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+		# The scaffold is wanted on an OpenSpec repo too — but NOT via /steer:init,
+		# which lays a competing spec/features/** spine alongside openspec/.
+		case "${STATE}" in
+		openspec | openspec-setup)
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml — proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core — mise toolchain pinning and stack-agnostic CI hygiene — applies to EVERY managed repo regardless of stack. This repo's spec spine is OpenSpec, so do NOT run /steer:init or /steer:adopt: they would lay a competing spec/features/** spine beside openspec/. Lay the bundled scaffold down directly instead — at minimum a root mise.toml + CI, matching the repo profile (app / infra / service / library / cli). This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			;;
+		*)
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml — proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core — mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene — applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs — not just app monorepos. Run /steer:init: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile — app, service, library or cli — not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit — pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			;;
+		esac
 
 		SPINE_MSG="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap also installs the /spec spine — a user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr). A 'prototype' or 'quick' build does NOT waive this — it relaxes spec depth and ceremony, never the scaffold or the spine. This spine reminder fires once per session; it stops once a complete /spec spine exists."
 
@@ -170,8 +187,11 @@ fi
 # Nudge 2 — issue-first.
 # ---------------------------------------------------------------------------
 ISSUE_CTX=""
-# Scoped to GitHub-adopted repos: need /spec/tracker.md declaring system: github.
+# Scoped to GitHub-adopted repos: need the tracker declaring system: github.
 if steer_tracker_is_github "${ROOT}"; then
+	# Name the file this repo actually has — openspec/steer/tracker.md on an
+	# OpenSpec repo — rather than hard-coding the native path into the nudge.
+	steer_tracker_rel "${ROOT}"
 	# Fire at most once per session+repo. Check the marker BEFORE the
 	# git-spawning exemptions below, so a repeat write in an already-nudged
 	# session short-circuits without spawning git. Marker CREATION stays past
@@ -213,9 +233,9 @@ if steer_tracker_is_github "${ROOT}"; then
 			# /steer:work branch/PR guidance.
 			MODE="$(steer_delivery_mode "${ROOT}")"
 			if [ "${MODE}" = "solo-trunk" ]; then
-				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's /spec/tracker.md uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it — GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) — do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it — GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) — do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
 			else
-				ISSUE_CTX="Issue-first check: this repo's /spec/tracker.md uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change: under ~20 lines with no behavior change, where the PR is the evidence anchor) needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change: under ~20 lines with no behavior change, where the PR is the evidence anchor) needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
 			fi
 		fi
 	fi

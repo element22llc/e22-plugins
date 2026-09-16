@@ -242,6 +242,35 @@ steer_decisions_dir() {
 	fi
 }
 
+# steer_app_docs_dir <repo-root> — the app guide (how to use/operate the
+# product). Living documentation, not a spec artifact, and OpenSpec models it no
+# more than it models the ADR log — so it follows the same rule.
+#
+# This one is not cosmetic: scripts/scan-capabilities.sh reports the
+# `app-knowledge-docs` capability from this path, and /steer:sync REPAIRS an
+# `absent` capability by creating the file. Left pointing at `spec/app/`, sync
+# would recreate a stray `spec/` on the very repo that just moved out of it.
+# shellcheck disable=SC2034  # read by sourcing callers (scan-capabilities.sh).
+steer_app_docs_dir() {
+	_r="${1:-.}"
+	if steer_has_openspec "${_r}"; then
+		STEER_APP_DOCS_DIR="${_r}/openspec/steer/app"
+	else
+		STEER_APP_DOCS_DIR="${_r}/spec/app"
+	fi
+}
+
+# steer_tracker_rel <repo-root> — the tracker's path RELATIVE to the repo root,
+# for user-facing text. The nudges name the file they are enforcing; naming a
+# path the repo does not have teaches the reader the wrong location, so the
+# strings interpolate this rather than hard-coding `spec/tracker.md`.
+# shellcheck disable=SC2034  # read by sourcing callers (the nudge hooks).
+steer_tracker_rel() {
+	_r="${1:-.}"
+	steer_tracker_file "${_r}"
+	STEER_TRACKER_REL="${STEER_TRACKER_FILE#"${_r}"/}"
+}
+
 # steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
 # inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.

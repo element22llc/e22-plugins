@@ -1,0 +1,36 @@
+kind: Fixed
+body: |-
+  - **An OpenSpec repo is no longer pushed at `/steer:init` from the write path,
+    and the app guide follows the other steer artifacts.** Moving the ADR log and
+    the tracker declaration under `openspec/steer/` left three places still
+    reasoning about the native spine, two of which were real defects rather than
+    stale wording:
+
+    - **`check-write-nudges.sh` pushed the competing bootstrap at write time.**
+      Its spine dimension fires on any state that is not `managed`, so an
+      OpenSpec repo — a *complete* spine, just not steer's — was told it had "no
+      `/spec` spine" and pointed at `/steer:init` on the first source write. The
+      SessionStart notice had already declined to say that; the write-path nudge
+      said it anyway, later in the session, where nothing contradicted it.
+      `openspec` is now excluded alongside `managed`, `openspec-setup` gets a
+      note naming the missing tracker template instead of a bootstrap, and the
+      scaffold clause — which still applies, since the toolchain is wanted here
+      too — gained a variant that asks for the bundled scaffold directly rather
+      than via `init`.
+    - **`/steer:sync` would have recreated a stray `spec/`.**
+      `scan-capabilities.sh` reported the `app-knowledge-docs` capability from a
+      hard-coded `spec/app/README.md`, so on an OpenSpec repo it read `absent` —
+      and sync *repairs* an absent capability by creating the file, on the very
+      repo that had just moved out of `spec/`. The app guide now resolves through
+      `steer_app_docs_dir` to `openspec/steer/app/`, and the migration entry
+      moves it with the other two.
+    - **The issue-first nudges named a file the repo does not have.** Four
+      user-facing strings hard-coded `/spec/tracker.md` while the *gating* read
+      the resolved path — so the text taught the wrong location for the file it
+      was enforcing. They interpolate `steer_tracker_rel` now.
+
+    `/steer:setup`'s routing table also gained rows for the two OpenSpec states,
+    since it had none and could not have routed them anywhere sensible.
+time: 2026-09-16T16:00:00.000000000-04:00
+custom:
+  Slug: openspec-residual-native-paths

@@ -49,7 +49,9 @@ steer_openspec_spine() {
 # openspec/steer/.
 steer_openspec_migration_pending() {
 	_r="${1:-.}"
-	[ -f "${_r}/spec/tracker.md" ] || [ -d "${_r}/spec/decisions" ]
+	[ -f "${_r}/spec/tracker.md" ] ||
+		[ -d "${_r}/spec/decisions" ] ||
+		[ -d "${_r}/spec/app" ]
 }
 
 # steer_spine_state <repo_root> — prints exactly one of:

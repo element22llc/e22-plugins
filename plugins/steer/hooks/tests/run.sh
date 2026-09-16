@@ -1880,6 +1880,35 @@ printf 'system: github\n' >"${CRI_NATTRK}/spec/tracker.md"
 out="$(run_inject "$(session_json "${CRI_NATTRK}" cri_nattrk)")"
 oq_grep "resolver: native repo still resolves spec/tracker.md" 'Issue-first (GitHub-adopted repos)' "${out}"
 
+# ----- the nudge text names the tracker the repo actually has -----
+# The issue-first nudge enforces a named file; naming one the repo does not have
+# teaches the reader the wrong location.
+WN_OS="$(new_repo wn_os)"
+mkdir -p "${WN_OS}/openspec/changes" "${WN_OS}/openspec/steer" "${WN_OS}/src"
+printf 'system: github\n' >"${WN_OS}/openspec/steer/tracker.md"
+out="$(run_hook check-write-nudges.sh "$(json_write "${WN_OS}" wnos1 src/app.ts 'x')")"
+oq_grep "nudge: openspec repo's issue-first text names the namespaced tracker" 'openspec/steer/tracker.md' "${out}"
+printf '%s' "${out}" | grep -q "repo's /spec/tracker.md" &&
+	bad "nudge: openspec repo must not be told its tracker is /spec/tracker.md" || ok
+
+# A COMPLETE openspec spine must not trigger the spine dimension — it would tell
+# an OpenSpec repo it has "no /spec spine" and push /steer:init at write time.
+printf '%s' "${out}" | grep -q 'no /spec spine' &&
+	bad "nudge: complete openspec spine must not get the no-spine bootstrap nudge" || ok
+# The scaffold dimension still fires (no root mise.toml) and SHOULD — the
+# toolchain applies here too. What must not appear is the imperative "Run
+# /steer:init"; naming it inside the explicit warn-off sentence is the point.
+printf '%s' "${out}" | grep -q 'Run /steer:init' &&
+	bad "nudge: openspec repo must never be told to Run /steer:init" || ok
+oq_grep "nudge: openspec scaffold text warns off the bootstrap skills" 'do NOT run /steer:init or /steer:adopt' "${out}"
+
+# The native repo keeps the native text.
+WN_NAT="$(new_repo wn_nat)"
+mkdir -p "${WN_NAT}/spec" "${WN_NAT}/src"
+printf 'system: github\n' >"${WN_NAT}/spec/tracker.md"
+out="$(run_hook check-write-nudges.sh "$(json_write "${WN_NAT}" wnnat1 src/app.ts 'x')")"
+oq_grep "nudge: native repo's issue-first text names spec/tracker.md" 'spec/tracker.md' "${out}"
+
 # ----- inject-standards.sh + orient-session.sh: knowledge-work mode -----
 # A non-git folder with no code/config markers (the typical Claude Cowork
 # product-owner case) is classified 'knowledge': only the unmarked, always-on

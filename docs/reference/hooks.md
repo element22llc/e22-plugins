@@ -264,15 +264,25 @@ OpenSpec repo, under `openspec/steer/`:
 | --- | --- | --- |
 | ADRs | `spec/decisions/` | `openspec/steer/decisions/` |
 | Tracker declaration | `spec/tracker.md` | `openspec/steer/tracker.md` |
+| App guide | `spec/app/` | `openspec/steer/app/` |
 
 The `steer/` segment is deliberate: `openspec/` is written by a third-party CLI
 (`openspec update` regenerates `openspec/AGENTS.md` wholesale; `archive`
 relocates whole change directories), so a flat `openspec/decisions/` would be one
 upstream release away from a collision. Both paths resolve through
-`steer_tracker_file` / `steer_decisions_dir` in `hooks/lib/scope.sh` — the single
-definition every hook and script reads, so nothing can disagree about which file
-declares the tracker. Repos on the pre-fold shape are carried across by the
-`MIGRATIONS.md` ledger entry that `/steer:sync` applies.
+`steer_tracker_file` / `steer_decisions_dir` / `steer_app_docs_dir` in
+`hooks/lib/scope.sh` — the single definition every hook and script reads, so
+nothing can disagree about which file declares the tracker. `steer_tracker_rel`
+gives the repo-relative form the nudges name in their user-facing text, so a
+message never points at a path the repo does not have. Repos on the pre-fold
+shape are carried across by the `MIGRATIONS.md` ledger entry that `/steer:sync`
+applies.
+
+The app guide matters here for a reason that is not cosmetic:
+`scan-capabilities.sh` reports `app-knowledge-docs` from that path and
+`/steer:sync` **repairs** an absent capability by creating the file — left
+pointing at `spec/app/`, sync would recreate a stray `spec/` on the repo that
+just moved out of it.
 
 Two things about that classification are load-bearing:
 

@@ -36,10 +36,13 @@ repo they live under `openspec/steer/`, NOT in `spec/`:**
   choice has to outlive the change that made it.
 - **Tracker declaration** → `openspec/steer/tracker.md`. It declares the issue
   tracker and is what issue-first enforcement reads. OpenSpec models no tracker.
+- **App guide** → `openspec/steer/app/`. Living documentation (how to use and
+  operate the product), not a spec artifact — Living docs applies unchanged,
+  only the path moves.
 
-**This overrides every skill that names a `spec/` path for these two.** A skill
-body still says `spec/decisions/` or `spec/tracker.md` — read it as
-`openspec/steer/…` here. The `steer/` segment keeps steer's durable artifacts
+**This overrides every skill and rule that names a `spec/` path for these
+three.** A skill body still says `spec/decisions/`, `spec/tracker.md` or
+`spec/app/` — read it as `openspec/steer/…` here. The `steer/` segment keeps steer's durable artifacts
 out of the namespace the `openspec` CLI regenerates. If you find them at the old
 `spec/` paths, the repo predates the move: run **`/steer:sync`**.
 

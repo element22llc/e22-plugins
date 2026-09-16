@@ -41,6 +41,16 @@ the spine state *means* — see "Polyrepo" below — so read both lines before r
 | `damaged` | spine stamped but files missing | **`/steer:sync`** (repair) |
 | `managed` + template drift flagged | bootstrapped but behind a plugin release | **`/steer:sync`** (update) |
 | `managed`, no drift | already current | nothing to do — say so, suggest `/steer:next` |
+| `openspec-setup` | OpenSpec spine; steer's tracker declaration missing | **do not init/adopt** — create `openspec/steer/tracker.md` from `templates/spec/tracker.md`, then scaffold only (below) |
+| `openspec` | OpenSpec spine, steer's side present | scaffold/drift only — **`/steer:sync`** if the toolchain is behind; otherwise nothing to do |
+
+**An OpenSpec repo (`openspec/`) never routes to `/steer:init` or
+`/steer:adopt`.** Both write a `spec/` spine from `templates/spec/` and stamp
+`spec/.version` — a second, competing spine beside the one the repo actually
+uses (rule `33-spec-workflow-openspec`). What such a repo can still need from
+this door is the **bundled scaffold** (mise, compose, CI, PR template) and
+steer's two artifacts, which live under `openspec/steer/`. Lay those down
+directly; they are single files, not a bootstrap.
 
 The `unmanaged`-with-code vs `unmanaged`-greenfield call is the one judgment the
 state helper can't make alone: check for app code (a populated `apps/`/`src/`,
