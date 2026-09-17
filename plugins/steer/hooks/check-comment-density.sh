@@ -78,6 +78,10 @@ MARK="${TMPDIR:-/tmp}/steer-comment-density.${SID:-nosid}.${KEY:-0}"
 # still over, because one ignorable notice is what the block tier exists to
 # escape — capped, so a file that genuinely cannot be trimmed stops nagging.
 if [ "${TIER}" = advise ]; then
+	# Back under a third: clear the block cap. The cap exists to stop nagging on a
+	# file that cannot be trimmed, and this one demonstrably can — without this a
+	# file that recovers and then regresses stays silent for the rest of the session.
+	rm -f "${MARK}.block" 2>/dev/null || true
 	[ -f "${MARK}" ] && exit 0
 	: >"${MARK}" 2>/dev/null || true
 else

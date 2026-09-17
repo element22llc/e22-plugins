@@ -3585,6 +3585,28 @@ assert_block "comment-density: bare allow-comments does not silence" "${out}"
 # The marker itself is a steer: directive, so it must not count toward the ratio:
 # 16 of 25 non-blank lines, not 17.
 assert_has "comment-density: marker line not counted" "${out}" '(16 of 25'
+# (p) trimming a blocked file back under a third is still heard, and resets the
+# block cap — the two marker resets exist for exactly this recover/regress path.
+{
+	gen_lines 16 '// step %s'
+	gen_lines 8 'const r%s = %s;'
+} >"${RCD}/src/recover.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
+assert_block "comment-density: recover case starts blocked" "${out}"
+{
+	gen_lines 6 '// why %s'
+	gen_lines 18 'const r%s = %s;'
+} >"${RCD}/src/recover.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
+assert_ctx "comment-density: trimmed into the advisory band is still heard" "${out}"
+assert_no_block "comment-density: trimmed file no longer blocks" "${out}"
+# Regressing past a third blocks again: the earlier cap must not have stuck.
+{
+	gen_lines 16 '// step %s'
+	gen_lines 8 'const r%s = %s;'
+} >"${RCD}/src/recover.ts"
+out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
+assert_block "comment-density: regression re-blocks after recovery" "${out}"
 # (n) the Copilot manifest carries it under the PascalCase PostToolUse event —
 # camelCase would lose Claude matcher semantics, and `Write`/`Edit` would then
 # never match Copilot's runtime `create`/`edit` tool names.
