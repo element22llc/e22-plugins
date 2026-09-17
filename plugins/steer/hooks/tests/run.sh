@@ -3764,5 +3764,37 @@ ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f -print 2>/dev/null |
 [ -z "${ASCII_DIRTY}" ] && ok ||
 	bad "bundled templates carry typographic characters:${ASCII_DIRTY}"
 
+# (l) scripts/check-ascii.sh carries a SECOND copy of the character set: a bulk
+# grep pattern used as a fast first pass over every tracked file, with the naming
+# table above run only on the files it flags. If the two ever disagree the gate
+# silently skips a file the write hook would deny, so assert every character the
+# table knows is matched by that pattern - and that no accented or guillemet
+# character is.
+ASCII_PAT="$(sed -n 's/^PATTERN="$(printf \(.*\))"$/\1/p' "${PLUGIN}/../../scripts/check-ascii.sh")"
+if [ -z "${ASCII_PAT}" ]; then
+	bad "check-ascii.sh: could not extract the bulk PATTERN for the parity check"
+else
+	ASCII_PAT="$(eval "printf ${ASCII_PAT}")"
+	ASCII_PARITY=""
+	for _oct in '\0342\0200\0224' '\0342\0200\0223' '\0342\0200\0220' '\0342\0200\0221' \
+		'\0342\0200\0222' '\0342\0200\0225' '\0342\0200\0230' '\0342\0200\0231' \
+		'\0342\0200\0234' '\0342\0200\0235' '\0342\0200\0246' '\0342\0200\0242' \
+		'\0302\0240' '\0342\0200\0257' '\0342\0200\0211' '\0342\0206\0222' \
+		'\0342\0206\0220' '\0342\0206\0224' '\0342\0207\0222'; do
+		printf 'a %b b\n' "${_oct}" | LC_ALL=C grep -qIE -- "${ASCII_PAT}" ||
+			ASCII_PARITY="${ASCII_PARITY} ${_oct}"
+	done
+	[ -z "${ASCII_PARITY}" ] && ok ||
+		bad "check-ascii.sh bulk pattern misses characters the naming table knows:${ASCII_PARITY}"
+	# Accented Latin and guillemets must never match - non-English copy is out of scope.
+	ASCII_FP=""
+	for _oct in '\0303\0251' '\0303\0240' '\0302\0253' '\0302\0273'; do
+		printf 'a %b b\n' "${_oct}" | LC_ALL=C grep -qIE -- "${ASCII_PAT}" &&
+			ASCII_FP="${ASCII_FP} ${_oct}"
+	done
+	[ -z "${ASCII_FP}" ] && ok ||
+		bad "check-ascii.sh bulk pattern matches non-English characters:${ASCII_FP}"
+fi
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
