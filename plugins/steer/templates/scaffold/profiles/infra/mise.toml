@@ -1,5 +1,6 @@
 # Root toolchain for an INFRASTRUCTURE repo (`infra` profile; replaces the core mise.toml,
 # not the nested infra/mise.toml of an app repo). Rationale: /steer:reference conventions -> "Toolchain".
+# steer:allow-comments most of the comment lines here are opt-in IaC stanzas the repo uncomments for its engine
 
 [settings]
 lockfile = true

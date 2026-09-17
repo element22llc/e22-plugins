@@ -1,5 +1,6 @@
 # Changelog assembly. Rationale: /steer:reference conventions -> "Changelog".
 # CHANGELOG.md is generated -- never edit it by hand.
+# steer:allow-comments what remains is the opt-in replacements stanza plus two traps recorded nowhere else
 changesDir: .changes
 unreleasedDir: unreleased
 headerPath: header.tpl.md

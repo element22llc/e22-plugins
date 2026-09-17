@@ -1,5 +1,6 @@
 # Branch-protection policy /steer:protect diffs against live GitHub settings and applies.
 # Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
+# steer:allow-comments each note names why a protection setting is what it is -- deleting them loses the security rationale, not noise
 
 schema: 3          # additive — v1 (no `protected_branches`) and v2 (no profiles) stay valid.
 
