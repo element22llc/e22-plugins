@@ -3537,6 +3537,20 @@ assert_empty "comment-density: missing file silent" "${out}"
 # (l) hooks.json registers it under PostToolUse with the sh prefix.
 tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh"' && ok ||
 	bad "hooks.json: check-comment-density.sh must be registered with the sh prefix"
+# (m) Copilot target: the CLI documents only a top-level additionalContext, so
+# the notice must not arrive wrapped in the Claude hookSpecificOutput envelope.
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-comment-density.sh "$(json_write "${RCD}" sCD11 src/dense.ts 'x')")"
+assert_has "comment-density copilot: flat additionalContext" "${out}" '{"additionalContext":"Comment-density check:'
+case "${out}" in
+*hookSpecificOutput*) bad "comment-density copilot: must not nest under hookSpecificOutput" ;;
+*) ok ;;
+esac
+assert_rc "comment-density copilot: never blocks" "$(last_rc)" 0
+# (n) the Copilot manifest carries it under the PascalCase PostToolUse event —
+# camelCase would lose Claude matcher semantics, and `Write`/`Edit` would then
+# never match Copilot's runtime `create`/`edit` tool names.
+grep -q '"PostToolUse"' "${HOOKS}/copilot-hooks.json" && ok ||
+	bad "copilot-hooks.json: check-comment-density.sh must be registered under PascalCase PostToolUse"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]
