@@ -19,5 +19,8 @@ comment exists only for a *why* the code cannot carry.
   this way; keep it so.
 - **A dense file is not a licence.** Write new code to this rule even in a
   comment-heavy file; trim adjacent noise only where the change already touches
-  those lines. When comments exceed a third of a file's lines the write-time
-  hook flags it — fix the file, don't dismiss the notice.
+  those lines. The write-time hook advises above a fifth of a file's lines and
+  **blocks** above a third — fix the file, don't dismiss the notice. Only when
+  every remaining comment earns its line, record that once in the file with
+  `steer:allow-comments <reason>`; the bar is the same as any escape hatch, and
+  a bare marker without a reason suppresses nothing.
