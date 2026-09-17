@@ -145,6 +145,12 @@ run = [
   "actionlint plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
 ]
 
+[tasks.check-ascii]
+description = "Fail on any typographic character in a tracked file (rule 85, ASCII everywhere)"
+# Reuses the shipped hook's character table, so this sweep and the write-time
+# gate cannot disagree. Rationale: scripts/check-ascii.sh.
+run = "sh scripts/check-ascii.sh"
+
 [tasks.shell]
 description = "Lint and format-check every shell script (plugin hooks + libs + tests, plugin scripts, repo scripts, shipped scaffold)"
 # The globs below must cover every `*.sh` the pre-commit `types: [shell]` hooks
@@ -237,7 +243,7 @@ description = "Run fast local checks (a superset of the pre-commit hygiene tier)
 # is never followed by a rejected `git commit`. `shell` covers the shellcheck +
 # shfmt hooks; `docs:check` covers the docs-sync hook (validate_docs.py, no docs
 # deps needed). When you add a pre-commit hook, add its task here too.
-depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check"]
+depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check", "check-ascii"]
 
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"

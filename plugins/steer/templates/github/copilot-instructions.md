@@ -1006,10 +1006,13 @@ anti-patterns prose: `/steer:reference conventions`.
   (and lockfile) in the same change; a plausible-looking undeclared package
   name is a hallucinated dependency that breaks in a clean environment.
   *(`package.json`; Python: `pyproject.toml`.)*
-- **ASCII in code and values** - typographic characters (em/en dashes, arrows,
-  smart quotes, ellipsis, non-breaking spaces) belong in prose and docs, never
-  in code, identifiers, config keys/values, or strings bound for an external
-  API - use the ASCII equivalent. Strict validators reject the rest.
+- **ASCII everywhere** - em/en dashes, curly quotes, ellipsis, arrows, bullets
+  and non-breaking spaces never appear in anything you produce: not in code,
+  config, identifiers or strings bound for an external API, and not in
+  comments, specs, docs, commit messages, PR text or chat either. Write `-`,
+  `'`, `"`, `...`, `->`. Strict validators reject the rest, and a write hook
+  denies them. This is about those characters only - accented letters,
+  guillemets and other non-English text are unaffected.
 
 
 ## Output discipline - earn every line

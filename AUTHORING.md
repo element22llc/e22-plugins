@@ -484,6 +484,16 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 
 ## Cross-cutting conventions
 
+- **ASCII only, in every file.** No em/en dashes, curly quotes, ellipsis
+  characters, bullets, arrows, non-breaking or thin spaces - anywhere, including
+  prose. Write `-`, `'`, `"`, `...`, `*`, `->`. This is the repo's own house
+  style *and* the standard it ships (rule 85), enforced by `mise run check-ascii`
+  and a pre-commit hook; `scripts/check-ascii.sh` reuses the shipped hook's
+  character table so the two cannot drift. A file that genuinely needs one of
+  these characters declares `steer:allow-typographic`. It does **not** restrict
+  non-English text: accented letters, guillemets and CJK are unaffected. Note
+  that `\uXXXX` typed into a Write/Edit tool payload is decoded to the real
+  character - author such literals through a quoted heredoc instead.
 - **Always namespace skills as `/steer:<skill>`** in rules, skills, and docs. A
   bare `/e22-*` in prose is flagged by validation.
 - **No `commands/` directory.** The legacy thin command shims were removed; skills

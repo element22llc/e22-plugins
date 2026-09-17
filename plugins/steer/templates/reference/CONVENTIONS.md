@@ -716,12 +716,17 @@ Patterns:
   why-comment an escape hatch requires). A dense file is not a licence: write new
   code to this rule regardless, and trim adjacent noise only where the change
   already touches those lines.
-- **ASCII in code, identifiers, and values.** Non-ASCII "typographic" characters -
-  em/en dashes, arrows, smart quotes, ellipsis, non-breaking spaces - belong in
-  prose and docs, not in code, identifiers, config keys/values, or any string
-  bound for an external API or system. Use the ASCII equivalent (`-`, `->`, `"`,
-  `'`, `...`, a plain space). When you copy text into code or a value,
-  ASCII-clean it first.
+- **ASCII everywhere.** Non-ASCII "typographic" characters - em/en dashes,
+  arrows, smart quotes, ellipsis, bullets, non-breaking spaces - do not appear
+  in anything we produce. Not in code, identifiers, config keys/values or any
+  string bound for an external API, and not in comments, specs, docs, commit
+  messages or PR text either. Use the ASCII equivalent (`-`, `->`, `"`, `'`,
+  `...`, `*`, a plain space); when you copy text in from anywhere, ASCII-clean
+  it first. A `PreToolUse` hook denies a write that introduces one, and
+  `steer:allow-typographic` in the same content is the escape hatch for a
+  genuine exception (a fixture asserting the character, a Unicode table).
+  Scope note: this is about those characters, not about non-English text -
+  accented letters, guillemets and CJK are unaffected.
 
 Anti-patterns to avoid:
 
@@ -752,12 +757,12 @@ Anti-patterns to avoid:
 - **Noise comments** - comments that restate the code, narrate obvious steps,
   decorative section banners, or commented-out dead code left in the file. They go
   stale and drown the why-comments that earn their place; delete on sight.
-- **Non-ASCII typographic characters in code or values** - an em/en dash, arrow,
-  smart quote, or ellipsis copied into an identifier, config key/value, or a
-  string sent to an external system. Strict validators reject them: AWS IAM's
-  `description` allows only ASCII plus Latin-1, so a `->` in a Terraform
-  `role_description` fails `apply`. Typography is fine in prose; the moment text
-  lands in code or a value, use the ASCII equivalent.
+- **Non-ASCII typographic characters, anywhere** - an em/en dash, arrow, smart
+  quote, or ellipsis, whether in an identifier, a config value, a string sent to
+  an external system, a comment, a spec or a doc. Strict validators reject them:
+  AWS IAM's `description` allows only ASCII plus Latin-1, so an em dash in a
+  Terraform `role_description` fails `apply`. They also read as machine-written.
+  Prose is not an exemption - use the ASCII equivalent everywhere.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
 (parameterized, migration-tracked), Pydantic v2 for boundary validation, type

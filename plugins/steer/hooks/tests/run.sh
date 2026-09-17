@@ -3569,29 +3569,36 @@ assert_deny "ascii: curly quote in a .json value" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA5 src/a.ts "const u = 'https://a.io ${EM} b';")")"
 assert_deny "ascii: value after a URL still scanned" "${out}"
 
-# (b) comments are where rule 85 ALLOWS these characters - the bundled scaffold
-# relies on that, so a comment-only occurrence must stay silent.
+# (b) COMMENTS ARE NOT EXEMPT. Rule 85 used to permit these characters in prose,
+# and the gate stripped comments before scanning; it no longer does, so the same
+# fixtures that once had to stay silent must now deny. This block is the
+# regression guard against the comment-stripping behaviour coming back.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA6 scripts/ci.sh "# Local services ${EM} committed.\nimage: postgres")")"
-assert_empty "ascii: hash comment exempt" "${out}"
+assert_deny "ascii: hash comment denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA7 compose.yaml "image: postgres:18 # mounts $(ch ellipsis)/data")")"
-assert_empty "ascii: trailing hash comment exempt" "${out}"
+assert_deny "ascii: trailing hash comment denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA8 src/a.ts "const x = 1; // width ${EM} height")")"
-assert_empty "ascii: trailing slash comment exempt" "${out}"
+assert_deny "ascii: trailing slash comment denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA9 src/a.ts "/* header\n * note ${EM} here\n */\nconst y = 2;")")"
-assert_empty "ascii: block comment interior exempt" "${out}"
+assert_deny "ascii: block comment interior denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA10 .vscode/x.json "  // Recommended ${EM} one per tool\n  a: 1")")"
-assert_empty "ascii: jsonc line-leading comment exempt" "${out}"
+assert_deny "ascii: jsonc comment denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA11 q.sql "-- table ${EM} notes\nselect 1;")")"
-assert_empty "ascii: sql dash comment exempt" "${out}"
+assert_deny "ascii: sql comment denied" "${out}"
 
-# (c) prose classes are out of scope entirely; so is a file type with no known
-# comment syntax (a deny must never be guessed at).
+# (c) prose is in scope too - Markdown, the /spec spine, the app guide. Only
+# machine-written classes stay out, plus a file type that is not recognised text
+# (a deny must never be guessed at).
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA12 NOTES.md "a ${EM} b")")"
-assert_empty "ascii: documentation exempt" "${out}"
+assert_deny "ascii: markdown prose denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA13 spec/features/x/intent.md "a ${EM} b")")"
-assert_empty "ascii: spec spine exempt" "${out}"
+assert_deny "ascii: spec spine denied" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA12b docs/guide.md "an arrow $(ch arrow) here")")"
+assert_deny "ascii: arrow in docs denied" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14 data/rows.csv "a ${EM} b")")"
-assert_empty "ascii: unknown file type exempt" "${out}"
+assert_empty "ascii: unrecognised file type still exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14b pnpm-lock.yaml "a ${EM} b")")"
+assert_empty "ascii: lockfile still exempt" "${out}"
 
 # (d) non-English copy must pass untouched - only the enumerated typographic set
 # matches, never accented letters or guillemets.
@@ -3670,17 +3677,17 @@ tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/che
 grep -q 'check-ascii-writes.sh' "${HOOKS}/copilot-hooks.json" && ok ||
 	bad "copilot-hooks.json: check-ascii-writes.sh must be registered for parity"
 
-# (k) THE REGRESSION THAT MATTERS: every bundled template must be clean in value
-# positions, or /steer:init and /steer:adopt would write files this very gate
-# then denies in the consumer repo. Runs the hook's own stripper, so a template
-# cannot pass here and fail live.
+# (k) THE REGRESSION THAT MATTERS: every bundled template must be clean, or
+# /steer:init and /steer:adopt would write files this very gate then denies in
+# the consumer repo. Markdown is included now that prose is in scope. Runs the
+# hook's own table, so a template cannot pass here and fail live.
 . "${HOOKS}/lib/typographic.sh"
-ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f ! -name '*.md' ! -name '*.mdx' -print 2>/dev/null |
+ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f -print 2>/dev/null |
 	while IFS= read -r f; do
 		[ -n "$(steer_typographic_scan "${f}")" ] && printf ' %s' "${f#"${PLUGIN}/"}"
 	done)"
 [ -z "${ASCII_DIRTY}" ] && ok ||
-	bad "bundled templates carry typographic characters in value positions:${ASCII_DIRTY}"
+	bad "bundled templates carry typographic characters:${ASCII_DIRTY}"
 
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

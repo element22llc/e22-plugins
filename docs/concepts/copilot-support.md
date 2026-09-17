@@ -332,7 +332,7 @@ could block edits.
 
 Three gates are ported so far, all surfacing as a soft **`ask`** (Copilot prompts
 you to confirm): the **version-pin policy** (`check-version-pins.sh`, a hard
-`deny` on Claude softened to `ask` here), the **ASCII-in-code-and-values gate**
+`deny` on Claude softened to `ask` here), the **ASCII-everywhere gate**
 (`check-ascii-writes.sh`, likewise a Claude `deny` softened to `ask`), and the
 **trunk-push graduation gate**
 (`check-bash-actions.sh`, an `ask` on both surfaces). One hook script serves both
