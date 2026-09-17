@@ -1,30 +1,16 @@
 #!/usr/bin/env sh
 # steer - a change that ships must bring a changelog fragment.
-#
-# WHAT COUNTS AS SHIPPING
-#   The inverse of this repo's own gate, because a product repo has no single
-#   shipped tree: everything counts EXCEPT paths that reach no user - the spec
-#   spine, docs, CI/editor config, tests, root prose, and the changelog machinery
-#   itself. Widen EXEMPT deliberately; each entry should be a path you can say
-#   ships nothing.
-#
-# WHAT SATISFIES IT
-#   A fragment ADDED under .changes/unreleased/. Editing an existing fragment is
-#   amending somebody else's pending entry, not recording yours.
-#
-# DELIVERY MODE
-#   Deliberately mode-blind, unlike the coverage gate. In pr-flow the PR is
-#   already gated, and the post-merge push re-checks the same diff and passes.
-#   In solo-trunk there is no PR at all, so this is the only thing standing
-#   between a trunk push and an unrecorded shipped change - exactly where the
-#   Definition-of-Done floor is supposed to bite.
-#
-# BASE RESOLUTION
-#   steer_ci_base() in ci-lib.sh. No base means the gate cannot see the change,
-#   so it skips (fail-open) - same convention as the coverage gate.
+# Rationale: /steer:reference conventions -> "Changelog".
+# Deliberately delivery-mode-blind: in solo-trunk there is no PR, so this is the
+# only thing between a trunk push and an unrecorded shipped change.
 set -eu
 
-. "$(dirname "$0")/ci-lib.sh"
+HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
+# a consumer repo lints these from its root and has no .shellcheckrc to lean on.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=ci-lib.sh
+. "${HERE}/ci-lib.sh"
 
 # Paths that ship nothing. Matched against each changed path with `case`.
 is_exempt() {

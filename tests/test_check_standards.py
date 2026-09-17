@@ -332,3 +332,63 @@ def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_pat
     errors: list[str] = []
     check_standards.check_skill_script_grants(errors)  # must not raise
     assert any("broken" in e for e in errors)
+
+
+def _write_wf(root: Path, body: str) -> None:
+    wf = root / "templates" / "github" / "workflows"
+    wf.mkdir(parents=True, exist_ok=True)
+    (wf / "dependabot-auto-merge.yml").write_text(body, encoding="utf-8")
+
+
+_WF_WITH_SCOPES = """on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  m:
+    steps:
+      - run: gh pr checks "$PR_URL" --watch --required --fail-fast
+"""
+
+
+_WF_WITHOUT_GH_PR_CHECKS = """on: push
+
+permissions:
+  contents: read
+
+jobs:
+  m:
+    steps:
+      - run: echo hi
+"""
+
+
+def test_gh_pr_checks_scopes_accepts_declared_scopes(monkeypatch, tmp_path: Path):
+    _write_wf(tmp_path, _WF_WITH_SCOPES)
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_gh_pr_checks_scopes(errors)
+    assert errors == []
+
+
+def test_gh_pr_checks_scopes_catches_the_566_regression(monkeypatch, tmp_path: Path):
+    """The pre-fix permissions block - the one that failed on the first Dependabot PR."""
+    _write_wf(tmp_path, _WF_WITH_SCOPES.replace("  checks: read\n  statuses: read\n", ""))
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_gh_pr_checks_scopes(errors)
+    assert len(errors) == 2
+    assert any("`checks: read`" in e for e in errors)
+    assert any("`statuses: read`" in e for e in errors)
+
+
+def test_gh_pr_checks_scopes_ignores_workflows_that_do_not_run_it(monkeypatch, tmp_path: Path):
+    _write_wf(tmp_path, _WF_WITHOUT_GH_PR_CHECKS)
+    monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
+    errors: list[str] = []
+    check_standards.check_gh_pr_checks_scopes(errors)
+    assert errors == []

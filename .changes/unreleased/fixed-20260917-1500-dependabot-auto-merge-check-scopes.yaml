@@ -1,0 +1,22 @@
+kind: Fixed
+body: |-
+  - **The bundled Dependabot auto-merge workflow no longer fails on a repo's
+    first Dependabot PR.** `dependabot-auto-merge.yml` declared only
+    `contents: write` and `pull-requests: write`, and a Dependabot-triggered run
+    gets **exactly** the permissions the workflow declares. Its wait step runs
+    `gh pr checks`, which resolves the GraphQL `statusCheckRollup` field - that
+    reads check runs (`checks`) and commit statuses (`statuses`), neither of
+    which was granted. So the job approved the PR and then died with
+    `Resource not accessible by integration
+    (node.statusCheckRollup.nodes.0.commit.statusCheckRollup)`: every managed
+    repo got a red Actions run on day one and the patch bump never merged. The
+    workflow now declares `checks: read` and `statuses: read` alongside the two
+    write scopes. `check_standards.py` gained the invariant - any bundled
+    workflow whose `run:` reaches for `gh pr checks` must declare both read
+    scopes - so the permissions map cannot drift away from the command it runs
+    again, and a ledger entry carries the two lines into already-bootstrapped
+    repos on the next `/steer:sync` (YAML workflows are reconciled by eye, not
+    by the additive helpers). Reported as issue #566.
+time: 2026-09-17T15:00:00.000000000-04:00
+custom:
+  Slug: dependabot-auto-merge-check-scopes

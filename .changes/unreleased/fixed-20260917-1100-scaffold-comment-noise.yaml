@@ -1,0 +1,35 @@
+kind: Fixed
+body: |-
+  - **The bundled scaffold no longer teaches the comment habit rule 08 forbids.**
+    Rule `08-code-comments` has said "why-only" since v6.1.0, but the templates
+    `/steer:init` and `/steer:adopt` instantiate were themselves comment-heavy -
+    `changie.yaml` at 53% comment lines, `scripts/ci-changelog.sh` at 40%,
+    `mise.toml` at 32% - so the first thing a managed repo saw was the density
+    the rule tells it to avoid, and new code was written to match the file it
+    landed in. The essays are gone; what they said is not lost, because nearly
+    all of it was already in `templates/reference/CONVENTIONS.md`:
+
+    - **`scripts/ci-changelog.sh`** carried a twenty-line header restating
+      CONVENTIONS' "Changelog" section almost verbatim (what counts as shipping,
+      what satisfies the gate, base resolution). Cut to the one-line header the
+      rest of the scaffold already uses plus the one fact CONVENTIONS does not
+      carry - that the gate is deliberately delivery-mode-blind.
+    - **`changie.yaml`** lost the fragments/curation rationale and the
+      release-cutting walkthrough, both duplicated in CONVENTIONS, and keeps the
+      `%-m`-vs-`%m` and same-second slug-collision traps that nothing else
+      records.
+    - **`mise.toml`** lost a banner-divider block and a nine-line `pre-commit`
+      essay, both covered by CONVENTIONS' "Standard mise tasks".
+    - **`scripts/ci-lib.sh`** lost a "converge this the next time that gate is
+      touched" note - task history, which rule 08 excludes by name.
+
+    Deliberately **not** stripped: the commented-out opt-in stanzas
+    (`replacements`, `[monorepo]`, the Ansible provider and `ansible:lint`), which
+    `CAPABILITIES.md` and `POLYREPO.md` document as the consumer's to tune; the
+    `# vX.Y.Z` SHA-pin comments the actions-security gate requires; and
+    `policy/branch-protection.yml`, whose comments each name a non-obvious
+    constraint (why `strict: false`, why the `solo` profile exists, why repo-wide
+    auto-merge stays off) rather than prose to trim.
+time: 2026-09-17T11:00:00.000000000-04:00
+custom:
+  Slug: scaffold-comment-noise

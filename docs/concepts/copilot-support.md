@@ -214,7 +214,7 @@ Code (`gen_agent_skills.py`):
 
 Three differences from Claude Code remain on the Copilot surfaces - the first two
 on both, the third on VS Code only (the CLI does run steer's three `PreToolUse`
-hooks, per the table above). Their
+gates and the `PostToolUse` comment-density notice, per the table above). Their
 *mitigations* do not: both notes below are injected by the generator into the
 portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
 **Copilot CLI** loads the authored `skills/` directly, where `context: fork` and
@@ -437,8 +437,8 @@ text that VS Code discards.
   Code where the check already ran.
 - **Worktree *teardown* is Claude-only too.** Stopping a worktree's Docker stack
   is now done by two Claude-Code lifecycle hooks (`SessionEnd` -> `docker:down`,
-  `WorktreeRemove` -> `docker:clean`), and `copilot-hooks.json` registers only the
-  three `PreToolUse` gates - so Copilot gets neither. This is exactly the trap this
+  `WorktreeRemove` -> `docker:clean`), and `copilot-hooks.json` registers no
+  lifecycle hook at all - so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
   Rules `24-worktrees` and `99-end-of-session` therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
@@ -468,8 +468,8 @@ text that VS Code discards.
   Code inline. Two others no longer need scoping because the surface-specific
   detail left the rule entirely: rule `62-hotfix` is now surface-neutral about the
   `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
-  `reconcile-issue-first.sh`, which is not ported - only the three `PreToolUse` gates
-  are, so on Copilot the prefix carries the convention alone), and rule
+  `reconcile-issue-first.sh`, which is not ported - no `Stop` hook is, so on
+  Copilot the prefix carries the convention alone), and rule
   `36-issue-first` no longer enumerates the `allow`/`ask` permission tiers. Those
   tiers are Claude Code's - they live in `.claude/settings.json` and Claude skill
   frontmatter, and are documented in the plugin's `ISSUE-WORKFLOW.md`, which the

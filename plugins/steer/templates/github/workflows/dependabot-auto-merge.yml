@@ -7,9 +7,13 @@ name: Dependabot auto-merge
 on: pull_request
 
 # Dependabot-triggered runs get exactly the permissions declared here.
+# `gh pr checks` resolves the GraphQL `statusCheckRollup`, which reads check runs
+# (`checks`) and commit statuses (`statuses`) - without both it fails, not degrades.
 permissions:
   contents: write
   pull-requests: write
+  checks: read
+  statuses: read
 
 jobs:
   dependabot-auto-merge:

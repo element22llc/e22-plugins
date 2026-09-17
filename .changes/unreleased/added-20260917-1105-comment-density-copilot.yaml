@@ -1,0 +1,29 @@
+kind: Added
+body: |-
+  - **The comment-density notice now reaches the Copilot CLI, and stops counting
+    lint directives as prose.** Two gaps that let comment-heavy writes through:
+
+    - **Copilot CLI parity.** `copilot-hooks.json` carried no `PostToolUse` entry
+      at all, so the density notice fired only on Claude Code and on Copilot in
+      VS Code (which runs the Claude `hooks.json` directly). The Copilot CLI got
+      nothing. `gen_copilot_hooks.py` now ports `check-comment-density.sh` under
+      the **PascalCase** `PostToolUse` key, which is load-bearing twice over:
+      Copilot applies Claude matcher semantics there, so `Write`/`Edit` resolve
+      to its runtime `create`/`edit` tools (the camelCase form would match
+      neither), and it feeds the snake_case `tool_name`/`tool_input` payload the
+      script already parses. The hook emits a **top-level** `additionalContext`
+      on that surface - the CLI documents only the flat key and never mentions
+      Claude's nested `hookSpecificOutput`, so the notice would otherwise be
+      dropped.
+    - **Directives are not comments.** The counter matched any line whose first
+      non-space character began a comment, which swept up the shebang and every
+      `# shellcheck`, `# noqa`, `# type:`, `// eslint-disable` and
+      `// @ts-expect-error` line. Short, directive-dense scripts therefore read
+      as comment-bloated - `scripts/ci-deps.sh` scored 38%, above the notice
+      threshold, on five lines of prose - which pointed the fix at the genuine
+      why-comments sitting beside the directives. Directives and the shebang are
+      machine-read instructions the file cannot work without; they still count
+      toward the line total, just not as comments.
+time: 2026-09-17T11:05:00.000000000-04:00
+custom:
+  Slug: comment-density-copilot
