@@ -136,10 +136,10 @@ steer_typographic_names() {
 	_steer_typo_hit "$(printf '%b' '\0342\0200\0221')" '2011' 'non-breaking hyphen U+2011 -> -'
 	_steer_typo_hit "$(printf '%b' '\0342\0200\0222')" '2012' 'figure dash U+2012 -> -'
 	_steer_typo_hit "$(printf '%b' '\0342\0200\0225')" '2015' 'horizontal bar U+2015 -> -'
-	_steer_typo_hit "$(printf '%b' '\0342\0200\0230')" '2018' "left single quote U+2018 -> '"
-	_steer_typo_hit "$(printf '%b' '\0342\0200\0231')" '2019' "right single quote U+2019 -> '"
-	_steer_typo_hit "$(printf '%b' '\0342\0200\0234')" '201c' 'left double quote U+201C -> "'
-	_steer_typo_hit "$(printf '%b' '\0342\0200\0235')" '201d' 'right double quote U+201D -> "'
+	_steer_typo_hit "$(printf '%b' '\0342\0200\0230')" '2018' 'left single quote U+2018 -> straight single quote'
+	_steer_typo_hit "$(printf '%b' '\0342\0200\0231')" '2019' 'right single quote U+2019 -> straight single quote'
+	_steer_typo_hit "$(printf '%b' '\0342\0200\0234')" '201c' 'left double quote U+201C -> straight double quote'
+	_steer_typo_hit "$(printf '%b' '\0342\0200\0235')" '201d' 'right double quote U+201D -> straight double quote'
 	_steer_typo_hit "$(printf '%b' '\0342\0200\0246')" '2026' 'ellipsis U+2026 -> ...'
 	_steer_typo_hit "$(printf '%b' '\0342\0200\0242')" '2022' 'bullet U+2022 -> *'
 	_steer_typo_hit "$(printf '%b' '\0302\0240')" '00a0' 'non-breaking space U+00A0 -> space'

@@ -49,6 +49,16 @@ body: |-
 
     **Known gap:** writes performed through `Bash` heredocs are not inspected,
     the same documented bypass `check-version-pins.sh` carries.
+
+    **Along the way: a broken `jq` no longer silently disables a gate.**
+    `steer_have_jq` promised "a usable `jq` on PATH" but only tested presence, so
+    a `jq` that is installed yet cannot execute — a half-installed or
+    architecture-mismatched build, a shim — took the `jq` branch, returned an
+    empty payload, and every hook reading its input through that helper fell
+    through to its fail-open exit instead of degrading to the grep fallback
+    written for exactly that case. It now probes execution as well, once per
+    process and cached, so the fallback stays reachable. This affects
+    `check-version-pins.sh` and the write-path nudges as much as the new gate.
 time: 2026-09-17T11:00:00.000000000-04:00
 custom:
   Slug: ascii-write-gate

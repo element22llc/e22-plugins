@@ -56,6 +56,17 @@ FILE="$(steer_field file_path)"
 
 # The plugin's own source repo: its pre-commit gates own style there, and the
 # hook fixtures below must be able to contain the very characters it denies.
+#
+# OUTSIDE A WORK TREE THE GATE STAYS ON. When the root cannot be resolved this
+# falls back to cwd rather than exiting, matching the sibling deny gate
+# (check-version-pins.sh) rather than the advisory nudges, which bail with
+# `|| exit 0`. The nudges are about repo state (a /spec spine, a tracker), which
+# a non-repo genuinely does not have; this rule is about the bytes in the file
+# and holds just as well in a scratch directory. Exiting there would switch the
+# gate off in exactly the ad-hoc places a stray em dash is most likely to be
+# written and least likely to be caught by review. The plugin-repo skip is then
+# best-effort (a relative ROOT resolves against the hook process's cwd), which
+# is the right failure direction: at worst the gate stays on.
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 ROOT="$(steer_action_root "${CWD}" "${FILE}")" || ROOT="${CWD}"

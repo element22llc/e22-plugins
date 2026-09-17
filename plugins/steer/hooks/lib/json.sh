@@ -40,7 +40,25 @@ steer_json_unescape() {
 }
 
 # steer_have_jq — true if a usable jq is on PATH.
-steer_have_jq() { command -v jq >/dev/null 2>&1; }
+#
+# Presence is not usability, and the difference is not academic: a jq that is on
+# PATH but fails to execute (a broken or half-installed build, an incompatible
+# binary, a shim) would take the jq branch below and yield nothing, so every
+# caller would read an EMPTY payload and the hook would fall through to its
+# fail-open exit — silently disabling the gate rather than degrading to the
+# grep fallback written for exactly this case. Probing execution keeps that
+# fallback reachable. The probe runs at most once per process (the result is
+# cached), so the write path pays one extra exec, not one per field read.
+steer_have_jq() {
+	if [ -z "${_STEER_JQ_OK:-}" ]; then
+		if command -v jq >/dev/null 2>&1 && jq --version >/dev/null 2>&1; then
+			_STEER_JQ_OK=yes
+		else
+			_STEER_JQ_OK=no
+		fi
+	fi
+	[ "${_STEER_JQ_OK}" = yes ]
+}
 
 # _steer_field_grep <name> <json> — FIRST JSON string value for <name> in <json>,
 # returned still-escaped (caller unescapes). The value pattern allows escaped

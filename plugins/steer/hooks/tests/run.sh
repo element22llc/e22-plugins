@@ -3611,6 +3611,43 @@ assert_empty "ascii: Bash writes are the documented gap" "${out}"
 # ensure_ascii; the unescaper does not decode it, so match the text form too.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA16 main.tf 'name = a \\u2014 b')")"
 assert_deny "ascii: \\u escape spelling denied" "${out}"
+# WITHOUT jq this is the ONLY branch that fires: the jq path decodes — back
+# to raw bytes, so a machine with jq installed proves the byte branch twice and
+# the sentinel-folding branch never. Shim jq to "absent" and re-assert, or the
+# no-jq environment the fallback exists for stays untested.
+# The shim is a jq that EXISTS but cannot run, which is also the case
+# steer_have_jq must reject: presence alone would take the jq branch, yield an
+# empty payload, and silently disable the gate instead of falling back to grep.
+# PATH is exported in a subshell rather than passed through run_hook's ENV=,
+# which is word-split and so cannot carry a PATH containing spaces.
+NOJQ="${WORK}/nojq"
+mkdir -p "${NOJQ}"
+printf '#!/bin/sh\nexit 127\n' >"${NOJQ}/jq"
+chmod +x "${NOJQ}/jq"
+# SC2030/SC2031 — the PATH change being LOCAL to the command substitution is the
+# point: only these two hook invocations must see the shimmed jq, and the rest of
+# the suite must keep the real one.
+# shellcheck disable=SC2030,SC2031
+out="$(
+	PATH="${NOJQ}:${PATH}"
+	export PATH
+	run_hook check-ascii-writes.sh "$(json_write /tmp sA16b main.tf 'name = a \\u2014 b')"
+)"
+assert_deny "ascii: \\u escape spelling denied without jq" "${out}"
+# shellcheck disable=SC2030,SC2031
+out="$(
+	PATH="${NOJQ}:${PATH}"
+	export PATH
+	run_hook check-ascii-writes.sh "$(json_write /tmp sA16c main.tf "d = 'a ${EM} b'")"
+)"
+assert_deny "ascii: raw bytes denied without jq" "${out}"
+
+# (f2) not a git work tree -> the gate STAYS ON (unlike the advisory nudges,
+# which bail): this rule is about the bytes in the file, not about repo state.
+NOGIT="${WORK}/asciiNoGit"
+mkdir -p "${NOGIT}"
+out="$(run_hook check-ascii-writes.sh "$(json_write "${NOGIT}" sA20 main.tf "d = 'a ${EM} b'")")"
+assert_deny "ascii: enforced outside a work tree" "${out}"
 
 # (g) escape hatch, mirroring steer:allow-pin.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA17 src/a.ts "const dash = '${EM}'; // steer:allow-typographic fixture")")"
