@@ -28,7 +28,7 @@ bootstrap routes would lay a second, competing spine.
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Two artifacts are steer's, because OpenSpec has no equivalent - and on this
+**Three artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
 - **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
