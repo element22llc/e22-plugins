@@ -726,7 +726,12 @@ Patterns:
   `steer:allow-typographic` in the same content is the escape hatch for a
   genuine exception (a fixture asserting the character, a Unicode table).
   Scope note: this is about those characters, not about non-English text -
-  accented letters, guillemets and CJK are unaffected.
+  accented letters, guillemets and CJK are unaffected. It is **not** a
+  carve-out for a language's typesetting conventions, though: the apostrophe is
+  `'` in every language, French included, and a narrow no-break space inside
+  `« »` is still a non-breaking space. Those forms are what typesetting inserts
+  and what an editor should never contain; write the ASCII form and let
+  rendering do the rest.
 
 Anti-patterns to avoid:
 

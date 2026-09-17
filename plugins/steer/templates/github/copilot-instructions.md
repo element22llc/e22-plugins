@@ -1015,7 +1015,8 @@ anti-patterns prose: `/steer:reference conventions`.
   comments, specs, docs, commit messages, PR text or chat either. Write `-`,
   `'`, `"`, `...`, `->`. Strict validators reject the rest, and a write hook
   denies them. This is about those characters only - accented letters,
-  guillemets and other non-English text are unaffected.
+  guillemets and other non-English text are unaffected. The apostrophe is `'`
+  in every language, French included; typeset forms are never the exception.
 
 
 ## Output discipline - earn every line
