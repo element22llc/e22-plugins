@@ -20,10 +20,12 @@ import gen_copilot_hooks
 
 def _claude_hooks(*scripts: str) -> str:
     """A hooks.json wiring each script the way the real manifest does: the
-    injector under SessionStart, registered once per part as ``<k> <N>``; every
-    other script under PreToolUse (bash-actions gets the broader Claude matcher
-    so the generator's override is exercised)."""
+    injector under SessionStart, registered once per part as ``<k> <N>``; the
+    comment-density notice under PostToolUse; every other script under PreToolUse
+    (bash-actions gets the broader Claude matcher so the generator's override is
+    exercised)."""
     pre: list[dict] = []
+    post: list[dict] = []
     session: list[dict] = []
     for s in scripts:
         if s == "inject-standards.sh":
@@ -42,27 +44,33 @@ def _claude_hooks(*scripts: str) -> str:
             )
             continue
         matcher = "Bash|mcp__.*[Ii]ssue.*" if "bash-actions" in s else "Write|Edit"
-        pre.append(
-            {
-                "matcher": matcher,
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": f'sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{s}"',
-                        "timeout": 10,
-                    }
-                ],
-            }
-        )
+        entry = {
+            "matcher": matcher,
+            "hooks": [
+                {
+                    "type": "command",
+                    "command": f'sh "${{CLAUDE_PLUGIN_ROOT}}/hooks/{s}"',
+                    "timeout": 10,
+                }
+            ],
+        }
+        (post if "comment-density" in s else pre).append(entry)
     hooks: dict = {}
     if session:
         hooks["SessionStart"] = session
     if pre:
         hooks["PreToolUse"] = pre
+    if post:
+        hooks["PostToolUse"] = post
     return json.dumps({"hooks": hooks})
 
 
-PORTED = ["inject-standards.sh", "check-version-pins.sh", "check-bash-actions.sh"]
+PORTED = [
+    "inject-standards.sh",
+    "check-version-pins.sh",
+    "check-bash-actions.sh",
+    "check-comment-density.sh",
+]
 
 
 def _all_hooks(doc: dict) -> list[dict]:
@@ -86,12 +94,17 @@ def test_render_shapes_copilot_manifest(tmp_path: Path):
     src.write_text(_claude_hooks(*PORTED))
     doc = json.loads(gen_copilot_hooks.render(src))
     assert doc["version"] == 1
-    assert list(doc["hooks"]) == ["sessionStart", "PreToolUse"]
+    assert list(doc["hooks"]) == ["sessionStart", "PreToolUse", "PostToolUse"]
     hooks = doc["hooks"]["PreToolUse"]
     assert len(hooks) == 2
     pins, bash = hooks
     assert pins["matcher"] == "Write|Edit"  # no override
     assert bash["matcher"] == "Bash"  # override applied
+    # PascalCase, not camelCase: it is what makes Copilot apply Claude matcher
+    # semantics, so `Write`/`Edit` resolve to its runtime `create`/`edit` tools.
+    (density,) = doc["hooks"]["PostToolUse"]
+    assert density["matcher"] == "Write|Edit"
+    assert "check-comment-density.sh" in density["bash"]
     # The injector: registered ONCE (Copilot keeps the last hook's context, so the
     # Claude parts must not be mirrored), under the camelCase event the CLI honours
     # a top-level additionalContext for, with no matcher and no part arguments.
