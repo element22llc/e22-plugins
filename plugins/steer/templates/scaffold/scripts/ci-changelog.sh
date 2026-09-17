@@ -24,7 +24,12 @@
 #   so it skips (fail-open) — same convention as the coverage gate.
 set -eu
 
-. "$(dirname "$0")/ci-lib.sh"
+HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# a consumer repo lints these from its root and has no .shellcheckrc to lean on.
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=ci-lib.sh
+. "${HERE}/ci-lib.sh"
 
 # Paths that ship nothing. Matched against each changed path with `case`.
 is_exempt() {

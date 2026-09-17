@@ -3,6 +3,12 @@
 # Usage: sh scripts/ws.sh <list|clone|sync|status|code|check|preflight>
 # Ships into the repo (not the plugin) so `mise run ws:clone` works with no Claude Code and no plugin checkout.
 # Rationale: /steer:reference polyrepo.
+#
+# The single-quoted strings below carry literal markdown backticks (`mise run ws:clone`,
+# `path:`) into user-facing output — nothing here is meant to expand, so SC2016 is noise
+# for the whole file. It is disabled here rather than in a .shellcheckrc because the repo
+# this ships into lints it bare.
+# shellcheck disable=SC2016
 set -eu
 
 MANIFEST="spec/workspace.yml"
