@@ -1,52 +1,54 @@
 kind: Added
 body: |-
-  - **Typographic characters are now denied at write time, everywhere.** Rule 85
-    used to say ASCII belonged in code and values and allowed em dashes, curly
-    quotes, ellipsis, arrows and non-breaking spaces in prose and docs. It was a
-    bullet in an always-on ruleset, and always-on prose is exactly what a long
-    session drifts past. Two costs, one concrete and one not: an AWS resource
-    name or `description` carrying an em dash is rejected by the API's validator,
-    so the break surfaced at deploy time rather than at the keystroke; and the
-    characters read as machine-written wherever they land. The rule is now
-    **ASCII everywhere** - not in code, config, identifiers or strings bound for
-    an external API, and not in comments, specs, docs, commit messages, PR text
-    or chat either - and a new `PreToolUse` hook, `check-ascii-writes.sh`,
-    enforces it. It inspects only the text a `Write` / `Edit` / `MultiEdit` /
-    `NotebookEdit` *introduces* and **denies** the write, naming each offender
-    with its codepoint and the ASCII substitute (`em dash U+2014 -> -`), so the
-    rewrite is one step instead of a guess. A deny rather than a notice for the
-    same reason `check-version-pins.sh` is one: the check is deterministic, a
-    `PostToolUse` notice cannot unwrite the file, and a mechanical fixup is
-    unsafe - rewriting a curly quote inside a string literal can break its
-    quoting. Copilot CLI gets an `ask`, as with every other gate there.
+  - **Typographic characters are now denied at write time, not just discouraged
+    in prose.** Rule 85 has always said ASCII belongs in code and values - em
+    dashes, curly quotes, ellipsis, arrows and non-breaking spaces are for prose
+    and docs - but it was a bullet in an always-on ruleset, and always-on prose
+    is exactly what a long session drifts past. The cost was not cosmetic: an
+    AWS resource name or `description` carrying an em dash is rejected by the
+    API's validator, so the break surfaced at deploy time rather than at the
+    keystroke that caused it. A new `PreToolUse` hook,
+    `check-ascii-writes.sh`, inspects only the text a `Write` / `Edit` /
+    `MultiEdit` / `NotebookEdit` *introduces* and **denies** the write, naming
+    each offending character with its codepoint and the ASCII substitute
+    (`em dash U+2014 -> -`), so the rewrite is one step instead of a guess. It
+    is a deny rather than a notice for the same reason `check-version-pins.sh`
+    is: the check is deterministic, a `PostToolUse` notice cannot unwrite the
+    file, and a mechanical fixup is unsafe - rewriting a curly quote inside a
+    string literal can break its quoting. Copilot CLI gets an `ask` instead, as
+    with every other gate there.
 
-    **Non-English copy is safe by construction.** The matched set is exactly
-    rule 85's - dashes, curly quotes, ellipsis, bullet, arrows, non-breaking and
+    **It is comment-aware, and that is the whole design.** Rule 85 permits these
+    characters in prose, and the bundled scaffold depends on that - every
+    `mise.toml`, `compose.yaml` and CI script opens with a typographic header
+    comment, because the Code comments rule asks for one. So comments are
+    stripped before the scan and only value positions are inspected; a header
+    comment is never flagged. Every stripping heuristic is biased to over-strip
+    (a `//` is only a comment when it does not follow a `:`, so a URL survives),
+    because a missed character merely leaves the always-on rule in force while a
+    false deny is what gets a gate switched off. Scope is `implementation` and
+    `operations` files with a known comment syntax, plus `.hcl`; documentation,
+    the `/spec` spine, lockfiles, generated output and unrecognized file types
+    are untouched.
+
+    **Non-English copy is deliberately safe.** Only the enumerated rule-85 set
+    matches - dashes, curly quotes, ellipsis, bullet, arrows, non-breaking and
     thin spaces. Accented Latin letters, guillemets, CJK and emoji are not in it
-    and never trip the gate. Scope is every authored text class; lockfiles,
-    generated output and unrecognized file types stay out. A genuinely required
-    character (a fixture asserting one, a Unicode table, a quoted external
-    string) is declared with `steer:allow-typographic` in the same content,
-    mirroring `steer:allow-pin`.
+    and never trip the gate. A deliberate character (a fixture asserting one, a
+    Unicode table) is declared with `steer:allow-typographic` in the same
+    content, mirroring `steer:allow-pin`.
 
-    **What this means for an existing repo.** Legacy prose is not rewritten for
-    you and nothing fails retroactively - the gate only sees text a write
-    introduces. In practice a file converts the first time it is touched, since
-    an edit that carries one of these characters through is denied. An edit that
-    *removes* one is never denied.
+    **The bundled templates were carrying the bug they now prevent.** Eighteen
+    shipped templates held em dashes in value positions - `mise.toml` task
+    `description` strings, `ci-*.sh` notice text, GitHub issue-form labels and
+    dropdown options, workflow step names - so `/steer:init` and `/steer:adopt`
+    would have written files this very gate then denied. Those are corrected to
+    plain hyphens; comment lines are untouched. A fixture case runs the hook's
+    own stripper across every non-Markdown template and fails if one regresses,
+    so the templates cannot drift back.
 
-    **The bundled templates and this repo were converted in the same change.**
-    Eighteen shipped templates held em dashes in value positions - `mise.toml`
-    task `description` strings, `ci-*.sh` notice text, GitHub issue-form labels
-    and dropdown options, workflow step names - so `/steer:init` and
-    `/steer:adopt` would have written files this very gate then denied. Those,
-    and every other tracked file in the plugin repo (14,392 occurrences across
-    606 files), are now ASCII. A fixture runs the hook's own character table
-    across every bundled template and fails if one regresses.
-
-    **Known gap:** writes performed through `Bash` heredocs carry no editor
-    payload and are not inspected, the same documented bypass
-    `check-version-pins.sh` carries.
+    **Known gap:** writes performed through `Bash` heredocs are not inspected,
+    the same documented bypass `check-version-pins.sh` carries.
 
     **Along the way: a broken `jq` no longer silently disables a gate.**
     `steer_have_jq` promised "a usable `jq` on PATH" but only tested presence, so
