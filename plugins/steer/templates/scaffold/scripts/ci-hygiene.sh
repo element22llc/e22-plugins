@@ -36,7 +36,7 @@ if [ -n "$(git ls-files '*.sh' '*.bash')" ]; then
 	git ls-files '*.sh' '*.bash'
 	git ls-files -z '*.sh' '*.bash' | xargs -0 shellcheck
 else
-	printf 'No shell scripts found — nothing to lint.\n'
+	printf 'No shell scripts found - nothing to lint.\n'
 fi
 steer_ci_endgroup
 

@@ -39,12 +39,12 @@ is_exempt() {
 }
 
 if ! base="$(steer_ci_base)"; then
-	steer_ci_notice 'No base ref to diff against — skipping the changelog gate (fail-open).'
+	steer_ci_notice 'No base ref to diff against - skipping the changelog gate (fail-open).'
 	exit 0
 fi
 
 if [ ! -f .changie.yaml ]; then
-	steer_ci_notice 'No .changie.yaml — repo has no changelog yet. Run /steer:sync to install it.'
+	steer_ci_notice 'No .changie.yaml - repo has no changelog yet. Run /steer:sync to install it.'
 	exit 0
 fi
 
@@ -60,7 +60,7 @@ ${changed}
 EOF
 
 if [ -z "${shipping}" ]; then
-	printf 'ci:changelog — no shipping paths changed; no fragment required.\n'
+	printf 'ci:changelog - no shipping paths changed; no fragment required.\n'
 	exit 0
 fi
 
@@ -68,7 +68,7 @@ added="$(git diff --diff-filter=A --name-only "${base}...HEAD" -- .changes/unrel
 	git diff --diff-filter=A --name-only "${base}" HEAD -- .changes/unreleased/)"
 
 if [ -n "${added}" ]; then
-	printf 'ci:changelog — fragment present.\n'
+	printf 'ci:changelog - fragment present.\n'
 	exit 0
 fi
 

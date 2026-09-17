@@ -72,6 +72,6 @@ description = "Boot the product's backing services; add per-member depends (mono
 depends = ["ws:docker:up"]
 
 [tasks."convert:doc"]
-description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout — used by /steer:intake"
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:intake"
 # The one unprefixed task: its `run` must stay identical to the core scaffold's (check_standards.py asserts it).
 run = "uvx --from 'markitdown[all]' markitdown"

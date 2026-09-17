@@ -3538,5 +3538,112 @@ assert_empty "comment-density: missing file silent" "${out}"
 tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh"' && ok ||
 	bad "hooks.json: check-comment-density.sh must be registered with the sh prefix"
 
+# --- check-ascii-writes.sh (rule 85: ASCII in code and values) ---
+# Like pin() above, ch() assembles the characters at runtime so this file's own
+# SOURCE carries no typographic character in a value position — otherwise the
+# gate under test would block editing its own fixtures in a consumer repo.
+ch() { # ch em | curly | ellipsis | nbsp | arrow
+	case "$1" in
+	em) printf '%b' '\0342\0200\0224' ;;
+	curly) printf '%b' '\0342\0200\0235' ;;
+	ellipsis) printf '%b' '\0342\0200\0246' ;;
+	nbsp) printf '%b' '\0302\0240' ;;
+	arrow) printf '%b' '\0342\0206\0222' ;;
+	esac
+}
+EM="$(ch em)"
+
+# (a) value position in operations/implementation files -> deny, naming the fix.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA1 main.tf "description = 'Creates the user ${EM} row'")")"
+assert_deny "ascii: em dash in a .tf value" "${out}"
+printf '%s' "${out}" | grep -q 'U+2014' && ok || bad "ascii: deny reason must name the codepoint (got: ${out})"
+printf '%s' "${out}" | grep -q 'rule 85' && ok || bad "ascii: deny reason must cite the rule (got: ${out})"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA2 src/a.ts "const label = 'Queue ${EM} main';")")"
+assert_deny "ascii: em dash in a .ts string" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA3 main.tf "name = 'my$(ch nbsp)bucket'")")"
+assert_deny "ascii: non-breaking space in a .tf value" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA4 cfn.json "{Description: Queue $(ch curly)}")")"
+assert_deny "ascii: curly quote in a .json value" "${out}"
+# The ":" guard that keeps "https://" from being read as a line comment must not
+# blind the scan to the rest of the line.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA5 src/a.ts "const u = 'https://a.io ${EM} b';")")"
+assert_deny "ascii: value after a URL still scanned" "${out}"
+
+# (b) comments are where rule 85 ALLOWS these characters — the bundled scaffold
+# relies on that, so a comment-only occurrence must stay silent.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA6 scripts/ci.sh "# Local services ${EM} committed.\nimage: postgres")")"
+assert_empty "ascii: hash comment exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA7 compose.yaml "image: postgres:18 # mounts $(ch ellipsis)/data")")"
+assert_empty "ascii: trailing hash comment exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA8 src/a.ts "const x = 1; // width ${EM} height")")"
+assert_empty "ascii: trailing slash comment exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA9 src/a.ts "/* header\n * note ${EM} here\n */\nconst y = 2;")")"
+assert_empty "ascii: block comment interior exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA10 .vscode/x.json "  // Recommended ${EM} one per tool\n  a: 1")")"
+assert_empty "ascii: jsonc line-leading comment exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA11 q.sql "-- table ${EM} notes\nselect 1;")")"
+assert_empty "ascii: sql dash comment exempt" "${out}"
+
+# (c) prose classes are out of scope entirely; so is a file type with no known
+# comment syntax (a deny must never be guessed at).
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA12 NOTES.md "a ${EM} b")")"
+assert_empty "ascii: documentation exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA13 spec/features/x/intent.md "a ${EM} b")")"
+assert_empty "ascii: spec spine exempt" "${out}"
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14 data/rows.csv "a ${EM} b")")"
+assert_empty "ascii: unknown file type exempt" "${out}"
+
+# (d) non-English copy must pass untouched — only the enumerated typographic set
+# matches, never accented letters or guillemets.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA15 src/a.tsx "const s = 'caf\\u00e9 na\\u00efve \\u00abbonjour\\u00bb';")")"
+assert_empty "ascii: accents and guillemets pass" "${out}"
+
+# (e) only INTRODUCED text is inspected: an edit that REMOVES an em dash is the
+# fix, not a violation.
+out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"main.tf\",\"old_string\":\"a ${EM} b\",\"new_string\":\"a - b\"}}")"
+assert_empty "ascii: removing an em dash is not denied" "${out}"
+out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"MultiEdit\",\"tool_input\":{\"file_path\":\"main.tf\",\"edits\":[{\"old_string\":\"p\",\"new_string\":\"clean = 1\"},{\"old_string\":\"q\",\"new_string\":\"d = 'x ${EM} y'\"}]}}")"
+assert_deny "ascii: MultiEdit scans every edit, not just the first" "${out}"
+out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo 'a ${EM} b' > main.tf\"}}")"
+assert_empty "ascii: Bash writes are the documented gap" "${out}"
+
+# (f) the \uXXXX spelling reaches the hook when a host serializes with
+# ensure_ascii; the unescaper does not decode it, so match the text form too.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA16 main.tf 'name = a \\u2014 b')")"
+assert_deny "ascii: \\u escape spelling denied" "${out}"
+
+# (g) escape hatch, mirroring steer:allow-pin.
+out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA17 src/a.ts "const dash = '${EM}'; // steer:allow-typographic fixture")")"
+assert_empty "ascii: steer:allow-typographic bypasses" "${out}"
+
+# (h) Copilot CLI takes a flat ask (its preToolUse is fail-closed and Preview).
+out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-ascii-writes.sh "$(json_write /tmp sA18 main.tf "d = 'a ${EM} b'")")"
+assert_copilot_ask "ascii: copilot gets a flat ask" "${out}"
+
+# (i) the plugin's own source repo is exempt — its pre-commit gates own style
+# there, and these fixtures must remain writable.
+RAP="$(new_repo repoAsciiPlugin)"
+mkdir -p "${RAP}/.claude-plugin"
+out="$(run_hook check-ascii-writes.sh "$(json_write "${RAP}" sA19 main.tf "d = 'a ${EM} b'")")"
+assert_empty "ascii: plugin repo exempt" "${out}"
+
+# (j) registration in both manifests.
+tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh"' && ok ||
+	bad "hooks.json: check-ascii-writes.sh must be registered with the sh prefix"
+grep -q 'check-ascii-writes.sh' "${HOOKS}/copilot-hooks.json" && ok ||
+	bad "copilot-hooks.json: check-ascii-writes.sh must be registered for parity"
+
+# (k) THE REGRESSION THAT MATTERS: every bundled template must be clean in value
+# positions, or /steer:init and /steer:adopt would write files this very gate
+# then denies in the consumer repo. Runs the hook's own stripper, so a template
+# cannot pass here and fail live.
+. "${HOOKS}/lib/typographic.sh"
+ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f ! -name '*.md' ! -name '*.mdx' -print 2>/dev/null |
+	while IFS= read -r f; do
+		[ -n "$(steer_typographic_scan "${f}")" ] && printf ' %s' "${f#"${PLUGIN}/"}"
+	done)"
+[ -z "${ASCII_DIRTY}" ] && ok ||
+	bad "bundled templates carry typographic characters in value positions:${ASCII_DIRTY}"
+
 printf '\n%d passed, %d failed\n' "${PASS}" "${FAIL}"
 [ "${FAIL}" -eq 0 ]

@@ -11,7 +11,7 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 . "${HERE}/ci-lib.sh"
 
 if ! steer_ci_has_node; then
-	steer_ci_notice 'No Node workspace — nothing to install.'
+	steer_ci_notice 'No Node workspace - nothing to install.'
 	exit 0
 fi
 
@@ -19,6 +19,6 @@ fi
 if [ -f pnpm-lock.yaml ]; then
 	pnpm install --frozen-lockfile
 else
-	printf 'No pnpm-lock.yaml yet — installing without frozen lockfile.\n'
+	printf 'No pnpm-lock.yaml yet - installing without frozen lockfile.\n'
 	pnpm install --no-frozen-lockfile
 fi

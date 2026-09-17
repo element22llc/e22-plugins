@@ -72,6 +72,7 @@ _SCRIPT_RE = re.compile(r"hooks/([a-z0-9-]+\.sh)")
 COPILOT_HOOKS: list[tuple[str, str, str | None]] = [
     ("SessionStart", "inject-standards.sh", None),
     ("PreToolUse", "check-version-pins.sh", None),
+    ("PreToolUse", "check-ascii-writes.sh", None),
     ("PreToolUse", "check-bash-actions.sh", "Bash"),
 ]
 

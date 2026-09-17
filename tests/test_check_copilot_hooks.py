@@ -62,7 +62,12 @@ def _claude_hooks(*scripts: str) -> str:
     return json.dumps({"hooks": hooks})
 
 
-PORTED = ["inject-standards.sh", "check-version-pins.sh", "check-bash-actions.sh"]
+PORTED = [
+    "inject-standards.sh",
+    "check-version-pins.sh",
+    "check-ascii-writes.sh",
+    "check-bash-actions.sh",
+]
 
 
 def _all_hooks(doc: dict) -> list[dict]:
@@ -88,9 +93,10 @@ def test_render_shapes_copilot_manifest(tmp_path: Path):
     assert doc["version"] == 1
     assert list(doc["hooks"]) == ["sessionStart", "PreToolUse"]
     hooks = doc["hooks"]["PreToolUse"]
-    assert len(hooks) == 2
-    pins, bash = hooks
+    assert len(hooks) == 3
+    pins, ascii_gate, bash = hooks
     assert pins["matcher"] == "Write|Edit"  # no override
+    assert ascii_gate["matcher"] == "Write|Edit"  # no override
     assert bash["matcher"] == "Bash"  # override applied
     # The injector: registered ONCE (Copilot keeps the last hook's context, so the
     # Claude parts must not be mirrored), under the camelCase event the CLI honours
@@ -120,7 +126,7 @@ def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
 
 
 def test_gate_missing_script_file_fails(tmp_path: Path, monkeypatch):
-    # hooks.json wires both scripts (so render succeeds), but the .sh files are
+    # hooks.json wires every ported script (so render succeeds), but the .sh files are
     # absent on disk — the one property byte-equality alone can't catch.
     hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks(*PORTED), [])
     (hooks_dir / "copilot-hooks.json").write_text(

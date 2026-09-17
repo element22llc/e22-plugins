@@ -213,7 +213,7 @@ Code (`gen_agent_skills.py`):
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Three differences from Claude Code remain on the Copilot surfaces — the first two
-on both, the third on VS Code only (the CLI does run steer's two `PreToolUse`
+on both, the third on VS Code only (the CLI does run steer's three `PreToolUse`
 hooks, per the table above). Their
 *mitigations* do not: both notes below are injected by the generator into the
 portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
@@ -330,9 +330,11 @@ The Copilot CLI manifest points hooks at a **Copilot-native** file
 **fail-closed** (a hook that errors *denies* the tool), so a mis-run Claude hook
 could block edits.
 
-Two gates are ported so far, both surfacing as a soft **`ask`** (Copilot prompts
+Three gates are ported so far, all surfacing as a soft **`ask`** (Copilot prompts
 you to confirm): the **version-pin policy** (`check-version-pins.sh`, a hard
-`deny` on Claude softened to `ask` here) and the **trunk-push graduation gate**
+`deny` on Claude softened to `ask` here), the **ASCII-in-code-and-values gate**
+(`check-ascii-writes.sh`, likewise a Claude `deny` softened to `ask`), and the
+**trunk-push graduation gate**
 (`check-bash-actions.sh`, an `ask` on both surfaces). One hook script serves both
 surfaces, each emitting Copilot's flat `permissionDecision` envelope when invoked
 with `STEER_HOOK_TARGET=copilot` — but the two paths are not identical: the
@@ -436,7 +438,7 @@ text that VS Code discards.
 - **Worktree *teardown* is Claude-only too.** Stopping a worktree's Docker stack
   is now done by two Claude-Code lifecycle hooks (`SessionEnd` → `docker:down`,
   `WorktreeRemove` → `docker:clean`), and `copilot-hooks.json` registers only the
-  two `PreToolUse` gates — so Copilot gets neither. This is exactly the trap this
+  three `PreToolUse` gates — so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
   Rules `24-worktrees` and `99-end-of-session` therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
@@ -466,7 +468,7 @@ text that VS Code discards.
   Code inline. Two others no longer need scoping because the surface-specific
   detail left the rule entirely: rule `62-hotfix` is now surface-neutral about the
   `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
-  `reconcile-issue-first.sh`, which is not ported — only the two `PreToolUse` gates
+  `reconcile-issue-first.sh`, which is not ported — only the three `PreToolUse` gates
   are, so on Copilot the prefix carries the convention alone), and rule
   `36-issue-first` no longer enumerates the `allow`/`ask` permission tiers. Those
   tiers are Claude Code's — they live in `.claude/settings.json` and Claude skill

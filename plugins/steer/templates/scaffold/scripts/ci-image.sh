@@ -12,7 +12,7 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
 dockerfiles="$(git ls-files 'apps/*/Dockerfile' 'Dockerfile')"
 if [ -z "${dockerfiles}" ]; then
-	steer_ci_notice 'No Dockerfile found (apps/*/Dockerfile or ./Dockerfile) — skipping image build. Add one when a deployable app exists (see /steer:build).'
+	steer_ci_notice 'No Dockerfile found (apps/*/Dockerfile or ./Dockerfile) - skipping image build. Add one when a deployable app exists (see /steer:build).'
 	exit 0
 fi
 

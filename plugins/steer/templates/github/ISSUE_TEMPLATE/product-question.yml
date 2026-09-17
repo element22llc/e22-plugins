@@ -22,7 +22,7 @@ body:
     id: why
     attributes:
       label: Why this matters
-      description: What does the answer change — user expectations, cost, scope?
+      description: What does the answer change - user expectations, cost, scope?
     validations:
       required: true
   - type: input

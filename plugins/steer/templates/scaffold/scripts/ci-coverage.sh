@@ -27,7 +27,7 @@ for f in coverage/lcov.info apps/*/coverage/lcov.info packages/*/coverage/lcov.i
 	if [ -f "${f}" ]; then reports="${reports} ${f}"; fi
 done
 if [ -z "${reports}" ]; then
-	steer_ci_notice 'No coverage report produced — wire pytest-cov / @vitest/coverage to measure coverage (/steer:reference conventions -> Coverage). Skipping changed-line gate.'
+	steer_ci_notice 'No coverage report produced - wire pytest-cov / @vitest/coverage to measure coverage (/steer:reference conventions -> Coverage). Skipping changed-line gate.'
 	exit 0
 fi
 
@@ -35,18 +35,18 @@ case "${STEER_CI_EVENT:-local}" in
 pull_request)
 	base="origin/${STEER_CI_BASE_REF}"
 	if ! git fetch --no-tags --quiet origin "${STEER_CI_BASE_REF}" 2>/dev/null; then
-		steer_ci_notice "Could not fetch base branch '${STEER_CI_BASE_REF}' — skipping changed-line coverage (fail-open)."
+		steer_ci_notice "Could not fetch base branch '${STEER_CI_BASE_REF}' - skipping changed-line coverage (fail-open)."
 		exit 0
 	fi
 	;;
 push)
 	# push to main: the solo-trunk DoD floor (pr-flow already gated via PR).
 	if ! grep -Eiq '^[[:space:]]*<!--[[:space:]]*steer:delivery-mode=solo-trunk[[:space:]]*-->' CLAUDE.md 2>/dev/null; then
-		steer_ci_notice 'push to main in pr-flow — the PR already gated coverage; skipping push-time floor.'
+		steer_ci_notice 'push to main in pr-flow - the PR already gated coverage; skipping push-time floor.'
 		exit 0
 	fi
 	if [ -z "${STEER_CI_BEFORE:-}" ] || [ "${STEER_CI_BEFORE}" = "${ZERO}" ]; then
-		steer_ci_notice 'No prior commit to diff against (first push) — skipping changed-line coverage (fail-open).'
+		steer_ci_notice 'No prior commit to diff against (first push) - skipping changed-line coverage (fail-open).'
 		exit 0
 	fi
 	base="${STEER_CI_BEFORE}"
@@ -54,7 +54,7 @@ push)
 *)
 	base="${STEER_CI_BASE:-origin/main}"
 	if ! git rev-parse --verify --quiet "${base}" >/dev/null 2>&1; then
-		steer_ci_notice "Base ref '${base}' not found — skipping changed-line coverage (fail-open). Set STEER_CI_BASE to pick another."
+		steer_ci_notice "Base ref '${base}' not found - skipping changed-line coverage (fail-open). Set STEER_CI_BASE to pick another."
 		exit 0
 	fi
 	;;
@@ -71,6 +71,6 @@ if uvx diff-cover@10.4.1 ${reports} \
 else
 	cat coverage-diff.md >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
 	cat coverage-diff.md
-	steer_ci_error "Changed lines are under ${COVERAGE_DIFF_MIN}% covered — cover the code you touched (rule 41-coverage)."
+	steer_ci_error "Changed lines are under ${COVERAGE_DIFF_MIN}% covered - cover the code you touched (rule 41-coverage)."
 	exit 1
 fi

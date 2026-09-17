@@ -10,7 +10,7 @@ HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 . "${HERE}/ci-lib.sh"
 
 if ! steer_ci_has_node; then
-	steer_ci_notice 'No Node workspace — no typecheck contract.'
+	steer_ci_notice 'No Node workspace - no typecheck contract.'
 	exit 0
 fi
 
