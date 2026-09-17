@@ -1,7 +1,7 @@
 """Tests for the Copilot hook generator + sync gate.
 
 ``gen_copilot_hooks.py`` renders ``plugins/steer/hooks/copilot-hooks.json`` from
-``plugins/steer/hooks/hooks.json`` — porting the ``COPILOT_HOOKS`` subset into
+``plugins/steer/hooks/hooks.json`` - porting the ``COPILOT_HOOKS`` subset into
 Copilot's flat schema with ``STEER_HOOK_TARGET=copilot`` + fail-open ``|| true``.
 The gate byte-compares the committed manifest against a fresh render and verifies
 each referenced script exists on disk. The real plugin must be in sync.
@@ -127,7 +127,7 @@ def test_gate_ok_then_drift(tmp_path: Path, monkeypatch):
 
 def test_gate_missing_script_file_fails(tmp_path: Path, monkeypatch):
     # hooks.json wires every ported script (so render succeeds), but the .sh files are
-    # absent on disk — the one property byte-equality alone can't catch.
+    # absent on disk - the one property byte-equality alone can't catch.
     hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks(*PORTED), [])
     (hooks_dir / "copilot-hooks.json").write_text(
         gen_copilot_hooks.render(hooks_dir / "hooks.json"), encoding="utf-8"
@@ -136,7 +136,7 @@ def test_gate_missing_script_file_fails(tmp_path: Path, monkeypatch):
 
 
 def test_gate_unwired_hook_fails(tmp_path: Path, monkeypatch):
-    # hooks.json drops a script the COPILOT_HOOKS selection ports → render raises,
+    # hooks.json drops a script the COPILOT_HOOKS selection ports -> render raises,
     # the gate reports it rather than crashing.
     hooks_dir = _point(monkeypatch, tmp_path, _claude_hooks("check-version-pins.sh"), PORTED)
     (hooks_dir / "copilot-hooks.json").write_text("{}", encoding="utf-8")
@@ -158,7 +158,7 @@ def test_ported_command_guards_unresolved_plugin_root():
 
     The path is built from ``${CLAUDE_PLUGIN_ROOT}``. If the Copilot CLI does not
     export that Claude-named variable, the path collapses to ``/hooks/<script>``
-    and ``sh`` fails before the script runs — which a bare ``|| true`` turns into
+    and ``sh`` fails before the script runs - which a bare ``|| true`` turns into
     a clean exit 0 with no permissionDecision. These two hooks are the only
     enforcement Copilot has, so that failure must be visible, not silent.
     """

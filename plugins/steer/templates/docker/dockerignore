@@ -17,7 +17,7 @@ node_modules
 **/__pycache__
 **/*.pyc
 
-# Local dev / secrets — never bake into an image
+# Local dev / secrets - never bake into an image
 .env
 .env.*
 !.env.example

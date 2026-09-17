@@ -4,12 +4,12 @@
 allowBuilds:
   playwright-chromium: true
 
-# Pin the whole Vue family to one exact version (3.5.41, published 2026-08-05 —
+# Pin the whole Vue family to one exact version (3.5.41, published 2026-08-05 -
 # well clear of pnpm 11's minimum-release-age supply-chain cooldown). `overrides`
 # forces the transitive @vue/* deps (slidev pulls several) to that same version,
 # not just our direct dep, so installs stay deterministic and policy-clean.
 # When bumping, pick a release already past the cooldown rather than adding a
-# `minimumReleaseAgeExclude` entry — the exclude throws the protection away.
+# `minimumReleaseAgeExclude` entry - the exclude throws the protection away.
 #
 # These versions MUST equal package.json's `vue` pin: an override outranks the
 # declared dep, so a Dependabot bump (it only edits package.json) is silently

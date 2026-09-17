@@ -1,4 +1,4 @@
-# Fixture: every workflow settled — honest "no action"
+# Fixture: every workflow settled - honest "no action"
 
 Cross-workflow: nothing actionable in any dimension. The navigator must not
 manufacture busywork.
@@ -23,7 +23,7 @@ Complete
 
 ## Expected suggested command
 
-none — an optional continuation (`/steer:spec` or `/steer:build`) may be named, but
+none - an optional continuation (`/steer:spec` or `/steer:build`) may be named, but
 never as a mandatory command.
 
 ## Must not recommend first

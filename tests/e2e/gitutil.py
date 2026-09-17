@@ -1,7 +1,7 @@
 """Git helpers for idempotency / re-run-safety assertions.
 
 The core idempotency primitive: commit the state a skill produced, run the skill
-again, then assert NOTHING changed — no working-tree diff and no new commit. Any
+again, then assert NOTHING changed - no working-tree diff and no new commit. Any
 clobber, duplicate managed block, or stray write shows up as a dirty tree or a
 moved HEAD, so one assertion (`assert_unchanged`) covers the whole bug class.
 """
@@ -49,7 +49,7 @@ def changed_paths(repo: Path) -> list[str]:
 
 def assert_changes_confined_to(repo: Path, *prefixes: str) -> None:
     """Every working-tree change sits under one of ``prefixes`` (e.g. ``spec/``).
-    Catches a skill that wrote outside its allowed area — e.g. spec, which must
+    Catches a skill that wrote outside its allowed area - e.g. spec, which must
     never touch code."""
     stray = [p for p in changed_paths(repo) if not p.startswith(prefixes)]
     assert not stray, f"writes escaped {prefixes}: {stray}"
@@ -57,7 +57,7 @@ def assert_changes_confined_to(repo: Path, *prefixes: str) -> None:
 
 def assert_unchanged(repo: Path, since_head: str) -> None:
     """The repo is byte-for-byte as it was at ``since_head``: clean working tree
-    and HEAD not moved. This is the idempotency assertion — a re-run that
+    and HEAD not moved. This is the idempotency assertion - a re-run that
     clobbers, duplicates, or commits anything will trip one of the two checks."""
     dirty = porcelain(repo)
     assert not dirty, f"re-run mutated the working tree:\n{dirty}"

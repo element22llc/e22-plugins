@@ -1,31 +1,31 @@
-## Living documentation — document in parallel, not after
+## Living documentation - document in parallel, not after
 
 The PO/dev speaks plainly; **you** translate it into durable artifacts *as the
 work happens*, never in a wrap-up pass. When conversation or implementation
 reveals a requirement, constraint, assumption, risk, trade-off, or decision,
 update (or propose) the owning artifact **in the same change as the code**:
 
-- Intent, goals, acceptance criteria → the feature's `intent.md` (scope
-  changes need PO approval); behavior/data/API decisions → `contract.md`;
-  hard-to-reverse choices → ADR.
-- Ambiguity → `## Open questions` — **never guess an answer into the spec**.
+- Intent, goals, acceptance criteria -> the feature's `intent.md` (scope
+  changes need PO approval); behavior/data/API decisions -> `contract.md`;
+  hard-to-reverse choices -> ADR.
+- Ambiguity -> `## Open questions` - **never guess an answer into the spec**.
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
-  release notes → the app guide (`/spec/app/`).
-- Tech stack, the apps/packages map, cross-component data flow → root
-  `ARCHITECTURE.md` — updated, with the linked diagram
+  release notes -> the app guide (`/spec/app/`).
+- Tech stack, the apps/packages map, cross-component data flow -> root
+  `ARCHITECTURE.md` - updated, with the linked diagram
   (`/spec/design/architecture-diagram.md`), in the same PR that changes them.
-- Visual identity, reusable design tokens → root `DESIGN.md`, seeded when the
+- Visual identity, reusable design tokens -> root `DESIGN.md`, seeded when the
   first UI lands and grown on the 3+ rule (Design sources). The PR that
   establishes the stack or first app also retires the scaffold's now-false
-  placeholder prose — a stub left after the thing it describes exists is
+  placeholder prose - a stub left after the thing it describes exists is
   drift.
-- A **notable event** — ratified decision, scope change, repo-level event,
-  absorbed PO document, incident → a **new file** under `/spec/history/`
+- A **notable event** - ratified decision, scope change, repo-level event,
+  absorbed PO document, incident -> a **new file** under `/spec/history/`
   (`YYYY-MM-DD-HHMM-<slug>.md`), immutable once merged. **An ordinary merged
-  change writes none** — the commit and the PR are its record.
+  change writes none** - the commit and the PR are its record.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
-and `/spec/history/` are the **workspace's** — write them there via
+and `/spec/history/` are the **workspace's** - write them there via
 `workspace.path`; if it does not resolve, record the event in the PR description
 **and say the workspace ledger still needs the entry**. Never a local copy.
 `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
@@ -38,6 +38,6 @@ conventions: **`/steer:reference traceability`**.
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it is living-docs
 upkeep: make the edit in the same change and let the **PR be the gate** (rule
-`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade
-— a genuine product / policy / architecture call, anything under High-risk
-areas — or when an edit would clobber filled-in content.
+`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade -
+a genuine product / policy / architecture call, anything under High-risk
+areas - or when an edit would clobber filled-in content.

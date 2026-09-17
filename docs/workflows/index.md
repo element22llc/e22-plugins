@@ -10,27 +10,27 @@ For the full per-command catalog (including internal helpers), see the
     want in plain language** ("I have an app idea", "fix #123", "what should I do
     next?") and Claude routes to the matching skill itself, announcing the choice
     in one line. You can always see which one ran: the `Recommended next actions`
-    heading that closes a workflow names it (`## Recommended next actions —
+    heading that closes a workflow names it (`## Recommended next actions -
     /steer:audit code`), so a wrong route is easy to spot and say so about. The
-    `/steer:*` forms below are the explicit way to invoke a workflow — handy when
-    you already know the one you want — not something you must memorize. Decision gates (creating issues, approving a spec, merging,
+    `/steer:*` forms below are the explicit way to invoke a workflow - handy when
+    you already know the one you want - not something you must memorize. Decision gates (creating issues, approving a spec, merging,
     deploying) still pause for a human regardless of how the skill was
-    reached — pushing the branch and opening the PR are autonomous.
+    reached - pushing the branch and opening the PR are autonomous.
 
     Announcing the route and *running* it are the same step: a reply that names
     the skill and then answers by hand is a misroute, not a route. Two things
-    follow. **A restricted session still routes the same way** — plan mode, a
+    follow. **A restricted session still routes the same way** - plan mode, a
     read-only or reduced-permission session, or a client with fewer tools never
     changes which skill owns the request; every workflow has a read-only front
     (survey, diagnose, interview, plan), so Claude enters it and the skill
     reports what it could not carry out. And **the follow-up questions come from
-    inside the workflow** — "which feature?", "which issue?" are asked after it
+    inside the workflow** - "which feature?", "which issue?" are asked after it
     starts, so at most one question precedes a route, and only when two skills
     are genuinely candidates.
 
     That closing block is **derived from what the run actually found**, not a
-    fixed sign-off. A workflow that swept its domain and found nothing to do —
-    no open question, no failing prerequisite, no unfinished transition — closes
+    fixed sign-off. A workflow that swept its domain and found nothing to do -
+    no open question, no failing prerequisite, no unfinished transition - closes
     with `No action is currently required.`, at most naming an *optional*
     continuation. What it never does is prescribe work over state the run did
     not touch, so a recommendation you are handed means something genuinely
@@ -58,16 +58,16 @@ flowchart LR
     work --> sync
 ```
 
-## I want to … → run …
+## I want to ... -> run ...
 
 A one-screen cheat sheet, keyed by intent rather than phase. You don't have to
-memorize it — describe the goal in plain language and Claude routes for you — but
+memorize it - describe the goal in plain language and Claude routes for you - but
 when you'd rather invoke the skill yourself, this is the index. The phase tables
 below give the detail.
 
-| I want to … | Run |
+| I want to ... | Run |
 | --- | --- |
-| Get set up — I'm not sure what state the repo is in | `/steer:setup` (detects & routes) |
+| Get set up - I'm not sure what state the repo is in | `/steer:setup` (detects & routes) |
 | Start a brand-new repo from scratch | `/steer:init` |
 | Bring an existing app under steer | [`/steer:adopt`](adopt.md) |
 | Absorb a product owner's spec / roadmap document | [`/steer:intake`](intake.md) |
@@ -77,17 +77,17 @@ below give the detail.
 | Implement with a review-gated loop (vetted, not first-draft) | [`/steer:work --reviewed`](work.md) |
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
-| Browse everything steer can do — not sure what to ask for | `/steer:help` |
+| Browse everything steer can do - not sure what to ask for | `/steer:help` |
 | Show or share a visual, plain-language page of one feature | `/steer:explain` |
 | Give a client a progress/status report ("what did we ship this week?") | `/steer:status` |
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |
 | Generate a release-milestone timeline | `/steer:roadmap` |
-| Run the maintain-phase sweep on a schedule (triage → draft fix → PR) | `/steer:loop` |
+| Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | `/steer:loop` |
 | Lock branch protection or flip the delivery mode | `/steer:protect` |
 | A tool is missing, or set up the local toolchain | `/steer:doctor` |
-| **Every** steer command fails at once (`syntax error near unexpected token`) — a CRLF-corrupted install, not a plugin bug | `/steer:doctor` (§0 diagnoses it locally) |
-| steer itself is misbehaving — file a plugin bug upstream | `/steer:report` |
+| **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:doctor` (§0 diagnoses it locally) |
+| steer itself is misbehaving - file a plugin bug upstream | `/steer:report` |
 | Answer accumulated open questions | `/steer:questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:adr` |
 | Sweep loose files at the repo root into `/spec` | `/steer:tidy` |
@@ -98,25 +98,25 @@ below give the detail.
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:setup` | **The front door** — detects the repo state and routes to the right path below. Start here. |
-| `/steer:init` | (via setup) A new repo with no `/spec` spine — installs the bundled scaffold + spine. |
+| `/steer:setup` | **The front door** - detects the repo state and routes to the right path below. Start here. |
+| `/steer:init` | (via setup) A new repo with no `/spec` spine - installs the bundled scaffold + spine. |
 | [`/steer:adopt`](adopt.md) | (via setup) An existing app with working code but no spine. |
 
 ## Build loop
 
 | Skill | Use when |
 | --- | --- |
-| [`/steer:issues`](issues.md) | Drive an idea from capture → draft spec → decomposed work. |
+| [`/steer:issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work. |
 | [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. |
-| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan → plan-gate review → implement → `/code-review` → bounded fix) — vetted, not first-draft. |
+| [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
 ## Steady state
 
 | Skill | Use when |
 | --- | --- |
-| `/steer:sync` | (via `/steer:setup`) After a plugin release — apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
+| `/steer:sync` | (via `/steer:setup`) After a plugin release - apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to diff the as-built `/spec` spine against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace. Read-only itself: it reconstructs, arbitrates, and names the one action that matters most. When that action is unambiguous and non-gated it is then announced and **continued into** (rule `00-router`'s bounded auto-continue), handing over at the first step that writes; a close call, a gated step, or an action no command performs waits for you. |
 | `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
-| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule — discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` — rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |
+| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule - discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` - rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |

@@ -14,36 +14,36 @@ One-sentence description of what this product does and who it serves.
 ## How this repo works
 
 This repo follows a shared workflow across all our products. It's an **internal
-monorepo** — multiple apps and shared packages live in this one product repo
+monorepo** - multiple apps and shared packages live in this one product repo
 (the org stays polyrepo *across* products):
 
 - **`/spec`** is the product spine. It describes what this product does and why. Read this first.
-- **`/apps`** holds deployable applications (e.g. `apps/web`) — each independently buildable and deployable. The Next.js web app owns its own backend (Route Handlers / Server Actions) by default; a separate `apps/api` is the exception.
-- **`/packages`** holds shared libraries consumed by apps or other packages — not independently deployed.
+- **`/apps`** holds deployable applications (e.g. `apps/web`) - each independently buildable and deployable. The Next.js web app owns its own backend (Route Handlers / Server Actions) by default; a separate `apps/api` is the exception.
+- **`/packages`** holds shared libraries consumed by apps or other packages - not independently deployed.
 - **`/configs`** holds shared tooling config (lint, base tsconfig, formatter, test presets).
 - **`/infra`** holds AWS infrastructure-as-code, provisioned with **OpenTofu** + **Terragrunt**.
 - **`CLAUDE.md`** is the operating manual for Claude when working in this repo.
 
 Defaults for package managers: **pnpm** for Node, **uv** for Python (rationale
-via the `steer` plugin — run `/steer:reference conventions`). They're biases, not mandates —
+via the `steer` plugin - run `/steer:reference conventions`). They're biases, not mandates -
 record a different choice in an ADR under `/spec/decisions`. On Windows, develop
-inside **WSL2** — see [Windows: develop in WSL](#windows-develop-in-wsl).
-- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up. The scaffold ships **no** `mise.lock` — `/steer:init`/`/steer:adopt` create it when they pin the toolchain. To pin (or re-pin) by hand: create the lock first (`touch mise.lock`, or `mise lock` — mise only writes the lock when the file already exists), run `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the committed `mise.lock` carries asset URLs for CI (`linux-x64`) as well as your host — otherwise CI's `mise install --locked` fails with "No lockfile URL found … on platform linux-x64". Until a `mise.lock` is committed, CI runs a plain unlocked `mise install`; never commit an empty / comment-only lock. Bump later with `mise upgrade`. Run `/steer:reference conventions` for the latest-in-config / pinned-in-lockfile rationale.
+inside **WSL2** - see [Windows: develop in WSL](#windows-develop-in-wsl).
+- **`mise.toml`** manages every language runtime and CLI tool. The root file covers repo-wide tools; `infra/mise.toml` covers OpenTofu + Terragrunt for infra contributors. The config uses `latest`; the committed **`mise.lock`** holds the exact pinned versions, so all machines and CI agree. Install [mise](https://mise.jdx.dev) and run `mise install` (and `cd infra && mise install` if you'll touch infra) to get set up. The scaffold ships **no** `mise.lock` - `/steer:init`/`/steer:adopt` create it when they pin the toolchain. To pin (or re-pin) by hand: create the lock first (`touch mise.lock`, or `mise lock` - mise only writes the lock when the file already exists), run `mise install`, then `mise lock --platform linux-x64,macos-arm64` so the committed `mise.lock` carries asset URLs for CI (`linux-x64`) as well as your host - otherwise CI's `mise install --locked` fails with "No lockfile URL found ... on platform linux-x64". Until a `mise.lock` is committed, CI runs a plain unlocked `mise install`; never commit an empty / comment-only lock. Bump later with `mise upgrade`. Run `/steer:reference conventions` for the latest-in-config / pinned-in-lockfile rationale.
 
 ## Quick links
 
-- [Product spec](./spec/vision.md) — what this product does and why. Spec ↔ code rules and templates come from the `steer` plugin: run `/steer:spec`, `/steer:adr`, or `/steer:reference conventions`
-- [App guide](./spec/app/README.md) — how to use the product: workflows, roles, configuration, limitations, troubleshooting
-- [Architecture](./ARCHITECTURE.md) — tech stack, the apps/packages map, and how the pieces fit together
-- [Action history](./spec/history/) — what changed, why, who asked, and where it's specified (one file per entry)
-- [Issue tracker](./spec/tracker.md) — which tracker this product uses and how work items are referenced
-- [CLAUDE.md](./CLAUDE.md) — the operating manual: stack, spec workflow, testing, change-size model
+- [Product spec](./spec/vision.md) - what this product does and why. Spec <-> code rules and templates come from the `steer` plugin: run `/steer:spec`, `/steer:adr`, or `/steer:reference conventions`
+- [App guide](./spec/app/README.md) - how to use the product: workflows, roles, configuration, limitations, troubleshooting
+- [Architecture](./ARCHITECTURE.md) - tech stack, the apps/packages map, and how the pieces fit together
+- [Action history](./spec/history/) - what changed, why, who asked, and where it's specified (one file per entry)
+- [Issue tracker](./spec/tracker.md) - which tracker this product uses and how work items are referenced
+- [CLAUDE.md](./CLAUDE.md) - the operating manual: stack, spec workflow, testing, change-size model
 - [File a feature request](../../issues/new?template=feature.yml)
 - [File a bug report](../../issues/new?template=bug.yml)
 
 ## Quickstart for POs (non-technical)
 
-You don't need to read code or run commands — Claude does the setup.
+You don't need to read code or run commands - Claude does the setup.
 
 1. **One time:** install [Claude Code](https://claude.com/claude-code) and
    [Docker Desktop](https://www.docker.com/products/docker-desktop/) (start it).
@@ -55,7 +55,7 @@ A developer reviews everything before it becomes the official version.
 
 ## Quickstart for devs
 
-> Prefer an assisted setup? In Claude Code, run **`/steer:doctor`** — it detects
+> Prefer an assisted setup? In Claude Code, run **`/steer:doctor`** - it detects
 > what's missing and installs the toolchain (mise, then pnpm/uv/node) with your
 > confirmation, and flags Docker Desktop / WSL2. The manual steps below are the
 > equivalent by hand.
@@ -66,9 +66,9 @@ brew install mise                          # macOS
 # See https://mise.jdx.dev/getting-started.html for other platforms
 
 # Activate mise in your shell; add this to ~/.zshrc or ~/.bashrc.
-# IMPORTANT: put this AFTER any nvm/asdf/volta/fnm setup in the rc file — whichever
+# IMPORTANT: put this AFTER any nvm/asdf/volta/fnm setup in the rc file - whichever
 # loads last wins PATH, and mise must win or bare `pnpm`/`node` run a global version
-# instead of the pinned one (`which pnpm` should resolve under …/mise/…).
+# instead of the pinned one (`which pnpm` should resolve under .../mise/...).
 eval "$(mise activate zsh)"
 
 # Per repo
@@ -79,17 +79,17 @@ mise lock --platform linux-x64,macos-arm64 # FIRST ADOPTION ONLY: add per-platfo
                                            # CI (linux-x64) can `mise install --locked`. Add other
                                            # platforms your team uses; commit the result.
 mise run dev:setup                         # local env in one command: Docker services up,
-                                           # migrations applied, dev data seeded (idempotent —
+                                           # migrations applied, dev data seeded (idempotent -
                                            # rerun anytime; needs Docker running)
 
-# Node apps/packages — pnpm is the default package manager. `mise run dev:setup`
+# Node apps/packages - pnpm is the default package manager. `mise run dev:setup`
 # already syncs deps via mise's [deps] auto-install, so a manual install is
 # usually unneeded; when you do install, route it through mise so it uses the
 # PINNED pnpm, never a global/nvm copy:
 mise exec -- pnpm install
 pnpm dev                        # bare is fine once mise is activated (see above)
 
-# Python apps/packages — uv is the default
+# Python apps/packages - uv is the default
 mise exec -- uv sync
 uv run <your-dev-command>
 ```
@@ -100,117 +100,117 @@ uv run <your-dev-command>
 > (those steps no-op until the first real app lands).
 > Adapt the tasks in `mise.toml` to the product during `/steer:init`.
 
-> Local config vars are documented in [`.env.example`](./.env.example) — copy it
+> Local config vars are documented in [`.env.example`](./.env.example) - copy it
 > to a git-ignored `.env` and fill in real values. Running several products
 > at once and hitting `port is already allocated`? Set a distinct `POSTGRES_PORT`
 > (e.g. `5433`) in `.env` and mirror it in `DATABASE_URL`; Compose picks it up
 > automatically.
 
-> On **Windows**, run all of the above inside WSL2 — see [Windows: develop in WSL](#windows-develop-in-wsl).
+> On **Windows**, run all of the above inside WSL2 - see [Windows: develop in WSL](#windows-develop-in-wsl).
 
-Before the `@claude` GitHub workflow will run, add the `ANTHROPIC_API_KEY` secret — see [GitHub Actions secrets](#github-actions-secrets) below. To use the GitHub MCP server from local Claude Code sessions, supply the steer plugin's `github_pat` config value — see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
+Before the `@claude` GitHub workflow will run, add the `ANTHROPIC_API_KEY` secret - see [GitHub Actions secrets](#github-actions-secrets) below. To use the GitHub MCP server from local Claude Code sessions, supply the steer plugin's `github_pat` config value - see [GitHub MCP server](#github-mcp-server-local-claude-code-only) below.
 
 ## Windows: develop in WSL
 
-On Windows, do **CLI and IDE work** — local Claude Code, the terminal, your editor — inside **WSL2** (Ubuntu recommended), not native Windows or PowerShell. The toolchain (mise, uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints assume a POSIX environment; WSL avoids path, line-ending, and shell-incompatibility issues. The **Claude Desktop Code tab** runs its own environment where **Git for Windows** is enough (builds included) — WSL is only needed for the local CLI/IDE surface.
+On Windows, do **CLI and IDE work** - local Claude Code, the terminal, your editor - inside **WSL2** (Ubuntu recommended), not native Windows or PowerShell. The toolchain (mise, uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints assume a POSIX environment; WSL avoids path, line-ending, and shell-incompatibility issues. The **Claude Desktop Code tab** runs its own environment where **Git for Windows** is enough (builds included) - WSL is only needed for the local CLI/IDE surface.
 
-1. **Install WSL2** — in an elevated PowerShell, run `wsl --install` (installs WSL2 + Ubuntu), then reboot. Verify with `wsl -l -v` (the distro should show `VERSION 2`). Full guide: <https://learn.microsoft.com/windows/wsl/install>.
-2. **Clone the repo *inside* the Linux filesystem** (e.g. `~/code/…`, not `/mnt/c/…`) — working under `/mnt/c` is markedly slower and breaks file-watching.
-3. **Install the toolchain in WSL**: open the Ubuntu shell and follow the [Quickstart for devs](#quickstart-for-devs) above (install mise, activate it in `~/.bashrc`/`~/.zshrc`, `mise install`). Install pnpm/uv via mise or their official installers — inside WSL, not on Windows.
+1. **Install WSL2** - in an elevated PowerShell, run `wsl --install` (installs WSL2 + Ubuntu), then reboot. Verify with `wsl -l -v` (the distro should show `VERSION 2`). Full guide: <https://learn.microsoft.com/windows/wsl/install>.
+2. **Clone the repo *inside* the Linux filesystem** (e.g. `~/code/...`, not `/mnt/c/...`) - working under `/mnt/c` is markedly slower and breaks file-watching.
+3. **Install the toolchain in WSL**: open the Ubuntu shell and follow the [Quickstart for devs](#quickstart-for-devs) above (install mise, activate it in `~/.bashrc`/`~/.zshrc`, `mise install`). Install pnpm/uv via mise or their official installers - inside WSL, not on Windows.
 4. **Editor**: use VS Code with the **WSL** extension (`code .` from the WSL shell), or a JetBrains IDE in WSL mode, so the editor uses the Linux toolchain.
 5. **Git line endings**: keep `core.autocrlf` off in WSL (`git config --global core.autocrlf input`) so scripts stay LF.
 
 ## GitHub Actions secrets
 
-`.github/workflows/claude.yml` (the `@claude` mention workflow — and any Claude Code Review workflow you add) authenticates to the Anthropic API and **loads the `steer` plugin from the org marketplace**, so the in-CI agent runs under the same engineering standards as a local Claude Code session (not a stock, standards-less Claude). Set these up **before** opening the first PR, or those jobs fail.
+`.github/workflows/claude.yml` (the `@claude` mention workflow - and any Claude Code Review workflow you add) authenticates to the Anthropic API and **loads the `steer` plugin from the org marketplace**, so the in-CI agent runs under the same engineering standards as a local Claude Code session (not a stock, standards-less Claude). Set these up **before** opening the first PR, or those jobs fail.
 
-- **`ANTHROPIC_API_KEY`** (secret, required) — create at <https://console.anthropic.com/settings/keys>, scoped to this project's billing workspace (not a personal key). Add under **Settings → Secrets and variables → Actions → Secrets**. Without it the job fails with a silent 401.
-No marketplace credential is needed: `element22llc/e22-plugins` is a **public** repo, so `claude.yml`'s `plugin_marketplaces` step clones it anonymously. (Older scaffolds set a shared `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` GitHub App for read access while the marketplace was private — that App is no longer required and the workflow no longer references it.)
+- **`ANTHROPIC_API_KEY`** (secret, required) - create at <https://console.anthropic.com/settings/keys>, scoped to this project's billing workspace (not a personal key). Add under **Settings -> Secrets and variables -> Actions -> Secrets**. Without it the job fails with a silent 401.
+No marketplace credential is needed: `element22llc/e22-plugins` is a **public** repo, so `claude.yml`'s `plugin_marketplaces` step clones it anonymously. (Older scaffolds set a shared `STEER_APP_ID` / `STEER_APP_PRIVATE_KEY` GitHub App for read access while the marketplace was private - that App is no longer required and the workflow no longer references it.)
 
-Verify: comment `@claude` on any PR or issue and confirm the reply reflects steer standards (e.g. it cites the Definition of Done or spec discipline) — that proves the plugin loaded, not just that the action ran. The workflow log's `system/init` event also lists loaded plugins. A 401 means `ANTHROPIC_API_KEY` is missing/wrong/mis-scoped; a plugin-not-found error means the marketplace clone failed (check the repo path). This workflow uses `anthropics/claude-code-action@v1` and does **not** consume the steer plugin's MCP servers or its `github_pat` config value.
+Verify: comment `@claude` on any PR or issue and confirm the reply reflects steer standards (e.g. it cites the Definition of Done or spec discipline) - that proves the plugin loaded, not just that the action ran. The workflow log's `system/init` event also lists loaded plugins. A 401 means `ANTHROPIC_API_KEY` is missing/wrong/mis-scoped; a plugin-not-found error means the marketplace clone failed (check the repo path). This workflow uses `anthropics/claude-code-action@v1` and does **not** consume the steer plugin's MCP servers or its `github_pat` config value.
 
 ## GitHub MCP server (local Claude Code only)
 
-The **`steer` plugin** (enabled in this repo via `.claude/settings.json`) ships an MCP config that wires **local Claude Code sessions** to GitHub's hosted MCP server (read issues, comment on PRs, inspect workflow runs). The servers arrive with the plugin and refresh on `/plugin update` — there is no per-repo `.mcp.json` to maintain — and each goes through Claude Code's per-server approval the first time it connects. It is not used by GitHub Actions. The config references `${user_config.github_pat}` — a **plugin config value** Claude Code prompts for once at install and stores outside the repo — in the macOS Keychain, or `~/.claude/.credentials.json` where no supported keychain is available (WSL2 included). The token never lives in the repo, and there is no shell rc to edit. It is optional: leave it blank and `github` just reports disconnected, and the skills that use it fall back to the `gh` CLI.
+The **`steer` plugin** (enabled in this repo via `.claude/settings.json`) ships an MCP config that wires **local Claude Code sessions** to GitHub's hosted MCP server (read issues, comment on PRs, inspect workflow runs). The servers arrive with the plugin and refresh on `/plugin update` - there is no per-repo `.mcp.json` to maintain - and each goes through Claude Code's per-server approval the first time it connects. It is not used by GitHub Actions. The config references `${user_config.github_pat}` - a **plugin config value** Claude Code prompts for once at install and stores outside the repo - in the macOS Keychain, or `~/.claude/.credentials.json` where no supported keychain is available (WSL2 included). The token never lives in the repo, and there is no shell rc to edit. It is optional: leave it blank and `github` just reports disconnected, and the skills that use it fall back to the `gh` CLI.
 
 1. **Create a fine-grained PAT** at [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens) scoped to this repo's owner, with repository permissions: Actions (Read), Commit statuses (Read), Contents (Read/write), Issues (Read/write), Pull requests (Read/write), Metadata (Read); organization Members (Read). Classic-PAT equivalent: `repo`, `read:org`, `workflow`. Set expiry ≤90 days. Defer to [GitHub's MCP docs](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-chat-with-the-github-mcp-server) if required scopes change.
-2. **Give it to the plugin** when Claude Code prompts at install, or set it later with `claude plugin install steer@e22-plugins --config github_pat="github_pat_…"`. It is stored outside the repo and outside your shell — so unlike an export it does not need repeating per shell or leak into `ps` output.
+2. **Give it to the plugin** when Claude Code prompts at install, or set it later with `claude plugin install steer@e22-plugins --config github_pat="github_pat_..."`. It is stored outside the repo and outside your shell - so unlike an export it does not need repeating per shell or leak into `ps` output.
 3. **Verify**: restart Claude Code in this repo, run `/mcp`, and confirm `github` is connected.
 
 Never put the token in a repo file (even gitignored) or paste it into a Claude message.
 
-## Document conversion (markitdown, on demand — no server)
+## Document conversion (markitdown, on demand - no server)
 
-Binary Office documents (`.docx`, `.xlsx`, `.pptx`) — and other formats like HTML, EPUB, and CSV — convert to clean Markdown through Microsoft's [markitdown](https://github.com/microsoft/markitdown), run as a **one-shot mise task** rather than a background MCP server:
+Binary Office documents (`.docx`, `.xlsx`, `.pptx`) - and other formats like HTML, EPUB, and CSV - convert to clean Markdown through Microsoft's [markitdown](https://github.com/microsoft/markitdown), run as a **one-shot mise task** rather than a background MCP server:
 
 ```sh
 mise run convert:doc path/to/document.docx        # Markdown on stdout
 ```
 
-`/steer:intake` uses this task to absorb a PO-supplied spec, roadmap, or requirements document into `/spec`. **PDFs and images don't need it — Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for `convert:doc` for the Office binaries specifically.
+`/steer:intake` uses this task to absorb a PO-supplied spec, roadmap, or requirements document into `/spec`. **PDFs and images don't need it - Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for `convert:doc` for the Office binaries specifically.
 
-1. **Prerequisite — `uv`** (provided by default): the task runs `uvx markitdown`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box — no per-product opt-in. First use auto-fetches the `markitdown` package from PyPI — no token or env var required.
+1. **Prerequisite - `uv`** (provided by default): the task runs `uvx markitdown`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box - no per-product opt-in. First use auto-fetches the `markitdown` package from PyPI - no token or env var required.
 2. **Verify**: `mise run convert:doc --help`, or just convert a document.
 
-Earlier plugin versions wired markitdown as an MCP server instead. That spawned a `uvx markitdown-mcp` subprocess in **every** session — including the overwhelming majority that never convert a document — so it was replaced by this on-demand task. If your repo still lists a `markitdown` server in `.mcp.json` or `.vscode/mcp.json`, the entry is stale but harmless; `/steer:sync` clears it.
+Earlier plugin versions wired markitdown as an MCP server instead. That spawned a `uvx markitdown-mcp` subprocess in **every** session - including the overwhelming majority that never convert a document - so it was replaced by this on-demand task. If your repo still lists a `markitdown` server in `.mcp.json` or `.vscode/mcp.json`, the entry is stale but harmless; `/steer:sync` clears it.
 
 ## Library docs MCP server (context7, local Claude Code only)
 
-The same steer-plugin MCP config also wires **local Claude Code sessions** to [Context7](https://context7.com)'s hosted MCP server, which returns **up-to-date, version-accurate documentation** for thousands of libraries and frameworks on demand. Reach for it when you're working against a fast-moving dependency and want the *current* API surface rather than what training data remembers. Like the GitHub server it's **HTTP** (`https://mcp.context7.com/mcp`), so there's **nothing to install** — no `PATH` prerequisite, no package fetch.
+The same steer-plugin MCP config also wires **local Claude Code sessions** to [Context7](https://context7.com)'s hosted MCP server, which returns **up-to-date, version-accurate documentation** for thousands of libraries and frameworks on demand. Reach for it when you're working against a fast-moving dependency and want the *current* API surface rather than what training data remembers. Like the GitHub server it's **HTTP** (`https://mcp.context7.com/mcp`), so there's **nothing to install** - no `PATH` prerequisite, no package fetch.
 
-1. **No token required**: the anonymous free tier connects out of the box. A `CONTEXT7_API_KEY` is **optional** — it only raises rate limits. If you hit them, get a key from [context7.com](https://context7.com), export it from your shell, and add it as an `Authorization` header via your own project `.mcp.json` (it merges additively) — don't edit the plugin-managed config, which refreshes on `/plugin update`.
+1. **No token required**: the anonymous free tier connects out of the box. A `CONTEXT7_API_KEY` is **optional** - it only raises rate limits. If you hit them, get a key from [context7.com](https://context7.com), export it from your shell, and add it as an `Authorization` header via your own project `.mcp.json` (it merges additively) - don't edit the plugin-managed config, which refreshes on `/plugin update`.
 2. **Verify**: restart Claude Code in this repo, run `/mcp`, and confirm `context7` is connected.
 
-Like the GitHub server, context7 is a **third-party hosted service** — the library names and queries you send go to its API. Don't send anything sensitive through it.
+Like the GitHub server, context7 is a **third-party hosted service** - the library names and queries you send go to its API. Don't send anything sensitive through it.
 
 ## Branch protection
 
-steer is advisory in the local session — it won't *block* a push to `main`. The
+steer is advisory in the local session - it won't *block* a push to `main`. The
 real gate is **GitHub branch protection** on the default branch, and the required
 rules are the single source of truth in [`policy/branch-protection.yml`](policy/branch-protection.yml):
 a PR before merging, 1 approval, dismiss stale approvals on new commits, the `ci`
-status check, linear history, and no bypassing — even for admins. A **one-person
+status check, linear history, and no bypassing - even for admins. A **one-person
 repo** selects the policy's `solo` profile (`profile: solo`, or
 `/steer:protect apply --solo`): same wall, approvals 0, because an author cannot
-approve their own PR and would otherwise be locked out of merging. In **Settings →
+approve their own PR and would otherwise be locked out of merging. In **Settings ->
 Code security**, enable Secret scanning + push protection.
 
 Protection is also what buys agent delivery autonomy: with the wall up, Claude
 pushes branches and opens PRs on its own (`.claude/settings.json` pre-approves
-them) and **your merge review is the one human gate** — an open PR is inert
+them) and **your merge review is the one human gate** - an open PR is inert
 until you merge it. Claude never merges: rule `45-commit-autonomy` forbids
 `gh pr merge` outright, so the `ask` entry on it is a backstop to decline, not a
 way to authorize a merge in-session. Force-pushes are denied outright. On an
 unprotected pre-MVP repo the same
 autonomy applies to trunk pushes (solo-trunk mode) until the repo shows it has
-outgrown that — then the steer trunk-push hook surfaces the session's first push
+outgrown that - then the steer trunk-push hook surfaces the session's first push
 for your confirmation (repeats carry a non-blocking reminder in Claude Code; on the
 Copilot CLI they pass silently) until you graduate via `/steer:protect`.
 
-Don't set this up by hand — run **`/steer:protect`**. It reads that policy, diffs
+Don't set this up by hand - run **`/steer:protect`**. It reads that policy, diffs
 it against the repo's live settings, and (on your confirmation) applies what's
 missing via the GitHub API. `init`/`adopt` recommend it as the final bootstrap
 step, and `/steer:audit` flags it when it drifts.
 
-Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the version-pin scan), then auto-detects your stack and runs its checks — Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran" — and the root `package.json`'s `--if-present` fan-out does **not** count as a contract, so this bites from the first commit: the Node phase activates as soon as that file exists, and `ci` stays red until some package defines a real `test` script. That is deliberate (Definition of Done), not a misconfiguration — write the first test with the first slice. The `design.md` lint job is advisory and intentionally not required.
+Be honest about what `ci` verifies: it always runs stack-agnostic hygiene (`actionlint`, `shellcheck`, the version-pin scan), then auto-detects your stack and runs its checks - Node/TS (Biome + typecheck + tests) when a `package.json`/`pnpm-workspace.yaml` is present, Python (Ruff + pytest) when a `pyproject.toml` is. A detected stack with **no** test contract fails the build, so a green `ci` never means "no tests ran" - and the root `package.json`'s `--if-present` fan-out does **not** count as a contract, so this bites from the first commit: the Node phase activates as soon as that file exists, and `ci` stays red until some package defines a real `test` script. That is deliberate (Definition of Done), not a misconfiguration - write the first test with the first slice. The `design.md` lint job is advisory and intentionally not required.
 
-#### Dependabot — and the auto-merge exception
+#### Dependabot - and the auto-merge exception
 
 [`.github/dependabot.yml`](.github/dependabot.yml) keeps dependencies patched. The
 paired [`dependabot-auto-merge.yml`](.github/workflows/dependabot-auto-merge.yml)
 workflow is a **deliberate, documented exception** to the human-review rule above:
 because dependency bumps don't touch application logic, steer **auto-approves and
-auto-merges the low-risk subset — patch and minor updates** (where most security
+auto-merges the low-risk subset - patch and minor updates** (where most security
 fixes land). **Major** bumps are never auto-merged: they can carry breaking changes
 and may need a [`policy/versions.yml`](policy/versions.yml) decision, so a human
 reviews them.
 
 This waives only the human *review*, never the tests: the workflow waits for the
 required `ci` check before it merges, so a bump that breaks tests, lint, or the
-version-pin scan never lands — **CI, not a human, is what guarantees the bump is
+version-pin scan never lands - **CI, not a human, is what guarantees the bump is
 safe.** Auto-merge is scoped to Dependabot by the workflow's `dependabot[bot]`
-guard — GitHub's repo-wide `allow_auto_merge` setting is deliberately left **off**,
+guard - GitHub's repo-wide `allow_auto_merge` setting is deliberately left **off**,
 so no other PR gets an auto-merge button. `/steer:protect` enables Dependabot
 alerts + security updates (so security PRs get opened); the merge itself is enacted
-by the workflow, not by protect. Want zero automated merges? Delete that workflow —
+by the workflow, not by protect. Want zero automated merges? Delete that workflow -
 Dependabot PRs then go through the same human gate as everything else.

@@ -1,13 +1,13 @@
-# Build status — [Product Name]
+# Build status - [Product Name]
 
 > `/steer:build` flow state. Claude updates this at every step transition and
 > commits it with the work. A fresh session reads this **first** and resumes
-> from **Current step** — never restart the interview or re-ask settled
+> from **Current step** - never restart the interview or re-ask settled
 > questions.
 
 ## Current step
 
-[N — step name from `/steer:build`, e.g. "6 — building feature by feature"]
+[N - step name from `/steer:build`, e.g. "6 - building feature by feature"]
 
 ## Features
 
@@ -20,7 +20,7 @@
 - [ ] All approved intents built and demoed to the PO
 - [ ] PO explicitly confirmed the app does what they wanted (step 9 gate)
 - [ ] Definition of Done holds (tests, contracts, high-risk choices recorded)
-- [ ] `PRODUCTIONIZATION.md` written — stubs, provisional high-risk choices, and what the dev must harden
+- [ ] `PRODUCTIONIZATION.md` written - stubs, provisional high-risk choices, and what the dev must harden
 - [ ] PR proposed/opened: [link]
 
 ## Notes / blockers

@@ -1,4 +1,4 @@
-"""Tests for scripts/audit_severity.py — the blast-radius severity ceiling.
+"""Tests for scripts/audit_severity.py - the blast-radius severity ceiling.
 
 The property under test is the one the release gate rests on: severity is a pure
 function of the path, and `cap` only ever moves a finding *down*. The regression
@@ -75,7 +75,7 @@ def test_cap_never_escalates() -> None:
     # The 6.0.0 regression: a docs-site nit graded blocker becomes low.
     assert audit_severity.cap("docs/reference/hooks.md", "blocker") == "low"
     assert audit_severity.cap("docs/reference/hooks.md", "high") == "low"
-    # Below the ceiling is preserved — capping clamps down only.
+    # Below the ceiling is preserved - capping clamps down only.
     assert audit_severity.cap("plugins/steer/hooks/lib/json.sh", "low") == "low"
     assert audit_severity.cap("plugins/steer/hooks/lib/json.sh", "blocker") == "high"
     assert audit_severity.cap("CHANGELOG.md", "blocker") == "blocker"
@@ -98,7 +98,7 @@ def test_shipping_boundary_is_not_duplicated() -> None:
     """The classifier must agree with the changelog gate's own definition.
 
     If these ever diverge, one gate demands a CHANGELOG entry for a path the
-    other calls non-shipping — which is the drift this module exists to prevent.
+    other calls non-shipping - which is the drift this module exists to prevent.
     """
     import check_changelog
 

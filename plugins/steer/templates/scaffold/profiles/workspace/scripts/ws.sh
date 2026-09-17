@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# ws.sh — polyrepo member driver behind the mise `ws:*` tasks; spec/workspace.yml is the one source of truth.
+# ws.sh - polyrepo member driver behind the mise `ws:*` tasks; spec/workspace.yml is the one source of truth.
 # Usage: sh scripts/ws.sh <list|clone|sync|status|code|check|preflight>
 # Ships into the repo (not the plugin) so `mise run ws:clone` works with no Claude Code and no plugin checkout.
 # Rationale: /steer:reference polyrepo.
@@ -13,7 +13,7 @@ die() {
 	exit 1
 }
 
-# Member clones are git-ignored, so a linked worktree has none of them — expected, not drift.
+# Member clones are git-ignored, so a linked worktree has none of them - expected, not drift.
 ws_in_linked_worktree() {
 	_wd=$(git rev-parse --git-dir 2>/dev/null) || return 1
 	_wc=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
@@ -37,7 +37,7 @@ ws_worktree_note() {
 RECORDS=$(mktemp)
 trap 'rm -f "${RECORDS}"' EXIT HUP INT TERM
 
-# --- Manifest parsing (fixed-shape YAML the plugin ships — not a general parser) ---
+# --- Manifest parsing (fixed-shape YAML the plugin ships - not a general parser) ---
 
 ws_product_name() {
 	awk '
@@ -55,8 +55,8 @@ ws_product_name() {
   ' "${MANIFEST}"
 }
 
-# ws_members — one TAB-separated record per member: name repository branch profile path (unset fields empty).
-# A placeholder member (no name AND no repository — what /steer:init leaves unresolved) is dropped, not errored.
+# ws_members - one TAB-separated record per member: name repository branch profile path (unset fields empty).
+# A placeholder member (no name AND no repository - what /steer:init leaves unresolved) is dropped, not errored.
 ws_members() {
 	awk '
     function clean(line, key) {
@@ -250,7 +250,7 @@ cmd_check() {
 			printf '  MISSING %-16s %s is NOT in .gitignore - its code would be committed here\n' \
 				"${name}" "${path}"
 		fi
-		# Say the compose check could not RUN rather than skip it silently — a skipped line reads as a pass.
+		# Say the compose check could not RUN rather than skip it silently - a skipped line reads as a pass.
 		if [ ! -d "${path}" ]; then
 			printf '  absent  %-16s not cloned at %s - compose-include check not run\n' \
 				"${name}" "${path}"

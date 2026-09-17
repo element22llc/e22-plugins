@@ -1,24 +1,24 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — one PART of the always-on ruleset.
+# steer SessionStart hook - one PART of the always-on ruleset.
 #
 #   sh inject-standards.sh [PART [PARTS]]        (defaults: 1 1)
 #
 # Everything this script writes to stdout becomes `additionalContext` for the
-# session — i.e. the always-on engineering operating rules. hooks.json registers
+# session - i.e. the always-on engineering operating rules. hooks.json registers
 # it PARTS times for `startup | resume | clear | compact | fork`, once per part, and
 # there is no once-per-session guard: `compact` can fire repeatedly within one
-# session, and re-injecting then is the point — a compaction can drop the rules
+# session, and re-injecting then is the point - a compaction can drop the rules
 # from context, so the hook has to put them back.
 #
 # WHY PARTS. Claude Code caps a hook command's stdout at 10,000 characters;
 # anything longer is persisted to a file and replaced in context with a short
-# "Output too large" pointer, while the hook still exits 0 — a SILENT failure
+# "Output too large" pointer, while the hook still exits 0 - a SILENT failure
 # that left every session with a fraction of the ruleset (#509). The cap is per
 # hook COMMAND, not per event (measured on 2.1.258: seven 9,500-character
 # commands all arrived whole), so the ruleset is delivered as PARTS commands
 # that each stay under it. Every invocation computes the same deterministic
-# partition of the eligible rules — lexical order, greedy fill, one part after
-# another — and emits only its own part, so hooks.json needs nothing but the
+# partition of the eligible rules - lexical order, greedy fill, one part after
+# another - and emits only its own part, so hooks.json needs nothing but the
 # part number. The parts land in context in completion order, not part order;
 # each carries a header saying so, and the numeric rule prefixes give the
 # sequence. If the eligible rules do not fit in PARTS parts, whole rules are
@@ -28,7 +28,7 @@
 #
 # THE COPILOT SURFACES take a different shape of the same payload. GitHub
 # Copilot's SessionStart hook injects context too, but only from a JSON object
-# on stdout — the Copilot CLI reads a top-level `additionalContext`, Copilot Chat
+# on stdout - the Copilot CLI reads a top-level `additionalContext`, Copilot Chat
 # in VS Code reads `hookSpecificOutput.additionalContext`, and both discard raw
 # text ("returned non-JSON output"). There is no 10k cap there (120 K characters
 # measured whole; 10 MiB documented) but the LAST hook returning context wins,
@@ -36,7 +36,7 @@
 # emits the WHOLE eligible ruleset as one JSON object carrying both keys and
 # every other part stays silent. The CLI reaches this path through the generated
 # copilot-hooks.json (STEER_HOOK_TARGET=copilot); VS Code reaches it by running
-# this plugin's Claude hooks.json as-is — which is why the host is detected here
+# this plugin's Claude hooks.json as-is - which is why the host is detected here
 # rather than declared by a manifest (lib/json.sh, steer_hook_host).
 #
 # Design notes:
@@ -65,7 +65,7 @@ RULES_DIR="${ROOT}/rules"
 PLUGIN_JSON="${ROOT}/.claude-plugin/plugin.json"
 
 # Which part this invocation emits, out of how many. Anything malformed falls
-# back to a single part — the pre-#509 shape — rather than emitting nothing.
+# back to a single part - the pre-#509 shape - rather than emitting nothing.
 PART="${1:-1}"
 PARTS="${2:-1}"
 case "${PART}${PARTS}" in
@@ -79,7 +79,7 @@ esac
 # The runtime's hard ceiling on one hook command's stdout, and the size a part
 # is filled to. The 500-character slack absorbs the runtime counting something
 # slightly differently from us (bytes vs characters on a multibyte-heavy part,
-# a trailing separator) — never spend it on rules.
+# a trailing separator) - never spend it on rules.
 STEER_INJECT_CAP=10000
 STEER_INJECT_PART_BUDGET=9500
 # The in-band notice names at most this many dropped rules, then a count.
@@ -106,7 +106,7 @@ if [ "${HOST}" = "copilot" ]; then
 	STEER_INJECT_CAP=2000000
 fi
 
-# emit_context — stdin is the context text; on Claude it is the hook's stdout as
+# emit_context - stdin is the context text; on Claude it is the hook's stdout as
 # is, on a Copilot surface it is wrapped in the envelope both surfaces read (the
 # CLI takes the top-level key, VS Code the nested one; each ignores the other).
 # Empty context emits nothing rather than an envelope around "".
@@ -125,7 +125,7 @@ emit_context() {
 VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "${PLUGIN_JSON}" 2>/dev/null | head -n 1)"
 [ -z "${VERSION}" ] && VERSION="unknown"
 
-# Character count of stdin (code points, locale-independent — see header).
+# Character count of stdin (code points, locale-independent - see header).
 steer_chars() {
 	LC_ALL=C tr -d '\200-\277' | wc -c | tr -d ' '
 }
@@ -143,37 +143,37 @@ refresh_hint() {
 part_header() {
 	if [ "$1" -eq 1 ]; then
 		if [ "${PARTS}" -eq 1 ]; then
-			printf '<!-- Engineering standards — steer plugin v%s. %s -->\n' "${VERSION}" "$(refresh_hint)"
+			printf '<!-- Engineering standards - steer plugin v%s. %s -->\n' "${VERSION}" "$(refresh_hint)"
 		else
-			printf '<!-- Engineering standards — steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. %s -->\n' "${VERSION}" "${PARTS}" "$(refresh_hint)"
+			printf '<!-- Engineering standards - steer plugin v%s, part 1/%s. The other parts arrive as separate SessionStart blocks, in any order; the numeric rule prefixes give the sequence. %s -->\n' "${VERSION}" "${PARTS}" "$(refresh_hint)"
 		fi
 		if [ "${WORK_MODE}" = "knowledge" ]; then
-			printf '\n<!-- steer: knowledge-work mode — this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The spec-workflow, decision-capture, living-docs, roles and output rules still apply. -->\n'
+			printf '\n<!-- steer: knowledge-work mode - this is a non-code folder, so the code/infra/tracker-specific rules are intentionally omitted (not missing). The spec-workflow, decision-capture, living-docs, roles and output rules still apply. -->\n'
 		fi
 	else
-		printf '<!-- Engineering standards — steer plugin v%s, part %s/%s (continued; parts arrive in any order). -->\n' "${VERSION}" "$1" "${PARTS}"
+		printf '<!-- Engineering standards - steer plugin v%s, part %s/%s (continued; parts arrive in any order). -->\n' "${VERSION}" "$1" "${PARTS}"
 	fi
 }
 
 # Work mode decides how much of the ruleset applies. 'knowledge' = a confidently
 # non-code folder (the typical Claude Cowork product-owner case: a connected
-# folder of specs/docs, no git repo) → inject only the lean, always-on
+# folder of specs/docs, no git repo) -> inject only the lean, always-on
 # PO-relevant set and skip every code/infra/tracker-scoped rule. Anything else,
-# or any doubt, → 'code' = the full ruleset (fail-safe; never silently drops a
+# or any doubt, -> 'code' = the full ruleset (fail-safe; never silently drops a
 # rule). See steer_work_mode in lib/scope.sh.
 WORK_MODE="$(steer_work_mode "${CWD}")"
 
 if [ ! -d "${RULES_DIR}" ]; then
-	# Only part 1 speaks for a missing rules dir — one notice, not PARTS copies.
+	# Only part 1 speaks for a missing rules dir - one notice, not PARTS copies.
 	if [ "${PART}" -eq 1 ]; then
 		printf '# Engineering standards\n\nThe steer rules directory was not found at %s. Reinstall or update the plugin (`/plugin`).\n' "${RULES_DIR}" | emit_context
-		# A vanished rules dir is a steer install defect, not a user error — record it
+		# A vanished rules dir is a steer install defect, not a user error - record it
 		# (path-free, stable signature) so surface-faults.sh can offer `/steer:report`.
 		# Guarded with `if` (never a bare `&&` chain at branch end): SessionStart
 		# stdout becomes additionalContext only on exit 0, so a failed guard test
 		# here would silently drop the fallback banner this branch exists for (#319).
 		if [ -n "${CONSUMER_ROOT}" ] && [ ! -d "${CONSUMER_ROOT}/.claude-plugin" ]; then
-			steer_record_fault "${CONSUMER_ROOT}" "inject-standards.sh" "rules directory missing — plugin install incomplete or corrupted"
+			steer_record_fault "${CONSUMER_ROOT}" "inject-standards.sh" "rules directory missing - plugin install incomplete or corrupted"
 		fi
 	fi
 	exit 0
@@ -185,15 +185,15 @@ fi
 #
 # Every size comes from ONE awk pass over the whole rules dir, and the loop is
 # driven by that table rather than by a second glob (awk visits the files in
-# glob order, so the two would agree — but looking each file up in the table
+# glob order, so the two would agree - but looking each file up in the table
 # with `${table#*pattern}` is quadratic in bash 3.2 and cost ~400 ms per part).
 # A per-rule `tr | wc` pipeline was two forks per rule per part; with PARTS parts
 # started in parallel that was hundreds of process spawns per session start.
 # Character count = bytes minus UTF-8 continuation bytes, matched as raw
 # 0x80-0xBF under LC_ALL=C, so it is the code-point count in any locale. A file
-# without a final newline counts one character over — the conservative
+# without a final newline counts one character over - the conservative
 # direction. An empty file has nothing to inject and does not appear.
-# Table row: `<chars> <first-line-chars> <path>` — path last, so a plugin root
+# Table row: `<chars> <first-line-chars> <path>` - path last, so a plugin root
 # containing spaces still parses.
 NL='
 '
@@ -220,8 +220,8 @@ for _srow in ${_sizes}; do
 	_skip=0
 	case "${_first}" in
 	'<!-- steer:inject-when='*' -->')
-		# A knowledge-work folder skips EVERY conditional rule — none of the
-		# code/infra/tracker-scoped rules apply there — leaving only the unmarked,
+		# A knowledge-work folder skips EVERY conditional rule - none of the
+		# code/infra/tracker-scoped rules apply there - leaving only the unmarked,
 		# always-on PO-relevant core. (Marker line is dropped with the rule.)
 		if [ "${WORK_MODE}" = "knowledge" ]; then
 			IFS="${NL}"
@@ -282,7 +282,7 @@ IFS="${_oifs}"
 
 # The notice is part of the payload, not a stderr warning: the session itself
 # has to know its ruleset is incomplete, because it is the thing acting on it.
-# It lives on the last emitted part and is sized from the data — rules are
+# It lives on the last emitted part and is sized from the data - rules are
 # popped off that part until header + rules + notice fit the budget, so the
 # guard can never itself bust the cap it exists to enforce.
 build_notice() {
@@ -296,7 +296,7 @@ build_notice() {
 	_more=""
 	[ "${_dropped_n}" -gt "${STEER_INJECT_NAME_LIMIT}" ] &&
 		_more=" and $((_dropped_n - STEER_INJECT_NAME_LIMIT)) more"
-	printf '<!-- steer: RULESET INCOMPLETE — the ruleset did not fit in %s SessionStart part(s) of %s characters (the runtime cap on hook output), so %s rule(s) were NOT injected:%s%s. Treat the standards above as partial; run `/steer:standards` for the full ruleset, and report it with `/steer:report`. -->\n' \
+	printf '<!-- steer: RULESET INCOMPLETE - the ruleset did not fit in %s SessionStart part(s) of %s characters (the runtime cap on hook output), so %s rule(s) were NOT injected:%s%s. Treat the standards above as partial; run `/steer:standards` for the full ruleset, and report it with `/steer:report`. -->\n' \
 		"${PARTS}" "${STEER_INJECT_CAP}" "${_dropped_n}" "${_names}" "${_more}"
 }
 NOTICE=""

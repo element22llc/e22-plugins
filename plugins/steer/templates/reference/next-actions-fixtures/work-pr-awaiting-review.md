@@ -1,4 +1,4 @@
-# Fixture: work — PR opened, acceptance met, awaiting review
+# Fixture: work - PR opened, acceptance met, awaiting review
 
 Workflow: `/steer:work #123`
 
@@ -17,7 +17,7 @@ Human decision required
 
 ## Expected suggested command
 
-none — PR review is a human action.
+none - PR review is a human action.
 
 ## Must not recommend first
 

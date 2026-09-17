@@ -121,7 +121,7 @@ def test_description_at_listing_cap_passes(tmp_path: Path):
 
 
 def test_unquoted_scalar_with_comment_marker_fails(tmp_path: Path):
-    """A plain scalar containing ' #' is silently truncated by YAML — the real
+    """A plain scalar containing ' #' is silently truncated by YAML - the real
     `work` skill shipped this way, losing 471 of 546 chars of trigger text."""
     root = _make_plugin(tmp_path)
     skill = root / "skills" / "demo-skill" / "SKILL.md"
@@ -136,7 +136,7 @@ def test_unquoted_scalar_with_comment_marker_fails(tmp_path: Path):
 
 
 def test_block_scalar_with_comment_marker_passes(tmp_path: Path):
-    """A '>-' folded block treats '#' as literal content — the sanctioned fix."""
+    """A '>-' folded block treats '#' as literal content - the sanctioned fix."""
     root = _make_plugin(tmp_path)
     skill = root / "skills" / "demo-skill" / "SKILL.md"
     skill.write_text(
@@ -250,9 +250,9 @@ def test_migration_versions_real_plugin_clean():
 
 
 def test_migration_versions_accepts_unreleased_heading(tmp_path: Path):
-    """`[Unreleased]` is the authoring state — an entry lands before its release."""
+    """`[Unreleased]` is the authoring state - an entry lands before its release."""
     root = _make_plugin(tmp_path)
-    _write_ledger(root, "### [Unreleased] — a pending transform")
+    _write_ledger(root, "### [Unreleased] - a pending transform")
     errors: list[str] = []
     check_plugin.check_migration_versions(root, errors)
     assert errors == []
@@ -260,7 +260,7 @@ def test_migration_versions_accepts_unreleased_heading(tmp_path: Path):
 
 def test_migration_versions_accepts_released_and_older(tmp_path: Path):
     root = _make_plugin(tmp_path)  # plugin.json version is 0.1.0
-    _write_ledger(root, "### v0.1.0 — the current release", "### v0.0.9 — an older one")
+    _write_ledger(root, "### v0.1.0 - the current release", "### v0.0.9 - an older one")
     errors: list[str] = []
     check_plugin.check_migration_versions(root, errors)
     assert errors == []
@@ -273,7 +273,7 @@ def test_migration_versions_rejects_guessed_next_version(tmp_path: Path):
     stamp" for every repo stamped in between, so /steer:sync SKIPS it silently.
     """
     root = _make_plugin(tmp_path)  # 0.1.0
-    _write_ledger(root, "### v0.2.0 — a guessed next minor")
+    _write_ledger(root, "### v0.2.0 - a guessed next minor")
     errors: list[str] = []
     check_plugin.check_migration_versions(root, errors)
     assert len(errors) == 1
@@ -283,7 +283,7 @@ def test_migration_versions_rejects_guessed_next_version(tmp_path: Path):
 
 def test_migration_versions_rejects_guessed_major_and_patch(tmp_path: Path):
     root = _make_plugin(tmp_path)  # 0.1.0
-    _write_ledger(root, "### v1.0.0 — guessed major", "### v0.1.1 — guessed patch")
+    _write_ledger(root, "### v1.0.0 - guessed major", "### v0.1.1 - guessed patch")
     errors: list[str] = []
     check_plugin.check_migration_versions(root, errors)
     assert len(errors) == 2
@@ -292,7 +292,7 @@ def test_migration_versions_rejects_guessed_major_and_patch(tmp_path: Path):
 def test_migration_versions_ignores_entry_template_placeholder(tmp_path: Path):
     """The ledger's own copy-me template carries a literal `vX.Y.Z`, not a version."""
     root = _make_plugin(tmp_path)
-    _write_ledger(root, "### vX.Y.Z — <one-line what>")
+    _write_ledger(root, "### vX.Y.Z - <one-line what>")
     errors: list[str] = []
     check_plugin.check_migration_versions(root, errors)
     assert errors == []

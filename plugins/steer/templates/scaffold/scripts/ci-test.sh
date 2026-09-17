@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
-# steer — run the test suite for every detected stack. Invoked by `mise run ci:test`.
+# steer - run the test suite for every detected stack. Invoked by `mise run ci:test`.
 # A detected stack with no test contract FAILS: green must mean tests ran.
 set -eu
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
 # a consumer repo lints these from its root and has no .shellcheckrc to lean on.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=ci-lib.sh
@@ -14,7 +14,7 @@ ran=0
 
 if steer_ci_has_node; then
 	ran=1
-	# The root `--if-present` fan-out is not a test contract — green must mean tests ran.
+	# The root `--if-present` fan-out is not a test contract - green must mean tests ran.
 	if ! git ls-files '*package.json' |
 		xargs grep -hE '"test"[[:space:]]*:' 2>/dev/null |
 		grep -qv -- '--if-present'; then

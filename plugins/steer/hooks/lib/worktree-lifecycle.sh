@@ -1,14 +1,14 @@
 # shellcheck shell=sh
-# (sourced, not executed — no shebang; the directive sets ShellCheck's dialect.)
+# (sourced, not executed - no shebang; the directive sets ShellCheck's dialect.)
 #
-# steer hook helper — tear down a linked worktree's local backing services.
+# steer hook helper - tear down a linked worktree's local backing services.
 #
 # WHY THIS EXISTS
 #   Rule `99-end-of-session` asks the agent to stop the dev servers and watchers
 #   it started, freeing their ports; the containers a worktree started are this
 #   helper's half of that. Asking is all a
 #   rule can do: it is prose in the always-on payload, it costs bytes every
-#   session, and the one moment it matters — the worktree going away — is the
+#   session, and the one moment it matters - the worktree going away - is the
 #   moment nobody is reading a checklist. `SessionEnd` and `WorktreeRemove` fire
 #   exactly there, so the teardown is attempted automatically rather than
 #   requested. How reliably differs by event, and the difference is not cosmetic:
@@ -19,11 +19,11 @@
 #   finishes. Do not describe the SessionEnd half as a guarantee.
 #
 # THE TWO MODES ARE NOT THE SAME ACT
-#   stop   `docker:down` — stops this worktree's containers, KEEPS its volumes.
+#   stop   `docker:down` - stops this worktree's containers, KEEPS its volumes.
 #          Used at SessionEnd. A session ending is not the worktree ending: the
 #          dev may still be working in that checkout from a plain terminal, so
 #          this frees held ports and CPU and touches no data.
-#   clean  `docker:clean` — down + volumes + orphans. Used at WorktreeRemove,
+#   clean  `docker:clean` - down + volumes + orphans. Used at WorktreeRemove,
 #          where the checkout itself is about to be deleted and its per-worktree
 #          volumes are, by construction, unreachable afterwards. This is the
 #          command rule `24-worktrees` names for that moment.
@@ -32,20 +32,20 @@
 #   harness has told us the worktree is being removed. Nothing here removes data
 #   because a session ended.
 #
-# GATING — every one of these must hold before anything runs:
+# GATING - every one of these must hold before anything runs:
 #   * a LINKED worktree (a plain checkout's stack is the dev's main stack and is
-#     never touched — the same boundary check-worktree-trust.sh draws);
+#     never touched - the same boundary check-worktree-trust.sh draws);
 #   * `docker` on PATH (a repo whose stack is never run pays nothing);
 #   * `mise` on PATH, and the task actually defined in that worktree's task set
-#     (`docker:clean` in a normal repo, `ws:docker:clean` in a workspace root —
+#     (`docker:clean` in a normal repo, `ws:docker:clean` in a workspace root -
 #     the scaffold's `ws:` prefixing invariant, see profiles/workspace/mise.toml);
 #   * a compose file present, so a `library`/`cli` repo that pruned `docker:*`
 #     pays nothing;
-#   * `STEER_NO_WORKTREE_TEARDOWN` unset — the escape hatch for a dev who wants
+#   * `STEER_NO_WORKTREE_TEARDOWN` unset - the escape hatch for a dev who wants
 #     their worktree stacks left alone.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
-#   POSIX sh, no jq. Silent and fail-soft throughout. Never blocks — neither
+#   POSIX sh, no jq. Silent and fail-soft throughout. Never blocks - neither
 #   calling event carries decision control, so a nonzero exit would stop nothing;
 #   the callers always exit 0.
 #
@@ -54,11 +54,11 @@
 #   genuinely no user-facing channel there; `SessionEnd` would show stderr to the
 #   user on an `exit 2`, but a teardown is not worth interrupting a shutdown for.
 #   Both discard their JSON output fields. (Upstream exit-code-2 table, verified
-#   verbatim: https://docs.claude.com/en/docs/claude-code/hooks.md — "SessionEnd |
+#   verbatim: https://docs.claude.com/en/docs/claude-code/hooks.md - "SessionEnd |
 #   No | Shows stderr to user only", "WorktreeRemove | No | Failures are logged in
 #   debug mode only".)
 
-# steer_wt_is_linked <root> — true when <root> is a linked worktree, i.e. it has a
+# steer_wt_is_linked <root> - true when <root> is a linked worktree, i.e. it has a
 # primary checkout that is not itself. Subprocess-free (reads the `.git` file).
 steer_wt_is_linked() {
 	_wl_root="$1"
@@ -67,7 +67,7 @@ steer_wt_is_linked() {
 	[ -n "${_wl_primary}" ] && [ "${_wl_primary}" != "${_wl_root}" ]
 }
 
-# steer_wt_has_compose <root> — true when the worktree ships a compose file, the
+# steer_wt_has_compose <root> - true when the worktree ships a compose file, the
 # only thing the docker:* tasks act on.
 steer_wt_has_compose() {
 	for _wc_f in compose.yaml compose.yml docker-compose.yaml docker-compose.yml; do
@@ -76,10 +76,10 @@ steer_wt_has_compose() {
 	return 1
 }
 
-# steer_wt_task <root> <suffix> — the mise task name to run for <suffix>
+# steer_wt_task <root> <suffix> - the mise task name to run for <suffix>
 # (`down` / `clean`) in <root>: `docker:<suffix>` when that task is defined there,
 # else `ws:docker:<suffix>` when THAT is (a workspace root, where every task is
-# `ws:`-prefixed so it cannot shadow a member's). Empty when neither exists —
+# `ws:`-prefixed so it cannot shadow a member's). Empty when neither exists -
 # a repo that legitimately pruned the docker tasks. One `mise tasks` call.
 steer_wt_task() {
 	_wt_list="$(mise tasks ls --no-header -C "$1" 2>/dev/null)" || return 1
@@ -96,7 +96,7 @@ steer_wt_task() {
 	return 1
 }
 
-# steer_wt_teardown <root> <stop|clean> — run the matching teardown task in <root>.
+# steer_wt_teardown <root> <stop|clean> - run the matching teardown task in <root>.
 # Silent; returns 0 whether it ran or declined, so a caller can `|| :` free.
 steer_wt_teardown() {
 	_td_root="$1"
@@ -119,7 +119,7 @@ steer_wt_teardown() {
 	[ -n "${_td_task}" ] || return 0
 
 	# `-C` so the worktree's own `[env] _.source = "scripts/worktree-env.sh"` sets
-	# COMPOSE_PROJECT_NAME — that scoping is what keeps a sibling worktree's stack
+	# COMPOSE_PROJECT_NAME - that scoping is what keeps a sibling worktree's stack
 	# untouched. An untrusted config makes mise refuse and this exits quietly,
 	# which is the correct outcome: nothing was started from an unloadable config.
 	mise run -C "${_td_root}" "${_td_task}" >/dev/null 2>&1 || :

@@ -1,4 +1,4 @@
-"""Tests for scripts/validate_docs.py — docs-site structural + sync checks.
+"""Tests for scripts/validate_docs.py - docs-site structural + sync checks.
 
 One live-repo test pins the real docs/ tree green; the rest run against small
 hermetic fixtures (monkeypatched module paths), covering each check's failure

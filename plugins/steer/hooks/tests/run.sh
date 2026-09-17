@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer hook fixture suite — POSIX sh. Version-pin checks are
+# steer hook fixture suite - POSIX sh. Version-pin checks are
 # deterministic against the bundled policy/versions.yml (no network, no jq).
 # Feeds canned PreToolUse JSON on stdin and asserts the hook's decision
 # (deny / silent allow) plus the field-extraction
@@ -10,14 +10,14 @@
 # Exit 0 when all cases pass, 1 otherwise.
 #
 # NOTE: pin literals are assembled at runtime via pin() so this file's *source*
-# never contains a `name:NN` token — otherwise the plugin's own version-pin hook
+# never contains a `name:NN` token - otherwise the plugin's own version-pin hook
 # (active in the authoring session) would block writing this test.
 
 # shellcheck disable=SC2015,SC2034
-# SC2015 — the assert helpers use the `cond && ok || bad` idiom; `ok` only bumps a
+# SC2015 - the assert helpers use the `cond && ok || bad` idiom; `ok` only bumps a
 #          counter and never fails, so the `|| bad` branch runs only on a real
 #          assertion failure. Intentional, not the if-then-else footgun.
-# SC2034 — STEER_INPUT is read by the sourced lib/json.sh functions (which ShellCheck
+# SC2034 - STEER_INPUT is read by the sourced lib/json.sh functions (which ShellCheck
 #          does not follow), so it reads as "unused" here though it is the input.
 
 set -u
@@ -34,7 +34,7 @@ WORK="$(mktemp -d "${TMPDIR:-/tmp}/steer-hooktests.XXXXXX")"
 WORK="$(CDPATH='' cd -- "${WORK}" && pwd -P)"
 trap 'rm -rf "${WORK}"' EXIT
 # run_hook records the invoked hook's exit code here so assert_empty can require a
-# clean (rc 0) silent-allow — a hook that crashes before printing must NOT pass as
+# clean (rc 0) silent-allow - a hook that crashes before printing must NOT pass as
 # "silent". Written inside run_hook's command-substitution subshell (a file, so it
 # survives the subshell); read via last_rc.
 RC_FILE="${WORK}/.last_hook_rc"
@@ -70,8 +70,8 @@ run_inject() { # <stdin> -> every registered part of inject-standards.sh, concat
 last_rc() { cat "${RC_FILE}" 2>/dev/null || printf '0'; }
 
 # Direct-sh runner for the non-hook helper scripts (template-reconcile /
-# scan-capabilities / scan-invocations / …). Sets `out` + `rc` AND records rc to
-# RC_FILE — so assert_empty's rc half asserts THIS invocation, not a stale rc
+# scan-capabilities / scan-invocations / ...). Sets `out` + `rc` AND records rc to
+# RC_FILE - so assert_empty's rc half asserts THIS invocation, not a stale rc
 # left by an earlier run_hook (issue #338).
 run_sh() { # <script> [args...]
 	out="$(sh "$@" 2>/dev/null)"
@@ -169,14 +169,14 @@ session_json_src() { # <cwd> <session> <source>
 }
 
 # Write a product CLAUDE.md carrying the machine-readable delivery-mode marker,
-# plus prose that names BOTH modes — so the tests prove the matcher is anchored to
+# plus prose that names BOTH modes - so the tests prove the matcher is anchored to
 # the marker line and never matches the explanatory prose word "solo trunk".
 claude_md_mode() { # <repo_root> <solo-trunk|pr-flow>
 	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n\nProse names solo trunk (pre-MVP) and PR flow both.\n' "$2" >"$1/CLAUDE.md"
 }
 
 # Same, plus the recorded graduation waiver marker (/steer:protect waive) on the
-# line after the mode marker — and prose that mentions the waiver, so the tests
+# line after the mode marker - and prose that mentions the waiver, so the tests
 # prove the waiver matcher is anchored to its comment line too.
 claude_md_mode_waived() { # <repo_root> <solo-trunk|pr-flow>
 	printf '## Delivery mode\n\n<!-- steer:delivery-mode=%s -->\n<!-- steer:graduation=waived -->\n\nProse names solo trunk (pre-MVP), PR flow, and the graduation waiver.\n' "$2" >"$1/CLAUDE.md"
@@ -189,9 +189,9 @@ json_notebook() { # <cwd> <session> <notebook_path>
 
 managed_spine() { # <repo_root>  -> stamp a complete, version-stamped spec spine
 	mkdir -p "$1/spec"
-	# TWO lines, comment first — the exact shape /steer:init, /steer:sync and
+	# TWO lines, comment first - the exact shape /steer:init, /steer:sync and
 	# /steer:adopt write. A bare version here hid a reader that took line 1.
-	printf '# Spec-spine version — managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.\n1.0.0\n' \
+	printf '# Spec-spine version - managed by /steer:init, /steer:adopt, /steer:sync. Do not edit by hand.\n1.0.0\n' \
 		>"$1/spec/.version"
 	for _sf in vision.md users.md glossary.md tracker.md; do
 		printf 'x\n' >"$1/spec/${_sf}"
@@ -223,14 +223,14 @@ STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"src/a.ts","content"
 assert_eq "extract: escaped quotes / decoy file_path" "$(steer_field file_path)" "src/a.ts"
 
 # JSON "a\\nb.ts" decodes to a-backslash-n-b (a literal backslash + 'n'), NOT a
-# newline — the escaped-backslash case.
+# newline - the escaped-backslash case.
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"a\\nb.ts","content":"x"}}'
 assert_eq "extract: escaped backslash preserved" "$(steer_field file_path)" 'a\nb.ts'
 
 STEER_INPUT='{"tool_name":"Write","tool_input":{"file_path":"real.ts","content":"\"file_path\":\"fake.ts\""}}'
 assert_eq "extract: repeated file_path not shadowed" "$(steer_field file_path)" "real.ts"
 
-# A top-level decoy of the same name, BEFORE tool_input, must not win — the no-jq
+# A top-level decoy of the same name, BEFORE tool_input, must not win - the no-jq
 # fallback scopes to the post-"tool_input" slice first (mirrors jq's precedence).
 STEER_INPUT='{"tool_name":"Write","file_path":"TOP.ts","tool_input":{"file_path":"INNER.ts","content":"x"}}'
 assert_eq "extract: top-level decoy file_path not preferred" "$(steer_field file_path)" "INNER.ts"
@@ -283,13 +283,13 @@ assert_eq "classify spec" "$(steer_classify_path spec/features/x/intent.md)" "sp
 assert_eq "classify unknown" "$(steer_classify_path data.bin)" "unknown"
 
 # --- check-version-pins.sh (deterministic, policy-driven; uses the bundled
-#     policy/versions.yml via CLAUDE_PLUGIN_ROOT — no network, no jq) ---
+#     policy/versions.yml via CLAUDE_PLUGIN_ROOT - no network, no jq) ---
 
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
 assert_deny "version-pins: denied major denied" "${out}"
 
 # Floor-only policy: a supported-but-older major (≥ minimum_supported, not denied)
-# is silent — there is no advisory "behind the target" tier.
+# is silent - there is no advisory "behind the target" tier.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
 assert_no_deny "version-pins: above-floor not denied" "${out}"
 assert_empty "version-pins: above-floor silent (no advisory tier)" "${out}"
@@ -319,20 +319,20 @@ out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image:
 assert_empty "version-pins: legacy pin-ok bypass" "${out}"
 
 # Regression: a three-segment pin (extracted at major.minor) must still honor a
-# same-line marker — the boundary class excludes only digits, not the dot.
+# same-line marker - the boundary class excludes only digits, not the dot.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11).2.1 # steer:allow-pin three-segment")")"
 assert_empty "version-pins: steer:allow-pin bypass honors 3-segment pin" "${out}"
 
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"docker run $(pin postgres 11)\"}}")"
 assert_empty "version-pins: Bash skipped (CI scanner is the backstop)" "${out}"
 
-# NotebookEdit new_source is inspected like any write — a denied pin in a notebook
+# NotebookEdit new_source is inspected like any write - a denied pin in a notebook
 # cell is caught, not silently passed (issue #271: NotebookEdit was a dead matcher).
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"NotebookEdit\",\"tool_input\":{\"notebook_path\":\"a.ipynb\",\"new_source\":\"image: $(pin postgres 11)\"}}")"
 assert_deny "version-pins: NotebookEdit new_source denied pin caught" "${out}"
 
 # A steer:allow-pin justification on a DIFFERENT line must NOT suppress a deny for a
-# pin elsewhere — the same-line discipline only holds if multi-line content survives
+# pin elsewhere - the same-line discipline only holds if multi-line content survives
 # unescaping (issue #271). '\n' in the JSON value is a real newline in the content.
 out="$(run_hook check-version-pins.sh "$(json_write /tmp sML compose.yaml "image: $(pin postgres 11)\nother: fine # steer:allow-pin unrelated")")"
 assert_deny "version-pins: allow-pin on a different line does not suppress deny" "${out}"
@@ -355,7 +355,7 @@ mkdir -p "${RP}/policy"
 printf 'schema: 1\nproducts:\n  postgres:\n    minimum_supported: "20"\n    denied: []\n' >"${RP}/policy/versions.yml"
 out="$(run_hook check-version-pins.sh "$(json_write "${RP}" sP compose.yaml "image: $(pin postgres 17)")")"
 assert_deny "version-pins: repo-local policy enforced (pg17 below local min 20)" "${out}"
-# The same repo-local policy is honored when editing from a SUBDIR — the hook
+# The same repo-local policy is honored when editing from a SUBDIR - the hook
 # resolves the work-tree root before reading policy/versions.yml (#277 item 4). A
 # subdir with no policy/ would otherwise fall through to the laxer bundled default.
 mkdir -p "${RP}/apps/web"
@@ -368,7 +368,7 @@ assert_empty "version-pins: dotted pin still honors its own allow-pin marker" "$
 
 # --- spec/scaffold dimension of check-write-nudges.sh (no /spec spine) ---
 # Two dimensions (issue #171): the /spec SPINE nudge fires once per session+repo;
-# the SCAFFOLD nudge is sticky — it re-fires on each NEW feature file while the
+# the SCAFFOLD nudge is sticky - it re-fires on each NEW feature file while the
 # repo has no root mise.toml, and self-clears the moment a mise.toml exists.
 unset ENV
 R1="$(new_repo repoA)"
@@ -378,18 +378,18 @@ printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: 
 printf '%s' "${out}" | grep -q 'Spec-first check' && ok || bad "spec-before-code: first write carries spine clause (${out})"
 
 # Second DISTINCT file, same session+repo, still no mise.toml: spine fired once
-# already, but the SCAFFOLD nudge re-fires — and ONLY the scaffold clause.
+# already, but the SCAFFOLD nudge re-fires - and ONLY the scaffold clause.
 out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/other.ts 'y')")"
 assert_ctx "spec-before-code: new file re-fires scaffold nudge" "${out}"
 printf '%s' "${out}" | grep -q 'Scaffold check' && ok || bad "spec-before-code: re-fire carries scaffold clause (${out})"
 printf '%s' "${out}" | grep -q 'Spec-first check' && bad "spec-before-code: spine clause must NOT repeat (${out})" || ok
 
-# SAME file written again → no dimension due → silent (scaffold dedup, never nag).
+# SAME file written again -> no dimension due -> silent (scaffold dedup, never nag).
 out="$(run_hook check-write-nudges.sh "$(json_write "${R1}" sA src/other.ts 'y2')")"
 assert_empty "spec-before-code: same file again is silent (scaffold dedup)" "${out}"
 
 # Root mise.toml present (scaffold landed) but no spine: the SPINE nudge fires
-# once, the SCAFFOLD dimension stays silent — proving the sticky nudge self-clears.
+# once, the SCAFFOLD dimension stays silent - proving the sticky nudge self-clears.
 R1b="$(new_repo repoAmise)"
 printf '[tools]\n' >"${R1b}/mise.toml"
 out="$(run_hook check-write-nudges.sh "$(json_write "${R1b}" sAm src/app.ts 'x')")"
@@ -398,7 +398,7 @@ printf '%s' "${out}" | grep -q 'Scaffold check' && bad "spec-before-code: no sca
 out="$(run_hook check-write-nudges.sh "$(json_write "${R1b}" sAm src/other.ts 'y')")"
 assert_empty "spec-before-code: scaffold present + spine fired -> later files silent" "${out}"
 
-# Writing mise.toml IS the act of scaffolding — never scaffold-nudge that write.
+# Writing mise.toml IS the act of scaffolding - never scaffold-nudge that write.
 R1c="$(new_repo repoAmk)"
 out="$(run_hook check-write-nudges.sh "$(json_write "${R1c}" sMk src/app.ts 'x')")"
 assert_ctx "spec-before-code: prime spine nudge before mise.toml write" "${out}"
@@ -417,7 +417,7 @@ R4="$(new_repo repoD)"
 out="$(run_hook check-write-nudges.sh "$(json_write "${R4}" sD README.md '# hi')")"
 assert_empty "spec-before-code: docs exempt" "${out}"
 
-# Bare spec/ (no .version) is NOT a managed spine — must still nudge (foreign),
+# Bare spec/ (no .version) is NOT a managed spine - must still nudge (foreign),
 # per the spec/.version predicate. An empty/foreign/partial spec/ no longer
 # silences the spec-first nudge.
 R5="$(new_repo repoE)"
@@ -484,15 +484,15 @@ out="$(run_hook check-write-nudges.sh "$(json_write "${R9}" sJ src/app.ts 'x')")
 assert_empty "issue-first: non-github tracker silent" "${out}"
 
 # No tracker.md at all: the issue-first dimension stays silent. (The spine
-# dimension legitimately reports the incomplete spec/ here — that is nudge 1's
-# job — so assert the absence of the issue nudge, not total silence.)
+# dimension legitimately reports the incomplete spec/ here - that is nudge 1's
+# job - so assert the absence of the issue nudge, not total silence.)
 R10="$(new_repo repoNoTracker)"
 mkdir -p "${R10}/spec"
 out="$(run_hook check-write-nudges.sh "$(json_write "${R10}" sN src/app.ts 'x')")"
 printf '%s' "${out}" | grep -q 'Issue-first' && bad "issue-first: no tracker must not issue-nudge (got: ${out})" || ok
 
 # Solo-trunk mode: issue-first still nudges, but with trunk wording (no /steer:work,
-# no issue branch — close the issue from the commit instead).
+# no issue branch - close the issue from the commit instead).
 R8st="$(new_repo repoGHsolo)"
 bootstrapped_repo "${R8st}"
 claude_md_mode "${R8st}" solo-trunk
@@ -502,7 +502,7 @@ printf '%s' "${out}" | grep -q 'solo-trunk mode' && ok || bad "issue-first: solo
 printf '%s' "${out}" | grep -q '/steer:work' && bad "issue-first: solo-trunk must NOT mention /steer:work (got: ${out})" || ok
 
 # PR-flow repo whose CLAUDE.md prose names "solo trunk" still gets PR-flow wording
-# — proves the marker matcher is anchored, not a substring of the prose.
+# - proves the marker matcher is anchored, not a substring of the prose.
 R8pf="$(new_repo repoGHpr)"
 bootstrapped_repo "${R8pf}"
 claude_md_mode "${R8pf}" pr-flow
@@ -571,7 +571,7 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8c}" sC3 'gh api graphql
 assert_ctx "issue-create: graphql createIssue nudges" "${out}"
 
 # A create whose payload ALREADY carries steer markers is the /steer:tracker-sync
-# render path — stay silent (contract is being applied, not bypassed).
+# render path - stay silent (contract is being applied, not bypassed).
 RC8d="$(new_repo repoCreateContractful)"
 mkdir -p "${RC8d}/spec"
 printf 'system: github\n' >"${RC8d}/spec/tracker.md"
@@ -580,7 +580,7 @@ assert_empty "issue-create: payload with steer markers silent" "${out}"
 
 # A /steer:report self-report files UPSTREAM to element22llc/e22-plugins, never the
 # product tracker. The guard must stay silent even on the label-less fallback
-# create, which carries no `steer:` marker — routing it through tracker-sync would
+# create, which carries no `steer:` marker - routing it through tracker-sync would
 # target the wrong repo.
 RC8f="$(new_repo repoSelfReport)"
 mkdir -p "${RC8f}/spec"
@@ -589,7 +589,7 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${RC8f}" sC4b 'gh issue crea
 assert_empty "issue-create: steer self-report upstream create stays silent" "${out}"
 
 # gh's documented `-R` alias for `--repo` is the same self-report create and must
-# be exempt too (#339) — pre-fix it got a false-positive nudge at the wrong repo.
+# be exempt too (#339) - pre-fix it got a false-positive nudge at the wrong repo.
 RC8h="$(new_repo repoSelfReportR)"
 mkdir -p "${RC8h}/spec"
 printf 'system: github\n' >"${RC8h}/spec/tracker.md"
@@ -619,7 +619,7 @@ assert_empty "issue-create: MCP add_issue_comment silent" "${out}"
 # marker set by earlier cases does not suppress these.
 out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5c mcp__github__issue_write y)")"
 assert_ctx "issue-create: MCP issue_write nudges (renamed create tool)" "${out}"
-# sub_issue_write links a relationship to an EXISTING issue (no body) — not a create.
+# sub_issue_write links a relationship to an EXISTING issue (no body) - not a create.
 out="$(run_hook check-bash-actions.sh "$(mcp_json "${RC8e}" sC5d mcp__github__sub_issue_write y)")"
 assert_empty "issue-create: MCP sub_issue_write silent (relationship, not create)" "${out}"
 
@@ -701,7 +701,7 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S7}" stS7)")"
 	assert_block "stop-reconcile: date branch release/2026-06 reported (not issue-governed)" "${out}"
 
-	# H: marker-first — a non-issue branch with a spec/.work/<branch> marker is
+	# H: marker-first - a non-issue branch with a spec/.work/<branch> marker is
 	# governed via the marker even though its name carries no issue number.
 	S8="$(git_repo stopMarker main)"
 	git -C "${S8}" checkout -q -b prototype-x
@@ -712,18 +712,18 @@ if command -v git >/dev/null 2>&1; then
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S8}" stS8)")"
 	assert_no_block "stop-reconcile: spec/.work marker governs non-issue branch" "${out}"
 
-	# I: .md marker governs via slash→underscore key AND the current session is
+	# I: .md marker governs via slash->underscore key AND the current session is
 	# stamped at the head of the session list, preserving the issue:/branch: header
 	# and the prior session id.
 	S9="$(git_repo stopMdMarker main)"
 	git -C "${S9}" checkout -q -b proto/x
 	mkdir -p "${S9}/spec/.work"
 	MD9="${S9}/spec/.work/proto_x.md"
-	printf '# Work marker — issue 123\n\n- issue: 123\n- branch: proto/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0002\n' >"${MD9}"
+	printf '# Work marker - issue 123\n\n- issue: 123\n- branch: proto/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0002\n' >"${MD9}"
 	mkdir -p "${S9}/src"
 	printf 'x\n' >"${S9}/src/app.ts"
 	out="$(run_hook reconcile-issue-first.sh "$(stop_json "${S9}" sess-new-0001)")"
-	assert_no_block "stop-reconcile: .md marker governs (slash→underscore key)" "${out}"
+	assert_no_block "stop-reconcile: .md marker governs (slash->underscore key)" "${out}"
 	hsess9="$(awk '/^## Claude Code sessions/{f=1;next} f&&/^-[[:space:]]/{s=$0;sub(/^-[[:space:]]+/,"",s);sub(/[[:space:]].*$/,"",s);print s;exit}' "${MD9}")"
 	assert_eq "stop-reconcile: current session stamped at head of .md marker" "${hsess9}" "sess-new-0001"
 	grep -q '^- issue: 123$' "${MD9}" && ok || bad "stop-reconcile: .md marker issue: line preserved"
@@ -742,7 +742,7 @@ if command -v git >/dev/null 2>&1; then
 	git -C "${S10}" checkout -q -b proto2/x
 	mkdir -p "${S10}/spec/.work"
 	MD10="${S10}/spec/.work/proto2_x.md"
-	printf '# Work marker — issue 7\n\n- issue: 7\n- branch: proto2/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0003\n' >"${MD10}"
+	printf '# Work marker - issue 7\n\n- issue: 7\n- branch: proto2/x\n\n## Claude Code sessions (newest first)\n\n- sess-old-0003\n' >"${MD10}"
 	cp "${MD10}" "${MD10}.before"
 	mkdir -p "${S10}/src"
 	printf 'x\n' >"${S10}/src/app.ts"
@@ -750,7 +750,7 @@ if command -v git >/dev/null 2>&1; then
 	assert_no_block "stop-reconcile: .md marker governs with empty session id" "${out}"
 	cmp -s "${MD10}" "${MD10}.before" && ok || bad "stop-reconcile: empty session id leaves .md marker intact"
 
-	# L: solo-trunk mode — a governed change on main is STILL surfaced (issue-first
+	# L: solo-trunk mode - a governed change on main is STILL surfaced (issue-first
 	# holds), but with trunk wording: reference the issue in the commit, no /steer:work.
 	S11="$(git_repo stopSolo main)"
 	claude_md_mode "${S11}" solo-trunk
@@ -761,7 +761,7 @@ if command -v git >/dev/null 2>&1; then
 	printf '%s' "${out}" | grep -q 'solo-trunk mode' && ok || bad "stop-reconcile: solo-trunk wording present (got: ${out})"
 	printf '%s' "${out}" | grep -q '/steer:work' && bad "stop-reconcile: solo-trunk must NOT mention /steer:work (got: ${out})" || ok
 
-	# M: solo-trunk advisory is independent of any prior committed issue ref — the
+	# M: solo-trunk advisory is independent of any prior committed issue ref - the
 	# new work is uncommitted at Stop time, so there is no commit-scan to silence it.
 	S12="$(git_repo stopSoloPriorRef main)"
 	claude_md_mode "${S12}" solo-trunk
@@ -807,7 +807,7 @@ if command -v git >/dev/null 2>&1; then
 
 	# Q: hotfix fast-path (rule 62). A governed change on a hotfix/<n> branch files
 	# its issue after-the-fact by design, so it still surfaces a one-time advisory
-	# but REFRAMED as the mandatory post-incident follow-up — never the standard
+	# but REFRAMED as the mandatory post-incident follow-up - never the standard
 	# "branch does not reference an issue" nag.
 	SHF="$(git_repo stopHotfix hotfix/42-outage)"
 	mkdir -p "${SHF}/src"
@@ -821,9 +821,9 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# check-open-questions.sh — structured Q-NNN parser + gate classification
+# check-open-questions.sh - structured Q-NNN parser + gate classification
 # (SessionStart hook: emits plain markdown, wrapped into additionalContext by
-#  the harness — assert on content, not on JSON shape.)
+#  the harness - assert on content, not on JSON shape.)
 # ---------------------------------------------------------------------------
 oq_repo() {
 	_r="${WORK}/$1"
@@ -843,7 +843,7 @@ assert_empty "open-questions: placeholder seed -> silent" "${out}"
 OQ2="$(oq_repo oq2 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — real one\n- status: open\n- impact: blocking\n- required_before: intent-approval\n'
+	printf '### Q-001 - real one\n- status: open\n- impact: blocking\n- required_before: intent-approval\n'
 } >"${OQ2}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ2}" oq2)")"
 oq_grep "open-questions: open blocking question classified blocking-now" 'block work now' "${out}"
@@ -852,7 +852,7 @@ oq_grep "open-questions: open blocking question classified blocking-now" 'block 
 OQ3="$(oq_repo oq3 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — done\n- status: resolved\n- impact: blocking\n- required_before: intent-approval\n'
+	printf '### Q-001 - done\n- status: resolved\n- impact: blocking\n- required_before: intent-approval\n'
 } >"${OQ3}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ3}" oq3)")"
 assert_empty "open-questions: resolved question -> silent" "${out}"
@@ -861,7 +861,7 @@ assert_empty "open-questions: resolved question -> silent" "${out}"
 OQ4="$(oq_repo oq4 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — later\n- status: open\n- impact: non-blocking\n- required_before: implementation\n'
+	printf '### Q-001 - later\n- status: open\n- impact: non-blocking\n- required_before: implementation\n'
 } >"${OQ4}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ4}" oq4)")"
 oq_grep "open-questions: non-blocking question classified backlog" 'non-blocking' "${out}"
@@ -870,7 +870,7 @@ oq_grep "open-questions: non-blocking question classified backlog" 'non-blocking
 OQ5="$(oq_repo oq5 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — broken\n- impact: blocking\n'
+	printf '### Q-001 - broken\n- impact: blocking\n'
 } >"${OQ5}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ5}" oq5)")"
 oq_grep "open-questions: malformed block flagged" 'malformed' "${out}"
@@ -880,7 +880,7 @@ oq_grep "open-questions: malformed block flagged" 'malformed' "${out}"
 OQ6="$(oq_repo oq6 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — prod\n- status: open\n- impact: blocking\n- required_before: production-release\n'
+	printf '### Q-001 - prod\n- status: open\n- impact: blocking\n- required_before: production-release\n'
 } >"${OQ6}/spec/features/f/intent.md"
 out="$(run_hook check-open-questions.sh "$(session_json "${OQ6}" oq6)")"
 oq_grep "open-questions: distant gate classified later-transition" 'later transition' "${out}"
@@ -905,7 +905,7 @@ oq_ngrep() { printf '%s' "$3" | grep -q "$2" && bad "$1 (unexpected: $3)" || ok;
 OQ9="$(oq_repo oq9 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — old\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+	printf '### Q-001 - old\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
 } >"${OQ9}/spec/features/f/intent.md"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ9}" oq9)")"
 oq_grep "open-questions: stale blocking question escalated" 'rotted' "${out}"
@@ -915,7 +915,7 @@ oq_grep "open-questions: stale blocking question escalated" 'rotted' "${out}"
 OQ10="$(oq_repo oq10 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — future\n- created: 2099-12-31\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+	printf '### Q-001 - future\n- created: 2099-12-31\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
 } >"${OQ10}/spec/features/f/intent.md"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ10}" oq10)")"
 oq_ngrep "open-questions: fresh question not escalated" 'rotted' "${out}"
@@ -924,7 +924,7 @@ oq_ngrep "open-questions: fresh question not escalated" 'rotted' "${out}"
 OQ11="$(oq_repo oq11 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — promoted\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- tracker: #42\n'
+	printf '### Q-001 - promoted\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- tracker: #42\n'
 } >"${OQ11}/spec/features/f/intent.md"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ11}" oq11)")"
 oq_ngrep "open-questions: promoted stale question not re-escalated" 'rotted' "${out}"
@@ -934,15 +934,15 @@ oq_ngrep "open-questions: promoted stale question not re-escalated" 'rotted' "${
 OQ12="$(oq_repo oq12 f)"
 {
 	printf '> Status: draft\n\n## Open questions\n\n'
-	printf '### Q-001 — no created\n- status: open\n- impact: blocking\n- owner: development\n- required_before: intent-approval\n- tracker:\n'
+	printf '### Q-001 - no created\n- status: open\n- impact: blocking\n- owner: development\n- required_before: intent-approval\n- tracker:\n'
 } >"${OQ12}/spec/features/f/intent.md"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ12}" oq12)")"
 oq_grep "open-questions: missing-created still counted (blame fail-open)" 'block work now' "${out}"
 oq_ngrep "open-questions: missing-created not escalated when git unavailable" 'rotted' "${out}"
 
 # ---------------------------------------------------------------------------
-# orient-session.sh — natural-language orientation (SessionStart, managed only)
-# (emits plain markdown wrapped into additionalContext by the harness — assert on
+# orient-session.sh - natural-language orientation (SessionStart, managed only)
+# (emits plain markdown wrapped into additionalContext by the harness - assert on
 #  content, not JSON shape.)
 # ---------------------------------------------------------------------------
 # Managed, version-stamped spine -> orient.
@@ -970,7 +970,7 @@ out="$(run_hook orient-session.sh "$(session_json "${OR1C}" or1c)")"
 oq_grep "orient: handed-off build falls back to orientation" 'need to know skill names' "${out}"
 oq_ngrep "orient: handed-off build does not nag resume" 'Resume the guided build' "${out}"
 
-# Polyrepo topology note — role-specific, ADDITIVE to the generic orientation,
+# Polyrepo topology note - role-specific, ADDITIVE to the generic orientation,
 # and completely absent in a single-repo product (the zero-cost guarantee).
 OR1W="$(new_repo orient1w)"
 managed_spine "${OR1W}"
@@ -1025,9 +1025,9 @@ out="$(run_hook orient-session.sh "$(session_json "${OR4}" or4)")"
 assert_empty "orient: damaged spine silent" "${out}"
 
 # ---------------------------------------------------------------------------
-# check-unmanaged-repo.sh — greenfield bootstrap nudge (SessionStart).
+# check-unmanaged-repo.sh - greenfield bootstrap nudge (SessionStart).
 # Resolves the repo root from the payload `cwd` like its sibling SessionStart
-# hooks (#331) — the suite deliberately does NOT cd into the fixture, so the
+# hooks (#331) - the suite deliberately does NOT cd into the fixture, so the
 # hook process cwd (this repo, which has .claude-plugin/) diverges from the
 # payload cwd; anchoring on the process cwd would self-silence every case
 # below. new_repo drops a .git file the upward walk anchors on.
@@ -1038,7 +1038,7 @@ out="$(run_hook check-unmanaged-repo.sh "$(session_json "${UM1}" um1)")"
 oq_grep "unmanaged: nudge offers /steer:build for a non-technical owner" '/steer:build' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:init for a developer" '/steer:init' "${out}"
 oq_grep "unmanaged: nudge still offers /steer:adopt for existing code" '/steer:adopt' "${out}"
-# Lite mode (PLAN.md Phase 2): spec-only work is sanctioned without bootstrap —
+# Lite mode (PLAN.md Phase 2): spec-only work is sanctioned without bootstrap -
 # the notice must offer /steer:spec as working right now, and keep the code gate.
 oq_grep "unmanaged: nudge offers spec-only lite mode" 'lite mode' "${out}"
 oq_grep "unmanaged: lite mode names /steer:spec" '/steer:spec' "${out}"
@@ -1106,7 +1106,7 @@ printf '%s' "${out}" | grep -q 'no spec-spine marker' &&
 oq_grep "unmanaged: interim-shape openspec repo gets the OpenSpec notice" 'uses OpenSpec for its spec spine' "${out}"
 
 # ---------------------------------------------------------------------------
-# scripts/scan-version-pins.sh — CI version-pin scanner (deterministic policy)
+# scripts/scan-version-pins.sh - CI version-pin scanner (deterministic policy)
 # (pins assembled via pin() so this file's source carries no name:NN literal.)
 # ---------------------------------------------------------------------------
 SCAN="${PLUGIN}/scripts/scan-version-pins.sh"
@@ -1158,7 +1158,7 @@ sh "${SCAN}" "${SDNP}" >/dev/null 2>&1
 assert_rc "scan: missing policy -> exit 2" "$?" 2
 
 # ---------------------------------------------------------------------------
-# scripts/template-reconcile.sh — read-only structural diff (not a hook)
+# scripts/template-reconcile.sh - read-only structural diff (not a hook)
 # ---------------------------------------------------------------------------
 RECON="${PLUGIN}/scripts/template-reconcile.sh"
 RDIR="${WORK}/recon"
@@ -1186,20 +1186,20 @@ assert_rc "reconcile: checkbox-normalization exits 0" "${rc}" 0
 assert_empty "reconcile: [x] vs [ ] not reported" "${out}"
 
 # placeholder-marked seed anchors are never reported as missing (issue #231):
-# a completed intent that filled in / deleted the `### Q-001 — [...]` stub must
+# a completed intent that filled in / deleted the `### Q-001 - [...]` stub must
 # not be flagged for the deleted placeholder.
 printf '## Open questions\n_No open questions._\n' >"${RDIR}/done.md"
-printf '## Open questions\n### Q-001 — [decide] <!-- steer:placeholder -->\n' >"${RDIR}/seed.md"
+printf '## Open questions\n### Q-001 - [decide] <!-- steer:placeholder -->\n' >"${RDIR}/seed.md"
 run_sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed.md"
 assert_rc "reconcile: placeholder-skip exits 0" "${rc}" 0
 assert_empty "reconcile: deleted placeholder seed not reported" "${out}"
 # a renamed real question (marker deleted) is also not chased back to the stub
-printf '## Open questions\n### Q-001 — should we ship X?\n' >"${RDIR}/real.md"
+printf '## Open questions\n### Q-001 - should we ship X?\n' >"${RDIR}/real.md"
 run_sh "${RECON}" "${RDIR}/real.md" "${RDIR}/seed.md"
 assert_rc "reconcile: filled-in placeholder run exits 0" "${rc}" 0
 assert_empty "reconcile: filled-in placeholder not reported" "${out}"
 # a genuinely-missing (non-placeholder) heading is still reported
-printf '## Open questions\n### Q-002 — real and unmarked\n' >"${RDIR}/seed2.md"
+printf '## Open questions\n### Q-002 - real and unmarked\n' >"${RDIR}/seed2.md"
 run_sh "${RECON}" "${RDIR}/done.md" "${RDIR}/seed2.md"
 printf '%s' "${out}" | grep -q 'Q-002' && ok || bad "reconcile: real missing heading still reported (got: ${out})"
 
@@ -1210,7 +1210,7 @@ run_sh "${RECON}" "${RDIR}/nope.md" "${RDIR}/bundled.md"
 assert_rc "reconcile: unreadable input -> exit 3" "${rc}" 3
 
 # ---------------------------------------------------------------------------
-# scripts/scan-capabilities.sh — read-only capability detector (not a hook)
+# scripts/scan-capabilities.sh - read-only capability detector (not a hook)
 # ---------------------------------------------------------------------------
 CAPSCAN="${PLUGIN}/scripts/scan-capabilities.sh"
 CAPS_MD="${PLUGIN}/templates/reference/CAPABILITIES.md"
@@ -1250,7 +1250,7 @@ assert_eq "cap: claude.yml with marketplace -> present-wired" "$(capstatus "${ou
 
 # agent-surface-current: the retired-surface check keys on steer's OWN artifacts.
 # The migration that retires .github/prompts/ deliberately leaves a team-authored
-# prompt file — and the directory around it — in place, so testing the directory
+# prompt file - and the directory around it - in place, so testing the directory
 # wedged such a repo at mis-wired with a verbatim-recopy repair that deletes nothing.
 CRP="${WORK}/capPrompts"
 mkdir -p "${CRP}/.github" "${CRP}/.agents"
@@ -1374,7 +1374,7 @@ capscan "${CR8}"
 assert_eq "cap: CLAUDE.md with marker -> present-wired" "$(capstatus "${out}" delivery-mode-declared)" "present-wired"
 
 # app-knowledge-docs: the app guide is instantiated from a spec template, so
-# additive reconciliation can never create it — the capability is its backfill
+# additive reconciliation can never create it - the capability is its backfill
 # path. Absent when spec/app/README.md is missing; present-wired once it exists.
 CR9="${WORK}/cap9"
 mkdir -p "${CR9}"
@@ -1391,7 +1391,7 @@ capscan "${CR1}"
 assert_eq "cap: repaired settings -> present-wired on re-scan" "$(capstatus "${out}" plugin-enabled-local)" "present-wired"
 
 # Every capability id the detector emits is documented in CAPABILITIES.md.
-# `stack` and `profile` are informational fingerprints, not capabilities — exempt.
+# `stack` and `profile` are informational fingerprints, not capabilities - exempt.
 capscan "${CR0}"
 printf '%s\n' "${out}" | awk -F '\t' '$1!="stack" && $1!="profile"{print $1}' | while IFS= read -r _id; do
 	grep -q "### ${_id} " "${CAPS_MD}" || printf 'UNDOC %s\n' "${_id}"
@@ -1418,7 +1418,7 @@ sh "${CAPSCAN}" "${WORK}/cap-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "cap: unreadable repo-root -> exit 3" "$?" 3
 
 # ---------------------------------------------------------------------------
-# scripts/scan-invocations.sh — read-only invalid-invocation detector (not a hook)
+# scripts/scan-invocations.sh - read-only invalid-invocation detector (not a hook)
 # ---------------------------------------------------------------------------
 INVSCAN="${PLUGIN}/scripts/scan-invocations.sh"
 INV_MD="${PLUGIN}/templates/reference/INVOCATION.md"
@@ -1483,7 +1483,7 @@ printf '%s' "${out}" | grep -q 'e22-plugins' && bad "inv: marketplace id must no
 # The /steer:reference <mode> correct form resolves via the `reference` skill, so
 # no line carries the token `/steer:reference`.
 assert_eq "inv: correct /steer:reference not flagged" "$(invclass "${out}" /steer:reference)" ""
-# Provenance file is out of scope entirely — no finding cites HISTORY.md.
+# Provenance file is out of scope entirely - no finding cites HISTORY.md.
 printf '%s' "${out}" | grep -q 'spec/HISTORY.md' && bad "inv: provenance HISTORY.md must not be scanned" || ok
 
 # Clean repo (the current scaffold CLAUDE.md) -> silent.
@@ -1510,10 +1510,10 @@ sh "${INVSCAN}" "${WORK}/inv-nope" "${PLUGIN}" >/dev/null 2>&1
 assert_rc "inv: unreadable repo-root -> exit 3" "$?" 3
 
 # ---------------------------------------------------------------------------
-# scripts/scan-prereqs.sh — offline cases for the pure parts (os/stack
+# scripts/scan-prereqs.sh - offline cases for the pure parts (os/stack
 # fingerprint, shadowed classification). The detector probes the host PATH, so
 # each case runs it under a HERMETIC PATH: a dir of symlinked core utilities
-# plus only the tools the case plants — every verdict is deterministic on any
+# plus only the tools the case plants - every verdict is deterministic on any
 # host or CI runner.
 # ---------------------------------------------------------------------------
 PREREQS="${PLUGIN}/scripts/scan-prereqs.sh"
@@ -1523,7 +1523,7 @@ for _t in sh uname head tr ls grep; do
 	ln -s "$(command -v "${_t}")" "${PQ_CORE}/${_t}"
 done
 
-fake_tool() { # <dir> <name> <output-line>  — a stub that answers any args with $3
+fake_tool() { # <dir> <name> <output-line>  - a stub that answers any args with $3
 	printf '#!/bin/sh\necho "%s"\n' "$3" >"$1/$2"
 	chmod +x "$1/$2"
 }
@@ -1622,11 +1622,11 @@ sh "${PREREQS}" "${WORK}/pq-nope" >/dev/null 2>&1
 assert_rc "prereqs: unreadable repo-root -> exit 3" "$?" 3
 
 # ---------------------------------------------------------------------------
-# scripts/check-policy-freshness.sh — offline cases for the pure parts
+# scripts/check-policy-freshness.sh - offline cases for the pure parts
 # (norm_cycle granularity, bump-up-only, apply_floor in-place edit). The live
 # feed is stubbed: a fake `curl` emits canned per-product cycle lists and a
 # fake `jq` is a stdin passthrough, so only the script's own logic is under
-# test — no network, deterministic.
+# test - no network, deterministic.
 # ---------------------------------------------------------------------------
 FRESH="${PLUGIN}/scripts/check-policy-freshness.sh"
 FR_BIN="${WORK}/fresh-bin"
@@ -1643,7 +1643,7 @@ esac
 EOF
 printf '#!/bin/sh\ncat\n' >"${FR_BIN}/jq"
 chmod +x "${FR_BIN}/curl" "${FR_BIN}/jq"
-freshrun() { # [args...] — run with the stubbed feed; sets out + rc (+ RC_FILE)
+freshrun() { # [args...] - run with the stubbed feed; sets out + rc (+ RC_FILE)
 	out="$(env PATH="${FR_BIN}:${PATH}" sh "${FRESH}" "$@" 2>/dev/null)"
 	rc=$?
 	printf '%s' "${rc}" >"${RC_FILE}"
@@ -1668,8 +1668,8 @@ fresh_policy
 # Read-only mode: behind floors reported, exit 1, file untouched.
 freshrun "${FR_POL}"
 assert_rc "freshness: bumps due -> exit 1" "${rc}" 1
-assert_has "freshness: postgres floor bump reported" "${out}" "postgres: minimum_supported 13 → 14"
-assert_has "freshness: major.minor floor normalized (9.1.2 -> 8.4 wins)" "${out}" "mysql: minimum_supported 8.0 → 8.4"
+assert_has "freshness: postgres floor bump reported" "${out}" "postgres: minimum_supported 13 -> 14"
+assert_has "freshness: major.minor floor normalized (9.1.2 -> 8.4 wins)" "${out}" "mysql: minimum_supported 8.0 -> 8.4"
 # norm_cycle keeps the floor's granularity: upstream "10.11" reads as major "10",
 # equal to the current floor -> NO bump (a finer cycle must never over-deny).
 printf '%s' "${out}" | grep -q 'mariadb' && bad "freshness: major-only floor must not bump from 10.11 (got: ${out})" || ok
@@ -1797,14 +1797,14 @@ CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
 out="$(run_inject "$(session_json "${CRI_INFRA}" cri_infra)")"
 oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
-oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
+oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack - infrastructure / IaC' "${out}"
 
 # Root-level IaC (Ansible site.yml, no /infra dir) -> infra-stack fragment injected
 # via has-iac. This is the case steer used to skip entirely.
 CRI_ANSIBLE="$(new_repo cri_ansible)"
 printf -- '- hosts: all\n' >"${CRI_ANSIBLE}/site.yml"
 out="$(run_inject "$(session_json "${CRI_ANSIBLE}" cri_ansible)")"
-oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack — infrastructure / IaC' "${out}"
+oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack - infrastructure / IaC' "${out}"
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
 
@@ -1814,7 +1814,7 @@ CRI_APP="$(new_repo cri_app)"
 printf '{}\n' >"${CRI_APP}/package.json"
 out="$(run_inject "$(session_json "${CRI_APP}" cri_app)")"
 oq_grep "inject: app repo (no /infra) includes deployment rule" 'auto-deploys non-prod' "${out}"
-printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
+printf '%s' "${out}" | grep -q 'Stack - infrastructure / IaC' &&
 	bad "inject: app repo without IaC must omit infra-stack fragment" || ok
 
 # No /infra, no IaC, no GitHub tracker -> all scoped rules skipped.
@@ -1822,7 +1822,7 @@ CRI_BARE="$(new_repo cri_bare)"
 out="$(run_inject "$(session_json "${CRI_BARE}" cri_bare)")"
 printf '%s' "${out}" | grep -q 'auto-deploys non-prod' &&
 	bad "inject: repo without /infra must omit deployment rule" || ok
-printf '%s' "${out}" | grep -q 'Stack — infrastructure / IaC' &&
+printf '%s' "${out}" | grep -q 'Stack - infrastructure / IaC' &&
 	bad "inject: repo without IaC must omit infra-stack fragment" || ok
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: repo without github tracker must omit issue-first rule" || ok
@@ -1891,11 +1891,11 @@ oq_grep "nudge: openspec repo's issue-first text names the namespaced tracker" '
 printf '%s' "${out}" | grep -q "repo's /spec/tracker.md" &&
 	bad "nudge: openspec repo must not be told its tracker is /spec/tracker.md" || ok
 
-# A COMPLETE openspec spine must not trigger the spine dimension — it would tell
+# A COMPLETE openspec spine must not trigger the spine dimension - it would tell
 # an OpenSpec repo it has "no /spec spine" and push /steer:init at write time.
 printf '%s' "${out}" | grep -q 'no /spec spine' &&
 	bad "nudge: complete openspec spine must not get the no-spine bootstrap nudge" || ok
-# The scaffold dimension still fires (no root mise.toml) and SHOULD — the
+# The scaffold dimension still fires (no root mise.toml) and SHOULD - the
 # toolchain applies here too. What must not appear is the imperative "Run
 # /steer:init"; naming it inside the explicit warn-off sentence is the point.
 printf '%s' "${out}" | grep -q 'Run /steer:init' &&
@@ -1946,12 +1946,12 @@ for src in resume clear compact fork; do
 	printf '%s' "${out}" | grep -q 'knowledge-work folder' &&
 		bad "orient(kw): source=${src} must not re-greet" || ok
 done
-# Absent source → fail open and greet (payload without the field behaves as before).
+# Absent source -> fail open and greet (payload without the field behaves as before).
 out="$(run_hook orient-session.sh "$(session_json "${KW}" kw_plain)")"
 oq_grep "orient(kw): absent source fails open and greets" 'knowledge-work folder' "${out}"
 
 # Fail-safe guard: a non-git folder that DOES carry a code marker (package.json)
-# is 'code' mode — full ruleset, no knowledge banner, no knowledge confirmation.
+# is 'code' mode - full ruleset, no knowledge banner, no knowledge confirmation.
 KWC="${WORK}/kw_pkg"
 mkdir -p "${KWC}"
 printf '{}\n' >"${KWC}/package.json"
@@ -1990,7 +1990,7 @@ steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compos
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
 
 # tracker-github matches the WORD github (`github\b`, #339), never a value that
-# merely starts with it — `system: githubbish` is not a GitHub tracker.
+# merely starts with it - `system: githubbish` is not a GitHub tracker.
 TRAITS_GHISH="$(new_repo traits_ghish)"
 mkdir -p "${TRAITS_GHISH}/spec"
 printf 'system: githubbish\n' >"${TRAITS_GHISH}/spec/tracker.md"
@@ -2018,7 +2018,7 @@ steer_tracker_is_github "${TRAITS_MEMNP}" && ok || bad "scope: member with no lo
 steer_inject_when_ok tracker-github "${TRAITS_MEMNP}" && ok || bad "scope: 36-issue-first must inject in a member"
 
 # With `workspace.path` naming a real local checkout, the workspace's tracker is
-# authoritative — both directions. `spec/workspace.yml` is what makes the target a
+# authoritative - both directions. `spec/workspace.yml` is what makes the target a
 # workspace, so the fixture carries it (steer_workspace_root requires it).
 TRAITS_MEMWS="$(new_repo traits_memws)"
 mkdir -p "${TRAITS_MEMWS}/ws/spec" "${TRAITS_MEMWS}/member/spec"
@@ -2036,7 +2036,7 @@ steer_tracker_is_github "${TRAITS_MEMWS}/member" && bad "scope: member honors a 
 printf 'system: github\n' >"${TRAITS_MEMWS}/ws/spec/tracker.md"
 
 # A resolved path that EXISTS but carries no member manifest is not a workspace.
-# This is the silent case worktrees produce (`path: ..` → `.claude/worktrees`, a
+# This is the silent case worktrees produce (`path: ..` -> `.claude/worktrees`, a
 # real but empty directory): accepting it read an empty tree and reported every
 # product-level spec as absent instead of falling back to the gateway.
 mkdir -p "${TRAITS_MEMWS}/bare/spec"
@@ -2058,7 +2058,7 @@ steer_tracker_is_github "${TRAITS_MEMWS}/member" && ok || bad "scope: unresolvab
 # ----- worktrees: workspace.path is anchored on the PRIMARY checkout -----
 # The regression this guards: `path: ..` (what templates/spec/product.md
 # recommends for a member cloned inside its workspace) resolved from
-# `<member>/.claude/worktrees/<n>` to `<member>/.claude/worktrees` — a directory
+# `<member>/.claude/worktrees/<n>` to `<member>/.claude/worktrees` - a directory
 # that EXISTS, so step 1 of the ladder won and the gateway was never reached.
 # Real linked-worktree layout: .git is a FILE holding a gitdir: pointer.
 WT_WS="${WORK}/wt_polyrepo"
@@ -2080,7 +2080,7 @@ steer_tracker_is_github "${WT_LINK}" && ok || bad "worktree: member worktree res
 printf 'system: jira\n' >"${WT_WS}/spec/tracker.md"
 steer_tracker_is_github "${WT_LINK}" && bad "worktree: worktree honors a non-GitHub workspace tracker" || ok
 
-# Without the anchoring, `..` would land here — assert the trap really is a real
+# Without the anchoring, `..` would land here - assert the trap really is a real
 # directory, so this test keeps testing something.
 [ -d "${WT_LINK}/.." ] && ok || bad "worktree: the mis-resolved path must exist to be a trap"
 steer_workspace_root "${WORK}/wt_polyrepo/member/.claude/worktrees" >/dev/null 2>&1 &&
@@ -2102,7 +2102,7 @@ printf 'gitdir: ../relative/.git/worktrees/x\n' >"${WT_SEP}/.git"
 assert_eq "worktree: relative gitdir passes through" \
 	"$(steer_primary_worktree "${WT_SEP}")" "${WT_SEP}"
 
-# An unresolved placeholder path is treated as absent (→ fail open), and a
+# An unresolved placeholder path is treated as absent (-> fail open), and a
 # `path:` outside the `workspace:` block is never mistaken for it.
 printf 'workspace:\n  path: [relative path]\n' >"${TRAITS_MEMWS}/member/spec/PRODUCT.md"
 steer_workspace_path "${TRAITS_MEMWS}/member" >/dev/null && bad "scope: placeholder workspace.path is absent" || ok
@@ -2148,7 +2148,7 @@ PROF_WSBAD="$(new_repo prof_wsbad)"
 printf '## Profile\n<!-- steer:profile=Workspace -->\n' >"${PROF_WSBAD}/CLAUDE.md"
 assert_eq "profile: mis-cased workspace falls back to app" "$(steer_repo_profile "${PROF_WSBAD}")" "app"
 
-# A member's spine is partial BY DESIGN — product-level artifacts live in the
+# A member's spine is partial BY DESIGN - product-level artifacts live in the
 # workspace. Without the member split it would report `damaged` forever and
 # /steer:sync would "repair" it by recreating the split-brain spine.
 . "${HOOKS}/lib/spine.sh"
@@ -2229,7 +2229,7 @@ steer_git_c_target 'echo "no git here"' >/dev/null &&
 	bad "git_c_target: non-git command has no target" || ok
 
 # End to end through the REAL trunk-push gate, both directions of #396.
-# (1) False negative — the dangerous one. Outer is pr-flow, inner is solo-trunk
+# (1) False negative - the dangerous one. Outer is pr-flow, inner is solo-trunk
 # WITH a graduation signal: the gate must ask about the inner repo's push.
 AR_FN_O="$(new_repo ar_fn_outer)"
 printf '## Delivery mode\n<!-- steer:delivery-mode=pr-flow -->\n' >"${AR_FN_O}/CLAUDE.md"
@@ -2280,7 +2280,7 @@ assert_eq "tracker_repo: inline comment and padding stripped" \
 	"$(steer_tracker_repo "${TR_COMMENT}")" "acme/tracker"
 
 # The shipped template's unresolved placeholder must read as ABSENT, not as a
-# repository literally named "[owner/repository]" — otherwise every un-inited
+# repository literally named "[owner/repository]" - otherwise every un-inited
 # repo would look foreign and divert away from `Closes #N`.
 TR_HOLDER="$(new_repo tr_holder)"
 mkdir -p "${TR_HOLDER}/spec"
@@ -2323,7 +2323,7 @@ WM_TF="${WORK}/wm_tf"
 mkdir -p "${WM_TF}"
 printf 'terraform {}\n' >"${WM_TF}/main.tf"
 assert_eq "work_mode: *.tf -> code" "$(steer_work_mode "${WM_TF}")" "code"
-# Loose source file with NO manifest must still read as code (fail-safe — a
+# Loose source file with NO manifest must still read as code (fail-safe - a
 # manifest-only scan would mis-classify a non-git script folder as knowledge).
 WM_SRC="${WORK}/wm_src"
 mkdir -p "${WM_SRC}"
@@ -2391,7 +2391,7 @@ out="$(run_hook check-graduation.sh "$(session_json "${GRAD_WAIVED}" sg4w)")"
 assert_empty "graduation: solo-trunk + signals + waiver silent" "${out}"
 
 # The waiver matcher is anchored to its comment line: prose mentioning the
-# waiver (no marker) does NOT waive — the nudge still fires.
+# waiver (no marker) does NOT waive - the nudge still fires.
 GRAD_WAIVEPROSE="$(new_repo grad_waiveprose)"
 mkdir -p "${GRAD_WAIVEPROSE}/infra"
 printf '## Delivery mode\n\n<!-- steer:delivery-mode=solo-trunk -->\n\nRun /steer:protect waive to set steer:graduation=waived if trunk is deliberate.\n' >"${GRAD_WAIVEPROSE}/CLAUDE.md"
@@ -2399,7 +2399,7 @@ out="$(run_hook check-graduation.sh "$(session_json "${GRAD_WAIVEPROSE}" sg4p)")
 assert_has "graduation: waiver named in prose only still nudges" "${out}" "graduate"
 assert_has "graduation: nudge names the waiver path" "${out}" "/steer:protect waive"
 
-# lib/repo-root.sh: steer_graduation_waived — fail-closed (no CLAUDE.md / no
+# lib/repo-root.sh: steer_graduation_waived - fail-closed (no CLAUDE.md / no
 # marker -> not waived), true only on the anchored marker line.
 steer_graduation_waived "${GRAD_WAIVED}" && ok || bad "waived: marker line -> waived"
 steer_graduation_waived "${GRAD_WAIVEPROSE}" && bad "waived: prose mention must not waive" || ok
@@ -2420,8 +2420,8 @@ out="$(run_hook check-graduation.sh "$(session_json "${GRAD_NOREPO}" sg6)")"
 assert_empty "graduation: no repo silent" "${out}"
 
 # --- trunk-push graduation gate of check-bash-actions.sh (PreToolUse, Bash) ---
-# Signals shared with check-graduation.sh via lib/graduation.sh. "ask" — not
-# deny — only when ALL hold: Bash git push + solo-trunk + a graduation signal.
+# Signals shared with check-graduation.sh via lib/graduation.sh. "ask" - not
+# deny - only when ALL hold: Bash git push + solo-trunk + a graduation signal.
 
 # solo-trunk + infra/ signal + git push -> wrapped ask naming /steer:protect.
 TP_HOT="$(new_repo tp_hot)"
@@ -2437,7 +2437,7 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp2 'git push')")
 ENV=""
 assert_copilot_ask "trunk-push: copilot flat ask" "${out}"
 
-# compound command (`… && git push`) still matches.
+# compound command (`... && git push`) still matches.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
 assert_ask "trunk-push: compound command push asks" "${out}"
 
@@ -2521,9 +2521,9 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_NOREPO}" tp11 'git push
 assert_empty "trunk-push: no repo silent" "${out}"
 
 # ---------------------------------------------------------------------------
-# check-template-drift.sh — root-anchored spec/template drift detector
+# check-template-drift.sh - root-anchored spec/template drift detector
 # (SessionStart; emits plain markdown wrapped as additionalContext by the harness.
-#  Reads cwd from the payload and resolves the work-tree root — issue #270.)
+#  Reads cwd from the payload and resolves the work-tree root - issue #270.)
 # ---------------------------------------------------------------------------
 INTENT_TPL="${PLUGIN}/templates/spec/feature-intent.md"
 
@@ -2544,7 +2544,7 @@ cp "${INTENT_TPL}" "${TD2}/spec/features/f/intent.md"
 out="$(run_hook check-template-drift.sh "$(session_json "${TD2}" td2)")"
 assert_empty "template-drift: reconciled intent.md silent" "${out}"
 
-# (c) the placeholder-marked heading (### Q-001 … steer:placeholder) is never
+# (c) the placeholder-marked heading (### Q-001 ... steer:placeholder) is never
 #     reported, even when the file is otherwise empty of headings (TD1 reused).
 out="$(run_hook check-template-drift.sh "$(session_json "${TD1}" td1c)")"
 printf '%s' "${out}" | grep -q 'Q-001' && bad "template-drift: placeholder heading must not be reported (got: ${out})" || ok
@@ -2558,9 +2558,9 @@ out="$(run_hook check-template-drift.sh "$(session_json "${TD3}/apps/web" td3)")
 assert_has "template-drift: subdir cwd resolves root and reports drift" "${out}" "## Open questions"
 
 # ---------------------------------------------------------------------------
-# session-checks.sh — consolidated SessionStart orchestrator. Sequencing only:
+# session-checks.sh - consolidated SessionStart orchestrator. Sequencing only:
 # the individual checks stay authoritative (tested above); these cases
-# pin the orchestration contract — aggregation, separation, silence, rc 0.
+# pin the orchestration contract - aggregation, separation, silence, rc 0.
 # ---------------------------------------------------------------------------
 
 # (a) one fixture tripping TWO checks: spec/ without .version (unmanaged-repo
@@ -2584,12 +2584,12 @@ managed_spine "${SC2}"
 out="$(run_hook session-checks.sh "$(session_json "${SC2}" sc2)")"
 assert_empty "session-checks: healthy managed repo silent" "${out}"
 
-# (c) rc 0 even when checks emit notices — a notice is context, not a failure.
+# (c) rc 0 even when checks emit notices - a notice is context, not a failure.
 out="$(run_hook session-checks.sh "$(session_json "${SC1}" sc1c)")"
 assert_eq "session-checks: rc 0 with notices" "$(last_rc)" "0"
 
 # (d) hooks.json registers the orchestrator (not each check individually)
-#     for startup|resume|clear|fork — the consolidation this section exists to pin.
+#     for startup|resume|clear|fork - the consolidation this section exists to pin.
 _hj="${HOOKS}/hooks.json"
 grep -q 'session-checks\.sh' "${_hj}" && ok || bad "session-checks: registered in hooks.json"
 for _solo in check-template-drift check-open-questions check-unmanaged-repo surface-faults check-graduation; do
@@ -2606,7 +2606,7 @@ _ss_fork="$(grep -c '"matcher": "startup|[a-z|]*fork"' "${_hj}")"
 assert_eq "hooks.json: every SessionStart matcher carries fork" "${_ss_fork}" "${_ss_total}"
 
 # ---------------------------------------------------------------------------
-# workspace-snapshot.sh — one-shot read-only local reconstruction for
+# workspace-snapshot.sh - one-shot read-only local reconstruction for
 # /steer:next. Local dimensions only; explicit "none" per empty dimension.
 # ---------------------------------------------------------------------------
 SNAP="${PLUGIN}/scripts/workspace-snapshot.sh"
@@ -2622,7 +2622,7 @@ mkdir -p "${WS1}/spec/features/checkout" "${WS1}/spec/decisions" "${WS1}/spec/.w
 	printf '### Q-999 Placeholder <!-- steer:placeholder -->\n- status: open\n'
 } >"${WS1}/spec/features/checkout/intent.md"
 printf '# ADR\n\n- **Status:** Proposed\n' >"${WS1}/spec/decisions/0001-stack.md"
-# Blockquote form — what the bundled adr.md template actually writes.
+# Blockquote form - what the bundled adr.md template actually writes.
 printf '# ADR\n\n> Status: Accepted\n> Ratified via: in-session\n' >"${WS1}/spec/decisions/0002-event-bus.md"
 # Template never filled in: the whole enum must not read as a real state.
 printf '# ADR\n\n> Status: Proposed | Accepted | Superseded by [link] | Deprecated\n' >"${WS1}/spec/decisions/0003-unfilled.md"
@@ -2670,7 +2670,7 @@ if command -v git >/dev/null 2>&1; then
 fi
 
 # ---------------------------------------------------------------------------
-# format-on-write.sh (PostToolUse) — formats the just-written file with the
+# format-on-write.sh (PostToolUse) - formats the just-written file with the
 # repo's OWN formatter, only when its config is present at the root. Stubbed
 # biome/ruff binaries record their argv so the cases assert exactly what ran;
 # PATH is pinned to stubs + /usr/bin:/bin so a real formatter never interferes.
@@ -2752,12 +2752,12 @@ grep -q "biome format --write ${RF1}/src/app.ts" "${STUB_LOG}" && ok ||
 unset ENV
 
 # ---------------------------------------------------------------------------
-# check-worktree-trust.sh (SessionStart) — inherits the primary checkout's
+# check-worktree-trust.sh (SessionStart) - inherits the primary checkout's
 # `mise trust` into a linked worktree. `mise trust` is path-based, so a new
-# worktree is untrusted and every `mise run …` there fails until someone trusts
+# worktree is untrusted and every `mise run ...` there fails until someone trusts
 # it (#416); inheriting grants nothing new because trust is path-keyed, not
 # content-hashed. A stubbed `mise` reports the trust states these cases need and
-# records its argv, so each case asserts exactly what the hook did — including
+# records its argv, so each case asserts exactly what the hook did - including
 # the boundary case that must write NOTHING.
 # ---------------------------------------------------------------------------
 WT_STUBS="${WORK}/wtstubs"
@@ -2768,7 +2768,7 @@ mkdir -p "${WT_STUBS}"
 # holds a mise.toml is untrusted, and one with no config prints nothing (mise's
 # real behaviour: --show lists config directories only). `trust -q -C <dir>`
 # just logs, so a case can assert trust was or was not applied.
-# It also ABBREVIATES the home dir to `~` on the way out, as real mise does —
+# It also ABBREVIATES the home dir to `~` on the way out, as real mise does -
 # printing the absolute path instead is what let a hook that matched only the
 # absolute form pass this suite while being inert on every real repo under home.
 # The stub keys that on $HOME because the test controls it; real mise uses $HOME
@@ -2808,7 +2808,7 @@ case "${HOME:-}" in
 esac
 # Real mise lists every config directory on the path, ANCESTORS FIRST and the
 # queried directory last. MISE_STUB_ANCESTORS is a colon-delimited list of
-# already-abbreviated ancestor DIRS (no spaces — run_hook word-splits $ENV), each
+# already-abbreviated ancestor DIRS (no spaces - run_hook word-splits $ENV), each
 # emitted as `<dir>: trusted` before the target line, so a case can pin the
 # ordering the matcher has to survive.
 _anc="${MISE_STUB_ANCESTORS:-}"
@@ -2819,7 +2819,7 @@ while [ -n "${_anc}" ]; do
 	[ "${_rest}" = "${_anc}" ] && break
 	_anc="${_rest}"
 done
-# The queried directory gets a line ONLY if it holds a config — mise lists config
+# The queried directory gets a line ONLY if it holds a config - mise lists config
 # directories, and its ancestors are listed either way. That asymmetry is what a
 # loose matcher turned into "an ancestor's state stands in for this directory's".
 [ -f "${_dir}/mise.toml" ] || exit 0
@@ -2828,7 +2828,7 @@ exit 0
 STUB
 chmod +x "${WT_STUBS}/mise"
 
-# wt_pair <name> — a primary checkout with a mise.toml plus a LINKED worktree of
+# wt_pair <name> - a primary checkout with a mise.toml plus a LINKED worktree of
 # it (the `.git` FILE holding the `gitdir:` pointer steer_primary_worktree
 # parses, so no real git is needed). Prints "<primary> <worktree>".
 wt_pair() {
@@ -2930,8 +2930,8 @@ out="$(ENV="PATH=${WT_STUBS}:/usr/bin:/bin MISE_STUB_LOG=${WT_LOG}" \
 assert_empty "worktree-trust: no repo silent" "${out}"
 
 # (j) REGRESSION: mise lists ancestors FIRST. An ancestor whose home-relative
-#     tail is also a suffix of the worktree path — a repo under `~/work` with a
-#     worktree named `work` — matched before the worktree's own line, so taking
+#     tail is also a suffix of the worktree path - a repo under `~/work` with a
+#     worktree named `work` - matched before the worktree's own line, so taking
 #     the first match returned the ANCESTOR's state and silently restored the
 #     original bug. The deepest (longest-tail) line must win.
 # shellcheck disable=SC2046
@@ -2948,9 +2948,9 @@ grep -q "mise trust -q -C ${WTJ_W}" "${WT_LOG}" && ok ||
 # (k) REGRESSION: a config-less PRIMARY whose ANCESTOR is trusted must not be
 #     read as trusted. A matcher that accepted an ancestor's line here skipped the
 #     "primary has no mise config at all" notice and fell through to
-#     `mise trust -q -C`, CREATING trust — the one thing this hook must never do.
+#     `mise trust -q -C`, CREATING trust - the one thing this hook must never do.
 #     The primary sits at ~/ancnest/ancnest so the ancestor ~/ancnest has tail
-#     `/ancnest`, which is also a SUFFIX of the primary's path — the exact shape
+#     `/ancnest`, which is also a SUFFIX of the primary's path - the exact shape
 #     that defeated the suffix matcher.
 # shellcheck disable=SC2046
 set -- $(wt_pair ancnest/ancnest)
@@ -2970,8 +2970,8 @@ grep -q 'check-worktree-trust\.sh' "${HOOKS}/session-checks.sh" && ok ||
 	bad "worktree-trust: listed in the session-checks roster"
 
 # (i) REGRESSION: the repo lives under $HOME, so `mise trust --show` abbreviates
-#     both paths to `~/…`. Matching only the absolute path made the hook read ''
-#     for every such worktree — the normal layout — and exit silently, inheriting
+#     both paths to `~/...`. Matching only the absolute path made the hook read ''
+#     for every such worktree - the normal layout - and exit silently, inheriting
 #     nothing and printing neither fallback notice. Same assertions as (a).
 # shellcheck disable=SC2046
 set -- $(wt_pair wtTrustHome)
@@ -2986,7 +2986,7 @@ grep -q "mise trust -q -C ${WTI_W}" "${WT_LOG}" && ok ||
 unset ENV
 
 # ---------------------------------------------------------------------------
-# on-session-end.sh (SessionEnd) + on-worktree-remove.sh (WorktreeRemove) —
+# on-session-end.sh (SessionEnd) + on-worktree-remove.sh (WorktreeRemove) -
 # tear down a LINKED worktree's backing services at the two moments the harness
 # tells us they are done. Both events discard stdout and the exit code, so every
 # case asserts on what the hook DID (a stubbed `mise` records its argv) rather
@@ -2997,7 +2997,7 @@ LC_STUBS="${WORK}/lcstubs"
 LC_LOG="${WORK}/lcmise.log"
 mkdir -p "${LC_STUBS}"
 # `mise tasks ls` answers from MISE_STUB_TASKS, each name printed with a
-# description column like the real thing; `mise run …` just logs. The list is
+# description column like the real thing; `mise run ...` just logs. The list is
 # COMMA-separated because run_hook word-splits $ENV into env assignments, so a
 # value with spaces would be read as a second assignment (and then as a command).
 cat >"${LC_STUBS}/mise" <<'STUB'
@@ -3018,7 +3018,7 @@ esac
 exit 0
 STUB
 chmod +x "${LC_STUBS}/mise"
-# docker only has to EXIST — the teardown is delegated to a mise task.
+# docker only has to EXIST - the teardown is delegated to a mise task.
 printf '#!/bin/sh\nexit 0\n' >"${LC_STUBS}/docker"
 chmod +x "${LC_STUBS}/docker"
 
@@ -3032,7 +3032,7 @@ worktree_remove_json() { # <worktree_path>
 	printf '{"session_id":"wr","hook_event_name":"WorktreeRemove","cwd":"%s","worktree_path":"%s"}' "$1" "$1"
 }
 
-# lc_pair <name> — wt_pair plus a compose.yaml in both roots, the file the
+# lc_pair <name> - wt_pair plus a compose.yaml in both roots, the file the
 # docker:* tasks act on and the gate this teardown checks.
 lc_pair() {
 	# shellcheck disable=SC2046  # deliberate word split: wt_pair prints two paths
@@ -3095,7 +3095,7 @@ assert_empty "worktree-remove: silent" "${out}"
 grep -q "mise run -C ${LCD_W} docker:clean" "${LC_LOG}" && ok ||
 	bad "worktree-remove: full teardown (log: $(cat "${LC_LOG}"))"
 
-# (e) WorktreeRemove acts on worktree_path, NOT on cwd — a subagent's isolated
+# (e) WorktreeRemove acts on worktree_path, NOT on cwd - a subagent's isolated
 #     tree or a background session's is removed while the session sits elsewhere.
 # shellcheck disable=SC2046
 set -- $(lc_pair lcE)
@@ -3169,7 +3169,7 @@ assert_empty "session-end: exits 0 on unparseable input" "${out}"
 unset ENV
 
 # (l) both events are registered in hooks.json, and check-worktree-trust.sh also
-#     runs on CwdChanged — the post-creation moment a worktree entered
+#     runs on CwdChanged - the post-creation moment a worktree entered
 #     mid-session becomes visible (WorktreeCreate fires before the path exists,
 #     and `mise trust` cannot trust a directory that is not there yet).
 for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.sh' \
@@ -3182,7 +3182,7 @@ for _pair in 'SessionEnd on-session-end.sh' 'WorktreeRemove on-worktree-remove.s
 done
 
 # ---------------------------------------------------------------------------
-# inject-standards.sh — parts under the 10,000-character cap on hook stdout.
+# inject-standards.sh - parts under the 10,000-character cap on hook stdout.
 #
 # Claude Code persists a longer hook output to a file and gives the session a
 # short "Output too large" pointer instead, while the hook still exits 0. The
@@ -3321,9 +3321,9 @@ assert_has "inject parts: part beyond PARTS falls back to one part" "${out}" "Be
 IF_NORULES="$(inject_fixture inject-norules)"
 rmdir "${IF_NORULES}/rules"
 out="$(inject_part "${IF_NORULES}" "${IF_REPO}" 1 3)"
-assert_has "inject parts: missing rules dir — part 1 emits the fallback banner" "${out}" "rules directory was not found"
+assert_has "inject parts: missing rules dir - part 1 emits the fallback banner" "${out}" "rules directory was not found"
 out="$(inject_part "${IF_NORULES}" "${IF_REPO}" 2 3)"
-assert_empty "inject parts: missing rules dir — part 2 is silent" "${out}"
+assert_empty "inject parts: missing rules dir - part 2 is silent" "${out}"
 
 # (g) hooks.json registers the parts contiguously as `k N`, all with the same N.
 HOOKS_JSON_FLAT="$(tr -d '\\' <"${HOOKS}/hooks.json")"
@@ -3340,7 +3340,7 @@ IF_MAXREPO="$(new_repo inject-real-max)"
 mkdir -p "${IF_MAXREPO}/infra" "${IF_MAXREPO}/apps" "${IF_MAXREPO}/spec" \
 	"${IF_MAXREPO}/openspec/changes" "${IF_MAXREPO}/openspec/steer"
 # The fixture carries openspec/, so the tracker that DECIDES sits at the
-# namespaced path — writing it to spec/tracker.md would leave tracker-github
+# namespaced path - writing it to spec/tracker.md would leave tracker-github
 # false and silently drop 36-issue-first from this "every predicate" shape.
 printf 'system: github\n' >"${IF_MAXREPO}/openspec/steer/tracker.md"
 : >"${INJ_ERR}"
@@ -3362,8 +3362,8 @@ for rf in "${PLUGIN}"/rules/*.md; do
 done
 
 # ----- inject-standards.sh: the Copilot surfaces get ONE JSON envelope (#513) -----
-# Copilot's SessionStart injects context only from a JSON object on stdout — the
-# CLI reads a top-level `additionalContext`, VS Code `hookSpecificOutput.…` —
+# Copilot's SessionStart injects context only from a JSON object on stdout - the
+# CLI reads a top-level `additionalContext`, VS Code `hookSpecificOutput....` -
 # and the LAST hook returning context wins, so the parted Claude delivery must
 # not be mirrored: part 1 carries the whole eligible ruleset, every other part
 # stays silent. The CLI arrives via STEER_HOOK_TARGET=copilot (copilot-hooks.json);
@@ -3404,7 +3404,7 @@ assert_has "inject copilot: CLI envelope carries the scoped issue-first rule" "$
 assert_has "inject copilot: refresh hint names the Copilot update path" "${out}" 'copilot plugin update steer'
 printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
 printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
-# (b) Under the copilot target, every part but 1 is silent — even when hooks.json's
+# (b) Under the copilot target, every part but 1 is silent - even when hooks.json's
 # `k N` arguments are passed through (VS Code runs all nine registrations).
 out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
 out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 9 2>/dev/null)"
@@ -3433,10 +3433,10 @@ assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out
 assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
 # (f) Missing rules dir on a Copilot surface: the fallback banner is still delivered
-# — inside the envelope, so it is not discarded as non-JSON.
+# - inside the envelope, so it is not discarded as non-JSON.
 out="$(ENV="STEER_HOOK_TARGET=copilot CLAUDE_PLUGIN_ROOT=${IF_NORULES}" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
-assert_envelope "inject copilot: missing rules dir — banner arrives in the envelope" "${out}"
-assert_has "inject copilot: missing rules dir — banner text present" "${out}" 'rules directory was not found'
+assert_envelope "inject copilot: missing rules dir - banner arrives in the envelope" "${out}"
+assert_has "inject copilot: missing rules dir - banner text present" "${out}" 'rules directory was not found'
 # (g) The generated Copilot manifest registers the injector once, under the
 # camelCase event, with no part arguments and the copilot target.
 CP_MANIFEST="$(tr -d '\\' <"${HOOKS}/copilot-hooks.json")"
@@ -3448,7 +3448,7 @@ printf '%s' "${CP_MANIFEST}" | grep -q 'STEER_HOOK_TARGET=copilot sh "${CLAUDE_P
 	bad "copilot-hooks.json: injector must run under STEER_HOOK_TARGET=copilot"
 
 # ---------------------------------------------------------------------------
-# check-comment-density.sh (PostToolUse) — flags a just-written source/config
+# check-comment-density.sh (PostToolUse) - flags a just-written source/config
 # file whose comment lines exceed a third of its non-blank lines, once per file
 # per session. Reads the file from disk; additionalContext only, never blocks.
 # ---------------------------------------------------------------------------
@@ -3540,7 +3540,7 @@ tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/che
 
 # --- check-ascii-writes.sh (rule 85: ASCII in code and values) ---
 # Like pin() above, ch() assembles the characters at runtime so this file's own
-# SOURCE carries no typographic character in a value position — otherwise the
+# SOURCE carries no typographic character in a value position - otherwise the
 # gate under test would block editing its own fixtures in a consumer repo.
 ch() { # ch em | curly | ellipsis | nbsp | arrow
 	case "$1" in
@@ -3569,7 +3569,7 @@ assert_deny "ascii: curly quote in a .json value" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA5 src/a.ts "const u = 'https://a.io ${EM} b';")")"
 assert_deny "ascii: value after a URL still scanned" "${out}"
 
-# (b) comments are where rule 85 ALLOWS these characters — the bundled scaffold
+# (b) comments are where rule 85 ALLOWS these characters - the bundled scaffold
 # relies on that, so a comment-only occurrence must stay silent.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA6 scripts/ci.sh "# Local services ${EM} committed.\nimage: postgres")")"
 assert_empty "ascii: hash comment exempt" "${out}"
@@ -3593,7 +3593,7 @@ assert_empty "ascii: spec spine exempt" "${out}"
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14 data/rows.csv "a ${EM} b")")"
 assert_empty "ascii: unknown file type exempt" "${out}"
 
-# (d) non-English copy must pass untouched — only the enumerated typographic set
+# (d) non-English copy must pass untouched - only the enumerated typographic set
 # matches, never accented letters or guillemets.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA15 src/a.tsx "const s = 'caf\\u00e9 na\\u00efve \\u00abbonjour\\u00bb';")")"
 assert_empty "ascii: accents and guillemets pass" "${out}"
@@ -3611,7 +3611,7 @@ assert_empty "ascii: Bash writes are the documented gap" "${out}"
 # ensure_ascii; the unescaper does not decode it, so match the text form too.
 out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA16 main.tf 'name = a \\u2014 b')")"
 assert_deny "ascii: \\u escape spelling denied" "${out}"
-# WITHOUT jq this is the ONLY branch that fires: the jq path decodes — back
+# WITHOUT jq this is the ONLY branch that fires: the jq path decodes - back
 # to raw bytes, so a machine with jq installed proves the byte branch twice and
 # the sentinel-folding branch never. Shim jq to "absent" and re-assert, or the
 # no-jq environment the fallback exists for stays untested.
@@ -3624,7 +3624,7 @@ NOJQ="${WORK}/nojq"
 mkdir -p "${NOJQ}"
 printf '#!/bin/sh\nexit 127\n' >"${NOJQ}/jq"
 chmod +x "${NOJQ}/jq"
-# SC2030/SC2031 — the PATH change being LOCAL to the command substitution is the
+# SC2030/SC2031 - the PATH change being LOCAL to the command substitution is the
 # point: only these two hook invocations must see the shimmed jq, and the rest of
 # the suite must keep the real one.
 # shellcheck disable=SC2030,SC2031
@@ -3657,7 +3657,7 @@ assert_empty "ascii: steer:allow-typographic bypasses" "${out}"
 out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-ascii-writes.sh "$(json_write /tmp sA18 main.tf "d = 'a ${EM} b'")")"
 assert_copilot_ask "ascii: copilot gets a flat ask" "${out}"
 
-# (i) the plugin's own source repo is exempt — its pre-commit gates own style
+# (i) the plugin's own source repo is exempt - its pre-commit gates own style
 # there, and these fixtures must remain writable.
 RAP="$(new_repo repoAsciiPlugin)"
 mkdir -p "${RAP}/.claude-plugin"

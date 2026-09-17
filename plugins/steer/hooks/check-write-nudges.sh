@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer PreToolUse hook — write-path point-of-action nudges (one process).
+# steer PreToolUse hook - write-path point-of-action nudges (one process).
 #
 # WHY ONE SCRIPT
 #   Both nudges fire on the same matcher (Write|Edit|MultiEdit|NotebookEdit),
@@ -7,32 +7,32 @@
 #   target path. They lived in separate hooks (check-code-before-spec.sh,
 #   check-issue-before-mutation.sh), duplicating that setup on every editor
 #   write; one process does the shared work once and runs both checks. Both
-#   are best-effort, non-blocking additionalContext nudges — when both are due
+#   are best-effort, non-blocking additionalContext nudges - when both are due
 #   on the same write (possible on a foreign/damaged spine whose spec/ already
 #   carries a GitHub tracker.md), their messages are emitted together.
 #
-# NUDGE 1 — SPEC-BEFORE-CODE + SCAFFOLD-BEFORE-CODE
+# NUDGE 1 - SPEC-BEFORE-CODE + SCAFFOLD-BEFORE-CODE
 #   check-unmanaged-repo.sh (SessionStart) flags a missing /spec spine once, at
 #   session start. But a startup banner is easy to move past, and a repo that
-#   is empty at startup can grow its first feature code mid-session — after
+#   is empty at startup can grow its first feature code mid-session - after
 #   the banner already fired. This nudge re-asserts the bootstrap rule at the
 #   exact moment it's about to be broken: a write of code/config into a repo
 #   that is not yet standards-managed.
 #
 #   TWO INDEPENDENT DIMENSIONS, two different cadences (issue #171):
-#     • The /spec SPINE is product-dependent — it needs vision/intent
+#     * The /spec SPINE is product-dependent - it needs vision/intent
 #       decisions, so nagging is wrong. The spine reminder fires AT MOST ONCE
 #       per session+repo.
-#     • The bundled SCAFFOLD (mise.toml, CI, PR template, compose, .gitignore)
-#       is product-INDEPENDENT — it costs nothing to lay down and should not
+#     * The bundled SCAFFOLD (mise.toml, CI, PR template, compose, .gitignore)
+#       is product-INDEPENDENT - it costs nothing to lay down and should not
 #       be easy to skip. So the scaffold reminder is STICKY: it re-fires on
 #       each new feature file while the repo still has no root mise.toml, and
 #       self-clears the instant a mise.toml lands (or the spine becomes
-#       managed). The marker for "scaffold present" is a root mise.toml — the
+#       managed). The marker for "scaffold present" is a root mise.toml - the
 #       one file the bundled scaffold always installs and the cheapest
 #       product-independent signal.
 #
-# NUDGE 2 — ISSUE-FIRST
+# NUDGE 2 - ISSUE-FIRST
 #   rule 36-issue-first says: in a GitHub-adopted repo, every code/config/
 #   infra/behavior change above Tiny has a GitHub issue before the first
 #   repository mutation. The rule is always-on prose, but prose is easy to skip
@@ -41,23 +41,23 @@
 #   /spec/tracker.md declares `system: github`. It is the lightweight safety
 #   net; primary enforcement is routing (/steer:work) + the skills, which
 #   actually find-or-create the issue. The nudge cannot know whether an issue
-#   exists — it only reminds. Fires AT MOST ONCE per session+repo; exempt on
+#   exists - it only reminds. Fires AT MOST ONCE per session+repo; exempt on
 #   a hotfix/<n> branch (rule 62 files the issue after-the-fact by design)
 #   and on /steer:sync's feat/sync branch for non-implementation writes
 #   (rule 36 carve-out).
 #
 # MECHANISM
 #   Best-effort, non-blocking by design. Emits
-#   hookSpecificOutput.additionalContext and exits 0 — the write proceeds; the
+#   hookSpecificOutput.additionalContext and exits 0 - the write proceeds; the
 #   model just sees the reminder(s). Markers live in TMPDIR (never the working
 #   tree), keyed by session id + a cheap hash of the repo path. The shared
 #   classifier (lib/classify.sh) decides which writes are feature work
-#   (implementation / operations / unknown → nudge) vs bootstrapping the spine
-#   itself (spec / documentation / generated / lockfile → exempt).
+#   (implementation / operations / unknown -> nudge) vs bootstrapping the spine
+#   itself (spec / documentation / generated / lockfile -> exempt).
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq required. tool_input/session_id/cwd arrive as JSON on
-#   stdin. Fail-open everywhere: any ambiguity → exit 0, never block a write.
+#   stdin. Fail-open everywhere: any ambiguity -> exit 0, never block a write.
 #   Honest limitation: best-effort nudges, not gates.
 
 STEER_INPUT="$(cat)"
@@ -73,18 +73,18 @@ SID="$(steer_field session_id)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 
-# Resolve the work-tree root of the FILE being written — cwd may be a subdir
+# Resolve the work-tree root of the FILE being written - cwd may be a subdir
 # (apps/web), and with a nested work tree the file may belong to a different repo
 # than cwd entirely (#396). Falls back to cwd's root when there is no usable
-# path. Not a git work tree → not a project we manage. The plugin's own source
-# repo → not our concern.
+# path. Not a git work tree -> not a project we manage. The plugin's own source
+# repo -> not our concern.
 ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
-# Need a target file (Bash calls have none → nothing to nudge on).
+# Need a target file (Bash calls have none -> nothing to nudge on).
 [ -n "${FILE}" ] || exit 0
 
-# Shared classification → shared exempt/nudge policy. spec/docs/generated/
+# Shared classification -> shared exempt/nudge policy. spec/docs/generated/
 # lockfile are exempt; implementation/operations/unknown nudge.
 CLASS="$(steer_classify_path "${FILE}")"
 [ "$(steer_class_nudges "${CLASS}")" = "nudge" ] || exit 0
@@ -95,22 +95,22 @@ CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
 SAFE_FILE="$(steer_json_safe "${FILE}")"
 
 # ---------------------------------------------------------------------------
-# Nudge 1 — spec-before-code + scaffold-before-code.
+# Nudge 1 - spec-before-code + scaffold-before-code.
 # ---------------------------------------------------------------------------
 SPEC_CTX=""
 # Only a complete, version-stamped spec spine counts as "managed". A bare,
 # foreign, or half-migrated spec/ must NOT silence the nudge. A managed spine
-# implies a bootstrapped repo (init/adopt lay the scaffold too) → skip, both
+# implies a bootstrapped repo (init/adopt lay the scaffold too) -> skip, both
 # dimensions.
 STATE="$(steer_spine_state "${ROOT}")"
 if [ "${STATE}" != "managed" ]; then
 	MARK_BASE="${TMPDIR:-/tmp}/steer-gf-nudge.${SID:-nosid}.${CWD_KEY:-0}"
 
 	# --- Spine dimension: fire AT MOST ONCE per session+repo. ---
-	# `openspec` is a COMPLETE spine, just not steer's — it is excluded here for
+	# `openspec` is a COMPLETE spine, just not steer's - it is excluded here for
 	# the same reason `managed` is. Without this the nudge told an OpenSpec repo
 	# it had "no /spec spine" and pushed /steer:init at write time, which is the
-	# competing-spine bootstrap rule 33 exists to prevent — past session start,
+	# competing-spine bootstrap rule 33 exists to prevent - past session start,
 	# where check-unmanaged-repo.sh could no longer speak.
 	SPINE_MARK="${MARK_BASE}.spine"
 	SPINE_DUE=""
@@ -127,7 +127,7 @@ if [ "${STATE}" != "managed" ]; then
 	# re-edits of the same file.
 	SCAFFOLD_DUE=""
 	case "${FILE##*/}" in
-	mise.toml) ;; # writing the scaffold marker — do not nudge about its absence
+	mise.toml) ;; # writing the scaffold marker - do not nudge about its absence
 	*)
 		if [ ! -f "${ROOT}/mise.toml" ]; then
 			SCAFFOLD_LIST="${MARK_BASE}.scaffold"
@@ -144,34 +144,34 @@ if [ "${STATE}" != "managed" ]; then
 		# foreign spec/ vs a damaged spine call for different first moves.
 		case "${STATE}" in
 		foreign)
-			SPINE_NOTE="a spec/ directory exists but has no spec-spine marker (spec/.version) — if this repo should be standards-managed, run /steer:adopt to reverse-engineer the spine from the code; otherwise this is not an spec spine"
+			SPINE_NOTE="a spec/ directory exists but has no spec-spine marker (spec/.version) - if this repo should be standards-managed, run /steer:adopt to reverse-engineer the spine from the code; otherwise this is not an spec spine"
 			;;
 		damaged)
-			SPINE_NOTE="this repo has an incomplete spec spine (spec/.version is present but spine files are missing) — run /steer:sync to repair it"
+			SPINE_NOTE="this repo has an incomplete spec spine (spec/.version is present but spine files are missing) - run /steer:sync to repair it"
 			;;
 		openspec-setup)
-			SPINE_NOTE="this repo's spec spine is OpenSpec (openspec/) — do NOT run /steer:init or /steer:adopt, which would lay a competing spec/features/** spine; what is missing is steer's tracker declaration, so create openspec/steer/tracker.md from the bundled templates/spec/tracker.md and resolve its placeholders"
+			SPINE_NOTE="this repo's spec spine is OpenSpec (openspec/) - do NOT run /steer:init or /steer:adopt, which would lay a competing spec/features/** spine; what is missing is steer's tracker declaration, so create openspec/steer/tracker.md from the bundled templates/spec/tracker.md and resolve its placeholders"
 			;;
 		*)
-			SPINE_NOTE="this repo has no /spec spine — if you are starting this product from scratch, bootstrap first with /steer:init (greenfield path); if you are reverse-engineering pre-existing code, run /steer:adopt"
+			SPINE_NOTE="this repo has no /spec spine - if you are starting this product from scratch, bootstrap first with /steer:init (greenfield path); if you are reverse-engineering pre-existing code, run /steer:adopt"
 			;;
 		esac
 
 		# Build the message from whichever dimensions are due. The scaffold
 		# clause leads when present: it is the product-independent, re-asserting
 		# part.
-		# The scaffold is wanted on an OpenSpec repo too — but NOT via /steer:init,
+		# The scaffold is wanted on an OpenSpec repo too - but NOT via /steer:init,
 		# which lays a competing spec/features/** spine alongside openspec/.
 		case "${STATE}" in
 		openspec | openspec-setup)
-			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml — proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core — mise toolchain pinning and stack-agnostic CI hygiene — applies to EVERY managed repo regardless of stack. This repo's spec spine is OpenSpec, so do NOT run /steer:init or /steer:adopt: they would lay a competing spec/features/** spine beside openspec/. Lay the bundled scaffold down directly instead — at minimum a root mise.toml + CI, matching the repo profile (app / infra / service / library / cli). This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack. This repo's spec spine is OpenSpec, so do NOT run /steer:init or /steer:adopt: they would lay a competing spec/features/** spine beside openspec/. Lay the bundled scaffold down directly instead - at minimum a root mise.toml + CI, matching the repo profile (app / infra / service / library / cli). This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
 			;;
 		*)
-			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml — proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core — mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene — applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs — not just app monorepos. Run /steer:init: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile — app, service, library or cli — not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit — pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
+			SCAFFOLD_MSG="Scaffold check: this repo has NO root mise.toml - proceeding to write ${CLASS} (${SAFE_FILE}) leaves it with zero toolchain/CI/PR-template. The universal core - mise toolchain pinning, the /spec spine, and stack-agnostic CI hygiene - applies to EVERY managed repo regardless of stack, INCLUDING infrastructure/IaC (Ansible, Terraform, OpenTofu, Pulumi), libraries, and CLIs - not just app monorepos. Run /steer:init: it detects the repo profile (app / infra / service / library / cli / workspace) and lays the core plus the matching extras (an infra repo gets a tofu/terragrunt/ansible-flavored root mise.toml + infra CI; compose.yaml is core for EVERY profile, and package.json comes with any Node-stack profile - app, service, library or cli - not app alone). Do NOT skip the bootstrap because the default app scaffold looks like a poor fit - pick the profile instead; at minimum lay down a root mise.toml + CI. This scaffold reminder re-fires on each new file you write until a root mise.toml exists."
 			;;
 		esac
 
-		SPINE_MSG="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap also installs the /spec spine — a user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr). A 'prototype' or 'quick' build does NOT waive this — it relaxes spec depth and ceremony, never the scaffold or the spine. This spine reminder fires once per session; it stops once a complete /spec spine exists."
+		SPINE_MSG="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap also installs the /spec spine - a user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr). A 'prototype' or 'quick' build does NOT waive this - it relaxes spec depth and ceremony, never the scaffold or the spine. This spine reminder fires once per session; it stops once a complete /spec spine exists."
 
 		if [ -n "${SCAFFOLD_DUE}" ] && [ -n "${SPINE_DUE}" ]; then
 			SPEC_CTX="${SCAFFOLD_MSG} ${SPINE_MSG}"
@@ -184,13 +184,13 @@ if [ "${STATE}" != "managed" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Nudge 2 — issue-first.
+# Nudge 2 - issue-first.
 # ---------------------------------------------------------------------------
 ISSUE_CTX=""
 # Scoped to GitHub-adopted repos: need the tracker declaring system: github.
 if steer_tracker_is_github "${ROOT}"; then
-	# Name the file this repo actually has — openspec/steer/tracker.md on an
-	# OpenSpec repo — rather than hard-coding the native path into the nudge.
+	# Name the file this repo actually has - openspec/steer/tracker.md on an
+	# OpenSpec repo - rather than hard-coding the native path into the nudge.
 	steer_tracker_rel "${ROOT}"
 	# Fire at most once per session+repo. Check the marker BEFORE the
 	# git-spawning exemptions below, so a repeat write in an already-nudged
@@ -203,7 +203,7 @@ if steer_tracker_is_github "${ROOT}"; then
 		# Hotfix fast-path exemption (rule 62): a production hotfix runs on a
 		# hotfix/<n> branch and files its issue after-the-fact by design, so the
 		# "issue BEFORE the first mutation" nudge would be a false positive
-		# here. Stay silent at the point of action — the end-of-turn
+		# here. Stay silent at the point of action - the end-of-turn
 		# reconciliation (reconcile-issue-first.sh) and rule 62 carry the
 		# mandatory post-incident follow-up.
 		if command -v git >/dev/null 2>&1; then
@@ -214,7 +214,7 @@ if steer_tracker_is_github "${ROOT}"; then
 
 		# Plugin-maintenance flow exemption (rule 36 carve-out): /steer:sync runs
 		# on its own feat/sync branch and writes operations-class scaffold (CI,
-		# mise.toml, compose.yaml, …) — structural reconciliation against plugin
+		# mise.toml, compose.yaml, ...) - structural reconciliation against plugin
 		# templates, not feature implementation. Stay silent there UNLESS the
 		# write is app source (implementation-class), which sync's contract
 		# forbids and is worth surfacing.
@@ -224,7 +224,7 @@ if steer_tracker_is_github "${ROOT}"; then
 		fi
 
 		if [ -n "${DUE}" ]; then
-			# Mark this session+repo as nudged — only now that we actually nudge.
+			# Mark this session+repo as nudged - only now that we actually nudge.
 			: >"${MARK}" 2>/dev/null || true
 
 			# Issue-first holds in BOTH delivery modes (the issue is the
@@ -233,15 +233,15 @@ if steer_tracker_is_github "${ROOT}"; then
 			# /steer:work branch/PR guidance.
 			MODE="$(steer_delivery_mode "${ROOT}")"
 			if [ "${MODE}" = "solo-trunk" ]; then
-				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it — GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) — do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior - not spec, docs, lockfiles, or a Tiny change) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it - GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) - do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
 			else
-				ISSUE_CTX="Issue-first check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior — not spec, docs, lockfiles, or a Tiny change: under ~20 lines with no behavior change, where the PR is the evidence anchor) needs a GitHub issue BEFORE the first mutation — reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior - not spec, docs, lockfiles, or a Tiny change: under ~20 lines with no behavior change, where the PR is the evidence anchor) needs a GitHub issue BEFORE the first mutation - reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
 			fi
 		fi
 	fi
 fi
 
-# Nothing due this write → silent.
+# Nothing due this write -> silent.
 [ -n "${SPEC_CTX}" ] || [ -n "${ISSUE_CTX}" ] || exit 0
 
 if [ -n "${SPEC_CTX}" ] && [ -n "${ISSUE_CTX}" ]; then

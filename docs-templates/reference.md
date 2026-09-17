@@ -13,4 +13,4 @@ validator check guards it.
 
 | Item | Purpose |
 | --- | --- |
-| `name` | … |
+| `name` | ... |

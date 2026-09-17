@@ -91,7 +91,7 @@ def _starts_block(line: str, in_paragraph: bool = False, ordered_indent: int | N
 
     Ordered markers follow CommonMark's interruption rule: a list can only break
     into a running paragraph when it starts at **1**. Without that, the wrapped
-    prose in v6.1.0 -- ``(check_standards.py check`` / ``11) covered …`` -- reads
+    prose in v6.1.0 -- ``(check_standards.py check`` / ``11) covered ...`` -- reads
     as an ordered item, and since it is indented two spaces under a bullet the
     renderer nests it as a sub-list instead of finishing the sentence.
     ``ordered_indent`` carries the indent of the item just emitted, so a genuine

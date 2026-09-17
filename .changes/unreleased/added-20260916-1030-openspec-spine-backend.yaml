@@ -1,26 +1,26 @@
 kind: Added
 body: |-
   - **A repo can now drive its spec spine with OpenSpec and keep every other
-    standard.** steer assumed one spine layout — `spec/features/<id>/intent.md` +
-    `contract.md` — so a repo using OpenSpec (Fission-AI) got the worst of both:
+    standard.** steer assumed one spine layout - `spec/features/<id>/intent.md` +
+    `contract.md` - so a repo using OpenSpec (Fission-AI) got the worst of both:
     rule 30 told every session to write artifacts in a place the repo does not
     use, and `check-unmanaged-repo.sh` read the missing `spec/` as *unmanaged*
     and served the full greenfield bootstrap card at every session start,
-    pushing `/steer:init` — which would have laid a competing spine next to
+    pushing `/steer:init` - which would have laid a competing spine next to
     `openspec/`. The fix is a scope predicate, not a second plugin: a new
-    `has-openspec` token (structural marker required — `openspec/project.md`,
+    `has-openspec` token (structural marker required - `openspec/project.md`,
     `openspec/specs/` or `openspec/changes/`, since a bare `openspec/` directory
     proves nothing, exactly as `spine.sh` refuses to read a bare `spec/` as a
     spine) gates a new rule `33-spec-workflow-openspec`, which remaps the spec
     artifacts onto `/opsx:propose` / `apply` / `archive` and states plainly that
-    every other rule — stack, testing, coverage, Definition of Done, issue-first,
-    drift gates, secrets, compliance, change size — is unchanged. The
+    every other rule - stack, testing, coverage, Definition of Done, issue-first,
+    drift gates, secrets, compliance, change size - is unchanged. The
     bootstrap notice swaps to a short OpenSpec orientation instead of the
     greenfield card, while a *damaged* steer spine is still reported: on an
     OpenSpec repo that spine is where the ADRs and the tracker declaration live.
     Rule 30 is deliberately left unmarked rather than paired with a negated
-    token — a marked rule is skipped wholesale in knowledge-work mode, where the
-    injection banner promises spec-workflow still applies — so rule 33 overrides
+    token - a marked rule is skipped wholesale in knowledge-work mode, where the
+    injection banner promises spec-workflow still applies - so rule 33 overrides
     it in prose and both are delivered together. Repos without `openspec/` pay
     nothing: the measured `code` profile is unchanged at 61,856 characters.
 

@@ -93,7 +93,7 @@ def test_accepted_adr_from_adoption_is_caught(tmp_path: Path, monkeypatch):
 def test_adr_default_proposed_before_accepted(tmp_path: Path, monkeypatch):
     spec = tmp_path / "spec"
     spec.mkdir(parents=True)
-    # Accepted listed before Proposed — must be flagged.
+    # Accepted listed before Proposed - must be flagged.
     (spec / "adr.md").write_text("> Status: Accepted | Proposed\n", encoding="utf-8")
     monkeypatch.setattr(check_fixtures, "SPEC_TEMPLATES", spec)
     errors: list[str] = []

@@ -1,7 +1,7 @@
 ---
 name: release
 description: >-
-  Cut a steer plugin release — first run a deep, read-only pre-release audit of
+  Cut a steer plugin release - first run a deep, read-only pre-release audit of
   the plugin codebase (computed preconditions + deterministic gate + strict docs
   build + the pre-release-audit workflow's judgment review) and BLOCK on any
   release-stopping finding; then confirm the semver bump with the user and cut
@@ -41,19 +41,19 @@ allowed-tools:
   - Bash(mise run docs:build*)
 ---
 
-# /release — cut a steer plugin release
+# /release - cut a steer plugin release
 
-A repo-local wrapper around the documented release flow (see `CLAUDE.md` →
-"Working in this repo" and `AUTHORING.md` → version policy). It runs in two
+A repo-local wrapper around the documented release flow (see `CLAUDE.md` ->
+"Working in this repo" and `AUTHORING.md` -> version policy). It runs in two
 phases:
 
-- **Phase A — deep pre-release audit (read-only).** Before touching a single
+- **Phase A - deep pre-release audit (read-only).** Before touching a single
   file, prove the codebase is coherent and release-ready: read the computed
   preconditions below, run the full deterministic gate *and* the strict docs
   build, run the `pre-release-audit` workflow for the judgment review, and record
-  the round in the ledger. This phase is a **gate** — any blocker-severity finding
+  the round in the ledger. This phase is a **gate** - any blocker-severity finding
   stops the release before the version is bumped.
-- **Phase B — cut the release.** Only once Phase A is clean: confirm the bump,
+- **Phase B - cut the release.** Only once Phase A is clean: confirm the bump,
   run `scripts/release_cut.py`, re-gate, and open the release PR. The version
   bump happens **once**, here, in a dedicated release PR; implementation PRs only
   accumulate fragments under `.changes/unreleased/`.
@@ -63,7 +63,7 @@ The invariant `check_changelog.py` enforces (and this skill upholds): the
 generated `CHANGELOG.md` carries exactly those versions in descending order.
 
 This skill is read-only until Step B2. Phase A only reads, runs gates, and
-dispatches read-only reviewers — it never edits, branches, or commits. That is
+dispatches read-only reviewers - it never edits, branches, or commits. That is
 deliberate: the audit must reflect the exact tree a reviewer will see, and a
 release that can't pass its own audit shouldn't have a branch at all.
 
@@ -73,7 +73,7 @@ tree "looks ready".
 
 ---
 
-## Computed preconditions — fresh at invocation
+## Computed preconditions - fresh at invocation
 
 The block below is produced by `scripts/release_preflight.py` **when you invoke
 this skill**, not recalled from prose. It is procedure Step 1, the CI-status half
@@ -88,27 +88,27 @@ uv run python scripts/release_preflight.py --report --caller release
 
 If the block above is missing or aborted, run the command yourself before
 anything else. Any `[blocker]` line stops the release here; `[high]` is reported
-in the PR body and never halts; `[warn]` means "not verified here" — close it by
+in the PR body and never halts; `[warn]` means "not verified here" - close it by
 hand and say so. `LAST_RELEASE=` is the anchor every diff-scoped check uses.
 
 ---
 
-## Phase A — deep pre-release audit (read-only gate)
+## Phase A - deep pre-release audit (read-only gate)
 
 **The audit procedure is single-sourced in
 [`.claude/audit/PRE-RELEASE-AUDIT.md`](../../audit/PRE-RELEASE-AUDIT.md).** Open
-it and execute **Steps 1–5 in full** — every dimension, no subset (that subset is
+it and execute **Steps 1-5 in full** - every dimension, no subset (that subset is
 `/quick-release`'s job). If that file and the index below ever disagree, the
 procedure file is authoritative.
 
 As the `/release` caller, you supply these pre/post-conditions around it:
 
-- **Base contract (procedure Step 1).** The base must be current `main` — the
+- **Base contract (procedure Step 1).** The base must be current `main` - the
   computed block must show `tree-clean`, `base-current` and `unreleased` as `[ok]`
   (a branch ahead of `main` is a blocker for a release, unlike `/audit-loop`).
 - **Bump input (procedure Step 3, dimension 1).** Carry forward the
   `changelog-coherence` finding, if any, that says the highest-impact bullet
-  implies a larger bump than a naive reading — it is input to Step B1.
+  implies a larger bump than a naive reading - it is input to Step B1.
 - **Timing note (procedure Step 4b).** State honestly that *this release's own*
   docs changes deploy only after this PR merges; Phase A proves the docs source
   is current and that *prior* docs changes are live. The post-merge deploy is a
@@ -116,29 +116,29 @@ As the `/release` caller, you supply these pre/post-conditions around it:
 
 The one-line index, for orientation only:
 
-- **Step 1 — base preconditions.** Computed above.
-- **Step 2 — deterministic gate.** `mise run ci` + the strict `mise run
+- **Step 1 - base preconditions.** Computed above.
+- **Step 2 - deterministic gate.** `mise run ci` + the strict `mise run
   docs:build`, up front and blocking. The `validator-compat` status is computed
-  above (`[high]`, not a blocker — it tracks upstream Claude Code, not the diff).
-- **Step 3 + 4a — judgment review.** Run the saved **`pre-release-audit`**
+  above (`[high]`, not a blocker - it tracks upstream Claude Code, not the diff).
+- **Step 3 + 4a - judgment review.** Run the saved **`pre-release-audit`**
   workflow (Workflow tool, `name: "pre-release-audit"`, no args). It scouts the
   delta, re-verifies every open ledger row whose file changed since it was
   confirmed, dispatches the five coherence dimensions and the
   `documentation-reviewer` in parallel, retries a failed dispatch once, dedupes,
   and verifies every in-delta finding against its cited line. It returns
   ledger-ready `candidates`, `reconcile` verdicts for the ledger, and a
-  `coverage` map — a dimension marked `unverified` means the round is not clean.
-- **Step 4b — deployed-site freshness.** Computed above.
-- **Step 5 — compile, rank, classify.** Severity is **capped** from the path by
+  `coverage` map - a dimension marked `unverified` means the round is not clean.
+- **Step 4b - deployed-site freshness.** Computed above.
+- **Step 5 - compile, rank, classify.** Severity is **capped** from the path by
   `scripts/audit_severity.py` when the candidates are recorded (never judged,
   never escalated); everything lands in `.claude/audit/findings.jsonl`.
 
-### A6. Audit gate — decide.
+### A6. Audit gate - decide.
 
 The gate is **mechanical**. Severity comes from `scripts/audit_severity.py`, which
 computes a ceiling from the finding's `path` (procedure Step 5); you do not grade
 findings by how serious the prose sounds, and you may not escalate one above its
-ceiling. Escalation discretion is what made this gate non-deterministic — the
+ceiling. Escalation discretion is what made this gate non-deterministic - the
 6.0.0 cut was halted by a judgment escalation on a docs-site page that ships to no
 consumer.
 
@@ -149,7 +149,7 @@ consumer.
   itself, and neither is a matter of opinion. Do not branch, do not bump.
 - **`[high]` / `[medium]` / `[low]` never halt the release.** Report them, record
   them in the ledger, and let the user decide whether to fold a quick fix in.
-  Do **not** ask the user to "defer a blocker" — if it is not release-critical it
+  Do **not** ask the user to "defer a blocker" - if it is not release-critical it
   was never a blocker, and framing it as one is how a routine cut turns into a
   judgment call the user has to overrule.
 - **Reconcile, then record the round, before deciding.** Write the workflow's
@@ -165,7 +165,7 @@ Only when there are **zero blockers** proceed to Phase B.
 
 ---
 
-## Phase B — cut the release
+## Phase B - cut the release
 
 ### B1. Determine the new version.
 
@@ -175,11 +175,11 @@ version, every pending fragment as `<kind> <slug>`, the bump those kinds imply
 each level. It is a **suggestion**: read the fragments (and the dimension-1 bump
 note from Phase A) and decide by nature:
 
-- **major** — a breaking change to plugin behavior (renamed/removed skill, rule,
+- **major** - a breaking change to plugin behavior (renamed/removed skill, rule,
   hook, or template; changed invocation; anything a consuming repo must react to).
-- **minor** — new backward-compatible capability (new skill, rule, scaffold file,
+- **minor** - new backward-compatible capability (new skill, rule, scaffold file,
   or option).
-- **patch** — fixes, wording, and internal changes only.
+- **patch** - fixes, wording, and internal changes only.
 
 When entries are mixed, the highest-impact one wins. State the proposed `X.Y.Z`
 and the one reason, and **confirm with the user before editing**.
@@ -187,16 +187,16 @@ and the one reason, and **confirm with the user before editing**.
 **The `allowed-tools` grant does not survive the user's reply.** Per the Claude
 Code skills reference, a skill's `allowed-tools` grants permission *for the turn
 that invokes the skill*, and **the grant clears when the user sends their next
-message** — the skill body stays in context, the permissions do not. So every
+message** - the skill body stays in context, the permissions do not. So every
 tool call after this confirmation is governed by the project's own permission
 settings alone. `.claude/settings.json` covers the common ones (`mise run *`,
 `uv run python scripts/*`, the read-only `git` verbs); anything outside it will
-prompt. That is not a failure — approve and continue — but do not read a prompt
+prompt. That is not a failure - approve and continue - but do not read a prompt
 for a command this skill pre-authorized as a sign something is wrong, and do not
 abandon a step because it started prompting. Durable rules belong in
 `.claude/settings.json`, not in frontmatter.
 
-### B2. Isolate, *then* branch — before editing any file.
+### B2. Isolate, *then* branch - before editing any file.
 
 This skill now edits tracked files, so the checkout must be isolated first;
 editing the shared checkout in a background session is rejected by the isolation
@@ -211,7 +211,7 @@ guard. Do this **before** the cut, never after a rejection.
   chore/release-X.Y.Z` off the up-to-date `main` is enough.
 - Either way, all later steps, the gate, and the PR run from this isolated branch.
 
-### B3. Cut — one command, then read its diff.
+### B3. Cut - one command, then read its diff.
 
 ```sh
 uv run python scripts/release_cut.py cut X.Y.Z --dry-run   # review the exact edits
@@ -223,10 +223,10 @@ The script performs the whole cut and refuses to start if a precondition fails:
 - The changelog, via `changie`: `batch` folds every pending fragment into
   `.changes/vX.Y.Z.md` and empties `.changes/unreleased/`; `merge` reassembles
   `CHANGELOG.md` from the version files. `merge` is also what rewrites the three
-  manifests, so skipping it would leave the release unpublishable —
+  manifests, so skipping it would leave the release unpublishable -
   `release-publish.yml` fires on the `plugin.json` version diff.
 - `plugins/steer/templates/reference/MIGRATIONS.md`: renames every
-  `### [Unreleased] — <what>` **inside `## Entries`** to `### vX.Y.Z — <what>` and
+  `### [Unreleased] - <what>` **inside `## Entries`** to `### vX.Y.Z - <what>` and
   never touches the authoring stub in the trailing `<!-- Template for a new entry
   -->` comment (stamping it would reinstate the guessed-version pattern, and no
   gate catches that). Zero renames is the normal case, not a skipped step. An
@@ -235,7 +235,7 @@ The script performs the whole cut and refuses to start if a precondition fails:
 - The three version-bearing manifests move to `X.Y.Z` with a one-line textual
   edit each: `plugins/steer/.claude-plugin/plugin.json` (source of truth),
   `plugins/steer/.github/plugin/plugin.json`, and the `steer` entry in
-  `.github/plugin/marketplace.json` — leaving that file's `metadata.version` (the
+  `.github/plugin/marketplace.json` - leaving that file's `metadata.version` (the
   marketplace's own) alone. `.changie.yaml`'s `replacements` do this on `merge`,
   anchored on each line's indentation, which is what keeps the marketplace's two
   `"version"` keys apart; `validate_cut` re-asserts it afterwards.
@@ -251,14 +251,14 @@ fix the cause (or stop), then re-run.
 ### B4. Validate the release invariant independently.
 
 `uv run python scripts/check_changelog.py` (no `--base`, so it runs the release
-validator only). It must report clean — version equals the newest heading and
+validator only). It must report clean - version equals the newest heading and
 headings descend.
 
 ### B5. Re-gate after the bump.
 
-Phase A's gate ran on the **pre-bump** tree, so re-run **`mise run ci`** — the
+Phase A's gate ran on the **pre-bump** tree, so re-run **`mise run ci`** - the
 full gate, not `mise run check`. Run it **unpiped** (a `| tail` reports `tail`'s
-exit status, not the gate's; under zsh `${PIPESTATUS[0]}` is empty — the array is
+exit status, not the gate's; under zsh `${PIPESTATUS[0]}` is empty - the array is
 `pipestatus` and 1-indexed, so a piped run reports nothing at all). Report a
 per-gate result; do not proceed past a red gate.
 
@@ -267,7 +267,7 @@ per-gate result; do not proceed past a red gate.
 the five managed routing-eval scaffolds stamp `spec/.version` into their fixture
 repos, and `test_managed_scaffold_stamps_the_current_plugin_version` fails until
 the bump is propagated to all of them. A green `check` says nothing about that.
-The version edits are **not** inert to the heavier suites — assuming they were is
+The version edits are **not** inert to the heavier suites - assuming they were is
 what pushed a red CI on the 6.1.1 cut, after a green `check` had been reported as
 the re-gate.
 
@@ -276,7 +276,7 @@ re-run `ci`, and fold the fix into the release branch before opening the PR.
 
 ### B6. Commit, push, open the PR.
 
-These steps are intentionally **not** pre-authorized — they prompt, preserving
+These steps are intentionally **not** pre-authorized - they prompt, preserving
 the human gate on outbound actions:
 
 - Commit the changed files with the message `chore(release): steer X.Y.Z`.
@@ -304,11 +304,11 @@ re-gate result.
 
 - Consumers pick up the release via `/plugin update`.
 - The **docs deploy** for this release's `docs/**` changes runs from `main` after
-  merge (`docs-deploy.yml`) — watch that run go green so the live site at
+  merge (`docs-deploy.yml`) - watch that run go green so the live site at
   `https://ai.element-22.com` actually reflects the release; a red deploy leaves
   the published docs stale (and the next preflight will flag it).
 - The **e2e suite** and the **routing evals** are local-only tiers (`mise run
-  e2e`, `mise run evals`) — run them before a substantive cut if you want the
+  e2e`, `mise run evals`) - run them before a substantive cut if you want the
   skill-level signal.
 - The **`vX.Y.Z` git tag + GitHub Release** are created automatically by
   `release-publish.yml`, which fires on the merge commit that changed
@@ -319,11 +319,11 @@ re-gate result.
   version=X.Y.Z` (an older version is tagged on the commit that introduced it and
   is not marked Latest), or, as a last resort, `gh release create vX.Y.Z --target
   <merge-sha> --title "steer X.Y.Z" --generate-notes --notes-file <(python3
-  scripts/reflow_release_notes.py .changes/vX.Y.Z.md)` — the reflow is not
+  scripts/reflow_release_notes.py .changes/vX.Y.Z.md)` - the reflow is not
   optional dressing: a Release body renders in comment mode, so publishing the
   80-column source verbatim breaks a line mid-sentence on nearly every line.
 - A dispatch **publishes** a missing Release; it never **rewrites** an existing
   one (it exits at `Release already exists -> skipping`). Repairing a body that
-  was published wrong is therefore a `gh release edit --notes-file` — and the
+  was published wrong is therefore a `gh release edit --notes-file` - and the
   file has to carry the `## What's Changed` tail from the current body, or the
   `--generate-notes` section is lost.

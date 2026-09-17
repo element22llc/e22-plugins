@@ -10,8 +10,8 @@ Customers can manage billing end to end without contacting support.
 
 ## Child features
 
-- [ ] #41 — Self-serve plan changes
-- [ ] #42 — Downloadable invoices
+- [ ] #41 - Self-serve plan changes
+- [ ] #42 - Downloadable invoices
 <!-- steer:managed:end -->
 
 ## Team notes

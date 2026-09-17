@@ -2,14 +2,14 @@
 
 **On-demand, not bootstrap-installed.** These are the starting-point container
 images for a product's **deployable apps**. Unlike the rest of the scaffold, they
-are *not* copied into a repo at `/steer:init` time — a fresh repo has no app yet,
+are *not* copied into a repo at `/steer:init` time - a fresh repo has no app yet,
 and a Dockerfile with nothing to build would ship broken. They are instantiated
 **when the first deployable app is created** and then owned by the product, the
 same way `compose.yaml` is adapted per repo.
 
 ## Which profiles get one
 
-Only **`app`** and **`service`** — the profiles that deploy as containers (default
+Only **`app`** and **`service`** - the profiles that deploy as containers (default
 target: AWS ECS). **`library`** and **`cli`** publish to package registries and
 **`infra`** provisions cloud resources, so none of them get a Dockerfile.
 
@@ -18,18 +18,18 @@ target: AWS ECS). **`library`** and **`cli`** publish to package registries and
 In a pnpm monorepo each `apps/<app>/` is independently deployable, so:
 
 - The Dockerfile installs at **`apps/<app>/Dockerfile`** (one per deployable app).
-- `.dockerignore` installs at the **repo root** — the build context is the repo
+- `.dockerignore` installs at the **repo root** - the build context is the repo
   root (`docker build -f apps/<app>/Dockerfile .`) so the lockfile and workspace
   `packages/` are in scope. Its source is stored here **without the leading dot**
-  (`templates/docker/dockerignore`) — the same convention the scaffold bundle
+  (`templates/docker/dockerignore`) - the same convention the scaffold bundle
   uses, so it cannot act on this plugin repo. Add the dot when you install it.
 
 ## When it is instantiated
 
-- **`/steer:build`** — when it scaffolds the real first app (step 5).
-- **`/steer:adopt`** — Phase 10, for an already-deployable app that has no
+- **`/steer:build`** - when it scaffolds the real first app (step 5).
+- **`/steer:adopt`** - Phase 10, for an already-deployable app that has no
   Dockerfile (copy-and-adapt, never clobber an existing one).
-- **Spec-first work** — when a feature adds the first `apps/<app>`, add its
+- **Spec-first work** - when a feature adds the first `apps/<app>`, add its
   Dockerfile from here (the `apps/README.md` scaffold points here).
 
 ## Pick by stack
@@ -42,14 +42,14 @@ In a pnpm monorepo each `apps/<app>/` is independently deployable, so:
 ## Base-image pinning
 
 The `FROM` major must satisfy `policy/versions.yml` (today: `node >= 22`,
-`python >= 3.10`) — the version-pin scanner and hook enforce it in CI and locally.
+`python >= 3.10`) - the version-pin scanner and hook enforce it in CI and locally.
 Keep it in sync with `mise.toml`'s runtime pin; a deliberately older base needs an
 ADR plus `# steer:allow-pin <reason>` on the `FROM` line.
 
 ## CI
 
 The scaffold `.github/workflows/ci.yml` **builds every `apps/*/Dockerfile` (and a
-root `Dockerfile`, if any) when present** — build-only, no registry push, no
+root `Dockerfile`, if any) when present** - build-only, no registry push, no
 credentials. That is what keeps an instantiated Dockerfile from rotting. When no
 Dockerfile exists the step is skipped with a notice, so a green `ci` never falsely
 implies an image built. Pushing/deploying the image is a per-app concern (confirm

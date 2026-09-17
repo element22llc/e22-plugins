@@ -2,7 +2,7 @@
 <!-- steer:fault-fingerprint=SOURCE:SIGNATURE -->
 ## What steer did wrong
 
-[One or two sentences: the plugin defect — contradictory skill instruction,
+[One or two sentences: the plugin defect - contradictory skill instruction,
 missing/broken template or script, or a recorded hook fault. The symptom, not a
 stack trace.]
 
@@ -15,8 +15,8 @@ stack trace.]
 ## Captured output
 
 ```
-[Verbatim error text or hook output, SCRUBBED — no absolute paths (rewrite to
-<repo>/…), no secrets, no product source. Omit this block if there is none.]
+[Verbatim error text or hook output, SCRUBBED - no absolute paths (rewrite to
+<repo>/...), no secrets, no product source. Omit this block if there is none.]
 ```
 
 ## Expected behavior
@@ -25,7 +25,7 @@ stack trace.]
 
 ## Reproduction
 
-1. [Minimal trigger, in terms of steer surfaces — not product specifics.]
+1. [Minimal trigger, in terms of steer surfaces - not product specifics.]
 
 ## Notes
 

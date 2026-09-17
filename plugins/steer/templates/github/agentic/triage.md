@@ -1,16 +1,16 @@
 ---
-# steer — OPTIONAL gh-aw agentic workflow. NOT installed by /steer:init or
+# steer - OPTIONAL gh-aw agentic workflow. NOT installed by /steer:init or
 # /steer:adopt and NOT listed in scaffold/MANIFEST.md. Opt in deliberately:
-# see docs (GitHub → "Agentic workflows (gh aw)") for the full recipe.
+# see docs (GitHub -> "Agentic workflows (gh aw)") for the full recipe.
 #
-# gh-aw (GitHub Agentic Workflows) is a GitHub Next *research demonstrator* —
+# gh-aw (GitHub Agentic Workflows) is a GitHub Next *research demonstrator* -
 # "not a product, not even a technical preview." Treat this file as source
 # you adapt: `gh aw compile triage.md` generates a standard Actions
 # `.lock.yml`; READ that lock file and SHA-pin its actions before trusting it.
 #
 # What it does: when an issue is opened/reopened, classify it against steer's
 # label taxonomy and GitHub Issue Type, then post one advisory triage comment.
-# It is ADVISORY ONLY — it never closes issues and never resolves product or
+# It is ADVISORY ONLY - it never closes issues and never resolves product or
 # technical questions. Those stay human-gated (rule 95 "not the gate" + the
 # /steer:issues lifecycle). The only writes are the declared safe-outputs.
 on:
@@ -19,7 +19,7 @@ on:
   reaction: eyes
 
 # Read-only by default. The only write-backs are the sanitized safe-outputs
-# below, which gh-aw runs in an isolated downstream job — the agent process
+# below, which gh-aw runs in an isolated downstream job - the agent process
 # itself cannot push commits or write to the API directly.
 permissions: read-all
 
@@ -59,31 +59,31 @@ make product or technical decisions, and you never close issues.
 
 Fetch the triggering issue and its comments. Read the title and body carefully.
 Issues opened via the steer Issue Forms already carry a `source:*` label and a
-`needs:triage` label — do not remove `source:*`.
+`needs:triage` label - do not remove `source:*`.
 
 ## 2. Classify
 
 Set the GitHub **Issue Type** to the best fit:
 
-- **Bug** — something is broken or behaves incorrectly.
-- **Feature** — net-new capability or product behavior.
-- **Task** — chore, refactor, docs, or maintenance with no new product behavior.
+- **Bug** - something is broken or behaves incorrectly.
+- **Feature** - net-new capability or product behavior.
+- **Task** - chore, refactor, docs, or maintenance with no new product behavior.
 
-Then apply labels from this fixed taxonomy **only** (do not invent labels — GitHub
+Then apply labels from this fixed taxonomy **only** (do not invent labels - GitHub
 silently drops unknown ones, and these are reconciled by `/steer:issues
 bootstrap-labels`):
 
-- **`needs:*`** — replace `needs:triage` with the real blocker, or remove it if
+- **`needs:*`** - replace `needs:triage` with the real blocker, or remove it if
   none applies:
-  - `needs:product-decision` — awaiting a PO/stakeholder call.
-  - `needs:technical-decision` — awaiting a dev/architecture call.
-  - `needs:spec` — needs a spec before development.
-  - `needs:validation` — implemented, awaiting acceptance.
-- **`risk:*`** — add when warranted: `risk:high` (high blast radius),
+  - `needs:product-decision` - awaiting a PO/stakeholder call.
+  - `needs:technical-decision` - awaiting a dev/architecture call.
+  - `needs:spec` - needs a spec before development.
+  - `needs:validation` - implemented, awaiting acceptance.
+- **`risk:*`** - add when warranted: `risk:high` (high blast radius),
   `risk:security` (auth/secrets/exploitable surface), `risk:data` (data
   integrity / migrations).
 
-Do **not** encode status, release, priority, or effort as labels — lifecycle
+Do **not** encode status, release, priority, or effort as labels - lifecycle
 **state** lives in markers, and **priority/effort are native issue fields**, not
 labels (never create `priority:*` / `effort:*` labels).
 
@@ -100,9 +100,9 @@ Leave exactly one comment that:
 - If the body is missing acceptance criteria, reproduction steps, or scope, asks
   the author for precisely what's needed.
 - If it `needs:product-decision` or `needs:technical-decision`, names the open
-  question and explicitly defers to a human — do not answer it yourself.
-- Points the author at `/steer:issues` for the full lifecycle (brainstorm →
-  materialize → decompose) when the issue is ready to move forward.
+  question and explicitly defers to a human - do not answer it yourself.
+- Points the author at `/steer:issues` for the full lifecycle (brainstorm ->
+  materialize -> decompose) when the issue is ready to move forward.
 
 Keep it short and concrete. You are accelerating triage, not replacing the
 human-gated decisions in steer's workflow.

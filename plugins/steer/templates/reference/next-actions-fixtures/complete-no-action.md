@@ -1,4 +1,4 @@
-# Fixture: complete — nothing left, do not manufacture work
+# Fixture: complete - nothing left, do not manufacture work
 
 Workflow: `/steer:adopt` (illustrative; the shape applies to any skill)
 
@@ -10,7 +10,7 @@ Workflow: `/steer:adopt` (illustrative; the shape applies to any skill)
 
 ## Expected highest-priority action
 
-`No action is currently required.` — optionally, begin normal feature work when there is a product change to make.
+`No action is currently required.` - optionally, begin normal feature work when there is a product change to make.
 
 ## Expected category
 
@@ -18,7 +18,7 @@ Complete
 
 ## Expected suggested command
 
-`/steer:spec` — offered as an **optional** continuation only, not a mandatory step to finish adoption.
+`/steer:spec` - offered as an **optional** continuation only, not a mandatory step to finish adoption.
 
 ## Must not recommend first
 

@@ -1,4 +1,4 @@
-"""Unit tests for gitutil — pure git, no skill runs (default token-free suite)."""
+"""Unit tests for gitutil - pure git, no skill runs (default token-free suite)."""
 
 from __future__ import annotations
 

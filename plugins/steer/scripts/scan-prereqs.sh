@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
-# scan-prereqs.sh — read-only local-prerequisite detector for /steer:doctor.
+# scan-prereqs.sh - read-only local-prerequisite detector for /steer:doctor.
 #
 # WHAT IT READS
-#   $1  repo-root  — a managed (or about-to-be-managed) repo to inspect
+#   $1  repo-root  - a managed (or about-to-be-managed) repo to inspect
 #                    (default: "."). Read only to resolve conditionality:
 #                    compose.yaml -> is Docker required vs advisory;
 #                    package.json / pyproject.toml -> which of pnpm/uv applies.
@@ -11,7 +11,7 @@
 #   The host toolchain a repo needs before /steer:init, /steer:build, or
 #   `mise run dev:setup` will work: git, mise (the gateway), Docker (+ daemon),
 #   and the mise-managed runtimes node / pnpm / uv. Detection is `command -v`
-#   plus `docker info` for the daemon — nothing is installed or modified here.
+#   plus `docker info` for the daemon - nothing is installed or modified here.
 #
 # WHETHER IT MODIFIES ANYTHING
 #   No. It only reads the host PATH + a few repo marker files and writes status
@@ -38,8 +38,8 @@
 #   not see a normal "gaps found" run reported as a failure.
 #
 # EXIT CODES
-#   0  ran OK — read stdout for the per-tool verdicts.
-#   2  usage error — too many arguments.
+#   0  ran OK - read stdout for the per-tool verdicts.
+#   2  usage error - too many arguments.
 #   3  repo-root is missing or unreadable.
 #
 # SECURITY: read-only; never executes repo content; no network; no jq.
@@ -77,7 +77,7 @@ ver() { "$1" --version 2>/dev/null | head -n1 | tr '\t' ' '; }
 
 # Does a resolved binary path look mise-managed? mise installs and shims both live
 # under the mise data dir (default ~/.local/share/mise -> contains "/mise/"). A
-# custom MISE_DATA_DIR without "mise" in the path won't match — acceptable, since
+# custom MISE_DATA_DIR without "mise" in the path won't match - acceptable, since
 # the shadow verdict is advisory, not a blocker.
 is_mise_path() {
 	case "$1" in
@@ -126,7 +126,7 @@ else
 	emit "git" "missing" "required"
 fi
 
-# --- mise (always required — the gateway to every other runtime) ---
+# --- mise (always required - the gateway to every other runtime) ---
 mise_present=false
 if have mise; then
 	mise_present=true
@@ -170,7 +170,7 @@ runtime() {
 	if have "$tool"; then
 		resolved="$(command -v "$tool" 2>/dev/null)"
 		if $mise_present && [ -n "$resolved" ] && ! is_mise_path "$resolved"; then
-			emit "$tool" "shadowed" "$resolved ($(shadow_src "$resolved")) is masking mise's pinned $tool — run via 'mise exec -- $tool', and source 'mise activate' AFTER your version manager in the rc file"
+			emit "$tool" "shadowed" "$resolved ($(shadow_src "$resolved")) is masking mise's pinned $tool - run via 'mise exec -- $tool', and source 'mise activate' AFTER your version manager in the rc file"
 		else
 			emit "$tool" "ok" "$(ver "$tool")"
 		fi

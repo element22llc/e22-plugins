@@ -1,4 +1,4 @@
-# Recommended next actions — the workflow handoff contract
+# Recommended next actions - the workflow handoff contract
 
 Shared convention for the `## Recommended next actions` block that every major
 workflow skill emits as its **final step**. The block turns the state a
@@ -6,13 +6,13 @@ workflow just observed into a forward-looking, **read-only** recommendation: wha
 a human or agent should do next, and which one action matters most right now.
 
 The goal: each workflow doesn't merely produce artifacts (a spec spine, an audit
-report, an approved intent, a PR) — it reconnects those artifacts to the next
+report, an approved intent, a PR) - it reconnects those artifacts to the next
 action in the lifecycle, so a session that resumes cold, or a human who picks the
 repo up later, is never left guessing.
 
-This file owns the **shared logic** — categories, precedence, output format, and
+This file owns the **shared logic** - categories, precedence, output format, and
 the read-only + locality rules. Each skill owns only its **domain mapping**
-(its own states → actions). A skill references this file; it never restates the
+(its own states -> actions). A skill references this file; it never restates the
 definitions or the precedence.
 
 ---
@@ -24,28 +24,28 @@ Each recommended action falls into exactly one category. The categories separate
 (when must this be resolved relative to production?). Release timing is
 **lifecycle-aware**: an app that is not yet launched, an app already serving
 users, and a defect actively harming a live system are three different
-obligations — so an already-live system never receives a "before production"
+obligations - so an already-live system never receives a "before production"
 instruction that reads as pre-launch.
 
 | Category | Meaning |
 |---|---|
 | **Blocking now** | The current workflow cannot safely complete, publish, merge, or advance until this is resolved. |
-| **Urgent live-system remediation** | A **deployed, live** system is actively exposing data, breaching users, or losing integrity. Highest urgency — it is a safety stop on something already in production, not a release-timing item. |
-| **Human decision required** | Progress depends on an explicit human product, architecture, risk, or release decision — including PR review/approval, PO intent validation, and ratifying a `Proposed` ADR. The agent routes it; it never guesses it. Some of these are **answerable in-session** — ADR ratification and PO intent approval are collected by a three-option prompt in their owning skill (rule `61-gate-prompts`), which is a real command even though the *decision* remains the human's. PR review, merge, deploy, and secret rotation are not promptable and stay command-less. |
-| **Required before initial production** | The system is **not yet launched**; this must be resolved before it first goes to production. *Publishing* a finding is not the requirement — *fixing or explicitly accepting* it is. |
-| **Required before next production release** | The system is **already live**; this must be resolved before the next production release, but does not require emergency remediation now. Again, *fixing or accepting* — not merely filing — is the requirement. |
-| **Recommended** | Valuable follow-up that is neither blocking nor release-mandatory — including backlog bookkeeping (publishing or shaping optional findings). |
+| **Urgent live-system remediation** | A **deployed, live** system is actively exposing data, breaching users, or losing integrity. Highest urgency - it is a safety stop on something already in production, not a release-timing item. |
+| **Human decision required** | Progress depends on an explicit human product, architecture, risk, or release decision - including PR review/approval, PO intent validation, and ratifying a `Proposed` ADR. The agent routes it; it never guesses it. Some of these are **answerable in-session** - ADR ratification and PO intent approval are collected by a three-option prompt in their owning skill (rule `61-gate-prompts`), which is a real command even though the *decision* remains the human's. PR review, merge, deploy, and secret rotation are not promptable and stay command-less. |
+| **Required before initial production** | The system is **not yet launched**; this must be resolved before it first goes to production. *Publishing* a finding is not the requirement - *fixing or explicitly accepting* it is. |
+| **Required before next production release** | The system is **already live**; this must be resolved before the next production release, but does not require emergency remediation now. Again, *fixing or accepting* - not merely filing - is the requirement. |
+| **Recommended** | Valuable follow-up that is neither blocking nor release-mandatory - including backlog bookkeeping (publishing or shaping optional findings). |
 | **Complete** | This workflow has no remaining action in its own lifecycle. May name an *optional* continuation, never a mandatory one. |
 
 **`Complete` means lifecycle integration, not "the skill emitted output."**
-Opening a PR is execution-complete but **not** integrated — that is *not*
+Opening a PR is execution-complete but **not** integrated - that is *not*
 `Complete`; it is a `Human decision required` gate (the PR awaits review). Never
 claim `Complete` while listing an unfinished action that belongs to the same
 lifecycle.
 
 ---
 
-## 2. Precedence — two levels
+## 2. Precedence - two levels
 
 Two precedence orders combine. The **shared safety precedence** is universal and
 always wins; within it, the **skill-local precedence** orders the workflow's own
@@ -53,14 +53,14 @@ states.
 
 ### Shared safety precedence (applies everywhere)
 
-1. immediate security or destructive-risk stop — including **urgent remediation
+1. immediate security or destructive-risk stop - including **urgent remediation
    of a live, deployed system** that is actively exposing data, breaching users,
    or losing integrity (the *Urgent live-system remediation* category), and a
    committed-secret / destructive exposure (a *Blocking now* stop);
 2. failed required gate in the current workflow;
 3. unresolved required human decision in the current workflow;
 4. the current workflow's next lifecycle transition;
-5. downstream release requirement — *Required before next production release*
+5. downstream release requirement - *Required before next production release*
    (already live) or *Required before initial production* (not yet launched);
 6. optional follow-up;
 7. no action required.
@@ -77,21 +77,21 @@ candidates sit at the **same** level, order them by this lexicographic key
 (smaller = higher), so a single navigator pick and a ranked backlog view agree:
 
 ```
-(safetyLevel,             # 1..7 above — STRUCTURAL, dominates everything
+(safetyLevel,             # 1..7 above - STRUCTURAL, dominates everything
  -priorityRank,           # native Priority field: Urgent=3 High=2 Medium=1 Low/unset=0
  -dependencyUnblockCount,  # native blocked-by edges this item unblocks (most first)
  milestoneDueProximity,   # nearer Target date / milestone due first
  lifecycleDepth,          # further along the lifecycle first (finish before start)
- createdAt, issueNumber)  # oldest first, then #N — a deterministic total order
+ createdAt, issueNumber)  # oldest first, then #N - a deterministic total order
 ```
 
 **Epics are not candidates.** A `kind=epic` issue is a rollup container, not
-directly actionable work — like `audit-run`, it is excluded from the candidate set
+directly actionable work - like `audit-run`, it is excluded from the candidate set
 this key ranks. `/steer:next` acts on an epic's child features/tasks, never on the
 epic itself; the epic surfaces only as the grouping those candidates roll up to.
 
 The native **Priority** issue field (`issue_priority`, `ENUMS.md`) is the primary
-tie-break *within* a level — it **cannot** lift an item across the safety levels
+tie-break *within* a level - it **cannot** lift an item across the safety levels
 above (a `Priority: Urgent` backlog item never outranks a level-2 gate or a level-3
 review). Security / blocking-question urgency reaches the top by raising the item's
 **safety level** (and, via escalate-only auto-set, its Priority *floor*), not by
@@ -100,10 +100,10 @@ unavailable, Priority ranks as unset (0) and the remaining terms order the level
 
 ### Skill-local precedence
 
-Each skill orders only its own states (e.g. for `/steer:adopt`: secret exposure →
-incomplete artifacts → PO/ADR decisions → adoption PR → publish → shape → begin
-work → normal flow). Arbitration across *unrelated* workspace state is **out of
-scope** for any single skill — that belongs to `/steer:next`, the cross-workflow
+Each skill orders only its own states (e.g. for `/steer:adopt`: secret exposure ->
+incomplete artifacts -> PO/ADR decisions -> adoption PR -> publish -> shape -> begin
+work -> normal flow). Arbitration across *unrelated* workspace state is **out of
+scope** for any single skill - that belongs to `/steer:next`, the cross-workflow
 navigator that reconstructs the whole workspace and arbitrates one action across
 all workflows using these same categories and this same shared precedence.
 
@@ -115,23 +115,23 @@ Recommendations are **inferred from state the workflow actually observed**, neve
 hardcoded as "always run X next." Reuse the existing state vocabulary rather
 than inventing a parallel one:
 
-- open-question `impact: blocking | non-blocking` and `required_before:` →
+- open-question `impact: blocking | non-blocking` and `required_before:` ->
   separates **Blocking now** / **Human decision required** from the
   release-timing categories;
-- feature `Status: draft | approved | live` — and this
+- feature `Status: draft | approved | live` - and this
   status (plus repo deploy state) is what **picks which release category
   applies**: a system not yet in production (`draft`/`approved`, no live
-  deployment) → **Required before initial production**; one already
-  `live`/deployed → **Required before next production release**, escalating to
+  deployment) -> **Required before initial production**; one already
+  `live`/deployed -> **Required before next production release**, escalating to
   **Urgent live-system remediation** when the live system is actively exposing
   data, breaching users, or losing integrity *now*;
-- issue lifecycle states (`inbox … ready-for-dev … in-progress … validate …
+- issue lifecycle states (`inbox ... ready-for-dev ... in-progress ... validate ...
   done · cancelled`);
 - ADR `Proposed | Accepted | Superseded | Deprecated` (a `Proposed` ADR is a
   **Human decision required**).
 
 If the relevant state is genuinely empty, the honest recommendation is
-`No action is currently required.` — do not manufacture busywork.
+`No action is currently required.` - do not manufacture busywork.
 
 **A skill's domain table has to keep that outcome reachable.** Every
 `Recommended` row names state the workflow observed as *unfinished*. A row that
@@ -139,7 +139,7 @@ is *also* satisfied by the clean, nothing-to-do state makes `Complete`
 structurally unreachable: `Recommended` sits at level 6 and `Complete` at level
 7, so the optional follow-up wins the precedence every time and the block ends
 up prescribing work the body just reported wasn't needed. The usual form is a
-row that re-runs a read-only check over state this run never touched — condition
+row that re-runs a read-only check over state this run never touched - condition
 such a row on the run having actually written something, and let the no-op path
 fall through to `Complete`.
 
@@ -154,10 +154,10 @@ happened to observe during execution (e.g. a committed secret), but it does
 workspace reconstruction belongs to `/steer:next`.
 
 - `/steer:spec customer-export` evaluates that feature's intent, questions, contract,
-  tracker state, and relevant ADRs — not every other feature's open questions.
+  tracker state, and relevant ADRs - not every other feature's open questions.
 - `/steer:work #123` evaluates issue #123, its branch, PR, criteria, validation, and
   any blocker it directly hit.
-- `/steer:adopt` and `/steer:audit` may evaluate the **whole repository** — repo-wide
+- `/steer:adopt` and `/steer:audit` may evaluate the **whole repository** - repo-wide
   discovery is their explicit purpose.
 
 This keeps handoffs fast, predictable, and explainable, and stops each skill from
@@ -170,16 +170,16 @@ silently becoming a partial `/steer:next`.
 Emit this block, in this order, as the workflow's final output. Omit any category
 section that is empty.
 
-**The heading names the skill that produced the block** — `## Recommended next
-actions — /steer:<skill>`, with the mode where the skill has one
+**The heading names the skill that produced the block** - `## Recommended next
+actions - /steer:<skill>`, with the mode where the skill has one
 (`/steer:audit code`). This is the only place a finished skill names itself, and
 it is deliberate: the body already named the skills that come *next*, so without
 the attribution the reader cannot tell what just ran, and a misroute is not
-reportable. It is one heading suffix, not a status line — do not expand it into a
+reportable. It is one heading suffix, not a status line - do not expand it into a
 summary of what the skill did.
 
 ```markdown
-## Recommended next actions — /steer:<skill>
+## Recommended next actions - /steer:<skill>
 
 ### Blocking now
 [Only actions preventing the current workflow from safely advancing.]
@@ -191,7 +191,7 @@ summary of what the skill did.
 [Explicit product, architecture, risk, or release decisions.]
 
 ### Required before initial production
-[Pre-launch release obligations — system not yet in production.]
+[Pre-launch release obligations - system not yet in production.]
 
 ### Required before next production release
 [Release obligations on an already-live system; do not block the current workflow.]
@@ -207,7 +207,7 @@ summary of what the skill did.
 Suggested command: `/steer:...`
 ```
 
-Omit every category section that is empty — a typical block shows only one or two
+Omit every category section that is empty - a typical block shows only one or two
 of these. The two release-timing sections are mutually exclusive for a given
 system (it is either pre-launch or live), so at most one appears.
 
@@ -217,7 +217,7 @@ One line per item, no explanatory prose under a heading, and in the common case
 the whole block is four lines:
 
 ```markdown
-## Recommended next actions — /steer:work
+## Recommended next actions - /steer:work
 
 ### Human decision required
 - PR #42 awaits review; merge is the dev's call.
@@ -236,31 +236,31 @@ Review and merge PR #42. Suggested command: `gh pr checks 42 --watch`
   per action, each a single line naming the action and its object. State the
   body already reported (what was built, what was checked, which gate ran) is
   not repeated here; the reader scrolled past it a moment ago.
-- **`Current recommended action` is the canonical field — an *action*, not a
+- **`Current recommended action` is the canonical field - an *action*, not a
   command.** It names exactly one concrete next step, chosen by precedence (§2),
   or the literal sentence `No action is currently required.`
 - **`Suggested command` is optional.** Include it on its own line *only* when a
   real, applicable plugin (or built-in) command advances the action. Omit it when the
-  next step is human or external — rotating a credential,
+  next step is human or external - rotating a credential,
   a reviewer reviewing a PR, or configuring an external system are **not** commands.
-  (A PO approving an intent *is* promptable and does carry a command — see the
+  (A PO approving an intent *is* promptable and does carry a command - see the
   in-session carve-out above; only an approval from a PO who is **not** in the session
   is command-less.)
   *Actively watching CI to conclusion and fixing a red build, by contrast, is a
-  concrete agent step* — name its command (`gh pr checks --watch`, or the harness
+  concrete agent step* - name its command (`gh pr checks --watch`, or the harness
   `/loop` over `gh pr checks` when detached). Only the **passive** sense of "wait until a human
   merges a green PR" is the non-command human step.
 - **Never force a command.** A `Suggested command` that doesn't actually perform
-  the action (e.g. `/security-review` does not *rotate* a secret) misleads — name
+  the action (e.g. `/security-review` does not *rotate* a secret) misleads - name
   the human action, and offer the command only as the follow-up it genuinely is.
 - **Read-only.** The block is the last thing a skill emits and changes nothing. It
-  does not publish issues, accept ADRs, claim work, push branches, or create PRs —
+  does not publish issues, accept ADRs, claim work, push branches, or create PRs -
   the owning workflow performs those under its own autonomy and gating rules.
   Emitting it is not necessarily the end of the turn, though: rule `00-router`'s
   **bounded auto-continue** then applies, so an unambiguous, non-gated
   `Suggested command` is announced and continued into. A `disallowed-tools`
-  boundary is **turn-scoped**, though — it clears only when the user sends their
-  next message — so a continuation *within the emitting turn* still runs without
+  boundary is **turn-scoped**, though - it clears only when the user sends their
+  next message - so a continuation *within the emitting turn* still runs without
   the tools the emitting skill removed. Where the emitter is one of the read-only
   skills that removes them, continuing into a **writing** skill reaches its first
   writing step and hands over there. A gated step, a command-less human

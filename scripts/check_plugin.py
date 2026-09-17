@@ -16,11 +16,11 @@ the conventions that `claude plugin validate` does not know about:
 
 Scope notes (kept deliberately narrow so the checks stay honest):
 
-- The ``templates/`` subtree is *payload* — content materialized into product
-  repos — so it is allowed to carry placeholders and product-repo-relative
+- The ``templates/`` subtree is *payload* - content materialized into product
+  repos - so it is allowed to carry placeholders and product-repo-relative
   links. Placeholder and link checks therefore skip it (link checks still cover
   ``templates/reference/``, whose cross-links must resolve within the plugin).
-- ``init`` documents the ``[Replace …]`` placeholder vocabulary, so those
+- ``init`` documents the ``[Replace ...]`` placeholder vocabulary, so those
   two files are exempt from the placeholder scan.
 
 Run from the repo root::
@@ -49,17 +49,17 @@ REQUIRED_AGENT_FRONTMATTER = ["name", "description"]
 # Claude Code concatenates `description` + `when_to_use` into the skill listing
 # used for routing and truncates the combined text at this many characters (the
 # documented default `skillListingMaxDescChars`). Past the cap the trailing text
-# is silently dropped — so a paragraph-length description crowds out its own
+# is silently dropped - so a paragraph-length description crowds out its own
 # `when_to_use` trigger phrases. Keep descriptions to purpose + primary trigger.
 SKILL_LISTING_CHAR_CAP = 1536
 # Frontmatter fields a plugin-scoped subagent silently ignores (Claude Code drops
-# them for security). Authoring one is a bug — fail loudly instead.
+# them for security). Authoring one is a bug - fail loudly instead.
 FORBIDDEN_AGENT_FRONTMATTER = ["hooks", "mcpServers", "permissionMode"]
 
 # Dirs (relative to PLUGIN_ROOT) whose authored markdown must be placeholder-free.
 # templates/ is excluded: it is meant to be instantiated and legitimately holds
-# placeholders like [Replace …] and [Product Name]. (The legacy commands/ dir was
-# removed — skills are namespaced; see check_standards.py.)
+# placeholders like [Replace ...] and [Product Name]. (The legacy commands/ dir was
+# removed - skills are namespaced; see check_standards.py.)
 PLACEHOLDER_SCAN_DIRS = ["skills", "rules", "agents"]
 
 # Files (relative to PLUGIN_ROOT) exempt from the placeholder scan because they
@@ -70,7 +70,7 @@ PLACEHOLDER_ALLOWLIST = {
 
 # Dirs (relative to PLUGIN_ROOT) whose relative markdown links must resolve.
 # templates/scaffold and templates/spec describe the *product* repo layout
-# (./spec/vision.md, ../apps/README.md, …) and are intentionally not checked.
+# (./spec/vision.md, ../apps/README.md, ...) and are intentionally not checked.
 LINK_SCAN_DIRS = ["skills", "rules", "templates/reference"]
 
 # Optional: client names that must never appear when --client-agnostic is set.
@@ -124,7 +124,7 @@ def check_plugin_json(root: Path, errors: list[str]) -> None:
 def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
     """The Copilot manifests must carry the same version as the plugin.
 
-    steer is published to two marketplaces from one source of truth — the Claude
+    steer is published to two marketplaces from one source of truth - the Claude
     ``.claude-plugin/plugin.json`` ``version`` (the Claude ``marketplace.json``
     carries no per-plugin version). The Copilot CLI manifests
     (``.github/plugin/plugin.json`` under the plugin root, and the repo-root
@@ -149,13 +149,13 @@ def check_copilot_version_sync(root: Path, errors: list[str]) -> None:
             if version != src_version:
                 errors.append(
                     f"{copilot_plugin}: version '{version}' != plugin version "
-                    f"'{src_version}' (Copilot manifest drifted — keep them in sync at release)"
+                    f"'{src_version}' (Copilot manifest drifted - keep them in sync at release)"
                 )
         except json.JSONDecodeError as exc:
             errors.append(f"{copilot_plugin}: invalid JSON ({exc})")
 
     # Copilot marketplace manifest (lives at the repo root, two levels above the
-    # plugin root — absent in unit tests with a temp root, in which case skip).
+    # plugin root - absent in unit tests with a temp root, in which case skip).
     copilot_marketplace = root.parent.parent / ".github" / "plugin" / "marketplace.json"
     if copilot_marketplace.is_file():
         try:
@@ -178,7 +178,7 @@ def _check_comment_truncation(path: Path, text: str, errors: list[str]) -> None:
 
     In an unquoted YAML scalar a ` #` begins a comment, so everything after it is
     discarded with no parse error. `work`'s `when_to_use` shipped this way for
-    several releases — `("work on #123"` cut the value at 75 of 546 chars,
+    several releases - `("work on #123"` cut the value at 75 of 546 chars,
     dropping every `--reviewed`/`--hotfix` trigger phrase from the routing
     surface, and skewing the listing ratchet that measures the parsed value.
 
@@ -216,22 +216,22 @@ def check_migration_versions(root: Path, errors: list[str]) -> None:
     Ledger entries are keyed by the plugin version that introduced them, and
     ``/steer:sync`` skips every entry at or below a repo's ``spec/.version``
     stamp. But an entry lands in an *implementation* PR, which merges before the
-    release that names it — so the introducing version is not knowable when the
+    release that names it - so the introducing version is not knowable when the
     entry is authored, and an author who guesses gets it wrong whenever the
     release turns out to be a major (or a patch, or one release later than
     assumed).
 
     A guess that lands *below* the version the entry actually shipped in is read
     as "at or below the stamp" by every repo stamped in between, so the migration
-    is **silently skipped** and never runs — no error, no transform, no signal.
+    is **silently skipped** and never runs - no error, no transform, no signal.
     That is the failure this check exists to make impossible.
 
     The rule is therefore: a ledger heading may name any version at or below the
     current ``plugin.json`` version (a real, released entry), or the literal
     ``[Unreleased]`` (the authoring state, which the release PR renames). A
     heading naming a version *above* the current one is always a guess about a
-    release that has not happened. Non-semver headings — ``[Unreleased]`` and the
-    ``vX.Y.Z`` placeholder in the file's own entry template — do not parse as
+    release that has not happened. Non-semver headings - ``[Unreleased]`` and the
+    ``vX.Y.Z`` placeholder in the file's own entry template - do not parse as
     versions and are ignored.
     """
     ledger = root / "templates" / "reference" / "MIGRATIONS.md"
@@ -252,7 +252,10 @@ def check_migration_versions(root: Path, errors: list[str]) -> None:
     for lineno, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), 1):
         if not line.startswith("### "):
             continue
-        head = line[4:].split("—")[0].strip().rstrip(":").strip()
+        # Split on a SPACED hyphen, not a bare one: the separator used to be an em
+        # dash, which could not occur inside a version key. A bare "-" can (and does)
+        # occur inside the prose that follows, so only " - " reliably ends the key.
+        head = line[4:].split(" - ")[0].strip().rstrip(":").strip()
         if not head.startswith("v"):
             continue  # `[Unreleased]` and prose headings carry no version key.
         entry = _semver(head[1:])
@@ -261,10 +264,10 @@ def check_migration_versions(root: Path, errors: list[str]) -> None:
         if entry > current:
             errors.append(
                 f"{ledger}:{lineno}: migration entry keyed 'v{head[1:]}' is ahead of the "
-                f"current plugin version {current_raw} — a guessed next version. An entry "
+                f"current plugin version {current_raw} - a guessed next version. An entry "
                 f"keyed below the release it actually ships in is silently SKIPPED by every "
                 f"repo stamped in between, so the migration never runs. Author it as "
-                f"'### [Unreleased] — <what>'; the release PR renames the heading."
+                f"'### [Unreleased] - <what>'; the release PR renames the heading."
             )
 
 
@@ -290,7 +293,7 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
         skill_text = skill_md.read_text(encoding="utf-8")
         fm, err = parse_frontmatter(skill_text)
         # Narrow on `fm`, not on `err`: they are correlated (err is set exactly
-        # when fm is None), but only this form tells a type checker so — and the
+        # when fm is None), but only this form tells a type checker so - and the
         # alternative is an unchecked `.get` on a possible None, which is how a
         # gate script crashes on the one malformed SKILL.md it exists to catch.
         if fm is None:
@@ -309,7 +312,7 @@ def check_skills(root: Path, errors: list[str], require_when_to_use: bool) -> No
         if combined > SKILL_LISTING_CHAR_CAP:
             errors.append(
                 f"{skill_md}: description + when_to_use is {combined} chars, over the "
-                f"{SKILL_LISTING_CHAR_CAP}-char skill-listing cap — Claude Code "
+                f"{SKILL_LISTING_CHAR_CAP}-char skill-listing cap - Claude Code "
                 f"truncates the excess and drops trigger text. Trim the description to "
                 f"purpose + primary trigger; keep protocol detail in the body."
             )
@@ -334,7 +337,7 @@ def check_agents(root: Path, errors: list[str]) -> None:
     The directory is optional. Each ``*.md`` must carry ``name`` + ``description``,
     have a ``name`` that matches its filename and is unique, and must not declare a
     frontmatter field that plugin subagents ignore (``hooks``/``mcpServers``/
-    ``permissionMode``) — those would be silently dropped at load time.
+    ``permissionMode``) - those would be silently dropped at load time.
     """
     agents_dir = root / "agents"
     if not agents_dir.is_dir():
@@ -342,7 +345,7 @@ def check_agents(root: Path, errors: list[str]) -> None:
     seen_names: dict[str, Path] = {}
     for agent_md in _iter_markdown(agents_dir):
         fm, err = parse_frontmatter(agent_md.read_text(encoding="utf-8"))
-        if fm is None:  # correlated with err — see check_skills
+        if fm is None:  # correlated with err - see check_skills
             errors.append(f"{agent_md}: {err}")
             continue
         for key in REQUIRED_AGENT_FRONTMATTER:
@@ -352,7 +355,7 @@ def check_agents(root: Path, errors: list[str]) -> None:
         for key in FORBIDDEN_AGENT_FRONTMATTER:
             if key in fm:
                 errors.append(
-                    f"{agent_md}: frontmatter '{key}' is ignored for plugin subagents — remove it"
+                    f"{agent_md}: frontmatter '{key}' is ignored for plugin subagents - remove it"
                 )
         name = fm.get("name")
         if isinstance(name, str) and name.strip():
@@ -384,10 +387,10 @@ def check_placeholders(root: Path, errors: list[str]) -> None:
 def _is_external_link(target: str) -> bool:
     target = target.strip()
     if not target or target.startswith("#"):
-        return True  # pure anchor — nothing to resolve on disk
+        return True  # pure anchor - nothing to resolve on disk
     if "://" in target or target.startswith(("mailto:", "tel:")):
         return True
-    # Runtime-resolved variable (e.g. ${CLAUDE_PLUGIN_ROOT}) — nothing to resolve.
+    # Runtime-resolved variable (e.g. ${CLAUDE_PLUGIN_ROOT}) - nothing to resolve.
     return "${" in target or "{{" in target
 
 

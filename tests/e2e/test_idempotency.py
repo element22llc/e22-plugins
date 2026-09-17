@@ -1,6 +1,6 @@
 """End-to-end: re-run / lifecycle safety.
 
-The steer skills are lifecycle-aware — re-running one, or running ``/steer:sync``
+The steer skills are lifecycle-aware - re-running one, or running ``/steer:sync``
 after a bootstrap, must never clobber user content or duplicate managed blocks.
 That class of bug is the hardest to catch by eye, so we pin it: run a skill,
 commit the result, run again, and assert the repo is byte-for-byte unchanged.
@@ -41,7 +41,7 @@ def test_init_is_rerun_safe(seed_repo):
 
     second = run_skill(seed_repo, INIT)
     summarize_run("/steer:init (2nd)", second)
-    # The re-run may legitimately refuse (non-zero exit) — what matters is that it
+    # The re-run may legitimately refuse (non-zero exit) - what matters is that it
     # changed nothing. So we assert on repo state, not on the second run's status.
     with explain_on_failure(seed_repo, second):
         gitutil.assert_unchanged(seed_repo, baseline)

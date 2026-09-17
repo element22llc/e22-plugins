@@ -1,7 +1,7 @@
 """Structural assertions over a repo a steer skill has just produced.
 
 Deliberately checks *invariants* (file presence + grep-able wiring markers), not
-exact prose — LLM output varies. The source of truth for every marker is
+exact prose - LLM output varies. The source of truth for every marker is
 ``plugins/steer/templates/reference/CAPABILITIES.md`` (the ``always`` entries)
 plus the spec-spine file list the ``init``/``adopt`` skills instantiate. When a
 capability's ``Wired-when`` marker changes there, update the matching assert
@@ -42,7 +42,7 @@ SPINE_FILES = (
     # The action history is a DIRECTORY of immutable per-entry files. What init/adopt
     # materialize is its format doc; the entries themselves are date-named, so no
     # single entry filename is assertable here. The legacy single-file
-    # `spec/HISTORY.md` is only ever an artifact of a pre-migration repo — a freshly
+    # `spec/HISTORY.md` is only ever an artifact of a pre-migration repo - a freshly
     # bootstrapped one must not have it.
     "spec/history/README.md",
     "spec/tracker.md",
@@ -65,7 +65,7 @@ def assert_plugin_enabled_local(repo: Path) -> None:
 def assert_toolchain_pin(repo: Path) -> None:
     """capability ``toolchain-pin``: ``mise.toml`` present and the toolchain
     pinned. The scaffold ships no ``mise.lock``; ``init``/``adopt`` create it
-    when they pin, so a produced repo must carry a *populated* lock — an empty /
+    when they pin, so a produced repo must carry a *populated* lock - an empty /
     comment-only lock pins nothing and breaks CI's ``--locked`` (issue #159)."""
     assert_file(repo, "mise.toml")
     lock = assert_file(repo, "mise.lock")
@@ -74,7 +74,7 @@ def assert_toolchain_pin(repo: Path) -> None:
         line.strip() and not line.lstrip().startswith("#")
         for line in lock.read_text(encoding="utf-8").splitlines()
     )
-    assert has_content, "mise.lock is empty / comment-only — toolchain not pinned"
+    assert has_content, "mise.lock is empty / comment-only - toolchain not pinned"
 
 
 def assert_version_pin_enforcement(repo: Path) -> None:
@@ -102,7 +102,7 @@ def assert_drift_gate(repo: Path) -> None:
 
 def assert_in_ci_plugin_loading(repo: Path) -> None:
     """capability ``in-ci-plugin-loading``: claude.yml loads via plugin_marketplaces
-    (an enabledPlugins block does NOT count — it no-ops in headless CI)."""
+    (an enabledPlugins block does NOT count - it no-ops in headless CI)."""
     assert_contains(repo, ".github/workflows/claude.yml", "plugin_marketplaces")
 
 
@@ -112,7 +112,7 @@ def assert_dependency_automation(repo: Path) -> None:
     assert_file(repo, ".github/workflows/dependabot-auto-merge.yml")
 
 
-# A *chosen* "Status: Accepted" — not the ADR template's enumeration line
+# A *chosen* "Status: Accepted" - not the ADR template's enumeration line
 # "Status: Proposed | Accepted | ...", which starts "Status: Proposed".
 _ACCEPTED_ADR = re.compile(r"Status:\s*Accepted\b")
 

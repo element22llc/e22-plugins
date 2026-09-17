@@ -21,7 +21,7 @@ github-cli = "latest"
 changie = "1.26.0"
 
 # Stack-specific: keep what matches the product, delete the rest (IaC pins live in /infra/mise.toml).
-"npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm — it has no macOS asset
+"npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm - it has no macOS asset
 biome = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
@@ -62,7 +62,7 @@ run = "pnpm --recursive --if-present run db:seed"
 
 # ---------------------------------------------------------------------------
 # Verification tasks. `.github/workflows/ci.yml` runs these same tasks, so the
-# checks cannot drift between your laptop and CI — and a repo whose org is out
+# checks cannot drift between your laptop and CI - and a repo whose org is out
 # of Actions minutes still has the full gate locally.
 #
 # Two tiers: `check` is the fast pre-push/pre-commit gate (no containers, no
@@ -126,13 +126,13 @@ run = "sh scripts/ci-coverage.sh"
 
 [tasks.pre-commit]
 description = "Sub-second commit gate: hygiene + lint. Wired to .git/hooks/pre-commit by /steer:init."
-# The tier that must stay FAST — it runs on every commit. Deliberately no
+# The tier that must stay FAST - it runs on every commit. Deliberately no
 # typecheck (needs an installed workspace) and no tests: those are `check` and
 # `ci`. Its job is to stop a lint/format failure before it costs a CI run, not
 # to be a second `ci`.
 #
 # Install per clone: `mise generate git-pre-commit --task=pre-commit --write`.
-# .git/hooks/ is not versioned, so every clone runs it once — but linked
+# .git/hooks/ is not versioned, so every clone runs it once - but linked
 # worktrees share the primary checkout's hooks, so `claude --worktree` needs
 # nothing extra. `git commit --no-verify` bypasses it; CI does not.
 depends = ["ci:hygiene", "ci:lint"]
@@ -150,7 +150,7 @@ description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on st
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.
 run = "uvx --from 'markitdown[all]' markitdown"
 
-# Opt-in diagram renderers (LikeC4 model, D2 topology) — see /steer:reference architecture-diagrams.
+# Opt-in diagram renderers (LikeC4 model, D2 topology) - see /steer:reference architecture-diagrams.
 # [tasks."diagrams:render"]
 # description = "Generate Mermaid + PNG from the LikeC4 model (spec/design/architecture/)"
 # run = [

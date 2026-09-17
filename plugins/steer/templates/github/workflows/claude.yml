@@ -1,6 +1,6 @@
 # `@claude` mention workflow. Loads the steer plugin so CI Claude runs under the same ruleset
 # as a local session. Prerequisite: the ANTHROPIC_API_KEY secret (README.md#github-actions-secrets).
-# Load steer ONLY via the action's plugin inputs — settings.json enabledPlugins is trust-dialog gated, no-ops in CI.
+# Load steer ONLY via the action's plugin inputs - settings.json enabledPlugins is trust-dialog gated, no-ops in CI.
 name: Claude Code
 
 on:
@@ -30,10 +30,10 @@ jobs:
     steps:
       - name: Checkout repository
         # `persist-credentials: false` would harden this, but claude-code-action carries no
-        # checkout of its own — it commits and pushes in the workspace THIS step created, so
+        # checkout of its own - it commits and pushes in the workspace THIS step created, so
         # dropping the credential can break the action's own delivery. The scope is bounded by
         # the `permissions:` block above. Revisit if the action gains its own token-based clone.
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] — v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] - v7.0.1
         with:
           fetch-depth: 1
 

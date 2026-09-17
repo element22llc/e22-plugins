@@ -1,7 +1,7 @@
 # `/steer:build`
 
-A guided flow for a **non-technical product owner**: idea → interview → approved
-spec → working local app → hand-off for dev review, with Claude driving all
+A guided flow for a **non-technical product owner**: idea -> interview -> approved
+spec -> working local app -> hand-off for dev review, with Claude driving all
 tooling.
 
 !!! info "When to use"
@@ -23,24 +23,24 @@ flowchart LR
 ## The PO happy path
 
 You bring the idea and the judgement; Claude drives every tool. The whole loop is
-five plain-language steps — you never type an issue, spec, or work command:
+five plain-language steps - you never type an issue, spec, or work command:
 
 1. **Describe your idea.** In plain language: *"I want an app that lets the team
    log client visits and see them on a weekly calendar."* Run
-   `/steer:build <your idea>`, or just say it — the always-on router rule sends it
+   `/steer:build <your idea>`, or just say it - the always-on router rule sends it
    to the right skill.
 2. **Claude interviews you and routes the work.** It asks the questions it needs
    (who uses it, what matters, what's out of scope), turns your answers into a
    spec, and pauses for you to **approve** before any code is written. Behind the
    scenes it handles the issue, the spec, and the work items for you.
 3. **Preview it locally.** Claude builds a working local app and tells you how to
-   run it. You click around and react in plain language — *"the date filter
-   should default to this week"* — and it iterates.
+   run it. You click around and react in plain language - *"the date filter
+   should default to this week"* - and it iterates.
 4. **Hand off for review.** When you're happy, the build hands off for developer
-   review. If a developer will review it, that hand-off is a **PR** — a developer
+   review. If a developer will review it, that hand-off is a **PR** - a developer
    is the human at the merge gate. Claude asks which applies at the very start:
    if you're the **sole contributor with no developer yet**, it recommends **solo
-   trunk** instead — the work lives on the main line as you go, with no PR, and
+   trunk** instead - the work lives on the main line as you go, with no PR, and
    developer review comes later, when one joins or you head for real users (Claude
    graduates the repo then).
 5. **Ship.** In PR flow the change merges once the developer approves; in solo
@@ -51,10 +51,10 @@ If a session is interrupted, you don't have to remember anything: as long as a
 `/spec/BUILD-STATUS.md` is present with work still in flight, the SessionStart
 hook steers the next session straight back into `/steer:build`, resuming from
 where you left off. (Running `/steer:build` yourself works too.) The flow stops
-resuming once the build is handed off — every box in its handoff gate checked.
+resuming once the build is handed off - every box in its handoff gate checked.
 
 !!! tip "Work on the spec before building"
-    At any point you can ask to *"work on what this should do first"* — Claude
+    At any point you can ask to *"work on what this should do first"* - Claude
     runs `/steer:spec` to think a feature through, sharpen acceptance criteria,
     and drive open questions down, all **without writing code**. The build flow
     uses the same spec loop internally at the intent stage. See
@@ -62,18 +62,18 @@ resuming once the build is handed off — every box in its handoff gate checked.
 
 !!! warning "\"Prototype\" is not an escape hatch"
     Saying *"just a prototype"*, *"quick"*, or *"throwaway"* relaxes only the
-    **ceremony** — lighter approval-gate formality, no per-feature
+    **ceremony** - lighter approval-gate formality, no per-feature
     issue/branch/PR while the repo has no GitHub tracker, and high-risk choices recorded
-    in `contract.md` as `proposed — dev confirms at review` rather than waved
-    through (only what needs real users or real data — hard deletes, retention
-    jobs, real payments, production auth — is stubbed to the minimum that demos).
+    in `contract.md` as `proposed - dev confirms at review` rather than waved
+    through (only what needs real users or real data - hard deletes, retention
+    jobs, real payments, production auth - is stubbed to the minimum that demos).
     A floor is never relaxed: no deploy or promotion to any environment, no
     `/infra`, no real secrets or third-party accounts.
     Issue-first is scoped to `system: github`, so it does not apply in prototype
     mode at all; once the repo is GitHub-adopted it does, and the issue survives
     for any change above [Tiny](../concepts/sdlc.md#change-size). It does **not** skip
     the plugin's **bundled scaffold**
-    (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, …) or
+    (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, ...) or
     the `/spec` spine. A prototype is still greenfield: it gets the scaffold (so it
     costs nothing to graduate later) and at least a minimal `/spec`. Hand-rolling
     `package.json` / build config / CI from scratch instead of installing the
@@ -82,29 +82,29 @@ resuming once the build is handed off — every box in its handoff gate checked.
 !!! info "Where the gates are"
     Claude commits, pushes, and opens the v0 PR on its own, but **approving the
     spec** and the **dev hand-off**
-    are always human decisions — reviewing/merging the v0 PR in PR flow, or
+    are always human decisions - reviewing/merging the v0 PR in PR flow, or
     graduating off the trunk via `/steer:protect` in solo trunk. See the
     [Authorization model](../concepts/authorization-model.md).
 
 !!! note "For the reviewing developer: prototype-mode vs. governed-mode delivery"
     In **prototype mode** (greenfield, no tracker yet) the hand-off is a single v0
-    PR (a pull request — the package a developer reviews) — **unless** the PO chose
+    PR (a pull request - the package a developer reviews) - **unless** the PO chose
     **solo trunk** at the start (sole contributor, no
     developer): then the build commits straight to the main line with no v0 PR, and
     the hand-off is graduation via [`/steer:protect`](../reference/skills.md) when a
     developer joins. In a repo that is already GitHub-adopted (**governed mode**),
     each approved slice instead ships through [`/steer:work`](work.md) as its own
-    issue → delivery — a PR in pr-flow, or a `Closes #N` trunk commit in
-    [solo-trunk](../concepts/authorization-model.md) — so there is no separate v0
+    issue -> delivery - a PR in pr-flow, or a `Closes #N` trunk commit in
+    [solo-trunk](../concepts/authorization-model.md) - so there is no separate v0
     PR. Either way the productionization brief still applies, and merge plus any
-    deploy or promotion to a real environment stay human-gated — the build itself
+    deploy or promotion to a real environment stay human-gated - the build itself
     never deploys or promotes.
 
 !!! note "For developers: what the dev reviewer inherits"
     A v0 hand-off is not just code. As it scaffolds the stack and builds the UI,
-    `/steer:build` keeps the root project docs current — `ARCHITECTURE.md` (the
+    `/steer:build` keeps the root project docs current - `ARCHITECTURE.md` (the
     as-built stack and apps/packages map), `DESIGN.md` (the real visual identity),
-    and `apps/README.md` — and a doc-reconciliation step before the hand-off
+    and `apps/README.md` - and a doc-reconciliation step before the hand-off
     confirms none are left as template stubs. The
     [Living docs](../reference/configuration.md) rule makes this the same in-flight
     upkeep across `/steer:init` and [`/steer:work`](work.md).
@@ -112,17 +112,17 @@ resuming once the build is handed off — every box in its handoff gate checked.
 ## Relationship to other skills
 
 - `/steer:build` is the **build** path; [`/steer:spec`](spec.md) is its
-  **no-build counterpart** — spec-only, ends at an approved intent without
+  **no-build counterpart** - spec-only, ends at an approved intent without
   writing code.
 - `/steer:build` is a **bootstrap front door in its own right**. The PO never runs
   [`/steer:init`](../reference/skills.md) directly, so `build` installs the spine
   itself and stamps `spec/.version` once `vision.md`, `users.md`, `glossary.md` and
-  `tracker.md` are in place — that stamp is what makes the repo `managed`. Without
+  `tracker.md` are in place - that stamp is what makes the repo `managed`. Without
   it the spine would be complete while every state check still read the repo as
   `foreign`.
 - A build in progress tracks state in `/spec/BUILD-STATUS.md`, so `/steer:build`
   can resume an interrupted session.
-- Approval still records evidence and the hand-off stays **dev-gated** — Claude
+- Approval still records evidence and the hand-off stays **dev-gated** - Claude
   drives the tooling, but a human reviews before code reaches real users (the v0
   PR in PR flow, or graduation off the trunk in solo trunk). See the
   [Authorization model](../concepts/authorization-model.md).

@@ -33,7 +33,7 @@ Desktop.ini
 #
 # These patterns contain a slash, so git anchors them to the repo root. Nested
 # .claude/ directories exist too (notably plugins/steer/.claude/), so each is
-# also matched with a leading **/ — otherwise a contributor without a matching
+# also matched with a leading **/ - otherwise a contributor without a matching
 # global ignore could commit a per-user settings file into the shipped plugin.
 .claude/settings.local.json
 **/.claude/settings.local.json
@@ -44,13 +44,13 @@ Desktop.ini
 .claude/worktrees/
 **/.claude/worktrees/
 
-# Cowork mount artifacts — Cowork sometimes leaves an empty folder named
+# Cowork mount artifacts - Cowork sometimes leaves an empty folder named
 # after the connected workspace inside the workspace itself. Ignore any
 # top-level "Element 22 *" directory that isn't real content.
 /Element 22 AI collaborative dev workflow/
 
 # ---------------------------------------------------------------------------
-# Other AI / editor tool state — per-developer local config, never committed.
+# Other AI / editor tool state - per-developer local config, never committed.
 # (.claude/ is handled above; the project-level .claude/settings.json there
 # stays committable on purpose.) .codegraph/ also carries its own .gitignore,
 # but ignore the whole dir so its pid/marker files don't surface either.
@@ -60,11 +60,11 @@ Desktop.ini
 .kiro/
 .codegraph/
 .mcp.json
-# …except the plugin's own shipped MCP config, which is a tracked source file.
+# ...except the plugin's own shipped MCP config, which is a tracked source file.
 !plugins/steer/.mcp.json
 
 # ---------------------------------------------------------------------------
-# Node / npm (defensive — no JS today, but harmless)
+# Node / npm (defensive - no JS today, but harmless)
 # ---------------------------------------------------------------------------
 node_modules/
 npm-debug.log*
@@ -74,7 +74,7 @@ yarn-error.log*
 .pnp.*
 
 # ---------------------------------------------------------------------------
-# Python (defensive — in case a plugin ships scripts)
+# Python (defensive - in case a plugin ships scripts)
 # ---------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
@@ -87,7 +87,7 @@ venv/
 .ruff_cache/
 
 # ---------------------------------------------------------------------------
-# Secrets — never commit these
+# Secrets - never commit these
 # ---------------------------------------------------------------------------
 .env
 .env.local
@@ -97,7 +97,7 @@ venv/
 
 # ---------------------------------------------------------------------------
 # Local-only mise config (per-machine dev tools, e.g. node + codegraph MCP).
-# The committed mise.toml/mise.lock pin only what CI needs — see AUTHORING.md.
+# The committed mise.toml/mise.lock pin only what CI needs - see AUTHORING.md.
 # ---------------------------------------------------------------------------
 mise.local.toml
 
@@ -115,17 +115,17 @@ out/
 # the breakage is silent and one-way: every *new* file added to that skill
 # (a factored-out procedure body, a supporting script) is ignored, and the skill
 # ships pointing at a file that never reached the repo. Re-include the directory
-# — a `!` on a path inside it would not work, since git does not descend into an
+# - a `!` on a path inside it would not work, since git does not descend into an
 # excluded directory.
 !plugins/steer/skills/build/
 
 # ---------------------------------------------------------------------------
-# Documentation site build output (`mise run docs:build` → site_dir)
+# Documentation site build output (`mise run docs:build` -> site_dir)
 # ---------------------------------------------------------------------------
 site/
 
 # ---------------------------------------------------------------------------
-# Infrastructure-as-code — local caches and state. Terraform state can carry
+# Infrastructure-as-code - local caches and state. Terraform state can carry
 # secrets, so it is never committed; .terraform.lock.hcl is intentionally NOT
 # ignored (it pins providers and belongs in git).
 # ---------------------------------------------------------------------------

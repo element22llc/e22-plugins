@@ -21,7 +21,7 @@ Blocking now
 
 ## Expected suggested command
 
-`/security-review` — offered only as the follow-up that validates remediation,
+`/security-review` - offered only as the follow-up that validates remediation,
 **not** as the action that rotates the secret.
 
 ## Must not recommend first

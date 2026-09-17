@@ -4,13 +4,13 @@
 steer's gate hooks run on Claude Code from ``plugins/steer/hooks/hooks.json``
 (hard ``deny``) and on the Copilot CLI from
 ``plugins/steer/hooks/copilot-hooks.json`` (soft ``ask``). Copilot deliberately
-ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` →
+ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` ->
 "Gate hooks on Copilot"), reshaped into Copilot's flat manifest schema:
 
 * the ``PreToolUse`` gates that can act as a blocking ``permissionDecision`` are
   ported, plus the ruleset injector ``inject-standards.sh`` as a ``sessionStart``
   hook: Copilot's SessionStart injects ``additionalContext`` from a JSON object
-  on stdout (measured 2026-09-02 — no practical size cap, but the *last* hook
+  on stdout (measured 2026-09-02 - no practical size cap, but the *last* hook
   returning context wins, so it is ported once, not once per Claude part; under
   ``STEER_HOOK_TARGET=copilot`` the script emits the whole ruleset as one JSON
   envelope from part 1 and nothing from any other part). The advisory
@@ -18,8 +18,8 @@ ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` �
   text, which Copilot discards, and for the one side-effecting check
   (``check-worktree-trust.sh``) that would drop the message explaining what
   happened while leaving the trust decision's two human-owned branches mute.
-  Rule ``24-worktrees`` carries that remedy as standards text instead — see
-  ``docs/concepts/copilot-support.md`` → "Known limitations";
+  Rule ``24-worktrees`` carries that remedy as standards text instead - see
+  ``docs/concepts/copilot-support.md`` -> "Known limitations";
 * each shared ``.sh`` is invoked with ``STEER_HOOK_TARGET=copilot`` (so it emits
   Copilot's ``permissionDecision`` / ``additionalContext`` envelope) and made
   **fail-open** (``|| true``, since Copilot's ``preToolUse`` is fail-*closed*);
@@ -27,22 +27,22 @@ ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` �
   ``{type, matcher, bash, timeoutSec}``, and some matchers are simplified. The
   event key is mapped through ``_COPILOT_EVENT``: the tool gates keep Claude's
   PascalCase ``PreToolUse`` (the Copilot CLI applies Claude matcher semantics to
-  it), but the injector is registered under the camelCase ``sessionStart`` — the
+  it), but the injector is registered under the camelCase ``sessionStart`` - the
   CLI honours a top-level ``additionalContext`` only there (measured: the same
-  object under PascalCase ``SessionStart`` runs but is dropped) — and a
+  object under PascalCase ``SessionStart`` runs but is dropped) - and a
   SessionStart entry carries no matcher, which Copilot's ``sessionStart`` lacks.
 
 Which hooks port, and any matcher override, is declared in ``COPILOT_HOOKS``
-below — the hook analog of ``gen_copilot_agents.py``'s ``_TOOL_MAP``. Everything
+below - the hook analog of ``gen_copilot_agents.py``'s ``_TOOL_MAP``. Everything
 else (the command path, the timeout) is pulled from ``hooks.json`` so the two
 sides cannot drift. The output is **strict JSON** (no comments): the Copilot CLI
-hook parser is not documented to accept JSONC, so — unlike the VS Code
-``mcp.json`` mirror — this file carries no header comment.
+hook parser is not documented to accept JSONC, so - unlike the VS Code
+``mcp.json`` mirror - this file carries no header comment.
 
 Copilot Chat in VS Code does NOT read this manifest: it detects steer as a
 Claude-format plugin and runs ``hooks/hooks.json`` directly, so the VS Code half
 of the delivery lives in ``inject-standards.sh``'s host detection
-(``lib/json.sh`` → ``steer_hook_host``), not here.
+(``lib/json.sh`` -> ``steer_hook_host``), not here.
 
 ``check_copilot_hooks.py`` fails the build if the committed manifest drifts.
 Run from the repo root::
@@ -67,7 +67,7 @@ _SCRIPT_RE = re.compile(r"hooks/([a-z0-9-]+\.sh)")
 
 # (event, script basename, matcher override) triples steer ports to Copilot, in
 # the order they should appear in the manifest. ``matcher=None`` keeps the Claude
-# matcher; a string overrides it (Copilot's tool-matcher grammar differs — e.g.
+# matcher; a string overrides it (Copilot's tool-matcher grammar differs - e.g.
 # Claude gates Bash *and* issue MCP tools, Copilot just ``Bash``).
 COPILOT_HOOKS: list[tuple[str, str, str | None]] = [
     ("SessionStart", "inject-standards.sh", None),
@@ -76,7 +76,7 @@ COPILOT_HOOKS: list[tuple[str, str, str | None]] = [
     ("PreToolUse", "check-bash-actions.sh", "Bash"),
 ]
 
-# Claude event name → the key it is registered under in the Copilot manifest.
+# Claude event name -> the key it is registered under in the Copilot manifest.
 # PascalCase ``PreToolUse`` keeps Claude's matcher grammar on the Copilot CLI;
 # the injector must sit under camelCase ``sessionStart`` for its top-level
 # ``additionalContext`` to be honoured (see the module docstring).
@@ -89,7 +89,7 @@ _COPILOT_EVENT: dict[str, str] = {
 # once per session, unconditionally), so the Claude matcher is not carried over.
 _MATCHERLESS_EVENTS = frozenset({"SessionStart"})
 
-# ``inject-standards.sh <k> <N>`` — the Claude side registers the injector once
+# ``inject-standards.sh <k> <N>`` - the Claude side registers the injector once
 # per part. Under STEER_HOOK_TARGET=copilot the script ignores the partition
 # (part 1 emits everything, the rest stay silent), so the port strips the part
 # arguments rather than ship a misleading ``1 9``.
@@ -98,8 +98,8 @@ _PART_ARGS_RE = re.compile(r'(inject-standards\.sh")\s+\d+\s+\d+\s*$')
 
 def _find_claude_hook(data: dict, event: str, script: str) -> tuple[str, str, int | None]:
     """Return (matcher, command, timeout) for the ``script`` under ``event`` in
-    hooks.json. Raises ``KeyError`` if the pairing is not wired on the Claude side
-    — a signal the ``COPILOT_HOOKS`` selection references a hook that no longer
+    hooks.json. Raises ``KeyError`` if the pairing is not wired on the Claude side -
+    a signal the ``COPILOT_HOOKS`` selection references a hook that no longer
     exists (the generator fails loudly rather than emit a dead reference)."""
     for entry in data.get("hooks", {}).get(event, []):
         for hook in entry.get("hooks", []):
@@ -120,17 +120,17 @@ def render(src: Path = HOOKS_JSON) -> str:
             command = _PART_ARGS_RE.sub(r"\1", command)
         # The command path is built from ${CLAUDE_PLUGIN_ROOT}, so if the Copilot
         # CLI does not export that Claude-named variable the path collapses to
-        # `/hooks/<script>` and `sh` fails before the script runs — which a bare
+        # `/hooks/<script>` and `sh` fails before the script runs - which a bare
         # `|| true` then converts into a clean exit 0 with no permissionDecision.
         # The gate would be absent and *nothing would say so*: these two are the
         # only enforcement Copilot has. An in-script fallback cannot help (the
         # script is never reached), so guard on the resolved path instead and
-        # report the skip on stderr. Still fail-open — a hook must never break a
-        # session — but now diagnosable rather than invisible.
+        # report the skip on stderr. Still fail-open - a hook must never break a
+        # session - but now diagnosable rather than invisible.
         guarded = (
             f'if [ -f "${{CLAUDE_PLUGIN_ROOT}}/hooks/{script}" ]; '
             f"then STEER_HOOK_TARGET=copilot {command} || true; "
-            f'else echo "steer: CLAUDE_PLUGIN_ROOT unresolved — {script} gate skipped" >&2; fi'
+            f'else echo "steer: CLAUDE_PLUGIN_ROOT unresolved - {script} gate skipped" >&2; fi'
         )
         hook: dict[str, Any] = {"type": "command"}
         if event not in _MATCHERLESS_EVENTS:

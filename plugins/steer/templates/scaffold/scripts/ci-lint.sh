@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-# steer — lint + format check for every detected stack. Invoked by `mise run ci:lint`.
+# steer - lint + format check for every detected stack. Invoked by `mise run ci:lint`.
 set -eu
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
 # a consumer repo lints these from its root and has no .shellcheckrc to lean on.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=ci-lib.sh

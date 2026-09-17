@@ -6,7 +6,7 @@
 <!-- steer:managed:start -->
 ## Problem
 
-[The defect in one or two sentences — the conceptual fault, not the stack trace.]
+[The defect in one or two sentences - the conceptual fault, not the stack trace.]
 
 ## Observed behavior
 
@@ -22,7 +22,7 @@
 
 ## Evidence
 
-- [`path/to/file.ts:42`](REPO_BLOB_BASE/path/to/file.ts#L42) — [logs, screenshots, failing assertion; observed detail.]
+- [`path/to/file.ts:42`](REPO_BLOB_BASE/path/to/file.ts#L42) - [logs, screenshots, failing assertion; observed detail.]
 
 ## Acceptance criteria
 
@@ -40,14 +40,14 @@
 
 ## Related issues
 
-- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+- #N - [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
-  are no related issues — never leave an empty stub.]
+  are no related issues - never leave an empty stub.]
 
 ## Delivery
 
 [Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
-markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+markers as a clickable line - maintained by `/steer:tracker-sync link-pr` and
 `/steer:work`.]
 
 - PR: #NN

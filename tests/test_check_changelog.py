@@ -1,4 +1,4 @@
-"""Tests for scripts/check_changelog.py — the release invariant + behaviour gate.
+"""Tests for scripts/check_changelog.py - the release invariant + behaviour gate.
 
 The release/fragment validators run against hermetic `.changes/` fixtures
 (monkeypatched module paths); the ``--base`` behaviour gate runs against real
@@ -355,7 +355,7 @@ def test_behaviour_gate_satisfied_by_a_release_cut(git_repo: Path):
 
 
 def test_behaviour_gate_ignores_a_non_version_file_under_changes(git_repo: Path):
-    """Only a `vX.Y.Z.md` counts as a cut — not any file dropped in `.changes/`."""
+    """Only a `vX.Y.Z.md` counts as a cut - not any file dropped in `.changes/`."""
     _git(git_repo, "checkout", "-q", "-b", "feat/x")
     (git_repo / "plugins/steer/skills/demo/SKILL.md").write_text("changed\n", encoding="utf-8")
     (git_repo / ".changes/notes.md").write_text("scratch\n", encoding="utf-8")
@@ -414,7 +414,7 @@ def test_main_with_base_flags_missing_entry(git_repo: Path):
 
 
 def test_scripts_parse_on_pre_314_grammar():
-    """Every validation script must stay runnable on stock 3.9–3.13 interpreters
+    """Every validation script must stay runnable on stock 3.9-3.13 interpreters
     (they carry python3 shebangs). feature_version rejects 3.14-only syntax such
     as PEP 758 un-parenthesized `except A, B:` clauses."""
     for script in sorted((REPO_ROOT / "scripts").glob("*.py")):

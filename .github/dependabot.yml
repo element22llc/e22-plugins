@@ -8,12 +8,12 @@
 # Policy mirrors the shipped template: weekly, grouped into one PR per
 # ecosystem, and **majors are left for a human** (they can carry breaking
 # changes and may need a `policy/versions.yml` floor decision). There is no
-# `dependabot-auto-merge.yml` here — unlike a product repo, every bump in the
+# `dependabot-auto-merge.yml` here - unlike a product repo, every bump in the
 # standards repo is reviewed by a maintainer before merge.
 version: 2
 
 updates:
-  # GitHub Actions — this repo's own workflows, pinned by commit SHA with a
+  # GitHub Actions - this repo's own workflows, pinned by commit SHA with a
   # `# vX.Y.Z` comment. Dependabot updates both the SHA and the comment.
   - package-ecosystem: github-actions
     directory: /
@@ -29,7 +29,7 @@ updates:
         update-types:
           - version-update:semver-major
 
-  # Python quality tooling (pyproject.toml + uv.lock) — ruff, pytest,
+  # Python quality tooling (pyproject.toml + uv.lock) - ruff, pytest,
   # pre-commit, and the `docs` group (zensical) that builds the docs site.
   - package-ecosystem: uv
     directory: /

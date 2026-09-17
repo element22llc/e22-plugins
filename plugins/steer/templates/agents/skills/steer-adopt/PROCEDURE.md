@@ -1,14 +1,14 @@
-# adopt — detailed adoption procedure
+# adopt - detailed adoption procedure
 
 Supporting runbook for the `/steer-adopt` skill. `SKILL.md` carries
 the **non-negotiable guardrails** and the **phase map**; this file carries the
 step-by-step detail each phase points to. Read the phase you are on here before
-executing it. The guardrails in `SKILL.md` govern every phase below — when this
+executing it. The guardrails in `SKILL.md` govern every phase below - when this
 runbook and a guardrail seem to conflict, the guardrail wins.
 
-## Phase 1 — Confirm it's an adoption case
+## Phase 1 - Confirm it's an adoption case
 
-**Say what you are doing first** — one line naming the route (`/steer-adopt`,
+**Say what you are doing first** - one line naming the route (`/steer-adopt`,
 whole-repo brownfield adoption) before the survey, per rule `00-router`'s
 "announce, then act". It is the only thing the reader has until Phase 12, and a
 run that is interrupted has at least said where it was going.
@@ -24,30 +24,30 @@ repo profile** from the same survey and **confirm it with the dev**: `infra`
 deployable, not a monorepo), `library` (a publishable package, no app entry), or
 `cli` (a declared `bin`/entrypoint). The profile decides which scaffold Phase 10
 syncs (an `infra` repo gets a tofu/terragrunt/ansible **root** `mise.toml` and
-infra CI, and skips the Node project files — but `node`/`compose.yaml` are still
-core); the universal core is the same for all. Adoption only *observes* — record the profile in the `CLAUDE.md` `## Profile`
+infra CI, and skips the Node project files - but `node`/`compose.yaml` are still
+core); the universal core is the same for all. Adoption only *observes* - record the profile in the `CLAUDE.md` `## Profile`
 marker (`<!-- steer:profile=<profile> -->`) at handoff, default `app`. Work on a
-`feat/adopt` branch — never commit to `main` (commit-autonomy rule). Commit
+`feat/adopt` branch - never commit to `main` (commit-autonomy rule). Commit
 the spine + scaffold as coherent units without asking, then push and open the
-adoption PR without asking — **the merge review waits for the dev** (Commit
+adoption PR without asking - **the merge review waits for the dev** (Commit
 autonomy).
 
-## Phase 2 — Reconcile the adoption checklist (resume safety) — do this FIRST on a resume
+## Phase 2 - Reconcile the adoption checklist (resume safety) - do this FIRST on a resume
 
-**Fresh or resume? Settle that first — it is one existence check.** Look for
+**Fresh or resume? Settle that first - it is one existence check.** Look for
 `/spec/PRODUCTIONIZATION.md` and its pre-v1.22.0 name
 `/spec/PRODUCTION-READINESS.md`. If **neither** is present this is a fresh
 adoption and **the whole phase is a no-op: skip to Phase 3 without opening the
 migrations ledger.** Nothing in the ledger can fire on a repo that has no spine
 to migrate, and the checklist is created from the current bundled template in
-Phase 8. This ordering is deliberate — the ledger is a large read, and paying for
+Phase 8. This ordering is deliberate - the ledger is a large read, and paying for
 it on every fresh adoption is what starved the survey.
 
 Everything below runs **only** when one of those two files exists.
 
 **Apply pending structural migrations before deciding anything else.** The
 non-additive transforms (renames/moves) live in the ledger at
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md` — that ledger is the
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/MIGRATIONS.md` - that ledger is the
 source of truth, not this skill. Walk it by precondition and apply each entry
 that still fires. The one that gates this step is the v1.22.0 rename: if
 `/spec/PRODUCTION-READINESS.md` is the name you found, run
@@ -57,7 +57,7 @@ applies these; here we apply them inline so a resumed adoption isn't blocked.)
 
 `/spec/PRODUCTIONIZATION.md` now exists (either already, or from the `git mv`
 above), you are resuming, and it may have been written by an *older* plugin
-version whose template lacked sections this version adds — **before reading its
+version whose template lacked sections this version adds - **before reading its
 checklist or proposing anything, run this diff** and act on its output (don't
 trust your memory of the template, and don't skip because the file looks
 complete):
@@ -69,129 +69,129 @@ sh "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/
 
 It prints the `##` sections and checklist items the bundled template has that the
 existing file lacks (e.g. a later-added `## Outdated dependencies & bad practices`
-section) — a *candidate* list (it over-reports). **Splice in** only the
+section) - a *candidate* list (it over-reports). **Splice in** only the
 genuinely-new sections, `## Adoption progress` checkboxes, and `## Gap analysis`
 table rows, leaving them **unchecked / empty**; **preserve every value already
-there** — never re-add a placeholder the dev filled in, reorder, or delete a row.
+there** - never re-add a placeholder the dev filled in, reorder, or delete a row.
 Empty output means the file is current as to headings and checklist items; the
 helper never emits **table rows**, so diff the `## Gap analysis` table by eye. Only then continue from the
-unchecked items. Full rules (anchor matching, over-reports handling) — the
+unchecked items. Full rules (anchor matching, over-reports handling) - the
 plugin-wide **Template reconciliation** convention:
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md` §"Template
 reconciliation".
 
-## Phase 3 — Survey the codebase
+## Phase 3 - Survey the codebase
 
 Map the apps and entry points, routes/pages, handlers, data models, external
 services, auth, and the env vars the code actually reads. From the routes and
 screens, list the **user-facing features** the app already has. This list drives
-Phases 5–6.
+Phases 5-6.
 
 **Still repo-only, and report it before moving on.** No plugin template is
 needed to read code, and none is read here. Close the phase with the survey in a
-few lines — what the app is, its surface, and anything that changes the plan
-(dead code, a committed secret, a defect you can point at). Phases 4–5 ask a
+few lines - what the app is, its surface, and anything that changes the plan
+(dead code, a committed secret, a defect you can point at). Phases 4-5 ask a
 human questions that depend on this, so it has to exist as *stated* output, not
 just as something you looked at.
 
-## Phase 4 — Reverse-engineer the product spec
+## Phase 4 - Reverse-engineer the product spec
 
 **In a polyrepo member, skip this phase entirely** (the topology resolved before
-Phase 1 — `spec/PRODUCT.md` present, or the workspace session said so). The
+Phase 1 - `spec/PRODUCT.md` present, or the workspace session said so). The
 product-level spine lives once, in the workspace; reverse-engineering one here is
 the split-brain the topology exists to prevent. Take what the code implies about
 vision/users/glossary to the **workspace** session instead.
 
 Otherwise, interview the dev (or PO) to fill `/spec/vision.md`, `/spec/users.md`,
-`/spec/glossary.md` — **ask, don't invent**. Seed each from what the code
+`/spec/glossary.md` - **ask, don't invent**. Seed each from what the code
 implies, then confirm with a human; unresolved product-level questions go to
-`vision.md` → `## Open questions`, not into guessed prose.
+`vision.md` -> `## Open questions`, not into guessed prose.
 
-## Phase 5 — Extract a spec per feature
+## Phase 5 - Extract a spec per feature
 
 For each feature from Phase 3, instantiate the feature spec (this skill invokes
 `/steer-spec-scaffold <id>` to create `intent.md` + `contract.md`).
 Fill `contract.md` from the **real code** (data model, API surface, behavior
-rules) and mark derived sections `derived from existing code — dev confirms` (the
+rules) and mark derived sections `derived from existing code - dev confirms` (the
 same "confirm at review" convention the contract template already uses). Draft
 `intent.md`'s what/why from the feature's behavior but leave the PO-acceptance
-boxes **unchecked** — the PO has not validated these yet. Ambiguities → that
+boxes **unchecked** - the PO has not validated these yet. Ambiguities -> that
 feature's `## Open questions`.
 
-## Phase 6 — Inventory as-built architectural choices, without inventing decisions
+## Phase 6 - Inventory as-built architectural choices, without inventing decisions
 
 For hard-to-reverse choices already present in the app (database, authentication,
 framework, tenancy, deployment shape, data-access strategy, and the like), record
-in `PRODUCTIONIZATION.md` → **`## Architectural choices requiring decision`**: the
+in `PRODUCTIONIZATION.md` -> **`## Architectural choices requiring decision`**: the
 observed implementation, concrete evidence from the repo, its conformance with
 the standards, the proposed Keep/Refactor/Rewrite/Reject disposition, and whether
 a forward decision is required. **Do not author an ADR just because the
-implementation exists.** The code proves a choice *exists* — it does not prove
+implementation exists.** The code proves a choice *exists* - it does not prove
 *why* it was made, that alternatives were consciously rejected, or that anyone
 authorized it; inferring a rationale and stamping an ADR `Accepted` silently
-converts a standards violation (e.g. raw SQL — flagged in Phase 9) into an
+converts a standards violation (e.g. raw SQL - flagged in Phase 9) into an
 approved exception. **Do not invent historical context, alternatives, rejection
 reasons, deciders, or approval status.** When the dev *explicitly* chooses a
 forward direction during adoption (retain Postgres, replace custom auth with
-Cognito, rebuild the data layer on Drizzle, …), create a **`Proposed`** ADR via
-**`/steer-adr`** — it stays `Proposed` until the named decider
+Cognito, rebuild the data layer on Drizzle, ...), create a **`Proposed`** ADR via
+**`/steer-adr`** - it stays `Proposed` until the named decider
 explicitly accepts it; generic approval of the adoption PR does **not** ratify it.
 
-## Phase 7 — Capture the as-built design
+## Phase 7 - Capture the as-built design
 
 *Skip this phase only if the repo has no UI surface* (backend-only API, library,
-CLI) — note "no UI surface — no `DESIGN.md`" in `PRODUCTIONIZATION.md` and move
+CLI) - note "no UI surface - no `DESIGN.md`" in `PRODUCTIONIZATION.md` and move
 on. Otherwise reverse-engineer the product's visual identity from the **real
-code** into a root `DESIGN.md`, the same way Phase 5 reverse-engineers the spec
-— **a Claude Design export is not required**; the running UI is the source. First
+code** into a root `DESIGN.md`, the same way Phase 5 reverse-engineers the spec -
+**a Claude Design export is not required**; the running UI is the source. First
 pull the format schema into context (`npx @google/design.md spec`) so the file is
-valid — don't guess the token shape. Then read what the code actually defines: the
+valid - don't guess the token shape. Then read what the code actually defines: the
 Tailwind theme config, CSS custom properties / `:root` variables, the global
 stylesheet, fonts loaded, and the color, spacing, and radius scales **in use**,
 plus component styling that **recurs** (buttons, inputs, cards, tables, nav,
-empty/loading/error states). Apply the `DESIGN.md` **3+ places** rule — only
+empty/loading/error states). Apply the `DESIGN.md` **3+ places** rule - only
 promote a token or component that recurs; one-off, feature-specific styling stays
 in that feature's `intent.md`. Write a valid root `DESIGN.md` in the
 `@google/design.md` format and validate it (`npx @google/design.md lint
-DESIGN.md`). **Same as-built discipline as Phases 4–5:** seed from what the code
+DESIGN.md`). **Same as-built discipline as Phases 4-5:** seed from what the code
 shows, mark derived or uncertain values for the dev to confirm, and route anything
 *not* evidenced in the code (intended brand tone, colors that don't appear
-anywhere) to `## Open questions` — **never invent** visual rules.
+anywhere) to `## Open questions` - **never invent** visual rules.
 
-## Phase 8 — Triage productionization
+## Phase 8 - Triage productionization
 
 Copy `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/productionization.md` to
-`/spec/PRODUCTIONIZATION.md` (only if it doesn't exist yet — on a resume it's
+`/spec/PRODUCTIONIZATION.md` (only if it doesn't exist yet - on a resume it's
 already there and was reconciled against the current template in Phase 2) and fill
-the gap analysis against the standards — tests present? lockfiles committed and
+the gap analysis against the standards - tests present? lockfiles committed and
 pinned? secrets handling? high-risk areas (auth, authorization, migrations,
 deletion, billing, deploy)? CI present? Schema validation at boundaries and no-silenced-errors?
-**data layer — is access through Drizzle/SQLAlchemy (not raw SQL), and is the
+**data layer - is access through Drizzle/SQLAlchemy (not raw SQL), and is the
 schema defined in code and migration-tracked?** layout? **Committed secrets are
 stop-and-rotate** (secrets rule): call them out at the top, tell the dev, and have
-the secret rotated — do not just delete the line.
+the secret rotated - do not just delete the line.
 
-**Propose a disposition for every gap-analysis area** — Keep (production-grade
+**Propose a disposition for every gap-analysis area** - Keep (production-grade
 as-is), Refactor (sound, harden in place), Rewrite (discard the implementation,
 rebuild from the now-extracted spec), or Reject (remove; not in spec, dead, or a
-liability) — with a one-line rationale. You **propose**; the dev **ratifies at PR
+liability) - with a one-line rationale. You **propose**; the dev **ratifies at PR
 review**. Then roll the dispositions into the `## Overall recommendation`: **when
 most areas trend Rewrite/Reject, recommend rebuilding from `/spec` rather than
-hardening in place** — the spec exists now, so a rewrite is a safe, often cheaper
+hardening in place** - the spec exists now, so a rewrite is a safe, often cheaper
 route to production than fixing a pile of issues. A project-level Rewrite or
 Reject is one kind of explicit forward decision (Phase 6): hard-to-reverse and
-cross-cutting → record it as a **`Proposed`** ADR (**`/steer-adr`**,
+cross-cutting -> record it as a **`Proposed`** ADR (**`/steer-adr`**,
 high-risk rule) for the dev to ratify; it stays `Proposed` until they accept, and
 you never force a large restructure silently. This doc is the dev's hardening
 brief and doubles as the resumable adoption checklist (a later session reconciles
 it against the current template per Phase 2, then continues from where it
 stopped).
 
-## Phase 9 — Check dependency freshness and flag bad practices
+## Phase 9 - Check dependency freshness and flag bad practices
 
 A vibe-coded app pins to whatever versions the generating model knew at *its*
-training cutoff — typically a major or two behind, sometimes on a library that's
-since been superseded. **Do not trust your own memory of "latest"** — it has the
+training cutoff - typically a major or two behind, sometimes on a library that's
+since been superseded. **Do not trust your own memory of "latest"** - it has the
 same cutoff problem. Query the registry **live** (`npm view <pkg> version`,
 `uv pip index versions <pkg>`, the current Node LTS) and diff against what the
 manifests pin. Record every dependency that is a major behind or superseded, plus
@@ -199,12 +199,12 @@ any as-built anti-patterns, in the **Outdated dependencies & bad practices**
 section of `PRODUCTIONIZATION.md`. Anti-patterns to flag (vs the `practices`
 rule):
 
-- **Raw SQL of any kind** — `db.execute`, tagged-template SQL, hand-built query
+- **Raw SQL of any kind** - `db.execute`, tagged-template SQL, hand-built query
   strings. The standard is data access through Drizzle/SQLAlchemy only.
-  **Parameterized raw SQL is still a violation** — parameterization clears
+  **Parameterized raw SQL is still a violation** - parameterization clears
   injection, not the raw-SQL-bypasses-the-ORM gap. Never mark it "clean" because
   it's parameterized.
-- **No schema / untracked schema** — the data model isn't defined in code (no
+- **No schema / untracked schema** - the data model isn't defined in code (no
   Drizzle schema or SQLAlchemy models, no migrations directory, schema existing
   only in a live DB). A missing schema is a *flagged gap*, not an absence of
   findings.
@@ -214,137 +214,137 @@ rule):
 Don't write a "verified clean" verdict on any data-layer practice without
 confirming both that access goes through the ORM *and* that the schema is defined
 in code and migration-tracked. The dev owns the upgrade, on a clean branch with
-tests green — propose, don't force, and never bump majors silently in the
+tests green - propose, don't force, and never bump majors silently in the
 adoption branch.
 
-## Phase 10 — Sync the bundled scaffolding
+## Phase 10 - Sync the bundled scaffolding
 
-**This is where the scaffold bundle gets read — not earlier.** Phases 1–9 need
+**This is where the scaffold bundle gets read - not earlier.** Phases 1-9 need
 none of it, and reading it up front is the front-loading the guardrails forbid.
 
 The plugin carries the full repo scaffold at
-`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/scaffold/` — read its `MANIFEST.md` and bring in
+`https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/scaffold/` - read its `MANIFEST.md` and bring in
 the files this repo lacks: `mise.toml` + the standard `[tasks]` (`dev:setup`,
 `docker:up/down`, `db:migrate`, `db:seed`), `compose.yaml`, CI under
 `.github/workflows/`, the PR template (drift-gate + living-docs checklists),
 `.github/copilot-instructions.md` (the generated Copilot standards surface) and
-`.agents/skills/steer-*/**` (the generated cross-tool skill surface —
+`.agents/skills/steer-*/**` (the generated cross-tool skill surface -
 both **overwrite-managed, copy verbatim, never reconcile or hand-edit**; harmless
 if no one uses Copilot), `/configs`, `.env.example`, and `.claude/settings.json` enabling the
 `steer` plugin via the marketplace (dotfiles are stored without their
-leading dot — rename per the MANIFEST map). Also instantiate the living-docs
+leading dot - rename per the MANIFEST map). Also instantiate the living-docs
 artifacts from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/`.
 
 **Wire the commit gate** once `mise.toml` carries the `pre-commit` task: run
 `mise generate git-pre-commit --task=pre-commit --write`. It writes
-`.git/hooks/pre-commit`, which is **not** versioned — so it is per-clone, nothing
+`.git/hooks/pre-commit`, which is **not** versioned - so it is per-clone, nothing
 to commit, and the team's other clones get it from `/steer-sync`. Say that when
 you announce it. Linked worktrees share the primary checkout's hooks, so
 `claude --worktree` needs nothing further. Check the hook directory first
-(`git rev-parse --git-path hooks` — it honours `core.hooksPath` and resolves a
+(`git rev-parse --git-path hooks` - it honours `core.hooksPath` and resolves a
 linked worktree to the primary checkout): if the repo already has a
 `pre-commit` hook (or sets `core.hooksPath`), **report the collision and leave it
-alone** — a repo with its own commit gate is a decision, not a gap.
+alone** - a repo with its own commit gate is a decision, not a gap.
 
 **In a polyrepo member, install `spec/PRODUCT.md` (from
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/spec/product.md`) and skip every product-level
-artifact in this list** — `/spec/tracker.md` (and with it both tracker
+artifact in this list** - `/spec/tracker.md` (and with it both tracker
 bootstraps below), `/spec/app/README.md`, `/spec/history/`. Those live once, in
 the workspace; record the adoption as a workspace `spec/history/` entry, else the PR
 description. The member still gets the rest: `spec/decisions/`, the design home,
 `ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
-non-`spec/` scaffold above. **Not** `spec/sources/` — like `spec/reference/`, that
+non-`spec/` scaffold above. **Not** `spec/sources/` - like `spec/reference/`, that
 one is the workspace's (rule `22-housekeeping`); never create it in a member.
 
 Otherwise: `/spec/tracker.md` (ask
-which tracker the team uses — if GitHub Issues, run
+which tracker the team uses - if GitHub Issues, run
 `/steer-issues bootstrap-labels` to create the
 `source:*`/`needs:*`/`risk:*` taxonomy, then `/steer-tracker-sync bootstrap-fields`
-to verify the native **Priority/Effort/date** issue fields are available — it
+to verify the native **Priority/Effort/date** issue fields are available - it
 reports a capability gap or option mismatch; it never fabricates org config),
 `/spec/app/README.md` (seed the usage/roles sections from what
-Phases 3–5 learned about the app — as-built, dev confirms), `/spec/history/README.md`
-(from `history-readme.md` — the format doc) plus the adoption itself as the
+Phases 3-5 learned about the app - as-built, dev confirms), `/spec/history/README.md`
+(from `history-readme.md` - the format doc) plus the adoption itself as the
 directory's first entry file (from `history-entry.md`), and the design/sources homes
 the MANIFEST maps: `/spec/design/README.md` + `/spec/design/source.md` (the
-design-export home; on a brownfield repo `source.md` usually stays a stub —
+design-export home; on a brownfield repo `source.md` usually stays a stub -
 design provenance lives per feature), `/spec/design/architecture-diagram.md` (the living
-global architecture diagram — seed it from the as-built choices Phase 6
+global architecture diagram - seed it from the as-built choices Phase 6
 inventoried and link it from `ARCHITECTURE.md`), and `/spec/sources/README.md`
 (the versioned home for recurring PO documents, maintained by `/steer-intake`). **Adapt to the existing
-stack** (Python → `uv` task commands; add/remove `compose.yaml` services to match
+stack** (Python -> `uv` task commands; add/remove `compose.yaml` services to match
 what the app needs). **Apply the layered profile overlays** (MANIFEST "Profile
-overlays") for the profile confirmed in Phase 1 — Core (Layer 0) for every
+overlays") for the profile confirmed in Phase 1 - Core (Layer 0) for every
 profile, then compose **additively**:
 - **Node-stack profiles** (`app`/`service`/`library`/`cli`): also bring in
   **Layer 1** `templates/scaffold/profiles/_node/` (`package.json`,
   `pnpm-workspace.yaml`, `biome.json`, `configs/`, `packages/`) and the profile's
-  **Layer 2** dir (`profiles/app/` → `apps/README.md` + `DESIGN.md` +
-  `claude/launch.json` — the Desktop Code-tab preview-server config, copy only if
+  **Layer 2** dir (`profiles/app/` -> `apps/README.md` + `DESIGN.md` +
+  `claude/launch.json` - the Desktop Code-tab preview-server config, copy only if
   the repo has no `.claude/launch.json`, never overwrite;
-  `profiles/service/` → `apps/README.md`; `library`/`cli` add nothing, adapt
+  `profiles/service/` -> `apps/README.md`; `library`/`cli` add nothing, adapt
   `package.json`). A Python-only product skips Layer 1 (use `pyproject.toml`/Ruff).
   After Layer 1 lands, **resolve the root `package.json` `packageManager`
-  placeholder** to the mise-pinned pnpm version (`pnpm@<major.minor.patch>` —
+  placeholder** to the mise-pinned pnpm version (`pnpm@<major.minor.patch>` -
   `mise current pnpm`), exactly as `/steer-init` does, so corepack (e.g. in the
   Docker build) uses the same pnpm that wrote `pnpm-lock.yaml`. (The additive
-  reconcile never injects the placeholder into a pre-existing `package.json` —
+  reconcile never injects the placeholder into a pre-existing `package.json` -
   it reports it as a `~` skip instead; stamp the real value if `packageManager`
   is still absent there.)
 - **Deployable apps** (`app`/`service`): for each `apps/<app>` that deploys as a
   container and has no `Dockerfile`, propose one from the plugin's
-  `templates/docker/` reference (copy-and-adapt to the app's stack — **never
+  `templates/docker/` reference (copy-and-adapt to the app's stack - **never
   clobber** an existing Dockerfile), plus a repo-root `.dockerignore`. CI builds
   `apps/*/Dockerfile` when present; `library`/`cli`/`infra` get none.
 - **`infra`**: install `templates/scaffold/profiles/infra/mise.toml` as the
   **root `mise.toml`** and **skip Layer 1** (no Node project files); its CI
-  auto-detects `*.tf`/Ansible. Core's `compose.yaml`/`worktree-env.sh` still land —
+  auto-detects `*.tf`/Ansible. Core's `compose.yaml`/`worktree-env.sh` still land -
   drop them only if the repo runs no local services.
 
 A **root `mise.toml` must always land** (it clears the scaffold nudge). **Reconcile, don't
-replace** — if the repo already has its
+replace** - if the repo already has its
 own CI, compose, or config, merge into it rather than overwriting, and **never
 clobber working app code**: diff and ask before touching anything that exists. For
-the structured-config files an existing repo most often already owns — the
+the structured-config files an existing repo most often already owns - the
 line-based `.gitignore`, `.gitattributes` and `.worktreeinclude`,
-and the JSON configs (`.claude/settings.json`, `biome.json`) —
+and the JSON configs (`.claude/settings.json`, `biome.json`) -
 reconcile with the additive helper rather than by hand, which never overwrites an
 existing value or line (`check` first, show the delta, then `--apply`):
 `python3 "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/scripts/scaffold_reconcile.py" auto <repo-file> <scaffold-template> [--apply]`. The
-scaffold carries a `DESIGN.md` stub — **do not overwrite the `DESIGN.md` Phase 7
+scaffold carries a `DESIGN.md` stub - **do not overwrite the `DESIGN.md` Phase 7
 already reverse-engineered**; only bring in the stub for a UI repo where Phase 7
 somehow produced nothing. Reverse-engineer the root `ARCHITECTURE.md` the same
 way: fill its stack table, apps/packages map, and cross-cutting concerns from the
-**as-built choices Phase 6 inventoried** (descriptive — *what is*, never inferring
+**as-built choices Phase 6 inventoried** (descriptive - *what is*, never inferring
 ratified decisions; the ADRs stay `Proposed`) plus the actual `package.json` /
 `mise.toml` / `compose.yaml`. **Do not overwrite an `ARCHITECTURE.md` a team
 already populated**; only seed the stub when none exists. Then pin the
-toolchain: run the canonical pin procedure — `/steer-reference conventions` →
-"Toolchain: `latest` in config, pinned in the lockfile" — for each config dir
+toolchain: run the canonical pin procedure - `/steer-reference conventions` ->
+"Toolchain: `latest` in config, pinned in the lockfile" - for each config dir
 (the repo's existing `mise.toml` dirs plus any the scaffold added, e.g.
 `infra/`): create the lock, `mise install`, `mise lock --platform
-linux-x64,macos-arm64` (+ the team's other platforms; `linux-x64` is mandatory —
+linux-x64,macos-arm64` (+ the team's other platforms; `linux-x64` is mandatory -
 CI runs there), verify the `platforms.linux-x64` blocks, and commit the
 populated locks (`mise.lock`, plus `pnpm-lock.yaml` / `uv.lock` once the
 workspace resolves). If the toolchain can't be installed now, commit **no**
-`mise.lock` — never an empty one.
+`mise.lock` - never an empty one.
 
-## Phase 11 — Reconcile layout
+## Phase 11 - Reconcile layout
 
 Relate code to `/apps` + `/packages` only where it's low-risk and clearly worth
 it; otherwise record the deviation in `PRODUCTIONIZATION.md` for the dev to
-decide. **Propose** any large restructure — never force it silently. The dev's PR
+decide. **Propose** any large restructure - never force it silently. The dev's PR
 review is the hard gate.
 
-## Phase 12 — Hand off
+## Phase 12 - Hand off
 
 **Stamp the spine version:** write `/spec/.version` with the current plugin
-version (resolve it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` —
+version (resolve it from `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/.claude-plugin/plugin.json` -
 never from memory), so a later `/steer-sync` knows which structural
 migrations this repo already carries:
 
 ```
-# Spec-spine version — managed by /steer-init, /steer-adopt, /steer-build,
+# Spec-spine version - managed by /steer-init, /steer-adopt, /steer-build,
 # /steer-sync. Do not edit by hand.
 <plugin version>
 ```
@@ -355,27 +355,27 @@ migrations this repo already carries:
 marker.
 
 Commit on `feat/adopt`. `PRODUCTIONIZATION.md` is the dev's productionization
-brief — every gap and as-built risk is listed there. Push the branch and open
-the adoption PR (announce it — Commit autonomy; the merge review is the dev's
+brief - every gap and as-built risk is listed there. Push the branch and open
+the adoption PR (announce it - Commit autonomy; the merge review is the dev's
 gate). Run the end-of-session
 checklist.
 
 - **To make selected gaps actionable** (GitHub tracker), run
-  **`/steer-issues publish-adoption`** — it reconciles chosen gaps
+  **`/steer-issues publish-adoption`** - it reconciles chosen gaps
   into `kind=finding` + `source:adoption` issues (stable `finding-key`, reconcile
   not duplicate). The brief is written here with `> Lifecycle: active-adoption`
   (the resumable state); `publish-adoption` flips it to `published-snapshot`
-  **only once all intended findings are filed** (partial-publication safe — see
+  **only once all intended findings are filed** (partial-publication safe - see
   that mode). After a clean flip the **issue is canonical** for
   ownership/lifecycle/closure; `PRODUCTIONIZATION.md` stays the assessment
   snapshot + evidence, recording the issue ref but not tracking its
   implementation status.
 
-## Phase 13 — Recommend the next action
+## Phase 13 - Recommend the next action
 
 As the final output, emit a `## Recommended next actions` block per the shared
 contract at `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`
-(categories, two-level precedence, output format, read-only + locality rules —
+(categories, two-level precedence, output format, read-only + locality rules -
 adoption is repo-wide *by purpose*, so a whole-repo sweep is in scope here).
 Derive it from the adoption state observed, mapping these states to categories:
 
@@ -383,7 +383,7 @@ Derive it from the adoption state observed, mapping these states to categories:
 |---|---|---|
 | Confirmed committed secret / critical exposure | Blocking now | Rotate & invalidate the value; then `/security-review` |
 | Invalid or incomplete adoption artifacts | Blocking now | Complete/repair them (no command) |
-| Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files — `/steer-spec approve` per feature (offers the gate prompt) |
+| Extracted intents not PO-accepted | Human decision required | PO validates the named `intent.md` files - `/steer-spec approve` per feature (offers the gate prompt) |
 | `Proposed` ADRs awaiting a decision | Human decision required | Review via `/steer-adr` |
 | Adoption PR not yet opened | Blocking now (next transition) | Push the branch and open the adoption PR |
 | Adoption PR open, awaiting review | Human decision required | A reviewer reviews/approves the PR (no command) |
@@ -393,9 +393,9 @@ Derive it from the adoption state observed, mapping these states to categories:
 | Selected findings not published | Recommended | `/steer-issues publish-adoption` |
 | Findings published, not shaped | Recommended | `/steer-issues triage` / `decompose` |
 | `/spec/.version` stale | Recommended | `/steer-sync` |
-| `main` not yet protected on GitHub (GitHub tracker) | Recommended | Establish the PR gate — `/steer-protect` (advisory locally; sets the real server-side wall). **In solo trunk mode this row does not apply** — protection is deferred to graduation, and a recorded waiver (`/steer-protect waive`) means the dev has already decided; don't re-raise it. |
-| Nothing remaining | Complete | Optional: begin feature work — `/steer-spec` |
+| `main` not yet protected on GitHub (GitHub tracker) | Recommended | Establish the PR gate - `/steer-protect` (advisory locally; sets the real server-side wall). **In solo trunk mode this row does not apply** - protection is deferred to graduation, and a recorded waiver (`/steer-protect waive`) means the dev has already decided; don't re-raise it. |
+| Nothing remaining | Complete | Optional: begin feature work - `/steer-spec` |
 
 Pick exactly one `Current recommended action` by precedence; offer a
-`Suggested command` only where a real command applies. The block is read-only —
+`Suggested command` only where a real command applies. The block is read-only -
 it recommends, it does not act.

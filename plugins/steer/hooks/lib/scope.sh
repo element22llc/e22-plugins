@@ -1,5 +1,5 @@
 # shellcheck shell=sh
-# steer hook helper — rule-injection scope predicates.
+# steer hook helper - rule-injection scope predicates.
 #
 # inject-standards.sh injects the always-on ruleset every session. A rule may
 # carry a first-line marker `<!-- steer:inject-when=<token> -->` declaring that
@@ -11,19 +11,19 @@
 # DROP a rule on an unreadable signal or an unrecognized token. Every predicate
 # degrades to "inject" (return 0) when it cannot prove the rule is out of scope.
 
-# steer_tracker_is_github <repo-root> — true when the repo's /spec/tracker.md
+# steer_tracker_is_github <repo-root> - true when the repo's /spec/tracker.md
 # declares `system: github`. Single source of truth for GitHub-tracker
 # detection, shared with the issue-first hooks (check-write-nudges.sh,
 # reconcile-issue-first.sh) and the inject-when scope dispatch below.
 #
-# A polyrepo MEMBER has no local spec/tracker.md — the tracker is product-level
+# A polyrepo MEMBER has no local spec/tracker.md - the tracker is product-level
 # and lives in the workspace by design (templates/reference/POLYREPO.md), which
 # is precisely where all the code sits. Reading the absence as "not GitHub"
 # therefore switched issue-first enforcement OFF in exactly those repos: rule
 # 36-issue-first stopped injecting and check-write-nudges.sh /
 # check-bash-actions.sh / reconcile-issue-first.sh all exited early. So a member
 # resolves the workspace's tracker when spec/PRODUCT.md names a local checkout,
-# and otherwise degrades to "inject" per this file's fail-open contract — a
+# and otherwise degrades to "inject" per this file's fail-open contract - a
 # needless nudge is recoverable, a silently-absent gate is not.
 steer_tracker_is_github() {
 	_root="${1:-.}"
@@ -32,7 +32,7 @@ steer_tracker_is_github() {
 	steer_tracker_file "${_root}"
 	_tracker="${STEER_TRACKER_FILE}"
 	if [ ! -f "${_tracker}" ]; then
-		# Not a member either → genuinely no tracker declared (single-repo case,
+		# Not a member either -> genuinely no tracker declared (single-repo case,
 		# unchanged): the rule is provably out of scope.
 		[ -f "${_root}/spec/PRODUCT.md" ] || return 1
 		_wsr="$(steer_workspace_root "${_root}")" || return 0
@@ -44,12 +44,12 @@ steer_tracker_is_github() {
 	grep -iq '^[[:space:]]*system:[[:space:]]*github\b' "${_tracker}" 2>/dev/null
 }
 
-# steer_workspace_path <repo-root> — prints the OPTIONAL relative path to a local
+# steer_workspace_path <repo-root> - prints the OPTIONAL relative path to a local
 # workspace checkout, read from spec/PRODUCT.md's `workspace.path`; nothing when
 # the file, the key, or the value is absent, or the value is still the unresolved
 # "[...]" placeholder. Scoped to the `workspace:` block so an unrelated `path:`
 # elsewhere in the pointer can never be mistaken for it. No network and no
-# subprocess beyond sed — this file is sourced by every PreToolUse hook.
+# subprocess beyond sed - this file is sourced by every PreToolUse hook.
 steer_workspace_path() {
 	_pm="${1:-.}/spec/PRODUCT.md"
 	[ -f "${_pm}" ] || return 1
@@ -64,10 +64,10 @@ steer_workspace_path() {
 	printf '%s' "${_v}"
 }
 
-# steer_workspace_root <repo-root> — the path to a local workspace checkout this
+# steer_workspace_root <repo-root> - the path to a local workspace checkout this
 # member can actually read the product spine from, or non-zero when there is
 # none. Returning non-zero is not an error: it is the signal to fall back to the
-# GitHub gateway (templates/spec/product.md → "Resolving the spine").
+# GitHub gateway (templates/spec/product.md -> "Resolving the spine").
 #
 # THE RAW `workspace.path` IS NOT ENOUGH, and both gaps were silent:
 #
@@ -76,11 +76,11 @@ steer_workspace_path() {
 #     linked worktree's own root. Without that, the recommended `path: ..` points
 #     at `<member>/.claude/worktrees` from inside a worktree.
 #   - Existence is not workspace-ness. The ladder used to accept any directory
-#     that merely EXISTED at the resolved path — and the path above exists. So the
+#     that merely EXISTED at the resolved path - and the path above exists. So the
 #     member manifest `spec/workspace.yml` must be PRESENT there: that file is
 #     what makes a directory a workspace at all (steer_polyrepo_role, below), and
-#     requiring it turns a silent read of an empty tree — which reports the
-#     product's specs as absent — into a clean gateway fallback.
+#     requiring it turns a silent read of an empty tree - which reports the
+#     product's specs as absent - into a clean gateway fallback.
 #
 # An absolute `workspace.path` is honoured as given; only a relative one is
 # anchored. Subprocess-free beyond the sed in steer_workspace_path.
@@ -95,7 +95,7 @@ steer_workspace_root() {
 	printf '%s' "${_wr_abs}"
 }
 
-# steer_tracker_repo <repo-root> — prints the tracker's declared `repository:`
+# steer_tracker_repo <repo-root> - prints the tracker's declared `repository:`
 # value from spec/tracker.md ("owner/name" for GitHub), or nothing when absent,
 # empty, or still the unresolved "[owner/repository]" placeholder.
 steer_tracker_repo() {
@@ -112,24 +112,24 @@ steer_tracker_repo() {
 	printf '%s' "${_v}"
 }
 
-# NOTE — there is deliberately NO companion helper that derives this repo's own
+# NOTE - there is deliberately NO companion helper that derives this repo's own
 # "owner/name" from the git remote. Deriving it by parsing `git remote get-url`
 # is unreliable in exactly the setups that matter: a `url.<base>.insteadOf`
 # rewrite (corporate proxies, ssh-for-https) makes git report a URL with no
 # github.com host in it at all, and GitHub Enterprise, a remote not named
 # `origin`, and a bare clone each break a host-based parser differently. Every
-# one of those failures is a FALSE NEGATIVE — the parser cannot prove a mismatch,
+# one of those failures is a FALSE NEGATIVE - the parser cannot prove a mismatch,
 # so the caller keeps `Closes #N` and the silent-non-closure bug survives in the
 # environments hardest to debug.
 #
 # The comparison therefore lives in the skills (`/steer:work`,
 # `/steer:tracker-sync`), which resolve the current repo authoritatively via
-# `gh repo view --json nameWithOwner` — correct under rewrites, GHE, and any
-# remote name — and which are already talking to GitHub anyway. Keeping the `gh`
+# `gh repo view --json nameWithOwner` - correct under rewrites, GHE, and any
+# remote name - and which are already talking to GitHub anyway. Keeping the `gh`
 # call out of this file also preserves its contract: sourced by every PreToolUse
 # hook, so no subprocess and no network.
 
-# steer_repo_does_iac <repo-root> — true when the repo does infrastructure-as-code,
+# steer_repo_does_iac <repo-root> - true when the repo does infrastructure-as-code,
 # whether as the whole repo (a root-level Terraform/OpenTofu/Ansible/Pulumi repo,
 # the infra profile) OR as a nested `/infra` dir inside an app monorepo. Broader
 # than the `has-infra` (nested-`/infra`-only) predicate: a pure Ansible repo keeps
@@ -143,25 +143,25 @@ steer_repo_does_iac() {
 	[ -f "${_r}/Pulumi.yaml" ] && return 0
 	[ -d "${_r}/roles" ] && [ -d "${_r}/playbooks" ] && return 0
 	# Root-level Terraform / OpenTofu / Terragrunt files. `find` (not a shell glob)
-	# so detection is identical under POSIX sh and zsh — an unguarded `for _f in
+	# so detection is identical under POSIX sh and zsh - an unguarded `for _f in
 	# *.tf` aborts the caller under zsh's `nomatch`, and a bare `ls *.tf` leaks a
 	# "no matches found" error there.
 	find "${_r}" -maxdepth 1 \( -name '*.tf' -o -name '*.hcl' \) 2>/dev/null | grep -q . && return 0
 	return 1
 }
 
-# steer_polyrepo_role <repo-root> — prints the repo's role in a polyrepo product,
+# steer_polyrepo_role <repo-root> - prints the repo's role in a polyrepo product,
 # or nothing when the product lives in a single repo (the overwhelmingly common
 # case, and the one that must cost zero always-on bytes):
 #
-#   workspace  a `spec/workspace.yml` member manifest — this repo hosts THE
+#   workspace  a `spec/workspace.yml` member manifest - this repo hosts THE
 #              product `/spec` spine and owns no application code.
-#   member     a `spec/PRODUCT.md` pointer — this repo implements part of a
+#   member     a `spec/PRODUCT.md` pointer - this repo implements part of a
 #              product whose spine lives in a sibling workspace repo.
-#   (empty)    neither marker → a single-repo product.
+#   (empty)    neither marker -> a single-repo product.
 #
 # Both markers live under `spec/` on purpose. The manifest is product-level truth
-# — which repos this product is made of — so it belongs with the rest of the
+# - which repos this product is made of - so it belongs with the rest of the
 # spine, not loose at the root where it would be steer's only unnamespaced root
 # file and would sit a rename away from moon's `.moon/workspace.yml`.
 #
@@ -183,17 +183,17 @@ steer_polyrepo_role() {
 	return 1
 }
 
-# steer_has_openspec <repo-root> — true when this repo drives its spec spine with
+# steer_has_openspec <repo-root> - true when this repo drives its spec spine with
 # OpenSpec (Fission-AI) rather than steer's own `spec/features/**` layout.
 #
 # A bare `openspec/` directory is NOT proof, for the same reason spine.sh refuses
 # to read a bare `spec/` as a spine: an empty folder, or an unrelated directory of
 # that name, would swap the whole spec-workflow ruleset to a backend the repo does
-# not actually use. Require a STRUCTURAL marker `openspec init` writes — the
+# not actually use. Require a STRUCTURAL marker `openspec init` writes - the
 # generated project brief, or one of the two working directories.
 #
 # The fail direction matches the has-* predicates beside it rather than this
-# file's inject-everything default: no marker → false → the OpenSpec rule is
+# file's inject-everything default: no marker -> false -> the OpenSpec rule is
 # skipped and steer's native rule 30 governs. That is the safe outcome on an
 # unclassifiable repo, because 30 is the rule that ships today.
 steer_has_openspec() {
@@ -203,13 +203,13 @@ steer_has_openspec() {
 		[ -d "${_r}/openspec/changes" ]
 }
 
-# steer_tracker_file <repo-root> / steer_decisions_dir <repo-root> — where THIS
+# steer_tracker_file <repo-root> / steer_decisions_dir <repo-root> - where THIS
 # repo keeps the two artifacts OpenSpec does not model. On an OpenSpec repo they
 # live under `openspec/steer/`; everywhere else, in the native spine.
 #
 # The `steer/` segment is not decoration. `openspec/` is written by a third-party
-# CLI — `openspec update` regenerates `openspec/AGENTS.md` wholesale and
-# `openspec archive` relocates whole change directories — so steer's durable
+# CLI - `openspec update` regenerates `openspec/AGENTS.md` wholesale and
+# `openspec archive` relocates whole change directories - so steer's durable
 # artifacts sit in a namespaced subtree that upstream will not claim. A flat
 # `openspec/decisions/` would be one OpenSpec release away from a collision.
 #
@@ -219,7 +219,7 @@ steer_has_openspec() {
 #
 # These ASSIGN (STEER_TRACKER_FILE / STEER_DECISIONS_DIR) rather than print. Both
 # are reached from the PreToolUse hot path via steer_tracker_is_github, where a
-# command substitution would fork a subshell on every single tool call — the cost
+# command substitution would fork a subshell on every single tool call - the cost
 # this file's header warns about. Assignment keeps them the one definition of
 # each path without paying for it.
 steer_tracker_file() {
@@ -242,9 +242,9 @@ steer_decisions_dir() {
 	fi
 }
 
-# steer_app_docs_dir <repo-root> — the app guide (how to use/operate the
+# steer_app_docs_dir <repo-root> - the app guide (how to use/operate the
 # product). Living documentation, not a spec artifact, and OpenSpec models it no
-# more than it models the ADR log — so it follows the same rule.
+# more than it models the ADR log - so it follows the same rule.
 #
 # This one is not cosmetic: scripts/scan-capabilities.sh reports the
 # `app-knowledge-docs` capability from this path, and /steer:sync REPAIRS an
@@ -260,7 +260,7 @@ steer_app_docs_dir() {
 	fi
 }
 
-# steer_tracker_rel <repo-root> — the tracker's path RELATIVE to the repo root,
+# steer_tracker_rel <repo-root> - the tracker's path RELATIVE to the repo root,
 # for user-facing text. The nudges name the file they are enforcing; naming a
 # path the repo does not have teaches the reader the wrong location, so the
 # strings interpolate this rather than hard-coding `spec/tracker.md`.
@@ -271,8 +271,8 @@ steer_tracker_rel() {
 	STEER_TRACKER_REL="${STEER_TRACKER_FILE#"${_r}"/}"
 }
 
-# steer_inject_when_one <token> <repo-root> — true / false for a SINGLE
-# inject-when predicate. An unknown token → fail-open (true), so a typo'd marker
+# steer_inject_when_one <token> <repo-root> - true / false for a SINGLE
+# inject-when predicate. An unknown token -> fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
 steer_inject_when_one() {
 	case "$1" in
@@ -282,7 +282,7 @@ steer_inject_when_one() {
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
 	has-openspec) steer_has_openspec "$2" ;;
-	# polyrepo — true in EITHER role (workspace host or member); a single-repo
+	# polyrepo - true in EITHER role (workspace host or member); a single-repo
 	# product matches neither and pays nothing. NOTE: no rule currently carries
 	# `inject-when=polyrepo`, so this arm is not reachable from the inject loop.
 	# That is deliberate, not an oversight: the ruleset is capped on its on-disk
@@ -291,52 +291,52 @@ steer_inject_when_one() {
 	# note) and /steer:reference polyrepo instead. The predicate is kept because
 	# the has-* tokens beside it are evaluated the same way and a future scoped
 	# rule must not have to reintroduce it. Do NOT document a `21-polyrepo` rule
-	# on the strength of this token — there isn't one.
+	# on the strength of this token - there isn't one.
 	polyrepo) steer_polyrepo_role "$2" >/dev/null ;;
 	has-workspace-manifest) [ -f "$2/spec/workspace.yml" ] ;;
 	has-product-pointer) [ -f "$2/spec/PRODUCT.md" ] ;;
-	# code-project — true in 'code' work mode. The knowledge-vs-code decision is
+	# code-project - true in 'code' work mode. The knowledge-vs-code decision is
 	# made ONCE in inject-standards.sh (steer_work_mode) and a knowledge folder
 	# skips EVERY marked rule in the inject loop before this predicate is reached,
-	# so by the time this arm runs we are in code mode → always inject. (The `*)`
+	# so by the time this arm runs we are in code mode -> always inject. (The `*)`
 	# default below would also inject; the explicit arm documents the token.)
 	code-project) return 0 ;;
 	*) return 0 ;;
 	esac
 }
 
-# steer_work_mode <cwd> — prints 'code' or 'knowledge'.
+# steer_work_mode <cwd> - prints 'code' or 'knowledge'.
 #
 # 'knowledge' is emitted ONLY when we are confident this is a non-code
-# knowledge-work folder — the typical Claude Cowork case where a product owner
+# knowledge-work folder - the typical Claude Cowork case where a product owner
 # opens a connected folder of specs/docs that is NOT a git repo. In that mode
 # inject-standards.sh injects only the lean, PO-relevant ruleset (it skips every
 # rule that carries an inject-when marker) and orient-session.sh confirms, in
 # plain language, that standards are active.
 #
 # 'code' is the fail-safe default: a git work tree (here or any ancestor) OR any
-# code/config marker — a manifest/build/IaC file OR a loose SOURCE file (*.py,
-# *.js, …) — within cwd (maxdepth 2) OR any error/doubt → 'code', i.e. the full
+# code/config marker - a manifest/build/IaC file OR a loose SOURCE file (*.py,
+# *.js, ...) - within cwd (maxdepth 2) OR any error/doubt -> 'code', i.e. the full
 # ruleset. Per this file's contract we never silently DROP a rule on an
 # unreadable signal, so every uncertain path resolves to 'code'. The source-file
 # extensions matter because a non-git code folder may carry no manifest at all
-# (loose scripts) — manifest-only detection would mis-classify it as knowledge.
+# (loose scripts) - manifest-only detection would mis-classify it as knowledge.
 # Residual limitation: a non-git code project whose ONLY markers sit deeper than
-# maxdepth 2 still reads as knowledge — open it as a git repo (or add a manifest)
+# maxdepth 2 still reads as knowledge - open it as a git repo (or add a manifest)
 # to get the full ruleset.
 #
 # POSIX sh, no jq. Computed once per session (SessionStart), not on a hot path.
-# `find` (never a shell glob — a bare `*.tf` aborts the caller under zsh nomatch);
+# `find` (never a shell glob - a bare `*.tf` aborts the caller under zsh nomatch);
 # no `-L`, so symlinks are not followed. Note: `spec/` is deliberately NOT a code
-# marker — a knowledge folder is exactly where a /spec spine may live.
+# marker - a knowledge folder is exactly where a /spec spine may live.
 steer_work_mode() {
 	_cwd="${1:-.}"
-	# A git work tree at cwd or above → treat as a code project.
+	# A git work tree at cwd or above -> treat as a code project.
 	steer_repo_root "${_cwd}" >/dev/null 2>&1 && {
 		printf 'code'
 		return 0
 	}
-	# No git. Scan shallowly for code/config markers — manifests, build/IaC files,
+	# No git. Scan shallowly for code/config markers - manifests, build/IaC files,
 	# AND loose source files. Capture find's own exit status (command substitution
 	# propagates it) so a find ERROR fails safe to 'code' rather than being
 	# mistaken for "no markers found".
@@ -366,11 +366,11 @@ steer_work_mode() {
 	printf 'knowledge'
 }
 
-# steer_inject_when_ok <token-expr> <repo-root> — true (inject the rule) / false
+# steer_inject_when_ok <token-expr> <repo-root> - true (inject the rule) / false
 # (skip it) for a rule's inject-when marker. <token-expr> is one predicate, or
 # several joined by `|` for OR: the rule injects when ANY listed predicate holds
 # (e.g. has-iac|has-apps for the deployment rule, which applies to infra and
-# app/service repos alike). Empty root → fail-open (inject), so a missing cwd
+# app/service repos alike). Empty root -> fail-open (inject), so a missing cwd
 # never silently removes a rule.
 steer_inject_when_ok() {
 	_token="$1"

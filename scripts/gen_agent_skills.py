@@ -5,16 +5,16 @@ steer's skills are authored as ``plugins/steer/skills/<name>/SKILL.md`` for
 Claude Code. Since the `Agent Skills <https://agentskills.io>`_ format became an
 open standard, that same ``SKILL.md`` layout is read natively by GitHub Copilot
 (CLI, VS Code, JetBrains, the cloud coding agent and code review), Cursor, Gemini
-CLI and Codex — all of which discover project skills in ``.agents/skills/``.
+CLI and Codex - all of which discover project skills in ``.agents/skills/``.
 
 So the skills no longer need a per-surface *translation*. This script renders one
 **portable copy of the real skill** per skill into
-``plugins/steer/templates/agents/skills/steer-<name>/`` — the committed artifacts
+``plugins/steer/templates/agents/skills/steer-<name>/`` - the committed artifacts
 ``/steer:init`` / ``/steer:adopt`` install into a consumer repo's
 ``.agents/skills/``, and ``/steer:sync`` refreshes. It replaces
 ``gen_copilot_prompts.py``, which rendered lossy *intent capsules* (purpose,
 when-to-use and arguments, then "the fully authored procedure lives in the steer
-plugin" — pointing at a file the reader could not open).
+plugin" - pointing at a file the reader could not open).
 
 Three things have to be rewritten for a body to work outside Claude Code.
 
@@ -26,21 +26,21 @@ copied in alongside ``SKILL.md``, which is exactly the spec's ``references/``/
 **2. Shared-bundle references become URLs into the public plugin repo.** The
 deep reference prose (``templates/reference/*``), spec templates
 (``templates/spec/*``) and the two helper scripts live outside any one skill and
-are shared by many. Vendoring them would put several hundred KB — ``MIGRATIONS.md``
-alone is the largest single file — into every consumer repo, so they are rewritten
+are shared by many. Vendoring them would put several hundred KB - ``MIGRATIONS.md``
+alone is the largest single file - into every consumer repo, so they are rewritten
 to ``blob/main`` URLs on the public marketplace repo and fetched on demand.
 
 .. warning::
 
-   Two known defects in this rewrite are open, not fixed — recorded for consumers
+   Two known defects in this rewrite are open, not fixed - recorded for consumers
    in ``docs/reference/known-limitations.md`` under the cross-tool skill tree.
    (a) ``BLOB_BASE`` points at GitHub's HTML ``blob/`` view, so a fetch returns a
    rendered page rather than file content; ``raw.githubusercontent.com`` is the
    form that returns bytes. (b) The rewrite is applied
    unconditionally, including inside runnable command lines, so the generated tree
-   contains ``sh "https://…"`` invocations that cannot execute on any surface.
-   Fixing (b) is a design question — vendor the few helper scripts, fetch them to a
-   temp file first, or drop those command blocks from the portable copy — so it is
+   contains ``sh "https://..."`` invocations that cannot execute on any surface.
+   Fixing (b) is a design question - vendor the few helper scripts, fetch them to a
+   temp file first, or drop those command blocks from the portable copy - so it is
    deliberately not patched here.
 
 *Why ``main`` and not the released tag:* pinning would rewrite all 26 skills on
@@ -52,18 +52,18 @@ link regardless.
 
 **3. Invocation is renamed.** ``/steer:<skill>`` is Claude Code's plugin
 namespacing. In a ``.agents/skills/steer-<name>/`` tree the slash name is the
-directory name, so cross-references become ``/steer-<skill>`` — the same names
+directory name, so cross-references become ``/steer-<skill>`` - the same names
 the retired VS Code prompt files used, so nothing a teammate types changes.
 
 Frontmatter is narrowed to what travels. ``name`` is prefixed to match the
 directory (the spec requires it); ``when_to_use`` is folded into the body as a
 "When to use" line rather than kept as a non-spec key; and ``allowed-tools`` /
 ``disallowed-tools`` are dropped, because their values are Claude tool syntax
-(``Bash(git status *)``, ``EnterWorktree``) that means nothing to another agent —
+(``Bash(git status *)``, ``EnterWorktree``) that means nothing to another agent -
 carrying them across risks a wrong grant, and per ``AUTHORING.md`` the read-only
 contract those fields express is a **prose invariant** in the body, which does
 travel. ``argument-hint`` and ``user-invocable`` are kept: both are purely
-declarative and VS Code reads them. ``context`` is dropped too — ``fork`` names a
+declarative and VS Code reads them. ``context`` is dropped too - ``fork`` names a
 Claude Code execution mode no other agent implements.
 
 Run from the repo root::
@@ -94,11 +94,11 @@ BLOB_BASE = "https://github.com/element22llc/e22-plugins/blob/main/plugins/steer
 PREFIX = "steer-"
 
 # Frontmatter keys carried into the portable copy, in emission order. Everything
-# else is dropped or folded into the body — see the module docstring.
+# else is dropped or folded into the body - see the module docstring.
 KEEP_KEYS = ("name", "description", "argument-hint", "user-invocable")
 
 BANNER = (
-    "<!-- Generated from the steer plugin's skills/{name}/SKILL.md — do not edit by hand.\n"
+    "<!-- Generated from the steer plugin's skills/{name}/SKILL.md - do not edit by hand.\n"
     "     Refresh with /steer:sync from Claude Code in a managed repo, or\n"
     "     `mise run gen:copilot` in the plugin repo. Authored for Claude Code and\n"
     "     rendered here in the cross-tool Agent Skills format (agentskills.io) that\n"
@@ -112,26 +112,26 @@ BANNER = (
 # lie on this surface, so a skill that was frontmatter-restricted upstream
 # carries the restriction as a standing instruction instead.
 # `context: fork` is dropped (see the module docstring), but the body of a forked
-# skill argues FROM that execution model — "this skill runs forked", "AskUserQuestion
+# skill argues FROM that execution model - "this skill runs forked", "AskUserQuestion
 # is removed from every subagent", "only the final result comes back". On a surface
 # with no fork those premises are false, and one of them forbids a correct action:
 # asking the user IS available there. The tool-pool half is covered by
 # RESTRICTION_NOTE; this covers the execution-model half.
 FORK_NOTE = (
     "> **Not forked on this surface.** In Claude Code this skill runs as a\n"
-    "> conversation fork, and parts of the procedure below reason from that — that it\n"
+    "> conversation fork, and parts of the procedure below reason from that - that it\n"
     "> cannot ask you a question, that only its final result reaches the main\n"
     "> session. No other agent implements that mode: here the skill runs in your\n"
     "> session like any other. Read those passages as background on why the steps are\n"
-    "> shaped this way, not as limits that apply to you — where a step says it cannot\n"
+    "> shaped this way, not as limits that apply to you - where a step says it cannot\n"
     "> ask, you may ask."
 )
 
 RESTRICTION_NOTE = (
-    "> **Read-only on this surface — enforced by instruction, not by tooling.**\n"
+    "> **Read-only on this surface - enforced by instruction, not by tooling.**\n"
     "> In Claude Code this skill runs with `{tools}` removed from the tool pool, but\n"
-    "> only for the turn that invokes it — upstream clears the restriction at the\n"
-    "> user's next message — so even there it is a rule the skill keeps across a\n"
+    "> only for the turn that invokes it - upstream clears the restriction at the\n"
+    "> user's next message - so even there it is a rule the skill keeps across a\n"
     "> multi-turn run rather than a guarantee the runtime holds. No other agent has\n"
     "> even that much: here it is a hard instruction. Treat those capabilities as\n"
     '> unavailable for the whole run, and read any claim below that they "are\n'
@@ -188,7 +188,7 @@ def render(skill_dir: Path) -> str:
             value = f"{PREFIX}{value}"
         elif isinstance(value, str):
             # `description` is prose like any other and routinely cites sibling
-            # skills — it needs the same invocation rewrite the body gets, or the
+            # skills - it needs the same invocation rewrite the body gets, or the
             # skill listing advertises commands this surface does not offer.
             value = rewrite_refs(value, skill)
         out[key] = value

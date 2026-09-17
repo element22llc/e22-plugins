@@ -1,7 +1,7 @@
-"""Tests for scripts/check_migrations.py — the migration-ledger integrity gate.
+"""Tests for scripts/check_migrations.py - the migration-ledger integrity gate.
 
 Every check gets a **positive control**: a fixture that trips it. A gate that has
-only ever been seen green is not known to check anything — the previous
+only ever been seen green is not known to check anything - the previous
 incarnation of this script reported ``deep-checked 0 entries`` on a clean tree for
 weeks, because its deep tier selected entries by a rule the authoring convention
 had since inverted.
@@ -38,7 +38,7 @@ Prose that mentions `### [Unreleased]` inline must not parse as an entry.
 """
 
 GOOD_ENTRY = """\
-### [Unreleased] — a real pending change
+### [Unreleased] - a real pending change
 
 - **What & why:** the thing moved, and a repo must follow it.
 - **Precondition:** `spec/OLD.md` exists.
@@ -47,7 +47,7 @@ GOOD_ENTRY = """\
 """
 
 RELEASED_ENTRY = """\
-### v3.12.0 — an older shipped change
+### v3.12.0 - an older shipped change
 
 - **What & why:** history.
 - **Precondition:** `spec/ANCIENT.md` exists.
@@ -56,9 +56,9 @@ RELEASED_ENTRY = """\
 """
 
 TEMPLATE_COMMENT = """\
-<!-- Template for a new entry — copy above the most recent one:
+<!-- Template for a new entry - copy above the most recent one:
 
-### [Unreleased] — <one-line what>
+### [Unreleased] - <one-line what>
 
 - **What & why:** <the structural change and the reason a repo must follow it>
 - **Precondition:** <a check that is true only while the migration is pending>
@@ -127,26 +127,26 @@ def test_prose_mention_above_entries_is_ignored(monkeypatch, tmp_path):
 
 
 def test_missing_action_field_fails(monkeypatch, tmp_path, capsys):
-    entry = "### [Unreleased] — no action\n\n- **What & why:** x.\n- **Precondition:** y.\n\n"
+    entry = "### [Unreleased] - no action\n\n- **What & why:** x.\n- **Precondition:** y.\n\n"
     _ledger(monkeypatch, tmp_path, HEAD + entry)
     assert _run() == 1
     assert "**Action:** field" in capsys.readouterr().err
 
 
 def test_missing_precondition_field_fails(monkeypatch, tmp_path, capsys):
-    entry = "### [Unreleased] — no precondition\n\n- **What & why:** x.\n- **Action:** y.\n\n"
+    entry = "### [Unreleased] - no precondition\n\n- **What & why:** x.\n- **Action:** y.\n\n"
     _ledger(monkeypatch, tmp_path, HEAD + entry)
     assert _run() == 1
     assert "**Precondition:** field" in capsys.readouterr().err
 
 
 def test_qualified_action_field_is_accepted(monkeypatch, tmp_path):
-    """`- **Action — an in-file token rewrite**,` is still the Action field."""
+    """`- **Action - an in-file token rewrite**,` is still the Action field."""
     entry = (
-        "### [Unreleased] — qualified action\n\n"
+        "### [Unreleased] - qualified action\n\n"
         "- **What & why:** x.\n"
         "- **Precondition:** y.\n"
-        "- **Action — an in-file token rewrite**, one pair: `a` -> `b`.\n\n"
+        "- **Action - an in-file token rewrite**, one pair: `a` -> `b`.\n\n"
     )
     _ledger(monkeypatch, tmp_path, HEAD + entry)
     assert _run() == 0
@@ -154,7 +154,7 @@ def test_qualified_action_field_is_accepted(monkeypatch, tmp_path):
 
 def test_bad_heading_key_fails(monkeypatch, tmp_path, capsys):
     entry = (
-        "### 3.12.0 — bare version, no v prefix\n\n"
+        "### 3.12.0 - bare version, no v prefix\n\n"
         "- **What & why:** x.\n- **Precondition:** y.\n- **Action:** z.\n\n"
     )
     _ledger(monkeypatch, tmp_path, HEAD + entry)
@@ -166,7 +166,7 @@ def test_heading_without_summary_fails(monkeypatch, tmp_path, capsys):
     entry = "### [Unreleased]\n\n- **What & why:** x.\n- **Precondition:** y.\n- **Action:** z.\n\n"
     _ledger(monkeypatch, tmp_path, HEAD + entry)
     assert _run() == 1
-    assert "no `— <what>` summary" in capsys.readouterr().err
+    assert "no `- <what>` summary" in capsys.readouterr().err
 
 
 # --- ordering ---------------------------------------------------------------
@@ -180,7 +180,7 @@ def test_versioned_entries_out_of_order_fail(monkeypatch, tmp_path, capsys):
 
 
 def test_repeated_version_is_allowed(monkeypatch, tmp_path):
-    """Several entries may share one release — non-increasing, not strict."""
+    """Several entries may share one release - non-increasing, not strict."""
     _ledger(monkeypatch, tmp_path, HEAD + RELEASED_ENTRY + RELEASED_ENTRY)
     assert _run() == 0
 
@@ -211,7 +211,7 @@ def test_version_ahead_of_release_is_not_this_gates_job(monkeypatch, tmp_path):
 
 def test_placeholder_left_in_unreleased_entry_fails(monkeypatch, tmp_path, capsys):
     entry = (
-        "### [Unreleased] — half-written\n\n"
+        "### [Unreleased] - half-written\n\n"
         "- **What & why:** <the structural change and the reason>\n"
         "- **Precondition:** y.\n"
         "- **Action:** z.\n\n"
@@ -224,7 +224,7 @@ def test_placeholder_left_in_unreleased_entry_fails(monkeypatch, tmp_path, capsy
 def test_angle_token_without_a_space_is_not_a_placeholder(monkeypatch, tmp_path):
     """`steer-<skill>.prompt.md` is a path pattern, not an unfilled field."""
     entry = (
-        "### [Unreleased] — path patterns are fine\n\n"
+        "### [Unreleased] - path patterns are fine\n\n"
         "- **What & why:** `.github/prompts/steer-<skill>.prompt.md` is retired.\n"
         "- **Precondition:** that path exists.\n"
         "- **Action:** delete it.\n\n"
@@ -235,7 +235,7 @@ def test_angle_token_without_a_space_is_not_a_placeholder(monkeypatch, tmp_path)
 
 def test_missing_cited_template_path_fails(monkeypatch, tmp_path, capsys):
     entry = (
-        "### [Unreleased] — cites a ghost\n\n"
+        "### [Unreleased] - cites a ghost\n\n"
         "- **What & why:** x.\n"
         "- **Precondition:** y.\n"
         "- **Action:** reconcile against `templates/spec/nope.md`.\n\n"
@@ -250,7 +250,7 @@ def test_present_cited_template_path_passes(monkeypatch, tmp_path):
     target.mkdir(parents=True)
     (target / "real.md").write_text("# Real\n", encoding="utf-8")
     entry = (
-        "### [Unreleased] — cites a real file\n\n"
+        "### [Unreleased] - cites a real file\n\n"
         "- **What & why:** x.\n"
         "- **Precondition:** y.\n"
         "- **Action:** reconcile against `templates/spec/real.md`.\n\n"
@@ -264,7 +264,7 @@ def test_unlocatable_cited_section_fails(monkeypatch, tmp_path, capsys):
     target.mkdir(parents=True)
     (target / "real.md").write_text("# Real\n\n## Actual\n", encoding="utf-8")
     entry = (
-        "### [Unreleased] — points at a missing heading\n\n"
+        "### [Unreleased] - points at a missing heading\n\n"
         "- **What & why:** x.\n"
         "- **Precondition:** y.\n"
         "- **Action:** copy `## Traceability` from `templates/spec/real.md`.\n\n"
@@ -281,7 +281,7 @@ def test_locatable_cited_section_passes(monkeypatch, tmp_path):
     target.mkdir(parents=True)
     (target / "real.md").write_text("# Real\n\n## Traceability\n", encoding="utf-8")
     entry = (
-        "### [Unreleased] — points at a real heading\n\n"
+        "### [Unreleased] - points at a real heading\n\n"
         "- **What & why:** x.\n"
         "- **Precondition:** y.\n"
         "- **Action:** copy `## Traceability` from `templates/spec/real.md`.\n\n"
@@ -316,7 +316,7 @@ def test_unclosed_comment_inside_a_fence_is_inert(monkeypatch, tmp_path):
     contains an unclosed `<!--`, and the `- **Action:**` bullet follows it.
     """
     entry = (
-        "### [Unreleased] — profile marker back-fill\n\n"
+        "### [Unreleased] - profile marker back-fill\n\n"
         "- **What & why:** repos carry a profile marker.\n"
         "- **Precondition:**\n\n"
         "  ```sh\n"

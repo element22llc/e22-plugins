@@ -1,8 +1,8 @@
-"""Tests for scripts/audit_ledger.py — the persistent findings ledger.
+"""Tests for scripts/audit_ledger.py - the persistent findings ledger.
 
 Two properties matter. First, identity is stable under the churn that actually
 happens between audit rounds (line drift, reviewer rewording), because an
-unstable id makes every round look like a fresh discovery — the rediscovery
+unstable id makes every round look like a fresh discovery - the rediscovery
 cycle this ledger exists to break. Second, a triaged finding never gates again.
 """
 

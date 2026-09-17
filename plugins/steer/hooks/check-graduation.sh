@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — solo-trunk graduation detector.
+# steer SessionStart hook - solo-trunk graduation detector.
 #
 # WHY THIS EXISTS
 #   solo-trunk mode (pre-MVP greenfield: commit straight to main, no PR, branch
@@ -8,7 +8,7 @@
 #   project can quietly stay ungated long after it has a deploy target or a
 #   promotion branch. This hook watches for the local, offline signals that a
 #   repo has grown past pre-MVP and nudges the owner to graduate via
-#   /steer:protect — which raises the PR wall and flips the delivery-mode marker
+#   /steer:protect - which raises the PR wall and flips the delivery-mode marker
 #   to pr-flow. The networked signal (a second collaborator) is left to
 #   /steer:audit and /steer:protect, which already use gh; this hook stays
 #   offline so it adds no latency and no auth dependency to session start.
@@ -16,14 +16,14 @@
 # MECHANISM
 #   stdout becomes session `additionalContext` (same path as inject-standards.sh
 #   / check-template-drift.sh). Fires ONLY when the repo declares solo-trunk AND
-#   at least one local graduation signal is present; SILENT otherwise — a fresh
+#   at least one local graduation signal is present; SILENT otherwise - a fresh
 #   pre-MVP repo and every pr-flow repo get zero noise, and the notice clears
 #   itself the moment /steer:protect graduates the repo.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd comes from the SessionStart
-#   payload (may be a subdir). Fail-soft: any ambiguity → stay silent. git is
-#   used only for branch detection and only if present — this is SessionStart,
+#   payload (may be a subdir). Fail-soft: any ambiguity -> stay silent. git is
+#   used only for branch detection and only if present - this is SessionStart,
 #   not the PreToolUse hot path, and git correctly resolves loose/packed/worktree
 #   refs that a filesystem peek would miss; absent git, that one signal is skipped.
 
@@ -51,19 +51,19 @@ SIGNALS="$(steer_graduation_signals "${ROOT}")"
 [ -n "${SIGNALS}" ] || exit 0
 
 printf '<!-- steer: solo-trunk graduation signal -->\n'
-printf '# This repo has outgrown solo-trunk — graduate it, or record that trunk is deliberate\n\n'
+printf '# This repo has outgrown solo-trunk - graduate it, or record that trunk is deliberate\n\n'
 printf 'This repo is in **solo-trunk** mode (direct-to-`main`, no PR, branch '
-printf 'protection off) — appropriate pre-MVP, but these signals say it has '
+printf 'protection off) - appropriate pre-MVP, but these signals say it has '
 printf 'outgrown that:\n'
 printf '%s\n' "${SIGNALS}"
 printf '\nWhile these signals stand, autonomous trunk pushes are gated (the '
 printf 'trunk-push gate in check-bash-actions.sh surfaces the first `git push` '
 printf 'each session for confirmation). Two ways to clear this, both the dev'"'"'s call: '
-printf '(1) **graduate** — `/steer:protect` reviews branch protection and, on '
+printf '(1) **graduate** - `/steer:protect` reviews branch protection and, on '
 printf 'confirmation, raises the PR wall that enforces pr-flow, flipping the '
 printf 'delivery-mode marker and logging a /spec/history/ entry (a one-person repo '
 printf 'graduates with `/steer:protect apply --solo`: PR + CI required, no approval, '
-printf 'so the dev can still merge alone); or (2) **waive** — '
+printf 'so the dev can still merge alone); or (2) **waive** - '
 printf 'if this repo will stay single-contributor on trunk and these signals are '
 printf 'expected (an infra/ tree or deploy target is part of the plan), '
 printf '`/steer:protect waive` records that decision (marker + /spec/history/ entry) '

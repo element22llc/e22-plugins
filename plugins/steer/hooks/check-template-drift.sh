@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — template drift detector (self-heal enforcement).
+# steer SessionStart hook - template drift detector (self-heal enforcement).
 #
 # WHY THIS EXISTS
 #   Skills that copy a bundled template into the product repo
@@ -7,7 +7,7 @@
 #   carry an in-prose "reconcile against the current template on resume" step. In
 #   practice the model routinely SKIPS that step: when the file looks complete it
 #   resumes "from the checklist" and never diffs, so sections added by a later
-#   `/plugin update` stay invisible. Prose can't force the action — a SKILL.md is
+#   `/plugin update` stay invisible. Prose can't force the action - a SKILL.md is
 #   advisory. This hook makes the drift unavoidable instead: it runs the diff
 #   deterministically at session start and injects a concrete, high-salience notice
 #   naming exactly which sections are missing.
@@ -22,7 +22,7 @@
 #   POSIX sh, no jq, no process substitution. The instantiated files live in the
 #   CONSUMER repo; the SessionStart cwd may be a SUBDIRECTORY of it, so we resolve
 #   the work-tree root from the payload cwd (mirroring check-open-questions.sh)
-#   rather than trusting relative paths — otherwise starting Claude in apps/web
+#   rather than trusting relative paths - otherwise starting Claude in apps/web
 #   would silently find no drift. Bundled templates come via ${CLAUDE_PLUGIN_ROOT}.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
@@ -39,12 +39,12 @@ REPO="$(steer_repo_root "${CWD}")" || REPO="${CWD}"
 # Print the `##`/`###` headings present in the template but absent from the existing
 # file. Headings are the reliable drift signal: whole new sections (e.g. a later
 # "## Outdated dependencies & bad practices") are exactly what gets missed. We
-# deliberately do NOT diff checklist items here — filled-in placeholders and reworded
+# deliberately do NOT diff checklist items here - filled-in placeholders and reworded
 # items over-report and would put false positives in the notice. Once the model is
 # pointed at the gap it opens the template and reconciles items too.
 #
 # We also skip headings carrying `<!-- steer:placeholder -->` (e.g. the seed
-# `### Q-001 — [...]` open-question block). Those are BY DESIGN rewritten or deleted
+# `### Q-001 - [...]` open-question block). Those are BY DESIGN rewritten or deleted
 # once a feature has a real question or is fully specced, so a verbatim match against
 # the template heading never succeeds and every correctly-completed file would be
 # flagged on every session. This mirrors check-open-questions.sh, which already
@@ -57,7 +57,7 @@ missing_sections() {
   # 50-feature repo the old inner loop spawned 800+ greps at every SessionStart,
   # setting the startup latency floor. awk records the template's `##`/`###`
   # headings (skipping `steer:placeholder` seeds), deletes any the existing file
-  # also has, and prints the remainder — an exact full-line match, as `grep -qxF`
+  # also has, and prints the remainder - an exact full-line match, as `grep -qxF`
   # did. Order-insensitive; `sort` gives a stable, deterministic report.
   awk '
     FNR == NR {
@@ -86,7 +86,7 @@ $(printf '%s\n' "$_out" | sed 's/^/    - /')"
 check_pair "PRODUCTIONIZATION.md" "spec/PRODUCTIONIZATION.md" "${TPL}/productionization.md"
 check_pair "BUILD-STATUS.md"         "spec/BUILD-STATUS.md"         "${TPL}/build-status.md"
 
-# Feature specs — there may be many; glob guards against the no-match literal.
+# Feature specs - there may be many; glob guards against the no-match literal.
 for _intent in "${REPO}"/spec/features/*/intent.md; do
   [ -e "$_intent" ] || continue
   _rel="${_intent#"${REPO}/"}"
@@ -101,10 +101,10 @@ done
 [ -n "$REPORT" ] || exit 0
 
 printf '<!-- steer: template drift detected -->\n'
-printf '# ⚠ template reconciliation required — do this before anything else\n\n'
+printf '# ⚠ template reconciliation required - do this before anything else\n\n'
 printf 'One or more spec files in this repo were instantiated under an OLDER plugin '
 printf 'version and are missing sections the current bundled template now defines. '
-printf 'These gaps are invisible if you resume "from the checklist" — that is exactly '
+printf 'These gaps are invisible if you resume "from the checklist" - that is exactly '
 printf 'the failure this notice prevents.\n\n'
 printf '**Before** resuming any spec workflow (/steer:adopt, /steer:build, '
 printf '/steer:spec-scaffold) or summarizing status, splice each missing section into '

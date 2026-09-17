@@ -1,4 +1,4 @@
-# Copilot coding-agent environment. The job MUST be named `copilot-setup-steps` — Copilot
+# Copilot coding-agent environment. The job MUST be named `copilot-setup-steps` - Copilot
 # discovers it by that exact name. Standards come from .github/copilot-instructions.md;
 # MCP servers and firewall live in Settings -> Copilot -> Coding agent, not here.
 name: Copilot setup steps

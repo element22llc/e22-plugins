@@ -5,17 +5,17 @@ steer is published to two marketplaces from one version: the Claude
 ``plugins/steer/.claude-plugin/plugin.json`` ``version``. The Copilot manifests
 each declare their own version and can silently drift from a release:
 
-* ``plugins/steer/.github/plugin/plugin.json`` — the Copilot CLI plugin manifest;
-* ``.github/plugin/marketplace.json`` (repo root) — the Copilot marketplace, in
+* ``plugins/steer/.github/plugin/plugin.json`` - the Copilot CLI plugin manifest;
+* ``.github/plugin/marketplace.json`` (repo root) - the Copilot marketplace, in
   its ``steer`` plugin entry.
 
 This generator rewrites **only** the ``version`` field in each (a targeted
-string edit — every other field, including the Copilot-specific descriptions and
+string edit - every other field, including the Copilot-specific descriptions and
 the marketplace-level ``metadata.version``, is left byte-for-byte untouched), so
 the three stay locked without a hand bump per file. ``check_plugin.py``'s
 ``check_copilot_version_sync`` remains the gate that fails the build on any drift.
 
-It runs inside ``mise run gen:copilot`` (idempotent — re-stamps the current
+It runs inside ``mise run gen:copilot`` (idempotent - re-stamps the current
 version when nothing changed) and again from the release skill after the source
 bump. Run from the repo root::
 
@@ -37,7 +37,7 @@ COPILOT_MARKETPLACE = Path(".github/plugin/marketplace.json")
 
 # The lone ``version`` field in the Copilot CLI plugin manifest.
 _PLUGIN_VERSION = re.compile(r'("version":\s*")[^"]*(")')
-# The ``version`` field *of the steer entry* in the marketplace manifest — anchored
+# The ``version`` field *of the steer entry* in the marketplace manifest - anchored
 # on the entry's name+source so the marketplace-level ``metadata.version`` (a
 # different, independently-managed version) is never touched.
 _MARKETPLACE_STEER_VERSION = re.compile(

@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — unmanaged-repo detector (greenfield nudge).
+# steer SessionStart hook - unmanaged-repo detector (greenfield nudge).
 #
 # WHY THIS EXISTS
 #   A repo with the plugin enabled but no /spec spine still gets the always-on
-#   rules injected — yet nothing PUSHES the spec-first bootstrap. So a session
+#   rules injected - yet nothing PUSHES the spec-first bootstrap. So a session
 #   silently degrades to "toolchain conventions only" and writes feature code
 #   with no vision/intent/contract behind it (the exact failure that prompted
 #   this hook: a brand-new non-template repo where code was written from scratch
 #   with the plugin active, but the spec spine never appeared). The drift and
-#   open-questions hooks only fire once /spec ALREADY exists — they cannot catch
+#   open-questions hooks only fire once /spec ALREADY exists - they cannot catch
 #   a repo that never got a spine. /steer:init (plugin-driven bootstrap, or a
 #   legacy fork) and /steer:adopt (reverse-engineer existing code) are the fixes,
 #   but a skill is pull, not push: it only runs when someone invokes it, and the
@@ -19,27 +19,27 @@
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path
 #   as inject-standards.sh / check-open-questions.sh). SILENT once the spine is
-#   `managed` — a complete, version-stamped spine (spec/.version + spine files) —
+#   `managed` - a complete, version-stamped spine (spec/.version + spine files) -
 #   so an initialized or adopted repo gets zero noise. Merely creating /spec is
 #   NOT enough: a `foreign` spec/ (no marker) gets a softer adopt offer and a
 #   `damaged` one gets a repair notice, so the message SWAPS rather than clears
 #   until the spine is complete. Presents the bootstrap routes (PO-guided build, developer init, or
 #   adopt) rather than guessing greenfield-vs-adopt from code volume (a brittle
-#   heuristic) — the session picks based on who is driving (a non-technical owner
+#   heuristic) - the session picks based on who is driving (a non-technical owner
 #   vs a developer) and whether the code is being written fresh or already existed.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. The CONSUMER repo comes from the
-#   SessionStart payload `cwd` — never the hook process's own cwd, which the
+#   SessionStart payload `cwd` - never the hook process's own cwd, which the
 #   harness does not guarantee to match (mirrors check-template-drift.sh, #331).
-#   Fail-soft: any ambiguity → stay silent, never block a session.
+#   Fail-soft: any ambiguity -> stay silent, never block a session.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/spine.sh"
 
 # Resolve the work-tree root from the payload cwd (which may be a SUBDIRECTORY
-# of the repo). Not a git work tree → not a project we manage.
+# of the repo). Not a git work tree -> not a project we manage.
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
 CWD="$(steer_field cwd)"
@@ -47,16 +47,16 @@ CWD="$(steer_field cwd)"
 ROOT="$(steer_repo_root "${CWD}")" || exit 0
 
 # This IS the steer source / marketplace repo itself, not a product
-# repo — never nag the plugin's own tree. (A product repo has .claude/ for
+# repo - never nag the plugin's own tree. (A product repo has .claude/ for
 # settings, never the .claude-plugin/ authoring directory.)
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
-# A bare, foreign, or half-migrated spec/ must NOT silence the bootstrap nudge —
+# A bare, foreign, or half-migrated spec/ must NOT silence the bootstrap nudge -
 # only a complete, version-stamped spine (spec/.version + spine files) does.
 STATE="$(steer_spine_state "${ROOT}")"
 [ "${STATE}" = "managed" ] && exit 0
 
-# An OpenSpec repo has a spine — it just is not steer's. Both OpenSpec states
+# An OpenSpec repo has a spine - it just is not steer's. Both OpenSpec states
 # speak here rather than falling through to the greenfield card, which would
 # demand a bootstrap that lays a second, competing spine.
 if [ "${STATE}" = "openspec" ]; then
@@ -67,7 +67,7 @@ if [ "${STATE}" = "openspec" ]; then
 		printf '⚠ **This OpenSpec repo still carries steer artifacts at their old '
 		printf 'location** (`spec/tracker.md` and/or `spec/decisions/`). They now '
 		printf 'live under `openspec/steer/`. Run **`/steer:sync`** to apply the '
-		printf 'migration — until then the tracker declaration being read may not '
+		printf 'migration - until then the tracker declaration being read may not '
 		printf 'be the one you are editing.\n'
 	fi
 	exit 0
@@ -76,7 +76,7 @@ fi
 if [ "${STATE}" = "openspec-setup" ]; then
 	# DO NOT route this to /steer:setup. Its init/adopt paths write
 	# spec/vision.md + spec/tracker.md from templates/spec/ and stamp
-	# spec/.version — precisely the competing spine rule 33 forbids here, and
+	# spec/.version - precisely the competing spine rule 33 forbids here, and
 	# its routing table has no row for this state. The honest instruction is the
 	# direct one: instantiate the single template that is missing.
 	printf '<!-- steer: openspec spine without steer artifacts -->\n'
@@ -84,20 +84,20 @@ if [ "${STATE}" = "openspec-setup" ]; then
 	printf 'Spec work goes through the `/opsx:*` commands.\n\n'
 	printf 'steer still owns two artifacts OpenSpec does not model, and **neither '
 	printf 'exists yet**:\n\n'
-	printf -- '- **Tracker declaration** → create `openspec/steer/tracker.md` from '
+	printf -- '- **Tracker declaration** -> create `openspec/steer/tracker.md` from '
 	printf '`${CLAUDE_PLUGIN_ROOT}/templates/spec/tracker.md` and resolve its '
 	printf 'placeholders. Issue-first enforcement reads this file; until it '
 	printf 'declares `system: github`, the issue gates stay off.\n'
-	printf -- '- **ADRs** → `openspec/steer/decisions/`, written by '
+	printf -- '- **ADRs** -> `openspec/steer/decisions/`, written by '
 	printf '**`/steer:adr`** when the first hard-to-reverse choice comes up. '
 	printf 'Nothing to create up front.\n\n'
-	printf 'Do **not** run `/steer:init` or `/steer:adopt` to get these — they '
+	printf 'Do **not** run `/steer:init` or `/steer:adopt` to get these - they '
 	printf 'lay a competing `spec/features/**` spine. `/steer:setup` is for the '
 	printf 'toolchain/CI scaffold only, and only if that is missing.\n'
 	exit 0
 fi
 
-# A spec/ exists but carries no ownership marker — do not assume it is managed. Offer
+# A spec/ exists but carries no ownership marker - do not assume it is managed. Offer
 # adoption once, softly, rather than the full greenfield bootstrap.
 if [ "${STATE}" = "foreign" ]; then
 	printf '<!-- steer: spec/ without spec-spine marker -->\n'
@@ -108,7 +108,7 @@ if [ "${STATE}" = "foreign" ]; then
 	exit 0
 fi
 
-# A version-stamped spine is missing required files — repair rather than rebuild.
+# A version-stamped spine is missing required files - repair rather than rebuild.
 if [ "${STATE}" = "damaged" ]; then
 	printf '<!-- steer: incomplete /spec spine -->\n'
 	printf '⚠ **This repo has an incomplete spec spine** (`spec/.version` is present but spine '
@@ -125,27 +125,27 @@ fi
 printf '<!-- steer: no /spec spine -->\n'
 printf '**This repo is not set up on the org standards yet** (no `/spec` spine). '
 printf 'The standards are loaded, and the user does not need to learn any command '
-printf -- '— they can just say what they want:\n\n'
+printf -- '- they can just say what they want:\n\n'
 printf -- '- **"Help me think an idea/feature through"** -> **`/steer:spec`** works '
 printf '**right now, spec-only (lite mode)**: it drafts the feature intent under '
 printf '`spec/features/<id>/` with no toolchain or scaffold required, and setup '
 printf 'can follow later.\n'
 printf -- '- **"Build my app idea"** (non-technical owner, not writing code) -> '
-printf '**`/steer:build`** — the guided idea->working-app flow; it bootstraps for '
+printf '**`/steer:build`** - the guided idea->working-app flow; it bootstraps for '
 printf 'you and drives interview, spec, scaffold, and build.\n'
-printf -- '- **"Set this repo up properly"** -> **`/steer:setup`** — the one front '
+printf -- '- **"Set this repo up properly"** -> **`/steer:setup`** - the one front '
 printf 'door: it detects the repo state and routes to `/steer:init` (developer '
 printf 'greenfield: spine + scaffold + pinned toolchain) or `/steer:adopt` '
 printf '(substantial existing code: reverse-engineer the spec, triage '
 printf 'productionization).\n\n'
-printf '**Before feature CODE is written, the bootstrap is required** — spec-only '
+printf '**Before feature CODE is written, the bootstrap is required** - spec-only '
 printf 'work is the one sanctioned exception. A "prototype" / "quick" / '
 printf '"throwaway" build does not skip it (quick relaxes ceremony, never the '
 printf 'scaffold or spine), and a non-app repo does not either: `/steer:init` '
 printf 'detects the profile (app / infra / service / library / cli / workspace) '
 printf 'and lays the universal '
-printf 'core plus only the matching extras — never hand-write toolchain/CI from '
+printf 'core plus only the matching extras - never hand-write toolchain/CI from '
 printf 'scratch here.\n\n'
 printf 'This notice clears itself once the repo has a complete, version-stamped '
-printf 'spec spine — which `/steer:init` or `/steer:adopt` creates. (Not a managed '
+printf 'spec spine - which `/steer:init` or `/steer:adopt` creates. (Not a managed '
 printf 'product repo? Ignore it.)\n'

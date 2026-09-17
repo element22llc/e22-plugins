@@ -1,4 +1,4 @@
-# Local backing services — committed so local matches deployed. Rationale:
+# Local backing services - committed so local matches deployed. Rationale:
 # /steer:reference conventions -> "Local services". No container_name or fixed
 # host port here: scripts/worktree-env.sh isolates parallel worktrees via env.
 
@@ -12,7 +12,7 @@ services:
       POSTGRES_PASSWORD: app
       POSTGRES_DB: app
     volumes:
-      - pgdata:/var/lib/postgresql # postgres:18+ mounts the parent dir, not …/data
+      - pgdata:/var/lib/postgresql # postgres:18+ mounts the parent dir, not .../data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app -d app"]
       interval: 2s

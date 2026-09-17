@@ -33,4 +33,4 @@ A locally-committed artifact that Claude can open directly. For Claude Design, c
 - [ ] Spec extracted into `/spec`
 - [ ] PO approved spec
 - [ ] Production implementation started
-- [ ] Production deployed — this folder is ready to archive
+- [ ] Production deployed - this folder is ready to archive

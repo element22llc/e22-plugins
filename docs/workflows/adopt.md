@@ -19,25 +19,25 @@ flowchart TD
     STAMP --> PR[Propose a PR]
 ```
 
-1. Surveys the repo — stack, profile, entry points, features — and reports what
+1. Surveys the repo - stack, profile, entry points, features - and reports what
    it found before anything else. On a **resumed** adoption (a
    `spec/PRODUCTIONIZATION.md` already on disk) it first applies any pending
    structural migrations from the ledger and reconciles that checklist against
    the current template; on a fresh adoption that step is a no-op it settles with
    one existence check.
-2. Reads the existing code to capture **what is** — not what someone decided.
-3. Materializes the `/spec` spine from the bundled templates — including the
+2. Reads the existing code to capture **what is** - not what someone decided.
+3. Materializes the `/spec` spine from the bundled templates - including the
    `design/` home (`README.md`, `source.md`, the living
    `architecture-diagram.md`) and `sources/README.md`.
 4. Reverse-engineers the root **`DESIGN.md`** from the app's real visual
-   identity (tokens, type scale, component patterns) — as-built, not aspirational.
-5. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** — a Keep / Refactor
+   identity (tokens, type scale, component patterns) - as-built, not aspirational.
+5. Triages the codebase into **`spec/PRODUCTIONIZATION.md`** - a Keep / Refactor
    / Rewrite / Reject verdict per area, with the reasoning, so the team inherits
    a ranked remediation plan rather than a verdict-free inventory.
 6. Installs the repo scaffold (toolchain, CI, PR template).
 7. If the tracker is GitHub Issues, bootstraps the label taxonomy
    (`/steer:issues bootstrap-labels`) and verifies the org-level
-   Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) —
+   Priority/Effort/date issue fields (`/steer:tracker-sync bootstrap-fields`) -
    the same tracker setup `/steer:init` performs.
 8. Stamps `/spec/.version` with the plugin version.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer PostToolUse hook — comment-density notice. The Code comments rule is
+# steer PostToolUse hook - comment-density notice. The Code comments rule is
 # prose the model can skip mid-session; this surfaces a comment-heavy write at
 # the moment it lands. Reads the just-written file from disk (so Edit and
 # MultiEdit need no payload parsing), emits additionalContext only, never blocks.
@@ -27,7 +27,7 @@ esac
 
 # Comment syntax by file name; prose, JSON, HTML and unknown types are skipped.
 # dependabot.yml has no conditional include, so its per-stack blocks are
-# commented-out code by necessity — a notice there would invite deleting them.
+# commented-out code by necessity - a notice there would invite deleting them.
 case "${TARGET##*/}" in
 dependabot.yml) exit 0 ;;
 Dockerfile | Dockerfile.* | Makefile | *.py | *.sh | *.bash | *.zsh | *.rb | *.pl | *.toml | *.yaml | *.yml | *.tf | *.hcl | *.ini | *.cfg) STYLE="hash" ;;

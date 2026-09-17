@@ -2,7 +2,7 @@ name: Dependabot auto-merge
 
 # The documented exception to the human-review gate: auto-approves and merges Dependabot
 # patch/minor bumps once the required `ci` check is green; majors stay with a human.
-# Rationale: README.md#branch-protection -> "Dependabot — and the auto-merge exception".
+# Rationale: README.md#branch-protection -> "Dependabot - and the auto-merge exception".
 
 on: pull_request
 
@@ -16,7 +16,7 @@ jobs:
     name: dependabot-auto-merge
     runs-on: ubuntu-latest
     # `github.actor` is the LAST actor to touch the context, not the one that opened the
-    # PR — an attacker can land a HEAD commit that makes it read `dependabot[bot]` while the
+    # PR - an attacker can land a HEAD commit that makes it read `dependabot[bot]` while the
     # rest of the branch is theirs. `pull_request.user.login` is the PR's author and cannot be
     # moved that way. (This workflow is `on: pull_request`, never `pull_request_target`.)
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' }}

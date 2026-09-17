@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — consolidated session-checks orchestrator.
+# steer SessionStart hook - consolidated session-checks orchestrator.
 #
 # WHY THIS EXISTS
 #   The startup/resume/clear matcher used to register five separate hook
 #   commands (template drift, open questions, unmanaged repo, fault surfacing,
-#   graduation) — six now, with worktree trust. Each registration pays the
-#   harness's per-hook overhead —
-#   spawn, stdin delivery, timeout envelope, output collection — at every
+#   graduation) - six now, with worktree trust. Each registration pays the
+#   harness's per-hook overhead -
+#   spawn, stdin delivery, timeout envelope, output collection - at every
 #   session start in every managed repo (PLAN.md Phase 1). This orchestrator
 #   keeps hooks.json to a single registration and runs the same checks, in the
 #   same order, itself.
@@ -16,14 +16,14 @@
 #   check unchanged, so the individual scripts keep their contract: read the
 #   payload from stdin, print a markdown notice (or nothing) to stdout. Each
 #   check is failure-isolated (a crash or nonzero exit never blocks the
-#   remaining checks — the isolation the harness used to provide per
+#   remaining checks - the isolation the harness used to provide per
 #   registration), stderr passes through untouched, and every non-empty
 #   notice is emitted with exactly one trailing newline so notices never glue
 #   together. Always exits 0: a broken check must not break session start.
 #
 #   The individual check scripts stay authoritative and individually testable
 #   (hooks/tests/run.sh drives them directly); this file must contain NO check
-#   logic of its own — only sequencing. Add a new session check by appending
+#   logic of its own - only sequencing. Add a new session check by appending
 #   it to the list below AND to the roster in CROSS-SURFACE.md; check_standards.py
 #   parses the `for _check in` list below and fails the build if the roster omits
 #   one, so the two cannot drift. The pytest latency budget
@@ -32,7 +32,7 @@
 #   One check does more than print: check-worktree-trust.sh inherits the primary
 #   checkout's `mise trust` into a linked worktree (see its header for why that
 #   grants nothing new). It is gated on being in a linked worktree, so a plain
-#   checkout — the common case the latency budget measures — exits before it
+#   checkout - the common case the latency budget measures - exits before it
 #   invokes anything.
 #
 # CONSTRAINTS (per repo CLAUDE.md)

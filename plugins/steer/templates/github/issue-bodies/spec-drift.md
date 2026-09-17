@@ -21,7 +21,7 @@
 ## Human decision required
 
 The agent may propose a direction but must **not** resolve behavioural drift
-autonomously — a PO or dev decides by ownership.
+autonomously - a PO or dev decides by ownership.
 
 - [ ] Change the implementation to match the spec
 - [ ] Approve the as-built behavior and update the spec

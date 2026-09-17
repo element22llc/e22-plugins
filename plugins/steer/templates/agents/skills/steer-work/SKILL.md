@@ -1,16 +1,16 @@
 ---
 name: steer-work
-description: Execute a GitHub issue end-to-end — claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer-issues, routing tracker-metadata I/O through /steer-tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path.
+description: Execute a GitHub issue end-to-end - claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer-issues, routing tracker-metadata I/O through /steer-tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path.
 argument-hint: '[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]'
 ---
 
-<!-- Generated from the steer plugin's skills/work/SKILL.md — do not edit by hand.
+<!-- Generated from the steer plugin's skills/work/SKILL.md - do not edit by hand.
      Refresh with /steer:sync from Claude Code in a managed repo, or
      `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("deliver X carefully", "do this with review"). Add --hotfix only for a real production incident ("prod is down", "emergency fix") — never for ordinary urgent work.
+**When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("deliver X carefully", "do this with review"). Add --hotfix only for a real production incident ("prod is down", "emergency fix") - never for ordinary urgent work.
 
 <!-- steer:modes start,resume,status,finish -->
 
@@ -26,11 +26,11 @@ These hold for the whole run, in every mode.
   following the concurrency-safe protocol in `ISSUE-SCHEMA.md` (re-fetch before
   write; stop and report on a concurrent edit; fail closed on duplicate/malformed
   blocks). Human content is never overwritten.
-- **Never auto-resolve product decisions or drift** — those wait for the named
+- **Never auto-resolve product decisions or drift** - those wait for the named
   human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
   obtain their answer (rule `61-gate-prompts`), never a licence to supply one.
   The PR **merge** is not promptable in any mode.
-- **The merge is the human gate** (rule 45) — push and open the PR yourself;
+- **The merge is the human gate** (rule 45) - push and open the PR yourself;
   never merge or deploy. Watching CI to conclusion and fixing a red build is
   **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
   *is* delivery (Delivery mode below); deploy stays human-gated all the same,
@@ -46,38 +46,38 @@ These hold for the whole run, in every mode.
    ladder in `/steer-reference polyrepo` § "Resolving the spine from a member",
    and read the tracker and linked specs from **there**. A missing local
    `intent.md` means the workspace has not been read yet, never that the feature
-   is unspecified — **never** author product-level spec files here to fill the
+   is unspecified - **never** author product-level spec files here to fill the
    gap.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
-   this is the **workspace's** `spec/tracker.md` resolved in step 0 — a member
+   this is the **workspace's** `spec/tracker.md` resolved in step 0 - a member
    never carries its own.
-2. **Route all tracker reads/writes through `/steer-tracker-sync`** (the gateway —
+2. **Route all tracker reads/writes through `/steer-tracker-sync`** (the gateway -
    `search`/`get`/`find-or-create`/`update`/`comment`/`set-type`/`label`/
    `transition`/`assign`/`link-pr`/`close`). Never hit `gh`/MCP for issues
-   directly. **Git and PR delivery are not gateway operations** — they are this
+   directly. **Git and PR delivery are not gateway operations** - they are this
    skill's execution concern, under the repo's commit/PR-autonomy rules.
 3. **No issue named but a mutation was requested?** Find-or-create one first
-   (Issue-first — a Tiny change needs none), then `start`.
+   (Issue-first - a Tiny change needs none), then `start`.
 
 ## Authorization (what an implement request grants)
 
 A CLI "fix/implement #N" request authorizes, without extra confirmation:
 read/search the issue, create-or-reuse the issue, claim it, update its managed
 state, create/switch the local branch, modify the local repository, run tests,
-commit, push, and open/update the PR — the full delivery loop up to the merge
+commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
 > **Pre-approved shell scope (frontmatter `allowed-tools`).** To cut repetitive
 > prompts, this skill pre-approves read-only git inspection (`status`, `diff`,
 > `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), the
 > Rule-45-autonomous local mutations `git add` / `git commit`, the delivery moves
-> `git push` / `gh pr create` / `gh pr edit` (autonomous under Commit autonomy —
+> `git push` / `gh pr create` / `gh pr edit` (autonomous under Commit autonomy -
 > the merge review is the gate, not the push or the PR), and **read-only CI
 > status** (`gh pr checks`, `gh run view`, `gh run watch`) so the post-push CI watch
 > (see `finish`) runs without a prompt per poll. It deliberately does **not**
 > pre-approve `gh pr merge`, `gh api`, `gh workflow run`, or destructive git
-> (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) — merge stays with
+> (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays with
 > the human, and tracker I/O still routes through `/steer-tracker-sync`. In an
 > ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
 > session's first `git push` for confirmation while graduation signals stand
@@ -86,22 +86,22 @@ commit, push, and open/update the PR — the full delivery loop up to the merge
 
 ## Delivery mode
 
-The two-state delivery model — pr-flow vs solo-trunk, the `CLAUDE.md`
-delivery-mode marker (absent → pr-flow), what each mode authorizes, and every
-gate — is canonical in **rule 45 (Commit autonomy)**; determine the mode once at
+The two-state delivery model - pr-flow vs solo-trunk, the `CLAUDE.md`
+delivery-mode marker (absent -> pr-flow), what each mode authorizes, and every
+gate - is canonical in **rule 45 (Commit autonomy)**; determine the mode once at
 `start` / `finish` and apply it, don't re-derive it. **Issue-first holds in both
 modes**; they differ only in the branch/PR ceremony. What that means for THIS
 skill's steps:
 
-- **pr-flow** (default) — the full flow this skill describes throughout: claim →
-  `issue/<n>` branch + `spec/.work` marker → implement → push → open PR → CI
-  green → transition. Declared-but-unprotected `main`: same flow unchanged, note
+- **pr-flow** (default) - the full flow this skill describes throughout: claim ->
+  `issue/<n>` branch + `spec/.work` marker -> implement -> push -> open PR -> CI
+  green -> transition. Declared-but-unprotected `main`: same flow unchanged, note
   the missing wall, recommend `/steer-protect` (rule 45).
-- **solo-trunk** — commit **straight to `main`**: no `issue/<n>` branch, no
+- **solo-trunk** - commit **straight to `main`**: no `issue/<n>` branch, no
   `spec/.work` marker, no PR. Still claim the issue and implement, but close it
   **from the trunk commit** (`Closes #N`, or `Refs owner/repo#N` + an explicit
-  close when the tracker repo differs — see Closing ref). Wherever a step below says *branch*,
-  *marker*, or *PR*, skip it and substitute the trunk commit — everything else
+  close when the tracker repo differs - see Closing ref). Wherever a step below says *branch*,
+  *marker*, or *PR*, skip it and substitute the trunk commit - everything else
   (validation, managed-block progress, closure-reason semantics) is identical.
   While a local graduation signal stands and no waiver is recorded, the
   trunk-push hook surfaces the session's first push for a human yes (rule 45);
@@ -114,41 +114,41 @@ skill's steps:
 | **`start #N`** | Resolve + validate the issue, detect a conflicting claim, **claim** it, create/reuse the branch and write the work marker (pr-flow only), load linked specs, begin implementing. |
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
-| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened — and never on a *skipped* check. |
+| **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
-through `finish`, but the phases stay distinct and idempotent — re-running a
+through `finish`, but the phases stay distinct and idempotent - re-running a
 phase reconciles rather than duplicates.
 
 **Read the full procedure before executing one:**
 [`modes/subcommands.md`](modes/subcommands.md).
 
-## Optional flags — read the procedure only when the flag is passed
+## Optional flags - read the procedure only when the flag is passed
 
-- **`--reviewed`** — wrap `start`→`finish` in two independent review gates (plan
+- **`--reviewed`** - wrap `start`->`finish` in two independent review gates (plan
   gate + code gate) plus a bounded fix loop, so the delivery is vetted rather
   than first-draft. Triage trivial work out of the gates.
-  → procedure: [`modes/reviewed.md`](modes/reviewed.md)
-- **`--hotfix`** — the production-incident fast path (rule `62-hotfix`): a
+  -> procedure: [`modes/reviewed.md`](modes/reviewed.md)
+- **`--hotfix`** - the production-incident fast path (rule `62-hotfix`): a
   `hotfix/<n>-slug` branch, issue after-the-fact, one expedited reviewer, and a
   mandatory traceability follow-up. Relaxes ceremony, never the human gates.
   Use it **only** for an active incident on a deployed production system.
-  → procedure: [`modes/hotfix.md`](modes/hotfix.md)
+  -> procedure: [`modes/hotfix.md`](modes/hotfix.md)
 
 Neither flag changes the subcommands above; both leave the merge and deploy
 gates exactly where they are.
 
-## Closing ref — check the tracker repo first
+## Closing ref - check the tracker repo first
 
 GitHub honours issue-closing keywords **only within one repository**. If
 `/spec/tracker.md` declares a `repository:` different from the repo the code
 lives in, `Closes #N` renders as a plain cross-reference and **the issue
-silently stays open** — and because this skill treats the merged PR as
+silently stays open** - and because this skill treats the merged PR as
 lifecycle-transition evidence, the issue never advances state either.
 
 - **No `repository:` declared, or the value is absent / a placeholder /
-  unreadable** → write `Closes #N`. Nothing further to do.
-- **A `repository:` is declared** → resolve both sides and compare before
+  unreadable** -> write `Closes #N`. Nothing further to do.
+- **A `repository:` is declared** -> resolve both sides and compare before
   writing any closing ref:
   [`CLOSING-REF.md`](CLOSING-REF.md).
 
@@ -157,28 +157,28 @@ Divert **only on positive proof of a mismatch**.
 In a **polyrepo member** the mismatch is structural, not incidental: the tracker
 is the workspace's, so a member PR can never auto-close its issue. Take the
 `Refs owner/repo#N` + explicit-close path every time, and land the spec update
-(the owning `contract.md`) as its own change in the **workspace** repo — those two
+(the owning `contract.md`) as its own change in the **workspace** repo - those two
 PRs cannot be atomic (`/steer-reference polyrepo`).
 
 ## Completion semantics
 
-**Closure reason — not the mere fact of closure — decides the terminal state.**
+**Closure reason - not the mere fact of closure - decides the terminal state.**
 Inspect it before transitioning a closed issue; keep delivery state as independent
-evidence (a merged PR — or, in solo-trunk, the closing trunk commit — is
+evidence (a merged PR - or, in solo-trunk, the closing trunk commit - is
 necessary for `done`, not sufficient on its own).
 
-- Opening a PR → `validate` (never `done`). **(Solo-trunk has no PR — the
+- Opening a PR -> `validate` (never `done`). **(Solo-trunk has no PR - the
   trunk commit that closes the issue is the delivery; go straight to the closure
   reasons below.)**
-- Closed as **`completed`** (delivered — PR merged or trunk commit landed — **and**
-  acceptance criteria accepted) → `done`.
+- Closed as **`completed`** (delivered - PR merged or trunk commit landed - **and**
+  acceptance criteria accepted) -> `done`.
 - Closed as **`rejected` / `duplicate` / `obsolete` / `not-planned` /
-  `superseded`** → **`cancelled`**, never `done` — record a replacement pointer
+  `superseded`** -> **`cancelled`**, never `done` - record a replacement pointer
   where one applies. Cancelled work was not delivered.
-- PR closed **without** merge → back to `in-progress` or `blocked`.
+- PR closed **without** merge -> back to `in-progress` or `blocked`.
 - `status` / `resume` / `finish` reconcile stale markers on the next interaction,
   reading the closure reason rather than assuming "closed == done." **They never
-  touch the spec's `Status:`** — delivery progress lives only in the issue marker,
+  touch the spec's `Status:`** - delivery progress lives only in the issue marker,
   and an `approved` intent whose issue is `in-progress`, `validate`, or `done` is
   correct, not drift (crosswalk in `ISSUE-WORKFLOW.md`). The one spec-side state
   this flow can legitimately surface is a `live` intent whose issue never reached a
@@ -187,9 +187,9 @@ necessary for `done`, not sufficient on its own).
 ## Branch naming
 
 Use the repository's configured branch convention if one exists. Otherwise fall
-back to `issue/<number>-<slug>` — **not** `fix/…`, which would mislabel feature,
+back to `issue/<number>-<slug>` - **not** `fix/...`, which would mislabel feature,
 docs, or infra work. Record the branch in `steer:branch` (tracker metadata) **and**
-in the local marker `spec/.work/<branch>.md` (slashes → underscores; local-only —
+in the local marker `spec/.work/<branch>.md` (slashes -> underscores; local-only -
 `spec/.work/` is git-ignored). The marker is what the Stop-hook reconciliation
 checks to confirm a branch is issue-governed, ahead of any branch-name guess; an
 unconventional but claimed branch is still recognized. Optional housekeeping:
@@ -197,9 +197,9 @@ remove the marker when the issue is closed.
 
 In **`--hotfix` mode**, use `hotfix/<n>-slug` instead (see `modes/hotfix.md`).
 
-Its exact format — the write-once `issue:`/`branch:` lines, the newest-first
+Its exact format - the write-once `issue:`/`branch:` lines, the newest-first
 session list the Stop hook keeps current, seeding from `$CLAUDE_CODE_SESSION_ID`,
-and the legacy extensionless-marker upgrade — is in
+and the legacy extensionless-marker upgrade - is in
 [`WORK-MARKER.md`](WORK-MARKER.md).
 
 ## Concurrency & claims
@@ -208,19 +208,19 @@ Before claiming or mutating, check for conflicts: the issue is already assigned
 to someone else, `steer:claimed-by` names another context, a different `steer:branch`
 is recorded, the recorded branch is gone, the worktree is dirty, or two local
 sessions exist for the same user. **A conflicting active branch or claimant
-prevents automatic takeover** — report it and ask. GitHub *assignment* represents
+prevents automatic takeover** - report it and ask. GitHub *assignment* represents
 the accountable human; the *branch* marker represents the active execution
 context.
 
 ## Multiple issues
 
-`Implement #123 and #124` → **one branch + PR per issue** by default (in
+`Implement #123 and #124` -> **one branch + PR per issue** by default (in
 solo-trunk, **one trunk commit per issue**, each closing its own `#N`). Combine only
 when one issue explicitly depends on the other, separating them would produce an
-invalid intermediate state, or the user explicitly asks for combined delivery —
+invalid intermediate state, or the user explicitly asks for combined delivery -
 otherwise issue-first traceability degrades into many-issues-to-one-PR.
 
-## Discovered work — bounded scope
+## Discovered work - bounded scope
 
 While implementing, if you find an unrelated bug, tech debt, a missing test, a
 security concern, or a new feature request: keep the current issue's scope
@@ -235,9 +235,9 @@ the separate work only when the current issue requires it.
 
 End every invocation with a `## Recommended next actions` block per
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/NEXT-ACTIONS.md`, obeying its
-**locality rule** — only this issue, its branch, PR, criteria, validation, and
+**locality rule** - only this issue, its branch, PR, criteria, validation, and
 any blocker directly hit, never the wider workspace. This skill's execution
-state → action mapping (and how it reads in solo-trunk) is in
-[`NEXT-ACTION.md`](NEXT-ACTION.md) — **read it
+state -> action mapping (and how it reads in solo-trunk) is in
+[`NEXT-ACTION.md`](NEXT-ACTION.md) - **read it
 when you get here.** The block recommends only; it never merges, deploys, or
 auto-advances state.

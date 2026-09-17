@@ -17,7 +17,7 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 
 Pick the topic for the question and **open the bundled reference file** for it,
 then answer from that file. These are the full-detail companions to the lean
-always-on rules — open the file rather than answering from memory, and if
+always-on rules - open the file rather than answering from memory, and if
 something is genuinely unclear or the project warrants deviating, record an ADR
 (`/steer:adr`) rather than guessing.
 
@@ -49,10 +49,10 @@ Each topic maps to one file under
 | `polyrepo` | `POLYREPO.md` |
 
 **Read the file itself and answer from it.** The table above (and its `Use for`
-column earlier in this skill) is for *routing* only — it is deliberately not a
+column earlier in this skill) is for *routing* only - it is deliberately not a
 substitute for the prose, and answering from it instead of opening the file is
 the failure mode this loader exists to prevent.
 
 If you need a fuller contents listing to choose between two topics, read
-[`COVERAGE.md`](${CLAUDE_PLUGIN_ROOT}/skills/reference/COVERAGE.md) — an index
+[`COVERAGE.md`](${CLAUDE_PLUGIN_ROOT}/skills/reference/COVERAGE.md) - an index
 of what each doc contains. It is still an index, not the prose.

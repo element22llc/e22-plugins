@@ -10,7 +10,7 @@ experimental = true
 _.source = "scripts/worktree-env.sh"
 
 [tools]
-# Baseline — always installed. `node` is the agent-tooling runtime, not a Node project layer.
+# Baseline - always installed. `node` is the agent-tooling runtime, not a Node project layer.
 node = "latest"
 python = "latest"
 uv = "latest"

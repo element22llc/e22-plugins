@@ -2,7 +2,7 @@
 """Golden-fixture contract checks for the steer plugin.
 
 The plugin codifies its workflow handoff contracts as *prose* golden fixtures
-(deliberately not executable tests — they stay reviewable and model-agnostic).
+(deliberately not executable tests - they stay reviewable and model-agnostic).
 This script makes those contracts machine-enforced at the edges that matter, so
 a silent regression in the shared vocabulary is caught in CI:
 
@@ -52,7 +52,7 @@ _TRANSITION_OWNER_RE = re.compile(r"steer:transition-owner\s+feature-status:draf
 
 
 def _registry() -> dict[str, list[str]]:
-    """Parse enums.registry — the single source of truth for controlled
+    """Parse enums.registry - the single source of truth for controlled
     vocabularies. The category and lifecycle-state sets below derive from it so
     they cannot drift from the canonical enums."""
     reg: dict[str, list[str]] = {}
@@ -69,10 +69,10 @@ def _registry() -> dict[str, list[str]]:
 
 _REG = _registry()
 
-# NEXT-ACTIONS.md §1 categories — derived from the registry (next_action).
+# NEXT-ACTIONS.md §1 categories - derived from the registry (next_action).
 VALID_CATEGORIES = set(_REG.get("next_action", []))
 
-# ISSUE-WORKFLOW.md issue lifecycle states — derived from the registry (issue_state).
+# ISSUE-WORKFLOW.md issue lifecycle states - derived from the registry (issue_state).
 VALID_LIFECYCLE_STATES = set(_REG.get("issue_state", []))
 
 # Stable headings every next-actions / next golden fixture must keep.
@@ -150,7 +150,7 @@ def check_next_actions_contract(errors: list[str]) -> None:
         # 03-responses otherwise forbids echoing skill routing, so if this form
         # falls out of the contract the two rules go back to contradicting each
         # other and no readout says what ran.
-        "## Recommended next actions — /steer:",
+        "## Recommended next actions - /steer:",
     ):
         if token not in text:
             errors.append(f"{doc}: contract no longer documents '{token}'")
@@ -296,8 +296,8 @@ def check_repo_fixtures(errors: list[str]) -> None:
 def check_workflow_authority(errors: list[str]) -> None:
     """Lock the workflow-authority and lifecycle-transition contracts.
 
-    These are *semantic* contracts about who may do what — not vocabulary or file
-    structure — so a refactor that silently re-scatters approval authority, breaks
+    These are *semantic* contracts about who may do what - not vocabulary or file
+    structure - so a refactor that silently re-scatters approval authority, breaks
     the issue-first scope wording, or drops the Stop-time loop guard is caught in
     CI rather than at pilot time:
 
@@ -313,7 +313,7 @@ def check_workflow_authority(errors: list[str]) -> None:
     """
     # 1. Exactly one skill owns draft -> approved, and it is spec.
     # Scan each skill's whole directory, not just SKILL.md: a skill body may be
-    # factored across sibling files (modes/*.md, PROCEDURE.md, MODES.md, …) that
+    # factored across sibling files (modes/*.md, PROCEDURE.md, MODES.md, ...) that
     # the dispatcher reads just-in-time to stay under the compaction cap
     # (check_context_budget.py). Authority is a property of the *skill*, so
     # moving the marker into a factored-out body must neither pass silently nor
@@ -344,7 +344,7 @@ def check_workflow_authority(errors: list[str]) -> None:
             )
         if _TRANSITION_OWNER_RE.search(btext):
             errors.append(
-                f"{build}: build must not own the draft->approved transition — "
+                f"{build}: build must not own the draft->approved transition - "
                 "delegate to spec instead of carrying the transition-owner marker"
             )
 

@@ -1,4 +1,4 @@
-# Fixture: adopt — committed secret outranks everything
+# Fixture: adopt - committed secret outranks everything
 
 Workflow: `/steer:adopt`
 
@@ -18,7 +18,7 @@ Blocking now
 
 ## Expected suggested command
 
-`/security-review` — offered only as the follow-up that validates remediation, **not** as the action that rotates the secret.
+`/security-review` - offered only as the follow-up that validates remediation, **not** as the action that rotates the secret.
 
 ## Must not recommend first
 

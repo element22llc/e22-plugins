@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — natural-language orientation (managed repos).
+# steer SessionStart hook - natural-language orientation (managed repos).
 #
 # WHY THIS EXISTS
 #   The router rule tells *you* (the model) to route plain-language intent to the
-#   right skill — but a non-technical user doesn't see that rule and may assume
+#   right skill - but a non-technical user doesn't see that rule and may assume
 #   they must memorize `/steer:*` commands. This hook makes the "just say what you
 #   want" affordance a high-salience, session-start signal so an unsure user gets
 #   oriented before they go looking for commands they never needed.
@@ -11,7 +11,7 @@
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path as
 #   inject-standards.sh / check-open-questions.sh). Fires ONLY on a fully managed
-#   spine — the unmanaged / foreign / damaged cases are owned by
+#   spine - the unmanaged / foreign / damaged cases are owned by
 #   check-unmanaged-repo.sh, which speaks instead, so the two never stack. An
 #   already-set-up repo is exactly where "describe a goal, I'll drive the workflow"
 #   is the useful nudge. One exception is steered deterministically: if a PO build
@@ -20,7 +20,7 @@
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd comes from the SessionStart
-#   payload (may be a subdir). Fail-soft: any ambiguity → stay silent.
+#   payload (may be a subdir). Fail-soft: any ambiguity -> stay silent.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
@@ -28,7 +28,7 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # SessionStart payload carries cwd (may be a subdir); anchor the spine lookup at
-# the work-tree root. Not a git repo → fall back to cwd.
+# the work-tree root. Not a git repo -> fall back to cwd.
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
 CWD="$(steer_field cwd)"
@@ -36,14 +36,14 @@ CWD="$(steer_field cwd)"
 
 # Knowledge-work folder (non-code; the typical Claude Cowork product-owner case).
 # There is no git repo here, so the spine-based orientation below never fires and
-# the user — often non-technical — has no signal that anything loaded. Confirm,
+# the user - often non-technical - has no signal that anything loaded. Confirm,
 # in plain language, that standards are active and that they can just describe a
 # goal.
 #
 # This is a ONE-TIME greeting, so it is gated to `source: startup`. The hook as a
 # whole is registered on `startup|resume|clear|compact|fork` (hooks.json) because the
-# polyrepo topology note below MUST survive a /clear or compaction — but re-greeting
-# the same user after every compaction is noise. Unknown/absent source → fail open
+# polyrepo topology note below MUST survive a /clear or compaction - but re-greeting
+# the same user after every compaction is noise. Unknown/absent source -> fail open
 # and greet, so a payload without the field behaves as it did before.
 # inject-standards.sh handles the lean rule injection for this same mode.
 case "$(steer_field source)" in
@@ -55,8 +55,8 @@ if [ "${_steer_greet}" = "1" ] && [ "$(steer_work_mode "${CWD}")" = "knowledge" 
 	printf '<!-- steer: knowledge-work orientation -->\n'
 	printf 'This is a non-code knowledge-work folder and the org engineering '
 	printf 'standards (steer) are active here in their lean, knowledge-work form. '
-	printf 'On your first reply, briefly confirm to the user — in plain language, no '
-	printf 'jargon — that the standards are loaded, and that they do **not** need to '
+	printf 'On your first reply, briefly confirm to the user - in plain language, no '
+	printf 'jargon - that the standards are loaded, and that they do **not** need to '
 	printf 'know any `/steer:*` command names: they can just describe what they want '
 	printf '(draft or refine a spec, capture a decision, ask what to do next) and you '
 	printf 'will route it to the right workflow yourself. Keep it to one or two '
@@ -66,19 +66,19 @@ fi
 
 ROOT="$(steer_repo_root "${CWD}")" || exit 0
 
-# This IS the steer source / marketplace repo itself, not a product repo —
+# This IS the steer source / marketplace repo itself, not a product repo -
 # never nag the plugin's own tree.
 [ -d "${ROOT}/.claude-plugin" ] && exit 0
 
 # Only orient on a complete, version-stamped spine. Unmanaged / foreign / damaged
-# spines are handled (and spoken to) by check-unmanaged-repo.sh — stay silent here
+# spines are handled (and spoken to) by check-unmanaged-repo.sh - stay silent here
 # so the session never gets two competing session-start banners.
 [ "$(steer_spine_state "${ROOT}")" = "managed" ] || exit 0
 
 # Polyrepo topology. Deliberately NOT an always-on rule: the always-on ruleset is
 # budget-capped on its ON-DISK total (scripts/check_context_budget.py), which a
 # scoped rule pays in full even though it injects for a small minority of repos.
-# This note is the better-targeted equivalent — emitted only in a repo that
+# This note is the better-targeted equivalent - emitted only in a repo that
 # actually is a workspace or a member, and additive to everything below rather
 # than replacing it. Emitted BEFORE the in-progress-PO-build branch on purpose:
 # that branch exits early, and a workspace/member with an open handoff gate still
@@ -94,18 +94,18 @@ if [ -n "${POLY_ROLE}" ]; then
 		printf 'listed in `spec/workspace.yml`. Any report you produce here (`/steer:next`, '
 		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`, `/steer:protect`) must '
 		printf 'name the members it covered and flag any it could read neither locally nor '
-		printf 'over the GitHub gateway as **uncovered** — never present a fraction of the '
+		printf 'over the GitHub gateway as **uncovered** - never present a fraction of the '
 		printf 'product as the whole. Load `/steer:reference polyrepo` before acting on the '
 		printf 'topology.\n'
 	else
 		printf 'This repo is a **member** of a product whose `/spec` spine lives in the '
 		printf 'workspace repo named in `spec/PRODUCT.md`. Its spine is partial **by '
-		printf 'design** — product-level artifacts and every feature `intent.md` live in '
+		printf 'design** - product-level artifacts and every feature `intent.md` live in '
 		printf 'the workspace, so a missing local intent means you have not read the '
 		printf 'workspace yet, never that the feature is unspecified. Do not create '
 		printf 'product-level spec files here to fill a gap. A PR here cannot auto-close a '
 		printf 'workspace issue with `Closes #N` (GitHub honours closing keywords only '
-		printf 'within one repo) — use `Refs owner/repo#N` and close explicitly after '
+		printf 'within one repo) - use `Refs owner/repo#N` and close explicitly after '
 		printf 'merge. Load `/steer:reference polyrepo` before acting on the topology.\n'
 	fi
 	printf '\n'
@@ -116,14 +116,14 @@ fi
 # back into the guided flow, not greeted with a blank "what do you want to do?".
 # Signal = spec/BUILD-STATUS.md whose Handoff gate still has an unchecked box
 # (`- [ ]`). A handed-off build (every box `- [x]`) carries no `- [ ]` line, so it
-# falls through to the generic orientation below — the flow stops nagging once
-# the dev has taken over. Fail-soft: an unreadable status file → generic nudge.
+# falls through to the generic orientation below - the flow stops nagging once
+# the dev has taken over. Fail-soft: an unreadable status file -> generic nudge.
 BUILD_STATUS="${ROOT}/spec/BUILD-STATUS.md"
 if [ -f "${BUILD_STATUS}" ] && grep -q '^- \[ \]' "${BUILD_STATUS}" 2>/dev/null; then
 	printf '<!-- steer: in-progress PO build -->\n'
 	printf 'An **in-progress PO build** lives here (`spec/BUILD-STATUS.md` has an open '
 	printf 'handoff gate). **Resume the guided build now via `/steer:build`**: read '
-	printf 'that file first and pick up from its **Current step** — do not restart the '
+	printf 'that file first and pick up from its **Current step** - do not restart the '
 	printf 'interview or re-ask settled questions, and do not wait for the user to name '
 	printf 'a command.\n'
 	exit 0
@@ -134,5 +134,5 @@ printf 'This repo is standards-managed. The user does **not** need to know skill
 printf 'names: when they describe a goal in plain language, route it to the matching '
 printf '`/steer:*` skill yourself and announce the routing in one line (per the '
 printf 'router rule). If they seem unsure where to start, tell them plainly that they '
-printf 'can just say what they want — build a feature, fix a bug, ask what to do next — '
+printf 'can just say what they want - build a feature, fix a bug, ask what to do next - '
 printf 'and you will drive the right workflow.\n'

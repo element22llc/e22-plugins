@@ -2,20 +2,20 @@
 
 How this system is built: the tech stack, the pieces and what each owns, how a
 request flows through them, and the cross-cutting concerns. This is the
-**engineer's system model** — the orientation a new contributor (or Claude)
+**engineer's system model** - the orientation a new contributor (or Claude)
 reads before touching code.
 
-**Scope — narrative and tables only.** *Why* a choice was made → an ADR in
-[`/spec/decisions/`](./spec/decisions); the *global architecture diagram* →
+**Scope - narrative and tables only.** *Why* a choice was made -> an ADR in
+[`/spec/decisions/`](./spec/decisions); the *global architecture diagram* ->
 [`/spec/design/architecture-diagram.md`](./spec/design/architecture-diagram.md)
-and other *diagrams* → [`/spec/design/`](./spec/design) (link them here, don't
-redraw them); *how to use/operate* the product → [`/spec/app/`](./spec/app).
+and other *diagrams* -> [`/spec/design/`](./spec/design) (link them here, don't
+redraw them); *how to use/operate* the product -> [`/spec/app/`](./spec/app).
 Keep this file describing *what is*, not *why* or *how-to*. It's a valid stub
-today — **grow it as the system grows**, in the same PR that changes the stack,
+today - **grow it as the system grows**, in the same PR that changes the stack,
 adds an app/package, or reshapes the data flow (living-docs rule).
 
 **Why this lives at the root and not in `/spec`.** `/spec` is the product's
-*intent* — what the product should do and why, authored ahead of the code. This
+*intent* - what the product should do and why, authored ahead of the code. This
 file is the *as-built* system model, authored behind it. Keeping the two apart
 lets the PR checklist flag *architecture/stack drift* as its own class; this
 file going stale against the code is reported by `/steer:audit code` (its
@@ -23,7 +23,7 @@ DX & docs dimension), not by `/steer:audit spec`.
 
 ## Tech stack
 
-Sourced from `package.json` / `mise.toml` / `compose.yaml` — keep versions in
+Sourced from `package.json` / `mise.toml` / `compose.yaml` - keep versions in
 step with those, don't hand-maintain a second copy.
 
 | Layer | Choice | Version | Notes |
@@ -34,17 +34,17 @@ step with those, don't hand-maintain a second copy.
 | Backend | [e.g., in-Next route handlers] | | [standalone `apps/api`? note the ADR] |
 | Database | [e.g., PostgreSQL] | | |
 | ORM / data access | [e.g., Drizzle] | | |
-| Auth | [e.g., Better Auth] | | high-risk — ADR-NNNN |
+| Auth | [e.g., Better Auth] | | high-risk - ADR-NNNN |
 | Testing | [e.g., Vitest / Playwright] | | |
 | Tooling | [e.g., pnpm, Biome, mise] | | |
 | Error tracking | [e.g., Sentry] | | |
 
 Deviations from the org-wide stack defaults are recorded as ADRs and noted in
-[`CLAUDE.md`](./CLAUDE.md) → *Stack overrides*.
+[`CLAUDE.md`](./CLAUDE.md) -> *Stack overrides*.
 
 ## Monorepo map
 
-What each deployable app and shared package owns — the system-wide view the
+What each deployable app and shared package owns - the system-wide view the
 per-directory READMEs don't give.
 
 | Path | Kind | Responsibility |
@@ -57,26 +57,26 @@ See [`apps/README.md`](./apps/README.md) and
 
 ## How it fits together
 
-[The request → response path, and the layer boundaries (UI → server →
-services → data). Two or three sentences. The global architecture diagram lives
+[The request -> response path, and the layer boundaries (UI -> server ->
+services -> data). Two or three sentences. The global architecture diagram lives
 in
-[`/spec/design/architecture-diagram.md`](./spec/design/architecture-diagram.md)
-— link it here, don't inline it.]
+[`/spec/design/architecture-diagram.md`](./spec/design/architecture-diagram.md) -
+link it here, don't inline it.]
 
 ## Cross-cutting concerns
 
 One line each, linking the owning ADR or contract:
 
-- **Auth & tenancy** — [model; ADR-NNNN]
-- **Persistence & migrations** — [strategy; expand/contract; ADR-NNNN, see `/spec/reference/`]
-- **Config & secrets** — [where they live: SSM Parameter Store `SecureString` by default / Secrets Manager when warranted; never committed]
-- **Deployment & environments** — [non-prod auto on `main`; prod auto on the `prod` branch behind a reviewed promotion PR; review app per feature PR; see `/infra/README.md`]
-- **Observability** — [logs store; metrics + alarms; error tracking (e.g. Sentry); health-check endpoint; **where alerts go** (on-call/channel)]
+- **Auth & tenancy** - [model; ADR-NNNN]
+- **Persistence & migrations** - [strategy; expand/contract; ADR-NNNN, see `/spec/reference/`]
+- **Config & secrets** - [where they live: SSM Parameter Store `SecureString` by default / Secrets Manager when warranted; never committed]
+- **Deployment & environments** - [non-prod auto on `main`; prod auto on the `prod` branch behind a reviewed promotion PR; review app per feature PR; see `/infra/README.md`]
+- **Observability** - [logs store; metrics + alarms; error tracking (e.g. Sentry); health-check endpoint; **where alerts go** (on-call/channel)]
 
 ## Where to look next
 
-- Decisions and their rationale → [`/spec/decisions/`](./spec/decisions) (ADRs)
-- Architecture diagram → [`/spec/design/architecture-diagram.md`](./spec/design/architecture-diagram.md); other diagrams → [`/spec/design/`](./spec/design)
-- Per-feature behaviour → `/spec/features/[id]/contract.md`
-- How to use/operate the product → [`/spec/app/`](./spec/app)
-- Stack overrides & product-specific patterns → [`CLAUDE.md`](./CLAUDE.md)
+- Decisions and their rationale -> [`/spec/decisions/`](./spec/decisions) (ADRs)
+- Architecture diagram -> [`/spec/design/architecture-diagram.md`](./spec/design/architecture-diagram.md); other diagrams -> [`/spec/design/`](./spec/design)
+- Per-feature behaviour -> `/spec/features/[id]/contract.md`
+- How to use/operate the product -> [`/spec/app/`](./spec/app)
+- Stack overrides & product-specific patterns -> [`CLAUDE.md`](./CLAUDE.md)

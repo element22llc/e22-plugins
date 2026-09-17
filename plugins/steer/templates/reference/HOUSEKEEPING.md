@@ -5,7 +5,7 @@ correct home under `/spec`. The always-on rule keeps only a short summary; this
 is the full sweep procedure, loaded on demand via `/steer:tidy`.
 
 Products are internal monorepos (see the layout rule). The **root** is for
-scaffolding and config — not a dumping ground for the spreadsheets, decks,
+scaffolding and config - not a dumping ground for the spreadsheets, decks,
 diagrams, and documents that feed the spec. A PO building from the template
 often commits a pile of source material at the root; this sweep **relocates,
 renames, and (with confirmation) removes** it so the tree reflects what each
@@ -13,41 +13,41 @@ file actually is.
 
 The three actions differ in how much they wait on you:
 
-- **Move** — a clearly-named file you can confidently classify goes to its
+- **Move** - a clearly-named file you can confidently classify goes to its
   correct home **immediately**, under its existing name, no confirmation. The
   obvious strays just get sorted; you never block on a yes for a move that was
   never in doubt.
-- **Rename + move** — a file whose name is cryptic, inconsistent, or misleading
+- **Rename + move** - a file whose name is cryptic, inconsistent, or misleading
   gets moved now under its current name, and a cleaner name is **proposed**
   separately (never renamed silently). A bad name is not a reason to bury or
-  delete a file; it's a reason to rename it — with a yes.
-- **Delete** — never automatic, always after the user confirms, and only in two
+  delete a file; it's a reason to rename it - with a yes.
+- **Delete** - never automatic, always after the user confirms, and only in two
   cases: **true junk** (which also gets a `.gitignore` pattern), and an
   **already-absorbed source** whose bytes match a committed
-  `spec/sources/**/original.*` (no `.gitignore` pattern there — it isn't junk).
+  `spec/sources/**/original.*` (no `.gitignore` pattern there - it isn't junk).
   Both are detailed below.
 
-Anything you **can't confidently classify** — an unfamiliar purpose, a
-`Copy of …` / look-alike pair — is **not** auto-moved: ask first (see "Unclear
+Anything you **can't confidently classify** - an unfamiliar purpose, a
+`Copy of ...` / look-alike pair - is **not** auto-moved: ask first (see "Unclear
 names" below). Confidence is the gate on the automatic move; absent it, you ask.
 
-## Root allowlist — leave these in place
+## Root allowlist - leave these in place
 
 These belong at the root. Never propose moving them:
 
 - **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `policy/`,
-  `scripts/`, `spec/` (rule `22-housekeeping` is the source of this list — a
+  `scripts/`, `spec/` (rule `22-housekeeping` is the source of this list - a
   `workspace` profile ships a root `scripts/ws.sh`, so `scripts/` is never loose
   material; `policy/` holds the version pins and branch-protection data the
   scaffold installs and `/steer:protect` reads).
 - **Root config:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `biome.json`, `compose.yaml`, `mise.toml`, `mise.lock`, `tsconfig*.json`.
 - **Root docs:** `CLAUDE.md`, `README.md`, `DESIGN.md`, `ARCHITECTURE.md`
-  (rule `32-living-docs` and the layout reference — `/steer:reference conventions` § Where things live — require the last at the root — never
+  (rule `32-living-docs` and the layout reference - `/steer:reference conventions` § Where things live - require the last at the root - never
   propose relocating it to `/spec/design/`).
 - **Dotfiles:** `.gitignore`, `.github/`, `.mise/`, etc.
 
-**Never touch** `node_modules/`, `.git/`, or any lockfile — and never reach
+**Never touch** `node_modules/`, `.git/`, or any lockfile - and never reach
 *inside* the known dirs during a tidy; the sweep only sorts what is loose at the
 root (the one exception is folding a stray top-level metadata folder, below).
 
@@ -59,10 +59,10 @@ row or none, ask rather than guess (see "Unclear names" below).
 | Material | Destination |
 |---|---|
 | Inventories, vendor/system metadata spreadsheets, discovery questions, PII asset lists, CMDB docs, SQL DDL / schema dumps | `/spec/reference/` |
-| Specification / requirements documents — a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW (source material feeding the spec, not the structured spec spine itself) | `/spec/reference/` |
+| Specification / requirements documents - a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW (source material feeding the spec, not the structured spec spine itself) | `/spec/reference/` |
 | An existing top-level `Technical Metadata/` (or similarly-named source) folder | `/spec/reference/technical-metadata/` |
 | Architecture diagrams, flow diagrams (`.svg`, "Flows for Review" `.pptx`) | `/spec/design/` |
-| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` — defer to `/steer:reference design-sources` for the exact path |
+| A Claude Design export (ZIP or extracted HTML) | `/spec/design/` - defer to `/steer:reference design-sources` for the exact path |
 | Code / config that lives at root | leave in place (allowlist) |
 
 `/spec/reference/` is the catch-all home for durable source material the spec is
@@ -70,15 +70,15 @@ built from. Group related files into subfolders by source system or topic when
 that makes the pile easier to navigate (e.g. `technical-metadata/`,
 `architecture/`).
 
-**Already-absorbed sources are the exception — delete, don't move.** Before
+**Already-absorbed sources are the exception - delete, don't move.** Before
 routing a spec/requirements doc to `/spec/reference/`, check whether its bytes
-match a committed `spec/sources/**/original.*` — a source `/steer:intake` has
+match a committed `spec/sources/**/original.*` - a source `/steer:intake` has
 already absorbed. If so, the stray at the drop location is a redundant duplicate:
 its content is preserved in the committed source, so **propose deleting it** rather
 than moving it (moving would just create a second copy of an already-absorbed
 source). Like every delete, it waits for a yes. This is the counterpart to
 `/steer:intake` relocating the file into `spec/sources/` when it absorbs a *new*
-version — between the two, an absorbed document never stays stalled where it was
+version - between the two, an absorbed document never stays stalled where it was
 dropped.
 
 ## Renaming as you move
@@ -86,30 +86,30 @@ dropped.
 A clear filename is part of a tidy repo. When you move a file, propose a better
 name if the current one is:
 
-- **Cryptic or coded** — `OPCO PI Logical Elements 03_29_2021.xlsx`,
+- **Cryptic or coded** - `OPCO PI Logical Elements 03_29_2021.xlsx`,
   `CIDRS_Data_Details-updated.xlsx`.
-- **Prefixed with cruft** — `Copy of …`, `Final_v3_FINAL`, trailing `(002)`,
+- **Prefixed with cruft** - `Copy of ...`, `Final_v3_FINAL`, trailing `(002)`,
   `-updated`, dates that aren't meaningful.
-- **Inconsistent** — spaces vs underscores, mixed case, against the convention
+- **Inconsistent** - spaces vs underscores, mixed case, against the convention
   the sibling files in that folder already follow.
 
 Keep the file extension. Match whatever naming pattern the destination folder
 already uses (if `/spec/reference/` holds `kebab-case.xlsx`, follow it; if it
-holds source-system names, follow that). Propose the rename in the plan — never
+holds source-system names, follow that). Propose the rename in the plan - never
 rename silently, and don't drop information the name actually carries (a real
 `as-of` date, a source system) just to make it shorter.
 
-## Unclear names and purpose — ask, don't assume
+## Unclear names and purpose - ask, don't assume
 
 A confusing or duplicate-looking name does **not** mean a file is disposable.
 `Copy of ICA_cadata.xlsx` may be the authoritative cut, an edited variant, or a
-true leftover — the name alone can't tell you, and deleting or misfiling it
+true leftover - the name alone can't tell you, and deleting or misfiling it
 loses real work.
 
 For any file whose **purpose or correct home you can't determine from its name
 and a quick look**:
 
-1. **Ask the PO/dev what it is and how it's used** — what the file is for, which
+1. **Ask the PO/dev what it is and how it's used** - what the file is for, which
    is the current version, whether a near-duplicate supersedes it.
 2. Use the answer to decide the action: move it to the right folder, rename it to
    reflect its actual content/role, or (only if they confirm it's a leftover)
@@ -117,56 +117,56 @@ and a quick look**:
 3. Never silently pick a winner between look-alike files, and never delete the
    odd-named one just because a "cleaner" sibling exists.
 
-## Junk — flag, never auto-delete, and gitignore the pattern
+## Junk - flag, never auto-delete, and gitignore the pattern
 
 Two things are deletion candidates, and both wait for a yes:
 
 - **OS/junk:** `desktop.ini`, `.DS_Store`, `Thumbs.db`.
-- **An already-absorbed source** — covered above; it is a redundant duplicate of
+- **An already-absorbed source** - covered above; it is a redundant duplicate of
   committed content, not junk, so the `.gitignore` step below does **not** apply
   to it.
 
 When you delete a junk file, **also add its pattern to `.gitignore`** so it
-doesn't get re-committed and re-introduced later — deleting the file alone is
+doesn't get re-committed and re-introduced later - deleting the file alone is
 half the fix. Use a broad pattern, not the one path (`.DS_Store`, `Thumbs.db`,
-`desktop.ini` — these match anywhere in the tree). Only add a pattern that isn't
+`desktop.ini` - these match anywhere in the tree). Only add a pattern that isn't
 already present, and keep them under a clearly-labelled section (e.g. a
 `# OS junk` comment) so the additions are obvious in review.
 
-Everything else that looks redundant — `Copy of …`, `(002)`, case- or
+Everything else that looks redundant - `Copy of ...`, `(002)`, case- or
 separator-variant pairs (e.g. `OpCo Architecture Recommendations.pptx` vs
-`OpCo_Architecture_Recommendations.pptx`) — goes through the "ask, don't assume"
+`OpCo_Architecture_Recommendations.pptx`) - goes through the "ask, don't assume"
 step above before any move/rename/delete. Surface which copy *looks* canonical,
-but let the PO/dev confirm. Don't gitignore these — they're content decisions,
+but let the PO/dev confirm. Don't gitignore these - they're content decisions,
 not recurring junk.
 
 ## Procedure
 
 1. **List** the repo root (one level). Drop everything on the allowlist and the
-   known dirs — what remains are the strays.
+   known dirs - what remains are the strays.
 2. **Classify** each stray into the taxonomy table. Sort each into one of three
    buckets:
-   - **Confident + clear name** → an automatic move.
-   - **Confident + cryptic/inconsistent name** → an automatic move *plus* a
+   - **Confident + clear name** -> an automatic move.
+   - **Confident + cryptic/inconsistent name** -> an automatic move *plus* a
      proposed rename. Note the cleaner name.
-   - **Can't confidently classify, or look-alike/duplicate** → a **questions**
+   - **Can't confidently classify, or look-alike/duplicate** -> a **questions**
      list; do not move yet.
 3. **Auto-move the confident strays now**, before asking anything:
    - Tracked files: `git mv <src> <dest>` under their **existing** filename
      (history follows). Untracked files: plain `mv`.
-   - Create destination folders (`/spec/reference/…`, `/spec/design/…`) as needed
-     — **except in a polyrepo member** (`spec/PRODUCT.md` present), where
+   - Create destination folders (`/spec/reference/...`, `/spec/design/...`) as needed -
+     **except in a polyrepo member** (`spec/PRODUCT.md` present), where
      `spec/reference/`, `spec/sources/`, `spec/features/` and `spec/app/` are the
      workspace's: do not create one locally. Leave the stray in place, and report
      it with the workspace as its destination. `spec/design/` and
-     `spec/decisions/` are the member's own — create those normally.
+     `spec/decisions/` are the member's own - create those normally.
    - If a moved file is referenced by a spec (`source.md`, an `intent.md` `Design
      source` section), update the reference so the link still resolves.
-4. **Ask** the PO/dev about the questions list — what each unclear or
-   duplicate-looking file is for and which version is current — before moving it.
-5. **Present a plan** for the gated work only: a table with an action column —
+4. **Ask** the PO/dev about the questions list - what each unclear or
+   duplicate-looking file is for and which version is current - before moving it.
+5. **Present a plan** for the gated work only: a table with an action column -
    `rename` (for files already auto-moved), `move` (for the now-answered
-   ambiguous ones), or `delete` — showing source → destination/new name. Include
+   ambiguous ones), or `delete` - showing source -> destination/new name. Include
    junk and confirmed leftovers as `delete` rows. Do not rename or delete
    anything yet.
 6. **On approval**, apply the gated actions:
@@ -177,7 +177,7 @@ not recurring junk.
 7. **Report** what was auto-moved, what renamed/moved/deleted on approval, and
    what you left in place or flagged ambiguous.
 8. **Commit the approved result without asking** (Commit autonomy). What needs a
-   yes is each rename/move/delete in steps 5-6 — not the commit that records them.
-   Never pause to ask "should I commit this?" — in branch-and-PR mode the merge is
-   the gate, and in solo trunk the first push of a session is — while a local
+   yes is each rename/move/delete in steps 5-6 - not the commit that records them.
+   Never pause to ask "should I commit this?" - in branch-and-PR mode the merge is
+   the gate, and in solo trunk the first push of a session is - while a local
    graduation signal stands; without one, a solo-trunk push is not gated at all.

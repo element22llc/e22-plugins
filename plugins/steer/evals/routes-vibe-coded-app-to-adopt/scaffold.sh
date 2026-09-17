@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build a VIBE-CODED repo — real code, no spec spine, no toolchain — for the
+# Build a VIBE-CODED repo - real code, no spec spine, no toolchain - for the
 # adopt routing case.
 #
 # The ask says "no spec, no toolchain; adopt it", so the fixture must carry
@@ -13,7 +13,7 @@ set -eu
 
 git init -q .
 # The sandbox has no init.defaultBranch, so HEAD would be `master` while the
-# standards name `main` — and every 2026-09-04 run spent answer space on that.
+# standards name `main` - and every 2026-09-04 run spent answer space on that.
 git symbolic-ref HEAD refs/heads/main
 git config user.email eval@example.com
 git config user.name "eval"

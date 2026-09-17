@@ -5,9 +5,9 @@
 ``plugins/steer/templates/github/agents/<name>.agent.md`` per steer subagent in
 ``plugins/steer/agents/*.md``. Those artifacts are committed (so ``/steer:init``
 can install them without running Python in the consumer repo), which means they
-can go stale the moment a subagent's frontmatter or body changes — or when a
+can go stale the moment a subagent's frontmatter or body changes - or when a
 subagent is added or removed. This check regenerates in-memory and compares the
-full set against the committed directory, failing the build on any drift — the
+full set against the committed directory, failing the build on any drift - the
 same single-source-of-truth discipline the other ``check_copilot_*`` gates apply.
 
 Run from the repo root::
@@ -30,7 +30,7 @@ def main() -> int:
         return 1
     if not OUT_DIR.is_dir():
         print(
-            f"check_copilot_agents: missing {OUT_DIR} — run 'mise run gen:copilot'",
+            f"check_copilot_agents: missing {OUT_DIR} - run 'mise run gen:copilot'",
             file=sys.stderr,
         )
         return 1
@@ -49,7 +49,7 @@ def main() -> int:
 
     if problems:
         print(
-            f"check_copilot_agents: {OUT_DIR} is out of sync with {AGENTS_DIR}/ — "
+            f"check_copilot_agents: {OUT_DIR} is out of sync with {AGENTS_DIR}/ - "
             f"run 'mise run gen:copilot' to regenerate:",
             file=sys.stderr,
         )

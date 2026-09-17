@@ -6,7 +6,7 @@ arm: both
 weight: 3
 ---
 
-The run must actually **enter** `audit` — asserted on the `Skill` tool call, not
+The run must actually **enter** `audit` - asserted on the `Skill` tool call, not
 on the prose.
 
 `last_message` was the wrong surface for this claim. `rules/00-router.md` says
@@ -19,7 +19,7 @@ killed right after its announce line. That measured message shape, not routing.
 
 A tool call is not the same mistake as grading the trace. The objection to
 `target: trace` is that the always-on ruleset names every skill, so any skill
-matches somewhere in the injected text — but an invocation is an **action** the
+matches somewhere in the injected text - but an invocation is an **action** the
 run took, and it is absent from the no-plugin arm by construction. `arm: both`
 therefore keeps this grader scored in both arms: the baseline has no steer
 skills to invoke, so the delta stays attributable to the plugin.

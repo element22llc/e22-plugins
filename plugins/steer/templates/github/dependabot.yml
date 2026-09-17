@@ -21,7 +21,7 @@ updates:
 
   # Uncomment the block matching the detected stack (/steer:init and /steer:adopt do this).
 
-  # Node / TypeScript — pnpm workspace at the repo root.
+  # Node / TypeScript - pnpm workspace at the repo root.
   # - package-ecosystem: npm
   #   directory: /
   #   schedule:
@@ -37,7 +37,7 @@ updates:
   #       update-types:
   #         - version-update:semver-major
 
-  # Python — pyproject.toml at the repo root.
+  # Python - pyproject.toml at the repo root.
   # - package-ecosystem: pip
   #   directory: /
   #   schedule:
@@ -53,7 +53,7 @@ updates:
   #       update-types:
   #         - version-update:semver-major
 
-  # Docker — base images. Majors are governed by policy/versions.yml (an ADR decision), not Dependabot.
+  # Docker - base images. Majors are governed by policy/versions.yml (an ADR decision), not Dependabot.
   # - package-ecosystem: docker
   #   directory: /
   #   schedule:
@@ -64,7 +64,7 @@ updates:
   #       update-types:
   #         - version-update:semver-major
 
-  # Terraform / OpenTofu — set `directory` to where the .tf/.hcl roots live.
+  # Terraform / OpenTofu - set `directory` to where the .tf/.hcl roots live.
   # - package-ecosystem: terraform
   #   directory: /
   #   schedule:

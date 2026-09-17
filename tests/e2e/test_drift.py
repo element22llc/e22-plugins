@@ -1,7 +1,7 @@
 """End-to-end: ``/steer:audit spec`` is a read-only conformance audit.
 
 The spec audit compares the as-built ``/spec`` against a tracker-spec export and *reports*
-divergences — it never edits code/spec and never commits (``disallowed-tools``).
+divergences - it never edits code/spec and never commits (``disallowed-tools``).
 Its report is printed in the response, not written to a file (the optional
 ``DRIFT-REPORT.md`` write needs a follow-up confirmation a headless run can't give).
 
@@ -9,7 +9,7 @@ So this scenario centers on the property that matters: **drift mutates nothing**
 even under ``bypassPermissions`` (the robust, structural assertion). A second,
 deliberately *lenient* check confirms the printed report actually engaged with the
 seeded divergence (the as-built ``phone`` column / XLSX the tracker never asked for)
-and closed with the mandatory ``## Recommended next actions`` block — prose, so
+and closed with the mandatory ``## Recommended next actions`` block - prose, so
 kept generous to avoid flaking on wording.
 """
 
@@ -42,7 +42,7 @@ def test_drift_is_read_only_and_reports_divergence(drift_repo):
     with explain_on_failure(drift_repo, run):
         assert not run.is_error, f"drift run failed: {run.stderr[:1500]}"
 
-        # The core contract: read-only. Nothing edited, nothing committed — even
+        # The core contract: read-only. Nothing edited, nothing committed - even
         # though we ran under bypassPermissions.
         gitutil.assert_unchanged(drift_repo, baseline)
 

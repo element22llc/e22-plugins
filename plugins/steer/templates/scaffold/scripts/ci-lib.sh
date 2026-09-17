@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer — shared stack detection for the `ci:*` mise tasks (sourced, never run).
+# steer - shared stack detection for the `ci:*` mise tasks (sourced, never run).
 # Every predicate must stay in lockstep with the plugin's hooks/lib/scope.sh:
 # CI and the always-on rules must agree on what stack a repo is, or a rule fires
 # for a stack CI never validates.
@@ -12,7 +12,7 @@ steer_ci_has_python() {
 	[ -f pyproject.toml ] || git ls-files '*/pyproject.toml' | grep -q .
 }
 
-# A bare roles/ dir is NOT Ansible — it needs playbooks/ beside it (mirrors steer_repo_does_iac).
+# A bare roles/ dir is NOT Ansible - it needs playbooks/ beside it (mirrors steer_repo_does_iac).
 steer_ci_has_ansible() {
 	[ -f ansible.cfg ] || [ -f site.yml ] || [ -f site.yaml ] || { [ -d roles ] && [ -d playbooks ]; }
 }
@@ -43,7 +43,7 @@ steer_ci_endgroup() {
 }
 
 # Resolve the git ref a changed-files gate should diff against, echoing it on
-# stdout. Echoes nothing and returns 1 when no base is resolvable — every caller
+# stdout. Echoes nothing and returns 1 when no base is resolvable - every caller
 # must then FAIL OPEN (skip the gate), never fail the build: a gate that cannot
 # see the diff has learned nothing, and blocking on that punishes shallow clones
 # and first pushes rather than catching a real defect.

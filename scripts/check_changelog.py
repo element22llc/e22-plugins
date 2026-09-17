@@ -6,7 +6,7 @@ Entries live as one curated fragment per change under ``.changes/unreleased/``;
 version file into ``CHANGELOG.md``. Three checks, so the same script serves
 local runs and the CI PR gate:
 
-1. **Release validator** (always — no git, no changie needed): the version in
+1. **Release validator** (always - no git, no changie needed): the version in
    ``plugin.json`` equals the newest ``.changes/vX.Y.Z.md``, and the assembled
    ``CHANGELOG.md`` carries exactly those versions in strictly descending
    order. A hand-edited or stale ``CHANGELOG.md`` fails here rather than
@@ -17,7 +17,7 @@ local runs and the CI PR gate:
 
 3. **Behaviour-change gate** (only with ``--base <ref>``): if any plugin
    behaviour file changed versus the base ref, a fragment must have been *added*
-   under ``.changes/unreleased/`` — so a stream of PRs accumulates entries.
+   under ``.changes/unreleased/`` - so a stream of PRs accumulates entries.
    Behaviour is deny-by-default: everything under ``plugins/steer/`` counts,
    minus the exemptions enumerated below, each with the reason it ships nothing.
    A **release cut** satisfies the gate with an added ``.changes/vX.Y.Z.md``
@@ -50,7 +50,7 @@ CHANGES_DIR = Path(".changes")
 UNRELEASED_DIR = CHANGES_DIR / "unreleased"
 
 # Everything the plugin ships is behaviour. An allowlist of directory prefixes fails
-# open — the plugin format keeps gaining component types, and adopting a new one
+# open - the plugin format keeps gaining component types, and adopting a new one
 # would ship ungated until somebody remembered to widen the gate. So the
 # classifier is deny-by-default: anything under `plugins/steer/`
 # requires a changelog fragment unless it is exempted below, and each exemption carries
@@ -59,7 +59,7 @@ UNRELEASED_DIR = CHANGES_DIR / "unreleased"
 PLUGIN_ROOT = "plugins/steer/"
 EXEMPT_SUBSTRINGS = ("/tests/",)  # test suites, wherever they sit under the plugin
 EXEMPT_PREFIXES = (
-    "plugins/steer/evals/",  # a dev gate like tests/ — inert at runtime
+    "plugins/steer/evals/",  # a dev gate like tests/ - inert at runtime
     "plugins/steer/.claude/",  # local dev settings for this checkout
 )
 EXEMPT_EXACT = (
@@ -130,7 +130,7 @@ def check_release(errors: list[str]) -> None:
     if versions[0] != version:
         errors.append(
             f"{PLUGIN_JSON}: version {version} != newest version file {versions[0]} "
-            "(`changie merge` rewrites plugin.json — run it rather than editing by hand)"
+            "(`changie merge` rewrites plugin.json - run it rather than editing by hand)"
         )
 
     # The committed CHANGELOG.md is generated. If it disagrees with the version
@@ -149,7 +149,7 @@ def check_release(errors: list[str]) -> None:
             detail.append("same versions, wrong order")
         errors.append(
             f"{CHANGELOG} is out of sync with {CHANGES_DIR} ({'; '.join(detail)}) "
-            "— run `mise run changelog:merge`"
+            "- run `mise run changelog:merge`"
         )
 
 

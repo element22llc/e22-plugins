@@ -1,4 +1,4 @@
-# Label taxonomy — the canonical set `bootstrap-labels` reconciles
+# Label taxonomy - the canonical set `bootstrap-labels` reconciles
 
 `/steer:issues bootstrap-labels` creates/reconciles exactly these labels
 idempotently (`gh label create --force` = create-or-update). GitHub silently
@@ -9,11 +9,11 @@ and agent labelling are reliable.
 `steer:source` marker; lifecycle **state** is the `steer:state` marker (never a
 label); **kind** is the `steer:kind` marker + the GitHub Issue **Type**. Do not
 encode status, release, or kind as labels. **Priority and effort are native
-GitHub issue fields, never labels** — `steer` reads them, and escalate-only
+GitHub issue fields, never labels** - `steer` reads them, and escalate-only
 auto-sets Priority, via `/steer:tracker-sync` (`issue_priority` in `ENUMS.md`;
 native-field contract in `ISSUE-SCHEMA.md`). Do not create `priority:*` labels.
 
-## `source:*` — origin (mirrors `steer:source`)
+## `source:*` - origin (mirrors `steer:source`)
 
 | Label | Meaning | Color |
 |---|---|---|
@@ -27,7 +27,7 @@ native-field contract in `ISSUE-SCHEMA.md`). Do not create `priority:*` labels.
 | `source:implementation` | Discovered while implementing another issue | `fbca04` |
 | `source:spec` | Spec question or spec drift | `006b75` |
 
-## `needs:*` — what's blocking readiness
+## `needs:*` - what's blocking readiness
 
 | Label | Meaning | Color |
 |---|---|---|
@@ -37,7 +37,7 @@ native-field contract in `ISSUE-SCHEMA.md`). Do not create `priority:*` labels.
 | `needs:spec` | Needs a spec before dev | `fbca04` |
 | `needs:validation` | Implemented; awaiting acceptance | `0e8a16` |
 
-## `risk:*` — review-sensitivity
+## `risk:*` - review-sensitivity
 
 | Label | Meaning | Color |
 |---|---|---|

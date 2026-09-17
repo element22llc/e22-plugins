@@ -1,13 +1,13 @@
 # `/steer:intake`
 
-Absorb a Product Owner's spec or roadmap **document** — and every later version of
-it — into the `/spec` spine, surfacing exactly what changed each time.
+Absorb a Product Owner's spec or roadmap **document** - and every later version of
+it - into the `/spec` spine, surfacing exactly what changed each time.
 
 !!! info "When to use"
     Use when a PO hands over a new or updated office document (a spec in Word, a
     roadmap deck, a requirements spreadsheet, a PDF) and you need to detect what
     changed versus the last version and fold the real changes into `/spec` and the
-    tracker — without losing human-authored content. Reach for it whenever a
+    tracker - without losing human-authored content. Reach for it whenever a
     re-sent document arrives with no pointer to what was edited.
 
 **Argument hint:** `[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]`
@@ -17,39 +17,39 @@ it — into the `/spec` spine, surfacing exactly what changed each time.
 Office documents are opaque binaries: `git` can't diff them and Claude can't read
 them directly, so a re-sent file is a blob with no indication of what moved.
 `/steer:intake` commits, for every version, **both** the original binary **and** a
-normalized Markdown extraction — so a plain `git diff` of successive extractions
+normalized Markdown extraction - so a plain `git diff` of successive extractions
 *is* the "what changed" the PO never spells out.
 
 ## What it does
 
-1. **Identity** — resolves a stable kebab-case `source-id` for the logical
+1. **Identity** - resolves a stable kebab-case `source-id` for the logical
    document, decoupled from the filename (a renamed re-send still maps to the same
    source).
-2. **Version, convert, commit** — lays down
+2. **Version, convert, commit** - lays down
    `spec/sources/<source-id>/versions/<vNNNN-DATE>/` holding `original.<ext>`
    (provenance) and `extracted.md` (the diff surface), and commits both together.
    The dropped file is **relocated** into that canonical home (a history-preserving
-   `git mv` for an in-repo drop — the same move `/steer:tidy` performs), not copied,
+   `git mv` for an in-repo drop - the same move `/steer:tidy` performs), not copied,
    so it does not stay stalled where the PO uploaded it; a file outside the repo is
    copied in and left in place. Conversion walks a ladder: the repo's
    **`mise run convert:doc <file>`** task (the deterministic, committable path),
    then a native `Read` for a text-bearing PDF, then a manual floor. There is no
-   markitdown MCP server — it was retired in favour of that on-demand task.
-3. **Diff** — `git diff`s the new extraction against the prior version and groups
+   markitdown MCP server - it was retired in favour of that on-demand task.
+3. **Diff** - `git diff`s the new extraction against the prior version and groups
    the hunks into change units by heading anchor (topic, not line number).
-4. **Report** — prints a structured *what-changed* table.
-5. **Reconcile** — routes each change through the skill that owns the artifact
+4. **Report** - prints a structured *what-changed* table.
+5. **Reconcile** - routes each change through the skill that owns the artifact
    (`/steer:spec-scaffold`, `/steer:spec`, `/steer:audit`, `/steer:roadmap`,
    `/steer:questions`), **never clobbering human prose**: conflicts become Open
    questions, drift is surfaced for a human, and the run writes **one**
-   `spec/history/` entry file summarizing the version — absorbing a source
+   `spec/history/` entry file summarizing the version - absorbing a source
    document is one notable event, not one per absorbed change.
 
 **Clarify mode** takes a different middle: a *client clarification document* is not
-a version of a prior spec, so instead of the diff (steps 3–4) it **segments** the
+a version of a prior spec, so instead of the diff (steps 3-4) it **segments** the
 extraction semantically, **maps** each unit inline against open questions and the
-feature list, and sorts them into a three-bucket, human-confirmed worklist —
-answers → `/steer:questions`, new scope → the reconcile rows, unmatched → surfaced
+feature list, and sorts them into a three-bucket, human-confirmed worklist -
+answers -> `/steer:questions`, new scope -> the reconcile rows, unmatched -> surfaced
 for the human (never guessed). The shared front-end (identity, versioned commit,
 action-history record) is unchanged.
 
@@ -57,15 +57,15 @@ action-history record) is unchanged.
 
 | Mode | What it does |
 | --- | --- |
-| `/steer:intake <path-to-doc>` | Absorb the supplied document — the normal "the PO just sent a new version" path. |
-| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment → map to the spine → three-bucket worklist (answers to `/steer:questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. The document a PO fills in is usually the **outbound** questionnaire `/steer:questions bundle` produces — when it carries `[<feature-id>] Q-NNN` answer headings, `clarify` segments per heading and maps each answer to its question by that feature-scoped key deterministically. |
-| `/steer:intake <source-id>` | Absorb the newest unabsorbed version of an already-tracked source, by its id — no path needed. |
+| `/steer:intake <path-to-doc>` | Absorb the supplied document - the normal "the PO just sent a new version" path. |
+| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment -> map to the spine -> three-bucket worklist (answers to `/steer:questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. The document a PO fills in is usually the **outbound** questionnaire `/steer:questions bundle` produces - when it carries `[<feature-id>] Q-NNN` answer headings, `clarify` segments per heading and maps each answer to its question by that feature-scoped key deterministically. |
+| `/steer:intake <source-id>` | Absorb the newest unabsorbed version of an already-tracked source, by its id - no path needed. |
 | `/steer:intake` | List the sources under `spec/sources/` and ask which document to absorb. |
 | `/steer:intake status` | Read-only ledger: each source, its latest absorbed version, mapped features/issues, and any version still awaiting a text-bearing copy. |
 
 ## Idempotency
 
-Re-running on an unchanged document is a no-op — a binary-hash guard detects an
+Re-running on an unchanged document is a no-op - a binary-hash guard detects an
 identical file (even re-sent under a new name). A genuinely new version diffs only
 against the current latest, so the report is always the incremental delta. If the
 byte-identical re-send is sitting at an in-repo drop location, intake surfaces it as

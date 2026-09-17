@@ -1,27 +1,27 @@
 # shellcheck shell=sh
 # shellcheck disable=SC2221,SC2222
-# (sourced, not executed — no shebang. SC2221/SC2222: several broad globs (*.lock,
+# (sourced, not executed - no shebang. SC2221/SC2222: several broad globs (*.lock,
 # *.yaml, *.toml, *.env) shadow the explicit names listed beside them; the explicit
 # names are kept deliberately as documentation of intent and are harmless because
 # each maps to the SAME class as the glob that shadows it. Note: mise.lock is NOT
-# listed under operations — `*.lock` (lockfile case, tested first) classifies it as
+# listed under operations - `*.lock` (lockfile case, tested first) classifies it as
 # a lockfile (exempt), which is the intended behavior; do not re-add mise.lock to
 # the operations case, where it would contradict its class.)
 #
-# steer hook helper — one file classifier, sourced by the point-of-action
+# steer hook helper - one file classifier, sourced by the point-of-action
 # nudges so they share a single notion of what a path *is*. Each hook maps the
 # class to its own policy (exempt / nudge); the classification itself lives here.
 #
 # Classes:
-#   spec           — the /spec spine or .claude/ config (bootstrapping the spine)
-#   documentation  — prose: md/mdx/txt/rst, LICENSE, docs/
-#   implementation — application source code
-#   operations     — config / infra: toml, yaml/yml, .env, Makefile, Dockerfile,
+#   spec           - the /spec spine or .claude/ config (bootstrapping the spine)
+#   documentation  - prose: md/mdx/txt/rst, LICENSE, docs/
+#   implementation - application source code
+#   operations     - config / infra: toml, yaml/yml, .env, Makefile, Dockerfile,
 #                    compose, *.tf, *.sql, *.sh, CI workflows, k8s/helm, *.conf,
 #                    *.properties, *.ini, *.cfg, mise config, manifests
-#   generated      — build output / vendored / minified
-#   lockfile       — dependency lockfiles
-#   unknown        — anything else (callers nudge conservatively)
+#   generated      - build output / vendored / minified
+#   lockfile       - dependency lockfiles
+#   unknown        - anything else (callers nudge conservatively)
 #
 # POSIX sh, pure string matching on the path. Order matters: more specific
 # classes are tested first.
@@ -64,7 +64,7 @@ steer_classify_path() {
   printf 'unknown'
 }
 
-# steer_class_nudges <class> — the shared exempt/nudge decision used by BOTH
+# steer_class_nudges <class> - the shared exempt/nudge decision used by BOTH
 # point-of-action nudges: exempt spec/documentation/generated/lockfile; nudge on
 # implementation/operations; nudge conservatively on unknown. Prints "nudge" or
 # "exempt".

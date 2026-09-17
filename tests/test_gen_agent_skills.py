@@ -2,9 +2,9 @@
 
 ``gen_agent_skills.py`` renders ``plugins/steer/templates/agents/skills/`` from
 the authored ``plugins/steer/skills/``, rewriting the three things that do not
-travel outside Claude Code: intra-skill asset paths (→ relative), shared-bundle
-paths (→ URLs into the public plugin repo), and ``/steer:`` invocations
-(→ ``/steer-``). The gate byte-compares the committed tree against a fresh render.
+travel outside Claude Code: intra-skill asset paths (-> relative), shared-bundle
+paths (-> URLs into the public plugin repo), and ``/steer:`` invocations
+(-> ``/steer-``). The gate byte-compares the committed tree against a fresh render.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ def _front(text: str) -> dict:
 def _after_banner(text: str) -> str:
     """Everything past the generated banner.
 
-    The banner deliberately keeps a literal ``/steer:sync`` — that is the Claude
+    The banner deliberately keeps a literal ``/steer:sync`` - that is the Claude
     Code command a maintainer runs to refresh the tree, not a cross-reference the
     portable body expects a reader to type. Assertions about rewritten invocations
     therefore look past it.
@@ -87,13 +87,13 @@ def test_steer_invocations_are_rewritten_everywhere(tmp_path: Path):
     tree = gen_agent_skills.build(tmp_path)
     assert "/steer-tracker-sync" in tree[Path("steer-spec/SKILL.md")]
     assert "/steer:" not in _after_banner(tree[Path("steer-spec/SKILL.md")])
-    # Supporting files get the same rewrite — not just SKILL.md.
+    # Supporting files get the same rewrite - not just SKILL.md.
     assert "/steer-audit" in tree[Path("steer-spec/MODES.md")]
 
 
 def test_when_to_use_is_folded_into_the_body(tmp_path: Path):
     # `when_to_use` is a Claude Code extension, not an Agent Skills spec field, so
-    # it must not survive as a key — but its routing signal must not be lost.
+    # it must not survive as a key - but its routing signal must not be lost.
     _skill(
         tmp_path,
         "next",
@@ -106,7 +106,7 @@ def test_when_to_use_is_folded_into_the_body(tmp_path: Path):
 
 
 def test_tool_grants_are_dropped_and_restrictions_restated_as_instruction(tmp_path: Path):
-    # Claude tool syntax means nothing to another agent, so the fields are dropped —
+    # Claude tool syntax means nothing to another agent, so the fields are dropped -
     # but a body that says "these tools are unavailable" would then be lying.
     _skill(
         tmp_path,

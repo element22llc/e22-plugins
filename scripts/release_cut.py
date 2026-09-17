@@ -7,8 +7,8 @@ reassembles ``CHANGELOG.md`` and rewrites the three version-bearing manifests
 through the ``replacements`` block in ``.changie.yaml``. What changie does *not*
 know about is the second ledger, and that is why this script still exists:
 
-- ``templates/reference/MIGRATIONS.md``: rename every ``### [Unreleased] — <what>``
-  entry **inside ``## Entries``** to ``### vX.Y.Z — <what>``. The authoring stub in
+- ``templates/reference/MIGRATIONS.md``: rename every ``### [Unreleased] - <what>``
+  entry **inside ``## Entries``** to ``### vX.Y.Z - <what>``. The authoring stub in
   the trailing ``<!-- Template for a new entry -->`` comment carries the identical
   heading and must never be stamped -- no gate catches it when it is.
 
@@ -93,7 +93,7 @@ def migration_entry_range(text: str) -> tuple[int, int]:
 
 
 def cut_migrations(text: str, version: str) -> tuple[str, int]:
-    """Rename ``### [Unreleased] — <what>`` entries to ``### v<version> — <what>``.
+    """Rename ``### [Unreleased] - <what>`` entries to ``### v<version> - <what>``.
 
     Returns ``(new_text, renamed_count)``. Zero renames is the normal case.
     """

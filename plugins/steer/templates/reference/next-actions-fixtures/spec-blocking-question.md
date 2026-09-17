@@ -1,4 +1,4 @@
-# Fixture: spec — a blocking open question gates approval
+# Fixture: spec - a blocking open question gates approval
 
 Workflow: `/steer:spec customer-export`
 
@@ -18,7 +18,7 @@ Blocking now
 
 ## Expected suggested command
 
-`/steer:questions` — the command that drives open questions to resolution.
+`/steer:questions` - the command that drives open questions to resolution.
 
 ## Must not recommend first
 

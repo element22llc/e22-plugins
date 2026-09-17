@@ -4,7 +4,7 @@
 A git-diff gate modeled on ``check_changelog.py``'s ``--base`` behaviour gate:
 if a PR changes the user-facing surface that the docs site describes (skills,
 rules, hooks) but touches no ``docs/`` file, the docs have almost certainly
-drifted — fail and point at ``/plugin-docs``.
+drifted - fail and point at ``/plugin-docs``.
 
 This is intentionally coarse (any docs change clears the gate); the structural
 sync is enforced separately and always by ``validate_docs.py``.
@@ -31,7 +31,7 @@ DOC_BEARING_PREFIXES = (
     "plugins/steer/agents/",
 )
 # Test-only changes don't change documented behaviour. Internal hook *libraries*
-# (``hooks/lib/*``) are sourced plumbing — they carry no event/matcher of their
+# (``hooks/lib/*``) are sourced plumbing - they carry no event/matcher of their
 # own and never appear in ``hooks.json``, so the docs site does not describe them
 # (``docs/reference/hooks.md`` documents the ``hooks.json`` entries). A change
 # confined to a lib helper therefore has no documented surface to drift from.
@@ -81,7 +81,7 @@ def check_impact(base: str, errors: list[str]) -> None:
     docs_touched = any(p.startswith(DOCS_PREFIX) for p in changed)
     if doc_bearing and not docs_touched:
         errors.append(
-            "documented surface changed but no docs/ file was updated — "
+            "documented surface changed but no docs/ file was updated - "
             f"review the docs and run /plugin-docs (changed: {sorted(doc_bearing)})"
         )
 

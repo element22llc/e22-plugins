@@ -6,7 +6,7 @@
 ``plugins/steer/rules/*.md``. That artifact is committed (so ``/steer:init`` can
 install it without running Python in the consumer repo), which means it can go
 stale the moment a rule changes. This check regenerates in-memory and byte-compares
-against the committed file, failing the build if they drift — the same
+against the committed file, failing the build if they drift - the same
 single-source-of-truth discipline ``check_standards.py`` applies to the scaffold's
 verbatim policy copies.
 
@@ -36,7 +36,7 @@ def main() -> int:
         return 1
     if not ARTIFACT.is_file():
         print(
-            f"check_copilot_instructions: missing {ARTIFACT} — run 'mise run gen:copilot'",
+            f"check_copilot_instructions: missing {ARTIFACT} - run 'mise run gen:copilot'",
             file=sys.stderr,
         )
         return 1
@@ -46,7 +46,7 @@ def main() -> int:
     if actual != expected:
         print(
             f"check_copilot_instructions: {ARTIFACT} is out of sync with "
-            f"{RULES_DIR}/ — run 'mise run gen:copilot' to regenerate",
+            f"{RULES_DIR}/ - run 'mise run gen:copilot' to regenerate",
             file=sys.stderr,
         )
         return 1
@@ -67,7 +67,7 @@ def main() -> int:
     if problems:
         print(
             f"check_copilot_instructions: {INSTRUCTIONS_DIR} is out of sync with "
-            f"{RULES_DIR}/ — run 'mise run gen:copilot' to regenerate:",
+            f"{RULES_DIR}/ - run 'mise run gen:copilot' to regenerate:",
             file=sys.stderr,
         )
         for problem in problems:

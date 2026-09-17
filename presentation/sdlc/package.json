@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Client-facing SDLC deck — how software is built with the steer plugin and what you gain. A Slidev deck served at /presentation/sdlc/ (ships nothing; not part of the steer plugin).",
+  "description": "Client-facing SDLC deck - how software is built with the steer plugin and what you gain. A Slidev deck served at /presentation/sdlc/ (ships nothing; not part of the steer plugin).",
   "packageManager": "pnpm@11.5.2",
   "scripts": {
     "dev": "slidev --open",

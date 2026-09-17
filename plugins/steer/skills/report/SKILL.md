@@ -1,9 +1,9 @@
 ---
 name: report
-description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins — gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer:issues)."
+description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins - gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer:issues)."
 when_to_use: >-
-  Use when steer misbehaves — a SessionStart self-fault notice, contradictory or
-  impossible skill/rule instructions, a missing or crashing bundled helper — or
+  Use when steer misbehaves - a SessionStart self-fault notice, contradictory or
+  impossible skill/rule instructions, a missing or crashing bundled helper - or
   on "report this steer bug".
 argument-hint: "[describe the defect | run with no args to use recorded faults]"
 allowed-tools:
@@ -21,14 +21,14 @@ allowed-tools:
   - mcp__github__add_issue_comment
   - Bash(git remote *)
   - Bash(git rev-parse *)
-# Tier 1: this skill never touches the product repo's TRACKED files — it writes the
+# Tier 1: this skill never touches the product repo's TRACKED files - it writes the
 # upstream issue, the scrubbed temp file it is built from, and (in aftercare) it
 # deletes the git-ignored `.claude/steer-faults.*` scratch files once their faults
 # are filed. Nothing tracked, nothing committed. Edit/NotebookEdit/
 # EnterWorktree are disallowed so a defect report has no in-place edit tool and
 # cannot open a worktree; branching and committing are Bash, which the frontmatter
 # does not withhold. Write STAYS GRANTED for that temp file (see step "Write the
-# scrubbed body to a temp file"), bound in prose to the temp path — do NOT disallow
+# scrubbed body to a temp file"), bound in prose to the temp path - do NOT disallow
 # it: disallowed-tools is scoped to the invoking turn and clears at the user's next
 # message, so dropping Write blocks the instructed write in-run while gating
 # nothing afterwards. The temp-path limit is held in prose.
@@ -43,13 +43,13 @@ machinery misbehaves in a product repo, this files a bug **upstream** in
 
 Two invariants, always:
 
-- **This is for steer's OWN defects** — a contradictory skill/rule, a missing or
+- **This is for steer's OWN defects** - a contradictory skill/rule, a missing or
   broken template/script/helper, or a recorded hook fault. Ordinary product-code
   bugs, failing tests, or user mistakes are **not** plugin faults; those go to the
   product tracker via `/steer:issues`. If the problem isn't steer's fault, say so
   and stop.
 - **Scrub and dedupe, then auto-file.** You render the scrubbed body and file it
-  without a confirmation step — the upstream `gh`/MCP create is **pre-approved**
+  without a confirmation step - the upstream `gh`/MCP create is **pre-approved**
   in allowed-tools above. The safety floor is the scrub (§3) and the fingerprint
   dedupe (§4), not a human prompt: if the scrub finds something it cannot safely
   redact, it **omits** it (or drops the whole field) rather than asking.
@@ -67,19 +67,19 @@ Pick where the defect comes from:
   session. Capture the surface (skill/rule/hook/template) and what triggered it.
 
 If there is no fault log and nothing concrete to report, say there's nothing to
-file and stop — never invent a defect.
+file and stop - never invent a defect.
 
 Read the **steer version** from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
 (or the SessionStart banner). Read the consumer repo **slug** from
-`git remote get-url origin` → keep only `owner/repo`; never the local path.
+`git remote get-url origin` -> keep only `owner/repo`; never the local path.
 
 ## 2. Build the report from the template
 
 Use `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/steer-bug.md`. Fill
 every section. Set the two markers at the top:
 
-- `<!-- steer:self-report=1 -->` — keep verbatim.
-- `<!-- steer:fault-fingerprint=SOURCE:SIGNATURE -->` — the **dedup key**. Build
+- `<!-- steer:self-report=1 -->` - keep verbatim.
+- `<!-- steer:fault-fingerprint=SOURCE:SIGNATURE -->` - the **dedup key**. Build
   it as `<source>:<signature>` from the fault record (e.g.
   `inject-standards.sh:rules directory missing`), or for a described defect, a
   short stable slug of the surface + symptom. It must be path-free and stable so
@@ -89,30 +89,30 @@ every section. Set the two markers at the top:
 
 The report goes to a **shared** repo. Before rendering or filing:
 
-- Rewrite absolute paths to `<repo>/…`; drop machine/user directory prefixes.
+- Rewrite absolute paths to `<repo>/...`; drop machine/user directory prefixes.
 - Redact anything secret-shaped (tokens, keys, URLs with credentials, `.env`
-  values) — replace with `[redacted]`.
+  values) - replace with `[redacted]`.
 - Do **not** include product source code. A short steer-side artifact (the hook
   output, the contradictory instruction) is fine; a product file is not.
 - Keep the consumer identity to the `owner/repo` slug at most. If even that is
   sensitive, omit it.
 - **Fail closed by omission, never by asking.** The report is auto-filed, so when
   something can't be confidently redacted (an unclassifiable secret-shaped value,
-  an unavoidable absolute path, product code), **drop it** — omit the line or
+  an unavoidable absolute path, product code), **drop it** - omit the line or
   field entirely. Never pause to ask the user how to redact.
 
 ## 4. Deduplicate upstream
 
 Detect capability, then search before creating:
 
-1. `gh auth status` — confirm authentication. If a **GitHub MCP** server is
+1. `gh auth status` - confirm authentication. If a **GitHub MCP** server is
    available, prefer it for the search/create; otherwise use `gh`.
 2. Search open + closed issues for the fingerprint:
    `gh issue list --repo element22llc/e22-plugins --state all --search "<signature>" --json number,title,url,state`
    and/or `gh search issues "<signature>" --repo element22llc/e22-plugins`.
-3. **Match found** → don't open a duplicate. Add a short "also seen in `<slug>` on
+3. **Match found** -> don't open a duplicate. Add a short "also seen in `<slug>` on
    v`<version>`" comment (with the fingerprint) to the existing issue instead of
-   filing a new one — no need to ask first. Prefer the GitHub MCP comment tool;
+   filing a new one - no need to ask first. Prefer the GitHub MCP comment tool;
    the `gh issue comment --repo element22llc/e22-plugins <n>` fallback is
    pre-approved only with `--repo element22llc/e22-plugins` as its first flag.
    One issue per fingerprint.
@@ -121,7 +121,7 @@ Detect capability, then search before creating:
 
 Write the scrubbed body to a temp file and create the issue against
 `element22llc/e22-plugins` with labels `bug` + `steer:self-report`. This is
-pre-approved in allowed-tools — no confirmation, no permission prompt. Keep
+pre-approved in allowed-tools - no confirmation, no permission prompt. Keep
 `--repo element22llc/e22-plugins` as the **first** flag: the pre-approval is
 scoped to that exact prefix, so a reordered create would fall back to a prompt.
 
@@ -132,8 +132,8 @@ gh issue create --repo element22llc/e22-plugins \
 ```
 
 - If the `steer:self-report` label doesn't exist upstream and you can't create
-  it, file with `bug` alone — never fail the report over a missing label.
-- **No upstream write access / `gh` unauthenticated / offline** → fall back:
+  it, file with `bug` alone - never fail the report over a missing label.
+- **No upstream write access / `gh` unauthenticated / offline** -> fall back:
   print the rendered body and a paste-ready
   `https://github.com/element22llc/e22-plugins/issues/new?template=steer-self-report.yml`
   link (or the full `gh issue create` command), so the user files it manually.
@@ -146,6 +146,6 @@ gh issue create --repo element22llc/e22-plugins \
   remove `<repo-root>/.claude/steer-faults.log` and
   `<repo-root>/.claude/steer-faults.surfaced` so resolved faults don't linger or
   re-surface. If only some were filed, leave the rest.
-- Never commit these files or the report to the product repo — the only *repo*
+- Never commit these files or the report to the product repo - the only *repo*
   this channel files into is the plugin's, and the fault log it clears here is
   git-ignored scratch state, never a tracked product file.

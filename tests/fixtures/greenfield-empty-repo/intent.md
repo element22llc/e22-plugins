@@ -32,13 +32,13 @@ A customer record: name, email, created date.
 
 ## Open questions
 
-### Q-001 — Which columns belong in the export?
+### Q-001 - Which columns belong in the export?
 
 - created: 2026-06-19
 - status: open
 - impact: non-blocking
 
-## Recommended next actions — /steer:spec
+## Recommended next actions - /steer:spec
 
 ### Human decision required
 

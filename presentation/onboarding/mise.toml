@@ -1,4 +1,4 @@
-# mise — toolchain + tasks for the Slidev deck.
+# mise - toolchain + tasks for the Slidev deck.
 # Mirrors the steer scaffold conventions: pnpm (not npm), lockfile-pinned tools,
 # and auto-installed workspace deps so `pnpm install` is never run by hand.
 
@@ -6,19 +6,19 @@
 # Pin every tool resolution into mise.lock for reproducible installs.
 lockfile = true
 # `experimental` unlocks the `[deps]` auto-install provider below (mise gates it
-# as experimental) — the same deliberate default the steer scaffold uses.
+# as experimental) - the same deliberate default the steer scaffold uses.
 experimental = true
 
 # Auto-install workspace deps before any `mise run` / `mise x`. Content-hashed
 # against pnpm-lock.yaml: runs `pnpm install` only when the lock changed, and is a
 # no-op once installed. This is how `pnpm install` becomes a prerequisite of
-# `dev` / `build` — no explicit install task needed.
+# `dev` / `build` - no explicit install task needed.
 [deps.pnpm]
 auto = true
 
 [tools]
 # Exact-pinned for strict determinism (mise.lock also records platform checksums).
-# This pin is the single source of truth for the deck's node version — the
+# This pin is the single source of truth for the deck's node version - the
 # GitHub Pages deploy (docs-deploy.yml) runs `mise install` here.
 node = "24.16.0"
 # npm backend on purpose: aqua:pnpm/pnpm lacks a macOS asset (steer scaffold note).

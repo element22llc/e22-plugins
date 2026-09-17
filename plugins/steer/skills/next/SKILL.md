@@ -1,9 +1,9 @@
 ---
 name: next
-description: "Read-only workspace navigator — reconstructs workspace state cold (branch/PR, feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action. Never edits, commits, merges, or advances state."
+description: "Read-only workspace navigator - reconstructs workspace state cold (branch/PR, feature status, open questions, Proposed ADRs, tracker issues, work claims, version drift) and arbitrates the single best next action. Never edits, commits, merges, or advances state."
 when_to_use: >-
   Use when picking a repo up cold or mid-stream and asking "what should I do
-  next?", "where do I start?", or "I'm lost" — when work spans workflows and you
+  next?", "where do I start?", or "I'm lost" - when work spans workflows and you
   need the one action that matters most.
 argument-hint: "[optional constraints, e.g. 'only feature-x', 'no tracker writes']"
 allowed-tools:
@@ -31,34 +31,34 @@ disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 > removed from the tool pool for the turn that invokes this skill, so navigation
 > cannot mutate the repo; across a multi-turn run that limit is one this skill
 > keeps in prose. This does
-> not make the repo immutable — shell mutations stay governed by your permission
+> not make the repo immutable - shell mutations stay governed by your permission
 > settings and hooks. This skill only *recommends*; the owning skill carries out
 > the action.
 
-`/steer:next` reconstructs the **entire workspace state** as it stands right now —
-independent of session memory — and arbitrates the **one action that matters
+`/steer:next` reconstructs the **entire workspace state** as it stands right now -
+independent of session memory - and arbitrates the **one action that matters
 most** across *all* workflows. It is the cross-workflow counterpart to the
 per-skill `## Recommended next actions` blocks: where each workflow skill is
 **locality-bound** (it recommends only from its own invocation), `/steer:next` is
 the only tool that sweeps unrelated workspace state and picks a single winner.
 
-It changes **nothing**. It reconstructs, classifies, arbitrates, and recommends —
+It changes **nothing**. It reconstructs, classifies, arbitrates, and recommends -
 it never edits, commits, publishes, accepts an ADR, claims work, pushes a branch,
 merges, or creates a PR. It also never *resolves* a state itself: it names the
-owning skill (`/steer:work`, `/steer:spec`, `/steer:questions`, …) as the place that
+owning skill (`/steer:work`, `/steer:spec`, `/steer:questions`, ...) as the place that
 does.
 
-## The contract it reuses — do not restate it
+## The contract it reuses - do not restate it
 
 The categories, two-level precedence, derivation rule, and read-only/locality
 rules live in `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`. Read
 it first. This skill is the **cross-workflow arbitrator** that the locality rule
 defers to; it owns one thing the per-skill blocks intentionally do not: a
 workspace-wide reconstruction plus arbitration across *unrelated* state. It uses
-the same categories and the same shared safety precedence — it does not fork
+the same categories and the same shared safety precedence - it does not fork
 them, and it does not duplicate each skill's domain table.
 
-## Relationship to the workflow skills — it routes, they execute
+## Relationship to the workflow skills - it routes, they execute
 
 `/steer:next` recommends; the owning skill executes. It surfaces *that* a blocking
 question gates feature A and names `/steer:questions`; it does not answer the
@@ -68,8 +68,8 @@ does not reconcile it here.
 If the single best action is itself running a skill, **announce it and continue into
 that skill** when the action is unambiguous and non-gated: rule `00-router`'s bounded
 auto-continue binds this skill like any other. Nothing inside `/steer:next`'s own
-run edits. But the tool removal above is **turn-scoped** — it clears only when you
-send your next message — so a skill continued into *within this same turn* still
+run edits. But the tool removal above is **turn-scoped** - it clears only when you
+send your next message - so a skill continued into *within this same turn* still
 has no `Edit`/`Write`/`NotebookEdit`/`EnterWorktree`. Continuing into a **writing**
 skill therefore reaches its first writing step and stops: announce the handover
 there, and your next message is what puts the owning skill under its own tier and
@@ -84,28 +84,28 @@ the human's), when the action is gated, or when no real command performs it.
 - After a batch of merges, to find what the workspace now needs.
 - Before a handoff, to surface the most urgent unresolved item across everything.
 
-## Phase 0 — Locate the spine
+## Phase 0 - Locate the spine
 
 If there is no `/spec` spine, there is nothing to reconstruct: the single
-recommended action is to **bootstrap** — `/steer:setup`, which detects whether
+recommended action is to **bootstrap** - `/steer:setup`, which detects whether
 this is greenfield (`init`) or existing "vibe-coded" code (`adopt`) and routes.
 Say so and stop. Don't run the rest.
 
 **Polyrepo.** Phase 1's snapshot helper reports `- polyrepo role:` next to the
 spine state; read the two together. In a **member** the spine is partial by
-design — resolve it by the ladder in `/steer:reference polyrepo` before
+design - resolve it by the ladder in `/steer:reference polyrepo` before
 concluding anything is missing; a member with only a pointer is `managed`, not
 broken. From the **workspace**, the arbitration below covers the members you can
-actually read: scope the report per that reference's "Reporting across members"
-— a next action chosen from a fraction of the product, presented as the whole,
+actually read: scope the report per that reference's "Reporting across members" -
+a next action chosen from a fraction of the product, presented as the whole,
 is worse than admitting the gap.
 
-## Phase 1 — Reconstruct workspace state (read-only)
+## Phase 1 - Reconstruct workspace state (read-only)
 
 Sweep each dimension and record what you find. Reuse the existing state
-vocabulary — never invent a parallel one. Read tools and `git`/`gh` reads only.
+vocabulary - never invent a parallel one. Read tools and `git`/`gh` reads only.
 
-**Start with the bundled snapshot helper** — one read-only call that gathers
+**Start with the bundled snapshot helper** - one read-only call that gathers
 every *local* dimension below (git, spine state + polyrepo role + version drift,
 features, open
 questions, Proposed ADRs, work claims, build/adoption markers, the declared
@@ -118,73 +118,73 @@ sh "${CLAUDE_PLUGIN_ROOT}/scripts/workspace-snapshot.sh"   # optional arg: repo 
 Read its output once instead of re-deriving those dimensions call-by-call;
 open an individual file only where the snapshot flags something that needs
 its full text (e.g. a blocking question's wording). Then fetch the two *live*
-dimensions the snapshot deliberately excludes — open PRs/CI (`gh`, read-only)
-and tracker issue state (`/steer:tracker-sync`) — **batched**: one list query
+dimensions the snapshot deliberately excludes - open PRs/CI (`gh`, read-only)
+and tracker issue state (`/steer:tracker-sync`) - **batched**: one list query
 plus per-candidate field reads, minimal output, never one call per issue when
 a single filtered query answers it. If the helper is unavailable or errors,
 fall back to sweeping the dimensions manually as specified below.
 
-- **Git / branch / PR** — current branch (`feat/*`, `fix/*`, `main`), open PRs and
-  their review state, CI status, and merge status (`git`, `gh pr`/`gh run` —
+- **Git / branch / PR** - current branch (`feat/*`, `fix/*`, `main`), open PRs and
+  their review state, CI status, and merge status (`git`, `gh pr`/`gh run` -
   read-only). Note a `main` checkout with no active branch.
-- **Spec features** — for each `spec/features/<id>/intent.md`, read the
+- **Spec features** - for each `spec/features/<id>/intent.md`, read the
   frontmatter `> Status: draft | approved | live`, and whether `contract.md` exists
   where behavior demands one. `Status:` is product state only: an `approved`
   feature may be unstarted, mid-build, or merged-but-unreleased, so **take
   delivery progress from the feature's tracker issue** (`steer:state`) and never
   infer it from the spec.
-- **Open questions** — sweep every `intent.md` and `spec/vision.md`
+- **Open questions** - sweep every `intent.md` and `spec/vision.md`
   `## Open questions` for `### Q-NNN` entries: `status:`,
   `impact: blocking | non-blocking`, `required_before:`
   (`intent-approval | contract-approval | implementation | non-prod-validation |
   production-release`), and `owner:`.
-- **Proposed ADRs** — `spec/decisions/NNNN-*.md` whose status header reads
+- **Proposed ADRs** - `spec/decisions/NNNN-*.md` whose status header reads
   `Proposed` (awaiting ratification by its Deciders). Accept **both** header forms:
   the bundled template's blockquote `> Status: Proposed` and a hand-written
   `- **Status:** Proposed`. An `Accepted` ADR also carries `> Ratified by:` /
   `> Ratified at:` / `> Ratified via:`; an ADR still showing the template's whole
-  `Proposed | Accepted | …` enum was never filled in — report that, don't read it
+  `Proposed | Accepted | ...` enum was never filled in - report that, don't read it
   as `Proposed`.
-- **Tracker issues** — read `spec/tracker.md` `system:`. If `github`, query issue
+- **Tracker issues** - read `spec/tracker.md` `system:`. If `github`, query issue
   lifecycle state via `/steer:tracker-sync` (MCP-first, `gh` fallback): the
   `<!-- steer:state=... -->` marker
   (`inbox · exploring · ready-for-spec · ready-for-dev · in-progress · validate ·
   blocked · done · cancelled`). If `none-yet`/manual, reconstruct from spec + git only and
-  **say so** — never invent tracker state. Also read each candidate issue's native
+  **say so** - never invent tracker state. Also read each candidate issue's native
   **Priority** field (`/steer:tracker-sync field-get`) and native **blocked-by**
-  edges — they feed the within-level tie-break (the composite sort key below). Where
+  edges - they feed the within-level tie-break (the composite sort key below). Where
   issue fields are unavailable, treat Priority as unset and **say so**.
-- **Work claims** — detect in-progress work from `steer:state=in-progress` plus an
+- **Work claims** - detect in-progress work from `steer:state=in-progress` plus an
   `steer:branch=` / `steer:claimed-by=` marker, cross-checked against the live branch
   and PR. Flag the **merged-PR-but-stale-tracker** case (PR merged to `main`, issue
-  still `validate`) — an unfinished lifecycle transition, not new work.
-- **Version drift** — compare `spec/.version` against the current plugin version;
+  still `validate`) - an unfinished lifecycle transition, not new work.
+- **Version drift** - compare `spec/.version` against the current plugin version;
   a stale spine routes to `/steer:sync`.
-- **Adoption brief** — if `spec/PRODUCTIONIZATION.md` exists, read its
+- **Adoption brief** - if `spec/PRODUCTIONIZATION.md` exists, read its
   `> Lifecycle:`. `active-adoption` means an adoption is mid-flight (resume it);
   `published-snapshot` means its findings already live as issues (counted under
-  the tracker dimension) — its checkboxes are **historical, not separate work**,
+  the tracker dimension) - its checkboxes are **historical, not separate work**,
   so don't double-count them.
-- **Recent context** — skim the newest `spec/history/` entries (`ls -r
+- **Recent context** - skim the newest `spec/history/` entries (`ls -r
   spec/history/*.md`) only to orient; it is
   informational, not a source of actions.
 
 State a dimension as **clean** or **not applicable** explicitly so silence never
 reads as "nothing there."
 
-## Phase 2 — Classify each observed state
+## Phase 2 - Classify each observed state
 
-Turn Phase 1's raw snapshot into typed, comparable states before arbitrating —
+Turn Phase 1's raw snapshot into typed, comparable states before arbitrating -
 the per-dimension classification tables, the state vocabulary they reuse, and
 the "absent by design vs missing" calls are in
 [`CLASSIFY.md`](${CLAUDE_PLUGIN_ROOT}/skills/next/CLASSIFY.md). **Read it here,
-with the snapshot in hand, and classify from it** — do not classify from memory
+with the snapshot in hand, and classify from it** - do not classify from memory
 of the vocabulary.
 
-## Phase 3 — Arbitrate to one action
+## Phase 3 - Arbitrate to one action
 
-**First, apply the user's constraints.** When the user has stated constraints —
-this invocation's `$ARGUMENTS` and anything said earlier in the conversation —
+**First, apply the user's constraints.** When the user has stated constraints -
+this invocation's `$ARGUMENTS` and anything said earlier in the conversation -
 drop or down-rank any candidate that conflicts, by this precedence:
 
 1. current `/steer:next` invocation constraints (`$ARGUMENTS` + this turn), then
@@ -198,44 +198,44 @@ safety precedence would otherwise pick, say so explicitly rather than
 recommending a constrained-out action.
 
 Then collect every surviving candidate and apply the **shared safety precedence**
-across all of them — regardless of which workflow each came from. Lower level
+across all of them - regardless of which workflow each came from. Lower level
 wins: a committed secret (L1) in one feature outranks a PR awaiting review (L3)
 in another, which outranks a `ready-for-dev` issue (L6). Within a single level,
 order by the **composite sort key** in `NEXT-ACTIONS.md`: the native **Priority**
 field first (`Urgent > High > Medium > Low`, unset lowest), then the candidate that
 unblocks the most downstream work, then milestone proximity / lifecycle depth, and
-finally created-at / feature-id for determinism — say a tie was broken. Priority
+finally created-at / feature-id for determinism - say a tie was broken. Priority
 orders *within* a level and never lifts a candidate across the precedence. The result
 is exactly one `Current recommended action`, or `No action is currently
 required.`
 
-## Phase 4 — Output
+## Phase 4 - Output
 
-When the user is the PO — see rule 05 (Who you are working with) — render this
-readout in plain product language (no L1–L7 level codes, no git/ADR/CI jargon);
+When the user is the PO - see rule 05 (Who you are working with) - render this
+readout in plain product language (no L1-L7 level codes, no git/ADR/CI jargon);
 keep the technical detail for devs. Emit, in order:
 
-1. **State reconstruction summary** — a short, dimension-by-dimension readout of
+1. **State reconstruction summary** - a short, dimension-by-dimension readout of
    what you found (this is the navigator's value: it shows the basis for the
    recommendation). Mark clean / not-applicable dimensions explicitly.
-2. **`## Recommended next actions`** — the standard block per NEXT-ACTIONS.md §5:
+2. **`## Recommended next actions`** - the standard block per NEXT-ACTIONS.md §5:
    the `###` category sections (omit empties), then `### Current recommended action`
    naming the single arbitrated action, with a `Suggested command:` line **only**
    when a real command performs it. A human gate still gets **no command for the
-   decision itself** — but where the decision is answerable in-session (ADR
+   decision itself** - but where the decision is answerable in-session (ADR
    ratification, PO intent approval; rule `61-gate-prompts`) the line names the
-   skill that *collects and records* the answer — `/steer:adr`, `/steer:spec` —
+   skill that *collects and records* the answer - `/steer:adr`, `/steer:spec` -
    which is a real command. PR review, secret rotation, merge, and deploy stay
    command-less: no prompt substitutes for them. Aggregate candidates across the
    whole workspace; each entry names its feature/issue so the source is clear.
 
 Read-only coda: `/steer:next` itself never edits, commits, publishes, merges, or
-advances any workflow's state — including a gate it reports as answerable: it
+advances any workflow's state - including a gate it reports as answerable: it
 **routes** to the owning skill, which runs the prompt and writes the transition.
 `/steer:next` never runs a ratification prompt itself. Auto-continuing into the
 recommended action does not weaken that.
 
-End the readout with the handoff block and nothing after it — no invitation to
+End the readout with the handoff block and nothing after it - no invitation to
 correct the recommendation, no offer to file a report, no reassurance that the
 user need not know a skill name (rule `03-responses`: no closing offer). The
 block's heading already names this skill, which is what a user needs to say "that
@@ -246,7 +246,7 @@ crowded out the recommendation in the v6.1.0 eval run.
 ## Golden fixtures
 
 `${CLAUDE_PLUGIN_ROOT}/templates/reference/next-fixtures/` pins the intended
-**cross-workflow** arbitration as prose scenarios (not executable tests) — each
+**cross-workflow** arbitration as prose scenarios (not executable tests) - each
 gives a multi-workflow `## Given` state and the single `## Expected
 highest-priority action`. Walk the table above plus the shared safety precedence
 by hand against each fixture to confirm the winner.

@@ -1,15 +1,15 @@
-# Claude Operating Manual — [Product Name]
+# Claude Operating Manual - [Product Name]
 
 The org-wide engineering standards (stack defaults, monorepo layout,
 spec workflow, testing rules, Definition of Done, high-risk areas, secrets
 handling, change-size model, baseline patterns/anti-patterns, design sources)
 are **injected automatically every session** by the **`steer`** plugin
-from the `e22-plugins` marketplace — see `.claude/settings.json`. They are maintained
+from the `e22-plugins` marketplace - see `.claude/settings.json`. They are maintained
 centrally in [`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins)
 and update via `/plugin update`, so they are **not** duplicated here. This file
 holds only product-specific context.
 
-Keep this file **lean** — it is loaded every session. Budget: stay under ~200
+Keep this file **lean** - it is loaded every session. Budget: stay under ~200
 lines (most products need far less). When a section outgrows a few bullets,
 move the substance to `/spec/**` (vision, feature intents, ADRs, `spec/history/`)
 or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
@@ -17,7 +17,7 @@ or [`ARCHITECTURE.md`](./ARCHITECTURE.md) and keep only the pointer here.
 > **New repo?** Run **`/steer:init`** once to fill the placeholders, pin the
 > toolchain, and finish the bootstrap. Remove this line when setup is done.
 > Non-technical PO? Type **`/steer:build`** to go from idea to a working local
-> app — it runs the first-run setup for you.
+> app - it runs the first-run setup for you.
 >
 > On-demand helpers from the plugin: `/steer:spec` (new feature
 > spec), `/steer:adr <slug>` (architecture decision), and
@@ -41,46 +41,46 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
      contradicts observed protection. Keep it in sync with the prose below.
      A solo-trunk repo that stays single-dev on trunk deliberately may carry a
      second line here, `<!-- steer:graduation=waived -->`, written by
-     /steer:protect waive — it silences the graduation nudge and the trunk-push
+     /steer:protect waive - it silences the graduation nudge and the trunk-push
      prompt; /steer:protect apply removes it at graduation. -->
 
-**`PR flow`** — work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
+**`PR flow`** - work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
 `issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the
 branch and opens the PR autonomously, and it merges only after a dev reviews it
-(Commit autonomy — the merge review is the human gate, enforced server-side by
+(Commit autonomy - the merge review is the human gate, enforced server-side by
 branch protection; run `/steer:protect` to verify/apply it). This is the default.
 
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:init` when one person is both PO and dev with no MVP yet): commit directly
 to `main` and push, no per-feature branch or PR, until graduation. Issue-first still holds
-(a change that needs an issue keeps it, closed from the trunk commit — a Tiny change
+(a change that needs an issue keeps it, closed from the trunk commit - a Tiny change
 needs none, per the Change-size model); only the branch
 and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
-Definition of Done are unchanged. **Graduate** to `PR flow` — run
-**`/steer:protect`**, which raises the server-side PR wall — the moment the MVP
+Definition of Done are unchanged. **Graduate** to `PR flow` - run
+**`/steer:protect`**, which raises the server-side PR wall - the moment the MVP
 works, you first deploy, or a second contributor joins, whichever comes first
 (once you deploy or add a `prod` branch, the steer trunk-push hook stops silent
 trunk pushes until you graduate; a new contributor is caught on demand by
 `/steer:protect`/`/steer:audit`, not at push time); then
 set this marker and the prose to `PR flow`. If instead this repo will **stay
 single-dev on trunk** with its infra or deploy target as part of the plan, record
-that once with `/steer:protect waive` — the graduation nudge and push prompt stop,
+that once with `/steer:protect waive` - the graduation nudge and push prompt stop,
 and only a second contributor reopens the question.
 
 ## Profile
 
 <!-- steer:profile=app -->
 
-**`app`** — this repo is an internal app monorepo. The profile decides which
+**`app`** - this repo is an internal app monorepo. The profile decides which
 stack-specific scaffold the bootstrap lays down on top of the universal core
 (mise pinning, the `/spec` spine, CI hygiene); `/steer:init` sets the marker
 above to the detected profile (`app` / `infra` / `service` / `library` / `cli` /
 `workspace`).
-Keep the marker and this line in sync — `/steer:sync` reads the marker. An
+Keep the marker and this line in sync - `/steer:sync` reads the marker. An
 **infra** repo (Terraform/OpenTofu/Ansible/Pulumi) gets a tofu/terragrunt/ansible
 root `mise.toml` and infra CI instead of the Node project files
 (`package.json` / `biome.json`); `node` + `compose.yaml` stay from the core scaffold.
-A **workspace** repo is the spine host of a product spanning several repos — it
+A **workspace** repo is the spine host of a product spanning several repos - it
 carries `spec/workspace.yml` and the `/spec` spine but no application code
 (`/steer:reference polyrepo`).
 
@@ -89,14 +89,14 @@ carries `spec/workspace.yml` and the `/spec` spine but no application code
 The default stack (injected by the plugin) applies unless overridden. Record
 any deviation as an ADR under `/spec/decisions/` (run `/steer:adr`) and note it here.
 The current as-built stack and how the pieces fit together live in
-[`ARCHITECTURE.md`](./ARCHITECTURE.md) — this section holds only the *deviations*.
+[`ARCHITECTURE.md`](./ARCHITECTURE.md) - this section holds only the *deviations*.
 
-- [none yet — defaults apply]
+- [none yet - defaults apply]
 
 ## Patterns we follow
 
 The baseline (Drizzle/parameterized SQL, schema-validated boundaries,
-server-first, static typing, …) is injected by the plugin. Add only
+server-first, static typing, ...) is injected by the plugin. Add only
 product-specific patterns the team learns here.
 
 ## Things to avoid

@@ -75,11 +75,11 @@ def test_scaffolds_are_byte_identical_within_each_variant():
         blobs = {n: (EVALS / n / "scaffold.sh").read_bytes() for n in sorted(names)}
         assert len(set(blobs.values())) == 1, (
             f"{variant} scaffolds have drifted apart: "
-            f"{sorted(blobs)} — edit one and propagate to the rest of the variant"
+            f"{sorted(blobs)} - edit one and propagate to the rest of the variant"
         )
         seen[variant] = next(iter(blobs.values()))
     assert len(set(seen.values())) == len(seen), (
-        "two variants ship the same scaffold — they exist to build different repo "
+        "two variants ship the same scaffold - they exist to build different repo "
         f"states: {sorted(seen)}"
     )
 
@@ -87,14 +87,14 @@ def test_scaffolds_are_byte_identical_within_each_variant():
 def test_managed_scaffold_stamps_the_current_plugin_version():
     # A spine stamped at a version other than the plugin's own reads as version
     # drift to /steer:next, which injects a sync nudge into every run of the five
-    # managed cases — one more notice competing with the ask. The release bump
+    # managed cases - one more notice competing with the ask. The release bump
     # therefore has to re-stamp this fixture, and this test is the reminder.
     version = json.loads(PLUGIN_JSON.read_text(encoding="utf-8"))["version"]
     scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
     stamped = re.findall(r"^(\d+\.\d+\.\d+)$", scaffold, flags=re.MULTILINE)
     assert stamped == [version], (
         f"the managed scaffold stamps spec/.version as {stamped}, but the plugin is "
-        f"at {version} — re-stamp it (and propagate to the whole managed variant)"
+        f"at {version} - re-stamp it (and propagate to the whole managed variant)"
     )
 
 
@@ -138,7 +138,7 @@ def test_routing_is_asserted_on_the_invocation_not_the_prose():
     # surface was wrong: rules/00-router.md puts the announcement in the FIRST
     # message and a finished skill's report names what comes next, so 15 of 24
     # with-plugin runs failed `routed` while the `answer` judge passed them
-    # unanimously. A tool call is not the trace-grading mistake either — an
+    # unanimously. A tool call is not the trace-grading mistake either - an
     # invocation is absent from the no-plugin arm by construction, which is why
     # `arm: both` can keep it scored in both arms.
     for d in _cases():
@@ -149,7 +149,7 @@ def test_routing_is_asserted_on_the_invocation_not_the_prose():
         )
         assert front["tool"] == "Skill", f"{d.name}/routed.md: must watch the Skill tool"
         assert front["arm"] == "both", (
-            f"{d.name}/routed.md: needs `arm: both` — a bare `tool_used: Skill` is "
+            f"{d.name}/routed.md: needs `arm: both` - a bare `tool_used: Skill` is "
             "auto-demoted to a with-only indicator and drops out of the score"
         )
         # The pattern has to name the skill the case is about, so a copy-paste
@@ -173,7 +173,7 @@ def test_both_arms_get_the_same_read_only_framing():
         assert framing, f"{d.name}: needs the read-only framing in append_system_prompt"
         prompts[d.name] = framing
     assert len(set(prompts.values())) == 1, (
-        f"the read-only framing differs across cases: {sorted(prompts)} — it is applied "
+        f"the read-only framing differs across cases: {sorted(prompts)} - it is applied "
         "to both ablation arms, so a per-case variant biases the comparison"
     )
     # The framing must carve the tracker tools out by name. "The network is
@@ -190,7 +190,7 @@ def test_both_arms_get_the_same_read_only_framing():
 def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
     # Two judge failure modes from the 2026-09-04 run, both on the grader side.
     # (1) The audit and issues readouts that ended "Current recommended action:
-    # /steer:work" were the ones failing — the judge read a handoff recommendation
+    # /steer:work" were the ones failing - the judge read a handoff recommendation
     # as *starting* the wrong workflow, while the plugin's handoff contract mandates
     # exactly that row. (2) Two greenfield and one build baseline run passed with a
     # homegrown spec-first plan that never mentioned steer, so "generic assistant"
@@ -202,7 +202,7 @@ def test_answer_graders_judge_the_action_and_require_the_owner_be_named():
             "starting that workflow"
         )
         assert "names no `/steer:*` skill at all" in text, (
-            f"{d.name}/answer.md: the generic-assistant failure must be concrete — "
+            f"{d.name}/answer.md: the generic-assistant failure must be concrete - "
             "a response that names no steer skill fails"
         )
 
@@ -220,8 +220,8 @@ def test_scaffolds_pin_the_default_branch_to_main():
 
 def test_managed_scaffold_carries_the_toolchain_an_audit_expects():
     # The managed fixture exists so the ask, not the fixture, fills the answer. In
-    # the 2026-09-04 run every managed case — next, spec and issues included, not
-    # just audit — led with "no pyproject / no CI / no .gitignore". Those are fixture
+    # the 2026-09-04 run every managed case - next, spec and issues included, not
+    # just audit - led with "no pyproject / no CI / no .gitignore". Those are fixture
     # gaps, not routing signal; the code defect (quantity ignored) is the finding.
     scaffold = (EVALS / "routes-fix-issue-to-work" / "scaffold.sh").read_text(encoding="utf-8")
     for artefact in ("pyproject.toml", ".github/workflows/ci.yml", ".gitignore", "mise.toml"):
@@ -244,7 +244,7 @@ def test_issue_read_answers_the_arguments_it_is_given():
     for number in ("#101", "#109", "#117", "#118", "#123"):
         assert number in body, (
             f"the issue_read responder does not describe {number}, but list_issues "
-            "advertises it — a skill that reads it back gets a not-found"
+            "advertises it - a skill that reads it back gets a not-found"
         )
 
 
@@ -256,6 +256,6 @@ def test_every_case_ask_comes_from_the_routing_fixtures():
         case = yaml.safe_load((d / "case.yaml").read_text(encoding="utf-8"))
         ask = case["execution"]["prompt"].strip()
         assert ask in known, (
-            f"{d.name}: ask {ask!r} is not in tests/fixtures/routing/asks.yml — "
+            f"{d.name}: ask {ask!r} is not in tests/fixtures/routing/asks.yml - "
             "eval cases are lifted verbatim so both gates cover the same asks"
         )

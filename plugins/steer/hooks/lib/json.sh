@@ -1,12 +1,12 @@
 # shellcheck shell=sh
-# (sourced, not executed — no shebang; the directive sets ShellCheck's dialect.)
+# (sourced, not executed - no shebang; the directive sets ShellCheck's dialect.)
 #
-# steer hook helper — deterministic best-effort field extraction.
+# steer hook helper - deterministic best-effort field extraction.
 #
 # NOT a general JSON parser, and it does not claim arbitrary-JSON correctness.
 # It extracts a small set of *known top-level / tool_input fields* from the exact
-# hook-input shapes the plugin's hooks use — `tool_input` fields on the tool
-# events, and top-level fields on the lifecycle events — with two strategies:
+# hook-input shapes the plugin's hooks use - `tool_input` fields on the tool
+# events, and top-level fields on the lifecycle events - with two strategies:
 #
 #   1. `jq` when present (authoritative).
 #   2. otherwise a narrow grep/sed extractor for those exact shapes.
@@ -22,7 +22,7 @@
 # \\ on a sentinel control char first so \\n is NOT turned into a newline.
 #
 # awk, not sed: POSIX leaves \n/\t/\r in a sed *replacement* undefined, and BSD
-# sed (the macOS default — the exact jq-less environment this fallback exists for)
+# sed (the macOS default - the exact jq-less environment this fallback exists for)
 # emits literal n/t/r instead of the control chars, collapsing multi-line content
 # to one line. awk's gsub replacements are portable across BSD and GNU.
 steer_json_unescape() {
@@ -39,13 +39,13 @@ steer_json_unescape() {
 	}'
 }
 
-# steer_have_jq — true if a usable jq is on PATH.
+# steer_have_jq - true if a usable jq is on PATH.
 #
 # Presence is not usability, and the difference is not academic: a jq that is on
 # PATH but fails to execute (a broken or half-installed build, an incompatible
 # binary, a shim) would take the jq branch below and yield nothing, so every
 # caller would read an EMPTY payload and the hook would fall through to its
-# fail-open exit — silently disabling the gate rather than degrading to the
+# fail-open exit - silently disabling the gate rather than degrading to the
 # grep fallback written for exactly this case. Probing execution keeps that
 # fallback reachable. The probe runs at most once per process (the result is
 # cached), so the write path pays one extra exec, not one per field read.
@@ -60,7 +60,7 @@ steer_have_jq() {
 	[ "${_STEER_JQ_OK}" = yes ]
 }
 
-# _steer_field_grep <name> <json> — FIRST JSON string value for <name> in <json>,
+# _steer_field_grep <name> <json> - FIRST JSON string value for <name> in <json>,
 # returned still-escaped (caller unescapes). The value pattern allows escaped
 # chars (\\.) so an embedded \" does not end the match early.
 _steer_field_grep() {
@@ -70,7 +70,7 @@ _steer_field_grep() {
 		sed -E "s/^\"$1\"[[:space:]]*:[[:space:]]*\"//; s/\"$//"
 }
 
-# steer_field <name> — value of a string field, preferring tool_input.<name> then
+# steer_field <name> - value of a string field, preferring tool_input.<name> then
 # top-level .<name>. Empty if absent/unextractable. The no-jq fallback mirrors the
 # jq precedence by searching the slice AFTER the "tool_input" key first (so a
 # top-level decoy field of the same name can't win), then the whole document.
@@ -88,7 +88,7 @@ steer_field() {
 	printf '%s' "${_val}" | steer_json_unescape
 }
 
-# steer_target_path — the path a mutating tool would write: tool_input.file_path
+# steer_target_path - the path a mutating tool would write: tool_input.file_path
 # for Write/Edit/MultiEdit, tool_input.notebook_path for NotebookEdit. Empty if
 # neither is present (e.g. a Bash call). Lets the point-of-action hooks classify
 # notebook writes the same way they classify ordinary file writes.
@@ -101,7 +101,7 @@ steer_target_path() {
 	steer_field notebook_path
 }
 
-# steer_tool — the tool name (top-level .tool_name).
+# steer_tool - the tool name (top-level .tool_name).
 steer_tool() {
 	if steer_have_jq; then
 		printf '%s' "${STEER_INPUT}" | jq -r '.tool_name // empty' 2>/dev/null
@@ -112,14 +112,14 @@ steer_tool() {
 		head -n 1 | sed -E 's/.*:[[:space:]]*"//; s/"$//'
 }
 
-# steer_mutation_content — the *added/new* text a tool would write, unescaped, so a
+# steer_mutation_content - the *added/new* text a tool would write, unescaped, so a
 # content check inspects only what is being introduced (F13: tool-aware):
 #   Write        -> content
 #   Edit         -> new_string   (NEVER old_string, so version upgrades aren't blocked)
 #   MultiEdit    -> every edits[].new_string, newline-joined
 #   NotebookEdit -> new_source   (the cell body being written)
 #   Bash         -> nothing (command text is intentionally skipped; the CI repo-scan
-#                   is the stronger backstop) — documented bypass.
+#                   is the stronger backstop) - documented bypass.
 # Empty for any other tool.
 steer_mutation_content() {
 	_tool="$(steer_tool)"
@@ -142,21 +142,21 @@ steer_mutation_content() {
 	esac
 }
 
-# steer_json_safe <value> — sanitize a value for embedding in a hand-built JSON
+# steer_json_safe <value> - sanitize a value for embedding in a hand-built JSON
 # string: strip double quotes and backslashes, flatten newlines/tabs/CRs to
-# spaces. The shared idiom behind every hook's SAFE_* interpolation — one home
+# spaces. The shared idiom behind every hook's SAFE_* interpolation - one home
 # so a fix to the sanitization lands everywhere at once.
 steer_json_safe() {
 	printf '%s' "$1" | tr -d '"\\' | tr '\n\t\r' '   '
 }
 
-# steer_json_string — stdin → one JSON string literal (quotes included), lossless.
+# steer_json_string - stdin -> one JSON string literal (quotes included), lossless.
 # The counterpart of steer_json_safe for payloads that must survive intact: the
 # whole ruleset the Copilot surfaces receive as `additionalContext`. Backslash
 # and double quote are escaped, tab / CR / newline become their escapes, and the
 # remaining C0 control bytes (which cannot appear in JSON text and have no
 # business in Markdown) are dropped. Runs under LC_ALL=C so multibyte UTF-8
-# passes through as bytes — JSON allows raw UTF-8 in strings. One awk pass;
+# passes through as bytes - JSON allows raw UTF-8 in strings. One awk pass;
 # ~7 ms for 60 K characters. The input's final newline, if any, is not emitted.
 steer_json_string() {
 	LC_ALL=C awk '
@@ -174,18 +174,18 @@ steer_json_string() {
 	END { printf "\"" }'
 }
 
-# steer_hook_host — which harness is running this hook: `claude` or `copilot`.
+# steer_hook_host - which harness is running this hook: `claude` or `copilot`.
 # The two want different SessionStart stdout (Claude Code: raw text; the Copilot
 # surfaces: a JSON envelope), and VS Code's Copilot Chat runs the plugin's Claude
-# hooks.json as-is, so the script — not the manifest — has to tell them apart.
+# hooks.json as-is, so the script - not the manifest - has to tell them apart.
 #   1. STEER_HOOK_TARGET=copilot, set by the generated Copilot CLI manifest
-#      (copilot-hooks.json)                                          → copilot
-#   2. the payload carries "permission_mode" — a documented Claude Code common
-#      input field that neither Copilot surface sends                → claude
+#      (copilot-hooks.json)                                          -> copilot
+#   2. the payload carries "permission_mode" - a documented Claude Code common
+#      input field that neither Copilot surface sends                -> claude
 #   3. the payload has "hook_event_name", "model" and "timestamp" but no
-#      "permission_mode" — the shape Copilot Chat in VS Code sends
-#      (observed on VS Code 1.135; the CLI's PascalCase form has no "model") → copilot
-#   4. anything else                                                 → claude
+#      "permission_mode" - the shape Copilot Chat in VS Code sends
+#      (observed on VS Code 1.135; the CLI's PascalCase form has no "model") -> copilot
+#   4. anything else                                                 -> claude
 # The default is deliberately Claude: mis-reading Claude Code as Copilot would
 # swap its parted raw delivery for one oversized JSON command and lose the
 # ruleset, whereas mis-reading a Copilot surface as Claude only keeps today's

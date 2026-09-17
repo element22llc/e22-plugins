@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
-# steer — a change that ships must bring a changelog fragment.
+# steer - a change that ships must bring a changelog fragment.
 #
 # WHAT COUNTS AS SHIPPING
 #   The inverse of this repo's own gate, because a product repo has no single
-#   shipped tree: everything counts EXCEPT paths that reach no user — the spec
+#   shipped tree: everything counts EXCEPT paths that reach no user - the spec
 #   spine, docs, CI/editor config, tests, root prose, and the changelog machinery
 #   itself. Widen EXEMPT deliberately; each entry should be a path you can say
 #   ships nothing.
@@ -16,12 +16,12 @@
 #   Deliberately mode-blind, unlike the coverage gate. In pr-flow the PR is
 #   already gated, and the post-merge push re-checks the same diff and passes.
 #   In solo-trunk there is no PR at all, so this is the only thing standing
-#   between a trunk push and an unrecorded shipped change — exactly where the
+#   between a trunk push and an unrecorded shipped change - exactly where the
 #   Definition-of-Done floor is supposed to bite.
 #
 # BASE RESOLUTION
 #   steer_ci_base() in ci-lib.sh. No base means the gate cannot see the change,
-#   so it skips (fail-open) — same convention as the coverage gate.
+#   so it skips (fail-open) - same convention as the coverage gate.
 set -eu
 
 . "$(dirname "$0")/ci-lib.sh"
@@ -32,7 +32,7 @@ is_exempt() {
 	spec/* | docs/* | .github/* | .claude/* | .vscode/* | .changes/*) return 0 ;;
 	tests/* | test/* | */tests/* | */test/*) return 0 ;;
 	# Prose ships no behaviour, wherever it lives. A docs change that IS worth an
-	# entry can still have one — this only says it is never *required*.
+	# entry can still have one - this only says it is never *required*.
 	*.md) return 0 ;;
 	esac
 	return 1

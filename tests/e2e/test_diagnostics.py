@@ -1,4 +1,4 @@
-"""Unit tests for the failure-diagnostics helper — pure, no skill runs.
+"""Unit tests for the failure-diagnostics helper - pure, no skill runs.
 
 Deliberately unmarked (not @pytest.mark.e2e), so it runs in the default suite
 and gives the debuggability tooling real coverage at zero token cost.

@@ -1,4 +1,4 @@
-# Fixture: adopt — PR opened but not reviewed is the current gate
+# Fixture: adopt - PR opened but not reviewed is the current gate
 
 Workflow: `/steer:adopt`
 
@@ -18,7 +18,7 @@ Human decision required
 
 ## Expected suggested command
 
-none — PR review is a human action.
+none - PR review is a human action.
 
 ## Must not recommend first
 

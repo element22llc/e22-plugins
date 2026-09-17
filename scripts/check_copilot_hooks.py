@@ -6,14 +6,14 @@ the plugin's ``plugins/steer/hooks/hooks.json`` (the single source of truth),
 porting the documented ``PreToolUse`` subset into Copilot's flat schema with
 ``STEER_HOOK_TARGET=copilot`` and fail-open ``|| true``. This check regenerates
 in-memory and byte-compares against the committed manifest, failing the build on
-any drift — so renaming, dropping, or retiming a hook on the Claude side can no
+any drift - so renaming, dropping, or retiming a hook on the Claude side can no
 longer silently leave the Copilot manifest behind.
 
 Because the manifest is *generated* from ``hooks.json``, the referential
 integrity the old parity gate asserted (every referenced script is wired on the
 Claude side, carries the target flag, and is fail-open) now holds by
-construction. We additionally verify each referenced script still exists on disk
-— the one property regeneration alone can't guarantee, since ``hooks.json`` could
+construction. We additionally verify each referenced script still exists on disk -
+the one property regeneration alone can't guarantee, since ``hooks.json`` could
 name a script that was deleted.
 
 Run from the repo root::
@@ -38,7 +38,7 @@ def main() -> int:
         return 1
     if not COPILOT_HOOKS_JSON.is_file():
         print(
-            f"check_copilot_hooks: missing {COPILOT_HOOKS_JSON} — run 'mise run gen:copilot'",
+            f"check_copilot_hooks: missing {COPILOT_HOOKS_JSON} - run 'mise run gen:copilot'",
             file=sys.stderr,
         )
         return 1
@@ -57,7 +57,7 @@ def main() -> int:
     if committed != expected:
         problems.append(
             f"{COPILOT_HOOKS_JSON.name} is out of sync with {HOOKS_JSON.name} "
-            f"— run 'mise run gen:copilot' to regenerate"
+            f"- run 'mise run gen:copilot' to regenerate"
         )
 
     if problems:
