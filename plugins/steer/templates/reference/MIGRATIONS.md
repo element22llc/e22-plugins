@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `dependabot-auto-merge.yml` gains the `checks`/`statuses` read scopes
+### v6.4.0 - `dependabot-auto-merge.yml` gains the `checks`/`statuses` read scopes
 
 - **What & why:** the shipped auto-merge workflow declares only `contents: write`
   and `pull-requests: write`. A Dependabot-triggered run gets **exactly** the
@@ -132,14 +132,13 @@ Name the file and say what to carry forward.
   theirs. Idempotent: once both scopes are present the precondition is false.
   **No history entry is earned** - CI scaffolding `/steer:sync` carries forward.
 
-### [Unreleased] - OpenSpec repos: steer's ADRs + tracker move under `openspec/steer/`
+### v6.4.0 - OpenSpec repos: steer's artifacts move under `openspec/steer/`
 
-- **What & why:** a repo whose spec spine is OpenSpec keeps two artifacts
-  OpenSpec does not model - the ADR log and the tracker declaration. The first
-  release to support that backend parked them in a thin `spec/` beside
-  `openspec/`, which left a repo with two spine directories and no way to tell
-  which was truth. They now live in **one** place, namespaced under
-  `openspec/steer/` so the `openspec` CLI (which regenerates
+- **What & why:** a repo whose spec spine is OpenSpec keeps three artifacts
+  OpenSpec does not model - the ADR log, the tracker declaration and the app
+  guide. A repo carrying them in a thin `spec/` beside `openspec/` has two spine
+  directories and no way to tell which is truth. They belong in **one** place,
+  namespaced under `openspec/steer/` so the `openspec` CLI (which regenerates
   `openspec/AGENTS.md` wholesale and relocates whole change directories on
   archive) cannot claim the path. **Native repos are untouched** - `spec/` stays
   exactly as it was; this entry fires only where `openspec/` exists.

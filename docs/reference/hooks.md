@@ -231,7 +231,8 @@ this file directly cannot pre-approve the call, and `check_skill_helper_sourcing
 now fails the build on it. Its only dependency is `lib/repo-root.sh`, so it stays
 usable on the hook hot path.
 
-`steer_spine_state <repo_root>` prints exactly one of four words:
+`steer_spine_state <repo_root>` prints exactly one of six words. Four describe
+a native `spec/` spine:
 
 | State | Means | Consequence |
 | --- | --- | --- |
@@ -257,10 +258,10 @@ helper's refusal to read a bare `spec/` as a spine. Making these **states**
 rather than a bypass in front of one caller is what keeps `/steer:doctor`,
 `/steer:sync` and `/steer:audit` answering the same question the same way.
 
-### Where the two steer artifacts live
+### Where the three steer artifacts live
 
-OpenSpec models neither an ADR log nor a tracker, so steer keeps both - on an
-OpenSpec repo, under `openspec/steer/`:
+OpenSpec models none of an ADR log, a tracker declaration or an app guide, so
+steer keeps all three - on an OpenSpec repo, under `openspec/steer/`:
 
 | Artifact | Native repo | OpenSpec repo |
 | --- | --- | --- |

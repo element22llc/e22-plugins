@@ -28,7 +28,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `30-spec-workflow.md` | Spec workflow. |
 | `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
 | `32-living-docs.md` | Document in parallel, not after. |
-| `33-spec-workflow-openspec.md` | Spec workflow - OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs and the tracker declaration stay steer's, under `openspec/steer/`. |
+| `33-spec-workflow-openspec.md` | Spec workflow - OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs, the tracker declaration and the app guide stay steer's, under `openspec/steer/`. |
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing rules. |
@@ -65,8 +65,10 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `92-user-facing-copy`, `99-end-of-session` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
-    `36-issue-first`, and `52-deployment` are likewise scoped - respectively to
-    repos that do IaC (`has-iac`), use GitHub as the tracker (`tracker-github`), and
+    `33-spec-workflow-openspec`, `36-issue-first`, and `52-deployment` are likewise
+    scoped - respectively to
+    repos that do IaC (`has-iac`), drive the spine with OpenSpec (`has-openspec`),
+    use GitHub as the tracker (`tracker-github`), and
     those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
     an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` - so
     `52-deployment` injects in any Node repo, not only one that deploys today).

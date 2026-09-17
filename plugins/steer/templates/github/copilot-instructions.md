@@ -507,7 +507,7 @@ bootstrap routes would lay a second, competing spine.
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Two artifacts are steer's, because OpenSpec has no equivalent - and on this
+**Three artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
 - **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
@@ -1013,8 +1013,8 @@ anti-patterns prose: `/steer:reference conventions`.
   and non-breaking spaces never appear in anything you produce: not in code,
   config, identifiers or strings bound for an external API, and not in
   comments, specs, docs, commit messages, PR text or chat either. Write `-`,
-  `'`, `"`, `...`, `->`. Strict validators reject the rest, and a write hook
-  denies them. This is about those characters only - accented letters,
+  `'`, `"`, `...`, `*`, `->`. Strict validators reject the rest, and a write
+  hook denies them. This is about those characters only - accented letters,
   guillemets and other non-English text are unaffected. The apostrophe is `'`
   in every language, French included; typeset forms are never the exception.
 
