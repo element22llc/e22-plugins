@@ -36,5 +36,5 @@ if steer_ci_has_ansible; then
 fi
 
 if [ "${ran}" -eq 0 ]; then
-	steer_ci_notice 'No IaC stack detected — nothing to check.'
+	steer_ci_notice 'No IaC stack detected - nothing to check.'
 fi

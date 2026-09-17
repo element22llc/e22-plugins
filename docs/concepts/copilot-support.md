@@ -213,7 +213,7 @@ Code (`gen_agent_skills.py`):
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Three differences from Claude Code remain on the Copilot surfaces — the first two
-on both, the third on VS Code only (the CLI does run steer's two `PreToolUse`
+on both, the third on VS Code only (the CLI does run steer's three `PreToolUse`
 gates and the `PostToolUse` comment-density notice, per the table above). Their
 *mitigations* do not: both notes below are injected by the generator into the
 portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
@@ -330,9 +330,11 @@ The Copilot CLI manifest points hooks at a **Copilot-native** file
 **fail-closed** (a hook that errors *denies* the tool), so a mis-run Claude hook
 could block edits.
 
-Two gates are ported so far, both surfacing as a soft **`ask`** (Copilot prompts
+Three gates are ported so far, all surfacing as a soft **`ask`** (Copilot prompts
 you to confirm): the **version-pin policy** (`check-version-pins.sh`, a hard
-`deny` on Claude softened to `ask` here) and the **trunk-push graduation gate**
+`deny` on Claude softened to `ask` here), the **ASCII-in-code-and-values gate**
+(`check-ascii-writes.sh`, likewise a Claude `deny` softened to `ask`), and the
+**trunk-push graduation gate**
 (`check-bash-actions.sh`, an `ask` on both surfaces). One hook script serves both
 surfaces, each emitting Copilot's flat `permissionDecision` envelope when invoked
 with `STEER_HOOK_TARGET=copilot` — but the two paths are not identical: the

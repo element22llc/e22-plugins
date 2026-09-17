@@ -18,7 +18,7 @@ if steer_ci_has_node; then
 	if ! git ls-files '*package.json' |
 		xargs grep -hE '"test"[[:space:]]*:' 2>/dev/null |
 		grep -qv -- '--if-present'; then
-		steer_ci_error 'Node workspace detected but no package defines a "test" script — a green CI would not mean tests ran. Add tests (Definition of Done).'
+		steer_ci_error 'Node workspace detected but no package defines a "test" script - a green CI would not mean tests ran. Add tests (Definition of Done).'
 		exit 1
 	fi
 	steer_ci_group 'pnpm test'
@@ -53,5 +53,5 @@ if steer_ci_has_python; then
 fi
 
 if [ "${ran}" -eq 0 ]; then
-	steer_ci_notice 'No Node or Python stack detected — no test suite to run.'
+	steer_ci_notice 'No Node or Python stack detected - no test suite to run.'
 fi

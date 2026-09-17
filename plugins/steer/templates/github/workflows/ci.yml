@@ -164,7 +164,7 @@ jobs:
           if [ "$EVENT" = "pull_request" ]; then
             range="${BASE_SHA}...HEAD"
           elif [ "${BEFORE:-$ZERO}" = "$ZERO" ]; then
-            echo "::notice::No prior commit to diff against (first push) — skipping spec-drift (fail-open)."
+            echo "::notice::No prior commit to diff against (first push) - skipping spec-drift (fail-open)."
             exit 0
           else
             range="${BEFORE}..${HEAD_SHA}"
@@ -232,7 +232,7 @@ jobs:
             def count(f): (f // 0);
             "## ai-slop (advisory)",
             "",
-            (if .scoreable then "**Score \(.score) — \(.label)**" else "**Not scored**" end)
+            (if .scoreable then "**Score \(.score) - \(.label)**" else "**Not scored**" end)
               + " · \(count(.summary.errors)) error(s)"
               + " · \(count(.summary.warnings)) warning(s)"
               + " · \(count(.summary.fixable)) fixable"

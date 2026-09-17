@@ -27,5 +27,5 @@ if steer_ci_has_python; then
 fi
 
 if [ "${ran}" -eq 0 ]; then
-	steer_ci_notice 'No Node or Python stack detected — no linter to run.'
+	steer_ci_notice 'No Node or Python stack detected - no linter to run.'
 fi

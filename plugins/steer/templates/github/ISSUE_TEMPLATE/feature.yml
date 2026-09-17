@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Describe the outcome you want in plain language. You do **not** need to
-        choose a feature name, write acceptance criteria, or know how it's built —
+        choose a feature name, write acceptance criteria, or know how it's built -
         an agent and a developer derive those later.
   - type: textarea
     id: outcome
@@ -28,7 +28,7 @@ body:
     id: who
     attributes:
       label: Who is affected?
-      description: Which users — existing, new, internal team, admins, a specific role?
+      description: Which users - existing, new, internal team, admins, a specific role?
   - type: input
     id: where
     attributes:
@@ -38,16 +38,16 @@ body:
     id: design
     attributes:
       label: Supporting screenshots or design links
-      description: If you explored this in Claude Design, paste the URL — that's the canonical way to share a design. Figma links, screenshots, and recordings work too.
+      description: If you explored this in Claude Design, paste the URL - that's the canonical way to share a design. Figma links, screenshots, and recordings work too.
   - type: dropdown
     id: importance
     attributes:
       label: Approximate importance
       options:
-        - Critical — blocking users today
-        - High — want it soon
-        - Medium — would be nice
-        - Low — backlog
+        - Critical - blocking users today
+        - High - want it soon
+        - Medium - would be nice
+        - Low - backlog
     validations:
       required: true
   - type: textarea
