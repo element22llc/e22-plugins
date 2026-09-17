@@ -37,9 +37,15 @@ Dockerfile | Dockerfile.* | Makefile | *.py | *.sh | *.bash | *.zsh | *.rb | *.p
 esac
 
 # Only a line's leading marker counts, so a `#` inside a string never does.
+# A shebang and a linter/type-checker directive are machine-read instructions the
+# file cannot work without, not prose a reader could delete — counting them made
+# short, directive-heavy scripts look comment-bloated and invited stripping the
+# real why-comments beside them. They still count toward the line total.
 COUNTS="$(awk -v style="${STYLE}" '
 	/^[[:space:]]*$/ { next }
 	{ total++ }
+	NR == 1 && /^#!/ { next }
+	/^[[:space:]]*(#|\/\/)[[:space:]]*(shellcheck|noqa|type:|pyright:|mypy:|ruff:|pylint:|flake8:|eslint-|biome-ignore|prettier-ignore|@ts-|steer:)/ { next }
 	style == "hash" && /^[[:space:]]*#/ { c++ }
 	style == "slash" && /^[[:space:]]*(\/\/|\/\*|\*)/ { c++ }
 	style == "dash" && /^[[:space:]]*--/ { c++ }
@@ -58,5 +64,14 @@ MARK="${TMPDIR:-/tmp}/steer-comment-density.${SID:-nosid}.${KEY:-0}"
 
 PCT=$((COMMENTS * 100 / TOTAL))
 SAFE_FILE="$(steer_json_safe "${FILE}")"
-printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Comment-density check: %s is %s%% comment lines (%s of %s non-blank). The Code comments rule allows a comment only for a non-obvious why. In the code you wrote or touched, delete every comment that restates the code, narrates a step, banners a section, describes the task or its history, or keeps code commented out; keep the why-comments that name a trap, an invariant, or the reason for an escape hatch. Rationale for config belongs in the reference prose or ARCHITECTURE.md, not inline. A pre-existing dense file is not a licence to add more. This notice fires once per file per session."}}\n' "${SAFE_FILE}" "${PCT}" "${COMMENTS}" "${TOTAL}"
+MSG="$(printf 'Comment-density check: %s is %s%% comment lines (%s of %s non-blank). The Code comments rule allows a comment only for a non-obvious why. In the code you wrote or touched, delete every comment that restates the code, narrates a step, banners a section, describes the task or its history, or keeps code commented out; keep the why-comments that name a trap, an invariant, or the reason for an escape hatch. Rationale for config belongs in the reference prose or ARCHITECTURE.md, not inline. A pre-existing dense file is not a licence to add more. This notice fires once per file per session.' "${SAFE_FILE}" "${PCT}" "${COMMENTS}" "${TOTAL}")"
+
+# Claude Code reads additionalContext nested under hookSpecificOutput; the
+# Copilot CLI documents only a top-level additionalContext and never mentions
+# the nested form, so that branch emits the flat key or the notice is dropped.
+if [ "${STEER_HOOK_TARGET:-claude}" = "copilot" ]; then
+	printf '{"additionalContext":"%s"}\n' "${MSG}"
+else
+	printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"%s"}}\n' "${MSG}"
+fi
 exit 0

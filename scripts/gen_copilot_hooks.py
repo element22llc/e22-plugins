@@ -13,10 +13,13 @@ ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` �
   on stdout (measured 2026-09-02 — no practical size cap, but the *last* hook
   returning context wins, so it is ported once, not once per Claude part; under
   ``STEER_HOOK_TARGET=copilot`` the script emits the whole ruleset as one JSON
-  envelope from part 1 and nothing from any other part). The advisory
-  SessionStart checks and the Stop hook are not ported yet: they still emit raw
-  text, which Copilot discards, and for the one side-effecting check
-  (``check-worktree-trust.sh``) that would drop the message explaining what
+  envelope from part 1 and nothing from any other part), and the ``PostToolUse``
+  comment-density notice, which emits a JSON envelope Copilot honours: its
+  ``additionalContext`` is appended to the tool result so the model sees it on
+  the same turn (capped at 10 KB, joined with a double newline across hooks).
+  The advisory SessionStart checks and the Stop hook are not ported yet: they
+  still emit raw text, which Copilot discards, and for the one side-effecting
+  check (``check-worktree-trust.sh``) that would drop the message explaining what
   happened while leaving the trust decision's two human-owned branches mute.
   Rule ``24-worktrees`` carries that remedy as standards text instead — see
   ``docs/concepts/copilot-support.md`` → "Known limitations";
@@ -26,8 +29,11 @@ ports only a **subset** of the hooks (see ``docs/concepts/copilot-support.md`` �
 * Claude's ``{matcher, hooks:[{command, timeout}]}`` shape becomes Copilot's flat
   ``{type, matcher, bash, timeoutSec}``, and some matchers are simplified. The
   event key is mapped through ``_COPILOT_EVENT``: the tool gates keep Claude's
-  PascalCase ``PreToolUse`` (the Copilot CLI applies Claude matcher semantics to
-  it), but the injector is registered under the camelCase ``sessionStart`` — the
+  PascalCase ``PreToolUse`` / ``PostToolUse``, which is load-bearing twice over —
+  Copilot applies Claude matcher semantics there (``Write`` and ``Edit`` match the
+  runtime ``create``/``edit`` tools, which the camelCase form would not) and feeds
+  the snake_case ``tool_name``/``tool_input`` payload these scripts already parse.
+  The injector is registered under the camelCase ``sessionStart`` — the
   CLI honours a top-level ``additionalContext`` only there (measured: the same
   object under PascalCase ``SessionStart`` runs but is dropped) — and a
   SessionStart entry carries no matcher, which Copilot's ``sessionStart`` lacks.
@@ -73,6 +79,7 @@ COPILOT_HOOKS: list[tuple[str, str, str | None]] = [
     ("SessionStart", "inject-standards.sh", None),
     ("PreToolUse", "check-version-pins.sh", None),
     ("PreToolUse", "check-bash-actions.sh", "Bash"),
+    ("PostToolUse", "check-comment-density.sh", None),
 ]
 
 # Claude event name → the key it is registered under in the Copilot manifest.
@@ -81,6 +88,7 @@ COPILOT_HOOKS: list[tuple[str, str, str | None]] = [
 # ``additionalContext`` to be honoured (see the module docstring).
 _COPILOT_EVENT: dict[str, str] = {
     "PreToolUse": "PreToolUse",
+    "PostToolUse": "PostToolUse",
     "SessionStart": "sessionStart",
 }
 

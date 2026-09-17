@@ -47,10 +47,6 @@ steer_ci_endgroup() {
 # must then FAIL OPEN (skip the gate), never fail the build: a gate that cannot
 # see the diff has learned nothing, and blocking on that punishes shallow clones
 # and first pushes rather than catching a real defect.
-#
-# `ci-coverage.sh` predates this helper and still inlines its own resolution,
-# because its `push` branch carries coverage-specific policy (the solo-trunk DoD
-# floor). Converge it here the next time that gate is touched.
 steer_ci_base() {
 	case "${STEER_CI_EVENT:-local}" in
 	pull_request)
