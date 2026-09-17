@@ -1399,6 +1399,33 @@ def check_migration_precondition_converges(errors: list[str]) -> None:
             )
 
 
+def check_gh_pr_checks_scopes(errors: list[str]) -> None:
+    """Assert a bundled workflow running ``gh pr checks`` declares the read scopes it needs.
+
+    ``gh pr checks`` resolves the GraphQL ``statusCheckRollup`` field, which reads check
+    runs (``checks: read``) and commit statuses (``statuses: read``). A Dependabot-triggered
+    run gets exactly the permissions its workflow declares, so omitting either makes the
+    field inaccessible and the step exits 1 — a red Actions run on a freshly bootstrapped
+    repo's first Dependabot PR (#566).
+    """
+    wf_dir = PLUGIN_ROOT / "templates" / "github" / "workflows"
+    for path in sorted(wf_dir.glob("*.yml")):
+        text = path.read_text(encoding="utf-8")
+        if "gh pr checks" not in text:
+            continue
+        rel = f"templates/github/workflows/{path.name}"
+        block = re.search(r"^permissions:\n((?:[ \t]+\S.*\n)*)", text, re.MULTILINE)
+        declared = block.group(1) if block else ""
+        for scope in ("checks", "statuses"):
+            if not re.search(rf"^\s+{scope}:\s*(read|write)\b", declared, re.MULTILINE):
+                errors.append(
+                    f"{rel}: runs `gh pr checks` but its top-level `permissions:` omits "
+                    f"`{scope}: read` — the command resolves `statusCheckRollup`, which "
+                    f"needs both `checks` and `statuses`, and a Dependabot-triggered run "
+                    f"gets only the declared scopes, so the step fails outright (#566)."
+                )
+
+
 def run_checks(errors: list[str]) -> None:
     reg = load_registry(errors)
     skills = skill_names()
@@ -1423,6 +1450,7 @@ def run_checks(errors: list[str]) -> None:
     check_skill_helper_sourcing(errors)
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)
+    check_gh_pr_checks_scopes(errors)
 
 
 def main() -> int:

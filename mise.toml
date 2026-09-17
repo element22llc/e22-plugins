@@ -161,6 +161,12 @@ run = [
   # suite's per-case repo builders: not shipped, but pre-commit's `types: [shell]`
   # matches them, so `check` must too or it stops being a superset.
   "shellcheck plugins/steer/hooks/*.sh plugins/steer/hooks/lib/*.sh plugins/steer/hooks/tests/*.sh plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",
+  # Second pass over the SHIPPED scaffold only, with --norc: the run above reads
+  # this repo's .shellcheckrc, whose disables are scoped to the plugin's own
+  # hooks, while a bootstrapped consumer repo has no rc at all and lints these
+  # files bare via `mise run ci:hygiene`. Without this the repo's disables mask
+  # exactly the findings that break a fresh bootstrap.
+  "shellcheck --norc plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh",
   # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
   # except plugins/steer/hooks/.
   "shfmt -d plugins/steer/scripts/*.sh plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh plugins/steer/evals/*/scaffold.sh scripts/*.sh",

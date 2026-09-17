@@ -94,6 +94,44 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number — **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] — `dependabot-auto-merge.yml` gains the `checks`/`statuses` read scopes
+
+- **What & why:** the shipped auto-merge workflow declares only `contents: write`
+  and `pull-requests: write`. A Dependabot-triggered run gets **exactly** the
+  permissions the workflow declares, and the step's `gh pr checks` resolves the
+  GraphQL `statusCheckRollup` field, which reads check runs (`checks`) and commit
+  statuses (`statuses`). With neither granted the field is inaccessible and the
+  step exits 1 — so the job approves the PR, then dies: `Resource not accessible
+  by integration (node.statusCheckRollup...)`. Every managed repo sees a red
+  Actions run on its first Dependabot PR, and the bump never merges. Tracked as
+  issue #566.
+- **Precondition:** the workflow exists and its `permissions:` block is missing
+  either scope — this fires:
+
+  ```sh
+  test -f .github/workflows/dependabot-auto-merge.yml &&
+    { grep -q 'checks: read' .github/workflows/dependabot-auto-merge.yml || echo pending; } &&
+    { grep -q 'statuses: read' .github/workflows/dependabot-auto-merge.yml || echo pending; }
+  ```
+
+  A repo without the file is `n/a` — creating it is
+  [`CAPABILITIES.md`](CAPABILITIES.md)'s `dependency-automation` repair, not this
+  entry's.
+- **Action:** add the two read scopes to the **top-level** `permissions:` map,
+  leaving the existing write scopes alone:
+
+  ```yaml
+  permissions:
+    contents: write
+    pull-requests: write
+    checks: read
+    statuses: read
+  ```
+
+  Show the diff. Only this file, only that map — a workflow the product wrote is
+  theirs. Idempotent: once both scopes are present the precondition is false.
+  **No history entry is earned** — CI scaffolding `/steer:sync` carries forward.
+
 ### [Unreleased] — OpenSpec repos: steer's ADRs + tracker move under `openspec/steer/`
 
 - **What & why:** a repo whose spec spine is OpenSpec keeps two artifacts
