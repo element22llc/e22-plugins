@@ -165,7 +165,7 @@ run = [
   # this repo's .shellcheckrc, whose disables are scoped to the plugin's own
   # hooks, while a bootstrapped consumer repo has no rc at all and lints these
   # files bare via `mise run ci:hygiene`. Without this the repo's disables mask
-  # exactly the findings that break a fresh bootstrap (#564).
+  # exactly the findings that break a fresh bootstrap.
   "shellcheck --norc plugins/steer/templates/scaffold/scripts/*.sh plugins/steer/templates/scaffold/profiles/*/scripts/*.sh",
   # shfmt mirrors the pre-commit hook's scoping exactly: a HARD gate everywhere
   # except plugins/steer/hooks/.
