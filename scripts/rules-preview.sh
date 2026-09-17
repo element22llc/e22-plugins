@@ -13,9 +13,9 @@
 #     sh scripts/rules-preview.sh --knowledge     # a non-code (PO) folder
 #     sh scripts/rules-preview.sh --full          # also dump the injected text
 #
-# Reuse, not reimplementation — the two halves both run shipped code:
-#   * the BUNDLE is the real hooks/inject-standards.sh — every part hooks.json
-#     registers, concatenated — run on a synthetic
+# Reuse, not reimplementation - the two halves both run shipped code:
+#   * the BUNDLE is the real hooks/inject-standards.sh - every part hooks.json
+#     registers, concatenated - run on a synthetic
 #     SessionStart payload, so the byte total is what a session truly pays;
 #   * the PER-RULE table calls the real lib/scope.sh predicates
 #     (steer_work_mode, steer_inject_when_ok), so kept/dropped can't drift from
@@ -81,7 +81,7 @@ trap 'rm -rf "${WORK}"' EXIT
 
 if [ "${KNOWLEDGE}" -eq 1 ]; then
 	# An empty, non-git dir carries no code markers, so the REAL steer_work_mode
-	# classifies it 'knowledge'. We don't force the mode — we hand the classifier
+	# classifies it 'knowledge'. We don't force the mode - we hand the classifier
 	# a folder that genuinely is one.
 	TARGET="${WORK}/knowledge-folder"
 	mkdir -p "${TARGET}"
@@ -105,7 +105,7 @@ BUNDLE="${WORK}/bundle.md"
 HOOK_ERR="${WORK}/hook.err"
 PAYLOAD="$(printf '{"session_id":"rules-preview","cwd":"%s","hook_event_name":"SessionStart"}' "${TARGET}")"
 
-# How many parts hooks.json registers — the same manifest the runtime reads.
+# How many parts hooks.json registers - the same manifest the runtime reads.
 # (Backslashes stripped first: the JSON escapes the quotes around the path.)
 PARTS="$(tr -d '\\' <"${PLUGIN}/hooks/hooks.json" 2>/dev/null | grep -c 'inject-standards\.sh" [0-9]* [0-9]*"' | tr -d ' ')"
 [ "${PARTS:-0}" -ge 1 ] || PARTS=1
@@ -175,11 +175,11 @@ CONSUMER_ROOT="$(steer_repo_root "${TARGET}" 2>/dev/null)" || CONSUMER_ROOT=""
 printf 'repo:      %s\n' "${TARGET}"
 if [ "${MODE}" = knowledge ]; then
 	printf 'work mode: knowledge (every marked rule is skipped)\n'
-	printf 'git root:  <none — a knowledge folder is not a git repo>\n\n'
+	printf 'git root:  <none - a knowledge folder is not a git repo>\n\n'
 else
 	printf 'work mode: code (full ruleset, subject to per-rule scope)\n'
 	printf 'git root:  %s\n\n' \
-		"${CONSUMER_ROOT:-<none — every scope predicate fails open>}"
+		"${CONSUMER_ROOT:-<none - every scope predicate fails open>}"
 fi
 
 printf '%-28s  %-7s  %5s  %6s  %s\n' 'RULE' 'STATUS' 'PART' 'CHARS' 'SCOPE'
@@ -228,14 +228,14 @@ for f in "${RULES_DIR}"/*.md; do
 	esac
 
 	# A scope-eligible rule that the cap guard dropped never reaches the session.
-	# Report it as CAPPED, not "inject" — conflating the two is what let a
+	# Report it as CAPPED, not "inject" - conflating the two is what let a
 	# 61 KB payload read as fully delivered.
 	part="-"
 	if [ "${status}" = inject ]; then
 		case " ${CAPPED} " in
 		*" ${name} "*)
 			status="CAPPED"
-			scope="${scope} — did not fit the ${PARTS} registered part(s), NOT delivered"
+			scope="${scope} - did not fit the ${PARTS} registered part(s), NOT delivered"
 			;;
 		*)
 			part="$(part_of "${f}" "${skip}")"
@@ -269,14 +269,14 @@ printf '\n%s delivered, %s out of scope (%s chars reclaimed)\n' \
 printf 'injected payload: %s chars (%s B, ~%s tokens @3.5 B/tok) in %s of %s registered part(s); largest part %s chars\n' \
 	"${INJECTED_CHARS}" "${INJECTED_BYTES}" "${INJECTED_TOKENS}" "${PARTS_USED}" "${PARTS}" "${LARGEST_PART}"
 if [ -n "${CAP_CHARS}" ] && [ -n "${PART_BUDGET}" ]; then
-	printf 'runtime cap:      %s characters per hook command (Claude Code; not a policy number) — each part is filled to %s; capacity %s chars, %s spare\n' \
+	printf 'runtime cap:      %s characters per hook command (Claude Code; not a policy number) - each part is filled to %s; capacity %s chars, %s spare\n' \
 		"${CAP_CHARS}" "${PART_BUDGET}" "$((PARTS * PART_BUDGET))" "$((PARTS * PART_BUDGET - INJECTED_CHARS))"
 fi
 if [ "${CAPPED_N}" -gt 0 ]; then
 	printf '\n!! %s rule(s) (%s chars) are in scope for this repo but did NOT fit the registered parts.\n' \
 		"${CAPPED_N}" "${CAPPED_BYTES}"
 	printf '   A session here never receives them. Trade prose out to templates/reference/*,\n'
-	printf '   scope the rule with an inject-when marker, or — deliberately — register one\n'
+	printf '   scope the rule with an inject-when marker, or - deliberately - register one\n'
 	printf '   more part in hooks/hooks.json (scripts/check_context_budget.py gates this).\n'
 fi
 

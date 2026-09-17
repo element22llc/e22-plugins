@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
-# steer — version-policy freshness check + refresh (advisory, CI/scheduled only).
+# steer - version-policy freshness check + refresh (advisory, CI/scheduled only).
 #
 # Compares policy/versions.yml `minimum_supported` floors against UPSTREAM
 # end-of-life (endoflife.date) and computes the floor each product SHOULD carry:
 # the lowest cycle still supported upstream, at the SAME granularity the floor
-# already uses (major-only or major.minor). It is BUMP-UP-ONLY — it never lowers a
+# already uses (major-only or major.minor). It is BUMP-UP-ONLY - it never lowers a
 # floor, so a policy that is deliberately STRICTER than upstream EOL is preserved.
 #
 # This is the ONLY place that consults the live source. Two modes:
-#   (default)   read-only — print the bumps that are due, exit 1 if any are due.
+#   (default)   read-only - print the bumps that are due, exit 1 if any are due.
 #   --write     apply the bumps in place to the policy file(s), exit 1 if any
 #               were applied. The scheduled workflow runs --write and opens a PR;
 #               enforcement (the hook + scan-version-pins.sh) never runs this.
@@ -17,7 +17,7 @@
 # seed) when no explicit file is given, so they never drift (check_standards.py
 # enforces byte-identity). Idempotent: a second run with current floors is a no-op.
 #
-# Requires jq + curl (a controlled CI environment — unlike the enforcement path,
+# Requires jq + curl (a controlled CI environment - unlike the enforcement path,
 # which is dependency-free). Prints nothing when every floor is current.
 #
 # USAGE: check-policy-freshness.sh [--write] [policy-file]
@@ -90,7 +90,7 @@ norm_cycle() { # <cycle> <segs>
 	fi
 }
 
-# apply_floor <file> <product> <newval> — replace minimum_supported within the
+# apply_floor <file> <product> <newval> - replace minimum_supported within the
 # product's block only. Fixed-shape YAML (2-space product keys, 4-space scalars).
 apply_floor() {
 	_af_tmp="$1.tmp.$$"
@@ -141,9 +141,9 @@ for _p in ${PRODUCTS}; do
 	done
 	[ -n "${_target}" ] || continue
 
-	# Bump up only — never lower a floor that is stricter than upstream EOL.
+	# Bump up only - never lower a floor that is stricter than upstream EOL.
 	if [ "$(steer_ver_num "${_target}")" -gt "$(steer_ver_num "${_cur}")" ] 2>/dev/null; then
-		REPORT="${REPORT}- ${_p}: minimum_supported ${_cur} → ${_target} (cycle ${_cur} no longer supported upstream)\n"
+		REPORT="${REPORT}- ${_p}: minimum_supported ${_cur} -> ${_target} (cycle ${_cur} no longer supported upstream)\n"
 		BUMPS="${BUMPS}${_p} ${_target}\n"
 	fi
 done

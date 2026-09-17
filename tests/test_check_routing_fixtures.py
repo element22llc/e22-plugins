@@ -71,7 +71,7 @@ def test_valid_fixture_passes(tmp_path: Path):
 
 def test_signal_in_router_only_passes(tmp_path: Path):
     # A signal carried by 00-router.md but absent from the skill's own
-    # frontmatter is still routable — the surface is the union.
+    # frontmatter is still routable - the surface is the union.
     root = _make_plugin(tmp_path)
     fx = _write_fixtures(
         tmp_path,

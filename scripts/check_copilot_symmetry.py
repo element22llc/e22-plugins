@@ -2,7 +2,7 @@
 """Meta-gate: every Copilot generator/gate must be wired into the dev loop.
 
 The Copilot surface stays maintainable only if every artifact is *generated* from
-a Claude source and *gated* for drift — never hand-maintained in parallel. This
+a Claude source and *gated* for drift - never hand-maintained in parallel. This
 check enforces the wiring half of that invariant so a new
 ``scripts/gen_copilot_*.py`` or ``scripts/check_copilot_*.py`` can't be added and
 then silently left out of the build:
@@ -13,12 +13,12 @@ then silently left out of the build:
   task (so every drift gate runs in ``mise run check`` / CI).
 
 The globs cover two families: ``*_copilot_*`` (artifacts only GitHub Copilot
-reads — instructions, custom agents, the VS Code MCP mirror, the hook manifest)
+reads - instructions, custom agents, the VS Code MCP mirror, the hook manifest)
 and ``*_agent_*`` (the cross-tool ``.agents/skills`` tree that Copilot, Cursor,
 Gemini CLI and Codex all read). Both are generated-from-Claude-source, so both
 need the same wiring guarantee.
 
-It does not re-verify artifact contents — the individual ``check_copilot_*`` gates
+It does not re-verify artifact contents - the individual ``check_copilot_*`` gates
 do that. It guards against the failure mode of adding a mirror with a gate but no
 generator (or a generator no one runs), which is how the surface drifted back to
 hand-maintenance before.
@@ -75,7 +75,7 @@ def main() -> int:
             problems.append(f"{script.name} is not invoked by the 'gen:copilot' mise task")
     for script in check_scripts:
         if script.name == "check_copilot_symmetry.py":
-            continue  # this file — checked by being in plugin-check to run at all
+            continue  # this file - checked by being in plugin-check to run at all
         if script.name not in check_cmds:
             problems.append(f"{script.name} is not invoked by the 'plugin-check' mise task")
 

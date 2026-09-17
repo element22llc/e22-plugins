@@ -1,5 +1,5 @@
 # shellcheck shell=sh
-# worktree-env.sh — per-worktree COMPOSE_PROJECT_NAME + host-port offset so parallel worktrees never collide.
+# worktree-env.sh - per-worktree COMPOSE_PROJECT_NAME + host-port offset so parallel worktrees never collide.
 # SOURCED by mise (`[env]._.source`), never executed: it must not `exit` or `set -e`; it only computes and exports.
 # Rationale: the always-on "Parallel worktrees" rule; MIGRATIONS.md v3.24.0 for the naming scheme.
 
@@ -25,7 +25,7 @@ else
 	_wt_offset=0
 fi
 
-# Compose project name: `<repo>-<worktree>` in a linked worktree — a bare worktree basename is not unique across repos, and a shared name let one repo's docker:clean tear down another's stack.
+# Compose project name: `<repo>-<worktree>` in a linked worktree - a bare worktree basename is not unique across repos, and a shared name let one repo's docker:clean tear down another's stack.
 _wt_ident=$(basename "$_wt_root")
 if [ "$_wt_linked" = 1 ]; then
 	case "$_wt_common" in

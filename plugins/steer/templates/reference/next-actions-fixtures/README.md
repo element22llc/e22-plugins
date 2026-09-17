@@ -2,7 +2,7 @@
 
 Prose scenarios that pin the intended arbitration of the
 [`NEXT-ACTIONS.md`](../NEXT-ACTIONS.md) handoff contract. They are **not
-executable tests** — they make the decision logic reviewable and guard against
+executable tests** - they make the decision logic reviewable and guard against
 semantic drift as skills adopt the convention and as `/steer:next` is later built.
 
 Each fixture states a `## Given` repository/spec/tracker state, the

@@ -1,5 +1,5 @@
 {
-  // Recommended extensions — one per tool in mise.toml. Rationale: /steer:reference conventions -> "Editor & IDE".
+  // Recommended extensions - one per tool in mise.toml. Rationale: /steer:reference conventions -> "Editor & IDE".
   "recommendations": [
     // Biome is the lint+format tool; do not add ESLint/Prettier
     "biomejs.biome",

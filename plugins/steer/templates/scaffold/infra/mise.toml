@@ -1,4 +1,4 @@
-# Tool pins for /infra only — keeps the root mise.toml stack-agnostic (see ./README.md).
+# Tool pins for /infra only - keeps the root mise.toml stack-agnostic (see ./README.md).
 # Rationale: /steer:reference conventions -> "Toolchain". No infra/mise.lock ships: create
 # it here (`touch mise.lock && mise install && mise lock --platform linux-x64,macos-arm64`)
 # and commit it. Bump with `mise upgrade`; validate in non-prod before prod.

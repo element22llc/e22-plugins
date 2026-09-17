@@ -4,7 +4,7 @@
 steer's subagents live at ``plugins/steer/agents/<name>.md`` and reach Claude
 Code as plugin-scoped subagents (spawned by ``/steer:audit``,
 ``/steer:work --reviewed``, and the ``/steer:loop`` workflow). GitHub Copilot in
-VS Code has a native analog —
+VS Code has a native analog -
 **custom agents** (``.github/agents/<name>.agent.md``, formerly "custom chat
 modes"/``.chatmode.md``), selectable in the Chat agent picker and invocable as
 subagents. This script ports each steer subagent into that format so a Copilot
@@ -12,7 +12,7 @@ teammate gets the same specialized, tool-restricted worker (e.g. the read-only
 ``steer-reviewer``) rather than only the always-on standards.
 
 It renders one artifact per subagent into
-``plugins/steer/templates/github/agents/<name>.agent.md`` — the committed files
+``plugins/steer/templates/github/agents/<name>.agent.md`` - the committed files
 ``/steer:init`` / ``/steer:adopt`` install into a consumer repo's
 ``.github/agents/``. The single source of truth stays the ``agents/*.md`` files;
 ``check_copilot_agents.py`` fails the build if a committed artifact drifts.
@@ -102,7 +102,7 @@ def _emitted_prompt_names() -> frozenset[str]:
 
     Every skill now ships to `.agents/skills/steer-<name>/`, but the
     `user-invocable: false` gateways (`spec-scaffold`, `tracker-sync`) keep that
-    field in the portable copy — so an agent still never offers them as a typed
+    field in the portable copy - so an agent still never offers them as a typed
     command, and a rewritten ref to one would assert something the user cannot
     type. They stay excluded for that reason, not because the file is missing.
     """
@@ -122,7 +122,7 @@ def _emitted_prompt_names() -> frozenset[str]:
 
 
 def _to_copilot_refs(text: str, emitted: frozenset[str]) -> str:
-    """Rewrite `/steer:<skill>` → `/steer-<skill>`, but only where that resolves."""
+    """Rewrite `/steer:<skill>` -> `/steer-<skill>`, but only where that resolves."""
 
     def _sub(m: re.Match[str]) -> str:
         return f"/steer-{m.group(1)}" if m.group(1) in emitted else m.group(0)
@@ -132,10 +132,10 @@ def _to_copilot_refs(text: str, emitted: frozenset[str]) -> str:
 
 def render_agent(name: str, fm: dict, body: str) -> str:
     """Render one VS Code custom-agent artifact from a steer subagent."""
-    # Rewrite `/steer:<skill>` → `/steer-<skill>` in the description too, not just
+    # Rewrite `/steer:<skill>` -> `/steer-<skill>` in the description too, not just
     # the body: the description is what Copilot's agent picker shows, and this file
-    # carries no `/steer:` → `/steer-` mapping preamble. Scoped to emitted names for
-    # the same reason `gen_agent_skills.py` is — an unscoped rewrite would ship a
+    # carries no `/steer:` -> `/steer-` mapping preamble. Scoped to emitted names for
+    # the same reason `gen_agent_skills.py` is - an unscoped rewrite would ship a
     # dangling `/steer-tracker-sync` the moment an agent references a gateway.
     emitted = _emitted_prompt_names()
     description = _to_copilot_refs(
@@ -162,7 +162,7 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     # re-copy from ${CLAUDE_PLUGIN_ROOT}, which VS Code does not have, so this names
     # an action taken from Claude Code rather than a command this reader types.
     header = (
-        f"<!-- Generated from the steer plugin's agents/{name}.md — do not edit by "
+        f"<!-- Generated from the steer plugin's agents/{name}.md - do not edit by "
         f"hand. Refresh with /steer:sync from Claude Code in a managed repo, or mise "
         f"run gen:copilot in the plugin repo. -->"
     )
@@ -174,7 +174,7 @@ def render_agent(name: str, fm: dict, body: str) -> str:
     ported = _to_copilot_refs(body, emitted).strip()
 
     tools_note = (
-        f" In VS Code its tools are {', '.join(f'`{t}`' for t in tools)} (read-only) —"
+        f" In VS Code its tools are {', '.join(f'`{t}`' for t in tools)} (read-only) -"
         " the Claude tool names in the body below (`Read`/`Grep`/`Glob`) map to these."
         if tools
         else ""

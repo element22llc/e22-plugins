@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — open-questions nudge (anti-rot).
+# steer SessionStart hook - open-questions nudge (anti-rot).
 #
 # WHY THIS EXISTS
-#   Open questions in the spec spine (each feature's intent.md → "## Open
+#   Open questions in the spec spine (each feature's intent.md -> "## Open
 #   questions", and vision.md / PRODUCTIONIZATION.md) get written down once,
 #   gated at PO acceptance, then forgotten. Nothing resurfaces them, so they
-#   rot. The /steer:questions skill resolves them — but a skill is
+#   rot. The /steer:questions skill resolves them - but a skill is
 #   pull, not push: it only runs when someone remembers to invoke it. This hook
 #   makes the backlog visible every session so it can't quietly accumulate.
 #
@@ -16,7 +16,7 @@
 #   notice clears itself once questions are answered or explicitly deferred.
 #
 #   Questions use the structured contract (see templates/spec/feature-intent.md):
-#     ### Q-001 — title
+#     ### Q-001 - title
 #     - status: open            # open | investigating | resolved | deferred | cancelled
 #     - impact: blocking        # blocking | non-blocking
 #     - required_before: intent-approval
@@ -33,12 +33,12 @@
 #   carry an optional `created: YYYY-MM-DD`. A *blocking*, still-open,
 #   *un-promoted* question (no `tracker:` ref) older than STEER_QUESTION_STALE_DAYS
 #   gets its own loud escalation line naming the question, feature, owner role,
-#   and age — the cue to promote it (assign its owner via the tracker.md Owners
+#   and age - the cue to promote it (assign its owner via the tracker.md Owners
 #   map) or defer it. When `created:` is absent we fall back to the heading
 #   line's `git blame` author-time, so legacy questions still get an age; if git
 #   is unavailable the question simply isn't aged (fail-open, never crash).
-#   The hook only *detects* staleness — it never opens issues (writes stay on the
-#   human-gated /steer:questions → /steer:issues path).
+#   The hook only *detects* staleness - it never opens issues (writes stay on the
+#   human-gated /steer:questions -> /steer:issues path).
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. Age math is done in awk (the
@@ -50,14 +50,14 @@
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/scope.sh"
 
 # SessionStart payload carries cwd (may be a subdir); anchor spec lookups at the
-# work-tree root. Not a git repo → fall back to cwd (a spec/ may still be
+# work-tree root. Not a git repo -> fall back to cwd (a spec/ may still be
 # addressable relatively).
 # shellcheck disable=SC2034  # consumed by steer_field (lib/json.sh) via $STEER_INPUT
 STEER_INPUT="$(cat 2>/dev/null)"
 CWD="$(steer_field cwd)"
 [ -n "${CWD}" ] || CWD="."
 ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
-# The promotion notice names the tracker — resolve it, so an OpenSpec repo is
+# The promotion notice names the tracker - resolve it, so an OpenSpec repo is
 # pointed at openspec/steer/tracker.md rather than a path it does not have.
 steer_tracker_rel "${ROOT}"
 
@@ -68,7 +68,7 @@ RB_ORDER="$(steer_required_before_order)"
 STEER_QUESTION_STALE_DAYS=14
 
 # Today as a day-number (days since 1970-01-01, UTC). STEER_TODAY (YYYY-MM-DD)
-# overrides for deterministic tests; otherwise `date -u` (POSIX — no -d/-j). If
+# overrides for deterministic tests; otherwise `date -u` (POSIX - no -d/-j). If
 # the date is unavailable or malformed, TODAY_DAYS is empty and staleness
 # escalation is skipped entirely (fail-open: counts still work). Day math uses
 # the shared days-from-civil awk source (lib/lifecycle.sh).
@@ -77,7 +77,7 @@ TODAY_DAYS="$(printf '%s\n' "${_today_ymd}" | awk -F- "${STEER_AWK_DAYS_FROM_CIV
   /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ { print days_from_civil($1 + 0, $2 + 0, $3 + 0); got = 1 }
   END { if (!got) print "" }')"
 
-# rank_of <token> — 1-based position of a gate token in the lifecycle order, or
+# rank_of <token> - 1-based position of a gate token in the lifecycle order, or
 # 0 when absent/unknown.
 rank_of() {
 	_i=0
@@ -91,7 +91,7 @@ rank_of() {
 	printf '0'
 }
 
-# parse_questions <file> — THE block parser, one pass, one home. Emits one
+# parse_questions <file> - THE block parser, one pass, one home. Emits one
 # tab-separated record per `### Q-NNN` block under "## Open questions"
 # (placeholder seeds skipped), empty fields as "-" (IFS-tab `read` and awk both
 # mishandle genuinely empty tab fields):
@@ -141,7 +141,7 @@ parse_questions() {
   ' "$1"
 }
 
-# count_open <file> — prints "now trans backlog attn" for one spec file, by
+# count_open <file> - prints "now trans backlog attn" for one spec file, by
 # classifying parse_questions records against the lifecycle gate ranking.
 count_open() {
 	_f="$1"
@@ -149,10 +149,10 @@ count_open() {
 		printf '0 0 0 0'
 		return 0
 	}
-	# Feature Status → the gate it has already cleared → that gate's rank. Only the
+	# Feature Status -> the gate it has already cleared -> that gate's rank. Only the
 	# header is scanned (stop at "## Open questions") so a question's own `status:`
 	# bullet is never mistaken for the feature Status. vision / productionization
-	# have no Status line → cleared rank 0 (nothing cleared).
+	# have no Status line -> cleared rank 0 (nothing cleared).
 	_status="$(awk '
     /^## Open questions/ { exit }
     tolower($0) ~ /^[>*#[:space:]]*status:/ {
@@ -182,8 +182,8 @@ count_open() {
     END { printf "%d %d %d %d", now + 0, trans + 0, backlog + 0, attn + 0 }'
 }
 
-# stale_lines <file> — for each blocking, still-open, un-promoted question
-# (promoted = non-empty `tracker:` — already on someone's plate), emit one
+# stale_lines <file> - for each blocking, still-open, un-promoted question
+# (promoted = non-empty `tracker:` - already on someone's plate), emit one
 # tab-separated record so the shell decides staleness in one place:
 #   AGE\t<Q-id>\t<owner>\t<age-in-days>   when `created:` is a valid YYYY-MM-DD
 #   BLAME\t<Q-id>\t<owner>\t<heading-line-no>   when `created:` is absent/malformed
@@ -202,7 +202,7 @@ stale_lines() {
     }'
 }
 
-# format_stale <file> <label> — turn stale_lines records into escalation markdown.
+# format_stale <file> <label> - turn stale_lines records into escalation markdown.
 # Resolves BLAME records to an age via `git blame` author-time (fail-open if git
 # or the commit is unavailable). Applies the staleness threshold in one place.
 # Pure stdout (no global writes) so a pipe-to-while subshell is safe here.
@@ -227,7 +227,7 @@ format_stale() {
 		esac
 		[ "${_age}" -ge "${STEER_QUESTION_STALE_DAYS}" ] 2>/dev/null || continue
 		if [ -n "${_owner}" ]; then _own=", owner ${_owner}"; else _own=""; fi
-		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd — promote (assign its owner via tracker.md) or defer: **/steer:questions**\n' \
+		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd - promote (assign its owner via tracker.md) or defer: **/steer:questions**\n' \
 			"${_qid}" "${_lbl}" "${_own}" "${_age}"
 	done
 }
@@ -262,7 +262,7 @@ check_file() {
 	[ "${_backlog}" -gt 0 ] && _breakdown="${_breakdown} ${_backlog} non-blocking"
 	[ "${_attn}" -gt 0 ] && _breakdown="${_breakdown} ${_attn} malformed"
 	REPORT="${REPORT}
-- \`${_FILE_LABEL}\` —${_breakdown}"
+- \`${_FILE_LABEL}\` -${_breakdown}"
 
 	# Staleness escalation for this file's blocking, un-promoted questions.
 	_esc="$(format_stale "${_file}" "${_FILE_LABEL}")"
@@ -285,7 +285,7 @@ check_file "${ROOT}/spec/PRODUCTIONIZATION.md"
 
 # A pre-1.25.0 fork may still carry the retired standalone SPEC-QUESTIONS.md.
 # Its items live under "## Open" (not "## Open questions"), so count_open never
-# sees them — surface the file itself so /steer:questions can migrate it away.
+# sees them - surface the file itself so /steer:questions can migrate it away.
 LEGACY=""
 [ -f "${ROOT}/spec/SPEC-QUESTIONS.md" ] && LEGACY=1
 
@@ -296,8 +296,8 @@ printf '<!-- steer: open questions outstanding -->\n'
 
 if [ -n "${LEGACY}" ]; then
 	printf '⚠ **Retired `spec/SPEC-QUESTIONS.md` present.** Open questions no longer '
-	printf 'live in a standalone file — they belong next to their context '
-	printf '(`vision.md` / each feature'"'"'s `intent.md` → `## Open questions`). '
+	printf 'live in a standalone file - they belong next to their context '
+	printf '(`vision.md` / each feature'"'"'s `intent.md` -> `## Open questions`). '
 	printf 'Run **/steer:questions** to migrate its questions into the right files and '
 	printf 'remove it.\n\n'
 fi
@@ -305,21 +305,21 @@ fi
 if [ "${TOTAL}" -gt 0 ] 2>/dev/null; then
 	printf 'ℹ **%s open question(s) across this product'"'"'s specs:**\n' "${TOTAL}"
 	printf '%s\n\n' "${REPORT}"
-	# Gate-aware summary — these are not all the same urgency.
+	# Gate-aware summary - these are not all the same urgency.
 	if [ "${NOW}" -gt 0 ]; then
-		printf -- '- **%s block work now** — a blocking question is open at or before the next gate this spec faces. Resolve these before advancing the gate.\n' "${NOW}"
+		printf -- '- **%s block work now** - a blocking question is open at or before the next gate this spec faces. Resolve these before advancing the gate.\n' "${NOW}"
 	fi
 	if [ "${TRANS}" -gt 0 ]; then
-		printf -- '- **%s block a later transition** — blocking, but for a gate further ahead (e.g. production-release). Track, do not necessarily resolve now.\n' "${TRANS}"
+		printf -- '- **%s block a later transition** - blocking, but for a gate further ahead (e.g. production-release). Track, do not necessarily resolve now.\n' "${TRANS}"
 	fi
 	if [ "${BACKLOG}" -gt 0 ]; then
-		printf -- '- **%s non-blocking** — backlog; they rot if left, but gate nothing.\n' "${BACKLOG}"
+		printf -- '- **%s non-blocking** - backlog; they rot if left, but gate nothing.\n' "${BACKLOG}"
 	fi
 	if [ "${ATTN}" -gt 0 ]; then
-		printf -- '- **%s malformed** — a `### Q-NNN` block is missing `status:`/`impact:`; fix the metadata so its gate state is unambiguous.\n' "${ATTN}"
+		printf -- '- **%s malformed** - a `### Q-NNN` block is missing `status:`/`impact:`; fix the metadata so its gate state is unambiguous.\n' "${ATTN}"
 	fi
 	if [ "${STALE_COUNT}" -gt 0 ] 2>/dev/null; then
-		printf '\n🚨 **%s blocking question(s) have rotted (open >%sd, not yet promoted)** — escalate now:\n' "${STALE_COUNT}" "${STEER_QUESTION_STALE_DAYS}"
+		printf '\n🚨 **%s blocking question(s) have rotted (open >%sd, not yet promoted)** - escalate now:\n' "${STALE_COUNT}" "${STEER_QUESTION_STALE_DAYS}"
 		printf '%s\n' "${STALE_REPORT}"
 		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `%s`.\n' "${STEER_TRACKER_REL}"
 	fi

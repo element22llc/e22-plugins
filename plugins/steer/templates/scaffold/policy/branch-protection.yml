@@ -2,7 +2,7 @@
 # Fields map 1:1 to the classic protection API; rationale: /steer:reference conventions.
 # steer:allow-comments each note names why a protection setting is what it is -- deleting them loses the security rationale, not noise
 
-schema: 3          # additive — v1 (no `protected_branches`) and v2 (no profiles) stay valid.
+schema: 3          # additive - v1 (no `protected_branches`) and v2 (no profiles) stay valid.
 
 # `team` applies everything below as written; `solo` layers `profiles.solo` on top.
 # GitHub blocks a PR's author from approving it, so on a one-contributor repo the
@@ -53,4 +53,4 @@ dependabot_security_updates: true
 
 # Review-gate exception: Dependabot patch/minor bumps auto-merge via
 # .github/workflows/dependabot-auto-merge.yml once `ci` is green (majors stay human-reviewed).
-# Repo-wide `allow_auto_merge` stays OFF — it would expose the button to every PR.
+# Repo-wide `allow_auto_merge` stays OFF - it would expose the button to every PR.

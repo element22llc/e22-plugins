@@ -193,7 +193,7 @@ def test_the_gate_measures_characters_of_the_exact_serialized_payload():
 def test_hook_counts_characters_the_way_the_gate_does():
     """The hook budgets itself with `LC_ALL=C tr -d '\\200-\\277' | wc -c`, which
     is the code-point count regardless of the session's locale. It must equal
-    Python's len() on the real payload — in a UTF-8 locale AND under LC_ALL=C,
+    Python's len() on the real payload - in a UTF-8 locale AND under LC_ALL=C,
     which is what a GUI-launched session may run with."""
     parts = ccb.measure_injected(REAL_PLUGIN, "code")
     payload = "".join(out for out, _ in parts)
@@ -327,7 +327,7 @@ def test_skill_body_over_compaction_cap_fails(tmp_path: Path):
 
 
 def test_skill_body_at_cap_passes(tmp_path: Path):
-    # The ceiling is inclusive — exactly at the cap must not fail.
+    # The ceiling is inclusive - exactly at the cap must not fail.
     root = _make_plugin(tmp_path, body_bytes=0)
     body = root / "skills" / "demo-skill" / "SKILL.md"
     body.write_text(
@@ -374,7 +374,7 @@ def test_report_renders_table(tmp_path: Path):
     text = ccb.report(_make_plugin(tmp_path))
     assert "| Always-on surface |" in text
     assert "rules/*.md on disk" in text
-    assert "injected payload — knowledge" in text
+    assert "injected payload - knowledge" in text
     assert "parts" in text
     assert "largest SKILL.md body" in text
     assert "Largest skill bodies (compaction cap):" in text

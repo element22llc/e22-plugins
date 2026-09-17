@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
-# steer — build-only container image check (no push, no credentials).
+# steer - build-only container image check (no push, no credentials).
 # Invoked by `mise run ci:image`.
 set -eu
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
 # a consumer repo lints these from its root and has no .shellcheckrc to lean on.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=ci-lib.sh

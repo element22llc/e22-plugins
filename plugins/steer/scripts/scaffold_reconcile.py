@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""scaffold_reconcile.py — additive, never-clobber reconciliation for the
+"""scaffold_reconcile.py - additive, never-clobber reconciliation for the
 non-Markdown scaffold files. The structured-config sibling of
 template-reconcile.sh.
 
@@ -8,7 +8,7 @@ anchors. It cannot parse the structured-config formats the scaffold also ships,
 so merging those into a repo that already has its own copy (during /steer:adopt
 or /steer:sync) was prose-only. This helper closes that gap for:
 
-  * JSON   — .claude/settings.json, biome.json, tsconfig, …
+  * JSON   - .claude/settings.json, biome.json, tsconfig, ...
   * gitignore (and the same line-based .worktreeinclude / .gitattributes)
 
 CONTRACT (mirrors template-reconcile.sh)
@@ -17,11 +17,11 @@ CONTRACT (mirrors template-reconcile.sh)
     scaffold_reconcile.py <kind> <existing-file> <template-file> [--apply]
       kind: json | gitignore | auto   (auto infers from the existing file name)
 
-  Default (check) mode — read-only. Prints the additive delta the template
+  Default (check) mode - read-only. Prints the additive delta the template
   contributes that the existing file lacks (missing JSON key-paths / array
   elements, missing gitignore patterns). Modifies nothing.
 
-  --apply mode — additive merge into the existing file:
+  --apply mode - additive merge into the existing file:
     * JSON: deep-merge. Objects recurse; arrays are unioned (existing order
       kept, template-only entries appended); scalars KEEP THE EXISTING VALUE
       (never overwritten); template-only keys are appended after existing keys.
@@ -29,12 +29,12 @@ CONTRACT (mirrors template-reconcile.sh)
       reordered or removed.
     Never deletes, reorders, or changes an existing value/line.
 
-  PERMISSION TIERS — the one place this merge removes content. A Claude Code
+  PERMISSION TIERS - the one place this merge removes content. A Claude Code
   `permissions` block has three sibling lists evaluated by precedence
   deny > ask > allow, so the SAME pattern string in two tiers is a
   contradiction, never a meaningful choice: the lower-precedence copy is dead
   weight (e.g. `Bash(gh pr merge)` in both `allow` and `ask` always behaves as
-  `ask`). A plain array union manufactures exactly that contradiction — the
+  `ask`). A plain array union manufactures exactly that contradiction - the
   template carries `gh pr merge` in `ask`, a repo that locally allow-listed it
   ends up with it in both. So after merging, each permission pattern is kept
   only in its most-restrictive tier and dropped from the others. This both
@@ -43,8 +43,8 @@ CONTRACT (mirrors template-reconcile.sh)
   already governed), so it is not a clobber of any real decision. Reported with
   a `-` prefix in the delta.
 
-  PLACEHOLDERS — never auto-injected. A template-only value that still carries
-  an unresolved placeholder (`[Replace …]`, `[Product Name]`, `[e.g., …]`) is
+  PLACEHOLDERS - never auto-injected. A template-only value that still carries
+  an unresolved placeholder (`[Replace ...]`, `[Product Name]`, `[e.g., ...]`) is
   NOT merged into an existing file: mechanically appending it would plant a
   literal placeholder in a working config (e.g. the Node `packageManager`
   placeholder, which corepack hard-fails on). Such values are reported with a
@@ -52,17 +52,17 @@ CONTRACT (mirrors template-reconcile.sh)
   value instead. A delta consisting only of `~` lines writes nothing.
 
   If the existing file is absent, --apply writes the template verbatim (a safe
-  install — placeholders included, since bootstrap resolves them right after)
+  install - placeholders included, since bootstrap resolves them right after)
   and check reports the whole template as missing.
 
-EXIT CODES (same convention as template-reconcile.sh — gaps are signaled via
+EXIT CODES (same convention as template-reconcile.sh - gaps are signaled via
 stdout, not a nonzero code, so a skill's Bash wrapper doesn't read a normal
 "gaps found" run as a failure):
   0  ran OK. check: empty stdout = already current; any output = additive delta
      to review. --apply: empty stdout = nothing written; output = what was added.
   2  usage error.
   3  an input file is missing/unreadable, or the existing file is not valid JSON
-     (fail loud — never clobber a file we cannot parse).
+     (fail loud - never clobber a file we cannot parse).
 """
 
 from __future__ import annotations
@@ -102,10 +102,10 @@ def _fmt_path(path: list[str]) -> str:
 
 
 # Unresolved template placeholders (the /steer:init documented scan set). A
-# template value carrying one of these must be resolved by the owning skill —
+# template value carrying one of these must be resolved by the owning skill -
 # a mechanical merge must never inject it verbatim into an existing file (e.g.
 # the Node package.json "packageManager" placeholder, which corepack hard-fails
-# on). Whole-template installs into an absent file still carry placeholders —
+# on). Whole-template installs into an absent file still carry placeholders -
 # that is the bootstrap flow, where the skill resolves them right after.
 _PLACEHOLDER_MARKERS = ("[Replace", "[Product Name", "[e.g.,")
 
@@ -120,7 +120,7 @@ def merge_json(
 ) -> object:
     """Deep additive merge. Returns the merged value; appends a human-readable
     line to `added` for every key/array element introduced. Existing scalars and
-    type mismatches keep the existing value — never clobbered. Template-only
+    type mismatches keep the existing value - never clobbered. Template-only
     values that still carry an unresolved placeholder are NOT merged; they are
     recorded in `skipped` (`~` prefix) for the owning skill to resolve by hand."""
     if isinstance(existing, dict) and isinstance(template, dict):
@@ -130,7 +130,7 @@ def merge_json(
                 if _contains_placeholder(tval):
                     skipped.append(
                         f"~ {_fmt_path([*path, key])} not merged (template value is an "
-                        "unresolved placeholder — resolve it per the owning skill)"
+                        "unresolved placeholder - resolve it per the owning skill)"
                     )
                     continue
                 merged[key] = tval
@@ -145,7 +145,7 @@ def merge_json(
                 if _contains_placeholder(item):
                     skipped.append(
                         f"~ {_fmt_path(path)}[] = {json.dumps(item, ensure_ascii=False)} "
-                        "not merged (unresolved placeholder — resolve it per the owning skill)"
+                        "not merged (unresolved placeholder - resolve it per the owning skill)"
                     )
                     continue
                 merged_list.append(item)
@@ -155,7 +155,7 @@ def merge_json(
     return existing
 
 
-# Claude Code permission lists, ordered most → least restrictive. Evaluation
+# Claude Code permission lists, ordered most -> least restrictive. Evaluation
 # precedence is deny > ask > allow, so a pattern present in two of these is a
 # contradiction and only the most-restrictive copy governs.
 _PERMISSION_TIERS = ("deny", "ask", "allow")
@@ -166,7 +166,7 @@ def _dedupe_permission_tiers(merged: object, added: list[str]) -> None:
 
     Mutates ``merged["permissions"]`` in place and records every dropped copy in
     ``added`` (``-`` prefix). A no-op unless a pattern appears in more than one
-    of allow/ask/deny — see the module docstring for why this single removal is
+    of allow/ask/deny - see the module docstring for why this single removal is
     not a clobber. Non-string entries are left untouched (permission patterns
     are always strings)."""
     if not isinstance(merged, dict):
@@ -208,7 +208,7 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
     skipped: list[str] = []
     if existing is None:
         # No existing file: the whole template is "missing". Placeholders ride
-        # along verbatim — this is the bootstrap install, where the owning skill
+        # along verbatim - this is the bootstrap install, where the owning skill
         # resolves them immediately after.
         merged = template
         added.append(f"+ (new file) {existing_path.name}")
@@ -220,10 +220,10 @@ def _reconcile_json(existing_path: Path, template: object, apply: bool) -> int:
     _dedupe_permission_tiers(merged, added)
 
     if not added and not skipped:
-        return 0  # already current — no output, exit 0
+        return 0  # already current - no output, exit 0
 
     if apply and added:
-        # Write only when something actually merged — a placeholder-only delta
+        # Write only when something actually merged - a placeholder-only delta
         # must not rewrite (and thereby reformat) the existing file.
         existing_path.parent.mkdir(parents=True, exist_ok=True)
         existing_path.write_text(

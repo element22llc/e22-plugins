@@ -132,7 +132,7 @@ def test_joins_a_continuation_that_merely_starts_with_a_pipe():
 
 
 def test_joins_a_continuation_that_opens_with_a_parenthetical_number():
-    """v6.1.0: ``(… check`` wraps onto ``11) covered …``, which is not a list.
+    """v6.1.0: ``(... check`` wraps onto ``11) covered ...``, which is not a list.
 
     The adjacency sweep cannot see this one -- ``11)`` *looks* like a valid block
     starter -- and the damage is worse than a stray break: indented two spaces
@@ -189,9 +189,9 @@ def test_passes_fenced_code_through_verbatim():
 
 
 def test_joins_a_wrapped_column_zero_paragraph():
-    source = "Workflow + authorization coherence — one git-authorization model\nand one owner.\n"
+    source = "Workflow + authorization coherence - one git-authorization model\nand one owner.\n"
     assert rr.reflow(source) == (
-        "Workflow + authorization coherence — one git-authorization model and one owner."
+        "Workflow + authorization coherence - one git-authorization model and one owner."
     )
 
 

@@ -3,7 +3,7 @@
 Small, self-contained golden artifacts that pin the **observable output
 contracts** of the major workflows, mirroring the spec's scenario tree.
 They are validated by [`../../scripts/check_fixtures.py`](../../scripts/check_fixtures.py)
-and are **not** executable repos — each file is the expected *shape* of an
+and are **not** executable repos - each file is the expected *shape* of an
 artifact a workflow emits, so a regression in the shared contract surfaces in
 review.
 

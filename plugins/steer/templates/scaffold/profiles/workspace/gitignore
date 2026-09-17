@@ -1,6 +1,6 @@
-# Workspace (polyrepo spine host) additions — merge into the core .gitignore, never replace it
+# Workspace (polyrepo spine host) additions - merge into the core .gitignore, never replace it
 
-# Member checkouts — one line per manifest `path:`, anchored so `docs` does not also ignore `apps/docs`
+# Member checkouts - one line per manifest `path:`, anchored so `docs` does not also ignore `apps/docs`
 # /frontend/
 # /backend/
 

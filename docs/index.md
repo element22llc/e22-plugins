@@ -1,14 +1,14 @@
-# e22-plugins — the `steer` plugin
+# e22-plugins - the `steer` plugin
 
 `e22-plugins` is an **engineering-standards plugin marketplace** for
 [Claude Code](https://claude.com/claude-code). It is not a product; it hosts one
-plugin of its own — **`steer`** — which injects org-wide engineering standards
+plugin of its own - **`steer`** - which injects org-wide engineering standards
 into every product Claude session and carries the bundled repo scaffold that
 bootstraps a new repository spec-first.
 
 The marketplace also **re-lists** Anthropic's upstream `frontend-design` plugin
 via a `git-subdir` source pinned to a SHA. That plugin is *referenced, not
-vendored* — its content is never copied here.
+vendored* - its content is never copied here.
 
 ## How the pieces fit together
 
@@ -88,7 +88,7 @@ flowchart LR
 
     The docs contract, the release flow, and the authoring guide for rules and skills.
 
-    [Contributing → Documentation](contributing/documentation.md) ·
+    [Contributing -> Documentation](contributing/documentation.md) ·
     [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md)
 
 </div>
@@ -96,4 +96,4 @@ flowchart LR
 !!! note "Docs are auto-maintained"
     This site is kept in sync with the plugin's source of truth by the repo-local
     `/plugin-docs` skill and a CI drift gate. See
-    [Contributing → Documentation](contributing/documentation.md).
+    [Contributing -> Documentation](contributing/documentation.md).

@@ -7,8 +7,8 @@ right thing*. Everything else (`scripts/check_*`, the hook fixture suite) is
 deterministic and runs on every PR; this tier is slow, costs tokens, and runs
 out-of-band.
 
-These are **structural** tests — they assert on which files exist, on managed-block
-markers, and on non-clobber/idempotency — **not** on prose quality. Keep new
+These are **structural** tests - they assert on which files exist, on managed-block
+markers, and on non-clobber/idempotency - **not** on prose quality. Keep new
 assertions structural; an LLM's wording varies run to run.
 
 ## Running
@@ -30,14 +30,14 @@ mise run e2e:local -- -k adopt
 mise run e2e:local -- -k test_sync_is_noop_when_current
 ```
 
-`e2e:local` does `env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 …`: it drops the API
+`e2e:local` does `env -u ANTHROPIC_API_KEY STEER_E2E_LOCAL=1 ...`: it drops the API
 key so Claude Code bills the **seat** (it prefers the key when present), and
 `STEER_E2E_LOCAL=1` flips the skip-guard on (a seat login sets no env var, so the
 gate needs the opt-in).
 
 ### Not in CI
 
-This tier does **not** run in CI — it is local-only, run on demand via
+This tier does **not** run in CI - it is local-only, run on demand via
 `mise run e2e` (API key) or `mise run e2e:local` (interactive seat). The
 workflow that used to run it on release was removed because it spent too much;
 run the suite locally before a substantive release instead.
@@ -63,25 +63,25 @@ the read-only check is exact.
 `run_steer` defaults to the account model (Opus). A cheaper model is **not**
 cheaper here: the skills are long and instruction-dense, so a weaker model takes
 many more turns, and because `--max-budget-usd` is a fixed *dollar* cap, a
-~5×-cheaper model buys ~5× more runtime before the cap bites — a Sonnet run once
+~5×-cheaper model buys ~5× more runtime before the cap bites - a Sonnet run once
 ballooned past 15 min and was cancelled. Opus converges in ~3 min and is bounded.
 The real fail-fast guard is the per-scenario wall-clock timeout, not the dollar cap.
 
 ## Layout
 
-- `run_steer.py` — subprocess wrapper around `claude -p`. Loads the working-tree
+- `run_steer.py` - subprocess wrapper around `claude -p`. Loads the working-tree
   plugin with `--plugin-dir` (no marketplace download), `bypassPermissions`, JSON
   output. `claude_available()` / `have_credentials()` gate the tests;
   `summarize_run()` reports turns/cost.
-- `prompts.py` — shared skill prompts (so a re-run uses the exact same prompt as
+- `prompts.py` - shared skill prompts (so a re-run uses the exact same prompt as
   its primary scenario). Each carries the "no commit/push/PR, non-interactive"
   contract.
-- `asserts.py` — structural assertions keyed to `CAPABILITIES.md` + the spec spine.
-- `gitutil.py` — `assert_unchanged(repo, since_head)`: the idempotency primitive
+- `asserts.py` - structural assertions keyed to `CAPABILITIES.md` + the spec spine.
+- `gitutil.py` - `assert_unchanged(repo, since_head)`: the idempotency primitive
   (clean working tree + HEAD unmoved).
-- `diagnostics.py` — `explain_on_failure(repo, run)`: on a failed assertion, dumps
+- `diagnostics.py` - `explain_on_failure(repo, run)`: on a failed assertion, dumps
   the produced repo tree + the skill's output so a red run is debuggable.
-- `conftest.py` — fixtures: `seed_repo` (empty git repo) and `existing_app_repo`
+- `conftest.py` - fixtures: `seed_repo` (empty git repo) and `existing_app_repo`
   (a vibe-coded app with no `/spec`).
 
 ## Adding a scenario
@@ -92,7 +92,7 @@ The real fail-fast guard is the per-scenario wall-clock timeout, not the dollar 
    `have_credentials()`, run via `run_skill`, call `summarize_run`, and wrap the
    assertions in `explain_on_failure(repo, run)`.
 4. Add **structural** assertions (file presence, markers, non-clobber) to
-   `asserts.py` / `gitutil.py` — not prose checks.
+   `asserts.py` / `gitutil.py` - not prose checks.
 5. Verify token-free: `uv run pytest -m e2e` (it should skip cleanly with no
    key/seat) and `mise run ci`. Then confirm it live with `mise run e2e:local -- -k <name>`.
 

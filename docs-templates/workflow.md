@@ -24,7 +24,7 @@ flowchart LR
 
 | Mode | What it does |
 | --- | --- |
-| `mode` | … |
+| `mode` | ... |
 
 ## Rules it follows
 

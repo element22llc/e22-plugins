@@ -1,10 +1,10 @@
-# LINE ENDINGS — everything this repo ships is LF, on every platform.
+# LINE ENDINGS - everything this repo ships is LF, on every platform.
 #
 # This plugin is CONSUMED as a checkout: `/plugin install` clones the
 # marketplace, and the consumer then executes the bundled `hooks/**.sh` and
 # `scripts/**.sh` directly. On a Windows host `core.autocrlf=true` is the Git
 # for Windows default, so without this file every bundled script checks out
-# with CRLF — and a CRLF shell script does not merely warn, it fails to PARSE
+# with CRLF - and a CRLF shell script does not merely warn, it fails to PARSE
 # (`syntax error near unexpected token $'{\r'`). Every hook lib and scan script
 # dies, and `template-reconcile.sh` silently reports every anchor in a bundled
 # Markdown template as a missing gap, because the CR-suffixed anchors can never
@@ -43,11 +43,11 @@ plugins/steer/templates/docker/dockerignore                   text eol=lf
 *.woff  binary
 *.woff2 binary
 
-# CHANGELOG.md is GENERATED — `changie merge` assembles it from `.changes/`.
+# CHANGELOG.md is GENERATED - `changie merge` assembles it from `.changes/`.
 # Never edit it by hand (check_changelog.py fails when it drifts from the version
 # files). No merge driver is needed: pending entries are one file per change
 # under `.changes/unreleased/`, so concurrent PRs write different paths and can
-# never collide. That is what retired the old `CHANGELOG.md merge=union` line —
+# never collide. That is what retired the old `CHANGELOG.md merge=union` line -
 # union is line-based, and the multi-line entries this repo writes are exactly
 # the shape it splices together wrongly (the same reason spec/history/ is a
 # directory; see plugins/steer/templates/spec/history-readme.md).

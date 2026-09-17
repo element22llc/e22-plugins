@@ -2,7 +2,7 @@
 name: plugin-docs
 description: >-
   Reconcile the Zensical documentation site under docs/ with the plugin's source
-  of truth — refresh the generated reference pages (skills, hooks, rules) from
+  of truth - refresh the generated reference pages (skills, hooks, rules) from
   plugins/steer/, flag stale concept/workflow prose, run the docs validator, and
   optionally serve the site. Delegates deep accuracy review to the
   documentation-reviewer subagent. Repo-local dev helper for e22-plugins; does
@@ -18,13 +18,13 @@ allowed-tools:
   - Bash(mise run docs:*)
 ---
 
-# /plugin-docs — keep the docs site in sync with the plugin
+# /plugin-docs - keep the docs site in sync with the plugin
 
 The documentation site (`docs/`, served via `mise run docs:serve`) must track the
 plugin's source of truth: the skills in `plugins/steer/skills/`, hooks in
 `plugins/steer/hooks/hooks.json`, and rules in `plugins/steer/rules/`. This skill
 reconciles the **generated** reference pages, flags **stale prose**, and runs the
-**validator**. It edits only `docs/` (and never bumps `plugin.json` — docs ship
+**validator**. It edits only `docs/` (and never bumps `plugin.json` - docs ship
 nothing).
 
 ## Steps
@@ -37,11 +37,11 @@ nothing).
    - Rules: the numeric-prefixed files in `plugins/steer/rules/` (first heading).
 
 2. **Reconcile the generated reference pages** so they match disk exactly:
-   - `docs/reference/skills.md` — every skill present as `/steer:<skill>`;
+   - `docs/reference/skills.md` - every skill present as `/steer:<skill>`;
      internal skills (`user-invocable: false`) listed under the internal section;
      read-only skills noted as such.
-   - `docs/reference/hooks.md` — one row per hook, correct event + matcher.
-   - `docs/reference/configuration.md` — the rule table matches the files on disk.
+   - `docs/reference/hooks.md` - one row per hook, correct event + matcher.
+   - `docs/reference/configuration.md` - the rule table matches the files on disk.
    Make the **minimal** edits needed; preserve hand-written prose and diagrams.
 
 3. **Flag stale concept/workflow prose.** For `docs/concepts/*` and
@@ -65,7 +65,7 @@ nothing).
 ## Boundaries
 
 - **Docs only.** Edit under `docs/` (and, when adding a page, `mkdocs.yml` nav).
-  Never edit `plugins/steer/**` from this skill — if the docs and the plugin
+  Never edit `plugins/steer/**` from this skill - if the docs and the plugin
   disagree, the plugin is the source of truth.
 - **No changelog, no version bump.** `docs/` and `.claude/` ship nothing.
 - **Grounded.** Every documented claim must trace to a `SKILL.md`, `hooks.json`,

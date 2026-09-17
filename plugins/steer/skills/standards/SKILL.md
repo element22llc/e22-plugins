@@ -1,20 +1,20 @@
 ---
 name: standards
-description: Load the always-on operating manual on demand where the SessionStart hook cannot inject it — reads every rules/*.md.
-when_to_use: Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules — notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
+description: Load the always-on operating manual on demand where the SessionStart hook cannot inject it - reads every rules/*.md.
+when_to_use: Use at the start of a session on any surface where the SessionStart hook does NOT auto-inject the rules - notably the Claude desktop/web Chat tab and chat-only surfaces, where plugin hooks do not run.
 disallowed-tools: Edit, Write, NotebookEdit, EnterWorktree
 ---
 
-# Operating manual — on-demand load
+# Operating manual - on-demand load
 
 The standards are normally injected by the `steer` SessionStart hook, which runs
-on `startup`, `resume`, `clear`, `compact` **and** `fork` — `compact` so a compaction that
+on `startup`, `resume`, `clear`, `compact` **and** `fork` - `compact` so a compaction that
 drops the rules from context gets them back. That hook **does not fire on the
 Claude Desktop *Chat* tab or
-claude.ai web chat** — those surfaces install plugins (so skills and MCP work) but
+claude.ai web chat** - those surfaces install plugins (so skills and MCP work) but
 do **not** run hooks, so a session there starts with *none* of the org rules in
-context. Run this skill first on those surfaces. (On Claude Code — the CLI, the
-IDE extensions, and the Desktop *Code* tab — and in Cowork, the hook injects the
+context. Run this skill first on those surfaces. (On Claude Code - the CLI, the
+IDE extensions, and the Desktop *Code* tab - and in Cowork, the hook injects the
 rules automatically and you don't need this skill.)
 
 Do this now:
@@ -26,22 +26,22 @@ Do this now:
    The files concatenate, in that order, to form the full operating manual.
 
 2. Adopt their contents as your standing operating rules for the rest of this
-   session — the same **authority** they would carry had the hook injected them.
+   session - the same **authority** they would carry had the hook injected them.
    They override generic defaults and remain in force for every subsequent turn.
 
    The **set** can be wider than a hook injection, and that is intended: in a
    non-code folder the hook runs in knowledge-work mode and injects only the lean
    PO core, skipping the `inject-when`-marked code/infra/tracker rules. Reading
    every file here loads those too. Apply the ones that fit the work in front of
-   you and ignore the rest — a code rule in a specs-only folder is inert, not a
+   you and ignore the rest - a code rule in a specs-only folder is inert, not a
    contradiction.
 
 3. Give the user a one-line confirmation naming the plugin version (read it from
-   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`) — e.g. "Standards
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`) - e.g. "Standards
    vX.Y.Z loaded." Do **not** dump the full ruleset back to the user;
    just confirm and proceed.
 
 The router (`00-router.md`) points to the on-demand reference skills
 (`/steer:reference [conventions|traceability|design-sources|context-hygiene|architecture-diagrams|artifacts|gates|polyrepo]`, `/steer:init`,
-`/steer:adopt`) — those work normally on the Chat tab and web chat since skills
+`/steer:adopt`) - those work normally on the Chat tab and web chat since skills
 are supported there; only the always-on injection needed this fallback.

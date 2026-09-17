@@ -4,8 +4,8 @@
 steer wires its MCP servers into Claude Code via ``plugins/steer/.mcp.json``
 (the ``mcpServers`` key). Copilot in VS Code does **not** read that file, so the
 scaffold ships ``plugins/steer/templates/scaffold/vscode/mcp.json`` (VS Code's
-``servers`` key) mirroring the same servers — see
-``docs/concepts/copilot-support.md`` → "MCP servers in VS Code".
+``servers`` key) mirroring the same servers - see
+``docs/concepts/copilot-support.md`` -> "MCP servers in VS Code".
 
 This script renders that mirror from the single source of truth (``.mcp.json``)
 so the two never diverge; ``check_copilot_mcp.py`` fails the build if the
@@ -13,9 +13,9 @@ committed mirror drifts. The one sanctioned difference is authentication: Claude
 resolves the token from plugin user config (``${user_config.github_pat}``,
 prompted at install and held in the macOS Keychain or
 ``~/.claude/.credentials.json``) while VS Code uses its own
-prompted input (``${input:github_pat}``) with a matching ``inputs`` block — two
+prompted input (``${input:github_pat}``) with a matching ``inputs`` block - two
 different secret stores, same "never in a repo file" property. That mapping
-lives in ``AUTH_INPUTS`` below — the MCP analog of ``gen_copilot_agents.py``'s
+lives in ``AUTH_INPUTS`` below - the MCP analog of ``gen_copilot_agents.py``'s
 ``_TOOL_MAP``. Any ``${...}`` placeholder without an ``AUTH_INPUTS`` entry is
 carried through unchanged.
 
@@ -40,7 +40,7 @@ VSCODE_MCP = Path("plugins/steer/templates/scaffold/vscode/mcp.json")
 
 # Map each auth placeholder used on the Claude side to the VS Code prompted-input
 # it becomes, plus the ``inputs`` entry that declares it. Keys are the placeholder
-# names exactly as they appear inside ``${...}`` in ``.mcp.json`` — today that is
+# names exactly as they appear inside ``${...}`` in ``.mcp.json`` - today that is
 # a ``user_config.*`` reference resolved from the plugin manifest's ``userConfig``
 # block, but a bare env-var name works the same way. The value's ``id`` is what
 # ``${input:<id>}`` references. Insertion order of the dict fields is preserved in

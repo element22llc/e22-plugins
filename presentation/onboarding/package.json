@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Team onboarding deck — Claude Code + the steer plugin crash course. A Slidev deck served at /presentation/onboarding/ (ships nothing; not part of the steer plugin).",
+  "description": "Team onboarding deck - Claude Code + the steer plugin crash course. A Slidev deck served at /presentation/onboarding/ (ships nothing; not part of the steer plugin).",
   "packageManager": "pnpm@11.5.2",
   "scripts": {
     "dev": "slidev --open",

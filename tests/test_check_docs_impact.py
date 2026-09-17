@@ -1,4 +1,4 @@
-"""Tests for scripts/check_docs_impact.py — the PR docs-impact gate.
+"""Tests for scripts/check_docs_impact.py - the PR docs-impact gate.
 
 Covers the doc-bearing path classification (including the agents/ surface from
 issue #330) and, against real throwaway git repos, the gate's diff semantics:

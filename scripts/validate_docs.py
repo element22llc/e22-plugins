@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Documentation-site structural + sync checks for the e22-plugins docs.
 
-Lightweight (stdlib + pyyaml only — no Zensical toolchain), so it runs as part of
+Lightweight (stdlib + pyyaml only - no Zensical toolchain), so it runs as part of
 ``mise run ci`` without pulling in the ``docs`` dependency-group. The strict
 link/render build is a separate gate (``mise run docs:build``): CI runs it on
 docs-touching PRs and pushes via ``.github/workflows/docs-deploy.yml``, and it
@@ -9,18 +9,18 @@ can also be run locally on demand.
 
 Checks:
 
-1. **Skill inventory** — every skill under ``plugins/steer/skills/`` appears in
+1. **Skill inventory** - every skill under ``plugins/steer/skills/`` appears in
    ``docs/reference/skills.md`` as ``/steer:<skill>`` (mirrors the README
    inventory check in ``check_standards.py``). This is what keeps the generated
    reference page honest.
-2. **Nav integrity** — every file referenced in ``mkdocs.yml`` ``nav:`` exists
+2. **Nav integrity** - every file referenced in ``mkdocs.yml`` ``nav:`` exists
    under ``docs/``.
-3. **No orphans** — every ``docs/**/*.md`` is reachable from the nav.
-4. **Internal links resolve** — relative markdown links in docs point at real
+3. **No orphans** - every ``docs/**/*.md`` is reachable from the nav.
+4. **Internal links resolve** - relative markdown links in docs point at real
    files.
-5. **Namespace hygiene** — every ``/steer:<skill>`` reference resolves to a real
+5. **Namespace hygiene** - every ``/steer:<skill>`` reference resolves to a real
    skill and no stale ``/e22-*`` reference survives.
-6. **Subagent inventory** — every agent under ``plugins/steer/agents/`` appears
+6. **Subagent inventory** - every agent under ``plugins/steer/agents/`` appears
    in ``docs/reference/agents.md``.
 7. **No duplicated section headings** within a page (fenced code skipped), which
    catches a bad edit re-emitting a whole block.
@@ -111,7 +111,7 @@ def _load_nav_paths(errors: list[str]) -> set[str]:
 
 def check_skill_inventory(errors: list[str], skills: set[str]) -> None:
     if not SKILLS_REF.is_file():
-        errors.append(f"{SKILLS_REF}: missing — skills reference page is required")
+        errors.append(f"{SKILLS_REF}: missing - skills reference page is required")
         return
     text = SKILLS_REF.read_text(encoding="utf-8")
     missing = {s for s in skills if not re.search(rf"/steer:{re.escape(s)}(?![a-z-])", text)}
@@ -127,10 +127,10 @@ def check_skill_inventory(errors: list[str], skills: set[str]) -> None:
 
 def check_agent_inventory(errors: list[str], agents: set[str]) -> None:
     if not agents:
-        return  # no shipped subagents — nothing to document
+        return  # no shipped subagents - nothing to document
     if not AGENTS_REF.is_file():
         errors.append(
-            f"{AGENTS_REF}: missing — subagents reference page is required when "
+            f"{AGENTS_REF}: missing - subagents reference page is required when "
             f"{AGENTS_DIR}/ is non-empty"
         )
         return
@@ -183,7 +183,7 @@ def check_namespace(errors: list[str], skills: set[str]) -> None:
     for md in _iter_docs():
         for i, line in enumerate(md.read_text(encoding="utf-8").splitlines(), 1):
             for m in _STALE_E22_RE.finditer(line):
-                errors.append(f"{md}:{i}: stale '{m.group(0)}' — use the '/steer:' namespace")
+                errors.append(f"{md}:{i}: stale '{m.group(0)}' - use the '/steer:' namespace")
             for m in _NS_RE.finditer(line):
                 # `/steer:<skill>` placeholders in templates are excluded already.
                 if m.group(1) not in skills:
@@ -196,7 +196,7 @@ def check_namespace(errors: list[str], skills: set[str]) -> None:
 def check_duplicate_headings(errors: list[str]) -> None:
     """Flag a page that repeats an `##`/`###` heading.
 
-    A bad edit — a slice that re-emits a span, a botched merge — can duplicate a
+    A bad edit - a slice that re-emits a span, a botched merge - can duplicate a
     whole block of a page. Nothing else catches it: the copy is valid Markdown,
     every link still resolves, and the build is happy, so the page ships with two
     versions of a section that will disagree the moment one is updated. That is
@@ -217,7 +217,7 @@ def check_duplicate_headings(errors: list[str]) -> None:
             if heading in seen:
                 errors.append(
                     f"{md}:{i}: duplicate heading {heading!r} (first seen at line {seen[heading]}) "
-                    "— a section is repeated; delete the copy"
+                    "- a section is repeated; delete the copy"
                 )
             else:
                 seen[heading] = i

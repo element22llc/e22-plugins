@@ -6,7 +6,7 @@ from the plugin's ``plugins/steer/.mcp.json`` (the single source of truth). That
 mirror is committed (so ``/steer:init`` can install it without running Python in
 the consumer repo), which means it can go stale the moment a server is added,
 removed, or retargeted on the Claude side. This check regenerates in-memory and
-byte-compares against the committed file, failing the build on any drift — the
+byte-compares against the committed file, failing the build on any drift - the
 same single-source-of-truth discipline the other Copilot artifacts get.
 
 Run from the repo root::
@@ -29,7 +29,7 @@ def main() -> int:
         return 1
     if not VSCODE_MCP.is_file():
         print(
-            f"check_copilot_mcp: missing {VSCODE_MCP} — run 'mise run gen:copilot'",
+            f"check_copilot_mcp: missing {VSCODE_MCP} - run 'mise run gen:copilot'",
             file=sys.stderr,
         )
         return 1
@@ -39,7 +39,7 @@ def main() -> int:
 
     if committed != expected:
         print(
-            f"check_copilot_mcp: {VSCODE_MCP} is out of sync with {CLAUDE_MCP} — "
+            f"check_copilot_mcp: {VSCODE_MCP} is out of sync with {CLAUDE_MCP} - "
             f"run 'mise run gen:copilot' to regenerate.",
             file=sys.stderr,
         )

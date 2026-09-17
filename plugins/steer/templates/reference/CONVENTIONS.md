@@ -21,7 +21,7 @@ libraries.
   non-prod environment before production.
 
 Before writing **any** pinned version (Docker image tag, base image, runtime,
-engines field), verify what current stable is **in this session** — check the
+engines field), verify what current stable is **in this session** - check the
 registry, [endoflife.date](https://endoflife.date), or the official site. Treat
 training-data memory of versions as stale by default: the failure mode is being
 *confidently* wrong, not unsure, so "ask when unsure" is not enough. If you
@@ -29,7 +29,7 @@ cannot verify, say so and ask the dev. Do not guess.
 
 ### Enforcement: the version-pin floor
 
-The rule above — verify and pin **current stable**, live, in-session — is how you
+The rule above - verify and pin **current stable**, live, in-session - is how you
 *choose* a version. The plugin backs it with a mechanical **EOL floor** so a stale
 major never slips through when that live check didn't happen. The floor is a
 deterministic, version-controlled policy file (`policy/versions.yml`): a per-product
@@ -39,27 +39,27 @@ call and no `jq`** so it is reproducible and never fails open for lack of a tool
 It is enforced in two places against that one file:
 
 - a `PreToolUse` hook (`hooks/check-version-pins.sh`) on the write path, and
-- a CI scanner (`scripts/scan-version-pins.sh`) over committed config — the
+- a CI scanner (`scripts/scan-version-pins.sh`) over committed config - the
   backstop for pins the hook can't see (Bash-mediated writes, etc.).
 
 For common images (`postgres:`, `node:`, `python:`, `redis:`, `valkey:`, `nginx:`,
 `mysql:`, `mariadb:`, `mongo:`), a pin **below the floor or in the denied list is
 denied**; anything at or above the floor is allowed silently. There is **no
-advisory "behind the target" tier** — what to pin is the live rule's job, not the
+advisory "behind the target" tier** - what to pin is the live rule's job, not the
 floor's, so the file never carries a `recommended` value that could silently rot.
 
 - **The floor tracks upstream EOL automatically.** A scheduled workflow
   (`version-policy-refresh.yml`) is the *only* thing that consults endoflife.date:
   weekly it raises any floor that has fallen behind to the lowest cycle still
   supported upstream and opens a **human-reviewed PR**. Enforcement never makes
-  that call. The floor may be deliberately *stricter* than upstream EOL — the
+  that call. The floor may be deliberately *stricter* than upstream EOL - the
   refresh only ever raises it, never lowers it.
 - **Deliberate older pins are allowed** (deploy-target/RDS parity, Node LTS
   policy): record an ADR and append `# steer:allow-pin <reason>` (legacy alias:
   `# pin-ok: <reason>`) on the same line as the pin; enforcement then passes it.
-- **Major-only tags float the minor** — `postgres:18` only compares the major;
+- **Major-only tags float the minor** - `postgres:18` only compares the major;
   `python:3.11` compares at maj.min granularity.
-- **Unknown products and ambiguity fail open** — a product not in the policy, or
+- **Unknown products and ambiguity fail open** - a product not in the policy, or
   anything the scanner can't statically resolve (a pin behind `${VAR}`), is not
   flagged. The floor enforces the common path; it doesn't replace the rule.
 - Markdown/text files are exempt; prose legitimately mentions old versions.
@@ -69,14 +69,14 @@ floor's, so the file never carries a `recommended` value that could silently rot
   never surrounding file content.
 - **Tool versions inside CI `run:` blocks are pinned exactly** (`uvx <tool>@<ver>`,
   `npx <pkg>@<ver>`). An unpinned call runs whatever the registry holds at run
-  time — unreviewed code, and a new lint rule reds an unrelated PR — and
+  time - unreviewed code, and a new lint rule reds an unrelated PR - and
   Dependabot does not see versions inside `run:`, so these are bumped
   deliberately, in a reviewed change.
 
 ### Toolchain: `latest` in config, pinned in the lockfile
 
 The toolchain (language runtimes, CLI tools) is managed with **mise**. The
-template's `mise.toml` files set every tool to `latest` on purpose — so the
+template's `mise.toml` files set every tool to `latest` on purpose - so the
 template never carries stale version numbers that someone has to hand-maintain.
 
 Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
@@ -84,33 +84,33 @@ Reproducibility comes from the **lockfile**, not from the `mise.toml` value:
 - `[settings] lockfile = true` is enabled, so `mise install` writes the exact
   resolved versions to `mise.lock` (one per config dir: root and `infra/`).
   **Caveat: mise only writes `mise.lock` if the file already exists.** The
-  template ships **no** `mise.lock` — you create it the first time you pin
+  template ships **no** `mise.lock` - you create it the first time you pin
   (`touch mise.lock`, or run `mise lock`, before installing), otherwise the
   install silently succeeds without pinning anything. Until a populated lock is
   committed, CI runs a plain unlocked `mise install`; **never commit an empty /
-  comment-only `mise.lock`** — it pins nothing yet makes CI's `--locked` fail.
-- **Commit `mise.lock`.** It is the real pin — CI and every developer machine
+  comment-only `mise.lock`** - it pins nothing yet makes CI's `--locked` fail.
+- **Commit `mise.lock`.** It is the real pin - CI and every developer machine
   install from it, so they always agree. `latest` in `mise.toml` only decides
   what gets resolved the next time the lock is *regenerated*.
 - **First use:** create the lock if it doesn't exist yet (`touch mise.lock`),
   run `mise install` (and the same in `infra/`), **then
   `mise lock --platform linux-x64,macos-arm64`** in each directory with a
   `mise.lock` (add `macos-x64` / `linux-arm64` / `windows-x64` for any other
-  platform the team develops on — `linux-x64` is mandatory because CI runs on
+  platform the team develops on - `linux-x64` is mandatory because CI runs on
   `ubuntu-latest`). `mise install` only records asset URLs + checksums for the
   **host** platform, so a lock pinned on macOS has no `linux-x64` entries and CI's
   `mise install --locked` (mise-action enables locked mode whenever a lock exists)
-  fails with *"No lockfile URL found … on platform linux-x64"*. **Verify** each
+  fails with *"No lockfile URL found ... on platform linux-x64"*. **Verify** each
   `mise.lock` now contains a `[tools.<tool>."platforms.linux-x64"]` block with
-  `url` + `checksum` (`grep -q 'platforms.linux-x64' mise.lock`) — a lock with
-  only `[[tools.*]]` version entries still fails `--locked` — and commit them.
+  `url` + `checksum` (`grep -q 'platforms.linux-x64' mise.lock`) - a lock with
+  only `[[tools.*]]` version entries still fails `--locked` - and commit them.
   This is the "pin on adoption" step; it has not happened until the
   multi-platform lockfiles are committed.
 - **Bumping:** run `mise upgrade` to move the lock forward, review the diff like
-  any other change, and — for infra tools — validate in non-prod before prod.
+  any other change, and - for infra tools - validate in non-prod before prod.
 
 **Backends must be cross-platform (macOS + Linux).** The mise registry's
-default backend for a tool is not always usable on every platform — e.g. plain
+default backend for a tool is not always usable on every platform - e.g. plain
 `pnpm` resolves to `aqua:pnpm/pnpm`, which has no valid macOS asset; managed repos
 pin `"npm:pnpm"` explicitly instead. When adding a tool to `mise.toml`, choose
 a backend whose binaries exist for both macOS (devs) and Linux (CI), and verify
@@ -122,11 +122,11 @@ mise setup steps are in the product README.
 
 **Shell activation & PATH precedence.** Commands assume mise is activated in
 the shell, with `mise activate` sourced **after** any other version manager
-(nvm/asdf/volta/fnm) in the rc file — whichever loads last wins PATH, and mise
+(nvm/asdf/volta/fnm) in the rc file - whichever loads last wins PATH, and mise
 must win or bare `pnpm`/`node` silently run a global version instead of the
 pinned one. Diagnostics: "tool not found" usually means mise isn't activated; a
 *wrong or old* version usually means it's shadowed. Either way run
-`/steer:doctor` — it flags a shadowed runtime and names the conflicting
+`/steer:doctor` - it flags a shadowed runtime and names the conflicting
 manager.
 
 ### Lockfiles are maintained, never bypassed
@@ -134,16 +134,16 @@ manager.
 This applies to **every** lockfile in the repo, not just mise's:
 
 - `mise.lock` (toolchain), `pnpm-lock.yaml` (Node workspaces), `uv.lock`
-  (Python), `.terraform.lock.hcl` (infra providers) — all are **committed and
+  (Python), `.terraform.lock.hcl` (infra providers) - all are **committed and
   kept in sync** with their config file as part of the change that touches it.
   Adding/removing a dependency or tool without the matching lockfile diff is an
   incomplete change.
 - **Never delete or `.gitignore` a lockfile to make an error go away.** Fix the
   resolution problem, or regenerate the lock with the owning tool
-  (`mise install` / `mise upgrade` / `mise lock --platform …`, `pnpm install`,
+  (`mise install` / `mise upgrade` / `mise lock --platform ...`, `pnpm install`,
   `uv lock`, `tofu init`). Once a `mise.lock` holds every CI/dev platform,
   `mise install` and `mise upgrade` keep all of those platforms in sync; you only
-  re-run `mise lock --platform …` to add a newly-used platform.
+  re-run `mise lock --platform ...` to add a newly-used platform.
 - Lockfile-only diffs deserve the same review as code: an unexplained large
   lockfile change is a smell, not noise. The scaffold `.gitattributes` marks
   them `-diff` so generated churn stays collapsed in review; expand it when the
@@ -153,46 +153,46 @@ This applies to **every** lockfile in the repo, not just mise's:
   (resolves aged transitives and adds too-fresh *direct* deps to
   `minimumReleaseAgeExclude`), but a lockfile generated by an older or stray
   pnpm that pinned fresh versions hard-fails with
-  `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` — regenerate it under the mise-pinned
+  `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` - regenerate it under the mise-pinned
   pnpm (`mise exec --no-deps -- pnpm install --lockfile-only`); never set
   `minimumReleaseAge: 0`.
 
 ### Standard mise tasks
 
-Every product repo — an **app / service** or **infra** repo that holds code —
+Every product repo - an **app / service** or **infra** repo that holds code -
 exposes the same task vocabulary via `[tasks]` in the root `mise.toml`, so one
 muscle memory works across all managed repos. A **workspace** (polyrepo spine)
 repo is the exception: it holds no code, so it has no `dev:setup` and no linters,
-and its tasks are `ws:`-prefixed — see `POLYREPO.md`. Everything in this section
+and its tasks are `ws:`-prefixed - see `POLYREPO.md`. Everything in this section
 describes the code-bearing profiles:
 
-- **`mise run dev:setup`** — the one-command local environment. **Idempotent**:
+- **`mise run dev:setup`** - the one-command local environment. **Idempotent**:
   safe to rerun anytime. It starts the Compose services (`docker compose up -d
   --wait`), applies database migrations, and seeds local dev data. The ordering
-  is **declared** (`dev:setup` → `db:seed` → `db:migrate` → `docker:up` via
-  `depends`), not a hand-written command list — see *Declaring task ordering*.
-- **`mise run docker:up` / `docker:down`** — just the backing services.
-- **`mise run db:migrate` / `db:seed`** — just the database steps. In Node repos
-  these fan out with `pnpm --recursive --if-present run …`, so each app/package
+  is **declared** (`dev:setup` -> `db:seed` -> `db:migrate` -> `docker:up` via
+  `depends`), not a hand-written command list - see *Declaring task ordering*.
+- **`mise run docker:up` / `docker:down`** - just the backing services.
+- **`mise run db:migrate` / `db:seed`** - just the database steps. In Node repos
+  these fan out with `pnpm --recursive --if-present run ...`, so each app/package
   owns its own `db:migrate`/`db:seed` script and packages without one are
-  skipped; Python repos call `uv run …` instead.
-- **`mise run pre-commit`** — the sub-second commit gate: hygiene + lint, no
+  skipped; Python repos call `uv run ...` instead.
+- **`mise run pre-commit`** - the sub-second commit gate: hygiene + lint, no
   typecheck and no tests. `/steer:init` and `/steer:adopt` wire it to
   `.git/hooks/pre-commit` with `mise generate git-pre-commit
   --task=pre-commit --write`. `.git/hooks/` is **not versioned**, so this is
   per-clone state, not a committed file: a teammate's fresh clone has no hook
   until they run that command or `/steer:sync`. Linked worktrees share the
   primary checkout's hooks, so `claude --worktree` needs nothing extra. It stays
-  deliberately thin — its job is to stop a lint failure before it costs a CI
+  deliberately thin - its job is to stop a lint failure before it costs a CI
   run, not to be a second `ci`. `git commit --no-verify` bypasses it; CI does not.
-- **`mise run check`** — the fast gate: hygiene (actionlint, shellcheck,
+- **`mise run check`** - the fast gate: hygiene (actionlint, shellcheck,
   version-pin policy), lint/format, typecheck. No containers, no coverage. Run
   it before every commit.
-- **`mise run ci`** — the full gate: everything the required `ci` status check
+- **`mise run ci`** - the full gate: everything the required `ci` status check
   runs (`check` plus tests, IaC checks, the image build, and the changed-line
   coverage gate). Run it before push / PR.
 
-  These two are **not a re-implementation of CI** — `.github/workflows/ci.yml`
+  These two are **not a re-implementation of CI** - `.github/workflows/ci.yml`
   invokes the very same `ci:*` tasks, whose logic lives in `scripts/ci-*.sh`, so
   the gate is defined once and cannot drift between a laptop and a runner. That
   is also what makes a repo verifiable when no runner is available at all (an
@@ -203,15 +203,15 @@ describes the code-bearing profiles:
 
 mise is the single task **entry surface**, not the single home. The split:
 
-- **Environment/orchestration tasks live in `mise.toml`** — they orchestrate
+- **Environment/orchestration tasks live in `mise.toml`** - they orchestrate
   tooling **outside** the workspace (Docker, the DB), which mise already owns,
   and are **polyglot**: `mise run dev:setup` works identically in a Python (uv)
   product with no root `package.json` workflow.
 - **App-level scripts stay in `package.json`** (`dev`, `build`, `test`,
-  `typecheck` fanning out across workspace packages) — pnpm owns that fan-out.
+  `typecheck` fanning out across workspace packages) - pnpm owns that fan-out.
   Don't relocate them into mise. When you want them discoverable from one place,
   add a thin mise task that **delegates** (`run = "pnpm build"`), rather than
-  moving the logic — so `mise tasks` lists the whole repo's vocabulary while pnpm
+  moving the logic - so `mise tasks` lists the whole repo's vocabulary while pnpm
   still owns the workspace graph.
 
 The delegation is **one-way**. A mise task may wrap a `package.json` script; a
@@ -220,10 +220,10 @@ toolchain (`uv`/Python), and **no task is defined in both files**. `package.json
 owns the Node workspace graph and nothing else.
 
 **Polyglot app (Node web + Python `apps/api`).** When the sanctioned API split
-exists (a Python `apps/api` alongside the Node `apps/web` — see the `apps/`
+exists (a Python `apps/api` alongside the Node `apps/web` - see the `apps/`
 README, recorded as an ADR), the backend is **outside** the pnpm workspace, so by
-the rule above it is an **orchestration task in `mise.toml`**, run with `uv run`
-— never a root-`package.json` script. Compose the two long-running servers with a
+the rule above it is an **orchestration task in `mise.toml`**, run with `uv run` -
+never a root-`package.json` script. Compose the two long-running servers with a
 mise `dev` task that fans out over `dev:*` in parallel (mise runs `depends`
 concurrently; bump `--jobs` if you have more than four). The root `package.json`
 carries no `dev:api`, no `uv`, and no `concurrently` cross-stack runner:
@@ -249,8 +249,8 @@ uv directly. Nothing is duplicated and no `pnpm`⇄`mise` loop can form.
 
 The template ships these tasks wired to the default stack (Postgres in
 `compose.yaml`, migrate/seed fan-out). **Adapt them to the product during
-`/steer:init`** — wire real migrate/seed commands, add services, swap pnpm for uv,
-or delete the docker/db tasks if the product has no backing services — and keep
+`/steer:init`** - wire real migrate/seed commands, add services, swap pnpm for uv,
+or delete the docker/db tasks if the product has no backing services - and keep
 `dev:setup` green as the stack evolves: in a code-bearing repo, a fresh clone plus
 `mise install && mise run dev:setup` must always produce a working local
 environment. (A workspace spine has no `dev:setup` to keep green; its equivalent
@@ -277,12 +277,12 @@ depends = ["db:migrate"]
 depends = ["db:seed"]     # transitively pulls docker:up -> db:migrate -> db:seed
 ```
 
-- **`depends`** — dependencies run **before** the task, in dependency order;
+- **`depends`** - dependencies run **before** the task, in dependency order;
   a failed dependency aborts the task. Put the ordering on each task so it is
   intrinsic, and have the umbrella task (`dev:setup`) depend on the terminal step.
-- **`depends_post`** — runs **after** the task; use for teardown/cleanup
+- **`depends_post`** - runs **after** the task; use for teardown/cleanup
   (e.g. a `docker:clean` that should follow an integration-test task).
-- **`wait_for`** — soft ordering: "run after X *if* X is also scheduled this
+- **`wait_for`** - soft ordering: "run after X *if* X is also scheduled this
   run, but don't trigger X." Niche; reach for `depends` first.
 
 ### Auto-installing workspace dependencies
@@ -302,7 +302,7 @@ auto = true                # `uv sync`     - runs only when uv.lock changed
 ```
 
 - Each provider is **content-hashed against its lockfile** and runs **only when
-  stale**, and is active **only when both configured and its lockfile exists** —
+  stale**, and is active **only when both configured and its lockfile exists** -
   so a Node-only repo's `[deps.uv]` simply no-ops until a `uv.lock` appears (and
   vice versa). This is the "install no-op on unchanged" property for free.
 - It rides on `experimental = true`. mise may change experimental behavior
@@ -311,7 +311,7 @@ auto = true                # `uv sync`     - runs only when uv.lock changed
   deliberate `mise upgrade`.
 - Escape hatch: `mise run --no-deps <task>` skips auto-install for one command.
 - The same provider shape (`auto` / `depends` / `run` / `sources` / `outputs`)
-  covers non-package-manager bootstrap too — e.g. the infra profile's commented
+  covers non-package-manager bootstrap too - e.g. the infra profile's commented
   `[deps.ansible-galaxy]` provider installs roles from `requirements.yml`.
 
 ### Skipping unchanged tasks (`sources` / `outputs`)
@@ -329,12 +329,12 @@ outputs = ["src/generated/**/*.ts"]
 
 ### File tasks vs `scripts/`
 
-mise can auto-discover **file tasks** — standalone executable scripts in a
+mise can auto-discover **file tasks** - standalone executable scripts in a
 task directory (default `mise-tasks/`), each a task named after the file with a
-`#MISE description=…` header. This is an option when a task outgrows an inline
+`#MISE description=...` header. This is an option when a task outgrows an inline
 `run` string. steer keeps loose project helpers in **`scripts/`** (invoked from a
 task's `run`, or via `${CLAUDE_PLUGIN_ROOT}` for plugin scripts); adopt
-`mise-tasks/` deliberately if a repo prefers file tasks — don't move `scripts/`
+`mise-tasks/` deliberately if a repo prefers file tasks - don't move `scripts/`
 wholesale.
 
 ## Commit messages
@@ -342,7 +342,7 @@ wholesale.
 Write commit subjects in the [Conventional Commits](https://www.conventionalcommits.org/)
 format. It is the org default because it makes history scannable, groups GitHub's
 auto-generated "What's Changed" release notes cleanly, and reads consistently
-across every managed repo — for the cost of a one-line convention with no tooling
+across every managed repo - for the cost of a one-line convention with no tooling
 to install. The always-on Commit-autonomy rule carries the condensed version;
 this is the full shape.
 
@@ -355,37 +355,37 @@ BREAKING CHANGE: what broke and how to migrate.
 Refs: #123
 ```
 
-- **Subject line** — `type(scope): summary`. Imperative mood ("add", not "added"
+- **Subject line** - `type(scope): summary`. Imperative mood ("add", not "added"
   / "adds"), no trailing period, lower-case summary, keep it under ~72 chars. The
   `scope` is optional but encouraged: the area touched, in the repo's own
   vocabulary (`ci`, `docs`, `hooks`, a package or app name).
-- **Types** — use the one that fits the change:
-  - `feat` — a new user-facing capability (minor-level change).
-  - `fix` — a bug fix (patch-level change).
-  - `docs` — documentation only.
-  - `refactor` — behavior-preserving code change (no feature, no fix).
-  - `perf` — a change that improves performance.
-  - `test` — adding or correcting tests only.
-  - `build` — build system, dependencies, or packaging.
-  - `ci` — CI/CD configuration and scripts.
-  - `chore` — routine maintenance that doesn't fit above (e.g. a release commit).
-  - `style` — formatting/whitespace only, no code meaning change.
-  - `revert` — reverts a previous commit.
-- **Breaking changes** — mark with a `!` before the colon (`feat!:`, `refactor!:`)
+- **Types** - use the one that fits the change:
+  - `feat` - a new user-facing capability (minor-level change).
+  - `fix` - a bug fix (patch-level change).
+  - `docs` - documentation only.
+  - `refactor` - behavior-preserving code change (no feature, no fix).
+  - `perf` - a change that improves performance.
+  - `test` - adding or correcting tests only.
+  - `build` - build system, dependencies, or packaging.
+  - `ci` - CI/CD configuration and scripts.
+  - `chore` - routine maintenance that doesn't fit above (e.g. a release commit).
+  - `style` - formatting/whitespace only, no code meaning change.
+  - `revert` - reverts a previous commit.
+- **Breaking changes** - mark with a `!` before the colon (`feat!:`, `refactor!:`)
   **and/or** a `BREAKING CHANGE:` footer describing the break and the migration.
   Either signals a major-level change.
-- **Body & footers** — optional. Use the body for the *why* when it isn't obvious
+- **Body & footers** - optional. Use the body for the *why* when it isn't obvious
   from the summary. Reference issues in a footer (`Refs: #123`, `Closes #123`);
   `Closes #N` on the merged commit auto-closes the issue (see Issue-first).
 
 Deliberately **not** adopted:
 
 - **No commit-lint gate.** The PR review is the gate, not each commit (see the
-  Commit-autonomy rule), and commits are freely rewritable before a squash-merge —
+  Commit-autonomy rule), and commits are freely rewritable before a squash-merge -
   so a per-commit linter would gate the wrong thing and drag a Node/commit-lint
   dependency into every product repo. The convention is guidance, enforced by
   habit and review.
-- **Commits are not the changelog.** The release changelog is **curated** — one
+- **Commits are not the changelog.** The release changelog is **curated** - one
   fragment written deliberately per change, never derived by parsing commit
   types. Conventional Commits here buy readable history, not automated release
   notes. See Changelog below.
@@ -394,7 +394,7 @@ Deliberately **not** adopted:
 
 Every repo carries a **changelog**: `.changes/` holds the entries and
 `CHANGELOG.md` is **generated** from them by `changie merge`, so never edit it by
-hand — it does not even exist until the first cut. What you write is a
+hand - it does not even exist until the first cut. What you write is a
 **fragment**: one YAML file per change under `.changes/unreleased/`.
 
 ```sh
@@ -405,59 +405,59 @@ KIND=Fixed SLUG=vendor-search-timeout \
 
 For an entry longer than a shell variable comfortably carries, write the file
 directly as `.changes/unreleased/<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml` with a
-`body: |` block. The body carries its own `- ` bullet and `**Kind: …**`
+`body: |` block. The body carries its own `- ` bullet and `**Kind: ...**`
 lead-in, so it reads identically in the fragment and in `CHANGELOG.md`; `kind`
 is metadata driving the version bump and grouping, and is not rendered.
 
 - **Why fragments rather than one appended file.** Two PRs write two different
   paths, so a changelog merge conflict cannot happen. `spec/history/` is a
   directory for exactly this reason, and its README explains why the obvious
-  alternative — git's `union` merge driver — is unsafe: union is *line*-based
+  alternative - git's `union` merge driver - is unsafe: union is *line*-based
   and splices multi-line entries together, silently dropping content with no
   conflict marker.
 - **Why curated rather than generated from commits.** A commit subject is
   written for a reviewer reading a diff; a changelog entry is written for
   someone deciding whether to care. Deriving one from the other gives you neither.
-  changie automates assembly and the version bump — never the prose.
+  changie automates assembly and the version bump - never the prose.
 - **Cutting a release.** `library` / `cli`: `changie batch auto`, which reads
   each kind's `auto:` level and picks the semver bump. `app` / `service`: these
   deploy continuously and have no artifact version, so the release moment is the
   **`prod` promotion** (see Deployment & environments) and the version is the
-  ship date — `changie batch $(date +%Y.%-m.%-d)`. Use `%-m`/`%-d`: changie
+  ship date - `changie batch $(date +%Y.%-m.%-d)`. Use `%-m`/`%-d`: changie
   normalizes `2026.09.15` to a `2026.9.15` heading while naming the file
   `2026.09.15.md`, and the two then disagree permanently. Follow either with
   `changie merge`.
 - **CI enforces it.** `ci:changelog` fails a PR that changes shipping code
   without *adding* a fragment. Editing an existing fragment is amending someone
-  else's pending entry, not recording yours. Paths that ship nothing — `spec/`,
-  `docs/`, `.github/`, tests, and Markdown anywhere — are exempt;
+  else's pending entry, not recording yours. Paths that ship nothing - `spec/`,
+  `docs/`, `.github/`, tests, and Markdown anywhere - are exempt;
   `scripts/ci-changelog.sh` is the authoritative list.
 
 ### Changelog vs. the other two logs
 
-Three logs, three audiences — keep them distinct and none of them will rot:
+Three logs, three audiences - keep them distinct and none of them will rot:
 
 | | Audience | Trigger | Answers |
 |---|---|---|---|
 | `CHANGELOG.md` | developers, integrators | every shipping change | *what changed* |
-| `/spec/app/` → Release notes | the PO and end users | a change a user would notice | *what it means for me* |
+| `/spec/app/` -> Release notes | the PO and end users | a change a user would notice | *what it means for me* |
 | `/spec/history/` | auditors, future maintainers | a ratified decision or notable event | *why we chose this* |
 
 So: every behaviour change gets a **fragment**; a change a user would notice
 *also* gets a plain-language line in the app guide. Most changes get one, not
-both — a refactor is changelog-only, a copy change may be release-notes-only.
+both - a refactor is changelog-only, a copy change may be release-notes-only.
 `/spec/history/` overlaps neither: an ordinary merged change writes no entry
 there at all.
 
 ## Backend placement
 
-For the UI web app, keep the backend **inside** the Next.js app — Route
+For the UI web app, keep the backend **inside** the Next.js app - Route
 Handlers (`app/api/**`), Server Actions, and server components / server-side
-data fetching — rather than standing up a separate API app. This is the default
+data fetching - rather than standing up a separate API app. This is the default
 to keep the stack simple. Only split out a standalone `apps/api` when the
 intent clearly warrants it: a non-web consumer, independent scaling/deploy
 needs, or a different runtime. Switch to Python + FastAPI + PostgreSQL when the
-project intent calls for it — data- or ML-heavy work, or a Python-ecosystem
+project intent calls for it - data- or ML-heavy work, or a Python-ecosystem
 dependency. Either split is a deliberate choice: record it as an ADR.
 
 ## Local services
@@ -465,24 +465,24 @@ dependency. Either split is a deliberate choice: record it as an ADR.
 Run backing services (PostgreSQL, Redis, etc.) with Docker Compose via a
 committed `compose.yaml`, so local matches deployed:
 
-- **Don't author `compose.yaml` from scratch** — start from the plugin's
+- **Don't author `compose.yaml` from scratch** - start from the plugin's
   bundled scaffold one and adapt, so generated services can't reintroduce
   stale image majors (the version-pin hook enforces the common path; see
-  Versioning policy → Enforcement).
+  Versioning policy -> Enforcement).
 - **Do not substitute a different engine for local dev** (e.g. SQLite in place
-  of PostgreSQL) — develop against the same database you deploy, or you'll ship
+  of PostgreSQL) - develop against the same database you deploy, or you'll ship
   behavior the real engine doesn't have.
 - **Make published host ports overridable.** A PO or dev often has several
   products running at once, and every repo that hardcodes `"5432:5432"` collides
   on the second `docker compose up` (`Bind for 0.0.0.0:5432 failed: port is
   already allocated`). Bind through an env var with the canonical port as the
-  default — `"${POSTGRES_PORT:-5432}:5432"` — and list that var in `.env.example`.
+  default - `"${POSTGRES_PORT:-5432}:5432"` - and list that var in `.env.example`.
   A dev hitting a collision then sets `POSTGRES_PORT=5433` in their git-ignored
   `.env` (Compose reads it automatically) and mirrors it in `DATABASE_URL`; the
   container-internal port and every other service are untouched. The
-  scaffold `compose.yaml` already does this for Postgres — keep the
+  scaffold `compose.yaml` already does this for Postgres - keep the
   pattern when you add Redis, MinIO, or any other service. (Container, network,
-  and volume *names* don't need this — Compose namespaces them per project
+  and volume *names* don't need this - Compose namespaces them per project
   directory automatically; only host port bindings collide.)
 - `pnpm dev` / `uv run` assume the Compose services are up; the standard entry
   point is `mise run dev:setup` (see Standard mise tasks).
@@ -492,10 +492,10 @@ committed `compose.yaml`, so local matches deployed:
   offset and a unique `COMPOSE_PROJECT_NAME`, so two agents can run
   `mise run docker:up` side by side and `docker:clean` tears down only its own
   stack. A hardcoded name or port defeats that. The offset space is 89 slots
-  (+10 … +890) shared by every repo on the machine; resolve a collision with
+  (+10 ... +890) shared by every repo on the machine; resolve a collision with
   `STEER_WORKTREE_OFFSET` in the worktree's env, never by editing the shared
   script. Re-taking `worktree-env.sh` from a newer scaffold renames a *running*
-  linked worktree's Compose stack — `docker compose -p <old-name> down -v`
+  linked worktree's Compose stack - `docker compose -p <old-name> down -v`
   first, or its containers and volumes are orphaned.
 - **`.worktreeinclude` lists only git-ignored, boot-critical files** (`.env*`,
   `.mise.local.toml`, `.claude/settings.local.json`) for Claude Code to copy
@@ -508,11 +508,11 @@ committed `compose.yaml`, so local matches deployed:
 
 Code lives at the repo root in three top-level directories:
 
-- **`/apps`** — deployable applications. Each app is independently buildable and
+- **`/apps`** - deployable applications. Each app is independently buildable and
   deployable, with its own deploy target.
-- **`/packages`** — shared libraries consumed by apps or other packages. Not
+- **`/packages`** - shared libraries consumed by apps or other packages. Not
   independently deployed.
-- **`/configs`** — shared tooling configuration (lint, base tsconfig, formatter,
+- **`/configs`** - shared tooling configuration (lint, base tsconfig, formatter,
   test presets) referenced by apps and packages.
 
 A single product repo may hold multiple apps and packages. The org stays
@@ -526,12 +526,12 @@ check, and `/infra` is validated from its own toolchain.
 
 ## Workspace tooling
 
-These are the **default biases**, not mandates — lean toward them, and if a
+These are the **default biases**, not mandates - lean toward them, and if a
 project warrants a different tool, record the choice as an ADR under
 `/spec/decisions`. `mise` still pins the underlying runtimes regardless of which
 package manager you use.
 
-- **Node.js → [pnpm](https://pnpm.io).** Use pnpm for installs and for workspaces
+- **Node.js -> [pnpm](https://pnpm.io).** Use pnpm for installs and for workspaces
   (`pnpm-workspace.yaml`) across `/apps` and `/packages`. Prefer it over npm or
   yarn; don't mix lockfiles in one repo. Dependency versions are centralized in
   the pnpm `catalog:` and referenced as `"catalog:"` from each `package.json`, so
@@ -540,17 +540,17 @@ package manager you use.
   scripts behind `allowBuilds`: a dependency that legitimately needs its
   postinstall (esbuild via tsx, linking its native binary) must be listed there
   or `pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`.
-- **Python → [uv](https://docs.astral.sh/uv/).** Use uv for environments,
+- **Python -> [uv](https://docs.astral.sh/uv/).** Use uv for environments,
   dependency resolution, and locking (`uv add`, `uv sync`, `uv run`). Prefer it
   over pip/Poetry/pip-tools.
 
-Layered task runners (turbo, nx) remain a per-project call — record them in an
+Layered task runners (turbo, nx) remain a per-project call - record them in an
 ADR if adopted.
 
 ### Editor & IDE
 
 **[Visual Studio Code](https://code.visualstudio.com/) is the default editor.**
-A default bias, not a mandate — use whatever editor you're productive in — but
+A default bias, not a mandate - use whatever editor you're productive in - but
 the *shared, committed* workspace config targets VS Code, and that's where the
 team's setup is documented and kept in sync.
 
@@ -558,14 +558,14 @@ team's setup is documented and kept in sync.
   recommended extensions (VS Code prompts contributors to install them on first
   open); `settings.json` carries shared editor defaults (Biome as the
   format-on-save formatter, so the editor matches `pnpm format` / CI). Both ship
-  in the plugin's bundled scaffold and install during `/steer:init` —
+  in the plugin's bundled scaffold and install during `/steer:init` -
   per-user overrides go in a git-ignored `.vscode/settings.local.json`, never in
   the committed file. `.vscode/mcp.json` is committed too: Copilot and VS Code
   do not read the Claude-only `.mcp.json`, so this per-repo file is how a Copilot
   teammate gets the same MCP servers. The rest of `.vscode/` stays ignored.
 - **Prefer in-editor extensions over standalone apps for adjacent activities.**
   Lean on VS Code's extension ecosystem to keep day-to-day work in one place
-  rather than juggling separate tools — for example **database access** (browse
+  rather than juggling separate tools - for example **database access** (browse
   and query the PostgreSQL instance from the editor), Tailwind IntelliSense,
   Terraform/HCL for `/infra`, GitHub Actions authoring, ShellCheck, and `.env`
   ergonomics. Each recommended extension maps to a tool already in the stack, so
@@ -577,7 +577,7 @@ team's setup is documented and kept in sync.
   `mise.toml`.
 
 Database access through an editor extension is for **browsing and ad-hoc
-queries** during development — application data access still goes through the ORM
+queries** during development - application data access still goes through the ORM
 (Drizzle/SQLAlchemy), parameterized and migration-tracked (see Baseline
 patterns). The extension is a window onto the same local Compose database, not a
 second access path in the app.
@@ -587,15 +587,15 @@ second access path in the app.
 One linter+formatter per language, installed via mise (single fast binaries, so
 they fit the lockfile model above):
 
-- **Node / TypeScript → [Biome](https://biomejs.dev).** One tool for both lint
+- **Node / TypeScript -> [Biome](https://biomejs.dev).** One tool for both lint
   and format. Prefer it over ESLint + Prettier; don't run them alongside Biome.
   Init per workspace with `biome init`, then `biome check` (lint) and
   `biome format`. Pinned in the root `mise.toml`.
-- **Python → [Ruff](https://docs.astral.sh/ruff/).** One tool for both lint
+- **Python -> [Ruff](https://docs.astral.sh/ruff/).** One tool for both lint
   (`ruff check`) and format (`ruff format`). Prefer it over Flake8 / Black /
   isort. Uncomment `ruff` in the root `mise.toml` for Python products.
 
-These are the defaults, not mandates — swap one only with an ADR under
+These are the defaults, not mandates - swap one only with an ADR under
 `/spec/decisions`. Wire them into the CI `lint` step (see
 `.github/workflows/ci.yml`) once the stack exists so a green `ci` enforces them.
 
@@ -603,29 +603,29 @@ These are the defaults, not mandates — swap one only with an ADR under
 
 One test runner per language:
 
-- **Node / TypeScript → [Vitest](https://vitest.dev).** Use it for unit and
+- **Node / TypeScript -> [Vitest](https://vitest.dev).** Use it for unit and
   integration tests across `/apps` and `/packages`; run with `pnpm test`. Prefer
   it over Jest; don't run both in one repo.
-- **Python → [pytest](https://docs.pytest.org/).** Run with `uv run pytest`.
+- **Python -> [pytest](https://docs.pytest.org/).** Run with `uv run pytest`.
 
 The "tests in the same PR" rule is in the always-on Testing rules. CI deliberately
 has **no test-file-name gate**: a filename check cannot tell a real test from an
-empty one. Test presence is enforced by "stack detected but no test contract →
+empty one. Test presence is enforced by "stack detected but no test contract ->
 fail", the Definition of Done, and review.
 
 #### Coverage
 
-Coverage is a **signal to find untested behavior, not a target** — see the always-on
+Coverage is a **signal to find untested behavior, not a target** - see the always-on
 Coverage rules. Measure it every run and keep it visible; gate only the lines a PR
 **changes**, never a global percentage.
 
 One coverage tool per language, emitting a standard report:
 
-- **Node / TypeScript → Vitest `--coverage`** (`@vitest/coverage-v8`). Run
+- **Node / TypeScript -> Vitest `--coverage`** (`@vitest/coverage-v8`). Run
   `pnpm test -- --coverage`; emits `coverage/lcov.info`.
-- **Python → [`pytest-cov`](https://pytest-cov.readthedocs.io/).** Run
+- **Python -> [`pytest-cov`](https://pytest-cov.readthedocs.io/).** Run
   `uv run pytest --cov --cov-report=xml`; emits `coverage.xml`.
-- **Changed-line regression → [`diff-cover`](https://github.com/Bachmann1234/diff_cover).**
+- **Changed-line regression -> [`diff-cover`](https://github.com/Bachmann1234/diff_cover).**
   Language-agnostic: it consumes `lcov.info` / `coverage.xml`, compares against the
   base branch, and fails when too little of the **changed** code is exercised
   ("cover what you touch"). CI wires this into the test step; there is deliberately
@@ -636,13 +636,13 @@ One coverage tool per language, emitting a standard report:
 
 ### Auth & error tracking
 
-- **Auth → [Better Auth](https://better-auth.com/)** for the Node/Next.js stack.
-  Auth is a high-risk area — scope with the dev and record an ADR before wiring
+- **Auth -> [Better Auth](https://better-auth.com/)** for the Node/Next.js stack.
+  Auth is a high-risk area - scope with the dev and record an ADR before wiring
   it in.
-- **Error tracking → [Sentry](https://sentry.io)** for error capture on both
-  frontend and backend. Keep DSNs and auth tokens in encrypted config at rest —
+- **Error tracking -> [Sentry](https://sentry.io)** for error capture on both
+  frontend and backend. Keep DSNs and auth tokens in encrypted config at rest -
   SSM Parameter Store `SecureString` by default (cheaper), Secrets Manager when
-  you need rotation / cross-account / large values — never commit them.
+  you need rotation / cross-account / large values - never commit them.
 
 ## Deployment & environments
 
@@ -650,35 +650,35 @@ The always-on "Deployment & environments" rule carries the condensed model; this
 is the rationale and the AWS-specific shape. Full operational detail lives in the
 scaffold's [`infra/README.md`](../scaffold/infra/README.md).
 
-- **Environments** — `non-prod` (shared validation) and `prod`, plus a **review
+- **Environments** - `non-prod` (shared validation) and `prod`, plus a **review
   app** per open feature PR (torn down on merge/close). The review-app mechanism
-  is product-specific — pick one and record it in an ADR.
-- **Branch-driven promotion** — promotion moves code between branches rather than
+  is product-specific - pick one and record it in an ADR.
+- **Branch-driven promotion** - promotion moves code between branches rather than
   triggering environments by hand:
-  - merge to `main` → **auto-deploy non-prod**;
+  - merge to `main` -> **auto-deploy non-prod**;
   - a reviewed promotion PR from `main` into a long-lived **`prod` branch** is the
-    **production approval gate**, and merging it → **auto-deploy prod**.
+    **production approval gate**, and merging it -> **auto-deploy prod**.
   - **Why a branch, not an environment approval?** GitHub's native
     deployment-environment "required reviewers" gate is Enterprise-only for
     private repos; a protected `prod` branch (required PR review, no direct push,
     no admin bypass) gives the same human gate on any plan. `/steer:protect`
-    applies that protection — see the `prod` entry in
+    applies that protection - see the `prod` entry in
     `policy/branch-protection.yml`.
   - **Policy precedence.** A repo's own `policy/branch-protection.yml` overrides
     the plugin default, consumer-first, exactly like `policy/versions.yml`.
     Tighten freely; a *weaker* per-repo policy needs an ADR.
   - **Repo-wide `allow_auto_merge` stays off.** It would expose the auto-merge
     button on every PR. Dependabot auto-merge is scoped by its workflow instead:
-    it waits for the required `ci` check and covers patch and minor bumps only —
+    it waits for the required `ci` check and covers patch and minor bumps only -
     majors stay human-reviewed because they may need a `policy/versions.yml`
     floor decision. The bot's approval satisfies only a *count-based* required
     review; a CODEOWNERS-required review, if a repo adds one, still needs a
-    human — by design.
-- **Observable by default** — a deployed environment ships logs, metrics with
+    human - by design.
+- **Observable by default** - a deployed environment ships logs, metrics with
   alarms, error tracking (Sentry), per-app health checks, and alerting routed to a
   human. "Deployed but unobservable" is not done; capture the wiring in
   `ARCHITECTURE.md`.
-- **Rollback & migrations** — every prod deploy has a known rollback (revert the
+- **Rollback & migrations** - every prod deploy has a known rollback (revert the
   `prod` merge / redeploy the prior SHA); migrations are **expand/contract** so the
   running version survives the deploy and a rollback never leaves schema ahead of
   code.
@@ -710,23 +710,33 @@ Patterns:
   it propagate. Report unexpected errors to Sentry with context; never swallow.
 - **One validated config module** for environment access instead of scattered
   `process.env` reads.
-- **`async/await` with no floating promises** — handle or `await` every promise.
+- **`async/await` with no floating promises** - handle or `await` every promise.
 - **Comments carry weight or don't exist.** Code is self-documenting through
   names and structure; reserve comments for the non-obvious *why* (plus the
   why-comment an escape hatch requires). A dense file is not a licence: write new
   code to this rule regardless, and trim adjacent noise only where the change
   already touches those lines.
-- **ASCII in code, identifiers, and values.** Non-ASCII "typographic" characters
-  — em/en dashes, arrows, smart quotes, ellipsis, non-breaking spaces — belong in
-  prose and docs, not in code, identifiers, config keys/values, or any string
-  bound for an external API or system. Use the ASCII equivalent (`-`, `->`, `"`,
-  `'`, `...`, a plain space). When you copy text into code or a value,
-  ASCII-clean it first.
+- **ASCII everywhere.** Non-ASCII "typographic" characters - em/en dashes,
+  arrows, smart quotes, ellipsis, bullets, non-breaking spaces - do not appear
+  in anything we produce. Not in code, identifiers, config keys/values or any
+  string bound for an external API, and not in comments, specs, docs, commit
+  messages or PR text either. Use the ASCII equivalent (`-`, `->`, `"`, `'`,
+  `...`, `*`, a plain space); when you copy text in from anywhere, ASCII-clean
+  it first. A `PreToolUse` hook denies a write that introduces one, and
+  `steer:allow-typographic` in the same content is the escape hatch for a
+  genuine exception (a fixture asserting the character, a Unicode table).
+  Scope note: this is about those characters, not about non-English text -
+  accented letters, guillemets and CJK are unaffected. It is **not** a
+  carve-out for a language's typesetting conventions, though: the apostrophe is
+  `'` in every language, French included, and a narrow no-break space inside
+  `« »` is still a non-breaking space. Those forms are what typesetting inserts
+  and what an editor should never contain; write the ASCII form and let
+  rendering do the rest.
 
 Anti-patterns to avoid:
 
-- **Raw SQL at all** — `db.execute`, tagged-template SQL, or hand-built query
-  strings — even when parameterized. The standard is data access through Drizzle;
+- **Raw SQL at all** - `db.execute`, tagged-template SQL, or hand-built query
+  strings - even when parameterized. The standard is data access through Drizzle;
   parameterizing a raw query clears the injection risk but not the bypass of the
   ORM's typing and migration tracking. String-interpolating user input is the
   worst case (injection), but raw SQL is the anti-pattern regardless.
@@ -734,30 +744,30 @@ Anti-patterns to avoid:
   modeling the type, and disabling Biome rules wholesale rather than fixing.
 - **Trusting unvalidated input** from requests, params, env, or external APIs
   reaching the DB, filesystem, or shell.
-- **Leaking server-only code or secrets to the client** — server modules
+- **Leaking server-only code or secrets to the client** - server modules
   imported into Client Components, sensitive values behind `NEXT_PUBLIC_`.
-- **Silent failures** — empty `catch`, swallowing errors, or returning a
+- **Silent failures** - empty `catch`, swallowing errors, or returning a
   fallback that hides a real fault.
 - **Business logic inside React components or route handlers** instead of a
   shared, testable `packages/` module.
-- **N+1 query patterns** and fetching whole tables to filter in JS — push
+- **N+1 query patterns** and fetching whole tables to filter in JS - push
   filtering/joins into the query.
-- **Untracked or non-reproducible DB changes** — no schema defined in code at
+- **Untracked or non-reproducible DB changes** - no schema defined in code at
   all (schema living only in a running database), ad-hoc schema edits outside
   Drizzle migrations, or a missing migrations history; destructive migrations
   without a reviewed forward path.
-- **Deleting or ignoring a lockfile to make an error go away** — fix the
+- **Deleting or ignoring a lockfile to make an error go away** - fix the
   resolution problem or regenerate the lock with its owning tool; a dependency
   change without the matching lockfile diff is an incomplete change.
-- **Noise comments** — comments that restate the code, narrate obvious steps,
+- **Noise comments** - comments that restate the code, narrate obvious steps,
   decorative section banners, or commented-out dead code left in the file. They go
   stale and drown the why-comments that earn their place; delete on sight.
-- **Non-ASCII typographic characters in code or values** — an em/en dash, arrow,
-  smart quote, or ellipsis copied into an identifier, config key/value, or a
-  string sent to an external system. Strict validators reject them: AWS IAM's
-  `description` allows only ASCII plus Latin-1, so a `→` in a Terraform
-  `role_description` fails `apply`. Typography is fine in prose; the moment text
-  lands in code or a value, use the ASCII equivalent.
+- **Non-ASCII typographic characters, anywhere** - an em/en dash, arrow, smart
+  quote, or ellipsis, whether in an identifier, a config value, a string sent to
+  an external system, a comment, a spec or a doc. Strict validators reject them:
+  AWS IAM's `description` allows only ASCII plus Latin-1, so an em dash in a
+  Terraform `role_description` fails `apply`. They also read as machine-written.
+  Prose is not an exemption - use the ASCII equivalent everywhere.
 
 For the Python/FastAPI path the same principles map: SQLAlchemy 2.x + Alembic
 (parameterized, migration-tracked), Pydantic v2 for boundary validation, type
@@ -765,7 +775,7 @@ hints checked with a type checker (mypy or pyright), Ruff for lint/format.
 
 ## Windows: use WSL
 
-Do **CLI and IDE work** — local Claude Code, the terminal, your editor — inside
+Do **CLI and IDE work** - local Claude Code, the terminal, your editor - inside
 **WSL2** (Windows Subsystem for Linux), not native Windows. The toolchain (mise,
 uv, pnpm, OpenTofu/Terragrunt) and the shell scripts CI lints all assume a POSIX
 environment, so WSL avoids a class of path, line-ending, and shell-incompatibility
@@ -787,32 +797,32 @@ never normalized. Merge the file additively if one exists
 
 This layout is the **app** profile: a monorepo of apps + shared packages. A
 **library** / **cli** is a single package (no `/apps` split); an **infra** repo
-uses IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`)
-— see Stack; a **workspace** hosts the spine and no app code. The `/spec` spine
+uses IaC (`live/` + `modules/`, or Ansible `roles/` + `playbooks/`) -
+see Stack; a **workspace** hosts the spine and no app code. The `/spec` spine
 is identical across profiles **except** in a polyrepo: the workspace holds the
 product spine, a member only its own (`/steer:reference polyrepo`).
 
-- **`/apps`** — applications (e.g. `apps/web`), each independently
+- **`/apps`** - applications (e.g. `apps/web`), each independently
   buildable and deployable (backend placement: see Stack).
-- **`/packages`** — shared libraries consumed by apps/packages; not deployed.
-- **`/configs`** — shared tooling config (lint, base tsconfig, test presets).
-- **`/spec`** — source of truth for what the product does and
+- **`/packages`** - shared libraries consumed by apps/packages; not deployed.
+- **`/configs`** - shared tooling config (lint, base tsconfig, test presets).
+- **`/spec`** - source of truth for what the product does and
   why. Design exports: `/spec/design` (product) or
   `/spec/features/[id]/design-export/` (feature). Also `/spec/history/`
   (action history) and `/spec/tracker.md` (issue-tracker declaration).
-- **`/spec/app`** — knowledge docs: usage, workflows, roles,
+- **`/spec/app`** - knowledge docs: usage, workflows, roles,
   configuration, limitations, troubleshooting, release notes.
-- **`/spec/decisions`** — ADRs.
-- **`/spec/sources`** — **recurring**, versioned PO source documents,
+- **`/spec/decisions`** - ADRs.
+- **`/spec/sources`** - **recurring**, versioned PO source documents,
   maintained by `/steer:intake`.
-- **`/spec/reference`** — **one-off** source/research materials feeding the
+- **`/spec/reference`** - **one-off** source/research materials feeding the
   spec. The `/steer:reference` prose ships with the plugin, not here.
-- **`/infra`** — infrastructure-as-code and deploy scripts.
-- **`/policy`** — org policy data: version pins, branch protection.
-- **`ARCHITECTURE.md`** (root) — *how it's built*: stack, the apps/packages
+- **`/infra`** - infrastructure-as-code and deploy scripts.
+- **`/policy`** - org policy data: version pins, branch protection.
+- **`ARCHITECTURE.md`** (root) - *how it's built*: stack, the apps/packages
   map, request flow. `/spec/app` is *how to use/operate it*,
   `/spec/design` the *diagrams* it links to, `/spec/decisions` the *why*;
   `README.md` is the front door to all of them.
 
-Specs are organized by user-facing feature; code however the stack wants — a
+Specs are organized by user-facing feature; code however the stack wants - a
 feature may span several apps/packages (coupling rules: `/steer:spec`).

@@ -3,7 +3,7 @@
 
 steer routes plain-language asks to skills via two always-on inputs: the
 ``rules/00-router.md`` intent table and each skill's ``description`` +
-``when_to_use`` frontmatter. PLAN.md Phase 1 trims both aggressively — this
+``when_to_use`` frontmatter. PLAN.md Phase 1 trims both aggressively - this
 gate is the net that keeps trimming honest: every fixture in
 ``tests/fixtures/routing/asks.yml`` records a representative user ask, the
 skill that owns it, and the **signal keywords** that make the mapping
@@ -21,7 +21,7 @@ Checks enforced:
 
 - every fixture names an existing skill directory;
 - every fixture carries at least one signal, and each signal appears
-  (case-insensitively) in that fixture's routing surface — the union of
+  (case-insensitively) in that fixture's routing surface - the union of
   ``rules/00-router.md`` and the skill's ``description`` + ``when_to_use``;
 - asks are unique, and the fixture count never drops below the floor
   (deleting fixtures to make a trim pass is the failure mode this guards).
@@ -48,7 +48,7 @@ import yaml
 PLUGIN_ROOT = Path("plugins/steer")
 FIXTURES = Path("tests/fixtures/routing/asks.yml")
 
-# Deleting fixtures must be a deliberate, reviewed act — the floor stops a
+# Deleting fixtures must be a deliberate, reviewed act - the floor stops a
 # failing fixture from being "fixed" by removal. Raise it as coverage grows.
 MIN_FIXTURES = 40
 
@@ -104,7 +104,7 @@ def run_checks(root: Path, fixtures_path: Path) -> list[str]:
     if len(fixtures) < MIN_FIXTURES:
         errors.append(
             f"{fixtures_path}: {len(fixtures)} fixture(s), below the "
-            f"{MIN_FIXTURES}-fixture floor — routing coverage must not shrink; "
+            f"{MIN_FIXTURES}-fixture floor - routing coverage must not shrink; "
             f"fix or replace fixtures instead of deleting them."
         )
 
@@ -142,7 +142,7 @@ def run_checks(root: Path, fixtures_path: Path) -> list[str]:
             if signal.lower() not in surface:
                 errors.append(
                     f"{where}: signal '{signal}' not found in the routing surface "
-                    f"(00-router.md + {skill}'s description/when_to_use) — a trim "
+                    f"(00-router.md + {skill}'s description/when_to_use) - a trim "
                     f"removed the vocabulary this ask routes on. Restore the "
                     f"keyword somewhere always-on, or consciously update the "
                     f"fixture with the replacement vocabulary."

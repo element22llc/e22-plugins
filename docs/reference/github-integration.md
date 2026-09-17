@@ -1,14 +1,14 @@
 # GitHub Actions integration
 
 steer ships a few kinds of GitHub Actions integration. Two are installed by
-default — `claude.yml` (keeps CI Claude consistent with local sessions) and
+default - `claude.yml` (keeps CI Claude consistent with local sessions) and
 Dependabot (keeps dependencies patched, and manages the resulting PRs). Three
 more are opt-in: `steer-loop.yml`, the scheduled autonomous loop `/steer:loop`
 scaffolds on demand; a `gh aw` recipe for unattended automation; and
 `copilot-setup-steps.yml`, which preinstalls the toolchain for GitHub's cloud
 coding agent (see [Copilot support](../concepts/copilot-support.md)).
 
-## `claude.yml` — the `@claude` mention workflow (default)
+## `claude.yml` - the `@claude` mention workflow (default)
 
 `/steer:init` and `/steer:adopt` install `.github/workflows/claude.yml` (source:
 `plugins/steer/templates/github/workflows/claude.yml`). It runs
@@ -17,7 +17,7 @@ when someone mentions `@claude` on an issue or PR.
 
 ### Why it loads the steer plugin
 
-steer's whole premise is "org standards in **every** session" — injected by a
+steer's whole premise is "org standards in **every** session" - injected by a
 SessionStart hook the moment the plugin loads. Without extra wiring, the in-CI
 agent would run as a stock, standards-less Claude: no stack defaults, no
 Definition of Done, no spec/drift discipline. The shipped workflow closes that
@@ -31,7 +31,7 @@ plugins: |
 ```
 
 Once the plugin installs, its SessionStart hook injects `rules/*` exactly as it
-does locally — the in-CI agent and the local agent are governed by the same
+does locally - the in-CI agent and the local agent are governed by the same
 rules, with no duplicated system prompt.
 
 !!! warning "settings.json does not work in CI"
@@ -49,31 +49,31 @@ rules, with no duplicated system prompt.
 | `ANTHROPIC_API_KEY` | secret | always | Anthropic API auth for the action. A 401 in the log means it is missing, wrong, or mis-scoped. |
 
 No marketplace credential is required: `element22llc/e22-plugins` is a **public**
-repo, so the `plugin_marketplaces` fetch clones it anonymously over HTTPS —
+repo, so the `plugin_marketplaces` fetch clones it anonymously over HTTPS -
 `ANTHROPIC_API_KEY` is the only secret `claude.yml` needs. (While the marketplace
-was private, a shared read-only **GitHub App** — `STEER_APP_ID` /
-`STEER_APP_PRIVATE_KEY` — minted a short-lived clone token. That App and those
+was private, a shared read-only **GitHub App** - `STEER_APP_ID` /
+`STEER_APP_PRIVATE_KEY` - minted a short-lived clone token. That App and those
 org variables/secrets are no longer needed and the workflow no longer references
 them; org owners can retire them at their convenience.)
 
 Verify by mentioning `@claude` and confirming the reply reflects steer standards
-(e.g. it cites the Definition of Done) — that proves the plugin loaded, not just
+(e.g. it cites the Definition of Done) - that proves the plugin loaded, not just
 that the action ran. The workflow log's `system/init` event also lists loaded
-plugins. See the scaffold `README.md` → "GitHub Actions secrets" for the
+plugins. See the scaffold `README.md` -> "GitHub Actions secrets" for the
 product-repo-facing version of this.
 
-## Dependabot — dependency updates + scoped auto-merge (default)
+## Dependabot - dependency updates + scoped auto-merge (default)
 
 `/steer:init` and `/steer:adopt` install two files (sources under
 `plugins/steer/templates/github/`):
 
-- **`.github/dependabot.yml`** — the `github-actions` ecosystem is enabled live
+- **`.github/dependabot.yml`** - the `github-actions` ecosystem is enabled live
   (every scaffolded repo ships workflows); the `npm` / `pip` / `docker` /
   `terraform` blocks are commented out for init/adopt to **uncomment per detected
   stack** (`terraform` is the one an `infra` repo needs) (mirroring how
   `ci.yml` gates stack steps). Updates are grouped, and **major** bumps are
-  `ignore`d — they're deferred to a deliberate `policy/versions.yml` decision.
-- **`.github/workflows/dependabot-auto-merge.yml`** — auto-approves Dependabot
+  `ignore`d - they're deferred to a deliberate `policy/versions.yml` decision.
+- **`.github/workflows/dependabot-auto-merge.yml`** - auto-approves Dependabot
   **patch/minor** PRs, waits for the required `ci` check, then merges that single
   PR. **Major** bumps are never auto-merged; they get a "left for a human" comment.
 
@@ -82,25 +82,25 @@ product-repo-facing version of this.
 steer normally requires a human-approved PR before anything lands on `main`. The
 auto-merge workflow is a **deliberate, documented exception**: dependency bumps
 don't touch application logic, so the human *review* is waived. It is **not** a
-waiver of the tests — the workflow waits for the required `ci` check to go green
+waiver of the tests - the workflow waits for the required `ci` check to go green
 before it merges, so a bump that breaks tests, lint, or the version-pin scan never
 lands. **CI, not a human, is what guarantees the bump is safe.** The exception is
 declared in `policy/branch-protection.yml` and the scaffold `README.md`
 branch-protection section.
 
-!!! note "Auto-merge is scoped to Dependabot — no repo-wide switch"
+!!! note "Auto-merge is scoped to Dependabot - no repo-wide switch"
     The merge is gated by the workflow's
     `if: github.event.pull_request.user.login == 'dependabot[bot]'` guard and uses a
     direct single-PR merge. The guard reads the PR's **author**, deliberately not
-    `github.actor` — that names the last actor to touch the context, so a crafted
+    `github.actor` - that names the last actor to touch the context, so a crafted
     HEAD commit can make it report `dependabot[bot]` while the rest of the branch is
     the attacker's. It deliberately does **not** enable
     GitHub's repo-wide `allow_auto_merge` setting, which would expose an auto-merge
     button to every PR. `gh pr checks --watch --required` watches only required
     checks, so the job never deadlocks on its own non-required run.
 
-`/steer:protect` enables the repo settings the exception relies on — Dependabot
-**alerts** and **security updates** (so security PRs get opened) — alongside secret
+`/steer:protect` enables the repo settings the exception relies on - Dependabot
+**alerts** and **security updates** (so security PRs get opened) - alongside secret
 scanning. It configures settings only; the merge itself is enacted by the workflow.
 `/steer:sync` keeps both files wired (the `dependency-automation` capability).
 
@@ -113,7 +113,7 @@ protection to every entry in its `protected_branches` list, not just `main`.
 This is how the [deployment standard](../concepts/deployment.md) enforces its
 production gate without GitHub Enterprise. Promotion to production is a **reviewed
 PR from `main` into `prod`**; the required-review approval on that PR *is* the
-production approval — it stands in for the deployment-environment approvals that
+production approval - it stands in for the deployment-environment approvals that
 only GitHub Enterprise provides. Merging the `prod` PR auto-deploys production, and
 nothing is ever pushed to `prod` directly.
 
@@ -122,35 +122,35 @@ nothing is ever pushed to `prod` directly.
 policy file and the protection in step as the plugin evolves.
 
 Because `ci` is a *required* check on `prod`, the shipped `ci.yml` must trigger on
-PRs targeting `prod` as well as `main` — its `pull_request.branches` is
+PRs targeting `prod` as well as `main` - its `pull_request.branches` is
 `[main, prod]`. A repo whose `ci.yml` predates that (or was forked from it) sees the
 promotion PR wait forever on a check that never reports; add `prod` to the trigger to
 clear it. See
 [Deployment & environments](../concepts/deployment.md#promotion) for the full
 promotion model.
 
-## `steer-loop.yml` — the scheduled autonomous loop (on demand)
+## `steer-loop.yml` - the scheduled autonomous loop (on demand)
 
 `/steer:loop` instantiates `.github/workflows/steer-loop.yml` from
 `plugins/steer/templates/github/workflows/steer-loop.yml`. It is **not**
 bootstrapped by `/steer:init` or `/steer:adopt` and is deliberately absent from
-`MANIFEST.md`'s install map — a repo runs a loop only when someone asks for one
+`MANIFEST.md`'s install map - a repo runs a loop only when someone asks for one
 (rule `53-autonomous-loops`).
 
 It is steer's own **unattended** path: the template ships a `schedule:` trigger
 defaulting to weekday mornings (`cron: "0 13 * * 1-5"`, 13:00 UTC), which
 `/steer:loop` confirms or adjusts with the dev at scaffold time, plus a
 `workflow_dispatch` so the loop can be tested before its first scheduled run.
-Keep the cadence modest — an hourly loop burns API budget and opens draft-PR
+Keep the cadence modest - an hourly loop burns API budget and opens draft-PR
 noise. `/steer:loop verify` checks an installed loop; `/steer:loop remove` takes
 it back out.
 
-## Agentic workflows (`gh aw`) — optional, opt-in
+## Agentic workflows (`gh aw`) - optional, opt-in
 
 [GitHub Agentic Workflows](https://github.com/githubnext/gh-aw) (`gh aw`) is a
 GitHub Next tool for authoring CI automation as natural-language Markdown that
-**compiles** to a standard Actions `.lock.yml`. It can run **unattended** — on
-repository events or a schedule, with no `@claude` mention — which `claude.yml`
+**compiles** to a standard Actions `.lock.yml`. It can run **unattended** - on
+repository events or a schedule, with no `@claude` mention - which `claude.yml`
 cannot do, since it only reacts to `@claude`. (steer's own unattended path is
 `steer-loop.yml`, above; gh-aw differs in authoring CI automation as
 natural-language Markdown rather than a fixed loop.)
@@ -160,17 +160,17 @@ steer ships **one example** workflow,
 runs when an issue is opened/reopened and classifies it against the steer label
 taxonomy and Issue Types). It is **not** installed by `/steer:init` or
 `/steer:adopt` and is deliberately absent from `MANIFEST.md`'s install map
-(the manifest names the directory only to say it does not ship) — you opt in
+(the manifest names the directory only to say it does not ship) - you opt in
 deliberately.
 
 That label taxonomy is bootstrapped by the local `/steer:issues` lifecycle, which
-runs `gh label create --force` inline for repo-level label setup — the one
+runs `gh label create --force` inline for repo-level label setup - the one
 sanctioned exception to routing all tracker I/O through the issue-scoped
 `/steer:tracker-sync` gateway, which has no op for repo-level label creation.
 
 ### Why it is not in the default scaffold
 
-- gh-aw is a self-described **research demonstrator** — *"not a product, not even
+- gh-aw is a self-described **research demonstrator** - *"not a product, not even
   a technical preview."* Committing it into every product repo would couple
   steer's deterministic, SHA-pinned, human-gated posture to a preview tool.
 - It overlaps with steer's own issue lifecycle. `/steer:issues triage` (via
@@ -184,11 +184,11 @@ sanctioned exception to routing all tracker I/O through the issue-scoped
 1. Install the CLI: `gh extension install github/gh-aw`.
 2. Copy `plugins/steer/templates/github/agentic/triage.md` into your repo's
    `.github/workflows/` and adapt it.
-3. Compile: `gh aw compile triage.md` → produces `triage.lock.yml`.
-4. **Review the generated lock file before trusting it** — confirm the only
+3. Compile: `gh aw compile triage.md` -> produces `triage.lock.yml`.
+4. **Review the generated lock file before trusting it** - confirm the only
    write-backs are the declared `safe-outputs` (the example is advisory-only: it
    relabels, sets the Issue Type, and comments, but never closes issues or
-   resolves product/technical questions — those stay human-gated) and confirm
+   resolves product/technical questions - those stay human-gated) and confirm
    every action it references is **SHA-pinned** (gh-aw pins by default; keep it).
 5. Set `ANTHROPIC_API_KEY` (the example uses the Claude engine, consistent with
    local sessions) and commit both files.

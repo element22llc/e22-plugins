@@ -1,9 +1,9 @@
-# Workspace (polyrepo spine host) mise.toml — REPLACES the core one. Every task is
+# Workspace (polyrepo spine host) mise.toml - REPLACES the core one. Every task is
 # `ws:`-prefixed: this file is an ancestor config in every member, so an unprefixed
 # name would shadow a member's. Rationale: /steer:reference polyrepo -> "Every workspace task is ws:-prefixed".
 # steer:allow-comments the density here is the commented-out [monorepo] block plus traps about task-name resolution
 
-# Monorepo mode — uncomment once a member is cloned. `monorepo_root` is a TOP-LEVEL key:
+# Monorepo mode - uncomment once a member is cloned. `monorepo_root` is a TOP-LEVEL key:
 # it must stay ABOVE [settings]; uncomment in place. Leave `[monorepo].lockfile` unset.
 # monorepo_root = true
 
@@ -18,7 +18,7 @@ lockfile = true
 experimental = true
 
 [tools]
-# Agent-runtime baseline — never prune; /steer:intake converts PO documents here, at the spine host.
+# Agent-runtime baseline - never prune; /steer:intake converts PO documents here, at the spine host.
 node = "latest"
 python = "latest"
 uv = "latest"

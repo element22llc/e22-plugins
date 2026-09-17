@@ -1,74 +1,74 @@
-# Audit dimensions — the standards catalogue behind `/steer:audit code`
+# Audit dimensions - the standards catalogue behind `/steer:audit code`
 
 The standards dimensions `/steer:audit` `code` mode sweeps, anchored to the
 baseline (`rules/85-practices.md`, Definition of Done, the high-risk rule) and
-the productionization brief — **not** a generic checklist. Skip any dimension
+the productionization brief - **not** a generic checklist. Skip any dimension
 that doesn't apply to the repo (e.g. design on a backend-only service) and say
 so in the report.
 
-1. **Spec conformance & coverage** *(needs `/spec`)* — user-facing features with
+1. **Spec conformance & coverage** *(needs `/spec`)* - user-facing features with
    no `intent.md`/`contract.md`; `contract.md` sections stale vs the real code;
    hard-to-reverse choices baked into the code with no ADR under
    `/spec/decisions/`.
-2. **Architecture & boundaries** — fat route handlers; domain logic living in UI
+2. **Architecture & boundaries** - fat route handlers; domain logic living in UI
    components or handlers instead of shared testable modules; server-first
    violations (secrets/DB access leaking client-side); broken package boundaries.
-3. **Data layer** — raw or string-interpolated SQL instead of a parameterized
+3. **Data layer** - raw or string-interpolated SQL instead of a parameterized
    query layer; schema changed outside committed, reviewed migrations.
-4. **Input validation & config** — external inputs (requests, external API
+4. **Input validation & config** - external inputs (requests, external API
    responses, env vars) used without boundary validation; scattered raw env reads
    instead of one validated config module.
-5. **Error handling & escape hatches** — swallowed errors / empty `catch`;
+5. **Error handling & escape hatches** - swallowed errors / empty `catch`;
    unexpected errors not reported with context (Sentry gaps); escape hatches
    without a why-comment (`any`, `@ts-ignore`/`@ts-expect-error`, wholesale
    lint-rule disabling).
-6. **Testing** — untested domain logic; bug-fix commits with no regression test;
+6. **Testing** - untested domain logic; bug-fix commits with no regression test;
    high-risk areas without coverage.
-7. **Toolchain & dependency health** — outdated dependencies; missing or drifted
+7. **Toolchain & dependency health** - outdated dependencies; missing or drifted
    lockfiles (`mise.lock`, `pnpm-lock.yaml`, `uv.lock`, `.terraform.lock.hcl`);
    unpinned toolchain versions. On a GitHub-tracked repo, also note if `main`
-   lacks branch protection (the real PR gate) — route to `/steer:protect` to
+   lacks branch protection (the real PR gate) - route to `/steer:protect` to
    verify/apply against `policy/branch-protection.yml`; do not query or change
    settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
    declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
-   intentional — *not* drift. But check whether the repo has **outgrown**
+   intentional - *not* drift. But check whether the repo has **outgrown**
    solo-trunk: a second collaborator (`gh api repos/{owner}/{repo}/collaborators
    --jq 'length'` > 1), a `prod`/`production` branch, or a deploy target (a deploy
    workflow / `infra/` tree). If any holds, **escalate** from "recommend later" to
-   "graduation conditions met — run `/steer:protect apply` now to raise the PR
+   "graduation conditions met - run `/steer:protect apply` now to raise the PR
    wall"; if none, report solo-trunk as expected and note graduation is optional
    until the MVP works. **A recorded graduation waiver**
    (`<!-- steer:graduation=waived -->` in `CLAUDE.md`, written by
    `/steer:protect waive`) answers the *local* signals: report them as expected
-   and do not escalate on them. The second-collaborator check still applies —
+   and do not escalate on them. The second-collaborator check still applies -
    a count > 1 voids the waiver, and that is the finding to escalate. (The
    SessionStart `check-graduation.sh` hook nudges on the local signals and is
    silent when waived; this is the networked, on-demand confirmation.)
-8. **Design consistency** *(UI repos only)* — `DESIGN.md` drift vs the code;
+8. **Design consistency** *(UI repos only)* - `DESIGN.md` drift vs the code;
    styling that recurs in **3+ places** but isn't promoted to a token/component
    (the `DESIGN.md` 3+ rule).
-9. **DX & docs** — README quickstart that no longer matches reality;
-   `ARCHITECTURE.md` stale vs the code — stack table diverged from
+9. **DX & docs** - README quickstart that no longer matches reality;
+   `ARCHITECTURE.md` stale vs the code - stack table diverged from
    `package.json` / `mise.toml`, or the apps/packages map missing/naming a
    directory that doesn't match `apps/*`+`packages/*`; `mise.toml` missing the
-   entry points a contributor needs **for its profile** — the core scaffold's are
+   entry points a contributor needs **for its profile** - the core scaffold's are
    `dev:setup` (idempotent env bootstrap) plus the `docker:*` / `db:*` pairs, an
    **infra** repo's are `infra:fmt`/`validate`/`plan`, and a **workspace** repo holds
    no code so its tasks are all `ws:`-prefixed with no `dev:setup` at all. Check
    against the profile, not the core list. Do **not** flag a missing `test` or `lint`
    task: per the Stack rule those live in `package.json` (Node) or the Python
    toolchain, and a `mise` task only ever delegates to them.
-10. **Comment noise** — comments that restate the code or narrate steps; banner
+10. **Comment noise** - comments that restate the code or narrate steps; banner
     and divider comments; commented-out code; task or history narration; doc
     comments on internals; rationale essays inline in `mise.toml`, `compose.yaml`,
     Dockerfiles or CI instead of the reference prose / `ARCHITECTURE.md`. Cite
-    the densest files (comment lines above a third of the file — where the
+    the densest files (comment lines above a third of the file - where the
     write-time hook blocks; it advises from a fifth), not every line; the fix is
     `/simplify`-class cleanup, so route it there rather than listing lines. A
-    file carrying `steer:allow-comments <reason>` has already been triaged —
+    file carrying `steer:allow-comments <reason>` has already been triaged -
     report it only if the recorded reason no longer holds.
 
-**Out of scope of every dimension** — correctness bugs, security
+**Out of scope of every dimension** - correctness bugs, security
 vulnerabilities, and mechanical cleanup are delegated, never re-run by the
 audit; the operative routing lives in `/steer:audit`'s Boundaries note
 (`/code-review`, `/security-review`, `/simplify`).

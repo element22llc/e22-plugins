@@ -1,4 +1,4 @@
-# steer canonical enum registry — the single machine-readable source of
+# steer canonical enum registry - the single machine-readable source of
 # truth for the controlled vocabularies the workflow uses.
 #
 # Format: strict, line-oriented, shell- AND python-parseable. Each non-comment

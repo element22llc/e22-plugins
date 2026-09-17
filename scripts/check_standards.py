@@ -14,7 +14,7 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
 4. Every ``/steer:<skill>`` slash reference resolves to a real skill (no phantom
    skill), and no stale ``/e22-*`` reference survives the rebrand. This one check
    also scans **root markdown** (see ``ROOT_MD_EXCLUDE``), which ships nothing but
-   is read by every contributor — the asymmetry where `README.md` could keep
+   is read by every contributor - the asymmetry where `README.md` could keep
    slash-prefixed legacy tokens that shipped files contort their prose to avoid.
    Prose whose whole point is to show the old form opts out with
    ``<!-- steer-legacy-ok -->`` (see ``LEGACY_OK_MARKER``).
@@ -24,7 +24,7 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
    appears nowhere.
 6. MANIFEST.md install-map sources exist, and every file under scaffold/ is
    declared in the map (reverse coverage). NOTE: migration-ledger targets are
-   **not** machine-checked — MIGRATIONS.md entries are prose (a rename's source
+   **not** machine-checked - MIGRATIONS.md entries are prose (a rename's source
    must be absent and its destination present, expressed as `git mv` plus greps),
    which no reliable parser extracts; they are verified in review instead. Do not
    read this check as covering them.
@@ -32,23 +32,23 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
 8. Cross-field invariants (registry internal consistency; approval-evidence
    fields present in the intent template).
 9. Installed payload (templates/scaffold, templates/spec, templates/reference)
-   carries no org-specific brand — the scaffold stays client-agnostic.
+   carries no org-specific brand - the scaffold stays client-agnostic.
 10. Hand-maintained rule/skill enumerations (CLAUDE.md skills block, the
     ``standards`` skill's rule list, CROSS-SURFACE.md's rule count + SessionStart
-    hook roster) stay in sync with what's actually on disk — so a new rule/skill
+    hook roster) stay in sync with what's actually on disk - so a new rule/skill
     can't silently desync the docs the way it did before this guard existed.
 11. A skill that is ``user-invocable: false`` is never presented to a human as a
     bare imperative (``Run /steer:X``) in a user-facing surface (SessionStart hook
-    notices, installed scaffold/spec docs) — typing it is rejected by the harness,
+    notices, installed scaffold/spec docs) - typing it is rejected by the harness,
     so such surfaces must route to a callable front door or attribute it to Claude.
 12. A skill that invokes a bundled plugin helper script (``scripts/*.sh|*.py`` via
     ``sh``/``bash``/``python[3]``/``uv run``, in SKILL.md *or* a factored-out body
-    like PROCEDURE.md) pre-authorizes that script in its ``allowed-tools`` —
+    like PROCEDURE.md) pre-authorizes that script in its ``allowed-tools`` -
     otherwise ``/steer:<skill>`` prompts the user on every run (the prompt-spam
     class from issue #266). Scoped to the plugin-script family, the one command
     family whose mere mention is unambiguously an execution (the mise/git/gh/pnpm
-    families are prose-heavy — a read-only skill *names* ``mise run dev:setup`` as
-    the contract it verifies without ever running it — so they can't be classified
+    families are prose-heavy - a read-only skill *names* ``mise run dev:setup`` as
+    the contract it verifies without ever running it - so they can't be classified
     mechanically without false positives).
 13. The **workspace** scaffold's ``mise.toml`` defines only ``ws:``-prefixed tasks
     (plus a small allowlist of names it shares byte-identically with the core
@@ -56,7 +56,7 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     the commented ``monorepo_root`` line stays above ``[settings]``. Members are
     cloned INSIDE the workspace and mise loads every ancestor config, so this file
     is loaded in every member: an unprefixed task name silently shadows any member
-    that does not define it (issue #415 — an unprefixed ``dev`` made ``mise run
+    that does not define it (issue #415 - an unprefixed ``dev`` made ``mise run
     dev`` in a member boot the whole product; an unprefixed ``docker:clean`` in a
     compose-less member dropped every member's volumes), and ``monorepo_root``
     under ``[settings]`` is an unknown field mise ignores, so monorepo mode never
@@ -94,7 +94,7 @@ CROSS_SURFACE = Path("CROSS-SURFACE.md")
 SCAN_DIRS = ["rules", "skills", "templates"]
 
 # Root markdown is scanned by the *command-ref* check only (check 4), not by the
-# token-membership checks — those are about the shipped enum contract, which root
+# token-membership checks - those are about the shipped enum contract, which root
 # prose is not party to. Scanning it at all closes a real asymmetry: shipped files
 # contort their prose to satisfy the stale-`/e22-*` guard while root files, which
 # every contributor reads first, were never checked.
@@ -105,11 +105,11 @@ SCAN_DIRS = ["rules", "skills", "templates"]
 # edits the next merge discards. Entry wording is reviewed at fragment time.
 ROOT_MD_EXCLUDE = {"CHANGELOG.md"}
 
-# Opt-out for prose whose whole point is to show the pre-rebrand form — a
+# Opt-out for prose whose whole point is to show the pre-rebrand form - a
 # migration note is *less* useful without the old token. Section-scoped: the
 # marker exempts the stale-token check from where it appears until the next
 # Markdown heading, so it can't silently widen past the section that needs it.
-# It does NOT exempt the `/steer:<skill>` resolution check — a phantom skill is a
+# It does NOT exempt the `/steer:<skill>` resolution check - a phantom skill is a
 # defect in any prose, historical or not.
 LEGACY_OK_MARKER = "<!-- steer-legacy-ok -->"
 
@@ -148,7 +148,7 @@ def _iter_md(dirs: list[str]):
 
 
 def _iter_root_md():
-    """Repo-root markdown — ships nothing, but every contributor reads it."""
+    """Repo-root markdown - ships nothing, but every contributor reads it."""
     for p in sorted(Path().glob("*.md")):
         if p.name not in ROOT_MD_EXCLUDE:
             yield p
@@ -168,7 +168,7 @@ def check_when_to_use_format(errors: list[str]) -> None:
             # Formatting check, NOT a YAML parse. Flag only genuinely fragile
             # forms: a single-quoted scalar with an inner single-quote, or a
             # double-quoted scalar that is not closed. A plain bare scalar
-            # (including internal apostrophes — legal in YAML) and a folded/literal
+            # (including internal apostrophes - legal in YAML) and a folded/literal
             # block scalar are fine.
             ok = True
             if val.startswith("'"):
@@ -178,7 +178,7 @@ def check_when_to_use_format(errors: list[str]) -> None:
             if not ok:
                 errors.append(
                     f"{skill_md}:{i + 1}: when_to_use is a fragile quoted scalar "
-                    f"(single-quoted with inner quote, or unclosed) — use a folded "
+                    f"(single-quoted with inner quote, or unclosed) - use a folded "
                     f"(>-) or double-quoted scalar"
                 )
             break
@@ -213,7 +213,7 @@ def _hint_subcommands(hint: str) -> set[str]:
         tok = tok.strip()
         if not tok:
             continue
-        # placeholders: anything with a space, <…>, #, --flag, ellipsis, or a
+        # placeholders: anything with a space, <...>, #, --flag, ellipsis, or a
         # trailing -id (feature-id) / known arg words.
         if " " in tok:
             # only "verb <arg>" forms are subcommands (e.g. `approve <feature-id>`,
@@ -273,7 +273,7 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
                 )
         # Only skills whose every argument-hint alternative is a bare keyword
         # (no positional placeholder like feature-id, no `<op>` sublayer) can have
-        # their cross-references mode-validated — otherwise a trailing token is
+        # their cross-references mode-validated - otherwise a trailing token is
         # indistinguishable from a feature-id argument. work / issues
         # qualify; spec (positional) and tracker-sync (`issue <op>`) don't.
         if hint_m and _is_subcommand_leading(hint_m.group(1)):
@@ -308,7 +308,7 @@ def check_commands_gone(errors: list[str]) -> None:
 
 # Skill names dropped the distinctive ``e22-`` prefix in the rebrand, so a "bare"
 # skill reference (e.g. ``/spec``) is now indistinguishable from the ``/spec``
-# directory and ordinary path tokens — there is no reliable bare-ref check to make.
+# directory and ordinary path tokens - there is no reliable bare-ref check to make.
 # Instead we (a) verify every ``/steer:<skill>`` resolves to a real skill, and
 # (b) reject any stale ``/e22-*`` slash reference left over from before the rebrand.
 _STALE_E22_RE = re.compile(r"(?<![A-Za-z0-9])/e22-[a-z][a-z-]*")
@@ -331,7 +331,7 @@ def check_command_refs(errors: list[str], skills: set[str]) -> None:
             if not legacy_ok:
                 for m in _STALE_E22_RE.finditer(line):
                     errors.append(
-                        f"{md}:{i}: stale '{m.group(0)}' — rebrand to the '/steer:' "
+                        f"{md}:{i}: stale '{m.group(0)}' - rebrand to the '/steer:' "
                         f"namespace, or mark a deliberate historical reference with "
                         f"'{LEGACY_OK_MARKER}' in its section"
                     )
@@ -358,14 +358,14 @@ def check_enums_md_agrees(errors: list[str], reg: dict[str, list[str]]) -> None:
 
 
 def check_crosswalk(errors: list[str], reg: dict[str, list[str]]) -> None:
-    """The published Status↔state crosswalk in ISSUE-WORKFLOW.md must cover every
+    """The published Status<->state crosswalk in ISSUE-WORKFLOW.md must cover every
     issue_state and every feature_status token, so it can't silently drift from the
     registry when a new state/status is added."""
     if not ISSUE_WORKFLOW_PATH.is_file():
         errors.append(f"{ISSUE_WORKFLOW_PATH}: missing")
         return
     text = ISSUE_WORKFLOW_PATH.read_text(encoding="utf-8")
-    heading = "### Spec `Status:` ↔ issue `steer:state` crosswalk"
+    heading = "### Spec `Status:` <-> issue `steer:state` crosswalk"
     start = text.find(heading)
     if start == -1:
         errors.append(f"ISSUE-WORKFLOW.md: missing the '{heading}' crosswalk section")
@@ -384,7 +384,7 @@ def check_crosswalk(errors: list[str], reg: dict[str, list[str]]) -> None:
 
 def _strip_category(cell: str) -> str:
     cell = cell.split(" (")[0]
-    cell = cell.split(" — ")[0]
+    cell = cell.split(" - ")[0]
     return cell.strip()
 
 
@@ -405,7 +405,7 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
 
     for md in _iter_md(SCAN_DIRS):
         rel = md.relative_to(PLUGIN_ROOT)
-        # managed-block fixtures are migration test data — they intentionally
+        # managed-block fixtures are migration test data - they intentionally
         # carry legacy/unknown markers (e.g. a deprecated kind) and are exempt.
         if "fixtures/managed-block" in rel.as_posix():
             continue
@@ -438,7 +438,7 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
                 for t in tokens(m.group(1)):
                     if t not in rbef:
                         errors.append(f"{loc}: required_before token '{t}' not in registry")
-            # `created:` is optional and a date, not an enum — when present it must
+            # `created:` is optional and a date, not an enum - when present it must
             # be YYYY-MM-DD so the staleness clock can read it (empty = unset).
             m = re.match(r"^\s*-\s*created:\s*(.*)$", line)
             if m:
@@ -455,7 +455,7 @@ def check_token_membership(errors: list[str], reg: dict[str, list[str]]) -> None
                         errors.append(f"{loc}: {key} value '{mm.group(1)}' not in registry")
             if _DEPRECATED_NEXT_ACTION.search(line):
                 errors.append(
-                    f"{loc}: deprecated category 'Required before production' — use "
+                    f"{loc}: deprecated category 'Required before production' - use "
                     f"'Required before initial production' / 'next production release'"
                 )
         # next-action category cells inside next-action tables
@@ -500,7 +500,7 @@ def check_manifest(errors: list[str]) -> None:
         for src in re.findall(r"`([^`]+)`", parts[0]):
             for one in re.split(r",\s*", src):
                 one = one.strip()
-                if not one or "*" in one or one.endswith("…") or one.endswith("/…"):
+                if not one or "*" in one or one.endswith("...") or one.endswith("/..."):
                     continue  # globs / described dirs
                 if not (scaffold / one).exists():
                     errors.append(f"{manifest}:{i}: source '{one}' not found under scaffold/")
@@ -517,7 +517,7 @@ def check_manifest_reverse(errors: list[str]) -> None:
     # Collect declared sources that resolve under scaffold/. Rows whose source
     # starts with `../` point at sibling template dirs (templates/spec,
     # templates/github), not files here, so they're irrelevant to this walk.
-    # Keep globs and `…` dir markers — here they're matched against files, not
+    # Keep globs and `...` dir markers - here they're matched against files, not
     # skipped as in the forward check.
     declared: list[str] = []
     for line in manifest.read_text(encoding="utf-8").splitlines():
@@ -536,8 +536,11 @@ def check_manifest_reverse(errors: list[str]) -> None:
         for pat in declared:
             if rel == pat or fnmatch.fnmatch(rel, pat):
                 return True
-            if pat.endswith("…"):  # described dir, e.g. `infra/…`
-                prefix = pat.rstrip("…").rstrip("/")
+            if pat.endswith("..."):  # described dir, e.g. `infra/...`
+                # removesuffix, not rstrip: the marker used to be a single ellipsis
+                # character, where rstrip was exact. "..." is three characters, and
+                # rstrip would strip any run of dots - including a legitimate one.
+                prefix = pat.removesuffix("...").rstrip("/")
                 if prefix and rel.startswith(prefix + "/"):
                     return True
         return False
@@ -551,7 +554,7 @@ def check_manifest_reverse(errors: list[str]) -> None:
         if not covered(rel):
             errors.append(
                 f"{manifest}: scaffold file '{rel}' is not listed in the MANIFEST "
-                "install-map — add a row so it gets installed"
+                "install-map - add a row so it gets installed"
             )
 
 
@@ -583,7 +586,7 @@ def _token_present(name: str, haystack: str) -> bool:
 def _sessionstart_hook_basenames() -> set[str]:
     """Basenames of every SessionStart hook script *registered* in hooks.json.
 
-    Registration only — the checks `session-checks.sh` orchestrates are not here.
+    Registration only - the checks `session-checks.sh` orchestrates are not here.
     Use `_session_subchecks()` for those; the roster check asserts both.
     """
     data = json.loads(HOOKS_JSON.read_text(encoding="utf-8"))
@@ -599,9 +602,9 @@ def _session_subchecks() -> set[str]:
     """Basenames of the checks `session-checks.sh` sequences in its dispatch loop.
 
     hooks.json names only the orchestrator, so deriving the roster from it alone
-    leaves every child ungated — and `session-checks.sh` instructs authors to add
+    leaves every child ungated - and `session-checks.sh` instructs authors to add
     each new check to the CROSS-SURFACE.md roster, an instruction nothing enforced.
-    Parsed from the `for _check in \\ … ; do` list, the one place the roster lives.
+    Parsed from the `for _check in \\ ... ; do` list, the one place the roster lives.
     """
     orchestrator = PLUGIN_ROOT / "hooks/session-checks.sh"
     if not orchestrator.is_file():
@@ -629,7 +632,7 @@ def check_enumeration_drift(errors: list[str], skills: set[str]) -> None:
                 f"(list every skill under plugins/steer/skills/)"
             )
 
-    # NOTE: the /steer:standards skill no longer enumerates the rule filenames —
+    # NOTE: the /steer:standards skill no longer enumerates the rule filenames -
     # it instructs "read every *.md under rules/ in lexical order", which fully
     # specifies the behavior without a hand-maintained list to keep in sync (the
     # maintenance trap this check used to guard). See #276.
@@ -722,7 +725,7 @@ def check_cross_field(errors: list[str], reg: dict[str, list[str]]) -> None:
 # --- check 9: git-authorization + workflow-ownership coherence ---
 
 # The contradictory "do not commit until approval" phrasing that Rule 45 (commit
-# autonomy) forbids — init/adopt must not reintroduce it.
+# autonomy) forbids - init/adopt must not reintroduce it.
 _NO_COMMIT_RE = re.compile(
     r"(?i)(nothing\s+(?:is\s+)?committed|commit\s+nothing|do\s+not\s+commit)"
     r"[^.\n]*until[^.\n]*approv"
@@ -743,7 +746,7 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(f"{rule}: must state 'Commit without asking' (commit autonomy)")
         if "Merging the PR is the one step that waits for the dev" not in t:
             errors.append(
-                f"{rule}: must state the merge gate — 'Merging the PR is the one step "
+                f"{rule}: must state the merge gate - 'Merging the PR is the one step "
                 f"that waits for the dev' (two-state delivery autonomy)"
             )
         if "Merge and deploy stay" not in t:
@@ -751,7 +754,7 @@ def check_authorization(errors: list[str]) -> None:
         if "propose opening the PR" in t:
             errors.append(
                 f"{rule}: 'propose opening the PR' is the retired pre-push human "
-                f"checkpoint — pushing and opening the PR are autonomous; the merge "
+                f"checkpoint - pushing and opening the PR are autonomous; the merge "
                 f"review is the gate"
             )
 
@@ -764,7 +767,7 @@ def check_authorization(errors: list[str]) -> None:
         p = PLUGIN_ROOT / rel
         if p.is_file() and _NO_COMMIT_RE.search(p.read_text(encoding="utf-8")):
             errors.append(
-                f"{p}: contradicts Rule 45 — drop 'nothing committed until approval'; "
+                f"{p}: contradicts Rule 45 - drop 'nothing committed until approval'; "
                 f"commit, push, and the PR are autonomous, only the merge waits for the dev"
             )
 
@@ -783,7 +786,7 @@ def check_authorization(errors: list[str]) -> None:
         for delivery_op in ("Bash(git push)", "Bash(gh pr create:*)"):
             if delivery_op not in allow:
                 errors.append(
-                    f"{settings}: '{delivery_op}' must be under permissions.allow — "
+                    f"{settings}: '{delivery_op}' must be under permissions.allow - "
                     f"push + PR-open are autonomous delivery (rule 45); the merge "
                     f"review is the human gate"
                 )
@@ -797,7 +800,7 @@ def check_authorization(errors: list[str]) -> None:
             errors.append(f"{settings}: '{merge}' must be under permissions.ask, not allow")
         if merge not in ask:
             errors.append(
-                f"{settings}: '{merge}' must be listed under permissions.ask — the "
+                f"{settings}: '{merge}' must be listed under permissions.ask - the "
                 f"merge is the one human delivery gate (rule 45)"
             )
         if "Bash(git commit:*)" not in allow:
@@ -805,19 +808,19 @@ def check_authorization(errors: list[str]) -> None:
         if "Bash(git rev-parse:*)" not in allow:
             errors.append(
                 f"{settings}: 'Bash(git rev-parse:*)' should stay under permissions.allow "
-                f"(read-only; steer machinery invokes it constantly — see issue #170)"
+                f"(read-only; steer machinery invokes it constantly - see issue #170)"
             )
         # Issue-first (rule 36) authorizes autonomous tracker-metadata writes on an
         # explicit implement/capture request. Some hosts' auto-mode classifiers block
         # an unprompted `gh issue create` as an external write, making the documented
-        # find-or-create path unreachable — so the scaffold pre-authorizes the `gh`
+        # find-or-create path unreachable - so the scaffold pre-authorizes the `gh`
         # tracker-metadata write verbs under `allow` (see issue #180). The merge
         # (`gh pr merge`) stays human-gated under `ask`; these are metadata only.
         #
         # The MCP write tools (`issue_write`/`sub_issue_write`) are NOT session-allowed:
         # a bare/ad-hoc MCP issue write is a prompt-injection-reachable escape a
         # consumer's security review flags, so the scaffold keeps them under `ask`
-        # (#294). The governed autonomous path stays silent regardless — the
+        # (#294). The governed autonomous path stays silent regardless - the
         # `/steer:tracker-sync` and `/steer:report` skills pre-authorize those tools in
         # their own `allowed-tools`, which grants them for the skill's turns even when
         # the session default prompts. The `gh issue` verbs above cover the CLI-first
@@ -826,18 +829,18 @@ def check_authorization(errors: list[str]) -> None:
         # silent. `gh api`/`gh api graphql` (a mutation vector for
         # fields/milestones/relationships) and delivery stay prompted by omission.
         autonomous_issue_ops = (
-            # gh path — write verbs (#180) + dedup/capability reads
+            # gh path - write verbs (#180) + dedup/capability reads
             "Bash(gh issue create:*)",
             "Bash(gh issue edit:*)",
             "Bash(gh issue comment:*)",
             "Bash(gh issue list:*)",
             "Bash(gh issue view:*)",
             "Bash(gh auth status:*)",
-            # MCP-first path — read/dedup tools stay session-allowed. The hosted GitHub
+            # MCP-first path - read/dedup tools stay session-allowed. The hosted GitHub
             # MCP server consolidated the issue verbs: create_issue/update_issue ->
             # issue_write, get_issue -> issue_read, add_sub_issue -> sub_issue_write
             # (#264). The write tools (issue_write/sub_issue_write) sit under `ask`
-            # (#294) and are re-granted per-skill via allowed-tools — see the forbidden
+            # (#294) and are re-granted per-skill via allowed-tools - see the forbidden
             # check below.
             "mcp__github__issue_read",
             "mcp__github__add_issue_comment",
@@ -849,17 +852,17 @@ def check_authorization(errors: list[str]) -> None:
                 errors.append(
                     f"{settings}: '{issue_op}' should stay under permissions.allow "
                     f"(issue-first autonomous tracker-metadata path; host classifiers "
-                    f"otherwise prompt on every find-or-create — see issue #180 and the "
+                    f"otherwise prompt on every find-or-create - see issue #180 and the "
                     f"MCP-first create path in /steer:tracker-sync)"
                 )
         # Read-only inspection the skills run constantly (git status/diff/log/show,
         # gh pr/run/repo/label reads, the named verify tasks). These are non-mutating
-        # and the read-heavy skills (/steer:next, /audit, /issues, /sync, /work, …)
-        # invoke them on every step — leaving them prompted made the whole experience
+        # and the read-heavy skills (/steer:next, /audit, /issues, /sync, /work, ...)
+        # invoke them on every step - leaving them prompted made the whole experience
         # feel gated even though nothing risky was happening. They stay under `allow`
         # so inspection is silent; the human-gated delivery surface (push/PR/merge/
         # deploy) stays prompted by `ask`/`deny` and the `gh api`/`gh:*` ban below.
-        # `mise run` is allowed ONLY for the named verify tasks `check`/`ci` — never
+        # `mise run` is allowed ONLY for the named verify tasks `check`/`ci` - never
         # the wildcard, which would silently green-light `mise run deploy`.
         read_only_ops = (
             "Bash(git status:*)",
@@ -888,17 +891,17 @@ def check_authorization(errors: list[str]) -> None:
                 errors.append(
                     f"{settings}: '{ro_op}' should stay under permissions.allow "
                     f"(read-only inspection the skills run constantly; prompting on it "
-                    f"is the friction this allowlist removes — keep it silent)"
+                    f"is the friction this allowlist removes - keep it silent)"
                 )
         # Rule-45-autonomous workflow moves the skills make on every unit of work:
-        # branching (switch/checkout -b — never committing to `main`), fetching to
+        # branching (switch/checkout -b - never committing to `main`), fetching to
         # branch off latest, local file moves, and the toolchain setup + run-the-app
         # tasks the PO/build flow drives itself. None reach the human-gated
-        # merge/deploy surface, so leaving them prompted was pure friction —
+        # merge/deploy surface, so leaving them prompted was pure friction -
         # sharpest in `/steer:build`, where a non-technical PO cannot answer the
         # prompt. `mise run dev` is a NAMED task, not the banned `mise run:*` wildcard,
         # so `mise run deploy` stays prompted. `git switch`/`checkout -b` are the safe
-        # branch moves (bare `git checkout -- <file>` stays prompted — it discards work).
+        # branch moves (bare `git checkout -- <file>` stays prompted - it discards work).
         autonomous_workflow_ops = (
             "Bash(git switch:*)",
             "Bash(git checkout -b:*)",
@@ -913,14 +916,14 @@ def check_authorization(errors: list[str]) -> None:
                 errors.append(
                     f"{settings}: '{wf_op}' should stay under permissions.allow "
                     f"(Rule-45-autonomous branch/fetch/move + PO-flow toolchain; "
-                    f"prompting on it is the friction this allowlist removes — it never "
+                    f"prompting on it is the friction this allowlist removes - it never "
                     f"reaches the human-gated delivery surface)"
                 )
         # A broad `mise run:*` would let `mise run deploy` through the human gate.
         for forbidden_mise in ("Bash(mise run:*)", "Bash(mise:*)"):
             if forbidden_mise in allow:
                 errors.append(
-                    f"{settings}: '{forbidden_mise}' must not be under permissions.allow — "
+                    f"{settings}: '{forbidden_mise}' must not be under permissions.allow - "
                     f"it green-lights `mise run deploy`/arbitrary tasks; allow only the "
                     f"named verify tasks (`mise run check`/`ci`)"
                 )
@@ -932,12 +935,12 @@ def check_authorization(errors: list[str]) -> None:
         for forbidden in ("Bash(gh api:*)", "Bash(gh api)", "Bash(gh:*)"):
             if forbidden in allow:
                 errors.append(
-                    f"{settings}: '{forbidden}' must not be under permissions.allow — "
+                    f"{settings}: '{forbidden}' must not be under permissions.allow - "
                     f"it grants the human-gated delivery surface (repo delete, PR merge, "
                     f"branch protection); keep `gh api` prompted"
                 )
         # Least-privilege scaffold posture (#294): these over-broad/write forms must
-        # NOT sit in `allow` — a consumer's security review flags them as allowlist
+        # NOT sit in `allow` - a consumer's security review flags them as allowlist
         # escapes / prompt-injection-reachable writes on every `/steer:sync`. The broad
         # `git remote:*` permits silent `set-url`/`add` (origin repoint -> exfil); `git
         # rm` is an unattended destructive delete; the MCP write tools are re-granted
@@ -950,13 +953,13 @@ def check_authorization(errors: list[str]) -> None:
         ):
             if forbidden in allow:
                 errors.append(
-                    f"{settings}: '{forbidden}' must not be under permissions.allow — "
+                    f"{settings}: '{forbidden}' must not be under permissions.allow - "
                     f"it is a security-review allowlist escape (#294); keep read-only "
                     f"forms in `allow` and move the write/destructive form to `ask`/`deny`"
                 )
         # The mutating `git remote` subcommands must be explicitly denied so a stale
         # consumer `allow: git remote:*` (additive reconcile never removes it) still
-        # can't repoint origin — deny outranks allow at eval time.
+        # can't repoint origin - deny outranks allow at eval time.
         deny = perms.get("deny", [])
         for required_deny in (
             "Bash(git remote set-url:*)",
@@ -967,7 +970,7 @@ def check_authorization(errors: list[str]) -> None:
             if required_deny not in deny:
                 errors.append(
                     f"{settings}: '{required_deny}' should stay under permissions.deny "
-                    f"(#294 — blocks origin-repoint exfil even if a stale `git remote:*` "
+                    f"(#294 - blocks origin-repoint exfil even if a stale `git remote:*` "
                     f"allow survives a consumer reconcile)"
                 )
 
@@ -1008,7 +1011,7 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
             continue
         if copy.read_bytes() != src.read_bytes():
             errors.append(
-                f"{copy}: scaffold copy drifted from {src_rel} — re-copy so consumer CI "
+                f"{copy}: scaffold copy drifted from {src_rel} - re-copy so consumer CI "
                 f"runs the same scanner/policy"
             )
 
@@ -1023,17 +1026,17 @@ def check_scaffold_version_copies(errors: list[str]) -> None:
 # the manifests lives outside these payload dirs. `templates/github` is the
 # single home for GitHub templates: the Issue Forms / workflows / PR template
 # under it are installed payload, and the `issue-bodies/` are plugin-internal
-# (read at runtime, not installed) — both are kept brand-free regardless.
+# (read at runtime, not installed) - both are kept brand-free regardless.
 _PAYLOAD_DIRS = [
     "templates/scaffold",
     "templates/spec",
     "templates/github",
     "templates/reference",
     # Instantiated per deployable app by /steer:build and /steer:adopt, so it
-    # lands in consumer repos like the rest — gate it identically.
+    # lands in consumer repos like the rest - gate it identically.
     "templates/docker",
     # Generated cross-tool skill surface, installed verbatim as `.agents/skills/`
-    # (scaffold MANIFEST.md) — so a brand string in a `skills/` source regenerates
+    # (scaffold MANIFEST.md) - so a brand string in a `skills/` source regenerates
     # straight into the client repo.
     "templates/agents",
 ]
@@ -1057,7 +1060,7 @@ def check_payload_debranded(errors: list[str]) -> None:
                     rel = path.relative_to(PLUGIN_ROOT)
                     errors.append(
                         f"{rel}:{lineno}: org-specific brand in installed payload "
-                        f"({line.strip()!r}) — keep the scaffold client-agnostic"
+                        f"({line.strip()!r}) - keep the scaffold client-agnostic"
                     )
 
 
@@ -1066,8 +1069,8 @@ def check_payload_debranded(errors: list[str]) -> None:
 # A skill declared `user-invocable: false` is reachable only when the model
 # invokes it (a front door routes to it). A user who *types* `/steer:<that-skill>`
 # is rejected by the harness ("This skill can only be invoked by Claude"). So any
-# surface a human reads as a to-do — a SessionStart hook notice, or the
-# human-readable docs installed into a managed repo — must not present such a skill
+# surface a human reads as a to-do - a SessionStart hook notice, or the
+# human-readable docs installed into a managed repo - must not present such a skill
 # as a bare imperative ("Run /steer:X"). Either route the user to a callable front
 # door, or attribute the action to Claude. Guards against the regression in #219;
 # generalizes to whatever set is `user-invocable: false` at any given time.
@@ -1097,7 +1100,7 @@ def _user_facing_surfaces() -> list[Path]:
     surfaces.append(PLUGIN_ROOT / "templates/scaffold/CLAUDE.md")
     surfaces.extend(sorted((PLUGIN_ROOT / "templates/spec").glob("*.md")))
     # The PR template is read by a human in the GitHub compose box, and
-    # scan-invocations.sh already scans its installed copy in consumer repos —
+    # scan-invocations.sh already scans its installed copy in consumer repos -
     # keep the two detectors' surface lists in agreement so a non-callable
     # gateway can't leak into it here and be flagged downstream instead.
     surfaces.append(PLUGIN_ROOT / "templates/github/pull_request_template.md")
@@ -1107,8 +1110,8 @@ def _user_facing_surfaces() -> list[Path]:
 def _output_blob(path: Path) -> str:
     """Collapse a file to one whitespace-normalized string for proximity scanning.
     A hook splits a single notice across many `printf` calls, so a line-based scan
-    would miss a verb and its `/steer:X` token landing on different lines — join
-    first. For shell hooks, drop whole-line comments (`# …`): they are not emitted
+    would miss a verb and its `/steer:X` token landing on different lines - join
+    first. For shell hooks, drop whole-line comments (`# ...`): they are not emitted
     to the user, so a `# /steer:sync runs on its own branch` note is not output."""
     lines = path.read_text(encoding="utf-8").splitlines()
     if path.suffix == ".sh":
@@ -1132,15 +1135,15 @@ def check_noncallable_imperatives(errors: list[str]) -> None:
                 snippet = blob[max(0, m.start() - 40) : m.start() + 30].strip()
                 errors.append(
                     f"{path}: '/steer:{m.group(1)}' is presented as a user "
-                    f"imperative, but that skill is user-invocable: false — route "
+                    f"imperative, but that skill is user-invocable: false - route "
                     f"users to a callable front door, or attribute it to Claude. "
-                    f"Near: …{snippet}…"
+                    f"Near: ...{snippet}..."
                 )
 
 
 # A skill body that invokes a *bundled* plugin helper script
 # (``${CLAUDE_PLUGIN_ROOT}/scripts/*.sh|*.py`` via sh/bash/python[3]/uv run)
-# *executes* it — unlike a product task (`mise run dev:*`) it only authors into the
+# *executes* it - unlike a product task (`mise run dev:*`) it only authors into the
 # target repo, or a command it merely names in prose. So a mention here is an
 # execution, and the skill's allowed-tools must cover it or /steer:<skill> prompts
 # the user on every run (issue #266). Anchored on ${CLAUDE_PLUGIN_ROOT} so a skill
@@ -1156,7 +1159,7 @@ _SCRIPT_INVOCATION = re.compile(
 
 def _grant_covers(interp: str, script: str, grants: list[str]) -> bool:
     """A grant covers an invocation when it names the same script under a
-    compatible interpreter — mirroring how the harness matches ``Bash(<glob>)``.
+    compatible interpreter - mirroring how the harness matches ``Bash(<glob>)``.
     """
     head = interp.split()[0]  # sh | bash | python3 | python | uv
     for grant in grants:
@@ -1198,7 +1201,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
         if not grants:
             errors.append(
                 f"{rel}: runs bundled plugin script(s) {sorted(invocations)} but "
-                f"declares no allowed-tools — add a Bash(<interp> *scripts/<name>*) "
+                f"declares no allowed-tools - add a Bash(<interp> *scripts/<name>*) "
                 f"grant so /steer:{skill_dir.name} does not prompt on every run (#266)"
             )
             continue
@@ -1206,7 +1209,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
             if not _grant_covers(interp, script, grants):
                 errors.append(
                     f"{rel}: runs scripts/{script} (via {interp.split()[0]}) but no "
-                    f"allowed-tools grant covers it — add "
+                    f"allowed-tools grant covers it - add "
                     f"Bash({interp.split()[0]} *scripts/{script}*) so "
                     f"/steer:{skill_dir.name} does not prompt mid-run (#266)"
                 )
@@ -1215,7 +1218,7 @@ def check_skill_script_grants(errors: list[str]) -> None:
 # A skill body that `.`-sources a hook helper reaches the right function by a form
 # that is not pre-approvable in practice: the source is only useful alongside the
 # calls to the functions it defines, and a permission rule matches a SINGLE command
-# string — so the compound snippet matches no rule even when its parts would (the
+# string - so the compound snippet matches no rule even when its parts would (the
 # same reason `git status && git diff` prompts). No skill grants a dot-source in any
 # form, and the check above cannot see one either, since it only recognises
 # `scripts/` calls. That combination is how /steer:setup shipped from v3.0.0 with a
@@ -1244,7 +1247,7 @@ def check_skill_helper_sourcing(errors: list[str]) -> None:
                 continue
             rel = f"skills/{skill_dir.name}/{md.relative_to(skill_dir)}"
             errors.append(
-                f"{rel}: dot-sources hooks/lib helper(s) {helpers} — a permission "
+                f"{rel}: dot-sources hooks/lib helper(s) {helpers} - a permission "
                 f"rule matches one command string, so the source plus the calls it "
                 f"enables match none, and /steer:{skill_dir.name} prompts on this "
                 f"step regardless of its grants. Wrap the reads in a "
@@ -1261,7 +1264,7 @@ _CORE_MISE = PLUGIN_ROOT / "templates/scaffold/mise.toml"
 # Unprefixed task names the workspace config is allowed to define, because a
 # member falling through to them is a NO-OP: the workspace's `run` is identical to
 # the core scaffold's, so the member gets the behaviour it would have had anyway.
-# Identity is asserted below, not assumed — a divergent copy is a silent shadow.
+# Identity is asserted below, not assumed - a divergent copy is a silent shadow.
 _WS_SHARED_TASKS = {"convert:doc"}
 
 
@@ -1283,7 +1286,7 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
     """Assert the workspace scaffold's mise tasks cannot shadow a member's (#415).
 
     Members are cloned INSIDE the workspace at the ``path:`` each declares, and mise
-    loads every ANCESTOR config — so the workspace's ``mise.toml`` is loaded in every
+    loads every ANCESTOR config - so the workspace's ``mise.toml`` is loaded in every
     member and every member worktree. A name the member also defines resolves to the
     member's (nearest config wins); a name it does NOT define falls through to the
     workspace's, with nothing in the output saying the task came from another repo.
@@ -1297,7 +1300,7 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
     text = _WS_MISE.read_text(encoding="utf-8")
     ws_tasks = _mise_tasks(_WS_MISE)
     if not ws_tasks:
-        errors.append(f"{rel}: no [tasks.*] parsed — the namespace check cannot verify this file")
+        errors.append(f"{rel}: no [tasks.*] parsed - the namespace check cannot verify this file")
         return
     core_tasks = _mise_tasks(_CORE_MISE)
 
@@ -1308,7 +1311,7 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
             continue
         if name not in _WS_SHARED_TASKS:
             errors.append(
-                f"{rel}: task `{name}` is not ws:-prefixed — the workspace config is an "
+                f"{rel}: task `{name}` is not ws:-prefixed - the workspace config is an "
                 f"ancestor config in every member, so this shadows any member that does "
                 f"not define `{name}` (#415). Rename it `ws:{name}`."
             )
@@ -1318,13 +1321,13 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
         if core is None:
             errors.append(
                 f"{rel}: task `{name}` is allowlisted as shared with the core scaffold, but "
-                f"the core scaffold defines no `{name}` — either rename it `ws:{name}` or "
+                f"the core scaffold defines no `{name}` - either rename it `ws:{name}` or "
                 f"drop it from _WS_SHARED_TASKS"
             )
         elif core.get("run") != body.get("run"):
             errors.append(
                 f"{rel}: task `{name}` is allowlisted as shared with the core scaffold but "
-                f"its `run` has drifted from it — a member falling through to this no longer "
+                f"its `run` has drifted from it - a member falling through to this no longer "
                 f"gets the behaviour it would have had, so it is a silent shadow. Re-align "
                 f"the two or rename it `ws:{name}`."
             )
@@ -1340,13 +1343,13 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
             if not isinstance(dep, str) or dep.startswith("//") or dep in allowed:
                 continue
             errors.append(
-                f"{rel}: task `{name}` depends on `{dep}` — `depends` resolves by name in the "
+                f"{rel}: task `{name}` depends on `{dep}` - `depends` resolves by name in the "
                 f"CALLER's task set, so from inside a member this binds to the member's "
                 f"`{dep}`, not this file's. Use the ws: name or a //member:task address (#415)."
             )
 
     # `monorepo_root` is a TOP-LEVEL key. TOML puts a bare key in the table above
-    # it, so the commented line must stay above `[settings]` — uncommented in place
+    # it, so the commented line must stay above `[settings]` - uncommented in place
     # under `[settings]` mise reports `unknown field: settings.monorepo_root` and
     # monorepo mode silently never turns on.
     lines = text.splitlines()
@@ -1354,13 +1357,13 @@ def check_workspace_task_namespace(errors: list[str]) -> None:
     settings = next((i for i, ln in enumerate(lines) if ln.strip() == "[settings]"), None)
     if mono is None:
         errors.append(
-            f"{rel}: no `monorepo_root =` line (commented or live) — the monorepo-mode block "
+            f"{rel}: no `monorepo_root =` line (commented or live) - the monorepo-mode block "
             f"the polyrepo reference tells consumers to uncomment is missing"
         )
     elif settings is not None and mono > settings:
         errors.append(
             f"{rel}: the `monorepo_root =` line (line {mono + 1}) sits below `[settings]` "
-            f"(line {settings + 1}) — TOML would make it `settings.monorepo_root`, an unknown "
+            f"(line {settings + 1}) - TOML would make it `settings.monorepo_root`, an unknown "
             f"field mise ignores, so uncommenting it never enables monorepo mode (#415). "
             f"Keep it above `[settings]`."
         )
@@ -1370,8 +1373,8 @@ def check_migration_precondition_converges(errors: list[str]) -> None:
     """Assert the bundled ``ci.yml`` cannot make the history migration self-matching.
 
     The ``spec/HISTORY.md`` -> ``spec/history/`` ledger entry decides "still pending?"
-    by grepping the consumer's live instruction surfaces — ``.github/workflows/ci.yml``
-    among them — for an *unescaped* mention of the old path. That same entry instructs
+    by grepping the consumer's live instruction surfaces - ``.github/workflows/ci.yml``
+    among them - for an *unescaped* mention of the old path. That same entry instructs
     copying this template's ``spec-drift`` block verbatim into the consumer. So if the
     template mentions the legacy path anywhere OTHER than the deliberate regex literal
     (``^spec/HISTORY\\.md$``, which the backslash exempts), every migrated repo carries a
@@ -1389,7 +1392,7 @@ def check_migration_precondition_converges(errors: list[str]) -> None:
     for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if bare.search(line):
             errors.append(
-                f"{rel}:{lineno}: mentions `spec/HISTORY.md` as a bare token — the history "
+                f"{rel}:{lineno}: mentions `spec/HISTORY.md` as a bare token - the history "
                 f"migration's precondition greps a consumer's ci.yml for exactly this, and "
                 f"that entry copies this block verbatim, so the migration would report "
                 f"`pending` forever and duplicate its history entry on every /steer:sync. "
@@ -1405,7 +1408,7 @@ def check_gh_pr_checks_scopes(errors: list[str]) -> None:
     ``gh pr checks`` resolves the GraphQL ``statusCheckRollup`` field, which reads check
     runs (``checks: read``) and commit statuses (``statuses: read``). A Dependabot-triggered
     run gets exactly the permissions its workflow declares, so omitting either makes the
-    field inaccessible and the step exits 1 — a red Actions run on a freshly bootstrapped
+    field inaccessible and the step exits 1 - a red Actions run on a freshly bootstrapped
     repo's first Dependabot PR (#566).
     """
     wf_dir = PLUGIN_ROOT / "templates" / "github" / "workflows"
@@ -1420,7 +1423,7 @@ def check_gh_pr_checks_scopes(errors: list[str]) -> None:
             if not re.search(rf"^\s+{scope}:\s*(read|write)\b", declared, re.MULTILINE):
                 errors.append(
                     f"{rel}: runs `gh pr checks` but its top-level `permissions:` omits "
-                    f"`{scope}: read` — the command resolves `statusCheckRollup`, which "
+                    f"`{scope}: read` - the command resolves `statusCheckRollup`, which "
                     f"needs both `checks` and `statuses`, and a Dependabot-triggered run "
                     f"gets only the declared scopes, so the step fails outright (#566)."
                 )

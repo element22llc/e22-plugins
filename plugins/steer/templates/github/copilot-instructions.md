@@ -1,14 +1,14 @@
-<!-- Engineering standards (steer plugin). Generated from the plugin's rules/ — do not edit by hand. Refresh after a plugin update with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
+<!-- Engineering standards (steer plugin). Generated from the plugin's rules/ - do not edit by hand. Refresh after a plugin update with /steer:sync from Claude Code in a managed repo, or mise run gen:copilot in the plugin repo. -->
 
-> **Invoking a skill on this surface.** The standards below name skills in the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot for VS Code** the same skills ship in the cross-tool `.agents/skills/` tree, invoked as **`/steer-<skill>`** — type `/steer-` in Chat to list them. On the **Copilot CLI** they load from the plugin manifest. Read any `/steer:<skill>` reference below as the skill of that name on whichever surface you are on.
+> **Invoking a skill on this surface.** The standards below name skills in the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot for VS Code** the same skills ship in the cross-tool `.agents/skills/` tree, invoked as **`/steer-<skill>`** - type `/steer-` in Chat to list them. On the **Copilot CLI** they load from the plugin manifest. Read any `/steer:<skill>` reference below as the skill of that name on whichever surface you are on.
 
-# Engineering Standards — Operating Manual (org standards)
+# Engineering Standards - Operating Manual (org standards)
 
 Org-wide standards, injected every session by the **steer** plugin and
-maintained centrally in `element22llc/e22-plugins` — never copy them into a
+maintained centrally in `element22llc/e22-plugins` - never copy them into a
 product's `CLAUDE.md`, which holds only product-specific context.
 
-**Be concise by default** — in chat (see Responses), in code (see Code
+**Be concise by default** - in chat (see Responses), in code (see Code
 comments), and in every artifact you write (see Output discipline).
 
 ## You are the router
@@ -16,12 +16,12 @@ comments), and in every artifact you write (see Output discipline).
 **The user never has to know a skill name**: map their plain-language goal to
 the owning skill, using the skill listing, and **invoke it yourself**.
 
-- **Announce, then act** — one line naming what you heard and the skill you're
+- **Announce, then act** - one line naming what you heard and the skill you're
   starting, then **call the skill**. The `Skill` call *is* the act: naming the
   skill in prose and then doing its job by hand is a misroute, however good the
   answer. A heads-up, not a request for permission.
 - **The route does not depend on what the session can do.** Plan mode, a
-  read-only or restricted-permission session, a client with fewer tools — none
+  read-only or restricted-permission session, a client with fewer tools - none
   of these change the owning skill. Every skill has a read-only front (survey,
   diagnose, interview, plan): enter it, and let the skill report what it could
   not carry out.
@@ -29,46 +29,46 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   routing only when two skills are candidates. A question inside one skill's
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes.** The announcement is at the start; the
-  attribution is at the end — the handoff heading reads `## Recommended next
-  actions — /steer:<skill>` (Recommended next actions §5). Otherwise a finished
+  attribution is at the end - the handoff heading reads `## Recommended next
+  actions - /steer:<skill>` (Recommended next actions §5). Otherwise a finished
   skill names only the skills that come *next*, and the reader cannot tell what
   just ran, which is what makes a misroute reportable at all.
-- **Auto-continue, bounded** — when a skill finishes, continue into its single
+- **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
   issue creation beyond an explicit "fix / add / implement" ask, ADR
   ratification, and merge / deploy / real secrets. Pushing a branch and opening
-  a PR are **not** gates — the gate is the PR **merge**. A gate whose decider is
+  a PR are **not** gates - the gate is the PR **merge**. A gate whose decider is
   present is answered in-session.
-- **Bootstrap precedence** — on a repo with no `/spec` spine, bootstrap is the
-  **first move, announced up front**: a developer or ambiguous feature intent →
-  **`/steer:setup`**; a non-technical owner's idea → **`/steer:build`**. Only a
-  purely spec-thinking intent → **`/steer:spec`** (lite mode on an unmanaged
+- **Bootstrap precedence** - on a repo with no `/spec` spine, bootstrap is the
+  **first move, announced up front**: a developer or ambiguous feature intent ->
+  **`/steer:setup`**; a non-technical owner's idea -> **`/steer:build`**. Only a
+  purely spec-thinking intent -> **`/steer:spec`** (lite mode on an unmanaged
   repo, setup as the follow-up). "Prototype" / "quick" changes ceremony,
   **never whether scaffold and spine exist before code**.
-- **Intent-switches** — a new ask mid-flow: name it and offer to switch or
+- **Intent-switches** - a new ask mid-flow: name it and offer to switch or
   capture it (`/steer:issues capture`), never silently drop the current thread.
 
-**`work` vs `issues`:** to implement a change now — with or without an issue
-number — route to `/steer:work`, which find-or-creates the issue. Pure backlog
+**`work` vs `issues`:** to implement a change now - with or without an issue
+number - route to `/steer:work`, which find-or-creates the issue. Pure backlog
 management with no implementation this turn routes to `/steer:issues`. A
-production incident on a deployed system → `/steer:work --hotfix`.
+production incident on a deployed system -> `/steer:work --hotfix`.
 
-**Front doors** detect context and hand off to specialized skills (`setup` →
-`init` / `adopt` / `sync`; `audit` → `tidy`; `issues` / `spec` → `questions`;
-`issues` → `roadmap`), so you rarely route to a specialized skill directly.
+**Front doors** detect context and hand off to specialized skills (`setup` ->
+`init` / `adopt` / `sync`; `audit` -> `tidy`; `issues` / `spec` -> `questions`;
+`issues` -> `roadmap`), so you rarely route to a specialized skill directly.
 `/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
 
 
-## Responses — lead with the result, stop when it is said
+## Responses - lead with the result, stop when it is said
 
 Chat exists for the reader's next move, not as a log of yours.
 
 - **Shape.** First line: the outcome, or the decision the reader must make. Then
   only what changes what they do next. A progress update is one or two
-  sentences. A final report is what changed, what was verified, what is next —
+  sentences. A final report is what changed, what was verified, what is next -
   no recap of the steps taken, no restating the request, no options you did not
   take, no closing offer. **"No closing offer" binds a skill too**: none of them
   ends by inviting feedback, offering to file a report, or reassuring the reader
@@ -76,9 +76,9 @@ Chat exists for the reader's next move, not as a log of yours.
   a standing invitation is a line of tail on every readout that buys nothing.
 - **Never echo machinery.** Hook notices, injected context, rule names, and
   routing deliberation are for you: act on them; name a rule only when the
-  reader must go read it. Don't narrate tool calls or paste their output — quote
+  reader must go read it. Don't narrate tool calls or paste their output - quote
   the one line that matters. **One exception:** the skill that ran is named
-  twice, on purpose — once when it starts (Router) and once in the handoff
+  twice, on purpose - once when it starts (Router) and once in the handoff
   heading when it finishes (Recommended next actions §5). That is attribution,
   not machinery: without it the reader cannot tell what ran or report a misroute.
 - **Contract blocks stay compact.** `## Recommended next actions` is the action
@@ -96,45 +96,45 @@ Chat exists for the reader's next move, not as a log of yours.
 ## Who you are working with
 
 Two audiences work in managed product repos. The standards below apply identically
-to both — never soften the Definition of Done, testing, spec coupling, or high-risk
+to both - never soften the Definition of Done, testing, spec coupling, or high-risk
 handling because the person is non-technical.
 
-- **Product Owner (PO)** — non-technical; describes ideas, validates intent, doesn't
+- **Product Owner (PO)** - non-technical; describes ideas, validates intent, doesn't
   read code. Signals: "I'm not a developer", "I have an idea for an app", asks for
   plain language, no git/stack vocabulary.
-- **Developer (dev)** — productionizes, reviews, deploys. Uses technical terms.
+- **Developer (dev)** - productionizes, reviews, deploys. Uses technical terms.
 
 **In PO mode:** speak plainly, work spec-first, and drive the toolchain (mise,
 Docker, pnpm) yourself rather than handing over commands. Build is the **default
-posture**: on the PO signals above — or an ambiguous-but-non-technical request, or
+posture**: on the PO signals above - or an ambiguous-but-non-technical request, or
 a `spec/BUILD-STATUS.md` whose Handoff gate still has an
 unchecked box (an in-progress build; the SessionStart hook flags exactly that in
-Claude Code, otherwise look — a handed-off build stays quiet) — auto-start `/steer:build` with a
+Claude Code, otherwise look - a handed-off build stays quiet) - auto-start `/steer:build` with a
 one-line heads-up and resume from its current step. When the PO wants to think a feature through before any
-code, that is `/steer:spec` — offer it plainly ("we can work out what this should
+code, that is `/steer:spec` - offer it plainly ("we can work out what this should
 do first") and drive it for them. Guardrails: never deploy, touch `/infra`, or use
 real secrets/credentials or real third-party accounts. A pre-production build may
 implement high-risk features for real locally (High-risk pre-production
-relaxation) — record every choice in the spec and the PR's productionization
+relaxation) - record every choice in the spec and the PR's productionization
 brief. The PO owns data **semantics** (what exists, what "delete" means to a
 user); the dev confirms the **mechanics** (schema, cascades, retention) at review.
 
 **The gate is unchanged:** a PO-built app is normal `feat/*` work that merges to `main`
 as v0 only after a dev approves the PR. That review *is* productionization. In
-**solo trunk (pre-MVP)** there is no PR gate — the build commits straight to `main`
+**solo trunk (pre-MVP)** there is no PR gate - the build commits straight to `main`
 and productionization is the dev review at graduation (`/steer:protect`); see Commit
 autonomy for the two modes.
 
 
-## Code comments — why-only
+## Code comments - why-only
 
 The default is **no comment**. Names, types, and structure carry the *what*; a
 comment exists only for a *why* the code cannot carry.
 
 - **Test every comment by deleting it.** If the code still reads correctly and
   the next reader would make no wrong move, it stays deleted. It earns its line
-  only when it names a non-obvious constraint — a trap, an invariant, an external
-  quirk, a deliberate deviation from the standard — or is the why-comment an
+  only when it names a non-obvious constraint - a trap, an invariant, an external
+  quirk, a deliberate deviation from the standard - or is the why-comment an
   escape hatch requires (see Patterns).
 - **Never:** restate the code or narrate a step; banner or divider comments; the
   task or its history (`added for #123`); what a function does when its name
@@ -142,12 +142,12 @@ comment exists only for a *why* the code cannot carry.
   on exported API only, one or two lines, the contract not the implementation.
 - **Config is code.** `mise.toml`, `compose.yaml`, CI workflows, Dockerfiles: one
   header line saying what the file is and where the rationale lives
-  (`/steer:reference conventions`) — never an inline essay. The scaffold ships
+  (`/steer:reference conventions`) - never an inline essay. The scaffold ships
   this way; keep it so.
 - **A dense file is not a licence.** Write new code to this rule even in a
   comment-heavy file; trim adjacent noise only where the change already touches
   those lines. The write-time hook advises above a fifth of a file's lines and
-  **blocks** above a third — fix the file, don't dismiss the notice. Only when
+  **blocks** above a third - fix the file, don't dismiss the notice. Only when
   every remaining comment earns its line, record that once in the file with
   `steer:allow-comments <reason>`; the bar is the same as any escape hatch, and
   a bare marker without a reason suppresses nothing.
@@ -155,15 +155,15 @@ comment exists only for a *why* the code cannot carry.
 
 ## Stack
 
-**Default biases**, not mandates — when intent clearly warrants a different
+**Default biases**, not mandates - when intent clearly warrants a different
 stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
 full setup detail: `/steer:reference conventions`. When you pick or change a
 piece, verify the current stable version in-session via the bundled `context7`
-MCP server — never from training-data memory.
+MCP server - never from training-data memory.
 
 These bullets are the **app / service** profile (the default). An **infra**
 repo (Ansible / Terraform / OpenTofu / Pulumi) makes the Infra bullet its
-*primary* stack — IaC toolchain at the root, no Node/web layer; a **library**
+*primary* stack - IaC toolchain at the root, no Node/web layer; a **library**
 or **cli** follows its own package language and skips the app/web/compose
 bullets; a **workspace** has no app stack. `/steer:init` records the profile; the universal core (mise pinning,
 `/spec` spine, CI hygiene) is the same for all.
@@ -172,125 +172,125 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Backend:** Node + TypeScript + PostgreSQL + Drizzle, kept **inside** the
   Next.js app (Route Handlers, Server Actions, server components). A
   standalone `apps/api`, or Python + FastAPI + PostgreSQL, only when intent
-  clearly warrants it — either split is an ADR.
+  clearly warrants it - either split is an ADR.
 - **Infra:** AWS via OpenTofu + Terragrunt (`/infra`). **CI:** GitHub Actions.
-  **Deploy:** AWS (e.g. ECS) via Actions — confirm the target per app; each
+  **Deploy:** AWS (e.g. ECS) via Actions - confirm the target per app; each
   deployable `apps/<app>` carries a `Dockerfile` (built by CI when present).
   Promotion, environments, and the `prod`-branch gate: Deployment &
   environments.
 - **Package managers:** pnpm (Node), uv (Python). Windows: WSL2 for CLI/IDE
   work; on the Claude Desktop Code tab, Git for Windows is enough.
 - **Editor:** VS Code; committed `.vscode/` config ships in the scaffold.
-- **Lint/format:** Biome (Node/TS), Ruff (Python) — each is the lint *and*
+- **Lint/format:** Biome (Node/TS), Ruff (Python) - each is the lint *and*
   format tool; no ESLint/Prettier or Flake8/Black/isort alongside without an
   ADR.
 - **Testing:** Vitest (Node/TS), pytest (Python).
-- **Auth:** Better Auth — high-risk; scope with the dev and write an ADR
+- **Auth:** Better Auth - high-risk; scope with the dev and write an ADR
   first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
-  never committed — see Secrets handling.
-- **Local services:** Docker Compose via a committed `compose.yaml` — adapt the
+  never committed - see Secrets handling.
+- **Local services:** Docker Compose via a committed `compose.yaml` - adapt the
   bundled scaffold one, don't author from scratch. **Same engine locally as
   deployed** (no SQLite stand-in for PostgreSQL); **every published host port
-  overridable** — `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` —
+  overridable** - `"${POSTGRES_PORT:-5432}:5432"`, never a bare `5432:5432` -
   with the override var in `.env.example`. A plugin hook denies stale
   image-major pins (only an *ask* on the Copilot CLI), so keep pins current
   yourself (exceptions: ADR + `# steer:allow-pin`).
 - **Task running:** mise is the single task entry point; environment tasks live
   in `mise.toml`, not `package.json`. Standard entry point `mise run dev:setup`
-  (idempotent: services up → migrate → seed) — keep it green. Declare ordering
-  with `depends` / `depends_post`, never `run = ["mise run …"]` chains.
+  (idempotent: services up -> migrate -> seed) - keep it green. Declare ordering
+  with `depends` / `depends_post`, never `run = ["mise run ..."]` chains.
   App-level Node scripts (`dev` / `build` / `test` / `typecheck`) stay in
-  `package.json` and a mise task may delegate to them — delegation is
+  `package.json` and a mise task may delegate to them - delegation is
   **one-way**. Compose a polyglot `dev` in `mise.toml` (`depends = ["dev:*"]`),
   never a root `concurrently` script; let `[deps.pnpm]` / `[deps.uv]`
   (`auto = true`) install on lockfile change.
 - **Environment variables:** local config in a git-ignored `.env` /
-  `.env.local`; names documented in `.env.example` — bootstrap and storage
+  `.env.local`; names documented in `.env.example` - bootstrap and storage
   rules in Secrets handling.
 
 
 ## Useful commands
 
 - **First-time setup:** `mise trust && mise install` (full mise setup in the
-  product README), then `mise run dev:setup` — idempotent local env: services
-  up → migrate → seed.
-- **Develop:** `pnpm dev` (Node) / `uv run <cmd>` (Python) — with mise activated,
+  product README), then `mise run dev:setup` - idempotent local env: services
+  up -> migrate -> seed.
+- **Develop:** `pnpm dev` (Node) / `uv run <cmd>` (Python) - with mise activated,
   bare `pnpm`/`uv` resolve to the **pinned** runtime. The scaffold's `[deps]`
-  auto-install runs `pnpm install` / `uv sync` before any `mise run …` on lockfile
+  auto-install runs `pnpm install` / `uv sync` before any `mise run ...` on lockfile
   change, so you almost never install deps by hand; if you must, route it through
-  mise — `mise exec -- pnpm install` — so it can't pick up a global/nvm copy.
+  mise - `mise exec -- pnpm install` - so it can't pick up a global/nvm copy.
 - **Test:** `pnpm test` (Vitest) / `uv run pytest`.
-- **Deploy:** promotion via merge (`main` → non-prod, `prod` PR → prod) — see
+- **Deploy:** promotion via merge (`main` -> non-prod, `prod` PR -> prod) - see
   Deployment & environments; there is no `pnpm deploy` task.
 
 The `pnpm`/`uv` lines above are the **app / service** profile. An **infra** repo
 uses its own `mise` tasks instead (`mise run infra:fmt` / `infra:validate` /
-`infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) — see Stack —
+`infra:plan`, or `tofu`/`terragrunt`/`ansible-playbook` directly) - see Stack -
 infrastructure. A **workspace** (polyrepo spine) repo holds no code, so it has no
 `dev:setup` or linters at all: its tasks are `ws:`-prefixed (`ws:clone`,
 `ws:docker:up`, `ws:dev`) and each member repo runs its own. The `mise trust &&
 mise install` first step is universal; `mise tasks` lists what a repo really has.
 
 Commands assume mise is activated and **wins PATH** over any other version
-manager (nvm/asdf/volta/fnm) — otherwise bare `pnpm`/`node` silently run a
-global version. "tool not found" → mise not activated; *wrong/old* version →
+manager (nvm/asdf/volta/fnm) - otherwise bare `pnpm`/`node` silently run a
+global version. "tool not found" -> mise not activated; *wrong/old* version ->
 shadowed. Either way run `/steer:doctor`; activation-order rationale:
 `/steer:reference conventions`.
 
 
 ## Keep the repo tidy
 
-The repo **root** holds scaffolding and config only — the known dirs (`apps/`,
+The repo **root** holds scaffolding and config only - the known dirs (`apps/`,
 `packages/`, `configs/`, `infra/`, `policy/`, `scripts/`, `spec/`) plus root config files
 (`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
 `CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md`).
 
-Loose **source/research materials** — spreadsheets, inventories, vendor
+Loose **source/research materials** - spreadsheets, inventories, vendor
 metadata, schema/DDL dumps, discovery docs, and **specification /
-requirements documents** (a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW) —
+requirements documents** (a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW) -
 never sit at the root: their home is `/spec/reference/`; architecture and
 flow diagrams go to `/spec/design/`. A spec *document* is source material
 feeding the spine, not the structured spec itself.
 
-A stray root file you can **confidently classify** into one of those homes →
+A stray root file you can **confidently classify** into one of those homes ->
 **move it there immediately** (keep its filename; `git mv` for tracked files
-so history follows) — don't wait for a yes. Hold for confirmation only where
+so history follows) - don't wait for a yes. Hold for confirmation only where
 judgment or loss is at stake:
 
-- **Renaming** a cryptic name — **propose** it; move the file now under its
+- **Renaming** a cryptic name - **propose** it; move the file now under its
   existing name and offer the rename separately.
-- **Ambiguous** files (unclassifiable at a glance, or `Copy of …` look-alike
-  pairs where picking wrong loses work) — **ask**, never guess.
-- **Deleting** — never automatic, always waits for a yes, and only in two
-  cases. **True junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) — delete plus a
-  `.gitignore` pattern so it can't return. An **already-absorbed source** — a
+- **Ambiguous** files (unclassifiable at a glance, or `Copy of ...` look-alike
+  pairs where picking wrong loses work) - **ask**, never guess.
+- **Deleting** - never automatic, always waits for a yes, and only in two
+  cases. **True junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) - delete plus a
+  `.gitignore` pattern so it can't return. An **already-absorbed source** - a
   spec/requirements doc whose bytes match a committed
-  `spec/sources/**/original.*` — is a redundant duplicate of content already
+  `spec/sources/**/original.*` - is a redundant duplicate of content already
   preserved, so propose deleting rather than moving it; no `.gitignore` pattern
   there, since it isn't junk and a future version is expected.
 - **Polyrepo member** (`spec/PRODUCT.md` present): `spec/reference/`,
-  `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** —
+  `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** -
   never create one locally for a stray; report it and name the workspace as its
-  home. `spec/design/`, `spec/decisions/` are the member's own — handle normally.
+  home. `spec/design/`, `spec/decisions/` are the member's own - handle normally.
 
 Run **`/steer:tidy`** for a full sweep.
 
 
-## Parallel worktrees — isolate runtime, clean up after
+## Parallel worktrees - isolate runtime, clean up after
 
 You may be one of several agents working the same repo at once, each in its own
-worktree; your local services must not collide with — or outlive — a sibling's.
+worktree; your local services must not collide with - or outlive - a sibling's.
 (A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
 discipline still applies to anything you start.) Task names below are the core
-scaffold's; a **workspace** repo prefixes its own `ws:` — see Useful commands.
+scaffold's; a **workspace** repo prefixes its own `ws:` - see Useful commands.
 
 **Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
-new worktree is untrusted and every `mise run …` there fails on *trust*, not on the
-task. Run `mise trust` in the worktree first — it is idempotent, so it costs
+new worktree is untrusted and every `mise run ...` there fails on *trust*, not on the
+task. Run `mise trust` in the worktree first - it is idempotent, so it costs
 nothing when a steer check already inherited the primary checkout's trust (Claude
 Code only). That first decision is the user's, not yours: `mise trust && mise
 install` if the repo was never trusted, `mise trust` if it has no `mise` config
-at all — a first-time trust decision is not yours to make.
+at all - a first-time trust decision is not yours to make.
 
 **Isolate runtime resources.** The scaffold handles this automatically: `mise`
 sources `scripts/worktree-env.sh`, giving each worktree a unique
@@ -298,49 +298,49 @@ sources `scripts/worktree-env.sh`, giving each worktree a unique
 (`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`; the primary checkout keeps the
 defaults). So:
 
-- Start services and the dev server through `mise run …` (`docker:up`,
-  `dev:setup`, the app's dev task) so the per-worktree env applies — never a
+- Start services and the dev server through `mise run ...` (`docker:up`,
+  `dev:setup`, the app's dev task) so the per-worktree env applies - never a
   bare `docker compose up` or a hardcoded port.
 - Don't pin a fixed `container_name` or a literal host port in `compose.yaml`,
-  and don't hardcode `localhost:5432`/`localhost:3000` in app config — read
+  and don't hardcode `localhost:5432`/`localhost:3000` in app config - read
   the env vars.
 - If two worktrees still draw the same offset, set
   `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing shared
   files.
 
 **Clean up before the worktree closes.** On Claude Code, steer's `WorktreeRemove`
-hook runs `docker:clean` on this worktree's stack — containers, **volumes** and
+hook runs `docker:clean` on this worktree's stack - containers, **volumes** and
 orphans, scoped to its `COMPOSE_PROJECT_NAME`, so its data goes with it. The
 `SessionEnd` hook does the lesser `docker:down`: containers stopped, **volumes
 kept**, and often cut short, so never count on it. Yours regardless: stop the dev servers and watchers
-you launched, freeing their ports — and run `mise run docker:clean` yourself when
+you launched, freeing their ports - and run `mise run docker:clean` yourself when
 removing a worktree by hand or on any other surface, where no hook fires.
 
 
-## Context hygiene — delegate heavy runs, keep state in files
+## Context hygiene - delegate heavy runs, keep state in files
 
 Long, multi-phase work bloats the session and risks losing task constraints at
-compaction. You cannot see context usage or trigger `/compact` — only the user
-can — so keep the working context lean.
+compaction. You cannot see context usage or trigger `/compact` - only the user
+can - so keep the working context lean.
 
 - **Delegate heavy runs to a subagent** (a fresh context window) and bring back
-  only the structured result, not the whole sweep — how `/steer:audit` fans out
+  only the structured result, not the whole sweep - how `/steer:audit` fans out
   to `steer-reviewer` and `/steer:work --reviewed` runs its plan gate.
 - **Keep durable state in files, not the chat.** Run-state and task-specific
   constraints (decisions made, what to skip, what's unreliable) go in
-  `/spec/**` or a sidecar artifact the work re-reads — files survive compaction
-  and a fresh session; chat history does not (`/steer:build` →
-  `BUILD-STATUS.md`, `/steer:work` → its work marker).
-- **Don't offer to save findings to session memory** — private auto-memory is
+  `/spec/**` or a sidecar artifact the work re-reads - files survive compaction
+  and a fresh session; chat history does not (`/steer:build` ->
+  `BUILD-STATUS.md`, `/steer:work` -> its work marker).
+- **Don't offer to save findings to session memory** - private auto-memory is
   invisible to the repo, the PR, and every teammate. Route each fact to its
-  canonical home by type: a **bug fix** → a regression test; an **operational
-  or behavioral fact** → the app guide / a `/spec/history/` entry; an **unresolved
-  follow-up** → a linked tracker issue; a **durable design decision** → the
-  spine. One home per fact — surface the capture, don't ask whether to
+  canonical home by type: a **bug fix** -> a regression test; an **operational
+  or behavioral fact** -> the app guide / a `/spec/history/` entry; an **unresolved
+  follow-up** -> a linked tracker issue; a **durable design decision** -> the
+  spine. One home per fact - surface the capture, don't ask whether to
   remember it.
 - **Only when the thread is genuinely overloaded** and delegation won't help,
   *recommend* the user `/compact` or a fresh session, pre-composing the
-  hand-off (the artifact path + the constraints to carry) — and say plainly it
+  hand-off (the artifact path + the constraints to carry) - and say plainly it
   is a recommendation you cannot perform yourself.
 
 Full pattern and a worked example: `/steer:reference context-hygiene`.
@@ -348,119 +348,119 @@ Full pattern and a worked example: `/steer:reference context-hygiene`.
 
 ## Spec workflow
 
-Create the artifact when the trigger fires — don't defer it:
+Create the artifact when the trigger fires - don't defer it:
 
-- **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
-  `contract.md`, before or alongside the code — author via **`/steer:spec`**
+- **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
+  `contract.md`, before or alongside the code - author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
-  deployment) → ADR at `/spec/decisions/000N-[slug].md` (run
+  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (run
   **`/steer:adr <slug>`**); the initial stack choice is usually the first.
-  **The bar is reversal cost, not novelty** — a pattern used in one place is a
+  **The bar is reversal cost, not novelty** - a pattern used in one place is a
   `contract.md` line until a third use makes it the house style.
-- **Behavior changes** → update the owning `contract.md` in the same PR — plus
+- **Behavior changes** -> update the owning `contract.md` in the same PR - plus
   the app guide (`/spec/app/`) if it describes the old behavior; see Living
   documentation.
-- **Open questions** → the feature's `intent.md` → `## Open questions`
+- **Open questions** -> the feature's `intent.md` -> `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.
-- **A feature that began as a tracker issue** → **`/steer:issues brainstorm`**
+- **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
   shapes it in the issue, **`materialize`** writes the approved intent to
   `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
   to `approved`. The issue is the work record; the spec stays product truth.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**` and the
-product-level files above are the **workspace's** — resolve the spine there,
+product-level files above are the **workspace's** - resolve the spine there,
 never create a local copy; ADRs and `ARCHITECTURE.md` stay per member
 (`/steer:reference polyrepo`).
 
-The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
+The spec <-> code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference `/steer:spec` draws
 on. Unsure whether something needs a feature spec or an ADR? Ask the dev
 rather than skipping it.
 
-**Greenfield** (new product — an idea, brief, screenshots, or a design export):
-**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) — the bundled
+**Greenfield** (new product - an idea, brief, screenshots, or a design export):
+**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) - the bundled
 scaffold **and** the `/spec` spine before feature code; never hand-write
 `package.json` / build config / CI from scratch. Then interview to fill
 `vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
-ambiguity → `vision.md` → `## Open questions`), draft feature intents, and get PO
+ambiguity -> `vision.md` -> `## Open questions`), draft feature intents, and get PO
 approval before broad implementation. Design exports: read the **local export**
-via `/steer:reference design-sources` — never fetch the URL (it 403s).
+via `/steer:reference design-sources` - never fetch the URL (it 403s).
 
-**A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
+**A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
 below; a GitHub-adopted repo still keeps the issue for any change above Tiny,
-closed from the commit — see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
+closed from the commit - see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
 built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
 to skip bootstrap now.
 
-**Solo greenfield can run on trunk** — when one person is both PO and dev
+**Solo greenfield can run on trunk** - when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
 relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
 and graduation are canonical in Commit autonomy.
 
-**Brownfield** (change to an existing product): triage → size it (Change-size
-model) → medium+ work writes/updates the spec or ADR first → implement →
+**Brownfield** (change to an existing product): triage -> size it (Change-size
+model) -> medium+ work writes/updates the spec or ADR first -> implement ->
 update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
-app with no `/spec`): run **`/steer:adopt`** once — reverse-engineer the spec
+app with no `/spec`): run **`/steer:adopt`** once - reverse-engineer the spec
 from the code, triage productionization (Keep/Refactor/Rewrite/Reject in
-`PRODUCTIONIZATION.md`), sync in the bundled scaffolding — distinct from a
+`PRODUCTIONIZATION.md`), sync in the bundled scaffolding - distinct from a
 per-feature Brownfield change.
 
 
 ## Durable decisions land in the spine, not in side-channels
 
-A durable design decision — stack, auth model, data model, architecture, a
-locked scope or MVP cut — belongs in `/spec`: a feature's `intent.md`, a
+A durable design decision - stack, auth model, data model, architecture, a
+locked scope or MVP cut - belongs in `/spec`: a feature's `intent.md`, a
 `contract.md`, or an ADR (`/steer:adr`). That is the single source of truth a
 teammate inherits from the repo. Scoping conversation, chat summaries, and
-**assistant memory** are working notes, not the record — never let a decision
+**assistant memory** are working notes, not the record - never let a decision
 survive only there, where the repo carries no trace of it.
 
 **No `/spec` spine yet? Bootstrap before you commit the decision, not after.**
 On a repo with no spine, do not persist architectural choices or a locked scope
-to memory or prose as a stand-in for the missing spine — that is the
+to memory or prose as a stand-in for the missing spine - that is the
 single-source-of-truth break this rule exists to prevent. Run `/steer:init`
 (greenfield) or `/steer:adopt` (existing code) first so the decision lands where
 it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
-is fine and expected — `init`'s own interview is where it belongs; what waits
+is fine and expected - `init`'s own interview is where it belongs; what waits
 for the spine is the **durable capture** of what was decided. See bootstrap
 precedence in the router and Living documentation (`32-living-docs`). Record
-each decision with its ratifier and date — see Answering a human gate.
+each decision with its ratifier and date - see Answering a human gate.
 
 
-## Living documentation — document in parallel, not after
+## Living documentation - document in parallel, not after
 
 The PO/dev speaks plainly; **you** translate it into durable artifacts *as the
 work happens*, never in a wrap-up pass. When conversation or implementation
 reveals a requirement, constraint, assumption, risk, trade-off, or decision,
 update (or propose) the owning artifact **in the same change as the code**:
 
-- Intent, goals, acceptance criteria → the feature's `intent.md` (scope
-  changes need PO approval); behavior/data/API decisions → `contract.md`;
-  hard-to-reverse choices → ADR.
-- Ambiguity → `## Open questions` — **never guess an answer into the spec**.
+- Intent, goals, acceptance criteria -> the feature's `intent.md` (scope
+  changes need PO approval); behavior/data/API decisions -> `contract.md`;
+  hard-to-reverse choices -> ADR.
+- Ambiguity -> `## Open questions` - **never guess an answer into the spec**.
 - Usage, workflows, roles, configuration, limitations, troubleshooting,
-  release notes → the app guide (`/spec/app/`).
-- Tech stack, the apps/packages map, cross-component data flow → root
-  `ARCHITECTURE.md` — updated, with the linked diagram
+  release notes -> the app guide (`/spec/app/`).
+- Tech stack, the apps/packages map, cross-component data flow -> root
+  `ARCHITECTURE.md` - updated, with the linked diagram
   (`/spec/design/architecture-diagram.md`), in the same PR that changes them.
-- Visual identity, reusable design tokens → root `DESIGN.md`, seeded when the
+- Visual identity, reusable design tokens -> root `DESIGN.md`, seeded when the
   first UI lands and grown on the 3+ rule (Design sources). The PR that
   establishes the stack or first app also retires the scaffold's now-false
-  placeholder prose — a stub left after the thing it describes exists is
+  placeholder prose - a stub left after the thing it describes exists is
   drift.
-- A **notable event** — ratified decision, scope change, repo-level event,
-  absorbed PO document, incident → a **new file** under `/spec/history/`
+- A **notable event** - ratified decision, scope change, repo-level event,
+  absorbed PO document, incident -> a **new file** under `/spec/history/`
   (`YYYY-MM-DD-HHMM-<slug>.md`), immutable once merged. **An ordinary merged
-  change writes none** — the commit and the PR are its record.
+  change writes none** - the commit and the PR are its record.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
-and `/spec/history/` are the **workspace's** — write them there via
+and `/spec/history/` are the **workspace's** - write them there via
 `workspace.path`; if it does not resolve, record the event in the PR description
 **and say the workspace ledger still needs the entry**. Never a local copy.
 `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
@@ -473,17 +473,17 @@ conventions: **`/steer:reference traceability`**.
 **Applying a decision already made is not a new decision.** Propagating a
 settled choice into the artifacts that should reflect it is living-docs
 upkeep: make the edit in the same change and let the **PR be the gate** (rule
-`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade
-— a genuine product / policy / architecture call, anything under High-risk
-areas — or when an edit would clobber filled-in content.
+`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade -
+a genuine product / policy / architecture call, anything under High-risk
+areas - or when an edit would clobber filled-in content.
 
 
-## Spec workflow — OpenSpec backend
+## Spec workflow - OpenSpec backend
 
 This repo carries an `openspec/` spine, so **OpenSpec owns the spec artifacts**.
-This rule overrides the *paths and commands* in Spec workflow. Every other rule
-— stack, testing, coverage, Definition of Done, issue-first, drift gates,
-secrets, compliance, change size — applies unchanged.
+This rule overrides the *paths and commands* in Spec workflow. Every other rule -
+stack, testing, coverage, Definition of Done, issue-first, drift gates,
+secrets, compliance, change size - applies unchanged.
 
 **`openspec/` IS this repo's spine**, so the router's bootstrap precedence and
 Durable decisions' "no `/spec` spine yet?" check are already satisfied: do not
@@ -491,70 +491,70 @@ announce `/steer:setup`, `/steer:init` or `/steer:adopt` as the first move here,
 and do not read the absent `spec/features/**` as an unbootstrapped repo. Those
 bootstrap routes would lay a second, competing spine.
 
-- **New or changed behavior** → an OpenSpec change, not `spec/features/<id>/`:
+- **New or changed behavior** -> an OpenSpec change, not `spec/features/<id>/`:
   **`/opsx:propose`** writes `openspec/changes/<id>/` with `proposal.md`,
   `specs/`, `design.md`, `tasks.md`. Shape it with **`/opsx:explore`** first
   when the approach is still open.
 - **Intent** is `proposal.md`; the **behavior contract** is that change's
   `specs/` (requirement + scenario), promoted into `openspec/specs/` on archive.
-  Never create `spec/features/<id>/intent.md` here — prefer the `/opsx:*`
+  Never create `spec/features/<id>/intent.md` here - prefer the `/opsx:*`
   commands over `/steer:spec` for authoring on this repo.
 - **Implement** from `tasks.md` (**`/opsx:apply`**), then **`/opsx:archive`** at
-  merge — that archive is this repo's action history.
-- **Behavior changed** → update the owning requirement in the same PR, exactly
+  merge - that archive is this repo's action history.
+- **Behavior changed** -> update the owning requirement in the same PR, exactly
   as the contract rule demands. Where the expanded profile is enabled,
   **`/opsx:verify`** (implementation vs. the change's artifacts) is a pre-merge
   check here, alongside the drift gates.
 - **Open questions** go in the change's `proposal.md`, not a side channel.
 
-**Two artifacts are steer's, because OpenSpec has no equivalent — and on this
+**Two artifacts are steer's, because OpenSpec has no equivalent - and on this
 repo they live under `openspec/steer/`, NOT in `spec/`:**
 
-- **ADRs** → `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
+- **ADRs** -> `openspec/steer/decisions/000N-<slug>.md` (**`/steer:adr`**). A
   change's `design.md` is per-change and is archived with it; a hard-to-reverse
   choice has to outlive the change that made it.
-- **Tracker declaration** → `openspec/steer/tracker.md`. It declares the issue
+- **Tracker declaration** -> `openspec/steer/tracker.md`. It declares the issue
   tracker and is what issue-first enforcement reads. OpenSpec models no tracker.
-- **App guide** → `openspec/steer/app/`. Living documentation (how to use and
-  operate the product), not a spec artifact — Living docs applies unchanged,
+- **App guide** -> `openspec/steer/app/`. Living documentation (how to use and
+  operate the product), not a spec artifact - Living docs applies unchanged,
   only the path moves.
 
 **This overrides every skill and rule that names a `spec/` path for these
 three.** A skill body still says `spec/decisions/`, `spec/tracker.md` or
-`spec/app/` — read it as `openspec/steer/…` here. The `steer/` segment keeps steer's durable artifacts
+`spec/app/` - read it as `openspec/steer/...` here. The `steer/` segment keeps steer's durable artifacts
 out of the namespace the `openspec` CLI regenerates. If you find them at the old
 `spec/` paths, the repo predates the move: run **`/steer:sync`**.
 
-Toolchain and CI scaffolding are still steer's — the bundled scaffold (mise,
+Toolchain and CI scaffolding are still steer's - the bundled scaffold (mise,
 compose, CI, PR template) applies here unchanged. Reach it via **`/steer:setup`**
 *only when that scaffold is missing*, and do not let it route into
 `/steer:init` / `/steer:adopt`: those write a `spec/` spine from the templates
 and stamp `spec/.version`, which is the competing spine this rule exists to
 prevent. Missing `openspec/steer/tracker.md`? Instantiate
-`templates/spec/tracker.md` there directly — it is one file, not a bootstrap.
+`templates/spec/tracker.md` there directly - it is one file, not a bootstrap.
 
 
 ## Issue tracker integration (client-agnostic)
 
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
-Azure DevOps, …). **`/spec/tracker.md`** declares the system + ref format —
+Azure DevOps, ...). **`/spec/tracker.md`** declares the system + ref format -
 read it before referencing work items; if missing, ask and create it from the
-bundled template — **except in a polyrepo member** (`spec/PRODUCT.md` present),
+bundled template - **except in a polyrepo member** (`spec/PRODUCT.md` present),
 where the tracker is the workspace's: resolve it there and never create a local
 copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
 description (tracker's own linking syntax), and the `/spec/history/` entry's `Refs:`. Copy a
-tracker item's acceptance criteria into the intent — the spec is the in-repo
+tracker item's acceptance criteria into the intent - the spec is the in-repo
 source of truth; the ref points back. **Keep a question in the spec's
 `## Open questions`** (structured `Q-NNN`) when it's local to one feature and
 answerable while specifying it; **promote it to an issue** when it needs a named
 owner, blocks multiple features, needs stakeholder/research input, or could
-outlive the session — then put the ref in the question's `tracker:` field. The
+outlive the session - then put the ref in the question's `tracker:` field. The
 issue is the decision *workflow*; the spec (or an ADR) is the durable *record*.
 
 When the tracker is **GitHub Issues**, **`/steer:issues`** is the high-level
-lifecycle workflow (capture → triage → brainstorm → materialize → decompose →
-status → reconcile), and **`/steer:tracker-sync`** is the low-level gateway it
-routes all reads/writes through (MCP-first → `gh` → manual floor). Agent-authored
+lifecycle workflow (capture -> triage -> brainstorm -> materialize -> decompose ->
+status -> reconcile), and **`/steer:tracker-sync`** is the low-level gateway it
+routes all reads/writes through (MCP-first -> `gh` -> manual floor). Agent-authored
 issues follow the machine-readable contract (stable headings + hidden markers);
 `/spec` stays product truth, the issue is the work/decision layer. Other trackers
 use the manual export.
@@ -562,57 +562,57 @@ use the manual export.
 
 ## Issue-first (GitHub-adopted repos)
 
-When `/spec/tracker.md` declares `system: github` — in a polyrepo member
+When `/spec/tracker.md` declares `system: github` - in a polyrepo member
 (`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
-copy — every
-**implementation-affecting mutation** — code, config, infrastructure, or
-behavior — has a GitHub issue **before the first repository mutation**. Out of
+copy - every
+**implementation-affecting mutation** - code, config, infrastructure, or
+behavior - has a GitHub issue **before the first repository mutation**. Out of
 scope (no issue needed): `/spec` edits, documentation, generated output,
-lockfiles, a **Tiny** change (Change-size model — the PR is the evidence anchor
+lockfiles, a **Tiny** change (Change-size model - the PR is the evidence anchor
 instead), and a plugin-maintenance `/steer:sync` on its own `feat/sync`
 branch (structural, never app source). Reuse the issue the user names;
-otherwise find-or-create one through `/steer:tracker-sync` — an explicit
+otherwise find-or-create one through `/steer:tracker-sync` - an explicit
 "fix / implement / add / create" request does **not** need confirmation to
 create the issue.
 
 - **Capture-only and ambiguous language do not auto-create.** "Note this" /
-  "we should eventually…" is captured deliberately, never inferred into a
+  "we should eventually..." is captured deliberately, never inferred into a
   batch of issues. A large inferred batch takes one confirmation;
   security-sensitive public disclosure takes human review.
-- **Implementation runs through `/steer:work`** — claim, branch, implement,
+- **Implementation runs through `/steer:work`** - claim, branch, implement,
   test, open the PR, transition the issue. Commit, push, and the PR are
   autonomous under Commit autonomy; **merge and deploy are never implied**.
-- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy) —
+- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy) -
   close it **from the trunk commit** (`Closes #N`). The issue stays the
   audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** gets its own linked issue
   (related/blocking), not silent scope creep in the current one.
 - The scaffold pre-authorizes the tracker write verbs, but your host may block
   one anyway. A create that is blocked is a **host-permission gate, not a
-  missing issue** — don't loop retrying; confirm with the user, or have them run
-  `!gh issue create …` under their own identity, then continue. (Full tiering
+  missing issue** - don't loop retrying; confirm with the user, or have them run
+  `!gh issue create ...` under their own identity, then continue. (Full tiering
   and rationale: ISSUE-WORKFLOW.md, "Host gating" in Operating model.)
 
 Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
-**Calling work a "prototype" does not waive it** — the only durable opt-out
+**Calling work a "prototype" does not waive it** - the only durable opt-out
 from the per-feature branch/PR is solo-trunk delivery mode.
 
 
 ## Testing rules
 
-- Every feature change **includes or updates automated tests** in the same PR — never "later."
+- Every feature change **includes or updates automated tests** in the same PR - never "later."
 - Every bug fix **MUST add a regression test** that fails before the fix and passes after. This is a hard rule.
 - Do **not** delete or skip failing tests to make CI pass. Fix the cause, or explicitly remove the behavior and say so in the PR.
 
 
 ## Coverage rules
 
-- Coverage is a **signal to find untested behavior, not a target to hit** — never
+- Coverage is a **signal to find untested behavior, not a target to hit** - never
   write shallow tests, or relax assertions, to move a number.
 - **Cover what you touch:** new and changed code paths ship exercised. Prioritize
   **critical paths, branches, and error handling** over blanket line %.
 - Coverage is **measured and visible every run** (per-stack tooling in `CONVENTIONS`).
-  A coverage drop on changed code is **drift** — surface it for human review, never
+  A coverage drop on changed code is **drift** - surface it for human review, never
   silently (see Drift gates).
 - No global "fail under N%" vanity gate; CI gates only **changed-line** coverage. The
   reviewer judges adequacy (see You are not the gate).
@@ -620,65 +620,65 @@ from the per-feature branch/PR is solo-trunk delivery mode.
 
 ## Commit autonomy
 
-Commits are cheap and local — the reviewed **PR merge** is the gate (see "You
+Commits are cheap and local - the reviewed **PR merge** is the gate (see "You
 are not the gate"), not each commit and not the push. Never pause work to ask
 "should I commit / push / open the PR?".
 
 Delivery runs in exactly **two modes**, keyed to what the repo **declares**. The
 product `CLAUDE.md` `## Delivery mode` marker is the declaration
-(`<!-- steer:delivery-mode=solo-trunk -->` → solo trunk; anything else, absent
-included → pr-flow); branch protection *enforces* pr-flow rather than defining
+(`<!-- steer:delivery-mode=solo-trunk -->` -> solo trunk; anything else, absent
+included -> pr-flow); branch protection *enforces* pr-flow rather than defining
 it. `/steer:protect` moves a repo between them, and there is no third mode.
 
-- **PR flow (the default — protection is the wall that enforces it).** Work on a branch off `main` —
+- **PR flow (the default - protection is the wall that enforces it).** Work on a branch off `main` -
   never commit or push to `main` directly. Use the repo's branch convention,
   else `feat/*` / `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`).
   On `main` with changes? Create the branch first, then commit. When the work
   is **complete** (Definition of Done holds, end-of-session checklist clean),
-  **push the branch and open the PR without asking** — announce it, don't
+  **push the branch and open the PR without asking** - announce it, don't
   request permission. First push of a fresh branch:
   `git push -u origin <branch>`. **Merging the PR is the one step that waits
   for the dev; everything before it (branch, commit, push, open PR) does not.**
 - **Solo trunk mode (declared, pre-MVP greenfield).** If the product
   `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
-  asking** — no `feat/*` branch, no per-feature PR. CI still runs on every
-  push; the spine, tests, and Definition of Done are **unchanged** — only the
+  asking** - no `feat/*` branch, no per-feature PR. CI still runs on every
+  push; the spine, tests, and Definition of Done are **unchanged** - only the
   branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
   required and closed from the trunk commit (`Closes #N`), not via a PR (see
-  Issue-first). **Graduate** — run **`/steer:protect`** — the moment the MVP
+  Issue-first). **Graduate** - run **`/steer:protect`** - the moment the MVP
   works, you first deploy, or a second contributor joins, whichever comes first.
   Until then a standing **local** graduation signal (a deploy target or a `prod`
   branch) stops trunk pushes being silent: the session's **first** one waits for
-  a human yes (`/steer:reference gates`) — unless the dev has recorded a
+  a human yes (`/steer:reference gates`) - unless the dev has recorded a
   **graduation waiver** (`/steer:protect waive`: a single-dev repo staying on
   trunk deliberately, `<!-- steer:graduation=waived -->`), which silences that
   gate and the session nudge; a second contributor voids it.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
-  applies unchanged — you still never merge — but say the wall is missing and
+  applies unchanged - you still never merge - but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
   the exception in an ADR.
 - In a GitHub-adopted repo, the **first mutation** of a unit of work
-  presupposes an active GitHub issue (see Issue-first) — autonomy is unchanged
+  presupposes an active GitHub issue (see Issue-first) - autonomy is unchanged
   once that issue exists.
-- **Commit without asking** whenever a coherent unit of work is done — tests
+- **Commit without asking** whenever a coherent unit of work is done - tests
   pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
   `type(scope): summary`, imperative mood; mark breaking changes with `!` or a
   `BREAKING CHANGE:` footer. Commit messages are **not** the release
-  changelog: a shipping change also adds a **changelog fragment** —
+  changelog: a shipping change also adds a **changelog fragment** -
   `mise run changelog:new`, one file under `.changes/unreleased/`.
   `CHANGELOG.md` is generated from those; never edit it by hand. Full detail:
   `/steer:reference conventions`.
 - **After pushing, watch CI to conclusion and fix a red build before treating
-  the work as complete** — don't hand the dev a running or red PR and stop.
-  (**Merge and deploy stay human-gated in every mode** — never `gh pr merge`,
+  the work as complete** - don't hand the dev a running or red PR and stop.
+  (**Merge and deploy stay human-gated in every mode** - never `gh pr merge`,
   never deploy, never push to a protected `prod` branch.)
 
 
 ## Definition of Done
 
 A change is done when **all** of these hold. Reviewers check most of them; CI
-enforces only a thin floor — in **solo-trunk**, where there is no reviewer, that
+enforces only a thin floor - in **solo-trunk**, where there is no reviewer, that
 floor (the changed-line coverage gate, rule 41; the changelog-fragment gate,
 which is delivery-mode-blind and so fires on a trunk push too; the advisory
 spec-drift warning, rule 55) is the *only* automated backstop. The rest is still on you.
@@ -687,111 +687,111 @@ Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** chang
 needs only a PR.
 
 - [ ] Code follows existing patterns in the touched app/package.
-- [ ] Comments carry only a non-obvious *why* — none restate the code, narrate a step, banner a section, or keep dead code (see Code comments).
+- [ ] Comments carry only a non-obvious *why* - none restate the code, narrate a step, banner a section, or keep dead code (see Code comments).
 - [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**. **(size-gated)**
-- [ ] Changed code is covered — critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
-- [ ] CI passes — watched to green after push, not assumed (see Commit autonomy).
-- [ ] Spec updated if behavior changed — the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
-- [ ] Living docs in sync — app guide, `ARCHITECTURE.md`, and a `/spec/history/` entry each updated when their trigger fired (see Living documentation).
-- [ ] Changelog fragment added under `.changes/unreleased/` if the change ships (see Commit autonomy); `CHANGELOG.md` itself left alone — it is generated.
-- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR — or, in solo-trunk, in the closing commit (see Issue tracker).
-- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress → `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
-- [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` — reversal cost is the bar, not novelty (see Spec workflow).
+- [ ] Changed code is covered - critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
+- [ ] CI passes - watched to green after push, not assumed (see Commit autonomy).
+- [ ] Spec updated if behavior changed - the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
+- [ ] Living docs in sync - app guide, `ARCHITECTURE.md`, and a `/spec/history/` entry each updated when their trigger fired (see Living documentation).
+- [ ] Changelog fragment added under `.changes/unreleased/` if the change ships (see Commit autonomy); `CHANGELOG.md` itself left alone - it is generated.
+- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR - or, in solo-trunk, in the closing commit (see Issue tracker).
+- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress -> `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
+- [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` - reversal cost is the bar, not novelty (see Spec workflow).
 - [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR — except in solo-trunk (pre-MVP), where there is no PR gate, and under the `solo` protection profile, where the sole dev's read-and-merge is the review (see Commit autonomy).
+- [ ] A dev approved the PR - except in solo-trunk (pre-MVP), where there is no PR gate, and under the `solo` protection profile, where the sole dev's read-and-merge is the review (see Commit autonomy).
 
 **Hotfix exception (see Hotfix / incident fast-path):** under a declared production
-hotfix, items above may be **deferred** to the mandatory post-incident follow-up —
+hotfix, items above may be **deferred** to the mandatory post-incident follow-up -
 **never waived**. The follow-up backfills the issue, the spec/ADR, and the
 `/spec/history/` entry so this list is satisfied once the fire is out.
 
 
-## Verify loop — iterate against the harness, don't flail
+## Verify loop - iterate against the harness, don't flail
 
-Before writing code, turn the task into a **verifiable end state** — name the
+Before writing code, turn the task into a **verifiable end state** - name the
 check that will prove it done (a failing test, a build that passes, a command
 whose output you can read). "Add validation" becomes "tests for the bad inputs,
 then make them pass." A vague goal you can't check is a goal you can't finish.
 
 - **State the assumption, don't bury it.** When a request has two readings,
-  surface the one you're taking (or ask) **before** writing against it — never
+  surface the one you're taking (or ask) **before** writing against it - never
   silently pick an interpretation and build 200 lines on it.
 - **Loop until green, then stop.** Run the harness (test, lint, typecheck,
-  build), fix what it reports, re-run — until it passes. The harness is the
+  build), fix what it reports, re-run - until it passes. The harness is the
   judge, not your reading of the diff.
-- **Cap the loop.** Bound the fix→re-run cycles; if repeated attempts don't
-  converge, **stop and report what blocked you** with the failing output — don't
+- **Cap the loop.** Bound the fix->re-run cycles; if repeated attempts don't
+  converge, **stop and report what blocked you** with the failing output - don't
   thrash or paper over the check (see Testing: never delete/skip a failing test).
 - **Never loop on uncheckable work.** Judgment calls, design decisions, and
-  long-compute runs (training, large sweeps, deploys) have no fast pass/fail —
+  long-compute runs (training, large sweeps, deploys) have no fast pass/fail -
   those are a human's call or a one-shot script, never an open-ended loop.
 
 
 ## Deployment & environments
 
 How code reaches users. Deploy/release logic is a high-risk area (see High-risk
-areas) — validate in non-prod before prod, and scope pipeline changes with the
+areas) - validate in non-prod before prod, and scope pipeline changes with the
 dev first. AWS/Terragrunt specifics live in the infra README (`/infra/README.md`
 for a nested infra dir, the root README for an infra-profile repo); rationale in
-`/steer:reference conventions`. The AWS app-promotion model below is the default —
+`/steer:reference conventions`. The AWS app-promotion model below is the default -
 an infra-profile repo with a different target records its flow in an ADR.
 
-- **Environments** — `non-prod` (shared validation) and `prod`. Every feature PR
+- **Environments** - `non-prod` (shared validation) and `prod`. Every feature PR
   also gets an isolated, auto-provisioned **review app**, torn down when the PR
-  merges or closes. The review-app mechanism is product-specific — record it in an
+  merges or closes. The review-app mechanism is product-specific - record it in an
   ADR (see Durable decisions).
-- **Promotion** — merge to `main` **auto-deploys non-prod**. Prod is gated by a
+- **Promotion** - merge to `main` **auto-deploys non-prod**. Prod is gated by a
   **reviewed PR from `main` into a long-lived `prod` branch**; merging that PR
   **auto-deploys prod**. Never push directly to `prod`. The branch-protection
   approval on `prod` *is* the production gate (run `/steer:protect`), standing in
   for deployment-environment approvals that GitHub Enterprise would otherwise
   provide.
-- **Observable by default** — a deployed environment ships logs, metrics with
+- **Observable by default** - a deployed environment ships logs, metrics with
   alarms, error tracking (Sentry), health checks, and alerting routed somewhere a
   human sees it. "Deployed but unobservable" is not done; capture the wiring in
   `ARCHITECTURE.md`.
-- **Rollback** — every prod deploy has a known rollback: revert the `prod` merge or
+- **Rollback** - every prod deploy has a known rollback: revert the `prod` merge or
   redeploy the prior SHA. Database migrations are expand/contract so the previous
   version keeps running through a deploy (see High-risk areas).
-- **Secrets & config at rest** — injected at deploy/runtime, never baked into images
+- **Secrets & config at rest** - injected at deploy/runtime, never baked into images
   or CI logs (see Secrets handling).
 
 
-## Autonomous loops — automate the navigation, never the authority
+## Autonomous loops - automate the navigation, never the authority
 
 An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)
-that wakes on its own, discovers work — CI failures, open issues, drift — and
+that wakes on its own, discovers work - CI failures, open issues, drift - and
 drives it through steer's skills unattended. It removes the prompting, **not**
 the responsibility: still ship code you *confirmed* works (Definition of done).
 
-- **A loop closes only up to a human gate — never through one.** It may
+- **A loop closes only up to a human gate - never through one.** It may
   discover, triage, draft in an isolated worktree, verify, push its **own work
-  branch**, and open a PR — the merge review is the human gate (Commit
+  branch**, and open a PR - the merge review is the human gate (Commit
   autonomy). It **stops** at every authority gate: issue creation beyond an
   explicit ask (Issue-first), ADR ratification (High-risk), and merge / deploy
   / push to `main` or any protected branch / real secrets. Loop-opened PRs are
-  **drafts by convention** — the deliberate signal that nobody attended the
+  **drafts by convention** - the deliberate signal that nobody attended the
   run; a reviewer flips one to ready.
 - **A loop presupposes PR flow.** Protect `main` first (`/steer:protect`);
-  never point a loop at a solo-trunk repo — unattended direct-to-`main`
+  never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own
-  change — route the check through an independent reviewer (`steer-reviewer`,
+  change - route the check through an independent reviewer (`steer-reviewer`,
   `/steer:audit`, the test harness).
 - **Keep durable state outside the model.** A loop's memory is the tracker +
-  `/spec/**` (issues, `/spec/history/`), not chat context — record what it did and
+  `/spec/**` (issues, `/spec/history/`), not chat context - record what it did and
   what's left so the next run resumes instead of repeating.
 - **Only loop on checkable work.** Judgment calls, design decisions, and
-  long-compute runs have no fast pass/fail — the loop surfaces them for a
+  long-compute runs have no fast pass/fail - the loop surfaces them for a
   human, it never decides them.
-- **Scaffold loops with `/steer:loop`** — never hand-roll an automation that
+- **Scaffold loops with `/steer:loop`** - never hand-roll an automation that
   can cross a gate.
 
 
-## Drift gates — surface before merge
+## Drift gates - surface before merge
 
-Drift — any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔ app
-docs ↔ tests ↔ delivered behavior — is resolved by **explicit human review,
+Drift - any meaningful mismatch along intent <-> spec <-> contract <-> tracker <-> app
+docs <-> tests <-> delivered behavior - is resolved by **explicit human review,
 never silently**: you *surface* it before merge; the reviewer resolves it (fix
 code, fix artifact, or record the accepted divergence). Flag these
 review-sensitive classes in the PR description **the moment you notice one**
@@ -800,12 +800,12 @@ drift · undocumented behavior change · security-sensitive ·
 compliance-impacting · operational (deploy/CI/infra) · local setup or
 deployment changed · app docs invalidated · architecture/stack drift
 (`ARCHITECTURE.md`)**. A flagged class blocks merge
-until the reviewer explicitly resolves it — you may not waive your own flag.
+until the reviewer explicitly resolves it - you may not waive your own flag.
 Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
 
 The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
 (never blocks) when a change touches application behavior without updating the
-owning `contract.md` / `intent.md` — a machine backstop for the *undocumented
+owning `contract.md` / `intent.md` - a machine backstop for the *undocumented
 behavior change* class, and in solo-trunk (no PR) the only one. A warning is a
 prompt, not a substitute for the flag: still flag the class and update the spec in
 the same change. Mechanics: `/steer:reference traceability`.
@@ -813,17 +813,17 @@ the same change. Mechanics: `/steer:reference traceability`.
 
 ## High-risk areas
 
-These require **explicit dev scoping before broad changes** — do not propose
+These require **explicit dev scoping before broad changes** - do not propose
 architectural changes here speculatively:
 
-- **Auth & sessions** — sign-in/up, password reset, token issuance, session invalidation
-- **Authorization & permissions** — role checks, access control, multi-tenancy boundaries
-- **Database migrations** — schema changes, backfills, migration scripts
-- **Infrastructure** — anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
-- **Secrets handling** — anything reading, writing, or transmitting credentials/keys/tokens
-- **Deletion logic** — hard deletes, cascading deletes, retention/cleanup jobs
-- **Billing & payments** — pricing, charging, refunds, subscription state
-- **Deployment & release logic** — CI/CD workflows, release scripts, feature-flag rollouts
+- **Auth & sessions** - sign-in/up, password reset, token issuance, session invalidation
+- **Authorization & permissions** - role checks, access control, multi-tenancy boundaries
+- **Database migrations** - schema changes, backfills, migration scripts
+- **Infrastructure** - anything in `/infra`, especially networking, IAM, secret stores (Parameter Store / Secrets Manager)
+- **Secrets handling** - anything reading, writing, or transmitting credentials/keys/tokens
+- **Deletion logic** - hard deletes, cascading deletes, retention/cleanup jobs
+- **Billing & payments** - pricing, charging, refunds, subscription state
+- **Deployment & release logic** - CI/CD workflows, release scripts, feature-flag rollouts
 
 Handling: scope with the dev **before** any code; contract or ADR first;
 smaller PRs; line-by-line review; validate in non-prod before prod. `@claude
@@ -832,47 +832,47 @@ implement this` is not appropriate here without explicit in/out scope.
 **Pre-production relaxation:** these gates protect real systems and real data.
 While a product is **pre-production** (nothing deployed, no real users or
 data), high-risk areas may be built for real locally without prior dev
-scoping — document the choices as you go (`contract.md`, ADR for
-hard-to-reverse picks, the feature's `intent.md` → `## Open questions` for open
+scoping - document the choices as you go (`contract.md`, ADR for
+hard-to-reverse picks, the feature's `intent.md` -> `## Open questions` for open
 items) and list them
 in the PR description so dev review hardens them at productionization.
 "Pre-production" is a property of the **product, not the laptop**: working
 locally in a deployed product still produces migrations/deletions that reach
-real data on merge — no relaxation there. **Never relaxed**, even
+real data on merge - no relaxation there. **Never relaxed**, even
 pre-production: real secrets/credentials, `/infra`, deploys, real third-party
 calls.
 
 
 ## Answering a human gate in-session
 
-A gate needs the deciding **human's** answer — not a particular channel. When that
+A gate needs the deciding **human's** answer - not a particular channel. When that
 human is in the session, don't send them out-of-band to edit a status field:
 **ask, then act in the same pass.** Never ratify on your own initiative.
 
 | Gate | Decides | On Approve |
 |---|---|---|
-| ADR `Proposed → Accepted` | its `Deciders` | `/steer:adr accept <n>` |
-| Intent `draft → approved` | the PO | `/steer:spec approve <id>` |
+| ADR `Proposed -> Accepted` | its `Deciders` | `/steer:adr accept <n>` |
+| Intent `draft -> approved` | the PO | `/steer:spec approve <id>` |
 | `--reviewed` plan sign-off | who asked | implement |
 
-Ask once, three options — **Approve · Reject · Decide later**:
+Ask once, three options - **Approve · Reject · Decide later**:
 
-- **Show the tradeoff** — rejected alternatives, negative consequences, locked
-  scope — never just a title; a human cannot decide what they cannot see.
+- **Show the tradeoff** - rejected alternatives, negative consequences, locked
+  scope - never just a title; a human cannot decide what they cannot see.
 - **Never pre-select, never infer.** An unambiguous answer *to the decision
   presented* ratifies it; ambient agreement ("ok", "thanks", silence, or sign-off
   on an earlier plan) does not. Never bundle two decisions into one prompt.
-- **`Decide later` is always offered** and leaves every field untouched — the
+- **`Decide later` is always offered** and leaves every field untouched - the
   artifact stays `Proposed` / `draft` exactly as before.
 - **Record who decided, when, and that it was in-session**, plus the
   `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded*
   kind is the audit hole this rule prevents.
-- **Preconditions fire first** — never show a gate the human cannot legitimately
-  pass (an unresolved blocking question → `/steer:questions`).
+- **Preconditions fire first** - never show a gate the human cannot legitimately
+  pass (an unresolved blocking question -> `/steer:questions`).
 - **Wrong decider?** Surface the mismatch and leave the state alone; you may not
   record someone else's decision for them.
 - **Never promptable, in any mode:** merge, deploy, real secrets, `/infra`,
-  protected-branch pushes. These need a human acting in the real system — asking
+  protected-branch pushes. These need a human acting in the real system - asking
   does not authorize them, and this rule never relaxes them.
 
 Full protocol: `/steer:reference gates`.
@@ -880,7 +880,7 @@ Full protocol: `/steer:reference gates`.
 
 ## Hotfix / incident fast-path
 
-A production incident is **high-risk and time-critical at once** — the one case
+A production incident is **high-risk and time-critical at once** - the one case
 where full ceremony and speed genuinely conflict. The hotfix lane is the **only
 sanctioned speed lever**. Run it via `/steer:work --hotfix`.
 
@@ -888,9 +888,9 @@ sanctioned speed lever**. Run it via `/steer:work --hotfix`.
 change targets an already-**deployed production** system with real users or data
 (the rule 60 predicate) **and** there is an active incident, outage, or
 regression. "Urgent" feature work, a looming demo, or a pre-MVP repo with nothing
-deployed are **not** hotfixes — they take the normal lane.
+deployed are **not** hotfixes - they take the normal lane.
 
-**What the lane relaxes — ceremony and ordering, never authority:**
+**What the lane relaxes - ceremony and ordering, never authority:**
 
 - **Issue after-the-fact.** File or backfill the GitHub issue as soon as
   practical instead of before the first edit; work on a `hotfix/<n>-slug` branch
@@ -898,54 +898,54 @@ deployed are **not** hotfixes — they take the normal lane.
   issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
   change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
-  gate still stands** — no self-merge.
-- **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 —
+  gate still stands** - no self-merge.
+- **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 -
   validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
   the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
-  is **never auto-executed** — merge and deploy stay human-gated.
+  is **never auto-executed** - merge and deploy stay human-gated.
 
 **Mandatory follow-up once the fire is out (not optional).** Restore traceability:
 backfill/finish the issue, write the spec or ADR if a durable decision was made,
 and write a `/spec/history/` entry. Definition of Done is **deferred under this
-lane, never waived** (rule 50) — a hotfix without its follow-up is unfinished
+lane, never waived** (rule 50) - a hotfix without its follow-up is unfinished
 work, not a shortcut earned.
 
 
 ## Secrets handling
 
 Secrets (DSNs, API tokens, DB credentials, `AUTH_SECRET`, AWS keys) are a
-high-risk area — scope with the dev before touching how they are read, written,
+high-risk area - scope with the dev before touching how they are read, written,
 or transmitted.
 
-- **Never commit secrets** — not in code, configs, `mise.toml`, specs, or
+- **Never commit secrets** - not in code, configs, `mise.toml`, specs, or
   commit messages.
 - **Local development:** config lives in a git-ignored `.env` / `.env.local`.
   When setting up or running an app, make sure it exists with the base
-  variables the app needs to boot — local Compose service URLs (e.g.
-  `DATABASE_URL` → the local PostgreSQL) and freshly generated local-only
+  variables the app needs to boot - local Compose service URLs (e.g.
+  `DATABASE_URL` -> the local PostgreSQL) and freshly generated local-only
   secrets, never values copied from deployed environments. Document variable
   *names* (not values) in the app's `.env.example`. A Claude Code worktree
   (`claude --worktree`) starts from git refs only, so the git-ignored `.env` is
-  absent there — the repo-root `.worktreeinclude` carries it (and other local
+  absent there - the repo-root `.worktreeinclude` carries it (and other local
   config) into each new worktree so the app still boots.
 - **Deployed environments:** secrets live in **SSM Parameter Store
-  (`SecureString`)** by default — it is cheaper than Secrets Manager and covers
+  (`SecureString`)** by default - it is cheaper than Secrets Manager and covers
   most needs (DSNs, tokens, DB credentials). Use **AWS Secrets Manager** only when
   you actually need its features: automatic rotation, cross-account sharing, or
-  large/binary values. Either way they are injected at deploy/runtime — never
+  large/binary values. Either way they are injected at deploy/runtime - never
   baked into images or CI logs. Non-secret config may live in `mise.toml`'s
   `[env]` block; secrets must not.
-- A committed secret is compromised: stop, tell the dev, and rotate it — don't
+- A committed secret is compromised: stop, tell the dev, and rotate it - don't
   just delete the line.
 
 
 ## Audit-aligned delivery (SOC 2 / ISO 27001)
 
-The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations —
+The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations -
 say "aligned", never "compliant": no workflow or artifact makes a product
 compliant; certification scope, compliance accountability, and
 production-readiness approval stay with humans. The artifacts double as audit
-evidence — keep the chain intact: traceability (intent → spec → tracker ref →
+evidence - keep the chain intact: traceability (intent -> spec -> tracker ref ->
 the reviewed PR, each change's own record), review evidence (dev-approved PRs,
 drift flags, DoD), change history (ADRs + action history), and
 access-conscious secure defaults
@@ -956,16 +956,16 @@ access-conscious secure defaults
 ## Change-size model
 
 Match the workflow to the change. When uncertain, size **up**. **This rule sets
-per-change ceremony** — Issue-first and Definition of Done take their thresholds
+per-change ceremony** - Issue-first and Definition of Done take their thresholds
 from here, and an arguable class takes the larger one.
 
-- **Tiny** (≈<20 lines, **no behavior change** — copy, typo, formatting, comment):
-  open a PR and stop — **no issue, no spec, no ADR, no plan**; the PR is the
+- **Tiny** (≈<20 lines, **no behavior change** - copy, typo, formatting, comment):
+  open a PR and stop - **no issue, no spec, no ADR, no plan**; the PR is the
   evidence anchor. Any behavior change is Small at minimum, however few the lines.
 - **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
 - **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
 - **Large** (crosses areas, touches infra, or a choice costly to reverse): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs. A first-time pattern is not itself Large.
-- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above — never Tiny.
+- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above - never Tiny.
 
 **Medium** and larger start in plan mode (or a posted plan): review the
 approach while it's cheap to change.
@@ -978,46 +978,50 @@ parens so it stays actionable there and still applies on any other stack. A
 product's own `CLAUDE.md` adds team-learned patterns on top. Full patterns +
 anti-patterns prose: `/steer:reference conventions`.
 
-- **Typed by default** — static typing on wherever the language supports it;
+- **Typed by default** - static typing on wherever the language supports it;
   model the type rather than reaching for an untyped escape hatch. *(TS
   `strict`; Python: type hints checked with a type checker.)*
-- **All data access goes through a parameterized query layer — never raw or
+- **All data access goes through a parameterized query layer - never raw or
   string-interpolated SQL.** Schema is defined in code and changed via
   committed, reviewed migrations; no ad-hoc schema edits. *(Drizzle + Drizzle
   Kit; Python: SQLAlchemy 2.x + Alembic.)*
 - **Validate every external input through a defined schema at the boundary
-  before use** — request inputs, external API responses, config and data
-  files, env vars — and derive types from that schema rather than hand-writing
+  before use** - request inputs, external API responses, config and data
+  files, env vars - and derive types from that schema rather than hand-writing
   them. One validated config module, not scattered raw env reads.
-- **Server-first** — secrets and DB access stay server-side; client code is
+- **Server-first** - secrets and DB access stay server-side; client code is
   explicit and lean; only genuinely public values reach the client. *(Next.js
   Server Components / `NEXT_PUBLIC_*`.)*
 - **Domain logic lives in shared, testable modules**, not in UI components or
-  route handlers — keep handlers thin. *(Monorepo `packages/`.)*
-- **Slice work vertically** — thin end-to-end slices (schema to UI), not
+  route handlers - keep handlers thin. *(Monorepo `packages/`.)*
+- **Slice work vertically** - thin end-to-end slices (schema to UI), not
   layer by layer; each merge leaves the product working.
-- **Nothing silenced** — no empty `catch` / swallowed errors (unexpected
+- **Nothing silenced** - no empty `catch` / swallowed errors (unexpected
   errors go to Sentry with context); no escape hatches without a why-comment
   (`any` casts, `@ts-ignore`/`@ts-expect-error`, wholesale lint-rule
   disabling).
-- **Lockfiles are maintained, not optional** — committed and updated in the
+- **Lockfiles are maintained, not optional** - committed and updated in the
   same change that touches their config/deps; never deleted or ignored to
   dodge an error. *(`mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
-  `.terraform.lock.hcl`; mise only writes `mise.lock` if it already exists —
+  `.terraform.lock.hcl`; mise only writes `mise.lock` if it already exists -
   restore a missing one first.)*
-- **Every import resolves to a declared dependency** — added to the manifest
+- **Every import resolves to a declared dependency** - added to the manifest
   (and lockfile) in the same change; a plausible-looking undeclared package
   name is a hallucinated dependency that breaks in a clean environment.
   *(`package.json`; Python: `pyproject.toml`.)*
-- **ASCII in code and values** — typographic characters (em/en dashes, arrows,
-  smart quotes, ellipsis, non-breaking spaces) belong in prose and docs, never
-  in code, identifiers, config keys/values, or strings bound for an external
-  API — use the ASCII equivalent. Strict validators reject the rest.
+- **ASCII everywhere** - em/en dashes, curly quotes, ellipsis, arrows, bullets
+  and non-breaking spaces never appear in anything you produce: not in code,
+  config, identifiers or strings bound for an external API, and not in
+  comments, specs, docs, commit messages, PR text or chat either. Write `-`,
+  `'`, `"`, `...`, `->`. Strict validators reject the rest, and a write hook
+  denies them. This is about those characters only - accented letters,
+  guillemets and other non-English text are unaffected. The apostrophe is `'`
+  in every language, French included; typeset forms are never the exception.
 
 
-## Output discipline — earn every line
+## Output discipline - earn every line
 
-Default to less. Every line — chat, code, or committed prose — must carry
+Default to less. Every line - chat, code, or committed prose - must carry
 something the reader can't already see. Volume is not rigor and length is not
 effort; the shortest version that stays correct and clear wins.
 
@@ -1025,36 +1029,36 @@ effort; the shortest version that stays correct and clear wins.
   and recaps (the shape is in Responses).
 - **Comments are the exception, not the default.** A comment carries only a
   non-obvious *why*; nothing that restates the code (see Code comments).
-- **Write the least code that does the job.** Solve the task in front of you —
+- **Write the least code that does the job.** Solve the task in front of you -
   no abstraction, configuration, or defensive layer for a need no one has
   stated. Fewer lines to read is fewer lines to review and maintain.
 - **Durable prose stays lean too.** Specs, ADRs, PR descriptions, and docs
-  inform, not impress — short declarative sentences, no hedging or ceremony.
+  inform, not impress - short declarative sentences, no hedging or ceremony.
   Same discipline applies to the standards themselves.
 
 
-## Shareable views → Claude Artifacts
+## Shareable views -> Claude Artifacts
 
 When a skill's output is a **shareable, at-a-glance view** someone hands to a
-stakeholder — a feature summary, a report/dashboard, a release timeline, a
-capability menu, a fillable questionnaire — render it as a **Claude Artifact**
+stakeholder - a feature summary, a report/dashboard, a release timeline, a
+capability menu, a fillable questionnaire - render it as a **Claude Artifact**
 (a default-private hosted page on claude.ai), not a wall of terminal text. Fall
-back to inline Markdown where the Artifact tool is unavailable — the fallback
+back to inline Markdown where the Artifact tool is unavailable - the fallback
 is not a failure.
 
 An Artifact is a **derived view, never a source of truth**: every visual
-encodes a real value the source (spec, tracker, audit) actually contains —
+encodes a real value the source (spec, tracker, audit) actually contains -
 never fabricate a status, date, count, or finding, and never advance a marker
-past what the source records. Always an on-demand render or an offer — never
-auto-generated per feature or on a schedule — and never carrying secrets or
+past what the source records. Always an on-demand render or an offer - never
+auto-generated per feature or on a schedule - and never carrying secrets or
 (on a stakeholder page) internal detail. Its only write is the page HTML to a
 **system temp dir, never under the repo tree**; don't persist the URL in the
 repo.
 
 Style the page from the repo's `DESIGN.md` tokens when present, else the
-`artifact-design`/`dataviz` house default — never an invented brand. A fillable
+`artifact-design`/`dataviz` house default - never an invented brand. A fillable
 page returns data **only through its exported, machine-keyed document**
-ingested by its owning skill (the PO questionnaire → `/steer:intake clarify`).
+ingested by its owning skill (the PO questionnaire -> `/steer:intake clarify`).
 
 Mechanics, the full derived-view discipline, the styling contract, the
 Markdown-fallback shape, and which skill renders what:
@@ -1063,14 +1067,14 @@ Markdown-fallback shape, and which skill renders what:
 
 ## Design sources & UI
 
-Most features have **no design export, or only a partial one** — that is the
+Most features have **no design export, or only a partial one** - that is the
 normal case, not a blocker. When an export *is* committed (Claude Design ZIP,
-Figma, screenshots), read the **local export** — Claude **cannot** fetch a Claude
+Figma, screenshots), read the **local export** - Claude **cannot** fetch a Claude
 Design URL (it 403s). The export is authoritative for the **visual behavior and
 flow it actually shows**; the spec for what the system does; gaps and conflicts
-go to the feature's `intent.md` → `## Open questions`. It is a **spec to realize
+go to the feature's `intent.md` -> `## Open questions`. It is a **spec to realize
 in the standard stack, not code to ship**: its delivery tech (UMD React,
-in-browser Babel, hand-rolled CSS) is disposable — serving the prototype runtime
+in-browser Babel, hand-rolled CSS) is disposable - serving the prototype runtime
 is an **ADR-gated, kill-dated exception**, never the default.
 
 When the design is absent or partial, **build the UI deliberately instead of
@@ -1080,8 +1084,8 @@ a professional/enterprise default, the standard stack (Next + TS + Tailwind), an
 accessibility.
 
 Whichever way a feature's UI originates, **capture the reusable decisions in
-`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) — populated as you build,
-promoting anything that recurs — so every feature stays visually uniform. Full
+`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) - populated as you build,
+promoting anything that recurs - so every feature stays visually uniform. Full
 walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
 no-export build): run **`/steer:reference design-sources`**.
 
@@ -1091,14 +1095,14 @@ no-export build): run **`/steer:reference design-sources`**.
 ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths are
 internal traceability. Keep them out of **app UI copy** (titles, labels, badges,
 tooltips, empty/error states, emails) and **`/spec/app/` guide copy and release
-notes** — state what changed for the user, not the record behind it; use the
+notes** - state what changed for the user, not the record behind it; use the
 product's own domain language (`spec/glossary.md`, linked not copied). Refs
 belong in intent, contracts, ADRs, history, runbook, PRs, commits.
 
 
-## You are not the gate — the DEV is
+## You are not the gate - the DEV is
 
-You have no path-based permission boundary in managed product repos — propose
+You have no path-based permission boundary in managed product repos - propose
 changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
 reviewing the PR is the hard gate and catches out-of-scope or risky edits. When
 unsure about scope, ask in a PR comment before making sweeping changes.
@@ -1107,19 +1111,19 @@ unsure about scope, ask in a PR comment before making sweeping changes.
 ## When steer itself misbehaves, report it upstream
 
 steer is maintained centrally in `element22llc/e22-plugins`. When the plugin's
-**own machinery** misbehaves, treat it as a plugin defect to report — not a
+**own machinery** misbehaves, treat it as a plugin defect to report - not a
 thing to silently work around:
 
 - A SessionStart **self-fault notice** flags recorded hook faults (Claude Code only).
 - A skill or rule gives **contradictory or impossible** instructions.
 - A referenced **template, script, or helper is missing, malformed, or crashes**.
 
-This is about steer's defects only — ordinary product-code errors, failing
+This is about steer's defects only - ordinary product-code errors, failing
 tests, or your own mistakes are not plugin faults and do not belong here.
 
 On any of the above: surface it plainly, then file it upstream with
-`/steer:report`. It **auto-files** after scrubbing and deduping — no confirmation
-step — and the scrub **redacts or omits** anything it can't safely classify
+`/steer:report`. It **auto-files** after scrubbing and deduping - no confirmation
+step - and the scrub **redacts or omits** anything it can't safely classify
 (secrets, absolute paths, product code) rather than asking, so nothing sensitive
 reaches the shared repo. If you only worked around the defect to keep going,
 still report it so it gets fixed for everyone.
@@ -1128,19 +1132,19 @@ still report it so it gets fixed for everyone.
 ## End-of-session checklist
 
 Before wrapping up a working session, run this checklist and report **only the
-open items**, one line each — a clean checklist is one sentence, never the list
+open items**, one line each - a clean checklist is one sentence, never the list
 echoed back with ticks. Don't silently close out, and don't turn the report
 into a round of per-item confirmations (satisfied items need no ack; only
 genuinely open items need the dev). Track open items with your todo tooling so
 nothing is dropped:
 
-- [ ] **Definition of Done holds** for every change made this session — spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
+- [ ] **Definition of Done holds** for every change made this session - spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree closing → dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook runs `docker:clean`, volumes included; `SessionEnd` only stops containers, keeps volumes, and often does not finish; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` — Parallel worktrees.)
+- [ ] Worktree closing -> dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook runs `docker:clean`, volumes included; `SessionEnd` only stops containers, keeps volumes, and often does not finish; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` - Parallel worktrees.)
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
 - [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
-- [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened — or, in solo-trunk, the trunk commit pushed — with CI watched to green (see Commit autonomy)?
-- [ ] Solo trunk mode without a recorded graduation waiver, and the MVP now works, you've deployed, or a second contributor joined → graduate to the PR flow via `/steer:protect` (Commit autonomy)? (A waived repo asks this only when a second contributor joined.)
+- [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened - or, in solo-trunk, the trunk commit pushed - with CI watched to green (see Commit autonomy)?
+- [ ] Solo trunk mode without a recorded graduation waiver, and the MVP now works, you've deployed, or a second contributor joined -> graduate to the PR flow via `/steer:protect` (Commit autonomy)? (A waived repo asks this only when a second contributor joined.)
 
 If any item can't be satisfied, say so plainly rather than implying the work is
 complete.

@@ -8,7 +8,7 @@
 <!-- steer:managed:start -->
 ## Outcome
 
-[The technical slice this sub-issue delivers — one shippable piece of the parent
+[The technical slice this sub-issue delivers - one shippable piece of the parent
 feature.]
 
 ## User value
@@ -40,14 +40,14 @@ internal tasks.]
 
 ## Related issues
 
-- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+- #N - [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
-  are no related issues — never leave an empty stub.]
+  are no related issues - never leave an empty stub.]
 
 ## Delivery
 
 [Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
-markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+markers as a clickable line - maintained by `/steer:tracker-sync link-pr` and
 `/steer:work`.]
 
 - PR: #NN
@@ -55,5 +55,5 @@ markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
 
 ## Validation
 
-[How this is verified — tests, preview, manual check.]
+[How this is verified - tests, preview, manual check.]
 <!-- steer:managed:end -->

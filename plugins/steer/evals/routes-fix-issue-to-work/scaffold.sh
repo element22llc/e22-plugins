@@ -1,11 +1,11 @@
 #!/bin/sh
-# Build a MANAGED steer repo — a complete, version-stamped /spec spine — for the
+# Build a MANAGED steer repo - a complete, version-stamped /spec spine - for the
 # routing cases whose ask presumes an already-bootstrapped product repo.
 #
 # Every session-start check must stay SILENT against this tree. A `foreign` spine
 # (spec/ without spec/.version) makes check-unmanaged-repo.sh inject an adopt
 # offer into every run, and the adopt digression then competes with the ask for
-# the answer — measuring the fixture instead of the routing. Verify with:
+# the answer - measuring the fixture instead of the routing. Verify with:
 #   printf '{"cwd":"<repo>"}' | sh plugins/steer/hooks/session-checks.sh
 # and expect no output.
 #
@@ -16,13 +16,13 @@ set -eu
 
 git init -q .
 # The sandbox has no init.defaultBranch, so HEAD would be `master` while the
-# standards name `main` — and every 2026-09-04 run spent answer space on that.
+# standards name `main` - and every 2026-09-04 run spent answer space on that.
 git symbolic-ref HEAD refs/heads/main
 git config user.email eval@example.com
 git config user.name "eval"
 
 cat >CLAUDE.md <<'EOF'
-# Acme Checkout — product context
+# Acme Checkout - product context
 
 Payments service for the Acme storefront. Org engineering standards arrive from
 the steer plugin; this file holds product-specific context only.
@@ -97,13 +97,13 @@ mkdir -p spec/features/checkout spec/decisions spec/history tests
 # one more nudge competing with the ask. tests/test_eval_suite.py pins the two
 # together, so a release bump fails the suite until this is re-stamped.
 cat >spec/.version <<'EOF'
-# Spec-spine version — managed by /steer:init, /steer:adopt, /steer:build,
+# Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
 # /steer:sync. Do not edit by hand.
 6.3.0
 EOF
 
 cat >spec/vision.md <<'EOF'
-# Vision — Acme Checkout
+# Vision - Acme Checkout
 
 ## What
 One-page checkout for the Acme storefront.
@@ -119,7 +119,7 @@ Checkout completion rate above 60% on mobile.
 EOF
 
 cat >spec/users.md <<'EOF'
-# Users — Acme Checkout
+# Users - Acme Checkout
 
 ## Shopper
 Buys one or two items and wants out. Job: pay without re-entering anything.
@@ -129,11 +129,11 @@ Owns the service. Job: change pricing rules without breaking totals.
 EOF
 
 cat >spec/glossary.md <<'EOF'
-# Glossary — Acme Checkout
+# Glossary - Acme Checkout
 
-- **Cart** — the shopper's selected line items before payment.
-- **Line item** — one product plus a quantity and a unit price in minor units.
-- **Total** — the sum a shopper is charged, in minor units.
+- **Cart** - the shopper's selected line items before payment.
+- **Line item** - one product plus a quantity and a unit price in minor units.
+- **Total** - the sum a shopper is charged, in minor units.
 EOF
 
 cat >spec/tracker.md <<'EOF'
@@ -155,7 +155,7 @@ Nothing is ever appended to a shared file, so concurrent PRs cannot conflict.
 EOF
 
 cat >spec/history/2026-01-12-0900-bootstrap.md <<'EOF'
-# 2026-01-12 09:00 — bootstrap
+# 2026-01-12 09:00 - bootstrap
 
 Installed the spec spine and the mise toolchain. Asked by the payments team.
 EOF
@@ -212,9 +212,9 @@ Related issue: acme/checkout#101
 
 ## Key concepts & data
 
-- Cart — the shopper's selected line items; remembers its items until payment succeeds.
-- Line item — a product, a quantity, and a unit price in minor units.
-- Total — the amount charged, in minor units, derived from the line items.
+- Cart - the shopper's selected line items; remembers its items until payment succeeds.
+- Line item - a product, a quantity, and a unit price in minor units.
+- Total - the amount charged, in minor units, derived from the line items.
 
 ## Lifecycle expectations
 
@@ -231,11 +231,11 @@ Related issue: acme/checkout#101
 
 ## Open questions
 
-None outstanding — all questions were resolved before approval.
+None outstanding - all questions were resolved before approval.
 EOF
 
 cat >spec/features/checkout/contract.md <<'EOF'
-# One-page checkout — Contract
+# One-page checkout - Contract
 
 > Tracker: acme/checkout#101
 
@@ -248,12 +248,12 @@ cat >spec/features/checkout/contract.md <<'EOF'
 
 ## Data model
 
-- `LineItem` — `sku: str`, `unit_price: int` (minor units), `quantity: int` (default 1).
-- `Cart` — `items: list[LineItem]`.
+- `LineItem` - `sku: str`, `unit_price: int` (minor units), `quantity: int` (default 1).
+- `Cart` - `items: list[LineItem]`.
 
 ## API surface
 
-- `total(items: list[LineItem]) -> int` — the charge in minor units.
+- `total(items: list[LineItem]) -> int` - the charge in minor units.
 
 ## Implementation pointers (optional)
 

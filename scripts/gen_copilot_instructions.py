@@ -4,13 +4,13 @@
 steer's always-on engineering standards live in ``plugins/steer/rules/*.md`` and
 reach Claude Code via the ``inject-standards.sh`` SessionStart hook, whose stdout
 becomes the session's ``additionalContext``. GitHub Copilot has no equivalent
-context-injecting hook — its ``sessionStart`` hook ignores stdout — so Copilot's
+context-injecting hook - its ``sessionStart`` hook ignores stdout - so Copilot's
 always-on context comes from a static custom-instructions file, primarily
 ``.github/copilot-instructions.md``. This one file serves **both** Copilot
 surfaces: the Copilot CLI and Copilot in VS Code (which reads it natively).
 
 This script concatenates the same ``rules/*.md`` (lexical order, mirroring the
-hook) into ``plugins/steer/templates/github/copilot-instructions.md`` — the
+hook) into ``plugins/steer/templates/github/copilot-instructions.md`` - the
 committed artifact ``/steer:init`` / ``/steer:adopt`` install into a consumer
 repo's ``.github/``. Keeping a single source of truth (the rules) means the two
 surfaces never diverge; ``check_copilot_instructions.py`` fails the build if the
@@ -49,7 +49,7 @@ INSTRUCTIONS_DIR = Path("plugins/steer/templates/github/instructions")
 # path-scoped, and Copilot has a native mechanism for that: path-specific
 # instruction files (`.github/instructions/<name>.instructions.md` with an
 # `applyTo` glob) that surface only when Copilot works on matching files. We route
-# those rules there instead of the flat file — the Copilot analog of the Claude
+# those rules there instead of the flat file - the Copilot analog of the Claude
 # hook's trait gating, and a tighter fit than dumping infra rules into every
 # repo's always-on context.
 SCOPED_RULES: dict[str, dict[str, str]] = {
@@ -60,7 +60,7 @@ SCOPED_RULES: dict[str, dict[str, str]] = {
             "infra/**,live/**,modules/**,roles/**,playbooks/**,inventory/**"
         ),
         "description": (
-            "Infrastructure-as-code stack standards — applied when editing "
+            "Infrastructure-as-code stack standards - applied when editing "
             "Terraform/OpenTofu/Terragrunt/Ansible/Pulumi files."
         ),
     },
@@ -69,14 +69,14 @@ SCOPED_RULES: dict[str, dict[str, str]] = {
 _INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
-# (`/steer:sync` resolves to a real skill). The refresh path is `/steer:sync` — its
+# (`/steer:sync` resolves to a real skill). The refresh path is `/steer:sync` - its
 # `agent-surface-current` capability re-copies each generated artifact verbatim
 # from the plugin. It is NOT `/steer:init`: init stops on an already-initialized
 # repo, so it can never refresh anything. Copilot teammates only consume the
 # installed file, so the header must name a path that works from a managed repo.
 HEADER = (
     "<!-- Engineering standards (steer plugin). Generated from the plugin's "
-    "rules/ — do not edit by hand. Refresh after a plugin update with /steer:sync "
+    "rules/ - do not edit by hand. Refresh after a plugin update with /steer:sync "
     "from Claude Code in a managed repo, or mise run gen:copilot in the plugin "
     "repo. -->"
 )
@@ -87,13 +87,13 @@ HEADER = (
 # a reader following a router table below would type a command that does not
 # exist there. `gen_agent_skills.py` rewrites refs to the hyphen form for the
 # prompt artifacts, but this file is read by BOTH Copilot surfaces and the CLI
-# loads skills from the plugin manifest — so a blanket rewrite would be wrong for
+# loads skills from the plugin manifest - so a blanket rewrite would be wrong for
 # one of them. State the mapping once, up front, instead.
 INVOCATION_NOTE = (
     "> **Invoking a skill on this surface.** The standards below name skills in "
     "the `/steer:<skill>` form (how Claude Code namespaces them). In **Copilot "
     "for VS Code** the same skills ship in the cross-tool `.agents/skills/` "
-    "tree, invoked as **`/steer-<skill>`** — type `/steer-` in Chat to list "
+    "tree, invoked as **`/steer-<skill>`** - type `/steer-` in Chat to list "
     "them. On the "
     "**Copilot CLI** they load from the plugin manifest. Read any "
     "`/steer:<skill>` reference below as the skill of that name on whichever "
@@ -143,10 +143,10 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
         header = (
             # `/steer:sync` (colon) with the surface named explicitly. The refresh is
             # a verbatim re-copy from ${CLAUDE_PLUGIN_ROOT}, absent in VS Code, so it
-            # is an action taken from Claude Code — naming the surface is what makes
+            # is an action taken from Claude Code - naming the surface is what makes
             # the colon form unambiguous without this file needing the flat
-            # instructions file's `/steer:` → `/steer-` mapping preamble.
-            f"<!-- Generated from the steer plugin's rules/{rule_name} — do not edit "
+            # instructions file's `/steer:` -> `/steer-` mapping preamble.
+            f"<!-- Generated from the steer plugin's rules/{rule_name} - do not edit "
             f"by hand. Refresh with /steer:sync from Claude Code in a managed repo, "
             f"or mise run gen:copilot in the plugin repo. -->"
         )

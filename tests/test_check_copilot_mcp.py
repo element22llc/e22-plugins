@@ -2,7 +2,7 @@
 
 ``gen_copilot_mcp.py`` renders ``plugins/steer/templates/scaffold/vscode/mcp.json``
 (VS Code's ``servers`` schema) from ``plugins/steer/.mcp.json`` (Claude's
-``mcpServers``), translating the auth placeholder (plugin user config → prompted
+``mcpServers``), translating the auth placeholder (plugin user config -> prompted
 input). The
 gate byte-compares the committed mirror against a fresh render. The real plugin's
 mirror must already be in sync.
@@ -37,7 +37,7 @@ def test_render_translates_github_pat(tmp_path: Path):
     # in the consumer repo: `/steer:sync`'s agent-surface-current capability does not
     # cover `.vscode/`, and the scaffold MANIFEST tells the consumer to merge it
     # additively and drop unused servers. So the header must say the consumer owns it
-    # and must NOT claim a refresh path — asserted here so it cannot regress to the
+    # and must NOT claim a refresh path - asserted here so it cannot regress to the
     # "do not edit by hand" / "refresh with /steer:sync" wording it carried before.
     assert "You own this copy" in out
     assert "/steer:sync never rewrites .vscode/" in out

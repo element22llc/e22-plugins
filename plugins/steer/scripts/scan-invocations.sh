@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# scan-invocations.sh — read-only invalid-invocation detector for /steer:sync's
+# scan-invocations.sh - read-only invalid-invocation detector for /steer:sync's
 # invocation-hygiene step (templates/reference/INVOCATION.md).
 #
 # WHY THIS EXISTS
@@ -7,34 +7,34 @@
 #   at bootstrap/adoption time and then frozen: the strings never re-resolve against
 #   the plugin. When skills are renamed, folded into a mode of another skill
 #   (`conventions` -> `/steer:reference conventions`), or made user-invocable:false
-#   (`spec-scaffold`), the repo keeps emitting invocations that no longer work — and
+#   (`spec-scaffold`), the repo keeps emitting invocations that no longer work - and
 #   Claude Code has no built-in check that a referenced skill exists. The plugin's own
 #   CI linter (scripts/check_standards.py) already catches these, but only in the
 #   plugin's OWN prose; nothing re-checks a consumer repo. This detector closes that
 #   gap for /steer:sync.
 #
 # WHAT IT READS
-#   $1  repo-root    — a managed repo to inspect (default: ".")
-#   $2  plugin-root  — the plugin source, to derive the VALID invocation surface
+#   $1  repo-root    - a managed repo to inspect (default: ".")
+#   $2  plugin-root  - the plugin source, to derive the VALID invocation surface
 #                      (default: $CLAUDE_PLUGIN_ROOT, else this script's parent dir).
 #
-# HOW "VALID" IS DERIVED (never a hardcoded list — self-updating with the plugin)
+# HOW "VALID" IS DERIVED (never a hardcoded list - self-updating with the plugin)
 #   * skill names           = the directory names under $PLUGIN/skills/
 #   * user-invocable:false  = skills whose SKILL.md frontmatter sets it (gateways a
-#                             user cannot type — reached only via a front door)
+#                             user cannot type - reached only via a front door)
 #   * reference modes       = the `<!-- steer:modes a,b,c -->` marker in
 #                             skills/reference/SKILL.md
 #   So a future skill rename/add changes the verdicts here with no edit to this file.
 #
-# WHAT IT SCANS (live instruction surfaces ONLY — the false-positive guard)
+# WHAT IT SCANS (live instruction surfaces ONLY - the false-positive guard)
 #   CLAUDE.md, README.md, .github/pull_request_template.md. It deliberately does NOT
 #   scan append-only / historical / provenance prose (spec/history/*, the frozen
 #   spec/HISTORY.md archive, spec/AUDIT-REPORT.md,
 #   spec/decisions/* ADRs, spec/sources/*, spec/reference/*, feature intent.md
-#   provenance lines) — a past `/e22-adopt` there is a legitimate record of what was
+#   provenance lines) - a past `/e22-adopt` there is a legitimate record of what was
 #   run, not live guidance, and must never be rewritten.
 #
-# OUTPUT (stdout) — one TAB-separated line PER problem occurrence (clean repo = silent):
+# OUTPUT (stdout) - one TAB-separated line PER problem occurrence (clean repo = silent):
 #   <file>\t<lineno>\t<found>\t<class>\t<suggested-fix>
 #   class ∈ legacy-e22 | reference-mode | noncallable-gateway | unknown
 #     legacy-e22           /e22-<skill> pre-rebrand prefix; <skill> resolves
@@ -51,13 +51,13 @@
 #                          flag only, no mechanical fix
 #   A valid invocation (a real callable skill, or /steer:reference <mode>) emits
 #   NOTHING. suggested-fix is `-` when there is no mechanical rewrite.
-#   Findings are reported on STDOUT, NEVER via a nonzero exit — so a skill running
+#   Findings are reported on STDOUT, NEVER via a nonzero exit - so a skill running
 #   this through a tool's Bash wrapper does not read a normal "findings" run as a
 #   failure (same contract as scan-capabilities.sh).
 #
 # EXIT CODES
-#   0  ran OK — read stdout for the findings.
-#   2  usage error — too many arguments.
+#   0  ran OK - read stdout for the findings.
+#   2  usage error - too many arguments.
 #   3  repo-root is missing or unreadable.
 #
 # SECURITY: read-only; never executes repo content; no network; no jq. Diagnostics
@@ -108,7 +108,7 @@ if [ -d "$SKILLS_DIR" ]; then
 	for _d in "$SKILLS_DIR"/*/; do
 		_md="${_d}SKILL.md"
 		[ -f "$_md" ] || continue
-		# Frontmatter only: read up to the second `---`. A tolerant grep is enough —
+		# Frontmatter only: read up to the second `---`. A tolerant grep is enough -
 		# the value is `false` (optionally quoted) on a `user-invocable:` line.
 		if grep -Eq '^user-invocable:[[:space:]]*("?false"?)[[:space:]]*$' "$_md" 2>/dev/null; then
 			NONCALLABLE="${NONCALLABLE}$(basename "$_d") "
@@ -134,7 +134,7 @@ in_set() { case "$2" in *" $1 "*) return 0 ;; *) return 1 ;; esac }
 
 emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 
-# classify_legacy <rel> <lineno> <found> <tok> — the shared verdict for BOTH legacy
+# classify_legacy <rel> <lineno> <found> <tok> - the shared verdict for BOTH legacy
 # passes below. It routes a pre-rebrand token through the SAME classifier ladder the
 # `/steer:` pass uses, so a legacy token gets the verdict its modern spelling would.
 # Classifying against $SKILLS alone got two cases wrong, and both matter because
@@ -142,7 +142,7 @@ emit() { printf '%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5"; }
 #   * a `reference` mode (`/e22-conventions`) degraded to `unknown` with no fix,
 #     when the deterministic `/steer:reference conventions` is exactly right;
 #   * a `user-invocable:false` gateway (`/e22-standards:e22-spec-scaffold`) was
-#     auto-rewritten to `/steer:spec-scaffold` — an invocation INVOCATION.md
+#     auto-rewritten to `/steer:spec-scaffold` - an invocation INVOCATION.md
 #     documents as untypable. It must be a human routing decision, no mechanical fix.
 # Pre-2.0.0 prose is the likeliest place both shapes appear: `conventions` and
 # `spec-scaffold` were typable skills back then.
@@ -154,7 +154,7 @@ classify_legacy() {
 	elif in_set "$4" "$SKILLS"; then
 		emit "$1" "$2" "$3" "legacy-e22" "/steer:$4"
 	else
-		# a renamed/removed skill (e.g. /e22-drift) — legacy, but not a pure token
+		# a renamed/removed skill (e.g. /e22-drift) - legacy, but not a pure token
 		# swap; flag for a human.
 		emit "$1" "$2" "$3" "unknown" "-"
 	fi
@@ -163,7 +163,7 @@ classify_legacy() {
 # --- scan the live instruction surfaces --------------------------------------
 
 # Fixed allowlist: unambiguously live, human-facing instruction prose. Extend
-# deliberately — never add append-only/provenance files (see header).
+# deliberately - never add append-only/provenance files (see header).
 SURFACES="CLAUDE.md README.md .github/pull_request_template.md"
 
 for REL in $SURFACES; do
@@ -178,20 +178,20 @@ for REL in $SURFACES; do
 		elif in_set "$tok" "$NONCALLABLE"; then
 			emit "$REL" "$_ln" "$_tok" "noncallable-gateway" "-"
 		elif in_set "$tok" "$SKILLS"; then
-			: # valid callable skill — emit nothing
+			: # valid callable skill - emit nothing
 		else
 			emit "$REL" "$_ln" "$_tok" "unknown" "-"
 		fi
 	done
 
-	# `/e22-standards:[e22-]<tok>` — the COMPOUND pre-rebrand forms. The plugin
+	# `/e22-standards:[e22-]<tok>` - the COMPOUND pre-rebrand forms. The plugin
 	# itself was named `e22-standards`, so a pre-2.0.0 repo qualifies invocations
 	# with it, either doubled (`/e22-standards:e22-init`, MIGRATIONS.md v2.0.0
 	# pair 1) or single (`/e22-standards:init`, pair 2). Both carry the real skill
 	# token AFTER the colon; `standards` is never it.
 	# This pass must run BEFORE the simple one below and is not optional: `standards`
 	# is itself a live skill name, so the simple pass reads `/e22-standards:e22-init`
-	# as the `standards` skill and suggests `/steer:standards` — and RECONCILE.md
+	# as the `standards` skill and suggests `/steer:standards` - and RECONCILE.md
 	# applies a legacy-e22 suggested-fix DETERMINISTICALLY, rewriting the line to
 	# the nonsense `/steer:standards:e22-init`. A wrong automatic rewrite of a
 	# consumer's CLAUDE.md is worse than no finding at all.
@@ -201,7 +201,7 @@ for REL in $SURFACES; do
 		classify_legacy "$REL" "$_ln" "$_found" "$tok"
 	done
 
-	# `/e22-<tok>` occurrences — the simple pre-rebrand prefix. Skip the marketplace
+	# `/e22-<tok>` occurrences - the simple pre-rebrand prefix. Skip the marketplace
 	# id (`/e22-plugins`), the one legitimate slash-prefixed e22- token.
 	grep -noE '/e22-[a-z][a-z-]*' "$F" 2>/dev/null | while IFS=: read -r _ln _tok; do
 		tok="${_tok#/e22-}"
@@ -212,8 +212,8 @@ for REL in $SURFACES; do
 		# HONEST LIMITATION: the guard is LINE-scoped, not occurrence-scoped, so a
 		# genuine bare `/e22-standards` sharing a line with a compound token is not
 		# separately reported. That under-reports by at most one finding on one
-		# implausible line shape; the alternative — rewriting every `/e22-standards`
-		# occurrence on such a line — would corrupt the compound into
+		# implausible line shape; the alternative - rewriting every `/e22-standards`
+		# occurrence on such a line - would corrupt the compound into
 		# `/steer:standards:init`. Under-report over wrong rewrite, deliberately.
 		if [ "$tok" = "standards" ] &&
 			sed -n "${_ln}p" "$F" 2>/dev/null | grep -q '/e22-standards:[a-z]'; then

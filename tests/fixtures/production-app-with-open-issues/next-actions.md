@@ -1,4 +1,4 @@
-# /steer:work handoff — issue #142 (live production app)
+# /steer:work handoff - issue #142 (live production app)
 
 The app is already in production. Issue #142 is an optional follow-up; nothing
 here gates a release, so the optional work is filed under **Recommended**, not
@@ -8,7 +8,7 @@ mislabelled as a release blocker.
 <!-- steer:kind=task -->
 <!-- steer:state=in-progress -->
 
-## Recommended next actions — /steer:work
+## Recommended next actions - /steer:work
 
 ### Recommended
 

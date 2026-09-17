@@ -1,10 +1,10 @@
-# Authoring guide — e22-plugins
+# Authoring guide - e22-plugins
 
 How to add or change a skill, rule, hook, or scaffold file in the `steer`
 plugin without reverse-engineering the conventions. This consolidates what the
 root [`CLAUDE.md`](CLAUDE.md), the check scripts under `scripts/`, and
 [`plugins/steer/templates/reference/INVOCATION.md`](plugins/steer/templates/reference/INVOCATION.md)
-already enforce — it does **not** introduce new policy.
+already enforce - it does **not** introduce new policy.
 
 
 > Repo-local helpers do the mechanical parts for you: `/new-skill`, `/new-rule`,
@@ -16,42 +16,42 @@ already enforce — it does **not** introduce new policy.
 > review as the saved `pre-release-audit` workflow, and cut with
 > `scripts/release_cut.py`.
 
-## What I touched → what to run
+## What I touched -> what to run
 
 Run `mise run check` before every commit and `mise run ci` before push/PR
-regardless — this matrix is for tight iteration on a single failure.
+regardless - this matrix is for tight iteration on a single failure.
 
-| You edited… | Gate that covers it | Fast re-run |
+| You edited... | Gate that covers it | Fast re-run |
 | --- | --- | --- |
 | `plugins/steer/skills/**` | `plugin-check` (incl. `check_agent_skills.py`) | `uv run python scripts/check_plugin.py && uv run python scripts/check_standards.py` |
 | `plugins/steer/rules/**` | `plugin-check` (incl. `check_copilot_instructions.py`) | `uv run python scripts/check_plugin.py` |
-| `rules/**`, `skills/**`, `agents/**`, `.mcp.json`, or `hooks/**` → stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_*`, all in `mise run check`) | `mise run gen:copilot` — regenerates the whole non-Claude agent surface (instructions, the `.agents/skills/` tree, agents, `vscode/mcp.json`, `copilot-hooks.json`, manifest versions); commit the regenerated files with the source change |
+| `rules/**`, `skills/**`, `agents/**`, `.mcp.json`, or `hooks/**` -> stale **committed Copilot artifacts** | `plugin-check` (`check_copilot_*`, all in `mise run check`) | `mise run gen:copilot` - regenerates the whole non-Claude agent surface (instructions, the `.agents/skills/` tree, agents, `vscode/mcp.json`, `copilot-hooks.json`, manifest versions); commit the regenerated files with the source change |
 | `plugins/steer/hooks/**` | `hooktests` + `shell` (+ `plugin-check`'s `check_copilot_hooks.py`) | `sh plugins/steer/hooks/tests/run.sh`; if you added/removed/retimed a *ported* hook, `mise run gen:copilot` regenerates `copilot-hooks.json` (ported subset declared in `gen_copilot_hooks.py`'s `COPILOT_HOOKS`) |
-| `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` — regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
+| `plugins/steer/.mcp.json` | `plugin-check` (`check_copilot_mcp.py`) | `mise run gen:copilot` - regenerates `templates/scaffold/vscode/mcp.json` from `.mcp.json` (auth mapping in `gen_copilot_mcp.py`'s `AUTH_INPUTS`); commit it. **Never hand-edit the mirror.** |
 | `plugins/steer/templates/**` (scaffold, github, spec, reference) | `plugin-check` (+ `fixtures` if golden) | `uv run python scripts/check_standards.py` |
 | `plugins/steer/templates/reference/MIGRATIONS.md` | `plugin-check` (`check_migrations.py` for entry structure + the `[Unreleased]` deep pass; `check_plugin.py`'s `check_migration_versions` for the version key) | `uv run python scripts/check_migrations.py` |
 | `plugins/steer/scripts/**`, `hooks/lib/version-policy.sh` | `shell` + `version-scan` | `uv run python scripts/check_standards.py` (byte-identical copies) |
-| any other `*.sh` — `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
+| any other `*.sh` - `scripts/*.sh`, `templates/scaffold/scripts/*.sh` | `shell` | `mise run shell` (shellcheck is a hard gate everywhere; shfmt is a hard gate outside `plugins/steer/hooks/`) |
 | `scripts/*.py` (the validators themselves) | `lint` + `typecheck` + `test` | `uv run pytest && uv run ruff check . && uv run ty check scripts/` |
 | `.github/workflows/**` | `actions` + `actions-security` | `actionlint && uv run zizmor --no-online-audits .github/workflows/` |
-| `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** — reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
+| `plugins/steer/templates/github/workflows/**` | `actions` (hard) + `actions-security` (**advisory** - reports, never fails; see [#492](https://github.com/element22llc/e22-plugins/issues/492)) | `mise run actions-security` |
 | `.changes/` / `plugin.json` | `plugin-check` | `uv run python scripts/check_changelog.py` |
-| `scripts/release_cut.py`, `scripts/release_preflight.py`, `scripts/reflow_release_notes.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py tests/test_reflow_release_notes.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `… release_preflight.py --report --offline --no-fetch` against the real tree |
+| `scripts/release_cut.py`, `scripts/release_preflight.py`, `scripts/reflow_release_notes.py` (the release path) | `lint` + `typecheck` + `test` | `uv run pytest tests/test_release_cut.py tests/test_release_preflight.py tests/test_reflow_release_notes.py`; then `uv run python scripts/release_cut.py cut X.Y.Z --dry-run` and `... release_preflight.py --report --offline --no-fetch` against the real tree |
 | `.claude/skills/{release,quick-release,audit-loop}/**`, `.claude/audit/**`, `.claude/workflows/**` | `plugin-check` (`claude plugin validate .claude/skills --strict`); the workflow has no gate | `claude plugin validate .claude/skills --strict`; for the workflow, `node -e` a syntax parse or run `/pre-release-audit` on a small delta |
 | `docs/**` (the docs site) | `docs:check` | `uv run python scripts/validate_docs.py` (then `mise run docs:build` for a strict link check) |
-| `CLAUDE.md`, `.claude/` | nothing ships | — (no changelog entry) |
+| `CLAUDE.md`, `.claude/` | nothing ships | - (no changelog entry) |
 
 ### Local-only dev tools (codegraph)
 
 The committed `mise.toml` pins only what CI needs (python, uv, shellcheck, shfmt,
 actionlint), so `mise install --locked` is reproducible on CI. The **codegraph**
-MCP code-intelligence server and its `node` runtime are *not* committed there —
+MCP code-intelligence server and its `node` runtime are *not* committed there -
 they are unused by CI and `codegraph@latest` cannot be pinned to a lockfile URL,
 which would break the locked install. Install them per-machine via a gitignored
 `mise.local.toml` (mise auto-merges it):
 
 ```toml
-# mise.local.toml — local only, gitignored
+# mise.local.toml - local only, gitignored
 [tools]
 node = "24"
 "npm:@colbymchenry/codegraph" = "latest"
@@ -68,26 +68,26 @@ be unique. The full field set actually used in this repo:
 | Field | Required | Notes |
 | --- | --- | --- |
 | `name` | yes | kebab-case, **no `/steer:` prefix**, must match the directory name. |
-| `description` | yes | Purpose + primary trigger, 1–2 sentences. Appended to `when_to_use` in the skill listing Claude Code uses for routing — keep it lean and put the key use case first (see the listing-cap note below). |
+| `description` | yes | Purpose + primary trigger, 1-2 sentences. Appended to `when_to_use` in the skill listing Claude Code uses for routing - keep it lean and put the key use case first (see the listing-cap note below). |
 | `when_to_use` | yes | Additional trigger phrases / example requests, **appended to `description`** in the routing listing (a recognized field, not documentation-only). Restricted-grammar scalar (see gotcha below). |
 | `argument-hint` | no | CLI arg syntax for multi-mode skills, e.g. `"[start \| resume \| status \| finish] [#issue ...]"`. |
-| `allowed-tools` | no | Pre-approve idempotent ops so the skill doesn't prompt — see below. |
-| `disallowed-tools` | no | Block mutation classes — used by read-only (Tier 1) skills. |
+| `allowed-tools` | no | Pre-approve idempotent ops so the skill doesn't prompt - see below. |
+| `disallowed-tools` | no | Block mutation classes - used by read-only (Tier 1) skills. |
 | `user-invocable` | no | `false` hides the skill from the slash menu (Tier 3 internal helpers). |
-| `context` | no | `fork` runs the skill in a subagent instead of the main session — for a **pure renderer** only (see below). |
+| `context` | no | `fork` runs the skill in a subagent instead of the main session - for a **pure renderer** only (see below). |
 
-> `displayName` is **not** a skill field — it belongs in
+> `displayName` is **not** a skill field - it belongs in
 > `plugins/steer/.claude-plugin/plugin.json` (the `/plugin` menu label). There is
 > no `model:` field on any skill; do not add one.
 
 > **Never `disable-model-invocation: true` on a steer skill.** The name reads
-> like "keep it out of auto-routing", and the byte math is tempting — it drops a
+> like "keep it out of auto-routing", and the byte math is tempting - it drops a
 > skill's description from the listing entirely, which is the one budget the
 > ratchet says is nearly full. But the flag does more than that: it makes the
 > skill **user-only**, so Claude cannot invoke it through the Skill tool *at
 > all*. steer's entire premise is that the model is the router and the user never
 > has to know a skill name (rule `00-router`, "map their plain-language goal to
-> the owning skill and **invoke it yourself**") — so every skill in the
+> the owning skill and **invoke it yourself**") - so every skill in the
 > listing, including the ones that look manual (`setup`, `protect`, `help`), is a
 > model-invocation target and would silently stop being reachable. `standards` is
 > worse still: it exists for the surfaces where no hook injects the rules, so its
@@ -97,38 +97,38 @@ be unique. The full field set actually used in this repo:
 > **`context: fork` is for pure renderers.** A forked skill runs as a subagent:
 > it gets the SKILL.md body as its prompt and **no access to the conversation
 > that invoked it**, and the agent type supplies its system prompt. Its
-> `allowed-tools` still applies — upstream's own `context: fork` example declares
-> `agent:` and `allowed-tools:` together — so keep the grants a forked skill
+> `allowed-tools` still applies - upstream's own `context: fork` example declares
+> `agent:` and `allowed-tools:` together - so keep the grants a forked skill
 > needs. A fork also runs in the **background** by default, which narrows it to
 > the background-subagent tool set; set `background: false` to keep the full set
 > if a step needs a tool outside it.
 >
 > Forking is right for a skill whose whole input is its argument and
-> whose whole output is a rendered page — `/steer:status` and `/steer:explain`,
+> whose whole output is a rendered page - `/steer:status` and `/steer:explain`,
 > which read a lot of spine to emit a little. It is wrong for a skill that reads
 > the conversation (`/steer:report` files a bug about what just happened), and
 > wrong for one that writes or orchestrates other skills (`/steer:roadmap` opens
 > issues and drives `/steer:issues`). Don't add it to either class.
 
-> **No `model:` or `effort:` on a skill — the router makes them leak.** Claude
+> **No `model:` or `effort:` on a skill - the router makes them leak.** Claude
 > Code supports both as skill frontmatter, and the token math is tempting:
 > `effort: low` on a mechanical instantiator like `spec-scaffold` or `standards`
 > looks free. It is not, **for this plugin specifically**. Frontmatter effort
 > "applies when that skill is active", overriding the session level, and steer's
-> router is built to **auto-continue** — rule `00-router`: *"when a skill
+> router is built to **auto-continue** - rule `00-router`: *"when a skill
 > finishes, continue into its single best next action"*. So the override does not
 > stay with the cheap skill:
 >
-> - `/steer:help` at `effort: low` → the router continues into `/steer:work`,
+> - `/steer:help` at `effort: low` -> the router continues into `/steer:work`,
 >   which now executes the implementation at low effort.
 > - `spec-scaffold` is worse, because it is an **internal gateway invoked
->   mid-flow** by `build`, `init`, `intake`, and `spec` — a low-effort override
+>   mid-flow** by `build`, `init`, `intake`, and `spec` - a low-effort override
 >   there downgrades the *calling* skill's remaining work in that turn.
 >
 > The user chose their model and effort; a navigation step must not silently
 > re-set them for the work it navigates into. Same reasoning as `model:`. If a
 > skill genuinely needs cheaper reasoning for a bounded piece of work, delegate
-> that piece to a **subagent** instead — `agents/*.md` supports `model` and
+> that piece to a **subagent** instead - `agents/*.md` supports `model` and
 > `effort`, and a subagent has its own context and cannot leak its override back
 > into the parent turn (`steer-reviewer` is the worked example).
 
@@ -137,29 +137,29 @@ be unique. The full field set actually used in this repo:
 > characters** (the documented `skillListingMaxDescChars` default); past the cap the
 > trailing trigger text is silently dropped. `check_plugin.py` fails any skill whose
 > combined length exceeds the cap. Keep the description to purpose + primary trigger
-> and let `when_to_use` carry the extra trigger phrases — a paragraph-length
+> and let `when_to_use` carry the extra trigger phrases - a paragraph-length
 > description otherwise crowds out its own routing signal.
 
-> **Body cap — the compaction trap.** An invoked skill's `SKILL.md` enters the
+> **Body cap - the compaction trap.** An invoked skill's `SKILL.md` enters the
 > conversation and stays there for the rest of the session. When auto-compaction
 > fires, Claude Code re-attaches the most recent invocation of each skill but
 > keeps only **the first 5,000 tokens of each** (re-attached skills also share a
 > combined 25,000-token budget). Everything past that point is silently dropped
-> mid-run — so an oversized `SKILL.md` is a *correctness* bug, not just a cost:
+> mid-run - so an oversized `SKILL.md` is a *correctness* bug, not just a cost:
 > the tail is where Guardrails and Coupling rules historically sat, and they
 > vanish exactly when a run has gone long enough to compact. Two rules follow:
 >
 > 1. **Front-load the standing instructions.** Guardrails, coupling rules, and
 >    output contracts go near the **top** of `SKILL.md`, never the bottom.
-> 2. **Keep the body under 17,500 bytes** — the 5,000-token cap at a pessimistic
+> 2. **Keep the body under 17,500 bytes** - the 5,000-token cap at a pessimistic
 >    3.5 B/token. `check_context_budget.py` fails any skill over it. This is a
 >    real ceiling derived from harness behaviour, **not** a ratchet: do not raise
 >    it to fit new prose.
 >
-> The fix when a skill outgrows the cap is always the same — factor per-mode or
+> The fix when a skill outgrows the cap is always the same - factor per-mode or
 > per-phase procedure into a sibling file (next section), never trim a guardrail.
 
-**Factoring a skill body — sibling procedure files.** A skill whose body would
+**Factoring a skill body - sibling procedure files.** A skill whose body would
 exceed the cap keeps a slim `SKILL.md` (frontmatter, guardrails, coupling rules,
 the standing contracts, and a **mode/phase map**) and moves the step-by-step
 procedure into sibling Markdown under the skill directory, which the dispatcher
@@ -176,7 +176,7 @@ Rules:
   one you need** so the dispatcher doesn't pull them all back in.
 - Every declared mode must still appear in `SKILL.md` (the mode map satisfies
   `check_standards.py`'s bidirectional marker check).
-- Sibling bodies are in scope for the same checks as `SKILL.md` — link
+- Sibling bodies are in scope for the same checks as `SKILL.md` - link
   resolution, token/enum membership, script grants, and workflow authority all
   scan the skill directory, not just `SKILL.md`.
 - Never move a guardrail, an authorization gate, or an output contract into a
@@ -193,12 +193,12 @@ when_to_use: >-
   ("work on #123", "fix #123"), or when a change needs an issue then implemented.
 ```
 
-**Invocation tier → which tool fields to set** (see `INVOCATION.md` for the full
+**Invocation tier -> which tool fields to set** (see `INVOCATION.md` for the full
 matrix):
 
-- **Tier 1 — read-only / reference** (`reference`, `audit`, `standards`, `next`,
+- **Tier 1 - read-only / reference** (`reference`, `audit`, `standards`, `next`,
   `doctor`, `explain`, `status`, `help`, `report`): never edit code/spec/tracker.
-  What defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree` —
+  What defines the tier is `disallowed-tools: Edit, NotebookEdit, EnterWorktree` -
   for the invoking turn the skill has no in-place edit tool and cannot open a
   worktree. Branching and committing are Bash, which the frontmatter does not
   withhold. `Write`
@@ -215,19 +215,19 @@ matrix):
   also disallows `Bash` (it reads only local files); `status` keeps `Bash` because
   it reads the tracker through `/steer:tracker-sync` (the `gh` read fallback needs
   shell), but writes nothing back (no tracker-write grant; reads only).
-- **Tier 2 — side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
-  `adr`, `issues`, `questions`, …): may create/edit/commit. Use `allowed-tools`
-  to pre-approve the routine idempotent ops the skill always performs — e.g.
+- **Tier 2 - side-effecting** (`init`, `adopt`, `sync`, `build`, `work`, `spec`,
+  `adr`, `issues`, `questions`, ...): may create/edit/commit. Use `allowed-tools`
+  to pre-approve the routine idempotent ops the skill always performs - e.g.
   `/steer:work` allowlists `Bash(git status *)`, `Bash(git switch *)`,
   `Bash(git add *)`, `Bash(git commit *)`, etc. **Pre-approve `git push` and
-  `gh pr create` too** — rule `45-commit-autonomy` makes branch, commit, push and
+  `gh pr create` too** - rule `45-commit-autonomy` makes branch, commit, push and
   PR-open autonomous ("announce it, don't request permission"), and
   `check_standards.py` fails the build if the scaffold allowlist drops them. What
   stays gated is the **merge and the deploy** (`gh pr merge` sits under `ask`),
   never the push.
-- **Tier 3 — hidden from the slash menu** (`user-invocable: false`): still
+- **Tier 3 - hidden from the slash menu** (`user-invocable: false`): still
   model-callable, just not in the menu. Reserved for *internal gateways* a parent
-  skill always drives with context a user can't supply by hand — `tracker-sync`
+  skill always drives with context a user can't supply by hand - `tracker-sync`
   (GitHub gateway, called with subcommands by `issues`/`work`, plus `spec`, `roadmap`,
   `questions`, `next`, `audit`/`status` reads, and `init`/`adopt` for
   `bootstrap-fields`) and `spec-scaffold`
@@ -235,14 +235,14 @@ matrix):
   The specialized skills reached through a front door (`init`/`adopt`/`sync`/`doctor`
   via `/steer:setup`; `tidy` via `/steer:audit`; `roadmap` via `/steer:issues`;
   `questions` via `/steer:spec`/`/steer:issues`; the `reference` loader) stay
-  **directly invocable** — a front door just auto-routes to them, so a user is never
+  **directly invocable** - a front door just auto-routes to them, so a user is never
   told to type something the harness then rejects. Visibility is orthogonal to
-  read-only/side-effecting tier — a hidden skill can still be Tier 1 or Tier 2.
+  read-only/side-effecting tier - a hidden skill can still be Tier 1 or Tier 2.
 
-**Allowlists only match single commands — never chain inspection with `&&` or
+**Allowlists only match single commands - never chain inspection with `&&` or
 pipes.** Claude Code matches a permission rule against the *whole* command string.
 `git status && git diff` matches neither `Bash(git status *)` nor `Bash(git diff
-*)`, so it prompts even when both are allowlisted — silently defeating every
+*)`, so it prompts even when both are allowlisted - silently defeating every
 `allowed-tools` entry and the scaffold `allow` list. When a skill runs inspection
 commands, instruct it to run them as **separate invocations**, one command per
 call. The same goes for the scaffold-shipped allowlist (`templates/scaffold/
@@ -252,49 +252,49 @@ its own. This is the single most common reason a repo that *looks* allowlisted
 still prompts.
 
 Long prose belongs in `plugins/steer/templates/reference/*`, surfaced through the
-skill — not inlined into the SKILL.md.
+skill - not inlined into the SKILL.md.
 
 When a skill runs a **long, multi-phase, or search-heavy** flow, delegate it to a
 subagent (fresh context by construction) and persist run-state and task constraints
-in `/spec/**` rather than running everything inline — keeping the main session lean
+in `/spec/**` rather than running everything inline - keeping the main session lean
 and the state durable across compaction. See rule `26-context-hygiene` and the
-exemplars it cites (`/steer:audit` → the `steer-reviewer` agent;
+exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 `/steer:work --reviewed`'s plan gate).
 
 ### Write descriptions as triggers; capture gotchas
 
 - **`description` + `when_to_use` are routing signal, not documentation.**
-  Write them for the model deciding "should I fire?" — lead with the situation
+  Write them for the model deciding "should I fire?" - lead with the situation
   that should trigger the skill (concrete user requests, repo states), not a
   summary of what the skill does. Trigger-shaped phrasing routes better than a
   feature list.
-- **Give substantive skills a `## Gotchas` section** — often the
+- **Give substantive skills a `## Gotchas` section** - often the
   highest-signal part of a skill body: the specific ways the model has
   actually gone wrong in this flow (wrong default taken, step skipped, state
   misread) and the correction, stated imperatively. Add an entry when a real
-  failure is observed — never pad it with restatements of the happy path.
+  failure is observed - never pad it with restatements of the happy path.
   `/new-skill` scaffolds the section.
 
-### Skill vs. mode — hold the line on surface area
+### Skill vs. mode - hold the line on surface area
 
-The user-facing menu is the handful of **front doors** — `setup`, `build`, `spec`,
+The user-facing menu is the handful of **front doors** - `setup`, `build`, `spec`,
 `intake`, `work`, `issues`, `audit`, `adr`, `next`, `explain`, `help`, `protect`,
-`report` — that `rules/00-router.md` names and that hand off to the specialized
+`report` - that `rules/00-router.md` names and that hand off to the specialized
 skills (the router routes from the skill listing itself; there is no separate
 intent table to keep in sync). Every new skill widens the set of things a user must choose
 between, so the bar for a *new, visible* skill is high. Before adding one, justify
 why it is **not**:
 
-1. **a mode of an existing skill** — a new verb on a skill that already owns the
+1. **a mode of an existing skill** - a new verb on a skill that already owns the
    area (e.g. `audit [code|spec]`, `work [--reviewed]`), declared via
-   `argument-hint` + a `<!-- steer:modes … -->` marker; or
-2. **a specialized skill reached through a front door** — directly invocable but
+   `argument-hint` + a `<!-- steer:modes ... -->` marker; or
+2. **a specialized skill reached through a front door** - directly invocable but
    not a front door itself, but reached through one that auto-routes to it
    (add the hand-off prose to the parent and a routing line to `00-router.md`).
    Mark it `user-invocable: false` only if it is a true *internal gateway* a parent
    always drives with context the user can't supply (`tracker-sync`,
    `spec-scaffold`); or
-3. **detected and routed** — folded behind a dispatcher like `/steer:setup` that
+3. **detected and routed** - folded behind a dispatcher like `/steer:setup` that
    picks the path from repo state rather than asking the user to pick a skill.
 
 Default to a mode or a front-door-routed specialized skill. Add a front door only
@@ -308,18 +308,18 @@ delivered in **parts**: Claude Code caps one hook command's stdout at 10,000
 characters and silently replaces a longer payload with an "Output too large"
 pointer, so `hooks/hooks.json` registers `inject-standards.sh` N times
 (`<k> <N>`), each invocation emitting one slice of the same deterministic
-partition. You never assign a rule to a part — the hook fills parts in lexical
-order — but the ruleset as a whole has to fit the registered parts, and
+partition. You never assign a rule to a part - the hook fills parts in lexical
+order - but the ruleset as a whole has to fit the registered parts, and
 `check_context_budget.py` (in `mise run check`) fails the build when any profile
 drops a rule or any part exceeds the cap.
 
-- Prefixes run `00`–`99` with **intentional gaps** (e.g. `20` → `22` → `30`,
-  `35` → `36`) — headroom so a new rule can slot between two existing ones.
+- Prefixes run `00`-`99` with **intentional gaps** (e.g. `20` -> `22` -> `30`,
+  `35` -> `36`) - headroom so a new rule can slot between two existing ones.
 - **Never renumber an existing file.** Other rules, skills, and docs reference
   rules by number; renumbering silently breaks those references.
 - To add one, pick the largest free gap adjacent to the rule it relates to
   (`/new-rule` lists the taken prefixes and proposes a slot).
-- Keep `rules/*.md` **lean and imperative** — it costs context every session.
+- Keep `rules/*.md` **lean and imperative** - it costs context every session.
   Push explanation, rationale, and examples into
   `plugins/steer/templates/reference/*` and point to them. A rule is
   always-on only when it has to govern before Claude touches anything (a
@@ -329,15 +329,15 @@ drops a rule or any part exceeds the cap.
   scope the rule with an `inject-when` marker, and only as a deliberate,
   reviewed last resort register one more part in `hooks/hooks.json` (every part
   is one more SessionStart process and up to 9,500 more always-on characters).
-- Never put first-run-only content (placeholder resolution) in a rule — it would
+- Never put first-run-only content (placeholder resolution) in a rule - it would
   re-fire each session; that lives in the `init` skill.
 
 ### Previewing what a session actually gets
 
 A rule may scope itself with a first-line `<!-- steer:inject-when=<token> -->`
-marker, so the injected payload **differs per consumer repo** — and a
+marker, so the injected payload **differs per consumer repo** - and a
 knowledge-work folder drops every marked rule. The budget gate measures this
-same payload — every registered part, in characters — for three fixture
+same payload - every registered part, in characters - for three fixture
 profiles (`knowledge`, `code`, `code-max`), so the gate and this preview report
 the same variable; but the gate only ever sees those synthetic shapes. To see
 what *your* repo gets:
@@ -351,21 +351,21 @@ mise run rules:preview -- --full              # also dump the injected text
 
 It prints a per-rule inject/skip table with the part each rule lands in and the
 scope token that decided it, the characters reclaimed by the skips, the payload
-total against the registered parts' capacity, and — if anything did not fit —
+total against the registered parts' capacity, and - if anything did not fit -
 the rules that were dropped. Use it after adding or re-scoping a rule to confirm
 the marker fires where you expect and the ruleset still fits.
 
-**Never copy an absolute byte/char total into prose** — not into a rule, a
+**Never copy an absolute byte/char total into prose** - not into a rule, a
 skill, `CHANGELOG.md`, or the docs site. Any correctness fix to a rule or skill
 moves these numbers, no gate compares prose against the live measurement, and
 every figure quoted this way has gone stale within the same release cycle. Cite
 the command instead (`uv run python scripts/check_context_budget.py --report`,
-or `mise run rules:preview`), which cannot drift. Quoting a *ceiling* is fine —
+or `mise run rules:preview`), which cannot drift. Quoting a *ceiling* is fine -
 those change only when deliberately ratcheted.
 
 The preview runs the **real** `hooks/inject-standards.sh` for the bundle and the
 **real** `lib/scope.sh` predicates for the table, so it cannot drift from live
-behaviour. It is an authoring aid, not a gate — deliberately not in `check`/`ci`.
+behaviour. It is an authoring aid, not a gate - deliberately not in `check`/`ci`.
 
 ## Hook authoring
 
@@ -386,7 +386,7 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 ## CHANGELOG & versioning
 
 - **One fragment per change, under `.changes/unreleased/`.** `CHANGELOG.md` is
-  **generated** — `changie merge` assembles it from `.changes/` — so never edit
+  **generated** - `changie merge` assembles it from `.changes/` - so never edit
   it by hand; `check_changelog.py` fails when it drifts from the version files.
   Between releases the committed `CHANGELOG.md` shows only *released* versions:
   pending entries sit unassembled as fragments, and running `changie merge -u`
@@ -399,8 +399,8 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
     BODY='- **Fixed: the thing.** why it mattered.' mise run changelog:new
   ```
 
-  Entries here are usually 10–20 lines of prose, which does not survive a shell
-  variable — so write the file directly. Its name is
+  Entries here are usually 10-20 lines of prose, which does not survive a shell
+  variable - so write the file directly. Its name is
   `<kind>-<YYYYMMDD>-<HHMM>-<slug>.yaml` (the same shape as `spec/history/`), and
   a `body: |` block scalar keeps the prose intact:
 
@@ -412,18 +412,18 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   body: |
     - **Fixed: `/steer:init` no longer clobbers a repo's own `pre-commit` hook.**
       6.2.0 wired the gate from both setup skills, but only `/steer:adopt`
-      carried the collision guard — so a repo that already owned a commit gate
+      carried the collision guard - so a repo that already owned a commit gate
       had it displaced by bootstrap.
   ```
 
-  The body carries its own `- ` bullet and `**Kind: …**` lead-in, exactly as
+  The body carries its own `- ` bullet and `**Kind: ...**` lead-in, exactly as
   entries have always been written; `kind` is metadata that drives the version
   bump and the grouping order, and is not rendered. Kinds are `Added`, `Changed`,
   `Fixed`, `Security`, `Docs` (declared in `.changie.yaml` with their `auto:`
   bump level).
 - **No merge conflicts, by construction.** Two PRs write two different paths, so
   git never has to resolve anything. That is what retired the old
-  `CHANGELOG.md merge=union` driver — union is *line*-based, and a multi-line
+  `CHANGELOG.md merge=union` driver - union is *line*-based, and a multi-line
   entry is exactly the shape it splices together wrongly, the same reason
   `spec/history/` is a directory rather than one appended file. Do not write a
   fragment filename that already exists; the required slug makes a collision
@@ -434,30 +434,30 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   version-bearing manifests through `.changie.yaml`'s `replacements`. A stream of
   PRs thus cuts one coherent release.
 - **Behaviour gate:** `check_changelog.py --base <ref>` requires a fragment to be
-  **added** under `.changes/unreleased/` when any behaviour file changes — editing
+  **added** under `.changes/unreleased/` when any behaviour file changes - editing
   an existing fragment is amending somebody else's pending entry, not recording
   yours, and does not satisfy the gate. Behaviour is deny-by-default: everything
   under `plugins/steer/`, plus `.github/plugin/marketplace.json` (which sits
-  outside it), minus the exemptions enumerated in the script — `tests/` anywhere,
+  outside it), minus the exemptions enumerated in the script - `tests/` anywhere,
   `evals/`, the plugin's maintainer `README.md`, and `plugins/steer/.claude/`.
   Changes confined to `CLAUDE.md`, `docs/`, or `.claude/` need no fragment.
 - `check_changelog.py` also validates (always, no git or changie needed) that
   `plugin.json`'s version equals the newest `.changes/vX.Y.Z.md`, that every
   pending fragment is well-formed, and that the assembled `CHANGELOG.md` carries
   exactly those versions in descending order.
-- **Never write a next-version number anywhere in an implementation PR** — not in
+- **Never write a next-version number anywhere in an implementation PR** - not in
   prose, not in a code comment, and above all not as a
   `templates/reference/MIGRATIONS.md` entry heading. Your PR merges *before* the
   release that names it, so the number is a guess, and for the ledger a wrong guess
   is a correctness bug rather than a typo: entries are keyed by the version that
   introduced them and `/steer:sync` **skips** every entry at or below a repo's
   `spec/.version` stamp, so an entry keyed *below* the release it actually ships in
-  is silently skipped by every repo stamped in between — the migration never runs
-  and nothing reports it. Author ledger entries as `### [Unreleased] — <what>`; the
+  is silently skipped by every repo stamped in between - the migration never runs
+  and nothing reports it. Author ledger entries as `### [Unreleased] - <what>`; the
   release PR renames the heading (step B3b) in the same commit that bumps the
   manifests. `check_plugin.py`'s `check_migration_versions` fails the build on any
   ledger heading ahead of `plugin.json`, so a guess cannot reach `main`. For a code
-  comment, describe the *shape* ("a repo bootstrapped before that shape…") rather
+  comment, describe the *shape* ("a repo bootstrapped before that shape...") rather
   than keying it to a release at all.
 
 ## Scaffold discipline
@@ -466,29 +466,39 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 `/steer:init` / `/steer:adopt`.
 
 - **Dotfiles are stored without the leading dot** (`gitignore`, `env.example`,
-  `claude/`, `vscode/`, …) so they don't act on this repo itself.
+  `claude/`, `vscode/`, ...) so they don't act on this repo itself.
 - **GitHub templates and the spec spine live in their own topic dirs**, not under
   `scaffold/`: `plugins/steer/templates/github/` (Issue Forms, workflows, PR
-  template — plus the runtime-only `issue-bodies/`) and
+  template - plus the runtime-only `issue-bodies/`) and
   `plugins/steer/templates/spec/`. The MANIFEST installs them via its
   `../github/` and `../spec/` rows. `templates/github/` is the single source of
-  truth for GitHub templates — never add a second copy under `scaffold/`.
-- Keep `plugins/steer/templates/scaffold/MANIFEST.md` in sync — it maps each
+  truth for GitHub templates - never add a second copy under `scaffold/`.
+- Keep `plugins/steer/templates/scaffold/MANIFEST.md` in sync - it maps each
   stored file (including the `../github/` and `../spec/` topic-dir rows) to its
   install path. Update it in the same change that adds a template file.
 - Version-governance files exist in two byte-identical copies (e.g.
-  `scaffold/scripts/scan-version-pins.sh` ↔ `scripts/scan-version-pins.sh`;
-  `scaffold/scripts/version-policy.sh` ↔ `hooks/lib/version-policy.sh`;
-  `scaffold/policy/versions.yml` ↔ `policy/versions.yml`). `check_standards.py`
-  fails if they drift — edit both.
+  `scaffold/scripts/scan-version-pins.sh` <-> `scripts/scan-version-pins.sh`;
+  `scaffold/scripts/version-policy.sh` <-> `hooks/lib/version-policy.sh`;
+  `scaffold/policy/versions.yml` <-> `policy/versions.yml`). `check_standards.py`
+  fails if they drift - edit both.
 
 ## Cross-cutting conventions
 
+- **ASCII only, in every file.** No em/en dashes, curly quotes, ellipsis
+  characters, bullets, arrows, non-breaking or thin spaces - anywhere, including
+  prose. Write `-`, `'`, `"`, `...`, `*`, `->`. This is the repo's own house
+  style *and* the standard it ships (rule 85), enforced by `mise run check-ascii`
+  and a pre-commit hook; `scripts/check-ascii.sh` reuses the shipped hook's
+  character table so the two cannot drift. A file that genuinely needs one of
+  these characters declares `steer:allow-typographic`. It does **not** restrict
+  non-English text: accented letters, guillemets and CJK are unaffected. Note
+  that `\uXXXX` typed into a Write/Edit tool payload is decoded to the real
+  character - author such literals through a quoted heredoc instead.
 - **Always namespace skills as `/steer:<skill>`** in rules, skills, and docs. A
   bare `/e22-*` in prose is flagged by validation.
 - **No `commands/` directory.** The legacy thin command shims were removed; skills
   are invoked directly through their plugin namespace.
-- **Standards prose is never duplicated** into a product repo's `CLAUDE.md` — that
+- **Standards prose is never duplicated** into a product repo's `CLAUDE.md` - that
   file holds only product-specific context. The standards live here and reach
   product repos through the marketplace.
 - **File naming.** Python scripts are `snake_case.py` (PEP 8 + importable as
@@ -506,7 +516,7 @@ plugin's *behaviour* for consumers.
 
 - **Serve / build / check:** `mise run docs:serve`, `mise run docs:build`
   (strict), `mise run docs:check`. The Zensical toolchain lives in the `docs`
-  dependency-group (`pyproject.toml`) — `serve`/`build` run via
+  dependency-group (`pyproject.toml`) - `serve`/`build` run via
   `uv run --group docs`, so the CI env stays light. `docs:check` is stdlib-only
   and runs inside `mise run ci`.
 - **Mermaid** diagrams render via the `pymdownx.superfences` custom fence in
@@ -527,12 +537,12 @@ plugin's *behaviour* for consumers.
 
 ## Built-in helpers (no install needed)
 
-These ship with Claude Code — lean on them rather than adding MCP servers:
+These ship with Claude Code - lean on them rather than adding MCP servers:
 
-- `/code-review` and `/simplify` — run on your diff before opening a PR.
-- `/fewer-permission-prompts` — extend `.claude/settings.json`'s allowlist as new
+- `/code-review` and `/simplify` - run on your diff before opening a PR.
+- `/fewer-permission-prompts` - extend `.claude/settings.json`'s allowlist as new
   routine read-only commands surface.
-- `/verify` — confirm a behaviour change does what it should.
+- `/verify` - confirm a behaviour change does what it should.
 
 No project MCP server is configured in-repo (`codegraph` is enabled per-user via
 `settings.local.json` against a globally-configured server). For a

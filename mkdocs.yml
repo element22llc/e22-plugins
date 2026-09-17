@@ -13,9 +13,9 @@
 # Zensical builds every file under docs_dir (it has no `exclude_docs` setting),
 # so non-page content is kept OUT of docs/: page scaffolds live in the repo-root
 # `docs-templates/` and the authoring guide is the repo-root `AUTHORING.md`.
-site_name: e22-plugins — steer
-site_description: Engineering-standards plugin marketplace — the steer plugin.
-# Served from the branded root domain (Route 53 CNAME → GitHub Pages, public);
+site_name: e22-plugins - steer
+site_description: Engineering-standards plugin marketplace - the steer plugin.
+# Served from the branded root domain (Route 53 CNAME -> GitHub Pages, public);
 # sets the canonical/asset base for root-path serving.
 site_url: https://ai.element-22.com/
 docs_dir: docs
@@ -28,12 +28,12 @@ use_directory_urls: true
 # (theme features content.action.edit / content.action.view below).
 # `edit_uri` MUST be set explicitly: Zensical's inferred default for a
 # github.com `repo_url` is `edit/master/<docs_dir>`, and this repo's default
-# branch is `main` — leaving it inferred points every pencil at a dead branch.
+# branch is `main` - leaving it inferred points every pencil at a dead branch.
 repo_url: https://github.com/element22llc/e22-plugins
 repo_name: element22llc/e22-plugins
 edit_uri: edit/main/docs
 # Rendered in the footer meta bar, left of Zensical's own attribution.
-copyright: Copyright &copy; 2026 Element 22 LLC — Apache-2.0
+copyright: Copyright &copy; 2026 Element 22 LLC - Apache-2.0
 
 theme:
   # `classic` matches the Material for MkDocs look & feel (vs Zensical's `modern`).
@@ -54,14 +54,14 @@ theme:
     - navigation.indexes
     - navigation.top
     - navigation.instant
-    # Thin progress bar during instant navigation — without it a slow page load
+    # Thin progress bar during instant navigation - without it a slow page load
     # looks like a dead click.
     - navigation.instant.progress
     # Keep the URL's anchor in sync with the scrolled heading, so copying the
     # address bar deep-links to the section actually on screen.
     - navigation.tracking
     # Previous/next links in the footer. These docs read linearly within a
-    # section (installation → first workflow → onboarding) and had no way to
+    # section (installation -> first workflow -> onboarding) and had no way to
     # page through.
     - navigation.footer
     # --- content ------------------------------------------------------------
@@ -91,7 +91,7 @@ theme:
 markdown_extensions:
   - admonition
   - attr_list
-  # Lets block-level Markdown render inside HTML wrappers — required for the
+  # Lets block-level Markdown render inside HTML wrappers - required for the
   # `<div class="grid cards" markdown>` card grid on the home page.
   - md_in_html
   - toc:
@@ -124,7 +124,7 @@ nav:
       # /presentation/<slug>/ by .github/workflows/docs-deploy.yml. Absolute URLs
       # keep the strict build and validate_docs from treating them as missing
       # pages. Filed under the section whose topic they cover rather than as
-      # top-level entries — with navigation.tabs on, a top-level entry costs a
+      # top-level entries - with navigation.tabs on, a top-level entry costs a
       # header tab, and 10 tabs overflow the 61rem grid.
       - Onboarding deck: https://ai.element-22.com/presentation/onboarding/
   - Concepts:
@@ -134,7 +134,7 @@ nav:
       - Authorization model: concepts/authorization-model.md
       - Deployment & environments: concepts/deployment.md
       - GitHub Copilot support: concepts/copilot-support.md
-      # External link — see the note on the onboarding deck above.
+      # External link - see the note on the onboarding deck above.
       - SDLC deck: https://ai.element-22.com/presentation/sdlc/
   - Workflows:
       # Bare path (no title) + the navigation.indexes feature: this page becomes

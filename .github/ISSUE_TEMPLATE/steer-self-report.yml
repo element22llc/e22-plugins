@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Report a defect in the **steer plugin** — a contradictory skill/rule
+        Report a defect in the **steer plugin** - a contradictory skill/rule
         instruction, a missing or broken template/script, or a recorded hook
         fault. `/steer:report` normally fills this in for you (scrubbed). Do not
         paste secrets, absolute paths, or product source.
@@ -14,14 +14,14 @@ body:
     id: what-went-wrong
     attributes:
       label: What steer did wrong
-      description: The plugin defect in one or two sentences — the symptom, not a stack trace.
+      description: The plugin defect in one or two sentences - the symptom, not a stack trace.
     validations:
       required: true
   - type: input
     id: surface
     attributes:
       label: Where it happened
-      description: The steer surface — skill, rule, hook, or template/script.
+      description: The steer surface - skill, rule, hook, or template/script.
       placeholder: "skill /steer:work · rule 36-issue-first · hook surface-faults.sh"
     validations:
       required: true
@@ -37,7 +37,7 @@ body:
     id: captured-output
     attributes:
       label: Captured output
-      description: Verbatim error/hook output — SCRUBBED (rewrite paths to <repo>/…, redact secrets). Leave blank if none.
+      description: Verbatim error/hook output - SCRUBBED (rewrite paths to <repo>/..., redact secrets). Leave blank if none.
       render: text
   - type: textarea
     id: expected

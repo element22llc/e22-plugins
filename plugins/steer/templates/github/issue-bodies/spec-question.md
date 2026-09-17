@@ -17,16 +17,16 @@ entry in the spec's `## Open questions`.]
 
 ## Affected specifications
 
-- [`spec/features/FEATURE_ID/intent.md`](REPO_BLOB_BASE/spec/features/FEATURE_ID/intent.md) — `Q-NNN`
+- [`spec/features/FEATURE_ID/intent.md`](REPO_BLOB_BASE/spec/features/FEATURE_ID/intent.md) - `Q-NNN`
 - [Other features this blocks, if any.]
 
 ## Decision needed from
 
-[Named owner or role — PO, dev lead, stakeholder.]
+[Named owner or role - PO, dev lead, stakeholder.]
 
 ## Resolution
 
 [Filled when decided. On resolution: update the canonical spec, record the
 decision here, close the issue, and write an ADR only when the decision is
-costly to reverse — reversal cost is the bar, not novelty.]
+costly to reverse - reversal cost is the bar, not novelty.]
 <!-- steer:managed:end -->

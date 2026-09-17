@@ -20,7 +20,7 @@ github-cli = "latest"
 changie = "1.26.0"
 
 # Stack-specific: keep what matches the product, delete the rest (IaC pins live in /infra/mise.toml).
-"npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm — it has no macOS asset
+"npm:pnpm" = "latest" # not the registry default aqua:pnpm/pnpm - it has no macOS asset
 biome = "latest"
 "aqua:koalaman/shellcheck" = "latest"
 "aqua:rhysd/actionlint" = "latest"
@@ -128,7 +128,7 @@ description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on st
 # `[all]` pulls the per-format extras; without it every format raises MissingDependency.
 run = "uvx --from 'markitdown[all]' markitdown"
 
-# Opt-in diagram renderers (LikeC4 model, D2 topology) — see /steer:reference architecture-diagrams.
+# Opt-in diagram renderers (LikeC4 model, D2 topology) - see /steer:reference architecture-diagrams.
 # [tasks."diagrams:render"]
 # description = "Generate Mermaid + PNG from the LikeC4 model (spec/design/architecture/)"
 # run = [

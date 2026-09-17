@@ -32,9 +32,9 @@ def test_is_subcommand_leading():
     f = check_standards._is_subcommand_leading
     assert f("[start | resume | status | finish] [#issue ...]") is True
     assert f("[capture | triage | brainstorm] [#issue | feature-id]") is True
-    # positional default (feature-id) → not subcommand-leading
+    # positional default (feature-id) -> not subcommand-leading
     assert f("[feature-id | approve <feature-id> | validate [feature-id]]") is False
-    # `<op>` sublayer → not subcommand-leading
+    # `<op>` sublayer -> not subcommand-leading
     assert f("[issue <op> | pull | push] [#issue | feature-id]") is False
     assert f("[idea or product description]") is False
 
@@ -59,7 +59,7 @@ def test_hint_subcommands():
 def test_strip_category():
     f = check_standards._strip_category
     assert f("Blocking now (L2)") == "Blocking now"
-    assert f("Complete — no action required (L7)") == "Complete"
+    assert f("Complete - no action required (L7)") == "Complete"
     assert f("Required before initial production") == "Required before initial production"
 
 
@@ -75,7 +75,7 @@ def test_deprecated_next_action_regex():
 
 def test_sessionstart_hook_basenames_matches_hooks_json():
     """The parser pins the live SessionStart roster (3 registrations since the
-    session-checks.sh consolidation — the five checks it orchestrates are no
+    session-checks.sh consolidation - the five checks it orchestrates are no
     longer registered individually)."""
     names = check_standards._sessionstart_hook_basenames()
     assert "inject-standards.sh" in names
@@ -88,7 +88,7 @@ def test_sessionstart_hook_basenames_matches_hooks_json():
 def test_session_subchecks_parses_the_orchestrator_roster():
     """The sub-checks are gated too: hooks.json names only `session-checks.sh`, so
     deriving the CROSS-SURFACE.md roster from registration alone left every child
-    unenforced — the orchestrator tells authors to update that roster."""
+    unenforced - the orchestrator tells authors to update that roster."""
     subs = check_standards._session_subchecks()
     assert "surface-faults.sh" in subs
     assert "check-worktree-trust.sh" in subs
@@ -100,7 +100,7 @@ def test_session_subchecks_parses_the_orchestrator_roster():
 def test_live_subcheck_roster_is_in_cross_surface():
     """Every sub-check the shipped orchestrator runs is named in CROSS-SURFACE.md."""
     subs = check_standards._session_subchecks()
-    assert subs, "parser returned nothing — the roster gate would silently pass"
+    assert subs, "parser returned nothing - the roster gate would silently pass"
     text = check_standards.CROSS_SURFACE.read_text(encoding="utf-8")
     for name in sorted(subs):
         assert name in text, f"CROSS-SURFACE.md roster omits {name}"
@@ -260,31 +260,31 @@ def _write_skill(
 def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: Path):
     skills = tmp_path / "skills"
     skills.mkdir()
-    # (a) invokes a script, grant present and matching → clean
+    # (a) invokes a script, grant present and matching -> clean
     _write_skill(
         skills,
         "granted",
         "allowed-tools:\n  - Bash(sh *scripts/scan-prereqs.sh*)\n",
         'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/scan-prereqs.sh" .`',
     )
-    # (b) invokes a script but no grant covers it → error
+    # (b) invokes a script but no grant covers it -> error
     _write_skill(
         skills,
         "ungranted",
         "allowed-tools:\n  - Bash(git status *)\n",
         'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" auto x y --apply`',
     )
-    # (c) invokes a script but declares no allowed-tools at all → error
+    # (c) invokes a script but declares no allowed-tools at all -> error
     _write_skill(
         skills,
         "toolless",
         "",
         'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" a b`',
     )
-    # (d) runs no plugin script → never flagged (even with no allowed-tools)
+    # (d) runs no plugin script -> never flagged (even with no allowed-tools)
     _write_skill(skills, "prose", "", "This skill just talks about `mise run dev:setup`.")
     # (e) run step lives in a secondary body file (PROCEDURE.md), grants only in
-    #     SKILL.md — must still be scanned (the adopt #266 regression).
+    #     SKILL.md - must still be scanned (the adopt #266 regression).
     _write_skill(
         skills,
         "factored",
@@ -292,14 +292,14 @@ def test_skill_script_grants_flags_uncovered_and_missing(monkeypatch, tmp_path: 
         "See PROCEDURE.md.",
         extra={"PROCEDURE.md": 'Run `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" x`'},
     )
-    # (f) grant names the script but under the WRONG interpreter → not covered.
+    # (f) grant names the script but under the WRONG interpreter -> not covered.
     _write_skill(
         skills,
         "wronginterp",
         "allowed-tools:\n  - Bash(sh *scripts/scaffold_reconcile.py*)\n",
         'Run `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/scaffold_reconcile.py" x`',
     )
-    # (g) target-repo script (no ${CLAUDE_PLUGIN_ROOT}) → never a plugin grant.
+    # (g) target-repo script (no ${CLAUDE_PLUGIN_ROOT}) -> never a plugin grant.
     _write_skill(skills, "targetrepo", "", "Run `sh scripts/setup.sh` in the product repo.")
 
     monkeypatch.setattr(check_standards, "SKILLS_DIR", skills)
@@ -323,7 +323,7 @@ def test_skill_script_grants_survives_malformed_frontmatter(monkeypatch, tmp_pat
     skills.mkdir()
     d = skills / "broken"
     d.mkdir()
-    # No closing frontmatter fence → parse_frontmatter returns (None, error).
+    # No closing frontmatter fence -> parse_frontmatter returns (None, error).
     (d / "SKILL.md").write_text(
         'name: broken\nRun `sh "${CLAUDE_PLUGIN_ROOT}/scripts/template-reconcile.sh" x`\n',
         encoding="utf-8",
@@ -376,7 +376,7 @@ def test_gh_pr_checks_scopes_accepts_declared_scopes(monkeypatch, tmp_path: Path
 
 
 def test_gh_pr_checks_scopes_catches_the_566_regression(monkeypatch, tmp_path: Path):
-    """The pre-fix permissions block — the one that failed on the first Dependabot PR."""
+    """The pre-fix permissions block - the one that failed on the first Dependabot PR."""
     _write_wf(tmp_path, _WF_WITH_SCOPES.replace("  checks: read\n  statuses: read\n", ""))
     monkeypatch.setattr(check_standards, "PLUGIN_ROOT", tmp_path)
     errors: list[str] = []

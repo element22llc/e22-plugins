@@ -1,4 +1,4 @@
-# [Feature Name] — Contract
+# [Feature Name] - Contract
 
 > Owner: dev team
 > Last updated: YYYY-MM-DD
@@ -16,7 +16,7 @@
 
 [Tables, fields, types. Only the parts that matter for this feature. Derive
 from the intent's "Key concepts & data" / "Lifecycle expectations". If drafted
-pre-production (e.g. a PO build), mark it `proposed — dev confirms at review`.]
+pre-production (e.g. a PO build), mark it `proposed - dev confirms at review`.]
 
 ```text
 table: example
@@ -37,12 +37,12 @@ POST /api/example
 
 ## Implementation pointers (optional)
 
-A **hint** to where this feature lives — not a maintained index. Hand-kept file
+A **hint** to where this feature lives - not a maintained index. Hand-kept file
 lists go stale on every refactor, so keep this light. If it's absent or stale,
 find the code by searching the repo.
 
 For a feature spanning multiple apps/packages, **naming the owner is more
-durable than listing files** — prefer it:
+durable than listing files** - prefer it:
 
 * Owning app(s): `apps/web`, `apps/api`
 * Owning package(s): `packages/core`
@@ -50,7 +50,7 @@ durable than listing files** — prefer it:
 File-level pointers below are a courtesy only; nobody is obligated to keep them
 perfect:
 
-* `apps/<app>/.../file.ts` — [what this does for the feature]
+* `apps/<app>/.../file.ts` - [what this does for the feature]
 * Route: `POST /api/example` defined in `apps/api/.../route.ts`
 
 ## Dependencies

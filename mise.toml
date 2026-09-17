@@ -11,7 +11,7 @@ changie = "1.26.0"
 # NOT listed here: they are not used by CI (Claude Code is installed via
 # install.sh and Python via `uv sync`), and `codegraph@latest` cannot be pinned
 # to a lockfile URL, which breaks `mise install --locked` on CI. Install them
-# per-machine via a gitignored `mise.local.toml` — see AUTHORING.md.
+# per-machine via a gitignored `mise.local.toml` - see AUTHORING.md.
 
 [settings]
 # Pin every tool resolution into mise.lock for reproducible installs.
@@ -30,7 +30,7 @@ STEER_CLAUDE_CODE_VERSION = "2.1.251"
 # python="latest" to the *free-threaded* 3.14 build, whose source-build /
 # abi3-wheel path is slow and flaky (see PR #107). This matters most for the
 # E2E suite: `/steer:init` runs `mise install` inside a throwaway scaffold repo
-# (python="latest"), and this var is inherited by that subprocess — so local
+# (python="latest"), and this var is inherited by that subprocess - so local
 # `mise run e2e` / `e2e:local` gets CI's fast, deterministic install instead of
 # an intermittent multi-minute build that pushed the init scenario past the cap.
 MISE_PYTHON_PRECOMPILED_FLAVOR = "install_only_stripped"
@@ -74,7 +74,7 @@ run = [
   "uv run python scripts/check_plugin.py",
   "uv run python scripts/check_standards.py",
   # Always-on context budgets (rules injection + skill-listing totals) and the
-  # routing-vocabulary regression net — the PLAN.md Phase 0 ratchet gates.
+  # routing-vocabulary regression net - the PLAN.md Phase 0 ratchet gates.
   "uv run python scripts/check_context_budget.py",
   "uv run python scripts/check_routing_fixtures.py",
   # The committed Copilot instructions artifact (+ path-scoped instruction
@@ -93,7 +93,7 @@ run = [
   # The migration ledger: entry structure, newest-first ordering, no guessed
   # version key, and a deep pass over the [Unreleased] entries a PR is adding.
   "uv run python scripts/check_migrations.py",
-  # Release validator (no base ref → release-validator only; safe locally).
+  # Release validator (no base ref -> release-validator only; safe locally).
   "uv run python scripts/check_changelog.py",
   # Validate both the marketplace manifest (root) and the plugin manifest.
   # --strict promotes warnings (unrecognized fields, missing metadata) to
@@ -136,27 +136,33 @@ run = [
   # Bare invocation scans this repo's .github/workflows/.
   "actionlint",
   # The shipped scaffold workflow lives outside .github/, so actionlint never
-  # sees it by default — lint it explicitly (also shellchecks its run: blocks).
+  # sees it by default - lint it explicitly (also shellchecks its run: blocks).
   "actionlint plugins/steer/templates/github/workflows/ci.yml",
   # The on-demand autonomous-loop workflow (instantiated by /steer:loop) also
-  # ships outside .github/ — lint it explicitly for the same reason.
+  # ships outside .github/ - lint it explicitly for the same reason.
   "actionlint plugins/steer/templates/github/workflows/steer-loop.yml",
   # The Copilot coding-agent setup workflow ships outside .github/ too.
   "actionlint plugins/steer/templates/github/workflows/copilot-setup-steps.yml",
 ]
 
+[tasks.check-ascii]
+description = "Fail on any typographic character in a tracked file (rule 85, ASCII everywhere)"
+# Reuses the shipped hook's character table, so this sweep and the write-time
+# gate cannot disagree. Rationale: scripts/check-ascii.sh.
+run = "sh scripts/check-ascii.sh"
+
 [tasks.shell]
 description = "Lint and format-check every shell script (plugin hooks + libs + tests, plugin scripts, repo scripts, shipped scaffold)"
 # The globs below must cover every `*.sh` the pre-commit `types: [shell]` hooks
-# see, and shfmt must gate the same paths pre-commit gates — otherwise `check`
+# see, and shfmt must gate the same paths pre-commit gates - otherwise `check`
 # stops being a superset of the commit gate and a green `check` can still be
 # rejected by `git commit`. See [tasks.check].
 run = [
   # ShellCheck is the hard gate everywhere (see .shellcheckrc for the few
   # intentional disables). Covers repo scripts and the shipped scaffold scripts
-  # too — the latter are installed into consumer repos, so they must be clean.
+  # too - the latter are installed into consumer repos, so they must be clean.
   # `profiles/*/scripts/` carries the profile-specific scaffold scripts (the
-  # workspace profile's ws.sh) — installed into consumer repos just like the
+  # workspace profile's ws.sh) - installed into consumer repos just like the
   # Layer-0 ones, so gated identically. `evals/*/scaffold.sh` are the routing
   # suite's per-case repo builders: not shipped, but pre-commit's `types: [shell]`
   # matches them, so `check` must too or it stops being a superset.
@@ -180,11 +186,11 @@ description = "Run the POSIX-sh hook fixture suite (deterministic; no network)"
 run = ["sh plugins/steer/hooks/tests/run.sh"]
 
 [tasks."changelog:new"]
-description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=… BODY=…)"
+description = "Record a changelog entry as a fragment (KIND=Fixed SLUG=... BODY=...)"
 run = """
 changie new -k "${KIND:?set KIND=Added|Changed|Fixed|Security|Docs}" \
   -m "Slug=${SLUG:?set SLUG to 3-6 kebab-case words}" \
-  -b "${BODY:?set BODY to the entry text, starting with '- **Kind: …**'}"
+  -b "${BODY:?set BODY to the entry text, starting with '- **Kind: ...**'}"
 """
 
 [tasks."changelog:merge"]
@@ -205,7 +211,7 @@ run = ["sh plugins/steer/scripts/scan-version-pins.sh ."]
 
 [tasks."rules:preview"]
 description = "Show the always-on ruleset a real session receives (which rules inject, which are scoped out, and the byte cost)"
-# An authoring aid, not a gate — deliberately absent from `check` / `ci`.
+# An authoring aid, not a gate - deliberately absent from `check` / `ci`.
 # Runs the real inject-standards.sh + lib/scope.sh, so it cannot drift from what
 # a session actually gets. `mise run rules:preview -- --knowledge` / `--repo
 # <path>` / `--full`.
@@ -224,7 +230,7 @@ run = [
 
 # Documentation site (Zensical + mermaid). The Zensical toolchain lives in
 # the `docs` dependency-group so it is NOT installed by the default `uv sync`
-# the CI env uses — serve/build pull it in on demand via `uv run --group docs`.
+# the CI env uses - serve/build pull it in on demand via `uv run --group docs`.
 [tasks."docs:serve"]
 description = "Serve the documentation site locally with live reload"
 run = ["uv run --group docs zensical serve"]
@@ -243,7 +249,7 @@ description = "Run fast local checks (a superset of the pre-commit hygiene tier)
 # is never followed by a rejected `git commit`. `shell` covers the shellcheck +
 # shfmt hooks; `docs:check` covers the docs-sync hook (validate_docs.py, no docs
 # deps needed). When you add a pre-commit hook, add its task here too.
-depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check"]
+depends = ["lint", "typecheck", "plugin-check", "actions", "actions-security", "shell", "docs:check", "check-ascii"]
 
 [tasks.delivery-gates]
 description = "Run the PR-only branch-diff gates (changelog + docs impact) vs origin/main"
@@ -264,7 +270,7 @@ depends = [
 
 # Model-graded routing evals (`claude plugin eval`). Like the E2E suite below this
 # spends real tokens (~$1.00-1.30 per case per run across both ablation arms), so
-# it is deliberately NOT in `ci`'s depends and stays off the PR path — run it on
+# it is deliberately NOT in `ci`'s depends and stays off the PR path - run it on
 # the release path or when the routing surface changes. The task runs the whole
 # suite at the health settings; every flag below is load-bearing, and a bare
 # `claude plugin eval` does not exercise this suite.
@@ -273,18 +279,18 @@ depends = [
 # is author-supplied bash the tool will not run unless asked. There are three
 # scaffold variants (managed / greenfield / legacy) because one fixture cannot
 # serve both "route this ask in a bootstrapped repo" and "route this ask in a repo
-# that still needs bootstrapping" — see evals/README.md.
+# that still needs bootstrapping" - see evals/README.md.
 #
 # --allow-tools grants the three read-only tracker tools the managed cases list.
 # They are served by the canned stand-ins in evals/mocks/github/ (--mocks defaults
 # to record, which serves a mock where one exists), never by the real API: with no
 # stand-in the plugin's bundled github server fails to connect and every run
 # narrates the credential fault instead of routing. Writes are deliberately NOT
-# granted — a routing case never needs to land a change.
+# granted - a routing case never needs to land a change.
 #
 # --runs 3 is the difference between a health number and noise. The per-case
 # default is `runs: 1` to keep an ad-hoc single-case run cheap, and at one run the
-# result is noise — the same case has scored 0.6/0/0.6/0/0.6 across five identical
+# result is noise - the same case has scored 0.6/0/0.6/0/0.6 across five identical
 # runs. Forward `-- --runs 1` for the cheap authoring loop.
 #
 # --judge-model sonnet: the `answer` grader reads prose for "did the ask reach the
@@ -293,7 +299,7 @@ depends = [
 #
 # --threshold 0.6 makes the exit code mean something: exit 1 if any case scores
 # below it. The default is 1.0, which fails on any imperfect case. 0.6 is exactly
-# the weight of each case's `routed` grader (3 of 3+2) — "the run entered the right
+# the weight of each case's `routed` grader (3 of 3+2) - "the run entered the right
 # skill even if the prose judge docked it". Read `aggregates.meanDelta` in the
 # results JSON for the actual health signal; this is a floor, not the number.
 #
@@ -303,7 +309,7 @@ depends = [
 #
 # --no-publish keeps the HTML report local. Publishing it to claude.ai is the CLI
 # default wherever the account supports it, and a task run on every routing change
-# should not push a report outward each time — forward `-- --publish-report` when
+# should not push a report outward each time - forward `-- --publish-report` when
 # you want the link.
 #
 # No --json: every run already writes that same payload as `aggregate-result.json`
@@ -319,7 +325,7 @@ depends = [
 # rollout has not reached, or one that cannot receive it (CI runners, gateways,
 # telemetry-disabled clients), it prints "currently in early access" and exits.
 # CLAUDE_CODE_WALNUT_SPIRE=1 is the enablement flag, set here so the task works
-# unchanged on any machine. It only lifts the preview gate — it is not a credential
+# unchanged on any machine. It only lifts the preview gate - it is not a credential
 # and grants nothing; drop it once the feature ships generally.
 [tasks."evals"]
 description = "Run the model-graded routing evals against the plugin (slow, ~$25-30; needs plugin-eval early access)"
@@ -336,10 +342,10 @@ claude plugin eval plugins/steer \
   --no-publish
 """
 
-# Headless end-to-end skill suite — drives the real `claude` CLI against a
+# Headless end-to-end skill suite - drives the real `claude` CLI against a
 # throwaway repo and asserts on the files a skill produces. SLOW and spends
 # tokens, so it is deliberately NOT in `ci`'s depends (stays off the PR path)
-# and no longer runs in CI at all — it is a local-only tier now, run on demand
+# and no longer runs in CI at all - it is a local-only tier now, run on demand
 # via `mise run e2e` / `e2e:local`. Skips unless ANTHROPIC_API_KEY /
 # CLAUDE_CODE_OAUTH_TOKEN is set (or STEER_E2E_LOCAL=1 for the seat variant).
 [tasks."e2e"]
@@ -349,7 +355,7 @@ description = "Run the headless end-to-end skill suite (slow, costs tokens; need
 run = ["uv run pytest -m e2e -rP"]
 
 # Local variant: run the suite on your interactive `claude` login (subscription
-# seat) instead of API tokens — run `claude /login` once first. `env -u
+# seat) instead of API tokens - run `claude /login` once first. `env -u
 # ANTHROPIC_API_KEY` drops the key for this run so Claude Code bills the seat (it
 # prefers the key when present); STEER_E2E_LOCAL=1 flips the skip-guard on. No
 # --max-budget-usd is sent (no API dollar cost on a seat); the per-scenario

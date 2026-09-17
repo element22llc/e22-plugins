@@ -12,50 +12,50 @@ Claude Code, then bootstrap or adopt repos with its skills.
 
 Once installed, the `SessionStart` hook injects the always-on
 [rules](../reference/configuration.md) into every session where the plugin is
-enabled — a lean subset in non-code folders, since the scoped rules self-gate (see
-[Known limitations](../reference/known-limitations.md)) — and the
+enabled - a lean subset in non-code folders, since the scoped rules self-gate (see
+[Known limitations](../reference/known-limitations.md)) - and the
 `/steer:<skill>` commands become available.
 
 !!! note "Invocation is always namespaced"
     Skills are invoked as `/steer:<skill>` (e.g. `/steer:spec`), never bare
-    `/<skill>` — Claude Code namespaces plugin skills to avoid collisions.
+    `/<skill>` - Claude Code namespaces plugin skills to avoid collisions.
 
 ### Verify it worked
 
-Run `/plugin` and confirm **Steer — Engineering Standards** is listed and enabled.
+Run `/plugin` and confirm **Steer - Engineering Standards** is listed and enabled.
 
 The rules arrive as context Claude can read, not as anything printed in the
 transcript, so there is nothing on screen to look for. Confirm them by asking: open a new
-session in a managed repo and ask something only the loaded standards can answer —
+session in a managed repo and ask something only the loaded standards can answer -
 "what is this repo's delivery mode?" (expect `pr-flow` or `solo-trunk`, per the
-`CLAUDE.md` marker) — then check the reply matches.
+`CLAUDE.md` marker) - then check the reply matches.
 
 !!! note "Prerequisites for the full workflow"
     `/steer:setup` **surfaces** a missing local toolchain (git, mise, Docker);
     `/steer:init` and `/steer:build` are the skills that invoke **`/steer:doctor`**
-    to resolve it when it's absent — doctor installs **mise and the runtimes it
+    to resolve it when it's absent - doctor installs **mise and the runtimes it
     manages** on your confirmation, and hands over `git` (a sudo command) and Docker
     Desktop (a GUI app) as steps for you to run. The issue and PR steps additionally need
     an authenticated GitHub path: check `gh auth status` (run `gh auth login` if
     it fails), or supply the plugin's `github_pat` config value for the GitHub MCP
-    server — Claude Code prompts for it at install and stores it outside the repo
+    server - Claude Code prompts for it at install and stores it outside the repo
     (macOS Keychain, or `~/.claude/.credentials.json` where no supported keychain
     is available, which includes WSL2).
 
 ## Where hooks fire (surfaces)
 
-!!! warning "Hooks don't fire everywhere — rules may not load automatically"
+!!! warning "Hooks don't fire everywhere - rules may not load automatically"
     `steer` relies on Claude Code's hook lifecycle: the `SessionStart` hook is
     what injects the always-on rules. **Claude Code** (the CLI, the IDE
     extensions, and the Desktop **Code** tab) runs hooks fully. **Cowork** runs
     them too, but it's a no-install sandbox and **best-effort, for PO/knowledge-work
-    only** — do engineering work in Claude Code (reconfirm hooks on your build;
+    only** - do engineering work in Claude Code (reconfirm hooks on your build;
     `SessionStart` had bugs earlier in 2026, since closed). But on the **Desktop
     *Chat* tab and claude.ai web
     chat** hooks do **not** run, so the rules are **not** auto-injected and the
     `PreToolUse` hooks (the spec-first/issue-first nudges and the version-pin
-    block) do not run. On those surfaces — and as a fallback anywhere the rules
-    didn't load — run this manually at the start of the session before doing
+    block) do not run. On those surfaces - and as a fallback anywhere the rules
+    didn't load - run this manually at the start of the session before doing
     anything else:
 
     ```text
@@ -68,14 +68,14 @@ session in a managed repo and ask something only the loaded standards can answer
 !!! note "Windows: give the hooks a shell"
     steer's hooks are invoked via `sh`, which native Windows lacks. On the
     **Claude Desktop Code tab**, install
-    [Git for Windows](https://gitforwindows.org/) and that's the whole setup —
+    [Git for Windows](https://gitforwindows.org/) and that's the whole setup -
     hooks fire and `/steer:build` builds locally (add Docker Desktop if the repo
     runs services); **no WSL2 needed**. If you work through the **CLI or an IDE**,
     use **WSL2** instead. Full matrix: [Windows setup](windows-setup.md).
 
 ## Bootstrapping a repo
 
-Run **[`/steer:setup`](../workflows/index.md)** — it detects the repo state and
+Run **[`/steer:setup`](../workflows/index.md)** - it detects the repo state and
 routes to the right path, so you don't have to choose:
 
 - **New repo:** installs the bundled scaffold and `/spec` spine (`/steer:init`).
@@ -91,13 +91,13 @@ Both replace the old static `repository-template` as the bootstrap source.
     3000) instead of relying on auto-detection. Bring services/DB up first with
     `mise run dev:setup`; repoint the config at `mise run dev` once the repo goes
     polyglot. It never overwrites an existing `launch.json`, and no other profile
-    (`service`, `library`, `cli`, `infra`, `workspace`) gets one — a `service` repo
+    (`service`, `library`, `cli`, `infra`, `workspace`) gets one - a `service` repo
     that wants debugging can of course copy it by hand.
 
 ## Keeping a repo in sync
 
 After a new plugin release, run **[`/steer:setup`](../workflows/index.md)** in a
-managed repo — it detects the drift and applies pending migrations, reconciling
+managed repo - it detects the drift and applies pending migrations, reconciling
 the scaffold and spec spine against the current templates (via `/steer:sync`).
 
 ## Next step

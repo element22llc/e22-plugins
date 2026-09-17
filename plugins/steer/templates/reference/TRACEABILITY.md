@@ -5,36 +5,36 @@ Full prose behind the always-on `living-docs`, `issue-tracker`, `drift-gates`,
 **`/steer:reference traceability`**.
 
 The goal: a PO can express intent in plain language, a dev can review precise
-contracts, and anyone — including an auditor — can walk the chain
-**intent → spec → tracker ref → implementation → review → release** months
+contracts, and anyone - including an auditor - can walk the chain
+**intent -> spec -> tracker ref -> implementation -> review -> release** months
 later. Claude does the translation and bookkeeping *in parallel with the
 work*; humans approve, review, and stay accountable.
 
 ---
 
-## 1. Living documentation — the natural-language-to-spec contract
+## 1. Living documentation - the natural-language-to-spec contract
 
 The user is never required to write structured artifacts. They describe goals,
 constraints, decisions, questions, and changes in plain human language; Claude
-converts that into the durable artifacts below **as the conversation happens**
-— and proposes the update rather than silently rewriting anything a human
+converts that into the durable artifacts below **as the conversation happens** -
+and proposes the update rather than silently rewriting anything a human
 already approved.
 
 ### Routing table
 
-| The human says (in any words)… | Claude updates / proposes |
+| The human says (in any words)... | Claude updates / proposes |
 |---|---|
-| "Users should be able to…", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) — PO approves scope changes |
-| "Actually, it should behave like…" (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) — same PR as the code |
+| "Users should be able to...", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) - PO approves scope changes |
+| "Actually, it should behave like..." (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) - same PR as the code |
 | "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one entry in `/spec/history/` |
-| "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` → Structure for the `intent.md`-vs-`vision.md` placement rule) |
-| "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) — usage, workflows, roles & permissions, configuration |
+| "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` -> Structure for the `intent.md`-vs-`vision.md` placement rule) |
+| "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) - usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; the PO-acceptance checkbox in `intent.md` (its `Status:` becomes `live` only at the actual release) |
-| A **notable event** — decision ratified, scope changed, repo-level event, PO document absorbed, incident (not an ordinary merged change) | `/spec/history/` entry: what, why, who asked, refs |
+| A **notable event** - decision ratified, scope changed, repo-level event, PO document absorbed, incident (not an ordinary merged change) | `/spec/history/` entry: what, why, who asked, refs |
 
 **In a polyrepo member** (`spec/PRODUCT.md` present), the product-level
-destinations in this table — `/spec/history/`, `/spec/app/`,
-`/spec/features/` — are the **workspace's**. Do not create them locally: route
+destinations in this table - `/spec/history/`, `/spec/app/`,
+`/spec/features/` - are the **workspace's**. Do not create them locally: route
 the entry to the workspace checkout (`workspace.path` in `spec/PRODUCT.md`), else
 carry it in the PR description. `spec/decisions/` and `spec/design/` are the
 member's own, so ADRs are recorded normally.
@@ -45,11 +45,11 @@ member's own, so ADRs are recorded normally.
   said (gaps, ambiguity) to `## Open questions`. Never invent an answer to
   make a spec look complete.
 - **Identify ambiguity out loud.** When intent could mean two things, say so
-  and ask — a one-line question now beats intent drift at review.
+  and ask - a one-line question now beats intent drift at review.
 - **Same change, not "later".** Doc updates ride in the PR that changes the
   behavior. A wrap-up documentation pass is already drift.
 - **Proposals, not stealth edits.** Updating an *approved* intent or a
-  ratified decision is itself a change — propose it and get the owning
+  ratified decision is itself a change - propose it and get the owning
   human's yes (PO for intent, dev for contracts/ADRs).
 - **Declined ≠ dropped.** If the human declines an update, record the
   divergence as an open question so it stays visible.
@@ -62,20 +62,20 @@ member's own, so ADRs are recorded normally.
 | Register | Plain language, no stack vocabulary, user-visible outcomes | Precise enough to implement and review against: rules, data, APIs, error states |
 | Owns | Intent, user workflows, acceptance criteria, product decisions, open product questions | Contracts, architecture, tests, infra, security, operations, release readiness |
 
-Don't make a PO read code (or a contract) to learn what the product does —
+Don't make a PO read code (or a contract) to learn what the product does -
 that's what the app guide and intents are for. Don't make a dev reverse-
-engineer intent from prose — that's what contracts and ADRs are for.
+engineer intent from prose - that's what contracts and ADRs are for.
 
 ### The end-user surface carries no internal ids
 
-Both registers above are *internal* — a PO reads bookkeeping refs fluently. The
+Both registers above are *internal* - a PO reads bookkeeping refs fluently. The
 app's own users do not, and the always-on `user-facing-copy` rule keeps every
 internal identifier off the surfaces they read:
 
-- **App UI copy** — page, section and nav titles, labels, badges, chips,
+- **App UI copy** - page, section and nav titles, labels, badges, chips,
   tooltips, empty and error states, validation messages, in-app changelogs,
   onboarding text, notification and email templates.
-- **End-user docs** — the `/spec/app/` guide copy, troubleshooting, and release
+- **End-user docs** - the `/spec/app/` guide copy, troubleshooting, and release
   notes. State what changed for the user ("archived vendors now appear in
   search"), not the record that authorized it ("implements ADR 0004 /
   PROJ-214"). The `/spec/app/` **operational runbook** is the exception: it is
@@ -83,8 +83,8 @@ internal identifier off the surfaces they read:
 
 Name things in the product's own domain language; `spec/glossary.md` is the
 source for it, which is why the glossary is linked from the app guide rather
-than copied into it. If a user genuinely needs an identifier to quote back — a
-support code, an audit reference — that is a **product feature with its own
+than copied into it. If a user genuinely needs an identifier to quote back - a
+support code, an audit reference - that is a **product feature with its own
 contract and its own format**, not an internal id passed through. A leaked ADR
 number in a tooltip is a drift signal too: it means a dev-register artifact was
 pasted into a user-register one without translation.
@@ -94,10 +94,10 @@ pasted into a user-register one without translation.
 ## 2. Action history (`/spec/history/`)
 
 An append-only log: **what happened, why, who or what requested it, and which
-specs/issues/decisions/code areas were affected.** 3–6 lines each; detail lives
+specs/issues/decisions/code areas were affected.** 3-6 lines each; detail lives
 in the linked spec/ADR/PR.
 
-**One entry per notable event** — a ratified decision (ADR `Accepted`, intent
+**One entry per notable event** - a ratified decision (ADR `Accepted`, intent
 approved), a scope change to an approved intent, a repo-level event (bootstrap,
 adoption, plugin sync, solo-trunk graduation), a PO source document absorbed, or
 a production incident and its follow-up. **Not** one per merged change and not
@@ -113,7 +113,7 @@ spec/history/YYYY-MM-DD-HHMM-<slug>.md
 ```
 
 ```markdown
-# 2026-06-10 14:32 — ADR 0004 accepted: Postgres for vendor search
+# 2026-06-10 14:32 - ADR 0004 accepted: Postgres for vendor search
 
 - **Why:** vendor search outgrew the in-memory index; reversing this once reports depend on it would mean redoing them
 - **Requested by:** @pat-po
@@ -122,7 +122,7 @@ spec/history/YYYY-MM-DD-HHMM-<slug>.md
 ```
 
 **Why a directory, not one file.** A single shared log put every PR's entry at
-the same insertion point — the top of the file — so every pair of concurrent
+the same insertion point - the top of the file - so every pair of concurrent
 changes conflicted there, and no date or time granularity helps: the collision is
 positional, not content-based. Git's `union` merge driver looks like the fix and
 is worse than the conflict: being *line*-based, when two entries share a trailing
@@ -135,7 +135,7 @@ Entries are **immutable**: never rewrite, re-date, or delete one. A correction i
 a new entry carrying `- **Corrects:** <filename>`. A repo bootstrapped before the
 directory existed keeps its earlier entries in a frozen `spec/HISTORY.md` archive.
 
-The log serves: **auditability** (when/why/who for a notable event — an ordinary
+The log serves: **auditability** (when/why/who for a notable event - an ordinary
 change's audit record is its commit and reviewed PR), **onboarding**
 (read the last quarter in five minutes), **review evidence** (the entry rides in
 the reviewed PR), **decision archaeology** (why is it like this?), and **drift
@@ -146,7 +146,7 @@ timeline).
 
 ## 3. App knowledge documentation (`/spec/app/`)
 
-Documentation about *using and operating* the product — distinct from specs
+Documentation about *using and operating* the product - distinct from specs
 (what to build) and contracts (how it must behave internally). Index:
 `spec/app/README.md` (bundled template `templates/spec/app-docs.md`), with
 sections split into their own files as they grow:
@@ -155,13 +155,13 @@ sections split into their own files as they grow:
 - **Roles & permissions** (who can do what, plain language)
 - **Configuration concepts** (what's adjustable and what it affects)
 - **Known limitations** (deliberate non-goals + current gaps)
-- **Troubleshooting** (symptom → cause → action)
+- **Troubleshooting** (symptom -> cause -> action)
 - **Operational runbook** (dev-facing; only once deployed)
 - **Release notes** (user-facing change log, newest first)
-- **Glossary** → link `spec/glossary.md`, never copy it
+- **Glossary** -> link `spec/glossary.md`, never copy it
 
 **Update trigger:** any PR that changes user-visible behavior, roles,
-configuration, or operations updates the affected page in the same PR — a
+configuration, or operations updates the affected page in the same PR - a
 stale app guide is a drift-gate flag ("app docs invalidated"). When behavior
 is about to change, check `/spec/app/` *before* merge, not after a user trips
 on it.
@@ -196,39 +196,39 @@ connect the two.** Only one file knows which tracker is in use:
 
 **Preserving issue context:** when work starts from a tracker item, copy its
 acceptance criteria and constraints into the feature's `intent.md` (don't
-leave them tracker-only — the repo must stand alone for review and audit);
+leave them tracker-only - the repo must stand alone for review and audit);
 keep the ref as the pointer back. When tracker state and spec diverge, that's
 exactly what `/steer:audit spec` audits.
 
 **Questions not yet tracked externally** live in `## Open questions`. Promote
 one to a tracker item when it needs scheduling, an external owner, or client
-visibility — then set that question's `tracker:` field to the ref. The
+visibility - then set that question's `tracker:` field to the ref. The
 `### Q-NNN` block **stays**: it already reads standalone, the issue carries the
-same id via `<!-- steer:question-id=Q-NNN -->`, and that spec-`tracker:` ↔
-issue-`question-id` pair is the bidirectional link — deleting the block strands
+same id via `<!-- steer:question-id=Q-NNN -->`, and that spec-`tracker:` <->
+issue-`question-id` pair is the bidirectional link - deleting the block strands
 the issue and fails `/steer:spec validate`, which flags a promoted question with
 no `tracker:` ref back.
 
 ---
 
-## 5. Drift gates — what must be surfaced before merge
+## 5. Drift gates - what must be surfaced before merge
 
-Drift is any meaningful mismatch along intent ↔ spec ↔ contract ↔ tracker ↔
-app docs ↔ action history ↔ tests ↔ delivered behavior. The standing rule
+Drift is any meaningful mismatch along intent <-> spec <-> contract <-> tracker <->
+app docs <-> action history <-> tests <-> delivered behavior. The standing rule
 (spec-framework Rule 5): **resolve drift via explicit human review, never
-silently** — fix the code, fix the artifact, or record the accepted
+silently** - fix the code, fix the artifact, or record the accepted
 divergence. The always-on `drift-gates` rule lists the nine review-sensitive
 classes; the scaffold's PR template carries them as a checklist so the flag is
 part of the review record.
 
 Mechanics:
 
-- Flag **when noticed, not at wrap-up** — note it in the PR description draft
+- Flag **when noticed, not at wrap-up** - note it in the PR description draft
   immediately (or tell the dev if no PR exists yet).
 - A checked flag **blocks merge** until the reviewer explicitly resolves it.
   "Resolved" is visible: a code change, an artifact update in the same PR, or
   a written accepted-divergence note (open question or `spec-drift` issue).
-- Claude **may not waive its own flag** — only the human reviewer resolves it.
+- Claude **may not waive its own flag** - only the human reviewer resolves it.
 - Sweeps for drift that slipped past per-PR gates: `/steer:audit spec` (as-built spec
   vs tracker spec), `/steer:audit` (code vs standards), `/steer:questions` (open
   questions rotting).
@@ -236,18 +236,18 @@ Mechanics:
 ### The advisory `spec-drift` CI job
 
 The bundled CI scaffold carries a machine backstop for the *undocumented behavior
-change* class — pure shell and git, no stack and no Python, so it runs anywhere:
+change* class - pure shell and git, no stack and no Python, so it runs anywhere:
 
 - It **warns, never blocks.** The warning is a prompt to update the spec or to
   confirm "no behavior change" via the PR template; it does not replace the
   human-resolved flag, and it cannot resolve one.
 - It fires when a change touches application behavior (`apps/`, `packages/`,
-  `src/`, …) without a matching spec update in the same change.
-- **What clears it:** the owning feature's `contract.md` or `intent.md` — the
+  `src/`, ...) without a matching spec update in the same change.
+- **What clears it:** the owning feature's `contract.md` or `intent.md` - the
   routine path for a behavior change. A dated `spec/history/` entry also clears
   the filter, and a repo mid-migration still clears it with `spec/HISTORY.md`,
   but neither is the routine path: an ordinary merged change writes no history
-  entry at all (§2). The directory's `README.md` format doc does **not** clear it —
+  entry at all (§2). The directory's `README.md` format doc does **not** clear it -
   the filter matches date-named entries only.
 - It runs **on PRs and on push to `main`**, which makes it the *only* spec-drift
   signal in solo-trunk mode, where there is no PR to carry a flag.
@@ -256,7 +256,7 @@ change* class — pure shell and git, no stack and no Python, so it runs anywher
 
 ## 6. SOC 2 / ISO 27001-aligned delivery
 
-The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations —
+The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations -
 say "aligned", never "compliant": no plugin, workflow, or generated artifact
 makes a product compliant. Certification scope, control ownership, compliance
 accountability, and production-readiness approval are human responsibilities;
@@ -266,11 +266,11 @@ What the workflow contributes, mapped to what auditors typically ask for:
 
 | Expectation | Where it lives here |
 |---|---|
-| Traceability of changes | intent → contract → tracker ref → reviewed PR (each change's own record) |
+| Traceability of changes | intent -> contract -> tracker ref -> reviewed PR (each change's own record) |
 | Review evidence | dev-approved PRs as the production gate; drift flags + DoD in the PR record |
 | Change history | ADRs (decisions), action history (what/why/who), git history (code) |
 | Access-conscious workflow | branch protection, least-scope tokens, no direct-to-`main`, PO/dev role split |
-| Secure defaults | secrets rules (never committed; encrypted config at rest — Parameter Store / Secrets Manager), high-risk gates, validated boundaries |
+| Secure defaults | secrets rules (never committed; encrypted config at rest - Parameter Store / Secrets Manager), high-risk gates, validated boundaries |
 | Documented operations | runbook in `/spec/app/`, `.env.example`, CI/deploy under version control |
 | Auditable decisions | ADR status lifecycle (Proposed/Accepted/Superseded), append-only history |
 | Human accountability | PO approves intent; dev approves the PR; humans own production readiness |
@@ -281,16 +281,16 @@ What the workflow contributes, mapped to what auditors typically ask for:
 
 ### A PO's day (plain language in, artifacts out)
 
-> **PO:** "Clients keep asking for a way to download their vendor list —
+> **PO:** "Clients keep asking for a way to download their vendor list -
 > finance wants it monthly as a spreadsheet. Oh, and only admins should be
 > able to do it."
 
 Claude, in parallel with any prototyping: drafts
 `spec/features/export-csv/intent.md` (what/why, acceptance criteria: admin-
-only, CSV columns…), adds `> Tracker: none yet`, asks one clarifying question
+only, CSV columns...), adds `> Tracker: none yet`, asks one clarifying question
 ("every vendor field, or a fixed set?") and records it under `## Open
 questions`, updates the app guide's Roles table proposal (admins gain
-"Export"), and — once built and merged — writes a release-notes line ("Admins can
+"Export"), and - once built and merged - writes a release-notes line ("Admins can
 now download the vendor list as CSV"). No history entry: shipping an approved
 feature is an ordinary merged change, and the commit plus the reviewed PR are its
 record. (The *approval* of the intent, earlier, was the notable event.) The PO
@@ -305,8 +305,8 @@ language.
 
 Claude: updates `contract.md` (API surface unchanged; behavior rule added for
 streaming + max-size error state), notes the move in Implementation pointers,
-checks the PR's drift-gate flags — "Contract drift" (contract updated to
-match) and nothing else — writes no history entry (a perf refactor is an ordinary
+checks the PR's drift-gate flags - "Contract drift" (contract updated to
+match) and nothing else - writes no history entry (a perf refactor is an ordinary
 merged change), and reminds that the app guide is unaffected (no user-visible
 change). Tests ride in the same PR per the testing rules. The reviewer sees
 the flag, the contract diff, and the regression test together.
@@ -315,4 +315,4 @@ the flag, the contract diff, and the regression test together.
 
 Both flows work in Claude Code and Cowork; the PO typically enters through
 **`/steer:build`**, the dev through the normal spec workflow
-(`/steer:spec`, `/steer:adr`) — the artifacts and gates are identical.
+(`/steer:spec`, `/steer:adr`) - the artifacts and gates are identical.

@@ -1,27 +1,27 @@
 #!/usr/bin/env sh
-# steer PostToolUse hook — format the file a Write/Edit just touched.
+# steer PostToolUse hook - format the file a Write/Edit just touched.
 #
 # WHY
 #   Formatting drift is the cheapest CI failure there is: the model writes
 #   near-formatted code, the CI lint gate rejects it, and a whole push-and-wait
-#   round-trip is spent on whitespace. Formatting at the point of mutation —
-#   with the repo's OWN formatter, only when the repo actually uses one —
+#   round-trip is spent on whitespace. Formatting at the point of mutation -
+#   with the repo's OWN formatter, only when the repo actually uses one -
 #   removes that loop without introducing any new tool or opinion.
 #
 # SCOPE (deliberately narrow)
-#   • Fires only when the repo has OPTED IN to a formatter this hook knows:
-#     a root biome.json/biome.jsonc (biome — the default-stack Node formatter)
-#     or a root pyproject.toml (ruff — the default Python formatter). No
-#     config → silent no-op; this hook never introduces a formatter.
-#   • Formats ONLY the single file the tool just wrote — never a tree sweep.
-#   • The formatter binary must already be on PATH (mise-managed repos have it
-#     via `mise activate`); a missing binary → silent no-op, never an install.
-#   • The plugin's own source repo is exempt (its pre-commit owns formatting).
+#   * Fires only when the repo has OPTED IN to a formatter this hook knows:
+#     a root biome.json/biome.jsonc (biome - the default-stack Node formatter)
+#     or a root pyproject.toml (ruff - the default Python formatter). No
+#     config -> silent no-op; this hook never introduces a formatter.
+#   * Formats ONLY the single file the tool just wrote - never a tree sweep.
+#   * The formatter binary must already be on PATH (mise-managed repos have it
+#     via `mise activate`); a missing binary -> silent no-op, never an install.
+#   * The plugin's own source repo is exempt (its pre-commit owns formatting).
 #
 # MECHANISM
 #   PostToolUse on Write|Edit|MultiEdit. Best-effort, silent, and always exit
 #   0: a formatter error must never fail the hook (the file may legitimately be
-#   mid-refactor and unparseable). Emits nothing — the write already happened;
+#   mid-refactor and unparseable). Emits nothing - the write already happened;
 #   there is no decision to influence.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
@@ -40,7 +40,7 @@ CWD="$(steer_field cwd)"
 
 # Resolve from the FILE, not cwd: with a nested work tree the two differ, and
 # formatting must run under the config of the repo that owns the file (#396).
-# Not a git work tree → not a repo we manage. The plugin's own source repo →
+# Not a git work tree -> not a repo we manage. The plugin's own source repo ->
 # its pre-commit hooks own formatting.
 ROOT="$(steer_action_root "${CWD}" "${FILE}")" || exit 0
 [ -d "${ROOT}/.claude-plugin" ] && exit 0

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer helper — one-shot, READ-ONLY /spec spine + topology facts.
+# steer helper - one-shot, READ-ONLY /spec spine + topology facts.
 #
 # WHY THIS EXISTS
 #   Several skills must know four things before they can route: where the repo
@@ -8,7 +8,7 @@
 #   answers lives in a `hooks/lib/*.sh` helper, and the skills used to reach
 #   them by `.`-sourcing those files inline and then calling the functions. A
 #   permission rule matches a SINGLE command string, so that compound snippet
-#   matched no rule at all — and no grant in this plugin covers a dot-source
+#   matched no rule at all - and no grant in this plugin covers a dot-source
 #   either. The onboarding front door therefore prompted the user on its very
 #   first action (the issue #266 class, on the one surface
 #   where a prompt is most expensive). Wrapping the reads in a bundled script
@@ -18,13 +18,13 @@
 #
 # SCOPE
 #   Read-only: writes nothing, mutates nothing, never talks to the network.
-#   Structural facts only — it deliberately does NOT compare `spec/.version`
+#   Structural facts only - it deliberately does NOT compare `spec/.version`
 #   against the plugin version (that semver call belongs to /steer:sync and
 #   /steer:next) and does NOT resolve this repo's own "owner/name" from the git
 #   remote (see the NOTE in hooks/lib/scope.sh: skills resolve that via
 #   `gh repo view`, which is correct under URL rewrites and GHE).
 #
-#   Every field prints explicitly — "none" rather than silence — so an absent
+#   Every field prints explicitly - "none" rather than silence - so an absent
 #   value can never be confused with a failed read.
 #
 # USAGE
@@ -56,7 +56,7 @@ fi
 	exit 1
 }
 
-printf '## Spine state (structural facts only — version drift and repo identity resolved by the caller)\n\n'
+printf '## Spine state (structural facts only - version drift and repo identity resolved by the caller)\n\n'
 printf -- '- root: %s\n' "${ROOT}"
 if [ "${IN_WORKTREE}" = no ]; then
 	printf -- '- git: not inside a work tree (no .git in any ancestor)\n'

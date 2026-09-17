@@ -49,7 +49,7 @@ def seed_repo(tmp_path: Path) -> Path:
 # Real working code adopt must NOT rewrite, and a custom .gitignore line the
 # additive scaffold merge must preserve. Kept as module constants so the test
 # can assert against the exact seeded content.
-CORE_SRC = '''"""Widget pricing core — pre-existing working code."""
+CORE_SRC = '''"""Widget pricing core - pre-existing working code."""
 
 
 def price(units: int, unit_cost: float, *, discount: float = 0.0) -> float:
@@ -74,7 +74,7 @@ class ExistingApp:
 @pytest.fixture
 def existing_app_repo(tmp_path: Path) -> ExistingApp:
     """A 'vibe-coded' app: real source, a README, and a custom .gitignore, but
-    NO ``/spec`` — the shape ``/steer:adopt`` reverse-engineers. Committed so a
+    NO ``/spec`` - the shape ``/steer:adopt`` reverse-engineers. Committed so a
     later working-tree diff would show anything adopt mutated."""
     repo = tmp_path / "existing-app"
     pkg = repo / "src" / "widgets"
@@ -108,16 +108,16 @@ def existing_app_repo(tmp_path: Path) -> ExistingApp:
 #
 # drift compares an as-built /spec spine (with a feature) against a tracker-spec
 # export and reports divergences. init never produces a feature (greenfield), and
-# running adopt to get one is a ~$4 extra live run — so we hand-seed a believable
+# running adopt to get one is a ~$4 extra live run - so we hand-seed a believable
 # adopted-style spine + a tracker export that DIVERGES from it. The as-built spec
 # says the export emits a `phone` column and XLSX; the tracker issue (Done) asks
-# only for CSV with name+email — so phone/XLSX are drift the report should surface.
+# only for CSV with name+email - so phone/XLSX are drift the report should surface.
 
-# Tokens the as-built spec has but the tracker intent does not — drift should name
+# Tokens the as-built spec has but the tracker intent does not - drift should name
 # at least one. Lower-cased substrings, matched leniently against the report text.
 DRIFT_SIGNALS = ("phone", "xlsx")
 
-_CONTRACT_MD = """# Contract — customer-export (as-built)
+_CONTRACT_MD = """# Contract - customer-export (as-built)
 
 Derived from the code; describes what the export actually does today.
 
@@ -129,7 +129,7 @@ Derived from the code; describes what the export actually does today.
 Evidence: `src/export.py:1`
 """
 
-_INTENT_MD = """# Intent — customer-export
+_INTENT_MD = """# Intent - customer-export
 
 Export customer records for downstream billing.
 
@@ -138,7 +138,7 @@ Export customer records for downstream billing.
 - (none)
 """
 
-_TRACKER_ISSUE = """# Issue #1 — Customer export
+_TRACKER_ISSUE = """# Issue #1 - Customer export
 
 Status: Done
 
@@ -156,7 +156,7 @@ _SPINE_FILES = (
     ("users.md", "# Users\n\nBilling ops.\n"),
     ("glossary.md", "# Glossary\n\n- customer: a billed account.\n"),
     # Action history: a directory of immutable per-entry files, seeded with its
-    # format doc plus one date-named entry — the shape init/adopt produce, so a
+    # format doc plus one date-named entry - the shape init/adopt produce, so a
     # fixture repo is not mistaken for one that predates that migration.
     ("history/README.md", "# Action history\n\nOne file per merged change.\n"),
     ("history/2026-01-01-0900-seeded.md", "# seeded\n\n- **Areas:** spec-only\n"),
@@ -200,7 +200,7 @@ def drift_repo(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def spec_repo(tmp_path: Path) -> Path:
-    """A bootstrapped repo with a spine but no features yet — the state
+    """A bootstrapped repo with a spine but no features yet - the state
     ``/steer:spec`` drafts a new feature into."""
     repo = tmp_path / "spec-app"
     _seed_spine(repo)

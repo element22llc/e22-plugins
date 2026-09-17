@@ -10,7 +10,7 @@ on:
   push:
     branches: [main]
 
-# Supersede a PR's own in-flight run when it is pushed again — the biggest saver of
+# Supersede a PR's own in-flight run when it is pushed again - the biggest saver of
 # Actions minutes on an agent-driven branch, which pushes often. Never on `main`:
 # every trunk commit gets its own conclusive run.
 # Least privilege for every job: all four only read the tree and write annotations /
@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The single required status check: stack-agnostic hygiene always, then the checks for each
-# DETECTED stack. A detected stack with no test contract FAILS — green must mean tests ran.
+# DETECTED stack. A detected stack with no test contract FAILS - green must mean tests ran.
 #
 # Every step delegates to a `mise run ci:*` task (mise.toml -> "Verification tasks"), whose
 # logic lives in scripts/ci-*.sh. CI and the local gate therefore run the SAME code: reproduce
@@ -37,7 +37,7 @@ jobs:
     # Draft PRs skip every job, so work in progress costs no minutes. SAFE against branch
     # protection: a *skipped* job satisfies a required status check (GitHub requires
     # "successful, skipped, or neutral"), and a draft PR cannot be merged regardless.
-    # Do NOT reach for `paths-ignore` to save more — a workflow that never fires leaves the
+    # Do NOT reach for `paths-ignore` to save more - a workflow that never fires leaves the
     # required check ABSENT, which is not the same as skipped and blocks the PR forever.
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
 
       # Every check below is a `mise run` task defined in mise.toml, so the SAME command
       # validates on a laptop: `mise run check` (fast) / `mise run ci` (everything here).
-      # The logic lives in scripts/ci-*.sh — shellcheck-gated, and never duplicated between
+      # The logic lives in scripts/ci-*.sh - shellcheck-gated, and never duplicated between
       # this file and the local gate. Rationale: mise.toml -> "Verification tasks".
       # Secret scanning is GitHub-native (Settings -> Code security), not a CI step.
 
@@ -73,7 +73,7 @@ jobs:
       - name: Type check (Node/TS)
         run: mise run ci:typecheck
 
-      # A detected stack with no test contract FAILS — green must mean tests ran.
+      # A detected stack with no test contract FAILS - green must mean tests ran.
       - name: Test
         run: mise run ci:test
 
@@ -103,7 +103,7 @@ jobs:
       # - name: Build
       #   run: pnpm run build
 
-  # Advisory — remove `continue-on-error` to make it block.
+  # Advisory - remove `continue-on-error` to make it block.
   design-lint:
     name: design.md lint (advisory)
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
@@ -176,7 +176,7 @@ jobs:
             | grep -Ev '(^|/)(tests?|__tests__|e2e|fixtures)/|\.(test|spec)\.[A-Za-z0-9]+$' \
             || true)
           # Date-prefixed entries only (not the dir's README). The legacy single-file path lives ONLY in the
-          # regex — naming it in prose breaks the migration ledger's grep of this file.
+          # regex - naming it in prose breaks the migration ledger's grep of this file.
           spec=$(printf '%s\n' "$changed" \
             | grep -E '^spec/features/.+/(contract|intent)\.md$|^spec/history/[0-9][^/]*\.md$|^spec/HISTORY\.md$' \
             || true)
@@ -199,7 +199,7 @@ jobs:
           fi
 
   # Advisory; .aislop/config.yml turns down rules that duplicate ruff/Biome. Make it blocking by dropping
-  # `continue-on-error` and the `|| true` below — `scan` already exits 1 on findings or score < ci.failBelow.
+  # `continue-on-error` and the `|| true` below - `scan` already exits 1 on findings or score < ci.failBelow.
   # Findings land as PR annotations + a step summary, which cost nothing; code scanning is a paid feature on
   # private repos. On a repo with GitHub Code Security, `--sarif` + `github/codeql-action/upload-sarif` works too.
   ai-slop:
@@ -219,7 +219,7 @@ jobs:
           node-version: 24
 
       - name: Scan for AI slop
-        # Exit 1 means findings or score < ci.failBelow — that is the report, not a failure. A crashed
+        # Exit 1 means findings or score < ci.failBelow - that is the report, not a failure. A crashed
         # scan exits 1 too but writes no report, which is what the jq probe separates.
         run: |
           npx --yes aislop@0.14.0 scan . --json > aislop.json || true
@@ -249,7 +249,7 @@ jobs:
              end)
           ' aislop.json >> "$GITHUB_STEP_SUMMARY"
           # Workflow commands need their own escaping, and GitHub renders at most 10 annotations
-          # per level per step — the step summary above is the complete list.
+          # per level per step - the step summary above is the complete list.
           jq -r '
             def esc: gsub("%"; "%25") | gsub("\r"; "%0D") | gsub("\n"; "%0A");
             def prop: esc | gsub(","; "%2C") | gsub(":"; "%3A");

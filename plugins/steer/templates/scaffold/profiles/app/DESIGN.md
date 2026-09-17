@@ -55,7 +55,7 @@ components:
 
 # DESIGN.md
 
-This is your product's visual identity. It starts as a small valid stub — a few
+This is your product's visual identity. It starts as a small valid stub - a few
 colors, two type tokens, a spacing and radius scale, and three components. **Grow
 it as reusable patterns emerge** (add a token or component once the same choice
 shows up in **3+ places**), not before.
@@ -70,7 +70,7 @@ inherit this one.
 
 ## Format spec
 
-The **format** of this file — section order, the token schema, and lint rules —
+The **format** of this file - section order, the token schema, and lint rules -
 is defined by the design.md specification, not by this repo:
 
 <https://github.com/google-labs-code/design.md>
@@ -89,4 +89,4 @@ npx @google/design.md lint DESIGN.md
 ```
 
 CI runs this linter as an **advisory** (non-blocking) step whenever a `DESIGN.md`
-changes — it is not a merge gate.
+changes - it is not a merge gate.

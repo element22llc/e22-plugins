@@ -56,7 +56,7 @@ def test_gate_detects_drift(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(check_copilot_agents, "AGENTS_DIR", agents)
     monkeypatch.setattr(check_copilot_agents, "OUT_DIR", out)
     assert check_copilot_agents.main() == 0
-    # Mutate a committed artifact → drift detected.
+    # Mutate a committed artifact -> drift detected.
     (out / "steer-reviewer.agent.md").write_text("tampered\n", encoding="utf-8")
     assert check_copilot_agents.main() == 1
 

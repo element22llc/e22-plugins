@@ -7,7 +7,7 @@
 <!-- steer:managed:start -->
 ## Outcome
 
-[The change in the product or user's world when this is done — not the
+[The change in the product or user's world when this is done - not the
 implementation.]
 
 ## User value
@@ -28,7 +28,7 @@ implementation.]
 
 ## Open questions
 
-- [ ] [Unresolved product decision — promote to a `spec-question` issue if it
+- [ ] [Unresolved product decision - promote to a `spec-question` issue if it
   blocks multiple features or needs a named owner.]
 
 ## Spec references
@@ -37,14 +37,14 @@ implementation.]
 
 ## Related issues
 
-- #N — [relationship (relates-to | depends-on | blocks | conflicts-with |
+- #N - [relationship (relates-to | depends-on | blocks | conflicts-with |
   supersedes | superseded-by) + one-line why. Omit this whole section when there
-  are no related issues — never leave an empty stub.]
+  are no related issues - never leave an empty stub.]
 
 ## Delivery
 
 [Omit until a branch/PR exists. Mirrors the `steer:branch` / `steer:pull-request`
-markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
+markers as a clickable line - maintained by `/steer:tracker-sync link-pr` and
 `/steer:work`.]
 
 - PR: #NN
@@ -52,5 +52,5 @@ markers as a clickable line — maintained by `/steer:tracker-sync link-pr` and
 
 ## Validation
 
-[How completion is confirmed — tests, demo, PO acceptance.]
+[How completion is confirmed - tests, demo, PO acceptance.]
 <!-- steer:managed:end -->

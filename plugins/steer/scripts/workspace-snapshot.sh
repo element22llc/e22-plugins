@@ -1,22 +1,22 @@
 #!/usr/bin/env sh
-# steer helper — one-shot, READ-ONLY workspace snapshot (local dimensions).
+# steer helper - one-shot, READ-ONLY workspace snapshot (local dimensions).
 #
 # WHY THIS EXISTS
 #   /steer:next reconstructs the whole workspace state cold on every run. Done
 #   manually that is a dozen separate tool calls (git status, git branch, a
-#   Read per intent.md, a sweep for ADRs, work claims, version drift, …), each
+#   Read per intent.md, a sweep for ADRs, work claims, version drift, ...), each
 #   a model round-trip (PLAN.md Phase 1 item 5). This script gathers every
 #   LOCAL dimension of that reconstruction in a single call and prints a
 #   compact, sectioned summary the model reads once.
 #
 # SCOPE
-#   Local state only — git, the /spec spine, features, open questions, ADRs,
+#   Local state only - git, the /spec spine, features, open questions, ADRs,
 #   work claims, build/adoption markers, and the declared tracker SYSTEM. It
 #   never talks to the network: live PR/CI state stays with `gh` reads and
 #   live issue state stays with /steer:tracker-sync (the skill fetches those
 #   separately, batched). Read-only: writes nothing, mutates nothing.
 #
-#   Every dimension prints explicitly — "none" rather than silence — matching
+#   Every dimension prints explicitly - "none" rather than silence - matching
 #   /steer:next's rule that silence must never read as "nothing there".
 #
 # USAGE
@@ -41,7 +41,7 @@ fi
 	exit 1
 }
 
-printf '## Workspace snapshot (local state only — live PR/CI and tracker state fetched separately)\n\n'
+printf '## Workspace snapshot (local state only - live PR/CI and tracker state fetched separately)\n\n'
 printf -- '- root: %s\n' "${ROOT}"
 
 # --- git -----------------------------------------------------------------
@@ -65,10 +65,10 @@ fi
 # --- spine + version drift ------------------------------------------------
 printf '\n### Spine\n'
 printf -- '- state: %s\n' "$(steer_spine_state "${ROOT}")"
-# The role changes what the state MEANS — a member's spine is partial by design,
+# The role changes what the state MEANS - a member's spine is partial by design,
 # so `managed` there is not the same claim as `managed` in a single-repo product.
 printf -- '- polyrepo role: %s\n' "$(steer_polyrepo_role "${ROOT}" || printf 'none (single-repo product)')"
-# The stamp is TWO lines — a managed-by comment, then the version (init, adopt,
+# The stamp is TWO lines - a managed-by comment, then the version (init, adopt,
 # build and sync all write it that way), so `head -1` returns the comment. Extract the
 # version itself, exactly as /steer:sync reads this same file.
 _spec_ver="$(grep -m1 -oE '[0-9]+\.[0-9]+\.[0-9]+' "${ROOT}/spec/.version" \
@@ -121,12 +121,12 @@ for _adr in "${STEER_DECISIONS_DIR}"/[0-9]*.md; do
 	[ -f "${_adr}" ] || continue
 	_dfound=1
 	# Accept BOTH header forms: the bundled adr.md template writes a blockquote
-	# (`> Status: …`) while hand-written ADRs often use a bold list item
-	# (`- **Status:** …`). Matching only one silently reported every
+	# (`> Status: ...`) while hand-written ADRs often use a bold list item
+	# (`- **Status:** ...`). Matching only one silently reported every
 	# template-created ADR as 'unknown', so a Proposed ADR never surfaced as
 	# awaiting ratification.
 	_dstatus="$(sed -n -e 's/^- \*\*Status:\*\* *//p' -e 's/^> *Status: *//p' "${_adr}" | head -1)"
-	# An unfilled template still carries the whole enum — say so rather than
+	# An unfilled template still carries the whole enum - say so rather than
 	# reporting the first alternative as if it were a real decision state.
 	case "${_dstatus}" in
 	*"|"*) _dstatus='unresolved-template' ;;
@@ -161,7 +161,7 @@ else
 	printf -- '- PRODUCTIONIZATION.md: none\n'
 fi
 
-# --- tracker (declared system only — never live state) -------------------------
+# --- tracker (declared system only - never live state) -------------------------
 printf '\n### Tracker\n'
 steer_tracker_file "${ROOT}"
 _tsys="$(sed -n 's/^system: *//p' "${STEER_TRACKER_FILE}" 2>/dev/null | head -1)"

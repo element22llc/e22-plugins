@@ -68,17 +68,17 @@ MIGRATIONS = """\
 
 > Newest first.
 
-### [Unreleased] — `foo` → `bar`
+### [Unreleased] - `foo` -> `bar`
 
 - **What & why:** rename.
 
-### v6.0.0 — earlier thing
+### v6.0.0 - earlier thing
 
 - **What & why:** earlier.
 
-<!-- Template for a new entry — copy above the most recent one:
+<!-- Template for a new entry - copy above the most recent one:
 
-### [Unreleased] — <one-line what>
+### [Unreleased] - <one-line what>
 
 - **What & why:** ...
 -->
@@ -164,10 +164,10 @@ def test_cut_bumps_all_three_manifests_and_leaves_marketplace_metadata_alone(rep
 def test_cut_renames_ledger_entries_but_never_the_stub(repo):
     rc.apply_cut("6.1.0")
     text = rc.MIGRATIONS.read_text(encoding="utf-8")
-    assert "### v6.1.0 — `foo` → `bar`" in text
+    assert "### v6.1.0 - `foo` -> `bar`" in text
     # the authoring stub keeps its placeholder heading
-    assert text.count("### [Unreleased] — <one-line what>") == 1
-    assert "### v6.1.0 — <one-line what>" not in text
+    assert text.count("### [Unreleased] - <one-line what>") == 1
+    assert "### v6.1.0 - <one-line what>" not in text
 
 
 def test_dry_run_writes_nothing_and_prints_the_plan(repo, capsys):
@@ -176,7 +176,7 @@ def test_dry_run_writes_nothing_and_prints_the_plan(repo, capsys):
     assert "- **Added:** a new skill." in out
     assert "6.0.0 -> 6.1.0" in out
     assert "metadata.version is left alone" in out
-    assert "### v6.1.0 — `foo` → `bar`" in out  # the migrations diff
+    assert "### v6.1.0 - `foo` -> `bar`" in out  # the migrations diff
     after = {p: p.read_text(encoding="utf-8") for p in repo.rglob("*") if p.is_file()}
     assert before == after
 
@@ -210,7 +210,7 @@ def test_cut_refuses_to_overwrite_an_existing_version_file(repo):
 
 def test_no_ledger_entries_is_a_silent_noop(repo):
     rc.MIGRATIONS.write_text(
-        "# Migrations\n\n## Entries\n\n> Newest first.\n\n### v6.0.0 — earlier\n", encoding="utf-8"
+        "# Migrations\n\n## Entries\n\n> Newest first.\n\n### v6.0.0 - earlier\n", encoding="utf-8"
     )
     rc.apply_cut("6.1.0")
     assert rc.validate_cut("6.1.0") == []
@@ -240,7 +240,7 @@ def test_validate_cut_flags_a_stamped_stub(repo):
     rc.apply_cut("6.1.0")
     text = rc.MIGRATIONS.read_text(encoding="utf-8")
     rc.MIGRATIONS.write_text(
-        text.replace("### [Unreleased] — <one-line what>", "### v6.1.0 — <one-line what>"),
+        text.replace("### [Unreleased] - <one-line what>", "### v6.1.0 - <one-line what>"),
         encoding="utf-8",
     )
     assert any("authoring stub" in e for e in rc.validate_cut("6.1.0"))

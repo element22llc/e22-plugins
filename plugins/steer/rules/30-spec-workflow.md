@@ -1,64 +1,64 @@
 ## Spec workflow
 
-Create the artifact when the trigger fires — don't defer it:
+Create the artifact when the trigger fires - don't defer it:
 
-- **Starting a user-facing feature** → `/spec/features/[id]/intent.md` +
-  `contract.md`, before or alongside the code — author via **`/steer:spec`**
+- **Starting a user-facing feature** -> `/spec/features/[id]/intent.md` +
+  `contract.md`, before or alongside the code - author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
-  deployment) → ADR at `/spec/decisions/000N-[slug].md` (run
+  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (run
   **`/steer:adr <slug>`**); the initial stack choice is usually the first.
-  **The bar is reversal cost, not novelty** — a pattern used in one place is a
+  **The bar is reversal cost, not novelty** - a pattern used in one place is a
   `contract.md` line until a third use makes it the house style.
-- **Behavior changes** → update the owning `contract.md` in the same PR — plus
+- **Behavior changes** -> update the owning `contract.md` in the same PR - plus
   the app guide (`/spec/app/`) if it describes the old behavior; see Living
   documentation.
-- **Open questions** → the feature's `intent.md` → `## Open questions`
+- **Open questions** -> the feature's `intent.md` -> `## Open questions`
   (product-level ones in `vision.md`); sweep and answer them with
   **`/steer:questions`** before they rot.
-- **A feature that began as a tracker issue** → **`/steer:issues brainstorm`**
+- **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
   shapes it in the issue, **`materialize`** writes the approved intent to
   `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
   to `approved`. The issue is the work record; the spec stays product truth.
 
 **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**` and the
-product-level files above are the **workspace's** — resolve the spine there,
+product-level files above are the **workspace's** - resolve the spine there,
 never create a local copy; ADRs and `ARCHITECTURE.md` stay per member
 (`/steer:reference polyrepo`).
 
-The spec ↔ code coupling rules (drift resolution, what counts as behavior, PO
+The spec <-> code coupling rules (drift resolution, what counts as behavior, PO
 acceptance) are canonical in the spec-framework reference `/steer:spec` draws
 on. Unsure whether something needs a feature spec or an ADR? Ask the dev
 rather than skipping it.
 
-**Greenfield** (new product — an idea, brief, screenshots, or a design export):
-**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) — the bundled
+**Greenfield** (new product - an idea, brief, screenshots, or a design export):
+**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) - the bundled
 scaffold **and** the `/spec` spine before feature code; never hand-write
 `package.json` / build config / CI from scratch. Then interview to fill
 `vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
-ambiguity → `vision.md` → `## Open questions`), draft feature intents, and get PO
+ambiguity -> `vision.md` -> `## Open questions`), draft feature intents, and get PO
 approval before broad implementation. Design exports: read the **local export**
-via `/steer:reference design-sources` — never fetch the URL (it 403s).
+via `/steer:reference design-sources` - never fetch the URL (it 403s).
 
-**A prototype is greenfield too** — "quick" / "just a prototype" / "throwaway"
+**A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
 below; a GitHub-adopted repo still keeps the issue for any change above Tiny,
-closed from the commit — see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
+closed from the commit - see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
 built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
 to skip bootstrap now.
 
-**Solo greenfield can run on trunk** — when one person is both PO and dev
+**Solo greenfield can run on trunk** - when one person is both PO and dev
 pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
 relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
 and graduation are canonical in Commit autonomy.
 
-**Brownfield** (change to an existing product): triage → size it (Change-size
-model) → medium+ work writes/updates the spec or ADR first → implement →
+**Brownfield** (change to an existing product): triage -> size it (Change-size
+model) -> medium+ work writes/updates the spec or ADR first -> implement ->
 update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
-app with no `/spec`): run **`/steer:adopt`** once — reverse-engineer the spec
+app with no `/spec`): run **`/steer:adopt`** once - reverse-engineer the spec
 from the code, triage productionization (Keep/Refactor/Rewrite/Reject in
-`PRODUCTIONIZATION.md`), sync in the bundled scaffolding — distinct from a
+`PRODUCTIONIZATION.md`), sync in the bundled scaffolding - distinct from a
 per-feature Brownfield change.

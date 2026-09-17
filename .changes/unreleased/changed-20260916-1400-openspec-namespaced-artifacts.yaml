@@ -6,15 +6,15 @@ body: |-
     `spec/tracker.md`, which left such a repo with two spine directories and no
     way to tell which was truth. They now sit in one place. The `steer/` segment
     is load-bearing rather than decorative: `openspec/` is written by a
-    third-party CLI — `openspec update` regenerates `openspec/AGENTS.md`
-    wholesale, and `openspec archive` relocates whole change directories — so a
+    third-party CLI - `openspec update` regenerates `openspec/AGENTS.md`
+    wholesale, and `openspec archive` relocates whole change directories - so a
     flat `openspec/decisions/` would be one upstream release away from a
     collision, while a namespaced subtree upstream will not claim is not.
     **Native repos are untouched:** `spec/` still resolves exactly as before, and
     the whole change is inert without an `openspec/` marker.
 
-    The path is resolved in **one** place — `steer_tracker_file` /
-    `steer_decisions_dir` in `hooks/lib/scope.sh` — which turned out to be the
+    The path is resolved in **one** place - `steer_tracker_file` /
+    `steer_decisions_dir` in `hooks/lib/scope.sh` - which turned out to be the
     whole migration. Every issue-first hook
     (`check-write-nudges`, `check-bash-actions`, `reconcile-issue-first`) already
     reached the tracker through `steer_tracker_is_github` rather than by naming
@@ -23,13 +23,13 @@ body: |-
     resolvers **assign** rather than print, because they sit on the PreToolUse
     hot path where a command substitution would fork a subshell on every tool
     call. Skill bodies keep their native `spec/` prose and rule 33 states the
-    override, the same pattern that already lets rule 33 override rule 30 —
+    override, the same pattern that already lets rule 33 override rule 30 -
     28 skills did not have to be edited to move two files.
 
     **`steer_spine_state` gained two outcomes rather than a second bypass.**
     `openspec` (steer's artifacts present) and `openspec-setup` (an `openspec/`
     spine with steer's side not laid down yet) are tested first, because after
-    the move such a repo may have no `spec/` at all — which the old ladder read
+    the move such a repo may have no `spec/` at all - which the old ladder read
     as `unmanaged`, i.e. the full greenfield bootstrap card pushing an init that
     would lay a second, competing spine. Making it a state instead of a
     special case in front of one caller is what keeps `/steer:doctor`,

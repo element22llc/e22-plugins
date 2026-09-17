@@ -10,12 +10,12 @@ approval evidence.
     refine the spine that `/steer:audit spec` later diffs against the tracker's
     intent.
 
-!!! tip "Lite mode — works on any repo, no bootstrap"
+!!! tip "Lite mode - works on any repo, no bootstrap"
     `/steer:spec` runs **spec-only on an unmanaged repo** (no `/spec` spine, no
     toolchain): the feature intent drafts under `spec/features/<id>/` and nothing
     is scaffolded. Thinking a feature through is the one activity sanctioned
     without bootstrap. `/steer:setup` is surfaced as the *follow-up* when the team
-    is ready to build — not a precondition. (Feature **code** still requires the
+    is ready to build - not a precondition. (Feature **code** still requires the
     bootstrap first.)
 
 **Argument hint:** `[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all]]`
@@ -25,9 +25,9 @@ approval evidence.
 | Mode | What it does |
 | --- | --- |
 | `/steer:spec <feature-id>` | Open or shape the feature's `intent.md` + `contract.md`. |
-| `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval — interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. Never invents an answer. |
-| `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness, plus the cross-artifact **analyze** pass — intent ↔ contract ↔ tracker consistency and acceptance-criteria quality (all warnings). |
-| `/steer:spec approve <feature-id>` | Record approval evidence on the intent. One of the three **promptable** gates: it offers **Approve · Reject · Decide later** in-session, showing the acceptance criteria and locked scope, and records the channel alongside the owner + timestamp. A blocking open question gated at `required_before: intent-approval` is a precondition — a failed question gate means the prompt is never shown; a blocking question gated at a *later* transition blocks that gate, not this one. |
+| `/steer:spec clarify <feature-id>` | Structured de-ambiguation sweep, run before approval - interrogates the draft against the classic gap classes (edge cases, error paths, permissions, data lifecycle, non-functional constraints, out-of-scope boundary) and converts each **real** gap into a `Q-NNN` open question. Never invents an answer. |
+| `/steer:spec validate [feature-id \| --all]` | Check the spec's open-question state and structural completeness, plus the cross-artifact **analyze** pass - intent <-> contract <-> tracker consistency and acceptance-criteria quality (all warnings). |
+| `/steer:spec approve <feature-id>` | Record approval evidence on the intent. One of the three **promptable** gates: it offers **Approve · Reject · Decide later** in-session, showing the acceptance criteria and locked scope, and records the channel alongside the owner + timestamp. A blocking open question gated at `required_before: intent-approval` is a precondition - a failed question gate means the prompt is never shown; a blocking question gated at a *later* transition blocks that gate, not this one. |
 
 ## Approval evidence
 
@@ -39,24 +39,24 @@ asserts the intent template keeps the approval-evidence fields:
 > Approved at:
 ```
 
-This makes approval an auditable event, not an implicit state — the
-[Authorization model](../concepts/authorization-model.md) draft → approved
+This makes approval an auditable event, not an implicit state - the
+[Authorization model](../concepts/authorization-model.md) draft -> approved
 transition has a named owner.
 
 !!! warning "Approval is sign-off on *intent*, not technical validation"
     `Status: approved` means the owner has signed off on **what** the feature
-    should do — the acceptance criteria are agreed and the blocking questions are
+    should do - the acceptance criteria are agreed and the blocking questions are
     resolved. It does **not** assert that any implementation is correct, safe, or
     production-ready. A non-technical owner's approval can't carry that assurance,
     and steer deliberately doesn't pretend it does: the technical gate is a human
     dev reviewing the PR ("review *is* productionization"). That review is the
     quality gate, and it writes no spec state at all: `Status:` stays `approved`
     through the entire build, so an `approved` feature may be unstarted, mid-build,
-    or merged — only its tracker issue (`in-progress` → `validate` → `done`) says
+    or merged - only its tracker issue (`in-progress` -> `validate` -> `done`) says
     which. `Status:` advances again only at the release, to `live`. Treat an
     `approved` spec as a vetted target, not a vetted build. In
     [solo-trunk mode](../concepts/authorization-model.md) there is no separate dev
-    PR gate, so that assurance rests on whoever commits to trunk — read `approved`
+    PR gate, so that assurance rests on whoever commits to trunk - read `approved`
     accordingly.
 
 ## Where it fits
@@ -70,6 +70,6 @@ flowchart LR
     spec -. is the as-built side of .-> drift
 ```
 
-The spine is the **as-built** side — a faithful description of what the product
+The spine is the **as-built** side - a faithful description of what the product
 actually does. `/steer:audit spec` diffs it against the **tracker spec** (what it
 was supposed to do, exported from the issue tracker) and surfaces every divergence.

@@ -1,6 +1,6 @@
 # `/steer:work`
 
-Execute a GitHub issue end-to-end from local Claude Code — the execution
+Execute a GitHub issue end-to-end from local Claude Code - the execution
 counterpart to [`/steer:issues`](issues.md) (which owns backlog management and
 never edits code).
 
@@ -9,18 +9,18 @@ never edits code).
 
 **Argument hint:** `[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]`
 
-!!! tip "`--reviewed` — the review-gated path"
+!!! tip "`--reviewed` - the review-gated path"
     Add `--reviewed` to wrap execution in the review loop formerly carried by the
-    standalone `deliver` skill: an independent plan-gate review → implement →
-    `/code-review` gate → bounded fix. The shared protocol lives in
+    standalone `deliver` skill: an independent plan-gate review -> implement ->
+    `/code-review` gate -> bounded fix. The shared protocol lives in
     `templates/reference/REVIEW-LOOP.md`.
 
-!!! warning "`--hotfix` — the production-incident fast-path"
-    Add `--hotfix` **only** for a genuine production incident — a change to an
+!!! warning "`--hotfix` - the production-incident fast-path"
+    Add `--hotfix` **only** for a genuine production incident - a change to an
     already-deployed system with real users/data **and** an active outage or
     regression (rule `62-hotfix`). "Urgent" feature work is not a hotfix. The lane
-    relaxes *ceremony and ordering* — the issue may be filed after-the-fact on a
-    `hotfix/<n>-slug` branch, one reviewer approval suffices — but keeps **every human
+    relaxes *ceremony and ordering* - the issue may be filed after-the-fact on a
+    `hotfix/<n>-slug` branch, one reviewer approval suffices - but keeps **every human
     authority gate** (merge / deploy stay human-gated; pushing the branch and
     opening the PR are autonomous, as everywhere). Once the fire is
     out, a **mandatory follow-up** backfills the issue, the spec/ADR, and a
@@ -48,20 +48,20 @@ flowchart TD
 
 How the work reaches `main` is governed by the repo's **delivery mode**, declared
 in the product `CLAUDE.md` `## Delivery mode` section (the same marker the steer
-hooks read — `solo-trunk` vs `pr-flow`; absent or unreadable → **pr-flow**).
-**Issue-first holds in both modes** — every implementation-affecting change above
+hooks read - `solo-trunk` vs `pr-flow`; absent or unreadable -> **pr-flow**).
+**Issue-first holds in both modes** - every implementation-affecting change above
 [**Tiny**](../concepts/sdlc.md#change-size) is tied to a GitHub issue; the modes
 differ only in the branch/PR ceremony around it.
 
 | | **pr-flow** (default) | **solo-trunk** (pre-MVP greenfield) |
 | --- | --- | --- |
-| Branch | `issue/<n>` branch + `spec/.work` marker | none — commit straight to `main` |
+| Branch | `issue/<n>` branch + `spec/.work` marker | none - commit straight to `main` |
 | Marker | written for Stop-hook reconciliation | skipped (stay on `main`) |
 | Delivery | push + open the PR autonomously; the **merge review** is the human gate (server-enforced by branch protection) | `Closes #N` trunk commit + push under [Commit autonomy](../concepts/authorization-model.md) (rule 45) |
 | Terminal evidence | merged PR | closed issue from the trunk commit |
 
 Determine the mode once at `start` / `finish`. In solo-trunk, wherever a step below
-says *branch*, *marker*, or *PR*, skip it and substitute the trunk commit —
+says *branch*, *marker*, or *PR*, skip it and substitute the trunk commit -
 validation, managed-block progress, CI-watch (via `gh run watch` on the trunk push),
 and the Definition of Done are unchanged. Committing to `main` is authorized in this
 mode; **deploy stays human-gated all the same**, and graduating the repo to the PR
@@ -72,16 +72,16 @@ flow is [`/steer:protect`](../reference/skills.md)'s job, never this skill's.
 | Mode | What it does |
 | --- | --- |
 | `start` | Validate, claim (self-assigns the invoking GitHub user), branch + write the work marker (pr-flow) or stay on `main` (solo-trunk), load specs, begin implementing. |
-| `resume` | Pick a claimed issue back up where it left off — including offering to re-enter the Claude Code session that last worked it. |
-| `status` | Report progress on the issue(s) — read-only. |
-| `finish` | Open the PR (pr-flow) — the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) — or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` — the reviewer gets a green PR, not a running or red one. |
+| `resume` | Pick a claimed issue back up where it left off - including offering to re-enter the Claude Code session that last worked it. |
+| `status` | Report progress on the issue(s) - read-only. |
+| `finish` | Open the PR (pr-flow) - the first push of the new `issue/<n>` branch sets the upstream (`git push -u origin <branch>`; later pushes are a plain `git push`) - or commit straight to `main` with a `Closes #N` trailer (solo-trunk), **watch CI to conclusion** (`gh pr checks --watch`, or `gh run watch` on the trunk push) and fix a red build before transitioning to `validate` - the reviewer gets a green PR, not a running or red one. |
 
 ## Closing refs across repositories
 
 GitHub honours issue-closing keywords **only within one repository**. If
-`/spec/tracker.md` declares a `repository:` other than the repo the code lives in
-— a team centralizing issues in a dedicated tracker repo, or a polyrepo member
-whose spine lives in the workspace — then `Closes #N` renders as a plain
+`/spec/tracker.md` declares a `repository:` other than the repo the code lives in -
+a team centralizing issues in a dedicated tracker repo, or a polyrepo member
+whose spine lives in the workspace - then `Closes #N` renders as a plain
 cross-reference and **the issue silently stays open**. Nothing warns, and because
 `finish` reads the merged PR as its lifecycle-transition evidence, the issue never
 advances state either.
@@ -91,8 +91,8 @@ declared tracker (`steer_tracker_repo`, `lib/scope.sh`) against the actual repo
 (`gh repo view --json nameWithOwner`).
 
 In a [polyrepo member](../concepts/product-spine.md#one-product-several-repos)
-the mismatch is structural rather than incidental — the tracker is always the
-workspace's — so the explicit-close path is taken every time. `start` also
+the mismatch is structural rather than incidental - the tracker is always the
+workspace's - so the explicit-close path is taken every time. `start` also
 resolves the spine from `spec/PRODUCT.md` before reading the tracker or a
 feature's specs: a member carries neither `spec/tracker.md` nor
 `spec/features/**`, and a missing local `intent.md` means the workspace has not
@@ -101,47 +101,47 @@ behavior change requires lands as its own change in the workspace repo.
 
 | | Closing ref | Who closes the issue |
 | --- | --- | --- |
-| Same repo, **or** either value unreadable | `Closes #N` — unchanged | GitHub, on merge |
+| Same repo, **or** either value unreadable | `Closes #N` - unchanged | GitHub, on merge |
 | **Proven** mismatch | `Refs owner/repo#N` | `/steer:tracker-sync close`, after the merge |
 
 Only a demonstrated mismatch diverts. An absent tracker file, an unresolved
 `[owner/repository]` placeholder, an empty value, or a failed `gh` call all keep
 `Closes #N`, so the ordinary same-repo path is untouched. In solo-trunk the same
-rule governs the commit trailer — and matters more there, since the closed issue
+rule governs the commit trailer - and matters more there, since the closed issue
 is the only terminal evidence.
 
 ## Local work marker
 
-`start` writes a local, git-ignored marker at `spec/.work/<branch>.md` (slashes →
+`start` writes a local, git-ignored marker at `spec/.work/<branch>.md` (slashes ->
 underscores). Its existence is what the end-of-turn
 [Stop-hook reconciliation](../reference/hooks.md) uses to recognize a branch as
-issue-governed — ahead of any branch-name guess — so an unconventionally named
+issue-governed - ahead of any branch-name guess - so an unconventionally named
 but properly claimed branch is still recognized.
 
 The marker also records a newest-first list of the **Claude Code session(s)**
 that worked the branch. The Stop hook keeps the most-recent session at the head
 each turn, and `resume` reads it: if a different prior session is recorded, it
 offers `claude --resume <id>` (and the transcript path) so you can re-enter that
-conversation for context. These session ids are local-only breadcrumbs — they
+conversation for context. These session ids are local-only breadcrumbs - they
 stay in the git-ignored marker and never reach the tracker.
 
 ## Rules it follows
 
 - **One issue per branch/PR** by default (in solo-trunk, **one trunk commit per
   issue**, each closing its own `#N`).
-- Git and PR delivery follow the repo's commit-autonomy rules — commits,
+- Git and PR delivery follow the repo's commit-autonomy rules - commits,
   pushes, and opening the PR are autonomous; **merging is gated**. See the
   [Authorization model](../concepts/authorization-model.md).
 - **After pushing, `finish` watches CI to green and fixes a red build** before
-  treating the work as done — the skill pre-approves `git push` /
+  treating the work as done - the skill pre-approves `git push` /
   `gh pr create|edit` plus read-only CI status (`gh pr checks`, `gh run
   view`, `gh run watch`) for this; the merge
   step stays gated. If you have stepped away, the in-turn watch blocks the turn;
   re-enter monitoring by re-running `gh pr checks` on a loop (steer ships no
   background poller). Merge and deploy remain a human's call.
-- **A change that ships brings a changelog fragment** — `mise run
+- **A change that ships brings a changelog fragment** - `mise run
   changelog:new`, one file under `.changes/unreleased/`. `mise run ci` and the
   required check both fail without one (`ci:changelog`), and editing someone
-  else's pending fragment does not count — the gate wants a file *added*.
+  else's pending fragment does not count - the gate wants a file *added*.
   `CHANGELOG.md` itself is generated at release and never hand-edited.
 - All tracker-metadata I/O routes through `/steer:tracker-sync`.

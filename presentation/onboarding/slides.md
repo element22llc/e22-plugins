@@ -1,6 +1,6 @@
 ---
 theme: seriph
-title: Claude Code & steer — a working session
+title: Claude Code & steer - a working session
 info: |
   ## Claude Code + the steer plugin crash course
   Part 1 (everyone): what Claude Code is, when to use it vs Cowork, and how
@@ -10,7 +10,7 @@ transition: slide-left
 mdc: true
 # Hash routing (/presentation/onboarding/#/2) keeps every slide inside
 # index.html, so the deck works on static subdirectory hosts (GitHub Pages) with
-# no SPA fallback — history mode would request /presentation/onboarding/2 and
+# no SPA fallback - history mode would request /presentation/onboarding/2 and
 # 404 on GitHub Pages.
 routerMode: hash
 fonts:
@@ -26,7 +26,7 @@ drawings:
 
 <div class="opacity-70 mt-6 text-xl">
 
-What **Claude Code** is, when to reach for it — and how to use the **steer** plugin well
+What **Claude Code** is, when to reach for it - and how to use the **steer** plugin well
 
 </div>
 
@@ -43,7 +43,7 @@ kbd {
 </style>
 
 <!--
-Two audiences. Part 1 is for everyone (POs especially) — what the tool is and
+Two audiences. Part 1 is for everyone (POs especially) - what the tool is and
 when to reach for it vs Cowork. Part 2 is the dev crash course on the steer plugin.
 -->
 
@@ -58,11 +58,11 @@ class: text-center
 
 <div v-click class="p-6 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
-### Part 1 — for everyone
+### Part 1 - for everyone
 **What Claude Code is & when to use it**
 
 - What it actually does
-- Cowork vs Claude Code — which when
+- Cowork vs Claude Code - which when
 - You set how hands-on it is
 
 <div class="text-sm opacity-60 mt-3">No code knowledge needed 👋</div>
@@ -71,11 +71,11 @@ class: text-center
 
 <div v-click class="p-6 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
-### Part 2 — for devs
+### Part 2 - for devs
 **The `steer` plugin crash course**
 
 - What it is & how it works
-- The loop: spec → issues → work → PR
+- The loop: spec -> issues -> work -> PR
 - What the hooks actually enforce
 - Skills cheat-sheet + efficiency
 
@@ -88,7 +88,7 @@ layout: section
 ---
 
 # Part 1
-## What Claude Code is — and when to use it
+## What Claude Code is - and when to use it
 <div class="opacity-60 mt-2">For everyone</div>
 
 ---
@@ -105,7 +105,7 @@ An <span class="accent font-semibold">agentic coding tool</span> that
 
 reads your **whole codebase**, edits files, runs commands,
 
-and integrates with your **dev tools** — git, tests, issues.
+and integrates with your **dev tools** - git, tests, issues.
 
 </v-clicks>
 
@@ -118,7 +118,7 @@ files, and **checks that it works**.
 
 </div>
 
-<div class="abs-bl m-4 text-xs opacity-40">Source: Anthropic — Claude Code docs (code.claude.com/docs)</div>
+<div class="abs-bl m-4 text-xs opacity-40">Source: Anthropic - Claude Code docs (code.claude.com/docs)</div>
 
 <style>.accent { color: #38bdf8; }</style>
 
@@ -154,14 +154,14 @@ Stages changes, writes commit messages, branches, **opens PRs**.
 <div v-click class="p-4 rounded-xl border border-amber-400/25 bg-amber-400/5">
 
 ### 🧠 Whole-repo context
-Understands the project, not just the open file — coordinated edits.
+Understands the project, not just the open file - coordinated edits.
 
 </div>
 
 <div v-click class="p-4 rounded-xl border border-rose-400/25 bg-rose-400/5">
 
 ### 🔌 Connected
-**MCP** plugs in your tools — issues, docs, data, custom services.
+**MCP** plugs in your tools - issues, docs, data, custom services.
 
 </div>
 
@@ -180,17 +180,17 @@ Understands the project, not just the open file — coordinated edits.
 
 # Cowork or Claude Code?
 
-<div class="text-sm opacity-60 mb-3">Two Claude tools that work your files directly — different jobs</div>
+<div class="text-sm opacity-60 mb-3">Two Claude tools that work your files directly - different jobs</div>
 
 <div class="grid grid-cols-2 gap-5 cowork-cards">
 
 <div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 💼 Claude Cowork
-<div class="text-sm opacity-60 mb-1">Knowledge & business work — no codebase needed</div>
+<div class="text-sm opacity-60 mb-1">Knowledge & business work - no codebase needed</div>
 
 - **Polished deliverables**: Excel with working formulas, PowerPoint, formatted docs
-- **Edit drafts in place**: highlight text → "Edit with Claude"
+- **Edit drafts in place**: highlight text -> "Edit with Claude"
 - **Projects**: workspaces with their own files, context, instructions & memory
 - **Scheduled tasks**: run on-demand or on a cadence you set
 
@@ -201,10 +201,10 @@ Understands the project, not just the open file — coordinated edits.
 ### 🛠️ Claude Code
 <div class="text-sm opacity-60 mb-1">When the work lives in a git repo</div>
 
-- **Whole-repo context**: one ask → coordinated multi-file edits
-- **Closes its own loop**: runs commands & tests, reads failures, fixes — then opens the PR
+- **Whole-repo context**: one ask -> coordinated multi-file edits
+- **Closes its own loop**: runs commands & tests, reads failures, fixes - then opens the PR
 - **Extensible**: `CLAUDE.md`, skills, hooks, MCP, plugins
-- **This is where <span class="accent">steer</span> runs** — our standards, every session
+- **This is where <span class="accent">steer</span> runs** - our standards, every session
 
 </div>
 
@@ -227,37 +227,37 @@ The split is the <b>job</b>: <b>Cowork</b> for office & knowledge deliverables �
 
 <!--
 This is the "why Code, not Cowork, for code" slide. Cowork is the PO/knowledge-work
-tool: spreadsheets, decks, documents — no repo. Claude Code is the engineering tool,
+tool: spreadsheets, decks, documents - no repo. Claude Code is the engineering tool,
 and the only one steer plugs into. If the deliverable is software in a git repo, it's
 Code; if it's an Excel/PPT/doc, it's Cowork. Same underlying Claude, two surfaces.
 -->
 
 ---
 
-# "But Cowork *can* write code…"
+# "But Cowork *can* write code..."
 
-<div class="text-sm opacity-60 mb-3">It can — and it'll even run. That's not the same as <i>optimal</i>. Here's the documented why.</div>
+<div class="text-sm opacity-60 mb-3">It can - and it'll even run. That's not the same as <i>optimal</i>. Here's the documented why.</div>
 
 <div class="grid grid-cols-3 gap-4">
 
 <div v-click class="p-4 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
 ### 🔒 No-install sandbox
-Cowork runs in an Anthropic-managed, locked-down Linux VM. You **can't install** `docker`, `mise`, language toolchains or `gh` — so the real **build / test / CI** flow can't run.
+Cowork runs in an Anthropic-managed, locked-down Linux VM. You **can't install** `docker`, `mise`, language toolchains or `gh` - so the real **build / test / CI** flow can't run.
 
 </div>
 
 <div v-click class="p-4 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🔌 GitHub is connector-only
-The plugin's MCP doesn't carry over. GitHub works **only** via the built-in connector — **repo-scoped**, no `gh` fallback. Org-level Issue Types & fields are out of reach.
+The plugin's MCP doesn't carry over. GitHub works **only** via the built-in connector - **repo-scoped**, no `gh` fallback. Org-level Issue Types & fields are out of reach.
 
 </div>
 
 <div v-click class="p-4 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🪧 Best-effort, PO-only
-`steer` classes Cowork as **knowledge-work** and injects a lean ruleset — the code/test/deploy rules are deliberately omitted. **Engineering belongs in Claude Code.**
+`steer` classes Cowork as **knowledge-work** and injects a lean ruleset - the code/test/deploy rules are deliberately omitted. **Engineering belongs in Claude Code.**
 
 </div>
 
@@ -265,23 +265,23 @@ The plugin's MCP doesn't carry over. GitHub works **only** via the built-in conn
 
 <div v-click class="mt-6 text-center text-lg">
 
-Cowork is a <b>great PO surface</b> — specs, docs, triage. But the engineering loop needs a toolchain its sandbox <b>can't host</b>.
+Cowork is a <b>great PO surface</b> - specs, docs, triage. But the engineering loop needs a toolchain its sandbox <b>can't host</b>.
 
 </div>
 
-<div class="abs-bl m-4 text-xs opacity-40">Source: steer docs → Known limitations (validated June 2026)</div>
+<div class="abs-bl m-4 text-xs opacity-40">Source: steer docs -> Known limitations (validated June 2026)</div>
 
 <!--
 The point of this slide: "it works" ≠ "it's the right tool." These three are
 ENVIRONMENT boundaries, documented in known-limitations.md, not opinions. The
-no-install sandbox is the big one — no mise/docker/gh means no real build, no
+no-install sandbox is the big one - no mise/docker/gh means no real build, no
 test run, no CI gate. GitHub is connector-only and repo-scoped. And steer itself
 treats Cowork as PO/knowledge-work (Tier 3). Next slide: we actually measured it.
 -->
 
 ---
 
-# We measured it — same app, same plugin
+# We measured it - same app, same plugin
 
 <div class="text-sm opacity-60 mb-3">
 <code>build123d Studio</code> built twice: once in <b>Cowork</b>, once in <b>Claude Code</b>. <b><span class="accent">steer was enabled in both.</span></b> Fair fight.
@@ -291,7 +291,7 @@ treats Cowork as PO/knowledge-work (Tier 3). Next slide: we actually measured it
 
 | | 💼 **Cowork** | 🛠️ **Claude Code** |
 |---|---|---|
-| **Git history** | <span class="bad">1 dump commit</span> | <span class="good">13 commits: spec → ADR → build</span> |
+| **Git history** | <span class="bad">1 dump commit</span> | <span class="good">13 commits: spec -> ADR -> build</span> |
 | **Structure** | <span class="bad">31 files, one flat folder</span> | <span class="good">128 files, proper monorepo</span> |
 | **Spec spine** | <span class="bad">✗ none</span> | <span class="good">✓ vision · contracts · tracker</span> |
 | **Decisions (ADR)** | <span class="bad">✗ none</span> | <span class="good">✓ stack decision recorded</span> |
@@ -303,7 +303,7 @@ treats Cowork as PO/knowledge-work (Tier 3). Next slide: we actually measured it
 
 <div v-click class="mt-4 text-center text-lg">
 
-Both shipped a <b>running app</b>. Only Claude Code shipped one that's <span class="accent">specced, tested and reviewable</span> — because only Claude Code could run the toolchain that gets you there.
+Both shipped a <b>running app</b>. Only Claude Code shipped one that's <span class="accent">specced, tested and reviewable</span> - because only Claude Code could run the toolchain that gets you there.
 
 </div>
 
@@ -319,10 +319,10 @@ Both shipped a <b>running app</b>. Only Claude Code shipped one that's <span cla
 <!--
 This is the empirical backstop for the previous slide. Same app, same steer
 plugin enabled on both branches (benchmark-cowork vs feat/bootstrap-build123d-studio
-in the steer-plugin-test repo) — so this is NOT "Cowork didn't have the standards."
+in the steer-plugin-test repo) - so this is NOT "Cowork didn't have the standards."
 It did. The difference is the environment: Cowork's sandbox couldn't run the build/
 test/git workflow, so it produced one big dump of a flat app with zero tests and
-vendored min.js files. Claude Code walked the full spec→issues→work→PR loop. The
+vendored min.js files. Claude Code walked the full spec->issues->work->PR loop. The
 honest takeaway: Cowork "works," but optimal engineering output needs Claude Code.
 -->
 
@@ -330,23 +330,23 @@ honest takeaway: Cowork "works," but optimal engineering output needs Claude Cod
 
 # You set how hands-on it is
 
-<div class="text-sm opacity-60 mb-4">An autonomy dial, not all-or-nothing — pick the oversight level per task</div>
+<div class="text-sm opacity-60 mb-4">An autonomy dial, not all-or-nothing - pick the oversight level per task</div>
 
 <div class="flex items-stretch justify-center gap-3 text-base">
 
 <div v-click class="px-4 py-3 rounded-xl border border-white/20 bg-white/5 w-48">
 <div class="font-bold">Ask before edits</div>
-<div class="text-sm opacity-60 mt-1">checks in before changes — full oversight <span class="opacity-50">(default)</span></div>
+<div class="text-sm opacity-60 mt-1">checks in before changes - full oversight <span class="opacity-50">(default)</span></div>
 </div>
 
-<div v-click class="flex items-center text-2xl accent">→</div>
+<div v-click class="flex items-center text-2xl accent">-></div>
 
 <div v-click class="px-4 py-3 rounded-xl border-2 border-sky-400/60 bg-sky-400/10 w-48">
 <div class="font-bold accent">Edit automatically ⭐</div>
-<div class="text-sm opacity-70 mt-1">applies edits without asking — keep momentum</div>
+<div class="text-sm opacity-70 mt-1">applies edits without asking - keep momentum</div>
 </div>
 
-<div v-click class="flex items-center text-2xl accent">→</div>
+<div v-click class="flex items-center text-2xl accent">-></div>
 
 <div v-click class="px-4 py-3 rounded-xl border border-white/20 bg-white/5 w-48">
 <div class="font-bold">Plan mode</div>
@@ -359,13 +359,13 @@ honest takeaway: Cowork "works," but optimal engineering output needs Claude Cod
 
 <div class="p-3 rounded-xl border border-white/15 bg-white/5">
 
-**In the Desktop app** — pick the mode from the **selector next to the send button**. **Auto mode** (runs autonomously with safety checks) appears there once you enable it in Desktop **settings**.
+**In the Desktop app** - pick the mode from the **selector next to the send button**. **Auto mode** (runs autonomously with safety checks) appears there once you enable it in Desktop **settings**.
 
 </div>
 
 <div class="p-3 rounded-xl border border-white/15 bg-white/5">
 
-**In the CLI** — cycle the same modes with <kbd>Shift</kbd>+<kbd>Tab</kbd> <span class="opacity-50">(no Shift+Tab on Desktop)</span>. On a long run, set a standing **allowlist** once with `/permissions` — e.g. `Bash(npm run *)`.
+**In the CLI** - cycle the same modes with <kbd>Shift</kbd>+<kbd>Tab</kbd> <span class="opacity-50">(no Shift+Tab on Desktop)</span>. On a long run, set a standing **allowlist** once with `/permissions` - e.g. `Bash(npm run *)`.
 
 </div>
 
@@ -378,7 +378,7 @@ kbd { background: rgba(255,255,255,0.12); border-radius: 6px; padding: 1px 8px; 
 
 <!--
 Frame this as a capability, not a fix: you choose the oversight level. Most of the
-room is on the Desktop app, where there is NO Shift+Tab — you pick the mode from the
+room is on the Desktop app, where there is NO Shift+Tab - you pick the mode from the
 selector beside the send button, and "Auto mode" only shows up after you turn it on
 in Desktop settings. Shift+Tab is the CLI-only way to cycle the same modes.
 Auto-accept ("Edit automatically") keeps long sessions flowing; "Ask before edits"
@@ -389,18 +389,18 @@ keeps you in the loop for sensitive work.
 
 # Get the most out of Claude Code
 
-<div class="text-sm opacity-60 mb-5">A few habits that make it dramatically better — auto mode is just the start</div>
+<div class="text-sm opacity-60 mb-5">A few habits that make it dramatically better - auto mode is just the start</div>
 
 <div class="grid grid-cols-3 gap-x-6 gap-y-5">
 
 <div v-click class="flex gap-3 items-start">
 <div class="text-2xl">🎚️</div>
-<div><b>Auto mode.</b> Let it run hands-off with safety checks — the dial you just saw.</div>
+<div><b>Auto mode.</b> Let it run hands-off with safety checks - the dial you just saw.</div>
 </div>
 
 <div v-click class="flex gap-3 items-start">
 <div class="text-2xl">🚀</div>
-<div><b>Fast mode.</b> <code>/fast</code> — faster output from the <b>same</b> Opus model (it doesn't drop to a smaller/cheaper one).</div>
+<div><b>Fast mode.</b> <code>/fast</code> - faster output from the <b>same</b> Opus model (it doesn't drop to a smaller/cheaper one).</div>
 </div>
 
 <div v-click class="flex gap-3 items-start">
@@ -420,7 +420,7 @@ keeps you in the loop for sensitive work.
 
 <div v-click class="flex gap-3 items-start">
 <div class="text-2xl">🔁</div>
-<div><b>Let it close the loop.</b> It runs the tests, reads the failure, fixes — don't relay each step.</div>
+<div><b>Let it close the loop.</b> It runs the tests, reads the failure, fixes - don't relay each step.</div>
 </div>
 
 </div>
@@ -443,7 +443,7 @@ class: text-center
 
 <div class="text-3xl mt-10 leading-relaxed max-w-4xl mx-auto">
 
-Claude Code does <span class="accent">whole tasks across your codebase</span> —
+Claude Code does <span class="accent">whole tasks across your codebase</span> -
 and you dial in exactly how much it checks with you.
 
 </div>
@@ -473,7 +473,7 @@ layout: section
 <v-clicks>
 
 - An **engineering-standards plugin** for Claude Code.
-- It injects our org's standards into **every** session — so Claude works the way we work, without you re-explaining it each time.
+- It injects our org's standards into **every** session - so Claude works the way we work, without you re-explaining it each time.
 - Not a product. One thing, installed once, shared across all our repos.
 
 </v-clicks>
@@ -488,35 +488,35 @@ Think of it as **a senior engineer's standards, always in the room**: spec-first
 
 ---
 
-# How it works — four moving parts
+# How it works - four moving parts
 
 <div class="grid grid-cols-2 gap-5 mt-6">
 
 <div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### 📜 Always-on rules
-A `SessionStart` hook injects `rules/*.md` every session. **This is the load-bearing part** — it's what makes Claude follow the standards.
+A `SessionStart` hook injects `rules/*.md` every session. **This is the load-bearing part** - it's what makes Claude follow the standards.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🧩 Skills
-On-demand `/steer:<skill>` commands — `setup`, `spec`, `work`, `issues`… The verbs you drive the workflow with.
+On-demand `/steer:<skill>` commands - `setup`, `spec`, `work`, `issues`... The verbs you drive the workflow with.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🪝 Hooks (gates)
-`PreToolUse` / `Stop` checks that nudge — or in one case **block** — at the moment of action.
+`PreToolUse` / `Stop` checks that nudge - or in one case **block** - at the moment of action.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
 ### 🔌 MCP
-`tracker-sync` talks to GitHub issues: **MCP → `gh` → manual** fallback chain.
+`tracker-sync` talks to GitHub issues: **MCP -> `gh` -> manual** fallback chain.
 
 </div>
 
@@ -530,7 +530,7 @@ A **portable nucleus** (skills + MCP, runs anywhere) and a **hook layer** (rules
 
 ---
 
-# Install — once, two lines
+# Install - once, two lines
 
 ```text
 /plugin marketplace add element22llc/e22-plugins
@@ -543,7 +543,7 @@ A **portable nucleus** (skills + MCP, runs anywhere) and a **hook layer** (rules
 
 - Same two commands for **everyone**, PO or dev.
 - Building apps? You'll also want **Docker Desktop** (the build flow runs containers).
-- Use **Claude Code** — the CLI, an IDE extension, or the Desktop **Code** tab — so the rules, gates and MCP all run.
+- Use **Claude Code** - the CLI, an IDE extension, or the Desktop **Code** tab - so the rules, gates and MCP all run.
 
 </v-clicks>
 
@@ -580,7 +580,7 @@ flowchart LR
 
 <div v-click class="p-4 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
-**`init`** installs the bundled scaffold — CI workflows, `mise.toml` tasks, `compose.yaml`, README quickstart, PR template. The repo starts standards-compliant.
+**`init`** installs the bundled scaffold - CI workflows, `mise.toml` tasks, `compose.yaml`, README quickstart, PR template. The repo starts standards-compliant.
 
 </div>
 
@@ -592,7 +592,7 @@ flowchart LR
 
 <div v-click class="p-4 rounded-xl border border-emerald-400/30 bg-emerald-400/5">
 
-**`sync`** keeps a bootstrapped repo current — reconciles scaffold + spec drift after a plugin update.
+**`sync`** keeps a bootstrapped repo current - reconciles scaffold + spec drift after a plugin update.
 
 </div>
 
@@ -625,7 +625,7 @@ flowchart LR
 
 <div v-click class="mt-6 text-center text-xl">
 
-Idea → **shape it** → **break it down** → **build it** → **review it**.
+Idea -> **shape it** -> **break it down** -> **build it** -> **review it**.
 <br>Every arrow is a `/steer:` skill. The last one is **always a human**.
 
 </div>
@@ -638,22 +638,22 @@ Idea → **shape it** → **break it down** → **build it** → **review it**.
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">📐</div>
-<div><b><code>/steer:spec</code></b> — work out what it should do <i>before</i> code. Produces the <b>spec spine</b> (intent, contract, decisions) that survives compaction.</div>
+<div><b><code>/steer:spec</code></b> - work out what it should do <i>before</i> code. Produces the <b>spec spine</b> (intent, contract, decisions) that survives compaction.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🎫</div>
-<div><b><code>/steer:issues</code></b> — decompose into tracked work. <b>Issue-first</b>: code changes above Tiny trace back to an issue.</div>
+<div><b><code>/steer:issues</code></b> - decompose into tracked work. <b>Issue-first</b>: code changes above Tiny trace back to an issue.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">⚙️</div>
-<div><b><code>/steer:work</code></b> — implement against an issue on an <code>issue/&lt;n&gt;-&lt;slug&gt;</code> branch. Claude commits autonomously.</div>
+<div><b><code>/steer:work</code></b> - implement against an issue on an <code>issue/&lt;n&gt;-&lt;slug&gt;</code> branch. Claude commits autonomously.</div>
 </div>
 
 <div v-click class="flex gap-4 items-start p-3 rounded-lg border border-white/10 bg-white/5">
 <div class="text-2xl">🔀</div>
-<div>Claude opens a <b>PR</b> — and <b>stops</b>. Push / PR / merge are <b>gated on a human</b>.</div>
+<div>Claude opens a <b>PR</b> - and <b>stops</b>. Push / PR / merge are <b>gated on a human</b>.</div>
 </div>
 
 </div>
@@ -667,26 +667,26 @@ Idea → **shape it** → **break it down** → **build it** → **review it**.
 <div class="grid grid-cols-1 gap-3">
 
 <div v-click class="p-3 rounded-lg border border-emerald-400/40 bg-emerald-400/5">
-<b>🟢 SessionStart → inject rules</b> — <b>real & load-bearing.</b> No rules = no standards.
+<b>🟢 SessionStart -> inject rules</b> - <b>real & load-bearing.</b> No rules = no standards.
 </div>
 
 <div v-click class="p-3 rounded-lg border border-rose-400/40 bg-rose-400/5">
-<b>🔴 PreToolUse → version-pin check</b> — the <b>one hard <code>deny</code></b>. Blocks runtime/image pins below the floor.
+<b>🔴 PreToolUse -> version-pin check</b> - the <b>one hard <code>deny</code></b>. Blocks runtime/image pins below the floor.
 </div>
 
 <div v-click class="p-3 rounded-lg border border-amber-400/40 bg-amber-400/5">
-<b>🟡 PreToolUse → spec-first / issue-first</b> — <b>advisory nudges</b>. They remind, then let the write proceed. Fail open.
+<b>🟡 PreToolUse -> spec-first / issue-first</b> - <b>advisory nudges</b>. They remind, then let the write proceed. Fail open.
 </div>
 
 <div v-click class="p-3 rounded-lg border border-violet-400/40 bg-violet-400/5">
-<b>🟣 The push / PR gate</b> — <b>not a hook at all.</b> It's a rule Claude follows. <b>A human reviewer is the real backstop.</b>
+<b>🟣 The push / PR gate</b> - <b>not a hook at all.</b> It's a rule Claude follows. <b>A human reviewer is the real backstop.</b>
 </div>
 
 </div>
 
 <div v-click class="mt-5 text-center opacity-80">
 
-The guarantee comes from **Claude following the rules + you reviewing** — not from a wall of blocks.
+The guarantee comes from **Claude following the rules + you reviewing** - not from a wall of blocks.
 
 </div>
 
@@ -708,9 +708,9 @@ The guarantee comes from **Claude following the rules + you reviewing** — not 
 <div v-click class="p-6 rounded-xl border border-rose-400/30 bg-rose-400/5">
 
 ### 🛑 Claude stops for a human
-- **Push** — never unprompted
+- **Push** - never unprompted
 - **Open / merge a PR**
-- **Deploy** — always your call
+- **Deploy** - always your call
 
 </div>
 
@@ -718,7 +718,7 @@ The guarantee comes from **Claude following the rules + you reviewing** — not 
 
 <div v-click class="mt-10 text-center text-xl">
 
-That pause isn't a bug — it's the **design**. The PR is the hand-off, not a failure.
+That pause isn't a bug - it's the **design**. The PR is the hand-off, not a failure.
 
 </div>
 
@@ -728,27 +728,27 @@ That pause isn't a bug — it's the **design**. The PR is the hand-off, not a fa
 
 <div class="grid grid-cols-3 gap-x-8 gap-y-2 mt-6 text-base">
 
-<div v-click><b class="accent">setup</b> — detect & route</div>
-<div v-click><b class="accent">init</b> / <b class="accent">adopt</b> — scaffold / absorb</div>
-<div v-click><b class="accent">build</b> — PO idea → app</div>
-<div v-click><b class="accent">spec</b> — shape behavior first</div>
-<div v-click><b class="accent">issues</b> — decompose, triage & status</div>
-<div v-click><b class="accent">work</b> — implement an issue</div>
-<div v-click><b class="accent">intake</b> — absorb a PO doc</div>
-<div v-click><b class="accent">questions</b> — answer open questions</div>
-<div v-click><b class="accent">adr</b> — capture a decision</div>
-<div v-click><b class="accent">audit</b> — standards check</div>
-<div v-click><b class="accent">sync</b> — reconcile state</div>
-<div v-click><b class="accent">protect</b> — branch protection</div>
-<div v-click><b class="accent">next</b> — what to do now</div>
-<div v-click><b class="accent">explain</b> — shareable feature page</div>
-<div v-click><b class="accent">help</b> — browse what steer can do</div>
-<div v-click><b class="accent">reference</b> — load the deep-dive prose</div>
-<div v-click><b class="accent">standards</b> — load rules by hand</div>
-<div v-click><b class="accent">doctor</b> — diagnose setup</div>
-<div v-click><b class="accent">roadmap</b> — release timeline</div>
-<div v-click><b class="accent">report</b> — file a steer bug upstream</div>
-<div v-click><b class="accent">tidy</b> — clean up</div>
+<div v-click><b class="accent">setup</b> - detect & route</div>
+<div v-click><b class="accent">init</b> / <b class="accent">adopt</b> - scaffold / absorb</div>
+<div v-click><b class="accent">build</b> - PO idea -> app</div>
+<div v-click><b class="accent">spec</b> - shape behavior first</div>
+<div v-click><b class="accent">issues</b> - decompose, triage & status</div>
+<div v-click><b class="accent">work</b> - implement an issue</div>
+<div v-click><b class="accent">intake</b> - absorb a PO doc</div>
+<div v-click><b class="accent">questions</b> - answer open questions</div>
+<div v-click><b class="accent">adr</b> - capture a decision</div>
+<div v-click><b class="accent">audit</b> - standards check</div>
+<div v-click><b class="accent">sync</b> - reconcile state</div>
+<div v-click><b class="accent">protect</b> - branch protection</div>
+<div v-click><b class="accent">next</b> - what to do now</div>
+<div v-click><b class="accent">explain</b> - shareable feature page</div>
+<div v-click><b class="accent">help</b> - browse what steer can do</div>
+<div v-click><b class="accent">reference</b> - load the deep-dive prose</div>
+<div v-click><b class="accent">standards</b> - load rules by hand</div>
+<div v-click><b class="accent">doctor</b> - diagnose setup</div>
+<div v-click><b class="accent">roadmap</b> - release timeline</div>
+<div v-click><b class="accent">report</b> - file a steer bug upstream</div>
+<div v-click><b class="accent">tidy</b> - clean up</div>
 
 </div>
 
@@ -762,28 +762,28 @@ Don't memorize them. Run <code>/steer:next</code> for the next move, or <code>/s
 
 ---
 
-# Working efficiently — the habits
+# Working efficiently - the habits
 
 <div class="grid grid-cols-2 gap-5 mt-6">
 
 <div v-click class="p-5 rounded-xl border border-sky-400/30 bg-sky-400/5">
 
 ### ⌨️ Set your autonomy
-<kbd>Shift</kbd>+<kbd>Tab</kbd> → auto-accept edits <span class="opacity-60">(Desktop: mode selector)</span>. Add a `/permissions` allowlist for your common commands.
+<kbd>Shift</kbd>+<kbd>Tab</kbd> -> auto-accept edits <span class="opacity-60">(Desktop: mode selector)</span>. Add a `/permissions` allowlist for your common commands.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-violet-400/30 bg-violet-400/5">
 
 ### 🧠 Protect your context
-Let steer **delegate heavy/search work to subagents** — they return just the result, keeping your main thread clean.
+Let steer **delegate heavy/search work to subagents** - they return just the result, keeping your main thread clean.
 
 </div>
 
 <div v-click class="p-5 rounded-xl border border-amber-400/30 bg-amber-400/5">
 
 ### 🧪 Gate before you commit
-`mise run check` before each commit, `mise run ci` before a PR — the same checks CI runs.
+`mise run check` before each commit, `mise run ci` before a PR - the same checks CI runs.
 
 </div>
 
@@ -820,7 +820,7 @@ class: text-center
 
 ### Devs
 - `steer` = standards, always on
-- Loop: **spec → issues → work → PR**
+- Loop: **spec -> issues -> work -> PR**
 - Hooks nudge; **you** are the gate
 - Lost? `/steer:next`
 
@@ -846,10 +846,10 @@ Docs &amp; the full reference: the `steer` documentation site
 <div class="mt-10 flex justify-center gap-4 text-lg">
 
 <div class="px-5 py-3 rounded-xl border border-sky-400/40 bg-sky-400/5">
-New here? → describe your idea, let Claude drive
+New here? -> describe your idea, let Claude drive
 </div>
 <div class="px-5 py-3 rounded-xl border border-emerald-400/40 bg-emerald-400/5">
-Dev? → <code>/steer:setup</code> on a repo
+Dev? -> <code>/steer:setup</code> on a repo
 </div>
 
 </div>

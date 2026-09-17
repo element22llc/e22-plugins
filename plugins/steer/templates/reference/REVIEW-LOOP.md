@@ -2,7 +2,7 @@
 
 The protocol behind `/steer:work --reviewed`. The loop takes a task and produces
 a **vetted** result instead of a first draft, by inserting two *independent*
-review gates — one on the plan, one on the diff — and a bounded fix loop around
+review gates - one on the plan, one on the diff - and a bounded fix loop around
 the implementation step that `/steer:work` already owns.
 
 This file owns the **shared logic**: the three disciplines, the per-gate rubric,
@@ -13,7 +13,7 @@ the stopping rules, and how the loop relates to the other execution skills. The
 
 ## 1. Why a loop at all
 
-A single straight pass — read prompt, plan in your head, implement, ship —
+A single straight pass - read prompt, plan in your head, implement, ship -
 carries every misread of the requirement and every blind spot of the implementing
 context straight into the output. The loop's value is that an **independent**
 context, scoring against an **explicit** rubric, catches what the implementer
@@ -33,12 +33,12 @@ The loop degrades into theater without all three.
 1. **Independence.** Each gate is a *fresh subagent* that never saw the rationale
    for the choices it reviews. A context that produced an artifact is anchored to
    its own reasoning and will confirm it. This is why each gate is a *separate*
-   subagent — a fresh general reviewer for the plan gate, `/code-review` (plus an
-   optional `steer-reviewer` standards pass) for the code gate — not "re-read your
+   subagent - a fresh general reviewer for the plan gate, `/code-review` (plus an
+   optional `steer-reviewer` standards pass) for the code gate - not "re-read your
    own work." §3 says which belongs to which, and why `steer-reviewer` cannot do
    the plan gate.
 2. **Explicit rubric.** The reviewer scores against the **restated requirements**
-   (what success means, spelled out) plus the **relevant steer rules** — not a
+   (what success means, spelled out) plus the **relevant steer rules** - not a
    vague "is this good?". A reviewer with no rubric emits generic feedback that
    never converges.
 3. **Bounded exit.** Review loops have sharp diminishing returns: round 1 catches
@@ -50,14 +50,14 @@ The loop degrades into theater without all three.
 
 - **Plan gate** reviews the *approach*: does it satisfy the requirement, is it the
   right shape, what is missing, does it respect the repo's invariants. Highest
-  return — a flawed plan is cheap to fix before code exists. The reviewer here is
+  return - a flawed plan is cheap to fix before code exists. The reviewer here is
   a **fresh independent subagent**, *not* `steer-reviewer`: that agent requires
   `path:line` evidence in existing code, which a prospective plan can't supply, so
   it would return nothing.
 - **Code gate** reviews the *diff*: correctness bugs, regressions, and fidelity to
   the approved plan. This is `/code-review`'s job. `steer-reviewer` is `Read`/
   `Grep`/`Glob`-only and has no git access, so it can check the **on-disk result
-  against standards** but never "the diff" — keep that split. The gate is
+  against standards** but never "the diff" - keep that split. The gate is
   pre-merge in PR flow; in solo-trunk mode the change is already on `main` by the
   time it runs, so its findings become immediate follow-up fixes, not a merge
   block.
@@ -66,12 +66,12 @@ The loop degrades into theater without all three.
 
 Give the reviewer three things, every time:
 
-- **Plan gate** — the plan text; the restated requirement; the steer rules the
+- **Plan gate** - the plan text; the restated requirement; the steer rules the
   change touches (e.g. conventions, change-size, the relevant lifecycle rules).
   Ask for severity-ranked findings and an explicit "what is missing" pass (the
   plan is prospective, so the reviewer reasons about the approach rather than
   citing `path:line`s).
-- **Code gate** — the diff (`/code-review`); for standards-sensitive repos, the
+- **Code gate** - the diff (`/code-review`); for standards-sensitive repos, the
   set of changed files plus the standards they must honor (`steer-reviewer`).
 
 Severity ranking is what makes the loop converge: fix every **high** finding,
@@ -80,9 +80,9 @@ fix loop open.
 
 ## 5. Where the loop sits among the skills
 
-- **`/steer:work`** owns governed implementation — branch, commits, tests, PR,
-  tracker — in GitHub-adopted repos. Its `--reviewed` mode *is* this loop: its
-  **Implement** phase runs the same governed `start`→`finish` path, with the gates
+- **`/steer:work`** owns governed implementation - branch, commits, tests, PR,
+  tracker - in GitHub-adopted repos. Its `--reviewed` mode *is* this loop: its
+  **Implement** phase runs the same governed `start`->`finish` path, with the gates
   added around it. In
   prototype/local mode (no tracker) there is no `/steer:work`; apply this protocol
   directly around implementation, exactly as `/steer:build` does in that mode.
@@ -93,7 +93,7 @@ fix loop open.
   does not reinvent it.
 - **`steer-reviewer`** is the shipped read-only subagent the code gate's optional
   standards check invokes explicitly (it cites `path:line` evidence in existing
-  code, so it is *not* used for the plan gate) — the same explicit-invocation
+  code, so it is *not* used for the plan gate) - the same explicit-invocation
   pattern `/steer:audit` and `/steer:audit spec` use. The plan gate uses a fresh
   general reviewer subagent instead.
 
@@ -102,23 +102,23 @@ fix loop open.
 Each gate spends tokens on top of the implementation. That is the price of a
 vetted result, and the reason for the triage step (trivial tasks skip the loop)
 and the 2-round cap. If a run stops at the cap with findings still open, say so
-and name what was left — silent truncation reads as "all clear" when it was not.
+and name what was left - silent truncation reads as "all clear" when it was not.
 
 ## 7. Related: the Advisor tool (per-developer, optional)
 
 Claude Code's [Advisor tool](https://code.claude.com/docs/en/advisor) is a
 lighter-weight cousin of this loop. It pairs your main model with a stronger
-**advisor model** that Claude consults *in-session* at decision points — before
+**advisor model** that Claude consults *in-session* at decision points - before
 committing to an approach, when stuck, or before declaring a task done: the same
 escalate-hard-decisions instinct this loop encodes, minus the
-independent-subagent gates and the diff review. They are not substitutes — reach
+independent-subagent gates and the diff review. They are not substitutes - reach
 for the advisor for a fast in-context second opinion, and for `--reviewed` when a
 wrong approach is costly to unwind and you want an adversarial, rubric-scored
 check.
 
 **steer does not configure it for you, by design.** `advisorModel` is a
 per-developer, cost- and account-dependent preference, it is experimental, and it
-runs on the Anthropic API only — not portable across Bedrock/Vertex — so it stays
+runs on the Anthropic API only - not portable across Bedrock/Vertex - so it stays
 out of the scaffold's checked-in `settings.json`, which would silently override
 each teammate's choice. Enable it yourself with `/advisor <model>` (e.g.
 `/advisor opus`) or `claude --advisor opus` for one session.

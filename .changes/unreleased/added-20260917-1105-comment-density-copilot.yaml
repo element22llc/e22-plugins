@@ -12,15 +12,15 @@ body: |-
       to its runtime `create`/`edit` tools (the camelCase form would match
       neither), and it feeds the snake_case `tool_name`/`tool_input` payload the
       script already parses. The hook emits a **top-level** `additionalContext`
-      on that surface — the CLI documents only the flat key and never mentions
+      on that surface - the CLI documents only the flat key and never mentions
       Claude's nested `hookSpecificOutput`, so the notice would otherwise be
       dropped.
     - **Directives are not comments.** The counter matched any line whose first
       non-space character began a comment, which swept up the shebang and every
       `# shellcheck`, `# noqa`, `# type:`, `// eslint-disable` and
       `// @ts-expect-error` line. Short, directive-dense scripts therefore read
-      as comment-bloated — `scripts/ci-deps.sh` scored 38%, above the notice
-      threshold, on five lines of prose — which pointed the fix at the genuine
+      as comment-bloated - `scripts/ci-deps.sh` scored 38%, above the notice
+      threshold, on five lines of prose - which pointed the fix at the genuine
       why-comments sitting beside the directives. Directives and the shebang are
       machine-read instructions the file cannot work without; they still count
       toward the line total, just not as comments.

@@ -1,25 +1,25 @@
 #!/usr/bin/env sh
-# steer SessionStart hook — surface recorded steer SELF-faults.
+# steer SessionStart hook - surface recorded steer SELF-faults.
 #
 # WHY THIS EXISTS
 #   steer's other hooks record their own malfunctions (a missing rules dir, a
-#   crashed helper) to a per-repo log via lib/report-fault.sh — they never phone
+#   crashed helper) to a per-repo log via lib/report-fault.sh - they never phone
 #   home themselves (no network/`gh`/time budget on the hot path). This hook is
 #   the one place that reads that log at session start and raises any UNREPORTED
 #   faults into session context, so the always-on self-report rule can point at
-#   `/steer:report` — which auto-files upstream after scrubbing and deduping, with
+#   `/steer:report` - which auto-files upstream after scrubbing and deduping, with
 #   no confirmation step (rule 97-self-report).
 #
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path
 #   as inject-standards.sh / orient-session.sh). A surfaced-count marker beside
 #   the log tracks how many fault lines have already been raised, so each fault
-#   is surfaced exactly once — never a per-session nag. `/steer:report` removes
+#   is surfaced exactly once - never a per-session nag. `/steer:report` removes
 #   both files once it has filed (or the user dismisses) the faults.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq, no process substitution. cwd comes from the SessionStart
-#   payload (may be a subdir). Fail-soft: any ambiguity → stay silent.
+#   payload (may be a subdir). Fail-soft: any ambiguity -> stay silent.
 
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/json.sh"
 . "${CLAUDE_PLUGIN_ROOT}/hooks/lib/repo-root.sh"
@@ -52,13 +52,13 @@ esac
 NEW=$((TOTAL - SURFACED))
 
 printf '<!-- steer: self-fault notice -->\n'
-printf '⚠ **steer recorded %s self-fault(s)** during recent sessions — the plugin ' "${NEW}"
+printf '⚠ **steer recorded %s self-fault(s)** during recent sessions - the plugin ' "${NEW}"
 printf 'itself misbehaved, not your code. The unreported faults:\n\n'
 # Show only the not-yet-surfaced tail; one bullet per fault (version · source · signature).
 tail -n "${NEW}" "${LOG}" 2>/dev/null | while IFS='|' read -r _ver _src _sig; do
-	printf -- '- `%s` in **%s** — %s\n' "${_ver}" "${_src}" "${_sig}"
+	printf -- '- `%s` in **%s** - %s\n' "${_ver}" "${_src}" "${_sig}"
 done
-printf '\nThis is a defect in the steer plugin. Run `/steer:report` — it scrubs, '
+printf '\nThis is a defect in the steer plugin. Run `/steer:report` - it scrubs, '
 printf 'dedupes, and auto-files upstream in element22llc/e22-plugins with no '
 printf 'confirmation step (rule 97-self-report; the scrub omits anything it '
 printf 'cannot safely redact, which is the safety floor instead of a prompt). '

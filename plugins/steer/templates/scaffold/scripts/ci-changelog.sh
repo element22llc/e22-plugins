@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
-# steer — a change that ships must bring a changelog fragment.
+# steer - a change that ships must bring a changelog fragment.
 # Rationale: /steer:reference conventions -> "Changelog".
 # Deliberately delivery-mode-blind: in solo-trunk there is no PR, so this is the
 # only thing between a trunk push and an unrecorded shipped change.
 set -eu
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
 # a consumer repo lints these from its root and has no .shellcheckrc to lean on.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=ci-lib.sh
@@ -18,7 +18,7 @@ is_exempt() {
 	spec/* | docs/* | .github/* | .claude/* | .vscode/* | .changes/*) return 0 ;;
 	tests/* | test/* | */tests/* | */test/*) return 0 ;;
 	# Prose ships no behaviour, wherever it lives. A docs change that IS worth an
-	# entry can still have one — this only says it is never *required*.
+	# entry can still have one - this only says it is never *required*.
 	*.md) return 0 ;;
 	esac
 	return 1

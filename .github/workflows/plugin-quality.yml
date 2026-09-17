@@ -42,7 +42,7 @@ jobs:
         # source of truth), not whatever "latest" happens to be at run time. The
         # installer takes the target as a positional arg.
         #
-        # Supply-chain note — accepted risk: install.sh is fetched live from
+        # Supply-chain note - accepted risk: install.sh is fetched live from
         # claude.ai and is NOT checksum-pinned. The CLI *version* it installs is
         # pinned above, but the installer script itself can change between runs;
         # checksum-pinning it would break on every installer release for a script
@@ -79,7 +79,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Claude Code (latest)
-        # Live-fetched installer + floating "latest": deliberate — this job exists
+        # Live-fetched installer + floating "latest": deliberate - this job exists
         # to surface upstream breakage early and is non-blocking. Same accepted
         # install.sh live-fetch risk as the pinned job (issue #341).
         run: |

@@ -1,4 +1,4 @@
-# Fixture: no /spec spine — bootstrap is the only action
+# Fixture: no /spec spine - bootstrap is the only action
 
 Phase 0 short-circuit: with no `/spec` spine there is nothing to reconstruct, so
 arbitration never runs.

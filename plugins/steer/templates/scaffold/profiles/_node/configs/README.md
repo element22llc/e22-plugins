@@ -6,5 +6,5 @@ config, test presets, and similar.
 
 - Put config here when two or more apps/packages should share it, so the rule
   lives in one place and is extended rather than copied.
-- This is configuration only — no deployable code (that's an app) and no shared
+- This is configuration only - no deployable code (that's an app) and no shared
   runtime library code (that's a package).

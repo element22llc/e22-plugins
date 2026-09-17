@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# steer — CI version-pin scanner: fails on literal `<product>:<version>` pins that violate policy/versions.yml.
+# steer - CI version-pin scanner: fails on literal `<product>:<version>` pins that violate policy/versions.yml.
 # Usage: scan-version-pins.sh [repo-root]   Exit: 0 clean · 1 denied pin · 2 config error (no/empty policy)
 # Suppress a deliberate pin with `# steer:allow-pin <reason>` (legacy `# pin-ok: <reason>`) + an ADR.
 # Rationale: /steer:reference conventions -> "Enforcement: the version-pin floor".

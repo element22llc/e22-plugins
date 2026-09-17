@@ -1,11 +1,11 @@
-# Routing regression fixtures — validated by scripts/check_routing_fixtures.py.
+# Routing regression fixtures - validated by scripts/check_routing_fixtures.py.
 #
 # Each fixture records a representative plain-language user ask, the skill that
 # owns it, and the signal keywords the mapping routes on. Every signal must
 # appear (case-insensitively) in the always-on routing surface: the union of
 # rules/00-router.md and the owning skill's description + when_to_use
 # frontmatter. When trimming that surface (PLAN.md Phase 1), a failure here
-# means the trim removed vocabulary an ask depends on — restore the keyword or
+# means the trim removed vocabulary an ask depends on - restore the keyword or
 # consciously update the fixture with the replacement vocabulary.
 #
 # Keep asks realistic (what a user would actually type), one skill per fixture,
@@ -28,13 +28,13 @@ fixtures:
   - ask: "there are [Replace ...] placeholders left over from the template"
     skill: init
     signals: ["placeholders", "template"]
-  - ask: "this app was vibe-coded — no spec, no toolchain; adopt it"
+  - ask: "this app was vibe-coded - no spec, no toolchain; adopt it"
     skill: adopt
     signals: ["vibe-coded", "adopt"]
   - ask: "reverse-engineer a spec from this existing codebase"
     skill: adopt
     signals: ["reverse-engineer", "existing repo"]
-  - ask: "mise: command not found — get my machine ready"
+  - ask: "mise: command not found - get my machine ready"
     skill: doctor
     signals: ["command not found", "prerequisites"]
   - ask: "apply the pending structural migrations from the last plugin release"
@@ -60,7 +60,7 @@ fixtures:
   - ask: "sweep this draft spec for gaps and edge cases before I sign off"
     skill: spec
     signals: ["clarify", "edge cases"]
-  - ask: "the client re-sent the requirements deck — what changed?"
+  - ask: "the client re-sent the requirements deck - what changed?"
     skill: intake
     signals: ["what changed", "docx"]
   - ask: "absorb this roadmap spreadsheet the PO handed over"
@@ -92,7 +92,7 @@ fixtures:
   - ask: "resume the issue I was working on yesterday"
     skill: work
     signals: ["resume", "issue"]
-  - ask: "production is down — ship an emergency hotfix"
+  - ask: "production is down - ship an emergency hotfix"
     skill: work
     signals: ["hotfix", "production incident"]
   - ask: "audit the overall health of this repo"
@@ -115,7 +115,7 @@ fixtures:
   - ask: "what should I do next?"
     skill: next
     signals: ["next action"]
-  - ask: "I'm lost — where do I even start in this repo?"
+  - ask: "I'm lost - where do I even start in this repo?"
     skill: next
     signals: ["I'm lost"]
   - ask: "what can steer do?"
@@ -155,12 +155,12 @@ fixtures:
   - ask: "check the merge rules on this GitHub repo"
     skill: protect
     signals: ["merge rules"]
-  - ask: "the repo root is full of loose spreadsheets and PDFs — clean it up"
+  - ask: "the repo root is full of loose spreadsheets and PDFs - clean it up"
     skill: tidy
     signals: ["repo root", "clean up"]
   - ask: "organize these stray design exports into their right home"
     skill: tidy
     signals: ["organize", "diagrams"]
-  - ask: "steer itself just crashed — file that bug upstream"
+  - ask: "steer itself just crashed - file that bug upstream"
     skill: report
     signals: ["steer plugin itself", "upstream"]

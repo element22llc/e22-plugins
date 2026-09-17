@@ -4,7 +4,7 @@
     "sessionStart": [
       {
         "type": "command",
-        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 inject-standards.sh gate skipped\" >&2; fi",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved - inject-standards.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       }
     ],
@@ -12,19 +12,19 @@
       {
         "type": "command",
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-version-pins.sh gate skipped\" >&2; fi",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-version-pins.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved - check-version-pins.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       },
       {
         "type": "command",
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
-        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-ascii-writes.sh gate skipped\" >&2; fi",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved - check-ascii-writes.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       },
       {
         "type": "command",
         "matcher": "Bash",
-        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-bash-actions.sh gate skipped\" >&2; fi",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-bash-actions.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved - check-bash-actions.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       }
     ],
@@ -32,7 +32,7 @@
       {
         "type": "command",
         "matcher": "Write|Edit|MultiEdit",
-        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved \u2014 check-comment-density.sh gate skipped\" >&2; fi",
+        "bash": "if [ -f \"${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh\" ]; then STEER_HOOK_TARGET=copilot sh \"${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh\" || true; else echo \"steer: CLAUDE_PLUGIN_ROOT unresolved - check-comment-density.sh gate skipped\" >&2; fi",
         "timeoutSec": 10
       }
     ]

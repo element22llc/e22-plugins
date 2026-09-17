@@ -1,102 +1,19 @@
 # shellcheck shell=sh
-# steer hook helper - typographic-character detection for rule 85 ("ASCII in
-# code and values"), shared by check-ascii-writes.sh and the fixture suite that
-# proves the bundled templates are clean in value positions.
+# steer hook helper - typographic-character detection for rule 85 ("ASCII
+# everywhere"), shared by check-ascii-writes.sh and by scripts/check-ascii.sh,
+# the committed-state gate for this repo. One character table, so the write-time
+# gate and the repo sweep can never disagree about what counts.
 #
-# Three pieces: map a path to its comment syntax, strip comments, name the
-# offending characters in what is left. They are separate so the template sweep
-# can run the same stripper the hook runs - if the stripping heuristics were
-# duplicated, the templates could pass a sweep the live gate would still deny.
+# The set is exactly rule 85's - dashes, curly quotes, ellipsis, bullet, arrows,
+# non-breaking and thin spaces - and nothing else. Accented Latin letters,
+# guillemets, CJK and emoji are deliberately absent: they are legitimate
+# content, and flagging them would break non-English copy.
 #
-# The character set is exactly rule 85's - dashes, curly quotes, ellipsis,
-# arrows, non-breaking and thin spaces, bullet - and nothing else. Accented
-# Latin letters, guillemets, CJK and emoji are deliberately absent: they are
-# legitimate content, and flagging them would break non-English copy.
+# There is no comment-stripping step. An earlier version scanned only value
+# positions, on the theory that prose was exempt; rule 85 no longer exempts it,
+# so the scan is raw and a typographic character is reported wherever it sits.
 #
 # POSIX sh; source this file.
-
-# steer_comment_style <path> - the comment syntax to strip before scanning, or
-# nothing when the file type has none we can parse (in which case the caller
-# skips the file rather than scanning it raw).
-#
-#   hash   #  to end of line
-#   slash  // to end of line, plus /* */ blocks
-#   tf     both of the above (Terraform/HCL accept either)
-#   jsonc  line-leading // only - a JSON string value routinely carries "//"
-#          inside a URL, and stripping there would blind the scan to the rest
-#          of the line
-#   dash   -- to end of line
-steer_comment_style() {
-	case "${1##*/}" in
-	Dockerfile | Dockerfile.* | Containerfile | Makefile | makefile | GNUmakefile)
-		printf 'hash'
-		return
-		;;
-	esac
-	case "$1" in
-	*.py | *.sh | *.bash | *.zsh | *.rb | *.pl | *.toml | *.yaml | *.yml | \
-		*.ini | *.cfg | *.conf | *.properties | *.mk | *.ex | *.exs | \
-		*.env | *.env.*) printf 'hash' ;;
-	*.tf | *.tfvars | *.hcl) printf 'tf' ;;
-	*.json) printf 'jsonc' ;;
-	*.ts | *.tsx | *.js | *.jsx | *.mjs | *.cjs | *.go | *.rs | *.java | *.kt | \
-		*.kts | *.swift | *.c | *.h | *.cc | *.cpp | *.hpp | *.cs | *.scala | \
-		*.dart | *.php | *.vue | *.svelte) printf 'slash' ;;
-	*.sql | *.lua) printf 'dash' ;;
-	*) : ;;
-	esac
-}
-
-# steer_strip_comments <style> - stdin with comment text removed, so only value
-# positions remain. Every heuristic over-strips on purpose: dropping too much
-# only costs a missed character (the always-on rule still applies), while
-# dropping too little produces a false deny, which is what gets a gate disabled.
-steer_strip_comments() {
-	LC_ALL=C awk -v style="$1" '
-		# Keep the "//" when it follows ":" so a URL survives; the scan must still
-		# see the rest of "https://example.com <em dash> label".
-		function line_slash(s,   i, c, out) {
-			out = ""
-			while (1) {
-				i = index(s, "//")
-				if (i == 0) return out s
-				c = (i > 1) ? substr(s, i - 1, 1) : ""
-				if (c != ":") return out substr(s, 1, i - 1)
-				out = out substr(s, 1, i + 1)
-				s = substr(s, i + 2)
-			}
-		}
-		function block(s,   i, j, out) {
-			out = ""
-			while (1) {
-				if (inblock) {
-					j = index(s, "*/")
-					if (j == 0) return out
-					s = substr(s, j + 2)
-					inblock = 0
-				}
-				i = index(s, "/*")
-				if (i == 0) return out s
-				out = out substr(s, 1, i - 1)
-				s = substr(s, i + 2)
-				inblock = 1
-			}
-		}
-		BEGIN { inblock = 0 }
-		{
-			line = $0
-			if (style == "slash" || style == "tf" || style == "jsonc") line = block(line)
-			if (style == "hash" || style == "tf") sub(/#.*/, "", line)
-			if (style == "slash" || style == "tf") line = line_slash(line)
-			if (style == "jsonc" && line ~ /^[ \t]*\/\//) line = ""
-			if (style == "dash") sub(/--.*/, "", line)
-			# A continuation line of a doc block the state machine did not catch
-			# (an Edit payload can start mid-block).
-			if ((style == "slash" || style == "tf") && line ~ /^[ \t]*\*/) line = ""
-			print line
-		}
-	'
-}
 
 # _steer_typo_hit <bytes> <codepoint-hex> <label> - append <label> once when
 # either the raw bytes or the \uXXXX text spelling is present. Reads/writes the
@@ -153,11 +70,7 @@ steer_typographic_names() {
 	printf '%s' "${_tn_out}"
 }
 
-# steer_typographic_scan <path> - convenience wrapper over the three pieces:
-# prints the offenders in <path>'s value positions, nothing when clean or when
-# the file type has no known comment syntax.
+# steer_typographic_scan <path> - the offenders in <path>, nothing when clean.
 steer_typographic_scan() {
-	_ts_style="$(steer_comment_style "$1")"
-	[ -n "${_ts_style}" ] || return 0
-	steer_strip_comments "${_ts_style}" <"$1" | steer_typographic_names
+	steer_typographic_names <"$1"
 }

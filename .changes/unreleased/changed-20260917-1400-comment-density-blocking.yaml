@@ -10,10 +10,10 @@ body: |-
       per file per session. At or above a third the hook returns a `decision:
       "block"` with the reason. Be clear about what that buys: on `PostToolUse`
       the write has already landed, so `block` places the reason **beside the tool
-      result** rather than undoing anything — materially more salient than ambient
+      result** rather than undoing anything - materially more salient than ambient
       context, but not a gate. The PR review remains the wall.
     - **The block tier re-fires** while the file is still over, capped at three per
-      file per session — one dismissable notice is the failure mode this tier
+      file per session - one dismissable notice is the failure mode this tier
       exists to escape, and the cap stops a file that genuinely cannot be trimmed
       from nagging.
     - **`steer:allow-comments <reason>`** anywhere in the file silences both
@@ -23,12 +23,12 @@ body: |-
       alias and has none.
     - **Copilot CLI keeps parity.** `postToolUse` has no `decision` field there,
       so the block tier prefixes its text with `BLOCKED:` instead of being
-      dropped — the surfaces read the same rather than one carrying a safety net
+      dropped - the surfaces read the same rather than one carrying a safety net
       the other lacks.
 
-    Four shipped scaffold files whose density is deliberate — `changie.yaml`,
+    Four shipped scaffold files whose density is deliberate - `changie.yaml`,
     `policy/branch-protection.yml`, and the `infra`/`workspace` profile
-    `mise.toml`s, all triaged when the templates were stripped — now carry the
+    `mise.toml`s, all triaged when the templates were stripped - now carry the
     marker with their reason, so a consumer editing them is not nudged about
     comments that were already judged to earn their place. No shipped scaffold
     file lands in the block tier.

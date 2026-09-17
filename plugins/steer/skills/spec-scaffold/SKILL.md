@@ -1,7 +1,7 @@
 ---
 name: spec-scaffold
 description: Create a feature's spec (intent.md + contract.md) from the bundled templates, or additively reconcile an existing one without overwriting filled-in content.
-when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, /steer:adopt, or /steer:intake with a resolved feature id — not a direct entry point."
+when_to_use: "Invoked by /steer:spec, /steer:build, /steer:init, /steer:adopt, or /steer:intake with a resolved feature id - not a direct entry point."
 argument-hint: "[feature-id]"
 allowed-tools:
   - Bash(sh *scripts/template-reconcile.sh*)
@@ -18,20 +18,20 @@ feature, using the canonical templates bundled with this plugin.
 
 ## Steps
 
-1. Determine the feature `[id]` — a short kebab-case slug (`user-login`,
+1. Determine the feature `[id]` - a short kebab-case slug (`user-login`,
    `export-csv`). Ask the dev if it isn't obvious.
 2. Create the folder `spec/features/[id]/` **in the repo that owns the product
-   spine**. Normally that is this repo — but in a **member** `spec/features/**`
+   spine**. Normally that is this repo - but in a **member** `spec/features/**`
    belongs to the workspace (rule `30-spec-workflow`): resolve it by the ladder
    in `/steer:reference polyrepo` and create the feature there, never here. **If
-   the folder already exists**, this `[id]` was scaffolded before — do not
+   the folder already exists**, this `[id]` was scaffolded before - do not
    clobber it; go to step 3's reconcile branch.
 3. Instantiate the two spec files from the bundled templates:
-   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` → `spec/features/[id]/intent.md`
-   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-contract.md` → `spec/features/[id]/contract.md`
+   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-intent.md` -> `spec/features/[id]/intent.md`
+   - `${CLAUDE_PLUGIN_ROOT}/templates/spec/feature-contract.md` -> `spec/features/[id]/contract.md`
 
    For a **new** feature, copy them in. For an **existing** feature (a re-run, or a
-   feature spec'd under an older plugin version), **reconcile instead of copy** —
+   feature spec'd under an older plugin version), **reconcile instead of copy** -
    don't eyeball it; run the diff first and act on its output (per file, intent then
    contract):
 
@@ -43,7 +43,7 @@ feature, using the canonical templates bundled with this plugin.
 
    Splice in only the genuinely-new sections/items it reports (empty/unchecked),
    preserving everything already written; never overwrite filled-in
-   intent/contract content or re-add a placeholder the dev replaced. Full rules —
+   intent/contract content or re-add a placeholder the dev replaced. Full rules -
    the plugin-wide **Template reconciliation** convention (over-reports handling,
    anchor matching, additive-only):
    `${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` §"Template
@@ -57,9 +57,9 @@ feature, using the canonical templates bundled with this plugin.
 
 ## Coupling rules
 
-The spec ↔ code rules (drift resolution, behavior vs. implementation, PO
+The spec <-> code rules (drift resolution, behavior vs. implementation, PO
 acceptance, naming) are in the bundled reference at
-`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` — read it if you
+`${CLAUDE_PLUGIN_ROOT}/templates/reference/SPEC-FRAMEWORK.md` - read it if you
 need the full rules. Key points: specs are organized by feature not code layout;
 spec and code change together in the same PR; resolve drift explicitly, never
 silently.

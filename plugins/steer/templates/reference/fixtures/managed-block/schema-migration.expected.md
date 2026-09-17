@@ -13,5 +13,5 @@ Raw SQL string interpolation in the reports export path.
 
 ## Evidence
 
-- `apps/api/reports.ts:42-58` — string-built query.
+- `apps/api/reports.ts:42-58` - string-built query.
 <!-- steer:managed:end -->

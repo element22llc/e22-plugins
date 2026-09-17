@@ -1,17 +1,17 @@
 #!/usr/bin/env sh
-# steer — changed-line coverage gate. Invoked by `mise run ci:coverage` (after ci:test).
-# Gates only the lines a change touches — never a global %; fail-open without a report.
+# steer - changed-line coverage gate. Invoked by `mise run ci:coverage` (after ci:test).
+# Gates only the lines a change touches - never a global %; fail-open without a report.
 # Rationale: rule 41-coverage; /steer:reference conventions -> Coverage.
 #
 # BASE RESOLUTION
 #   CI exports STEER_CI_EVENT / STEER_CI_BASE_REF / STEER_CI_BEFORE from the
 #   workflow context. Locally none are set, so the base falls back to
-#   STEER_CI_BASE (default origin/main) — the same fail-open convention as the
+#   STEER_CI_BASE (default origin/main) - the same fail-open convention as the
 #   plugin repo's delivery-gates.sh: an unresolvable base skips, never blocks.
 set -eu
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from —
+# SCRIPTDIR keeps this resolvable no matter the cwd shellcheck is invoked from -
 # a consumer repo lints these from its root and has no .shellcheckrc to lean on.
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=ci-lib.sh
@@ -61,7 +61,7 @@ push)
 esac
 
 printf '## Coverage (changed lines vs %s)\n' "${base}" >>"${GITHUB_STEP_SUMMARY:-/dev/null}"
-# Pinned — this gate can FAIL a PR. If a bump drops --markdown-report, use --format markdown:coverage-diff.md.
+# Pinned - this gate can FAIL a PR. If a bump drops --markdown-report, use --format markdown:coverage-diff.md.
 # shellcheck disable=SC2086  # deliberate word-splitting of the collected report paths
 if uvx diff-cover@10.4.1 ${reports} \
 	--compare-branch "${base}" \

@@ -2,7 +2,7 @@
 
 Standing invariants: which bundled files a managed repo needs to use a given
 **steer** capability, how to tell each is *present-and-wired* (not merely
-present), how to repair a gap, and when the requirement does — and doesn't —
+present), how to repair a gap, and when the requirement does - and doesn't -
 apply.
 
 `/steer:sync` walks this on **every** sync (independent of `FROM`/`TARGET`),
@@ -31,15 +31,15 @@ documented here, exempting the `stack`/`profile` fingerprints). This doc owns th
 repair semantics + conditionality the script can't decide.
 
 **Profile and capability conditionality.** Capabilities are conditioned on the
-`stack` fingerprint, not on `profile` — and `stack=none` already does the right
+`stack` fingerprint, not on `profile` - and `stack=none` already does the right
 thing for an `infra` repo (no `package.json`/`pyproject.toml`), dropping
 `node-tooling` to `n/a`. `worktree-port-isolation` stays applicable on an `infra`
-repo because `compose.yaml` ships in the **core** scaffold (every profile) — it
+repo because `compose.yaml` ships in the **core** scaffold (every profile) - it
 falls to `n/a` only if that `compose.yaml` is also deleted *and* the stack is
 `none`. The `profile` emit is for reporting only (`/steer:sync`, `/steer:report`);
 do **not** add a second, profile-keyed conditioning axis for a decision `stack`
 (plus the compose trait) already makes. `toolchain-pin`
-is profile-agnostic — it checks the repo-root `mise.toml`, which every profile
+is profile-agnostic - it checks the repo-root `mise.toml`, which every profile
 installs (the `infra` profile's is the tofu/terragrunt/ansible flavor).
 
 ## Discipline
@@ -49,13 +49,13 @@ installs (the `infra` profile's is the tofu/terragrunt/ansible flavor).
   value. The lone exception is a `verbatim` file (see below).
 - **Create only when the conditional predicate applies.** Absence of a
   conditional file in a repo whose stack/tracker doesn't match is `n/a`, **not**
-  `missing` — never re-add it.
+  `missing` - never re-add it.
 - **`disabled` is respected, never repaired.** A `"steer@e22-plugins": false` (or
   an equivalent deliberate opt-off) means the team turned the capability off;
-  report it and move on. There is no opt-out file — a deliberately-dropped
+  report it and move on. There is no opt-out file - a deliberately-dropped
   *always* capability re-appears as a proposal each sync and the dev declines it.
 - **`verbatim` files are re-copied, not merged.** The version-pin scripts are
-  contractually byte-identical to the plugin source — there is no room for
+  contractually byte-identical to the plugin source - there is no room for
   product adaptation, so a drifted copy is *replaced*. **Show the diff first** and
   warn that local edits will be lost (move product-specific pins to
   `policy/versions.yml` instead); never silently overwrite.
@@ -72,7 +72,7 @@ and **Repair**.
 
 ## Entries
 
-### plugin-enabled-local — local sessions load steer
+### plugin-enabled-local - local sessions load steer
 - **Files:** `.claude/settings.json`
 - **Conditional:** always
 - **Wired-when:** `enabledPlugins` contains `"steer@e22-plugins": true`. A
@@ -82,28 +82,28 @@ and **Repair**.
   every existing key. Never replace the file. Source:
   `templates/scaffold/claude/settings.json`. (The pre-2.0.0 dead
   `e22-standards@e22-plugins` key is *removed* by the v2.0.0 ledger migration in
-  [MIGRATIONS.md](MIGRATIONS.md), not here — that rewrite runs before this repair,
+  [MIGRATIONS.md](MIGRATIONS.md), not here - that rewrite runs before this repair,
   so by the time this runs the live key already exists and the splice is a no-op.
   This repair only ever *adds*.)
 - **Verbatim:** no
-- **Why it matters:** without this, the plugin never loads locally — no skills, no
+- **Why it matters:** without this, the plugin never loads locally - no skills, no
   rules, no hooks. The repo degrades to stock Claude.
 
-### delivery-mode-declared — explicit delivery mode in CLAUDE.md
+### delivery-mode-declared - explicit delivery mode in CLAUDE.md
 - **Files:** `CLAUDE.md`
 - **Conditional:** always (every managed repo has a `CLAUDE.md` and runs in some
   delivery mode).
 - **Wired-when:** `CLAUDE.md` carries a `steer:delivery-mode=` marker
   (`<!-- steer:delivery-mode=pr-flow|solo-trunk -->`). Without it the
-  commit-autonomy and issue-first hooks **fail open to `pr-flow`** — functionally
+  commit-autonomy and issue-first hooks **fail open to `pr-flow`** - functionally
   safe, but the choice is invisible and a solo, pre-MVP dev never discovers
   solo-trunk. `CLAUDE.md` present without the marker is `mis-wired`; an absent
   `CLAUDE.md` is `absent`.
-- **Repair:** a **human decision** — `sync` never picks the mode. Propose
+- **Repair:** a **human decision** - `sync` never picks the mode. Propose
   additive-splicing the `## Delivery mode` section from
   `templates/scaffold/CLAUDE.md` (which documents both modes) with the marker
-  defaulting to `pr-flow` — matching the hooks' fail-open, so behaviour is
-  unchanged — and **surface the solo-trunk option**, recommending it when the repo
+  defaulting to `pr-flow` - matching the hooks' fail-open, so behaviour is
+  unchanged - and **surface the solo-trunk option**, recommending it when the repo
   is a solo PO+dev with no MVP/deploy yet (rule `45-commit-autonomy`). Additive
   only: never edit or overwrite an existing `## Delivery mode` section. To adopt
   solo-trunk on an existing repo the dev flips the marker; `/steer:protect`
@@ -112,67 +112,67 @@ and **Repair**.
   the repo deliberately stays single-dev on trunk.
 - **Verbatim:** no
 - **Why it matters:** a repo bootstrapped before solo-trunk existed (≤ 2.11.0)
-  silently runs `pr-flow` forever — the solo-trunk offer lives only in `init`'s
+  silently runs `pr-flow` forever - the solo-trunk offer lives only in `init`'s
   run-once interview, and `sync` carries the spine forward without re-asking. This
   is the one place a later sync can surface the choice.
 
-### app-knowledge-docs — the app guide (how to use/operate the product)
+### app-knowledge-docs - the app guide (how to use/operate the product)
 - **Files:** `spec/app/README.md`
-- **Conditional:** always (every managed product has usage to document — at
+- **Conditional:** always (every managed product has usage to document - at
   whatever fidelity; a stub is valid, like an empty `decisions/`).
 - **Wired-when:** `spec/app/README.md` exists. It is the index for the app
-  knowledge docs — usage, workflows, roles & permissions, configuration, known
+  knowledge docs - usage, workflows, roles & permissions, configuration, known
   limitations, troubleshooting, release notes. The layout reference
   (`CONVENTIONS.md` § Where things live), `rules/32-living-docs.md`, `50-definition-of-done.md`, the PR template, and the
   scaffold `ARCHITECTURE.md` all reference `/spec/app/` **unconditionally**, so a
-  repo missing it carries dangling links. Absent → the file is missing.
+  repo missing it carries dangling links. Absent -> the file is missing.
 - **Repair:** **create** `spec/app/README.md` from
   `${CLAUDE_PLUGIN_ROOT}/templates/spec/app-docs.md`, resolving placeholders and
   seeding the usage / roles / limitations sections from what the spine already
   knows (`vision.md`, `users.md`, `glossary.md`). A **stub is fine** where the
-  product isn't operable yet — keep it honest: omit the operational runbook while
+  product isn't operable yet - keep it honest: omit the operational runbook while
   local-only, per the template's own guidance. Additive: never overwrite an
   existing guide.
 - **Verbatim:** no
 - **Why it matters:** the guide is instantiated from a spec template, not copied
-  as a static scaffold file, so additive reconciliation — which only splices into
-  files that already exist — can never create it. A repo bootstrapped before init
+  as a static scaffold file, so additive reconciliation - which only splices into
+  files that already exist - can never create it. A repo bootstrapped before init
   reliably instantiated it, or by an init run that skipped the step, is left with
   references to a `/spec/app/` that does not exist, and no earlier sync mechanism
   repaired it (`STEER_SPINE_REQUIRED` deliberately stays the minimal narrative
   singletons, so a missing guide never trips the `damaged` nudge). This capability
   is that missing backfill path.
 
-### in-ci-plugin-loading — @claude CI runs under steer standards
+### in-ci-plugin-loading - @claude CI runs under steer standards
 - **Files:** `.github/workflows/claude.yml`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** file contains `plugin_marketplaces`. An `enabledPlugins` block
-  does **not** count — it is trust-dialog gated and no-ops in headless CI.
+  does **not** count - it is trust-dialog gated and no-ops in headless CI.
 - **Repair:** create from `templates/github/workflows/claude.yml` (copy-and-adapt);
-  propose. The marketplace repo is public, so the plugin clone is anonymous — no
+  propose. The marketplace repo is public, so the plugin clone is anonymous - no
   marketplace credential needed. The workflow does need the `ANTHROPIC_API_KEY`
   secret to run at all; if it is absent, report `wired-pending-secret` and name
   adding the key as a human follow-up.
 - **Verbatim:** no
-- **Why it matters:** without it the in-CI `@claude` agent runs standards-less —
+- **Why it matters:** without it the in-CI `@claude` agent runs standards-less -
   no Definition of Done, no spec/drift discipline.
 
-### agent-surface-current — non-Claude agents read the *current* standards
+### agent-surface-current - non-Claude agents read the *current* standards
 - **Files:** `.agents/skills/steer-*/**` (the cross-tool skill tree),
   `.github/copilot-instructions.md`, `.github/agents/*.agent.md`,
   `.github/instructions/*.instructions.md`
 - **Conditional:** `.github/copilot-instructions.md` present. The non-Claude
   surface is opt-in at bootstrap, so a repo that never installed it is `n/a`, never
-  `absent` — sync must not install a surface nobody asked for. Once the
+  `absent` - sync must not install a surface nobody asked for. Once the
   instructions file exists the whole set is in scope (instructions present but no
-  `.agents/skills/` is `mis-wired`, not `n/a` — which is also the state a repo
+  `.agents/skills/` is `mis-wired`, not `n/a` - which is also the state a repo
   lands in until the `.github/prompts` migration runs).
 - **Wired-when:** every generated file is **byte-identical** to its plugin source
-  under `${CLAUDE_PLUGIN_ROOT}/templates/` — `agents/skills/` for the skill tree,
-  `github/` for `copilot-instructions.md`, `agents/` and `instructions/` — **and**
+  under `${CLAUDE_PLUGIN_ROOT}/templates/` - `agents/skills/` for the skill tree,
+  `github/` for `copilot-instructions.md`, `agents/` and `instructions/` - **and**
   no retired `steer-*.prompt.md` remains under `.github/prompts/`. A prompt file
   the team wrote themselves may stay, and the directory with it. These are generated artifacts, so
-  byte-equality is the only meaningful test — any difference means the consumer is
+  byte-equality is the only meaningful test - any difference means the consumer is
   reading standards from an older plugin version.
 - **Repair:** **verbatim re-copy** of the differing files from the plugin source.
   This is the never-clobber exception: those rows are declared "overwrite-managed,
@@ -183,46 +183,46 @@ and **Repair**.
 
   **A re-copy alone cannot clear this capability.** The Wired-when above also
   requires that no retired `steer-*.prompt.md` remains, and copying files in never
-  removes one — so the repair must *also* delete any `steer-`-prefixed prompt file
+  removes one - so the repair must *also* delete any `steer-`-prefixed prompt file
   under `.github/prompts/`, and the directory itself only if nothing else remains.
   Delete **only** steer's own artifacts: a prompt file the team wrote is theirs.
   Without this half, a repo carrying a leftover prompt file reports `mis-wired`
   after every repair, which is the unrepairable state this check exists to avoid.
-- **Verbatim:** yes — re-copy, the never-clobber exception.
+- **Verbatim:** yes - re-copy, the never-clobber exception.
 - **Why it matters:** no non-Claude agent has a context-injecting SessionStart
   hook, so this static set *is* their entire standards surface. The
   `.agents/skills/` half is read by GitHub Copilot (CLI, VS Code, JetBrains, the
-  cloud coding agent and code review), Cursor, Gemini CLI and Codex alike — one
+  cloud coding agent and code review), Cursor, Gemini CLI and Codex alike - one
   tree, every agent, in the open Agent Skills format. With no refresh path it freezes at
   whatever plugin version bootstrapped the repo: a Copilot teammate silently works
   against retired rules and stale task names while their Claude Code colleagues are
   current, and every rule correction shipped since bootstrap reaches only half the
   team.
 
-### version-pin-enforcement — committed-state version-pin gate
+### version-pin-enforcement - committed-state version-pin gate
 - **Files:** `policy/versions.yml`, `scripts/scan-version-pins.sh`,
   `scripts/version-policy.sh` (+ the `ci.yml` scanner step, covered by
   `drift-gate`)
 - **Conditional:** always
 - **Wired-when:** `policy/versions.yml` present **and** both scripts
-  byte-identical to the plugin source (`scripts/scan-version-pins.sh` ↔
+  byte-identical to the plugin source (`scripts/scan-version-pins.sh` <->
   `${CLAUDE_PLUGIN_ROOT}/scripts/scan-version-pins.sh`; `scripts/version-policy.sh`
-  ↔ `${CLAUDE_PLUGIN_ROOT}/hooks/lib/version-policy.sh`).
+  <-> `${CLAUDE_PLUGIN_ROOT}/hooks/lib/version-policy.sh`).
 - **Repair:** create a missing `policy/versions.yml` from the plugin default
-  (never tighten silently — a product may raise floors, sync must not). **Re-copy**
+  (never tighten silently - a product may raise floors, sync must not). **Re-copy**
   drifted scripts verbatim (show the diff + the lost-edits warning first).
 - **Verbatim:** scripts yes; `policy/versions.yml` no (a product may tighten it).
 - **Why it matters:** without it, neither the interactive hook nor CI catches a
   major pinned below the supported floor.
 
-### drift-gate — CI hygiene check + PR drift checklists
+### drift-gate - CI hygiene check + PR drift checklists
 - **Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
   `scripts/ci-lib.sh`, `scripts/ci-hygiene.sh`, `scripts/ci-deps.sh`,
   `scripts/ci-lint.sh`, `scripts/ci-typecheck.sh`, `scripts/ci-test.sh`,
   `scripts/ci-iac.sh`, `scripts/ci-image.sh`, `scripts/ci-coverage.sh`
 - **Conditional:** always (GitHub-hosted repos)
-- **Wired-when:** `ci.yml` reaches the hygiene stage — now via `mise run ci:hygiene`,
-  which runs `scan-version-pins.sh` — **and** `mise.toml` defines the `check` + `ci`
+- **Wired-when:** `ci.yml` reaches the hygiene stage - now via `mise run ci:hygiene`,
+  which runs `scan-version-pins.sh` - **and** `mise.toml` defines the `check` + `ci`
   tasks **and** every `scripts/ci-*.sh` the tasks invoke is present **and** the PR
   template is present (it carries the spec-sync, drift-gate, and living-docs
   checklists). A `ci.yml` that calls `mise run ci:*` against a `mise.toml` with no
@@ -232,14 +232,14 @@ and **Repair**.
   tasks, or the PR-template section; copy any missing `scripts/ci-*.sh` from the
   scaffold. Never clobber product-specific CI steps or a product's adapted stage
   script. Sources under `templates/github/` and `templates/scaffold/`.
-- **Verbatim:** `scripts/ci-lib.sh` yes — its stack predicates must stay in lockstep
+- **Verbatim:** `scripts/ci-lib.sh` yes - its stack predicates must stay in lockstep
   with the plugin's `hooks/lib/scope.sh`; the stage scripts and `ci.yml` no (a
   product adapts them to its toolchain).
 - **Why it matters:** `ci.yml` is the single required status check behind branch
   protection; the PR template is where drift classes are surfaced before merge.
 
-### commit-gate — the pre-commit hook wired to `mise run pre-commit`
-- **Files:** `.git/hooks/pre-commit` (**not versioned** — per-clone local state),
+### commit-gate - the pre-commit hook wired to `mise run pre-commit`
+- **Files:** `.git/hooks/pre-commit` (**not versioned** - per-clone local state),
   backed by the `pre-commit` task in `mise.toml`
 - **Conditional:** repos whose `mise.toml` defines a `pre-commit` task
 - **Wired-when:** `mise.toml` defines `pre-commit` **and** `.git/hooks/pre-commit`
@@ -247,30 +247,30 @@ and **Repair**.
 - **Repair:** run `mise generate git-pre-commit --task=pre-commit --write`. This is
   the one capability whose repair is expected to fire **repeatedly** on a healthy
   repo: `.git/hooks/` is not carried by a clone, so every teammate's first
-  `/steer:sync` re-establishes it. That is the point — a commit gate nobody but the
+  `/steer:sync` re-establishes it. That is the point - a commit gate nobody but the
   bootstrapper has is not a gate. Never propose committing the hook or setting
   `core.hooksPath` to a tracked directory to dodge this; both are repo-wide
-  decisions a sync must not make. A repo that owns its own commit gate — a foreign
-  `pre-commit` hook, or `core.hooksPath` aimed elsewhere — scans as **`n/a`**, not
+  decisions a sync must not make. A repo that owns its own commit gate - a foreign
+  `pre-commit` hook, or `core.hooksPath` aimed elsewhere - scans as **`n/a`**, not
   `mis-wired`: that is a decision, not a gap, and proposing the same repair on every
   sync is exactly the nagging this vocabulary exists to avoid. Mention it once and
   move on.
 - **Verbatim:** n/a (generated, never copied)
-- **Why it matters:** it is the cheapest place to catch a lint or format failure —
+- **Why it matters:** it is the cheapest place to catch a lint or format failure -
   before it costs a CI run, which matters most exactly when CI capacity is scarce.
 
-### branch-protection-policy — machine-readable PR gate description
+### branch-protection-policy - machine-readable PR gate description
 - **Files:** `policy/branch-protection.yml`
 - **Conditional:** always
 - **Wired-when:** present.
 - **Repair:** create from the plugin default; propose. Applying it server-side is
-  **`/steer:protect`** — name that as the follow-up; sync writes the policy file,
+  **`/steer:protect`** - name that as the follow-up; sync writes the policy file,
   it does not configure GitHub.
 - **Verbatim:** no
 - **Why it matters:** `/steer:protect` reconciles the live GitHub rule against
   this file; without it there is no declared gate to enforce.
 
-### dependency-automation — Dependabot + the auto-merge exception
+### dependency-automation - Dependabot + the auto-merge exception
 - **Files:** `.github/dependabot.yml`, `.github/workflows/dependabot-auto-merge.yml`
 - **Conditional:** always (GitHub-hosted repos)
 - **Wired-when:** both present; the auto-merge workflow guards on
@@ -280,7 +280,7 @@ and **Repair**.
   `dependabot.yml`, uncomment the ecosystem block(s) matching the detected stack
   (`npm`/`pip`/`docker`) rather than shipping only `github-actions`. The repo
   settings the exception relies on (Dependabot alerts + security updates) are
-  **`/steer:protect`**'s job — name it as the follow-up; sync writes the files, it
+  **`/steer:protect`**'s job - name it as the follow-up; sync writes the files, it
   does not configure GitHub. The workflow scopes auto-merge to Dependabot itself;
   no repo-wide `allow_auto_merge` setting is used.
 - **Verbatim:** no (ecosystems are adapted per stack)
@@ -289,13 +289,13 @@ and **Repair**.
   check stays the hard gate. Without the workflow, Dependabot PRs pile up awaiting
   a human even though they're safe once CI is green.
 
-### toolchain-pin — pinned dev toolchain
+### toolchain-pin - pinned dev toolchain
 - **Files:** `mise.toml` (required), `mise.lock` (created at pin time)
 - **Conditional:** always
-- **Wired-when:** `mise.toml` present. The scaffold ships **no** `mise.lock` —
+- **Wired-when:** `mise.toml` present. The scaffold ships **no** `mise.lock` -
   `/steer:init`/`/steer:adopt` create and commit it when they pin the toolchain.
   An absent lock means "not pinned yet", not a gap: CI installs unlocked until a
-  populated lock lands. **Do not compare `mise.lock` contents** — they are
+  populated lock lands. **Do not compare `mise.lock` contents** - they are
   per-machine/per-platform. An empty / comment-only lock is a defect (it pins
   nothing and breaks CI's `--locked`); a populated lock must never be flagged.
 - **Repair:** create a missing `mise.toml` from the scaffold. For a missing
@@ -304,17 +304,17 @@ and **Repair**.
   one; flag (don't auto-write) an empty / comment-only lock. Never overwrite a
   populated lock.
 - **Verbatim:** no
-- **Why it matters:** no `mise.toml` ⇒ none of the standard tasks
-  (`dev:setup`, `db:migrate`, …) exist; no `mise.lock` ⇒ the toolchain isn't
+- **Why it matters:** no `mise.toml` => none of the standard tasks
+  (`dev:setup`, `db:migrate`, ...) exist; no `mise.lock` => the toolchain isn't
   pinned yet.
 
-### node-tooling — Node lint/format baseline
+### node-tooling - Node lint/format baseline
 - **Files:** `biome.json`, `configs/tsconfig.base.json` (+ `package.json`,
   `pnpm-workspace.yaml` as the stack signal)
-- **Conditional:** Node stack only — applies when `package.json` or
+- **Conditional:** Node stack only - applies when `package.json` or
   `pnpm-workspace.yaml` is present (polyglot counts; the predicate is "Node
   present", inclusive). Python-only / pre-app repos report `n/a`.
-- **Wired-when:** `biome.json` present — that file alone is the wired test; the
+- **Wired-when:** `biome.json` present - that file alone is the wired test; the
   shared tsconfig is part of the baseline but is not probed.
 - **Repair:** create the missing Node config from the scaffold; adapt to the
   repo's real layout.
@@ -322,9 +322,9 @@ and **Repair**.
 - **Why it matters:** the Biome lint/format gate (and shared tsconfig) is the
   Node baseline the standards assume.
 
-### github-issue-forms — PO-friendly Issue Forms
+### github-issue-forms - PO-friendly Issue Forms
 - **Files:** `.github/ISSUE_TEMPLATE/*` (`config.yml` + the YAML forms)
-- **Conditional:** tracker is GitHub Issues — read `spec/tracker.md` frontmatter
+- **Conditional:** tracker is GitHub Issues - read `spec/tracker.md` frontmatter
   `system: github`. Any other tracker reports `n/a`.
 - **Wired-when:** `.github/ISSUE_TEMPLATE/config.yml` present; the individual
   forms beside it are not probed.
@@ -334,18 +334,18 @@ and **Repair**.
 - **Why it matters:** the Issue Forms carry the Issue Type + `source:`/`needs:`
   label taxonomy the issue-first workflow depends on.
 
-### github-issue-permissions — tracker read/write path granted locally
+### github-issue-permissions - tracker read/write path granted locally
 - **Files:** `.claude/settings.json`
-- **Conditional:** tracker is GitHub Issues — read `spec/tracker.md` frontmatter
+- **Conditional:** tracker is GitHub Issues - read `spec/tracker.md` frontmatter
   `system: github`. Any other tracker reports `n/a` (the `gh issue` allow-list is
   irrelevant to a Jira/Linear/other tracker, whose manual/MCP paths differ).
-- **Wired-when:** the `permissions.allow` list contains `Bash(gh issue create` —
+- **Wired-when:** the `permissions.allow` list contains `Bash(gh issue create` -
   the write verb whose absence breaks the tracker write path (its presence proves
   the scaffold's full `gh issue *` allow block was spliced, reads included). An
   older read-only-era `settings.json` (list/view but no `create`) is `mis-wired`;
   an absent file is `absent`.
 - **Repair:** additive-splice the `gh issue *` allow entries from
-  `templates/scaffold/claude/settings.json` — in practice the `settings.json`
+  `templates/scaffold/claude/settings.json` - in practice the `settings.json`
   reconcile in `/steer:sync` step 5 (`scaffold_reconcile.py`, deny > ask > allow
   de-conflicted) already restores them; this capability names the gap so a repo
   that only ran a partial update, or was never onboarded, sees *why* every tracker
@@ -353,24 +353,24 @@ and **Repair**.
 - **Verbatim:** no
 - **Why it matters:** the write verbs live in `/steer:tracker-sync`'s
   `allowed-tools`, but a skill's `allowed-tools` grant applies **only while that
-  skill is the invoked one**. The lifecycle reaches the gateway transitively — a
+  skill is the invoked one**. The lifecycle reaches the gateway transitively - a
   PO runs `/steer:issues capture` (or `/steer:work`, `/steer:issues materialize`),
-  which *delegates to* tracker-sync in prose — so tracker-sync's grants never take
+  which *delegates to* tracker-sync in prose - so tracker-sync's grants never take
   effect and the `gh issue create/edit/comment` write falls through to
   `.claude/settings.json`. Without these allow entries the write is prompted
   (interactive) or **silently auto-denied** (headless/non-interactive), which is
   the failure that looks like "the whole `gh` surface is walled off." The scaffold
-  allow-list — verified by this capability — is the real backstop for that
+  allow-list - verified by this capability - is the real backstop for that
   orchestrated path.
 
-### changelog-fragments — every shipped change is recorded
+### changelog-fragments - every shipped change is recorded
 - **Files:** `.changie.yaml`, `.changes/unreleased/`
 - **Conditional:** always (every managed repo ships something to someone, and
   the always-on Commit-autonomy rule promises a curated `CHANGELOG.md`).
 - **Wired-when:** `.changie.yaml` **exists** and `.changes/unreleased/` is a
   directory. Presence-only, like `line-ending-normalization`: whether the config
-  still matches the plugin default is the product's business — `kinds` and
-  `replacements` are explicitly theirs to tune — so a customized `.changie.yaml`
+  still matches the plugin default is the product's business - `kinds` and
+  `replacements` are explicitly theirs to tune - so a customized `.changie.yaml`
   is `present-wired`, not a gap. What this entry closes is the **create-missing**
   hole: a repo adopted before this shipped has no route to a changelog at all.
 - **Repair:** copy `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/changie.yaml` to
@@ -378,35 +378,35 @@ and **Repair**.
   create `.changes/unreleased/.gitkeep` + `.changes/header.tpl.md`. Also wire
   `ci:changelog` into `mise.toml` and `.github/workflows/ci.yml` if absent.
   **If the repo already has a hand-written `CHANGELOG.md`, do not parse or split
-  it** — rename it to `CHANGELOG-archive.md`, say so in the header template, and
+  it** - rename it to `CHANGELOG-archive.md`, say so in the header template, and
   start fragments from empty. Its shape is unknown and a bad split loses history.
-- **Verbatim:** no — seeded once, then the product's. Reconcile additively;
+- **Verbatim:** no - seeded once, then the product's. Reconcile additively;
   never overwrite a `.changie.yaml` a repo has tuned.
 - **Why it matters:** the standard promised this file and never delivered it.
   Rule `45-commit-autonomy` tells every session "commit messages are **not** the
-  release changelog — that stays the curated `CHANGELOG.md`", `CONVENTIONS.md`
+  release changelog - that stays the curated `CHANGELOG.md`", `CONVENTIONS.md`
   records the decision not to derive it from commit types, and the scaffold even
   shipped a `CHANGELOG.md merge=union` driver for a file nothing installed. So
   every consumer repo carried the rule and the merge driver without the
-  changelog — the agent was told to keep something that did not exist.
+  changelog - the agent was told to keep something that did not exist.
 
-### line-ending-normalization — LF pinned for every checkout
+### line-ending-normalization - LF pinned for every checkout
 - **Files:** `.gitattributes`
 - **Conditional:** always (every managed repo carries shell scripts, CI, or a
   Docker entrypoint that a CRLF checkout would break).
 - **Wired-when:** `.gitattributes` **exists**. This is a **presence-only** probe
   by design: whether the file's *content* carries the current pins is step 5's
-  additive reconcile (`scaffold_reconcile.py auto .gitattributes …`), not a
+  additive reconcile (`scaffold_reconcile.py auto .gitattributes ...`), not a
   capability gap, so a repo with an older or hand-written `.gitattributes` is
   `present-wired` here and gets its missing lines spliced there. This entry exists
   solely to close the **create-missing** hole: step 5 splices only into files that
   already exist, and until now nothing created this one.
 - **Repair:** **propose creating** it from
   `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/gitattributes` (the scaffold stores
-  dotfiles without the leading dot — install it **as `.gitattributes`**) and
+  dotfiles without the leading dot - install it **as `.gitattributes`**) and
   **wait for a yes**. Like `backing-services-compose`, this is one of only two
   step-6 `absent` cases that waits for an **explicit yes before creating the
-  file** — not because the need is unknowable, but because the file changes how
+  file** - not because the need is unknowable, but because the file changes how
   git treats every subsequent write in someone else's repo. (Read that narrowly:
   *every* repair is "proposed" in the sense that step 6 lands it on `feat/sync`
   under the read-then-propose discipline, and several entries below say "propose"
@@ -418,31 +418,31 @@ and **Repair**.
   collides with anything in flight). Say that plainly when proposing.
 - **Verbatim:** no
 - **Why it matters:** this is the exposure that produced the v5.0.0 CRLF release.
-  A CRLF shell script does not warn, it fails to **parse** — so `scripts/*.sh`,
+  A CRLF shell script does not warn, it fails to **parse** - so `scripts/*.sh`,
   every CI step that runs them, and a Docker image's entrypoint all die at once
   with `syntax error near unexpected token $'{\r'`. A repo that never had a
   `.gitattributes` had no route to one at all: `/steer:init` and `/steer:adopt`
   install it from the install map, but a repo adopted before it shipped (< 3.12.0)
   or one that lost the file stayed exposed through every steady-state sync.
 
-### backing-services-compose — local backing services
+### backing-services-compose - local backing services
 - **Files:** `compose.yaml`
-- **Conditional:** only if the product runs backing services — **not
+- **Conditional:** only if the product runs backing services - **not
   deterministically knowable.** The detector reports raw absence; the skill
   **proposes only after confirming with the dev**, and when uncertain asks rather
   than creating an unused `compose.yaml`.
-- **Wired-when:** `compose.yaml` present. There is no content probe — per
+- **Wired-when:** `compose.yaml` present. There is no content probe - per
   Conditional, absence is reported raw and is never a defect on its own.
 - **Repair:** create from the scaffold once the service need is confirmed; adapt
   the real service list.
 - **Verbatim:** no
 - **Why it matters:** without it `mise run dev:setup` can't bring up local
-  services — but a service-less product correctly has none, so this is the
+  services - but a service-less product correctly has none, so this is the
   highest false-positive risk and stays propose-only.
 
-### worktree-port-isolation — collision-free parallel worktrees
+### worktree-port-isolation - collision-free parallel worktrees
 - **Files:** `scripts/worktree-env.sh`, `mise.toml`
-- **Conditional:** only if the repo has a local runtime that binds host ports —
+- **Conditional:** only if the repo has a local runtime that binds host ports -
   i.e. a `compose.yaml` is present **or** the stack is Node/Python. A repo with
   no services and no app stack reports `n/a`, not missing.
 - **Wired-when:** `scripts/worktree-env.sh` exists **and** `mise.toml`'s `[env]`
@@ -453,16 +453,16 @@ and **Repair**.
 - **Repair:** create `scripts/worktree-env.sh` from the scaffold and additive-splice
   the `_.source` line into `mise.toml`'s `[env]` table. Preserve any product
   edits to the script's BASELINE port block.
-- **Verbatim:** no — keep the `_.source` wiring and the offset logic; adapt only
+- **Verbatim:** no - keep the `_.source` wiring and the offset logic; adapt only
   the BASELINE block (host ports per the product's services).
 - **Why it matters:** without it, two agents in parallel worktrees both bind
-  5432/3000 and share container/volume names — `docker compose up` in the second
+  5432/3000 and share container/volume names - `docker compose up` in the second
   worktree fails and teardown in one can clobber the other.
 
-<!-- Template for a new capability entry — copy, fill, and add a matching check to
+<!-- Template for a new capability entry - copy, fill, and add a matching check to
      scripts/scan-capabilities.sh (same id) in the SAME change.
 
-### <capability-id> — <one-line what it unlocks>
+### <capability-id> - <one-line what it unlocks>
 - **Files:** <install-target path(s)>
 - **Conditional:** <always | the predicate from observed repo facts; absence when
   the predicate doesn't hold is `n/a`, never `missing`>
@@ -470,7 +470,7 @@ and **Repair**.
   not just that the file exists>
 - **Repair:** <create-from-scaffold | additive-splice the named marker |
   verbatim-recopy (show diff first) | propose-only/ask>
-- **Verbatim:** <yes — re-copy, the lone never-clobber exception | no>
+- **Verbatim:** <yes - re-copy, the lone never-clobber exception | no>
 - **Why it matters:** <what breaks without it>
 
   When a migration MOVES a capability file, update its **Files** path here in the

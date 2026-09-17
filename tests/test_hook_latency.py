@@ -1,7 +1,7 @@
 """Latency budget for the steer SessionStart hook chain.
 
 Every hook in hooks.json's SessionStart matchers runs, sequentially, at every
-session start in every managed repo — their combined wall time is startup
+session start in every managed repo - their combined wall time is startup
 latency every user pays. This test runs the full startup chain against a
 minimal managed-repo fixture and fails when it exceeds the budget.
 
@@ -11,7 +11,7 @@ grows a network call, a repo-wide scan, or an interpreter spawn. Override via
 STEER_HOOK_LATENCY_BUDGET_MS for unusually slow or fast environments.
 
 Kept in the pytest tier (not hooks/tests/run.sh) because POSIX sh has no
-portable sub-second clock — `date +%s%N` is GNU-only. The sh suite remains the
+portable sub-second clock - `date +%s%N` is GNU-only. The sh suite remains the
 behavioral gate; this file only budgets wall time.
 """
 
@@ -34,10 +34,10 @@ DEFAULT_BUDGET_MS = 2000
 # Every SessionStart hook SCRIPT registered in hooks.json for the `startup`
 # source, in first-registration order. test_chain_matches_hooks_json pins this
 # list to the manifest so a newly registered hook cannot dodge the budget.
-# session-checks.sh is the consolidated orchestrator — timing it times every
+# session-checks.sh is the consolidated orchestrator - timing it times every
 # check it runs. inject-standards.sh is registered several times (once per part
 # of the ruleset, `<k> <N>`); the budget runs every registered command, so the
-# parts are paid for as the runtime pays for them — sequentially here, which is
+# parts are paid for as the runtime pays for them - sequentially here, which is
 # the pessimistic case (the runtime starts them in parallel).
 STARTUP_CHAIN = [
     "inject-standards.sh",
@@ -83,7 +83,7 @@ def test_chain_matches_hooks_json():
     """The budgeted chain must cover every registered SessionStart hook."""
     registered = list(dict.fromkeys(name for name, _ in _registered_commands()))
     assert registered == STARTUP_CHAIN, (
-        "hooks.json SessionStart chain changed — update STARTUP_CHAIN so the "
+        "hooks.json SessionStart chain changed - update STARTUP_CHAIN so the "
         "latency budget keeps covering every registered hook."
     )
 
@@ -115,5 +115,5 @@ def test_session_start_chain_within_budget(tmp_path: Path):
     budget = _budget_ms()
     assert total_ms <= budget, (
         f"SessionStart chain took {total_ms:.0f} ms, over the {budget} ms budget "
-        f"— a hook grew expensive work every session pays for. Breakdown: {breakdown}"
+        f"- a hook grew expensive work every session pays for. Breakdown: {breakdown}"
     )

@@ -4,11 +4,11 @@ Drives the working-tree ``steer`` plugin against a throwaway repo and parses the
 ``--output-format json`` result. Zero extra deps: it shells out to the pinned
 ``claude`` CLI that CI already installs (``STEER_CLAUDE_CODE_VERSION``).
 
-Plugin-load mechanism: ``--plugin-dir <repo>/plugins/steer`` — a confirmed,
+Plugin-load mechanism: ``--plugin-dir <repo>/plugins/steer`` - a confirmed,
 purpose-built CLI flag that loads the local checkout's plugin for the single
 run, so the test exercises the *working-tree* version with no marketplace
 download or auth. (Fallback if that ever regresses: write the temp repo a
-``.claude/settings.json`` with ``extraKnownMarketplaces`` → ``{source: local,
+``.claude/settings.json`` with ``extraKnownMarketplaces`` -> ``{source: local,
 path: <repo root>}`` + ``enabledPlugins: {"steer@e22-plugins": true}``.)
 
 Cost/runaway control: ``--max-budget-usd`` (API-billing only; this CLI has no
@@ -41,17 +41,17 @@ PLUGIN_DIR = REPO_ROOT / "plugins" / "steer"
 # job burn to its ceiling. It must clear the *heaviest* scenario, not the median:
 # `init` on a greenfield repo installs the full scaffold, instantiates the whole
 # spec spine, writes the first ADR, and runs a real `mise install` + cross-platform
-# `mise lock` — measured at 40+ turns / ~$5 on Opus, several minutes of wall-clock
+# `mise lock` - measured at 40+ turns / ~$5 on Opus, several minutes of wall-clock
 # that rides close to the old 8-min cap and intermittently blew past it. 12 min
 # gives that scenario genuine headroom while still failing a true hang fast.
 # Override via env in CI if needed.
 DEFAULT_BUDGET_USD = os.environ.get("STEER_E2E_BUDGET_USD", "2.00")
 DEFAULT_TIMEOUT_S = int(os.environ.get("STEER_E2E_TIMEOUT", "720"))
 
-# Default to the account model (Opus on this org) — it converges in the fewest turns
+# Default to the account model (Opus on this org) - it converges in the fewest turns
 # and stays bounded. A cheaper model is NOT cheaper here: Sonnet/Haiku take many more turns
 # on these long, instruction-dense skills, and because --max-budget-usd is a fixed
-# *dollar* cap, a ~5x-cheaper model buys ~5x more runtime before the cap bites — so
+# *dollar* cap, a ~5x-cheaper model buys ~5x more runtime before the cap bites - so
 # the run balloons to 15+ min and may not converge (measured: a Sonnet dispatch hung
 # past 15 min and was cancelled). Set STEER_E2E_MODEL to experiment; "" = account default.
 DEFAULT_MODEL = os.environ.get("STEER_E2E_MODEL", "")
@@ -78,13 +78,13 @@ def claude_available() -> bool:
 def have_credentials() -> bool:
     """Whether a headless run can authenticate.
 
-    - ``ANTHROPIC_API_KEY`` — API billing (what CI uses).
-    - ``CLAUDE_CODE_OAUTH_TOKEN`` — a long-lived token (e.g. ``claude setup-token``).
-    - ``STEER_E2E_LOCAL=1`` — trust an interactive ``claude`` login on this machine,
+    - ``ANTHROPIC_API_KEY`` - API billing (what CI uses).
+    - ``CLAUDE_CODE_OAUTH_TOKEN`` - a long-lived token (e.g. ``claude setup-token``).
+    - ``STEER_E2E_LOCAL=1`` - trust an interactive ``claude`` login on this machine,
       so a logged-in dev can run the suite on their subscription **seat** without
       any API key. A subscription login sets no env var, so this opt-in is how the
       gate knows to run. To bill the seat (not the API), do NOT set
-      ``ANTHROPIC_API_KEY`` in that shell — Claude Code prefers the key when present.
+      ``ANTHROPIC_API_KEY`` in that shell - Claude Code prefers the key when present.
     """
     return bool(
         os.environ.get("ANTHROPIC_API_KEY")
@@ -102,7 +102,7 @@ def summarize_run(label: str, run: SkillRun) -> None:
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as fh:
             fh.write(
-                f"- `{label}` — model: `{run.model}`, turns: {run.num_turns}, "
+                f"- `{label}` - model: `{run.model}`, turns: {run.num_turns}, "
                 f"cost: ${run.cost_usd}\n"
             )
 
@@ -118,7 +118,7 @@ def run_skill(
 ) -> SkillRun:
     """Run ``claude -p <prompt>`` inside ``repo`` with the local plugin loaded,
     permissions bypassed (ephemeral sandbox), and JSON output. Returns the
-    parsed result; never raises on a non-zero exit — the caller asserts on
+    parsed result; never raises on a non-zero exit - the caller asserts on
     ``is_error`` so it can surface ``stderr``.
 
     ``model`` defaults to ``DEFAULT_MODEL`` (account default = Opus here,

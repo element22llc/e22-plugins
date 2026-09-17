@@ -1,6 +1,6 @@
 # Glossary
 
-Shared vocabulary for this product. Add a term whenever PO, devs, and Claude would otherwise use different words for the same thing — or the same word for different things.
+Shared vocabulary for this product. Add a term whenever PO, devs, and Claude would otherwise use different words for the same thing - or the same word for different things.
 
 ## How to use this file
 
@@ -13,12 +13,12 @@ Shared vocabulary for this product. Add a term whenever PO, devs, and Claude wou
 
 > Replace these examples with real terms once the product takes shape.
 
-**[Term]** — Short definition. Note any synonyms we explicitly avoid, such as: we say customer, not client or account.
+**[Term]** - Short definition. Note any synonyms we explicitly avoid, such as: we say customer, not client or account.
 
-**[Term]** — Definition.
+**[Term]** - Definition.
 
 ## Anti-synonyms
 
 Terms that look interchangeable but are not. One line on the distinction.
 
-- **[Term A] vs [Term B]** — How they differ in this product.
+- **[Term A] vs [Term B]** - How they differ in this product.

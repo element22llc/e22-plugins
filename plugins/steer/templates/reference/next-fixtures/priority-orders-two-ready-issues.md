@@ -1,7 +1,7 @@
 # Fixture: Priority breaks the tie between two equally-ready backlog issues
 
 Within the backlog (level 6), with no structural signal separating two candidates,
-the native **Priority** issue field is the primary tie-break — above the older
+the native **Priority** issue field is the primary tie-break - above the older
 "unblocks the most" heuristic.
 
 ## Given

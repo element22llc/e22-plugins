@@ -23,7 +23,7 @@ Human decision required
 
 ## Expected suggested command
 
-`none` — a human reviews; no command advances it.
+`none` - a human reviews; no command advances it.
 
 ## Must not recommend first
 

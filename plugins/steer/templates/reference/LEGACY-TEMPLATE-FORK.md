@@ -1,8 +1,8 @@
-# Legacy template fork — resolution procedure (init Path A)
+# Legacy template fork - resolution procedure (init Path A)
 
 The procedure `/steer:init` runs when a repo is an unresolved fork of the **old
-static `repository-template`** — detected by `[Replace …]`, `[Product Name]`,
-`[e.g., …]`, or `@github-handle` placeholders still present anywhere in the
+static `repository-template`** - detected by `[Replace ...]`, `[Product Name]`,
+`[e.g., ...]`, or `@github-handle` placeholders still present anywhere in the
 repo. New repos never start from that template (the plugin's bundled scaffold is
 the bootstrap source); this path exists only for forks that predate it. The fork
 already ships a `/spec` skeleton and scaffolding, so the job is to resolve the
@@ -20,30 +20,30 @@ the old template lacked.
    one round: product name, one-line description, PO handle, dev handles,
    Greenfield-vs-Brownfield, production URL (if any). For the stack, confirm or
    override the defaults (the always-on Stack rules) rather than asking from
-   scratch — and if the dev overrides them, record the choice as an ADR (run
+   scratch - and if the dev overrides them, record the choice as an ADR (run
    `/steer:adr`).
 3. **Propose all edits in a single batch** so the dev can confirm the filled-in
-   values (product name, handles, …) before they're applied. Once applied,
-   commit them, push, and open the PR (Commit autonomy — **the merge review is
+   values (product name, handles, ...) before they're applied. Once applied,
+   commit them, push, and open the PR (Commit autonomy - **the merge review is
    what waits for the dev**).
-4. **Pin the toolchain — for every CI/dev platform.** The template's `mise.toml`
+4. **Pin the toolchain - for every CI/dev platform.** The template's `mise.toml`
    files use `latest` and ship **no** `mise.lock`. If `mise` (or Docker) isn't
    installed yet, run **`/steer:doctor`** first. Then run the canonical pin
-   procedure — `/steer:reference conventions` → "Toolchain: `latest` in config,
-   pinned in the lockfile" — in each config dir (root, and `infra/` if they'll
+   procedure - `/steer:reference conventions` -> "Toolchain: `latest` in config,
+   pinned in the lockfile" - in each config dir (root, and `infra/` if they'll
    touch infra): create the lock, `mise install`, `mise lock --platform
-   linux-x64,macos-arm64` (+ other team platforms; `linux-x64` is mandatory —
+   linux-x64,macos-arm64` (+ other team platforms; `linux-x64` is mandatory -
    CI runs there), verify the `platforms.linux-x64` blocks, commit. If the dev
-   defers pinning, commit **no** `mise.lock` — never an empty placeholder.
+   defers pinning, commit **no** `mise.lock` - never an empty placeholder.
 5. **Replace or remove the starter.** The template ships a minimal `apps/web` +
    `packages/core` workspace so `mise exec -- pnpm install && pnpm dev` boots a
-   page on a fresh clone. It is a placeholder, not the real stack — replace it
+   page on a fresh clone. It is a placeholder, not the real stack - replace it
    with the actual first app (the default frontend is Next.js), or delete both
    folders if `web` isn't your first app. See `apps/web/README.md`. The template
    deliberately ships **no** workspace lockfile (the starter's would go stale);
    once the real workspace exists, run `mise exec -- pnpm install` (or
-   `mise exec -- uv lock` for Python) — through mise so it uses the pinned
-   runtime, not a global/nvm one — and commit the generated `pnpm-lock.yaml` /
+   `mise exec -- uv lock` for Python) - through mise so it uses the pinned
+   runtime, not a global/nvm one - and commit the generated `pnpm-lock.yaml` /
    `uv.lock`; from then on it is maintained with every dependency change.
 6. **Adapt the standard tasks to this product.** The template's `mise.toml`
    ships a baseline `dev:setup` task (plus `docker:up/down`, `db:migrate`,
@@ -54,42 +54,42 @@ the old template lacked.
      it and the docker/db tasks if there are no backing services);
    - once the real app exists, give it `db:migrate` / `db:seed` scripts (e.g.
      drizzle-kit + a seed script) so the fan-out picks them up;
-   - Python products: swap the `pnpm …` task commands for `uv run …`.
+   - Python products: swap the `pnpm ...` task commands for `uv run ...`.
    - **Polyglot app (Node web + Python `apps/api`):** drive the Python backend
-     from **mise** (`[tasks."dev:api"] run = "uv run uvicorn …"`) and compose a
-     `[tasks.dev]` with `depends = ["dev:*"]` to run web + api together — mise is
+     from **mise** (`[tasks."dev:api"] run = "uv run uvicorn ..."`) and compose a
+     `[tasks.dev]` with `depends = ["dev:*"]` to run web + api together - mise is
      the single, polyglot entry point. Do **not** add `dev:api`, `uv`, or a
      `concurrently` cross-stack `dev` to the root `package.json`; a
      `package.json` script never shells out to `uv` and no task is defined in
      both files (rule `10-stack`). The scaffold `mise.toml` ships this as a
-     commented block — uncomment and adapt it.
+     commented block - uncomment and adapt it.
    The contract (run `/steer:reference conventions` for the prose):
    `mise run dev:setup` is idempotent and, from a fresh clone after
    `mise install`, must produce a working local environment.
 
    Once the adapted `mise.toml` carries a `pre-commit` task, **wire the commit
-   gate** — `mise generate git-pre-commit --task=pre-commit --write`, under the
+   gate** - `mise generate git-pre-commit --task=pre-commit --write`, under the
    same guard the plugin-driven path and `/steer:adopt` use: check the hook
    directory first (`git rev-parse --git-path hooks`, which honours
    `core.hooksPath`), and if the fork already has a `pre-commit` hook (or sets
    `core.hooksPath`), **report the collision and leave it alone**. A fork that
    predates the bundled scaffold is the likeliest repo to carry a commit gate of
-   its own, and that is a decision, not a gap. The hook is per-clone state —
+   its own, and that is a decision, not a gap. The hook is per-clone state -
    `.git/hooks/` is not versioned, so there is nothing to commit and the team's
    other clones get it from `/steer:sync`.
 7. **Back-fill the newer scaffold artifacts.** A fork of the old template
-   predates the plugin-bundled scaffold, so it lacks the living-docs spine —
+   predates the plugin-bundled scaffold, so it lacks the living-docs spine -
    instantiate what's missing from `${CLAUDE_PLUGIN_ROOT}/templates/spec/`:
    `/spec/history/README.md` (from `history-readme.md`, plus a seeded bootstrap
    entry file from `history-entry.md`),
-   `/spec/tracker.md` (from `tracker.md` — ask which tracker the product uses),
+   `/spec/tracker.md` (from `tracker.md` - ask which tracker the product uses),
    and `/spec/app/README.md` (from `app-docs.md`). Also back-fill the root
    `ARCHITECTURE.md` from
    `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/ARCHITECTURE.md` and fill its stack
    table + apps/packages map from the repo's `package.json` / `mise.toml` and
    actual `apps/*`+`packages/*`. Reconcile the PR template against the bundled
    `${CLAUDE_PLUGIN_ROOT}/templates/github/pull_request_template.md` so the
-   drift-gate and living-docs checklists come in (additive — never drop sections
+   drift-gate and living-docs checklists come in (additive - never drop sections
    the team added).
 
 8. **Walk the migration ledger, then stamp.** A fork of the old template predates
@@ -98,24 +98,24 @@ the old template lacked.
    would defeat them: `/steer:sync` skips every version-keyed entry at or below the
    stamp, so writing today's version onto a repo that never received those
    transforms silently retires them on exactly the repos furthest behind. So walk
-   the ledger **first** — test each entry's precondition against this repo and
-   apply the ones that match, oldest first — and only then write `/spec/.version`
+   the ledger **first** - test each entry's precondition against this repo and
+   apply the ones that match, oldest first - and only then write `/spec/.version`
    with the current plugin version (resolve it from
-   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` — never from memory), in the
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` - never from memory), in the
    same two-line form the plugin-driven path writes:
 
    ```
-   # Spec-spine version — managed by /steer:init, /steer:adopt, /steer:build,
+   # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
    # /steer:sync. Do not edit by hand.
    <plugin version>
    ```
 
    The stamp is what makes the repo **managed** rather than `foreign`: without it
    the fork keeps every spine file but `/steer:setup` still routes it to
-   `/steer:adopt`, and the "already ran" guard below — which tests this stamp —
+   `/steer:adopt`, and the "already ran" guard below - which tests this stamp -
    can never fire.
 
 **When the repo is already customized:** if the scan finds no placeholders
 **and** a complete spine exists (`spec/.version` plus the spine files), this
-setup has already run — do not re-propose it; confirm the repo is set up and
+setup has already run - do not re-propose it; confirm the repo is set up and
 move on.

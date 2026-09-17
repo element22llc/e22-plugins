@@ -1,12 +1,12 @@
 """End-to-end: ``/steer:spec`` drafts a feature spec, code-free.
 
 spec authors a feature's ``intent.md`` (and optionally ``contract.md``) and ends
-at a *draft* intent — it flips to approved only via the ``approve`` subcommand,
+at a *draft* intent - it flips to approved only via the ``approve`` subcommand,
 and its defining guardrail is that **all writes stay under ``/spec/``** (never
 ``/apps``, ``/packages``, or other code).
 
 Assertions are structural: the intent file exists, it's left at draft (not
-approved), and every write is confined to ``spec/`` — the never-builds guardrail.
+approved), and every write is confined to ``spec/`` - the never-builds guardrail.
 """
 
 from __future__ import annotations
@@ -22,8 +22,8 @@ from .run_steer import claude_available, have_credentials, run_skill, summarize_
 
 pytestmark = pytest.mark.e2e
 
-# A *chosen* "Status: approved" — not the template enumeration line, which reads
-# "Status: draft | approved | …" and so begins "Status: draft".
+# A *chosen* "Status: approved" - not the template enumeration line, which reads
+# "Status: draft | approved | ..." and so begins "Status: draft".
 _APPROVED = re.compile(r"Status:\s*approved\b")
 
 
@@ -43,7 +43,7 @@ def test_spec_drafts_feature_confined_to_spec(spec_repo):
         intent = asserts.assert_file(spec_repo, f"spec/features/{SPEC_FEATURE_ID}/intent.md")
         text = intent.read_text(encoding="utf-8")
 
-        # Left at draft — spec records approval only via the `approve` subcommand.
+        # Left at draft - spec records approval only via the `approve` subcommand.
         assert not _APPROVED.search(text), "spec marked the intent approved without `approve`"
 
         # The defining guardrail: spec writes only under /spec/, never code.

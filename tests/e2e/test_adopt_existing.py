@@ -3,10 +3,10 @@
 Beyond proving the harness generalizes past a single skill, this covers two
 contracts that ``init`` cannot:
 
-- **Additive, never-clobber sync** — adopt syncs the bundled scaffold into a repo
+- **Additive, never-clobber sync** - adopt syncs the bundled scaffold into a repo
   that already has files; existing working code stays byte-identical and a
   custom ``.gitignore`` line survives the merge.
-- **No Accepted ADR from inference** — adopt reverse-engineers intents as
+- **No Accepted ADR from inference** - adopt reverse-engineers intents as
   *Proposed* ADRs and must never ratify one from code (adopt-no-adr-from-inference).
 
 Skip-guarded on ``claude`` + a credential, like the init scenario.
@@ -31,7 +31,7 @@ pytestmark = pytest.mark.e2e
 )
 def test_adopt_existing(existing_app_repo):
     app = existing_app_repo
-    # adopt is the heaviest skill — it reverse-engineers the app, instantiates the
+    # adopt is the heaviest skill - it reverse-engineers the app, instantiates the
     # spine, syncs the scaffold, AND triages productionization, so it runs well past
     # the default per-scenario timeout (a live run hit the 480s cap still working).
     # Give it generous headroom; the default still fail-fasts the lighter skills.

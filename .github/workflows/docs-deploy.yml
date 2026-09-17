@@ -3,14 +3,14 @@ name: Docs site
 # Builds the Zensical docs site and publishes it to GitHub Pages.
 #
 # The `build` job runs the strict build on every PR and push, so broken docs
-# (dead links/nav) fail before reaching `main` — a gap the `mise run ci` gate
+# (dead links/nav) fail before reaching `main` - a gap the `mise run ci` gate
 # (structure-only `validate_docs.py`) does not cover. The `deploy` job publishes
 # the built site to GitHub Pages, and only ever runs from `main`.
 #
-# Setup: repo Settings → Pages → Source = "GitHub Actions" (one-time). The site
+# Setup: repo Settings -> Pages -> Source = "GitHub Actions" (one-time). The site
 # is served at https://ai.element-22.com via the custom domain pinned by the
-# tracked `docs/CNAME` file; DNS (Route 53 CNAME → element22llc.github.io) lives
-# in the private element22llc/e22-plugins-infra repo. No secrets required — the
+# tracked `docs/CNAME` file; DNS (Route 53 CNAME -> element22llc.github.io) lives
+# in the private element22llc/e22-plugins-infra repo. No secrets required - the
 # marketplace repo is public and the deploy uses the built-in GITHUB_TOKEN OIDC.
 
 on:
@@ -52,7 +52,7 @@ concurrency:
 # free-threaded build. Current mise resolves a bare `python = "3.14"` to the
 # free-threaded interpreter and ignores the locked URL for the core:python
 # backend. Zensical ships only abi3 wheels, which can't load on a free-threaded
-# ABI, so uv falls back to compiling zensical from Rust source — which is what
+# ABI, so uv falls back to compiling zensical from Rust source - which is what
 # broke this build. This env var is the only lever that flips the flavor; it must
 # be set before mise-action runs `mise install`.
 env:
@@ -74,7 +74,7 @@ jobs:
 
       - name: Build docs (strict)
         # Reuse the single-source-of-truth task: uv run --group docs
-        # zensical build --strict → site/. --strict fails on broken links/nav.
+        # zensical build --strict -> site/. --strict fails on broken links/nav.
         run: mise run docs:build
 
       - name: Pin custom domain (CNAME)
@@ -89,7 +89,7 @@ jobs:
         # into the docs site at /presentation/<slug>/, so one GitHub Pages
         # artifact serves the docs and every deck (linked from the docs nav).
         # Each deck carries its own toolchain (presentation/<slug>/mise.toml:
-        # node + pnpm) — the root mise.toml has no node.
+        # node + pnpm) - the root mise.toml has no node.
         working-directory: presentation/onboarding
         run: |
           mise trust
@@ -98,7 +98,7 @@ jobs:
           mise exec -- pnpm exec slidev build --base /presentation/onboarding/ --out ../../site/presentation/onboarding
 
       - name: Build SDLC presentation deck (served at /presentation/sdlc/)
-        # The client-facing SDLC deck — same recipe as the onboarding deck above.
+        # The client-facing SDLC deck - same recipe as the onboarding deck above.
         working-directory: presentation/sdlc
         run: |
           mise trust

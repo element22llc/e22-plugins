@@ -1,10 +1,10 @@
 # Autonomous loop, instantiated on demand by /steer:loop (not part of the bootstrap scaffold).
-# Invariant (rule 53): deliver up to a DRAFT PR, never merge/deploy/push to main — do not add a
+# Invariant (rule 53): deliver up to a DRAFT PR, never merge/deploy/push to main - do not add a
 # merge step or widen the prompt. Presupposes pr-flow (/steer:protect) and the ANTHROPIC_API_KEY secret.
 name: steer loop
 
 on:
-  # Keep the cadence modest — an hourly loop burns API budget and opens draft-PR noise.
+  # Keep the cadence modest - an hourly loop burns API budget and opens draft-PR noise.
   schedule:
     - cron: "0 13 * * 1-5"
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
 jobs:
   loop:
     runs-on: ubuntu-latest
-    # Enough to branch, push its own branch, open a draft PR, update tickets — NOT to merge or deploy. Do not broaden.
+    # Enough to branch, push its own branch, open a draft PR, update tickets - NOT to merge or deploy. Do not broaden.
     permissions:
       contents: write
       pull-requests: write
@@ -26,10 +26,10 @@ jobs:
     steps:
       - name: Checkout repository
         # `persist-credentials: false` would harden this, but claude-code-action carries no
-        # checkout of its own — it commits and pushes in the workspace THIS step created, so
+        # checkout of its own - it commits and pushes in the workspace THIS step created, so
         # dropping the credential can break the action's own delivery. The scope is bounded by
         # the `permissions:` block above. Revisit if the action gains its own token-based clone.
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] — v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] - v7.0.1
         with:
           fetch-depth: 0 # full history so the loop can branch and diff
 

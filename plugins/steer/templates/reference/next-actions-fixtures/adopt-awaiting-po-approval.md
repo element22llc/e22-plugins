@@ -1,4 +1,4 @@
-# Fixture: adopt — extracted intents need PO validation
+# Fixture: adopt - extracted intents need PO validation
 
 Workflow: `/steer:adopt`
 
@@ -19,7 +19,7 @@ Human decision required
 
 ## Expected suggested command
 
-`/steer:spec approve` per feature — it offers the gate prompt. The *decision* stays the PO's, but an in-session PO approval **is** promptable and does carry a command; only an approval from a PO who is not in the session is command-less.
+`/steer:spec approve` per feature - it offers the gate prompt. The *decision* stays the PO's, but an in-session PO approval **is** promptable and does carry a command; only an approval from a PO who is not in the session is command-less.
 
 ## Must not recommend first
 

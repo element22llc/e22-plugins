@@ -2,7 +2,7 @@
 
 ``gen_copilot_manifests.py`` copies the source ``plugin.json`` version into the
 Copilot CLI plugin manifest and the marketplace's ``steer`` entry, touching only
-the ``version`` field — never the marketplace-level ``metadata.version``.
+the ``version`` field - never the marketplace-level ``metadata.version``.
 """
 
 from __future__ import annotations

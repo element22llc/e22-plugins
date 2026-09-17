@@ -1,13 +1,13 @@
 # Design exports
 
-A **readable home for a Greenfield product's design export** — the artifact
-Claude reads to extract the spec — plus a traceability link back to where the
+A **readable home for a Greenfield product's design export** - the artifact
+Claude reads to extract the spec - plus a traceability link back to where the
 exploration happened. This is *not* a prototyping workspace: code exploration
 happens on a branch under `/apps`, never here.
 
-## Two kinds of content — both live here
+## Two kinds of content - both live here
 
-1. **`architecture-diagram.md` — the living architecture diagram.** A maintained,
+1. **`architecture-diagram.md` - the living architecture diagram.** A maintained,
    system-level diagram (Mermaid by default; optionally generated from a LikeC4
    model). [`ARCHITECTURE.md`](../../ARCHITECTURE.md) links to it instead of
    inlining a diagram. It is kept **current** as the system changes (living-docs
@@ -15,7 +15,7 @@ happens on a branch under `/apps`, never here.
    `/steer:reference architecture-diagrams`.
 2. **Design exports (the rest of this folder).** Disposable UI/UX exploration
    artifacts (Claude Design / Figma / screenshots) that seed the spec once and are
-   then reference-only — see the sections below.
+   then reference-only - see the sections below.
 
 Feature-specific design exports live with their feature, at
 `/spec/features/[id]/design-export/`. Use this folder for a **product-level**
@@ -25,7 +25,7 @@ exploration).
 ## Link, do not copy
 
 Design explorations are disposable. Don't reconstruct the prototype's source
-code here — copying it bloats the repo, creates two sources of truth, and tempts
+code here - copying it bloats the repo, creates two sources of truth, and tempts
 devs to import it into `/apps` or `/packages` instead of reimplementing against
 the spec. Link to the real artifact; the spec is what carries forward.
 
@@ -33,9 +33,9 @@ the spec. Link to the real artifact; the spec is what carries forward.
 
 `source.md` captures **two artifacts**:
 
-1. **Traceability link** — where a human can re-open the design (e.g. a Claude
+1. **Traceability link** - where a human can re-open the design (e.g. a Claude
    Design URL). Claude cannot fetch authenticated URLs, so this is reference only.
-2. **Extraction source** — a locally-committed artifact Claude can actually read.
+2. **Extraction source** - a locally-committed artifact Claude can actually read.
 
 Acceptable extraction sources:
 
@@ -50,7 +50,7 @@ Acceptable extraction sources:
 ### Why both link and export?
 
 Claude Design URLs (`https://claude.ai/design/...`) return `403 Forbidden` to
-anonymous fetchers — they require a signed-in browser session. The URL is worth
+anonymous fetchers - they require a signed-in browser session. The URL is worth
 keeping for human traceability, but it cannot be the thing Claude reads. The
 committed export is.
 
@@ -67,10 +67,10 @@ always end up here, not loose in the tree.
 2. **Spec extraction:** Dev reads the export and talks with the PO, then writes
    specs in `/spec` and gets PO approval.
 3. **Productionization:** Dev builds production code in `/apps` and `/packages`
-   to satisfy the spec. The export is reference only — do not import from it.
+   to satisfy the spec. The export is reference only - do not import from it.
 4. **Archive:** Once the product ships, the *exports* can be removed from `main`
    (preserve them on a `design-archive` branch if you want the history). Keep
-   `architecture-diagram.md` — it is living, not disposable.
+   `architecture-diagram.md` - it is living, not disposable.
 
 ## Brownfield
 

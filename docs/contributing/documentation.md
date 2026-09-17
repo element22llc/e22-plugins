@@ -44,7 +44,7 @@ flowchart LR
   `skills/`, `rules/`, `hooks/`, or `agents/` without touching `docs/`. Two paths are
   exempt: `/tests/` and `/hooks/lib/`. Note that `hooks/lib/` *is* documented (the
   `lib/json.sh`, `lib/repo-root.sh`, `lib/spine.sh` **and `lib/scope.sh`** contracts in the hooks
-  reference), so a change to that plumbing escapes the gate — update the docs by
+  reference), so a change to that plumbing escapes the gate - update the docs by
   hand. `lib/scope.sh` carries the rule-injection scope predicates and the
   workspace/spine resolution ladder, so it is the exempt file most likely to
   invalidate a doc page.
@@ -66,11 +66,11 @@ what stops them from becoming pages.
 ## Authoring the plugin itself
 
 Docs about *building* the plugin (skill frontmatter schema, rule numbering, hook
-rules, the "what I touched → what to run" matrix) live in
+rules, the "what I touched -> what to run" matrix) live in
 [`AUTHORING.md`](https://github.com/element22llc/e22-plugins/blob/main/AUTHORING.md),
 not on this site. One authoring constraint worth flagging here: a skill's
 `description` + `when_to_use` frontmatter is concatenated into the routing listing
 Claude Code truncates at 1,536 characters (`skillListingMaxDescChars`), so
-`check_plugin.py` fails any skill whose combined length exceeds that cap — keep
+`check_plugin.py` fails any skill whose combined length exceeds that cap - keep
 the description to purpose + primary trigger. Changes confined to `docs/`,
 `.claude/`, or `CLAUDE.md` ship nothing and need no `CHANGELOG.md` entry.

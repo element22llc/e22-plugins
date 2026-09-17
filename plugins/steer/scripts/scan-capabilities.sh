@@ -1,10 +1,10 @@
 #!/usr/bin/env sh
-# scan-capabilities.sh — read-only capability-prerequisite detector for
+# scan-capabilities.sh - read-only capability-prerequisite detector for
 # /steer:sync's capability-repair step (templates/reference/CAPABILITIES.md).
 #
 # WHAT IT READS
-#   $1  repo-root        — a managed repo to inspect (default: ".")
-#   $2  plugin-root      — the plugin source for byte-identical comparisons
+#   $1  repo-root        - a managed repo to inspect (default: ".")
+#   $2  plugin-root      - the plugin source for byte-identical comparisons
 #                          (default: $CLAUDE_PLUGIN_ROOT, else this script's
 #                          parent dir). Needed only for `verbatim` capabilities.
 #
@@ -16,7 +16,7 @@
 #   plugin source. Stack/tracker conditionality that the helper can resolve
 #   deterministically (Node vs Python stack; GitHub-Issues tracker) is folded in
 #   as `n/a`; anything needing judgment (does this product need backing
-#   services?) is reported raw and left to the skill — the same over-report →
+#   services?) is reported raw and left to the skill - the same over-report ->
 #   skill-prunes division as template-reconcile.sh.
 #
 # WHETHER IT MODIFIES ANYTHING
@@ -39,8 +39,8 @@
 #   "gaps found" run reported as a failure.
 #
 # EXIT CODES
-#   0  ran OK — read stdout for the per-capability verdicts.
-#   2  usage error — too many arguments.
+#   0  ran OK - read stdout for the per-capability verdicts.
+#   2  usage error - too many arguments.
 #   3  repo-root is missing or unreadable.
 #
 # SECURITY: read-only; never executes repo content; no network; no jq.
@@ -71,7 +71,7 @@ PLUGIN="${2:-${CLAUDE_PLUGIN_ROOT:-${HERE%/scripts}}}"
 	exit 3
 }
 
-# Tracker path resolution is shared with the hooks — an OpenSpec repo keeps the
+# Tracker path resolution is shared with the hooks - an OpenSpec repo keeps the
 # declaration at openspec/steer/tracker.md. Sourced rather than re-tested here so
 # this script and steer_tracker_is_github can never disagree about which file
 # decides "GitHub-Issues tracker". Missing lib (a partial install) degrades to
@@ -109,13 +109,13 @@ else
 fi
 emit "stack" "$stack" "-"
 
-# --- profile fingerprint (informational) — the repo profile from the CLAUDE.md
+# --- profile fingerprint (informational) - the repo profile from the CLAUDE.md
 # `## Profile` marker; absent -> app (back-compat). Capabilities are conditioned
 # on the `stack` fingerprint above (stack=none already drops node-tooling /
-# worktree-port-isolation to n/a for infra), NOT re-gated on profile — this emit
+# worktree-port-isolation to n/a for infra), NOT re-gated on profile - this emit
 # is for reporting (sync, /steer:report) only. Reuse the canonical reader in
 # hooks/lib/repo-root.sh so this never drifts from the hook-side parser (same
-# anchoring + case handling — single source of truth).
+# anchoring + case handling - single source of truth).
 profile=app
 if [ -f "$PLUGIN/hooks/lib/repo-root.sh" ]; then
 	# shellcheck source=/dev/null
@@ -124,7 +124,7 @@ if [ -f "$PLUGIN/hooks/lib/repo-root.sh" ]; then
 fi
 emit "profile" "$profile" "CLAUDE.md"
 
-# --- plugin-enabled-local — local sessions load steer ---
+# --- plugin-enabled-local - local sessions load steer ---
 # A `false` value is a deliberate opt-off and is respected, never repaired.
 F=".claude/settings.json"
 if ! exists "$F"; then
@@ -137,14 +137,14 @@ else
 	emit "plugin-enabled-local" "mis-wired" "$F"
 fi
 
-# --- delivery-mode-declared — explicit delivery mode in CLAUDE.md ---
+# --- delivery-mode-declared - explicit delivery mode in CLAUDE.md ---
 # The commit-autonomy + issue-first hooks read a `steer:delivery-mode=` marker on
-# the product CLAUDE.md and FAIL OPEN to pr-flow when it is absent — so a repo
+# the product CLAUDE.md and FAIL OPEN to pr-flow when it is absent - so a repo
 # bootstrapped before the marker existed runs implicit pr-flow and the solo-trunk
 # choice is never surfaced. Wired only when the marker is explicitly present; an
 # absent CLAUDE.md is a deeper problem and reported as such. Always applies (every
 # managed repo has a CLAUDE.md and runs in some delivery mode). The repair is a
-# human decision (which mode) — the skill proposes, never picks one.
+# human decision (which mode) - the skill proposes, never picks one.
 F="CLAUDE.md"
 if ! exists "$F"; then
 	emit "delivery-mode-declared" "absent" "$F"
@@ -154,18 +154,18 @@ else
 	emit "delivery-mode-declared" "mis-wired" "$F"
 fi
 
-# --- app-knowledge-docs — the app guide (how to use/operate the product) ---
+# --- app-knowledge-docs - the app guide (how to use/operate the product) ---
 # The layout reference (CONVENTIONS.md), `rules/32-living-docs.md`,
 # `50-definition-of-done.md`, the PR
 # template, and the scaffold `ARCHITECTURE.md` all reference `/spec/app/`
 # UNCONDITIONALLY, but the guide is instantiated from a spec template
-# (`templates/spec/app-docs.md`), not copied as a static scaffold file — so a
+# (`templates/spec/app-docs.md`), not copied as a static scaffold file - so a
 # repo bootstrapped before init reliably created it, or by an init run that
 # skipped the step, is left with dangling references that additive reconciliation
 # can never repair (it only splices into files that already exist). Presence of
 # the index IS the capability; the sync repair creates it from the app-docs
-# template. Always applies — a stub is valid, like an empty `decisions/`.
-# On an OpenSpec repo the guide lives at openspec/steer/app/ — reported from the
+# template. Always applies - a stub is valid, like an empty `decisions/`.
+# On an OpenSpec repo the guide lives at openspec/steer/app/ - reported from the
 # resolved path, because sync REPAIRS an `absent` capability by creating the
 # file and would otherwise recreate a stray spec/ there.
 F="${STEER_APP_DOCS_REL}/README.md"
@@ -175,7 +175,7 @@ else
 	emit "app-knowledge-docs" "absent" "$F"
 fi
 
-# --- in-ci-plugin-loading — @claude CI runs under steer standards ---
+# --- in-ci-plugin-loading - @claude CI runs under steer standards ---
 # Wired only via the action's plugin_marketplaces input; an enabledPlugins block
 # does NOT count (trust-dialog gated, no-ops in headless CI).
 F=".github/workflows/claude.yml"
@@ -187,7 +187,7 @@ else
 	emit "in-ci-plugin-loading" "mis-wired" "$F"
 fi
 
-# --- version-pin-enforcement — policy + verbatim scanner scripts ---
+# --- version-pin-enforcement - policy + verbatim scanner scripts ---
 # scripts are contractually byte-identical to the plugin source.
 P_POLICY="policy/versions.yml"
 P_SCAN="scripts/scan-version-pins.sh"
@@ -205,12 +205,12 @@ else
 	emit "version-pin-enforcement" "present-wired" "$vp_files"
 fi
 
-# --- agent-surface-current — non-Claude agents read the CURRENT standards ---
+# --- agent-surface-current - non-Claude agents read the CURRENT standards ---
 # Generated artifacts, contractually byte-identical to the plugin source. Two
 # families: the Copilot-only files under .github/, and the cross-tool
-# .agents/skills/ tree (Agent Skills format — Copilot, Cursor, Gemini CLI and
+# .agents/skills/ tree (Agent Skills format - Copilot, Cursor, Gemini CLI and
 # Codex all discover it). Support is opt-in at bootstrap, so a repo that never
-# installed it is n/a — never "absent", or sync would install a surface nobody
+# installed it is n/a - never "absent", or sync would install a surface nobody
 # asked for.
 CPI=".github/copilot-instructions.md"
 cp_files="$CPI,.agents/skills,.github/agents,.github/instructions"
@@ -247,7 +247,7 @@ else
 	# A retired artifact left behind is drift too: .github/prompts/steer-*.prompt.md
 	# was the previous skill surface and must not linger alongside .agents/skills/.
 	# Key this on STEER'S OWN files, not on the directory: the migration deliberately
-	# leaves a team-authored prompt file — and the directory around it — in place, so
+	# leaves a team-authored prompt file - and the directory around it - in place, so
 	# testing the directory reported permanent, unrepairable drift against a repo that
 	# had followed the migration exactly. Written as a loop with an existence test so
 	# an unmatched glob (which stays literal in POSIX sh) doesn't count as a hit, and
@@ -264,10 +264,10 @@ else
 	fi
 fi
 
-# --- drift-gate — CI hygiene stage + the mise tasks behind it + PR-template checklists ---
+# --- drift-gate - CI hygiene stage + the mise tasks behind it + PR-template checklists ---
 # Two wired spellings, both valid. CURRENT: ci.yml delegates each step to a
 # `mise run ci:*` task, so the hygiene stage (and the version-pin scanner it
-# runs) lives in scripts/ci-hygiene.sh — the workflow no longer names the
+# runs) lives in scripts/ci-hygiene.sh - the workflow no longer names the
 # scanner at all, and the tasks + scripts must be present or every PR fails.
 # LEGACY: a repo that predates that still carries the inlined scanner step; it
 # is wired, not broken, and the MIGRATIONS ledger moves it forward.
@@ -293,7 +293,7 @@ else
 	emit "drift-gate" "mis-wired" "$dg_files"
 fi
 
-# --- branch-protection-policy — machine-readable gate description ---
+# --- branch-protection-policy - machine-readable gate description ---
 F="policy/branch-protection.yml"
 if exists "$F"; then
 	emit "branch-protection-policy" "present-wired" "$F"
@@ -301,7 +301,7 @@ else
 	emit "branch-protection-policy" "absent" "$F"
 fi
 
-# --- dependency-automation — Dependabot + the scoped auto-merge exception ---
+# --- dependency-automation - Dependabot + the scoped auto-merge exception ---
 dbc=".github/dependabot.yml"
 dbw=".github/workflows/dependabot-auto-merge.yml"
 da_files="$dbc,$dbw"
@@ -318,7 +318,7 @@ else
 	emit "dependency-automation" "mis-wired" "$da_files"
 fi
 
-# --- toolchain-pin — mise toolchain + lock (lock contents NOT compared) ---
+# --- toolchain-pin - mise toolchain + lock (lock contents NOT compared) ---
 mt="mise.toml"
 ml="mise.lock"
 if ! exists "$mt"; then
@@ -329,7 +329,7 @@ else
 	emit "toolchain-pin" "present-wired" "$mt,$ml"
 fi
 
-# --- node-tooling — lint/format baseline (Node stack only) ---
+# --- node-tooling - lint/format baseline (Node stack only) ---
 nt_files="biome.json,configs/tsconfig.base.json"
 if [ "$stack" = "python" ] || [ "$stack" = "none" ]; then
 	emit "node-tooling" "n/a" "$nt_files"
@@ -339,7 +339,7 @@ else
 	emit "node-tooling" "absent" "$nt_files"
 fi
 
-# --- github-issue-forms — PO-friendly Issue Forms (GitHub-Issues tracker) ---
+# --- github-issue-forms - PO-friendly Issue Forms (GitHub-Issues tracker) ---
 F=".github/ISSUE_TEMPLATE"
 if grep -Eq '^[[:space:]]*system:[[:space:]]*github\b' "$STEER_TRACKER_FILE" 2>/dev/null; then
 	if exists "$F/config.yml"; then
@@ -351,8 +351,8 @@ else
 	emit "github-issue-forms" "n/a" "$F"
 fi
 
-# --- github-issue-permissions — tracker read/write path granted locally ---
-# /steer:issues → /steer:tracker-sync performs `gh issue create/edit/comment`
+# --- github-issue-permissions - tracker read/write path granted locally ---
+# /steer:issues -> /steer:tracker-sync performs `gh issue create/edit/comment`
 # writes, but a skill's allowed-tools grant applies only while that skill is the
 # invoked one. Reached through an orchestrator (issues/work/spec), tracker-sync's
 # grants never take effect and the write falls through to .claude/settings.json.
@@ -369,10 +369,10 @@ else
 	emit "github-issue-permissions" "mis-wired" "$F"
 fi
 
-# --- changelog-fragments — every shipped change is recorded ---
+# --- changelog-fragments - every shipped change is recorded ---
 # Presence-only, like line-ending-normalization: `.changie.yaml` is the product's
 # to tune (kinds, replacements), so a customized one is wired, not a gap. What is
-# detected is the create-missing hole — a repo adopted before this shipped has no
+# detected is the create-missing hole - a repo adopted before this shipped has no
 # changelog at all. The unreleased dir must exist too: `changie new` writes into
 # it, and git does not carry an empty directory.
 F=".changie.yaml"
@@ -386,10 +386,10 @@ else
 	emit "changelog-fragments" "absent" "$F"
 fi
 
-# --- line-ending-normalization — LF pinned for every checkout ---
+# --- line-ending-normalization - LF pinned for every checkout ---
 # Presence-only: whether the file's CONTENT carries the current pins is step 5's
 # additive reconcile, not a capability gap. This entry exists solely to close the
-# create-missing hole — step 5 splices only into files that already exist.
+# create-missing hole - step 5 splices only into files that already exist.
 F=".gitattributes"
 if exists "$F"; then
 	emit "line-ending-normalization" "present-wired" "$F"
@@ -397,7 +397,7 @@ else
 	emit "line-ending-normalization" "absent" "$F"
 fi
 
-# --- backing-services-compose — local services (judgment: skill asks) ---
+# --- backing-services-compose - local services (judgment: skill asks) ---
 # Whether a product NEEDS backing services is not deterministically knowable, so
 # absence is reported raw and the skill proposes only after confirming.
 F="compose.yaml"
@@ -407,7 +407,7 @@ else
 	emit "backing-services-compose" "absent" "$F"
 fi
 
-# --- worktree-port-isolation — collision-free parallel worktrees ---
+# --- worktree-port-isolation - collision-free parallel worktrees ---
 # Applicable only where a local runtime binds host ports: a compose.yaml is
 # present OR the stack is Node/Python. Wired when the deriver script exists AND
 # mise.toml sources it (per-worktree COMPOSE_PROJECT_NAME + host-port offset).
@@ -424,14 +424,14 @@ else
 	emit "worktree-port-isolation" "mis-wired" "$wt_files"
 fi
 
-# --- commit-gate — the pre-commit hook wired to `mise run pre-commit` ---
+# --- commit-gate - the pre-commit hook wired to `mise run pre-commit` ---
 # Per-clone LOCAL state, not a committed file: .git/hooks/ is not carried by a
 # clone, so `absent` here is the normal reading on a teammate's fresh checkout
 # and the repair is expected to fire repeatedly. `git rev-parse --git-path hooks`
 # (not $ROOT/.git/hooks) because a linked worktree's .git is a file pointing at
-# the shared common dir — and because it honours core.hooksPath.
-# A repo that owns its own commit gate — a foreign pre-commit hook, or
-# core.hooksPath aimed at a tracked directory — reports n/a: that is a decision,
+# the shared common dir - and because it honours core.hooksPath.
+# A repo that owns its own commit gate - a foreign pre-commit hook, or
+# core.hooksPath aimed at a tracked directory - reports n/a: that is a decision,
 # not a gap, and proposing a repair every sync is the failure mode to avoid.
 CG_MT="mise.toml"
 cg_files="$CG_MT,.git/hooks/pre-commit"

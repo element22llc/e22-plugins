@@ -4,7 +4,7 @@ description: 'Load one of steer''s full reference docs on demand: conventions, t
 argument-hint: '[conventions | traceability | design-sources | context-hygiene | architecture-diagrams | artifacts | gates | polyrepo]'
 ---
 
-<!-- Generated from the steer plugin's skills/reference/SKILL.md — do not edit by hand.
+<!-- Generated from the steer plugin's skills/reference/SKILL.md - do not edit by hand.
      Refresh with /steer:sync from Claude Code in a managed repo, or
      `mise run gen:copilot` in the plugin repo. Authored for Claude Code and
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
@@ -12,10 +12,10 @@ argument-hint: '[conventions | traceability | design-sources | context-hygiene |
 
 **When to use.** Use for any tooling/convention question or stack-default rationale, living- docs/tracker/drift questions, a feature built from a design export or screenshots, keeping a long multi-phase run lean across compaction, the system architecture diagram, rendering a shareable Artifact, ratifying an ADR or approving an intent in-session, or a product whose spine spans several repos.
 
-> **Read-only on this surface — enforced by instruction, not by tooling.**
+> **Read-only on this surface - enforced by instruction, not by tooling.**
 > In Claude Code this skill runs with `Edit`, `Write`, `NotebookEdit`, `EnterWorktree` removed from the tool pool, but
-> only for the turn that invokes it — upstream clears the restriction at the
-> user's next message — so even there it is a rule the skill keeps across a
+> only for the turn that invokes it - upstream clears the restriction at the
+> user's next message - so even there it is a rule the skill keeps across a
 > multi-turn run rather than a guarantee the runtime holds. No other agent has
 > even that much: here it is a hard instruction. Treat those capabilities as
 > unavailable for the whole run, and read any claim below that they "are
@@ -27,7 +27,7 @@ argument-hint: '[conventions | traceability | design-sources | context-hygiene |
 
 Pick the topic for the question and **open the bundled reference file** for it,
 then answer from that file. These are the full-detail companions to the lean
-always-on rules — open the file rather than answering from memory, and if
+always-on rules - open the file rather than answering from memory, and if
 something is genuinely unclear or the project warrants deviating, record an ADR
 (`/steer-adr`) rather than guessing.
 
@@ -59,10 +59,10 @@ Each topic maps to one file under
 | `polyrepo` | `POLYREPO.md` |
 
 **Read the file itself and answer from it.** The table above (and its `Use for`
-column earlier in this skill) is for *routing* only — it is deliberately not a
+column earlier in this skill) is for *routing* only - it is deliberately not a
 substitute for the prose, and answering from it instead of opening the file is
 the failure mode this loader exists to prevent.
 
 If you need a fuller contents listing to choose between two topics, read
-[`COVERAGE.md`](COVERAGE.md) — an index
+[`COVERAGE.md`](COVERAGE.md) - an index
 of what each doc contains. It is still an index, not the prose.

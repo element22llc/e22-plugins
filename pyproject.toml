@@ -16,11 +16,11 @@ dev = [
   "zizmor>=1.29.0",
 ]
 # Documentation-site toolchain. Kept in its own group (NOT in dev, the default
-# group `uv sync` installs) so the CI quality env stays light — `mise run
+# group `uv sync` installs) so the CI quality env stays light - `mise run
 # docs:serve` / `docs:build` pull it in with `uv run --group docs`. Zensical
 # (the Material for MkDocs team's successor) reads our mkdocs.yml natively and
 # initializes mermaid.js for `mermaid` code blocks on its own, so mermaid needs
-# no extra dependency — only the superfences custom_fence config in mkdocs.yml.
+# no extra dependency - only the superfences custom_fence config in mkdocs.yml.
 docs = [
   "zensical>=0.0.53",
   "pymdown-extensions>=10",
@@ -28,16 +28,16 @@ docs = [
 
 [tool.uv]
 # This project is a collection of validation scripts, not an installable
-# package — don't look for a build backend or a package layout.
+# package - don't look for a build backend or a package layout.
 package = false
 
 [tool.ruff]
 line-length = 100
 # Deliberately BELOW requires-python (>=3.14): the scripts carry python3
-# shebangs and get invoked directly on stock 3.9–3.13 interpreters, so keep the
+# shebangs and get invoked directly on stock 3.9-3.13 interpreters, so keep the
 # source syntax-portable. In particular this stops the formatter rewriting
 # `except (A, B):` into the PEP 758 `except A, B:` form, which is a SyntaxError
-# before 3.14 (issue #329) — and makes `ruff format --check` enforce the
+# before 3.14 (issue #329) - and makes `ruff format --check` enforce the
 # portable style.
 target-version = "py313"
 
@@ -48,7 +48,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 # The e2e tier drives the real `claude` CLI (slow, costs tokens). Exclude it from
-# the default run — `mise run e2e` (which appends its own `-m e2e`, last -m wins)
+# the default run - `mise run e2e` (which appends its own `-m e2e`, last -m wins)
 # opts back in. So `uv run pytest` and `mise run ci` never spend a token.
 addopts = "-m 'not e2e'"
 markers = [

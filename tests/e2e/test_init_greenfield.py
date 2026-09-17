@@ -6,7 +6,7 @@ spine, plugin wiring, and the ``always`` capability scaffold. Skipped unless the
 (``uv run pytest``) and contributors without a key stay green and spend nothing.
 
 Fidelity note: the prompt tells ``init`` to stop before commit/PR (the user
-decision for the prototype) — deterministic, no ``gh`` auth or branch cleanup.
+decision for the prototype) - deterministic, no ``gh`` auth or branch cleanup.
 The on-disk artifacts the skill writes are identical either way; only the
 final commit/PR tail is suppressed.
 """

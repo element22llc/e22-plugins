@@ -13,7 +13,7 @@ body: |-
     carries a file-level `disable=SC2016` with the reason.
   - **The gate that should have caught them now does.** `mise run shell` linted
     the shipped scaffold under this repo's own `.shellcheckrc`, whose SC1091 and
-    SC2016 disables are scoped to the plugin's runtime hooks — so it masked
+    SC2016 disables are scoped to the plugin's runtime hooks - so it masked
     exactly the findings that break a consumer, which has no `.shellcheckrc` at
     all. `shell` now makes a second `--norc` pass over the shipped scaffold
     scripts only, so a scaffold script that would fail a bootstrapped repo fails
