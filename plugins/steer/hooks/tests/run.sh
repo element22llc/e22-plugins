@@ -959,11 +959,14 @@ oq_grep "open-questions: non-GitHub tracker still escalates" 'rotted' "${out}"
 oq_ngrep "open-questions: non-GitHub escalation drops the owners-map claim" 'owners:' "${out}"
 oq_ngrep "open-questions: non-GitHub escalation drops the spec-question claim" 'spec-question' "${out}"
 oq_grep "open-questions: non-GitHub escalation names the manual path" 'promotion is manual' "${out}"
+oq_ngrep "open-questions: non-GitHub per-question line drops the owner auto-assign" 'assign its owner' "${out}"
+oq_grep "open-questions: non-GitHub per-question line names the tracker ref" 'set its `tracker:` ref' "${out}"
 
 OQ14="$(oq_stale_repo oq14 github)"
 out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ14}" oq14)")"
 oq_grep "open-questions: GitHub tracker keeps the owners-map wording" 'owners:' "${out}"
 oq_grep "open-questions: GitHub tracker keeps the spec-question wording" 'spec-question' "${out}"
+oq_grep "open-questions: GitHub per-question line keeps the owner auto-assign" 'assign its owner' "${out}"
 
 # ---------------------------------------------------------------------------
 # orient-session.sh - natural-language orientation (SessionStart, managed only)
