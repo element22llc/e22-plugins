@@ -92,14 +92,16 @@ to put the path first. (Same discipline, inverted, as `/steer-report` keeping
 
 ## Preconditions
 
-1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
-   tracker is something else, say so and stop. In a **member** the tracker is the
-   workspace's (rule `35-issue-tracker`); the protection target is still *this* repo.
-2. **`gh auth status`** must succeed. If not, tell the dev to run `gh auth login`
+1. **`gh auth status`** must succeed. If not, tell the dev to run `gh auth login`
    themselves (never run auth on their behalf) and stop.
-3. **Resolve `owner/repo`** from `git remote get-url origin` (or `gh repo view`).
+2. **Resolve `owner/repo`** from `git remote get-url origin` (or `gh repo view`).
    If there is no GitHub remote yet (e.g. repo not pushed), say so and stop -
-   protection can only be set once the repo exists on GitHub.
+   protection can only be set once the repo exists on GitHub. **This is the only
+   GitHub dependency this skill has.** Do not gate on `/spec/tracker.md`
+   `system:` - branch protection is a property of where the **code** is hosted,
+   not of which tracker the product uses, and a repo with GitHub-hosted code and
+   a Jira/Linear/absent tracker needs the wall exactly as much. The protection
+   target is always *this* repo, including in a polyrepo member.
 
 ## Resolve desired state
 
