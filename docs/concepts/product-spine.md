@@ -39,10 +39,13 @@ carries the same id via `<!-- steer:question-id=Q-NNN -->`, and that pair is the
 bidirectional link - `/steer:spec validate` flags a promoted question with no
 `tracker:` ref back. A
 blocking question still open after 14 days has, by definition, outlived the
-session: the SessionStart hook escalates it, and promotion assigns it to its
-`owner:` role via the `owners:` map in `tracker.md`. So questions get *pushed*
-at a named human rather than rotting in markdown - without every question
-becoming an issue.
+session: the SessionStart hook escalates it, and on a GitHub Issues tracker
+promotion assigns it to its `owner:` role via the `owners:` map in `tracker.md`.
+On any other tracker - Jira, Linear, `none-yet`, or none declared - the
+escalation is the same but promotion is manual, so the notice says to open the
+work item in the declared tracker and write its ref into the question's
+`tracker:` field instead. Either way questions get *pushed* at a named human
+rather than rotting in markdown - without every question becoming an issue.
 
 !!! warning "Reverse-engineering never invents decisions"
     `/steer:adopt` builds a spine from existing code, but it must **never infer a
