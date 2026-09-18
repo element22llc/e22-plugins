@@ -61,6 +61,14 @@ ROOT="$(steer_repo_root "${CWD}")" || ROOT="${CWD}"
 # pointed at openspec/steer/tracker.md rather than a path it does not have.
 steer_tracker_rel "${ROOT}"
 
+# Promotion means something different per tracker: on GitHub Issues /steer:questions
+# files a spec-question issue and assigns it from the `owners:` map, and on every
+# other tracker - Jira, Linear, none-yet, none declared - that is manual and there
+# is no owners map to assign from. Resolved once here rather than inside
+# format_stale, whose pipe-to-while body is a subshell. Fail-open (an ambiguous
+# member resolves to GitHub) keeps today's wording as the default.
+if steer_tracker_is_github "${ROOT}"; then TRACKER_IS_GITHUB=1; else TRACKER_IS_GITHUB=0; fi
+
 RB_ORDER="$(steer_required_before_order)"
 
 # A blocking question still open this many days after its `created:` date is
@@ -227,8 +235,13 @@ format_stale() {
 		esac
 		[ "${_age}" -ge "${STEER_QUESTION_STALE_DAYS}" ] 2>/dev/null || continue
 		if [ -n "${_owner}" ]; then _own=", owner ${_owner}"; else _own=""; fi
-		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd - promote (assign its owner via tracker.md) or defer: **/steer:questions**\n' \
-			"${_qid}" "${_lbl}" "${_own}" "${_age}"
+		if [ "${TRACKER_IS_GITHUB}" = 1 ]; then
+			_how="promote (assign its owner via ${STEER_TRACKER_REL})"
+		else
+			_how="promote (open it in the declared tracker, then set its \`tracker:\` ref)"
+		fi
+		printf -- '- ⚠ `%s` (%s%s) blocking, open %sd - %s or defer: **/steer:questions**\n' \
+			"${_qid}" "${_lbl}" "${_own}" "${_age}" "${_how}"
 	done
 }
 
@@ -321,7 +334,11 @@ if [ "${TOTAL}" -gt 0 ] 2>/dev/null; then
 	if [ "${STALE_COUNT}" -gt 0 ] 2>/dev/null; then
 		printf '\n🚨 **%s blocking question(s) have rotted (open >%sd, not yet promoted)** - escalate now:\n' "${STALE_COUNT}" "${STEER_QUESTION_STALE_DAYS}"
 		printf '%s\n' "${STALE_REPORT}"
-		printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `%s`.\n' "${STEER_TRACKER_REL}"
+		if [ "${TRACKER_IS_GITHUB}" = 1 ]; then
+			printf 'Promotion files a `spec-question` issue and assigns the owner role via the `owners:` map in `%s`.\n' "${STEER_TRACKER_REL}"
+		else
+			printf 'This product does not use GitHub Issues, so promotion is manual: open the work item in the tracker declared in `%s`, then write its ref into the question'"'"'s `tracker:` field.\n' "${STEER_TRACKER_REL}"
+		fi
 	fi
 	printf '\nRun **/steer:questions** to sweep them and drive each to an answer '
 	printf '(or an explicit deferral). This notice clears itself once they are resolved.\n'
