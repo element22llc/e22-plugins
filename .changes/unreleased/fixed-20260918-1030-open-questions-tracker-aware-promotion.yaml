@@ -1,0 +1,20 @@
+kind: Fixed
+body: |
+  - **The rotted-question escalation no longer gives GitHub-only advice on a
+    non-GitHub tracker.** `check-open-questions.sh` escalates a blocking question
+    left open past the staleness threshold and told every repo to "promote (assign
+    its owner via tracker.md)", closing with "promotion files a `spec-question`
+    issue and assigns the owner role via the `owners:` map". Both are GitHub
+    Issues operations: on Jira, Linear, `none-yet`, or a repo with no tracker
+    declared, no issue gets filed and there is no `owners:` map to assign from, so
+    the loudest notice steer emits was wrong every session. The hook now resolves
+    the tracker system once (via the existing `steer_tracker_is_github` predicate,
+    which fails open, so an ambiguous polyrepo member keeps today's wording) and
+    switches the promotion advice to the manual path - open the work item in the
+    declared tracker, then write its ref into the question's `tracker:` field.
+    The escalation itself is unchanged in every tracker: only the advice differs.
+    The GitHub line also now names the resolved tracker path rather than a
+    hard-coded `tracker.md`, matching the footer and pointing an OpenSpec repo at
+    `openspec/steer/tracker.md`.
+custom:
+  Slug: open-questions-tracker-aware-promotion

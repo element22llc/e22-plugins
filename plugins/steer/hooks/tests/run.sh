@@ -940,6 +940,34 @@ out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_
 oq_grep "open-questions: missing-created still counted (blame fail-open)" 'block work now' "${out}"
 oq_ngrep "open-questions: missing-created not escalated when git unavailable" 'rotted' "${out}"
 
+# Escalation wording is tracker-aware. On a NON-GitHub tracker the promotion advice
+# must not promise a filed `spec-question` issue or an `owners:` auto-assign - there
+# is neither - so it names the manual path instead.
+oq_stale_repo() {
+	_r="$(oq_repo "$1" f)"
+	printf 'system: %s\n' "$2" >"${_r}/spec/tracker.md"
+	{
+		printf '> Status: draft\n\n## Open questions\n\n'
+		printf '### Q-001 - old\n- created: 2000-01-01\n- status: open\n- impact: blocking\n- owner: product\n- required_before: intent-approval\n- tracker:\n'
+	} >"${_r}/spec/features/f/intent.md"
+	printf '%s' "${_r}"
+}
+
+OQ13="$(oq_stale_repo oq13 jira)"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ13}" oq13)")"
+oq_grep "open-questions: non-GitHub tracker still escalates" 'rotted' "${out}"
+oq_ngrep "open-questions: non-GitHub escalation drops the owners-map claim" 'owners:' "${out}"
+oq_ngrep "open-questions: non-GitHub escalation drops the spec-question claim" 'spec-question' "${out}"
+oq_grep "open-questions: non-GitHub escalation names the manual path" 'promotion is manual' "${out}"
+oq_ngrep "open-questions: non-GitHub per-question line drops the owner auto-assign" 'assign its owner' "${out}"
+oq_grep "open-questions: non-GitHub per-question line names the tracker ref" 'set its `tracker:` ref' "${out}"
+
+OQ14="$(oq_stale_repo oq14 github)"
+out="$(ENV='STEER_TODAY=2026-06-19' run_hook check-open-questions.sh "$(session_json "${OQ14}" oq14)")"
+oq_grep "open-questions: GitHub tracker keeps the owners-map wording" 'owners:' "${out}"
+oq_grep "open-questions: GitHub tracker keeps the spec-question wording" 'spec-question' "${out}"
+oq_grep "open-questions: GitHub per-question line keeps the owner auto-assign" 'assign its owner' "${out}"
+
 # ---------------------------------------------------------------------------
 # orient-session.sh - natural-language orientation (SessionStart, managed only)
 # (emits plain markdown wrapped into additionalContext by the harness - assert on
