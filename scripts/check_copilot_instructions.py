@@ -25,8 +25,12 @@ from gen_copilot_instructions import (
     ARTIFACT,
     INSTRUCTIONS_DIR,
     RULES_DIR,
+    SCOPE_PRECONDITIONS,
+    SCOPED_RULES,
+    UNQUALIFIED_TOKENS,
     render,
     render_scoped,
+    rule_tokens,
 )
 
 
@@ -74,8 +78,41 @@ def main() -> int:
             print(f"  - {problem}", file=sys.stderr)
         return 1
 
+    unqualified = _unqualified_scoped_rules()
+    if unqualified:
+        print(
+            "check_copilot_instructions: a trait-scoped rule would ship to every "
+            "repo with nothing saying when it applies - the flat artifact cannot "
+            "test a repo trait, so give the token a line in SCOPE_PRECONDITIONS, "
+            "route the rule into SCOPED_RULES with an applyTo glob, or record why "
+            "it is safe in UNQUALIFIED_TOKENS:",
+            file=sys.stderr,
+        )
+        for problem in unqualified:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+
     print("check_copilot_instructions: OK")
     return 0
+
+
+def _unqualified_scoped_rules() -> list[str]:
+    """Rules whose ``inject-when`` token has no qualification in the flat artifact.
+
+    Claude Code gates such a rule by predicate; the static Copilot file cannot, so
+    an unqualified one asserts its trait to every consumer. Rule 33 told native
+    `spec/` repos "This repo carries an `openspec/` spine" that way (#577). Every
+    token must therefore be qualified, routed, or explicitly exempted - a new one
+    fails here instead of shipping."""
+    problems: list[str] = []
+    for token, rules in sorted(rule_tokens(RULES_DIR).items()):
+        if token in SCOPE_PRECONDITIONS or token in UNQUALIFIED_TOKENS:
+            continue
+        for rule in rules:
+            if rule in SCOPED_RULES:
+                continue
+            problems.append(f"{rule} carries inject-when={token}, which is in neither map")
+    return problems
 
 
 if __name__ == "__main__":
