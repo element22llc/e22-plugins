@@ -1,0 +1,21 @@
+kind: Fixed
+body: |
+  - **`/steer:sync` no longer turns away the OpenSpec repos sent to it.** Rule 33,
+    the unmanaged-repo session check and the v6.4.0 migration ledger all route an
+    `openspec` repo carrying pre-fold steer artifacts to `/steer:sync` - whose own
+    entry gate admitted `damaged` and `managed` only and redirected everything
+    else back to `/steer:setup`, which sent it to sync again. The one documented
+    way to apply that migration was a loop. Sync now admits `openspec` and states
+    what it means there: it reconciles steer's surface only - the scaffold and the
+    three artifacts under `openspec/steer/` - and treats `spec/**` as off-limits,
+    since writing a `spec/` spine or a `spec/.version` stamp is the competing spine
+    rule 33 exists to prevent. Two consequences follow and are written into the
+    steps: an `openspec` repo reads as `unstamped` by design, so the whole ledger
+    walks by precondition on every sync (the precondition is the safety mechanism,
+    and every entry is idempotent), and the sync's record is the PR description,
+    because rule 33 makes the OpenSpec archive that repo's action history.
+    `openspec-setup` is unchanged - steer's side is not laid down yet, so it still
+    instantiates the tracker per setup's row rather than syncing. A routing eval
+    case covers the misroute, with a fixture whose spine state is `openspec`.
+custom:
+  Slug: sync-admits-openspec

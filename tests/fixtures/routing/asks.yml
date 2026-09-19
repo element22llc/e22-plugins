@@ -43,6 +43,9 @@ fixtures:
   - ask: "give me a read-only report of scaffold drift vs the current templates"
     skill: sync
     signals: ["--check", "drift"]
+  - ask: "this repo uses openspec and its steer scaffold is behind - bring it up to date"
+    skill: sync
+    signals: ["openspec", "up to date"]
 
   # --- spec authoring / product owner flows ------------------------------------
   - ask: "I'm not a developer but I want to build an app from my idea"

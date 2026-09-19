@@ -40,6 +40,18 @@ them, not opted out - propose them. Never regenerate the resolved
 `include:` list, member `.gitignore` lines, or `[monorepo].config_roots` from
 the template: they are derived from `spec/workspace.yml`, which the team owns.
 
+**An OpenSpec repo reconciles steer's surface only.** On spine state
+`openspec`, steps 4-6 touch the scaffold (mise, compose, CI, PR template,
+`.claude/`, `.gitignore`) and the three artifacts rule
+`33-spec-workflow-openspec` names as steer's: `openspec/steer/tracker.md`,
+`openspec/steer/decisions/` (ADRs, exempt from reconciliation as everywhere) and
+`openspec/steer/app/README.md`. Read every skill body's `spec/tracker.md` /
+`spec/app/` as its `openspec/steer/` path here. **Off-limits: `spec/**` in its
+entirety** - reconciling or stamping it lays the competing spine rule 33 forbids
+- and **everything else under `openspec/`**, which the `openspec` CLI
+regenerates. The pre-fold migration in the ledger is the one thing that may move
+files out of `spec/` here, and only the three it enumerates.
+
 **Members sync independently.** There is no workspace mode that syncs every
 member in one pass; run `/steer:sync` in each repo. Because the plugin version
 is stamped per repo, members can settle on different versions - when syncing a
