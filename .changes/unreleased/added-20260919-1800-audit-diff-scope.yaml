@@ -1,0 +1,21 @@
+kind: Added
+body: |
+  - **`/steer:audit code` takes an optional `--since <ref>` diff scope.** An
+    unscoped sweep reviews a corpus that mostly has not changed in years, so it
+    always finds *something*, each run finds a *different* something, and the
+    finding count never trends down however much gets fixed - which makes "audit
+    until a round is clean" a wait on a stochastic sampler rather than on the
+    work. `--since <ref>` bounds the reviewers to what `git diff <ref>...HEAD`
+    changed plus each changed file's counterparty surfaces (a changed skill's
+    rule, a changed rule's skills, a changed module's tests), so the surface is
+    finite and shrinks as it is repaired. Whole-repo stays the default: a
+    periodic standards pass is supposed to see the whole tree. Under a scope each
+    reviewer is handed the file list explicitly rather than the ref (a reviewer
+    that reads the whole tree while believing it is scoped produces exactly the
+    findings the scope excluded), a finding must implicate a changed file, and
+    anything else is reported as a one-line pre-existing count - never ranked,
+    never the headline. The report header states which scope ran, so a bounded
+    sweep cannot be read as a clean bill of health. `spec` mode takes no scope:
+    as-built-vs-intended is a question about the whole spine.
+custom:
+  Slug: audit-diff-scope

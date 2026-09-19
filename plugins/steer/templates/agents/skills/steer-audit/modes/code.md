@@ -5,7 +5,8 @@ the `code` half of `all`. The read-only contract, polyrepo scope note, and
 coupling rules stay in `SKILL.md` - they apply to both modes and are not
 repeated here.
 
-**Boundaries.** `code` mode is whole-repo, multi-dimension, and leverage-ranked -
+**Boundaries.** `code` mode is multi-dimension and leverage-ranked, whole-repo
+unless the caller passed `--since <ref>` (SKILL.md, "Optional diff scope") -
 it never re-runs the focused skills: correctness bugs defer to `/code-review`,
 security to `/security-review`, mechanical cleanup to `/simplify` (name the
 skill; don't run it here). A cluttered repo root is handed to `/steer-tidy`, not
@@ -36,6 +37,13 @@ load it before fanning out reviewers.
 
 ## Phase 0 - Recon
 
+**Resolve the scope first.** Without `--since`, it is the whole tree. With
+`--since <ref>`, run `git diff --name-only <ref>...HEAD`, add each changed file's
+counterparty surfaces, and carry that list forward - every reviewer gets it
+explicitly in Phase 1, and Phase 2 drops any finding that cites a path outside
+it. State the scope in the report header, so nobody reads a bounded sweep as a
+clean bill of health.
+
 Detect the stack from the repo itself (`package.json` / `pyproject.toml`,
 frameworks, database, auth) - don't trust training-data memory. Map the apps,
 entry points, and user-facing features. Check whether a `/spec` spine exists; if
@@ -47,6 +55,11 @@ Decide which dimensions apply.
 Run one reviewer per applicable dimension. Each finding must carry
 **`path:line` evidence** - the file and line that demonstrate it - plus a
 one-line statement of which standard it misses. No evidence, no finding.
+
+**Under a scope, hand each reviewer the file list explicitly** rather than naming
+the ref and trusting it to derive the same set. A reviewer that reads the whole
+tree while believing it is scoped produces exactly the findings the scope was
+meant to exclude.
 
 **Fan out on large repos.** When the repo is large - roughly **5+ applicable
 dimensions over more than ~200 source files**, or any sweep where reading every
@@ -64,7 +77,9 @@ Re-read the cited code for **every** candidate finding and drop:
 - false positives (the cited line doesn't actually do what the finding claims),
 - anything already conformant (the pattern is intentional and has a why-comment,
   or the standard doesn't apply here),
-- duplicates across dimensions (collapse to one).
+- duplicates across dimensions (collapse to one),
+- under `--since`, anything citing a path outside the scope - set those aside as
+  **pre-existing** and report only their count.
 
 Subagents over-report - this stage is what makes the report trustworthy. A
 finding that survives vetting states the standard missed, the evidence, and why
@@ -88,8 +103,10 @@ of dimension.
 1. **Ranked audit report.** Print it: a summary table (dimension -> count ->
    top finding), then a leverage-ordered findings list (finding + `path:line`
    evidence + standard missed + impact/effort/confidence + proposed routing).
-   Note any dimension that was **skipped** (not applicable) or **not run** (no
-   `/spec`) so silence never reads as "clean." Offer to also write it to
+   Head it with the scope - whole-repo, or `--since <ref>` and the file count -
+   and note any dimension that was **skipped** (not applicable) or **not run** (no
+   `/spec`) so silence never reads as "clean." Under a scope, close with the
+   one-line pre-existing count. Offer to also write it to
    `/spec/AUDIT-REPORT.md` **only if the dev wants it tracked** - it's a
    point-in-time artifact, not part of the durable spine. Write it to the working
    tree only, and say plainly that committing it is the dev's next step.
