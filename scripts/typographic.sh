@@ -1,8 +1,9 @@
 # shellcheck shell=sh
-# steer hook helper - typographic-character detection for rule 85 ("ASCII
-# everywhere"), shared by check-ascii-writes.sh and by scripts/check-ascii.sh,
-# the committed-state gate for this repo. One character table, so the write-time
-# gate and the repo sweep can never disagree about what counts.
+# Repo-local helper - typographic-character detection for rule 85 ("ASCII
+# everywhere"), used by scripts/check-ascii.sh, this repo's committed-state gate.
+# It lived under plugins/steer/hooks/lib/ while a write-time hook shared the
+# table; that tier retired (the rule stands, reviewers catch strays), so the
+# table moved here with the only caller that remains. It ships nothing.
 #
 # The set is exactly rule 85's - dashes, curly quotes, ellipsis, bullet, arrows,
 # non-breaking and thin spaces - and nothing else. Accented Latin letters,

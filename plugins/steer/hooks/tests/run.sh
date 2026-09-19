@@ -3600,149 +3600,15 @@ assert_no_block "comment-density: trimmed file no longer blocks" "${out}"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
 assert_block "comment-density: regression re-blocks after recovery" "${out}"
 
-# --- check-ascii-writes.sh (rule 85: ASCII in code and values) ---
-# Like pin() above, ch() assembles the characters at runtime so this file's own
-# SOURCE carries no typographic character in a value position - otherwise the
-# gate under test would block editing its own fixtures in a consumer repo.
-ch() { # ch em | curly | ellipsis | nbsp | arrow
-	case "$1" in
-	em) printf '%b' '\0342\0200\0224' ;;
-	curly) printf '%b' '\0342\0200\0235' ;;
-	ellipsis) printf '%b' '\0342\0200\0246' ;;
-	nbsp) printf '%b' '\0302\0240' ;;
-	arrow) printf '%b' '\0342\0206\0222' ;;
-	esac
-}
-EM="$(ch em)"
+# --- rule 85 (ASCII everywhere) - the character table and the template sweep ---
+# The write-time hook that used to deny a typographic character retired with the
+# ASCII hook tier: the rule stands and reviewers catch strays. Two guards remain,
+# and they are the ones that protect a CONSUMER repo rather than a session.
 
-# (a) value position in operations/implementation files -> deny, naming the fix.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA1 main.tf "description = 'Creates the user ${EM} row'")")"
-assert_deny "ascii: em dash in a .tf value" "${out}"
-printf '%s' "${out}" | grep -q 'U+2014' && ok || bad "ascii: deny reason must name the codepoint (got: ${out})"
-printf '%s' "${out}" | grep -q 'rule 85' && ok || bad "ascii: deny reason must cite the rule (got: ${out})"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA2 src/a.ts "const label = 'Queue ${EM} main';")")"
-assert_deny "ascii: em dash in a .ts string" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA3 main.tf "name = 'my$(ch nbsp)bucket'")")"
-assert_deny "ascii: non-breaking space in a .tf value" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA4 cfn.json "{Description: Queue $(ch curly)}")")"
-assert_deny "ascii: curly quote in a .json value" "${out}"
-# The ":" guard that keeps "https://" from being read as a line comment must not
-# blind the scan to the rest of the line.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA5 src/a.ts "const u = 'https://a.io ${EM} b';")")"
-assert_deny "ascii: value after a URL still scanned" "${out}"
-
-# (b) COMMENTS ARE NOT EXEMPT. Rule 85 used to permit these characters in prose,
-# and the gate stripped comments before scanning; it no longer does, so the same
-# fixtures that once had to stay silent must now deny. This block is the
-# regression guard against the comment-stripping behaviour coming back.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA6 scripts/ci.sh "# Local services ${EM} committed.\nimage: postgres")")"
-assert_deny "ascii: hash comment denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA7 compose.yaml "image: postgres:18 # mounts $(ch ellipsis)/data")")"
-assert_deny "ascii: trailing hash comment denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA8 src/a.ts "const x = 1; // width ${EM} height")")"
-assert_deny "ascii: trailing slash comment denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA9 src/a.ts "/* header\n * note ${EM} here\n */\nconst y = 2;")")"
-assert_deny "ascii: block comment interior denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA10 .vscode/x.json "  // Recommended ${EM} one per tool\n  a: 1")")"
-assert_deny "ascii: jsonc comment denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA11 q.sql "-- table ${EM} notes\nselect 1;")")"
-assert_deny "ascii: sql comment denied" "${out}"
-
-# (c) prose is in scope too - Markdown, the /spec spine, the app guide. Only
-# machine-written classes stay out, plus a file type that is not recognised text
-# (a deny must never be guessed at).
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA12 NOTES.md "a ${EM} b")")"
-assert_deny "ascii: markdown prose denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA13 spec/features/x/intent.md "a ${EM} b")")"
-assert_deny "ascii: spec spine denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA12b docs/guide.md "an arrow $(ch arrow) here")")"
-assert_deny "ascii: arrow in docs denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14 data/rows.csv "a ${EM} b")")"
-assert_empty "ascii: unrecognised file type still exempt" "${out}"
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA14b pnpm-lock.yaml "a ${EM} b")")"
-assert_empty "ascii: lockfile still exempt" "${out}"
-
-# (d) non-English copy must pass untouched - only the enumerated typographic set
-# matches, never accented letters or guillemets.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA15 src/a.tsx "const s = 'caf\\u00e9 na\\u00efve \\u00abbonjour\\u00bb';")")"
-assert_empty "ascii: accents and guillemets pass" "${out}"
-
-# (e) only INTRODUCED text is inspected: an edit that REMOVES an em dash is the
-# fix, not a violation.
-out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"main.tf\",\"old_string\":\"a ${EM} b\",\"new_string\":\"a - b\"}}")"
-assert_empty "ascii: removing an em dash is not denied" "${out}"
-out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"MultiEdit\",\"tool_input\":{\"file_path\":\"main.tf\",\"edits\":[{\"old_string\":\"p\",\"new_string\":\"clean = 1\"},{\"old_string\":\"q\",\"new_string\":\"d = 'x ${EM} y'\"}]}}")"
-assert_deny "ascii: MultiEdit scans every edit, not just the first" "${out}"
-out="$(run_hook check-ascii-writes.sh "{\"cwd\":\"/tmp\",\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo 'a ${EM} b' > main.tf\"}}")"
-assert_empty "ascii: Bash writes are the documented gap" "${out}"
-
-# (f) the \uXXXX spelling reaches the hook when a host serializes with
-# ensure_ascii; the unescaper does not decode it, so match the text form too.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA16 main.tf 'name = a \\u2014 b')")"
-assert_deny "ascii: \\u escape spelling denied" "${out}"
-# WITHOUT jq this is the ONLY branch that fires: the jq path decodes - back
-# to raw bytes, so a machine with jq installed proves the byte branch twice and
-# the sentinel-folding branch never. Shim jq to "absent" and re-assert, or the
-# no-jq environment the fallback exists for stays untested.
-# The shim is a jq that EXISTS but cannot run, which is also the case
-# steer_have_jq must reject: presence alone would take the jq branch, yield an
-# empty payload, and silently disable the gate instead of falling back to grep.
-# PATH is exported in a subshell rather than passed through run_hook's ENV=,
-# which is word-split and so cannot carry a PATH containing spaces.
-NOJQ="${WORK}/nojq"
-mkdir -p "${NOJQ}"
-printf '#!/bin/sh\nexit 127\n' >"${NOJQ}/jq"
-chmod +x "${NOJQ}/jq"
-# SC2030/SC2031 - the PATH change being LOCAL to the command substitution is the
-# point: only these two hook invocations must see the shimmed jq, and the rest of
-# the suite must keep the real one.
-# shellcheck disable=SC2030,SC2031
-out="$(
-	PATH="${NOJQ}:${PATH}"
-	export PATH
-	run_hook check-ascii-writes.sh "$(json_write /tmp sA16b main.tf 'name = a \\u2014 b')"
-)"
-assert_deny "ascii: \\u escape spelling denied without jq" "${out}"
-# shellcheck disable=SC2030,SC2031
-out="$(
-	PATH="${NOJQ}:${PATH}"
-	export PATH
-	run_hook check-ascii-writes.sh "$(json_write /tmp sA16c main.tf "d = 'a ${EM} b'")"
-)"
-assert_deny "ascii: raw bytes denied without jq" "${out}"
-
-# (f2) not a git work tree -> the gate STAYS ON (unlike the advisory nudges,
-# which bail): this rule is about the bytes in the file, not about repo state.
-NOGIT="${WORK}/asciiNoGit"
-mkdir -p "${NOGIT}"
-out="$(run_hook check-ascii-writes.sh "$(json_write "${NOGIT}" sA20 main.tf "d = 'a ${EM} b'")")"
-assert_deny "ascii: enforced outside a work tree" "${out}"
-
-# (g) escape hatch, mirroring steer:allow-pin.
-out="$(run_hook check-ascii-writes.sh "$(json_write /tmp sA17 src/a.ts "const dash = '${EM}'; // steer:allow-typographic fixture")")"
-assert_empty "ascii: steer:allow-typographic bypasses" "${out}"
-
-# (h) Copilot CLI takes a flat ask (its preToolUse is fail-closed and Preview).
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-ascii-writes.sh "$(json_write /tmp sA18 main.tf "d = 'a ${EM} b'")")"
-assert_copilot_ask "ascii: copilot gets a flat ask" "${out}"
-
-# (i) the plugin's own source repo is exempt - its pre-commit gates own style
-# there, and these fixtures must remain writable.
-RAP="$(new_repo repoAsciiPlugin)"
-mkdir -p "${RAP}/.claude-plugin"
-out="$(run_hook check-ascii-writes.sh "$(json_write "${RAP}" sA19 main.tf "d = 'a ${EM} b'")")"
-assert_empty "ascii: plugin repo exempt" "${out}"
-
-# (j) registration in hooks.json (the one manifest; the Copilot CLI variant
-# retired with hook parity).
-tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh"' && ok ||
-	bad "hooks.json: check-ascii-writes.sh must be registered with the sh prefix"
-
-# (k) THE REGRESSION THAT MATTERS: every bundled template must be clean, or
-# /steer:init and /steer:adopt would write files this very gate then denies in
-# the consumer repo. Markdown is included now that prose is in scope. Runs the
-# hook's own table, so a template cannot pass here and fail live.
-. "${HOOKS}/lib/typographic.sh"
+# (a) THE REGRESSION THAT MATTERS: every bundled template must be clean, or
+# /steer:init and /steer:adopt would write files that break rule 85 in the
+# consumer repo the moment they land. Markdown is included: prose is in scope.
+. "${PLUGIN}/../../scripts/typographic.sh"
 ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f -print 2>/dev/null |
 	while IFS= read -r f; do
 		[ -n "$(steer_typographic_scan "${f}")" ] && printf ' %s' "${f#"${PLUGIN}/"}"
@@ -3750,10 +3616,10 @@ ASCII_DIRTY="$(find "${PLUGIN}/templates" -type f -print 2>/dev/null |
 [ -z "${ASCII_DIRTY}" ] && ok ||
 	bad "bundled templates carry typographic characters:${ASCII_DIRTY}"
 
-# (l) scripts/check-ascii.sh carries a SECOND copy of the character set: a bulk
+# (b) scripts/check-ascii.sh carries a SECOND copy of the character set: a bulk
 # grep pattern used as a fast first pass over every tracked file, with the naming
 # table above run only on the files it flags. If the two ever disagree the gate
-# silently skips a file the write hook would deny, so assert every character the
+# silently skips a file it should have reported, so assert every character the
 # table knows is matched by that pattern - and that no accented or guillemet
 # character is.
 ASCII_PAT="$(sed -n 's/^PATTERN="$(printf \(.*\))"$/\1/p' "${PLUGIN}/../../scripts/check-ascii.sh")"

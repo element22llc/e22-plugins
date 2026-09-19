@@ -9,7 +9,7 @@
 #
 # TWO PASSES, because this runs in the fast pre-commit tier. A single LC_ALL=C
 # grep over every tracked file finds the offending FILES in one process; the
-# per-character naming (hooks/lib/typographic.sh, ~40 shell string matches per
+# per-character naming (scripts/typographic.sh, ~40 shell string matches per
 # file) then runs only for the few that actually hit. Naming every file instead
 # took 24 seconds on this repo, which is most of the fast gate's budget for a
 # check that is almost always a no-op.
@@ -34,11 +34,11 @@
 set -u
 
 HERE="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
-. "${HERE}/plugins/steer/hooks/lib/typographic.sh"
+. "${HERE}/scripts/typographic.sh"
 
 # The rule-85 set as raw UTF-8 bytes: U+00A0; U+2010..U+2015, U+2018/19,
 # U+201C/1D, U+2026, U+2022, U+2009, U+202F; U+2190/92/94; U+21D2. Kept in step
-# with the table in hooks/lib/typographic.sh, which names them.
+# with the table in scripts/typographic.sh, which names them.
 PATTERN="$(printf '\302\240|\342\200[\220-\225\230\231\234\235\246\242\211\257]|\342\206[\220\222\224]|\342\207\222')"
 
 REPORT="$(mktemp "${TMPDIR:-/tmp}/steer-check-ascii.XXXXXX")"
