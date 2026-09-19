@@ -75,8 +75,9 @@ Pointers are a hint, not a maintained index (the spec <-> code coupling rules co
 
 ## Testing
 
-Per the Definition of Done (injected every session by the `steer` plugin).
-Mostly review aids - with one exception: **changed-line coverage becomes a real CI
+Reviewer aids for "appropriately tested" and "changed code is covered" - the
+Definition of Done's second item and the coverage rule, both injected every
+session by the `steer` plugin. Mostly review aids - with one exception: **changed-line coverage becomes a real CI
 gate once this repo wires coverage tooling.** `ci` then runs `diff-cover
 --fail-under` on touched lines and fails the PR. Until a coverage provider is
 added (`@vitest/coverage-v8` / `pytest-cov` - deliberately not pinned by the

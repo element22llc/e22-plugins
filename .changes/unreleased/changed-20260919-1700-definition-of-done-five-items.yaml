@@ -1,0 +1,20 @@
+kind: Changed
+body: |
+  - **The Definition of Done is five items, not thirteen.** It had grown into a
+    second copy of the ruleset: comments, coverage, the changelog fragment, the
+    tracker ref, the issue and its `steer:state`, ADRs, drift classes, high-risk
+    scoping and PR approval were each restated there as well as in the rule that
+    owns them - so a policy change had two places to land and a reader had two
+    wordings to reconcile. It now carries only what "done" means: intent
+    understood, appropriately tested, CI green, the contracts and docs this change
+    **actually affected** updated (not a survey of every artifact), and merge and
+    deploy through the required human gates. Everything else is **named, not
+    repeated**, with a pointer to its owning rule. Two clauses that lived nowhere
+    else moved rather than being dropped: "follow the patterns already in the
+    touched app/package" is now a practices bullet, and the issue's `steer:state`
+    reflecting reality is now part of issue-first. Rule 99's end-of-session check
+    stops re-listing the items, and the scaffold PR template says which rules its
+    testing aids serve. The hotfix exception is unchanged: deferred to the
+    post-incident follow-up, never waived.
+custom:
+  Slug: definition-of-done-five-items
