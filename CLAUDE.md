@@ -38,7 +38,6 @@ plugins/steer/
 │                                   #   PreToolUse/PostToolUse/Stop gates;
 │                                   #   CwdChanged/SessionEnd/WorktreeRemove lifecycle hooks
 │                                   #   (worktree trust + Docker teardown);
-│                                   #   copilot-hooks.json (Copilot-CLI hook variant)
 ├── policy/                         # org policy data (branch-protection.yml, versions.yml)
 ├── scripts/                        # helpers skills invoke via ${CLAUDE_PLUGIN_ROOT} -
 │                                   #   mostly POSIX sh (e.g. template-reconcile.sh - read-only

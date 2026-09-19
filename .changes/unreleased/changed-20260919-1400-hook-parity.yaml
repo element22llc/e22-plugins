@@ -1,0 +1,21 @@
+kind: Changed
+body: |
+  - **Cross-agent parity now stops at skills and prose - the Copilot CLI hook
+    variant is retired.** `hooks/copilot-hooks.json`, its generator
+    (`gen_copilot_hooks.py`), its byte-equality drift gate
+    (`check_copilot_hooks.py`) and the `STEER_HOOK_TARGET=copilot` branches inside
+    the hook scripts are gone, and the Copilot plugin manifest no longer declares
+    a `hooks` path. A second hook manifest cost a generator, a gate, a per-hook
+    porting decision and a softened `ask` envelope on every dual-target script -
+    for a surface steer never promised parity on, carrying gates that were
+    *ported, not proven* (whether the Copilot CLI even exports `CLAUDE_PLUGIN_ROOT`
+    was never verified). What replaces it is an honest statement: **hook
+    enforcement is guaranteed on Claude Code only.** The Copilot CLI takes the
+    standards from the committed `.github/copilot-instructions.md`, and Copilot
+    Chat in VS Code keeps running the plugin's `hooks.json` directly - the ruleset
+    injector still recognises its payload shape and answers with the JSON envelope
+    it reads - but incidentally, with no parity promise. The generated
+    `.agents/skills/` tree, the Copilot instructions and the custom agents stay
+    first-class, generated and gated.
+custom:
+  Slug: hook-parity

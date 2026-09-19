@@ -175,26 +175,23 @@ steer_json_string() {
 }
 
 # steer_hook_host - which harness is running this hook: `claude` or `copilot`.
-# The two want different SessionStart stdout (Claude Code: raw text; the Copilot
-# surfaces: a JSON envelope), and VS Code's Copilot Chat runs the plugin's Claude
-# hooks.json as-is, so the script - not the manifest - has to tell them apart.
-#   1. STEER_HOOK_TARGET=copilot, set by the generated Copilot CLI manifest
-#      (copilot-hooks.json)                                          -> copilot
-#   2. the payload carries "permission_mode" - a documented Claude Code common
-#      input field that neither Copilot surface sends                -> claude
-#   3. the payload has "hook_event_name", "model" and "timestamp" but no
+# The two want different SessionStart stdout (Claude Code: raw text; Copilot Chat
+# in VS Code: a JSON envelope), and VS Code runs the plugin's Claude hooks.json
+# as-is, so the script - not a manifest - has to tell them apart. The detection is
+# payload-shape only; the Copilot CLI hook variant that used to set
+# STEER_HOOK_TARGET retired with hook parity (hook enforcement is guaranteed on
+# Claude Code; VS Code picks it up incidentally, with no parity promise).
+#   1. the payload carries "permission_mode" - a documented Claude Code common
+#      input field VS Code does not send                             -> claude
+#   2. the payload has "hook_event_name", "model" and "timestamp" but no
 #      "permission_mode" - the shape Copilot Chat in VS Code sends
-#      (observed on VS Code 1.135; the CLI's PascalCase form has no "model") -> copilot
-#   4. anything else                                                 -> claude
+#      (observed on VS Code 1.135)                                   -> copilot
+#   3. anything else                                                 -> claude
 # The default is deliberately Claude: mis-reading Claude Code as Copilot would
 # swap its parted raw delivery for one oversized JSON command and lose the
 # ruleset, whereas mis-reading a Copilot surface as Claude only keeps today's
 # behaviour (raw stdout, discarded there). Reads $STEER_INPUT like steer_field.
 steer_hook_host() {
-	if [ "${STEER_HOOK_TARGET:-claude}" = "copilot" ]; then
-		printf 'copilot'
-		return
-	fi
 	case "${STEER_INPUT}" in
 	*'"permission_mode"'*)
 		printf 'claude'

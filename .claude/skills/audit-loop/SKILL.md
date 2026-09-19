@@ -392,7 +392,7 @@ Apply the **minimal targeted** change each finding calls for:
   (`.claude/skills/plugin-docs/SKILL.md`) rather than hand-editing; the generated
   pages under `docs/reference/` are reconciled from the plugin, not authored.
 - **Copilot artifacts** (`copilot-instructions.md`, `prompts/`, `agents/`,
-  `vscode/mcp.json`, `copilot-hooks.json`) - regenerate with
+  `vscode/mcp.json`) - regenerate with
   `mise run gen:copilot` and commit the result. **Never hand-edit a generated
   file**; a hand-edit reappears as a finding the moment the generator runs.
 - **A contradiction finding does not tell you which side is wrong.** "Surface A
