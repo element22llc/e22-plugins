@@ -3441,9 +3441,9 @@ assert_has "inject copilot: missing rules dir - banner text present" "${out}" 'r
 
 # ---------------------------------------------------------------------------
 # check-comment-density.sh (PostToolUse) - flags a just-written source/config
-# file by comment ratio: advisory additionalContext in the 20-33% band (once per
-# file per session), a `block` decision above a third (re-fires while still over,
-# capped). Reads the file from disk; never fails the tool call.
+# file by comment ratio: one advisory additionalContext from a fifth of its
+# non-blank lines up, once per file per session. Reads the file from disk; never
+# fails the tool call and never returns a decision.
 # ---------------------------------------------------------------------------
 RCD="$(new_repo repoCommentDensity)"
 mkdir -p "${RCD}/src"
@@ -3461,23 +3461,19 @@ gen_lines() { # <count> <printf-format>  -> <count> lines, %s = index
 	gen_lines 8 'const v%s = %s;'
 } >"${RCD}/src/dense.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
-assert_block "comment-density: dense ts write blocks" "${out}"
+assert_ctx "comment-density: dense ts write advises" "${out}"
 assert_has "comment-density: notice carries the ratio" "${out}" '66% comment lines (16 of 24'
-assert_rc "comment-density: block still exits 0" "$(last_rc)" 0
-# (b) the block tier re-fires on a second write while the file is still over -
-# one dismissable notice is what this tier exists to escape.
+assert_rc "comment-density: advisory exits 0" "$(last_rc)" 0
+# (b) even a file far past the threshold gets ONE notice per session - the block
+# tier that used to re-fire above a third retired with the runtime style tiers.
+assert_no_block "comment-density: never returns a decision" "${out}"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
-assert_block "comment-density: block re-fires same session" "${out}"
-# ...but stops after the cap, so an untrimmable file cannot nag forever.
-out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
-assert_block "comment-density: third block still fires" "${out}"
-out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD1 src/dense.ts 'x')")"
-assert_empty "comment-density: block capped at three per file per session" "${out}"
+assert_empty "comment-density: repeat write on a very dense file is silent" "${out}"
 # (c) a new session re-flags the same file.
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD2 src/dense.ts 'x')")"
-assert_block "comment-density: new session re-flags" "${out}"
-# (d) exactly a third is advisory, not a block: over the 20% advisory floor but
-# not *more* than a third.
+assert_ctx "comment-density: new session re-flags" "${out}"
+# (d) exactly a third: one tier now, so this is the same advisory as any other
+# file over the floor - it was the block/advisory boundary.
 {
 	gen_lines 8 '// note %s'
 	gen_lines 16 'const w%s = %s;'
@@ -3503,7 +3499,7 @@ assert_empty "comment-density: under the advisory floor silent" "${out}"
 	gen_lines 6 'let b%s = %s;'
 } >"${RCD}/src/block.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD4 src/block.ts 'x')")"
-assert_block "comment-density: block comment counted" "${out}"
+assert_ctx "comment-density: block comment counted" "${out}"
 # (f) under 20 non-blank lines is exempt, even when all comments.
 gen_lines 19 '# only %s' >"${RCD}/src/short.py"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD5 src/short.py 'x')")"
@@ -3525,7 +3521,7 @@ assert_has "comment-density: python leading hash counted" "${out}" '(14 of 21'
 	gen_lines 5 'tool%s = "latest"'
 } >"${RCD}/mise.toml"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD7 mise.toml 'x')")"
-assert_block "comment-density: toml config flagged" "${out}"
+assert_ctx "comment-density: toml config flagged" "${out}"
 # (i) prose is out of scope even when every line starts with `#`.
 gen_lines 30 '# heading %s' >"${RCD}/NOTES.md"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD8 NOTES.md 'x')")"
@@ -3547,19 +3543,7 @@ assert_empty "comment-density: missing file silent" "${out}"
 # (l) hooks.json registers it under PostToolUse with the sh prefix.
 tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-comment-density.sh"' && ok ||
 	bad "hooks.json: check-comment-density.sh must be registered with the sh prefix"
-# (m) Copilot target: the CLI documents only a top-level additionalContext, so
-# the notice must not arrive wrapped in the Claude hookSpecificOutput envelope.
-# postToolUse has no decision field there, so the block tier carries its severity
-# in the text rather than being dropped on that surface.
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-comment-density.sh "$(json_write "${RCD}" sCD11 src/dense.ts 'x')")"
-assert_has "comment-density copilot: flat additionalContext" "${out}" '{"additionalContext":"BLOCKED: Comment-density check:'
-assert_no_block "comment-density copilot: no decision field on that surface" "${out}"
-case "${out}" in
-*hookSpecificOutput*) bad "comment-density copilot: must not nest under hookSpecificOutput" ;;
-*) ok ;;
-esac
-assert_rc "comment-density copilot: never fails the call" "$(last_rc)" 0
-# (o) file-level opt-out with a reason silences both tiers; a bare marker does not.
+# (m) file-level opt-out with a reason silences the notice; a bare marker does not.
 {
 	printf '// steer:allow-comments every line documents a protocol quirk\n'
 	gen_lines 16 '// step %s'
@@ -3573,32 +3557,30 @@ assert_empty "comment-density: allow-comments with a reason silences" "${out}"
 	gen_lines 8 'const z%s = %s;'
 } >"${RCD}/src/bare.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD14 src/bare.ts 'x')")"
-assert_block "comment-density: bare allow-comments does not silence" "${out}"
+assert_ctx "comment-density: bare allow-comments does not silence" "${out}"
 # The marker itself is a steer: directive, so it must not count toward the ratio:
 # 16 of 25 non-blank lines, not 17.
 assert_has "comment-density: marker line not counted" "${out}" '(16 of 25'
-# (p) trimming a blocked file back under a third is still heard, and resets the
-# block cap - the two marker resets exist for exactly this recover/regress path.
+# (n) the notice is once per file per session, whatever the file does next: a
+# trimmed file has nothing more to say, and a regressed one was already told.
 {
 	gen_lines 16 '// step %s'
 	gen_lines 8 'const r%s = %s;'
 } >"${RCD}/src/recover.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
-assert_block "comment-density: recover case starts blocked" "${out}"
+assert_ctx "comment-density: recover case is flagged once" "${out}"
 {
 	gen_lines 6 '// why %s'
 	gen_lines 18 'const r%s = %s;'
 } >"${RCD}/src/recover.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
-assert_ctx "comment-density: trimmed into the advisory band is still heard" "${out}"
-assert_no_block "comment-density: trimmed file no longer blocks" "${out}"
-# Regressing past a third blocks again: the earlier cap must not have stuck.
+assert_empty "comment-density: trimmed file is silent" "${out}"
 {
 	gen_lines 16 '// step %s'
 	gen_lines 8 'const r%s = %s;'
 } >"${RCD}/src/recover.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
-assert_block "comment-density: regression re-blocks after recovery" "${out}"
+assert_empty "comment-density: regression stays silent in the same session" "${out}"
 
 # --- rule 85 (ASCII everywhere) - the character table and the template sweep ---
 # The write-time hook that used to deny a typographic character retired with the
