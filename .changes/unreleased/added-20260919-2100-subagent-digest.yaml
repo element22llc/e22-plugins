@@ -1,0 +1,27 @@
+kind: Added
+body: |
+  - **Subagents now receive a short digest of the standards that bind them.** The
+    always-on ruleset is delivered as SessionStart context and a subagent inherits
+    none of it - the Agent tool starts a fresh conversation - so a
+    `general-purpose` subagent editing code during `/steer:work` ran with no
+    scope, testing, secrets or gate rules at all, and `steer-reviewer` audited a
+    slice against standards nobody had handed it. Rule `26-context-hygiene`
+    actively steers heavy work *to* subagents, so that was not a marginal share of
+    steer-governed work. A new `SubagentStart` hook injects a ~1.6 KB digest as
+    `hookSpecificOutput.additionalContext`: stay in the scope you were given,
+    report out-of-scope findings instead of acting on them, follow the patterns
+    already in the file you touch, tests come with the change, run the checks your
+    change implicates, never commit a secret, never merge or deploy or push to a
+    protected branch, and say plainly what you did not do. **A digest, not the
+    ruleset** - the full payload is ~60,000 characters and would be paid per
+    spawn, defeating the point of delegating for a fresh window; anything more
+    specific is one `rules/` read away, and the digest says so. The matchers are
+    the safety boundary: `^general-purpose$` and `^steer:steer-reviewer$` only,
+    anchored because a plugin-scoped id puts the colon on the regular-expression
+    path. `Explore` and `Plan` read and propose, pay nothing today, and stay that
+    way - the hook re-checks the agent type itself rather than trusting the
+    matcher, so widening one in `hooks.json` cannot silently start injecting into
+    every subagent. Fail-open throughout, and a hook test caps the digest at 2,048
+    bytes so it cannot quietly grow back into the ruleset.
+custom:
+  Slug: subagent-digest
