@@ -476,6 +476,14 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
 - Keep `plugins/steer/templates/scaffold/MANIFEST.md` in sync - it maps each
   stored file (including the `../github/` and `../spec/` topic-dir rows) to its
   install path. Update it in the same change that adds a template file.
+- **Action pins in the shipped workflows refresh on a schedule, not by hand.**
+  Dependabot cannot see `templates/github/workflows/` (it scans only
+  `/.github/workflows`), so `.github/workflows/template-pin-refresh.yml` runs
+  `scripts/refresh_template_pins.py --write` weekly and opens one human-reviewed
+  PR - bump-up only, never auto-merged, the same shape as
+  `version-policy-refresh.yml`. Nothing gates pins at build time: a stale pin is
+  a PR waiting to be opened, not a red build. Run the script yourself
+  (no `--write`) to see what is behind.
 - Version-governance files exist in two byte-identical copies (e.g.
   `scaffold/scripts/scan-version-pins.sh` <-> `scripts/scan-version-pins.sh`;
   `scaffold/scripts/version-policy.sh` <-> `hooks/lib/version-policy.sh`;

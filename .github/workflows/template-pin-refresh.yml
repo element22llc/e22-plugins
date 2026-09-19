@@ -1,0 +1,142 @@
+name: template-pin-refresh
+
+# Keeps the SHIPPED workflow templates' action pins current. Dependabot cannot:
+# its github-actions ecosystem scans only /.github/workflows and a root
+# action.yml, and `directory` has no escape hatch for
+# plugins/steer/templates/github/workflows/ (#548). A consumer repo self-heals
+# once bootstrapped - its own shipped dependabot.yml takes over - so what rots is
+# the INITIAL pin a freshly bootstrapped repo receives.
+#
+# Same shape as version-policy-refresh.yml, deliberately: weekly cron, consult
+# upstream, bump a static file, open a human-reviewed PR, never auto-merge. Pins
+# are BUMP-UP-ONLY; a pin ahead of the newest release is a deliberate pick.
+#
+# CI caveat: the PR is opened with the default GITHUB_TOKEN, which by GitHub design
+# does NOT trigger the `ci` pull_request workflow on the new PR. The reviewer
+# re-triggers CI (close+reopen, or push a commit) before merge.
+
+on:
+  schedule:
+    # Weekly, Monday 06:31 UTC - off the :00 mark, and after version-policy-refresh
+    # (06:17) so two bot PRs never race for the same checkout minute.
+    - cron: "31 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      # This job pushes with the checkout credential (`git push --force origin
+      # $branch`, below), so `persist-credentials: false` would break it rather
+      # than harden it. Scope is bounded by the `permissions:` block and the
+      # branch name is generated, not input.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked] - v7.0.1
+
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+
+      - name: Bump template action pins to current
+        id: refresh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          report="$(uv run python scripts/refresh_template_pins.py --write)"
+          rc=$?
+          {
+            echo "report<<REPORT_EOF"
+            echo "${report}"
+            echo "REPORT_EOF"
+          } >> "$GITHUB_OUTPUT"
+          # rc: 0 pins current * 1 bumps applied * 2 a lookup failed. Fail loudly on
+          # 2 - "could not ask upstream" must never read as "nothing to do".
+          [ "${rc}" = "2" ] && exit 1
+          exit 0
+
+      - name: Detect changes
+        id: changed
+        run: |
+          if git diff --quiet -- plugins/steer/templates/github/workflows; then
+            echo "changed=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Record the change in the changelog
+        if: steps.changed.outputs.changed == '1'
+        env:
+          REPORT: ${{ steps.refresh.outputs.report }}
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import os
+          import pathlib
+
+          seen = []
+          for raw in os.environ.get("REPORT", "").splitlines():
+              line = raw.strip()
+              if not line.startswith("- ") or ":" not in line:
+                  continue
+              bump = line[2:].split(":", 1)[1].strip()
+              if bump not in seen:
+                  seen.append(bump)
+          summary = "; ".join(seen) if seen else "action pins refreshed"
+
+          body = (
+              "- **Changed:** the shipped workflow templates' action pins were "
+              "refreshed to their current upstream releases (automated by "
+              f"`template-pin-refresh.yml`): {summary}. Dependabot cannot see the "
+              "templates tree, so this is what keeps the pin a freshly bootstrapped "
+              "repo receives from rotting; bump-up only, always via this PR."
+          )
+
+          # One fragment per change, exactly as a human would write it: the
+          # unreleased directory is the only thing a PR touches, so this bot can
+          # never collide with a concurrent PR's entry.
+          stamp = datetime.datetime.now().astimezone()
+          frag = pathlib.Path(
+              f".changes/unreleased/changed-{stamp:%Y%m%d-%H%M}-template-action-pins.yaml"
+          )
+          frag.parent.mkdir(parents=True, exist_ok=True)
+          frag.write_text(
+              "kind: Changed\n"
+              f"time: {stamp.isoformat()}\n"
+              "custom:\n  Slug: template-action-pins\n"
+              f"body: |\n  {body}\n",
+              encoding="utf-8",
+          )
+          print(f"wrote {frag}")
+          PY
+
+      - name: Open or update the refresh PR
+        if: steps.changed.outputs.changed == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT: ${{ steps.refresh.outputs.report }}
+        run: |
+          branch="chore/template-pin-refresh"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Bot-owned branch, reset from the current default-branch HEAD each run so
+          # the diff is always "main + this bump" - a force push is intentional.
+          git checkout -B "${branch}"
+          git add plugins/steer/templates/github/workflows .changes/unreleased
+          git commit -m "chore(scaffold): refresh the shipped templates' action pins"
+          git push --force origin "${branch}"
+          body="$(printf '%s\n\n%s\n' \
+            "Automated by \`template-pin-refresh.yml\`. The pins below are behind their current upstream release. Dependabot cannot maintain them - it scans only \`/.github/workflows\` - so this keeps the pin a freshly bootstrapped repo receives current. Bump-up only. Review before merge; CI does not auto-run on token-opened PRs (close+reopen or push to trigger it)." \
+            "${REPORT}")"
+          existing="$(gh pr list --head "${branch}" --state open --json number --jq '.[0].number' 2>/dev/null)"
+          if [ -n "${existing}" ]; then
+            gh pr edit "${existing}" --body "${body}"
+          else
+            gh pr create --base main --head "${branch}" \
+              --title "chore(scaffold): refresh the shipped templates' action pins" \
+              --body "${body}" --label "maintenance" 2>/dev/null \
+              || gh pr create --base main --head "${branch}" \
+                --title "chore(scaffold): refresh the shipped templates' action pins" \
+                --body "${body}"
+          fi
