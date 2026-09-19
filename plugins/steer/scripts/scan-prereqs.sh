@@ -103,7 +103,8 @@ os=other
 case "$(uname -s 2>/dev/null)" in
 Darwin) os=darwin ;;
 Linux)
-	if [ -n "${WSL_DISTRO_NAME:-}" ] || grep -qi microsoft /proc/version 2>/dev/null; then
+	# STEER_PROC_VERSION lets the test harness stub the WSL probe; the host has no /proc/version to unset.
+	if [ -n "${WSL_DISTRO_NAME:-}" ] || grep -qi microsoft "${STEER_PROC_VERSION:-/proc/version}" 2>/dev/null; then
 		os=wsl2
 	else
 		os=linux
