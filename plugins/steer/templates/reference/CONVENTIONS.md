@@ -646,9 +646,16 @@ One coverage tool per language, emitting a standard report:
 
 ## Deployment & environments
 
-The always-on "Deployment & environments" rule carries the condensed model; this
-is the rationale and the AWS-specific shape. Full operational detail lives in the
-scaffold's [`infra/README.md`](../scaffold/infra/README.md).
+A repo declares its own delivery model in `policy/delivery.yml`, and the always-on
+"Deployment & environments" rule follows that file. What follows is the **org
+default** that file is seeded with, and the rationale for its shape - not a
+requirement on a repo that delivers differently. Full operational detail lives in
+the scaffold's [`infra/README.md`](../scaffold/infra/README.md).
+
+The fields map onto this shape directly: `environments: [non-prod, prod]`,
+`deploy_on_merge: non-prod`, `production_gate: prod-branch-pr`,
+`review_apps: true`, `observability: [sentry]`. Change a value and the rule
+follows it; only a gate *weaker* than this default needs an ADR.
 
 - **Environments** - `non-prod` (shared validation) and `prod`, plus a **review
   app** per open feature PR (torn down on merge/close). The review-app mechanism

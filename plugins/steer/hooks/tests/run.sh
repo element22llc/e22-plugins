@@ -1824,7 +1824,7 @@ oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${o
 CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
 out="$(run_inject "$(session_json "${CRI_INFRA}" cri_infra)")"
-oq_grep "inject: repo with /infra includes deployment rule" 'auto-deploys non-prod' "${out}"
+oq_grep "inject: repo with /infra includes deployment rule" 'policy/delivery.yml' "${out}"
 oq_grep "inject: repo with /infra includes infra-stack fragment" 'Stack - infrastructure / IaC' "${out}"
 
 # Root-level IaC (Ansible site.yml, no /infra dir) -> infra-stack fragment injected
@@ -1841,7 +1841,7 @@ printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 CRI_APP="$(new_repo cri_app)"
 printf '{}\n' >"${CRI_APP}/package.json"
 out="$(run_inject "$(session_json "${CRI_APP}" cri_app)")"
-oq_grep "inject: app repo (no /infra) includes deployment rule" 'auto-deploys non-prod' "${out}"
+oq_grep "inject: app repo (no /infra) includes deployment rule" 'policy/delivery.yml' "${out}"
 printf '%s' "${out}" | grep -q 'Stack - infrastructure / IaC' &&
 	bad "inject: app repo without IaC must omit infra-stack fragment" || ok
 

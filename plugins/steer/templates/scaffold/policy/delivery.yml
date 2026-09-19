@@ -1,0 +1,28 @@
+# How code reaches users in THIS repo. steer follows what this file declares and
+# never imposes a model; rationale: /steer:reference conventions.
+# steer:allow-comments each field's note says what a value changes, which is the difference between a policy file and a guess
+
+schema: 1
+
+# Ordered least-privileged first. A repo that deploys nowhere writes `[]`.
+environments: [non-prod, prod]
+
+# What merging to the default branch deploys - an environment name, or `none`.
+deploy_on_merge: non-prod
+
+# How production is approved. `prod-branch-pr` is a reviewed PR from the default
+# branch into a long-lived `prod` branch (the gate /steer:protect can apply on any
+# GitHub plan); `github-environment` is a deployment-environment required reviewer
+# (Enterprise for private repos); `manual` is a human running the deploy; `none`
+# says this repo has no production to gate.
+# Whatever the value, merging and deploying stay human decisions.
+production_gate: prod-branch-pr
+
+# Auto-provisioned per-PR environment, torn down when the PR closes. The
+# mechanism is product-specific - record the choice in an ADR.
+review_apps: true
+
+# What a deployed environment reports to a human. An empty list is allowed and
+# means "not wired yet": steer then flags unobservable as a gap to close, not a
+# failure to fix now.
+observability: [sentry]
