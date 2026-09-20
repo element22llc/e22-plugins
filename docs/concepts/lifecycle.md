@@ -39,10 +39,11 @@ stateDiagram-v2
 
 ## Issue-first
 
-In a GitHub-adopted repo, the **first mutation** of a unit of work presupposes an
-active issue (the *issue-first* rule). `/steer:work` will find-or-create the issue
-before the first change. Commit autonomy is unchanged once that issue exists - see
-the [Authorization model](authorization-model.md).
+In a GitHub-adopted repo, the **first mutation** presupposes an active issue
+where the *issue-first* rule requires one; otherwise the PR is the work record.
+`/steer:work` find-or-creates it before the first change in those cases. Commit
+autonomy is unchanged either way - see the
+[Authorization model](authorization-model.md).
 
 The rule reaches **two cases**, not every change: [**High-risk**](sdlc.md#change-classification)
 work, and any of the six value cases - a planned feature, a tracked bug, work

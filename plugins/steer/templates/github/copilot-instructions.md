@@ -50,7 +50,8 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   capture it (`/steer:issues capture`), never silently drop the current thread.
 
 **`work` vs `issues`:** to implement a change now - with or without an issue
-number - route to `/steer:work`, which find-or-creates the issue. Promoting to
+number - route to `/steer:work`, which find-or-creates the issue where
+Issue-first requires one. Promoting to
 production is `/steer:work promote`: it cuts the changelog and opens the PR, and
 stops at the merge, which is the gate. Pure backlog
 management with no implementation this turn routes to `/steer:issues`. A
@@ -671,9 +672,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   applies unchanged - you still never merge - but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
   the exception in an ADR.
-- In a GitHub-adopted repo, the **first mutation** of a unit of work
-  presupposes an active GitHub issue (see Issue-first) - autonomy is unchanged
-  once that issue exists.
+- In a GitHub-adopted repo, the **first mutation** presupposes an active
+  GitHub issue **where Issue-first requires one** - otherwise the PR is the
+  work record. Autonomy is unchanged either way.
 - **Commit without asking** whenever a coherent unit of work is done - tests
   pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
@@ -964,9 +965,11 @@ access-conscious secure defaults
 
 ## Change classification
 
-Three classes set per-change ceremony - Issue-first and Definition of Done take
-their thresholds from here. Classify by **what the change does**, never by how
-many lines it touches; when two readings are arguable, take the heavier one.
+Three classes set per-change ceremony, and **Issue-first takes its threshold
+from here**. The Definition of Done holds in full for every class - what the
+class scales is the ceremony around the change, not what "done" means. Classify
+by **what the change does**, never by how many lines it touches; when two
+readings are arguable, take the heavier one.
 
 - **Trivial** - no observable behavior change: copy, formatting, comments,
   a behavior-preserving refactor, generated output, lockfiles. Open a PR and

@@ -1,9 +1,11 @@
 <!-- steer:inject-when=code-project -->
 ## Change classification
 
-Three classes set per-change ceremony - Issue-first and Definition of Done take
-their thresholds from here. Classify by **what the change does**, never by how
-many lines it touches; when two readings are arguable, take the heavier one.
+Three classes set per-change ceremony, and **Issue-first takes its threshold
+from here**. The Definition of Done holds in full for every class - what the
+class scales is the ceremony around the change, not what "done" means. Classify
+by **what the change does**, never by how many lines it touches; when two
+readings are arguable, take the heavier one.
 
 - **Trivial** - no observable behavior change: copy, formatting, comments,
   a behavior-preserving refactor, generated output, lockfiles. Open a PR and

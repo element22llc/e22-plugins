@@ -22,6 +22,10 @@ body: |
     lockfiles - lets the **PR be the work record**. This is a relaxation: the
     rule previously reached every implementation-affecting mutation above Tiny.
     The two advisory hooks (`check-write-nudges.sh`, `reconcile-issue-first.sh`)
-    follow the new wording; both still only report, and neither blocks.
+    follow the new wording; both still only report, and neither blocks. The
+    router and commit-autonomy rules stated the retired universal form - "work
+    find-or-creates the issue", "the first mutation presupposes an active
+    issue" - and now both say "where Issue-first requires one", so no rule
+    contradicts the relaxed one.
 custom:
   Slug: change-classification

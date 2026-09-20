@@ -68,8 +68,8 @@ These hold for the whole run, in every mode.
 ## Authorization (what an implement request grants)
 
 A CLI "fix/implement #N" request authorizes, without extra confirmation:
-read/search the issue, create-or-reuse the issue, claim it, update its managed
-state, create/switch the local branch, modify the local repository, run tests,
+read/search the issue, create-or-reuse the issue where Issue-first requires
+one, claim it, update its managed state, create/switch the local branch, modify the local repository, run tests,
 commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
