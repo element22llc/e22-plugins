@@ -59,3 +59,13 @@ production incident on a deployed system -> `/steer:work --hotfix`.
 `/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
+
+**Deliberately not in this always-on payload** - each is loaded by the skill
+that needs it, so route there rather than improvising: a cluttered repo root ->
+**`/steer:tidy`** (it carries the housekeeping rules); a shareable stakeholder
+page -> the rendering skill loads `/steer:reference artifacts`; a long
+multi-phase run -> `/steer:reference context-hygiene`. Two context lines hold
+regardless: delegate a heavy sweep to a subagent and bring back the result, not
+the sweep; and route every durable fact to its canonical home on disk (test,
+spec, app guide, issue) - never offer to keep it in private session memory,
+which the repo, the PR and every teammate cannot see.

@@ -257,7 +257,7 @@ skill - not inlined into the SKILL.md.
 When a skill runs a **long, multi-phase, or search-heavy** flow, delegate it to a
 subagent (fresh context by construction) and persist run-state and task constraints
 in `/spec/**` rather than running everything inline - keeping the main session lean
-and the state durable across compaction. See rule `26-context-hygiene` and the
+and the state durable across compaction. See `/steer:reference context-hygiene` and the
 exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 `/steer:work --reviewed`'s plan gate).
 

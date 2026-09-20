@@ -2015,6 +2015,20 @@ steer_inject_when_ok has-apps "${TRAITS_APP}" && ok || bad "scope: has-apps true
 steer_inject_when_ok has-compose "${TRAITS_APP}" && ok || bad "scope: has-compose true with compose.yaml"
 steer_inject_when_ok has-iac "${TRAITS_APP}" && bad "scope: has-iac false for plain app repo" || ok
 
+# automation-optin is the one FAIL-CLOSED predicate: rule 53 governs machinery a
+# repo only has once it declares it, so absence must skip the rule rather than
+# inject it (the fail-open default every other token takes).
+TRAITS_NOLOOP="$(new_repo traits_noloop)"
+steer_inject_when_ok automation-optin "${TRAITS_NOLOOP}" &&
+	bad "scope: automation-optin false without policy/automation.yml" || ok
+mkdir -p "${TRAITS_NOLOOP}/policy"
+printf 'loops: false\n' >"${TRAITS_NOLOOP}/policy/automation.yml"
+steer_inject_when_ok automation-optin "${TRAITS_NOLOOP}" &&
+	bad "scope: automation-optin false when loops: false" || ok
+printf 'schema: 1\nloops: true\n' >"${TRAITS_NOLOOP}/policy/automation.yml"
+steer_inject_when_ok automation-optin "${TRAITS_NOLOOP}" && ok ||
+	bad "scope: automation-optin true when loops: true"
+
 # tracker-github matches the WORD github (`github\b`, #339), never a value that
 # merely starts with it - `system: githubbish` is not a GitHub tracker.
 TRAITS_GHISH="$(new_repo traits_ghish)"
@@ -3346,7 +3360,11 @@ done
 # (h) The real ruleset arrives whole in the code-max shape (every predicate true).
 IF_MAXREPO="$(new_repo inject-real-max)"
 mkdir -p "${IF_MAXREPO}/infra" "${IF_MAXREPO}/apps" "${IF_MAXREPO}/spec" \
-	"${IF_MAXREPO}/openspec/changes" "${IF_MAXREPO}/openspec/steer"
+	"${IF_MAXREPO}/openspec/changes" "${IF_MAXREPO}/openspec/steer" "${IF_MAXREPO}/policy"
+# automation-optin fails CLOSED, so "every predicate true" has to declare it -
+# without the file 53-autonomous-loops is legitimately absent and this block's
+# every-heading-delivered sweep would read that as a dropped rule.
+printf 'loops: true\n' >"${IF_MAXREPO}/policy/automation.yml"
 # The fixture carries openspec/, so the tracker that DECIDES sits at the
 # namespaced path - writing it to spec/tracker.md would leave tracker-github
 # false and silently drop 36-issue-first from this "every predicate" shape.

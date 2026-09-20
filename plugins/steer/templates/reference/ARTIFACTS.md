@@ -1,6 +1,6 @@
 # Producing Claude Artifacts
 
-Full reference for rule `88-artifacts`. A **Claude Artifact** is a self-contained,
+The Artifact standard in full. A **Claude Artifact** is a self-contained,
 default-private web page that Claude publishes to a hosted URL on claude.ai, which
 the user can then choose to share with a teammate. Several steer skills turn a
 read-only, at-a-glance view of `/spec`, tracker, or audit state into one - a page a
@@ -254,5 +254,6 @@ render unless the user supplies a URL to update.
 | `/steer:status` | Client-facing period report - shipped / in-progress / needs-input / next | the whole spine over the reporting window |
 | `/steer:help` | Capability menu - skills grouped by journey | the live `skills/*/SKILL.md` frontmatter |
 
-The lean always-on version of this is rule `88-artifacts`; this reference is its
-full rationale and how-to.
+This file is the standard itself, not a condensed rule's companion - nothing
+about Artifacts rides in the always-on payload, so a rendering skill loads it
+before it renders.

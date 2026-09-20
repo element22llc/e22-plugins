@@ -119,7 +119,7 @@ than treating it as a missing feature. When the tool **is** available, additiona
 grid a user can hand to a teammate who is new to steer - an offer only, never
 auto-published; a curious user often just wants the inline list. The cards are
 still **derived from the live skill frontmatter** (Phase 1), never a hardcoded
-or invented capability. Render by the shared discipline - rule `88-artifacts`,
+or invented capability. Render by the shared discipline -
 mechanics in `/steer-reference artifacts` - with the temp path
 `<tempdir>/steer-help-menu.html`.
 

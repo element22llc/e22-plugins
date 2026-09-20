@@ -110,7 +110,7 @@ exists in one repo while its siblings have nothing to load).
    product-level artifacts - no `vision.md`, `users.md`, `glossary.md`,
    `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, and no
    `spec/sources/` (like `spec/reference/`, that one is the workspace's - rule
-   `22-housekeeping` forbids creating it in a member). Those live once,
+   `HOUSEKEEPING.md` forbids creating it in a member). Those live once,
    in the workspace. Everything else in the phase map is unchanged: the member
    keeps its own `spec/decisions/`, `ARCHITECTURE.md`, tests, CI, and
    `PRODUCTIONIZATION.md` - productionization is per repo, because deployment is.

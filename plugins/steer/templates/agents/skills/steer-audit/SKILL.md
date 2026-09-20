@@ -38,7 +38,7 @@ argument-hint: '[code | spec | all] [--since <ref>]'
 > this skill's modes instruct, and only **after** the user confirms them in a
 > fresh message - the optional reports (`AUDIT-REPORT.md` / `DRIFT-REPORT.md`)
 > and the optional **Artifact dashboard**, whose only write is its HTML to a
-> system temp dir, never under the repo tree (rule `88-artifacts`). One further
+> system temp dir, never under the repo tree (`/steer-reference artifacts`). One further
 > temp-only write is sanctioned: the triage export that `/steer-tracker-sync pull`
 > materializes into a temp directory when `spec` mode offers it instead of pasting
 > - same temp-dir limit, never under the repo tree. Never use `Write` to create or

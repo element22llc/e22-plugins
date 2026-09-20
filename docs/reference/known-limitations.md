@@ -197,8 +197,8 @@ or how full the window is, and **neither a hook nor the model can trigger `/comp
 or start a new session** - only you can. So `steer` will never silently compact or
 "switch you to a fresh session" when a long run fills the window.
 
-What it does instead (rule `26-context-hygiene`; full prose via
-`/steer:reference context-hygiene`):
+What it does instead (the context-hygiene standard; the router carries the
+two always-on lines, full prose via `/steer:reference context-hygiene`):
 
 - **Delegates heavy, multi-phase, or search-heavy runs to subagents**, which get a
   fresh context window by construction and return only the result - so the heavy

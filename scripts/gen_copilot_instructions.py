@@ -94,6 +94,11 @@ SCOPE_PRECONDITIONS: dict[str, str] = {
         "directory, `*.tf`/`*.tofu`/`*.hcl`, `playbooks/`, `roles/`). Skip this "
         "section in a repo with none."
     ),
+    "automation-optin": (
+        "**Applies only to a repo that has declared the automation opt-in** - "
+        "`policy/automation.yml` with `loops: true`. A repo without that file runs "
+        "no steer-scaffolded loop, so skip this section entirely."
+    ),
     "tracker-github": (
         "**Applies only where the tracker declaration says `system: github`** - "
         "`spec/tracker.md`, or `openspec/steer/tracker.md` on an OpenSpec repo (in "

@@ -126,7 +126,7 @@ of dimension.
    **`/steer:issues publish-audit <triage-doc>`**. The write is post-confirmation,
    per the read-only note in `SKILL.md`, to the temp path
    `steer-audit-code-<short-sha>.html`; all rendering mechanics live in rule
-   `88-artifacts` / `/steer:reference artifacts`.
+   `/steer:reference artifacts`.
 2. **Route each finding** to where it belongs in the workflow:
    - **Code-health findings** -> a **two-level** issue set, filed via
      **`/steer:issues publish-audit`** (which routes through `/steer:tracker-sync`):

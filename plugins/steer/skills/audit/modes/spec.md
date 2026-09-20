@@ -157,7 +157,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    decision (its decision-checklist issue), not a bulk selection. The write is
    post-confirmation, per the read-only note in `SKILL.md`, to the temp path
    `steer-audit-drift-<short-sha>.html`; all rendering mechanics live in rule
-   `88-artifacts` / `/steer:reference artifacts`.
+   `/steer:reference artifacts`.
 2. **Proposed resolution per finding**, following Rule 5 (spec-framework
    reference): reconcile the divergence by changing the code to match the tracker
    intent, **or** updating the spec/tracker to match the as-built reality (when

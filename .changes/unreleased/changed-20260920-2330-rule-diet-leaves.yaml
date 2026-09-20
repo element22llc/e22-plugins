@@ -1,0 +1,25 @@
+kind: Changed
+body: |
+  - **Five rules leave the always-on payload.** Housekeeping, context hygiene,
+    Artifacts and design sources no longer ship in every session's SessionStart
+    context: each was already owned in full by a reference document
+    (`HOUSEKEEPING.md`, `CONTEXT-HYGIENE.md`, `ARTIFACTS.md`,
+    `DESIGN-SOURCES.md`) and by the skill that loads it - `/steer:tidy` for
+    housekeeping, every rendering skill for Artifacts, `/steer:reference` for
+    the other two. The router gains one short paragraph naming what moved and
+    where, so the model routes there instead of improvising, and keeps the two
+    context lines that bind no particular skill: delegate a heavy sweep and
+    bring back the result, and route a durable fact to its home on disk rather
+    than offering to keep it in private session memory. The spec rule keeps a
+    short UI paragraph pointing at `/steer:reference design-sources`.
+  - **Rule `53-autonomous-loops` is now opt-in.** It carries
+    `inject-when=automation-optin`, a new scope predicate that is true only when
+    the consumer repo declares `policy/automation.yml` with `loops: true`. It is
+    the one predicate that fails **closed**: the rule governs machinery a repo
+    only has once it has asked for it, so a repo running no loop pays nothing
+    for the rule. `/steer:loop scaffold` now writes that declaration alongside
+    the workflow, `verify` reports it as a gap when missing, and `remove` drops
+    it. An e22 app repo's always-on payload falls from 66,026 to 58,412
+    characters; a knowledge folder's from 27,060 to 24,827.
+custom:
+  Slug: rule-diet-leaves

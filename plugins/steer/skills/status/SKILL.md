@@ -182,7 +182,7 @@ Ask `/steer:tracker-sync` for the tracker reads; read `/spec` directly for the r
 
 ## Render the report
 
-Render by the shared Artifact discipline - rule `88-artifacts`, mechanics in
+Render by the shared Artifact discipline - mechanics in
 `/steer:reference artifacts` - as a **high-level page a client can read in
 seconds**: a header banner with the period and headline (e.g. *"3 features shipped,
 Milestone 2 82% complete"*), then the sections above as compact visual blocks -
@@ -238,7 +238,7 @@ all cases; it recommends the next step, it never performs it.
 
 Issue lifecycle/state in `ISSUE-WORKFLOW.md`; the status enum in `ENUMS.md`; the
 open-question contract (`impact`/`owner`) in `SPEC-FRAMEWORK.md`; Artifact
-mechanics in rule `88-artifacts` / `/steer:reference artifacts`; milestone
+mechanics in `/steer:reference artifacts`; milestone
 conventions in `/spec/tracker.md` and rule `35-issue-tracker`. GitHub I/O is
 `/steer:tracker-sync`'s job. This skill only aggregates those into a client-facing
 progress snapshot.

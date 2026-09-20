@@ -22,9 +22,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `10-stack.md` | Stack defaults (app / service profile). |
 | `12-stack-infra.md` | Stack - infrastructure / IaC (injected when the repo does IaC). |
 | `15-commands.md` | Useful commands. |
-| `22-housekeeping.md` | Keep the repo tidy. |
 | `24-worktrees.md` | Parallel worktrees - isolate runtime, clean up after. |
-| `26-context-hygiene.md` | Context hygiene - delegate heavy runs, keep state in files. |
 | `30-spec-workflow.md` | Spec workflow. |
 | `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
 | `32-living-docs.md` | Document in parallel, not after. |
@@ -37,7 +35,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `50-definition-of-done.md` | Definition of Done - **five items**: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates. Deliberately not a restatement of every other rule: comments, coverage, the changelog fragment, the tracker ref, the issue state, ADRs, drift classes and high-risk scoping stay canonical in their own rules and are named, not repeated. Deferred (never waived) under a declared production hotfix. |
 | `51-verify-loop.md` | Verify loop - turn a task into a verifiable end state, iterate against the harness until green with a bounded loop, stop-and-report when blocked, never loop on uncheckable/long-compute work. |
 | `52-deployment.md` | Deployment & environments - **the repo declares its model in `policy/delivery.yml`** (environments, `deploy_on_merge`, `production_gate`, review apps, observability) and the rule follows it; merge and deploy stay human in every model, plus the observability, rollback and secrets-at-rest baselines. The org default it is seeded with - AWS, `non-prod`/`prod`, branch-driven promotion - and why prod is gated on a branch, are in [Deployment & environments](../concepts/deployment.md). |
-| `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). |
+| `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). **Opt-in** (`inject-when=automation-optin`): injected only where the repo declares `policy/automation.yml` with `loops: true`, which `/steer:loop scaffold` writes alongside the workflow. |
 | `55-drift-gates.md` | Surface drift before merge. |
 | `60-high-risk.md` | High-risk areas. |
 | `61-gate-prompts.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Full protocol in the `gates` reference. |
@@ -47,8 +45,6 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
 | `87-output-discipline.md` | Earn every line - tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
-| `88-artifacts.md` | Shareable views -> Claude Artifacts - a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
-| `90-design-sources.md` | Design sources & UI. |
 | `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces - ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate - the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping - no confirmation step. |
@@ -58,20 +54,26 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     Some rules carry a first-line `<!-- steer:inject-when=... -->` marker and are
     injected only when their scope applies (see
     [`inject-standards.sh`](hooks.md)). The code-loop rules - `08-code-comments`,
-    `10-stack`, `15-commands`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
+    `10-stack`, `15-commands`, `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
-    `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
-    `75-compliance`, `80-change-class`, `85-practices`, `90-design-sources`,
+    `51-verify-loop`, `55-drift-gates`, `62-hotfix`,
+    `75-compliance`, `80-change-class`, `85-practices`,
     `92-user-facing-copy`, `99-end-of-session` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
-    `33-spec-workflow-openspec`, `36-issue-first`, and `52-deployment` are likewise
+    `33-spec-workflow-openspec`, `36-issue-first`, `52-deployment` and
+    `53-autonomous-loops` are likewise
     scoped - respectively to
     repos that do IaC (`has-iac`), drive the spine with OpenSpec (`has-openspec`),
-    use GitHub as the tracker (`tracker-github`), and
+    use GitHub as the tracker (`tracker-github`),
     those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
     an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` - so
-    `52-deployment` injects in any Node repo, not only one that deploys today).
+    `52-deployment` injects in any Node repo, not only one that deploys today),
+    and those that have declared the automation opt-in (`automation-optin`).
+    That last one is the only predicate that fails **closed**: every other token
+    injects on an unreadable signal, because a safety rule must never be dropped
+    silently, whereas rule 53 governs machinery a repo only has once it has asked
+    for it.
     Polyrepo topology is deliberately **not** an
     always-on rule. (The original reason - that the ruleset was capped on its
     on-disk total, so a scoped rule cost every consumer in full - no longer
@@ -82,11 +84,21 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `orient-session.sh` - the hook itself speaks in every managed repo; only the
     topology block is marker-gated. That block is registered on the same
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
-    `/clear`, a resume, auto-compaction and a forked session. The router, context-hygiene, spec-workflow,
+    `/clear`, a resume, auto-compaction and a forked session. The router, spec-workflow,
     decision-capture, living-docs, responses (`03`), roles,
     **gate-prompts (`61`)**, high-risk,
-    not-the-gate, self-report, secrets, output, and artifacts rules carry no
+    not-the-gate, self-report, secrets and output rules carry no
     `inject-when` marker and so stay always-on.
+
+!!! note "Standards that are not always-on rules"
+    Housekeeping, context hygiene, Artifact rendering and design sources are
+    org standards with no rule file: each lives in full in
+    `templates/reference/` (`HOUSEKEEPING.md`, `CONTEXT-HYGIENE.md`,
+    `ARTIFACTS.md`, `DESIGN-SOURCES.md`) and is loaded by the skill that needs
+    it - `/steer:tidy`, the Artifact-rendering skills, and `/steer:reference`.
+    The router names them so a session routes there rather than improvising, and
+    keeps the two context lines that bind no particular skill (delegate a heavy
+    sweep; route a durable fact to disk, never to private session memory).
 
 ## Code intelligence (LSP)
 

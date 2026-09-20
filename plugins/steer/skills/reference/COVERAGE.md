@@ -155,8 +155,8 @@ It covers, in detail:
   recommendation you cannot perform.
 - **A worked example** - the part-regeneration scenario end to end.
 
-The lean always-on version of this is rule `26-context-hygiene` - this reference is
-its full rationale and how-to.
+This file carries the context-hygiene standard in full; no condensed version
+rides in the always-on payload, so load it whenever a run turns long.
 
 ## architecture-diagrams
 
@@ -218,9 +218,9 @@ It covers, in detail:
   and the inline-Markdown fallback (never written under the repo tree) where the
   Artifact tool is unavailable.
 
-This backs the always-on rule `88-artifacts` and the Artifact-rendering skills
+This file carries the Artifact standard in full; the rendering skills
 (`/steer:explain`, `/steer:status`, `/steer:questions bundle`, `/steer:audit`,
-`/steer:roadmap`, `/steer:help`).
+`/steer:roadmap`, `/steer:help`) each load it before rendering.
 
 ## gates
 
