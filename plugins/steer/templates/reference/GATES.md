@@ -137,7 +137,7 @@ No prompt in any mode authorizes these. They require a human acting in the real
 system, and **asking is not authorization**:
 
 - **PR merge** - the reviewed merge is the delivery gate (rule
-  `45-commit-autonomy`, `95-not-the-gate`). Never `gh pr merge`. The reviewer
+  `45-delivery`, `95-not-the-gate`). Never `gh pr merge`. The reviewer
   reads the diff on the PR; an in-session "yes" is not that review, because the
   diff is not what was shown.
 - **Deploy** - including a hotfix whose deploy is policy-permitted (rule
@@ -148,7 +148,7 @@ system, and **asking is not authorization**:
   no in-session answer substitutes for it (rule `45`).
 
 **Not on this list: the ungraduated solo-trunk trunk push.** While a local
-graduation signal stands, rule `45-commit-autonomy` stops trunk pushes being
+graduation signal stands, rule `45-delivery` stops trunk pushes being
 *silent* - the session's **first** one waits for a human yes, and repeats carry a
 non-blocking reminder (on the Copilot CLI the repeat is instead a **silent allow**:
 that envelope has no non-blocking channel) - and `check-bash-actions.sh` surfaces

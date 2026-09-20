@@ -7,8 +7,8 @@ Preconditions step 0b exempts it from the tracker read and the issue
 find-or-create.
 
 **What this owns and where it stops.** It prepares and opens PRs. **Merging the
-promotion PR is the production gate and stays human** (rule `45-commit-autonomy`,
-rule `52-deployment`) - never `gh pr merge` here, never deploy, never push to
+promotion PR is the production gate and stays human** (rule `45-delivery`,
+rule `45-delivery` § Deployment & environments) - never `gh pr merge` here, never deploy, never push to
 `prod`.
 
 ## Step 1 - read the declared gate

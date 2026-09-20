@@ -26,7 +26,7 @@
 #   clean  `docker:clean` - down + volumes + orphans. Used at WorktreeRemove,
 #          where the checkout itself is about to be deleted and its per-worktree
 #          volumes are, by construction, unreachable afterwards. This is the
-#          command rule `24-worktrees` names for that moment.
+#          command rule `45-delivery` § Parallel worktrees names for that moment.
 #
 #   Destroying volumes is only ever done on the `clean` path, and only when the
 #   harness has told us the worktree is being removed. Nothing here removes data

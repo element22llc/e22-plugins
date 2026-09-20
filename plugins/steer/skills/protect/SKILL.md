@@ -30,7 +30,7 @@ actually configured on the repo - this skill verifies it is, and helps set it up
 **pr-flow** (autonomous branch pushes + PRs; the merge review is the human gate).
 Protection is what *enforces* pr-flow, not what declares it - a declared pr-flow
 repo whose `main` is unprotected is a **gap to close, not a third mode** (rule
-`45-commit-autonomy`), which is why this skill never flips such a repo to
+`45-delivery`), which is why this skill never flips such a repo to
 solo-trunk. The marker is also what the hooks read offline (no network), and this
 skill owns it - whenever verify or apply observes live protection that
 contradicts the declaration, **say so**. Reconciling is `apply`'s job: `verify`

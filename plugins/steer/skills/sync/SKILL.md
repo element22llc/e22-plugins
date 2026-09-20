@@ -83,7 +83,7 @@ spec-vs-tracker drift check (`/steer:audit spec`), and **not** a code-health aud
 - **Branch + PR; never commit to `main` - in *both* delivery modes.** Plugin
   maintenance is structural, not feature work (rule `36-issue-first`), so a sync
   lands on its own `feat/sync` branch even in a declared **solo-trunk** repo,
-  where feature work goes straight to trunk (rule `45-commit-autonomy`). This is
+  where feature work goes straight to trunk (rule `45-delivery`). This is
   the deliberate exception to that rule, not an application of it. The dev's PR
   **merge review** is the hard gate; push the branch and open the PR yourself,
   announced - never merge it.

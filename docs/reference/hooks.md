@@ -154,7 +154,7 @@ What they can *report* differs:
 | `on-session-end.sh` | `SessionEnd` (`logout\|prompt_input_exit\|other`) | Only in a **linked worktree**: attempts that worktree's `docker:down` (`ws:docker:down` in a workspace root) to stop its containers and free its ports when the session really ends. **Best-effort - see the 1.5s budget above**: `mise tasks ls` plus `mise run ... docker:down` will often not finish inside it, so do not rely on this to have stopped anything; `WorktreeRemove` is the dependable half. **Volumes are kept** - a session ending is not the worktree ending, and the dev may still be in that checkout from a plain terminal. Never matches `clear` or `resume`: those continue the same working session, which is why the rules are re-injected for them. Silent in a plain checkout, without a compose file, without `mise`/`docker` on `PATH`, in a repo that pruned the `docker:*` tasks, and when `STEER_NO_WORKTREE_TEARDOWN` is set to any non-empty value. |
 | `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown - `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) - because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. `WorktreeRemove` carries no decision control, so the hook cannot stop the removal or report a problem; it exits `0` whatever happens - steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
 
-The two teardown modes are the same distinction rules `24-worktrees` and
+The two teardown modes are the same distinction rules `45-delivery` § Parallel worktrees and
 `50-done` § End-of-session checklist draw, now attempted automatically rather than requested: stop
 what is running when a session ends, remove the data only when the thing that
 owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Only the
@@ -326,7 +326,7 @@ so it stays POSIX `sh` with no `jq` and no network.
 `steer_inject_when_ok <token> <root>` is the entry point for rule scoping: a rule
 whose first line is `<!-- steer:inject-when=<token> -->` is injected only when the
 predicate holds. Tokens compose with `|` for OR - the rule injects when **any**
-listed predicate holds (`52-deployment`'s `has-iac|has-apps`) - and with `&` for
+listed predicate holds (`45-delivery` § Deployment & environments's `has-iac|has-apps`) - and with `&` for
 AND, which binds loosest, so every arm must hold (`12-stack-infra`'s
 `has-iac&org-e22`: the org pack's IaC stack, delivered only to an IaC repo that
 follows the pack). The predicates are

@@ -178,7 +178,7 @@ Code security**, enable Secret scanning + push protection.
 Protection is also what buys agent delivery autonomy: with the wall up, Claude
 pushes branches and opens PRs on its own (`.claude/settings.json` pre-approves
 them) and **your merge review is the one human gate** - an open PR is inert
-until you merge it. Claude never merges: rule `45-commit-autonomy` forbids
+until you merge it. Claude never merges: rule `45-delivery` forbids
 `gh pr merge` outright, so the `ask` entry on it is a backstop to decline, not a
 way to authorize a merge in-session. Force-pushes are denied outright. On an
 unprotected pre-MVP repo the same

@@ -152,10 +152,6 @@ UNQUALIFIED_TOKENS: dict[str, str] = {
         "installed into code repos by the bootstrap skills, and qualifying 20 rules "
         "with it would be noise"
     ),
-    "has-iac|has-apps": (
-        "an alternation covering app and IaC repos alike, and rule 52 opens on what "
-        "it is about rather than asserting a trait - there is nothing false to read"
-    ),
 }
 
 

@@ -214,7 +214,7 @@ Unprefixed, that turned two ordinary commands into cross-repo surprises:
   **whole product's** aggregated Compose stack.
 - `mise run docker:clean` in a member that ships no `compose.yaml` (a library or cli
   member, which the core scaffold lets you strip) tore down **every** member's
-  containers *and volumes* - while rule `24-worktrees` tells every agent to run
+  containers *and volumes* - while rule `45-delivery` § Parallel worktrees tells every agent to run
   exactly that command before removing a worktree.
 
 `ws:`-prefixing removes the fall-through by construction: no member scaffold defines

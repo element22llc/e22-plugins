@@ -126,7 +126,7 @@ Name the file and say what to carry forward.
 
 (Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
 
-- **What & why:** rule `52-deployment` used to *impose* one delivery model - AWS,
+- **What & why:** rule `45-delivery` § Deployment & environments used to *impose* one delivery model - AWS,
   `non-prod`/`prod`, branch-driven promotion - on every managed repo, so a repo
   that deploys elsewhere, or nowhere, read a rule that was simply false about it
   and had no way to say so. The model is now **declared** in
@@ -263,7 +263,7 @@ Name the file and say what to carry forward.
 ### v6.3.0 - every repo gets a real `CHANGELOG.md` (changie fragments)
 
 - **What & why:** the standard has always said the release changelog is the
-  curated `CHANGELOG.md` - rule `45-commit-autonomy` says it to every session,
+  curated `CHANGELOG.md` - rule `45-delivery` says it to every session,
   `CONVENTIONS.md` records the decision not to derive it from commit types, and
   the scaffold even shipped a `CHANGELOG.md merge=union` driver for it. Nothing
   ever installed the file. So every managed repo carried the rule and the merge
@@ -853,11 +853,11 @@ Name the file and say what to carry forward.
   shadows any member that does not define that name itself. Unprefixed, `mise run
   dev` inside a member booted the **whole product**, and `mise run docker:clean` in a
   member that ships no `compose.yaml` dropped **every** member's volumes - the
-  cleanup rule `24-worktrees` tells every agent to run before removing a worktree.
+  cleanup rule `45-delivery` § Parallel worktrees tells every agent to run before removing a worktree.
   The workspace profile therefore renamed its whole-product tasks: `dev` -> `ws:dev`
   and `docker:up` / `docker:down` / `docker:clean` -> `ws:docker:*` (`convert:doc` is
   the one deliberate exception). The always-on rules moved with it - `15-commands`,
-  `24-worktrees` and `50-done` § End-of-session checklist now name the `ws:` forms - so an
+  `45-delivery` § Parallel worktrees and `50-done` § End-of-session checklist now name the `ws:` forms - so an
   **already-scaffolded** workspace repo receives injected rules naming tasks its
   `mise.toml` does not define until this migration is applied. Additive
   reconciliation cannot carry it: it splices in what is missing and never renames or
@@ -1097,7 +1097,7 @@ Name the file and say what to carry forward.
 
 ### v3.16.0 - scaffold `.claude/settings.json`: push + PR-create move from `ask` to `allow`
 
-- **What & why:** the two-state delivery model (rule `45-commit-autonomy`) made
+- **What & why:** the two-state delivery model (rule `45-delivery`) made
   pushing a branch and opening the PR **autonomous** delivery steps - the human
   gate is the PR **merge** (server-enforced by branch protection in pr-flow) and,
   in an ungraduated solo-trunk repo, the trunk-push hook's graduation gate. The

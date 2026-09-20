@@ -220,7 +220,7 @@ matrix):
   to pre-approve the routine idempotent ops the skill always performs - e.g.
   `/steer:work` allowlists `Bash(git status *)`, `Bash(git switch *)`,
   `Bash(git add *)`, `Bash(git commit *)`, etc. **Pre-approve `git push` and
-  `gh pr create` too** - rule `45-commit-autonomy` makes branch, commit, push and
+  `gh pr create` too** - rule `45-delivery` makes branch, commit, push and
   PR-open autonomous ("announce it, don't request permission"), and
   `check_standards.py` fails the build if the scaffold allowlist drops them. What
   stays gated is the **merge and the deploy** (`gh pr merge` sits under `ask`),

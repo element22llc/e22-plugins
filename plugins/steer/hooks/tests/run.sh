@@ -1795,7 +1795,10 @@ grep -q 'rules directory missing' "${NR2}/.claude/steer-faults.log" 2>/dev/null 
 	ok || bad "inject: missing rules dir records a self-fault in the consumer repo"
 
 # ----- inject-standards.sh: conditional (inject-when) rule scoping -----
-# 36-issue-first carries inject-when=tracker-github; 52-deployment inject-when=has-iac|has-apps.
+# 36-issue-first carries inject-when=tracker-github; 12-stack-infra inject-when=has-iac&org-e22.
+# Deployment is no longer separately scoped - it is a section of 45-delivery
+# (code-project), which policy/delivery.yml already neutralises for a repo that
+# deploys nowhere (`environments: []`).
 # A scoped rule is injected only when its predicate holds; always-on rules
 # (e.g. 00-router) appear regardless; the marker line never leaks into output.
 
@@ -1818,7 +1821,8 @@ printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' &&
 	bad "inject: non-github repo must omit issue-first rule" || ok
 oq_grep "inject: always-on router present (jira repo)" 'You are the router' "${out}"
 
-# /infra present -> deployment AND infra-stack fragment injected (has-infra + has-iac).
+# /infra present -> the infra-stack fragment is injected (has-iac), and the
+# delivery rule (which carries deployment) rides in on code-project.
 CRI_INFRA="$(new_repo cri_infra)"
 mkdir -p "${CRI_INFRA}/infra"
 out="$(run_inject "$(session_json "${CRI_INFRA}" cri_infra)")"
@@ -1834,8 +1838,8 @@ oq_grep "inject: root-level Ansible repo includes infra-stack fragment" 'Stack -
 printf '%s' "${out}" | grep -q 'steer:inject-when' &&
 	bad "inject: inject-when marker line must be stripped (ansible repo)" || ok
 
-# App repo (package.json, no /infra, no IaC) -> deployment rule injected via the
-# has-apps arm of has-iac|has-apps, but NOT the infra-stack fragment (has-iac only).
+# App repo (package.json, no /infra, no IaC) -> the delivery rule is injected,
+# but NOT the infra-stack fragment (has-iac is false).
 CRI_APP="$(new_repo cri_app)"
 printf '{}\n' >"${CRI_APP}/package.json"
 out="$(run_inject "$(session_json "${CRI_APP}" cri_app)")"

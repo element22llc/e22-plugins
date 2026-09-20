@@ -8,7 +8,7 @@
 #   runs `mise trust`. The whole scaffolded dev loop is `mise run ...` - `docker:up`,
 #   `dev:setup`, `db:migrate`, the lint/test tasks - so the first thing an agent
 #   does in a new worktree fails, with an error about trust rather than about the
-#   task. Rule `24-worktrees` positions parallel worktrees as normal practice, and a
+#   task. Rule `45-delivery` § Parallel worktrees positions parallel worktrees as normal practice, and a
 #   polyrepo runs one feature across several members at once, so the cost is one
 #   trust step per member per feature (#416).
 #

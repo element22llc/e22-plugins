@@ -17,7 +17,7 @@ prompt on every session's first `git push`, forever.
 
 A waiver is that answer, recorded once: **"single contributor, trunk is
 deliberate, these signals are expected."** It is a **decision, not a third
-delivery mode** (rule `45-commit-autonomy`) - the repo stays solo-trunk with
+delivery mode** (rule `45-delivery`) - the repo stays solo-trunk with
 everything that mode already requires (issue-first, CI on push, the spine, tests,
 Definition of Done). It covers **only the local signals**. A second collaborator
 is the one condition a solo waiver cannot cover: `verify` and `/steer:audit`

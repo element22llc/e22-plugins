@@ -3,7 +3,7 @@
 How code reaches users. **The repo declares its own model** in
 `policy/delivery.yml` - environments, what merging deploys, how production is
 approved (`production_gate`), whether review apps exist, and what it reports to a
-human - and the always-on rule `52-deployment.md` follows that file rather than
+human - and the always-on rule `45-delivery.md` § Deployment & environments follows that file rather than
 imposing one. `/steer:protect` reads `production_gate` to decide whether a `prod`
 branch is expected at all, and enforces the branch side at the server edge via
 `policy/branch-protection.yml`.
