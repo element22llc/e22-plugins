@@ -1,10 +1,9 @@
 <!-- steer:inject-when=tracker-github -->
 ## Issue-first (GitHub-adopted repos)
 
-When `/spec/tracker.md` declares `system: github` - in a polyrepo member
-(`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
-copy - an issue exists **before the first repository mutation** in exactly two
-cases:
+Where `/spec/tracker.md` declares `system: github` - in a polyrepo member that
+file is the **workspace's** - an issue exists **before the first repository
+mutation** in exactly two cases:
 
 - **High-risk work** (Change classification), and
 - **any of the six value cases**: a planned feature, a tracked bug, work
@@ -13,33 +12,26 @@ cases:
 
 Everything else - a Trivial change, an ordinary Behavioral fix nobody is
 tracking, `/spec` edits, documentation, generated output, lockfiles, a
-plugin-maintenance `/steer:sync` on its own `feat/sync` branch - needs no
-issue: **the PR is the work record**. Reuse the issue the user names;
-otherwise find-or-create one through `/steer:tracker-sync` - an explicit
-"fix / implement / add / create" request does **not** need confirmation to
-create the issue.
+plugin-maintenance sync - needs no issue: **the PR is the work record**. Reuse
+the issue the user names; otherwise find-or-create one through
+`/steer:tracker-sync`. An explicit "fix / implement / add / create" request does
+**not** need confirmation to create it.
 
-- **Capture-only and ambiguous language do not auto-create.** "Note this" /
-  "we should eventually..." is captured deliberately, never inferred into a
-  batch of issues. A large inferred batch takes one confirmation;
-  security-sensitive public disclosure takes human review.
+- **Capture-only and ambiguous language do not auto-create.** "Note this" / "we
+  should eventually..." is captured deliberately, never inferred into a batch. A
+  large inferred batch takes one confirmation; security-sensitive public
+  disclosure takes human review.
 - **Implementation runs through `/steer:work`** - claim, branch, implement,
-  test, open the PR, transition the issue. Commit, push, and the PR are
-  autonomous under Commit autonomy; **merge and deploy are never implied**.
-- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy) -
-  close it **from the trunk commit** (`Closes #N`). The issue stays the
-  audit-evidence anchor (Audit-aligned delivery).
-- **Discovered out-of-scope work** gets its own linked issue
-  (related/blocking), not silent scope creep in the current one.
-- **The issue's `steer:state` reflects reality** - work in progress is
-  `validate`, never `done` - and the PR references it with the correct
-  closing/non-closing relation.
-- The scaffold pre-authorizes the tracker write verbs, but your host may block
-  one anyway. A create that is blocked is a **host-permission gate, not a
-  missing issue** - don't loop retrying; confirm with the user, or have them run
-  `!gh issue create ...` under their own identity, then continue. (Full tiering
-  and rationale: ISSUE-WORKFLOW.md, "Host gating" in Operating model.)
+  test, open the PR, transition the issue. **Solo trunk keeps the issue and
+  drops the branch/PR**: close it from the trunk commit (`Closes #N`), since the
+  issue is the audit-evidence anchor.
+- **Discovered out-of-scope work** gets its own linked issue, not silent scope
+  creep in the current one. The issue's `steer:state` reflects reality - work in
+  progress is `validate`, never `done` - and the PR references it with the
+  correct closing relation.
+- A tracker write your host blocks is a **host-permission gate, not a missing
+  issue**: don't loop retrying; confirm with the user, or have them run
+  `!gh issue create ...` themselves, then continue.
 
-Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
-**Calling work a "prototype" does not waive it** - the only durable opt-out
+**Calling work a "prototype" does not waive this.** The only durable opt-out
 from the per-feature branch/PR is solo-trunk delivery mode.

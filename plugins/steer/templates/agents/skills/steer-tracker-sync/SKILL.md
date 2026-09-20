@@ -53,7 +53,7 @@ manual export. It is glue, not a new source of truth.
 
 ## Coupling rules
 
-Tracker-integration conventions are canonical in rule `35-issue-tracker` and the
+Tracker-integration conventions are canonical in rule `35-tracker` and the
 `/steer-reference traceability` reference; the spec <-> code resolution rules live in
 `https://github.com/element22llc/e22-plugins/blob/main/plugins/steer/templates/reference/SPEC-FRAMEWORK.md`. This skill only
 moves pointers and findings across the GitHub boundary - those references govern

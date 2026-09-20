@@ -221,6 +221,6 @@ all cases; it recommends the next step, it never performs it.
 Issue lifecycle/state in `ISSUE-WORKFLOW.md`; the status enum in `ENUMS.md`; the
 open-question contract (`impact`/`owner`) in `SPEC-FRAMEWORK.md`; Artifact
 mechanics in `/steer-reference artifacts`; milestone
-conventions in `/spec/tracker.md` and rule `35-issue-tracker`. GitHub I/O is
+conventions in `/spec/tracker.md` and rule `35-tracker`. GitHub I/O is
 `/steer-tracker-sync`'s job. This skill only aggregates those into a client-facing
 progress snapshot.

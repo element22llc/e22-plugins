@@ -427,37 +427,34 @@ prevent. Missing `openspec/steer/tracker.md`? Instantiate
 ## Issue tracker integration (client-agnostic)
 
 Products use whatever tracker the client has (Jira, GitHub Issues, Linear,
-Azure DevOps, ...). **`/spec/tracker.md`** declares the system + ref format -
+Azure DevOps, ...). **`/spec/tracker.md`** declares the system and ref format -
 read it before referencing work items; if missing, ask and create it from the
-bundled template - **except in a polyrepo member** (`spec/PRODUCT.md` present),
-where the tracker is the workspace's: resolve it there and never create a local
-copy. Refs live in `intent.md`'s `> Tracker:` line, the PR
-description (tracker's own linking syntax), and the `/spec/history/` entry's `Refs:`. Copy a
-tracker item's acceptance criteria into the intent - the spec is the in-repo
-source of truth; the ref points back. **Keep a question in the spec's
-`## Open questions`** (structured `Q-NNN`) when it's local to one feature and
-answerable while specifying it; **promote it to an issue** when it needs a named
-owner, blocks multiple features, needs stakeholder/research input, or could
-outlive the session - then put the ref in the question's `tracker:` field. The
-issue is the decision *workflow*; the spec (or an ADR) is the durable *record*.
+bundled template, **except in a polyrepo member**, where the tracker is the
+workspace's. Refs live in `intent.md`'s `> Tracker:` line, the PR description,
+and a `/spec/history/` entry's `Refs:`. Copy a tracker item's acceptance
+criteria into the intent: the spec is the in-repo source of truth and the ref
+points back.
 
-When the tracker is **GitHub Issues**, **`/steer:issues`** is the high-level
-lifecycle workflow (capture -> triage -> brainstorm -> materialize -> decompose ->
-status -> reconcile), and **`/steer:tracker-sync`** is the low-level gateway it
-routes all reads/writes through (MCP-first -> `gh` -> manual floor). Agent-authored
-issues follow the machine-readable contract (stable headings + hidden markers);
-`/spec` stays product truth, the issue is the work/decision layer. Other trackers
-use the manual export.
+**A question stays in the spec's `## Open questions`** (structured `Q-NNN`) when
+it is local to one feature and answerable while specifying it; **promote it to
+an issue** when it needs a named owner, blocks several features, needs
+stakeholder or research input, or could outlive the session - then put the ref
+in the question's `tracker:` field. The issue is the decision *workflow*; the
+spec or an ADR is the durable *record*.
+
+On **GitHub Issues**, **`/steer:issues`** is the lifecycle workflow and
+**`/steer:tracker-sync`** the gateway it routes every read and write through.
+Agent-authored issues follow the machine-readable contract (stable headings,
+hidden markers). Other trackers use the manual export.
 
 
 ## Issue-first (GitHub-adopted repos)
 
 > **Applies only where the tracker declaration says `system: github`** - `spec/tracker.md`, or `openspec/steer/tracker.md` on an OpenSpec repo (in a polyrepo member, the workspace's). On any other tracker, or with none declared, skip this section.
 
-When `/spec/tracker.md` declares `system: github` - in a polyrepo member
-(`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
-copy - an issue exists **before the first repository mutation** in exactly two
-cases:
+Where `/spec/tracker.md` declares `system: github` - in a polyrepo member that
+file is the **workspace's** - an issue exists **before the first repository
+mutation** in exactly two cases:
 
 - **High-risk work** (Change classification), and
 - **any of the six value cases**: a planned feature, a tracked bug, work
@@ -466,56 +463,44 @@ cases:
 
 Everything else - a Trivial change, an ordinary Behavioral fix nobody is
 tracking, `/spec` edits, documentation, generated output, lockfiles, a
-plugin-maintenance `/steer:sync` on its own `feat/sync` branch - needs no
-issue: **the PR is the work record**. Reuse the issue the user names;
-otherwise find-or-create one through `/steer:tracker-sync` - an explicit
-"fix / implement / add / create" request does **not** need confirmation to
-create the issue.
+plugin-maintenance sync - needs no issue: **the PR is the work record**. Reuse
+the issue the user names; otherwise find-or-create one through
+`/steer:tracker-sync`. An explicit "fix / implement / add / create" request does
+**not** need confirmation to create it.
 
-- **Capture-only and ambiguous language do not auto-create.** "Note this" /
-  "we should eventually..." is captured deliberately, never inferred into a
-  batch of issues. A large inferred batch takes one confirmation;
-  security-sensitive public disclosure takes human review.
+- **Capture-only and ambiguous language do not auto-create.** "Note this" / "we
+  should eventually..." is captured deliberately, never inferred into a batch. A
+  large inferred batch takes one confirmation; security-sensitive public
+  disclosure takes human review.
 - **Implementation runs through `/steer:work`** - claim, branch, implement,
-  test, open the PR, transition the issue. Commit, push, and the PR are
-  autonomous under Commit autonomy; **merge and deploy are never implied**.
-- **Solo trunk keeps the issue, drops the branch/PR** (Commit autonomy) -
-  close it **from the trunk commit** (`Closes #N`). The issue stays the
-  audit-evidence anchor (Audit-aligned delivery).
-- **Discovered out-of-scope work** gets its own linked issue
-  (related/blocking), not silent scope creep in the current one.
-- **The issue's `steer:state` reflects reality** - work in progress is
-  `validate`, never `done` - and the PR references it with the correct
-  closing/non-closing relation.
-- The scaffold pre-authorizes the tracker write verbs, but your host may block
-  one anyway. A create that is blocked is a **host-permission gate, not a
-  missing issue** - don't loop retrying; confirm with the user, or have them run
-  `!gh issue create ...` under their own identity, then continue. (Full tiering
-  and rationale: ISSUE-WORKFLOW.md, "Host gating" in Operating model.)
+  test, open the PR, transition the issue. **Solo trunk keeps the issue and
+  drops the branch/PR**: close it from the trunk commit (`Closes #N`), since the
+  issue is the audit-evidence anchor.
+- **Discovered out-of-scope work** gets its own linked issue, not silent scope
+  creep in the current one. The issue's `steer:state` reflects reality - work in
+  progress is `validate`, never `done` - and the PR references it with the
+  correct closing relation.
+- A tracker write your host blocks is a **host-permission gate, not a missing
+  issue**: don't loop retrying; confirm with the user, or have them run
+  `!gh issue create ...` themselves, then continue.
 
-Non-GitHub trackers and repos without a `/spec` spine keep today's flow.
-**Calling work a "prototype" does not waive it** - the only durable opt-out
+**Calling work a "prototype" does not waive this.** The only durable opt-out
 from the per-feature branch/PR is solo-trunk delivery mode.
 
 
-## Testing rules
+## Testing
 
 - Every feature change **includes or updates automated tests** in the same PR - never "later."
 - Every bug fix **MUST add a regression test** that fails before the fix and passes after. This is a hard rule.
 - Do **not** delete or skip failing tests to make CI pass. Fix the cause, or explicitly remove the behavior and say so in the PR.
 
-
-## Coverage rules
-
-- Coverage is a **signal to find untested behavior, not a target to hit** - never
-  write shallow tests, or relax assertions, to move a number.
-- **Cover what you touch:** new and changed code paths ship exercised. Prioritize
-  **critical paths, branches, and error handling** over blanket line %.
-- Coverage is **measured and visible every run** (per-stack tooling in `CONVENTIONS`).
-  A coverage drop on changed code is **drift** - surface it for human review, never
-  silently (see Drift gates).
-- No global "fail under N%" vanity gate; CI gates only **changed-line** coverage. The
-  reviewer judges adequacy (see You are not the gate).
+**Coverage is a signal to find untested behavior, not a target to hit** - never
+write a shallow test, or relax an assertion, to move a number. **Cover what you
+touch**: new and changed code paths ship exercised, prioritising critical paths,
+branches and error handling over blanket line percentage. It is measured every
+run, and a drop on changed code is **drift** - surface it (Drift gates). There
+is no global "fail under N%" gate; CI gates changed-line coverage only, and the
+reviewer judges adequacy.
 
 
 ## Commit autonomy
