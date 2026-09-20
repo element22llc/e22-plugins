@@ -26,6 +26,9 @@ create the issue.
   audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** gets its own linked issue
   (related/blocking), not silent scope creep in the current one.
+- **The issue's `steer:state` reflects reality** - work in progress is
+  `validate`, never `done` - and the PR references it with the correct
+  closing/non-closing relation.
 - The scaffold pre-authorizes the tracker write verbs, but your host may block
   one anyway. A create that is blocked is a **host-permission gate, not a
   missing issue** - don't loop retrying; confirm with the user, or have them run

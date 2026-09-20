@@ -591,6 +591,9 @@ create the issue.
   audit-evidence anchor (Audit-aligned delivery).
 - **Discovered out-of-scope work** gets its own linked issue
   (related/blocking), not silent scope creep in the current one.
+- **The issue's `steer:state` reflects reality** - work in progress is
+  `validate`, never `done` - and the PR references it with the correct
+  closing/non-closing relation.
 - The scaffold pre-authorizes the tracker write verbs, but your host may block
   one anyway. A create that is blocked is a **host-permission gate, not a
   missing issue** - don't loop retrying; confirm with the user, or have them run
@@ -681,32 +684,28 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
 
 ## Definition of Done
 
-A change is done when **all** of these hold. Reviewers check most of them; CI
-enforces only a thin floor - in **solo-trunk**, where there is no reviewer, that
-floor (the changed-line coverage gate, rule 41; the changelog-fragment gate,
-which is delivery-mode-blind and so fires on a trunk push too; the advisory
-spec-drift warning, rule 55) is the *only* automated backstop. The rest is still on you.
+A change is done when **all five** of these hold:
 
-Items marked **(size-gated)** follow the **Change-size model**: a **Tiny** change
-needs only a PR.
+- [ ] **Intent understood** - you can state what the change is for, and it is the change that was asked for.
+- [ ] **Appropriately tested** - Testing rules; a bug fix carries a regression test that fails before and passes after.
+- [ ] **CI green** - watched to conclusion after push, not assumed (Commit autonomy).
+- [ ] **The contracts and docs this change actually affected are updated** - not a survey of every artifact: the ones this diff made wrong (Spec workflow, Living documentation).
+- [ ] **Merge and deploy went through the required human gates** (Commit autonomy, You are not the gate).
 
-- [ ] Code follows existing patterns in the touched app/package.
-- [ ] Comments carry only a non-obvious *why* - none restate the code, narrate a step, banner a section, or keep dead code (see Code comments).
-- [ ] Tests added or updated; bug fixes include a regression test that **fails before the fix and passes after**. **(size-gated)**
-- [ ] Changed code is covered - critical paths, branches, and error handling exercised; no unexplained coverage drop on the lines this change touches (see Coverage).
-- [ ] CI passes - watched to green after push, not assumed (see Commit autonomy).
-- [ ] Spec updated if behavior changed - the relevant `contract.md`, or `intent.md` if scope changed (see Spec workflow).
-- [ ] Living docs in sync - app guide, `ARCHITECTURE.md`, and a `/spec/history/` entry each updated when their trigger fired (see Living documentation).
-- [ ] Changelog fragment added under `.changes/unreleased/` if the change ships (see Commit autonomy); `CHANGELOG.md` itself left alone - it is generated.
-- [ ] Review-sensitive classes flagged in the PR description (see Drift gates); tracker ref in the PR - or, in solo-trunk, in the closing commit (see Issue tracker).
-- [ ] GitHub-adopted repo **(size-gated)**: the change has a GitHub issue; its `steer:state` reflects reality (work in progress -> `validate`, never `done`); it is referenced with the correct closing/non-closing relation; discovered out-of-scope work was filed as separate linked issues (see Issue-first).
-- [ ] Choices **costly to reverse** captured as an ADR under `/spec/decisions/` - reversal cost is the bar, not novelty (see Spec workflow).
-- [ ] High-risk areas were scoped first (see High-risk areas).
-- [ ] A dev approved the PR - except in solo-trunk (pre-MVP), where there is no PR gate, and under the `solo` protection profile, where the sole dev's read-and-merge is the review (see Commit autonomy).
+That is the whole list. Everything else you owe a change is canonical in its own
+rule and is not restated here - comments (Code comments), coverage (Coverage
+rules), the changelog fragment and the tracker ref (Commit autonomy, Issue
+tracker), the issue and its state (Issue-first), ADRs for choices costly to
+reverse (Spec workflow), review-sensitive classes (Drift gates), high-risk
+scoping (High-risk areas). Ceremony scales with the change (Change-size model).
+
+CI enforces only a thin floor - in **solo-trunk**, where there is no reviewer,
+that floor (changed-line coverage, the changelog-fragment gate, the advisory
+spec-drift warning) is the *only* automated backstop. The rest is on you.
 
 **Hotfix exception (see Hotfix / incident fast-path):** under a declared production
-hotfix, items above may be **deferred** to the mandatory post-incident follow-up -
-**never waived**. The follow-up backfills the issue, the spec/ADR, and the
+hotfix these may be **deferred** to the mandatory post-incident follow-up -
+**never waived**. The follow-up backfills the issue, the spec or ADR, and the
 `/spec/history/` entry so this list is satisfied once the fire is out.
 
 
@@ -982,6 +981,9 @@ parens so it stays actionable there and still applies on any other stack. A
 product's own `CLAUDE.md` adds team-learned patterns on top. Full patterns +
 anti-patterns prose: `/steer:reference conventions`.
 
+- **Follow the patterns already in the touched app/package** - the local idiom
+  wins over a better one introduced in passing; change the house style
+  deliberately, in its own change.
 - **Typed by default** - static typing on wherever the language supports it;
   model the type rather than reaching for an untyped escape hatch. *(TS
   `strict`; Python: type hints checked with a type checker.)*
@@ -1142,7 +1144,7 @@ into a round of per-item confirmations (satisfied items need no ack; only
 genuinely open items need the dev). Track open items with your todo tooling so
 nothing is dropped:
 
-- [ ] **Definition of Done holds** for every change made this session - spec and ADR written, tests added, living docs in sync, tracker refs recorded, drift resolved now rather than deferred to "later", review-sensitive classes flagged for the PR?
+- [ ] **The five Definition of Done items hold** for every change made this session?
 - [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
 - [ ] Worktree closing -> dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook runs `docker:clean`, volumes included; `SessionEnd` only stops containers, keeps volumes, and often does not finish; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` - Parallel worktrees.)
 - [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?

@@ -6,6 +6,9 @@ parens so it stays actionable there and still applies on any other stack. A
 product's own `CLAUDE.md` adds team-learned patterns on top. Full patterns +
 anti-patterns prose: `/steer:reference conventions`.
 
+- **Follow the patterns already in the touched app/package** - the local idiom
+  wins over a better one introduced in passing; change the house style
+  deliberately, in its own change.
 - **Typed by default** - static typing on wherever the language supports it;
   model the type rather than reaching for an untyped escape hatch. *(TS
   `strict`; Python: type hints checked with a type checker.)*
