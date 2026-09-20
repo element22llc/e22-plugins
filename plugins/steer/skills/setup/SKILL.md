@@ -92,14 +92,14 @@ offer after a long scoping pass. Honor that:
   scoping the user expects folds into `init`'s own interview. Don't run a long free-form
   scoping conversation and *then* offer to set up.
 - **Durable decisions wait for the spine.** Design decisions surfaced during onboarding are
-  captured into `/spec` once it exists (`31-decision-capture`), never a memory- or chat-only
+  captured into `/spec` once it exists (`30-spec` § Durable decisions), never a memory- or chat-only
   record.
 - **"Prototype" / "quick" / "throwaway" never waives bootstrap.** A prototype is greenfield: it
   still gets the bundled scaffold and a `/spec` spine. Those words change spec *depth* and
   *ceremony* (lighter interview; declaring solo-trunk mode drops per-feature branch/PR - a
   GitHub-adopted repo still keeps the issue where Issue-first requires one), never *whether* scaffold
   and spine exist. The greenfield-vs-prototype ceremony mechanics are canonical in Spec workflow
-  (`30-spec-workflow`) - don't restate them; route and let that skill own depth.
+  (`30-spec`) - don't restate them; route and let that skill own depth.
 
 (A non-technical owner's idea routes to `/steer:build` instead - bootstrap-inclusive, with its own
 prototype-ceremony handling. This section governs the developer path that lands here.)

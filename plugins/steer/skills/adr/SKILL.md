@@ -18,7 +18,7 @@ the product repo, from the bundled template.
    is absent, stop and route to **`/steer:setup`** - its routing table is the
    canonical state->skill map, and it resolves greenfield-vs-adopt from
    `scan-spine-state.sh` rather than leaving that call to you. Decision capture
-   presumes the spine a bootstrap installs (rule `31-decision-capture`). Test the
+   presumes the spine a bootstrap installs (rule `30-spec` § Durable decisions). Test the
    stamp, not `spec/`: a bare directory can be an empty folder or a foreign
    OpenAPI `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`.
 
@@ -92,8 +92,8 @@ On a clean acceptance, in one change:
    `> Ratified via: in-session` (or `offline-review` when the decision came from a
    review outside the session).
 3. Write **one** `/spec/history/` entry file - what / why / who asked / refs (rule
-   `32-living-docs`: one entry per ratified decision). **In a member** the ADR is
-   this repo's but the history entry is the workspace's - per rule `32-living-docs`.
+   `30-spec` § Living documentation: one entry per ratified decision). **In a member** the ADR is
+   this repo's but the history entry is the workspace's - per rule `30-spec` § Living documentation.
 4. If this ADR supersedes an older one, mark that one
    `Superseded by [link]` - never delete or renumber it.
 

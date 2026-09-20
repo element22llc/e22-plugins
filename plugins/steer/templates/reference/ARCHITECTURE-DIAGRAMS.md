@@ -1,6 +1,6 @@
 # Architecture diagrams
 
-The full-detail companion to the always-on living-docs rule (`32-living-docs`) and
+The full-detail companion to the always-on living-docs rule (`30-spec` § Living documentation) and
 the `spec/design/` layout. It explains how to give a repo an **easily-viewable global
 architecture picture** without letting that picture drift from reality.
 
@@ -217,7 +217,7 @@ per-provider icon URLs there.
 
 ## Drift discipline (single source of truth)
 
-A diagram that lies is worse than none. The rule (`32-living-docs`): the same PR that
+A diagram that lies is worse than none. The rule (`30-spec` § Living documentation): the same PR that
 changes the stack, adds/removes/renames an app or package, or reshapes
 cross-component data flow **updates the diagram too**.
 

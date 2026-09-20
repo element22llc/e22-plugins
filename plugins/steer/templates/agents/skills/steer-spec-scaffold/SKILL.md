@@ -24,7 +24,7 @@ feature, using the canonical templates bundled with this plugin.
    `export-csv`). Ask the dev if it isn't obvious.
 2. Create the folder `spec/features/[id]/` **in the repo that owns the product
    spine**. Normally that is this repo - but in a **member** `spec/features/**`
-   belongs to the workspace (rule `30-spec-workflow`): resolve it by the ladder
+   belongs to the workspace (rule `30-spec`): resolve it by the ladder
    in `/steer-reference polyrepo` and create the feature there, never here. **If
    the folder already exists**, this `[id]` was scaffolded before - do not
    clobber it; go to step 3's reconcile branch.

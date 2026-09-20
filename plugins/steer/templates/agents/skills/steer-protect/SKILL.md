@@ -50,7 +50,7 @@ marker on its first line, flipped to `<!-- steer:delivery-mode=pr-flow -->` so t
 steer hooks resume the per-feature branch/PR flow (the mode is over - the server wall
 now enforces it) - and write a graduation entry under `/spec/history/`. **In a
 member** the `CLAUDE.md` marker is this repo's own and is flipped here; the
-graduation entry goes to the workspace's ledger per rule `32-living-docs`.
+graduation entry goes to the workspace's ledger per rule `30-spec` § Living documentation.
 
 **A one-person repo graduates with the `solo` profile.** GitHub will not let a
 PR's author approve it, so the policy's default 1-approval rule would leave a

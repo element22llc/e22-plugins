@@ -68,7 +68,7 @@ or [`/steer:adopt`](../workflows/adopt.md) (existing code) - so the scoping fold
 into the setup interview and each choice lands as an ADR or `vision.md` entry,
 reviewable in the bootstrap PR. Capturing decisions
 to memory or prose *instead of* a spine that doesn't exist yet is the
-single-source-of-truth break the always-on `31-decision-capture` rule exists to
+single-source-of-truth break the always-on `30-spec` § Durable decisions rule exists to
 prevent.
 
 The same logic applies to **everything a working session surfaces**, not just

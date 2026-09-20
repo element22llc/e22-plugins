@@ -149,7 +149,7 @@ as "stale by that same test".
    (data model, integration boundary, library choice) -> ask the **dev**. Ask,
    don't invent; work through them oldest/most-blocking first.
 
-6. **Fold each answer back into the spec - by tier** (rule `32-living-docs`:
+6. **Fold each answer back into the spec - by tier** (rule `30-spec` § Living documentation:
    *applying a decision already made is not a new decision*).
    - **Auto-apply, no per-edit yes** - answers that decide nothing new: a
      **code-fact** grounded from the code (step 4), or a human-decision the

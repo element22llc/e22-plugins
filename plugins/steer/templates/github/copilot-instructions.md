@@ -324,38 +324,33 @@ Create the artifact when the trigger fires - don't defer it:
   `contract.md`, before or alongside the code - author via **`/steer:spec`**
   (or **`/steer:build`** for a PO). `[id]` is a kebab-case slug (`user-login`).
 - **Hard-to-reverse or cross-cutting choice** (stack, database, auth,
-  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (run
-  **`/steer:adr <slug>`**); the initial stack choice is usually the first.
-  **The bar is reversal cost, not novelty** - a pattern used in one place is a
-  `contract.md` line until a third use makes it the house style.
-- **Behavior changes** -> update the owning `contract.md` in the same PR - plus
-  the app guide (`/spec/app/`) if it describes the old behavior; see Living
-  documentation.
+  deployment) -> ADR at `/spec/decisions/000N-[slug].md` (**`/steer:adr
+  <slug>`**). **The bar is reversal cost, not novelty** - a pattern used in one
+  place is a `contract.md` line until a third use makes it house style.
+- **Behavior changes** -> the owning `contract.md` in the same PR, plus the app
+  guide (`/spec/app/`) if it describes the old behavior.
 - **Open questions** -> the feature's `intent.md` -> `## Open questions`
-  (product-level ones in `vision.md`); sweep and answer them with
-  **`/steer:questions`** before they rot.
+  (product-level ones in `vision.md`); answer them with **`/steer:questions`**
+  before they rot.
 - **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
-  shapes it in the issue, **`materialize`** writes the approved intent to
-  `intent.md` as `Status: draft`; an explicit `/steer:spec approve` flips it
-  to `approved`. The issue is the work record; the spec stays product truth.
+  shapes it in the issue, **`materialize`** writes the approved intent as
+  `Status: draft`, and an explicit `/steer:spec approve` flips it to
+  `approved`. The issue is the work record; the spec stays product truth.
 
-**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**` and the
-product-level files above are the **workspace's** - resolve the spine there,
-never create a local copy; ADRs and `ARCHITECTURE.md` stay per member
-(`/steer:reference polyrepo`).
+Unsure whether something needs a feature spec or an ADR? Ask the dev rather than
+skipping it.
 
-The spec <-> code coupling rules (drift resolution, what counts as behavior, PO
-acceptance) are canonical in the spec-framework reference `/steer:spec` draws
-on. Unsure whether something needs a feature spec or an ADR? Ask the dev
-rather than skipping it.
+**No spine yet, or a repo that never went through bootstrap?** That is
+`/steer:setup`, and it comes **before** feature code - the scaffold and the
+spine, never a hand-written `package.json`, build config or CI. It routes to the
+greenfield interview, to `/steer:adopt` for existing code, or to solo trunk mode
+for a one-person pre-MVP product, and the flows themselves live in the
+spec-framework reference. "Quick" or "throwaway" relaxes the *ceremony*, never
+the scaffold or the spine.
 
-**Greenfield** (new product - an idea, brief, screenshots, or a design export):
-**bootstrap first** (`/steer:init`, or `/steer:build` for a PO) - the bundled
-scaffold **and** the `/spec` spine before feature code; never hand-write
-`package.json` / build config / CI from scratch. Then interview to fill
-`vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
-ambiguity -> `vision.md` -> `## Open questions`), draft feature intents, and get PO
-approval before broad implementation.
+**Brownfield** (change to an existing product): triage -> classify it (Change
+classification) -> Behavioral and High-risk work writes the spec or ADR first ->
+implement -> update the owning `contract.md` if behavior changed.
 
 **UI work, with or without a design export.** A committed export (Claude Design
 ZIP, Figma, screenshots) is a spec to realize in the standard stack, not code to
@@ -364,94 +359,52 @@ normal case: build the UI deliberately rather than defaulting to generic AI
 aesthetics, and capture the reusable decisions in `DESIGN.md` as you go. Full
 walkthrough: `/steer:reference design-sources`.
 
-**A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
-relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
-below; a GitHub-adopted repo still keeps the issue where Issue-first requires one,
-closed from the commit - see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
-bundled scaffold and a minimal `/spec` (vision + the feature intents being
-built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
-to skip bootstrap now.
-
-**Solo greenfield can run on trunk** - when one person is both PO and dev
-pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
-relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
-and graduation are canonical in Commit autonomy.
-
-**Brownfield** (change to an existing product): triage -> classify it (Change
-classification) -> Behavioral and High-risk work writes/updates the spec or ADR
-first -> implement -> update the owning `contract.md` if behavior changed.
-
-**Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
-app with no `/spec`): run **`/steer:adopt`** once - reverse-engineer the spec
-from the code, triage productionization (Keep/Refactor/Rewrite/Reject in
-`PRODUCTIONIZATION.md`), sync in the bundled scaffolding - distinct from a
-per-feature Brownfield change.
-
-
-## Durable decisions land in the spine, not in side-channels
+### Durable decisions land in the spine, not in side-channels
 
 A durable design decision - stack, auth model, data model, architecture, a
-locked scope or MVP cut - belongs in `/spec`: a feature's `intent.md`, a
-`contract.md`, or an ADR (`/steer:adr`). That is the single source of truth a
-teammate inherits from the repo. Scoping conversation, chat summaries, and
-**assistant memory** are working notes, not the record - never let a decision
-survive only there, where the repo carries no trace of it.
+locked scope or MVP cut - belongs in `/spec`: an `intent.md`, a `contract.md`,
+or an ADR. That is the single source of truth a teammate inherits from the repo.
+Scoping conversation, chat summaries and **assistant memory** are working notes;
+never let a decision survive only there. Record each with its ratifier and date
+(Answering a human gate). **No spine yet? Bootstrap before you commit the
+decision, not after** - the scoping dialogue is fine and expected; what waits
+for the spine is the durable capture of what was decided.
 
-**No `/spec` spine yet? Bootstrap before you commit the decision, not after.**
-On a repo with no spine, do not persist architectural choices or a locked scope
-to memory or prose as a stand-in for the missing spine - that is the
-single-source-of-truth break this rule exists to prevent. Run `/steer:init`
-(greenfield) or `/steer:adopt` (existing code) first so the decision lands where
-it is traceable and reviewable in the bootstrap PR. The scoping dialogue itself
-is fine and expected - `init`'s own interview is where it belongs; what waits
-for the spine is the **durable capture** of what was decided. See bootstrap
-precedence in the router and Living documentation (`32-living-docs`). Record
-each decision with its ratifier and date - see Answering a human gate.
-
-
-## Living documentation - document in parallel, not after
+### Living documentation - document in parallel, not after
 
 The PO/dev speaks plainly; **you** translate it into durable artifacts *as the
 work happens*, never in a wrap-up pass. When conversation or implementation
-reveals a requirement, constraint, assumption, risk, trade-off, or decision,
+reveals a requirement, constraint, assumption, risk, trade-off or decision,
 update (or propose) the owning artifact **in the same change as the code**:
+goals and acceptance -> `intent.md` (scope changes need PO approval); behavior,
+data and API -> `contract.md`; a hard-to-reverse choice -> an ADR; ambiguity ->
+`## Open questions`, **never a guessed answer**; usage, workflows, roles,
+configuration, troubleshooting, release notes -> the app guide; stack, the
+apps/packages map, cross-component data flow -> root `ARCHITECTURE.md` with its
+linked diagram; visual identity and reusable tokens -> root `DESIGN.md`. The PR
+that establishes the stack or the first app also retires the scaffold's
+now-false placeholder prose. The full routing table, register and extraction
+discipline: **`/steer:reference traceability`**.
 
-- Intent, goals, acceptance criteria -> the feature's `intent.md` (scope
-  changes need PO approval); behavior/data/API decisions -> `contract.md`;
-  hard-to-reverse choices -> ADR.
-- Ambiguity -> `## Open questions` - **never guess an answer into the spec**.
-- Usage, workflows, roles, configuration, limitations, troubleshooting,
-  release notes -> the app guide (`/spec/app/`).
-- Tech stack, the apps/packages map, cross-component data flow -> root
-  `ARCHITECTURE.md` - updated, with the linked diagram
-  (`/spec/design/architecture-diagram.md`), in the same PR that changes them.
-- Visual identity, reusable design tokens -> root `DESIGN.md`, seeded when the
-  first UI lands and grown on the 3+ rule (Design sources). The PR that
-  establishes the stack or first app also retires the scaffold's now-false
-  placeholder prose - a stub left after the thing it describes exists is
-  drift.
 - A **notable event** - ratified decision, scope change, repo-level event,
   absorbed PO document, incident -> a **new file** under `/spec/history/`
   (`YYYY-MM-DD-HHMM-<slug>.md`), immutable once merged. **An ordinary merged
-  change writes none** - the commit and the PR are its record.
-
-**Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, `/spec/app/`
-and `/spec/history/` are the **workspace's** - write them there via
-`workspace.path`; if it does not resolve, record the event in the PR description
-**and say the workspace ledger still needs the entry**. Never a local copy.
-`ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per member (`/steer:reference polyrepo`).
-
-PO-facing artifacts (intent, vision, app guide) stay plain-language;
-dev-facing ones (contract, ADR) stay precise enough to implement and review
-against. A declined proposal becomes an open question, not silence. Full
-conventions: **`/steer:reference traceability`**.
-
-**Applying a decision already made is not a new decision.** Propagating a
-settled choice into the artifacts that should reflect it is living-docs
-upkeep: make the edit in the same change and let the **PR be the gate** (rule
-`95-not-the-gate`). Pause for a yes only when the *decision itself* is unmade -
-a genuine product / policy / architecture call, anything under High-risk
-areas - or when an edit would clobber filled-in content.
+  change writes none**; the commit and the PR are its record.
+- **Applying a decision already made is not a new decision.** Propagate a
+  settled choice in the same change and let the **PR be the gate**. Pause only
+  when the decision itself is unmade - a genuine product, policy or
+  architecture call, anything under High-risk areas - or when the edit would
+  clobber filled-in content.
+- **Internal ids stay out of end-user surfaces.** ADR ids, tracker refs,
+  `Q-NNN`, feature slugs and `spec/**` paths never reach app UI copy or the app
+  guide's user-facing copy and release notes: say what changed for the user, in
+  the product's own domain language. Refs belong in intent, contracts, ADRs,
+  history, the runbook, PRs and commits.
+- **Polyrepo member** (`spec/PRODUCT.md` present): `spec/features/**`, the
+  product-level files, `/spec/app/` and `/spec/history/` are the **workspace's**
+  - write them through `workspace.path`, never a local copy; if it does not
+  resolve, say so in the PR. `ARCHITECTURE.md`, `DESIGN.md` and ADRs stay per
+  member (`/steer:reference polyrepo`).
 
 
 ## Spec workflow - OpenSpec backend
@@ -961,16 +914,6 @@ prose: `/steer:reference conventions`.
   those characters only - accented letters, guillemets and other non-English
   text are unaffected, and the apostrophe is `'` in every language, French
   included.
-
-
-## Internal ids stay out of end-user surfaces
-
-ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths are
-internal traceability. Keep them out of **app UI copy** (titles, labels, badges,
-tooltips, empty/error states, emails) and **`/spec/app/` guide copy and release
-notes** - state what changed for the user, not the record behind it; use the
-product's own domain language (`spec/glossary.md`, linked not copied). Refs
-belong in intent, contracts, ADRs, history, runbook, PRs, commits.
 
 
 ## You are not the gate - the DEV is

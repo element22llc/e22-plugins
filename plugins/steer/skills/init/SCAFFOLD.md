@@ -17,7 +17,7 @@ live once, in the workspace. The member still gets its own internals:
 `spec/decisions/`, `spec/design/`, `DESIGN.md`, `ARCHITECTURE.md`,
 `PRODUCTIONIZATION.md`, and the whole non-`spec/` scaffold. Writing the
 product-level files here manufactures the split-brain spine rule
-`30-spec-workflow` and `/steer:reference polyrepo` exist to prevent - if you
+`30-spec` and `/steer:reference polyrepo` exist to prevent - if you
 cannot tell which role this repo plays, say so and stop rather than write them
 locally. Everything else in this step is unchanged.
 
