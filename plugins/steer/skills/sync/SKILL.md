@@ -2,9 +2,9 @@
 name: sync
 description: "Bring a bootstrapped repo up to date with the current plugin - apply ledger migrations, reconcile spine + scaffold against current templates, repair capability wiring and stale invocations, re-stamp /spec/.version, and land a PR. Read-then-propose, never clobbers."
 when_to_use: >-
-  Use on a steady-state repo after a plugin release, when an upstream rename or
-  missing capability wiring needs repair, or with --check for a read-only
-  capability + drift report with no branch or PR.
+  Use on a steady-state or OpenSpec repo after a plugin release, when an upstream
+  rename or missing capability wiring needs repair, or with --check for a
+  read-only capability + drift report with no branch or PR.
 argument-hint: "[--check]"
 allowed-tools:
   - Bash(git status *)
@@ -119,10 +119,22 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    role step 6 needs, and the declared tracker repository. Run it **once** here
    and carry the values forward.
 
-   Only **`damaged`** and **`managed`** are sync cases. **`unmanaged`** or
-   **`foreign`** is not: stop and redirect per `/steer:setup`'s routing table
-   (the canonical state->skill map) - never "reconcile" a directory steer never
-   wrote. **Before creating any branch, record the currently checked-out
+   **`damaged`**, **`managed`** and **`openspec`** are sync cases.
+   **`unmanaged`** or **`foreign`** is not: stop and redirect per
+   `/steer:setup`'s routing table (the canonical state->skill map) - never
+   "reconcile" a directory steer never wrote. **`openspec-setup`** is not either:
+   steer's side is not laid down yet, so instantiate
+   `openspec/steer/tracker.md` per setup's row rather than syncing.
+
+   **On `openspec`, sync runs against steer's surface only** - the scaffold
+   (mise, compose, CI, PR template) and the three artifacts under
+   `openspec/steer/`. OpenSpec owns the spec spine (rule
+   `33-spec-workflow-openspec`), so `spec/**` is off-limits: never reconcile a
+   `spec/` spine here and never write `spec/.version`, which is the competing-spine
+   marker that rule exists to prevent. The state is a sync case precisely because
+   the v6.4.0 ledger entry that folds pre-fold artifacts into `openspec/steer/`
+   applies here - the unmanaged-repo hook and rule 33 both send this repo to sync
+   for it. Steps 3, 7 and 8 carry the three consequences. **Before creating any branch, record the currently checked-out
    branch - call it `BASE`:**
 
    ```sh
@@ -160,7 +172,11 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
 
    `unstamped` means the repo predates stamping (bootstrapped before this
    feature) - treat `FROM` as `0.0.0` and rely on each migration's precondition
-   to decide what actually applies. If `FROM` already equals `TARGET`, no
+   to decide what actually applies. An **`openspec`** repo reads as `unstamped`
+   by design and stays that way: steer does not own its spine, so there is no
+   stamp to read and none is ever written. The whole ledger therefore walks by
+   precondition on every sync there - which is correct, since the precondition is
+   the safety mechanism and every entry is idempotent and self-detecting. If `FROM` already equals `TARGET`, no
    **version-keyed** entry can be pending - but do **not** skip step 4: an entry
    headed `### [Unreleased]` carries no version to compare, and skipping it here
    would strand it on exactly the repos already stamped at that version, which is
@@ -212,7 +228,9 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    before executing. All are additive and never clobber; under `--check` they
    report only.
 
-7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value):
+7. **Re-stamp.** Write `TARGET` into `/spec/.version` (overwrite the old value)
+   - **skip this step entirely on an `openspec` repo**, where writing that file
+   would lay the competing spine marker step 1 forbids:
 
    ```
    # Spec-spine version - managed by /steer:init, /steer:adopt, /steer:build,
@@ -220,7 +238,11 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    <TARGET>
    ```
 
-8. **Record and hand off.** Write a `/spec/history/` entry (what synced -
+8. **Record and hand off.** On an **`openspec`** repo the PR description is the
+   record - rule 33 makes the OpenSpec archive this repo's action history and
+   names only three artifacts as steer's, so write no `spec/history/` entry here
+   and put the same content in the PR body. Everywhere else, write a
+   `/spec/history/` entry (what synced -
    `FROM -> TARGET`, which migrations applied, which templates reconciled, which
    capability gaps repaired - why, who asked, refs) - in a member, to the
    workspace's ledger per rule `32-living-docs`; the member's own durable record
@@ -251,7 +273,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    | Capability needs an external secret/config (`claude.yml` API key; branch protection) | Human decision required | Dev adds `ANTHROPIC_API_KEY`, or applies the gate via `/steer:protect` |
    | Capability follow-up after a created file (Issue Forms added) | Recommended | `/steer:issues bootstrap-labels` |
    | Sync PR open, awaiting review | Human decision required | A dev reviews/merges the PR (no command) - execution is done, integration is not |
-   | Nothing pending; `/spec/.version` current; all capabilities present-and-wired | Complete | `No action is currently required.` |
+   | Nothing pending; `/spec/.version` current (n/a on `openspec`); all capabilities present-and-wired | Complete | `No action is currently required.` |
 
    Pick one `Current recommended action` by precedence (a failed migration
    outranks a capability gap). An opened-but-unmerged sync PR is **not**

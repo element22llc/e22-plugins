@@ -42,7 +42,7 @@ the spine state *means* - see "Polyrepo" below - so read both lines before routi
 | `managed` + template drift flagged | bootstrapped but behind a plugin release | **`/steer:sync`** (update) |
 | `managed`, no drift | already current | nothing to do - say so, suggest `/steer:next` |
 | `openspec-setup` | OpenSpec spine; steer's tracker declaration missing | **do not init/adopt** - create `openspec/steer/tracker.md` from `templates/spec/tracker.md`, then scaffold only (below) |
-| `openspec` | OpenSpec spine, steer's side present | scaffold/drift only - **`/steer:sync`** if the toolchain is behind; otherwise nothing to do |
+| `openspec` | OpenSpec spine, steer's side present | scaffold/drift only - **`/steer:sync`**, which admits this state and reconciles steer's surface (scaffold + `openspec/steer/**`) without touching `spec/`; otherwise nothing to do |
 
 **An OpenSpec repo (`openspec/`) never routes to `/steer:init` or
 `/steer:adopt`.** Both write a `spec/` spine from `templates/spec/` and stamp

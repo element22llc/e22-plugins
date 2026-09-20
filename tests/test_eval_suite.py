@@ -39,6 +39,13 @@ SCAFFOLD_VARIANTS = {
     "legacy": {
         "routes-vibe-coded-app-to-adopt",
     },
+    # OpenSpec owns the spec spine, so neither the managed nor the legacy fixture
+    # fits: a spec/.version stamp would contradict the state under test, and an
+    # unspecified tree would route to adopt. The pre-fold residue in spec/ is what
+    # makes the ask a sync case.
+    "openspec": {
+        "routes-openspec-behind-to-sync",
+    },
 }
 
 
