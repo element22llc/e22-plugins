@@ -94,7 +94,7 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
-### [Unreleased] - `policy/delivery.yml` declares how the repo delivers
+### v6.5.0 - `policy/delivery.yml` declares how the repo delivers
 
 (Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
 

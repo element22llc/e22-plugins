@@ -2,7 +2,9 @@
 
 Read this file only when `promote` is the subcommand. It is the one unit of work
 in `/steer:work` that is **not issue-scoped**: the thing being delivered is
-everything already merged to the default branch.
+everything already merged to the default branch, which is why the skill's
+Preconditions step 0b exempts it from the tracker read and the issue
+find-or-create.
 
 **What this owns and where it stops.** It prepares and opens PRs. **Merging the
 promotion PR is the production gate and stays human** (rule `45-commit-autonomy`,

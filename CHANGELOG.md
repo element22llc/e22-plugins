@@ -3,6 +3,254 @@
 All notable changes to the `e22-plugins` marketplace. Each plugin is versioned
 in its own `.claude-plugin/plugin.json`; this file records what changed and when.
 
+## 6.5.0
+
+- **`/steer:audit code` takes an optional `--since <ref>` diff scope.** An
+  unscoped sweep reviews a corpus that mostly has not changed in years, so it
+  always finds *something*, each run finds a *different* something, and the
+  finding count never trends down however much gets fixed - which makes "audit
+  until a round is clean" a wait on a stochastic sampler rather than on the
+  work. `--since <ref>` bounds the reviewers to what `git diff <ref>...HEAD`
+  changed plus each changed file's counterparty surfaces (a changed skill's
+  rule, a changed rule's skills, a changed module's tests), so the surface is
+  finite and shrinks as it is repaired. Whole-repo stays the default: a
+  periodic standards pass is supposed to see the whole tree. Under a scope each
+  reviewer is handed the file list explicitly rather than the ref (a reviewer
+  that reads the whole tree while believing it is scoped produces exactly the
+  findings the scope excluded), a finding must implicate a changed file, and
+  anything else is reported as a one-line pre-existing count - never ranked,
+  never the headline. The report header states which scope ran, so a bounded
+  sweep cannot be read as a clean bill of health. `spec` mode takes no scope:
+  as-built-vs-intended is a question about the whole spine.
+
+- **A repo now declares how it delivers, in `policy/delivery.yml`, and rule 52
+  follows it.** The deployment rule used to *impose* one model on every managed
+  repo - AWS, `non-prod`/`prod`, a reviewed `main -> prod` promotion - so a repo
+  that deploys somewhere else, or nowhere at all, was handed an always-on rule
+  that was simply false about it, with no way to say so short of ignoring the
+  rule. The new scaffold file declares the facts instead: `environments`,
+  `deploy_on_merge`, `production_gate` (`prod-branch-pr`, `github-environment`,
+  `manual` or `none`), `review_apps`, and `observability`. It is seeded with
+  today's org defaults, so nothing changes for an existing repo, and a migration
+  ledger entry writes it into already-bootstrapped repos - reconciling the
+  values against what the repo demonstrably does rather than assigning it the
+  default, and saying which values were inferred and from what.
+  `/steer:protect` reads `production_gate` and stops proposing a `prod` branch
+  to a repo whose gate lives elsewhere, saying plainly that it cannot verify a
+  gate outside branch protection. The AWS shape and the reasoning for gating
+  prod on a branch move to `/steer:reference conventions`, where the rule points
+  for them. **Merge and deploy stay human in every model**: a `production_gate`
+  value declares *which* human step applies, never that there is none.
+  An empty `observability` list is allowed and means "not wired yet" - steer
+  flags unobservable as a gap to close, not a rule broken.
+
+- **`/steer:work promote` owns the production promotion PR.** Rule 52 mandated a
+  reviewed `main -> prod` promotion and `/steer:protect` configured the branch,
+  but no skill ever opened the PR - so the one delivery step with a mandated
+  shape had no owner, and the consumer changelog cut that belongs to it had to
+  be run by hand. `promote` is a subcommand of `work` rather than a release
+  skill of its own: it is delivery, and `work` already owns branch -> PR ->
+  watch. It is the one unit of work there that is **not issue-scoped** - what
+  ships is everything already merged, so it is exempt from `work`'s tracker
+  read and its issue find-or-create. It reads `policy/delivery.yml`'s
+  `production_gate` first and only drives `prod-branch-pr`; under
+  `github-environment` or `manual` it reports what is unreleased and stops,
+  because approving a deployment is the human's own action and there is no PR to
+  open, and under `none` it says the repo declares no production. It refuses to
+  create a missing `prod` branch itself - an unprotected `prod` is a gate that
+  looks real and is not - and points at `/steer:protect`. The changelog cut
+  lands in **its own PR to the default branch**, not inside the promotion PR:
+  `.changes/unreleased/` lives on the default branch, so a cut that existed only
+  on `prod` would leave the fragments pending to be cut again and the two
+  `CHANGELOG.md` files permanently divergent. Re-running `promote` after that
+  merges opens the promotion PR, and a second run updates the open PR rather
+  than opening another. **Merging it deploys production and stays the human
+  gate** - `promote` never merges, never deploys, never pushes to `prod`.
+
+- **Subagents now receive a short digest of the standards that bind them.** The
+  always-on ruleset is delivered as SessionStart context and a subagent inherits
+  none of it - the Agent tool starts a fresh conversation - so a
+  `general-purpose` subagent editing code during `/steer:work` ran with no
+  scope, testing, secrets or gate rules at all, and `steer-reviewer` audited a
+  slice against standards nobody had handed it. Rule `26-context-hygiene`
+  actively steers heavy work *to* subagents, so that was not a marginal share of
+  steer-governed work. A new `SubagentStart` hook injects a ~1.6 KB digest as
+  `hookSpecificOutput.additionalContext`: stay in the scope you were given,
+  report out-of-scope findings instead of acting on them, follow the patterns
+  already in the file you touch, tests come with the change, run the checks your
+  change implicates, never commit a secret, never merge or deploy or push to a
+  protected branch, and say plainly what you did not do. **A digest, not the
+  ruleset** - the full payload is ~60,000 characters and would be paid per
+  spawn, defeating the point of delegating for a fresh window; anything more
+  specific is one `rules/` read away, and the digest says so. The matchers are
+  the safety boundary: `^general-purpose$` and `^steer:steer-reviewer$` only,
+  anchored because a plugin-scoped id puts the colon on the regular-expression
+  path. `Explore` and `Plan` read and propose, pay nothing today, and stay that
+  way - the hook re-checks the agent type itself rather than trusting the
+  matcher, so widening one in `hooks.json` cannot silently start injecting into
+  every subagent. Fail-open throughout, and a hook test caps the digest at 2,048
+  bytes so it cannot quietly grow back into the ruleset.
+
+- **The shipped workflow templates' action pins are kept current on a
+  schedule.** `anthropics/claude-code-action` was pinned at v1.0.231; the other
+  four actions were already at their current release. Dependabot cannot
+  maintain these pins - its `github-actions` ecosystem scans only
+  `/.github/workflows` and a root `action.yml`, with no escape hatch for a
+  templates tree - so what rots is the *initial* pin a freshly bootstrapped
+  repo receives (a consumer's own shipped `dependabot.yml` takes over from
+  there). `template-pin-refresh.yml` now resolves each pinned tag's successor
+  weekly and opens one human-reviewed PR, bump-up only and never auto-merged,
+  the same shape `version-policy-refresh.yml` already uses for the EOL floors.
+  Nothing gates pins at build time: a stale pin is a PR waiting to be opened,
+  not a red build. The resolver deliberately ignores a moving major tag
+  (`releases/latest` returns `v1` for `claude-code-action`, a tag whose commit
+  changes under a pin) and fails loudly on a lookup error, so "could not ask
+  upstream" can never read as "nothing to do".
+
+- **Cross-agent parity now stops at skills and prose - the Copilot CLI hook
+  variant is retired.** `hooks/copilot-hooks.json`, its generator
+  (`gen_copilot_hooks.py`), its byte-equality drift gate
+  (`check_copilot_hooks.py`) and the `STEER_HOOK_TARGET=copilot` branches inside
+  the hook scripts are gone, and the Copilot plugin manifest no longer declares
+  a `hooks` path. A second hook manifest cost a generator, a gate, a per-hook
+  porting decision and a softened `ask` envelope on every dual-target script -
+  for a surface steer never promised parity on, carrying gates that were
+  *ported, not proven* (whether the Copilot CLI even exports `CLAUDE_PLUGIN_ROOT`
+  was never verified). What replaces it is an honest statement: **hook
+  enforcement is guaranteed on Claude Code only.** The Copilot CLI takes the
+  standards from the committed `.github/copilot-instructions.md`, and Copilot
+  Chat in VS Code keeps running the plugin's `hooks.json` directly - the ruleset
+  injector still recognises its payload shape and answers with the JSON envelope
+  it reads - but incidentally, with no parity promise. The generated
+  `.agents/skills/` tree, the Copilot instructions and the custom agents stay
+  first-class, generated and gated.
+
+- **ASCII everywhere stays a rule; its runtime enforcement goes.** The
+  `PreToolUse` write gate (`check-ascii-writes.sh`), its `hooks.json`
+  registration and its hook tests are removed, and rule 85's bullet no longer
+  claims a hook denies the character - the convention is unchanged and
+  reviewers catch strays. A deterministic style preference does not need a
+  per-keystroke gate in every session: the hook could not see Bash heredoc
+  writes anyway (the gap #568 proposed to close with a CI backstop, now closed
+  as won't-fix), and the two guards that actually protect a consumer repo are
+  kept - the bundled templates are still swept for typographic characters, so
+  `/steer:init` can never install a file that breaks the rule it ships, and the
+  character table still has to agree with the bulk pattern that scans it. The
+  table moved with its remaining caller: `hooks/lib/typographic.sh` is now
+  `scripts/typographic.sh`, repo tooling behind `mise run check-ascii`, and
+  ships nothing. `steer:allow-typographic` keeps its meaning as the declared
+  exception, now read by a reviewer or a repo's own sweep rather than a hook.
+
+- **The comment-density notice is advisory only; its blocking tier is gone.**
+  `check-comment-density.sh` kept two tiers: an advisory notice from a fifth of
+  a file's non-blank lines, and a `decision: "block"` above a third that
+  re-fired on every write while the file stayed over, capped at three. The block
+  ran on `PostToolUse`, where the write has already landed - so it bought
+  loudness, not enforcement, and the PR review was the wall either way. One
+  threshold remains, at a fifth, emitting `additionalContext` once per file per
+  session; rule 08 says advice rather than "blocks above a third". Two pieces of
+  machinery go with the tier: the block cap and its recover/regress marker
+  resets, which existed only to stop a blocking notice nagging, and the
+  `BLOCKED:` text prefix the Copilot CLI got in place of a decision field. The
+  `steer:allow-comments <reason>` waiver still silences the notice and still
+  requires its reason - but with nothing to escape, its `#`/`//`-only parser
+  (#576) stops mattering, which is why that issue closes as won't-fix.
+
+- **The Definition of Done is five items, not thirteen.** It had grown into a
+  second copy of the ruleset: comments, coverage, the changelog fragment, the
+  tracker ref, the issue and its `steer:state`, ADRs, drift classes, high-risk
+  scoping and PR approval were each restated there as well as in the rule that
+  owns them - so a policy change had two places to land and a reader had two
+  wordings to reconcile. It now carries only what "done" means: intent
+  understood, appropriately tested, CI green, the contracts and docs this change
+  **actually affected** updated (not a survey of every artifact), and merge and
+  deploy through the required human gates. Everything else is **named, not
+  repeated**, with a pointer to its owning rule. Two clauses that lived nowhere
+  else moved rather than being dropped: "follow the patterns already in the
+  touched app/package" is now a practices bullet, and the issue's `steer:state`
+  reflecting reality is now part of issue-first. Rule 99's end-of-session check
+  stops re-listing the items, and the scaffold PR template says which rules its
+  testing aids serve. The hotfix exception is unchanged: deferred to the
+  post-incident follow-up, never waived.
+
+- **The rotted-question escalation no longer gives GitHub-only advice on a
+  non-GitHub tracker.** `check-open-questions.sh` escalates a blocking question
+  left open past the staleness threshold and told every repo to "promote (assign
+  its owner via tracker.md)", closing with "promotion files a `spec-question`
+  issue and assigns the owner role via the `owners:` map". Both are GitHub
+  Issues operations: on Jira, Linear, `none-yet`, or a repo with no tracker
+  declared, no issue gets filed and there is no `owners:` map to assign from, so
+  the loudest notice steer emits was wrong every session. The hook now resolves
+  the tracker system once (via the existing `steer_tracker_is_github` predicate,
+  which fails open, so an ambiguous polyrepo member keeps today's wording) and
+  switches the promotion advice to the manual path - open the work item in the
+  declared tracker, then write its ref into the question's `tracker:` field.
+  The escalation itself is unchanged in every tracker: only the advice differs.
+  The GitHub line also now names the resolved tracker path rather than a
+  hard-coded `tracker.md`, matching the footer and pointing an OpenSpec repo at
+  `openspec/steer/tracker.md`.
+
+- **`/steer:protect` no longer refuses a repo whose tracker is not GitHub
+  Issues.** Its first precondition read `/spec/tracker.md` and stopped unless
+  `system: github`, so a product with GitHub-hosted code and a Jira, Linear, or
+  not-yet-declared tracker could not set up branch protection at all - it lost
+  the server-side PR gate for a reason unrelated to protection. The dependency
+  was never the tracker: it is a GitHub **remote**, which the skill's own
+  `owner/repo` precondition already resolves and already fails cleanly on. That
+  precondition is removed, leaving `gh auth status` and the remote as the two
+  real ones, with the reasoning recorded inline so it cannot be reintroduced.
+  The `/steer:init` and `/steer:adopt` next-action rows that gated the same
+  recommendation on "GitHub tracker" now say GitHub remote.
+
+- **The hook test suite now passes on WSL2.** `scan-prereqs.sh` fingerprints WSL
+  from two host facts - `WSL_DISTRO_NAME` and a `microsoft` match in
+  `/proc/version` - and the suite's "Linux, no WSL" case controlled neither: it
+  faked `uname` but inherited the real environment variable, and nothing could
+  stub the file. On the sanctioned Windows setup a clean checkout therefore ran
+  red (`prereqs: os Linux (no WSL) -> linux`, got `wsl2`) while passing on macOS
+  and non-WSL Linux. The probe now reads `${STEER_PROC_VERSION:-/proc/version}`,
+  a seam the harness stubs per case, and the three OS cases each pin both
+  signals - so the no-WSL case unsets the variable and points at a plain kernel
+  string, and a new case covers the `/proc/version` signal on its own. Runtime
+  detection is unchanged: with the variable unset, the probe reads the real file.
+
+- **`/steer:sync` no longer turns away the OpenSpec repos sent to it.** Rule 33,
+  the unmanaged-repo session check and the v6.4.0 migration ledger all route an
+  `openspec` repo carrying pre-fold steer artifacts to `/steer:sync` - whose own
+  entry gate admitted `damaged` and `managed` only and redirected everything
+  else back to `/steer:setup`, which sent it to sync again. The one documented
+  way to apply that migration was a loop. Sync now admits `openspec` and states
+  what it means there: it reconciles steer's surface only - the scaffold and the
+  three artifacts under `openspec/steer/` - and treats `spec/**` as off-limits,
+  since writing a `spec/` spine or a `spec/.version` stamp is the competing spine
+  rule 33 exists to prevent. Two consequences follow and are written into the
+  steps: an `openspec` repo reads as `unstamped` by design, so the whole ledger
+  walks by precondition on every sync (the precondition is the safety mechanism,
+  and every entry is idempotent), and the sync's record is the PR description,
+  because rule 33 makes the OpenSpec archive that repo's action history.
+  `openspec-setup` is unchanged - steer's side is not laid down yet, so it still
+  instantiates the tracker per setup's row rather than syncing. A routing eval
+  case covers the misroute, with a fixture whose spine state is `openspec`.
+
+- **The Copilot instructions no longer tell every repo it runs on OpenSpec.**
+  `.github/copilot-instructions.md` is a flat, always-on file with no
+  conditional-injection mechanism, so a rule the Claude hook gates by predicate
+  shipped to every consumer with its marker simply stripped. Rule 33 therefore
+  told a native `spec/` repo "This repo carries an `openspec/` spine, so
+  **OpenSpec owns the spec artifacts**" and "Never create
+  `spec/features/<id>/intent.md` here" - flatly contradicting the unqualified
+  Spec workflow rule in the same file. The generator now states a trait-scoped
+  rule's precondition under its heading ("Applies only to a repo whose spec
+  spine is OpenSpec ... skip this section entirely"), which the reader can check
+  and which is simply true on the repo the rule is for. `has-iac` and
+  `tracker-github` get the same treatment; `12-stack-infra` keeps its
+  path-scoped `instructions/` file, where `applyTo` already gates it.
+  `check_copilot_instructions.py` now **fails** on a rule whose `inject-when`
+  token is neither qualified, routed to a scoped file, nor recorded as
+  deliberately unqualified with a reason - so the next trait-scoped rule cannot
+  ship unqualified by default, which is how this one did.
+
+
 ## 6.4.0
 
 - **A repo can now drive its spec spine with OpenSpec and keep every other

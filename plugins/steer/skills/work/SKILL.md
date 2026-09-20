@@ -1,13 +1,13 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end - claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer:issues, routing tracker-metadata I/O through /steer:tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path."
+description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition; the counterpart to /steer:issues. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
-  #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted
-  repo needs an issue found-or-created and then implemented. Add --reviewed for
-  any change costly to unwind ("deliver X carefully", "do this with review").
-  Add --hotfix only for a real production incident ("prod is down", "emergency
-  fix") - never for ordinary urgent work.
+  #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue
+  found-or-created and then implemented. Add --reviewed for any change costly to
+  unwind ("do this with review"). Add --hotfix only for a real production
+  incident ("prod is down") - never for ordinary urgent work. Use promote to
+  ship what is already on the default branch to production ("promote to prod").
 argument-hint: "[start | resume | status | finish | promote] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
@@ -67,6 +67,11 @@ These hold for the whole run, in every mode.
    `intent.md` means the workspace has not been read yet, never that the feature
    is unspecified - **never** author product-level spec files here to fill the
    gap.
+0b. **`promote` is exempt from steps 1 and 3.** It is not issue-scoped - the
+   thing being delivered is everything already merged to the default branch - so
+   it reads no tracker and finds-or-creates no issue. Its only GitHub dependency
+   is the remote, the same reason `/steer:protect` does not gate on the tracker
+   either. Read `modes/promote.md` and start at its Step 1.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
    this is the **workspace's** `spec/tracker.md` resolved in step 0 - a member
