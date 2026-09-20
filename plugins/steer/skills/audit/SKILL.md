@@ -5,7 +5,7 @@ when_to_use: >-
   Use for a periodic standards-conformance pass - code health and the
   highest-leverage improvements (code), whether the build matches what the
   tracker asked for (spec), or both.
-argument-hint: "[code | spec | all]"
+argument-hint: "[code | spec | all] [--since <ref>]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -73,8 +73,8 @@ govern how each finding gets *resolved*.
 
 ## Pick the mode for the question you're asking
 
-- **`code`** *(default - bare `/steer:audit`)* - whole-repo **code-vs-standards**
-  health sweep: review the codebase across the standards dimensions, **vet**
+- **`code`** *(default - bare `/steer:audit`)* - **code-vs-standards** health
+  sweep, whole-repo unless `--since <ref>` bounds it: review the codebase across the standards dimensions, **vet**
   every candidate finding against the code it cites, rank survivors by
   **leverage**, **propose** routing into `/spec`, and hand the survivors to
   `/steer:issues publish-audit` - the separate filing step.
@@ -88,6 +88,28 @@ govern how each finding gets *resolved*.
   own ranked report and routing. Use it for a full periodic pass (health **and**
   conformance) before a release. If there is no `/spec` spine, `spec` can't run -
   say so and run `code` only. Read each mode's procedure file as you reach it.
+
+## Optional diff scope - `--since <ref>`
+
+`code` mode (and the `code` half of `all`) accepts **`--since <ref>`**: review
+only what `git diff <ref>...HEAD` changed, plus each changed file's counterparty
+surfaces (a changed skill's rule, a changed rule's skills, a changed module's
+tests). **Whole-repo stays the default** - a periodic standards pass is supposed
+to see the whole tree.
+
+Use it when the question is "did *this work* introduce anything", not "how
+healthy is this repo": before a release, on a long-lived branch, or when an
+unscoped sweep keeps returning the same unrelated backlog. That is the failure
+the flag exists for - an unscoped reviewer samples a corpus that mostly has not
+changed in years, so it always finds *something*, each run finds a *different*
+something, and the count never trends down however much you fix.
+
+Under a scope, a finding must implicate a changed file. Anything else is
+**pre-existing**: count it in one line ("N findings outside the scope, not
+listed - run without `--since` to see them"), never rank it, and never let it
+head the report. Do not widen the scope because a neighbouring file looks
+suspect. `spec` mode takes no scope: as-built-vs-intended is a question about the
+whole spine, and a diff cannot answer it.
 
 **Read only the procedure file for the mode you are running.** They answer
 different questions ("is what we built healthy and standards-aligned?" vs. "did
