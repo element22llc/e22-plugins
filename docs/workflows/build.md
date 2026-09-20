@@ -71,7 +71,7 @@ resuming once the build is handed off - every box in its handoff gate checked.
     `/infra`, no real secrets or third-party accounts.
     Issue-first is scoped to `system: github`, so it does not apply in prototype
     mode at all; once the repo is GitHub-adopted it does, and the issue survives
-    for any change above [Tiny](../concepts/sdlc.md#change-size). It does **not** skip
+    wherever [Issue-first](../concepts/lifecycle.md#issue-first) requires one. It does **not** skip
     the plugin's **bundled scaffold**
     (`mise.toml`, `compose.yaml`, CI, PR template, `.gitignore`, ...) or
     the `/spec` spine. A prototype is still greenfield: it gets the scaffold (so it

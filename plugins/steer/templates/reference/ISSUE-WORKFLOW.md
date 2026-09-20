@@ -23,12 +23,15 @@ Two invariants underpin everything:
 
 1. **Local interactive Claude Code is the primary worker.** Unattended GitHub
    Actions execution is out of scope and would require a separate explicit signal.
-2. **Every implementation-affecting mutation has a GitHub issue first** - in a
+2. **High-risk work and the six value cases have a GitHub issue first** - in a
    GitHub-adopted repo (`/spec/tracker.md` -> `system: github`), reuse the issue
-   the user names or create one before the first code/config/infra/behavior
-   change. "Implementation-affecting" is the scope: editing the `/spec` spine,
-   documentation, generated output, lockfiles, and a **Tiny** change (Change-size
-   model - the PR is the evidence anchor instead) are exempt. Two non-blocking
+   the user names or create one before the first mutation when the work is
+   High-risk (Change classification) or is a planned feature, a tracked bug,
+   work spanning more than one session, work coordinated between people, a
+   product decision or acceptance to record, or a discovered follow-up.
+   Everything else - a Trivial change, an untracked fix, the `/spec` spine,
+   documentation, generated output, lockfiles - lets the PR be the work
+   record. Two non-blocking
    safety nets reinforce this - a PreToolUse nudge at the first editor write, and
    a Stop-time working-tree reconciliation that catches Bash-mediated mutations
    the editor nudge never sees. Both report; neither enforces.

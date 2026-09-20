@@ -2,7 +2,7 @@
 
 The org-wide engineering standards (stack defaults, monorepo layout,
 spec workflow, testing rules, Definition of Done, high-risk areas, secrets
-handling, change-size model, baseline patterns/anti-patterns, design sources)
+handling, change classification, baseline patterns/anti-patterns, design sources)
 are **injected automatically every session** by the **`steer`** plugin
 from the `e22-plugins` marketplace - see `.claude/settings.json`. They are maintained
 centrally in [`element22llc/e22-plugins`](https://github.com/element22llc/e22-plugins)
@@ -53,8 +53,9 @@ branch protection; run `/steer:protect` to verify/apply it). This is the default
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:init` when one person is both PO and dev with no MVP yet): commit directly
 to `main` and push, no per-feature branch or PR, until graduation. Issue-first still holds
-(a change that needs an issue keeps it, closed from the trunk commit - a Tiny change
-needs none, per the Change-size model); only the branch
+(a change that needs an issue keeps it, closed from the trunk commit - work
+that needs none, per Change classification, has the PR or commit as its
+record); only the branch
 and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
 Definition of Done are unchanged. **Graduate** to `PR flow` - run
 **`/steer:protect`**, which raises the server-side PR wall - the moment the MVP

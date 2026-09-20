@@ -38,9 +38,9 @@ it. `/steer:protect` moves a repo between them, and there is no third mode.
   applies unchanged - you still never merge - but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
   the exception in an ADR.
-- In a GitHub-adopted repo, the **first mutation** of a unit of work
-  presupposes an active GitHub issue (see Issue-first) - autonomy is unchanged
-  once that issue exists.
+- In a GitHub-adopted repo, the **first mutation** presupposes an active
+  GitHub issue **where Issue-first requires one** - otherwise the PR is the
+  work record. Autonomy is unchanged either way.
 - **Commit without asking** whenever a coherent unit of work is done - tests
   pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:

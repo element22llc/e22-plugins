@@ -37,7 +37,7 @@ inside **WSL2** - see [Windows: develop in WSL](#windows-develop-in-wsl).
 - [Architecture](./ARCHITECTURE.md) - tech stack, the apps/packages map, and how the pieces fit together
 - [Action history](./spec/history/) - what changed, why, who asked, and where it's specified (one file per entry)
 - [Issue tracker](./spec/tracker.md) - which tracker this product uses and how work items are referenced
-- [CLAUDE.md](./CLAUDE.md) - the operating manual: stack, spec workflow, testing, change-size model
+- [CLAUDE.md](./CLAUDE.md) - the operating manual: stack, spec workflow, testing, change classification
 - [File a feature request](../../issues/new?template=feature.yml)
 - [File a bug report](../../issues/new?template=bug.yml)
 

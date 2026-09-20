@@ -24,7 +24,7 @@ What changes versus the normal flow:
   the issue as soon as practical and reference it from the PR/commit - the hook
   won't nag a `hotfix/` branch, but the issue is still required by the follow-up.
 - **Single-reviewer, expedited.** One reviewer approval is sufficient (it relaxes
-  the change-size / high-risk scoping ceremony of rules 60 and 80) - it does **not**
+  the high-risk scoping ceremony of rules 60 and 80) - it does **not**
   remove the PR/merge human gate. No self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* under rule 62 +
   Deployment (validate in non-prod where feasible) - but, exactly as everywhere

@@ -20,7 +20,7 @@ a silent regression in the shared vocabulary is caught in CI:
   language on optional work, valid lifecycle, stable markers);
 - the workflow-authority contracts hold: exactly one skill owns ``draft ->
   approved``, ``build`` delegates approval, the issue-first scope wording is
-  "implementation-affecting mutation", and the Stop-time reconciliation hook is
+  the two cases that need an issue, and the Stop-time reconciliation hook is
   registered with its loop guard intact.
 
 Run from the repo root::
@@ -305,8 +305,9 @@ def check_workflow_authority(errors: list[str]) -> None:
       marked by the canonical transition-owner comment;
     - ``build`` *delegates* approval to ``spec approve`` and never owns the
       transition or re-implements its field edits;
-    - the issue-first contract (rule 36 + ISSUE-WORKFLOW) is scoped to an
-      "implementation-affecting mutation", not "every repository change";
+    - the issue-first contract (rule 36 + ISSUE-WORKFLOW) is scoped to the two
+      cases that need an issue - High-risk work and the six value cases - not
+      "every repository change";
     - the Stop-time reconciliation hook exists, is registered, classifies changes
       through the shared classifier, and carries the ``stop_hook_active`` loop
       guard so it cannot loop indefinitely.
@@ -348,14 +349,18 @@ def check_workflow_authority(errors: list[str]) -> None:
                 "delegate to spec instead of carrying the transition-owner marker"
             )
 
-    # 3. Issue-first contract uses the scoped "implementation-affecting mutation".
+    # 3. Issue-first contract names the two cases that need an issue. The scope
+    # is what this guards: the rule must not drift back to sweeping every change.
     for path in (RULES / "36-issue-first.md", REFERENCE / "ISSUE-WORKFLOW.md"):
         if not path.is_file():
             errors.append(f"{path}: issue-first source is missing")
-        elif "implementation-affecting mutation" not in _read(path):
+            continue
+        text = _read(path)
+        missing = [p for p in ("High-risk", "six value cases") if p not in text]
+        if missing:
             errors.append(
-                f"{path}: issue-first contract must use the scoped phrase "
-                "'implementation-affecting mutation'"
+                f"{path}: issue-first contract must name the two scoped cases "
+                f"(missing {', '.join(repr(m) for m in missing)})"
             )
 
     # 4. The Stop-time reconciliation hook exists, is registered, and is safe.

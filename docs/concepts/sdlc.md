@@ -30,8 +30,8 @@ flowchart LR
 | --- | --- | --- | --- |
 | **0 · Bootstrap** | [`/steer:setup`](../workflows/index.md) -> `init` (greenfield) / [`adopt`](../workflows/adopt.md) (brownfield) / `sync` (steady-state); `doctor` for prerequisites | `/spec` spine + bundled scaffold (mise, compose, CI, PR template, policy) + pinned toolchain | - (enablement, not a gate) |
 | **1 · Shape** | [`/steer:spec`](../workflows/spec.md), `questions`, `adr`, `roadmap` | `intent.md`, `contract.md`, ADRs, a release timeline | `/steer:spec approve` - blocked while a **blocking** question gated at intent-approval is unresolved (later-gated questions block their own gate) |
-| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: every implementation-affecting mutation has an issue **before** the first change - except a [**Tiny**](#change-size) change, `/spec` edits, docs, generated output, lockfiles, and `/steer:sync` |
-| **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change-size + high-risk scoping; **merge/deploy never implied** |
+| **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:sync` let the PR be the record |
+| **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
 | **5 · Deliver** | merge -> [deploy](deployment.md); [`/steer:protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
 | **6 · Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
@@ -51,32 +51,35 @@ authority gate, and requires a **mandatory post-incident follow-up** - backfill 
 issue, write the spec/ADR, add a `/spec/history/` entry - so the phases skipped under
 fire are restored, not waived.
 
-## Change size
+## Change classification
 
 The phases above describe the full path. **How much of it a given change actually
-walks is set by its size** - rule `80-change-size` is authoritative for per-change
-ceremony, and both Issue-first and the Definition of Done take their thresholds
-from it. When a change is arguable between two classes, it takes the **larger**
-one.
+walks is set by its class** - rule `80-change-class` is authoritative for
+per-change ceremony, and both Issue-first and the Definition of Done take their
+thresholds from it. A change is classified by **what it does**, never by how many
+lines it touches; when two readings are arguable, it takes the **heavier** class.
 
-| Class | Roughly | Ceremony it earns |
+| Class | What it is | Ceremony it earns |
 | --- | --- | --- |
-| **Tiny** | ≈<20 lines, **no behavior change** - copy, typo, formatting, comment | Open a PR and stop: **no issue, no spec, no ADR, no plan**. The PR is the evidence anchor. |
-| **Small** | ≈<200 lines, contained behavior change | Confirm intent; update `contract.md` if behavior changed. |
-| **Medium** | A new screen, feature, or capability | `intent.md` first, PO approval, then implement with `contract.md`. Starts in plan mode (or a posted plan). |
-| **Large** | Crosses areas, touches infra, or a choice costly to reverse - **a first-time pattern is not itself Large** | An ADR in `/spec/decisions/` first, agree with the team, ship in small PRs. Starts in plan mode (or a posted plan). |
-| **Risky** | Any [high-risk area](../reference/configuration.md), *regardless of line count* | High-risk handling - **never Tiny**. |
+| **Trivial** | No observable behavior change - copy, formatting, comments, a behavior-preserving refactor, generated output, lockfiles | Open a PR and stop: **no issue, no spec, no ADR, no plan**. The PR is the work record. |
+| **Behavioral** | Observable behavior changes, for a user, a caller, or an operator | Tests in the same PR, and the owning `contract.md` updated. A planned feature writes `intent.md` first and gets PO approval. Plan mode (or a posted plan) whenever the approach is worth reviewing before it is written. |
+| **High-risk** | Anything in the [high-risk areas](../reference/configuration.md) list, **at any size** | Scope with the dev before any code, contract or ADR first, smaller PRs, line-by-line review. Never Trivial, and never treated as merely Behavioral. |
 
-Tiny is guarded on both sides, which is what keeps it from becoming a loophole: it
-requires *zero* behavior change (any behavior difference is Small at minimum,
-however few the lines), and anything in a high-risk area is Risky at any line
-count. The two Definition-of-Done items that a Tiny change is excused from are
-marked **(size-gated)** in rule `50`: **tests** and the **GitHub issue** with its
-`steer:state`. (Rule 50's tests bullet also covers the regression test a bug fix
-requires, but that clause never reaches a Tiny change - a bug fix corrects
-behavior, so it is Small at minimum.) The
-spec-update item is not size-gated - it is simply moot for a Tiny change, which by
-definition changes no behavior.
+Line count was the previous model's axis - Tiny under ~20 lines, then Small,
+Medium and Large - and it is the one property that says nothing about what a
+change can break: a 12-line auth edit read as Tiny, a 400-line rename read as
+Large. Classifying by effect closes that gap from both sides. Trivial requires
+*zero* observable behavior change, so a bug fix is never Trivial (it corrects
+behavior, which is the definition of Behavioral), and anything in a high-risk
+area is High-risk however small the diff.
+
+One consumer takes its threshold from here: **Issue-first** requires a GitHub
+issue for High-risk work and for the six value cases, which
+[Issue-first](lifecycle.md#issue-first) enumerates; everything else lets the PR be
+the work record. The **Definition of Done** is five items for every class - what
+changes with the class is the ceremony around the change, not what "done"
+means. Orthogonal to all three: a choice **costly to reverse** - stack, data
+model, tenancy, deployment - takes an ADR before the code, in any class.
 
 ## One lifecycle store, two questions
 

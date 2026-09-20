@@ -33,9 +33,9 @@
 #       product-independent signal.
 #
 # NUDGE 2 - ISSUE-FIRST
-#   rule 36-issue-first says: in a GitHub-adopted repo, every code/config/
-#   infra/behavior change above Tiny has a GitHub issue before the first
-#   repository mutation. The rule is always-on prose, but prose is easy to skip
+#   rule 36-issue-first says: in a GitHub-adopted repo, High-risk work and the
+#   six value cases have a GitHub issue before the first repository mutation;
+#   everything else lets the PR be the work record. The rule is always-on prose, but prose is easy to skip
 #   mid-session. This nudge re-asserts it at the moment it's about to be
 #   broken: the first write of real source or operations file in a repo whose
 #   /spec/tracker.md declares `system: github`. It is the lightweight safety
@@ -233,9 +233,9 @@ if steer_tracker_is_github "${ROOT}"; then
 			# /steer:work branch/PR guidance.
 			MODE="$(steer_delivery_mode "${ROOT}")"
 			if [ "${MODE}" = "solo-trunk" ]; then
-				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds: every implementation-affecting mutation (code/config/infra/behavior - not spec, docs, lockfiles, or a Tiny change) needs a GitHub issue. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it - GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) - do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check (solo-trunk mode): this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Solo-trunk relaxes the per-feature branch and PR, but issue-first still holds where it applies: High-risk work, or any of the six value cases (a planned feature, a tracked bug, work spanning more than one session, work coordinated between people, a product decision or acceptance to record, a discovered follow-up), needs a GitHub issue. Anything else - a Trivial change, an untracked fix, spec, docs, lockfiles - does not. Reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md). Stay on main and CLOSE the issue from your trunk commit with a 'Closes #N' trailer (a bare '(#N)' in the subject only cross-references it - GitHub does not close on that, and in solo-trunk the closed issue IS the completion record) - do NOT create an issue/<N> branch or open a PR. This nudge does not block the write and fires once per session."
 			else
-				ISSUE_CTX="Issue-first check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). Every implementation-affecting mutation (code/config/infra/behavior - not spec, docs, lockfiles, or a Tiny change: under ~20 lines with no behavior change, where the PR is the evidence anchor) needs a GitHub issue BEFORE the first mutation - reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
+				ISSUE_CTX="Issue-first check: this repo's ${STEER_TRACKER_REL} uses GitHub Issues, and you are about to write ${CLASS} (${SAFE_FILE}). High-risk work, or any of the six value cases (a planned feature, a tracked bug, work spanning more than one session, work coordinated between people, a product decision or acceptance to record, a discovered follow-up), needs a GitHub issue BEFORE the first mutation; anything else - a Trivial change, an untracked fix, spec, docs, lockfiles - lets the PR be the work record. reuse the issue the user named, or find-or-create one via /steer:tracker-sync (an explicit fix/implement/add request needs no confirmation to create it; see the Authorization & confirmation block in ISSUE-WORKFLOW.md), then run implementation through /steer:work. This nudge does not block the write and fires once per session."
 			fi
 		fi
 	fi

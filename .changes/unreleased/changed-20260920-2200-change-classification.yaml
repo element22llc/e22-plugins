@@ -1,0 +1,31 @@
+kind: Changed
+body: |
+  - **Change size is now change classification: Trivial, Behavioral,
+    High-risk.** The old model sized a change by line count - Tiny under ~20
+    lines, Small under ~200, then Medium and Large - and line count is the one
+    property that says nothing about what a change can break. A 12-line auth
+    edit read as Tiny; a 400-line rename read as Large. Rule
+    `80-change-size` is now `80-change-class` and classifies by **what the
+    change does**: Trivial is no observable behavior change and the PR is the
+    work record; Behavioral is observable behavior changing for a user, caller
+    or operator, and carries tests plus the owning `contract.md` in the same
+    PR; High-risk is the rule 60 list at any size. An arguable class still
+    takes the heavier one, and a choice costly to reverse still takes an ADR in
+    any class.
+  - **Issue-first names the two cases that need an issue instead of a size
+    threshold.** In a GitHub-adopted repo an issue is required before the first
+    mutation for **High-risk work** and for the **six value cases** - a planned
+    feature, a tracked bug, work spanning more than one session, work
+    coordinated between people, a product decision or acceptance to record, or
+    a discovered follow-up. Everything else - a Trivial change, an ordinary
+    fix nobody is tracking, spec edits, documentation, generated output,
+    lockfiles - lets the **PR be the work record**. This is a relaxation: the
+    rule previously reached every implementation-affecting mutation above Tiny.
+    The two advisory hooks (`check-write-nudges.sh`, `reconcile-issue-first.sh`)
+    follow the new wording; both still only report, and neither blocks. The
+    router and commit-autonomy rules stated the retired universal form - "work
+    find-or-creates the issue", "the first mutation presupposes an active
+    issue" - and now both say "where Issue-first requires one", so no rule
+    contradicts the relaxed one.
+custom:
+  Slug: change-classification

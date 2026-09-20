@@ -203,9 +203,10 @@ polyrepo member (`spec/PRODUCT.md` present) skip them - `vision.md`, `users.md`,
 A non-technical PO drives this same flow via `/steer:build`, which adapts each
 step to plain language and Claude-driven tooling.
 
-**Brownfield** (change to an existing product): triage the issue -> size it
-(Change-size model) -> for medium+ work write/update the spec or ADR first ->
-implement -> update the owning `contract.md` if behavior changed.
+**Brownfield** (change to an existing product): triage the issue -> classify it
+(Change classification) -> Behavioral and High-risk work writes/updates the spec
+or ADR first -> implement -> update the owning `contract.md` if behavior
+changed.
 
 ## Naming
 
