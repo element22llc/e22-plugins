@@ -54,8 +54,8 @@ relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
 and graduation are canonical in Commit autonomy.
 
 **Brownfield** (change to an existing product): triage -> classify it (Change
-classification) -> medium+ work writes/updates the spec or ADR first -> implement ->
-update the owning `contract.md` if behavior changed.
+classification) -> Behavioral and High-risk work writes/updates the spec or ADR
+first -> implement -> update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
 app with no `/spec`): run **`/steer:adopt`** once - reverse-engineer the spec

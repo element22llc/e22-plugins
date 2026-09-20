@@ -73,10 +73,11 @@ Large. Classifying by effect closes that gap from both sides. Trivial requires
 behavior, which is the definition of Behavioral), and anything in a high-risk
 area is High-risk however small the diff.
 
-Two consumers take their threshold from here. **Issue-first** requires a GitHub
-issue for High-risk work and for the six value cases (below); everything else
-lets the PR be the work record. The **Definition of Done** is five items for every
-class - what changes with the class is the ceremony around it, not what "done"
+One consumer takes its threshold from here: **Issue-first** requires a GitHub
+issue for High-risk work and for the six value cases, which
+[Issue-first](lifecycle.md#issue-first) enumerates; everything else lets the PR be
+the work record. The **Definition of Done** is five items for every class - what
+changes with the class is the ceremony around the change, not what "done"
 means. Orthogonal to all three: a choice **costly to reverse** - stack, data
 model, tenancy, deployment - takes an ADR before the code, in any class.
 

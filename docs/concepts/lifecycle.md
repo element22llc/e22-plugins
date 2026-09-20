@@ -49,8 +49,8 @@ The rule reaches **two cases**, not every change: [**High-risk**](sdlc.md#change
 work, and any of the six value cases - a planned feature, a tracked bug, work
 spanning more than one session, work coordinated between people, a product
 decision or acceptance to record, or a discovered follow-up. Everything else lets
-the **PR be the work record**. Rule `80-change-class` sets that threshold;
-issue-first defers to it.
+the **PR be the work record**. Rule `80-change-class` defines the classes; the
+six value cases are issue-first's own.
 
 **Solo-trunk mode keeps the issue, drops the PR.** In
 [solo-trunk mode](authorization-model.md) - a pre-MVP greenfield repo whose

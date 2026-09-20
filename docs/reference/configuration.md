@@ -222,10 +222,11 @@ carries the workspace task vocabulary once and rule 24 cross-references it, payi
 back ~120 B of the cost. Finally from 67,300 to **68,400**, to fund the **Tiny**
 ceremony exemption in rule `80-change-size` and its two consumers - unlike the
 fourth raise this is new capability rather than a correction, so it took an
-explicit decision. Making the size class actually govern needs three always-on
-statements (the exemption, the authority claim, the size-gated markers) and cannot
-be expressed by cross-reference alone, because the rules being exempted are the
-ones a session reads. Trades were made first, as the default requires - the same
+explicit decision. Making the size class govern needed three always-on
+statements (the exemption, the authority claim, the size-gated markers) and could
+not be expressed by cross-reference alone, because the rules being exempted are
+the ones a session reads. That model was later replaced by change classification,
+and the size-gated markers are gone. Trades were made first, as the default requires - the same
 change that shrinks a per-change duty paid part of its own cost. Which rules paid,
 and how much, is recorded only in the ratchet note in
 `scripts/check_context_budget.py`, for the reason given below. Net +511 B, re-armed
