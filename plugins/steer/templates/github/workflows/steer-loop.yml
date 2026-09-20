@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0 # full history so the loop can branch and diff
 
       - name: Run steer loop
-        uses: anthropics/claude-code-action@9cdae7f0d995e3ba7c33f226087fdf82a59cd520 # v1.0.223
+        uses: anthropics/claude-code-action@cfc3eb22bfed5c26ef66e3223c982af27e4524de # v1.0.231
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
 
