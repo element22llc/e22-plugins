@@ -213,8 +213,8 @@ Code (`gen_agent_skills.py`):
 | `/steer:<skill>` | `/steer-<skill>` | Plugin namespacing is Claude Code's; the slash name here is the skill's directory name. |
 
 Three differences from Claude Code remain on the Copilot surfaces - the first two
-on both, the third on VS Code only (the CLI does run steer's three `PreToolUse`
-gates and the `PostToolUse` comment-density notice, per the table above). Their
+on both, the third on VS Code only (which runs the plugin's `hooks.json`
+incidentally, per the table above; the CLI runs no steer hooks at all). Their
 *mitigations* do not: both notes below are injected by the generator into the
 portable `.agents/skills/` tree, so the **VS Code** surface carries them. The
 **Copilot CLI** loads the authored `skills/` directly, where `context: fork` and
