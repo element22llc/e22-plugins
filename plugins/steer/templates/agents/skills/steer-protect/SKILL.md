@@ -122,10 +122,26 @@ Read the policy, **consumer-first then plugin default** (same precedence as
 - **Additional branches.** If the policy declares a `protected_branches:` list
   (schema 2 - optional; absent in older policies), each entry is a further branch
   to protect with its own fields (the canonical case is a `prod` promotion branch
-  whose required PR review is the production approval gate - see the "Deployment &
-  environments" rule). Resolve each entry's literal `name` and its CI context the
-  same way. Treat the whole set - default branch **plus** every declared branch -
-  as the desired state; the steps below apply to each.
+  whose required PR review is the production approval gate). Resolve each entry's
+  literal `name` and its CI context the same way. Treat the whole set - default
+  branch **plus** every declared branch - as the desired state; the steps below
+  apply to each.
+- **The repo's declared production gate.** Read `production_gate:` from
+  `policy/delivery.yml` (absent -> treat as `prod-branch-pr`, the org default).
+  It says which gate this repo actually uses, so it decides whether a `prod`
+  branch is *expected* here at all:
+  - `prod-branch-pr` - the branch gate applies; a declared-but-missing `prod`
+    branch is "not created yet" as below.
+  - `github-environment` or `manual` - **do not** propose a `prod` branch or read
+    its absence as a gap; protect the default branch, and say plainly that the
+    production gate lives outside branch protection, so this run does not verify
+    it.
+  - `none` - no production to gate; the default branch is the whole scope.
+
+  A `protected_branches:` entry still wins where it exists: someone declared that
+  branch deliberately. What `production_gate` changes is what steer *proposes* and
+  what it reports as missing - never the gate itself, which stays human in every
+  model.
 - **Profile.** Read `profile:` (schema 3 - `team` when absent, as in older
   policies). For any profile other than `team`, overlay that profile's map from
   `profiles:` onto **every** branch in scope before diffing - under `solo`,

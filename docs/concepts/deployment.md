@@ -1,8 +1,18 @@
 # Deployment & environments
 
-How code reaches users. `steer` codifies a **branch-driven promotion** model in
-the always-on rule `52-deployment.md`, enforced at the server edge by
-`policy/branch-protection.yml` (applied with [`/steer:protect`](../reference/skills.md)).
+How code reaches users. **The repo declares its own model** in
+`policy/delivery.yml` - environments, what merging deploys, how production is
+approved (`production_gate`), whether review apps exist, and what it reports to a
+human - and the always-on rule `52-deployment.md` follows that file rather than
+imposing one. `/steer:protect` reads `production_gate` to decide whether a `prod`
+branch is expected at all, and enforces the branch side at the server edge via
+`policy/branch-protection.yml`.
+
+What the rest of this page describes is the **org default** that file is seeded
+with - branch-driven promotion on AWS - and why it has that shape. A repo that
+delivers elsewhere, or nowhere, edits the file; only a gate *weaker* than this
+default needs an ADR. Merge and deploy stay human decisions in every model.
+
 Deploy/release logic is a [high-risk area](../reference/configuration.md): validate
 in non-prod before prod, and scope pipeline changes with the dev first. The
 AWS/Terragrunt specifics live in each product's `/infra/README.md`.

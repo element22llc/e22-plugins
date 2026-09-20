@@ -94,6 +94,49 @@ Name the file and say what to carry forward.
 > release renames it, never a guessed number - **what & why**, a **precondition**
 > (apply only if true), and the **action**.
 
+### [Unreleased] - `policy/delivery.yml` declares how the repo delivers
+
+(Heading stays `[Unreleased]`; the release PR renames it to `### vX.Y.Z`.)
+
+- **What & why:** rule `52-deployment` used to *impose* one delivery model - AWS,
+  `non-prod`/`prod`, branch-driven promotion - on every managed repo, so a repo
+  that deploys elsewhere, or nowhere, read a rule that was simply false about it
+  and had no way to say so. The model is now **declared** in
+  `policy/delivery.yml`: environments, what merging deploys, how production is
+  approved, whether review apps exist, and what the repo reports to a human. The
+  rule follows the file, and `/steer:protect` reads `production_gate` to decide
+  whether a `prod` branch is expected here at all. An existing repo needs the
+  file written with **today's behaviour as its values**, so nothing changes for it
+  on upgrade.
+- **Precondition:** the repo has a `policy/` directory (it was bootstrapped) and
+  no delivery policy yet:
+
+  ```sh
+  test -d policy && ! test -f policy/delivery.yml && echo pending
+  ```
+
+  A repo with no `policy/` directory is `n/a` - seeding the whole directory is
+  bootstrap's job, not this entry's.
+- **Action:** copy
+  `${CLAUDE_PLUGIN_ROOT}/templates/scaffold/policy/delivery.yml` to
+  `policy/delivery.yml` **unedited**, then reconcile its values against what the
+  repo demonstrably does before proposing the diff - the point is to record
+  today's behaviour, not to assign it the default:
+  - no deploy workflow, or nothing deployed -> `environments: []`,
+    `deploy_on_merge: none`, `production_gate: none`, `review_apps: false`;
+  - a `prod` branch in `policy/branch-protection.yml`'s `protected_branches:`,
+    or on the remote -> keep `production_gate: prod-branch-pr`;
+  - a GitHub deployment environment with required reviewers and no `prod` branch
+    -> `production_gate: github-environment`;
+  - no Sentry DSN anywhere in the repo's config or `.env.example` ->
+    `observability: []`, which is allowed and means "not wired yet".
+
+  Say which values you inferred and from what, so the dev can correct one line
+  instead of re-deriving the file. Idempotent: once the file exists the
+  precondition is false, and a repo that has since edited it is never touched.
+  **No history entry is earned** - this records existing behaviour rather than
+  deciding anything.
+
 ### v6.4.0 - `dependabot-auto-merge.yml` gains the `checks`/`statuses` read scopes
 
 - **What & why:** the shipped auto-merge workflow declares only `contents: write`
