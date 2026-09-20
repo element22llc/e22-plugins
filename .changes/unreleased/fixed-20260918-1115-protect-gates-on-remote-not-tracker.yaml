@@ -1,0 +1,15 @@
+kind: Fixed
+body: |
+  - **`/steer:protect` no longer refuses a repo whose tracker is not GitHub
+    Issues.** Its first precondition read `/spec/tracker.md` and stopped unless
+    `system: github`, so a product with GitHub-hosted code and a Jira, Linear, or
+    not-yet-declared tracker could not set up branch protection at all - it lost
+    the server-side PR gate for a reason unrelated to protection. The dependency
+    was never the tracker: it is a GitHub **remote**, which the skill's own
+    `owner/repo` precondition already resolves and already fails cleanly on. That
+    precondition is removed, leaving `gh auth status` and the remote as the two
+    real ones, with the reasoning recorded inline so it cannot be reintroduced.
+    The `/steer:init` and `/steer:adopt` next-action rows that gated the same
+    recommendation on "GitHub tracker" now say GitHub remote.
+custom:
+  Slug: protect-gates-on-remote-not-tracker

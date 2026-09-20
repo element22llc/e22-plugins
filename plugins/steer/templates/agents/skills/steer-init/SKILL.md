@@ -227,7 +227,7 @@ bootstrapped repo's state.
 | Solo trunk mode: bootstrap committed to `main`, no PR | Recommended | Spec or build the first feature; graduate via `/steer-protect` when the MVP works - or, if the repo will stay single-dev on trunk, record that with `/steer-protect waive` |
 | Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
 | Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature - `/steer-spec` or `/steer-build` |
-| Repo pushed to GitHub, `main` not yet protected (GitHub tracker) | Recommended | Establish the PR gate - run `/steer-protect` (steer is advisory locally; this sets the real server-side wall). **In solo trunk mode, defer this until graduation** (MVP works / first deploy / second contributor) - and skip it entirely when a graduation waiver is recorded. |
+| Repo pushed to GitHub, `main` not yet protected (GitHub remote - the tracker system is irrelevant) | Recommended | Establish the PR gate - run `/steer-protect` (steer is advisory locally; this sets the real server-side wall). **In solo trunk mode, defer this until graduation** (MVP works / first deploy / second contributor) - and skip it entirely when a graduation waiver is recorded. |
 | Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. A tracker intentionally set
