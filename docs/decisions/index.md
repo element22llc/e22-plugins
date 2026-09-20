@@ -44,7 +44,7 @@ negative consequences, then stamps `> Ratified by:` / `> Ratified at:` /
 `/spec/history/` entry file. `Decide later` changes nothing, so an undecided ADR is
 never worse off. Self-ratification is legitimate - in a solo repo the author and
 decider are the same person, and the channel stamp is what keeps it auditable.
-See rule `61-gate-prompts` and `/steer:reference gates`.
+See rule `61-gates` and `/steer:reference gates`.
 
 !!! warning "No ADR from inference"
     Reverse-engineering skills (`/steer:adopt`) must **never infer a ratified ADR

@@ -25,7 +25,7 @@ stopping rules: [`REVIEW-LOOP.md`](https://github.com/element22llc/e22-plugins/b
 - **Human plan sign-off - answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule
   `95-not-the-gate`) as a three-option prompt - **Approve · Reject · Decide later**
-  (rule `61-gate-prompts`; protocol `/steer-reference gates`). The prompt shows what
+  (rule `61-gates`; protocol `/steer-reference gates`). The prompt shows what
   changes and where, the **high-severity reviewer findings and how they were
   resolved**, and the residual risk - not just "approve the plan?". `Approve`
   proceeds straight into implementation in the same pass; `Decide later` stops here

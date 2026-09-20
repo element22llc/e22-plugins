@@ -137,7 +137,7 @@ stale-spec checks fire too.
 **Offer the approval in-session - don't end on a dead `draft`.** Once the
 preconditions above hold (no refusal, no unresolved blocking question), present the
 tradeoff to the PO and ask: **Approve · Reject · Decide later** (rule
-`61-gate-prompts`; full protocol `/steer:reference gates`). The prompt shows the
+`61-gates`; full protocol `/steer:reference gates`). The prompt shows the
 **acceptance criteria**, the **locked scope - in and out**, and any non-blocking
 open questions that survive approval. `Decide later` leaves the intent `draft`
 exactly as today; `Reject` records the reason in `intent.md`. Never pre-select

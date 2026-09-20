@@ -4,7 +4,7 @@ Read this file only when `--hotfix` was passed. The preconditions,
 authorization scope, delivery mode, subcommands, and guardrails stay in
 `SKILL.md` and apply unchanged.
 
-`--hotfix` is the **production-incident fast-path** (rule `62-hotfix`). It relaxes
+`--hotfix` is the **production-incident fast-path** (rule `61-gates` § Hotfix). It relaxes
 *ceremony and ordering*, never the human authority gates. Use it **only** when the
 objective entry condition holds: the change targets an already-**deployed
 production** system with real users or data **and** there is an active incident,

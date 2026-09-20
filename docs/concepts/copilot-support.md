@@ -435,7 +435,7 @@ the standards in `.github/copilot-instructions.md`.
   plugin, which the Copilot marketplace does not list, so it was scoped to Claude
   Code inline (the rule has since left the always-on payload for
   `DESIGN-SOURCES.md`, which carries the same qualification). Two others no longer need scoping because the surface-specific
-  detail left the rule entirely: rule `62-hotfix` is now surface-neutral about the
+  detail left the rule entirely: rule `61-gates` § Hotfix is now surface-neutral about the
   `hotfix/<n>-slug` prefix (the reconciliation it used to name is the `Stop` hook
   `reconcile-issue-first.sh`, which is not ported - no `Stop` hook is, so on
   Copilot the prefix carries the convention alone), and rule

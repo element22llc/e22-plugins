@@ -10,7 +10,7 @@ territory). Same safety level; the tie-break must be deterministic.
 - ADR `0007-event-bus.md` is `Status: Proposed`, awaiting its Deciders. The
   `payments` feature's contract depends on this decision. The ADR's `Deciders`
   names the person in the session, so the decision is **answerable in-session**
-  (rule `61-gate-prompts`).
+  (rule `61-gates`).
 - Feature `search` intent is `draft`, drafted but not yet PO-approved - it does
   **not** depend on the ADR.
 - Neither candidate has a human-set **Priority** field (an ADR has no issue

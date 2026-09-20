@@ -223,7 +223,7 @@ keep the technical detail for devs. Emit, in order:
    naming the single arbitrated action, with a `Suggested command:` line **only**
    when a real command performs it. A human gate still gets **no command for the
    decision itself** - but where the decision is answerable in-session (ADR
-   ratification, PO intent approval; rule `61-gate-prompts`) the line names the
+   ratification, PO intent approval; rule `61-gates`) the line names the
    skill that *collects and records* the answer - `/steer:adr`, `/steer:spec` -
    which is a real command. PR review, secret rotation, merge, and deploy stay
    command-less: no prompt substitutes for them. Aggregate candidates across the
