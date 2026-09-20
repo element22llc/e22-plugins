@@ -4,8 +4,8 @@ Org-wide standards, injected every session by the **steer** plugin and
 maintained centrally in `element22llc/e22-plugins` - never copy them into a
 product's `CLAUDE.md`, which holds only product-specific context.
 
-**Be concise by default** - in chat (see Responses), in code (see Code
-comments), and in every artifact you write (see Output discipline).
+**Be concise by default** - in chat, in code, and in every artifact you write
+(see Output discipline).
 
 ## You are the router
 
@@ -26,9 +26,9 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   scope ("which feature?", "which issue?") is the skill's to ask, after entry.
 - **Name it again when it finishes.** The announcement is at the start; the
   attribution is at the end - the handoff heading reads `## Recommended next
-  actions - /steer:<skill>` (Recommended next actions §5). Otherwise a finished
-  skill names only the skills that come *next*, and the reader cannot tell what
-  just ran, which is what makes a misroute reportable at all.
+  actions - /steer:<skill>`. Otherwise a finished skill names only the skills
+  that come *next*, and the reader cannot tell what just ran, which is what
+  makes a misroute reportable at all.
 - **Auto-continue, bounded** - when a skill finishes, continue into its single
   best next action only if non-gated; a gated step is announced, then waits.
 - **Routing moves navigation, never authority.** The human gates are unchanged:
@@ -47,11 +47,11 @@ the owning skill, using the skill listing, and **invoke it yourself**.
 
 **`work` vs `issues`:** to implement a change now - with or without an issue
 number - route to `/steer:work`, which find-or-creates the issue where
-Issue-first requires one. Promoting to
-production is `/steer:work promote`: it cuts the changelog and opens the PR, and
-stops at the merge, which is the gate. Pure backlog
-management with no implementation this turn routes to `/steer:issues`. A
-production incident on a deployed system -> `/steer:work --hotfix`.
+Issue-first requires one. Promoting to production is `/steer:work promote`: it
+cuts the changelog and opens the PR, and stops at the merge, which is the gate.
+Pure backlog management with no implementation this turn routes to
+`/steer:issues`. A production incident on a deployed system ->
+`/steer:work --hotfix`.
 
 **Front doors** detect context and hand off to specialized skills (`setup` ->
 `init` / `adopt` / `sync`; `audit` -> `tidy`; `issues` / `spec` -> `questions`;
@@ -69,3 +69,19 @@ regardless: delegate a heavy sweep to a subagent and bring back the result, not
 the sweep; and route every durable fact to its canonical home on disk (test,
 spec, app guide, issue) - never offer to keep it in private session memory,
 which the repo, the PR and every teammate cannot see.
+
+### You are not the gate - the dev is
+
+You have no path-based permission boundary in a managed product repo - propose
+changes anywhere (`/apps`, `/packages`, `/configs`, `/spec`, `/infra`). The dev
+reviewing the PR is the hard gate and catches an out-of-scope or risky edit.
+Unsure about scope? Ask in a PR comment before making sweeping changes.
+
+### When steer itself misbehaves, report it upstream
+
+A **steer defect** - a recorded hook fault, a rule or skill giving contradictory
+or impossible instructions, a bundled template or helper that is missing or
+crashes - is surfaced plainly and filed with **`/steer:report`**, which
+auto-files after scrubbing and deduping. Report it even when you worked around
+it. Product-code errors, failing tests and your own mistakes are not plugin
+faults.

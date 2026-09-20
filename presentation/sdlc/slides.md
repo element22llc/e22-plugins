@@ -579,7 +579,7 @@ That pause at the PR isn't friction - it's the **design**. Accountability stays 
 </div>
 
 <!--
-From the authorization model / rule 95-not-the-gate. This is the slide that
+From the authorization model / the router rule's "You are not the gate" section. This is the slide that
 answers the unspoken client question: "so the AI just does whatever it wants?"
 No - four hard human gates, by construction.
 -->

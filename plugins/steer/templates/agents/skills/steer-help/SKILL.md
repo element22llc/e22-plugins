@@ -125,7 +125,7 @@ mechanics in `/steer-reference artifacts` - with the temp path
 
 End the menu with the last journey group and nothing after it - no line inviting
 correction, no offer to file a report (rule `03-output` § Responses: no closing offer). A
-user who wants to flag a misroute says so, and rule `97-self-report` files it
+user who wants to flag a misroute says so, and rule `00-router` § When steer itself misbehaves files it
 then; a standing invitation on every menu is tail nobody reads.
 
 ## Zooming in (optional argument)

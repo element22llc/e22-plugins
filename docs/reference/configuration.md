@@ -15,7 +15,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 
 | Rule | Topic |
 | --- | --- |
-| `00-router.md` | Operating-manual entry point. |
+| `00-router.md` | Operating-manual entry point - **you are the router**: map a plain-language goal to the owning skill and invoke it yourself, announcing it at the start and naming it again in the handoff heading. Routing moves navigation, never authority; bootstrap precedes feature code; an intent-switch is named, never dropped. Also names what deliberately is *not* in the always-on payload and which skill loads it. Its *You are not the gate* section states that there is no path-based permission boundary and the reviewing dev is the hard gate; *When steer itself misbehaves* routes a plugin defect to `/steer:report`, which auto-files after scrubbing. |
 | `03-output.md` | **Earn every line**, in three parts. *Output discipline* - default to less everywhere; write the least code that does the job; durable prose informs rather than impresses. *Responses* - lead with the result and stop when it is said; a progress update is one or two sentences, a final report is what changed / what was verified / what is next, with no closing offer (which binds a skill too); hook notices and injected context are never echoed, the one exception being the skill's own name in the handoff heading. *Code comments* - why-only: the default is no comment, test each one by deleting it, never restate the code or keep dead code, config gets one header line, and a dense file is not a licence to add more (advised at write time by `check-comment-density.sh`, audited by the comment-noise dimension). |
 | `05-roles.md` | Who you are working with. |
 | `10-stack.md` | Stack defaults (app / service profile) - **e22 org pack** (`inject-when=org-e22`), and the home of the baseline patterns' default-stack instances and the deployed secret-store default. |
@@ -33,8 +33,6 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns, stated as principles so they hold on any stack (the org pack names the instances) - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
-| `95-not-the-gate.md` | You are not the gate - the dev is. |
-| `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping - no confirmation step. |
 
 !!! note "Conditional injection"
     Some rules carry a first-line `<!-- steer:inject-when=... -->` marker and are
@@ -66,11 +64,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `orient-session.sh` - the hook itself speaks in every managed repo; only the
     topology block is marker-gated. That block is registered on the same
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
-    `/clear`, a resume, auto-compaction and a forked session. The router, spec,
-    output (`03`), roles,
-    **gates (`61`)**, high-risk,
-    not-the-gate, self-report and output rules carry no
-    `inject-when` marker and so stay always-on.
+    `/clear`, a resume, auto-compaction and a forked session. The router, spec, output (`03`), roles, **gates (`61`)** and high-risk
+    rules carry no `inject-when` marker and so stay always-on.
 
 !!! note "Standards that are not always-on rules"
     Housekeeping, context hygiene, Artifact rendering and design sources are

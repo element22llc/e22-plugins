@@ -8,7 +8,7 @@
 #   the one place that reads that log at session start and raises any UNREPORTED
 #   faults into session context, so the always-on self-report rule can point at
 #   `/steer:report` - which auto-files upstream after scrubbing and deduping, with
-#   no confirmation step (rule 97-self-report).
+#   no confirmation step (the router rule's upstream-report section).
 #
 # MECHANISM
 #   Everything written to stdout becomes session `additionalContext` (same path
@@ -60,7 +60,7 @@ tail -n "${NEW}" "${LOG}" 2>/dev/null | while IFS='|' read -r _ver _src _sig; do
 done
 printf '\nThis is a defect in the steer plugin. Run `/steer:report` - it scrubs, '
 printf 'dedupes, and auto-files upstream in element22llc/e22-plugins with no '
-printf 'confirmation step (rule 97-self-report; the scrub omits anything it '
+printf 'confirmation step (rule 00-router, upstream-report section; the scrub omits anything it '
 printf 'cannot safely redact, which is the safety floor instead of a prompt). '
 printf 'Do not silently work around it.\n'
 

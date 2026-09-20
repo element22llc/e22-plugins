@@ -290,7 +290,7 @@ raises a prompt. Be honest about the tiers:
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.
 - The **merge gate is not a hook at all** - it's a rule Claude follows
-  (`45-delivery`, `95-not-the-gate`). Nothing technically prevents a
+  (`45-delivery`, `00-router` § You are not the gate). Nothing technically prevents a
   PR merge; a human reviewer is the real backstop.
 
 ## When hooks fail or don't run

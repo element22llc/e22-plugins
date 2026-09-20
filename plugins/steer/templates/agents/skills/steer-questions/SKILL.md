@@ -159,7 +159,7 @@ as "stale by that same test".
      **code-fact** grounded from the code (step 4), or a human-decision the
      PO/dev *just made* this session. Write the spec edit (plus any docs that
      must stay consistent - a `CLAUDE.md` one-liner, a superseding ADR) in the
-     same change; the **PR is the gate** (rule `95-not-the-gate`).
+     same change; the **PR is the gate** (rule `00-router` § You are not the gate).
    - **Ask first** - a genuine product/policy/architecture decision *not yet
      made*, or anything under **High-risk areas** (rule `60-high-risk`): never
      blind-write it; route it (step 5) and apply only once the human answers.

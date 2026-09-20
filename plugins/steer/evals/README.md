@@ -146,7 +146,7 @@ takes no discriminating argument.
 responder it returned issue #123 for every call, and the v6.1.0 runs noticed:
 they spent turns probing `#117` / `#118` / `#101` / `sub_issues` / `comments`,
 concluded "a defect in steer's bundled MCP server", and offered to file it with
-`/steer:report` - a fixture bug that rule `97-self-report` faithfully converted
+`/steer:report` - a fixture bug that rule `00-router` § When steer itself misbehaves faithfully converted
 into a false upstream report. The responder body now describes the whole backlog
 plus the `comments` / `sub_issues` / `labels` projections, so a wrong number gets
 a real not-found and the empty sub-issue lists stay the reason the triage case

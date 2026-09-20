@@ -1,0 +1,13 @@
+kind: Changed
+body: |
+  - **The router absorbs not-the-gate and self-report, and roles is trimmed.**
+    `95-not-the-gate` and `97-self-report` are now sections of `00-router`:
+    *You are not the gate* unchanged in substance, and *When steer itself
+    misbehaves* cut to the defect classes, the `/steer:report` route and the
+    auto-file behaviour, since the scrubbing detail is the skill's. `05-roles`
+    keeps both audiences, the PO posture and the unchanged productionization
+    gate, with the parenthetical toolchain names and the BUILD-STATUS mechanics
+    dropped. This is the last fold row: 38 rule files at the start of 6.6, 18
+    now. An e22 app repo's payload: 46,971 -> 45,941.
+custom:
+  Slug: fold-router

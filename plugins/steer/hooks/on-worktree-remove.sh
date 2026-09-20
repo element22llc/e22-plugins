@@ -31,7 +31,7 @@
 #   its JSON output fields and logs failures in debug mode only. (Contrast
 #   SessionEnd, whose stderr on an `exit 2` IS shown to the user - the two events
 #   are not the same on this point; see lib/worktree-lifecycle.sh.)
-#   This exits 0 regardless: steer is not the gate (rule `95-not-the-gate`), and
+#   This exits 0 regardless: steer is not the gate (rule `00-router` § You are not the gate), and
 #   least of all the gate on someone else's cleanup. It also never removes the
 #   worktree itself; declining to do so is what leaves Claude Code's own git handling in
 #   charge.

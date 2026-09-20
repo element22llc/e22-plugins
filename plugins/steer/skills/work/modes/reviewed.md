@@ -24,7 +24,7 @@ stopping rules: [`REVIEW-LOOP.md`](../../../templates/reference/REVIEW-LOOP.md).
   your own plan.
 - **Human plan sign-off - answerable in-session.** Present the vetted plan before a
   significant change (`--reviewed` is the caller opting into gates; rule
-  `95-not-the-gate`) as a three-option prompt - **Approve · Reject · Decide later**
+  `00-router` § You are not the gate) as a three-option prompt - **Approve · Reject · Decide later**
   (rule `61-gates`; protocol `/steer:reference gates`). The prompt shows what
   changes and where, the **high-severity reviewer findings and how they were
   resolved**, and the residual risk - not just "approve the plan?". `Approve`
