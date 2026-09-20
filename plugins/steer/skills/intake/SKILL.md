@@ -48,7 +48,7 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
   `/steer:spec` (additive - never overwrite human prose; a conflict becomes an
   Open question).
 - It does **not** resolve drift. A change that contradicts the spine is surfaced
-  as a `/steer:audit`-style finding for a human, per rule `55-drift-gates`.
+  as a `/steer:audit`-style finding for a human, per rule `50-done` § Drift gates.
 - It does **not** invent content (anything absent from the extraction becomes
   an Open question, never a guessed requirement) and does **not** fabricate
   dates - roadmap dates come from the human via `/steer:roadmap`.

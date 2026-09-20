@@ -664,46 +664,69 @@ A change is done when **all five** of these hold:
 
 - [ ] **Intent understood** - you can state what the change is for, and it is the change that was asked for.
 - [ ] **Appropriately tested** - Testing rules; a bug fix carries a regression test that fails before and passes after.
-- [ ] **CI green** - watched to conclusion after push, not assumed (Commit autonomy).
-- [ ] **The contracts and docs this change actually affected are updated** - not a survey of every artifact: the ones this diff made wrong (Spec workflow, Living documentation).
-- [ ] **Merge and deploy went through the required human gates** (Commit autonomy, You are not the gate).
+- [ ] **CI green** - watched to conclusion after push, not assumed.
+- [ ] **The contracts and docs this change actually affected are updated** - the ones this diff made wrong, not a survey of every artifact.
+- [ ] **Merge and deploy went through the required human gates.**
 
 That is the whole list. Everything else you owe a change is canonical in its own
-rule and is not restated here - comments (Code comments), coverage (Coverage
-rules), the changelog fragment and the tracker ref (Commit autonomy, Issue
-tracker), the issue and its state (Issue-first), ADRs for choices costly to
-reverse (Spec workflow), review-sensitive classes (Drift gates), high-risk
-scoping (High-risk areas). Ceremony scales with the change (Change classification).
+rule and named, not restated here: comments, coverage, the changelog fragment,
+the tracker ref and issue state, ADRs, high-risk scoping. Ceremony scales with
+the change (Change classification). CI enforces only a thin floor - in
+**solo-trunk** that floor (changed-line coverage, the changelog-fragment gate,
+the advisory spec-drift warning) is the *only* automated backstop. Under a
+declared production hotfix these are **deferred** to the mandatory follow-up,
+never waived.
 
-CI enforces only a thin floor - in **solo-trunk**, where there is no reviewer,
-that floor (changed-line coverage, the changelog-fragment gate, the advisory
-spec-drift warning) is the *only* automated backstop. The rest is on you.
+### Verify loop - iterate against the harness, don't flail
 
-**Hotfix exception (see Hotfix / incident fast-path):** under a declared production
-hotfix these may be **deferred** to the mandatory post-incident follow-up -
-**never waived**. The follow-up backfills the issue, the spec or ADR, and the
-`/spec/history/` entry so this list is satisfied once the fire is out.
+Before writing code, name the check that will prove the task done - a failing
+test, a passing build, a command whose output you can read. A goal you can't
+check is a goal you can't finish.
 
+- **State the assumption, don't bury it.** Two readings of a request -> surface
+  the one you're taking, or ask, **before** writing 200 lines against it.
+- **Loop until green, then stop**, and **cap the loop**: run the harness, fix
+  what it reports, re-run; if attempts stop converging, **report what blocked
+  you** with the failing output. Never thrash, never paper over the check.
+- **Never loop on uncheckable work** - judgment calls, design decisions and
+  long-compute runs have no fast pass/fail.
 
-## Verify loop - iterate against the harness, don't flail
+### Drift gates - surface before merge
 
-Before writing code, turn the task into a **verifiable end state** - name the
-check that will prove it done (a failing test, a build that passes, a command
-whose output you can read). "Add validation" becomes "tests for the bad inputs,
-then make them pass." A vague goal you can't check is a goal you can't finish.
+Drift - any mismatch along intent <-> spec <-> contract <-> tracker <-> app docs
+<-> tests <-> delivered behavior - is resolved by **explicit human review, never
+silently**: you surface it before merge, the reviewer resolves it. Flag these
+classes in the PR description the moment you notice one (the scaffold's PR
+template carries the checklist): **intent drift · contract drift · undocumented
+behavior change · security-sensitive · compliance-impacting · operational
+(deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
+architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
+until the reviewer resolves it - you may not waive your own flag. The scaffold's
+advisory `spec-drift` CI job warns when behavior changes without its
+`contract.md`; a warning is a prompt, not a substitute for the flag. Sweeps:
+`/steer:audit`. Mechanics: `/steer:reference traceability`.
 
-- **State the assumption, don't bury it.** When a request has two readings,
-  surface the one you're taking (or ask) **before** writing against it - never
-  silently pick an interpretation and build 200 lines on it.
-- **Loop until green, then stop.** Run the harness (test, lint, typecheck,
-  build), fix what it reports, re-run - until it passes. The harness is the
-  judge, not your reading of the diff.
-- **Cap the loop.** Bound the fix->re-run cycles; if repeated attempts don't
-  converge, **stop and report what blocked you** with the failing output - don't
-  thrash or paper over the check (see Testing: never delete/skip a failing test).
-- **Never loop on uncheckable work.** Judgment calls, design decisions, and
-  long-compute runs (training, large sweeps, deploys) have no fast pass/fail -
-  those are a human's call or a one-shot script, never an open-ended loop.
+### Audit-aligned delivery
+
+The workflow is **aligned with** SOC 2 / ISO 27001 delivery expectations - say
+"aligned", never "compliant": certification scope and production-readiness
+approval stay with humans. The artifacts are the evidence, so keep the chain
+intact - traceability, review evidence, change history, secure defaults.
+
+### End-of-session checklist
+
+Before wrapping up, run this and report **only the open items**, one line each -
+a clean checklist is one sentence, never the list echoed back with ticks. Track
+them with your todo tooling; if an item can't be satisfied, say so rather than
+implying the work is complete.
+
+- [ ] The five Definition of Done items hold for every change this session?
+- [ ] Unfinished work and known gaps surfaced explicitly?
+- [ ] Dev servers and watchers you started stopped? (Closing a worktree: `mise run docker:clean` - the hooks are best-effort.)
+- [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers and validation; unrelated findings captured as linked issues; the PR references the issue with the right closing relation?
+- [ ] Scaffold placeholders flagged or resolved? (Unbootstrapped repo: `/steer:init`.)
+- [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
+- [ ] Solo trunk, no graduation waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?
 
 
 ## Deployment & environments
@@ -766,29 +789,6 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   human, it never decides them.
 - **Scaffold loops with `/steer:loop`** - never hand-roll an automation that
   can cross a gate.
-
-
-## Drift gates - surface before merge
-
-Drift - any meaningful mismatch along intent <-> spec <-> contract <-> tracker <-> app
-docs <-> tests <-> delivered behavior - is resolved by **explicit human review,
-never silently**: you *surface* it before merge; the reviewer resolves it (fix
-code, fix artifact, or record the accepted divergence). Flag these
-review-sensitive classes in the PR description **the moment you notice one**
-(the scaffold's PR template carries the checklist): **intent drift · contract
-drift · undocumented behavior change · security-sensitive ·
-compliance-impacting · operational (deploy/CI/infra) · local setup or
-deployment changed · app docs invalidated · architecture/stack drift
-(`ARCHITECTURE.md`)**. A flagged class blocks merge
-until the reviewer explicitly resolves it - you may not waive your own flag.
-Periodic sweeps: `/steer:audit` (`code` health, `spec` conformance).
-
-The scaffold's CI also carries an **advisory** `spec-drift` job that *warns*
-(never blocks) when a change touches application behavior without updating the
-owning `contract.md` / `intent.md` - a machine backstop for the *undocumented
-behavior change* class, and in solo-trunk (no PR) the only one. A warning is a
-prompt, not a substitute for the flag: still flag the class and update the spec in
-the same change. Mechanics: `/steer:reference traceability`.
 
 
 ## High-risk areas
@@ -917,20 +917,6 @@ or transmitted.
   just delete the line.
 
 
-## Audit-aligned delivery (SOC 2 / ISO 27001)
-
-The workflow is **aligned with** SOC 2 and ISO 27001 delivery expectations -
-say "aligned", never "compliant": no workflow or artifact makes a product
-compliant; certification scope, compliance accountability, and
-production-readiness approval stay with humans. The artifacts double as audit
-evidence - keep the chain intact: traceability (intent -> spec -> tracker ref ->
-the reviewed PR, each change's own record), review evidence (dev-approved PRs,
-drift flags, DoD), change history (ADRs + action history), and
-access-conscious secure defaults
-(secrets rules, high-risk gates, branch protection). Evidence map:
-`/steer:reference traceability`.
-
-
 ## Change classification
 
 Three classes set per-change ceremony, and **Issue-first takes its threshold
@@ -1055,24 +1041,3 @@ step - and the scrub **redacts or omits** anything it can't safely classify
 (secrets, absolute paths, product code) rather than asking, so nothing sensitive
 reaches the shared repo. If you only worked around the defect to keep going,
 still report it so it gets fixed for everyone.
-
-
-## End-of-session checklist
-
-Before wrapping up a working session, run this checklist and report **only the
-open items**, one line each - a clean checklist is one sentence, never the list
-echoed back with ticks. Don't silently close out, and don't turn the report
-into a round of per-item confirmations (satisfied items need no ack; only
-genuinely open items need the dev). Track open items with your todo tooling so
-nothing is dropped:
-
-- [ ] **The five Definition of Done items hold** for every change made this session?
-- [ ] Any unfinished work or known gaps surfaced explicitly to the dev?
-- [ ] Worktree closing -> dev servers and watchers you started stopped, freeing their ports? (On Claude Code steer's `WorktreeRemove` hook runs `docker:clean`, volumes included; `SessionEnd` only stops containers, keeps volumes, and often does not finish; a worktree removed by hand, or any other surface, still needs `mise run docker:clean` - Parallel worktrees.)
-- [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers, and validation status; new unrelated bugs/gaps/follow-ups were captured as separate linked issues; the PR references the issue with the correct closing/non-closing relation?
-- [ ] Any remaining scaffold placeholders flagged or resolved? (Unbootstrapped repo or legacy fork: run `/steer:init`.)
-- [ ] All finished work committed on the working branch; if the change is complete, branch pushed and PR opened - or, in solo-trunk, the trunk commit pushed - with CI watched to green (see Commit autonomy)?
-- [ ] Solo trunk mode without a recorded graduation waiver, and the MVP now works, you've deployed, or a second contributor joined -> graduate to the PR flow via `/steer:protect` (Commit autonomy)? (A waived repo asks this only when a second contributor joined.)
-
-If any item can't be satisfied, say so plainly rather than implying the work is
-complete.

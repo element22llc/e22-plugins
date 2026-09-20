@@ -408,7 +408,7 @@ the standards in `.github/copilot-instructions.md`.
   `WorktreeRemove` -> `docker:clean`), and neither event exists on a Copilot
   surface - so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
-  Rules `24-worktrees` and `99-end-of-session` therefore scope the hook claim to
+  Rules `24-worktrees` and `50-done` § End-of-session checklist therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
   else. (On Claude Code only the `WorktreeRemove` half is dependable; the
   `SessionEnd` half is best-effort - see

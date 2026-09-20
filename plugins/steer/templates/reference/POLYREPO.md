@@ -138,7 +138,7 @@ never read as "nothing there".
 
 ## Drift crosses the repo edge; the gates do not
 
-Rule `55-drift-gates` and `/steer:audit spec` compare as-built against intended
+Rule `50-done` § Drift gates and `/steer:audit spec` compare as-built against intended
 **within one tree**. A contract change in one member that invalidates another
 member's assumption is invisible to both. No gate catches this for you.
 

@@ -155,7 +155,7 @@ What they can *report* differs:
 | `on-worktree-remove.sh` | `WorktreeRemove` | The **full** teardown - `docker:clean` (down + volumes + orphans, `ws:docker:clean` in a workspace root) - because the checkout itself is about to be deleted and its per-worktree volumes become unreachable regardless. Acts on the payload's `worktree_path`, never on `cwd`: the tree being removed is often not where the session is sitting. `WorktreeRemove` carries no decision control, so the hook cannot stop the removal or report a problem; it exits `0` whatever happens - steer is not the gate, least of all on someone else's cleanup. Same gating and same opt-out as `on-session-end.sh`. |
 
 The two teardown modes are the same distinction rules `24-worktrees` and
-`99-end-of-session` draw, now attempted automatically rather than requested: stop
+`50-done` § End-of-session checklist draw, now attempted automatically rather than requested: stop
 what is running when a session ends, remove the data only when the thing that
 owned it is being deleted. Both share `hooks/lib/worktree-lifecycle.sh`. Only the
 `WorktreeRemove` half is dependable; the `SessionEnd` half is opportunistic, so

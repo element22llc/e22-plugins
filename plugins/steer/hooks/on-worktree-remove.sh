@@ -3,7 +3,7 @@
 #
 # WHY THIS EXISTS
 #   Rule `24-worktrees` names `mise run docker:clean` (down + volumes + orphans)
-#   as the thing to run before removing a worktree, and rule `99-end-of-session`
+#   as the thing to run before removing a worktree, and rule `50-done` § End-of-session checklist
 #   repeats it as a checklist item. Both are prose: they ask, and the ask is
 #   easily missed at exactly the moment it stops being recoverable - once the
 #   checkout is gone, its per-worktree compose project is orphaned with no

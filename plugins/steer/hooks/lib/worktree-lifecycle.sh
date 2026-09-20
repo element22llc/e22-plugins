@@ -4,7 +4,7 @@
 # steer hook helper - tear down a linked worktree's local backing services.
 #
 # WHY THIS EXISTS
-#   Rule `99-end-of-session` asks the agent to stop the dev servers and watchers
+#   Rule `50-done` § End-of-session checklist asks the agent to stop the dev servers and watchers
 #   it started, freeing their ports; the containers a worktree started are this
 #   helper's half of that. Asking is all a
 #   rule can do: it is prose in the always-on payload, it costs bytes every
