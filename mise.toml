@@ -87,7 +87,6 @@ run = [
   # The VS Code MCP scaffold must mirror the plugin's .mcp.json servers.
   "uv run python scripts/check_copilot_mcp.py",
   # The Copilot hook manifest must stay wired to real, shared hooks.json scripts.
-  "uv run python scripts/check_copilot_hooks.py",
   # Every Copilot generator/gate must be wired into gen:copilot / plugin-check.
   "uv run python scripts/check_copilot_symmetry.py",
   # The migration ledger: entry structure, newest-first ordering, no guessed
@@ -224,7 +223,6 @@ run = [
   "uv run python scripts/gen_agent_skills.py --write",
   "uv run python scripts/gen_copilot_agents.py --write",
   "uv run python scripts/gen_copilot_mcp.py --write",
-  "uv run python scripts/gen_copilot_hooks.py --write",
   "uv run python scripts/gen_copilot_manifests.py --write",
 ]
 

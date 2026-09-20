@@ -303,15 +303,6 @@ assert_deny "version-pins: below minimum_supported denied (python 3.9)" "${out}"
 out="$(run_hook check-version-pins.sh "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"compose.yaml\",\"old_string\":\"$(pin postgres 11)\",\"new_string\":\"$(pin postgres 18)\"}}")"
 assert_empty "version-pins: upgrade edit silent (F13, old value ignored)" "${out}"
 
-# Copilot target (STEER_HOOK_TARGET=copilot): same detection, but a flat
-# permissionDecision envelope with "ask" instead of the Claude deny wrapper.
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11)")")"
-assert_copilot_ask "version-pins: copilot target emits flat ask, not deny" "${out}"
-
-# Copilot target on a clean pin stays silent (no spurious ask).
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 16)")")"
-assert_empty "version-pins: copilot target silent on supported pin" "${out}"
-
 out="$(run_hook check-version-pins.sh "$(json_write /tmp s1 compose.yaml "image: $(pin postgres 11) # steer:allow-pin vendor LTS")")"
 assert_empty "version-pins: steer:allow-pin bypass" "${out}"
 
@@ -2466,12 +2457,6 @@ out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp1 'git push ori
 assert_ask "trunk-push: solo-trunk + signal + push asks" "${out}"
 assert_has "trunk-push: ask names the graduation path" "${out}" "/steer:protect"
 
-# same repo, copilot target -> flat ask envelope (no hookSpecificOutput).
-ENV="STEER_HOOK_TARGET=copilot"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp2 'git push')")"
-ENV=""
-assert_copilot_ask "trunk-push: copilot flat ask" "${out}"
-
 # compound command (`... && git push`) still matches.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp3 'mise run check && git push')")"
 assert_ask "trunk-push: compound command push asks" "${out}"
@@ -2493,14 +2478,6 @@ assert_has "trunk-push: repeat reminder still names the graduation path" "${out}
 # A NEW session re-asks (the marker is session-keyed, not repo-permanent).
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4c 'git push origin main')")"
 assert_ask "trunk-push: new session asks again" "${out}"
-
-# Copilot repeat: the copilot envelope carries decisions only -> silent allow.
-ENV="STEER_HOOK_TARGET=copilot"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4d 'git push')")"
-assert_copilot_ask "trunk-push: copilot first push flat ask" "${out}"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp4d 'git push')")"
-ENV=""
-assert_empty "trunk-push: copilot repeat push silent" "${out}"
 
 # non-push git command -> silent (hot-path early exit).
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp5 'git status')")"
@@ -2527,10 +2504,6 @@ mkdir -p "${TP_WAIVED}/infra"
 claude_md_mode_waived "${TP_WAIVED}" solo-trunk
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_WAIVED}" tp8w 'git push origin main')")"
 assert_empty "trunk-push: solo-trunk + signal + waiver silent" "${out}"
-ENV="STEER_HOOK_TARGET=copilot"
-out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_WAIVED}" tp8wc 'git push')")"
-ENV=""
-assert_empty "trunk-push: waived repo silent under copilot too" "${out}"
 
 # Unwaived hot repo: the ask names the waiver as the alternative to graduating.
 out="$(run_hook check-bash-actions.sh "$(bash_json "${TP_HOT}" tp8x 'git push origin main')")"
@@ -3429,58 +3402,49 @@ assert_envelope() { # <label> <out>
 			ok || bad "$1 (envelope is not valid JSON with equal halves)"
 	fi
 }
-# (a) Copilot CLI target: one envelope, whole ruleset, no part arguments needed.
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
-assert_rc "inject copilot: CLI target exits 0" "$(last_rc)" 0
-assert_envelope "inject copilot: CLI target emits the JSON envelope" "${out}"
-assert_has "inject copilot: CLI envelope carries the first rule" "${out}" 'You are the router'
-assert_has "inject copilot: CLI envelope carries the last rule" "${out}" 'End-of-session checklist'
-assert_has "inject copilot: CLI envelope carries the scoped issue-first rule" "${out}" 'Issue-first (GitHub-adopted repos)'
-assert_has "inject copilot: refresh hint names the Copilot update path" "${out}" 'copilot plugin update steer'
+# (a) Copilot Chat in VS Code: one envelope carrying the whole ruleset, detected
+# from the payload shape alone. The Copilot CLI hook variant retired with hook
+# parity, so there is no target variable to set any more - enforcement is
+# guaranteed on Claude Code; VS Code picks this up incidentally.
+out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
+assert_envelope "inject copilot: VS Code payload emits the JSON envelope" "${out}"
+assert_has "inject copilot: envelope carries the first rule" "${out}" 'You are the router'
+assert_has "inject copilot: envelope carries the last rule" "${out}" 'End-of-session checklist'
+assert_has "inject copilot: envelope carries the scoped issue-first rule" "${out}" 'Issue-first (GitHub-adopted repos)'
+assert_has "inject copilot: refresh hint names the VS Code update path" "${out}" 'Extensions view'
+printf '%s' "${out}" | grep -q 'copilot plugin update steer' && bad "inject copilot: the retired CLI update path must not be named" || ok
 printf '%s' "${out}" | grep -q 'part 1/' && bad "inject copilot: envelope must not be labelled as a part" || ok
 printf '%s' "${out}" | grep -q 'RULESET INCOMPLETE' && bad "inject copilot: no rule may be dropped (cap lifted)" || ok
-# (b) Under the copilot target, every part but 1 is silent - even when hooks.json's
-# `k N` arguments are passed through (VS Code runs all nine registrations).
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+# (b) Every part but 1 is silent on a Copilot surface, even though VS Code runs
+# all nine `k N` registrations from hooks.json - the LAST hook returning context
+# wins there, so a mirrored delivery would overwrite the ruleset with a tail part.
 out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 2 9 2>/dev/null)"
 assert_empty "inject copilot: part 2 of 9 is silent on a Copilot surface" "${out2}"
 out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 9 9 2>/dev/null)"
 assert_empty "inject copilot: part 9 of 9 is silent on a Copilot surface" "${out2}"
-# (c) VS Code Copilot Chat payload, no target variable: recognised from its shape,
-# part 1 of 9 emits the same envelope the CLI gets.
-out2="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
-assert_envelope "inject copilot: VS Code payload is recognised without STEER_HOOK_TARGET" "${out2}"
-assert_eq "inject copilot: VS Code and CLI envelopes are byte-identical" "${out2}" "${out}"
-# (d) Fail-safe: a Claude payload (permission_mode) stays raw and parted; so does a
-# payload of unknown shape (the CLI's camelCase form without the target variable).
+# (c) Fail-safe: a Claude payload (permission_mode) stays raw and parted; so does a
+# payload of unknown shape - the Copilot CLI's camelCase form, which no longer has
+# a target variable to declare itself with, must degrade to the Claude path rather
+# than to silence.
 out="$(printf '%s' "$(cp_claude_json "${CP_REPO}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
 case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: Claude payload must stay raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
 assert_has "inject copilot: Claude payload keeps the parted header" "${out}" 'part 1/9'
 assert_has "inject copilot: Claude payload keeps the Claude refresh hint" "${out}" '/plugin update steer@e22-plugins'
 out="$(run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
 case "${out}" in '<!-- Engineering standards'*) ok ;; *) bad "inject copilot: unknown payload shape must default to Claude raw (got: $(printf '%s' "${out}" | head -c 80))" ;; esac
-# (e) Knowledge-work folder on a Copilot surface: still the envelope, still lean.
+# (d) Knowledge-work folder on a Copilot surface: still the envelope, still lean.
 CP_KNOW="${WORK}/inject-copilot-know"
 mkdir -p "${CP_KNOW}"
 printf 'notes\n' >"${CP_KNOW}/README.md"
-out="$(ENV="STEER_HOOK_TARGET=copilot" run_hook inject-standards.sh "$(cp_cli_json "${CP_KNOW}")")"
+out="$(printf '%s' "$(cp_vscode_json "${CP_KNOW}")" | sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
 assert_envelope "inject copilot: knowledge-work folder gets the envelope" "${out}"
 assert_has "inject copilot: knowledge-work envelope says so" "${out}" 'knowledge-work mode'
 printf '%s' "${out}" | grep -q 'Issue-first (GitHub-adopted repos)' && bad "inject copilot: knowledge-work envelope must omit scoped rules" || ok
-# (f) Missing rules dir on a Copilot surface: the fallback banner is still delivered
+# (e) Missing rules dir on a Copilot surface: the fallback banner is still delivered
 # - inside the envelope, so it is not discarded as non-JSON.
-out="$(ENV="STEER_HOOK_TARGET=copilot CLAUDE_PLUGIN_ROOT=${IF_NORULES}" run_hook inject-standards.sh "$(cp_cli_json "${CP_REPO}")")"
+out="$(printf '%s' "$(cp_vscode_json "${CP_REPO}")" | CLAUDE_PLUGIN_ROOT="${IF_NORULES}" sh "${HOOKS}/inject-standards.sh" 1 9 2>/dev/null)"
 assert_envelope "inject copilot: missing rules dir - banner arrives in the envelope" "${out}"
 assert_has "inject copilot: missing rules dir - banner text present" "${out}" 'rules directory was not found'
-# (g) The generated Copilot manifest registers the injector once, under the
-# camelCase event, with no part arguments and the copilot target.
-CP_MANIFEST="$(tr -d '\\' <"${HOOKS}/copilot-hooks.json")"
-printf '%s' "${CP_MANIFEST}" | grep -q '"sessionStart"' && ok || bad "copilot-hooks.json: injector must be registered under camelCase sessionStart"
-[ "$(printf '%s' "${CP_MANIFEST}" | grep -o 'inject-standards.sh"' | wc -l | tr -d ' ')" -eq 2 ] && ok ||
-	bad "copilot-hooks.json: injector must appear exactly once (guard + invocation)"
-printf '%s' "${CP_MANIFEST}" | grep -q 'inject-standards.sh" [0-9]' && bad "copilot-hooks.json: injector must carry no part arguments" || ok
-printf '%s' "${CP_MANIFEST}" | grep -q 'STEER_HOOK_TARGET=copilot sh "${CLAUDE_PLUGIN_ROOT}/hooks/inject-standards.sh"' && ok ||
-	bad "copilot-hooks.json: injector must run under STEER_HOOK_TARGET=copilot"
 
 # ---------------------------------------------------------------------------
 # check-comment-density.sh (PostToolUse) - flags a just-written source/config
@@ -3642,11 +3606,6 @@ assert_no_block "comment-density: trimmed file no longer blocks" "${out}"
 } >"${RCD}/src/recover.ts"
 out="$(run_hook check-comment-density.sh "$(json_write "${RCD}" sCD15 src/recover.ts 'x')")"
 assert_block "comment-density: regression re-blocks after recovery" "${out}"
-# (n) the Copilot manifest carries it under the PascalCase PostToolUse event -
-# camelCase would lose Claude matcher semantics, and `Write`/`Edit` would then
-# never match Copilot's runtime `create`/`edit` tool names.
-grep -q '"PostToolUse"' "${HOOKS}/copilot-hooks.json" && ok ||
-	bad "copilot-hooks.json: check-comment-density.sh must be registered under PascalCase PostToolUse"
 
 # --- check-ascii-writes.sh (rule 85: ASCII in code and values) ---
 # Like pin() above, ch() assembles the characters at runtime so this file's own
@@ -3781,11 +3740,10 @@ mkdir -p "${RAP}/.claude-plugin"
 out="$(run_hook check-ascii-writes.sh "$(json_write "${RAP}" sA19 main.tf "d = 'a ${EM} b'")")"
 assert_empty "ascii: plugin repo exempt" "${out}"
 
-# (j) registration in both manifests.
+# (j) registration in hooks.json (the one manifest; the Copilot CLI variant
+# retired with hook parity).
 tr -d '\\' <"${HOOKS}/hooks.json" | grep -q 'sh "${CLAUDE_PLUGIN_ROOT}/hooks/check-ascii-writes.sh"' && ok ||
 	bad "hooks.json: check-ascii-writes.sh must be registered with the sh prefix"
-grep -q 'check-ascii-writes.sh' "${HOOKS}/copilot-hooks.json" && ok ||
-	bad "copilot-hooks.json: check-ascii-writes.sh must be registered for parity"
 
 # (k) THE REGRESSION THAT MATTERS: every bundled template must be clean, or
 # /steer:init and /steer:adopt would write files this very gate then denies in

@@ -63,10 +63,7 @@
 #   the create proceeds; fires AT MOST ONCE per session+repo. Silent unless
 #   /spec/tracker.md says `system: github`, and silent when the payload
 #   already carries `steer:` markers - that is the contract being applied
-#   (the /steer:tracker-sync path), not a bypass. Claude-only: the Copilot
-#   PreToolUse envelope carries decisions, not additionalContext, so the
-#   guard stays silent under STEER_HOOK_TARGET=copilot (it was never
-#   registered for Copilot as a standalone hook either).
+#   (the /steer:tracker-sync path), not a bypass.
 #
 # CONSTRAINTS (per repo CLAUDE.md)
 #   POSIX sh, no jq required, fail-open on any ambiguity - never break a
@@ -124,9 +121,6 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			CWD_KEY="$(printf '%s' "${ROOT}" | cksum 2>/dev/null | cut -d' ' -f1)"
 			MARK="${TMPDIR:-/tmp}/steer-trunkpush.${SID:-nosid}.${CWD_KEY:-0}"
 			if [ -f "${MARK}" ]; then
-				# Copilot's PreToolUse envelope carries decisions only (no
-				# additionalContext equivalent) -> silent allow on the repeat.
-				[ "${STEER_HOOK_TARGET:-claude}" = "copilot" ] && exit 0
 				CTX="Trunk-push reminder: this solo-trunk repo still shows graduation signals and the push-approval ask already fired this session. If the human approved that push, carry on - but settle this soon so trunk pushes stop needing case-by-case yeses: graduate via /steer:protect (verify, then apply on the dev's confirmation), or, if the repo deliberately stays single-dev on trunk, record a graduation waiver via /steer:protect waive. If the human DECLINED it, do not retry the push; surface that decision instead."
 				printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "${CTX}"
 				exit 0
@@ -139,15 +133,8 @@ if [ "${TOOL}" = "Bash" ] && [ -n "${CMD}" ] &&
 			SAFE_SIGNALS="$(steer_json_safe "${SIGNALS}" | sed 's/  */ /g; s/^ //')"
 			REASON="Trunk-push graduation gate - this repo declares solo-trunk delivery but has outgrown pre-MVP:${SAFE_SIGNALS}. While these signals stand, direct-to-main pushes need a human yes. Graduate now instead: run /steer:protect (verify, then apply on the dev's confirmation) to raise the branch-protection wall - that flips the repo to pr-flow, where branch pushes and PRs are autonomous and the merge review is the only gate (a one-person repo graduates with /steer:protect apply --solo, which requires the PR and CI but no approval, so the dev can still merge alone). Or, if this repo deliberately stays single-dev on trunk and these signals are expected, run /steer:protect waive to record that decision - it silences this gate for good. Approving this prompt pushes anyway; the gate clears once the repo graduates or the waiver is recorded."
 
-			# Output envelope is harness-specific, mirroring check-version-pins.sh:
-			# Claude PreToolUse takes the decision wrapped in hookSpecificOutput;
-			# GitHub Copilot CLI takes a flat decision object. Both get "ask" -
-			# this gate is a surfaced human decision, never a hard deny.
-			if [ "${STEER_HOOK_TARGET:-claude}" = "copilot" ]; then
-				printf '{"permissionDecision":"ask","permissionDecisionReason":"%s"}\n' "${REASON}"
-			else
-				printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
-			fi
+			# "ask", never a hard deny: this gate is a surfaced human decision.
+			printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"%s"}}\n' "${REASON}"
 			exit 0
 		fi
 	fi
@@ -156,9 +143,6 @@ fi
 # ---------------------------------------------------------------------------
 # Check 2 - issue-create contract guard.
 # ---------------------------------------------------------------------------
-# Claude-only (see the doc block above).
-[ "${STEER_HOOK_TARGET:-claude}" = "copilot" ] && exit 0
-
 # --- Is this an issue-CREATE action? Cheap checks first; this hook is matched
 # on every Bash call, so bail immediately on anything that is not issue
 # creation. ---
