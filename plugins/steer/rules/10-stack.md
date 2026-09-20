@@ -1,5 +1,9 @@
-<!-- steer:inject-when=code-project -->
-## Stack
+<!-- steer:inject-when=org-e22 -->
+## Stack (e22 org pack)
+
+**The e22 org pack** - delivered where `policy/org.yml` says `pack: e22`, which
+is also what an absent file means. Another pack drops this section and leaves
+the core rules, which name no product.
 
 **Default biases**, not mandates - when intent clearly warrants a different
 stack, propose the better fit and record an ADR (`/steer:adr`). Rationale and
@@ -34,6 +38,9 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Auth:** Better Auth - high-risk; scope with the dev and write an ADR
   first. **Error tracking:** Sentry; DSNs/tokens in encrypted config at rest,
   never committed - see Secrets handling.
+- **Secret store (deployed):** SSM Parameter Store `SecureString` - what Secrets
+  handling means by "the declared store". Secrets Manager only for rotation,
+  cross-account sharing, or large/binary values.
 - **Local services:** Docker Compose via a committed `compose.yaml` - adapt the
   bundled scaffold one, don't author from scratch. **Same engine locally as
   deployed** (no SQLite stand-in for PostgreSQL); **every published host port
@@ -53,3 +60,11 @@ bullets; a **workspace** has no app stack. `/steer:init` records the profile; th
 - **Environment variables:** local config in a git-ignored `.env` /
   `.env.local`; names documented in `.env.example` - bootstrap and storage
   rules in Secrets handling.
+
+**Patterns, instantiated here:** typed by default -> TS `strict` / Python hints
+under a type checker; parameterized data access -> Drizzle Kit or SQLAlchemy +
+Alembic; server-first -> Server Components, `NEXT_PUBLIC_*`; shared domain
+modules -> `packages/`; nothing silenced -> unexpected errors to Sentry with
+context; lockfiles -> `mise.lock`, `pnpm-lock.yaml`, `uv.lock`,
+`.terraform.lock.hcl` (mise writes `mise.lock` only if it exists already);
+declared dependencies -> `package.json`, `pyproject.toml`.

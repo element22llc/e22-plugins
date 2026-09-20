@@ -4,11 +4,11 @@ applyTo: '**/*.tf,**/*.tofu,**/*.hcl,**/*.tfvars,**/*.tf.json,infra/**,live/**,m
 description: Infrastructure-as-code stack standards - applied when editing Terraform/OpenTofu/Terragrunt/Ansible/Pulumi files.
 ---
 
-## Stack - infrastructure / IaC
+## Stack - infrastructure / IaC (e22 org pack)
 
-This repo does infrastructure-as-code. The universal core still applies (mise
-pinning, the `/spec` spine, CI hygiene); the stack below replaces the app
-defaults. Deviations are ADRs, same as any stack choice.
+This repo does infrastructure-as-code and follows the e22 org pack. The
+universal core still applies (mise pinning, the `/spec` spine, CI hygiene); the
+stack below replaces the app defaults. Deviations are ADRs, same as any stack choice.
 
 - **IaC engine:** OpenTofu (or Terraform) for cloud resources; Ansible for host
   configuration/provisioning; Pulumi only with an ADR. **Orchestration/DRY:**

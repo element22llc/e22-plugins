@@ -2345,6 +2345,31 @@ steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_INFRA}" && ok || bad "scope: O
 TRAITS_OR_NONE="$(new_repo traits_or_none)"
 steer_inject_when_ok 'has-iac|has-apps' "${TRAITS_OR_NONE}" && bad "scope: OR marker false when no arm holds" || ok
 
+# org-e22: absent policy/org.yml means e22, so an existing repo keeps the house
+# stack rules on upgrade; any other declared pack drops them.
+ORG_NONE="$(new_repo org_none)"
+[ "$(steer_org_pack "${ORG_NONE}")" = "e22" ] && ok || bad "org: absent policy/org.yml reads as e22"
+steer_inject_when_ok org-e22 "${ORG_NONE}" && ok || bad "org: org-e22 true with no declaration"
+mkdir -p "${ORG_NONE}/policy"
+printf 'schema: 1\npack: none\n' >"${ORG_NONE}/policy/org.yml"
+[ "$(steer_org_pack "${ORG_NONE}")" = "none" ] && ok || bad "org: declared pack is read back"
+steer_inject_when_ok org-e22 "${ORG_NONE}" && bad "org: org-e22 false when another pack is declared" || ok
+printf 'pack: e22  # house defaults\n' >"${ORG_NONE}/policy/org.yml"
+steer_inject_when_ok org-e22 "${ORG_NONE}" && ok || bad "org: inline comment stripped from pack value"
+
+# AND composition: every `&` arm must hold; an arm may itself be an OR list.
+steer_inject_when_ok 'has-iac&org-e22' "${TRAITS_INFRA}" && ok ||
+	bad "scope: AND marker true when both arms hold"
+mkdir -p "${TRAITS_APP}/policy"
+printf 'pack: none\n' >"${TRAITS_APP}/policy/org.yml"
+steer_inject_when_ok 'has-apps&org-e22' "${TRAITS_APP}" &&
+	bad "scope: AND marker false when the pack arm fails" || ok
+steer_inject_when_ok 'has-iac&org-e22' "${TRAITS_APP}" &&
+	bad "scope: AND marker false when the trait arm fails" || ok
+steer_inject_when_ok 'org-e22&has-iac|has-apps' "${TRAITS_INFRA}" && ok ||
+	bad "scope: AND binds loosest - OR arm resolves inside it"
+rm -f "${TRAITS_APP}/policy/org.yml"
+
 # work-mode classifier: non-git + no markers -> knowledge; git or any code marker
 # -> code; fail-safe defaults to code. /spec is deliberately NOT a code marker.
 WM_KW="${WORK}/wm_kw"

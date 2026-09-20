@@ -1,5 +1,5 @@
-<!-- steer:inject-when=code-project -->
-## Useful commands
+<!-- steer:inject-when=org-e22 -->
+## Useful commands (e22 org pack)
 
 - **First-time setup:** `mise trust && mise install` (full mise setup in the
   product README), then `mise run dev:setup` - idempotent local env: services

@@ -326,10 +326,12 @@ so it stays POSIX `sh` with no `jq` and no network.
 `steer_inject_when_ok <token> <root>` is the entry point for rule scoping: a rule
 whose first line is `<!-- steer:inject-when=<token> -->` is injected only when the
 predicate holds. Tokens compose with `|` for OR - the rule injects when **any**
-listed predicate holds (the one shipped composite is `52-deployment`'s
-`has-iac|has-apps`). The predicates are
+listed predicate holds (`52-deployment`'s `has-iac|has-apps`) - and with `&` for
+AND, which binds loosest, so every arm must hold (`12-stack-infra`'s
+`has-iac&org-e22`: the org pack's IaC stack, delivered only to an IaC repo that
+follows the pack). The predicates are
 `tracker-github`, `has-infra`, `has-iac`, `has-apps`, `has-compose`,
-`has-openspec`, `code-project`, `automation-optin`, `polyrepo`,
+`has-openspec`, `code-project`, `org-e22`, `automation-optin`, `polyrepo`,
 `has-workspace-manifest` and `has-product-pointer`.
 **An unknown token fails open (injects)**, so a typo'd marker can never silently
 drop a rule from the always-on context. `automation-optin` is the single

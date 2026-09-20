@@ -287,6 +287,33 @@ steer_automation_optin() {
 	grep -Eq '^[[:space:]]*loops:[[:space:]]*(true|yes|on)[[:space:]]*(#.*)?$' "${_af}" 2>/dev/null
 }
 
+# steer_org_pack <repo-root> - prints the org pack this repo follows, read from
+# `policy/org.yml`'s `pack:` key. Prints `e22` when the file, the key or the
+# value is absent.
+#
+# ABSENT MEANS e22 BY DESIGN. The org pack exists so a consumer outside Element
+# 22 can drop the house stack, commands and secret-store defaults without
+# arguing with a rule - but every repo that exists today was bootstrapped
+# against those defaults, and an upgrade that silently stopped delivering them
+# would be a regression dressed as a feature. So the default is the status quo
+# and opting OUT is the deliberate edit.
+steer_org_pack() {
+	_op="${1:-.}/policy/org.yml"
+	if [ -f "${_op}" ]; then
+		_v="$(sed -n 's/^[[:space:]]*pack:[[:space:]]*//p' "${_op}" 2>/dev/null | head -n 1)"
+		_v="${_v%%#*}"
+		_v="$(printf '%s' "${_v}" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//; s/^"//; s/"$//')"
+		case "${_v}" in
+		'' | '['*) ;;
+		*)
+			printf '%s' "${_v}"
+			return 0
+			;;
+		esac
+	fi
+	printf 'e22'
+}
+
 # steer_inject_when_one <token> <repo-root> - true / false for a SINGLE
 # inject-when predicate. An unknown token -> fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
@@ -299,6 +326,7 @@ steer_inject_when_one() {
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
 	has-openspec) steer_has_openspec "$2" ;;
 	automation-optin) steer_automation_optin "$2" ;;
+	org-e22) [ "$(steer_org_pack "$2")" = "e22" ] ;;
 	# polyrepo - true in EITHER role (workspace host or member); a single-repo
 	# product matches neither and pays nothing. NOTE: no rule currently carries
 	# `inject-when=polyrepo`, so this arm is not reachable from the inject loop.
@@ -385,21 +413,46 @@ steer_work_mode() {
 
 # steer_inject_when_ok <token-expr> <repo-root> - true (inject the rule) / false
 # (skip it) for a rule's inject-when marker. <token-expr> is one predicate, or
-# several joined by `|` for OR: the rule injects when ANY listed predicate holds
-# (e.g. has-iac|has-apps for the deployment rule, which applies to infra and
-# app/service repos alike). Empty root -> fail-open (inject), so a missing cwd
-# never silently removes a rule.
+# several composed two ways:
+#
+#   `a|b`  OR  - inject when ANY arm holds (has-iac|has-apps: the deployment
+#                rule applies to infra and app/service repos alike).
+#   `a&b`  AND - inject when EVERY arm holds (has-iac&org-e22: the org pack's
+#                IaC stack, delivered only to an IaC repo that follows the pack).
+#
+# AND binds loosest, so `a&b|c` reads as `a AND (b OR c)` - the shape the rules
+# actually need, since a scoped org-pack rule is "this repo trait, and this pack".
+# Empty root -> fail-open (inject), so a missing cwd never silently removes a rule.
 steer_inject_when_ok() {
 	_token="$1"
 	_root="${2:-}"
 	[ -n "${_root}" ] || return 0
 	_save_ifs="${IFS}"
-	IFS='|'
-	for _t in ${_token}; do
+	IFS='&'
+	for _and in ${_token}; do
 		IFS="${_save_ifs}"
-		steer_inject_when_one "${_t}" "${_root}" && return 0
-		IFS='|'
+		steer_inject_when_any "${_and}" "${_root}" || {
+			IFS="${_save_ifs}"
+			return 1
+		}
+		IFS='&'
 	done
 	IFS="${_save_ifs}"
+	return 0
+}
+
+# steer_inject_when_any <or-expr> <repo-root> - one AND arm: true when any
+# `|`-joined predicate in it holds.
+steer_inject_when_any() {
+	_any_token="$1"
+	_any_root="$2"
+	_any_ifs="${IFS}"
+	IFS='|'
+	for _t in ${_any_token}; do
+		IFS="${_any_ifs}"
+		steer_inject_when_one "${_t}" "${_any_root}" && return 0
+		IFS='|'
+	done
+	IFS="${_any_ifs}"
 	return 1
 }

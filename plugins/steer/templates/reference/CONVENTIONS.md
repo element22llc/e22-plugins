@@ -3,6 +3,23 @@
 Cross-cutting conventions for product repos. The always-on rules keep
 only pointers; this is the full prose, loaded on demand via `/steer:reference conventions`.
 
+## Org packs - which defaults reach this repo
+
+The house stack, the useful-commands rule and the deployed secret-store default
+are the **e22 org pack**, not universal law. A repo declares its pack in
+`policy/org.yml`:
+
+```yaml
+pack: e22   # any other value drops the pack
+```
+
+`pack: e22` is also what an **absent** file means, so a repo bootstrapped before
+packs existed keeps exactly what it had. On any other value the session receives
+only the vendor-neutral core: the patterns rule states each pattern as a
+principle with no product named, and secrets handling says "the declared store"
+rather than naming one. Adopting a different stack is still an ADR - the pack
+decides which defaults are *delivered*, not whether a choice needs recording.
+
 ## Versioning policy
 
 Default to **current stable** versions of all tools, runtimes, frameworks, and

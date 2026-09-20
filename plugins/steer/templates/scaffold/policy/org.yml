@@ -1,0 +1,14 @@
+# Which org pack's defaults this repo follows. steer delivers the pack's stack,
+# commands and secret-store rules on top of the vendor-neutral core; rationale:
+# /steer:reference conventions.
+# steer:allow-comments the value changes which always-on rules a session receives, which is not guessable from the key alone
+
+schema: 1
+
+# `e22` is the house pack this plugin ships: Next/TS/Tailwind, Node + PostgreSQL +
+# Drizzle, OpenTofu + Terragrunt on AWS, pnpm/uv, mise as the task entry point,
+# SSM Parameter Store for secrets at rest. Any other value (`none` is the
+# conventional one) drops the pack and leaves only the core rules, which name no
+# product. An absent file reads as `e22`, so a repo bootstrapped before packs
+# existed keeps exactly what it had.
+pack: e22
