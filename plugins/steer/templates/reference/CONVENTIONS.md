@@ -722,9 +722,10 @@ Patterns:
   string bound for an external API, and not in comments, specs, docs, commit
   messages or PR text either. Use the ASCII equivalent (`-`, `->`, `"`, `'`,
   `...`, `*`, a plain space); when you copy text in from anywhere, ASCII-clean
-  it first. A `PreToolUse` hook denies a write that introduces one, and
-  `steer:allow-typographic` in the same content is the escape hatch for a
-  genuine exception (a fixture asserting the character, a Unicode table).
+  it first. Review is the enforcement - no hook denies the write - and a repo
+  that wants a machine backstop can grep its own tracked files in CI.
+  `steer:allow-typographic` in the content marks a genuine exception (a fixture
+  asserting the character, a Unicode table) for a reader or such a sweep.
   Scope note: this is about those characters, not about non-English text -
   accented letters, guillemets and CJK are unaffected. It is **not** a
   carve-out for a language's typesetting conventions, though: the apostrophe is

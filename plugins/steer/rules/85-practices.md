@@ -41,7 +41,7 @@ anti-patterns prose: `/steer:reference conventions`.
   and non-breaking spaces never appear in anything you produce: not in code,
   config, identifiers or strings bound for an external API, and not in
   comments, specs, docs, commit messages, PR text or chat either. Write `-`,
-  `'`, `"`, `...`, `*`, `->`. Strict validators reject the rest, and a write
-  hook denies them. This is about those characters only - accented letters,
-  guillemets and other non-English text are unaffected. The apostrophe is `'`
-  in every language, French included; typeset forms are never the exception.
+  `'`, `"`, `...`, `*`, `->`; strict validators reject the rest. This is about
+  those characters only - accented letters, guillemets and other non-English
+  text are unaffected, and the apostrophe is `'` in every language, French
+  included.

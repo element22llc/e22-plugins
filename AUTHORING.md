@@ -496,8 +496,10 @@ Hooks live under `plugins/steer/hooks/` and are wired in `hooks.json`.
   characters, bullets, arrows, non-breaking or thin spaces - anywhere, including
   prose. Write `-`, `'`, `"`, `...`, `*`, `->`. This is the repo's own house
   style *and* the standard it ships (rule 85), enforced by `mise run check-ascii`
-  and a pre-commit hook; `scripts/check-ascii.sh` reuses the shipped hook's
-  character table so the two cannot drift. A file that genuinely needs one of
+  and a pre-commit hook; `scripts/check-ascii.sh` uses the repo-local
+  `scripts/typographic.sh` table (which lived under the plugin's `hooks/lib/`
+  until the write-time ASCII hook tier retired) so its bulk pattern and its
+  naming table cannot drift apart. A file that genuinely needs one of
   these characters declares `steer:allow-typographic`. It does **not** restrict
   non-English text: accented letters, guillemets and CJK are unaffected. Note
   that `\uXXXX` typed into a Write/Edit tool payload is decoded to the real
