@@ -480,6 +480,8 @@ areas - or when an edit would clobber filled-in content.
 
 ## Spec workflow - OpenSpec backend
 
+> **Applies only to a repo whose spec spine is OpenSpec** - it has `openspec/project.md`, `openspec/specs/` or `openspec/changes/`. If this repo has none of those, skip this section entirely: the unqualified Spec workflow above governs, and `spec/features/**` is where specs belong.
+
 This repo carries an `openspec/` spine, so **OpenSpec owns the spec artifacts**.
 This rule overrides the *paths and commands* in Spec workflow. Every other rule -
 stack, testing, coverage, Definition of Done, issue-first, drift gates,
@@ -561,6 +563,8 @@ use the manual export.
 
 
 ## Issue-first (GitHub-adopted repos)
+
+> **Applies only where the tracker declaration says `system: github`** - `spec/tracker.md`, or `openspec/steer/tracker.md` on an OpenSpec repo (in a polyrepo member, the workspace's). On any other tracker, or with none declared, skip this section.
 
 When `/spec/tracker.md` declares `system: github` - in a polyrepo member
 (`spec/PRODUCT.md` present) that file is the **workspace's**, never a local

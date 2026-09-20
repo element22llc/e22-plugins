@@ -66,7 +66,41 @@ SCOPED_RULES: dict[str, dict[str, str]] = {
     },
 }
 
-_INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=\S+\s*-->\n?")
+_INJECT_WHEN_MARKER = re.compile(r"^<!--\s*steer:inject-when=(?P<token>\S+)\s*-->\n?")
+
+# A rule kept in the flat file loses the hook's gating, so one that ASSERTS its
+# trait as fact ships that assertion to every repo. Rule 33 said "This repo
+# carries an `openspec/` spine" to native `spec/` repos, contradicting the
+# unqualified Spec workflow rule in the same file. The flat file cannot test a
+# repo trait, so it states the precondition instead: the reader can check it, and
+# on the repo the rule is really for the line is simply true. Keyed by token, so a
+# new trait-scoped rule inherits the qualification instead of depending on its
+# author having written a conditional first sentence.
+#
+# A token that needs no precondition is listed in ``UNQUALIFIED_TOKENS`` with its
+# reason; `check_copilot_instructions.py` fails when a rule carries a token in
+# neither map nor in ``SCOPED_RULES``, so a new trait-scoped rule forces the
+# decision rather than shipping unqualified by default - the #577 failure mode.
+SCOPE_PRECONDITIONS: dict[str, str] = {
+    "has-openspec": (
+        "**Applies only to a repo whose spec spine is OpenSpec** - it has "
+        "`openspec/project.md`, `openspec/specs/` or `openspec/changes/`. If this "
+        "repo has none of those, skip this section entirely: the unqualified Spec "
+        "workflow above governs, and `spec/features/**` is where specs belong."
+    ),
+    "has-iac": (
+        "**Applies only to a repo that does infrastructure-as-code** - it has "
+        "Terraform/OpenTofu/Terragrunt/Pulumi or Ansible sources (an `infra/` "
+        "directory, `*.tf`/`*.tofu`/`*.hcl`, `playbooks/`, `roles/`). Skip this "
+        "section in a repo with none."
+    ),
+    "tracker-github": (
+        "**Applies only where the tracker declaration says `system: github`** - "
+        "`spec/tracker.md`, or `openspec/steer/tracker.md` on an OpenSpec repo (in "
+        "a polyrepo member, the workspace's). On any other tracker, or with none "
+        "declared, skip this section."
+    ),
+}
 
 # Brand-free (the payload debrand gate scans templates/github) and skill-ref-safe
 # (`/steer:sync` resolves to a real skill). The refresh path is `/steer:sync` - its
@@ -100,6 +134,19 @@ INVOCATION_NOTE = (
     "surface you are on."
 )
 
+# Tokens that deliberately ship unqualified, with the reason each is safe.
+UNQUALIFIED_TOKENS: dict[str, str] = {
+    "code-project": (
+        "the work-mode baseline (code repo vs knowledge folder); this artifact is "
+        "installed into code repos by the bootstrap skills, and qualifying 20 rules "
+        "with it would be noise"
+    ),
+    "has-iac|has-apps": (
+        "an alternation covering app and IaC repos alike, and rule 52 opens on what "
+        "it is about rather than asserting a trait - there is nothing false to read"
+    ),
+}
+
 
 def iter_rule_files(rules_dir: Path) -> list[Path]:
     """The rule files, in the lexical order the SessionStart hook concatenates
@@ -117,9 +164,36 @@ def render(rules_dir: Path = RULES_DIR) -> str:
     are emitted separately by ``render_scoped``."""
     parts: list[str] = [HEADER, "\n\n", INVOCATION_NOTE, "\n\n"]
     for f in iter_rule_files(rules_dir):
-        parts.append(_INJECT_WHEN_MARKER.sub("", f.read_text(encoding="utf-8"), count=1))
+        parts.append(_qualified_body(f.read_text(encoding="utf-8")))
         parts.append("\n\n")
     return "".join(parts).rstrip("\n") + "\n"
+
+
+def rule_tokens(rules_dir: Path = RULES_DIR) -> dict[str, list[str]]:
+    """Return {inject-when token: [rule filenames carrying it]} across all rules,
+    routed and flat alike - the surface ``check_copilot_instructions`` audits."""
+    out: dict[str, list[str]] = {}
+    if not rules_dir.is_dir():
+        return out
+    for f in sorted(rules_dir.glob("*.md")):
+        marker = _INJECT_WHEN_MARKER.match(f.read_text(encoding="utf-8"))
+        if marker is not None:
+            out.setdefault(marker.group("token"), []).append(f.name)
+    return out
+
+
+def _qualified_body(text: str) -> str:
+    """Strip the ``inject-when`` marker and, for a trait-scoped rule that stays in
+    the flat file, state its precondition under the rule's heading."""
+    marker = _INJECT_WHEN_MARKER.match(text)
+    body = _INJECT_WHEN_MARKER.sub("", text, count=1)
+    if marker is None:
+        return body
+    precondition = SCOPE_PRECONDITIONS.get(marker.group("token"))
+    if precondition is None:
+        return body
+    heading, sep, rest = body.partition("\n")
+    return f"{heading}{sep}\n> {precondition}\n{rest}"
 
 
 def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
@@ -132,6 +206,8 @@ def render_scoped(rules_dir: Path = RULES_DIR) -> dict[str, str]:
         rule_path = rules_dir / rule_name
         if not rule_path.is_file():
             continue
+        # No precondition line here: `applyTo` already gates this file, so the
+        # sentence the flat artifact needs would be redundant.
         body = _INJECT_WHEN_MARKER.sub("", rule_path.read_text(encoding="utf-8"), count=1).strip()
         front = yaml.safe_dump(
             {"applyTo": spec["applyTo"], "description": spec["description"]},
