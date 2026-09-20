@@ -16,9 +16,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | Rule | Topic |
 | --- | --- |
 | `00-router.md` | Operating-manual entry point. |
-| `03-responses.md` | Responses lead with the result and stop when it is said - a progress update is one or two sentences, a final report is what changed / what was verified / what is next, with no closing offer (which binds a skill too: none of them ends by inviting feedback); hook notices and injected context are never echoed, the one exception being the skill's own name, which the handoff heading carries so you can see what ran; the next-actions block and the end-of-session checklist stay compact (open items only). |
+| `03-output.md` | **Earn every line**, in three parts. *Output discipline* - default to less everywhere; write the least code that does the job; durable prose informs rather than impresses. *Responses* - lead with the result and stop when it is said; a progress update is one or two sentences, a final report is what changed / what was verified / what is next, with no closing offer (which binds a skill too); hook notices and injected context are never echoed, the one exception being the skill's own name in the handoff heading. *Code comments* - why-only: the default is no comment, test each one by deleting it, never restate the code or keep dead code, config gets one header line, and a dense file is not a licence to add more (advised at write time by `check-comment-density.sh`, audited by the comment-noise dimension). |
 | `05-roles.md` | Who you are working with. |
-| `08-code-comments.md` | Code comments are why-only - the default is no comment; test each one by deleting it; never restate the code, banner, narrate the task, or keep dead code; config gets one header line pointing at the reference prose; a dense file is not a licence to add more. Advised at write time by `check-comment-density.sh`, and covered in `/steer:audit` by the comment-noise dimension. |
 | `10-stack.md` | Stack defaults (app / service profile) - **e22 org pack** (`inject-when=org-e22`), and the home of the baseline patterns' default-stack instances and the deployed secret-store default. |
 | `12-stack-infra.md` | Stack - infrastructure / IaC. **e22 org pack**, injected when the repo does IaC *and* follows the pack (`inject-when=has-iac&org-e22`). |
 | `15-commands.md` | Useful commands - **e22 org pack** (`inject-when=org-e22`). |
@@ -39,7 +38,6 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns, stated as principles so they hold on any stack (the org pack names the instances) - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
-| `87-output-discipline.md` | Earn every line - tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
 | `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces - ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate - the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping - no confirmation step. |
@@ -47,8 +45,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 !!! note "Conditional injection"
     Some rules carry a first-line `<!-- steer:inject-when=... -->` marker and are
     injected only when their scope applies (see
-    [`inject-standards.sh`](hooks.md)). The code-loop rules - `08-code-comments`,
-    `10-stack`, `15-commands`, `24-worktrees`, `35-issue-tracker`,
+    [`inject-standards.sh`](hooks.md)). The code-loop rules -
+    `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-done`,
     `80-change-class`, `85-practices`,
     `92-user-facing-copy` - are marked
@@ -64,12 +62,11 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` - so
     `52-deployment` injects in any Node repo, not only one that deploys today),
     and those that have declared the automation opt-in (`automation-optin`).
-    `10-stack` and `15-commands` carry `org-e22` alone. Tokens compose with `|`
-    for OR and `&` for AND, AND binding loosest.
-    That last one is the only predicate that fails **closed**: every other token
-    injects on an unreadable signal, because a safety rule must never be dropped
-    silently, whereas rule 53 governs machinery a repo only has once it has asked
-    for it.
+    `automation-optin` is the only predicate that fails **closed**: every other
+    token injects on an unreadable signal, because a safety rule must never be
+    dropped silently, whereas rule 53 governs machinery a repo only has once it
+    has asked for it. `10-stack` and `15-commands` carry `org-e22` alone.
+    Tokens compose with `|` for OR and `&` for AND, AND binding loosest.
     Polyrepo topology is deliberately **not** an
     always-on rule. (The original reason - that the ruleset was capped on its
     on-disk total, so a scoped rule cost every consumer in full - no longer
@@ -81,7 +78,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     topology block is marker-gated. That block is registered on the same
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
     `/clear`, a resume, auto-compaction and a forked session. The router, spec-workflow,
-    decision-capture, living-docs, responses (`03`), roles,
+    decision-capture, living-docs, output (`03`), roles,
     **gates (`61`)**, high-risk,
     not-the-gate, self-report and output rules carry no
     `inject-when` marker and so stay always-on.

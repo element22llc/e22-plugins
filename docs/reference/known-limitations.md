@@ -285,7 +285,7 @@ raises a prompt. Be honest about the tiers:
   Cosmetic and non-blocking; it never rejects or reverts the write.
 - **`PostToolUse` -> `check-comment-density.sh`** notes a source or config file
   whose comment lines exceed a third of its non-blank lines (rule
-  `08-code-comments`). A once-per-file-per-session notice, not a gate - the write
+  `03-output` § Code comments). A once-per-file-per-session notice, not a gate - the write
   already happened and is never reverted.
 - **`Stop` -> `reconcile-issue-first.sh`** reports, at end of turn, work that
   never got an issue. A report, not a gate - it cannot undo anything.
