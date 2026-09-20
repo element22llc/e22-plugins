@@ -3,13 +3,18 @@
 
 When `/spec/tracker.md` declares `system: github` - in a polyrepo member
 (`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
-copy - every
-**implementation-affecting mutation** - code, config, infrastructure, or
-behavior - has a GitHub issue **before the first repository mutation**. Out of
-scope (no issue needed): `/spec` edits, documentation, generated output,
-lockfiles, a **Tiny** change (Change-size model - the PR is the evidence anchor
-instead), and a plugin-maintenance `/steer:sync` on its own `feat/sync`
-branch (structural, never app source). Reuse the issue the user names;
+copy - an issue exists **before the first repository mutation** in exactly two
+cases:
+
+- **High-risk work** (Change classification), and
+- **any of the six value cases**: a planned feature, a tracked bug, work
+  spanning more than one session, work coordinated between people, a product
+  decision or acceptance to record, or a follow-up discovered along the way.
+
+Everything else - a Trivial change, an ordinary Behavioral fix nobody is
+tracking, `/spec` edits, documentation, generated output, lockfiles, a
+plugin-maintenance `/steer:sync` on its own `feat/sync` branch - needs no
+issue: **the PR is the work record**. Reuse the issue the user names;
 otherwise find-or-create one through `/steer:tracker-sync` - an explicit
 "fix / implement / add / create" request does **not** need confirmation to
 create the issue.

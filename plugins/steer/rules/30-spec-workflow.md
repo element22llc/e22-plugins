@@ -42,7 +42,7 @@ via `/steer:reference design-sources` - never fetch the URL (it 403s).
 
 **A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
-below; a GitHub-adopted repo still keeps the issue for any change above Tiny,
+below; a GitHub-adopted repo still keeps the issue where Issue-first requires one,
 closed from the commit - see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
 built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
@@ -53,8 +53,8 @@ pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
 relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
 and graduation are canonical in Commit autonomy.
 
-**Brownfield** (change to an existing product): triage -> size it (Change-size
-model) -> medium+ work writes/updates the spec or ADR first -> implement ->
+**Brownfield** (change to an existing product): triage -> classify it (Change
+classification) -> medium+ work writes/updates the spec or ADR first -> implement ->
 update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that never went through bootstrap (a "vibe-coded"

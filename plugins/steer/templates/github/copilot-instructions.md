@@ -392,7 +392,7 @@ via `/steer:reference design-sources` - never fetch the URL (it 403s).
 
 **A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
-below; a GitHub-adopted repo still keeps the issue for any change above Tiny,
+below; a GitHub-adopted repo still keeps the issue where Issue-first requires one,
 closed from the commit - see Issue-first), **not** the scaffold or the spine. Even a throwaway gets the
 bundled scaffold and a minimal `/spec` (vision + the feature intents being
 built). `/steer:adopt` is for *un-bootstrapped* pre-existing code, not an excuse
@@ -403,8 +403,8 @@ pre-MVP, `/steer:init` offers **solo trunk mode**: only the branch/PR ceremony
 relaxes; scaffold, spine, tests, and Definition of Done all hold. Mechanics
 and graduation are canonical in Commit autonomy.
 
-**Brownfield** (change to an existing product): triage -> size it (Change-size
-model) -> medium+ work writes/updates the spec or ADR first -> implement ->
+**Brownfield** (change to an existing product): triage -> classify it (Change
+classification) -> medium+ work writes/updates the spec or ADR first -> implement ->
 update the owning `contract.md` if behavior changed.
 
 **Adopting a whole repo** that never went through bootstrap (a "vibe-coded"
@@ -570,13 +570,18 @@ use the manual export.
 
 When `/spec/tracker.md` declares `system: github` - in a polyrepo member
 (`spec/PRODUCT.md` present) that file is the **workspace's**, never a local
-copy - every
-**implementation-affecting mutation** - code, config, infrastructure, or
-behavior - has a GitHub issue **before the first repository mutation**. Out of
-scope (no issue needed): `/spec` edits, documentation, generated output,
-lockfiles, a **Tiny** change (Change-size model - the PR is the evidence anchor
-instead), and a plugin-maintenance `/steer:sync` on its own `feat/sync`
-branch (structural, never app source). Reuse the issue the user names;
+copy - an issue exists **before the first repository mutation** in exactly two
+cases:
+
+- **High-risk work** (Change classification), and
+- **any of the six value cases**: a planned feature, a tracked bug, work
+  spanning more than one session, work coordinated between people, a product
+  decision or acceptance to record, or a follow-up discovered along the way.
+
+Everything else - a Trivial change, an ordinary Behavioral fix nobody is
+tracking, `/spec` edits, documentation, generated output, lockfiles, a
+plugin-maintenance `/steer:sync` on its own `feat/sync` branch - needs no
+issue: **the PR is the work record**. Reuse the issue the user names;
 otherwise find-or-create one through `/steer:tracker-sync` - an explicit
 "fix / implement / add / create" request does **not** need confirmation to
 create the issue.
@@ -699,7 +704,7 @@ rule and is not restated here - comments (Code comments), coverage (Coverage
 rules), the changelog fragment and the tracker ref (Commit autonomy, Issue
 tracker), the issue and its state (Issue-first), ADRs for choices costly to
 reverse (Spec workflow), review-sensitive classes (Drift gates), high-risk
-scoping (High-risk areas). Ceremony scales with the change (Change-size model).
+scoping (High-risk areas). Ceremony scales with the change (Change classification).
 
 CI enforces only a thin floor - in **solo-trunk**, where there is no reviewer,
 that floor (changed-line coverage, the changelog-fragment gate, the advisory
@@ -901,8 +906,8 @@ deployed are **not** hotfixes - they take the normal lane.
   so the lane reads as sanctioned rather than as a skipped step. This relaxes
   issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
-  change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
-  gate still stands** - no self-merge.
+  high-risk scoping ceremony (rules 60, 80). The PR / merge **human gate still
+  stands** - no self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 -
   validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
   the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy
@@ -957,22 +962,26 @@ access-conscious secure defaults
 `/steer:reference traceability`.
 
 
-## Change-size model
+## Change classification
 
-Match the workflow to the change. When uncertain, size **up**. **This rule sets
-per-change ceremony** - Issue-first and Definition of Done take their thresholds
-from here, and an arguable class takes the larger one.
+Three classes set per-change ceremony - Issue-first and Definition of Done take
+their thresholds from here. Classify by **what the change does**, never by how
+many lines it touches; when two readings are arguable, take the heavier one.
 
-- **Tiny** (≈<20 lines, **no behavior change** - copy, typo, formatting, comment):
-  open a PR and stop - **no issue, no spec, no ADR, no plan**; the PR is the
-  evidence anchor. Any behavior change is Small at minimum, however few the lines.
-- **Small** (≈<200 lines, contained behavior change): confirm intent; update `contract.md` if behavior changed.
-- **Medium** (new screen/feature/capability): write `intent.md` first, get PO approval, then implement with `contract.md`.
-- **Large** (crosses areas, touches infra, or a choice costly to reverse): write an ADR in `/spec/decisions/` first, agree with the team, then ship in small PRs. A first-time pattern is not itself Large.
-- **Risky** (any high-risk area, regardless of line count): follow high-risk handling above - never Tiny.
+- **Trivial** - no observable behavior change: copy, formatting, comments,
+  a behavior-preserving refactor, generated output, lockfiles. Open a PR and
+  stop - no issue, no spec, no ADR, no plan; **the PR is the work record**.
+- **Behavioral** - observable behavior changes, for a user, a caller, or an
+  operator. Carries tests in the same PR and updates the owning `contract.md`;
+  a planned feature writes its `intent.md` first and gets PO approval (Spec
+  workflow). Start in plan mode, or post the plan, whenever the approach is
+  worth reviewing before it is written.
+- **High-risk** - anything in the High-risk areas list, at any size. Scope with
+  the dev before any code, contract or ADR first, smaller PRs, line-by-line
+  review. Never Trivial, and never treated as merely Behavioral.
 
-**Medium** and larger start in plan mode (or a posted plan): review the
-approach while it's cheap to change.
+A choice that is **costly to reverse** - stack, data model, tenancy, deployment -
+takes an ADR before the code (Spec workflow), whatever its class.
 
 
 ## Patterns we follow (baseline)

@@ -67,7 +67,7 @@ The loop degrades into theater without all three.
 Give the reviewer three things, every time:
 
 - **Plan gate** - the plan text; the restated requirement; the steer rules the
-  change touches (e.g. conventions, change-size, the relevant lifecycle rules).
+  change touches (e.g. conventions, change classification, the relevant lifecycle rules).
   Ask for severity-ranked findings and an explicit "what is missing" pass (the
   plan is prospective, so the reviewer reasons about the approach rather than
   citing `path:line`s).

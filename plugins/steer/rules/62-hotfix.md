@@ -18,8 +18,8 @@ deployed are **not** hotfixes - they take the normal lane.
   so the lane reads as sanctioned rather than as a skipped step. This relaxes
   issue-first *timing* (rule 36), not its existence.
 - **Expedited single-reviewer.** One reviewer approval suffices, in place of the
-  change-size / high-risk scoping ceremony (rules 60, 80). The PR / merge **human
-  gate still stands** - no self-merge.
+  high-risk scoping ceremony (rules 60, 80). The PR / merge **human gate still
+  stands** - no self-merge.
 - **Deploy on the fix.** Deploying the fix is *policy-permitted* (rule 52 -
   validate in non-prod where feasible). Pushing the `hotfix/` branch and opening
   the PR are autonomous delivery steps (Commit autonomy); as everywhere, deploy

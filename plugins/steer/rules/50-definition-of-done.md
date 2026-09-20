@@ -14,7 +14,7 @@ rule and is not restated here - comments (Code comments), coverage (Coverage
 rules), the changelog fragment and the tracker ref (Commit autonomy, Issue
 tracker), the issue and its state (Issue-first), ADRs for choices costly to
 reverse (Spec workflow), review-sensitive classes (Drift gates), high-risk
-scoping (High-risk areas). Ceremony scales with the change (Change-size model).
+scoping (High-risk areas). Ceremony scales with the change (Change classification).
 
 CI enforces only a thin floor - in **solo-trunk**, where there is no reviewer,
 that floor (changed-line coverage, the changelog-fragment gate, the advisory
