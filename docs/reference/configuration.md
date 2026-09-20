@@ -44,7 +44,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `62-hotfix.md` | Hotfix / incident fast-path - the one sanctioned speed lever for a production incident (`/steer:work --hotfix`); relaxes ceremony, keeps every human authority gate, requires a mandatory post-incident follow-up. |
 | `70-secrets.md` | Secrets handling. |
 | `75-compliance.md` | Audit-aligned delivery (SOC 2 / ISO 27001). |
-| `80-change-size.md` | Change-size model - **authoritative for per-change ceremony**; Issue-first and Definition of Done take their thresholds from it. Tiny (≈<20 lines, no behavior change) needs no issue, spec, ADR, or plan; any behavior change is Small at minimum; a high-risk area is Risky at any line count; an arguable class takes the larger one. |
+| `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first and Definition of Done take their thresholds from it. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
 | `87-output-discipline.md` | Earn every line - tight responses, comments the exception (governed by `08-code-comments.md`), least code that does the job, lean durable prose. |
 | `88-artifacts.md` | Shareable views -> Claude Artifacts - a derived, temp-only, on-demand page with a Markdown fallback; styled to the product's `DESIGN.md` tokens (house default otherwise); fillable pages return data only via their exported, machine-keyed document. Full discipline in the `artifacts` reference. |
@@ -61,7 +61,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `10-stack`, `15-commands`, `22-housekeeping`, `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-definition-of-done`,
     `51-verify-loop`, `53-autonomous-loops`, `55-drift-gates`, `62-hotfix`,
-    `75-compliance`, `80-change-size`, `85-practices`, `90-design-sources`,
+    `75-compliance`, `80-change-class`, `85-practices`, `90-design-sources`,
     `92-user-facing-copy`, `99-end-of-session` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
