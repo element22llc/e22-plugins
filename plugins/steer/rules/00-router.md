@@ -46,7 +46,9 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   capture it (`/steer:issues capture`), never silently drop the current thread.
 
 **`work` vs `issues`:** to implement a change now - with or without an issue
-number - route to `/steer:work`, which find-or-creates the issue. Pure backlog
+number - route to `/steer:work`, which find-or-creates the issue. Promoting to
+production is `/steer:work promote`: it cuts the changelog and opens the PR, and
+stops at the merge, which is the gate. Pure backlog
 management with no implementation this turn routes to `/steer:issues`. A
 production incident on a deployed system -> `/steer:work --hotfix`.
 

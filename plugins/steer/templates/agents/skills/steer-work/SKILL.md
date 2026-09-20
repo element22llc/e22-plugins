@@ -1,7 +1,7 @@
 ---
 name: steer-work
 description: Execute a GitHub issue end-to-end - claim through delivery (an opened PR, or a trunk commit in solo-trunk) and lifecycle transition; the execution counterpart to /steer-issues, routing tracker-metadata I/O through /steer-tracker-sync. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path.
-argument-hint: '[start | resume | status | finish] [--reviewed | --hotfix] [#issue ...]'
+argument-hint: '[start | resume | status | finish | promote] [--reviewed | --hotfix] [#issue ...]'
 ---
 
 <!-- Generated from the steer plugin's skills/work/SKILL.md - do not edit by hand.
@@ -12,7 +12,7 @@ argument-hint: '[start | resume | status | finish] [--reviewed | --hotfix] [#iss
 
 **When to use.** Use when asked to work, start, resume, or finish a specific issue ("work on #123", "fix #123"), or when a code/config/behavior change in a GitHub-adopted repo needs an issue found-or-created and then implemented. Add --reviewed for any change costly to unwind ("deliver X carefully", "do this with review"). Add --hotfix only for a real production incident ("prod is down", "emergency fix") - never for ordinary urgent work.
 
-<!-- steer:modes start,resume,status,finish -->
+<!-- steer:modes start,resume,status,finish,promote -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
 **execution** layer of the issue-first workflow: `/steer-issues` manages the
@@ -115,6 +115,7 @@ skill's steps:
 | **`resume #N`** | Reconstruct context from the issue + recorded branch/PR + working tree, reconcile stale markers, continue from the actual lifecycle state. |
 | **`status #N`** | **Read-only**: state, claimant, branch, PR, blockers, spec readiness, outstanding validation. Mutates nothing. |
 | **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
+| **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](modes/promote.md) |
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
