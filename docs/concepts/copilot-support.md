@@ -14,10 +14,11 @@ truth and how to install and refresh the Copilot side.
     (`.github/agents/*.agent.md` - the `steer-reviewer` port), **path-scoped
     instructions** (`.github/instructions/*.instructions.md`), **MCP servers**
     (`.vscode/mcp.json`), an opt-in **cloud coding-agent** setup workflow
-    (`copilot-setup-steps.yml`), and the **gate hooks** (the version-pin
-    policy and the trunk-push graduation gate, CLI-only, as soft `ask`s).
-    Skill *enforcement* still differs from Claude Code and **hooks do not
-    exist in VS Code** - see the sections below for the caveats.
+    (`copilot-setup-steps.yml`). It does **not** cover hooks: the Copilot CLI
+    hook variant retired, so **hook enforcement is guaranteed on Claude Code
+    only**. Copilot Chat in VS Code runs `hooks/hooks.json` directly and gets
+    them incidentally, with no parity promise. Skill *enforcement* still differs
+    from Claude Code - see the sections below for the caveats.
 
 ## Surfaces at a glance
 
@@ -142,10 +143,12 @@ standards load regardless of a teammate's VS Code defaults.
 
 ## Refreshing after a steer update
 
-The always-on rules themselves no longer need a refresh on the Copilot CLI or in
-VS Code: the SessionStart hook reads them from the installed plugin, so a plugin
-update is the whole upgrade path there (`copilot plugin update steer`, or the
-Extensions view in VS Code). The **committed** Copilot files - the instructions
+In VS Code the always-on rules need no refresh: the SessionStart hook reads them
+from the installed plugin, so a plugin update is the whole upgrade path there
+(the Extensions view). On the **Copilot CLI**, which runs no steer hooks, the
+rules arrive only through the committed `.github/copilot-instructions.md`, so a
+`copilot plugin update steer` refreshes the skills and the instructions file
+must be regenerated to match. The **committed** Copilot files - the instructions
 fallback, the cross-tool skill tree, custom agents, path-scoped instructions -
 are a **static snapshot**, so they go stale when steer's rules or skills change.
 Refresh them with **`/steer:sync`** from Claude Code:
@@ -236,7 +239,9 @@ bullets there as caveats you apply yourself.
   opens with an explicit note that the restriction is now **enforced by
   instruction, not by tooling**, so a body reading "the edit tools are unavailable"
   is not mistaken for a guarantee. Treat those skills as advisory there.
-- **Hooks do not exist in VS Code**, so nothing gates a skill mid-run.
+- **No steer hook gates a skill mid-run on either Copilot surface** - the CLI
+  runs none, and the hooks VS Code picks up from `hooks.json` guard writes and
+  Bash calls, not skill bodies.
 
 ## Custom agents on Copilot
 
