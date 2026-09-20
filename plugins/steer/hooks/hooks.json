@@ -72,6 +72,18 @@
         ]
       }
     ],
+    "SubagentStart": [
+      {
+        "matcher": "^general-purpose$|^steer:steer-reviewer$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/hooks/inject-subagent-digest.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit|NotebookEdit",
