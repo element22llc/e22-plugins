@@ -1,0 +1,26 @@
+kind: Changed
+body: |
+  - **`/steer:loop` is model-only,** `user-invocable: false`. An autonomous loop
+    is machinery a repo opts into once, not a skill a user browses to: rule
+    `53-autonomous-loops` is the only always-on surface that names `/steer:loop`,
+    and it reaches a repo only where `policy/automation.yml` declares
+    `loops: true`. The opt-in is therefore what puts the door in front of anyone
+    - the frontmatter never had to be conditional. The capability menu drops its
+    hand-written `loop` entry, and `scan-invocations.sh` exempts the skill by
+    name for the same reason as `reference` and `report`: rule 53 names it as a
+    delegation, and it has no front door a `noncallable-gateway` finding could
+    be rewritten to.
+  - **The automation opt-in is a gate the dev answers, not a file the skill
+    writes for itself.** `/steer:loop scaffold` on a repo that has not declared
+    `loops: true` now puts the decision in-session first, with the tradeoff
+    stated - unattended API spend per scheduled run, draft-PR noise, the PR flow
+    a loop requires - and writes the marker only on approve, recording the
+    decider. Arming an unattended agent is a repo-level event, so an in-session
+    approval also writes its `/spec/history/` entry. `verify` and `remove` are
+    unchanged.
+  - The Copilot port of `steer-reviewer` no longer points at a `/steer-loop`
+    prompt: that prompt file stops being generated when the skill goes internal,
+    so the cross-link would have dangled.
+    Seventh step of the 7.0 public-surface flip (#584).
+custom:
+  Slug: loop-behind-optin

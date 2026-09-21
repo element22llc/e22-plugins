@@ -125,7 +125,10 @@ fi
 # by name, with the reason, because no token shape distinguishes a delegation from
 # an imperative - check_standards.py's check 11 is what polices "Run /steer:X" in
 # the installed docs.
-MODEL_ONLY=" reference report "
+#
+# `loop` is the same class, reached from rule 53 ("Scaffold loops with
+# /steer:loop"), which a repo carries only once it declared the automation opt-in.
+MODEL_ONLY=" reference report loop "
 
 # Reference modes from the `<!-- steer:modes a,b,c -->` marker (single source of
 # truth for which `/steer:reference <mode>` topics exist).

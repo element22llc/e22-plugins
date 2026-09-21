@@ -92,9 +92,9 @@ to its group; omit an empty group:
   types.
 - **Ship & respond** - the emergency door: `/steer-work --hotfix` for a
   production incident on a deployed system (from `work`'s `argument-hint`).
-- **Track & automate** - repo health and drift, the scheduled loop (`audit`,
-  `loop`); the tidy-up itself is `/steer-work tidy`, the backlog
-  `/steer-work issues`.
+- **Track & automate** - repo health and drift (`audit`); the tidy-up itself is
+  `/steer-work tidy`, the backlog `/steer-work issues`. Scaffolding a scheduled
+  loop is machinery a repo opts into, not a menu entry, so `loop` is not one.
 - **Govern & plumbing** - load the manual on a chat-only surface where no hook
   runs (`standards`). Filing a steer defect and loading reference prose are
   Claude's own moves (`report`, `reference`), so neither is an entry here.

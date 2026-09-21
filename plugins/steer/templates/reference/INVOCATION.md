@@ -49,7 +49,6 @@ an unrelated question.
 | `/steer:spec questions` | Resolves open questions, folding decisions into the spec. |
 | `/steer:spec roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
-| `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. |
 
 ## Tier 3 - internal orchestration only
 
@@ -68,6 +67,7 @@ Not a user's first move.
 | `/steer:sync` | Steady-state update - ledger migrations, spine/scaffold reconcile, lands a PR. Reached only through `/steer:setup sync`. |
 | `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
 | `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. **Auto-files** with no confirmation step, which is why the model owns the channel: the user reports the misbehaviour in plain language. |
+| `/steer:loop` | Scaffolds a scheduled autonomous-loop workflow - commits, pushes, opens a PR. Reached from rule 53, which a repo carries only once it declared the automation opt-in (`policy/automation.yml`); a dev asks for a scheduled sweep in plain language. |
 
 ## Drift detection & auto-repair (managed repos)
 
@@ -97,10 +97,11 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 | `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
-Two `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
-name in the scanner (`MODEL_ONLY`): `reference` and `report`. Live prose names
-them as a delegation ("Claude loads `/steer:reference gates`"), not as something
-the reader types, and unlike an absorbed mode neither has a front door to be
+Three `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
+name in the scanner (`MODEL_ONLY`): `reference`, `report` and `loop`. Live prose
+names them as a delegation ("Claude loads `/steer:reference gates`", rule 53's
+"Scaffold loops with `/steer:loop`"), not as something
+the reader types, and unlike an absorbed mode none has a front door to be
 rewritten to - so a finding there would be unfixable by construction. The
 exemption is the modern spelling only; a pre-rebrand `e22-report` still gets its
 deterministic rewrite. The imperative framing in installed docs ("Run
