@@ -1,0 +1,16 @@
+kind: Changed
+body: |
+  - **`/steer:explain` is now `/steer:status feature <id>`.** One front door
+    answers "where are we?" at either scope: the window modes report the whole
+    spine over a period, `feature <id>` reports one feature in depth. The page
+    is unchanged - `explain` survives as the internal renderer
+    (`user-invocable: false`) that the mode invokes with the resolved id, so
+    the status pipeline, acceptance meter, user journey and open-question
+    boards are the same artifact, reached by a name a PO can guess. Asking a
+    non-technical reader to pick between two skills for one question was the
+    split this closes. Typing `/steer:explain` no longer resolves; a frozen
+    mention in a managed repo's prose is surfaced by `/steer:sync`'s invocation
+    scan as a `noncallable-gateway` to reroute. Second step of the 7.0
+    public-surface flip (#584).
+custom:
+  Slug: status-absorbs-explain

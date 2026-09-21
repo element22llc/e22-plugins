@@ -139,8 +139,8 @@ fixtures:
 
   # --- reporting / stakeholder views ---------------------------------------------
   - ask: "make a shareable page of the checkout feature for a stakeholder"
-    skill: explain
-    signals: ["stakeholder", "shareable"]
+    skill: status
+    signals: ["shareable summary for the PO"]
   - ask: "what did we ship this week? I need a client status update"
     skill: status
     signals: ["what did we ship this week", "client"]

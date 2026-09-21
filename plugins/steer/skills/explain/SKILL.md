@@ -1,12 +1,13 @@
 ---
 name: explain
-description: "Render one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback) - status pipeline, acceptance meter, user journey, scope and open-question boards. A read-only derived view: every visual encodes a real spec value; never writes into /spec, /apps, or /packages."
-when_to_use: >-
-  Use when someone wants a plain-language, at-a-glance page of one feature to
-  look at or hand to a non-technical stakeholder - "show me feature X", "make a
-  shareable summary for the PO".
+description: "Internal renderer - one feature spec as a stakeholder-readable, shareable Claude Artifact (Markdown fallback): status pipeline, acceptance meter, user journey, scope and open-question boards. Read-only and derived; writes nothing back."
+when_to_use: "Reached via /steer:status feature <id> - not a direct entry point."
 argument-hint: "[feature-id]"
 disallowed-tools: Bash, Edit, NotebookEdit, EnterWorktree
+# Internal single-feature renderer behind `/steer:status feature <id>`.
+# Model-callable, hidden from the slash menu, so "where are we?" is one door
+# whatever its scope - the whole spine over a window, or one feature in depth.
+user-invocable: false
 # Runs in a forked subagent: this skill is a pure renderer - it reads the
 # feature's /spec files and publishes a page, and needs nothing from the
 # conversation that invoked it (the feature-id is the whole input). Forking
@@ -32,10 +33,11 @@ background: false
 
 # Explain a feature - a shareable, plain-language view
 
-**Scope boundary:** this skill only *presents* what the spec already says.
-Choosing the next action is `/steer:next`; authoring or approving the spec is
-`/steer:spec`; progress across the whole spine over time is `/steer:status`.
-Never auto-generate per feature.
+**Scope boundary:** this skill only *presents* what the spec already says. It is
+the renderer behind `/steer:status feature <id>`, the one-feature scope of that
+front door; progress across the whole spine over a window is the same skill's
+window modes. Choosing the next action is `/steer:next`; authoring or approving
+the spec is `/steer:spec`. Never auto-generate per feature.
 
 Turn one feature's approved intent into a **high-level page a stakeholder can
 read at a glance** - not a five-page wall of text but a **visual, interactive

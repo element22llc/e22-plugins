@@ -178,7 +178,7 @@ renders a shareable Claude Artifact styles the page from the tokens `DESIGN.md`
 declares (root, or `apps/<app>/DESIGN.md`), falling back to the house default
 only when the repo declares none - the Artifact standard
 (`/steer:reference artifacts`) and, in practice,
-[`/steer:explain`](skills.md). Populate it and stakeholder-facing pages carry the
+[`/steer:status feature <id>`](skills.md). Populate it and stakeholder-facing pages carry the
 product's own palette, type scale, and spacing; leave it empty and they carry the
 generic look. Never an invented brand either way.
 

@@ -78,7 +78,7 @@ below give the detail.
 | Build or prototype an app as a non-developer | [`/steer:build`](build.md) |
 | Find out what to do next | `/steer:next` |
 | Browse everything steer can do - not sure what to ask for | `/steer:next capabilities` |
-| Show or share a visual, plain-language page of one feature | `/steer:explain` |
+| Show or share a visual, plain-language page of one feature | `/steer:status feature <id>` |
 | Give a client a progress/status report ("what did we ship this week?") | `/steer:status` |
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:sync` |

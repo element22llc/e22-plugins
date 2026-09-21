@@ -1,11 +1,12 @@
 ---
 name: status
-description: "Client-facing, time-boxed progress report across the whole /spec spine - what shipped, what's in progress, what needs the client's input, and what's next - rendered as a shareable Claude Artifact with a Markdown fallback. Read-only and derived; never fabricates counts, dates, or status."
+description: "Client-facing progress reporting - the default modes cover the whole /spec spine over a time window (what shipped, what is in progress, what needs the client's input, what is next); `feature <id>` renders one feature in depth instead. A shareable Claude Artifact with a Markdown fallback, read-only and derived; never fabricates counts, dates, or status."
 when_to_use: >-
   Use for a progress update to hand a client or Product Owner - "give me a
   status report", "what did we ship this week", "weekly status for the client",
-  "where are we on <milestone>".
-argument-hint: "[this-week | since <date> | milestone [<name>]]"
+  "where are we on <milestone>". Use `feature <id>` for a plain-language page of
+  one feature - "show me feature X", "a shareable summary for the PO".
+argument-hint: "[this-week | since <date> | milestone [<name>] | feature <id>]"
 # Read-only by construction. Pre-approve ONLY the tracker *read* verbs that
 # /steer:tracker-sync performs while this skill is the invoked one (a skill's
 # allowed-tools apply only to the invoked skill - so, unlike /steer:roadmap which
@@ -47,14 +48,25 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 context: fork
 background: false
 ---
-<!-- steer:modes this-week,since,milestone -->
+<!-- steer:modes this-week,since,milestone,feature -->
 
 # Status report - a shareable, plain-language progress update
 
-**Scope boundary:** this summarizes progress across the whole spine over a
-time window. Choosing the next action is `/steer:next`; a forward timeline is
-`/steer:roadmap`; one feature in depth is `/steer:explain`. Never write into
-/spec, /apps, /packages, or the tracker, and never auto-generate on a schedule.
+**Scope boundary:** this reports what is already true and renders it for
+someone else to read. Choosing the next action is `/steer:next`; a forward
+timeline is `/steer:roadmap`. Never write into /spec, /apps, /packages, or the
+tracker, and never auto-generate on a schedule.
+
+**Two scopes, one door.** The default modes report the **whole spine over a
+window**; `feature <id>` reports **one feature in depth**. Both answer "where
+are we?" for the same reader, which is why they share a front door rather than
+asking a PO to know which of two skills to name.
+
+**`feature <id>` delegates.** Invoke `/steer:explain` with the resolved id - an
+internal skill, `user-invocable: false`, that owns the single-feature page:
+status pipeline, acceptance meter, user journey, scope and open-question boards.
+Do not re-derive that page here. Everything below this section is the
+window-scoped report.
 
 Turn the current state of the workspace into a **client-readable progress report
 for a time window**: what shipped this period, what's in flight, what's waiting on
@@ -62,14 +74,14 @@ the client, and what's next - published as a **Claude Code Artifact** (a private
 hosted page on claude.ai you can then share) or rendered as **Markdown** where
 Artifacts are unavailable.
 
-This is the **periodic, cross-cutting** counterpart to the roster's other
-PO-facing views: `/steer:explain` presents **one feature** in depth; `/steer:roadmap`
-lays out the **forward** timeline; `status` reports **progress over a window across
-the whole spine** - the answer to "what's the status?".
+This is the **periodic, cross-cutting** view: `/steer:status feature <id>`
+presents **one feature** in depth; `/steer:roadmap` lays out the **forward**
+timeline; the default modes report **progress over a window across the whole
+spine** - the answer to "what's the status?".
 
 ## Render, don't own - this is a derived view
 
-Mirror `/steer:explain` and `/steer:roadmap`: **`/spec` and the tracker are
+Mirror `/steer:status feature <id>` and `/steer:roadmap`: **`/spec` and the tracker are
 canonical**. The report is a **snapshot** of what they already say - it goes stale
 the moment the spine or tracker changes; regenerate to refresh.
 
@@ -212,7 +224,8 @@ session needs anyway, since steer does not store it (see the "Updating a previou
 
 - **Not** the next-action navigator - "what should I do now?" is `/steer:next`.
 - **Not** a forward plan - the release timeline is `/steer:roadmap`.
-- **Not** a single-feature deep view - that is `/steer:explain`.
+- **Not** a single-feature deep view in its default modes - that is this
+  skill's own `feature <id>` mode, a different scope rather than a different door.
 - **Not** a spec author or a tracker writer - it renders what `/spec` and the
   tracker already say and writes nothing back.
 - **Not** an auto-publisher - no scheduled or per-window generation by the plugin;
