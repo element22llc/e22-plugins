@@ -1,5 +1,5 @@
 ---
-# Repository-local tracker contract. Read by /steer:tracker-sync and /steer:issues.
+# Repository-local tracker contract. Read by /steer:tracker-sync and /steer:work issues.
 # /steer:init resolves the placeholders - never ship fabricated values.
 system:                     # github | jira | linear | azure-devops | other | none-yet
 repository:                 # "[owner/repository]" for GitHub; project key or URL otherwise
@@ -45,7 +45,7 @@ owners:
 > contract is the **frontmatter above**; the prose below is the human summary.
 > The workflow is **client-agnostic** - any tracker works; only this file knows
 > which one. Full conventions: run `/steer:reference traceability`. GitHub Issues lifecycle:
-> see the issue-workflow reference, driven by `/steer:issues`.
+> see the issue-workflow reference, driven by `/steer:work issues`.
 
 ## Conventions (summary)
 

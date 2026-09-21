@@ -1,7 +1,7 @@
 ---
 type: tool_used
 tool: Skill
-input_match: 'steer:issues\b'
+input_match: 'steer:(issues|work)\b'
 arm: both
 weight: 3
 ---

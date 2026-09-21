@@ -1,6 +1,6 @@
 # Label taxonomy - the canonical set `bootstrap-labels` reconciles
 
-`/steer:issues bootstrap-labels` creates/reconciles exactly these labels
+`/steer:work issues bootstrap-labels` creates/reconciles exactly these labels
 idempotently (`gh label create --force` = create-or-update). GitHub silently
 drops a form/agent label that doesn't exist, so this must run before Issue Forms
 and agent labelling are reliable.

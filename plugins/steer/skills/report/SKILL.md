@@ -1,6 +1,6 @@
 ---
 name: report
-description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins - gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer:issues)."
+description: "File a bug about the steer plugin itself upstream in element22llc/e22-plugins - gather the defect, scrub secrets/paths/product code, dedupe against existing issues, and auto-file via GitHub MCP or gh. For steer's own defects, not product bugs (those go to /steer:work issues)."
 when_to_use: >-
   Use when steer misbehaves - a SessionStart self-fault notice, contradictory or
   impossible skill/rule instructions, a missing or crashing bundled helper - or
@@ -46,8 +46,8 @@ Two invariants, always:
 - **This is for steer's OWN defects** - a contradictory skill/rule, a missing or
   broken template/script/helper, or a recorded hook fault. Ordinary product-code
   bugs, failing tests, or user mistakes are **not** plugin faults; those go to the
-  product tracker via `/steer:issues`. If the problem isn't steer's fault, say so
-  and stop.
+  product tracker via `/steer:work issues`. If the problem isn't steer's fault,
+  say so and stop.
 - **Scrub and dedupe, then auto-file.** You render the scrubbed body and file it
   without a confirmation step - the upstream `gh`/MCP create is **pre-approved**
   in allowed-tools above. The safety floor is the scrub (§3) and the fingerprint

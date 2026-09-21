@@ -78,13 +78,13 @@ fixtures:
 
   # --- backlog / delivery -------------------------------------------------------
   - ask: "capture this idea in the backlog for later"
-    skill: issues
+    skill: work
     signals: ["capture", "backlog"]
   - ask: "triage the backlog and decompose the big items"
-    skill: issues
+    skill: work
     signals: ["triage", "decompose"]
   - ask: "show me a ranked board of what's in flight"
-    skill: issues
+    skill: work
     signals: ["board", "ranked"]
   - ask: "fix issue #123"
     skill: work

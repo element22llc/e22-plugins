@@ -23,4 +23,4 @@ Human decision required
 
 ## Must not recommend first
 
-`/steer:issues publish-adoption`. Human product/architecture decisions (level 3) outrank optional follow-up such as publishing findings (level 6). The `Proposed` ADRs are also Human decision required but the intents gate the product meaning of everything downstream.
+`/steer:work issues publish-adoption`. Human product/architecture decisions (level 3) outrank optional follow-up such as publishing findings (level 6). The `Proposed` ADRs are also Human decision required but the intents gate the product meaning of everything downstream.

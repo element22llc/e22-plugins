@@ -189,7 +189,7 @@ tracker pull stays here in the lead. Below that size, diff the features inline.
    | Observed state | Category | Action / suggested command |
    |---|---|---|
    | Behavioural drift needing a human call | Human decision required | PO/dev decides by ownership (no command) |
-   | Drift findings not yet filed (GitHub) | Recommended | `/steer-issues publish-drift` |
+   | Drift findings not yet filed (GitHub) | Recommended | `/steer-work issues publish-drift` |
    | Ambiguities surfaced | Required before next production release | Resolve them - `/steer-spec questions` |
    | No actual drift (only expected-Missing backlog) | Complete | `No action is currently required.` |
 

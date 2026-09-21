@@ -14,8 +14,8 @@ Create the artifact when the trigger fires - don't defer it:
 - **Open questions** -> the feature's `intent.md` -> `## Open questions`
   (product-level ones in `vision.md`); answer them with
   **`/steer:spec questions`** before they rot.
-- **A feature that began as a tracker issue** -> **`/steer:issues brainstorm`**
-  shapes it in the issue, **`materialize`** writes the approved intent as
+- **A feature that began as a tracker issue** -> **`/steer:work issues
+  brainstorm`** shapes it in the issue, **`materialize`** writes that intent as
   `Status: draft`, and an explicit `/steer:spec approve` flips it to `approved`.
   The issue is the work record; the spec stays product truth.
 

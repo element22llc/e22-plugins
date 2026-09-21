@@ -19,7 +19,7 @@ Recommended
 
 ## Expected suggested command
 
-`/steer:issues publish-adoption`
+`/steer:work issues publish-adoption`
 
 ## Must not recommend first
 

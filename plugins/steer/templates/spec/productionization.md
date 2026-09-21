@@ -27,14 +27,14 @@
 >   **requires** a `Superseded by:` pointer. Historical only.
 
 > Lifecycle: active-adoption
-> Published findings: [issue refs once published via `/steer:issues publish-adoption`, else empty]
+> Published findings: [issue refs once published via `/steer:work issues publish-adoption`, else empty]
 > Superseded by: [replacement pointer if superseded, else empty]
 
-> **What publishes, and where.** `/steer:issues publish-adoption` does **not**
-> file one issue per section, row, or bullet - findings are **deduplicated by
-> remediation work-shape** (keyed to a `finding-key`, drawn across sections); the
-> same underlying fix is one finding even if it surfaces in several places. Route
-> each section as follows:
+> **What publishes, and where.** `/steer:work issues publish-adoption` does
+> **not** file one issue per section, row, or bullet - findings are
+> **deduplicated by remediation work-shape** (keyed to a `finding-key`, drawn
+> across sections); the same underlying fix is one finding even if it surfaces
+> in several places. Route each section as follows:
 >
 > - **Gap analysis** rows with an action (Refactor / Rewrite / Reject) ->
 >   `kind=finding` + `source:adoption`, **one finding per remediation work-shape**.

@@ -24,7 +24,7 @@ parenthetical is the shared safety-precedence level (NEXT-ACTIONS.md §2).
 | Spine bootstrapped, next lifecycle step ready (e.g. open a PR) | Blocking now - next transition (L4) | owning skill |
 | Open question `required_before: production-release`, feature not yet live (non-blocking now) | Required before initial production (L5) | `/steer:spec questions` |
 | Open question `required_before: production-release`, feature already `live` (non-blocking now) | Required before next production release (L5) | `/steer:spec questions` |
-| `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/steer:work start #N`, `/steer:issues ...`, `/steer:setup sync` |
+| `ready-for-dev` issue queued; optional findings to publish/shape; `.version` stale | Recommended (L6) | `/steer:work start #N`, `/steer:work issues ...`, `/steer:setup sync` |
 | Every workflow settled across all dimensions | Complete - no action required (L7) | - |
 
 When the same state could plausibly fit two categories, the **derivation rule**

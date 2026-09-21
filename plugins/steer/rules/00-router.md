@@ -43,18 +43,19 @@ the owning skill, using the skill listing, and **invoke it yourself**.
   purely spec-thinking intent -> **`/steer:spec`**, with setup as the follow-up.
   "Prototype" changes ceremony, **never whether scaffold and spine come first**.
 - **Intent-switches** - a new ask mid-flow: name it and offer to switch or
-  capture it (`/steer:issues capture`), never silently drop the current thread.
+  capture it (`/steer:work issues capture`), never silently drop the current
+  thread.
 
-**`work` vs `issues`:** to implement a change now, with or without an issue
-number, route to `/steer:work` - it find-or-creates the issue where Issue-first
-requires one. Promotion to production is `/steer:work promote` (it cuts the
-changelog, opens the PR, and stops at the merge); a production incident is
-`/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`. Pure backlog management with no implementation this turn
-is `/steer:issues`.
+**`/steer:work` owns both moments of the work.** To implement a change now, with
+or without an issue number, route to it - it find-or-creates the issue where
+Issue-first requires one. Backlog work with no implementation this turn is
+`/steer:work issues`. Promotion to production is `/steer:work promote` (it cuts
+the changelog, opens the PR, and stops at the merge); a production incident is
+`/steer:work --hotfix`; a repo-root sweep is `/steer:work tidy`.
 
 **Front doors** detect context and hand off (`setup` -> `init` / `adopt` /
-`sync`; `audit` -> `work tidy`; `issues` / `spec` -> `questions`; `issues` ->
-`roadmap`), so you rarely route to a specialized skill directly;
+`sync`; `audit` -> `work tidy`; `work` -> `issues`; `spec` ->
+`questions`), so you rarely route to a specialized skill directly;
 `/steer:tracker-sync` and `/steer:spec-scaffold` are internal gateways, not
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.

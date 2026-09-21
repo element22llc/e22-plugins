@@ -1,10 +1,12 @@
 ---
 name: issues
-description: "GitHub Issues lifecycle for the /spec spine - capture, triage, brainstorm, materialize, decompose, epics, status, a ranked relationship-aware board, bounded reconcile, the publish-* family (audit/drift/adoption/findings), and bootstrap-labels. A thin orchestrator; /spec stays product truth, the issue is the work/decision layer."
-when_to_use: >-
-  Use to manage the backlog without implementing now - drive a PO idea from
-  capture to a draft spec to decomposed work without losing open questions or
-  overwriting human content.
+description: "Internal backlog layer for the /spec spine - capture, triage, brainstorm, materialize, decompose, epics, status, a ranked board, bounded reconcile, the publish-* family and bootstrap-labels. A thin orchestrator: /spec stays product truth, the issue is the work/decision layer."
+when_to_use: "Reached via /steer:work issues - not a direct entry point."
+# Internal backlog lifecycle behind `/steer:work issues`. Model-callable, hidden
+# from the slash menu: the backlog and the delivery it feeds are one user-facing
+# door, and which moment of the work an ask belongs to is a routing call the
+# front door makes.
+user-invocable: false
 argument-hint: "[capture | triage [#N|--all] | brainstorm | materialize | decompose | epic [--new \"<title>\"] [#E --add #F1,#F2] | status | board [--all] | reconcile [--all] | publish-audit [<target>] | publish-drift [report] | publish-adoption | publish-findings [--source <id>] | bootstrap-labels] [#issue | feature-id]"
 allowed-tools:
   - Bash(git status *)
@@ -16,9 +18,9 @@ allowed-tools:
 ---
 <!-- steer:modes capture,triage,brainstorm,materialize,decompose,epic,status,board,reconcile,publish-audit,publish-drift,publish-adoption,publish-findings,bootstrap-labels -->
 
-# Drive the GitHub Issues lifecycle for the /spec spine
+# Drive the GitHub Issues lifecycle for the /spec spine (`/steer:work issues`)
 
-`/steer:issues` is the **PO-facing lifecycle workflow** above the low-level
+This is the **backlog half** of `/steer:work`, above the low-level
 `/steer:tracker-sync` gateway. It **orchestrates; it does not own domain
 reasoning** - every step delegates to the skill that owns it and routes GitHub
 I/O through `/steer:tracker-sync`. The two invariants from the issue-workflow
@@ -137,14 +139,14 @@ recommend the **next valid lifecycle transition** for the issue(s) just touched
 
 | Issue lifecycle state | Category | Action / suggested command |
 |---|---|---|
-| `inbox`, not yet triaged | Recommended | `/steer:issues triage` |
-| `exploring` (feature needs a spec) | Human decision required | Shape intent - `/steer:issues materialize` -> `/steer:spec` |
+| `inbox`, not yet triaged | Recommended | `/steer:work issues triage` |
+| `exploring` (feature needs a spec) | Human decision required | Shape intent - `/steer:work issues materialize` -> `/steer:spec` |
 | `ready-for-spec`, intent not approved | Human decision required | PO approves the intent - `/steer:spec approve` (offers the gate prompt) |
 | `ready-for-dev`, decomposed and actionable | Recommended | Start it - `/steer:work start #N` |
 | `in-progress` / `validate` | Human decision required | A reviewer reviews the open PR (no command) |
 | Unresolved `blocking` question on the item | Blocking now | `/steer:spec questions` |
 | Several `ready-for-dev` items to sequence into releases | Recommended | Lay them on a timeline - `/steer:spec roadmap` |
-| `epic` in `exploring`, child features identified | Recommended | Link them - `/steer:issues epic #E --add ...` |
+| `epic` in `exploring`, child features identified | Recommended | Link them - `/steer:work issues epic #E --add ...` |
 | `epic` whose child features are all terminal (≥1 `done`) | Human decision required | PO confirms the epic outcome (no command) |
 | Nothing queued | Complete | `No action is currently required.` |
 

@@ -131,7 +131,7 @@ one best step (see `https://github.com/element22llc/e22-plugins/blob/main/plugin
 | Converter unavailable; binary committed | Blocking now | Enable conversion (install `uv`; `mise run convert:doc`), then re-run `/steer-spec intake <doc>` |
 | Conflicting claims surfaced as Open questions | Human decision required | PO resolves the `Q-NNN`s (no command) |
 | New feature described in the document | Recommended | Spec it - `/steer-spec` |
-| Change contradicts the build (drift) | Required before next production release | File it - `/steer-issues publish-drift` |
+| Change contradicts the build (drift) | Required before next production release | File it - `/steer-work issues publish-drift` |
 | Roadmap/milestone change absorbed | Recommended | Reconcile the timeline - `/steer-spec roadmap` |
 | Clarification units matched open questions (bucket 1) | Recommended | Fold the answers - `/steer-spec questions` |
 | Clarification units unmatched (bucket 3) | Human decision required | The human places them (may become new `Q-NNN`s) - no command |

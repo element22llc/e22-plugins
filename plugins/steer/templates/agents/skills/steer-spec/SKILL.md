@@ -188,8 +188,8 @@ precondition the others don't: it is GitHub-only, and says so and stops when
    | Intent drafted, PO in the session | Human decision required | Answer the approval prompt - on Approve, `/steer-spec approve` |
    | Intent drafted, PO is someone else | Human decision required | PO reviews & approves the intent (no command) |
    | Behavior demands a contract that isn't written | Required before initial production | Author `contract.md` |
-   | Approved, tracker configured, not yet filed | Recommended | file it via `/steer-issues` |
-   | Approved | Complete | Optional: implement in a separate session - `/steer-work` (after `/steer-issues decompose`) or `/steer-build` |
+   | Approved, tracker configured, not yet filed | Recommended | file it via `/steer-work issues` |
+   | Approved | Complete | Optional: implement in a separate session - `/steer-work` (after `/steer-work issues decompose`) or `/steer-build` |
 
    Pick one `Current recommended action` by precedence; the block stays code-free,
    like the rest of this skill.

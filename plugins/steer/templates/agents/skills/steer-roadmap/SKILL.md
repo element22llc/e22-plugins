@@ -204,7 +204,7 @@ jargon); keep the technical detail for devs.
 | Plan confirmed; issues not yet milestoned | Recommended | Materialize - `/steer-spec roadmap from-features` / `from-gap` |
 | `ready-for-dev` issue on the next milestone | Recommended | Start it - `/steer-work start #N` |
 | Feature now `live` but still milestoned as pending | Recommended | Reconcile - `/steer-spec roadmap sync` |
-| Done-but-Missing / Diverged drift surfaced | Required before next production release | File it - `/steer-issues publish-drift` |
+| Done-but-Missing / Diverged drift surfaced | Required before next production release | File it - `/steer-work issues publish-drift` |
 | Roadmap current, nothing queued | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. Read-only in preview; in a

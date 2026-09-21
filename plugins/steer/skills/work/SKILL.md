@@ -1,6 +1,6 @@
 ---
 name: work
-description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition; the counterpart to /steer:issues. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue; tidy sweeps the repo root into /spec and takes none."
+description: "Execute a GitHub issue end-to-end - claim through delivery (a PR, or a trunk commit in solo-trunk) and lifecycle transition. Pass --reviewed for independent plan- and code-review gates, --hotfix for the production-incident fast path. promote opens the production promotion PR and takes no issue; tidy sweeps the repo root into /spec and takes none. issues is the backlog layer above them - capture, triage, decompose, epics, a ranked board, reconcile and the publish-* family - which never edits code."
 when_to_use: >-
   Use when asked to work, start, resume, or finish a specific issue ("work on
   #123", "fix #123"), or when a change in a GitHub-adopted repo needs an issue
@@ -9,8 +9,9 @@ when_to_use: >-
   incident ("prod is down") - never for ordinary urgent work. Use promote to
   ship what is already on the default branch to production ("promote to prod").
   Use tidy when the repo root is cluttered with loose documents, diagrams or
-  exports ("clean up the repo", "organize the strays").
-argument-hint: "[start | resume | status | finish | promote | tidy] [--reviewed | --hotfix] [#issue ...]"
+  exports ("clean up the repo", "organize the strays"). Use issues for backlog
+  management with no implementation this turn.
+argument-hint: "[start | resume | status | finish | promote | tidy | issues <mode>] [--reviewed | --hotfix] [#issue ...]"
 allowed-tools:
   - Bash(sh *scripts/scan-spine-state.sh*)
   - Bash(git status *)
@@ -33,11 +34,12 @@ allowed-tools:
   - Bash(gh run view *)
   - Bash(gh run watch *)
 ---
-<!-- steer:modes start,resume,status,finish,promote,tidy -->
+<!-- steer:modes start,resume,status,finish,promote,tidy,issues -->
 
 Implement work from a GitHub issue by following the `work` skill. This is the
-**execution** layer of the issue-first workflow: `/steer:issues` manages the
-backlog and never edits code; `/steer:work` reads an issue and delivers it.
+**delivery** door of the issue-first workflow at both of its moments: the
+`issues` modes manage the backlog and never edit code; the subcommands below
+read an issue and deliver it.
 
 ## Guardrails
 
@@ -50,25 +52,22 @@ These hold for the whole run, in every mode.
 - **Never auto-resolve product decisions or drift** - those wait for the named
   human (see `ISSUE-WORKFLOW.md`). **Asking** that human in-session is how you
   obtain their answer (rule `61-gates`), never a licence to supply one.
-  The PR **merge** is not promptable in any mode.
-- **The merge is the human gate** (rule 45) - push and open the PR yourself;
-  never merge or deploy. Watching CI to conclusion and fixing a red build is
-  **finishing the work**, not crossing that gate. In solo-trunk the trunk commit
-  *is* delivery (Delivery mode below); deploy stays human-gated all the same,
-  and graduating the repo is `/steer:setup protect`'s job, never this skill's.
+- **The merge is the human gate** (rule 45), and not promptable in any mode -
+  push and open the PR yourself; never merge or deploy. Watching CI to
+  conclusion and fixing a red build is **finishing the work**, not crossing that
+  gate. In solo-trunk the trunk commit *is* delivery (Delivery mode below);
+  deploy stays human-gated all the same.
 - References: `ISSUE-WORKFLOW.md`, `ISSUE-SCHEMA.md`, the Issue-first, Commit
   autonomy, and Definition of Done rules.
 
 ## Preconditions
 
-0. **Member (`spec/PRODUCT.md`)? Resolve the spine first.** Its spine is
-   **partial by design**: the tracker and every feature's `intent.md` /
-   `contract.md` live in the workspace. Resolve it before step 1 by the two-test
-   ladder in `/steer:reference polyrepo` § "Resolving the spine from a member",
-   and read the tracker and linked specs from **there**. A missing local
-   `intent.md` means the workspace has not been read yet, never that the feature
-   is unspecified - **never** author product-level spec files here to fill the
-   gap.
+0. **Member (`spec/PRODUCT.md`)? Resolve the spine first**, before step 1, by
+   the ladder in `/steer:reference polyrepo`: the tracker and every feature's
+   `intent.md` / `contract.md` live in the workspace, so read both from
+   **there**. A missing local `intent.md` means the workspace has not been read
+   yet, never that the feature is unspecified - **never** author product-level
+   spec files here to fill the gap.
 0b. **`promote` is exempt from steps 1 and 3.** It is not issue-scoped - the
    thing being delivered is everything already merged to the default branch - so
    it reads no tracker and finds-or-creates no issue. Its only GitHub dependency
@@ -77,14 +76,17 @@ These hold for the whole run, in every mode.
 0c. **`tidy` is exempt from steps 1 and 3 as well.** It changes where files live,
    never what the product does - a Trivial-class sweep, so there is no issue to
    find and no tracker to read. Go straight to the `tidy` row below.
+0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
+   so there is nothing to find-or-create - a capture or triage ask must never
+   open an issue for itself. Steps 1 and 2 hold, and `/steer:issues` re-runs the
+   same tracker gate on entry; enter the mode rather than repeating it here.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
    this is the **workspace's** `spec/tracker.md` resolved in step 0 - a member
    never carries its own.
-2. **Route all tracker reads/writes through `/steer:tracker-sync`** (the gateway -
-   `search`/`get`/`find-or-create`/`update`/`comment`/`set-type`/`label`/
-   `transition`/`assign`/`link-pr`/`close`). Never hit `gh`/MCP for issues
-   directly. **Git and PR delivery are not gateway operations** - they are this
+2. **Route all tracker reads/writes through `/steer:tracker-sync`**, whose own
+   operations table is the interface. Never hit `gh`/MCP for issues directly.
+   **Git and PR delivery are not gateway operations** - they are this
    skill's execution concern, under the repo's commit/PR-autonomy rules.
 3. **No issue named but a mutation was requested?** Find-or-create one first
    (Issue-first - work outside its two cases needs none), then `start`.
@@ -97,21 +99,17 @@ one, claim it, update its managed state, create/switch the local branch, modify 
 commit, push, and open/update the PR - the full delivery loop up to the merge
 (Commit autonomy). **Merge and deploy are never implied.**
 
-> **Pre-approved shell scope (frontmatter `allowed-tools`).** To cut repetitive
-> prompts, this skill pre-approves read-only git inspection (`status`, `diff`,
-> `log`, `show`, `rev-parse`), branch create/switch (`checkout -b`, `switch`), the
-> Rule-45-autonomous local mutations `git add` / `git commit`, the delivery moves
-> `git push` / `gh pr create` / `gh pr edit` (autonomous under Commit autonomy -
-> the merge review is the gate, not the push or the PR), and **read-only CI
-> status** (`gh pr checks`, `gh run view`, `gh run watch`) so the post-push CI watch
-> (see `finish`) runs without a prompt per poll. It deliberately does **not**
-> pre-approve `gh pr merge`, `gh api`, `gh workflow run`, or destructive git
-> (`push --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays with
-> the human, and tracker I/O still routes through `/steer:tracker-sync`. In an
+> **Pre-approved shell scope.** The `allowed-tools` frontmatter above
+> pre-approves read-only git inspection, branch create/switch, the
+> Rule-45-autonomous `git add` / `git commit`, the delivery moves `git push` /
+> `gh pr create` / `gh pr edit`, and read-only CI status, so the post-push CI
+> watch runs without a prompt per poll. It deliberately does **not** pre-approve
+> `gh pr merge`, `gh api`, `gh workflow run`, or destructive git (`push
+> --force`, `reset --hard`, `clean -fdx`, `branch -D`) - merge stays with the
+> human, and tracker I/O still routes through `/steer:tracker-sync`. In an
 > ungraduated solo-trunk repo the trunk-push hook additionally surfaces the
-> session's first `git push` for confirmation while graduation signals stand
-> and no graduation waiver is recorded (rule 45; repeats carry a non-blocking
-> reminder, and on the Copilot CLI the repeat is a silent allow).
+> session's first `git push` for confirmation while graduation signals stand and
+> no waiver is recorded (rule 45).
 
 ## Delivery mode
 
@@ -119,22 +117,19 @@ The two-state delivery model - pr-flow vs solo-trunk, the `CLAUDE.md`
 delivery-mode marker (absent -> pr-flow), what each mode authorizes, and every
 gate - is canonical in **rule 45 (Commit autonomy)**; determine the mode once at
 `start` / `finish` and apply it, don't re-derive it. **Issue-first holds in both
-modes**; they differ only in the branch/PR ceremony. What that means for THIS
-skill's steps:
+modes**; they differ only in the branch/PR ceremony.
 
-- **pr-flow** (default) - the full flow this skill describes throughout: claim ->
-  `issue/<n>` branch + `spec/.work` marker -> implement -> push -> open PR -> CI
-  green -> transition. Declared-but-unprotected `main`: same flow unchanged, note
-  the missing wall, recommend `/steer:setup protect` (rule 45).
-- **solo-trunk** - commit **straight to `main`**: no `issue/<n>` branch, no
-  `spec/.work` marker, no PR. Still claim the issue and implement, but close it
-  **from the trunk commit** (`Closes #N`, or `Refs owner/repo#N` + an explicit
-  close when the tracker repo differs - see Closing ref). Wherever a step below says *branch*,
-  *marker*, or *PR*, skip it and substitute the trunk commit - everything else
-  (validation, managed-block progress, closure-reason semantics) is identical.
-  While a local graduation signal stands and no waiver is recorded, the
-  trunk-push hook surfaces the session's first push for a human yes (rule 45);
-  a waived repo pushes silently, and deciding either is `/steer:setup protect`'s job.
+- **pr-flow** (default) - the flow described throughout: claim -> `issue/<n>`
+  branch + `spec/.work` marker -> implement -> push -> open PR -> CI green ->
+  transition. On declared-but-unprotected `main`, run it unchanged, note the
+  missing wall and recommend `/steer:setup protect`.
+- **solo-trunk** - substitute the trunk commit wherever a step says *branch*,
+  *marker* or *PR*; still claim the issue, and close it from that commit
+  (`Closes #N`, or `Refs owner/repo#N` + an explicit close when the tracker repo
+  differs - see Closing ref). Everything else - validation, managed-block
+  progress, closure-reason semantics - is identical. While a graduation signal
+  stands and no waiver is recorded, the trunk-push hook surfaces the session's
+  first push for a human yes (rule 45).
 
 ## Subcommands (distinct, idempotent)
 
@@ -146,13 +141,22 @@ skill's steps:
 | **`finish #N`** | Validate, update progress, commit, push, open-or-update the PR, **mark it ready for review**, **watch CI to conclusion**, then transition. Never `done` merely because a PR was opened - and never on a *skipped* check. |
 | **`promote`** | **Not issue-scoped** - what ships is everything already merged. Reads `policy/delivery.yml`'s `production_gate`, shows what would ship, cuts the consumer changelog, and opens the production promotion PR. Stops there: **merging it deploys production and is the human's gate.** -> [`modes/promote.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/modes/promote.md) |
 | **`tidy`** | **Not issue-scoped** - sweep the loose files at the repo root into their correct home (`/spec/reference`, `/spec/design`): move the confidently-classified strays now, propose every rename and delete for a yes. Changes where files live, never behavior. |
+| **`issues <mode>`** | **Not issue-scoped** - the backlog layer, which never edits code: `capture`, `triage`, `brainstorm`, `materialize`, `decompose`, `epic`, `status`, `board`, `reconcile`, the `publish-*` family, `bootstrap-labels`. Its mode map names the one procedure file each mode needs. |
 
-**`tidy` delegates, it does not restate.** Invoke `/steer:tidy` - an internal
-skill, `user-invocable: false`, whose body loads `HOUSEKEEPING.md` as the
-authoritative sweep procedure (root allowlist, classification, the never-touch
-list, the delete gate). Do not re-derive any of that here. It is a mode of this
-skill because a sweep *changes the repo*, which is what this front door owns;
-seeing that the root is cluttered is `/steer:audit`'s job and it hands off here.
+**`tidy` and `issues` delegate, they do not restate.** Both are internal skills
+(`user-invocable: false`) that own their procedure - `/steer:tidy` loads
+`HOUSEKEEPING.md`, `/steer:issues` the one mode file its mode map names. Invoke
+the skill and follow it; re-derive none of it here. Both are modes of this door
+because both change the repo's **work state**, which is what it owns - the issue
+captured today is the one `start` claims tomorrow. A recommendation you hand
+back to a user names `/steer:work <mode>`, never the owning skill.
+
+**`status #N` and `issues status` are different views.** `status #N` is the
+execution view of one claimed issue - claimant, branch, PR, CI, outstanding
+validation. `issues status [#N | <feature-id>]` joins the issue to the spine:
+intent status, contract readiness, sub-issue progress, or an epic's child
+rollup. "How is my PR doing?" is the first; "is this feature ready?" the
+second.
 
 Natural language (`Fix the export bug`, `work #123`) may orchestrate `start`
 through `finish`, but the phases stay distinct and idempotent - re-running a
@@ -178,14 +182,12 @@ gates exactly where they are.
 
 ## Closing ref - check the tracker repo first
 
-GitHub honours issue-closing keywords **only within one repository**. If
-`/spec/tracker.md` declares a `repository:` different from the repo the code
-lives in, `Closes #N` renders as a plain cross-reference and **the issue
-silently stays open** - and because this skill treats the merged PR as
-lifecycle-transition evidence, the issue never advances state either.
+GitHub honours issue-closing keywords **only within one repository**, so a
+tracker declared in another repo leaves the issue silently open - and, because
+this skill treats the merged PR as transition evidence, unadvanced.
 
-- **No `repository:` declared, or the value is absent / a placeholder /
-  unreadable** -> write `Closes #N`. Nothing further to do.
+- **No `repository:` declared in `/spec/tracker.md`, or the value is absent / a
+  placeholder / unreadable** -> write `Closes #N`. Nothing further to do.
 - **A `repository:` is declared** -> resolve both sides and compare before
   writing any closing ref:
   [`CLOSING-REF.md`](${CLAUDE_PLUGIN_ROOT}/skills/work/CLOSING-REF.md).

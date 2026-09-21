@@ -48,7 +48,7 @@ an unrelated question.
 | `/steer:spec` | Authors/iterates a feature spec. |
 | `/steer:spec intake` | Absorbs a PO-supplied spec/roadmap document into `/spec` + the tracker. |
 | `/steer:spec adr` | Creates a numbered ADR. |
-| `/steer:issues` | Captures/triages/materializes GitHub issues. |
+| `/steer:work issues` | Captures/triages/materializes GitHub issues. |
 | `/steer:spec questions` | Resolves open questions, folding decisions into the spec. |
 | `/steer:spec roadmap` | Builds/refreshes the release-milestone timeline from the spec. |
 | `/steer:setup protect` | Sets/verifies GitHub branch protection (the PR gate). |
@@ -95,7 +95,7 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 |---|---|---|
 | `legacy-e22` | a pre-rebrand prefix whose `<skill>` still resolves - bare `e22-<skill>`, or the plugin's own former name qualifying it, `e22-standards:e22-<skill>` and `e22-standards:<skill>` (the token is the one **after** the colon, never `standards`). Old-token forms are written here **without** the leading `/`, as in `MIGRATIONS.md`, so this file passes the stale-`/e22-*` lint guard; in a managed repo they carry it | **deterministic** - rewrite to `/steer:<skill>` |
 | `reference-mode` | `<mode>` is a `reference` topic, not a skill - whether written `/steer:<mode>` or with a legacy prefix | **deterministic** - rewrite to `/steer:reference <mode>` |
-| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
+| `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
 
 `/steer:sync` auto-applies the two deterministic classes read-then-propose on its PR
