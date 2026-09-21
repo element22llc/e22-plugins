@@ -237,7 +237,7 @@ recommended action does not weaken that.
 
 End the readout with the handoff block and nothing after it - no invitation to
 correct the recommendation, no offer to file a report, no reassurance that the
-user need not know a skill name (rule `03-responses`: no closing offer). The
+user need not know a skill name (rule `03-output` § Responses: no closing offer). The
 block's heading already names this skill, which is what a user needs to say "that
 was the wrong route"; when they do, rule `97-self-report` files it with
 `/steer:report`. A standing invitation on every readout buys nothing and it

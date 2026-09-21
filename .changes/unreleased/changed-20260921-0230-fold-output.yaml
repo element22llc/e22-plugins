@@ -1,0 +1,15 @@
+kind: Changed
+body: |
+  - **The three rules about earning a line become one.** `03-responses`,
+    `08-code-comments` and `87-output-discipline` are now `03-output`:
+    *Output discipline* as the lead, *Responses* and *Code comments* as sections
+    under it. Two of `87`'s four bullets were pointers at the other two rules
+    ("keep responses tight (see Responses)", "comments are the exception (see
+    Code comments)") and disappear with the boundary that made them necessary;
+    its other two - least code that does the job, lean durable prose - are now
+    the rule's opening. Headings keep the names other rules and skills cite, so
+    a reference reads `` `03-output` § Responses ``. An e22 app repo's payload:
+    54,718 -> 53,912; a knowledge folder pays 906 more, since code comments now
+    ride in an always-on file.
+custom:
+  Slug: fold-output

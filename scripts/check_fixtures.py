@@ -147,7 +147,7 @@ def check_next_actions_contract(errors: list[str]) -> None:
         "## Recommended next actions",
         "### Current recommended action",
         # The heading is the ONE place a finished skill names itself. Rule
-        # 03-responses otherwise forbids echoing skill routing, so if this form
+        # 03-output's Responses section otherwise forbids echoing skill routing, so if this form
         # falls out of the contract the two rules go back to contradicting each
         # other and no readout says what ran.
         "## Recommended next actions - /steer:",
