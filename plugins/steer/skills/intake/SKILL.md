@@ -151,7 +151,7 @@ one best step (see `${CLAUDE_PLUGIN_ROOT}/templates/reference/NEXT-ACTIONS.md`):
 | Delta absorbed, nothing open | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action`. Committing the source + extraction and
-pushing/opening the PR is autonomous (rule `45-commit-autonomy`); the dev's
+pushing/opening the PR is autonomous (rule `45-delivery`); the dev's
 merge review is the gate - this skill never merges.
 
 ## Coupling rules

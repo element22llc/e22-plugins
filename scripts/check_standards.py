@@ -736,7 +736,7 @@ def check_authorization(errors: list[str]) -> None:
     import json
 
     # 1. Rule 45 states the model: commit + push + PR-open autonomous, merge gated.
-    rule = PLUGIN_ROOT / "rules/45-commit-autonomy.md"
+    rule = PLUGIN_ROOT / "rules/45-delivery.md"
     if not rule.is_file():
         errors.append(f"{rule}: commit-autonomy rule is missing")
     else:

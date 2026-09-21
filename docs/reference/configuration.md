@@ -21,16 +21,14 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `10-stack.md` | Stack defaults (app / service profile) - **e22 org pack** (`inject-when=org-e22`), and the home of the baseline patterns' default-stack instances and the deployed secret-store default. |
 | `12-stack-infra.md` | Stack - infrastructure / IaC. **e22 org pack**, injected when the repo does IaC *and* follows the pack (`inject-when=has-iac&org-e22`). |
 | `15-commands.md` | Useful commands - **e22 org pack** (`inject-when=org-e22`). |
-| `24-worktrees.md` | Parallel worktrees - isolate runtime, clean up after. |
 | `30-spec.md` | **The product spine**, in four parts. *Spec workflow* - the triggers that create an artifact (feature intent + contract, ADR by reversal cost, contract on a behavior change, open questions, a tracker-born feature), plus the brownfield sequence, the bootstrap-first rule (`/steer:setup`) and UI work with or without a design export. *Durable decisions* - a decision belongs in the spine, never only in chat or assistant memory, and bootstrap comes before the capture. *Living documentation* - update the owning artifact in the same change as the code, with the notable-event rule for `/spec/history/`, "applying a settled decision is not a new decision", the internal-ids ban on end-user copy, and the polyrepo member's write-through. Full routing table in the `traceability` reference. |
 | `33-spec-workflow-openspec.md` | Spec workflow - OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs, the tracker declaration and the app guide stay steer's, under `openspec/steer/`. |
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing rules. |
 | `41-coverage.md` | Coverage as a signal - cover what you touch; no vanity threshold. |
-| `45-commit-autonomy.md` | Commit autonomy - Conventional Commit subjects, and a changelog fragment for anything that ships (see [Authorization model](../concepts/authorization-model.md)). |
+| `45-delivery.md` | **How work reaches users**, in three parts. *Commit autonomy* - commit, push and open the PR without asking; the merge is the gate. Two declared modes, pr-flow (the default) and solo trunk, with `/steer:protect` moving a repo between them; Conventional Commit subjects and a changelog fragment for anything that ships; CI watched to conclusion after every push (see [Authorization model](../concepts/authorization-model.md)). *Deployment & environments* - the repo declares its model in `policy/delivery.yml` and the rule follows it, with the observability, rollback and secrets-at-rest baselines; merge and deploy stay human in every model. *Parallel worktrees* - trust the worktree, start services through `mise` so the per-worktree isolation applies, and clean up what you started. |
 | `50-done.md` | **What finishing a change means**, in four sections. *Definition of Done* - five items: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates; deliberately not a restatement of every other rule, and deferred (never waived) under a declared production hotfix. *Verify loop* - name the check that proves the task done, loop against the harness until green, cap the loop and report what blocked you, never loop on uncheckable work. *Drift gates* - surface drift before merge by flagging its class in the PR; a flagged class blocks merge and you may not waive your own flag. *Audit-aligned delivery* - aligned with SOC 2 / ISO 27001, never "compliant". *End-of-session checklist* - report open items only. |
-| `52-deployment.md` | Deployment & environments - **the repo declares its model in `policy/delivery.yml`** (environments, `deploy_on_merge`, `production_gate`, review apps, observability) and the rule follows it; merge and deploy stay human in every model, plus the observability, rollback and secrets-at-rest baselines. The org default it is seeded with - AWS, `non-prod`/`prod`, branch-driven promotion - and why prod is gated on a branch, are in [Deployment & environments](../concepts/deployment.md). |
 | `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). **Opt-in** (`inject-when=automation-optin`): injected only where the repo declares `policy/automation.yml` with `loops: true`, which `/steer:loop scaffold` writes alongside the workflow. |
 | `60-high-risk.md` | High-risk areas - auth, authorization, migrations, infrastructure, secrets, deletion, billing, deploy/release logic: scope with the dev before any code, contract or ADR first. Relaxed only while the **product** is pre-production, and never for real secrets, `/infra`, deploys or real third-party calls. Its *Secrets handling* section carries the never-commit rule, the local `.env` bootstrap, and "deployed secrets live in the declared store". |
 | `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
@@ -42,21 +40,17 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 !!! note "Conditional injection"
     Some rules carry a first-line `<!-- steer:inject-when=... -->` marker and are
     injected only when their scope applies (see
-    [`inject-standards.sh`](hooks.md)). The code-loop rules -
-    `24-worktrees`, `35-issue-tracker`,
-    `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-done`,
+    [`inject-standards.sh`](hooks.md)). The code-loop rules - `35-issue-tracker`,
+    `40-testing`, `41-coverage`, `45-delivery`, `50-done`,
     `80-change-class`, `85-practices` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
-    `33-spec-workflow-openspec`, `36-issue-first`, `52-deployment` and
+    `33-spec-workflow-openspec`, `36-issue-first` and
     `53-autonomous-loops` are likewise
     scoped - respectively to
     repos that do IaC **and** follow the e22 org pack (`has-iac&org-e22`),
     drive the spine with OpenSpec (`has-openspec`),
     use GitHub as the tracker (`tracker-github`),
-    those that do IaC **or** ship an app (`has-iac|has-apps`, where `has-apps` is
-    an `apps/` directory, a `package.json`, or a `pnpm-workspace.yaml` - so
-    `52-deployment` injects in any Node repo, not only one that deploys today),
     and those that have declared the automation opt-in (`automation-optin`).
     `automation-optin` is the only predicate that fails **closed**: every other
     token injects on an unreadable signal, because a safety rule must never be
@@ -139,7 +133,7 @@ the org stack defaults in rule `10-stack`:
   explicit confirmation.
 - **`policy/delivery.yml`** - how code reaches users here: environments,
   `deploy_on_merge`, `production_gate`, review apps, observability. Rule
-  `52-deployment` follows it rather than imposing a model, and `/steer:protect`
+  `45-delivery` follows it rather than imposing a model, and `/steer:protect`
   and `/steer:work promote` read `production_gate`.
 - **`policy/org.yml`** - which org pack this repo follows. `pack: e22` (also the
   meaning of an absent file) delivers the house stack, useful-commands and
@@ -150,7 +144,7 @@ the org stack defaults in rule `10-stack`:
 - **`STEER_NO_WORKTREE_TEARDOWN`** - set to any non-empty value to stop the
   `SessionEnd` / `WorktreeRemove` hooks touching a worktree's Docker stack.
 - **`STEER_WORKTREE_OFFSET`** - pin one worktree's host-port offset when two
-  draw the same one (rule `24-worktrees`), instead of editing shared files.
+  draw the same one (rule `45-delivery` § Parallel worktrees), instead of editing shared files.
 - **`CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`** - Claude Code's own knob, not
   steer's: raises the `SessionEnd` budget above its 1.5s default so the teardown
   has time to finish (see [Hooks](hooks.md)).

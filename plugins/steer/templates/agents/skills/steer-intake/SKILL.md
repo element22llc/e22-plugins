@@ -137,7 +137,7 @@ one best step (see `https://github.com/element22llc/e22-plugins/blob/main/plugin
 | Delta absorbed, nothing open | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action`. Committing the source + extraction and
-pushing/opening the PR is autonomous (rule `45-commit-autonomy`); the dev's
+pushing/opening the PR is autonomous (rule `45-delivery`); the dev's
 merge review is the gate - this skill never merges.
 
 ## Coupling rules

@@ -3,7 +3,7 @@
 `steer` draws a deliberate line between actions that are **cheap and reversible**
 (done autonomously) and actions that are **outward-facing or hard to reverse**
 (gated on a human). This is codified in the always-on rule
-`45-commit-autonomy.md` and reinforced by `95-not-the-gate.md`.
+`45-delivery.md` and reinforced by `95-not-the-gate.md`.
 
 ```mermaid
 flowchart TD
@@ -22,7 +22,7 @@ flowchart TD
 ```
 
 Delivery runs in exactly **two modes**, keyed to what the repo **declares**
-(rule `45-commit-autonomy`): the `CLAUDE.md` `<!-- steer:delivery-mode=solo-trunk -->`
+(rule `45-delivery`): the `CLAUDE.md` `<!-- steer:delivery-mode=solo-trunk -->`
 marker makes a repo **solo-trunk** (pre-MVP by declared intent), where the trunk
 commit + push are the autonomous delivery and there is no PR; anything else,
 including an absent marker, is **pr-flow** - the diagram above, with the
@@ -72,7 +72,7 @@ moves a repo between the two and reconciles the marker.
     (discards work), destructive `git rm` (an unattended recursive/forced delete -
     moved to `ask`), and every **merge/deploy** verb stay gated - `gh pr merge`
     sits under `ask`. `git push` and `gh pr create`/`edit` are *not* gated: they
-    are autonomous delivery (rule `45-commit-autonomy`). `check_standards.py` pins
+    are autonomous delivery (rule `45-delivery`). `check_standards.py` pins
     two of them - `Bash(git push)` and `Bash(gh pr create:*)` - so those cannot
     silently leave `allow`; the rest of the set (`gh pr edit`, the `git push
     origin`/`-u` variants) sits under `allow` unasserted.
@@ -275,7 +275,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 - **Merging the PR.** This is the one step that waits for the dev - everything
   before it (branching, committing, pushing, opening the PR) does not. The
   **merge review is the gate** - not each commit, not the push. `gh pr merge`
-  is never pre-approved: rule `45-commit-autonomy` forbids it outright, so its
+  is never pre-approved: rule `45-delivery` forbids it outright, so its
   `ask` entry in the scaffold is a backstop to decline, not an approval path.
   In a protected repo the server wall enforces the review regardless.
 - **Deploying**, in every mode - including the hotfix lane, where a deploy is

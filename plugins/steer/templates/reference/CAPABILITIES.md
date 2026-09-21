@@ -104,7 +104,7 @@ and **Repair**.
   `templates/scaffold/CLAUDE.md` (which documents both modes) with the marker
   defaulting to `pr-flow` - matching the hooks' fail-open, so behaviour is
   unchanged - and **surface the solo-trunk option**, recommending it when the repo
-  is a solo PO+dev with no MVP/deploy yet (rule `45-commit-autonomy`). Additive
+  is a solo PO+dev with no MVP/deploy yet (rule `45-delivery`). Additive
   only: never edit or overwrite an existing `## Delivery mode` section. To adopt
   solo-trunk on an existing repo the dev flips the marker; `/steer:protect`
   graduates it back to `pr-flow`, or records a graduation waiver
@@ -383,7 +383,7 @@ and **Repair**.
 - **Verbatim:** no - seeded once, then the product's. Reconcile additively;
   never overwrite a `.changie.yaml` a repo has tuned.
 - **Why it matters:** the standard promised this file and never delivered it.
-  Rule `45-commit-autonomy` tells every session "commit messages are **not** the
+  Rule `45-delivery` tells every session "commit messages are **not** the
   release changelog - that stays the curated `CHANGELOG.md`", `CONVENTIONS.md`
   records the decision not to derive it from commit types, and the scaffold even
   shipped a `CHANGELOG.md merge=union` driver for a file nothing installed. So

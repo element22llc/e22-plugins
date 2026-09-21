@@ -275,47 +275,6 @@ shadowed. Either way run `/steer:doctor`; activation-order rationale:
 `/steer:reference conventions`.
 
 
-## Parallel worktrees - isolate runtime, clean up after
-
-You may be one of several agents working the same repo at once, each in its own
-worktree; your local services must not collide with - or outlive - a sibling's.
-(A repo with no `compose.yaml`/ports has nothing to isolate; the cleanup
-discipline still applies to anything you start.) Task names below are the core
-scaffold's; a **workspace** repo prefixes its own `ws:` - see Useful commands.
-
-**Trust a worktree before you run `mise` in it.** `mise trust` is path-based, so a
-new worktree is untrusted and every `mise run ...` there fails on *trust*, not on the
-task. Run `mise trust` in the worktree first - it is idempotent, so it costs
-nothing when a steer check already inherited the primary checkout's trust (Claude
-Code only). That first decision is the user's, not yours: `mise trust && mise
-install` if the repo was never trusted, `mise trust` if it has no `mise` config
-at all - a first-time trust decision is not yours to make.
-
-**Isolate runtime resources.** The scaffold handles this automatically: `mise`
-sources `scripts/worktree-env.sh`, giving each worktree a unique
-`COMPOSE_PROJECT_NAME` and a stable per-worktree host-port offset
-(`POSTGRES_PORT`, `WEB_PORT`, `DATABASE_URL`; the primary checkout keeps the
-defaults). So:
-
-- Start services and the dev server through `mise run ...` (`docker:up`,
-  `dev:setup`, the app's dev task) so the per-worktree env applies - never a
-  bare `docker compose up` or a hardcoded port.
-- Don't pin a fixed `container_name` or a literal host port in `compose.yaml`,
-  and don't hardcode `localhost:5432`/`localhost:3000` in app config - read
-  the env vars.
-- If two worktrees still draw the same offset, set
-  `STEER_WORKTREE_OFFSET=<n>` for one of them rather than editing shared
-  files.
-
-**Clean up before the worktree closes.** On Claude Code, steer's `WorktreeRemove`
-hook runs `docker:clean` on this worktree's stack - containers, **volumes** and
-orphans, scoped to its `COMPOSE_PROJECT_NAME`, so its data goes with it. The
-`SessionEnd` hook does the lesser `docker:down`: containers stopped, **volumes
-kept**, and often cut short, so never count on it. Yours regardless: stop the dev servers and watchers
-you launched, freeing their ports - and run `mise run docker:clean` yourself when
-removing a worktree by hand or on any other surface, where no hook fires.
-
-
 ## Spec workflow
 
 Create the artifact when the trigger fires - don't defer it:
@@ -565,55 +524,83 @@ Commits are cheap and local - the reviewed **PR merge** is the gate (see "You
 are not the gate"), not each commit and not the push. Never pause work to ask
 "should I commit / push / open the PR?".
 
-Delivery runs in exactly **two modes**, keyed to what the repo **declares**. The
-product `CLAUDE.md` `## Delivery mode` marker is the declaration
+Delivery runs in exactly **two modes**, keyed to what the repo **declares**: the
+product `CLAUDE.md` `## Delivery mode` marker
 (`<!-- steer:delivery-mode=solo-trunk -->` -> solo trunk; anything else, absent
-included -> pr-flow); branch protection *enforces* pr-flow rather than defining
-it. `/steer:protect` moves a repo between them, and there is no third mode.
+included -> pr-flow). Branch protection *enforces* pr-flow rather than defining
+it, and `/steer:protect` moves a repo between them. There is no third mode.
 
-- **PR flow (the default - protection is the wall that enforces it).** Work on a branch off `main` -
-  never commit or push to `main` directly. Use the repo's branch convention,
-  else `feat/*` / `fix/*` (`/steer:work` defaults to `issue/<number>-<slug>`).
-  On `main` with changes? Create the branch first, then commit. When the work
-  is **complete** (Definition of Done holds, end-of-session checklist clean),
-  **push the branch and open the PR without asking** - announce it, don't
-  request permission. First push of a fresh branch:
-  `git push -u origin <branch>`. **Merging the PR is the one step that waits
-  for the dev; everything before it (branch, commit, push, open PR) does not.**
-- **Solo trunk mode (declared, pre-MVP greenfield).** If the product
-  `CLAUDE.md` declares solo-trunk, commit **directly to `main` and push without
-  asking** - no `feat/*` branch, no per-feature PR. CI still runs on every
-  push; the spine, tests, and Definition of Done are **unchanged** - only the
-  branch/PR ceremony relaxes. On a GitHub-adopted repo the issue is still
-  required and closed from the trunk commit (`Closes #N`), not via a PR (see
-  Issue-first). **Graduate** - run **`/steer:protect`** - the moment the MVP
-  works, you first deploy, or a second contributor joins, whichever comes first.
-  Until then a standing **local** graduation signal (a deploy target or a `prod`
-  branch) stops trunk pushes being silent: the session's **first** one waits for
-  a human yes (`/steer:reference gates`) - unless the dev has recorded a
-  **graduation waiver** (`/steer:protect waive`: a single-dev repo staying on
-  trunk deliberately, `<!-- steer:graduation=waived -->`), which silences that
-  gate and the session nudge; a second contributor voids it.
+- **PR flow (the default).** Work on a branch off `main` - never commit or push
+  to `main` directly. Use the repo's branch convention, else `feat/*` / `fix/*`
+  (`/steer:work` defaults to `issue/<number>-<slug>`). On `main` with changes?
+  Create the branch first, then commit. When the work is **complete**, **push
+  the branch and open the PR without asking** - announce it, don't request
+  permission. **Merging the PR is the one step that waits for the dev;
+  everything before it does not.**
+- **Solo trunk mode (declared, pre-MVP).** Commit **directly to `main` and push
+  without asking** - no branch, no per-feature PR. CI still runs; the spine,
+  tests and Definition of Done are **unchanged**, and on a GitHub-adopted repo
+  the issue is still closed from the trunk commit (`Closes #N`) where
+  Issue-first requires one. **Graduate via `/steer:protect`** the moment the MVP
+  works, you first deploy, or a second contributor joins. Until then a local
+  graduation signal makes the session's first trunk push wait for a human yes,
+  unless the dev recorded a waiver - mechanics in `/steer:reference gates`.
 - **Declared-but-unprotected PR flow is a gap, not a mode.** The flow above
   applies unchanged - you still never merge - but say the wall is missing and
   recommend `/steer:protect`; where protection is genuinely unavailable, record
   the exception in an ADR.
-- In a GitHub-adopted repo, the **first mutation** presupposes an active
-  GitHub issue **where Issue-first requires one** - otherwise the PR is the
-  work record. Autonomy is unchanged either way.
 - **Commit without asking** whenever a coherent unit of work is done - tests
   pass, lint clean, builds. Keep commits small, with a
   **[Conventional Commits](https://www.conventionalcommits.org/)** subject:
-  `type(scope): summary`, imperative mood; mark breaking changes with `!` or a
-  `BREAKING CHANGE:` footer. Commit messages are **not** the release
-  changelog: a shipping change also adds a **changelog fragment** -
-  `mise run changelog:new`, one file under `.changes/unreleased/`.
-  `CHANGELOG.md` is generated from those; never edit it by hand. Full detail:
-  `/steer:reference conventions`.
+  `type(scope): summary`, imperative mood; `!` or a `BREAKING CHANGE:` footer
+  for a breaking change. Commit messages are **not** the release changelog: a
+  shipping change also adds a **changelog fragment** (`mise run changelog:new`,
+  one file under `.changes/unreleased/`), and `CHANGELOG.md` is generated from
+  those - never edited by hand.
 - **After pushing, watch CI to conclusion and fix a red build before treating
   the work as complete** - don't hand the dev a running or red PR and stop.
   (**Merge and deploy stay human-gated in every mode** - never `gh pr merge`,
   never deploy, never push to a protected `prod` branch.)
+
+### Deployment & environments
+
+How code reaches users is **declared by the repo, not imposed here**:
+`policy/delivery.yml` names its environments, what merging deploys, how
+production is approved (`production_gate`), whether review apps exist, and what
+it reports to a human. Read it before saying anything about this repo's
+delivery; if it is missing, ask and seed it from the bundled template. Deploy
+and release logic is a high-risk area - scope pipeline changes with the dev, and
+validate in non-prod where the declared model has one.
+
+- **Follow the declared model**, and never push directly to a protected branch
+  whatever the gate. `/steer:protect` applies the GitHub side of it.
+- **Merge and deploy stay human, in every model.** A gate declares *which*
+  human step applies, never that there is none.
+- **Observable by default** - logs, metrics with alarms, error tracking, health
+  checks, alerting a human sees, wiring recorded in `ARCHITECTURE.md`. An empty
+  `observability` list is allowed: unobservable is a **flag to raise**, not a
+  rule to break.
+- **Rollback** - every production deploy has a known one (revert the promotion,
+  redeploy the prior SHA); migrations are expand/contract so the previous
+  version survives the deploy.
+- **Secrets at rest** - injected at deploy/runtime, never baked into images or
+  CI logs (Secrets handling).
+
+A repo that delivers differently edits `policy/delivery.yml`; only a *weaker*
+gate than the seeded one needs an ADR.
+
+### Parallel worktrees
+
+Several agents may work one repo at once, each in its own worktree, so local
+services must not collide with or outlive a sibling's. Run `mise trust` in a new
+worktree before any `mise run ...` (it is path-based, and an untrusted worktree
+fails on trust, not on the task), and start services only through `mise run ...`
+so the scaffold's per-worktree `COMPOSE_PROJECT_NAME` and host-port offset
+apply - never a bare `docker compose up`, a pinned `container_name` or a
+hardcoded port. Clean up what you started: `mise run docker:clean` on the way
+out, since the lifecycle hooks are best-effort and fire on Claude Code only.
+Isolation mechanics and the `STEER_WORKTREE_OFFSET` escape hatch:
+`/steer:reference conventions`.
 
 
 ## Definition of Done
@@ -685,35 +672,6 @@ implying the work is complete.
 - [ ] Scaffold placeholders flagged or resolved? (Unbootstrapped repo: `/steer:init`.)
 - [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
 - [ ] Solo trunk, no graduation waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?
-
-
-## Deployment & environments
-
-How code reaches users is **declared by the repo, not imposed here**:
-`policy/delivery.yml` names its environments, what merging deploys, how
-production is approved (`production_gate`), whether review apps exist, and what
-it reports to a human. Read it before saying anything about this repo's
-delivery; if it is missing, ask and seed it from the bundled template. Deploy
-and release logic is a high-risk area (see High-risk areas) - scope pipeline
-changes with the dev, and validate in non-prod where the declared model has one.
-
-- **Follow the declared model**, and never push directly to a protected branch
-  whatever the gate. `/steer:protect` applies the GitHub side of it.
-- **Merge and deploy stay human, in every model.** A gate declares *which*
-  human step applies, never that there is none (Commit autonomy).
-- **Observable by default** - logs, metrics with alarms, error tracking, health
-  checks, alerting a human sees, wiring recorded in `ARCHITECTURE.md`. An empty
-  `observability` list is allowed: unobservable is a **flag to raise**, not a
-  rule to break.
-- **Rollback** - every production deploy has a known one (revert the promotion,
-  redeploy the prior SHA); migrations are expand/contract so the previous
-  version survives the deploy (see High-risk areas).
-- **Secrets at rest** - injected at deploy/runtime, never baked into images or
-  CI logs (see Secrets handling).
-
-The org's default shape, and why it gates prod on a branch, is the seeded
-`policy/delivery.yml` plus `/steer:reference conventions`. A repo that delivers
-differently edits that file; only a *weaker* gate needs an ADR.
 
 
 ## Autonomous loops - automate the navigation, never the authority

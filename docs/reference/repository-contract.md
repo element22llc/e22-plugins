@@ -104,7 +104,7 @@ matches what is on disk. Only four expressions actually gate a
 shipped rule: `code-project` (the code-loop rules, enumerated in
 [Configuration & rules](configuration.md#the-ruleset)), `has-iac` (`12-stack-infra`),
 `tracker-github` (`36-issue-first`) and the composite `has-iac|has-apps`
-(`52-deployment`) - so `has-apps` appears only inside that composite.
+(`45-delivery` § Deployment & environments) - so `has-apps` appears only inside that composite.
 `lib/scope.sh` also defines `has-compose`, `has-infra`, `polyrepo`,
 `has-workspace-manifest` and `has-product-pointer`, all of which are
 **available but carry no rule today** - the polyrepo topology is deliberately

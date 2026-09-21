@@ -398,7 +398,7 @@ the standards in `.github/copilot-instructions.md`.
   Copilot session started in *or* entered into a linked worktree does **not**
   inherit the primary checkout's trust, and its first `mise run ...` fails on
   *trust*, not on the task - the cost a polyrepo pays per member per feature. The
-  standards carry the remedy instead of a hook: rule `24-worktrees` tells the agent
+  standards carry the remedy instead of a hook: rule `45-delivery` § Parallel worktrees tells the agent
   to run `mise trust` in the worktree before its first `mise run ...` and names the
   inheriting check as Claude-Code-only, so no Copilot surface is told trust it does
   not have. `mise trust` is idempotent, so the instruction is also free on Claude
@@ -408,7 +408,7 @@ the standards in `.github/copilot-instructions.md`.
   `WorktreeRemove` -> `docker:clean`), and neither event exists on a Copilot
   surface - so Copilot gets neither. This is exactly the trap this
   page exists to avoid: an unscoped rule asserting a safety net that is not there.
-  Rules `24-worktrees` and `50-done` § End-of-session checklist therefore scope the hook claim to
+  Rules `45-delivery` § Parallel worktrees and `50-done` § End-of-session checklist therefore scope the hook claim to
   Claude Code and leave `mise run docker:clean` as the agent's own job everywhere
   else. (On Claude Code only the `WorktreeRemove` half is dependable; the
   `SessionEnd` half is best-effort - see
