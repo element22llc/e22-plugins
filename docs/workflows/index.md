@@ -88,7 +88,7 @@ below give the detail.
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
-| steer itself is misbehaving - file a plugin bug upstream | `/steer:report` |
+| steer itself is misbehaving | Say so - Claude files the plugin bug upstream (`/steer:report`) |
 | Answer accumulated open questions | `/steer:spec questions` |
 | Record a hard-to-reverse or cross-cutting decision | `/steer:spec adr` |
 | Sweep loose files at the repo root into `/spec` | `/steer:work tidy` |

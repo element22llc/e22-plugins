@@ -311,7 +311,7 @@ there is no automatic retry. Mitigation:
     token $'{\r'`, that is not a hook failing open - it is a **CRLF-corrupted
     install**, and a CRLF shell script does not warn, it fails to *parse*. The
     hooks share `hooks/lib/*.sh`, so one bad checkout takes out the whole set
-    simultaneously (the v5.0.0 fault). Do **not** file this through
+    simultaneously (the v5.0.0 fault). It is **not** a case for
     `/steer:report`: it has a local, immediate answer. Run
     [`/steer:setup doctor`](skills.md) - its **§0 plugin-integrity check** greps the
     installed `hooks/` and `scripts/` for CR before anything else and reports it
