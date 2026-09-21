@@ -1,4 +1,4 @@
-# `/steer-questions bundle` - render the PO-answerable questions as a questionnaire
+# `/steer-spec questions bundle` - render the PO-answerable questions as a questionnaire
 
 Read this file only when running `bundle`. The default sweep, the
 open-question locations, the done-when contract, the recommended-next-actions
@@ -6,7 +6,7 @@ block, and the coupling rules stay in `SKILL.md`.
 
 ## Bundle mode (`bundle`)
 
-`/steer-questions bundle [<feature-id>]` renders the open questions **a Product
+`/steer-spec questions bundle [<feature-id>]` renders the open questions **a Product
 Owner can answer** as a shareable, fillable questionnaire - the **outbound**
 half of the PO clarification loop. The loop, the machine-keyed return document
 the page exports, and how `/steer-intake clarify` ingests the filled export are
@@ -44,7 +44,7 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
    `spec/SPEC-QUESTIONS.md` (step 1) is included **read-only**, never silently
    omitted: `Read` its `## Open` items into the gather scoped `[product]`,
    never migrate or delete it here, and add a notice to run the default
-   `/steer-questions` first so it gets healed.
+   `/steer-spec questions` first so it gets healed.
 
 3. **Filter to what the PO can answer.** A bundle carries the questions a
    **Product Owner** can decide - not pure dev/technical work:

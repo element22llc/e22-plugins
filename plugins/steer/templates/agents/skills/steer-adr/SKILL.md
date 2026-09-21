@@ -1,7 +1,8 @@
 ---
 name: steer-adr
-description: Create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed -> Accepted transition.
+description: Internal decision record - create a numbered ADR from the bundled template, then offer its Deciders in-session ratification; `accept` writes the Proposed -> Accepted transition.
 argument-hint: '[<slug> | accept <n>]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/adr/SKILL.md - do not edit by hand.
@@ -10,11 +11,11 @@ argument-hint: '[<slug> | accept <n>]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use for a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) - reversal cost is the bar, not novelty, so a first-time pattern used in one place is a contract.md line instead. Also when asked to record a decision, or when a Decider ratifies a `Proposed` ADR ("accept ADR 0007") - including one drafted earlier.
+**When to use.** Reached via /steer-spec adr - not a direct entry point.
 
 <!-- steer:modes default,accept -->
 
-# Write an ADR
+# Write an ADR (`/steer-spec adr`)
 
 Create a new Architecture Decision Record at `/spec/decisions/000N-[slug].md` in
 the product repo, from the bundled template.
@@ -30,7 +31,7 @@ the product repo, from the bundled template.
    OpenAPI `spec/`, which is why `hooks/lib/spine.sh` keys on `spec/.version`.
 
    **The exception is a bootstrap calling *in*.** `/steer-init`, `/steer-adopt`
-   and `/steer-build` all invoke `/steer-adr` while bootstrapping - `init` and
+   and `/steer-build` all invoke `/steer-spec adr` while bootstrapping - `init` and
    `adopt` before they stamp, `build` after - so gating on the stamp would abort
    callers this step exists to route to, and send the agent back into the skill
    already running. When any of them is the caller, proceed and let the bootstrap
@@ -78,7 +79,7 @@ one prompt. If `Deciders` names someone who is not the person answering, surface
 the mismatch and leave the state alone - you may not record their decision for
 them.
 
-## `accept` mode - `/steer-adr accept <n>`
+## `accept` mode - `/steer-spec adr accept <n>`
 
 <!-- steer:transition-owner adr-status:Proposed->Accepted -->
 
@@ -143,7 +144,7 @@ is `Proposed`, so the next step is a human decision - but it is now an
 
 | Observed state | Category | Action / suggested command |
 |---|---|---|
-| ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt - on Approve, `/steer-adr accept <n>` |
+| ADR drafted, `Status: Proposed`, Decider in the session | Human decision required | Answer the ratification prompt - on Approve, `/steer-spec adr accept <n>` |
 | `Proposed`, Decider is someone else | Human decision required | The named Deciders ratify or reject (no command) |
 | ADR accepted, supersedes an older one | Recommended | Mark the old ADR `Superseded by [link]` |
 | Accepted, and it was blocking work | Blocking now - next transition | Continue the work it gated (`/steer-work`, `/steer-spec`) |

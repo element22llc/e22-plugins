@@ -4,13 +4,13 @@ How steer gets open questions answered by a Product Owner who has no repo and
 no Claude Code. This file is the **single source of truth** for the contract
 the two ends of the loop share - the machine-keyed return-document format, the
 segmentation rule for the inbound document, and the three-bucket routing with
-its durability rules. `/steer:questions bundle` (outbound) and
+its durability rules. `/steer:spec questions bundle` (outbound) and
 `/steer:intake clarify` (inbound) each own their operational steps and defer
 here; when the contract changes, it changes in this one place.
 
 ## The loop
 
-1. **Outbound - `/steer:questions bundle`** gathers the PO-answerable open
+1. **Outbound - `/steer:spec questions bundle`** gathers the PO-answerable open
    questions across the spine and renders them as a shareable, **fillable
    questionnaire** - a Claude Artifact, or the same fillable Markdown printed
    inline where the Artifact tool is unavailable (rendering discipline:
@@ -24,7 +24,7 @@ here; when the contract changes, it changes in this one place.
    any PO source document (version-stamped and committed under
    `spec/sources/`), segments it into units, maps each unit - by its machine
    key where present - and sorts them into the three-bucket worklist below.
-4. **Fold - `/steer:questions`** (the default resolve flow) applies each routed
+4. **Fold - `/steer:spec questions`** (the default resolve flow) applies each routed
    answer to the spec under its step-6 tier gate and closes the question
    (`status: resolved`, decision in `_Resolution:_`; the block itself stays).
 
@@ -119,7 +119,7 @@ in one of three buckets:
 
 | Bucket | Unit | Routes to |
 |---|---|---|
-| **1 - answers an open question** | confident match to an open `Q-NNN` (a key match, or a confident semantic match) | intake's step-5 reconcile row for answers, which hands the fold to `/steer:questions` (its step 6). Still tier-gated there: a genuine unmade product decision stays human-gated; a decides-nothing-new answer auto-applies with the PR as the gate |
+| **1 - answers an open question** | confident match to an open `Q-NNN` (a key match, or a confident semantic match) | intake's step-5 reconcile row for answers, which hands the fold to `/steer:spec questions` (its step 6). Still tier-gated there: a genuine unmade product decision stays human-gated; a decides-nothing-new answer auto-applies with the PR as the gate |
 | **2 - new info** | maps to a feature, answers no open question | intake's existing step-5 reconcile rows (`/steer:spec` / `/steer:spec-scaffold` / `/steer:roadmap` / `/steer:audit`) - new scope routes exactly as a spec-doc change does |
 | **3 - unmatched / low-confidence** | can't be placed confidently, or carries a stale/unknown key | **surfaced for the human** - "where does this go?" - **never guessed**; may become a new `Q-NNN` |
 
@@ -152,7 +152,7 @@ proposed-answer annotations / raised `Q-NNN`s, the step-5 gateway routing, and -
 at its step 6 - the `spec/history/` entry and advancing `source.md`'s
 `Latest absorbed version`. **"Absorbed" means the doc was ingested and every
 unit durably routed - not that every answer has been folded.**
-**`/steer:questions` owns the fold:** it applies its step-6 tier gate to the
+**`/steer:spec questions` owns the fold:** it applies its step-6 tier gate to the
 pending answer, writes it into the owning `intent.md` / `vision.md` with the
 source-ref + quoted span as provenance, and closes the question. Questions
 never touches the source pointer; intake never folds. Advancing the pointer is
@@ -163,7 +163,7 @@ on the `Q-NNN`s.
 are durable, re-running `clarify` on the same binary hits intake's binary-hash
 guard and reports `already absorbed` - the doc is already ingested and routed.
 An interrupted run loses nothing already written; finish any un-folded answers
-with **`/steer:questions`**, whose sweep finds the
+with **`/steer:spec questions`**, whose sweep finds the
 `pending /steer:questions fold` annotations on the `Q-NNN`s. Do **not** re-run
 `clarify` to resume - it cannot, and does not need to.
 

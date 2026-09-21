@@ -48,9 +48,9 @@ Skip any skill whose frontmatter says `user-invocable: false` - the internal
 gateways and the skills a front door has absorbed as a mode, this one included.
 A user cannot type them, so listing them as commands would hand out invocations
 the harness rejects. You may mention that a front door auto-routes to specialized skills
-(`setup` -> `init` / `adopt` / `sync`; `audit` -> `work tidy`; `issues` / `spec` ->
-`questions`; `issues` -> `roadmap`), but don't enumerate those unless the user
-asks to zoom in.
+(`setup` -> `init` / `adopt` / `sync` / `doctor` / `protect`; `spec` ->
+`questions` / `adr`; `audit` -> `work tidy`; `issues` -> `roadmap`), but don't
+enumerate those unless the user asks to zoom in.
 
 ## Phase 1 - Read the listing
 
@@ -85,9 +85,9 @@ to its group; omit an empty group:
 - **Start** - empty, and omitted. `init`, `adopt`, `sync`, `doctor` and
   `protect` are all `setup`'s modes, not skills a user types, so they never
   appear here as entries of their own.
-- **Spec & backlog** - absorb a PO document, capture/sequence the backlog,
-  sweep open questions, record decisions (`intake`, `issues`, `roadmap`,
-  `questions`, `adr`).
+- **Spec & backlog** - absorb a PO document, capture/sequence the backlog
+  (`intake`, `issues`, `roadmap`). Sweeping open questions and recording a
+  decision are `spec`'s `questions` and `adr` modes, not skills a user types.
 - **Ship & respond** - the emergency door: `/steer-work --hotfix` for a
   production incident on a deployed system (from `work`'s `argument-hint`).
 - **Track & automate** - repo health and drift, the scheduled loop (`audit`,

@@ -90,7 +90,7 @@ if [ "${STATE}" = "openspec-setup" ]; then
 	printf 'placeholders. Issue-first enforcement reads this file; until it '
 	printf 'declares `system: github`, the issue gates stay off.\n'
 	printf -- '- **ADRs** -> `openspec/steer/decisions/`, written by '
-	printf '**`/steer:adr`** when the first hard-to-reverse choice comes up. '
+	printf '**`/steer:spec adr`** when the first hard-to-reverse choice comes up. '
 	printf 'Nothing to create up front.\n\n'
 	printf 'Do **not** run `/steer:setup init` or `/steer:setup adopt` to get '
 	printf 'these - they lay a competing `spec/features/**` spine. `/steer:setup` '

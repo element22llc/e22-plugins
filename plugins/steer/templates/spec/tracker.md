@@ -26,7 +26,7 @@ labels:
   question: source:spec
 
 # Owners - maps a spec question's `owner:` role to a GitHub assignee (login).
-# Used when /steer:questions promotes a question to a spec-question issue: the
+# Used when /steer:spec questions promotes a question to a spec-question issue: the
 # question's `owner:` resolves to the login(s) here and the issue is assigned.
 # `shared` is not a row - it resolves to product + development together.
 # Leave a row blank to skip auto-assignment for that role (the issue is left
@@ -67,7 +67,7 @@ owners:
   can't rot unseen; promotion routes it to a named human via the **Owners map**.
 - **Owners map (`owners:` frontmatter):** maps a question's `owner:` role
   (`product`/`development`/`design`/`security`) to a GitHub login. On promotion,
-  `/steer:questions` assigns the `spec-question` issue to the mapped login;
+  `/steer:spec questions` assigns the `spec-question` issue to the mapped login;
   `owner: shared` assigns product **and** development; a blank/missing row leaves
   the issue unassigned with `needs:triage`. Fill it once per repo so escalated
   questions land on a person, not a backlog.

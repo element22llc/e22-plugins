@@ -171,7 +171,7 @@ if [ "${STATE}" != "managed" ]; then
 			;;
 		esac
 
-		SPINE_MSG="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap also installs the /spec spine - a user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:adr). A 'prototype' or 'quick' build does NOT waive this - it relaxes spec depth and ceremony, never the scaffold or the spine. This spine reminder fires once per session; it stops once a complete /spec spine exists."
+		SPINE_MSG="Spec-first check: ${SPINE_NOTE}, and you are about to write ${CLASS} (${SAFE_FILE}). Bootstrap also installs the /spec spine - a user-facing feature gets /spec/features/<id>/intent.md + contract.md (run /steer:spec-scaffold) before or alongside its code, and the initial stack is recorded as an ADR (run /steer:spec adr). A 'prototype' or 'quick' build does NOT waive this - it relaxes spec depth and ceremony, never the scaffold or the spine. This spine reminder fires once per session; it stops once a complete /spec spine exists."
 
 		if [ -n "${SCAFFOLD_DUE}" ] && [ -n "${SPINE_DUE}" ]; then
 			SPEC_CTX="${SCAFFOLD_MSG} ${SPINE_MSG}"

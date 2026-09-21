@@ -1,16 +1,15 @@
 ---
 name: questions
-description: "Sweep the /spec spine's open questions, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. bundle renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback)."
-when_to_use: >-
-  Use to work down accumulated open questions, before a release or PO-to-dev
-  handoff, or to fold in answers ingested via /steer:intake clarify; use bundle
-  mode to hand a Product Owner the open questions across every feature at once.
+description: "Internal open-question sweep - gather every open question across the /spec spine, walk the PO/dev through each, fold decisions into the spec, promote what outlives the session to an issue, delete a legacy SPEC-QUESTIONS.md. `bundle` renders the PO-answerable ones as a fillable Artifact questionnaire (Markdown fallback)."
+when_to_use: "Reached via /steer:spec questions - not a direct entry point."
 argument-hint: "[bundle [<feature-id>]]"
+# Internal question sweep behind `/steer:spec questions`. Model-callable, hidden
+# from the slash menu - see the note on `init`.
+user-invocable: false
 ---
-
 <!-- steer:modes default,bundle -->
 
-# Resolve open questions (`/steer:questions`)
+# Resolve open questions (`/steer:spec questions`)
 
 Open questions are the spine's quiet failure mode: written down once, gated at
 PO acceptance, then left to rot. This skill gathers every open question across
@@ -185,7 +184,7 @@ as "stale by that same test".
      their **source-ref** and **exact quoted span** - as code-fact answers
      carry `file:line` - so a mis-mapped clarification is auditable and
      reversible at PR review, and closed like any other answered question.
-   - A hard-to-reverse or cross-cutting answer -> **`/steer:adr`**; propagating
+   - A hard-to-reverse or cross-cutting answer -> **`/steer:spec adr`**; propagating
      a decision *already made* into a superseding ADR is itself auto-apply.
    - A question that needs a **named owner, blocks multiple features, needs
      stakeholder/research input, or could outlive the session** -> promote it to

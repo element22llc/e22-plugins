@@ -81,7 +81,7 @@ It covers, in detail:
   and how untracked questions get promoted.
 - **Drift gates** - the nine review-sensitive classes, flag-when-noticed
   mechanics, who may resolve a flag, and the periodic sweeps
-  (`/steer-audit spec`, `/steer-audit`, `/steer-questions`).
+  (`/steer-audit spec`, `/steer-audit`, `/steer-spec questions`).
 - **SOC 2 / ISO 27001-aligned delivery** - "aligned, never compliant" wording,
   and the expectation->artifact evidence map.
 - **Worked examples** - a PO's day and a dev's day through the same workflow.
@@ -214,13 +214,13 @@ It covers, in detail:
   and disclose on demand; the permission-free copy-out floor a questionnaire needs;
   the **return leg** (a hosted page stores nothing - data comes back only through
   the exported, machine-keyed document ingested by the owning skill:
-  `/steer-questions bundle` -> `/steer-intake clarify`, the audit triage form ->
+  `/steer-spec questions bundle` -> `/steer-intake clarify`, the audit triage form ->
   `/steer-issues publish-audit`);
   and the inline-Markdown fallback (never written under the repo tree) where the
   Artifact tool is unavailable.
 
 This file carries the Artifact standard in full; the rendering skills
-(`/steer-explain`, `/steer-status`, `/steer-questions bundle`, `/steer-audit`,
+(`/steer-explain`, `/steer-status`, `/steer-spec questions bundle`, `/steer-audit`,
 `/steer-roadmap`, `/steer-next capabilities`) each load it before rendering.
 
 ## gates
@@ -248,7 +248,7 @@ It covers, in detail:
   pushes. Gates become answerable, never removable.
 
 This backs the always-on rule `61-gates` and the gate-owning skills
-(`/steer-adr`, `/steer-spec approve`, `/steer-work --reviewed`).
+(`/steer-spec adr`, `/steer-spec approve`, `/steer-work --reviewed`).
 
 ## polyrepo
 

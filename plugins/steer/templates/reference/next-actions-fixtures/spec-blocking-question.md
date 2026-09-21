@@ -18,7 +18,7 @@ Blocking now
 
 ## Expected suggested command
 
-`/steer:questions` - the command that drives open questions to resolution.
+`/steer:spec questions` - the command that drives open questions to resolution.
 
 ## Must not recommend first
 

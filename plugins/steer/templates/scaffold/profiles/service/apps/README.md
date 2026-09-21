@@ -16,7 +16,7 @@ plugin-injected stack rules cover where a backend belongs (run
   [`/infra`](../infra/README.md).
 
 Workspace tooling (npm/pnpm/bun workspaces, turbo, nx, ...) is the product team's
-choice - record it in an ADR under [`/spec/decisions`](../spec/decisions) (run `/steer:adr`). The
+choice - record it in an ADR under [`/spec/decisions`](../spec/decisions) (run `/steer:spec adr`). The
 toolchain itself is pinned with mise; see [`mise.toml`](../mise.toml).
 
 This folder starts empty - the bootstrap (`/steer:init`) scaffolds the real

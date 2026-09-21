@@ -78,7 +78,7 @@ real secrets). Steps 5-6 (scaffold, build feature by feature) are in
       gate (Commit-autonomy rule); its description links to
       `/spec/PRODUCTIONIZATION.md`, the demo-validated `intent.md` files, and any
       remaining `## Open questions` across the feature intents / `vision.md` (run
-      `/steer-questions` to work them down). Link the PR in
+      `/steer-spec questions` to work them down). Link the PR in
       `/spec/BUILD-STATUS.md`. The dev PR review is the gate: it merges to `main`
       as v0 only with a dev's approval.
     - **Solo trunk** - there is no PR to open; the v0 is already on `main`. Tell

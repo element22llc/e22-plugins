@@ -224,7 +224,7 @@ from a **different** session needs that URL anyway - steer does not store it. Th
 After rendering, surface the single most useful follow-up, and stop:
 
 - Spec `Status:` still `draft`/unapproved -> offer `/steer-spec approve <id>`.
-- Open blocking questions remain -> offer `/steer-questions` (or `/steer-spec`).
+- Open blocking questions remain -> offer `/steer-spec questions` (or `/steer-spec`).
 - Nothing outstanding -> `No action is required.`
 
 ## Reference

@@ -2,11 +2,11 @@
 
 A gate needs the deciding **human's** answer - not a particular channel. When that
 human is in the session, don't send them out-of-band to edit a status field:
-**ask, then act in the same pass.** Never ratify on your own initiative.
+**ask, then act in one pass.** Never ratify on your own initiative.
 
 | Gate | Decides | On Approve |
 |---|---|---|
-| ADR `Proposed -> Accepted` | its `Deciders` | `/steer:adr accept <n>` |
+| ADR `Proposed -> Accepted` | its `Deciders` | `/steer:spec adr accept <n>` |
 | Intent `draft -> approved` | the PO | `/steer:spec approve <id>` |
 | `--reviewed` plan sign-off | who asked | implement |
 
@@ -20,7 +20,7 @@ Ask once, three options - **Approve · Reject · Decide later**:
 - **`Decide later` is always offered** and leaves every field untouched.
 - **Record who decided, when, and that it was in-session**, plus the
   `/spec/history/` entry. Self-ratification is legitimate; the *unrecorded* kind
-  is the audit hole this rule prevents.
+  is the audit hole this prevents.
 - **Preconditions fire first**, and a **wrong decider** means surfacing the
   mismatch and leaving the state alone - never show a gate the human cannot
   legitimately pass.

@@ -26,7 +26,7 @@ already approved.
 |---|---|
 | "Users should be able to...", a new goal, a scope change | Feature `intent.md` (what/why, user experience, acceptance) - PO approves scope changes |
 | "Actually, it should behave like..." (requirement evolved) | The owning `contract.md` (+ `intent.md` if scope moved) - same PR as the code |
-| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:adr`; one entry in `/spec/history/` |
+| "Let's go with X over Y" (trade-off accepted, hard to reverse) | ADR via `/steer:spec adr`; one entry in `/spec/history/` |
 | "I'm not sure / we'll decide later / ask the client" | A `## Open questions` entry (see `SPEC-FRAMEWORK.md` -> Structure for the `intent.md`-vs-`vision.md` placement rule) |
 | "How does someone use this?" answered, a workflow settled, a role defined | App guide (`/spec/app/`) - usage, workflows, roles & permissions, configuration |
 | "Ship it / that's what I wanted" (validation, release-worthy change) | Release notes in the app guide; the PO-acceptance checkbox in `intent.md` (its `Status:` becomes `live` only at the actual release) |
@@ -230,7 +230,7 @@ Mechanics:
   a written accepted-divergence note (open question or `spec-drift` issue).
 - Claude **may not waive its own flag** - only the human reviewer resolves it.
 - Sweeps for drift that slipped past per-PR gates: `/steer:audit spec` (as-built spec
-  vs tracker spec), `/steer:audit` (code vs standards), `/steer:questions` (open
+  vs tracker spec), `/steer:audit` (code vs standards), `/steer:spec questions` (open
   questions rotting).
 
 ### The advisory `spec-drift` CI job
@@ -315,4 +315,4 @@ the flag, the contract diff, and the regression test together.
 
 Both flows work in Claude Code and Cowork; the PO typically enters through
 **`/steer:build`**, the dev through the normal spec workflow
-(`/steer:spec`, `/steer:adr`) - the artifacts and gates are identical.
+(`/steer:spec`, `/steer:spec adr`) - the artifacts and gates are identical.

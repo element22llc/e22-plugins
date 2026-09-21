@@ -92,12 +92,12 @@ The product-level spec artifacts live with the other spec templates in
 | `../spec/app-docs.md` | `spec/app/README.md` | **App knowledge docs** index - usage, roles, configuration, limitations, troubleshooting, release notes. |
 | `../spec/sources-readme.md` | `spec/sources/README.md` | What belongs in `spec/sources/` - the versioned home for recurring PO documents, maintained by `/steer:intake`. |
 | `spec/features/.gitkeep` | `spec/features/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec-scaffold` populates it. |
-| `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:adr` populates it. |
+| `spec/decisions/.gitkeep` | `spec/decisions/.gitkeep` | Bundled so the dir survives the first commit; `/steer:spec adr` populates it. |
 
 Nine more `templates/spec/` templates also live there but are instantiated **on
 demand** by their skills - not copied at bootstrap - so they are not in this
 install map: `feature-intent.md` + `feature-contract.md` (`/steer:spec-scaffold`),
-`adr.md` (`/steer:adr`), `build-status.md` + `productionization.md`
+`adr.md` (`/steer:spec adr`), `build-status.md` + `productionization.md`
 (`/steer:build`), `source-manifest.md` (`/steer:intake`),
 `history-entry.md` (every change that logs an action-history entry), and the two polyrepo
 markers (`/steer:init` / `/steer:adopt`) - `product.md` -> `spec/PRODUCT.md` for a

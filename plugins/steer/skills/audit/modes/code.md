@@ -138,10 +138,10 @@ of dimension.
      Bodies: `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/audit-run.md`
      (parent run issue) and `${CLAUDE_PLUGIN_ROOT}/templates/github/issue-bodies/finding.md` (child findings).
      Scope children to genuine, high-leverage findings - don't file one per nit.
-   - **Architectural / cross-cutting calls** -> propose an ADR via `/steer:adr`.
+   - **Architectural / cross-cutting calls** -> propose an ADR via `/steer:spec adr`.
    - **Spec coverage & conformance gaps** -> a proposed `## Open questions` entry
      in the owning feature's `intent.md` (or `vision.md` if cross-cutting),
-     drivable to answers by `/steer:questions`.
+     drivable to answers by `/steer:spec questions`.
    - **Correctness / security / mechanical cleanup** -> defer per the Boundaries
      note. To turn an unresolved `/code-review` or
      `/security-review` finding into a tracked issue, route it through
@@ -169,8 +169,8 @@ of dimension.
    | **Confirmed** defect with a written rule to build against - a contract, an acceptance criterion, a standard - and a bounded fix | Blocking now | Fix it - `/steer:work` (it find-or-creates the issue) |
    | Potential security concern needing validation | Human decision required | Run `/security-review` |
    | Potential correctness defect needing diff analysis | Human decision required | Run `/code-review` |
-   | Architectural / cross-cutting call | Human decision required | Propose an ADR via `/steer:adr` |
-   | Spec coverage / conformance gap | Required before next production release | `/steer:questions` |
+   | Architectural / cross-cutting call | Human decision required | Propose an ADR via `/steer:spec adr` |
+   | Spec coverage / conformance gap | Required before next production release | `/steer:spec questions` |
    | Suspected spec-vs-build drift | Required before next production release | Run `/steer:audit spec` |
    | `main` unprotected / branch-protection drift (GitHub) - unless `CLAUDE.md` declares solo trunk mode, where it is intentional until graduation (and settled for good by a recorded graduation waiver, unless a second collaborator has joined) | Recommended | `/steer:setup protect` |
    | Vetted code-health findings ready for tracking | Recommended | `/steer:issues publish-audit` |

@@ -201,7 +201,7 @@ the fix; the marker flip itself is `apply`'s job:
   would grant trunk autonomy nobody chose): report the gap and recommend `apply`.
   If protection is genuinely unavailable - a private repo on a GitHub plan
   without branch protection, or no admin rights - recommend recording the
-  exception as an ADR (run `/steer-adr`) so `verify` and `/steer-audit` keep the
+  exception as an ADR (run `/steer-spec adr`) so `verify` and `/steer-audit` keep the
   gap visible instead of it looking like an oversight; the local flow is
   unchanged either way (branch + PR, never merge - rule 45).
 

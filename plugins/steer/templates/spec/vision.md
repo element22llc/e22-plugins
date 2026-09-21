@@ -37,7 +37,7 @@ valuable.]
 
 Product-level ambiguities not yet tied to a single feature (greenfield vision
 gaps, whole-repo decisions). Per-feature questions live in that feature's
-`spec/features/*/intent.md`. Work these down with `/steer:questions`. Use the
+`spec/features/*/intent.md`. Work these down with `/steer:spec questions`. Use the
 structured format (stable `Q-NNN` IDs, `status`/`impact`/`owner`/
 `required_before`/`tracker`) - see the spec-framework reference. The seed block
 below is marked `<!-- steer:placeholder -->` so the SessionStart open-questions hook

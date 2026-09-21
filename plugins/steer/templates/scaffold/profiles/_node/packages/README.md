@@ -11,4 +11,4 @@ part of whatever depends on them.
   [`/configs`](../configs/README.md), not here.
 
 Workspace tooling is the product team's choice - record it in an ADR under
-[`/spec/decisions`](../spec/decisions) (run `/steer:adr`).
+[`/spec/decisions`](../spec/decisions) (run `/steer:spec adr`).

@@ -72,5 +72,5 @@ cannot be enabled on private repos at all (the API returns `403` with an
 upgrade message). The two-state model still applies - the repo runs pr-flow on
 the honor system: same branch + PR + never-merge flow (rule 45), just without
 the server wall. Recommend recording that exception as an ADR (run
-`/steer:adr`) so the gap is a documented decision `verify` and `/steer:audit`
+`/steer:spec adr`) so the gap is a documented decision `verify` and `/steer:audit`
 keep visible, not an oversight.
