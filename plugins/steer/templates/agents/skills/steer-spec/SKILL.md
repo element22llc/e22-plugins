@@ -39,7 +39,7 @@ restate its steps here.
 | `validate [<id> \| --all]` | Check the open-question contract and intent/contract/tracker consistency | - |
 | `questions` | Sweep the **whole spine's** open questions and drive each to an answer; `questions bundle [<id>]` renders the PO-answerable ones as one fillable questionnaire | `/steer-questions` |
 | `adr` | Record a hard-to-reverse choice as a numbered ADR; `adr accept <n>` writes the `Proposed -> Accepted` transition its Deciders ratify | `/steer-adr` |
-| `intake` | Absorb a PO document (docx/pptx/xlsx/pdf) into the spine by diffing it against the last version; `intake clarify <path>` folds a client's answers document, `intake status` reports the source ledger's absorb state | `/steer-intake` |
+| `intake` | Absorb a PO document (docx/pptx/xlsx/pdf) into the spine by diffing it against the last version; `intake clarify <path>` folds a client's answers document, `intake status` prints the read-only ledger of every absorbed source | `/steer-intake` |
 | `roadmap` | Lay unshipped intent on a release timeline as milestone-grouped issues; no argument is a read-only preview, then `from-features` / `from-gap` / `sync` | `/steer-roadmap` |
 
 All four are `user-invocable: false` - a user reaches them **only** through this
@@ -53,9 +53,10 @@ the word:
   are writing for gaps you can close yourself. `intake clarify <path>` absorbs a
   document the **client sent back** answering questions you already asked.
   "Here's their answers" is always the second one.
-- **`intake status` vs `/steer-status`.** The mode reports one absorbed source's
-  ledger state; the public skill renders a client-facing progress report across
-  the spine. Nothing routes to `intake status` without a source in hand.
+- **`intake status` vs `/steer-status`.** The mode prints the read-only ledger
+  of every absorbed source; the public skill renders a client-facing progress
+  report across the spine. Nothing routes to `intake status` without a source
+  ledger to read.
 - **`roadmap sync` vs `/steer-setup sync`.** The mode reconciles milestones
   against the spine. It touches no scaffold, no templates and no `spec/.version`.
 

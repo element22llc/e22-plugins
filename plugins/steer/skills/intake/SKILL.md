@@ -1,6 +1,6 @@
 ---
 name: intake
-description: "Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` reports a source's absorb state."
+description: "Internal document absorb - commit a PO office document plus a normalized Markdown extraction under spec/sources/, diff it against the prior version, and route the real changes into the spine and tracker without clobbering human prose. `clarify` folds a client answers document; `status` prints the read-only ledger of every absorbed source."
 when_to_use: "Reached via /steer:spec intake - not a direct entry point."
 argument-hint: "[<path-to-doc> | clarify <path-to-doc> | <source-id> | status]"
 # Internal ingestion path behind `/steer:spec intake`. Model-callable, hidden

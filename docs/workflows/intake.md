@@ -1,7 +1,9 @@
-# `/steer:intake`
+# `/steer:spec intake`
 
 Absorb a Product Owner's spec or roadmap **document** - and every later version of
-it - into the `/spec` spine, surfacing exactly what changed each time.
+it - into the `/spec` spine, surfacing exactly what changed each time. A mode of
+[`/steer:spec`](spec.md); the `intake` skill behind it is internal and is not
+typed on its own.
 
 !!! info "When to use"
     Use when a PO hands over a new or updated office document (a spec in Word, a
@@ -16,7 +18,7 @@ it - into the `/spec` spine, surfacing exactly what changed each time.
 
 Office documents are opaque binaries: `git` can't diff them and Claude can't read
 them directly, so a re-sent file is a blob with no indication of what moved.
-`/steer:intake` commits, for every version, **both** the original binary **and** a
+`/steer:spec intake` commits, for every version, **both** the original binary **and** a
 normalized Markdown extraction - so a plain `git diff` of successive extractions
 *is* the "what changed" the PO never spells out.
 
@@ -39,7 +41,7 @@ normalized Markdown extraction - so a plain `git diff` of successive extractions
    the hunks into change units by heading anchor (topic, not line number).
 4. **Report** - prints a structured *what-changed* table.
 5. **Reconcile** - routes each change through the skill that owns the artifact
-   (`/steer:spec-scaffold`, `/steer:spec`, `/steer:audit`, `/steer:roadmap`,
+   (`/steer:spec-scaffold`, `/steer:spec`, `/steer:audit`, `/steer:spec roadmap`,
    `/steer:spec questions`), **never clobbering human prose**: conflicts become Open
    questions, drift is surfaced for a human, and the run writes **one**
    `spec/history/` entry file summarizing the version - absorbing a source
@@ -57,11 +59,11 @@ action-history record) is unchanged.
 
 | Mode | What it does |
 | --- | --- |
-| `/steer:intake <path-to-doc>` | Absorb the supplied document - the normal "the PO just sent a new version" path. |
-| `/steer:intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment -> map to the spine -> three-bucket worklist (answers to `/steer:spec questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. The document a PO fills in is usually the **outbound** questionnaire `/steer:spec questions bundle` produces - when it carries `[<feature-id>] Q-NNN` answer headings, `clarify` segments per heading and maps each answer to its question by that feature-scoped key deterministically. |
-| `/steer:intake <source-id>` | Absorb the newest unabsorbed version of an already-tracked source, by its id - no path needed. |
-| `/steer:intake` | List the sources under `spec/sources/` and ask which document to absorb. |
-| `/steer:intake status` | Read-only ledger: each source, its latest absorbed version, mapped features/issues, and any version still awaiting a text-bearing copy. |
+| `/steer:spec intake <path-to-doc>` | Absorb the supplied document - the normal "the PO just sent a new version" path. |
+| `/steer:spec intake clarify <path-to-doc>` | Absorb a **client clarification document** that answers open questions and/or adds scope: segment -> map to the spine -> three-bucket worklist (answers to `/steer:spec questions`, new scope to the reconcile rows, unmatched surfaced). Every folded answer records the source-ref + quoted span. The document a PO fills in is usually the **outbound** questionnaire `/steer:spec questions bundle` produces - when it carries `[<feature-id>] Q-NNN` answer headings, `clarify` segments per heading and maps each answer to its question by that feature-scoped key deterministically.  Not `/steer:spec clarify <feature-id>`, which interrogates a draft rather than absorbing an answers document. |
+| `/steer:spec intake <source-id>` | Absorb the newest unabsorbed version of an already-tracked source, by its id - no path needed. |
+| `/steer:spec intake` (no argument) | List the sources under `spec/sources/` and ask which document to absorb. |
+| `/steer:spec intake status` | Read-only ledger: each source, its latest absorbed version, mapped features/issues, and any version still awaiting a text-bearing copy. |
 
 ## Idempotency
 
