@@ -77,6 +77,14 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     keeps the two context lines that bind no particular skill (delegate a heavy
     sweep; route a durable fact to disk, never to private session memory).
 
+    The 6.6 rule diet applied the same principle *inside* the surviving rules:
+    the greenfield and adopt walkthrough, the living-documentation routing
+    table, the worktree isolation mechanics, the mise task-ordering rules, the
+    solo-trunk waiver procedure and the deployment baselines' rationale all live
+    in `SPEC-FRAMEWORK.md`, `TRACEABILITY.md`, `CONVENTIONS.md` and `GATES.md`.
+    Each rule keeps the sentence a session must act on without loading anything,
+    and names the reference for the rest.
+
 ## Code intelligence (LSP)
 
 `plugin.json` declares two **language servers**, so Claude Code gets real

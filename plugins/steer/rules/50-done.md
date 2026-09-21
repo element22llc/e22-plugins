@@ -10,13 +10,10 @@ A change is done when **all five** of these hold:
 - [ ] **Merge and deploy went through the required human gates.**
 
 That is the whole list. Everything else you owe a change is canonical in its own
-rule and named, not restated here: comments, coverage, the changelog fragment,
-the tracker ref and issue state, ADRs, high-risk scoping. Ceremony scales with
-the change (Change classification). CI enforces only a thin floor - in
-**solo-trunk** that floor (changed-line coverage, the changelog-fragment gate,
-the advisory spec-drift warning) is the *only* automated backstop. Under a
-declared production hotfix these are **deferred** to the mandatory follow-up,
-never waived.
+rule and named, not restated here. Ceremony scales with the change (Change
+classification). CI enforces only a thin floor, and in **solo-trunk** that floor
+is the *only* automated backstop. Under a declared production hotfix these are
+**deferred** to the mandatory follow-up, never waived.
 
 ### Verify loop - iterate against the harness, don't flail
 
@@ -28,43 +25,39 @@ check is a goal you can't finish.
   the one you're taking, or ask, **before** writing 200 lines against it.
 - **Loop until green, then stop**, and **cap the loop**: run the harness, fix
   what it reports, re-run; if attempts stop converging, **report what blocked
-  you** with the failing output. Never thrash, never paper over the check.
-- **Never loop on uncheckable work** - judgment calls, design decisions and
-  long-compute runs have no fast pass/fail.
+  you** with the failing output. Never thrash, never paper over the check, and
+  never loop on uncheckable work - a judgment call or a long-compute run has no
+  fast pass/fail.
 
 ### Drift gates - surface before merge
 
 Drift - any mismatch along intent <-> spec <-> contract <-> tracker <-> app docs
 <-> tests <-> delivered behavior - is resolved by **explicit human review, never
 silently**: you surface it before merge, the reviewer resolves it. Flag these
-classes in the PR description the moment you notice one (the scaffold's PR
-template carries the checklist): **intent drift · contract drift · undocumented
+classes in the PR the moment you notice one (its template carries the
+checklist): **intent drift · contract drift · undocumented
 behavior change · security-sensitive · compliance-impacting · operational
 (deploy/CI/infra) · local setup or deployment changed · app docs invalidated ·
 architecture/stack drift (`ARCHITECTURE.md`)**. A flagged class blocks merge
-until the reviewer resolves it - you may not waive your own flag. The scaffold's
-advisory `spec-drift` CI job warns when behavior changes without its
-`contract.md`; a warning is a prompt, not a substitute for the flag. Sweeps:
-`/steer:audit`. Mechanics: `/steer:reference traceability`.
-
-### Audit-aligned delivery
+until the reviewer resolves it - you may not waive your own flag. The advisory
+`spec-drift` CI job warns when behavior changes without its `contract.md`; a
+warning is a prompt, not a substitute for the flag. Sweeps: `/steer:audit`.
 
 The workflow is **aligned with** SOC 2 / ISO 27001 delivery expectations - say
 "aligned", never "compliant": certification scope and production-readiness
 approval stay with humans. The artifacts are the evidence, so keep the chain
-intact - traceability, review evidence, change history, secure defaults.
+intact.
 
 ### End-of-session checklist
 
 Before wrapping up, run this and report **only the open items**, one line each -
-a clean checklist is one sentence, never the list echoed back with ticks. Track
-them with your todo tooling; if an item can't be satisfied, say so rather than
-implying the work is complete.
+a clean checklist is one sentence, never the list echoed back with ticks. If an
+item can't be satisfied, say so rather than implying the work is complete.
 
 - [ ] The five Definition of Done items hold for every change this session?
 - [ ] Unfinished work and known gaps surfaced explicitly?
-- [ ] Dev servers and watchers you started stopped? (Closing a worktree: `mise run docker:clean` - the hooks are best-effort.)
-- [ ] GitHub-adopted repo: the active issue reflects progress, branch, blockers and validation; unrelated findings captured as linked issues; the PR references the issue with the right closing relation?
-- [ ] Scaffold placeholders flagged or resolved? (Unbootstrapped repo: `/steer:init`.)
+- [ ] Dev servers and watchers you started stopped, and `mise run docker:clean` run if a worktree is closing?
+- [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
+- [ ] Scaffold placeholders flagged or resolved?
 - [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
-- [ ] Solo trunk, no graduation waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?
+- [ ] Solo trunk, no waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?

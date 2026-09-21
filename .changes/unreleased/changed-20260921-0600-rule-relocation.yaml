@@ -1,0 +1,24 @@
+kind: Changed
+body: |
+  - **The surviving rules keep the sentence a session acts on and name the
+    reference for the rest.** Folding alone returned about half the saving the
+    release targets, because a fold removes duplicated pointers rather than
+    prose. This pass moves the self-contained detail out of the always-on
+    payload to the reference document that already carried it in full: the mise
+    task-ordering and auto-install mechanics and the per-profile task layouts to
+    `CONVENTIONS.md`, the worktree isolation mechanics and the deployment
+    baselines' rationale likewise, the solo-trunk waiver procedure to
+    `GATES.md`. Every rule keeps the operative line - trust the worktree, keep
+    `dev:setup` green, the three deployment baselines, the graduation trigger -
+    and points at the reference for the mechanics. Nothing that a session must
+    do without loading anything was moved.
+  - **Payload, end of the 6.6 rule diet.** An e22 app repo: **66,026 ->
+    41,295** characters (-37%); an infra repo 67,870 -> 43,079; a knowledge
+    folder 27,060 -> 20,392; an app repo that declares another org pack 36,405.
+    Rule files: 38 -> 18. That is short of the release's ~34,000 target, and
+    deliberately so: the remaining payload is the text a session has to act on
+    directly, and the next 7,000 characters would have to come out of the gates
+    table, the drift-class list the PR template mirrors, and the end-of-session
+    checklist - behaviour, not duplication.
+custom:
+  Slug: rule-relocation
