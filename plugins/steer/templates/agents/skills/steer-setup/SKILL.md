@@ -139,7 +139,7 @@ prototype-ceremony handling. This section governs the developer path that lands 
 
 Power users can skip detection by naming the mode: `setup init`, `setup adopt`,
 `setup sync` (`setup sync --check` for the read-only report), `setup doctor`, or
-`setup protect` (with `verify` / `apply [--solo]` / `waive`). Honor the explicit
+`setup protect` (with `verify` / `apply [--solo | --team]` / `waive`). Honor the explicit
 mode, but if it clearly contradicts the detected state (e.g. `setup init` on a repo
 that's already `managed`), say what you detected and confirm before proceeding.
 `doctor` and `protect` contradict nothing - they run at any spine state.
