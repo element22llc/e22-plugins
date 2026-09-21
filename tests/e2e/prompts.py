@@ -17,14 +17,14 @@ _NO_SIDE_EFFECTS = (
 )
 
 INIT = (
-    "/steer:init\n\n"
+    "/steer:setup init\n\n"
     "This is an automated, non-interactive test run against a greenfield repo. "
     "Bootstrap it: install the bundled scaffold and instantiate the full spec "
     f"spine. {_NO_SIDE_EFFECTS}"
 )
 
 ADOPT = (
-    "/steer:adopt\n\n"
+    "/steer:setup adopt\n\n"
     "Automated, non-interactive test run. This is an existing app with real code "
     "and no /spec. Reverse-engineer the spec spine and sync the bundled "
     "scaffolding ADDITIVELY - never delete or rewrite existing working code, and "
@@ -32,7 +32,7 @@ ADOPT = (
 )
 
 SYNC = (
-    "/steer:sync\n\n"
+    "/steer:setup sync\n\n"
     "Automated, non-interactive test run. Reconcile this repo against the current "
     f"plugin version, repairing only genuine gaps. {_NO_SIDE_EFFECTS}"
 )

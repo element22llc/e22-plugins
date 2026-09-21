@@ -564,9 +564,9 @@ Then point Claude at a repo and run `/steer:setup`.
 ```mermaid {scale: 0.85}
 flowchart LR
     S["/steer:setup"] --> Q{repo state?}
-    Q -->|brand new| INIT["/steer:init<br/>scaffold from bundle"]
-    Q -->|existing app| ADOPT["/steer:adopt<br/>add standards in place"]
-    Q -->|already on the standards| SYNC["/steer:sync<br/>update to the latest plugin"]
+    Q -->|brand new| INIT["init mode<br/>scaffold from bundle"]
+    Q -->|existing app| ADOPT["adopt mode<br/>add standards in place"]
+    Q -->|already on the standards| SYNC["sync mode<br/>update to the latest plugin"]
     INIT --> W[ready to work]
     ADOPT --> W
     SYNC --> W

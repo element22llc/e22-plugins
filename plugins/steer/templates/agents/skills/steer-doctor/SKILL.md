@@ -185,7 +185,7 @@ final scan.
 | `os` = `windows` (Git Bash live) | Complete | Supported - hooks run; valid for the Desktop Code tab, builds included. WSL2 optional (CLI/IDE dev only) |
 | Windows, no POSIX shell (detector couldn't run) | Blocking now | Install Git for Windows, reopen, re-scan - or WSL2 for CLI/IDE dev |
 | A runtime is `shadowed` (and nothing above blocks) | Recommended | Fix activation ordering (§3) - not a hard blocker, but the wrong, un-pinned version is in use |
-| All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer-init` (dev) or `/steer-build` (PO) |
+| All green, repo not yet set up (no `/spec`) | Recommended | Stand the repo up - `/steer-setup` (dev) or `/steer-build` (PO) |
 | All green, repo already set up, and this run installed or repaired a tool | Recommended | Install the project's deps against the toolchain just fixed - `mise run dev:setup`, then start work |
 | All green, repo already set up, and this run installed or repaired nothing | Complete | `No action is currently required.` - optionally `mise run dev:setup` if the project's deps aren't installed yet |
 

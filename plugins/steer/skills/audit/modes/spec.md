@@ -17,7 +17,7 @@ turn a separate, approved step (see the spec-framework reference, Rule 5).
 **Boundaries.** `/steer:adopt` is the one-time bootstrap for an un-specced repo -
 it reverse-engineers the as-built `/spec` from the code; the `spec` audit is
 steady-state conformance that **consumes** that spine and diffs it against the
-tracker intent. **If there is no `/spec` spine yet, stop and run `/steer:adopt`
+tracker intent. **If there is no `/spec` spine yet, stop and run `/steer:setup adopt`
 first** - there is no as-built spec to compare against.
 
 ## When to run
@@ -35,7 +35,7 @@ first** - there is no as-built spec to compare against.
    *derived from the real code*. A contract's `## Implementation pointers` section
    is **optional and explicitly not a maintained index** - it may name an owning
    app/package, a file, or nothing at all - so never depend on it being there. If
-   the spine itself is absent, redirect to `/steer:adopt` and stop.
+   the spine itself is absent, redirect to `/steer:setup adopt` and stop.
 2. **The tracker spec export** - markdown files from any issue tracker (Jira,
    Linear, GitHub Issues, ...), **one file per epic/issue or per story / task**. A
    coarse-grained file (epic, large issue) contains several sub-items with their

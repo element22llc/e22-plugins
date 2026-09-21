@@ -80,7 +80,7 @@ non-clobbering, human-gated guarantees are inherited, not re-implemented.
    > document - to serve this one skill. `convert:doc` runs the same
    > `markitdown` tool on demand. If a repo predates the removal and still lists
    > a `markitdown` server in its own `.mcp.json` or `.vscode/mcp.json`, that
-   > entry is stale but harmless; `/steer:sync` clears it.
+   > entry is stale but harmless; `/steer:setup sync` clears it.
 
 ## Modes
 

@@ -118,7 +118,7 @@ Read the policy, **consumer-first then plugin default** (same precedence as
   required status check must match the check-run GitHub actually reports, or merges
   will block forever on a context that never arrives. If the workflow is absent,
   flag that the `ci` gate cannot be required yet and recommend installing it
-  (`/steer-sync` / scaffold) first.
+  (`/steer-setup sync` / scaffold) first.
 - **Additional branches.** If the policy declares a `protected_branches:` list
   (schema 2 - optional; absent in older policies), each entry is a further branch
   to protect with its own fields (the canonical case is a `prod` promotion branch
@@ -268,6 +268,6 @@ confirmation.
   **not** enable GitHub's repo-wide `allow_auto_merge` - that switch would expose
   auto-merge to every PR; auto-merge is scoped to Dependabot by the workflow
   itself. The merge is enacted by `.github/workflows/dependabot-auto-merge.yml`
-  (installed via the scaffold / `/steer-sync`), which waits for `ci` then merges
+  (installed via the scaffold / `/steer-setup sync`), which waits for `ci` then merges
   the single Dependabot PR directly - **protect never merges.** If that workflow is
   absent, say so: alerts are on but nothing auto-merges yet.

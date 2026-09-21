@@ -181,7 +181,7 @@ fall back to sweeping the dimensions manually as specified below.
   and PR. Flag the **merged-PR-but-stale-tracker** case (PR merged to `main`, issue
   still `validate`) - an unfinished lifecycle transition, not new work.
 - **Version drift** - compare `spec/.version` against the current plugin version;
-  a stale spine routes to `/steer-sync`.
+  a stale spine routes to `/steer-setup sync`.
 - **Adoption brief** - if `spec/PRODUCTIONIZATION.md` exists, read its
   `> Lifecycle:`. `active-adoption` means an adoption is mid-flight (resume it);
   `published-snapshot` means its findings already live as issues (counted under

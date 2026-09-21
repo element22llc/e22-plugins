@@ -133,7 +133,7 @@ outside issues, say the report covers tracked issues only - don't guess at the r
    the tracker-sourced sections *"tracker not connected - reads unavailable"*.
    Never fabricate tracker state.
 2. **Locate the spine.** If there is no `/spec`, there is nothing to report on yet -
-   redirect to `/steer:setup` (which routes to `/steer:init` or `/steer:adopt`) and
+   redirect to `/steer:setup` (it detects which of its modes fits) and
    stop.
 3. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took.
