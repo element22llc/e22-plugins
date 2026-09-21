@@ -502,3 +502,13 @@ def test_reachability_catches_model_only_drift(monkeypatch, tmp_path: Path):
     errors = _run_reachability(monkeypatch, skills, rules, model_only="")
     assert len(errors) == 1
     assert "MODEL_ONLY" in errors[0]
+
+
+def test_reachability_catches_an_exemption_on_a_public_skill(monkeypatch, tmp_path: Path):
+    """An exemption naming a skill users can type is stale, not an exemption."""
+    skills, rules = _reachability_fixture(tmp_path)
+    errors = _run_reachability(
+        monkeypatch, skills, rules, gateways={"gateway": "called by setup", "setup": "stale"}
+    )
+    assert len(errors) == 1
+    assert "'setup' is exempted" in errors[0]
