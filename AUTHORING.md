@@ -279,7 +279,7 @@ exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 ### Skill vs. mode - hold the line on surface area
 
 The user-facing menu is the handful of **front doors** - `setup`, `build`, `spec`,
-`intake`, `work`, `issues`, `audit`, `adr`, `next`, `explain`, `protect`,
+`intake`, `work`, `issues`, `audit`, `adr`, `next`, `status`, `protect`,
 `report` - that `rules/00-router.md` names and that hand off to the specialized
 skills (the router routes from the skill listing itself; there is no separate
 intent table to keep in sync). Every new skill widens the set of things a user must choose

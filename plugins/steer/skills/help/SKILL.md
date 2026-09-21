@@ -62,7 +62,8 @@ order - the handful that covers a whole working life with steer:
 3. `build` - build an app idea as a non-technical owner
 4. `work` - implement or fix something now
 5. `next` - "what should I do next?"
-6. `status` - a client-ready progress report
+6. `status` - a client-ready progress report, or `status feature <id>` for a
+   shareable page of one feature
 
 **Tier 2 - "More, by journey."** After the essentials, add every remaining
 user-invocable skill under one explicit *"More (you can also just describe any
@@ -78,7 +79,6 @@ to its group; omit an empty group:
   production incident on a deployed system (from `work`'s `argument-hint`).
 - **Track & automate** - repo health and drift, tidy-up, the scheduled loop
   (`audit`, `tidy`, `loop`).
-- **Report** - a shareable page of one feature (`explain`).
 - **Govern & plumbing** - report a steer defect (`report`); load the manual or
   reference prose on chat-only surfaces (`standards`, `reference`).
 
