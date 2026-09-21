@@ -1,7 +1,8 @@
 # Workflows overview
 
 A **workflow** is a multi-step skill that drives a phase of the product
-lifecycle. This section documents the ones a developer or PO invokes directly.
+lifecycle. This section documents the ones a developer or PO drives directly,
+including modes reached through a front door.
 For the full per-command catalog (including internal helpers), see the
 [Skills reference](../reference/skills.md).
 
@@ -70,7 +71,7 @@ below give the detail.
 | Get set up - I'm not sure what state the repo is in | `/steer:setup` (detects & routes) |
 | Start a brand-new repo from scratch | `/steer:setup init` |
 | Bring an existing app under steer | [`/steer:setup adopt`](adopt.md) |
-| Absorb a product owner's spec / roadmap document | [`/steer:intake`](intake.md) |
+| Absorb a product owner's spec / roadmap document | [`/steer:spec intake`](intake.md) |
 | Capture, triage, or decompose ideas into issues | [`/steer:issues`](issues.md) |
 | Shape or approve a feature spec | [`/steer:spec`](spec.md) |
 | Start, resume, or finish an issue | [`/steer:work`](work.md) |
@@ -82,7 +83,7 @@ below give the detail.
 | Give a client a progress/status report ("what did we ship this week?") | `/steer:status` |
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
-| Generate a release-milestone timeline | `/steer:roadmap` |
+| Generate a release-milestone timeline | [`/steer:spec roadmap`](spec.md) |
 | Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | `/steer:loop` |
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
@@ -109,7 +110,7 @@ below give the detail.
 | Skill | Use when |
 | --- | --- |
 | [`/steer:issues`](issues.md) | Drive an idea from capture -> draft spec -> decomposed work. |
-| [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision. |
+| [`/steer:spec`](spec.md) | Think a feature through and shape/approve acceptance criteria. `questions` sweeps the spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document, `roadmap` lays unshipped intent on a timeline. |
 | [`/steer:work`](work.md) | Start, resume, or finish a specific issue. Add `--reviewed` to run it through a review-gated loop (plan -> plan-gate review -> implement -> `/code-review` -> bounded fix) - vetted, not first-draft. |
 | [`/steer:build`](build.md) | A non-developer wants to build or prototype an idea. |
 
@@ -120,5 +121,5 @@ below give the detail.
 | `/steer:setup sync` | After a plugin release - apply migrations, reconcile spine + scaffold. Which migrations exist, and what each one rewrites, is in [Versioning the contract](../reference/repository-contract.md#versioning-the-contract). |
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to diff the as-built `/spec` spine against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace. Read-only itself: it reconstructs, arbitrates, and names the one action that matters most. When that action is unambiguous and non-gated it is then announced and **continued into** (rule `00-router`'s bounded auto-continue), handing over at the first step that writes; a close call, a gated step, or an action no command performs waits for you. |
-| `/steer:roadmap` | Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
+| `/steer:spec roadmap` | A `/steer:spec` mode. Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
 | `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule - discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` - rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |

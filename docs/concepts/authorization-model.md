@@ -161,7 +161,7 @@ subset of those inspection commands, but are **not** read-only overall - `sync` 
 `gh pr edit`), and `issues` carries `gh label create` plus its own
 `gh issue list`/`view` and `gh search issues` reads; their delivery grants are
 enumerated above. The setup and build flows
-(`/steer:setup init`, `/steer:setup adopt`, `/steer:intake`, `/steer:build`) likewise declare
+(`/steer:setup init`, `/steer:setup adopt`, `/steer:spec intake`, `/steer:build`) likewise declare
 scoped grants for the operations they routinely run - git inspection and
 branch-creation (`git status`/`diff`/`log`/`switch`/`checkout -b`), the same
 `git push` / `gh pr create` delivery grants as the other delivery skills, and - in

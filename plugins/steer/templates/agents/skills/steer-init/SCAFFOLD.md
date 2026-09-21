@@ -49,7 +49,7 @@ design/sources homes: `/spec/design/README.md` (from `design-readme.md`),
 `design-architecture-diagram.md` - the living global architecture diagram
 `ARCHITECTURE.md` links to), and
 `/spec/sources/README.md` (from `sources-readme.md` - the versioned home for
-recurring PO documents, maintained by `/steer-intake`). Install the
+recurring PO documents, maintained by `/steer-spec intake`). Install the
 bundled `spec/features/.gitkeep` and `spec/decisions/.gitkeep` so those dirs
 survive the first commit (an empty dir does not - `/steer-spec-scaffold`
 and `/steer-spec adr` populate them later). **Adapt to the chosen stack

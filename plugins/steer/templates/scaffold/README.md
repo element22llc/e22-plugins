@@ -147,7 +147,7 @@ Binary Office documents (`.docx`, `.xlsx`, `.pptx`) - and other formats like HTM
 mise run convert:doc path/to/document.docx        # Markdown on stdout
 ```
 
-`/steer:intake` uses this task to absorb a PO-supplied spec, roadmap, or requirements document into `/spec`. **PDFs and images don't need it - Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for `convert:doc` for the Office binaries specifically.
+`/steer:spec intake` uses this task to absorb a PO-supplied spec, roadmap, or requirements document into `/spec`. **PDFs and images don't need it - Claude's `Read` tool already handles those natively** (it renders PDF pages visually), so reach for `convert:doc` for the Office binaries specifically.
 
 1. **Prerequisite - `uv`** (provided by default): the task runs `uvx markitdown`, so `uv` must be on your `PATH`. `mise.toml` pins `uv` and `python` for every repo, so `mise install` ([Quickstart for devs](#quickstart-for-devs)) sets this up out of the box - no per-product opt-in. First use auto-fetches the `markitdown` package from PyPI - no token or env var required.
 2. **Verify**: `mise run convert:doc --help`, or just convert a document.

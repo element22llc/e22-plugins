@@ -142,7 +142,7 @@ it never overrides it (see `NEXT-ACTIONS.md`).
 (`risk:security` -> `Urgent`; an open `blocking` question gating this issue ->
 `High`; ...) and never silently downgrades a human-set value. **Effort, Start date,
 and Target date** are the other default issue fields; `steer` reads them and (for
-dates) writes them under human confirmation via `/steer:roadmap`, but their option
+dates) writes them under human confirmation via `/steer:spec roadmap`, but their option
 sets are **org-defined** - read from the field definition, not pinned here. Where
 the org has not enabled issue fields, ranking treats Priority as unset and the
 field is omitted (capability degradation in `ISSUE-WORKFLOW.md`).

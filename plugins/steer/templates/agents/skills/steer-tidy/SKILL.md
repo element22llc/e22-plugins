@@ -35,7 +35,7 @@ Key points (read the file for the full detail):
   A **Claude Design export** also -> `/spec/design/` - defer to `/steer-reference design-sources`.
 - **Already-absorbed sources are the exception - delete, don't move.** A
   spec/requirements doc whose bytes match a committed `spec/sources/**/original.*`
-  has already been absorbed by `/steer-intake`; the stray is a redundant duplicate,
+  has already been absorbed by `/steer-spec intake`; the stray is a redundant duplicate,
   so **propose deleting it** (content is preserved in the committed source) rather
   than moving it to `/spec/reference/` - moving it would just duplicate the source.
   Like every delete, it waits for a yes.

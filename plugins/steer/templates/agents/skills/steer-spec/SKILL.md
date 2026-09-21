@@ -1,7 +1,7 @@
 ---
 name: steer-spec
-description: Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. `questions` sweeps the whole spine's open questions and `adr` records a hard-to-reverse decision. Ends at an approved intent, not a build.
-argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr]'
+description: Spec-only brainstorm for a feature - author and iterate intent.md (and contract.md where behavior demands it) and drive open questions to resolution WITHOUT writing any code; `clarify` sweeps the draft for gaps (edge cases, error paths, scope), `approve` flips intent Status, `validate` checks the open-question contract and intent/contract/tracker consistency. `questions` sweeps the whole spine's open questions, `adr` records a hard-to-reverse decision, `intake` absorbs a PO document and `roadmap` lays unshipped intent on a release timeline. Ends at an approved intent, not a build.
+argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | validate [feature-id | --all] | questions | adr | intake | roadmap]'
 ---
 
 <!-- Generated from the steer plugin's skills/spec/SKILL.md - do not edit by hand.
@@ -10,9 +10,9 @@ argument-hint: '[feature-id | approve <feature-id> | clarify <feature-id> | vali
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state. Works spec-only on an unmanaged repo (lite mode) - no bootstrap required. `questions` works down accumulated open questions and, as `questions bundle`, hands a Product Owner every feature's questions at once as a fillable questionnaire; `adr` records a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) as a numbered ADR, and `adr accept <n>` is the only path from Proposed to Accepted.
+**When to use.** Use to think a feature through before committing to implementation, shape acceptance criteria, or validate a spec's question state. Works spec-only on an unmanaged repo (lite mode) - no bootstrap required. `questions` works down accumulated open questions and, as `questions bundle`, hands a Product Owner every feature's questions at once as a fillable questionnaire; `adr` records a hard-to-reverse or cross-cutting choice (stack, database, auth, deployment, tenancy) as a numbered ADR, and `adr accept <n>` is the only path from Proposed to Accepted. `intake` absorbs a PO's new or re-sent spec, roadmap or requirements document (docx/pptx/xlsx/pdf, a deck or a spreadsheet) by diffing it against the last version to find what changed; `roadmap` turns unshipped intent into a release timeline of milestones.
 
-<!-- steer:modes default,approve,clarify,validate,questions,adr -->
+<!-- steer:modes default,approve,clarify,validate,questions,adr,intake,roadmap -->
 # Brainstorm a feature spec - no build
 
 A **design-studio loop**: author and iterate a feature's spec and drive its open
@@ -39,10 +39,26 @@ restate its steps here.
 | `validate [<id> \| --all]` | Check the open-question contract and intent/contract/tracker consistency | - |
 | `questions` | Sweep the **whole spine's** open questions and drive each to an answer; `questions bundle [<id>]` renders the PO-answerable ones as one fillable questionnaire | `/steer-questions` |
 | `adr` | Record a hard-to-reverse choice as a numbered ADR; `adr accept <n>` writes the `Proposed -> Accepted` transition its Deciders ratify | `/steer-adr` |
+| `intake` | Absorb a PO document (docx/pptx/xlsx/pdf) into the spine by diffing it against the last version; `intake clarify <path>` folds a client's answers document, `intake status` prints the read-only ledger of every absorbed source | `/steer-intake` |
+| `roadmap` | Lay unshipped intent on a release timeline as milestone-grouped issues; no argument is a read-only preview, then `from-features` / `from-gap` / `sync` | `/steer-roadmap` |
 
-Both are `user-invocable: false` - a user reaches them **only** through this door,
-so a recommendation you hand back names `/steer-spec <mode>`, never the owning
-skill.
+All four are `user-invocable: false` - a user reaches them **only** through this
+door, so a recommendation you hand back names `/steer-spec <mode>`, never the
+owning skill.
+
+**Three names collide, and nesting is what separates them.** Read the ask, not
+the word:
+
+- **`clarify` vs `intake clarify`.** `clarify <id>` interrogates the draft you
+  are writing for gaps you can close yourself. `intake clarify <path>` absorbs a
+  document the **client sent back** answering questions you already asked.
+  "Here's their answers" is always the second one.
+- **`intake status` vs `/steer-status`.** The mode prints the read-only ledger
+  of every absorbed source; the public skill renders a client-facing progress
+  report across the spine. Nothing routes to `intake status` without a source
+  ledger to read.
+- **`roadmap sync` vs `/steer-setup sync`.** The mode reconciles milestones
+  against the spine. It touches no scaffold, no templates and no `spec/.version`.
 
 **`clarify` and `questions` are not the same sweep.** `clarify` interrogates one
 draft you are writing now, for gaps the author can close alone. `questions` walks
@@ -93,10 +109,13 @@ step, never a precondition for the spec work itself.
 does not exist and `adr` writes `/spec/decisions/`, which decision capture
 presumes a bootstrap installed (rule `30-spec` § Durable decisions) - so both
 **stop and route to `/steer-setup`** on an unmanaged repo, which each owning
-skill gates on itself (`adr` step 1, `questions` step 0) - so the same thing
+skill gates on itself (`adr` step 1, `questions` step 0, `intake` step 1,
+`roadmap` step 2) - so the same thing
 happens when `/steer-issues` or `/steer-intake` reaches the sweep without coming
 through this door. Say which mode was asked for and why it needs the spine;
-don't silently downgrade it to the brainstorm loop.
+don't silently downgrade it to the brainstorm loop. `roadmap` carries a second
+precondition the others don't: it is GitHub-only, and says so and stops when
+`/spec/tracker.md` declares another tracker.
 
 ## Steps
 

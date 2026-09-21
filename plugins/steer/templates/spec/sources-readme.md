@@ -2,11 +2,11 @@
 
 This is the **versioned home for PO-supplied documents** - the specs, roadmaps,
 requirements decks, and spreadsheets a Product Owner hands over and keeps
-re-sending with updates. It is maintained by `/steer:intake`.
+re-sending with updates. It is maintained by `/steer:spec intake`.
 
 Office documents are opaque binaries: git can't diff them and Claude can't read
 them directly, so a re-sent file is otherwise a blob with no pointer to what
-changed. `/steer:intake` fixes that by committing, for every version, **both** the
+changed. `/steer:spec intake` fixes that by committing, for every version, **both** the
 original binary **and** a normalized Markdown extraction - so a plain `git diff` of
 successive extractions *is* the "what changed" the PO never spells out.
 
@@ -37,7 +37,7 @@ spec/sources/
 
 | Home | Holds | Maintained by |
 |---|---|---|
-| `spec/sources/` | **Recurring, versioned** PO documents (this dir) | `/steer:intake` |
+| `spec/sources/` | **Recurring, versioned** PO documents (this dir) | `/steer:spec intake` |
 | `spec/design/` | UI/design exports (Claude Design ZIP, Figma, screenshots) | `/steer:spec`, `/steer:adopt` |
 | `spec/reference/` | One-off source/research materials feeding the spec | `/steer:work tidy` (filing), humans |
 

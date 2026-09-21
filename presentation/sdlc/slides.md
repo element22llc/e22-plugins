@@ -330,7 +330,7 @@ The spec can't be **approved** while a blocking question is unanswered. Approval
 
 <div v-click class="mt-3 text-center text-sm opacity-60">
 
-Your Word / PowerPoint / Excel briefs are absorbed directly (<code>/steer:intake</code>) - versioned, diffed against the previous edition, and mapped to open questions.
+Your Word / PowerPoint / Excel briefs are absorbed directly (<code>/steer:spec intake</code>) - versioned, diffed against the previous edition, and mapped to open questions.
 
 </div>
 

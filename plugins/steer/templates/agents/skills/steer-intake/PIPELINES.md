@@ -1,4 +1,4 @@
-# `/steer-intake` - the intake and clarify pipelines
+# `/steer-spec intake` - the intake and clarify pipelines
 
 Read this file when you reach the pipeline step. The scope note, the
 "first, every run" checks, the mode list, idempotency/re-run behaviour, edge
@@ -104,7 +104,7 @@ writes feature prose itself:
 | A new feature / capability is described | `/steer-spec-scaffold` then `/steer-spec` | instantiate `intent.md` + `contract.md`; an existing feature is reconciled additively via `template-reconcile.sh`, never clobbered |
 | A change to an existing feature's acceptance criteria | `/steer-spec` on the owning `intent.md` | additive edit - copy / append / merge, never overwrite human prose; a conflict becomes an Open question |
 | A vision / scope / cross-cutting change | `/steer-spec` on `vision.md` | additive edit; conflicts -> Open questions |
-| A roadmap / milestone / date change | `/steer-roadmap` | human-confirmed milestones and dates - never fabricated |
+| A roadmap / milestone / date change | `/steer-spec roadmap` | human-confirmed milestones and dates - never fabricated |
 | A change that contradicts what the spine/code already says | `/steer-audit` (spec conformance) -> `/steer-issues publish-drift` | one issue per real divergence, stable `finding-key`, reconciled across re-runs - never auto-resolved |
 | An ambiguous / under-specified change | `/steer-questions` | a `Q-NNN` Open question with `status` / `impact` / `owner` / `required_before` |
 | A unit that **answers** an existing open question (clarify mode, bucket 1) | `/steer-questions` (fold-answer path) | folds the answer into the owning `Q-NNN` under `/steer-spec questions`' step-6 tier gate; records the source-ref + quoted span as provenance. Intake never writes the resolution itself - the resolve direction, symmetric to the raise-direction row above |

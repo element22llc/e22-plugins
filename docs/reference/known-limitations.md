@@ -94,7 +94,7 @@ takes out document conversion:
   that does work if the surface routes it - nothing to install, no shell secret.
 - **Office-document conversion is not a server at all** - it is the
   `mise run convert:doc` task (`uvx --from 'markitdown[all]' markitdown`). It needs `uv`/Python, which
-  the sandbox cannot install, so `/steer:intake` drops to its manual floor in
+  the sandbox cannot install, so `/steer:spec intake` drops to its manual floor in
   Cowork: it commits the binary and stops before diffing rather than fabricating
   an extraction. Convert the document elsewhere, or work in the CLI.
 

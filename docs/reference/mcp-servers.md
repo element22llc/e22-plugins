@@ -87,10 +87,10 @@ Earlier versions wired Microsoft's
 [markitdown](https://github.com/microsoft/markitdown) as a third MCP server.
 It was removed: a plugin MCP server starts automatically whenever the plugin is
 enabled, so every session paid a `uvx markitdown-mcp` subprocess to serve the
-one skill that needs it ([`/steer:intake`](../workflows/intake.md)).
+one skill that needs it ([`/steer:spec intake`](../workflows/intake.md)).
 
 The same tool now runs **on demand** as the scaffold's mise task, which
-`/steer:intake` already used as its deterministic committable path:
+`/steer:spec intake` already used as its deterministic committable path:
 
 ```sh
 mise run convert:doc path/to/document.docx     # Markdown on stdout

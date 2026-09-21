@@ -298,7 +298,7 @@ Start/Target date) are an **org-level** GitHub feature, currently public preview
 reachable only via GraphQL (not `gh` REST, not the manual floor). So:
 
 - **Fields available** -> read them for ranking; escalate-only auto-set Priority;
-  write dates under human confirmation (`/steer:roadmap`). Their option sets are
+  write dates under human confirmation (`/steer:spec roadmap`). Their option sets are
   org-defined - read them from the field definition, never fabricate option names.
 - **Fields unavailable/unknown** -> **omit** them, emit a non-blocking capability
   warning, and rank Priority as unset. **Never** reintroduce `priority:*`/`effort:*`

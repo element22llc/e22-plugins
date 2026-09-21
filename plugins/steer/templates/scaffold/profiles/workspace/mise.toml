@@ -18,7 +18,7 @@ lockfile = true
 experimental = true
 
 [tools]
-# Agent-runtime baseline - never prune; /steer:intake converts PO documents here, at the spine host.
+# Agent-runtime baseline - never prune; /steer:spec intake converts PO documents here, at the spine host.
 node = "latest"
 python = "latest"
 uv = "latest"
@@ -73,6 +73,6 @@ description = "Boot the product's backing services; add per-member depends (mono
 depends = ["ws:docker:up"]
 
 [tasks."convert:doc"]
-description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:intake"
+description = "Convert an Office document (docx/pptx/xlsx/pdf) to Markdown on stdout - used by /steer:spec intake"
 # The one unprefixed task: its `run` must stay identical to the core scaffold's (check_standards.py asserts it).
 run = "uvx --from 'markitdown[all]' markitdown"

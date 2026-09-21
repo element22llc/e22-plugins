@@ -645,7 +645,7 @@ Name the file and say what to carry forward.
      | `README.md` | the "Action history" link target: `./spec/HISTORY.md` -> `./spec/history/`. |
      | `CLAUDE.md` | the `/spec/**` pointer listing `HISTORY.md` -> `spec/history/`. |
      | `spec/tracker.md` | the traceability bullet - "every `/spec/HISTORY.md` entry lists the tracker ref" -> "every `/spec/history/` entry". |
-     | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry · ...]` cell -> `[history entry · ...]`. One file per tracked source - `/steer:intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
+     | `spec/sources/*/source.md` | the absorbed-versions table's `[HISTORY entry · ...]` cell -> `[history entry · ...]`. One file per tracked source - `/steer:spec intake` instantiates the source-manifest template as `spec/sources/<source-id>/source.md`, never as a root `spec/source-manifest.md`. |
      | `spec/PRODUCT.md` | (polyrepo members only) the ownership row listing `HISTORY.md` among the workspace-owned artifacts -> `spec/history/`. |
 
      **Leave `.github/copilot-instructions.md` and `.agents/skills/*` alone** - they are
@@ -1057,12 +1057,12 @@ Name the file and say what to carry forward.
 ### v3.23.0 - markitdown MCP server retired for the `convert:doc` task
 
 - **What & why:** the `markitdown` MCP server has been removed from the plugin's
-  `.mcp.json`. It existed for exactly one skill (`/steer:intake`), but a plugin
+  `.mcp.json`. It existed for exactly one skill (`/steer:spec intake`), but a plugin
   MCP server starts automatically whenever the plugin is enabled - so every
   session paid a `uvx markitdown-mcp` subprocess, including the overwhelming
   majority that never convert a document. The same `markitdown` tool now runs
   on demand through the scaffold's `mise run convert:doc <file>` task, which
-  `/steer:intake` already treated as its deterministic committable path - so
+  `/steer:spec intake` already treated as its deterministic committable path - so
   capability is unchanged and only the always-on cost goes away. The plugin's
   own copy refreshes on `/plugin update`, but two *materialized* per-repo files
   can still name the dead server: `.vscode/mcp.json` (the Copilot mirror, which

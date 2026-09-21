@@ -1,7 +1,8 @@
 ---
 name: steer-roadmap
-description: Generate a release timeline for the /spec spine as a GitHub Projects v2 roadmap - unshipped intent becomes issues grouped under release milestones with due dates (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Optionally renders an Artifact timeline.
+description: Internal release timeline - turn the /spec spine's unshipped intent into issues grouped under release milestones, viewable as a GitHub Projects v2 roadmap (no-arg = preview). The issue + /spec stay canonical; never fabricates dates. Optionally renders an Artifact timeline.
 argument-hint: '[<no argument = read-only preview> | from-features | from-gap | sync]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/roadmap/SKILL.md - do not edit by hand.
@@ -10,16 +11,16 @@ argument-hint: '[<no argument = read-only preview> | from-features | from-gap | 
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use for a roadmap, release plan, or Projects v2 timeline - where the product is going, or turning features into milestone issues.
+**When to use.** Reached via /steer-spec roadmap - not a direct entry point.
 
 <!-- steer:modes default,from-features,from-gap,sync -->
 
-# Generate a release-milestone roadmap for the /spec spine
+# Generate a release-milestone roadmap for the /spec spine (`/steer-spec roadmap`)
 
 **Scope boundary:** forward-looking planning only - a *report of progress so
 far* is `/steer-status`.
 
-`/steer-roadmap` turns **intended-but-unshipped work** into GitHub issues grouped
+`/steer-spec roadmap` turns **intended-but-unshipped work** into GitHub issues grouped
 under release **Milestones**, so an existing GitHub Projects v2 roadmap/timeline
 view can lay the work out by milestone. It is a **thin orchestrator above
 `/steer-issues` and `/steer-audit spec`** - it sequences the timeline; it does not own
@@ -200,9 +201,9 @@ jargon); keep the technical detail for devs.
 |---|---|---|
 | Dependency cycle / `conflicts-with` among work-set items | Human decision required | Resolve the ordering (no command) |
 | Milestone plan proposed, awaiting dates/approval | Human decision required | PO/dev confirm titles + due dates (no command) |
-| Plan confirmed; issues not yet milestoned | Recommended | Materialize - `/steer-roadmap from-features` / `from-gap` |
+| Plan confirmed; issues not yet milestoned | Recommended | Materialize - `/steer-spec roadmap from-features` / `from-gap` |
 | `ready-for-dev` issue on the next milestone | Recommended | Start it - `/steer-work start #N` |
-| Feature now `live` but still milestoned as pending | Recommended | Reconcile - `/steer-roadmap sync` |
+| Feature now `live` but still milestoned as pending | Recommended | Reconcile - `/steer-spec roadmap sync` |
 | Done-but-Missing / Diverged drift surfaced | Required before next production release | File it - `/steer-issues publish-drift` |
 | Roadmap current, nothing queued | Complete | `No action is currently required.` |
 

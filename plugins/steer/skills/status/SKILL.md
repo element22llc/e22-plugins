@@ -54,7 +54,7 @@ background: false
 
 **Scope boundary:** this reports what is already true and renders it for
 someone else to read. Choosing the next action is `/steer:next`; a forward
-timeline is `/steer:roadmap`. Never write into /spec, /apps, /packages, or the
+timeline is `/steer:spec roadmap`. Never write into /spec, /apps, /packages, or the
 tracker, and never auto-generate on a schedule.
 
 **Two scopes, one door.** The default modes report the **whole spine over a
@@ -75,13 +75,13 @@ hosted page on claude.ai you can then share) or rendered as **Markdown** where
 Artifacts are unavailable.
 
 This is the **periodic, cross-cutting** view: `/steer:status feature <id>`
-presents **one feature** in depth; `/steer:roadmap` lays out the **forward**
+presents **one feature** in depth; `/steer:spec roadmap` lays out the **forward**
 timeline; the default modes report **progress over a window across the whole
 spine** - the answer to "what's the status?".
 
 ## Render, don't own - this is a derived view
 
-Mirror `/steer:status feature <id>` and `/steer:roadmap`: **`/spec` and the tracker are
+Mirror `/steer:status feature <id>` and `/steer:spec roadmap`: **`/spec` and the tracker are
 canonical**. The report is a **snapshot** of what they already say - it goes stale
 the moment the spine or tracker changes; regenerate to refresh.
 
@@ -105,7 +105,7 @@ the moment the spine or tracker changes; regenerate to refresh.
   **one** thing it writes is the report's HTML source (via `Write`, not disallowed) -
   bound by a hard invariant: **only to a system temp directory, never a path
   under the repo working tree**. Discover the spine with `Glob`/`Read`.
-- **GitHub reads go through `/steer:tracker-sync`.** Like `/steer:roadmap`, this
+- **GitHub reads go through `/steer:tracker-sync`.** Like `/steer:spec roadmap`, this
   skill never calls the GitHub API directly - it asks `/steer:tracker-sync` to read
   closed issues and milestone progress (MCP-first -> `gh` -> manual floor), and says
   which path was taken so the reader knows whether the tracker was consulted. On
@@ -223,7 +223,7 @@ session needs anyway, since steer does not store it (see the "Updating a previou
 ## What this skill is *not*
 
 - **Not** the next-action navigator - "what should I do now?" is `/steer:next`.
-- **Not** a forward plan - the release timeline is `/steer:roadmap`.
+- **Not** a forward plan - the release timeline is `/steer:spec roadmap`.
 - **Not** a single-feature deep view in its default modes - that is this
   skill's own `feature <id>` mode, a different scope rather than a different door.
 - **Not** a spec author or a tracker writer - it renders what `/spec` and the
@@ -241,7 +241,7 @@ delegating each to its owner:
 |---|---|---|
 | Open `owner: product` blocking questions in the report | Blocking now | Hand the client the questionnaire - `/steer:spec questions bundle` |
 | A feature's issue is in `validate` (built, not yet accepted or released) | Human decision required | The PO confirms acceptance - no command confirms it, and `validate -> done` is propose-only. `/steer:work resume #N` owns the transition and proposes `done` once they have; it also holds the "PR merged" precondition, which this report deliberately does not read (see *what got done*, above) |
-| Milestone dates missing / roadmap stale vs shipped work | Recommended | Refresh the timeline - `/steer:roadmap sync` |
+| Milestone dates missing / roadmap stale vs shipped work | Recommended | Refresh the timeline - `/steer:spec roadmap sync` |
 | Report rendered, nothing outstanding for the client | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. This skill is read-only in

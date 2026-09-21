@@ -18,7 +18,7 @@ among others:
 | `history/` | Append-only log of **notable events** - a ratified decision, a scope change, a repo-level event, an absorbed PO document, an incident - with tracker `Refs:`; **one immutable file per entry** (`YYYY-MM-DD-HHMM-<slug>.md`), so concurrent PRs never conflict on it. An ordinary merged change writes none: the reviewed PR is its record. A repo bootstrapped before the directory keeps a frozen `HISTORY.md` archive beside it. |
 | `tracker.md` | Declares the issue-tracking system and ref format. |
 | `design/` | Design-export home: `README.md`, product-level `source.md` provenance (greenfield), and the living global `architecture-diagram.md` that the root `ARCHITECTURE.md` links to. |
-| `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:intake`](../workflows/intake.md). |
+| `sources/` | Versioned home for recurring PO source documents, maintained by [`/steer:spec intake`](../workflows/intake.md). |
 | `reference/` | Catch-all home for durable **one-off** (non-versioned) source/research material feeding the spec - inventories, vendor metadata, schema/DDL dumps, discovery docs. Created on demand by [`/steer:work tidy`](../workflows/index.md); a document sent once can stay here, but the moment it starts arriving in versions it belongs under `sources/`. |
 | ADRs | Ratified, hard-to-reverse decisions (see [Decisions](../decisions/index.md)). |
 | `.version` | Stamps the plugin version the spine was reconciled against. |
@@ -113,14 +113,14 @@ points at a real but empty directory.
 Two consequences worth knowing before adopting the topology:
 
 - **Reports must state their scope.** `/steer:next`, `/steer:status`,
-  `/steer:audit`, `/steer:roadmap` and `/steer:setup protect` name the members they
+  `/steer:audit`, `/steer:spec roadmap` and `/steer:setup protect` name the members they
   covered and flag any they could reach neither way as **uncovered** - a fraction
   of a product presented as the whole is worse than a smaller, honest answer.
   `/steer:setup protect` in particular names the sibling repos still unprotected, so a
   one-repo verdict never reads as product-wide.
 - **Some things do not cross the repo edge.** Sub-issues and Projects v2 do;
   Milestones, closing keywords (`Closes #N`), and the merge-time drift gates do
-  not. `/steer:roadmap` moves the release axis onto a Project field for that
+  not. `/steer:spec roadmap` moves the release axis onto a Project field for that
   reason, and a member PR closes its workspace issue explicitly instead of
   relying on GitHub.
 
@@ -134,7 +134,7 @@ mise monorepo mode enabled (uncomment the `[monorepo]` block in the workspace
 `mise.toml`) plus one `depends` entry per member that has a `dev` task, so a fresh
 workspace boots services only. Every task the workspace profile defines carries
 that `ws:` prefix on purpose - `convert:doc` is the one deliberate exception,
-unprefixed so `/steer:intake` keeps one vocabulary and safe because its `run`
+unprefixed so `/steer:spec intake` keeps one vocabulary and safe because its `run`
 command is identical to the core scaffold's. The reason is mise's config
 hierarchy: it loads every *ancestor* config, so the workspace's `mise.toml` is
 loaded inside each member too, and an unprefixed name there would shadow any member

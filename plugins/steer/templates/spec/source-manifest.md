@@ -1,7 +1,7 @@
 # Source document - [Source title]
 
 > One PO-supplied document tracked across its successive versions. Instantiated by
-> `/steer:intake` as `spec/sources/<source-id>/source.md`. The committed binary +
+> `/steer:spec intake` as `spec/sources/<source-id>/source.md`. The committed binary +
 > its normalized extraction live under `versions/`; this file is the ledger that
 > binds them to a stable identity and records what each version was absorbed into.
 >
@@ -31,7 +31,7 @@
 
 > Which `spec/features/<id>/` this document feeds. Many-to-many: one document may
 > drive several features, and one feature may draw from several documents. When two
-> documents make conflicting claims about the same feature, `/steer:intake` raises a
+> documents make conflicting claims about the same feature, `/steer:spec intake` raises a
 > single Open question naming both - it never auto-picks a winner.
 
 - [spec/features/<id>/ - what part of this document maps here]
