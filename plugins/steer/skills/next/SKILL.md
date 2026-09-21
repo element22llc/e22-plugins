@@ -28,7 +28,7 @@ disallowed-tools: Edit, NotebookEdit, EnterWorktree
 
 # Navigate the workspace to the single best next action (read-only)
 
-<!-- steer:modes default,capabilities -->
+<!-- steer:modes default,capabilities=help -->
 
 > Native in-place edit tools (`Edit`/`NotebookEdit`) and worktree creation are
 > removed from the tool pool for the turn that invokes this skill, so navigation

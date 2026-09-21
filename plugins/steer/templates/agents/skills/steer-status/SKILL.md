@@ -29,7 +29,7 @@ argument-hint: '[this-week | since <date> | milestone [<name>] | feature <id>]'
 > shaped this way, not as limits that apply to you - where a step says it cannot
 > ask, you may ask.
 
-<!-- steer:modes this-week,since,milestone,feature -->
+<!-- steer:modes this-week,since,milestone,feature=explain -->
 
 # Status report - a shareable, plain-language progress update
 

@@ -135,12 +135,15 @@ MODEL_ONLY=" reference report loop "
 MODES=" "
 _ref="$SKILLS_DIR/reference/SKILL.md"
 if [ -f "$_ref" ]; then
-	_line="$(grep -oE '<!--[[:space:]]*steer:modes[[:space:]]+[a-z0-9,_-]+' "$_ref" 2>/dev/null | head -n1)"
+	_line="$(grep -oE '<!--[[:space:]]*steer:modes[[:space:]]+[a-z0-9,_=-]+' "$_ref" 2>/dev/null | head -n1)"
 	_csv="${_line##*steer:modes}"
 	# strip leading spaces, split commas -> spaces
 	_csv="$(printf '%s' "$_csv" | tr ',' ' ')"
 	for _m in $_csv; do
-		MODES="${MODES}${_m} "
+		# A front door annotates a function-named mode with the internal skill it
+		# enters (`capabilities=help`); `reference`'s modes are topics and never
+		# carry one, but parse the same grammar so the two readers can't disagree.
+		MODES="${MODES}${_m%%=*} "
 	done
 fi
 

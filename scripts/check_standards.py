@@ -62,6 +62,15 @@ Complements ``check_plugin.py`` (frontmatter/links/placeholders hygiene) with th
     under ``[settings]`` is an unknown field mise ignores, so monorepo mode never
     turns on.
 
+14. Every ``user-invocable: false`` skill has exactly one declared way in: a front
+    door's ``<!-- steer:modes ... -->`` marker names it (annotated ``mode=owner``
+    where the mode reads by function, as `capabilities=help`), or it is in one of
+    two enumerated classes - a gateway an owning skill calls mid-procedure, or a
+    skill an always-on rule names. Hiding a skill is one frontmatter line; giving it
+    a way in is prose somewhere else, so without this the v7 seven-skill surface can
+    strand one silently. The rule-reached set is also cross-checked against
+    ``MODEL_ONLY`` in ``scan-invocations.sh``, the same fact in a second file.
+
 Usage::
 
     uv run python scripts/check_standards.py
@@ -186,11 +195,31 @@ def check_when_to_use_format(errors: list[str]) -> None:
 
 # --- check 2: bidirectional declared-mode markers ---
 
-_MODE_MARKER_RE = re.compile(r"<!--\s*steer:modes\s+([a-z0-9,_-]+)\s*-->")
+_MODE_MARKER_RE = re.compile(r"<!--\s*steer:modes\s+([a-z0-9,_=-]+)\s*-->")
 _HINT_RE = re.compile(r'^argument-hint:\s*"(.*)"\s*$', re.MULTILINE)
 # a code-span reference to a namespaced skill, capturing an optional trailing
 # bare keyword (the mode) inside the same span.
 _REF_RE = re.compile(r"`/steer:([a-z][a-z-]*)((?:\s+[^`]*)?)`")
+
+
+def _parse_modes(csv: str) -> dict[str, str]:
+    """Marker payload -> {mode: owning skill}.
+
+    A mode named after the skill it enters (`init`) owns itself; one named after
+    what it *does* (`capabilities`, `feature`) annotates its owner explicitly
+    (`capabilities=help`). Without the annotation the reachability check in
+    check 14 would fail on exactly the two absorptions whose mode was renamed to
+    read well, and reading the delegation prose instead would make a
+    machine-readable marker depend on a sentence.
+    """
+    modes: dict[str, str] = {}
+    for tok in csv.split(","):
+        tok = tok.strip()
+        if not tok:
+            continue
+        mode, _, owner = tok.partition("=")
+        modes[mode] = owner or mode
+    return modes
 
 
 def _is_subcommand_leading(hint: str) -> bool:
@@ -256,7 +285,7 @@ def check_mode_markers(errors: list[str], skills: set[str]) -> None:
                     f"but no <!-- steer:modes ... --> marker"
                 )
             continue
-        modes = {m.strip() for m in marker.group(1).split(",") if m.strip()}
+        modes = set(_parse_modes(marker.group(1)))
         declared[name] = modes
         body = text[marker.end() :]
         # direction A: argument-hint subcommands ⊆ declared
@@ -1402,6 +1431,131 @@ def check_migration_precondition_converges(errors: list[str]) -> None:
             )
 
 
+# --- check 14: every internal skill has exactly one declared way in ---
+
+# A `user-invocable: false` skill cannot be typed, so the only thing that makes it
+# reachable is something naming it. The v7 surface has three such somethings, and a
+# skill that belongs to none of them is dead weight nobody can route to - the failure
+# the seven-skill fold makes easy, because hiding a skill is one frontmatter line
+# while giving it a way in is prose somewhere else.
+
+# (1) Absorbed modes are derived, not listed: a front door's `<!-- steer:modes -->`
+#     marker names them. Only a *front door's* marker counts, and only an internal
+#     name in it - mode names collide with skill names (`work status`, `audit spec`),
+#     and a public skill is reachable on its own.
+
+# (2) Gateways: invoked by an owning skill mid-procedure, never entered as a mode, so
+#     no marker can name them. Enumerated with the caller that reaches each.
+GATEWAY_SKILLS = {
+    "spec-scaffold": "instantiated by spec / build / init / adopt / intake with a feature id",
+    "tracker-sync": "the tracker I/O gateway every tracker-touching skill routes through",
+}
+
+# (3) Rule-reached: named by an always-on rule, which is how the model gets there -
+#     no front door absorbed them and no skill calls them. The reason is checked, not
+#     just recorded: each name must actually appear in rules/, so retiring the rule
+#     line that reaches one fails here instead of stranding it silently. Keep this set
+#     equal to `MODEL_ONLY` in plugins/steer/scripts/scan-invocations.sh - asserted
+#     below, because steps 6 and 7 of #584 each had to edit both by hand.
+RULE_REACHED_SKILLS = {
+    "reference": "rule 00, plus the /steer:reference cross-references in rules 10/30/45/61/85",
+    "report": "rule 00's self-report passage",
+    "loop": "rule 53 (carried only by a repo that declared the automation opt-in)",
+}
+
+_MODEL_ONLY_RE = re.compile(r'^MODEL_ONLY="\s*([a-z0-9 _-]*?)\s*"', re.MULTILINE)
+
+
+def _front_door_claims(
+    front_doors: set[str], internal: set[str], errors: list[str]
+) -> dict[str, list[str]]:
+    """{internal skill: front doors whose mode marker names it}."""
+    claims: dict[str, list[str]] = {}
+    for door in sorted(front_doors):
+        skill_md = SKILLS_DIR / door / "SKILL.md"
+        if not skill_md.is_file():
+            continue
+        marker = _MODE_MARKER_RE.search(skill_md.read_text(encoding="utf-8"))
+        if not marker:
+            continue
+        for mode, owner in _parse_modes(marker.group(1)).items():
+            if owner == mode:
+                # An unannotated mode claims a skill only when one shares its name.
+                if owner in internal:
+                    claims.setdefault(owner, []).append(door)
+                continue
+            # An explicit `mode=owner` is a deliberate claim: it must land on a real
+            # internal skill, or the annotation is stale rather than merely unused.
+            if owner in internal:
+                claims.setdefault(owner, []).append(door)
+            else:
+                errors.append(
+                    f"skills/{door}/SKILL.md: mode marker annotates '{mode}={owner}' but "
+                    f"'{owner}' is not a user-invocable: false skill - the annotation names "
+                    f"the internal skill the mode enters."
+                )
+    return claims
+
+
+def check_internal_skill_reachability(errors: list[str], skills: set[str]) -> None:
+    internal = _noncallable_skills()
+    if not internal:
+        return
+    front_doors = skills - internal
+    claims = _front_door_claims(front_doors, internal, errors)
+
+    for name, where in sorted({**GATEWAY_SKILLS, **RULE_REACHED_SKILLS}.items()):
+        if name not in internal:
+            errors.append(
+                f"check_standards: '{name}' is exempted from the reachability check "
+                f"({where}) but is not a user-invocable: false skill - drop the "
+                f"exemption, or the set has gone stale."
+            )
+
+    rules_blob = "\n".join(p.read_text(encoding="utf-8") for p in sorted(RULES_DIR.glob("*.md")))
+    for name, where in sorted(RULE_REACHED_SKILLS.items()):
+        if name in internal and f"/steer:{name}" not in rules_blob:
+            errors.append(
+                f"rules/: no rule names '/steer:{name}', but it is exempted as "
+                f"rule-reached ({where}) - nothing can route to it now."
+            )
+
+    for name in sorted(internal):
+        doors = claims.get(name, [])
+        exempt = name in GATEWAY_SKILLS or name in RULE_REACHED_SKILLS
+        if len(doors) > 1:
+            errors.append(
+                f"skills/{name}/SKILL.md: named as a mode by {sorted(doors)} - an internal "
+                f"skill states one front door in its description, so two doors make that "
+                f"description wrong whichever one it names."
+            )
+        elif doors and exempt:
+            errors.append(
+                f"skills/{name}/SKILL.md: reached both as a mode of '{doors[0]}' and by the "
+                f"hardcoded exemption in check_standards.py - a skill with a front door needs "
+                f"no exemption; drop it."
+            )
+        elif not doors and not exempt:
+            errors.append(
+                f"skills/{name}/SKILL.md: user-invocable: false and unreachable - no front "
+                f"door's <!-- steer:modes --> marker names it (annotate the mode as "
+                f"`<mode>={name}` where the mode reads by function), and it is in neither "
+                f"exempt class in check_standards.py."
+            )
+
+    scan = PLUGIN_ROOT / "scripts/scan-invocations.sh"
+    if scan.is_file():
+        m = _MODEL_ONLY_RE.search(scan.read_text(encoding="utf-8"))
+        if not m:
+            errors.append(f'{scan}: no MODEL_ONLY="..." line to cross-check against')
+        elif set(m.group(1).split()) != set(RULE_REACHED_SKILLS):
+            errors.append(
+                f"{scan}: MODEL_ONLY is {sorted(set(m.group(1).split()))} but the rule-reached "
+                f"set here is {sorted(RULE_REACHED_SKILLS)} - a model-only skill needs both, "
+                f"or scan-invocations.sh reports an unfixable finding against correct prose."
+            )
+
+
 def check_gh_pr_checks_scopes(errors: list[str]) -> None:
     """Assert a bundled workflow running ``gh pr checks`` declares the read scopes it needs.
 
@@ -1454,6 +1608,7 @@ def run_checks(errors: list[str]) -> None:
     check_workspace_task_namespace(errors)
     check_migration_precondition_converges(errors)
     check_gh_pr_checks_scopes(errors)
+    check_internal_skill_reachability(errors, skills)
 
 
 def main() -> int:
