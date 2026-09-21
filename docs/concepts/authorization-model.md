@@ -87,10 +87,12 @@ moves a repo between the two and reconciles the marker.
     `sub_issue_write`) instead sit under `ask` - a bare/ad-hoc MCP issue write is
     an allowlist escape a consumer's security review flags - but the
     `/steer:tracker-sync` skill re-grants both in its own `allowed-tools` (and
-    `/steer:report` re-grants `issue_write` alone). `/steer:report` is a direct
-    entry point, so its re-grant does take effect; `/steer:tracker-sync` is
-    `user-invocable: false` and always reached transitively, so in practice its
-    grants never fire - see the warning below. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
+    `/steer:report` re-grants `issue_write` alone). `/steer:report` is invoked as a
+    skill in its own right - by Claude, not typed by a user - so its re-grant
+    does take effect; `/steer:tracker-sync` is reached *transitively*, from
+    another skill's prose rather than by invocation, so in practice its grants
+    never fire - see the warning below. Both are `user-invocable: false`; what
+    decides the grant is invocation, not who may type it. `git push` and `gh pr create`/`edit` sit under `allow` (autonomous
     delivery - the merge is the gate); `gh pr merge` stays under `ask` and
     force-pushes under `deny`. Where a host still blocks the create, it is a
     *host-permission gate, not a missing issue* - confirm with the user or run

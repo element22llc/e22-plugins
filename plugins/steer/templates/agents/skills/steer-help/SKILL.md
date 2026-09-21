@@ -95,8 +95,9 @@ to its group; omit an empty group:
 - **Track & automate** - repo health and drift, the scheduled loop (`audit`,
   `loop`); the tidy-up itself is `/steer-work tidy`, the backlog
   `/steer-work issues`.
-- **Govern & plumbing** - report a steer defect (`report`); load the manual or
-  reference prose on chat-only surfaces (`standards`, `reference`).
+- **Govern & plumbing** - load the manual on a chat-only surface where no hook
+  runs (`standards`). Filing a steer defect and loading reference prose are
+  Claude's own moves (`report`, `reference`), so neither is an entry here.
 
 **Completeness check before you render.** The groups above are placement
 guidance, not the source of truth: the skill listing is. After grouping, confirm

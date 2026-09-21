@@ -58,8 +58,9 @@ printf 'itself misbehaved, not your code. The unreported faults:\n\n'
 tail -n "${NEW}" "${LOG}" 2>/dev/null | while IFS='|' read -r _ver _src _sig; do
 	printf -- '- `%s` in **%s** - %s\n' "${_ver}" "${_src}" "${_sig}"
 done
-printf '\nThis is a defect in the steer plugin. Run `/steer:report` - it scrubs, '
-printf 'dedupes, and auto-files upstream in element22llc/e22-plugins with no '
+printf '\nThis is a defect in the steer plugin, and Claude files it upstream with '
+printf '`/steer:report` - it scrubs, '
+printf 'dedupes, and auto-files in element22llc/e22-plugins with no '
 printf 'confirmation step (rule 00-router, upstream-report section; the scrub omits anything it '
 printf 'cannot safely redact, which is the safety floor instead of a prompt). '
 printf 'Do not silently work around it.\n'

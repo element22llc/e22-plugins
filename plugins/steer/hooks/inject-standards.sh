@@ -296,7 +296,7 @@ build_notice() {
 	_more=""
 	[ "${_dropped_n}" -gt "${STEER_INJECT_NAME_LIMIT}" ] &&
 		_more=" and $((_dropped_n - STEER_INJECT_NAME_LIMIT)) more"
-	printf '<!-- steer: RULESET INCOMPLETE - the ruleset did not fit in %s SessionStart part(s) of %s characters (the runtime cap on hook output), so %s rule(s) were NOT injected:%s%s. Treat the standards above as partial; run `/steer:standards` for the full ruleset, and report it with `/steer:report`. -->\n' \
+	printf '<!-- steer: RULESET INCOMPLETE - the ruleset did not fit in %s SessionStart part(s) of %s characters (the runtime cap on hook output), so %s rule(s) were NOT injected:%s%s. Treat the standards above as partial; the gap is filed upstream with `/steer:report`, and `/steer:standards` loads the full ruleset. -->\n' \
 		"${PARTS}" "${STEER_INJECT_CAP}" "${_dropped_n}" "${_names}" "${_more}"
 }
 NOTICE=""

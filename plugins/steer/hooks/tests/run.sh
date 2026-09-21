@@ -1465,6 +1465,9 @@ mkdir -p "${IR0}/.github" "${IR0}/spec"
 	printf 'Legacy prereqs: /e22-standards:doctor once.\n'          # legacy -> noncallable-gateway (setup mode), NO fix
 	printf 'Legacy scaffold: /e22-standards:e22-spec-scaffold x.\n' # legacy -> noncallable-gateway, NO fix
 	printf 'Legacy prose: /e22-conventions covers it.\n'            # legacy -> reference-mode
+	printf 'Claude loads /steer:reference gates for us.\n'          # model-only -> no emit
+	printf 'Claude files it with /steer:report upstream.\n'         # model-only -> no emit
+	printf 'Old channel: /e22-report filed it once.\n'              # legacy spelling -> /steer:report
 } >"${IR0}/CLAUDE.md"
 printf 'See /steer:design-sources for exports.\n' >"${IR0}/README.md" # reference-mode
 printf 'Contributor guide: /steer:conventions applies.\n' >"${IR0}/.github/pull_request_template.md"
@@ -1511,9 +1514,16 @@ assert_eq "inv: /steer:sync -> noncallable-gateway" "$(invclass "${out}" /steer:
 assert_eq "inv: /steer:sync -> no mechanical fix" "$(invfix "${out}" /steer:sync)" "-"
 printf '%s' "${out}" | grep -q '/steer:work' && bad "inv: valid /steer:work must not be flagged" || ok
 printf '%s' "${out}" | grep -q 'e22-plugins' && bad "inv: marketplace id must not be flagged" || ok
-# The /steer:reference <mode> correct form resolves via the `reference` skill, so
-# no line carries the token `/steer:reference`.
+# `reference` and `report` are user-invocable:false, but a human-facing doc names
+# them as a DELEGATION ("Claude loads /steer:reference gates"), and there is no
+# front door to rewrite them to - so the scanner exempts them by name rather than
+# reporting an unfixable `noncallable-gateway` on prose that is correct. The
+# exemption covers the modern spelling only: a pre-rebrand `/e22-report` is still
+# a stale token with a deterministic fix.
 assert_eq "inv: correct /steer:reference not flagged" "$(invclass "${out}" /steer:reference)" ""
+assert_eq "inv: model-only /steer:report not flagged" "$(invclass "${out}" /steer:report)" ""
+assert_eq "inv: legacy /e22-report -> legacy-e22" "$(invclass "${out}" /e22-report)" "legacy-e22"
+assert_eq "inv: legacy /e22-report fix -> /steer:report" "$(invfix "${out}" /e22-report)" "/steer:report"
 # Provenance file is out of scope entirely - no finding cites HISTORY.md.
 printf '%s' "${out}" | grep -q 'spec/HISTORY.md' && bad "inv: provenance HISTORY.md must not be scanned" || ok
 

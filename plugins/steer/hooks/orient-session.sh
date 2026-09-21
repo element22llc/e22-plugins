@@ -105,7 +105,7 @@ if [ -n "${POLY_ROLE}" ]; then
 		printf 'workspace yet, never that the feature is unspecified. Do not create '
 		printf 'product-level spec files here to fill a gap. A PR here cannot auto-close a '
 		printf 'workspace issue with `Closes #N` (GitHub honours closing keywords only '
-		printf 'within one repo) - use `Refs owner/repo#N` and close explicitly after '
+		printf 'within one repo) - `Refs owner/repo#N`, then close it explicitly after '
 		printf 'merge. Load `/steer:reference polyrepo` before acting on the topology.\n'
 	fi
 	printf '\n'

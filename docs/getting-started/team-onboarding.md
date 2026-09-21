@@ -151,8 +151,8 @@ See the [Hooks reference](../reference/hooks.md) and
   **`/steer:setup doctor`** detects it first thing (§0) and tells you how to repair it;
   see [Windows setup -> line endings](windows-setup.md#line-endings).
 - **steer itself misbehaves** (a skill does the wrong thing, a hook misfires) -
-  run **`/steer:report`**, which files a bug about the plugin upstream so it gets
-  fixed for everyone.
+  say so, and Claude files a bug about the plugin upstream (`/steer:report`) so
+  it gets fixed for everyone. You never have to know the channel's name.
 
 ## When do I ask a dev to review?
 

@@ -13,17 +13,15 @@ be *careful* about that.
 
 ## Tier 1 - safe to infer (read-only / navigation / reference)
 
-Read-only or purely advisory; inferring them from a question is fine. Three carry a
-caveat worth knowing before you infer them: `/steer:report` **auto-files** an
-upstream issue with no confirmation step; `/steer:audit` will offer to write a
-report file into `/spec`; and `/steer:setup doctor` will offer to **install system
-software**. None of the three changes existing repo content, and the latter two
-act only on an explicit yes.
+Read-only or purely advisory; inferring them from a question is fine. Two carry a
+caveat worth knowing before you infer them: `/steer:audit` will offer to write a
+report file into `/spec`, and `/steer:setup doctor` will offer to **install system
+software**. Neither changes existing repo content, and both act only on an
+explicit yes.
 
 | Skill | What it does |
 |---|---|
-| `/steer:reference [conventions\|traceability\|design-sources\|context-hygiene\|architecture-diagrams\|artifacts\|gates\|polyrepo]` | Reference prose by topic - conventions (versioning, toolchain, lint/test), traceability (living docs, tracker, drift gates), design-sources (design exports), context-hygiene (session/context discipline), architecture-diagrams (Mermaid/LikeC4 tiers), artifacts (rendering a shareable Claude Artifact), gates (the human-authority gate protocol), polyrepo (workspace/member topology). |
-| `/steer:standards` | Re-loads the always-on rules on demand. |
+| `/steer:standards` | Re-loads the always-on rules on demand - the fallback where no hook runs, so it stays typable. |
 | `/steer:next` | Read-only workspace navigator - never edits or publishes. |
 | `/steer:next capabilities` | Read-only orientation on the skills and where to start - the capability menu, rendered by the internal `help`. |
 | `/steer:audit` | Read-only health audit - reports, never edits. |
@@ -31,7 +29,6 @@ act only on an explicit yes.
 | `/steer:status` | Read-only delivery snapshot - reports, never edits. |
 | `/steer:status feature <id>` | Renders **one feature's spec** as a stakeholder-readable Artifact - presentation only, never authoring. |
 | `/steer:setup doctor` | Diagnoses the local toolchain (git/mise/Docker) and, with a yes, installs **mise and the runtimes it manages**; git and Docker Desktop are handed over as commands to run yourself. |
-| `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. |
 
 ## Tier 2 - requires explicit user intent (side-effecting)
 
@@ -69,6 +66,8 @@ Not a user's first move.
 | `/steer:init` | Greenfield bootstrap (scaffold + spine). Reached only through `/steer:setup init`. |
 | `/steer:adopt` | Brownfield adoption - reverse-engineers the spec, scaffolds an existing repo. Reached only through `/steer:setup adopt`. |
 | `/steer:sync` | Steady-state update - ledger migrations, spine/scaffold reconcile, lands a PR. Reached only through `/steer:setup sync`. |
+| `/steer:reference <topic>` | The reference-prose loader - conventions, traceability, design-sources, context-hygiene, architecture-diagrams, artifacts, gates, polyrepo. Reached from a rule or a skill that names the topic it needs; the user describes the question instead. |
+| `/steer:report` | Files a bug about the steer plugin itself upstream in `e22-plugins`. **Auto-files** with no confirmation step, which is why the model owns the channel: the user reports the misbehaviour in plain language. |
 
 ## Drift detection & auto-repair (managed repos)
 
@@ -97,6 +96,15 @@ rewritten. The marketplace id `e22-plugins` is never flagged.
 | `reference-mode` | `<mode>` is a `reference` topic, not a skill - whether written `/steer:<mode>` or with a legacy prefix | **deterministic** - rewrite to `/steer:reference <mode>` |
 | `noncallable-gateway` | `<skill>` is `user-invocable: false` (a user can't type it) - again whichever prefix it arrives with | **human decision** - route to a front door (e.g. `spec-scaffold`->`/steer:spec`, `tracker-sync`->`/steer:work issues`, `help`->`/steer:next capabilities`, `explain`->`/steer:status feature <id>`, `init`/`adopt`/`sync`->`/steer:setup <mode>`); the swap changes meaning, so propose, don't auto-rewrite |
 | `unknown` | a token resolving to no skill and no mode (e.g. a removed skill) | **surface only** - the dev decides |
+
+Two `user-invocable: false` skills are **exempt** from `noncallable-gateway` by
+name in the scanner (`MODEL_ONLY`): `reference` and `report`. Live prose names
+them as a delegation ("Claude loads `/steer:reference gates`"), not as something
+the reader types, and unlike an absorbed mode neither has a front door to be
+rewritten to - so a finding there would be unfixable by construction. The
+exemption is the modern spelling only; a pre-rebrand `e22-report` still gets its
+deterministic rewrite. The imperative framing in installed docs ("Run
+`/steer:reference ...`") is policed instead by `check_standards.py` check 11.
 
 `/steer:sync` auto-applies the two deterministic classes read-then-propose on its PR
 branch and surfaces the other two for the dev. The version-keyed one-shot for the
