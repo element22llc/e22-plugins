@@ -186,9 +186,10 @@ INJECTED_PART_BUDGET_CHARS = 9_500
 # /steer:reference), leaving the rule imperative - or scope the rule with an
 # `inject-when` marker so only the repos it applies to pay for it.
 #
-# UNTOUCHABLE, in any budget conversation: `60-high-risk`, `70-secrets`,
-# `95-not-the-gate`, and the router's routing + gate-authority text. Those are
-# the rules that must govern BEFORE Claude touches anything.
+# UNTOUCHABLE, in any budget conversation: `60-high-risk` (including its Secrets
+# handling section) and `00-router`'s routing, gate-authority and
+# "you are not the gate" text. Those are the rules that must govern BEFORE
+# Claude touches anything.
 
 # How the gate actually detects a breach: hooks/inject-standards.sh enforces the
 # cap itself, dropping whole rules from the tail and appending an in-band
