@@ -159,7 +159,7 @@ you may not record their approval for them.
    `Approval comment/link:` so the channel is part of the record.
 2. Flip `> Status:` to `approved`.
 3. Write **one** `/spec/history/` entry file (what / why / who-asked / refs) -
-   in a member, to the workspace's ledger per rule `32-living-docs`.
+   in a member, to the workspace's ledger per rule `30-spec` § Living documentation.
 4. Recommend the local next action - decompose into work
    (`/steer-issues decompose`, then execute each via
    `/steer-work`) or, for a PO-driven build,

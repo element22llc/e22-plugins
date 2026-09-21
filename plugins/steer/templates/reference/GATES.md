@@ -121,7 +121,7 @@ record all four of:
    are not the same evidence, and the record should not blur them.
 
 Plus **one** `/spec/history/` entry - a ratified decision is a notable event, one
-of the cases rule `32-living-docs` still requires an entry for (what / why / who
+of the cases rule `30-spec` § Living documentation still requires an entry for (what / why / who
 asked / refs). One entry, not one per field.
 
 On `Reject`, record the reason where a future reader will find it: for an ADR,

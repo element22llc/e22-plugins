@@ -245,7 +245,7 @@ nothing is branched, written, or PR'd. Use it to see what a full sync would do.
    `/spec/history/` entry (what synced -
    `FROM -> TARGET`, which migrations applied, which templates reconciled, which
    capability gaps repaired - why, who asked, refs) - in a member, to the
-   workspace's ledger per rule `32-living-docs`; the member's own durable record
+   workspace's ledger per rule `30-spec` § Living documentation; the member's own durable record
    is its `/spec/.version` stamp. Commit on `feat/sync`, then
    push and open the PR
    **against `BASE`** (the branch captured in step 1) without asking, announcing

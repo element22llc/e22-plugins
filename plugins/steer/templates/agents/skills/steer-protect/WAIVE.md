@@ -59,7 +59,7 @@ and why, in one line.
 3. **Write the history entry** under `/spec/history/` - same shape as the
    graduation entry (`YYYY-MM-DD-HHMM-graduation-waived.md`): the decision, the
    signals that were standing, the reason, and the revocation condition. **In a
-   member** the entry goes to the workspace's ledger (rule `32-living-docs`);
+   member** the entry goes to the workspace's ledger (rule `30-spec` § Living documentation);
    the `CLAUDE.md` marker is this repo's own.
 4. **Commit** per the repo's mode - this is a solo-trunk repo, so the trunk
    commit (issue-first applies as for any change of this size).

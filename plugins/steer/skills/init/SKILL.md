@@ -119,7 +119,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    an afterthought. Every decision the scoping produces (stack, auth, a locked
    MVP cut) is captured **into the spine you are about to create** - as an ADR
    (step 4) or a `vision.md` entry - never left as a chat- or memory-only note
-   (rule `31-decision-capture`).
+   (rule `30-spec` § Durable decisions).
    - **Offer solo trunk mode when solo.** If one person is both PO and dev and there
      is no MVP or deploy yet, **offer and recommend** solo trunk mode: commit straight
      to `main` (no `feat/*` branch, no per-feature PR) until graduation. A one-line
@@ -205,7 +205,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    `YYYY-MM-DD-HHMM-repo-bootstrapped.md`, from `templates/spec/history-entry.md`
    (what, why,
    who asked, the bootstrap PR) - in a member, to the workspace's ledger per
-   rule `32-living-docs`.
+   rule `30-spec` § Living documentation.
    **Stamp the spine version:** write
    `/spec/.version` with the current plugin version (resolve it from
    `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json` - never from memory) so a

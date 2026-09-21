@@ -22,9 +22,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `12-stack-infra.md` | Stack - infrastructure / IaC. **e22 org pack**, injected when the repo does IaC *and* follows the pack (`inject-when=has-iac&org-e22`). |
 | `15-commands.md` | Useful commands - **e22 org pack** (`inject-when=org-e22`). |
 | `24-worktrees.md` | Parallel worktrees - isolate runtime, clean up after. |
-| `30-spec-workflow.md` | Spec workflow. |
-| `31-decision-capture.md` | Durable decisions land in the spine, not in side-channels. |
-| `32-living-docs.md` | Document in parallel, not after. |
+| `30-spec.md` | **The product spine**, in four parts. *Spec workflow* - the triggers that create an artifact (feature intent + contract, ADR by reversal cost, contract on a behavior change, open questions, a tracker-born feature), plus the brownfield sequence, the bootstrap-first rule (`/steer:setup`) and UI work with or without a design export. *Durable decisions* - a decision belongs in the spine, never only in chat or assistant memory, and bootstrap comes before the capture. *Living documentation* - update the owning artifact in the same change as the code, with the notable-event rule for `/spec/history/`, "applying a settled decision is not a new decision", the internal-ids ban on end-user copy, and the polyrepo member's write-through. Full routing table in the `traceability` reference. |
 | `33-spec-workflow-openspec.md` | Spec workflow - OpenSpec backend. Injected only where `openspec/` carries a structural marker (`inject-when=has-openspec`); remaps the spec artifacts onto the `/opsx:*` commands and leaves every other rule unchanged. ADRs, the tracker declaration and the app guide stay steer's, under `openspec/steer/`. |
 | `35-issue-tracker.md` | Issue-tracker integration (client-agnostic). |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
@@ -38,7 +36,6 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `61-gates.md` | Answering a human gate in-session - a gate needs the deciding human's answer, not a particular channel, so where that human is present it is collected by an **Approve · Reject · Decide later** prompt and recorded with its ratifier, date, and channel. Covers ADR `Proposed -> Accepted`, intent `draft -> approved`, and `--reviewed` plan sign-off; merge, deploy, real secrets, `/infra`, and protected-branch pushes are **never** promptable. Its *Hotfix / incident fast-path* section holds the one sanctioned speed lever for a production incident (`/steer:work --hotfix`), which relaxes ceremony and ordering, keeps every authority gate, and owes a mandatory follow-up. Full protocol in the `gates` reference. |
 | `80-change-class.md` | Change classification - **authoritative for per-change ceremony**; Issue-first takes its threshold from it, and the Definition of Done holds in full for every class. Trivial (no observable behavior change) needs no issue, spec, ADR, or plan and the PR is the work record; Behavioral carries tests and the owning `contract.md`; a high-risk area is High-risk at any size; an arguable class takes the heavier one. |
 | `85-practices.md` | Baseline patterns, stated as principles so they hold on any stack (the org pack names the instances) - typed by default, schema-validated boundaries (incl. JSON/YAML config & data files), parameterized data access, server-first, nothing silenced, every import resolves to a declared dependency, ASCII everywhere (no typographic characters in any authored text). |
-| `92-user-facing-copy.md` | Internal ids stay out of end-user surfaces - ADR ids, tracker refs, `Q-NNN` ids, feature slugs and `spec/**` paths never reach app UI copy or `/spec/app/` guide copy and release notes; the `/spec/app/` runbook is dev-facing and keeps its refs, and the guide's `spec/glossary.md` cross-link is a link, not copy. Third-register prose in the `traceability` reference. |
 | `95-not-the-gate.md` | You are not the gate - the dev is. |
 | `97-self-report.md` | When steer itself misbehaves, file it upstream with `/steer:report`, which auto-files after scrubbing and deduping - no confirmation step. |
 
@@ -48,8 +45,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     [`inject-standards.sh`](hooks.md)). The code-loop rules -
     `24-worktrees`, `35-issue-tracker`,
     `40-testing`, `41-coverage`, `45-commit-autonomy`, `50-done`,
-    `80-change-class`, `85-practices`,
-    `92-user-facing-copy` - are marked
+    `80-change-class`, `85-practices` - are marked
     `code-project`, so they are **skipped in knowledge-work mode** (a confidently
     non-code folder, e.g. a Claude Cowork product-owner workspace). `12-stack-infra`,
     `33-spec-workflow-openspec`, `36-issue-first`, `52-deployment` and
@@ -77,8 +73,8 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
     `orient-session.sh` - the hook itself speaks in every managed repo; only the
     topology block is marker-gated. That block is registered on the same
     `startup|resume|clear|compact|fork` matcher as the ruleset, so it survives a
-    `/clear`, a resume, auto-compaction and a forked session. The router, spec-workflow,
-    decision-capture, living-docs, output (`03`), roles,
+    `/clear`, a resume, auto-compaction and a forked session. The router, spec,
+    output (`03`), roles,
     **gates (`61`)**, high-risk,
     not-the-gate, self-report and output rules carry no
     `inject-when` marker and so stay always-on.
