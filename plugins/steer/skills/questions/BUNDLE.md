@@ -66,7 +66,7 @@ touches the tracker not at all - gathering uses read-only `Glob` / `Read` /
      **stop**. Don't render an empty form.
 
 4. **Render - Artifact when available.** Render by the **shared Artifact
-   discipline** - rule `88-artifacts`, mechanics in `/steer:reference artifacts`
+   discipline** - mechanics in `/steer:reference artifacts`
    ([`ARTIFACTS.md`](../../templates/reference/ARTIFACTS.md)), including the
    **copy-out floor** a fillable page must uphold and its
    progressive-enhancement copy/download controls - do not restate them here.

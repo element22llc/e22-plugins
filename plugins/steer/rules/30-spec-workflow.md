@@ -37,8 +37,14 @@ scaffold **and** the `/spec` spine before feature code; never hand-write
 `package.json` / build config / CI from scratch. Then interview to fill
 `vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
 ambiguity -> `vision.md` -> `## Open questions`), draft feature intents, and get PO
-approval before broad implementation. Design exports: read the **local export**
-via `/steer:reference design-sources` - never fetch the URL (it 403s).
+approval before broad implementation.
+
+**UI work, with or without a design export.** A committed export (Claude Design
+ZIP, Figma, screenshots) is a spec to realize in the standard stack, not code to
+ship - read the **local export**, never the URL (it 403s). No export is the
+normal case: build the UI deliberately rather than defaulting to generic AI
+aesthetics, and capture the reusable decisions in `DESIGN.md` as you go. Full
+walkthrough: `/steer:reference design-sources`.
 
 **A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode

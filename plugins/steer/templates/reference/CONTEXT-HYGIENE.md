@@ -1,6 +1,6 @@
 # Context hygiene
 
-Full reference for rule `26-context-hygiene`. The goal: long, multi-phase work
+The context-hygiene standard in full. The goal: long, multi-phase work
 should not bloat or exhaust the main session, and task-specific constraints should
 never be lost when the context compacts - **without** the user having to notice and
 intervene.

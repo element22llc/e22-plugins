@@ -23,7 +23,7 @@ Key points (read the file for the full detail):
   allowlist** (and the known dirs `apps/ packages/ configs/ infra/ policy/
   scripts/ spec/`) stays put. **Never touch** `node_modules/`, `.git/`, or lockfiles.
 - **Member: never create a product-level spine dir locally** (rule
-  `22-housekeeping`) - a stray whose home is one of them is reported with the
+  `HOUSEKEEPING.md`) - a stray whose home is one of them is reported with the
   workspace named as its destination, not filed here. `spec/design/` and
   `spec/decisions/` *are* the member's own and are handled normally.
 - Loose **source/research materials** (spreadsheets, inventories, vendor

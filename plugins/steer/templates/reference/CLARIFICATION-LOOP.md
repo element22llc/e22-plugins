@@ -14,7 +14,7 @@ here; when the contract changes, it changes in this one place.
    questions across the spine and renders them as a shareable, **fillable
    questionnaire** - a Claude Artifact, or the same fillable Markdown printed
    inline where the Artifact tool is unavailable (rendering discipline:
-   [`ARTIFACTS.md`](ARTIFACTS.md), rule `88-artifacts`). Bundle changes nothing
+   [`ARTIFACTS.md`](ARTIFACTS.md)). Bundle changes nothing
    in the spec.
 2. **Offline - the PO answers in a browser.** They fill each answer, copy out
    the return document below (a hosted page stores nothing, so the export is

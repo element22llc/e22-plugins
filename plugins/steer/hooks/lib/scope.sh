@@ -271,6 +271,22 @@ steer_tracker_rel() {
 	STEER_TRACKER_REL="${STEER_TRACKER_FILE#"${_r}"/}"
 }
 
+# steer_automation_optin <repo-root> - true when this repo has DECLARED that it
+# runs steer's autonomous-loop machinery, by shipping `policy/automation.yml`
+# with `loops: true`. Absent or false -> false, and rule 53 stays out of the
+# always-on payload.
+#
+# Opt-in, and therefore the one predicate in this file that fails CLOSED. The
+# fail-open contract above protects safety rules that every repo needs; rule 53
+# is the opposite shape - it governs machinery a repo only has once it has asked
+# for it, so injecting it by default would charge every consumer for a feature
+# almost none of them run. A repo that wants the rule declares the file.
+steer_automation_optin() {
+	_af="${1:-.}/policy/automation.yml"
+	[ -f "${_af}" ] || return 1
+	grep -Eq '^[[:space:]]*loops:[[:space:]]*(true|yes|on)[[:space:]]*(#.*)?$' "${_af}" 2>/dev/null
+}
+
 # steer_inject_when_one <token> <repo-root> - true / false for a SINGLE
 # inject-when predicate. An unknown token -> fail-open (true), so a typo'd marker
 # never silently removes a rule from the always-on context.
@@ -282,6 +298,7 @@ steer_inject_when_one() {
 	has-apps) [ -d "$2/apps" ] || [ -f "$2/package.json" ] || [ -f "$2/pnpm-workspace.yaml" ] ;;
 	has-compose) [ -f "$2/compose.yaml" ] || [ -f "$2/compose.yml" ] ;;
 	has-openspec) steer_has_openspec "$2" ;;
+	automation-optin) steer_automation_optin "$2" ;;
 	# polyrepo - true in EITHER role (workspace host or member); a single-repo
 	# product matches neither and pays nothing. NOTE: no rule currently carries
 	# `inject-when=polyrepo`, so this arm is not reachable from the inject loop.

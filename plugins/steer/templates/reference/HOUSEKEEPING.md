@@ -36,7 +36,7 @@ names" below). Confidence is the gate on the automatic move; absent it, you ask.
 These belong at the root. Never propose moving them:
 
 - **Known dirs:** `apps/`, `packages/`, `configs/`, `infra/`, `policy/`,
-  `scripts/`, `spec/` (rule `22-housekeeping` is the source of this list - a
+  `scripts/`, `spec/` (this file is the source of that list - a
   `workspace` profile ships a root `scripts/ws.sh`, so `scripts/` is never loose
   material; `policy/` holds the version pins and branch-protection data the
   scaffold installs and `/steer:protect` reads).

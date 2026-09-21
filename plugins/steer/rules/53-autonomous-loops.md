@@ -1,4 +1,4 @@
-<!-- steer:inject-when=code-project -->
+<!-- steer:inject-when=automation-optin -->
 ## Autonomous loops - automate the navigation, never the authority
 
 An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)

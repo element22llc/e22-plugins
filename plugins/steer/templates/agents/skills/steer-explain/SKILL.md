@@ -185,7 +185,7 @@ chart. Map the intent's own sections to these visuals:
 
 ### 4. Publish (or fall back)
 
-Render **by the shared Artifact discipline** - rule `88-artifacts`, full mechanics
+Render **by the shared Artifact discipline** - full mechanics
 in `/steer-reference artifacts` - and do not restate it here. Two things are
 **specific to this skill**:
 
@@ -232,6 +232,6 @@ After rendering, surface the single most useful follow-up, and stop:
 - Spec sources: `spec/features/<id>/intent.md`, `contract.md`.
 - Status enum for the lifecycle pipeline: `ENUMS.md`.
 - Artifact rendering, the derived-view discipline, and the Markdown fallback:
-  `/steer-reference artifacts` (rule `88-artifacts`) - the shared standard this
+  `/steer-reference artifacts` - the shared standard this
   skill renders by. Visual system: the `artifact-design` skill (page shell) and,
   where offered, `dataviz` (chart colour/encoding), both loaded at publish time.

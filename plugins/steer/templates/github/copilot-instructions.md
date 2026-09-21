@@ -64,6 +64,16 @@ production incident on a deployed system -> `/steer:work --hotfix`.
 front doors. Reference prose loads on demand via `/steer:reference`; where
 nothing is auto-injected (Desktop chat, claude.ai web), run `/steer:standards`.
 
+**Deliberately not in this always-on payload** - each is loaded by the skill
+that needs it, so route there rather than improvising: a cluttered repo root ->
+**`/steer:tidy`** (it carries the housekeeping rules); a shareable stakeholder
+page -> the rendering skill loads `/steer:reference artifacts`; a long
+multi-phase run -> `/steer:reference context-hygiene`. Two context lines hold
+regardless: delegate a heavy sweep to a subagent and bring back the result, not
+the sweep; and route every durable fact to its canonical home on disk (test,
+spec, app guide, issue) - never offer to keep it in private session memory,
+which the repo, the PR and every teammate cannot see.
+
 
 ## Responses - lead with the result, stop when it is said
 
@@ -241,44 +251,6 @@ shadowed. Either way run `/steer:doctor`; activation-order rationale:
 `/steer:reference conventions`.
 
 
-## Keep the repo tidy
-
-The repo **root** holds scaffolding and config only - the known dirs (`apps/`,
-`packages/`, `configs/`, `infra/`, `policy/`, `scripts/`, `spec/`) plus root config files
-(`package.json`, `compose.yaml`, `mise.toml`, lockfiles, dotfiles,
-`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`, `DESIGN.md`).
-
-Loose **source/research materials** - spreadsheets, inventories, vendor
-metadata, schema/DDL dumps, discovery docs, and **specification /
-requirements documents** (a `.pdf`, `.docx`, or deck spec, brief, RFP/SOW) -
-never sit at the root: their home is `/spec/reference/`; architecture and
-flow diagrams go to `/spec/design/`. A spec *document* is source material
-feeding the spine, not the structured spec itself.
-
-A stray root file you can **confidently classify** into one of those homes ->
-**move it there immediately** (keep its filename; `git mv` for tracked files
-so history follows) - don't wait for a yes. Hold for confirmation only where
-judgment or loss is at stake:
-
-- **Renaming** a cryptic name - **propose** it; move the file now under its
-  existing name and offer the rename separately.
-- **Ambiguous** files (unclassifiable at a glance, or `Copy of ...` look-alike
-  pairs where picking wrong loses work) - **ask**, never guess.
-- **Deleting** - never automatic, always waits for a yes, and only in two
-  cases. **True junk** (`desktop.ini`, `.DS_Store`, `Thumbs.db`) - delete plus a
-  `.gitignore` pattern so it can't return. An **already-absorbed source** - a
-  spec/requirements doc whose bytes match a committed
-  `spec/sources/**/original.*` - is a redundant duplicate of content already
-  preserved, so propose deleting rather than moving it; no `.gitignore` pattern
-  there, since it isn't junk and a future version is expected.
-- **Polyrepo member** (`spec/PRODUCT.md` present): `spec/reference/`,
-  `spec/sources/`, `spec/features/` and `spec/app/` are the **workspace's** -
-  never create one locally for a stray; report it and name the workspace as its
-  home. `spec/design/`, `spec/decisions/` are the member's own - handle normally.
-
-Run **`/steer:tidy`** for a full sweep.
-
-
 ## Parallel worktrees - isolate runtime, clean up after
 
 You may be one of several agents working the same repo at once, each in its own
@@ -320,35 +292,6 @@ you launched, freeing their ports - and run `mise run docker:clean` yourself whe
 removing a worktree by hand or on any other surface, where no hook fires.
 
 
-## Context hygiene - delegate heavy runs, keep state in files
-
-Long, multi-phase work bloats the session and risks losing task constraints at
-compaction. You cannot see context usage or trigger `/compact` - only the user
-can - so keep the working context lean.
-
-- **Delegate heavy runs to a subagent** (a fresh context window) and bring back
-  only the structured result, not the whole sweep - how `/steer:audit` fans out
-  to `steer-reviewer` and `/steer:work --reviewed` runs its plan gate.
-- **Keep durable state in files, not the chat.** Run-state and task-specific
-  constraints (decisions made, what to skip, what's unreliable) go in
-  `/spec/**` or a sidecar artifact the work re-reads - files survive compaction
-  and a fresh session; chat history does not (`/steer:build` ->
-  `BUILD-STATUS.md`, `/steer:work` -> its work marker).
-- **Don't offer to save findings to session memory** - private auto-memory is
-  invisible to the repo, the PR, and every teammate. Route each fact to its
-  canonical home by type: a **bug fix** -> a regression test; an **operational
-  or behavioral fact** -> the app guide / a `/spec/history/` entry; an **unresolved
-  follow-up** -> a linked tracker issue; a **durable design decision** -> the
-  spine. One home per fact - surface the capture, don't ask whether to
-  remember it.
-- **Only when the thread is genuinely overloaded** and delegation won't help,
-  *recommend* the user `/compact` or a fresh session, pre-composing the
-  hand-off (the artifact path + the constraints to carry) - and say plainly it
-  is a recommendation you cannot perform yourself.
-
-Full pattern and a worked example: `/steer:reference context-hygiene`.
-
-
 ## Spec workflow
 
 Create the artifact when the trigger fires - don't defer it:
@@ -388,8 +331,14 @@ scaffold **and** the `/spec` spine before feature code; never hand-write
 `package.json` / build config / CI from scratch. Then interview to fill
 `vision.md`, `users.md`, `glossary.md` (ask, don't invent; product-level
 ambiguity -> `vision.md` -> `## Open questions`), draft feature intents, and get PO
-approval before broad implementation. Design exports: read the **local export**
-via `/steer:reference design-sources` - never fetch the URL (it 403s).
+approval before broad implementation.
+
+**UI work, with or without a design export.** A committed export (Claude Design
+ZIP, Figma, screenshots) is a spec to realize in the standard stack, not code to
+ship - read the **local export**, never the URL (it 403s). No export is the
+normal case: build the UI deliberately rather than defaulting to generic AI
+aesthetics, and capture the reusable decisions in `DESIGN.md` as you go. Full
+walkthrough: `/steer:reference design-sources`.
 
 **A prototype is greenfield too** - "quick" / "just a prototype" / "throwaway"
 relaxes the *ceremony* (lighter interview; branch/PR only via solo-trunk mode
@@ -769,6 +718,8 @@ differently edits that file; only a *weaker* gate needs an ADR.
 
 ## Autonomous loops - automate the navigation, never the authority
 
+> **Applies only to a repo that has declared the automation opt-in** - `policy/automation.yml` with `loops: true`. A repo without that file runs no steer-scaffolded loop, so skip this section entirely.
+
 An **autonomous loop** is a scheduled automation (a cron workflow, a Routine)
 that wakes on its own, discovers work - CI failures, open issues, drift - and
 drives it through steer's skills unattended. It removes the prompting, **not**
@@ -1054,59 +1005,6 @@ effort; the shortest version that stays correct and clear wins.
 - **Durable prose stays lean too.** Specs, ADRs, PR descriptions, and docs
   inform, not impress - short declarative sentences, no hedging or ceremony.
   Same discipline applies to the standards themselves.
-
-
-## Shareable views -> Claude Artifacts
-
-When a skill's output is a **shareable, at-a-glance view** someone hands to a
-stakeholder - a feature summary, a report/dashboard, a release timeline, a
-capability menu, a fillable questionnaire - render it as a **Claude Artifact**
-(a default-private hosted page on claude.ai), not a wall of terminal text. Fall
-back to inline Markdown where the Artifact tool is unavailable - the fallback
-is not a failure.
-
-An Artifact is a **derived view, never a source of truth**: every visual
-encodes a real value the source (spec, tracker, audit) actually contains -
-never fabricate a status, date, count, or finding, and never advance a marker
-past what the source records. Always an on-demand render or an offer - never
-auto-generated per feature or on a schedule - and never carrying secrets or
-(on a stakeholder page) internal detail. Its only write is the page HTML to a
-**system temp dir, never under the repo tree**; don't persist the URL in the
-repo.
-
-Style the page from the repo's `DESIGN.md` tokens when present, else the
-`artifact-design`/`dataviz` house default - never an invented brand. A fillable
-page returns data **only through its exported, machine-keyed document**
-ingested by its owning skill (the PO questionnaire -> `/steer:intake clarify`).
-
-Mechanics, the full derived-view discipline, the styling contract, the
-Markdown-fallback shape, and which skill renders what:
-`/steer:reference artifacts`.
-
-
-## Design sources & UI
-
-Most features have **no design export, or only a partial one** - that is the
-normal case, not a blocker. When an export *is* committed (Claude Design ZIP,
-Figma, screenshots), read the **local export** - Claude **cannot** fetch a Claude
-Design URL (it 403s). The export is authoritative for the **visual behavior and
-flow it actually shows**; the spec for what the system does; gaps and conflicts
-go to the feature's `intent.md` -> `## Open questions`. It is a **spec to realize
-in the standard stack, not code to ship**: its delivery tech (UMD React,
-in-browser Babel, hand-rolled CSS) is disposable - serving the prototype runtime
-is an **ADR-gated, kill-dated exception**, never the default.
-
-When the design is absent or partial, **build the UI deliberately instead of
-defaulting to generic AI aesthetics**: the **`frontend-design`** plugin
-(this marketplace, Claude Code only) carries that craft; these standards scope it to
-a professional/enterprise default, the standard stack (Next + TS + Tailwind), and
-accessibility.
-
-Whichever way a feature's UI originates, **capture the reusable decisions in
-`DESIGN.md`** (repo root, or `apps/<app>/DESIGN.md`) - populated as you build,
-promoting anything that recurs - so every feature stays visually uniform. Full
-walkthrough (artifact paths, what to read, what not to invent, realize-vs-serve,
-no-export build): run **`/steer:reference design-sources`**.
 
 
 ## Internal ids stay out of end-user surfaces

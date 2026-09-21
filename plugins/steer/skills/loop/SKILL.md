@@ -26,7 +26,9 @@ allowed-tools:
 
 # Scaffold an autonomous loop
 
-`/steer:loop` sets up an **autonomous loop** (rule `53-autonomous-loops`): a
+`/steer:loop` sets up an **autonomous loop** (rule `53-autonomous-loops`, which a
+repo receives in its always-on context only once this skill has declared the
+opt-in - step 2 below): a
 scheduled automation that wakes on its own, discovers work, and drives it through
 steer's skills without a human in each turn - the "loop engineering" pattern.
 What it installs is a GitHub Actions workflow on a `cron` schedule that runs the
@@ -80,7 +82,12 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    `.github/workflows/steer-loop.yml`. This template is **on-demand** - it is not
    part of the bootstrap scaffold, so a repo only gets a loop when someone asks
    for one here.
-2. **Resolve the two choices with the dev - don't guess:**
+2. **Declare the automation opt-in.** Write `policy/automation.yml` with
+   `loops: true` (create it if absent; leave any other key alone). That marker is
+   what puts rule `53-autonomous-loops` into the repo's always-on context - a
+   repo running no loop pays nothing for the rule, and a repo running one has the
+   boundary in front of every session. Commit it with the workflow in step 5.
+3. **Resolve the two choices with the dev - don't guess:**
    - **Schedule (`cron`).** The template defaults to weekday mornings
      (`0 13 * * 1-5`, 13:00 UTC). Confirm or adjust the cadence. Keep it modest -
      an hourly loop burns API budget and opens draft-PR noise; daily or a few
@@ -88,19 +95,19 @@ Run these as **separate** invocations (chained `&&` defeats the allow-list).
    - **Scope.** What the loop is allowed to pick up - the default prompt triages
      CI failures and open issues via `/steer:audit` + `/steer:next`. Narrow it if
      the dev wants (e.g. "only CI failures", "only issues labelled `loop-ok`").
-3. **Leave the gate wiring intact.** Do not add `merge`, `gh pr merge`, deploy
+4. **Leave the gate wiring intact.** Do not add `merge`, `gh pr merge`, deploy
    steps, or any push targeting `main`/a protected branch to the workflow. The
    prompt and
    permissions are deliberately scoped to *deliver-up-to-the-PR* - widening them
    to cross the merge violates rule
    53. If the dev wants the loop to merge, that's a human decision made per-PR,
    not something this skill bakes in.
-4. **Deliver the workflow like any change.** Commit
-   `.github/workflows/steer-loop.yml` on a `feat/*` branch, push, and open the
+5. **Deliver the workflow like any change.** Commit
+   `.github/workflows/steer-loop.yml` and `policy/automation.yml` on a `feat/*` branch, push, and open the
    PR without asking, announcing it (Commit autonomy - the merge review is the
    dev's gate). The scheduled loop only arms once that PR merges, so the human
    decision to run a loop at all is the merge itself.
-5. **Report the follow-ups honestly:** the `ANTHROPIC_API_KEY` secret if missing,
+6. **Report the follow-ups honestly:** the `ANTHROPIC_API_KEY` secret if missing,
    branch protection if missing (`/steer:protect apply`),
    the chosen schedule, the scope, and that the loop delivers up to the PR and
    never merges. Point at rule
@@ -118,14 +125,18 @@ Report whether `.github/workflows/steer-loop.yml` exists and is wired:
   `issues: write`, `id-token: write`, `actions: read` - flag any broader grant;
 - the prompt contains no merge/deploy/push-to-`main` instruction (rule 53 - the
   loop pushes only its own work branches);
-- `ANTHROPIC_API_KEY` is present in `gh secret list`.
+- `ANTHROPIC_API_KEY` is present in `gh secret list`;
+- `policy/automation.yml` declares `loops: true` - without it the repo runs the
+  loop but no session is told the boundary; report it as a gap to close.
 
 If everything holds, say the loop is wired and name its schedule. If nothing is
 installed, say so and offer `scaffold`.
 
 ## Remove
 
-`remove` deletes `.github/workflows/steer-loop.yml` and delivers the removal the
+`remove` deletes `.github/workflows/steer-loop.yml`, drops the `loops: true`
+declaration from `policy/automation.yml` (deleting the file when nothing else is
+declared in it), and delivers the removal the
 same way as scaffold (branch, commit, push, PR - the merge review is the gate).
 Confirm first - a scheduled loop someone relies on shouldn't vanish
 silently. The `ANTHROPIC_API_KEY` secret is left alone (other workflows may use

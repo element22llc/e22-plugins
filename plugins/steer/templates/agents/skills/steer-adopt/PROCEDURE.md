@@ -254,7 +254,7 @@ the workspace; record the adoption as a workspace `spec/history/` entry, else th
 description. The member still gets the rest: `spec/decisions/`, the design home,
 `ARCHITECTURE.md`, `PRODUCTIONIZATION.md`, and the whole
 non-`spec/` scaffold above. **Not** `spec/sources/` - like `spec/reference/`, that
-one is the workspace's (rule `22-housekeeping`); never create it in a member.
+one is the workspace's (`HOUSEKEEPING.md`); never create it in a member.
 
 Otherwise: `/spec/tracker.md` (ask
 which tracker the team uses - if GitHub Issues, run

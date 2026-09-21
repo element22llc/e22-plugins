@@ -110,7 +110,7 @@ reason the rest of the spine does.
 map *minus* the product-level artifacts - no `vision.md`, `users.md`,
 `glossary.md`, `spec/history/`, `spec/app/`, `spec/features/`, `spec/tracker.md`, or
 `spec/sources/README.md`;
-those live once, in the workspace (rule `22-housekeeping` forbids creating
+those live once, in the workspace (`HOUSEKEEPING.md` forbids creating
 `spec/sources/` or `spec/reference/` in a member). It keeps `spec/decisions/`, `spec/design/`, and
 gains `spec/PRODUCT.md`. `steer_spine_state` detects that pointer and validates a
 member against the reduced `STEER_SPINE_REQUIRED_MEMBER` set (`hooks/lib/spine.sh`),
@@ -133,7 +133,9 @@ gh-aw agentic workflow under `../github/agentic/` (e.g. `triage.md`) is **not
 installed** by `/steer:init` or `/steer:adopt` - opt in deliberately per the docs
 (GitHub -> "Agentic workflows (gh aw)"). Likewise the autonomous-loop workflow
 `../github/workflows/steer-loop.yml` is **not** bootstrapped - it is instantiated
-on demand by `/steer:loop` (rule `53-autonomous-loops`), so a repo runs a loop
+on demand by `/steer:loop`, together with a `policy/automation.yml` declaring
+`loops: true` - the marker that puts rule `53-autonomous-loops` into the repo's
+always-on context - so a repo runs a loop, and pays for the rule that governs it,
 only when someone asks for one. The Copilot coding-agent setup workflow
 `../github/workflows/copilot-setup-steps.yml` is **not** auto-installed either -
 it is opt-in per repo (install it only when the team uses the GitHub-side Copilot

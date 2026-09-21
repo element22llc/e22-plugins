@@ -8,7 +8,7 @@
 #   its own context. So a general-purpose subagent that edits code during
 #   /steer:work ran with none of the testing, secrets, scope or gate rules, and
 #   steer-reviewer audited a slice against standards nobody handed it. Rule
-#   `26-context-hygiene` actively steers heavy work TO subagents, so that is not a
+#   the context-hygiene standard actively steers heavy work TO subagents, so that is not a
 #   marginal share of steer-governed work (#515).
 #
 #   A DIGEST, not the ruleset. The full payload is ~60k characters and would be
