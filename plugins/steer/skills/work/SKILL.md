@@ -78,8 +78,10 @@ These hold for the whole run, in every mode.
    find and no tracker to read. Go straight to the `tidy` row below.
 0d. **`issues <mode>` is exempt from step 3.** The backlog modes write no code,
    so there is nothing to find-or-create - a capture or triage ask must never
-   open an issue for itself. Steps 1 and 2 hold, and `/steer:issues` re-runs the
-   same tracker gate on entry; enter the mode rather than repeating it here.
+   open an issue for itself. Steps 1 and 2 hold, step 2 with the one carve-out
+   `issues` already declares (`bootstrap-labels` runs `gh label create` inline,
+   a repo-level op the gateway exposes none for), and `/steer:issues` re-runs
+   the same tracker gate on entry; enter the mode rather than repeating it here.
 1. **Read `/spec/tracker.md`.** This skill requires `system: github`. If the
    tracker is something else, say so and stop (manual flow only). In a member,
    this is the **workspace's** `spec/tracker.md` resolved in step 0 - a member
