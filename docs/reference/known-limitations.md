@@ -279,7 +279,7 @@ raises a prompt. Be honest about the tiers:
 - **`PreToolUse` -> `check-bash-actions.sh`** is an **`ask`**, never a deny: in a
   `solo-trunk` repo that has outgrown pre-MVP, the first `git push` to trunk of a
   session raises a permission prompt (approving it pushes anyway; the gate clears
-  by graduating via `/steer:protect`). The same script also carries an advisory
+  by graduating via `/steer:setup protect`). The same script also carries an advisory
   issue-create guard. Once-per-session-and-repo - later pushes downgrade to a
   note.
 - **`PostToolUse` -> `format-on-write.sh`** formats a file after it is written.
@@ -306,14 +306,14 @@ there is no automatic retry. Mitigation:
 - On managed surfaces, confirm rules loaded (the session should reflect the
   standards) before trusting the gates.
 
-!!! danger "One failure mode is *not* fail-open - run `/steer:doctor` first"
+!!! danger "One failure mode is *not* fail-open - run `/steer:setup doctor` first"
     If **every** steer script dies at once with `syntax error near unexpected
     token $'{\r'`, that is not a hook failing open - it is a **CRLF-corrupted
     install**, and a CRLF shell script does not warn, it fails to *parse*. The
     hooks share `hooks/lib/*.sh`, so one bad checkout takes out the whole set
     simultaneously (the v5.0.0 fault). Do **not** file this through
     `/steer:report`: it has a local, immediate answer. Run
-    [`/steer:doctor`](skills.md) - its **§0 plugin-integrity check** greps the
+    [`/steer:setup doctor`](skills.md) - its **§0 plugin-integrity check** greps the
     installed `hooks/` and `scripts/` for CR before anything else and reports it
     as an install fault, with the repair. See
     [Windows setup -> Line endings](../getting-started/windows-setup.md#line-endings).

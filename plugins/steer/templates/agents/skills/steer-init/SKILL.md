@@ -24,7 +24,7 @@ one step that waits for the dev is the **merge review** of that PR.
 **Solo greenfield?** When one person is both PO and dev with no MVP or deploy yet,
 Path B offers **solo trunk mode** (Commit autonomy): the bootstrap and early features
 land **directly on `main`** - no `feat/*` branch, no bootstrap PR - until graduation
-via `/steer-protect`. The `feat/*` + PR default below is for repos with a reviewer;
+via `/steer-setup protect`. The `feat/*` + PR default below is for repos with a reviewer;
 the per-step notes call out the trunk-mode variant.
 
 **A. Legacy fork of the old `repository-template`** - `[Replace ...]`,
@@ -205,7 +205,7 @@ commit the bootstrap directly to `main` and skip the bootstrap PR; see step 7.)
    **Solo trunk mode:** commit the bootstrap **directly to `main`** with no PR
    and push it (Commit autonomy), and
    note in the history entry that the repo runs on trunk until graduation
-   (`/steer-protect`) - there is no bootstrap PR. Otherwise (a repo with a reviewer):
+   (`/steer-setup protect`) - there is no bootstrap PR. Otherwise (a repo with a reviewer):
    commit on the `feat/*` branch, push, and open the PR for dev review - the **bootstrap
    gate** that brings the repo under the standards and lets spec-first work begin
    on `main`. This is **not** productionization: a greenfield bootstrap ships
@@ -225,10 +225,10 @@ bootstrapped repo's state.
 |---|---|---|
 | Unresolved template placeholders (`[Replace ...]`, `@github-handle`) | Blocking now | Resolve them before feature work |
 | Bootstrap PR open, awaiting dev review | Human decision required | A dev reviews/merges the bootstrap PR (no command) |
-| Solo trunk mode: bootstrap committed to `main`, no PR | Recommended | Spec or build the first feature; graduate via `/steer-protect` when the MVP works - or, if the repo will stay single-dev on trunk, record that with `/steer-protect waive` |
+| Solo trunk mode: bootstrap committed to `main`, no PR | Recommended | Spec or build the first feature; graduate via `/steer-setup protect` when the MVP works - or, if the repo will stay single-dev on trunk, record that with `/steer-setup protect waive` |
 | Tracker not yet configured (and not intentionally `none`/manual) | Recommended | Configure `/spec/tracker.md` |
 | Spine bootstrapped, no first feature yet | Recommended | Spec or build the first feature - `/steer-spec` or `/steer-build` |
-| Repo pushed to GitHub, `main` not yet protected (GitHub remote - the tracker system is irrelevant) | Recommended | Establish the PR gate - run `/steer-protect` (steer is advisory locally; this sets the real server-side wall). **In solo trunk mode, defer this until graduation** (MVP works / first deploy / second contributor) - and skip it entirely when a graduation waiver is recorded. |
+| Repo pushed to GitHub, `main` not yet protected (GitHub remote - the tracker system is irrelevant) | Recommended | Establish the PR gate - run `/steer-setup protect` (steer is advisory locally; this sets the real server-side wall). **In solo trunk mode, defer this until graduation** (MVP works / first deploy / second contributor) - and skip it entirely when a graduation waiver is recorded. |
 | Placeholders resolved, PR merged, tracker set as intended | Complete | `No action is currently required.` |
 
 Pick one `Current recommended action` by precedence. A tracker intentionally set

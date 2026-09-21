@@ -27,7 +27,7 @@ so in the report.
 7. **Toolchain & dependency health** - outdated dependencies; missing or drifted
    lockfiles (`mise.lock`, `pnpm-lock.yaml`, `uv.lock`, `.terraform.lock.hcl`);
    unpinned toolchain versions. On a GitHub-tracked repo, also note if `main`
-   lacks branch protection (the real PR gate) - route to `/steer:protect` to
+   lacks branch protection (the real PR gate) - route to `/steer:setup protect` to
    verify/apply against `policy/branch-protection.yml`; do not query or change
    settings here (audit is read-only code-health). **Exception:** if `CLAUDE.md`
    declares `Delivery mode: solo trunk (pre-MVP)`, an unprotected `main` is
@@ -35,11 +35,11 @@ so in the report.
    solo-trunk: a second collaborator (`gh api repos/{owner}/{repo}/collaborators
    --jq 'length'` > 1), a `prod`/`production` branch, or a deploy target (a deploy
    workflow / `infra/` tree). If any holds, **escalate** from "recommend later" to
-   "graduation conditions met - run `/steer:protect apply` now to raise the PR
+   "graduation conditions met - run `/steer:setup protect apply` now to raise the PR
    wall"; if none, report solo-trunk as expected and note graduation is optional
    until the MVP works. **A recorded graduation waiver**
    (`<!-- steer:graduation=waived -->` in `CLAUDE.md`, written by
-   `/steer:protect waive`) answers the *local* signals: report them as expected
+   `/steer:setup protect waive`) answers the *local* signals: report them as expected
    and do not escalate on them. The second-collaborator check still applies -
    a count > 1 voids the waiver, and that is the finding to escalate. (The
    SessionStart `check-graduation.sh` hook nudges on the local signals and is

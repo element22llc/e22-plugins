@@ -264,7 +264,7 @@ really has.
 Commands assume mise is activated and **wins PATH** over any other version
 manager - otherwise a bare `pnpm` or `node` silently runs a global version.
 "Tool not found" means mise is not activated; a *wrong* version means it is
-shadowed. Either way, run **`/steer:doctor`**.
+shadowed. Either way, run **`/steer:setup doctor`**.
 
 
 ## Spec workflow
@@ -493,7 +493,7 @@ are not the gate"), not each commit and not the push. Never pause work to ask
 Delivery runs in exactly **two modes**, keyed to the product `CLAUDE.md`
 `## Delivery mode` marker (`<!-- steer:delivery-mode=solo-trunk -->` -> solo
 trunk; anything else, absent included -> pr-flow). Branch protection *enforces*
-pr-flow rather than defining it, and `/steer:protect` moves a repo between them.
+pr-flow rather than defining it; `/steer:setup protect` moves a repo between them.
 
 - **PR flow (the default).** Work on a branch off `main` - never commit or push
   to `main` directly. Use the repo's convention, else `feat/*` / `fix/*`
@@ -504,21 +504,21 @@ pr-flow rather than defining it, and `/steer:protect` moves a repo between them.
 - **Solo trunk mode (declared, pre-MVP).** Commit **directly to `main` and push
   without asking**. CI still runs; the spine, tests and Definition of Done are
   **unchanged**, and the issue is still closed from the trunk commit where
-  Issue-first requires one. **Graduate via `/steer:protect`** the moment the MVP
-  works, you first deploy, or a second contributor joins; until then a local
+  Issue-first requires one. **Graduate via `/steer:setup protect`** the moment the MVP
+  works, you deploy, or a second contributor joins; until then a local
   graduation signal makes the session's first trunk push wait for a human yes,
   unless the dev recorded a waiver (`/steer:reference gates`).
 - **Declared-but-unprotected PR flow is a gap, not a mode**: the flow above
-  applies unchanged, but say the wall is missing and recommend `/steer:protect`
-  (an ADR where protection is genuinely unavailable).
+  holds, but say the wall is missing and recommend `/steer:setup protect`
+  (an ADR where protection is truly unavailable).
 - **Commit without asking** whenever a coherent unit of work is done - tests
   pass, lint clean, builds. Keep commits small, with a **Conventional Commits**
   subject (`type(scope): summary`, imperative; `!` for a breaking change).
   Commit messages are **not** the changelog: a shipping change also adds a
   **fragment** (`mise run changelog:new`), and `CHANGELOG.md` is generated from
   those, never hand-edited.
-- **After pushing, watch CI to conclusion and fix a red build before treating
-  the work as complete** - don't hand the dev a running or red PR and stop.
+- **After pushing, watch CI to conclusion and fix a red build before the work
+  counts as complete** - don't hand the dev a running or red PR and stop.
   (**Merge and deploy stay human-gated in every mode** - never `gh pr merge`,
   never deploy, never push to a protected `prod` branch.)
 
@@ -614,7 +614,7 @@ item can't be satisfied, say so rather than implying the work is complete.
 - [ ] GitHub-adopted repo: the active issue reflects progress, blockers and validation; unrelated findings filed as linked issues; the PR references it with the right closing relation?
 - [ ] Scaffold placeholders flagged or resolved?
 - [ ] Everything finished committed, and a complete change pushed with its PR open - or the trunk commit pushed in solo-trunk - with CI watched to green?
-- [ ] Solo trunk, no waiver, and the MVP works, you deployed, or a second contributor joined -> `/steer:protect`?
+- [ ] Solo trunk, no waiver, the MVP works, you deployed, or a second contributor joined -> `/steer:setup protect`?
 
 
 ## Autonomous loops - automate the navigation, never the authority
@@ -634,7 +634,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   / push to `main` or any protected branch / real secrets. Loop-opened PRs are
   **drafts by convention** - the deliberate signal that nobody attended the
   run; a reviewer flips one to ready.
-- **A loop presupposes PR flow.** Protect `main` first (`/steer:protect`);
+- **A loop presupposes PR flow.** Protect `main` first (`/steer:setup protect`);
   never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own

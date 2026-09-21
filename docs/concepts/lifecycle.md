@@ -60,7 +60,7 @@ per-feature branch or PR - issue-first **still holds**: the issue remains the
 audit-evidence anchor, so the change keeps an issue and closes it from the trunk
 commit (a `Closes #N` trailer). Only the branch/PR ceremony relaxes: the
 issue-first hooks read the marker and reword their advice (reference the issue in
-the commit, *not* "open a PR" or "create an `issue/<N>` branch"). `/steer:protect`
+the commit, *not* "open a PR" or "create an `issue/<N>` branch"). `/steer:setup protect`
 flips the marker to `pr-flow` at graduation, after which the per-feature PR flow
 resumes. Calling work a "prototype" does not waive issue-first - declaring
 solo-trunk mode is the only durable opt-out, and it drops the PR, not the issue.

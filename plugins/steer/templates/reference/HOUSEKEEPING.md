@@ -39,7 +39,7 @@ These belong at the root. Never propose moving them:
   `scripts/`, `spec/` (this file is the source of that list - a
   `workspace` profile ships a root `scripts/ws.sh`, so `scripts/` is never loose
   material; `policy/` holds the version pins and branch-protection data the
-  scaffold installs and `/steer:protect` reads).
+  scaffold installs and `/steer:setup protect` reads).
 - **Root config:** `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`,
   `biome.json`, `compose.yaml`, `mise.toml`, `mise.lock`, `tsconfig*.json`.
 - **Root docs:** `CLAUDE.md`, `README.md`, `DESIGN.md`, `ARCHITECTURE.md`

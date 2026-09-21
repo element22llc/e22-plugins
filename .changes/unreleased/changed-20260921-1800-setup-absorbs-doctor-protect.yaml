@@ -1,0 +1,26 @@
+kind: Changed
+body: |
+  - **`/steer:doctor` and `/steer:protect` are now `/steer:setup doctor` and
+    `/steer:setup protect`.** The bootstrap trio moved behind `/steer:setup`
+    last release because picking among them is a detection, not a user choice.
+    These two are behind it for a different reason: they are the same job's
+    edges. Prerequisites have to hold before `init`, `adopt` or `sync` can run
+    at all, and raising the branch-protection wall is the step each of them ends
+    on - so a user getting a repo onto the standards now learns **one** name,
+    and every recommendation steer hands back names that one. Both flip to
+    `user-invocable: false` and `setup` grows the mode table, the routing
+    vocabulary its fixtures assert on, and the `verify` / `apply [--solo]` /
+    `waive` and shadowed-runtime surface; neither procedure moved, so doctor's
+    §0 integrity check, its install handover and protect's policy diff, solo
+    profile and waiver are byte-for-byte what they were. Both also stay
+    reachable **without** spine detection - a broken toolchain and a merge-rules
+    question arrive with no bootstrap in sight, so naming the mode routes
+    straight there. The graduation nudge, the trunk-push gate, rules 15/45/50/53
+    and the bundled scaffold prose name the front door, and a frozen
+    `/steer:doctor` or `/steer:protect` in a managed repo's live prose now
+    reports as a `noncallable-gateway` for the dev to reroute. Rule 45's and
+    50's wording was tightened to pay for the longer invocation, keeping the
+    always-on payload at or under its previous size on every scope target.
+    Completes the third step of the 7.0 public-surface flip (#584).
+custom:
+  Slug: setup-absorbs-doctor-protect

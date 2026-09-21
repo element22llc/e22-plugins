@@ -82,9 +82,9 @@ user-invocable skill under one explicit *"More (you can also just describe any
 of these):"* fold, grouped by journey in this order - map each remaining skill
 to its group; omit an empty group:
 
-- **Start** - the remaining setup doors (`doctor`, `protect`). `init`, `adopt`
-  and `sync` are `setup`'s modes, not skills a user types, so they never appear
-  here as entries of their own.
+- **Start** - empty, and omitted. `init`, `adopt`, `sync`, `doctor` and
+  `protect` are all `setup`'s modes, not skills a user types, so they never
+  appear here as entries of their own.
 - **Spec & backlog** - absorb a PO document, capture/sequence the backlog,
   sweep open questions, record decisions (`intake`, `issues`, `roadmap`,
   `questions`, `adr`).

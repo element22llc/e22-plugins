@@ -1,7 +1,8 @@
 ---
 name: steer-protect
-description: Make GitHub branch protection reliable - diff policy/branch-protection.yml against live settings and, on confirmation, apply the gaps via gh api (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` uses the one-person profile (PR + CI, no approval); `waive` keeps a single-dev repo on trunk and silences the graduation nudge and push gate. Verify by default.
+description: Internal branch-protection path - diff policy/branch-protection.yml against live GitHub settings and apply the gaps on confirmation (protection, secret scanning, Dependabot). Graduation writes the CLAUDE.md delivery-mode marker and a /spec/history/ entry; `apply --solo` is the one-person profile, `waive` keeps a single-dev repo on trunk. Verifies by default.
 argument-hint: '[verify | apply [--solo | --team] | waive]'
+user-invocable: false
 ---
 
 <!-- Generated from the steer plugin's skills/protect/SKILL.md - do not edit by hand.
@@ -10,11 +11,11 @@ argument-hint: '[verify | apply [--solo | --team] | waive]'
      rendered here in the cross-tool Agent Skills format (agentskills.io) that
      Copilot, Cursor, Gemini CLI and Codex read from .agents/skills/. -->
 
-**When to use.** Use when asked to protect main or a prod branch, check merge rules, graduate solo trunk to PR flow, stop the graduation nag / push prompt, or as init/adopt's last step.
+**When to use.** Reached via /steer-setup protect - not a direct entry point.
 
 <!-- steer:modes verify,apply,waive -->
 
-# Make GitHub branch protection reliable
+# Make GitHub branch protection reliable (`/steer-setup protect`)
 
 steer is **advisory in the local session** - there is no local hard block on
 committing or pushing to `main` (rule 95, "You are not the gate - the DEV is";
@@ -64,7 +65,7 @@ is the default; a `solo` policy on a repo that has grown a second collaborator i
 
 **Graduation is not the only answer to the signals.** A repo that will keep a
 *single* contributor on trunk - with the `infra/` tree or deploy target the local
-signals flag - can instead record a **graduation waiver**: `/steer-protect waive`
+signals flag - can instead record a **graduation waiver**: `/steer-setup protect waive`
 writes `<!-- steer:graduation=waived -->` under the delivery-mode marker plus a
 `/spec/history/` entry, and the SessionStart nudge and the trunk-push ask fall
 silent together (the hooks' shared detector honours the marker). It is a
@@ -190,7 +191,7 @@ the fix; the marker flip itself is `apply`'s job:
 
 - Marker says **solo-trunk** but `main` **is protected** -> the repo already
   graduated (someone applied protection outside this skill). Report that the
-  marker is stale and recommend `/steer-protect apply`, which flips it to
+  marker is stale and recommend `/steer-setup protect apply`, which flips it to
   `<!-- steer:delivery-mode=pr-flow -->`, updates the section prose, and appends
   the graduation entry under `/spec/history/`. Do not edit those files from
   `verify`: a mode documented as read-only must stay read-only, and a stale

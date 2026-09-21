@@ -14,7 +14,7 @@ the responsibility: still ship code you *confirmed* works (Definition of done).
   / push to `main` or any protected branch / real secrets. Loop-opened PRs are
   **drafts by convention** - the deliberate signal that nobody attended the
   run; a reviewer flips one to ready.
-- **A loop presupposes PR flow.** Protect `main` first (`/steer:protect`);
+- **A loop presupposes PR flow.** Protect `main` first (`/steer:setup protect`);
   never point a loop at a solo-trunk repo - unattended direct-to-`main`
   delivery has no gate at all.
 - **Split ideation from verification.** The drafting agent never clears its own

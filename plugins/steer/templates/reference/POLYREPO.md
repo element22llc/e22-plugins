@@ -107,7 +107,7 @@ spine themselves must apply the same two tests.
 ## Reporting across members
 
 `/steer:next`, `/steer:status`, `/steer:audit`, `/steer:roadmap` and
-`/steer:protect` walk one tree by default. In a polyrepo that would hand a client
+`/steer:setup protect` walk one tree by default. In a polyrepo that would hand a client
 a fraction of the product with no indication it was a fraction - worse than a
 smaller, honest answer.
 
@@ -159,7 +159,7 @@ runs per repo, so N members can settle on N plugin versions. Mitigations:
 
 - **Reusable workflows** for CI, referenced by each member instead of copied.
 - **Org-level rulesets** instead of N branch-protection applications - but note
-  these require **GitHub Team or Enterprise**. On Free, `/steer:protect` still
+  these require **GitHub Team or Enterprise**. On Free, `/steer:setup protect` still
   runs per member and the copies stand.
 - Sync the members deliberately, in one pass, and check `/spec/.version` agrees
   across them.

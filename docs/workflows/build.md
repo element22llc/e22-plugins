@@ -83,7 +83,7 @@ resuming once the build is handed off - every box in its handoff gate checked.
     Claude commits, pushes, and opens the v0 PR on its own, but **approving the
     spec** and the **dev hand-off**
     are always human decisions - reviewing/merging the v0 PR in PR flow, or
-    graduating off the trunk via `/steer:protect` in solo trunk. See the
+    graduating off the trunk via `/steer:setup protect` in solo trunk. See the
     [Authorization model](../concepts/authorization-model.md).
 
 !!! note "For the reviewing developer: prototype-mode vs. governed-mode delivery"
@@ -91,7 +91,7 @@ resuming once the build is handed off - every box in its handoff gate checked.
     PR (a pull request - the package a developer reviews) - **unless** the PO chose
     **solo trunk** at the start (sole contributor, no
     developer): then the build commits straight to the main line with no v0 PR, and
-    the hand-off is graduation via [`/steer:protect`](../reference/skills.md) when a
+    the hand-off is graduation via [`/steer:setup protect`](../reference/skills.md) when a
     developer joins. In a repo that is already GitHub-adopted (**governed mode**),
     each approved slice instead ships through [`/steer:work`](work.md) as its own
     issue -> delivery - a PR in pr-flow, or a `Closes #N` trunk commit in

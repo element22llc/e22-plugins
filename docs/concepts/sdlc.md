@@ -33,7 +33,7 @@ flowchart LR
 | **2 · Plan** | [`/steer:issues`](../workflows/issues.md) | A triaged, decomposed backlog of issues | Issue-first: [High-risk](#change-classification) work and the six value cases have an issue **before** the first change; a Trivial change, an untracked fix, `/spec` edits, docs, generated output, lockfiles and `/steer:setup sync` let the PR be the record |
 | **3 · Build** | [`/steer:work`](../workflows/work.md) (and `work --reviewed`) | A branch, the implementation, tests, progress on the issue, a PR | Commit autonomy + change classification + high-risk scoping; **merge/deploy never implied** |
 | **4 · Verify** | Definition of Done + [drift gates](#drift-gates) | A reviewed, drift-flagged PR with CI green | A **human dev approves the PR** - "review *is* productionization" |
-| **5 · Deliver** | merge -> [deploy](deployment.md); [`/steer:protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
+| **5 · Deliver** | merge -> [deploy](deployment.md); [`/steer:setup protect`](../reference/skills.md) | A deployed change; an enforced branch-protection gate | Branch protection + (at graduation) the PR flow |
 | **6 · Maintain** | [`/steer:audit`](../reference/skills.md) (`code`/`spec`), `next`, `sync`, `work tidy`, `loop`, `report` | Findings routed back into the backlog; plugin kept current | - (re-enters Plan) |
 
 Non-technical owners enter through [`/steer:build`](../workflows/build.md), which
@@ -166,12 +166,12 @@ delivery-mode marker and enforces "cover what you touch" against the previous
 commit (it skips post-merge pushes in pr-flow, where the PR already gated those
 lines). A returning session is also nudged to *graduate* out of solo-trunk once a
 `prod` branch, a deploy target, or an `infra/` tree appears - or to record a
-**graduation waiver** (`/steer:protect waive`) when the repo deliberately stays
+**graduation waiver** (`/steer:setup protect waive`) when the repo deliberately stays
 single-dev on trunk with those in place; a waived repo gets neither the nudge nor
 the push prompt. All three are
 **local, offline** signals - a second contributor joining is equally a reason to
 graduate (and voids a waiver), but no hook can see it, so that one is caught on demand by
-[`/steer:protect`](../reference/skills.md) or `/steer:audit`, never at push time.
+[`/steer:setup protect`](../reference/skills.md) or `/steer:audit`, never at push time.
 
 ## What steer never decides for you
 

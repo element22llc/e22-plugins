@@ -32,7 +32,7 @@ real secrets). Steps 5-6 (scaffold, build feature by feature) are in
       description carrying the brief.
     - **Prototype mode, solo trunk** - the build is already on `main`; there is
       no v0 PR. The brief is still written, and the handoff gate is
-      **graduation** via `/steer:protect` (which raises the PR wall for all
+      **graduation** via `/steer:setup protect` (which raises the PR wall for all
       future work) when a developer joins or you head for real users.
     - **Governed mode** - each slice already shipped via `/steer:work` as its own
       issue -> delivery (a PR in PR flow, or a `Closes #N` trunk commit in solo
@@ -83,7 +83,7 @@ real secrets). Steps 5-6 (scaffold, build feature by feature) are in
       as v0 only with a dev's approval.
     - **Solo trunk** - there is no PR to open; the v0 is already on `main`. Tell
       the PO plainly the build is ready for a developer, and recommend graduating
-      via `/steer:protect` (it raises the server-side PR wall and ends trunk
+      via `/steer:setup protect` (it raises the server-side PR wall and ends trunk
       mode) when a developer joins or before real users arrive. Record that
       readiness in `/spec/BUILD-STATUS.md`. The dev review at graduation is the
       gate - the standards floor (tests, contracts, Definition of Done) already

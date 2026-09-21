@@ -32,12 +32,12 @@ it. Then:
 - **The `prod` branch exists.** `gh api repos/{owner}/{repo}/branches/prod` -
   `404` means the branch-based gate was declared but never adopted. Stop and say
   so: create it (`git branch prod main && git push -u origin prod`) and run
-  `/steer:protect`, which is what makes the merge an approval rather than a
+  `/steer:setup protect`, which is what makes the merge an approval rather than a
   formality. Do not create it yourself - an unprotected `prod` is a gate that
   looks real and is not.
-- **`prod` is protected.** If `/steer:protect --check`-equivalent state shows no
+- **`prod` is protected.** If `/steer:setup protect --check`-equivalent state shows no
   required review on `prod`, say the promotion PR would merge without an
-  approval, and recommend `/steer:protect` before continuing. Offer to continue
+  approval, and recommend `/steer:setup protect` before continuing. Offer to continue
   anyway only if the dev says so; record that they did.
 - **The default branch is green.** `gh pr checks` on the last merged PR, or
   `gh run list --branch main --limit 1`. A red default branch is not promotable;
@@ -105,7 +105,7 @@ Per `NEXT-ACTIONS.md`, derived from where the run stopped:
 | Observed state | Category | Action |
 |---|---|---|
 | `production_gate` is not `prod-branch-pr` | Human decision required | The declared gate is the human's own step (no command) |
-| No `prod` branch, or it is unprotected | Blocking now | `/steer:protect` |
+| No `prod` branch, or it is unprotected | Blocking now | `/steer:setup protect` |
 | Default branch red | Blocking now | Fix the build before promoting |
 | Changelog cut PR open | Human decision required | A dev reviews and merges the cut (no command) |
 | Promotion PR open | Human decision required | A dev approves and merges - **that merge deploys production** (no command) |

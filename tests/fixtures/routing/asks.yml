@@ -35,7 +35,7 @@ fixtures:
     skill: setup
     signals: ["reverse-engineer", "existing repo"]
   - ask: "mise: command not found - get my machine ready"
-    skill: doctor
+    skill: setup
     signals: ["command not found", "prerequisites"]
   - ask: "apply the pending structural migrations from the last plugin release"
     skill: setup
@@ -153,10 +153,10 @@ fixtures:
 
   # --- governance / hygiene --------------------------------------------------------
   - ask: "protect main so nobody can push to it directly"
-    skill: protect
+    skill: setup
     signals: ["protect main", "branch protection"]
   - ask: "check the merge rules on this GitHub repo"
-    skill: protect
+    skill: setup
     signals: ["merge rules"]
   - ask: "the repo root is full of loose spreadsheets and PDFs - clean it up"
     skill: work

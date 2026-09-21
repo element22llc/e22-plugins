@@ -21,4 +21,4 @@ really has.
 Commands assume mise is activated and **wins PATH** over any other version
 manager - otherwise a bare `pnpm` or `node` silently runs a global version.
 "Tool not found" means mise is not activated; a *wrong* version means it is
-shadowed. Either way, run **`/steer:doctor`**.
+shadowed. Either way, run **`/steer:setup doctor`**.

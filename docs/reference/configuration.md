@@ -26,7 +26,7 @@ command's output at 10,000 characters (see the hook's row in [Hooks](hooks.md)).
 | `35-tracker.md` | Issue-tracker integration, client-agnostic - `/spec/tracker.md` declares the system and ref format; refs live in the intent, the PR and the history entry; a question stays a `Q-NNN` open question until it needs an owner, blocks several features, needs outside input, or would outlive the session, and is then promoted to an issue. On GitHub, `/steer:issues` is the lifecycle and `/steer:tracker-sync` the gateway. |
 | `36-issue-first.md` | Issue-first (GitHub-adopted repos). |
 | `40-testing.md` | Testing - a feature change carries its tests in the same PR, a bug fix carries a regression test that fails before and passes after, and a failing test is never deleted or skipped to make CI pass. Coverage is a signal, not a target: cover what you touch, prioritise critical paths and error handling, surface a drop on changed code as drift, and gate only changed-line coverage - the reviewer judges adequacy. |
-| `45-delivery.md` | **How work reaches users**, in three parts. *Commit autonomy* - commit, push and open the PR without asking; the merge is the gate. Two declared modes, pr-flow (the default) and solo trunk, with `/steer:protect` moving a repo between them; Conventional Commit subjects and a changelog fragment for anything that ships; CI watched to conclusion after every push (see [Authorization model](../concepts/authorization-model.md)). *Deployment & environments* - the repo declares its model in `policy/delivery.yml` and the rule follows it, with the observability, rollback and secrets-at-rest baselines; merge and deploy stay human in every model. *Parallel worktrees* - trust the worktree, start services through `mise` so the per-worktree isolation applies, and clean up what you started. |
+| `45-delivery.md` | **How work reaches users**, in three parts. *Commit autonomy* - commit, push and open the PR without asking; the merge is the gate. Two declared modes, pr-flow (the default) and solo trunk, with `/steer:setup protect` moving a repo between them; Conventional Commit subjects and a changelog fragment for anything that ships; CI watched to conclusion after every push (see [Authorization model](../concepts/authorization-model.md)). *Deployment & environments* - the repo declares its model in `policy/delivery.yml` and the rule follows it, with the observability, rollback and secrets-at-rest baselines; merge and deploy stay human in every model. *Parallel worktrees* - trust the worktree, start services through `mise` so the per-worktree isolation applies, and clean up what you started. |
 | `50-done.md` | **What finishing a change means**, in four sections plus the audit-alignment clause. *Definition of Done* - five items: intent understood, appropriately tested, CI green, the contracts and docs this change actually affected updated, merge and deploy through the required human gates; deliberately not a restatement of every other rule, and deferred (never waived) under a declared production hotfix. *Verify loop* - name the check that proves the task done, loop against the harness until green, cap the loop and report what blocked you, never loop on uncheckable work. *Drift gates* - surface drift before merge by flagging its class in the PR; a flagged class blocks merge and you may not waive your own flag. *Audit-aligned delivery* - aligned with SOC 2 / ISO 27001, never "compliant". *End-of-session checklist* - report open items only. |
 | `53-autonomous-loops.md` | Autonomous loops - automate the navigation, never the authority; a loop may discover, triage, draft, push its own branch, and open a **draft** PR, but stops at every human gate (merge, deploy, ADR ratification, secrets). **Opt-in** (`inject-when=automation-optin`): injected only where the repo declares `policy/automation.yml` with `loops: true`, which `/steer:loop scaffold` writes alongside the workflow. |
 | `60-high-risk.md` | High-risk areas - auth, authorization, migrations, infrastructure, secrets, deletion, billing, deploy/release logic: scope with the dev before any code, contract or ADR first. Relaxed only while the **product** is pre-production, and never for real secrets, `/infra`, deploys or real third-party calls. Its *Secrets handling* section carries the never-commit rule, the local `.env` bootstrap, and "deployed secrets live in the declared store". |
@@ -134,11 +134,11 @@ the org stack defaults in rule `10-stack`:
 - **`policy/versions.yml`** - version floors; `check-version-pins.sh` blocks pins
   that violate it.
 - **`policy/branch-protection.yml`** - the branch-protection ruleset
-  `/steer:protect` verifies the live GitHub settings against, and applies on
+  `/steer:setup protect` verifies the live GitHub settings against, and applies on
   explicit confirmation.
 - **`policy/delivery.yml`** - how code reaches users here: environments,
   `deploy_on_merge`, `production_gate`, review apps, observability. Rule
-  `45-delivery` follows it rather than imposing a model, and `/steer:protect`
+  `45-delivery` follows it rather than imposing a model, and `/steer:setup protect`
   and `/steer:work promote` read `production_gate`.
 - **`policy/org.yml`** - which org pack this repo follows. `pack: e22` (also the
   meaning of an absent file) delivers the house stack, useful-commands and
@@ -211,7 +211,7 @@ rules, and that trade deleted ~1 KB of rationale prose that existed nowhere else
 the repo. Paying the bytes was judged cheaper than losing the prose. Then from
 65,200 to 65,300, because the polyrepo work landed in the same cycle and consumed
 that new headroom down to 7 bytes - leaving three factual corrections to always-on
-rules (a wrong `/steer:doctor` routing claim, a missing `scripts/` entry in the
+rules (a wrong `/steer:setup doctor` routing claim, a missing `scripts/` entry in the
 root allowlist, a mis-cited rule heading) with nothing to spend. Then from 65,300
 to 66,500, to fund the worktree-trust step in rule `24-worktrees`: a worktree
 created with `git worktree add` **in a plain terminal** is a case no hook can

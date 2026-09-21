@@ -92,7 +92,7 @@ if [ -n "${POLY_ROLE}" ]; then
 		printf 'hosts THE `/spec` spine (including every feature `intent.md`) and owns no '
 		printf 'application code, so an absent `apps/` is expected, not a gap. Members are '
 		printf 'listed in `spec/workspace.yml`. Any report you produce here (`/steer:next`, '
-		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`, `/steer:protect`) must '
+		printf '`/steer:status`, `/steer:audit`, `/steer:roadmap`, `/steer:setup protect`) must '
 		printf 'name the members it covered and flag any it could read neither locally nor '
 		printf 'over the GitHub gateway as **uncovered** - never present a fraction of the '
 		printf 'product as the whole. Load `/steer:reference polyrepo` before acting on the '

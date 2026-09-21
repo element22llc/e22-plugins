@@ -28,7 +28,7 @@ commit + push are the autonomous delivery and there is no PR; anything else,
 including an absent marker, is **pr-flow** - the diagram above, with the
 server-enforced **merge review as the one human gate**. Branch protection
 *enforces* pr-flow; it does not define the mode, so a declared-pr-flow repo whose
-`main` is unprotected is a **gap to close, not a third mode**. `/steer:protect`
+`main` is unprotected is a **gap to close, not a third mode**. `/steer:setup protect`
 moves a repo between the two and reconciles the marker.
 
 ## What is autonomous
@@ -126,17 +126,17 @@ moves a repo between the two and reconciles the marker.
     autonomously, with no `feat/*` branch and
     no per-feature PR - there is no second reviewer yet, so the PR gate has nothing
     behind it. CI still runs on every push, and the spine, tests, and Definition of
-    Done are unchanged. The mode ends at **graduation** - run `/steer:protect apply`,
+    Done are unchanged. The mode ends at **graduation** - run `/steer:setup protect apply`,
     which raises the server-side PR wall - once the MVP works, you first deploy, or a
     second contributor joins. A dev who is still alone graduates with
-    `/steer:protect apply --solo`: the policy's `solo` profile keeps the PR and the
+    `/steer:setup protect apply --solo`: the policy's `solo` profile keeps the PR and the
     `ci` check required but needs no approval, since an author cannot approve their
     own PR and would otherwise be locked out of merging. Once any of those signals is *visible locally* (a deploy
     workflow, an `infra/` tree, a `prod` branch), the trunk-push gate
     (`check-bash-actions.sh`) stops silent trunk pushes - the first `git push`
     each session surfaces for a human yes (repeats carry a non-blocking
     reminder) until the repo graduates - **or** until the dev records a
-    **graduation waiver** (`/steer:protect waive`): a repo that will stay
+    **graduation waiver** (`/steer:setup protect waive`): a repo that will stay
     single-dev on trunk, with its infra or deploy target as part of the plan,
     records that decision once (a `CLAUDE.md` marker plus a `/spec/history/`
     entry) and both the nudge and the push gate fall silent. The waiver is a
@@ -175,10 +175,11 @@ prompts the user mid-flow every time: `scaffold_reconcile.py` in `/steer:setup i
 `/steer:setup adopt` and `/steer:setup sync`, `template-reconcile.sh` in `/steer:setup adopt`,
 `/steer:build`, `/steer:spec-scaffold` and `/steer:setup sync`, `scan-capabilities.sh` +
 `scan-invocations.sh` in `/steer:setup sync`,
-`scan-prereqs.sh` in `/steer:doctor`, `workspace-snapshot.sh` in `/steer:next`, and
+`scan-prereqs.sh` in `/steer:setup doctor`, `workspace-snapshot.sh` in `/steer:next`, and
 `scan-spine-state.sh` in `/steer:setup`, `/steer:setup sync`, `/steer:work`,
 `/steer:status` and `/steer:audit`.
-`/steer:doctor` carries one grant that is deliberately *not* a helper script:
+The `doctor` skill behind `/steer:setup doctor` carries one grant that is
+deliberately *not* a helper script:
 `Bash(grep -rl *)`, for the §0 plugin-integrity check that greps the installed
 `hooks/` and `scripts/` for CR bytes. It is broader than the paths it serves - an
 unbounded-path filesystem read - and that is the point: the fault it detects
@@ -188,7 +189,7 @@ read-only (`grep -rl` lists names; it cannot mutate), which is what keeps the
 breadth acceptable - and the *repair* is handed over on the same principle: doctor
 prints the in-place `sed` unblock for the dev to run rather than running it, the
 same way it prints a shell-rc edit instead of making one.
-`/steer:protect` likewise declares a scoped grant for what it routinely reads - `gh auth
+The `protect` skill likewise declares a scoped grant for what it routinely reads - `gh auth
 status`, `gh repo view`, `git remote`, `git rev-parse`, and the read-scoped
 `Bash(gh api repos/*)` above -
 while the `gh api` write that applies protection stays prompted (see the argument-order
@@ -207,7 +208,7 @@ wildcard, since an open `mise run:*` would silently green-light `mise run deploy
 mutation vector for repo delete, PR merge, and branch protection). **Two skills re-grant a
 narrow slice**, each for a different transport:
 
-- `/steer:protect` carries `Bash(gh api repos/*)`, so *reading* live protection settings
+- The `protect` skill carries `Bash(gh api repos/*)`, so *reading* live protection settings
   is silent in a `protect` session. Its **writes** stay prompted, but only because the
   grant is a path prefix and every write in the skill puts `-X PUT`/`-X PATCH` **before**
   the endpoint path, so it falls outside the prefix; a write with the flag after the path
@@ -283,7 +284,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 - **Trunk pushes in a solo-trunk repo that has outgrown pre-MVP** - the
   trunk-push gate (`check-bash-actions.sh`) surfaces the first `git push` each
   session for a human yes once a local graduation signal stands, until
-  `/steer:protect` graduates the repo or `/steer:protect waive` records that
+  `/steer:setup protect` graduates the repo or `/steer:setup protect waive` records that
   staying single-dev on trunk is deliberate.
 - **Product and architecture decisions** - ratifying a `Proposed` ADR, approving
   a feature intent, signing off a `--reviewed` plan. Claude proposes; the named
@@ -319,7 +320,7 @@ the fix never varies: wrap the reads in a bundled script and grant that.
 !!! note "The local boundary is advisory - the server enforces it"
     Rule `00-router.md` § You are not the gate is explicit that this in-session discipline cannot
     *stop* a direct push to `main`; it only governs how the agent behaves. The
-    real wall is **GitHub branch protection**, which `/steer:protect` verifies
+    real wall is **GitHub branch protection**, which `/steer:setup protect` verifies
     against `policy/branch-protection.yml` and (on the dev's explicit
     confirmation) applies via `gh api`. Run it as the final step of init/adopt to
     turn the advisory boundary into an enforced one.
@@ -333,7 +334,7 @@ multi-turn run it is a limit the skill keeps in prose:
 - **Tier 1 (read-only)** skills do not modify a file that already exists in the
   repo: they all set `disallowed-tools: Edit, NotebookEdit, EnterWorktree` - e.g.
   `audit`, `next`, `standards`. Read-only is scoped to **tracked repo content**, not
-  to side effects generally: `/steer:doctor` is Tier 1 and still offers, on an
+  to side effects generally: the `doctor` skill is Tier 1 and still offers, on an
   explicit yes, to **install toolchain software on the machine** (`brew install mise`, then the runtimes mise manages) - the largest
   real-world side effect any Tier-1 skill has. Its boundary stops there: `git` and
   Docker Desktop are *handed over* as commands for you to run, never executed.

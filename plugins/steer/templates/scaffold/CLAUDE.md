@@ -37,18 +37,18 @@ success looks like. Pull from `/spec/vision.md` once it exists.]
      This marker DECLARES the repo's delivery mode; branch protection enforces
      pr-flow rather than defining it, so an unprotected main on a declared
      pr-flow repo is a gap to close, not solo-trunk. /steer:setup sets it;
-     /steer:protect flips it to pr-flow at graduation and reports a marker that
+     /steer:setup protect flips it to pr-flow at graduation and reports a marker that
      contradicts observed protection. Keep it in sync with the prose below.
      A solo-trunk repo that stays single-dev on trunk deliberately may carry a
      second line here, `<!-- steer:graduation=waived -->`, written by
-     /steer:protect waive - it silences the graduation nudge and the trunk-push
-     prompt; /steer:protect apply removes it at graduation. -->
+     /steer:setup protect waive - it silences the graduation nudge and the trunk-push
+     prompt; /steer:setup protect apply removes it at graduation. -->
 
 **`PR flow`** - work on `feat/*` / `fix/*` branches (`/steer:work` defaults to
 `issue/<number>-<slug>` when it is driving an issue), one PR per change; Claude pushes the
 branch and opens the PR autonomously, and it merges only after a dev reviews it
 (Commit autonomy - the merge review is the human gate, enforced server-side by
-branch protection; run `/steer:protect` to verify/apply it). This is the default.
+branch protection; run `/steer:setup protect` to verify/apply it). This is the default.
 
 Solo greenfield can instead run in **`solo trunk (pre-MVP)`** mode (offered by
 `/steer:setup` when one person is both PO and dev with no MVP yet): commit directly
@@ -58,14 +58,14 @@ that needs none, per Change classification, has the PR or commit as its
 record); only the branch
 and PR ceremony relaxes. CI still runs on every push, and the spine, tests, and
 Definition of Done are unchanged. **Graduate** to `PR flow` - run
-**`/steer:protect`**, which raises the server-side PR wall - the moment the MVP
+**`/steer:setup protect`**, which raises the server-side PR wall - the moment the MVP
 works, you first deploy, or a second contributor joins, whichever comes first
 (once you deploy or add a `prod` branch, the steer trunk-push hook stops silent
 trunk pushes until you graduate; a new contributor is caught on demand by
-`/steer:protect`/`/steer:audit`, not at push time); then
+`/steer:setup protect`/`/steer:audit`, not at push time); then
 set this marker and the prose to `PR flow`. If instead this repo will **stay
 single-dev on trunk** with its infra or deploy target as part of the plan, record
-that once with `/steer:protect waive` - the graduation nudge and push prompt stop,
+that once with `/steer:setup protect waive` - the graduation nudge and push prompt stop,
 and only a second contributor reopens the question.
 
 ## Profile

@@ -28,7 +28,7 @@ the old template lacked.
    what waits for the dev**).
 4. **Pin the toolchain - for every CI/dev platform.** The template's `mise.toml`
    files use `latest` and ship **no** `mise.lock`. If `mise` (or Docker) isn't
-   installed yet, run **`/steer:doctor`** first. Then run the canonical pin
+   installed yet, run **`/steer:setup doctor`** first. Then run the canonical pin
    procedure - `/steer:reference conventions` -> "Toolchain: `latest` in config,
    pinned in the lockfile" - in each config dir (root, and `infra/` if they'll
    touch infra): create the lock, `mise install`, `mise lock --platform

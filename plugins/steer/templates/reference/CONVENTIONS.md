@@ -143,7 +143,7 @@ the shell, with `mise activate` sourced **after** any other version manager
 must win or bare `pnpm`/`node` silently run a global version instead of the
 pinned one. Diagnostics: "tool not found" usually means mise isn't activated; a
 *wrong or old* version usually means it's shadowed. Either way run
-`/steer:doctor` - it flags a shadowed runtime and names the conflicting
+`/steer:setup doctor` - it flags a shadowed runtime and names the conflicting
 manager.
 
 ### Lockfiles are maintained, never bypassed
@@ -685,7 +685,7 @@ follows it; only a gate *weaker* than this default needs an ADR.
   - **Why a branch, not an environment approval?** GitHub's native
     deployment-environment "required reviewers" gate is Enterprise-only for
     private repos; a protected `prod` branch (required PR review, no direct push,
-    no admin bypass) gives the same human gate on any plan. `/steer:protect`
+    no admin bypass) gives the same human gate on any plan. `/steer:setup protect`
     applies that protection - see the `prod` entry in
     `policy/branch-protection.yml`.
   - **Policy precedence.** A repo's own `policy/branch-protection.yml` overrides
