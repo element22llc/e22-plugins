@@ -59,7 +59,7 @@ These apply to **every** mode, for the whole run.
 
 Lifecycle, state model, and authority are canonical in `ISSUE-WORKFLOW.md`; the
 issue format in `ISSUE-SCHEMA.md`; the open-question + validate contract in
-`SPEC-FRAMEWORK.md`; tracker conventions in rule `35-issue-tracker` and
+`SPEC-FRAMEWORK.md`; tracker conventions in rule `35-tracker` and
 `/steer:reference traceability`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those across the lifecycle.
 
@@ -71,7 +71,7 @@ sequences those across the lifecycle.
 2. **Detect capability via `/steer:tracker-sync`** (MCP vs `gh` vs manual) and say
    which path you took, so the user knows whether issues were actually touched.
 3. **Member? The tracker and the specs are in the workspace** (rules
-   `35-issue-tracker`, `30-spec`) - resolve it by the ladder in
+   `35-tracker`, `30-spec`) - resolve it by the ladder in
    `/steer:reference polyrepo` and read both from there; never file a product
    issue against the member's own repo to work around it. Two facts shape
    decomposition: **sub-issues do

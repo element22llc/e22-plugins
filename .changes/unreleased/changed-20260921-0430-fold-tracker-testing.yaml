@@ -1,0 +1,17 @@
+kind: Changed
+body: |
+  - **Tracker rules trimmed, and the GitHub arm stays its own file.**
+    `35-issue-tracker` is renamed `35-tracker` and both it and `36-issue-first`
+    are cut to what a session acts on. They are deliberately **not** merged: an
+    `inject-when` marker is per file, `35` is `code-project` and `36` is
+    `tracker-github`, so one file would either ship issue-first prose to every
+    non-GitHub code repo or drop the client-agnostic tracker rule from them. The
+    epic requires the GitHub arm to stay scoped, and #583 says the payload
+    number is the gate rather than the rule count - a merge would cost bytes on
+    the repos it does not apply to and save none on the ones it does.
+  - **Coverage folds into testing.** `41-coverage` becomes a paragraph of
+    `40-testing`: coverage is a signal rather than a target, cover what you
+    touch, a drop on changed code is drift, and CI gates changed-line coverage
+    only. An e22 app repo's payload: 48,007 -> 46,971.
+custom:
+  Slug: fold-tracker-testing

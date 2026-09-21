@@ -210,5 +210,5 @@ The Projects-v2 compatibility boundary and issue format are canonical in
 `ISSUE-SCHEMA.md`; lifecycle/state/authority in `ISSUE-WORKFLOW.md`; the spec-gap
 verdict model in `/steer:audit spec`; contract readiness + the open-question contract in
 `SPEC-FRAMEWORK.md`; milestone conventions in `/spec/tracker.md` and rule
-`35-issue-tracker`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
+`35-tracker`. GitHub I/O is `/steer:tracker-sync`'s job. This skill only
 sequences those into a release timeline.
