@@ -84,7 +84,7 @@ below give the detail.
 | Check standards conformance, or that the `/spec` spine matches its tracker specs | `/steer:audit code` · `/steer:audit spec` |
 | Apply a new plugin release (migrations, scaffold, spine) | `/steer:setup sync` |
 | Generate a release-milestone timeline | [`/steer:spec roadmap`](spec.md) |
-| Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | `/steer:loop` |
+| Run the maintain-phase sweep on a schedule (triage -> draft fix -> PR) | Ask for an autonomous loop - Claude scaffolds it (`/steer:loop`): a workflow that discovers, triages, drafts a fix reviewed by `steer-reviewer`, and opens a **draft** PR, never merging or deploying (rule 53). It starts by asking you to declare the automation opt-in |
 | Lock branch protection or flip the delivery mode | `/steer:setup protect` |
 | A tool is missing, or set up the local toolchain | `/steer:setup doctor` |
 | **Every** steer command fails at once (`syntax error near unexpected token`) - a CRLF-corrupted install, not a plugin bug | `/steer:setup doctor` (§0 diagnoses it locally) |
@@ -122,4 +122,3 @@ below give the detail.
 | `/steer:audit` | Periodic read-only pass: `code` for whole-repo standards-conformance health, `spec` to diff the as-built `/spec` spine against its tracker specs, `all` for both. |
 | `/steer:next` | "What should I do next?" across the whole workspace. Read-only itself: it reconstructs, arbitrates, and names the one action that matters most. When that action is unambiguous and non-gated it is then announced and **continued into** (rule `00-router`'s bounded auto-continue), handing over at the first step that writes; a close call, a gated step, or an action no command performs waits for you. |
 | `/steer:spec roadmap` | A `/steer:spec` mode. Generate a release-milestone timeline from the `/spec` spine (viewable as a GitHub Projects v2 roadmap). |
-| `/steer:loop` | Run a maintain-phase sweep autonomously on a schedule - discovers, triages, drafts a fix in an isolated worktree, has it checked by an independent reviewer it did not author with (`steer-reviewer` / `/steer:audit` - rule 53's split-ideation-from-verification step), pushes a branch, opens a **draft** PR. Never merges or deploys (see rule 53). |

@@ -135,15 +135,17 @@ promotion model.
 `plugins/steer/templates/github/workflows/steer-loop.yml`. It is **not**
 bootstrapped by `/steer:setup init` or `/steer:setup adopt` and is deliberately absent from
 `MANIFEST.md`'s install map - a repo runs a loop only when someone asks for one
-(rule `53-autonomous-loops`).
+(rule `53-autonomous-loops`). The first thing `scaffold` asks for is the
+**automation opt-in** where `policy/automation.yml` does not already declare
+`loops: true`: an in-session decision with the trade stated, taken before
+anything is written.
 
 It is steer's own **unattended** path: the template ships a `schedule:` trigger
 defaulting to weekday mornings (`cron: "0 13 * * 1-5"`, 13:00 UTC), which
 `/steer:loop` confirms or adjusts with the dev at scaffold time, plus a
 `workflow_dispatch` so the loop can be tested before its first scheduled run.
 Keep the cadence modest - an hourly loop burns API budget and opens draft-PR
-noise. `/steer:loop verify` checks an installed loop; `/steer:loop remove` takes
-it back out.
+noise. The `verify` mode reports an installed loop; `remove` takes it back out.
 
 ## Agentic workflows (`gh aw`) - optional, opt-in
 
