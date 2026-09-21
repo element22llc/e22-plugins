@@ -88,7 +88,7 @@ be unique. The full field set actually used in this repo:
 > all*. steer's entire premise is that the model is the router and the user never
 > has to know a skill name (rule `00-router`, "map their plain-language goal to
 > the owning skill and **invoke it yourself**") - so every skill in the
-> listing, including the ones that look manual (`setup`, `protect`, `help`), is a
+> listing, including the ones that look manual (`setup`, `protect`, `doctor`), is a
 > model-invocation target and would silently stop being reachable. `standards` is
 > worse still: it exists for the surfaces where no hook injects the rules, so its
 > listing description is the *only* thing that tells the model to load it there.
@@ -119,7 +119,7 @@ be unique. The full field set actually used in this repo:
 > finishes, continue into its single best next action"*. So the override does not
 > stay with the cheap skill:
 >
-> - `/steer:help` at `effort: low` -> the router continues into `/steer:work`,
+> - `/steer:next` at `effort: low` -> the router continues into `/steer:work`,
 >   which now executes the implementation at low effort.
 > - `spec-scaffold` is worse, because it is an **internal gateway invoked
 >   mid-flow** by `build`, `init`, `intake`, and `spec` - a low-effort override
@@ -203,8 +203,9 @@ matrix):
   worktree. Branching and committing are Bash, which the frontmatter does not
   withhold. `Write`
   splits the tier: add it to `disallowed-tools` for a skill that writes nothing at
-  all (`reference`, `standards`, `next`, `doctor`), and **keep it granted** for the
-  five that write a temp-dir path (`audit`, `explain`, `help`, `status` for the
+  all (`reference`, `standards`, `doctor`), and **keep it granted** for the
+  five that write a temp-dir path (`audit`, `explain`, `next` in `capabilities`
+  mode via `help`, `status` for the
   artifact HTML; `report` for the scrubbed issue body). For four of the five that
   temp path is the *only* write; `/steer:audit` is the exception, with a second
   post-confirmation write its modes instruct (`/spec/AUDIT-REPORT.md` /
@@ -278,7 +279,7 @@ exemplars it cites (`/steer:audit` -> the `steer-reviewer` agent;
 ### Skill vs. mode - hold the line on surface area
 
 The user-facing menu is the handful of **front doors** - `setup`, `build`, `spec`,
-`intake`, `work`, `issues`, `audit`, `adr`, `next`, `explain`, `help`, `protect`,
+`intake`, `work`, `issues`, `audit`, `adr`, `next`, `explain`, `protect`,
 `report` - that `rules/00-router.md` names and that hand off to the specialized
 skills (the router routes from the skill listing itself; there is no separate
 intent table to keep in sync). Every new skill widens the set of things a user must choose

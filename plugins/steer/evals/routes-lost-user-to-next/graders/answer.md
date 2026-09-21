@@ -18,7 +18,8 @@ started that workflow; that handoff is the standards' own closing contract.
 
 Fail the response if it:
 
-- starts the **wrong** workflow - in particular `help`, which does not own this ask;
+- starts the **wrong** workflow, or the wrong mode - in particular
+  `/steer:next capabilities`, the capability menu, which does not own this ask;
 - answers as a generic assistant - names no `/steer:*` skill at all. A competent
   plan, interview, or scaffold that never names the owning skill fails, however
   good it reads; or

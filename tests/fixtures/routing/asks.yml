@@ -122,10 +122,10 @@ fixtures:
     skill: next
     signals: ["I'm lost"]
   - ask: "what can steer do?"
-    skill: help
+    skill: next
     signals: ["what can steer do"]
   - ask: "show me the commands"
-    skill: help
+    skill: next
     signals: ["show me the commands"]
   - ask: "why do we default to pnpm and mise? load the conventions"
     skill: reference
