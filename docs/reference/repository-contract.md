@@ -270,7 +270,7 @@ requires `spec/workspace.yml` to be **present at** `workspace.path` rather than 
 directory (resolved against the primary checkout - from a linked worktree the
 recommended relative `..` otherwise lands on a real but empty directory and the
 product's specs read as absent); and `spec/PRODUCTIONIZATION.md`'s open-question seed
-becomes a `### Q-NNN` field block, because the SessionStart hook and `/steer:questions`
+becomes a `### Q-NNN` field block, because the SessionStart hook and `/steer:spec questions`
 count only those, so the old bullet seed modelled a shape neither one sees. The fifth
 covers the workspace task rename. The workspace profile's
 whole-product tasks are now `ws:`-prefixed (`ws:dev`, `ws:docker:up` / `down` /

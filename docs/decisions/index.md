@@ -6,7 +6,7 @@ the plugin itself, decisions are captured in `CHANGELOG.md` and PRs.
 
 ## When to write an ADR
 
-**The bar is reversal cost, not novelty.** Use [`/steer:adr`](../reference/skills.md)
+**The bar is reversal cost, not novelty.** Use [`/steer:spec adr`](../reference/skills.md)
 when undoing the choice later would mean changing work built on top of it - stack,
 database, auth, deployment, tenancy model - or when asked to record a decision.
 
@@ -36,7 +36,7 @@ flowchart TD
 New ADRs default to **Proposed** - the fixture suite asserts this. An ADR becomes
 **Accepted** only on an explicit human decision.
 
-That decision is **answerable in-session**. `/steer:adr accept <n>` is the single
+That decision is **answerable in-session**. `/steer:spec adr accept <n>` is the single
 writer of `Proposed -> Accepted`: it offers the three-option gate prompt
 (**Approve · Reject · Decide later**) carrying the ADR's rejected alternatives and
 negative consequences, then stamps `> Ratified by:` / `> Ratified at:` /

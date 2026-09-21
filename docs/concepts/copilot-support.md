@@ -470,7 +470,7 @@ the standards in `.github/copilot-instructions.md`.
   frontmatter, and are documented in the plugin's `ISSUE-WORKFLOW.md`, which the
   flat Copilot standards file does not carry; Copilot applies its own host
   permissions instead, which is what the rule's surviving text describes. And
-  `/steer:questions` leaned on
+  `/steer:spec questions` leaned on
   `check-open-questions.sh` for both the backlog nudge and the 14-day blocking
   escalation with no alternative - its body now tells any other surface to apply
   that age test by hand.
